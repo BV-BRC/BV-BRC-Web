@@ -821,7 +821,7 @@ define([
         Topic.publish('/navigate', { href: '/workspace' + path });
       }, false);
 
-
+      /*
       this.actionPanel.addAction('ViewNwk', 'fa icon-tree2 fa-2x', {
         label: 'VIEW',
         multiple: false,
@@ -876,9 +876,10 @@ define([
           console.log('Error: could not find chisqTable.tsv output file');
         }
       }, false);
+      */
 
       this.actionPanel.addAction('ViewNwkXml', 'fa icon-tree2 fa-2x', {
-        label: 'VIEW2',
+        label: 'VIEW',
         multiple: false,
         validTypes: ['nwk', 'phyloxml'],
         tooltip: 'View Archaeopteryx Tree'
@@ -904,7 +905,7 @@ define([
       }, false);
 
       this.browserHeader.addAction('ViewNwkXml', 'fa icon-tree2 fa-2x', {
-        label: 'VIEW2',
+        label: 'VIEW',
         multiple: false,
         validTypes: ['GeneTree'],
         tooltip: 'View Archaeopteryx Tree'
