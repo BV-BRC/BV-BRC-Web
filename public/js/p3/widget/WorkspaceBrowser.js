@@ -1340,6 +1340,7 @@ define([
         }
       }, false);
 
+      /*
       this.browserHeader.addAction('Rerun', 'fa icon-rotate-left fa-2x', {
         label: 'RERUN',
         multiple: false,
@@ -1353,6 +1354,7 @@ define([
         console.log(selection);
 
       }, false);
+      */
 
       // listen for opening user permisssion dialog
       Topic.subscribe('/openUserPerms', function (selection) {
