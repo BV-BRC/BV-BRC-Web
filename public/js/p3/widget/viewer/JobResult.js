@@ -67,7 +67,6 @@ define([
     },
     setupResultType: function () {
       // console.log("[JobResult] setupResultType()");
-      console.log("this.data=",this.data);
       if (this.data.autoMeta.app.id) {
         this._resultType = this.data.autoMeta.app.id;
         // console.log("[JobResult] _resultType:",this._resultType);
