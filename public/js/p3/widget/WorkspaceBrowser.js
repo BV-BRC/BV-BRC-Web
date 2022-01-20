@@ -1346,7 +1346,7 @@ define([
         persistent: true,
         // TODO: list of services that allow "descending" into a job object
         // TODO: does not last past the
-        validTypes: ['RNASeq', 'TnSeq', 'Variation', 'folder'],
+        validTypes: ['RNASeq', 'TnSeq', 'Variation'],
         tooltip: 'Reset job form with current parameters'
       }, function (selection) {
         // console.log("View Tracks: ", this);
