@@ -850,6 +850,33 @@ define([
         }
       }, false);
 
+      this.browserHeader.addAction('ViewNwk', 'fa icon-tree2 fa-2x', {
+        label: 'VIEW',
+        mutliple: false,
+        validTypes: ['GeneTree'],
+        tooltip: 'View Tree'
+      }, function (selection, container, button) {
+        console.log(selection);
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this,function(file_data) {
+          var gt_file = file_data[0].split(".");
+          if (gt_file[gt_file.length - 1] === 'nwk') {
+            path = gt_file.join(".");
+          }
+          if (path) { 
+            return;
+          }
+        }));
+        if (path) {
+          var labelSearch = 'true';
+          var idType = 'patric_id';
+          var labelType = 'feature_name';
+          Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path) });
+        } else {
+          console.log('Error: could not find chisqTable.tsv output file');
+        }
+      }, false);
+
       this.actionPanel.addAction('ViewNwkXml', 'fa icon-tree2 fa-2x', {
         label: 'VIEW2',
         multiple: false,
@@ -874,6 +901,34 @@ define([
           idType = 'genome_name';
         }
         Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) + '&fileType=' + fileType });
+      }, false);
+
+      this.browserHeader.addAction('ViewNwkXml', 'fa icon-tree2 fa-2x', {
+        label: 'VIEW2',
+        multiple: false,
+        validTypes: ['GeneTree'],
+        tooltip: 'View Archaeopteryx Tree'
+      }, function (selection, container, button) { 
+        console.log(selection);
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this,function(file_data) {
+          var gt_file = file_data[0].split(".");
+          if (gt_file[gt_file.length - 1] === 'nwk') {
+            path = gt_file.join(".");
+          }
+          if (path) { 
+            return;
+          }
+        }));
+        if (path) {
+          var labelSearch = 'true';
+          var idType = 'patric_id';
+          var labelType = 'feature_name';
+          var fileType = 'nwk';
+          Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path) + '&fileType=' + fileType });
+        } else {
+          console.log('Error: could not find chisqTable.tsv output file');
+        }
       }, false);
 
       this.actionPanel.addAction('ViewAFA', 'fa icon-alignment fa-2x', {
