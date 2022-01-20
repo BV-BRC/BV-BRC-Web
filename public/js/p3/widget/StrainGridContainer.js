@@ -1,18 +1,20 @@
 define([
-  'dojo/_base/declare', './GridContainer', 'dojo/on',
-  './StrainGrid', './AdvancedSearchFields', 'dijit/popup', 'dojo/topic',
-  'dijit/TooltipDialog', './FacetFilterPanel',
-  'dojo/_base/lang', 'dojo/dom-construct'
+  'dojo/_base/declare', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
+  'dijit/popup', 'dijit/Dialog', 'dijit/TooltipDialog',
+  './StrainGrid', './AdvancedSearchFields', './GridContainer',
+  './PerspectiveToolTip', './SelectionToGroup',
+  '../util/PathJoin'
 
 ], function (
-  declare, GridContainer, on,
-  StrainGrid, AdvancedSearchFields, popup, Topic,
-  TooltipDialog, FacetFilterPanel,
-  lang, domConstruct
+  declare, on, Topic, domConstruct,
+  popup, Dialog, TooltipDialog,
+  StrainGrid, AdvancedSearchFields, GridContainer,
+  PerspectiveToolTipDialog, SelectionToGroup,
+  PathJoin
 ) {
 
-  var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
-  var downloadTT = new TooltipDialog({
+  const dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
+  const downloadTT = new TooltipDialog({
     content: dfc,
     onMouseLeave: function () {
       popup.close(downloadTT);
@@ -26,7 +28,6 @@ define([
     facetFields: AdvancedSearchFields['strain'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['strain'].filter((ff) => ff.search),
     filter: '',
-    maxGenomeCount: 10000,
     dataModel: 'strain',
     primaryKey: 'id',
     defaultFilter: '',
@@ -46,52 +47,37 @@ define([
           tooltipDialog: downloadTT
         },
         function () {
-          var _self = this;
+          const _self = this;
 
-          var totalRows = _self.grid.totalRows;
-          // console.log("TOTAL ROWS: ", totalRows);
-          if (totalRows > _self.maxDownloadSize) {
-            downloadTT.set('content', 'This table exceeds the maximum download size of ' + _self.maxDownloadSize);
-          } else {
-            downloadTT.set('content', dfc);
+          const totalRows = _self.grid.totalRows;
+          const dataType = _self.dataModel
+          const primaryKey = _self.primaryKey
+          const currentQuery = _self.grid.get('query')
+          const authToken = (window.App.authorizationToken) ? `&http_authorization=${encodeURIComponent(window.App.authorizationToken)}` : ''
+          const query = `${currentQuery}&sort(${primaryKey})&limit(${totalRows})`
 
-            on(downloadTT.domNode, 'div:click', function (evt) {
-              var rel = evt.target.attributes.rel.value;
-              var dataType = _self.dataModel;
-              var currentQuery = _self.grid.get('query');
+          on(downloadTT.domNode, 'div:click', function (evt) {
+            const typeAccept = evt.target.attributes.rel.value
 
-              // console.log("DownloadQuery: ", currentQuery);
-              var query = currentQuery + '&sort(+' + _self.primaryKey + ')&limit(' + _self.maxDownloadSize + ')';
+            const baseUrl = `${PathJoin(window.App.dataServiceURL, dataType)}/?${authToken}&http_accept=${typeAccept}&http_download=true`
 
-              var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : '');
-              if (baseUrl.charAt(-1) !== '/') {
-                baseUrl += '/';
-              }
-              baseUrl = baseUrl + dataType + '/?';
+            const form = domConstruct.create('form', {
+              style: 'display: none;',
+              id: 'downloadForm',
+              enctype: 'application/x-www-form-urlencoded',
+              name: 'downloadForm',
+              method: 'post',
+              action: baseUrl
+            }, _self.domNode);
+            domConstruct.create('input', {
+              type: 'hidden',
+              value: encodeURIComponent(query),
+              name: 'rql'
+            }, form);
+            form.submit();
 
-              if (window.App.authorizationToken) {
-                baseUrl = baseUrl + '&http_authorization=' + encodeURIComponent(window.App.authorizationToken);
-              }
-
-              baseUrl = baseUrl + '&http_accept=' + rel + '&http_download=true';
-              var form = domConstruct.create('form', {
-                style: 'display: none;',
-                id: 'downloadForm',
-                enctype: 'application/x-www-form-urlencoded',
-                name: 'downloadForm',
-                method: 'post',
-                action: baseUrl
-              }, _self.domNode);
-              domConstruct.create('input', {
-                type: 'hidden',
-                value: encodeURIComponent(query),
-                name: 'rql'
-              }, form);
-              form.submit();
-
-              popup.close(downloadTT);
-            });
-          }
+            popup.close(downloadTT);
+          });
 
           popup.open({
             popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
@@ -102,6 +88,79 @@ define([
         true,
         'left'
       ]
+    ]),
+    selectionActions: GridContainer.prototype.selectionActions.concat([
+      [
+        'ViewGenomeItems',
+        'MultiButton fa icon-selection-GenomeList fa-2x',
+        {
+          label: 'GENOMES',
+          validTypes: ['*'],
+          multiple: true,
+          min: 1,
+          max: 0,
+          tooltip: 'Switch to Genome List View. Press and Hold for more options.',
+          ignoreDataType: true,
+          validContainerTypes: ['strain_data'],
+          pressAndHold: function (selection, button, opts, evt) {
+            const genome_ids = Array.from(selection.reduce((p, v) => { return p.add(v.genome_ids) }, new Set()))
+            popup.open({
+              popup: new PerspectiveToolTipDialog({
+                perspective: 'GenomeList',
+                perspectiveUrl: '/view/GenomeList/?eq(*,*)&genome(in(genome_id,(' + genome_ids.join(',') + ')))'
+              }),
+              around: button,
+              orient: ['below']
+            });
+          }
+        },
+        function (selection) {
+          const genome_ids = Array.from(selection.reduce((p, v) => { return p.add(v.genome_ids) }, new Set()))
+          Topic.publish('/navigate', { href: '/view/GenomeList/?eq(*,*)&genome(in(genome_id,(' + genome_ids.join(',') + ')))' });
+        },
+        false
+      ], [
+        'AddGroup',
+        'fa icon-object-group fa-2x',
+        {
+          label: 'GROUP',
+          ignoreDataType: true,
+          multiple: true,
+          validTypes: ['*'],
+          requireAuth: true,
+          max: 10000,
+          tooltip: 'Add selection to a new or existing group',
+          validContainerTypes: ['strain_data']
+        },
+        function (selection, containerWidget) {
+          const dlg = new Dialog({ title: 'Add selected items to group' });
+          const genome_ids = Array.from(selection.reduce((p, v) => { return p.add(v.genome_ids) }, new Set()))
+          const sel = genome_ids.flat().map((genome_id) => {
+            return { 'genome_id': genome_id }
+          })
+          if (!containerWidget) {
+            return;
+          }
+
+          var stg = new SelectionToGroup({
+            selection: sel,
+            type: 'genome_group',
+            inputType: containerWidget.containerType,
+            path: containerWidget.get('path')
+          });
+          on(dlg.domNode, 'dialogAction', function (evt) {
+            dlg.hide();
+            setTimeout(function () {
+              dlg.destroy();
+            }, 2000);
+          });
+          domConstruct.place(stg.domNode, dlg.containerNode, 'first');
+          stg.startup();
+          dlg.startup();
+          dlg.show();
+        },
+        false
+      ],
     ])
   });
 });

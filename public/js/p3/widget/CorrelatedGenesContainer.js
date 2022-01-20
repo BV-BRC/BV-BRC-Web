@@ -12,7 +12,6 @@ define([
     tooltip: 'The "Correlated Genes" tab shows list of genes from the same genome with correlated expression profiles',
     gutters: false,
     state: null,
-    maxGenomeCount: 5000,
     apiServer: window.App.dataServiceURL,
 
     onSetState: function (attr, oldVal, state) {

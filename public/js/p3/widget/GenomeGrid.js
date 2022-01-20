@@ -14,7 +14,6 @@ define([
     query: (this.query || ''),
     apiToken: window.App.authorizationToken,
     apiServer: window.App.dataAPI,
-    defaultSortProperty: 'score',
     dataModel: 'genome',
     primaryKey: 'genome_id',
     store: store,
@@ -24,7 +23,7 @@ define([
     }, ColumnsGenome),
     constructor: function () {
       this.queryOptions = {
-        sort: [{ attribute: this.defaultSortProperty, descending: true }]
+        sort: [{ attribute: 'date_inserted', descending: true }]
       };
     },
     startup: function () {

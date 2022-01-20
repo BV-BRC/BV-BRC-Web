@@ -116,7 +116,7 @@ define(['dojo/_base/declare', 'dojo/has', 'dojo/on', 'dgrid/util/misc', 'put-sel
         }
 
         // Then show other groups in alphabetical order
-        Object.keys(groups).sort().forEach(function (group_label) {
+        Object.keys(groups).forEach(function (group_label) {
           if (group_label === 'common') {
             return;
           }

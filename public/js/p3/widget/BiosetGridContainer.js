@@ -10,7 +10,6 @@ define([
     gridCtor: Grid,
     containerType: 'bioset_data',
     facetFields: [],
-    maxGenomeCount: 5000,
     dataModel: 'bioset',
     getFilterPanel: function (opts) {
     },

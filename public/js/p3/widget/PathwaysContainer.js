@@ -13,7 +13,6 @@ define([
   return declare([BorderContainer], {
     gutters: false,
     state: null,
-    maxGenomeCount: 500,
     tooltip: 'The "Pathways" tab contains a list of pathways for genomes associated with the current view',
     apiServer: window.App.dataServiceURL,
     defaultFilter: 'eq(annotation,%22PATRIC%22)',

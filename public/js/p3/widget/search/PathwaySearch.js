@@ -65,6 +65,11 @@ define([
         queryArr.push(`keyword(${TextInputEncoder(sanitizeInput(keywordValue))})`)
       }
 
+      const genomeIDValue = this.genomeIDNode.get('value')
+      if (genomeIDValue !== '') {
+        queryArr.push(`eq(genome_id,${TextInputEncoder(genomeIDValue)})`)
+      }
+
       const brcIDValue = this.brcIDNode.get('value')
       if (brcIDValue !== '') {
         queryArr.push(`eq(patric_id,${TextInputEncoder(brcIDValue)})`)
@@ -77,7 +82,7 @@ define([
 
       const pathwayNameValue = this.pathwayNameNode.get('value')
       if (pathwayNameValue !== '') {
-        queryArr.push(`eq(pathway_name,"${sanitizeInput(pathwayNameValue)}")`)
+        queryArr.push(`eq(pathway_name,"${TextInputEncoder(sanitizeInput(pathwayNameValue))}")`)
       }
 
       const pathwayClassValue = this.pathwayClassNode.get('value')

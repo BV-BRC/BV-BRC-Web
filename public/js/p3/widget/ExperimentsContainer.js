@@ -13,7 +13,6 @@ define([
   return declare([BorderContainer], {
     gutters: false,
     query: null,
-    maxGenomeCount: 10000,
     facetFields: ExperimentGridContainer.prototype.facetFields,
     containerActions: ExperimentGridContainer.prototype.containerActions,
     apiServer: window.App.dataAPI,

@@ -21,7 +21,6 @@ define([
   return declare([GridContainer], {
     containerType: 'antibiotic_data',
     facetFields: ['atc_classification'],
-    maxGenomeCount: 10000,
     dataModel: 'antibiotics',
     getFilterPanel: function (opts) {
     },

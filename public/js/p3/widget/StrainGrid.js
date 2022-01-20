@@ -1,11 +1,9 @@
 define([
-  'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on',
-  'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
-  './PageGrid', './formatter', '../store/StrainJsonRest', './GridSelector'
+  'dojo/_base/declare', 'dojo/on',
+  './PageGrid', '../store/StrainJsonRest', './GridSelector'
 ], function (
-  declare, BorderContainer, on,
-  domClass, ContentPane, domConstruct,
-  Grid, formatter, Store, selector
+  declare, on,
+  Grid, Store, selector
 ) {
 
   var store = new Store({});
@@ -76,7 +74,6 @@ define([
       });
 
       this.on('dgrid-select', function (evt) {
-        console.log('dgrid-select: ', evt);
         var newEvt = {
           rows: evt.rows,
           selected: evt.grid.selection,
@@ -87,7 +84,6 @@ define([
         on.emit(_self.domNode, 'select', newEvt);
       });
       this.on('dgrid-deselect', function (evt) {
-        console.log('dgrid-select');
         var newEvt = {
           rows: evt.rows,
           selected: evt.grid.selection,
