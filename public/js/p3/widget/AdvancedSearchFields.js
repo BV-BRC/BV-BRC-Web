@@ -63,7 +63,7 @@ define([], function () {
         field: '----- Taxonomy -----', type: 'str', facet: false, face_hidden: true, search: true
       },
       {
-        field: 'taxon_id', type: 'numeric', facet: false, facet_hidden: true, search: true
+        field: 'taxon_id', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'taxon_lineage_ids', type: 'str', facet: false, facet_hidden: true, search: true
@@ -335,7 +335,7 @@ define([], function () {
         field: 'genome_name', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
-        field: 'taxon_id', type: 'numeric', facet: false, facet_hidden: false, search: true
+        field: 'taxon_id', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
         field: 'accession', type: 'str', facet: false, facet_hidden: false, search: true
@@ -377,10 +377,10 @@ define([], function () {
         field: 'strand', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
-        field: 'na_length', type: 'int', facet: false, facet_hidden: false, search: true
+        field: 'na_length', type: 'numeric', facet: false, facet_hidden: false, search: true
       },
       {
-        field: 'aa_length', type: 'int', facet: false, facet_hidden: false, search: true
+        field: 'aa_length', type: 'numeric', facet: false, facet_hidden: false, search: true
       },
       {
         field: 'na_sequence_md5', type: 'str', facet: false, facet_hidden: false, search: true
@@ -427,7 +427,7 @@ define([], function () {
         field: 'genome_name', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'taxon_id', type: 'numeric', facet: false, facet_hidden: true, search: true
+        field: 'taxon_id', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'sequence_id', type: 'string', facet: false, facet_hidden: true, search: true
@@ -536,7 +536,7 @@ define([], function () {
     ],
     'protein_feature': [
       {
-        field: 'taxon_id', type: 'numeric', facet: false, facet_hidden: true, search: true
+        field: 'taxon_id', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'genome_id', type: 'str', facet: false, facet_hidden: true, search: true
@@ -628,7 +628,7 @@ define([], function () {
         field: 'organism_name', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'taxon_id', type: 'int', facet: false, facet_hidden: true, search: true
+        field: 'taxon_id', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'taxon_lineage_ids', type: 'str', facet: false, facet_hidden: true, search: true
@@ -690,7 +690,7 @@ define([], function () {
         field: 'genome_name', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'taxon_id', type: 'int', facet: false, facet_hidden: true, search: true
+        field: 'taxon_id', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'sequence_id', type: 'str', facet: false, facet_hidden: true, search: false
@@ -740,7 +740,7 @@ define([], function () {
         field: 'genome_name', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'taxon_id', type: 'int', facet: false, facet_hidden: true, search: true
+        field: 'taxon_id', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'refseq_locus_tag', type: 'str', facet: false, facet_hidden: true, search: true
@@ -1252,7 +1252,7 @@ define([], function () {
         field: 'organism', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'taxon_id', type: 'int', facet: false, facet_hidden: true, search: true
+        field: 'taxon_id', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'taxon_lineage_ids', type: 'str', facet: false, facet_hidden: true, search: false
