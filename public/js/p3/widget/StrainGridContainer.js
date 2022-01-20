@@ -1,13 +1,15 @@
 define([
-  'dojo/_base/declare', 'dojo/on', 'dojo/dom-construct',
-  'dijit/popup', 'dijit/TooltipDialog',
+  'dojo/_base/declare', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
+  'dijit/popup', 'dijit/Dialog', 'dijit/TooltipDialog',
   './StrainGrid', './AdvancedSearchFields', './GridContainer',
+  './PerspectiveToolTip', './SelectionToGroup',
   '../util/PathJoin'
 
 ], function (
-  declare, on, domConstruct,
-  popup, TooltipDialog,
+  declare, on, Topic, domConstruct,
+  popup, Dialog, TooltipDialog,
   StrainGrid, AdvancedSearchFields, GridContainer,
+  PerspectiveToolTipDialog, SelectionToGroup,
   PathJoin
 ) {
 
@@ -86,6 +88,79 @@ define([
         true,
         'left'
       ]
+    ]),
+    selectionActions: GridContainer.prototype.selectionActions.concat([
+      [
+        'ViewGenomeItems',
+        'MultiButton fa icon-selection-GenomeList fa-2x',
+        {
+          label: 'GENOMES',
+          validTypes: ['*'],
+          multiple: true,
+          min: 1,
+          max: 0,
+          tooltip: 'Switch to Genome List View. Press and Hold for more options.',
+          ignoreDataType: true,
+          validContainerTypes: ['strain_data'],
+          pressAndHold: function (selection, button, opts, evt) {
+            const genome_ids = Array.from(selection.reduce((p, v) => { return p.add(v.genome_ids) }, new Set()))
+            popup.open({
+              popup: new PerspectiveToolTipDialog({
+                perspective: 'GenomeList',
+                perspectiveUrl: '/view/GenomeList/?eq(*,*)&genome(in(genome_id,(' + genome_ids.join(',') + ')))'
+              }),
+              around: button,
+              orient: ['below']
+            });
+          }
+        },
+        function (selection) {
+          const genome_ids = Array.from(selection.reduce((p, v) => { return p.add(v.genome_ids) }, new Set()))
+          Topic.publish('/navigate', { href: '/view/GenomeList/?eq(*,*)&genome(in(genome_id,(' + genome_ids.join(',') + ')))' });
+        },
+        false
+      ], [
+        'AddGroup',
+        'fa icon-object-group fa-2x',
+        {
+          label: 'GROUP',
+          ignoreDataType: true,
+          multiple: true,
+          validTypes: ['*'],
+          requireAuth: true,
+          max: 10000,
+          tooltip: 'Add selection to a new or existing group',
+          validContainerTypes: ['strain_data']
+        },
+        function (selection, containerWidget) {
+          const dlg = new Dialog({ title: 'Add selected items to group' });
+          const genome_ids = Array.from(selection.reduce((p, v) => { return p.add(v.genome_ids) }, new Set()))
+          const sel = genome_ids.flat().map((genome_id) => {
+            return { 'genome_id': genome_id }
+          })
+          if (!containerWidget) {
+            return;
+          }
+
+          var stg = new SelectionToGroup({
+            selection: sel,
+            type: 'genome_group',
+            inputType: containerWidget.containerType,
+            path: containerWidget.get('path')
+          });
+          on(dlg.domNode, 'dialogAction', function (evt) {
+            dlg.hide();
+            setTimeout(function () {
+              dlg.destroy();
+            }, 2000);
+          });
+          domConstruct.place(stg.domNode, dlg.containerNode, 'first');
+          stg.startup();
+          dlg.startup();
+          dlg.show();
+        },
+        false
+      ],
     ])
   });
 });
