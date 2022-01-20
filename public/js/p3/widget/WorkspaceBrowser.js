@@ -578,6 +578,30 @@ define([
         Topic.publish('/navigate', { href: '/workspace' + encodePath(selection[0].path) });
       }, false);
 
+      this.browserHeader.addAction('ViewMetaCATS', 'fa icon-eye fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['MetaCATS'],
+        tooltip: 'View in Browser'
+      }, function (selection, container, button) {
+        console.log(selection);
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this,function(meta_file_data) {
+          var meta_file = meta_file_data[0].split("-");
+          if (meta_file[meta_file.length - 1] === 'chisqTable.tsv') {
+            path = meta_file.join("-");
+          }
+          if (path) { 
+            return;
+          }
+        }));
+        if (path) {
+          Topic.publish('/navigate',{ href: '/workspace' + encodePath(path) });
+        } else {
+          console.log('Error: could not find chisqTable.tsv output file');
+        }
+      }, false);
+
       this.browserHeader.addAction('ViewSeqComparison', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
