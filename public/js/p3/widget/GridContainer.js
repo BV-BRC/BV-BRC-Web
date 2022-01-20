@@ -116,7 +116,6 @@ define([
     columns: null,
     enableAnchorButton: false,
     showAutoFilterMessage: true,
-    maxDownloadSize: 2500000,
     containerType: '',
 
     _setColumnsAttr: function (columns) {

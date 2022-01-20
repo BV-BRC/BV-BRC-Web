@@ -93,7 +93,6 @@ define([
     dataModel: 'subsystem',
     type: 'subsystem',
     primaryKey: 'id',
-    maxDownloadSize: 25000,
     typeMap: {
       subsystems: 'subsystem_id',
       role_id: 'role_id',
