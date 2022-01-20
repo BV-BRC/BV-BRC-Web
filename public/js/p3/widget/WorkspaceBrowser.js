@@ -866,6 +866,32 @@ define([
         Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + path, target: 'blank' });
       }, false);
 
+      this.browserHeader.addAction('ViewAFA','fa icon-bars fa-2x', {
+        label: 'MSA',
+        multiple: false,
+        validTypes: ['MSA'],
+        tooltip: 'View aligned fasta'
+      }, function(selection,container,button) {
+        //console.log(self.actionPanel.currentContainerWidget.path);
+        console.log("selection=",selection);
+        var alignType = selection[0].autoMeta.parameters.alphabet;
+        var afa_file;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this,function(msa_file_data) {
+          var msa_file = msa_file_data[0].split(".");
+          if (msa_file[msa_file.length - 1] === 'afa') {
+            afa_file = msa_file.join(".");
+          }
+          if (afa_file) { 
+            return;
+          }
+        }));
+        if ((!afa_file) | (!alignType)) {
+          console.log('Error: Alignment file doesnt exist or alignment alphabet could not be determined');
+        } else {
+          Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + afa_file, target: 'blank'});
+        }
+      }, false);
+
       this.browserHeader.addAction('ViewExperimentSummary', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
