@@ -626,12 +626,7 @@ define([
         }, {
           name: 'UniProtKB Accession',
           text: 'uniprotkb_accession',
-          link: function (obj) {
-            var ids = obj.uniprotkb_accession;
-            return obj.uniprotkb_accession.map(function (d, idx) {
-              return lang.replace('<a href="https://www.uniprot.org/uniprot/{0}">{1}</a>', [ids[idx], d]);
-            }).join(', ');
-          }
+          link: 'https://www.uniprot.org/uniprot/'
         }, {
           name: 'PDB Accession',
           text: 'pdb_accession',
