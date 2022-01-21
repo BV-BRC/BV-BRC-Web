@@ -586,17 +586,14 @@ define([
       }, function (selection, container, button) {
         console.log(selection);
         var path;
-        selection[0].autoMeta.output_files.forEach(lang.hitch(this,function(meta_file_data) {
-          var meta_file = meta_file_data[0].split("-");
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (meta_file_data) {
+          var meta_file = meta_file_data[0].split('-');
           if (meta_file[meta_file.length - 1] === 'chisqTable.tsv') {
-            path = meta_file.join("-");
-          }
-          if (path) { 
-            return;
+            path = meta_file.join('-');
           }
         }));
         if (path) {
-          Topic.publish('/navigate',{ href: '/workspace' + encodePath(path) });
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
         } else {
           console.log('Error: could not find chisqTable.tsv output file');
         }
@@ -863,7 +860,7 @@ define([
           if (gt_file[gt_file.length - 1] === 'nwk') {
             path = gt_file.join(".");
           }
-          if (path) { 
+          if (path) {
             return;
           }
         }));
@@ -909,16 +906,13 @@ define([
         multiple: false,
         validTypes: ['GeneTree'],
         tooltip: 'View Archaeopteryx Tree'
-      }, function (selection, container, button) { 
+      }, function (selection, container, button) {
         console.log(selection);
         var path;
-        selection[0].autoMeta.output_files.forEach(lang.hitch(this,function(file_data) {
-          var gt_file = file_data[0].split(".");
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
+          var gt_file = file_data[0].split('.');
           if (gt_file[gt_file.length - 1] === 'nwk') {
-            path = gt_file.join(".");
-          }
-          if (path) { 
-            return;
+            path = gt_file.join('.');
           }
         }));
         if (path) {
@@ -946,29 +940,26 @@ define([
         Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + path, target: 'blank' });
       }, false);
 
-      this.browserHeader.addAction('ViewAFA','fa icon-bars fa-2x', {
+      this.browserHeader.addAction('ViewAFA', 'fa icon-bars fa-2x', {
         label: 'MSA',
         multiple: false,
         validTypes: ['MSA'],
         tooltip: 'View aligned fasta'
-      }, function(selection,container,button) {
-        //console.log(self.actionPanel.currentContainerWidget.path);
-        console.log("selection=",selection);
+      }, function (selection, container, button) {
+        // console.log(self.actionPanel.currentContainerWidget.path);
+        console.log('selection=', selection);
         var alignType = selection[0].autoMeta.parameters.alphabet;
         var afa_file;
-        selection[0].autoMeta.output_files.forEach(lang.hitch(this,function(msa_file_data) {
-          var msa_file = msa_file_data[0].split(".");
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (msa_file_data) {
+          var msa_file = msa_file_data[0].split('.');
           if (msa_file[msa_file.length - 1] === 'afa') {
-            afa_file = msa_file.join(".");
-          }
-          if (afa_file) { 
-            return;
+            afa_file = msa_file.join('.');
           }
         }));
         if ((!afa_file) | (!alignType)) {
           console.log('Error: Alignment file doesnt exist or alignment alphabet could not be determined');
         } else {
-          Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + afa_file, target: 'blank'});
+          Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
         }
       }, false);
 
