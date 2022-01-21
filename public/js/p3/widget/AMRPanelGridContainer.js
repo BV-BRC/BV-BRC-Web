@@ -2,12 +2,14 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang',
   'dojo/dom-construct', 'dojo/on', 'dojo/topic',
   'dijit/TooltipDialog', 'dijit/popup', 'dijit/Dialog',
-  './GridContainer', './AMRPanelGrid', './PerspectiveToolTip', './SelectionToGroup'
+  './GridContainer', './AMRPanelGrid', './PerspectiveToolTip', './SelectionToGroup',
+  '../util/PathJoin'
 ], function (
   declare, lang,
   domConstruct, on, Topic,
   TooltipDialog, popup, Dialog,
-  GridContainer, Grid, PerspectiveToolTipDialog, SelectionToGroup
+  GridContainer, Grid, PerspectiveToolTipDialog, SelectionToGroup,
+  PathJoin
 ) {
 
   const dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
