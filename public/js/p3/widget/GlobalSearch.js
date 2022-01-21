@@ -108,7 +108,7 @@ define([
             Topic.publish('/navigate', { href: '/view/StrainList/?' + q });
             break;
           case 'genomes':
-            Topic.publish('/navigate', { href: '/view/GenomeList/?' + q });
+            Topic.publish('/navigate', { href: '/view/GenomeList/?' + q + '#view_tab=genomes&defaultSort=-score' });
             // clear = true;
             break;
           case 'protein_features':
