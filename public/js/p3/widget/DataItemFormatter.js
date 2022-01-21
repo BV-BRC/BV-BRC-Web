@@ -651,10 +651,12 @@ define([
           name: 'Location',
           text: 'location',
           mini: true
-        }, {
-          name: 'Segments',
-          text: 'segments',
-        }, {
+        },
+        // {
+        //   name: 'Segments',
+        //   text: 'segments',
+        // },
+        {
           name: 'Codon Start',
           text: 'codon_start',
         }],
@@ -2052,7 +2054,14 @@ define([
       }, {
         name: 'Genome IDs',
         text: 'genome_ids',
-        link: '/view/Genome/'
+        link: function (obj) {
+          if (obj.genome_ids.length > 1) {
+            return `<a href="/view/GenomeList/?eq(*,*)&genome(in(genome_id,(${obj.genome_ids.join(',')})))">${obj.genome_ids}</a>`;
+          } else if (obj.genome_ids.length == 1) {
+            return `<a href="/view/Genome/${obj.genome_ids[0]}">${obj.genome_ids[0]}</a>`;
+          }
+          return '';
+        }
       }, {
         name: 'Genbank Accessions',
         text: 'genbank_accessions',

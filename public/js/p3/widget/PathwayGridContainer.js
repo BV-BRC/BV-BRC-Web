@@ -1,14 +1,14 @@
 define([
-  'dojo/_base/declare', './GridContainer', 'dojo/on',
-  './PathwayGrid', './AdvancedSearchFields', 'dijit/popup', 'dojo/topic',
-  'dijit/TooltipDialog', './FacetFilterPanel',
-  'dojo/_base/lang', 'dojo/dom-construct'
+  'dojo/_base/declare', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
+  'dijit/popup', 'dijit/TooltipDialog',
+  './PathwayGrid', './AdvancedSearchFields', './GridContainer',
+  '../util/PathJoin'
 
 ], function (
-  declare, GridContainer, on,
-  PathwayGrid, AdvancedSearchFields, popup, Topic,
-  TooltipDialog, FacetFilterPanel,
-  lang, domConstruct
+  declare, on, Topic, domConstruct,
+  popup, TooltipDialog,
+  PathwayGrid, AdvancedSearchFields, GridContainer,
+  PathJoin
 ) {
 
   var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
@@ -26,7 +26,6 @@ define([
     facetFields: AdvancedSearchFields['pathway'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['pathway'].filter((ff) => ff.search),
     filter: '',
-    maxGenomeCount: 10000,
     dataModel: 'pathway',
     primaryKey: 'id',
     defaultFilter: '',
@@ -46,52 +45,37 @@ define([
           tooltipDialog: downloadTT
         },
         function () {
-          var _self = this;
+          const _self = this;
 
-          var totalRows = _self.grid.totalRows;
-          // console.log("TOTAL ROWS: ", totalRows);
-          if (totalRows > _self.maxDownloadSize) {
-            downloadTT.set('content', 'This table exceeds the maximum download size of ' + _self.maxDownloadSize);
-          } else {
-            downloadTT.set('content', dfc);
+          const totalRows = _self.grid.totalRows;
+          const dataType = _self.dataModel
+          const primaryKey = _self.primaryKey
+          const currentQuery = _self.grid.get('query')
+          const authToken = (window.App.authorizationToken) ? `&http_authorization=${encodeURIComponent(window.App.authorizationToken)}` : ''
+          const query = `${currentQuery}&sort(${primaryKey})&limit(${totalRows})`
 
-            on(downloadTT.domNode, 'div:click', function (evt) {
-              var rel = evt.target.attributes.rel.value;
-              var dataType = _self.dataModel;
-              var currentQuery = _self.grid.get('query');
+          on(downloadTT.domNode, 'div:click', function (evt) {
+            const typeAccept = evt.target.attributes.rel.value
 
-              // console.log("DownloadQuery: ", currentQuery);
-              var query = currentQuery + '&sort(+' + _self.primaryKey + ')&limit(' + _self.maxDownloadSize + ')';
+            const baseUrl = `${PathJoin(window.App.dataServiceURL, dataType)}/?${authToken}&http_accept=${typeAccept}&http_download=true`
 
-              var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : '');
-              if (baseUrl.charAt(-1) !== '/') {
-                baseUrl += '/';
-              }
-              baseUrl = baseUrl + dataType + '/?';
+            const form = domConstruct.create('form', {
+              style: 'display: none;',
+              id: 'downloadForm',
+              enctype: 'application/x-www-form-urlencoded',
+              name: 'downloadForm',
+              method: 'post',
+              action: baseUrl
+            }, _self.domNode);
+            domConstruct.create('input', {
+              type: 'hidden',
+              value: encodeURIComponent(query),
+              name: 'rql'
+            }, form);
+            form.submit();
 
-              if (window.App.authorizationToken) {
-                baseUrl = baseUrl + '&http_authorization=' + encodeURIComponent(window.App.authorizationToken);
-              }
-
-              baseUrl = baseUrl + '&http_accept=' + rel + '&http_download=true';
-              var form = domConstruct.create('form', {
-                style: 'display: none;',
-                id: 'downloadForm',
-                enctype: 'application/x-www-form-urlencoded',
-                name: 'downloadForm',
-                method: 'post',
-                action: baseUrl
-              }, _self.domNode);
-              domConstruct.create('input', {
-                type: 'hidden',
-                value: encodeURIComponent(query),
-                name: 'rql'
-              }, form);
-              form.submit();
-
-              popup.close(downloadTT);
-            });
-          }
+            popup.close(downloadTT);
+          });
 
           popup.open({
             popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
@@ -102,6 +86,32 @@ define([
         true,
         'left'
       ]
-    ])
+    ]),
+    selectionActions: GridContainer.prototype.selectionActions.concat([
+      [
+        'ViewPathwayMap',
+        'fa icon-map-o fa-2x',
+        {
+          label: 'Map',
+          multiple: false,
+          validTypes: ['*'],
+          tooltip: 'View PathwayMap',
+          validContainerTypes: ['pathwayTab_data']
+        },
+        function (selection) {
+          var url = { annotation: 'PATRIC' };
+          url.genome_id = selection[0].genome_id;
+          url.pathway_id = selection[0].pathway_id;
+          url.feature_id = selection[0].feature_id;
+
+          var params = Object.keys(url).map(function (p) {
+            return p + '=' + url[p];
+          }).join('&');
+          // console.log(params);
+          Topic.publish('/navigate', { href: '/view/PathwayMap/?' + params, target: 'blank' });
+        },
+        false
+      ]
+    ]),
   });
 });

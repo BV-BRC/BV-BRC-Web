@@ -66,7 +66,6 @@ define([
     dataModel: 'pathway',
     type: 'pathway',
     primaryKey: 'id',
-    maxDownloadSize: 25000,
     typeMap: {
       pathway: 'pathway_id',
       ec_number: 'ec_number',

@@ -13,14 +13,12 @@ define([
 ) {
 
   return declare([BorderContainer], {
-    // id: "PFContainer",
     tooltip: 'The "Protein Families" tab contains a list of Protein Families for genomes associated with the current view',
 
     gutters: false,
     state: null,
     pfState: null,
     loadingMask: null,
-    maxGenomeCount: 500,
     apiServer: window.App.dataServiceURL,
     constructor: function (options) {
       // console.log(options);
@@ -60,10 +58,6 @@ define([
       this.loadingMask.startup();
     },
     onSetState: function (attr, oldVal, state) {
-      if (state.genome_ids && state.genome_ids.length > this.maxGenomeCount) {
-        console.log('Too Many Genomes for Protein Families Display', state.genome_ids.length);
-        return;
-      }
 
       if (this.mainGridContainer) {
         this.mainGridContainer.set('state', state);
