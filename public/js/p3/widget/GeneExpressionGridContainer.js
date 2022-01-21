@@ -1,5 +1,5 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/Topic', 'dojo/dom-construct',
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
   'dijit/popup', 'dijit/TooltipDialog',
   './GeneExpressionGrid', './AdvancedSearchFields', './GridContainer',
   '../util/PathJoin'
