@@ -581,6 +581,27 @@ define([
         Topic.publish('/navigate', { href: '/workspace' + encodePath(selection[0].path) });
       }, false);
 
+      this.browserHeader.addAction('ViewMetaCATS', 'fa icon-eye fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['MetaCATS'],
+        tooltip: 'View in Browser'
+      }, function (selection, container, button) {
+        console.log(selection);
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (meta_file_data) {
+          var meta_file = meta_file_data[0].split('-');
+          if (meta_file[meta_file.length - 1] === 'chisqTable.tsv') {
+            path = meta_file.join('-');
+          }
+        }));
+        if (path) {
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
+        } else {
+          console.log('Error: could not find chisqTable.tsv output file');
+        }
+      }, false);
+
       this.browserHeader.addAction('ViewSeqComparison', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
@@ -800,7 +821,7 @@ define([
         Topic.publish('/navigate', { href: '/workspace' + path });
       }, false);
 
-
+      /*
       this.actionPanel.addAction('ViewNwk', 'fa icon-tree2 fa-2x', {
         label: 'VIEW',
         multiple: false,
@@ -829,8 +850,36 @@ define([
         }
       }, false);
 
+      this.browserHeader.addAction('ViewNwk', 'fa icon-tree2 fa-2x', {
+        label: 'VIEW',
+        mutliple: false,
+        validTypes: ['GeneTree'],
+        tooltip: 'View Tree'
+      }, function (selection, container, button) {
+        console.log(selection);
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this,function(file_data) {
+          var gt_file = file_data[0].split(".");
+          if (gt_file[gt_file.length - 1] === 'nwk') {
+            path = gt_file.join(".");
+          }
+          if (path) {
+            return;
+          }
+        }));
+        if (path) {
+          var labelSearch = 'true';
+          var idType = 'patric_id';
+          var labelType = 'feature_name';
+          Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path) });
+        } else {
+          console.log('Error: could not find chisqTable.tsv output file');
+        }
+      }, false);
+      */
+
       this.actionPanel.addAction('ViewNwkXml', 'fa icon-tree2 fa-2x', {
-        label: 'VIEW2',
+        label: 'VIEW',
         multiple: false,
         validTypes: ['nwk', 'phyloxml'],
         tooltip: 'View Archaeopteryx Tree'
@@ -855,6 +904,31 @@ define([
         Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) + '&fileType=' + fileType });
       }, false);
 
+      this.browserHeader.addAction('ViewNwkXml', 'fa icon-tree2 fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['GeneTree'],
+        tooltip: 'View Archaeopteryx Tree'
+      }, function (selection, container, button) {
+        console.log(selection);
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
+          var gt_file = file_data[0].split('.');
+          if (gt_file[gt_file.length - 1] === 'nwk') {
+            path = gt_file.join('.');
+          }
+        }));
+        if (path) {
+          var labelSearch = 'true';
+          var idType = 'patric_id';
+          var labelType = 'feature_name';
+          var fileType = 'nwk';
+          Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path) + '&fileType=' + fileType });
+        } else {
+          console.log('Error: could not find chisqTable.tsv output file');
+        }
+      }, false);
+
       this.actionPanel.addAction('ViewAFA', 'fa icon-alignment fa-2x', {
         label: 'MSA',
         multiple: false,
@@ -867,6 +941,29 @@ define([
           alignType = 'dna';
         }
         Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + path, target: 'blank' });
+      }, false);
+
+      this.browserHeader.addAction('ViewAFA', 'fa icon-bars fa-2x', {
+        label: 'MSA',
+        multiple: false,
+        validTypes: ['MSA'],
+        tooltip: 'View aligned fasta'
+      }, function (selection, container, button) {
+        // console.log(self.actionPanel.currentContainerWidget.path);
+        console.log('selection=', selection);
+        var alignType = selection[0].autoMeta.parameters.alphabet;
+        var afa_file;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (msa_file_data) {
+          var msa_file = msa_file_data[0].split('.');
+          if (msa_file[msa_file.length - 1] === 'afa') {
+            afa_file = msa_file.join('.');
+          }
+        }));
+        if ((!afa_file) | (!alignType)) {
+          console.log('Error: Alignment file doesnt exist or alignment alphabet could not be determined');
+        } else {
+          Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
+        }
       }, false);
 
       this.browserHeader.addAction('ViewExperimentSummary', 'fa icon-eye fa-2x', {
@@ -1343,13 +1440,14 @@ define([
         }
       }, false);
 
+      /*
       this.browserHeader.addAction('Rerun', 'fa icon-rotate-left fa-2x', {
         label: 'RERUN',
         multiple: false,
         persistent: true,
         // TODO: list of services that allow "descending" into a job object
         // TODO: does not last past the
-        validTypes: ['RNASeq', 'TnSeq', 'Variation', 'folder', 'job_result'],
+        validTypes: ['RNASeq', 'TnSeq', 'Variation'],
         tooltip: 'Reset job form with current parameters'
       }, function (selection, container, button) {
         // console.log("View Tracks: ", this);
@@ -1368,6 +1466,7 @@ define([
           console.log('Rerun not enabled for: ', service_id);
         }
       }, false);
+      */
 
       // /END: Rerun functionality
 

@@ -97,7 +97,7 @@ define(['./formatter'], function (formatter) {
     genome_status: {
       label: 'Genome Status',
       field: 'genome_status',
-      hidden: false,
+      hidden: true,
       group: 'Status'
     },
 
@@ -203,7 +203,7 @@ define(['./formatter'], function (formatter) {
     genome_quality: {
       label: 'Genome Quality',
       field: 'genome_quality',
-      hidden: false,
+      hidden: true,
       group: 'Genome Quality'
     },
 
