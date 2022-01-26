@@ -12,7 +12,7 @@
                 <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
               </div>
             </h3>
-            <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}" target="_blank">${applicationLabel} Service User Guide</a> and
+            <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and
                 <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
             </p>
         </div>
@@ -41,7 +41,7 @@
                             <div class="appRow">
                                 <div class="halfAppRow">
                                     <label>Experiment Type</label><br>
-                                    <select data-dojo-type="dijit/form/Select" name="data_type" style="width:100%"
+                                    <select data-dojo-type="dijit/form/Select" name="data_type" data-dojo-attach-point="data_type" style="width:100%"
                                             required="true"
                                             data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
                                         <option value="transcriptomics">Transcriptomics</option>
@@ -65,9 +65,9 @@
                             <div class="appRow">
                                 <div class="halfAppRow">
                                     <label>Source ID Type</label><br>
-                                    <select data-dojo-type="dijit/form/Select" name="source_id_type" style="width:100%"
+                                    <select data-dojo-type="dijit/form/Select" name="source_id_type" style="width:100%" data-dojo-attach-point="source_id_type"
                                             required="true">
-                                        <option selected="true" value="patric_id">PATRIC ID</option>
+                                        <option selected="true" value="patric_id">BRC ID</option>
                                         <option value="feature_id">PATRIC Feature ID</option>
                                         <option value="gi">NCBI GI Number</option>
                                         <option value="gene_id">NCBI Gene ID</option>
@@ -111,7 +111,7 @@
                             <div class="appRow">
                                 <div class="appField">
                                     <label>Experiment Description</label><br>
-                                    <div data-dojo-type="dijit/form/ValidationTextBox" name="experiment_description"
+                                    <div data-dojo-type="dijit/form/ValidationTextBox" name="experiment_description" data-dojo-attach-point="experiment_description"
                                          style="width:100%" required="true"
                                          data-dojo-props="intermediateChanges:true,promptMessage:'Description of the experiment.',missingMessage:'Experiment description must be provided.',trim:true,placeHolder:'Description'"></div>
                                 </div>
@@ -128,7 +128,7 @@
                             <div class="appRow">
                                 <div class="appField">
                                     <label>Pubmed ID</label><br>
-                                    <div data-dojo-type="dijit/form/ValidationTextBox" name="pmid" style="width:100%"
+                                    <div data-dojo-type="dijit/form/ValidationTextBox" name="pmid" style="width:100%" data-dojo-attach-point="pmid"
                                          required="false"
                                          data-dojo-props="intermediateChanges:true,promptMessage:'Pubmed ID is optional',missingMessage:'A taxonmic name must be provided.',trim:true,placeHolder:'Optional'"></div>
                                 </div>

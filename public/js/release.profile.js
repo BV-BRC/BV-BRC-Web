@@ -39,14 +39,13 @@ var profile = {
     { name: 'jDataView', location: './jDataView/src', main: 'jdataview' },
     { name: 'd3', location: './d3' },
     { name: 'd3.v5', location: './d3.v5' },
-    { name: 'swfobject', location: './swfobject' },
     { name: 'phyloview', location: './phyloview' },
     { name: 'cytoscape-panzoom', location:'./cytoscape-panzoom' },
     { name: 'cytoscape-context-menus', location:'./cytoscape-context-menus' },
     { name: 'cytoscape-cola', location:'./cytoscape-cola' },
     { name: 'cytoscape-dagre', location:'./cytoscape-dagre' },
-    { name: 'jsmol', location:'./jsmol' },
-    { name: 'heatmap', location:'./heatmap' }
+    { name: 'heatmap', location:'./heatmap' },
+    { name: 'molstar', location:'./molstar' }
   ],
   layers: {
     'p3/layer/core': {

@@ -21,7 +21,7 @@ define([
     extraSearch: ['first_name', 'last_name'],
     queryExpr: 're:%5e${0}',
     queryFilter: '',
-    resultFields: ['id', 'name'],
+    resultFields: ['id', 'name', 'source'],
     includePrivate: true,
     includePublic: true,
     pageSize: 25,
@@ -115,8 +115,8 @@ define([
     }, */
 
     getSelected: function () {
-      var username = this.attr('value');
-      return username.length ?  username + '@patricbrc.org' : null;
+      var user = this.get('item')
+      return user.id.length ?  user.id + '@' + user.realm : null;
     },
 
     labelFunc: function (item, store) {

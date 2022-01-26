@@ -21,12 +21,10 @@ define([
   return declare([GridContainer], {
     containerType: 'antibiotic_data',
     facetFields: ['atc_classification'],
-    maxGenomeCount: 10000,
     dataModel: 'antibiotics',
     getFilterPanel: function (opts) {
     },
     primaryKey: 'pubchem_cid',
-    maxDownloadSize: 250000,
     selectionActions: GridContainer.prototype.selectionActions.concat([
       [
         'ViewAntibioticItem',

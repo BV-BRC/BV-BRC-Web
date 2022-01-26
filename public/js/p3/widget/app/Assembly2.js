@@ -14,15 +14,15 @@ define([
 
   return declare([AppBase], {
     baseClass: 'App Assembly2',
-    pageTitle: 'Genome Assembly Service (new)',
+    pageTitle: 'Genome Assembly Service',
     templateString: Template,
     applicationName: 'GenomeAssembly2',
     requireAuth: true,
-    applicationLabel: 'Genome Assembly (new)',
+    applicationLabel: 'Genome Assembly',
     applicationDescription: 'The Genome Assembly Service allows single or multiple assemblers to be invoked to compare results. The service attempts to select the best assembly.',
-    applicationHelp: 'user_guides/services/genome_assembly_service.html',
-    tutorialLink: 'tutorial/genome_assembly/assembly2.html',
-    videoLink: 'videos/genome_assembly_service.html',
+    applicationHelp: 'quick_references/services/genome_assembly_service.html',
+    tutorialLink: 'tutorial/genome_assembly/assembly.html',
+    videoLink: '',
     libraryData: null,
     defaultPath: '',
     startingRows: 13,
@@ -35,7 +35,7 @@ define([
       this.pairToAttachPt2 = ['read1'];
       this.advPairToAttachPt = ['interleaved', 'read_orientation_outward', 'paired_platform'];
       this.paramToAttachPt = ['recipe', 'output_path', 'output_file', 'genome_size'];
-      this.singleToAttachPt = ['single_end_libs'];
+      this.singleToAttachPt = ['single_end_libsWidget'];
       this.advSingleToAttachPt = ['single_platform'];
       this.libraryStore = new Memory({ data: [], idProperty: '_id' });
     },
@@ -120,54 +120,28 @@ define([
         }
       }));
       this._started = true;
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
+        }
+      }
     },
 
     getValues: function () {
       var assembly_values = {};
       var values = this.inherited(arguments);
 
-      var pairedList = this.libraryStore.query({ _type: 'paired' });
-      var singleList = this.libraryStore.query({ _type: 'single' });
-      var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
-      var pairedLibs = [];
-      var singleLibs = [];
-      var srrAccessions = [];
+      // Generic JSON parameters are added to assembly values in this function
+      assembly_values = this.checkBaseParameters(values, assembly_values);
 
-      pairedLibs = pairedList.map(function (lrec) {
-        var rrec = {};
-        Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
-          if (!attr.startsWith('_')) {
-            rrec[attr] = lrec[attr];
-          }
-        }));
-        rrec['read_orientation_outward'] = (rrec['read_orientation_outward'] === 'true');
-        rrec['interleaved'] = (rrec['interleaved'] === 'true');
-        return rrec;
-      });
-      if (pairedLibs.length) {
-        assembly_values.paired_end_libs = pairedLibs;
+      if (!this.form_flag) {
+        this.ingestAttachPoints(this.paramToAttachPt, assembly_values, true);
       }
-      singleLibs = singleList.map(function (lrec) {
-        var rrec = {};
-        Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
-          if (!attr.startsWith('_')) {
-            rrec[attr] = lrec[attr];
-          }
-        }));
-        return rrec;
-      });
-      if (singleLibs.length) {
-        assembly_values.single_end_libs = singleLibs;
-      }
-      srrAccessions = srrAccessionList.map(function (lrec) {
-        return lrec._id;
-      });
-      if (srrAccessions.length) {
-        assembly_values.srr_ids = srrAccessions;
-      }
-
-      this.ingestAttachPoints(this.paramToAttachPt, assembly_values, true);
-
       if (Object.prototype.hasOwnProperty.call(values, 'racon_iter') && values.racon_iter) {
         assembly_values.racon_iter = values.racon_iter;
       }
@@ -183,7 +157,6 @@ define([
       if (Object.prototype.hasOwnProperty.call(values, 'min_contig_cov') && values.min_contig_cov) {
         assembly_values.min_contig_cov = values.min_contig_cov;
       }
-
       return assembly_values;
     },
 
@@ -200,7 +173,7 @@ define([
         var incomplete = 0;
         var browser_select = 0;
         var alias = attachname;
-        if (attachname == 'read1' || attachname == 'read2' || attachname == 'single_end_libs') {
+        if (attachname == 'read1' || attachname == 'read2' || attachname == 'single_end_libsWidget') {
           cur_value = this[attachname].searchBox.value;
           browser_select = 1;
         }
@@ -215,7 +188,7 @@ define([
         if (attachname == 'paired_platform' || attachname == 'single_platform') {
           alias = 'platform';
         }
-        if (attachname == 'single_end_libs') {
+        if (attachname == 'single_end_libsWidget') {
           alias = 'read';
         }
         if (typeof (cur_value) === 'string') {
@@ -262,7 +235,7 @@ define([
           }
           return 'P(' + fn + ', ' + fn2 + ')';
         case 'single':
-          var fn = this.single_end_libs.searchBox.get('displayedValue');
+          var fn = this.single_end_libsWidget.searchBox.get('displayedValue');
           maxName = 24;
           if (fn.length > maxName) {
             fn = fn.substr(0, (maxName / 2) - 2) + '...' + fn.substr((fn.length - (maxName / 2)) + 2);
@@ -283,7 +256,7 @@ define([
           var fn2 = this.read2.searchBox.get('value');
           return fn + fn2;
         case 'single':
-          var fn = this.single_end_libs.searchBox.get('value');
+          var fn = this.single_end_libsWidget.searchBox.get('value');
           return fn;
         case 'srr_accession':
           var name = this.srr_accession.get('value');
@@ -474,6 +447,86 @@ define([
         this.genome_size_block.style.display = 'none';
         this.checkParameterRequiredFields();
       }
+    },
+
+    checkBaseParameters: function (values, assembly_values) {
+      var pairedList = this.libraryStore.query({ _type: 'paired' });
+      var singleList = this.libraryStore.query({ _type: 'single' });
+      var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
+
+      // TODO: standardize data type or define for each service??
+      this.paired_end_libs = pairedList.map(function (lrec) {
+        var rrec = {};
+        Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
+          if (!attr.startsWith('_')) {
+            rrec[attr] = lrec[attr];
+          }
+        }));
+        rrec['read_orientation_outward'] = (rrec['read_orientation_outward'] === 'true');
+        rrec['interleaved'] = (rrec['interleaved'] === 'true');
+        return rrec;
+      });
+      if (this.paired_end_libs.length) {
+        assembly_values.paired_end_libs = this.paired_end_libs;
+      }
+      this.single_end_libs = singleList.map(function (lrec) {
+        var rrec = {};
+        Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
+          if (!attr.startsWith('_')) {
+            rrec[attr] = lrec[attr];
+          }
+        }));
+        return rrec;
+      });
+      if (this.single_end_libs.length) {
+        assembly_values.single_end_libs = this.single_end_libs;
+      }
+      this.sra_libs = srrAccessionList.map(function (lrec) {
+        return lrec._id;
+      });
+      if (this.sra_libs.length) {
+        assembly_values.srr_ids = this.sra_libs;
+      }
+
+      // recipe
+      this.strategy = values.recipe;
+      assembly_values.recipe = values.recipe;
+      // output_path and output_file
+      assembly_values.output_path = values.output_path;
+      this.output_folder = values.output_path;
+      assembly_values.output_file = values.output_file;
+      this.output_name = values.output_file;
+
+      return assembly_values;
+    },
+
+    intakeRerunForm: function () {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path', 'strategy': 'recipe' };
+        var widget_map = { 'single_end_libs': 'single_end_libsWidget' }; // TODO: remove this line?
+        param_dict['widget_map'] = widget_map;
+        var service_spec = {
+          'trim': 'trim', 'min_contig_len': 'min_contig_len', 'racon_iter': 'racon_iter', 'pilon_iter': 'pilon_iter', 'min_contig_cov': 'min_contig_cov'
+        }; // job : attach_point
+        param_dict['service_specific'] = service_spec;
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
+        job_data = this.formatRerunJson(job_data);
+        AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+        localStorage.removeItem('bvbrc_rerun_job');
+        this.form_flag = true;
+      }
+    },
+
+    formatRerunJson: function (job_data) {
+      if (!job_data.paired_end_libs) {
+        job_data.paired_end_libs = [];
+      }
+      if (!job_data.single_end_libs) {
+        job_data.single_end_libs = [];
+      }
+      return job_data;
     }
   });
 });

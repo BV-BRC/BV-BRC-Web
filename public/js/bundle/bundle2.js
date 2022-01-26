@@ -2,9 +2,7 @@
 r(),S.point=c,S.lineEnd=f}function c(n,t){u(s=n,h=t),p=M,g=x,v=b,d=_,y=w,S.point=u}function f(){i(M,x,m,b,_,w,p,g,s,v,d,y,a,t),S.lineEnd=o,o()}var s,h,p,g,v,d,y,m,M,x,b,_,w,S={point:e,lineStart:r,lineEnd:o,polygonStart:function(){t.polygonStart(),S.lineStart=l},polygonEnd:function(){t.polygonEnd(),S.lineStart=r}};return S}function i(t,e,r,a,l,c,f,s,h,p,g,v,d,y){var m=f-t,M=s-e,x=m*m+M*M;if(x>4*u&&d--){var b=a+p,_=l+g,w=c+v,S=Math.sqrt(b*b+_*_+w*w),k=Math.asin(w/=S),N=xo(xo(w)-1)<Uo||xo(r-h)<Uo?(r+h)/2:Math.atan2(_,b),E=n(N,k),A=E[0],C=E[1],z=A-t,L=C-e,q=M*z-m*L;(q*q/x>u||xo((m*z+M*L)/x-.5)>.3||o>a*p+l*g+c*v)&&(i(t,e,r,a,l,c,A,C,N,b/=S,_/=S,w,d,y),y.point(A,C),i(A,C,N,b,_,w,f,s,h,p,g,v,d,y))}}var u=.5,o=Math.cos(30*Yo),a=16;return t.precision=function(n){return arguments.length?(a=(u=n*n)>0&&16,t):Math.sqrt(u)},t}function re(n){var t=ee(function(t,e){return n([t*Zo,e*Zo])});return function(n){return le(t(n))}}function ie(n){this.stream=n}function ue(n,t){return{point:t,sphere:function(){n.sphere()},lineStart:function(){n.lineStart()},lineEnd:function(){n.lineEnd()},polygonStart:function(){n.polygonStart()},polygonEnd:function(){n.polygonEnd()}}}function oe(n){return ae(function(){return n})()}function ae(n){function t(n){return n=a(n[0]*Yo,n[1]*Yo),[n[0]*h+l,c-n[1]*h]}function e(n){return n=a.invert((n[0]-l)/h,(c-n[1])/h),n&&[n[0]*Zo,n[1]*Zo]}function r(){a=Ct(o=se(y,M,x),u);var n=u(v,d);return l=p-n[0]*h,c=g+n[1]*h,i()}function i(){return f&&(f.valid=!1,f=null),t}var u,o,a,l,c,f,s=ee(function(n,t){return n=u(n,t),[n[0]*h+l,c-n[1]*h]}),h=150,p=480,g=250,v=0,d=0,y=0,M=0,x=0,b=Fa,_=m,w=null,S=null;return t.stream=function(n){return f&&(f.valid=!1),f=le(b(o,s(_(n)))),f.valid=!0,f},t.clipAngle=function(n){return arguments.length?(b=null==n?(w=n,Fa):It((w=+n)*Yo),i()):w},t.clipExtent=function(n){return arguments.length?(S=n,_=n?Zt(n[0][0],n[0][1],n[1][0],n[1][1]):m,i()):S},t.scale=function(n){return arguments.length?(h=+n,r()):h},t.translate=function(n){return arguments.length?(p=+n[0],g=+n[1],r()):[p,g]},t.center=function(n){return arguments.length?(v=n[0]%360*Yo,d=n[1]%360*Yo,r()):[v*Zo,d*Zo]},t.rotate=function(n){return arguments.length?(y=n[0]%360*Yo,M=n[1]%360*Yo,x=n.length>2?n[2]%360*Yo:0,r()):[y*Zo,M*Zo,x*Zo]},ao.rebind(t,s,"precision"),function(){return u=n.apply(this,arguments),t.invert=u.invert&&e,r()}}function le(n){return ue(n,function(t,e){n.point(t*Yo,e*Yo)})}function ce(n,t){return[n,t]}function fe(n,t){return[n>Fo?n-Ho:-Fo>n?n+Ho:n,t]}function se(n,t,e){return n?t||e?Ct(pe(n),ge(t,e)):pe(n):t||e?ge(t,e):fe}function he(n){return function(t,e){return t+=n,[t>Fo?t-Ho:-Fo>t?t+Ho:t,e]}}function pe(n){var t=he(n);return t.invert=he(-n),t}function ge(n,t){function e(n,t){var e=Math.cos(t),a=Math.cos(n)*e,l=Math.sin(n)*e,c=Math.sin(t),f=c*r+a*i;return[Math.atan2(l*u-f*o,a*r-c*i),tn(f*u+l*o)]}var r=Math.cos(n),i=Math.sin(n),u=Math.cos(t),o=Math.sin(t);return e.invert=function(n,t){var e=Math.cos(t),a=Math.cos(n)*e,l=Math.sin(n)*e,c=Math.sin(t),f=c*u-l*o;return[Math.atan2(l*u+c*o,a*r+f*i),tn(f*r-a*i)]},e}function ve(n,t){var e=Math.cos(n),r=Math.sin(n);return function(i,u,o,a){var l=o*t;null!=i?(i=de(e,i),u=de(e,u),(o>0?u>i:i>u)&&(i+=o*Ho)):(i=n+o*Ho,u=n-.5*l);for(var c,f=i;o>0?f>u:u>f;f-=l)a.point((c=_t([e,-r*Math.cos(f),-r*Math.sin(f)]))[0],c[1])}}function de(n,t){var e=dt(t);e[0]-=n,bt(e);var r=nn(-e[1]);return((-e[2]<0?-r:r)+2*Math.PI-Uo)%(2*Math.PI)}function ye(n,t,e){var r=ao.range(n,t-Uo,e).concat(t);return function(n){return r.map(function(t){return[n,t]})}}function me(n,t,e){var r=ao.range(n,t-Uo,e).concat(t);return function(n){return r.map(function(t){return[t,n]})}}function Me(n){return n.source}function xe(n){return n.target}function be(n,t,e,r){var i=Math.cos(t),u=Math.sin(t),o=Math.cos(r),a=Math.sin(r),l=i*Math.cos(n),c=i*Math.sin(n),f=o*Math.cos(e),s=o*Math.sin(e),h=2*Math.asin(Math.sqrt(on(r-t)+i*o*on(e-n))),p=1/Math.sin(h),g=h?function(n){var t=Math.sin(n*=h)*p,e=Math.sin(h-n)*p,r=e*l+t*f,i=e*c+t*s,o=e*u+t*a;return[Math.atan2(i,r)*Zo,Math.atan2(o,Math.sqrt(r*r+i*i))*Zo]}:function(){return[n*Zo,t*Zo]};return g.distance=h,g}function _e(){function n(n,i){var u=Math.sin(i*=Yo),o=Math.cos(i),a=xo((n*=Yo)-t),l=Math.cos(a);Ja+=Math.atan2(Math.sqrt((a=o*Math.sin(a))*a+(a=r*u-e*o*l)*a),e*u+r*o*l),t=n,e=u,r=o}var t,e,r;Ga.point=function(i,u){t=i*Yo,e=Math.sin(u*=Yo),r=Math.cos(u),Ga.point=n},Ga.lineEnd=function(){Ga.point=Ga.lineEnd=b}}function we(n,t){function e(t,e){var r=Math.cos(t),i=Math.cos(e),u=n(r*i);return[u*i*Math.sin(t),u*Math.sin(e)]}return e.invert=function(n,e){var r=Math.sqrt(n*n+e*e),i=t(r),u=Math.sin(i),o=Math.cos(i);return[Math.atan2(n*u,r*o),Math.asin(r&&e*u/r)]},e}function Se(n,t){function e(n,t){o>0?-Io+Uo>t&&(t=-Io+Uo):t>Io-Uo&&(t=Io-Uo);var e=o/Math.pow(i(t),u);return[e*Math.sin(u*n),o-e*Math.cos(u*n)]}var r=Math.cos(n),i=function(n){return Math.tan(Fo/4+n/2)},u=n===t?Math.sin(n):Math.log(r/Math.cos(t))/Math.log(i(t)/i(n)),o=r*Math.pow(i(n),u)/u;return u?(e.invert=function(n,t){var e=o-t,r=K(u)*Math.sqrt(n*n+e*e);return[Math.atan2(n,e)/u,2*Math.atan(Math.pow(o/r,1/u))-Io]},e):Ne}function ke(n,t){function e(n,t){var e=u-t;return[e*Math.sin(i*n),u-e*Math.cos(i*n)]}var r=Math.cos(n),i=n===t?Math.sin(n):(r-Math.cos(t))/(t-n),u=r/i+n;return xo(i)<Uo?ce:(e.invert=function(n,t){var e=u-t;return[Math.atan2(n,e)/i,u-K(i)*Math.sqrt(n*n+e*e)]},e)}function Ne(n,t){return[n,Math.log(Math.tan(Fo/4+t/2))]}function Ee(n){var t,e=oe(n),r=e.scale,i=e.translate,u=e.clipExtent;return e.scale=function(){var n=r.apply(e,arguments);return n===e?t?e.clipExtent(null):e:n},e.translate=function(){var n=i.apply(e,arguments);return n===e?t?e.clipExtent(null):e:n},e.clipExtent=function(n){var o=u.apply(e,arguments);if(o===e){if(t=null==n){var a=Fo*r(),l=i();u([[l[0]-a,l[1]-a],[l[0]+a,l[1]+a]])}}else t&&(o=null);return o},e.clipExtent(null)}function Ae(n,t){return[Math.log(Math.tan(Fo/4+t/2)),-n]}function Ce(n){return n[0]}function ze(n){return n[1]}function Le(n){for(var t=n.length,e=[0,1],r=2,i=2;t>i;i++){for(;r>1&&Q(n[e[r-2]],n[e[r-1]],n[i])<=0;)--r;e[r++]=i}return e.slice(0,r)}function qe(n,t){return n[0]-t[0]||n[1]-t[1]}function Te(n,t,e){return(e[0]-t[0])*(n[1]-t[1])<(e[1]-t[1])*(n[0]-t[0])}function Re(n,t,e,r){var i=n[0],u=e[0],o=t[0]-i,a=r[0]-u,l=n[1],c=e[1],f=t[1]-l,s=r[1]-c,h=(a*(l-c)-s*(i-u))/(s*o-a*f);return[i+h*o,l+h*f]}function De(n){var t=n[0],e=n[n.length-1];return!(t[0]-e[0]||t[1]-e[1])}function Pe(){rr(this),this.edge=this.site=this.circle=null}function Ue(n){var t=cl.pop()||new Pe;return t.site=n,t}function je(n){Be(n),ol.remove(n),cl.push(n),rr(n)}function Fe(n){var t=n.circle,e=t.x,r=t.cy,i={x:e,y:r},u=n.P,o=n.N,a=[n];je(n);for(var l=u;l.circle&&xo(e-l.circle.x)<Uo&&xo(r-l.circle.cy)<Uo;)u=l.P,a.unshift(l),je(l),l=u;a.unshift(l),Be(l);for(var c=o;c.circle&&xo(e-c.circle.x)<Uo&&xo(r-c.circle.cy)<Uo;)o=c.N,a.push(c),je(c),c=o;a.push(c),Be(c);var f,s=a.length;for(f=1;s>f;++f)c=a[f],l=a[f-1],nr(c.edge,l.site,c.site,i);l=a[0],c=a[s-1],c.edge=Ke(l.site,c.site,null,i),$e(l),$e(c)}function He(n){for(var t,e,r,i,u=n.x,o=n.y,a=ol._;a;)if(r=Oe(a,o)-u,r>Uo)a=a.L;else{if(i=u-Ie(a,o),!(i>Uo)){r>-Uo?(t=a.P,e=a):i>-Uo?(t=a,e=a.N):t=e=a;break}if(!a.R){t=a;break}a=a.R}var l=Ue(n);if(ol.insert(t,l),t||e){if(t===e)return Be(t),e=Ue(t.site),ol.insert(l,e),l.edge=e.edge=Ke(t.site,l.site),$e(t),void $e(e);if(!e)return void(l.edge=Ke(t.site,l.site));Be(t),Be(e);var c=t.site,f=c.x,s=c.y,h=n.x-f,p=n.y-s,g=e.site,v=g.x-f,d=g.y-s,y=2*(h*d-p*v),m=h*h+p*p,M=v*v+d*d,x={x:(d*m-p*M)/y+f,y:(h*M-v*m)/y+s};nr(e.edge,c,g,x),l.edge=Ke(c,n,null,x),e.edge=Ke(n,g,null,x),$e(t),$e(e)}}function Oe(n,t){var e=n.site,r=e.x,i=e.y,u=i-t;if(!u)return r;var o=n.P;if(!o)return-(1/0);e=o.site;var a=e.x,l=e.y,c=l-t;if(!c)return a;var f=a-r,s=1/u-1/c,h=f/c;return s?(-h+Math.sqrt(h*h-2*s*(f*f/(-2*c)-l+c/2+i-u/2)))/s+r:(r+a)/2}function Ie(n,t){var e=n.N;if(e)return Oe(e,t);var r=n.site;return r.y===t?r.x:1/0}function Ye(n){this.site=n,this.edges=[]}function Ze(n){for(var t,e,r,i,u,o,a,l,c,f,s=n[0][0],h=n[1][0],p=n[0][1],g=n[1][1],v=ul,d=v.length;d--;)if(u=v[d],u&&u.prepare())for(a=u.edges,l=a.length,o=0;l>o;)f=a[o].end(),r=f.x,i=f.y,c=a[++o%l].start(),t=c.x,e=c.y,(xo(r-t)>Uo||xo(i-e)>Uo)&&(a.splice(o,0,new tr(Qe(u.site,f,xo(r-s)<Uo&&g-i>Uo?{x:s,y:xo(t-s)<Uo?e:g}:xo(i-g)<Uo&&h-r>Uo?{x:xo(e-g)<Uo?t:h,y:g}:xo(r-h)<Uo&&i-p>Uo?{x:h,y:xo(t-h)<Uo?e:p}:xo(i-p)<Uo&&r-s>Uo?{x:xo(e-p)<Uo?t:s,y:p}:null),u.site,null)),++l)}function Ve(n,t){return t.angle-n.angle}function Xe(){rr(this),this.x=this.y=this.arc=this.site=this.cy=null}function $e(n){var t=n.P,e=n.N;if(t&&e){var r=t.site,i=n.site,u=e.site;if(r!==u){var o=i.x,a=i.y,l=r.x-o,c=r.y-a,f=u.x-o,s=u.y-a,h=2*(l*s-c*f);if(!(h>=-jo)){var p=l*l+c*c,g=f*f+s*s,v=(s*p-c*g)/h,d=(l*g-f*p)/h,s=d+a,y=fl.pop()||new Xe;y.arc=n,y.site=i,y.x=v+o,y.y=s+Math.sqrt(v*v+d*d),y.cy=s,n.circle=y;for(var m=null,M=ll._;M;)if(y.y<M.y||y.y===M.y&&y.x<=M.x){if(!M.L){m=M.P;break}M=M.L}else{if(!M.R){m=M;break}M=M.R}ll.insert(m,y),m||(al=y)}}}}function Be(n){var t=n.circle;t&&(t.P||(al=t.N),ll.remove(t),fl.push(t),rr(t),n.circle=null)}function We(n){for(var t,e=il,r=Yt(n[0][0],n[0][1],n[1][0],n[1][1]),i=e.length;i--;)t=e[i],(!Je(t,n)||!r(t)||xo(t.a.x-t.b.x)<Uo&&xo(t.a.y-t.b.y)<Uo)&&(t.a=t.b=null,e.splice(i,1))}function Je(n,t){var e=n.b;if(e)return!0;var r,i,u=n.a,o=t[0][0],a=t[1][0],l=t[0][1],c=t[1][1],f=n.l,s=n.r,h=f.x,p=f.y,g=s.x,v=s.y,d=(h+g)/2,y=(p+v)/2;if(v===p){if(o>d||d>=a)return;if(h>g){if(u){if(u.y>=c)return}else u={x:d,y:l};e={x:d,y:c}}else{if(u){if(u.y<l)return}else u={x:d,y:c};e={x:d,y:l}}}else if(r=(h-g)/(v-p),i=y-r*d,-1>r||r>1)if(h>g){if(u){if(u.y>=c)return}else u={x:(l-i)/r,y:l};e={x:(c-i)/r,y:c}}else{if(u){if(u.y<l)return}else u={x:(c-i)/r,y:c};e={x:(l-i)/r,y:l}}else if(v>p){if(u){if(u.x>=a)return}else u={x:o,y:r*o+i};e={x:a,y:r*a+i}}else{if(u){if(u.x<o)return}else u={x:a,y:r*a+i};e={x:o,y:r*o+i}}return n.a=u,n.b=e,!0}function Ge(n,t){this.l=n,this.r=t,this.a=this.b=null}function Ke(n,t,e,r){var i=new Ge(n,t);return il.push(i),e&&nr(i,n,t,e),r&&nr(i,t,n,r),ul[n.i].edges.push(new tr(i,n,t)),ul[t.i].edges.push(new tr(i,t,n)),i}function Qe(n,t,e){var r=new Ge(n,null);return r.a=t,r.b=e,il.push(r),r}function nr(n,t,e,r){n.a||n.b?n.l===e?n.b=r:n.a=r:(n.a=r,n.l=t,n.r=e)}function tr(n,t,e){var r=n.a,i=n.b;this.edge=n,this.site=t,this.angle=e?Math.atan2(e.y-t.y,e.x-t.x):n.l===t?Math.atan2(i.x-r.x,r.y-i.y):Math.atan2(r.x-i.x,i.y-r.y)}function er(){this._=null}function rr(n){n.U=n.C=n.L=n.R=n.P=n.N=null}function ir(n,t){var e=t,r=t.R,i=e.U;i?i.L===e?i.L=r:i.R=r:n._=r,r.U=i,e.U=r,e.R=r.L,e.R&&(e.R.U=e),r.L=e}function ur(n,t){var e=t,r=t.L,i=e.U;i?i.L===e?i.L=r:i.R=r:n._=r,r.U=i,e.U=r,e.L=r.R,e.L&&(e.L.U=e),r.R=e}function or(n){for(;n.L;)n=n.L;return n}function ar(n,t){var e,r,i,u=n.sort(lr).pop();for(il=[],ul=new Array(n.length),ol=new er,ll=new er;;)if(i=al,u&&(!i||u.y<i.y||u.y===i.y&&u.x<i.x))u.x===e&&u.y===r||(ul[u.i]=new Ye(u),He(u),e=u.x,r=u.y),u=n.pop();else{if(!i)break;Fe(i.arc)}t&&(We(t),Ze(t));var o={cells:ul,edges:il};return ol=ll=il=ul=null,o}function lr(n,t){return t.y-n.y||t.x-n.x}function cr(n,t,e){return(n.x-e.x)*(t.y-n.y)-(n.x-t.x)*(e.y-n.y)}function fr(n){return n.x}function sr(n){return n.y}function hr(){return{leaf:!0,nodes:[],point:null,x:null,y:null}}function pr(n,t,e,r,i,u){if(!n(t,e,r,i,u)){var o=.5*(e+i),a=.5*(r+u),l=t.nodes;l[0]&&pr(n,l[0],e,r,o,a),l[1]&&pr(n,l[1],o,r,i,a),l[2]&&pr(n,l[2],e,a,o,u),l[3]&&pr(n,l[3],o,a,i,u)}}function gr(n,t,e,r,i,u,o){var a,l=1/0;return function c(n,f,s,h,p){if(!(f>u||s>o||r>h||i>p)){if(g=n.point){var g,v=t-n.x,d=e-n.y,y=v*v+d*d;if(l>y){var m=Math.sqrt(l=y);r=t-m,i=e-m,u=t+m,o=e+m,a=g}}for(var M=n.nodes,x=.5*(f+h),b=.5*(s+p),_=t>=x,w=e>=b,S=w<<1|_,k=S+4;k>S;++S)if(n=M[3&S])switch(3&S){case 0:c(n,f,s,x,b);break;case 1:c(n,x,s,h,b);break;case 2:c(n,f,b,x,p);break;case 3:c(n,x,b,h,p)}}}(n,r,i,u,o),a}function vr(n,t){n=ao.rgb(n),t=ao.rgb(t);var e=n.r,r=n.g,i=n.b,u=t.r-e,o=t.g-r,a=t.b-i;return function(n){return"#"+bn(Math.round(e+u*n))+bn(Math.round(r+o*n))+bn(Math.round(i+a*n))}}function dr(n,t){var e,r={},i={};for(e in n)e in t?r[e]=Mr(n[e],t[e]):i[e]=n[e];for(e in t)e in n||(i[e]=t[e]);return function(n){for(e in r)i[e]=r[e](n);return i}}function yr(n,t){return n=+n,t=+t,function(e){return n*(1-e)+t*e}}function mr(n,t){var e,r,i,u=hl.lastIndex=pl.lastIndex=0,o=-1,a=[],l=[];for(n+="",t+="";(e=hl.exec(n))&&(r=pl.exec(t));)(i=r.index)>u&&(i=t.slice(u,i),a[o]?a[o]+=i:a[++o]=i),(e=e[0])===(r=r[0])?a[o]?a[o]+=r:a[++o]=r:(a[++o]=null,l.push({i:o,x:yr(e,r)})),u=pl.lastIndex;return u<t.length&&(i=t.slice(u),a[o]?a[o]+=i:a[++o]=i),a.length<2?l[0]?(t=l[0].x,function(n){return t(n)+""}):function(){return t}:(t=l.length,function(n){for(var e,r=0;t>r;++r)a[(e=l[r]).i]=e.x(n);return a.join("")})}function Mr(n,t){for(var e,r=ao.interpolators.length;--r>=0&&!(e=ao.interpolators[r](n,t)););return e}function xr(n,t){var e,r=[],i=[],u=n.length,o=t.length,a=Math.min(n.length,t.length);for(e=0;a>e;++e)r.push(Mr(n[e],t[e]));for(;u>e;++e)i[e]=n[e];for(;o>e;++e)i[e]=t[e];return function(n){for(e=0;a>e;++e)i[e]=r[e](n);return i}}function br(n){return function(t){return 0>=t?0:t>=1?1:n(t)}}function _r(n){return function(t){return 1-n(1-t)}}function wr(n){return function(t){return.5*(.5>t?n(2*t):2-n(2-2*t))}}function Sr(n){return n*n}function kr(n){return n*n*n}function Nr(n){if(0>=n)return 0;if(n>=1)return 1;var t=n*n,e=t*n;return 4*(.5>n?e:3*(n-t)+e-.75)}function Er(n){return function(t){return Math.pow(t,n)}}function Ar(n){return 1-Math.cos(n*Io)}function Cr(n){return Math.pow(2,10*(n-1))}function zr(n){return 1-Math.sqrt(1-n*n)}function Lr(n,t){var e;return arguments.length<2&&(t=.45),arguments.length?e=t/Ho*Math.asin(1/n):(n=1,e=t/4),function(r){return 1+n*Math.pow(2,-10*r)*Math.sin((r-e)*Ho/t)}}function qr(n){return n||(n=1.70158),function(t){return t*t*((n+1)*t-n)}}function Tr(n){return 1/2.75>n?7.5625*n*n:2/2.75>n?7.5625*(n-=1.5/2.75)*n+.75:2.5/2.75>n?7.5625*(n-=2.25/2.75)*n+.9375:7.5625*(n-=2.625/2.75)*n+.984375}function Rr(n,t){n=ao.hcl(n),t=ao.hcl(t);var e=n.h,r=n.c,i=n.l,u=t.h-e,o=t.c-r,a=t.l-i;return isNaN(o)&&(o=0,r=isNaN(r)?t.c:r),isNaN(u)?(u=0,e=isNaN(e)?t.h:e):u>180?u-=360:-180>u&&(u+=360),function(n){return sn(e+u*n,r+o*n,i+a*n)+""}}function Dr(n,t){n=ao.hsl(n),t=ao.hsl(t);var e=n.h,r=n.s,i=n.l,u=t.h-e,o=t.s-r,a=t.l-i;return isNaN(o)&&(o=0,r=isNaN(r)?t.s:r),isNaN(u)?(u=0,e=isNaN(e)?t.h:e):u>180?u-=360:-180>u&&(u+=360),function(n){return cn(e+u*n,r+o*n,i+a*n)+""}}function Pr(n,t){n=ao.lab(n),t=ao.lab(t);var e=n.l,r=n.a,i=n.b,u=t.l-e,o=t.a-r,a=t.b-i;return function(n){return pn(e+u*n,r+o*n,i+a*n)+""}}function Ur(n,t){return t-=n,function(e){return Math.round(n+t*e)}}function jr(n){var t=[n.a,n.b],e=[n.c,n.d],r=Hr(t),i=Fr(t,e),u=Hr(Or(e,t,-i))||0;t[0]*e[1]<e[0]*t[1]&&(t[0]*=-1,t[1]*=-1,r*=-1,i*=-1),this.rotate=(r?Math.atan2(t[1],t[0]):Math.atan2(-e[0],e[1]))*Zo,this.translate=[n.e,n.f],this.scale=[r,u],this.skew=u?Math.atan2(i,u)*Zo:0}function Fr(n,t){return n[0]*t[0]+n[1]*t[1]}function Hr(n){var t=Math.sqrt(Fr(n,n));return t&&(n[0]/=t,n[1]/=t),t}function Or(n,t,e){return n[0]+=e*t[0],n[1]+=e*t[1],n}function Ir(n){return n.length?n.pop()+",":""}function Yr(n,t,e,r){if(n[0]!==t[0]||n[1]!==t[1]){var i=e.push("translate(",null,",",null,")");r.push({i:i-4,x:yr(n[0],t[0])},{i:i-2,x:yr(n[1],t[1])})}else(t[0]||t[1])&&e.push("translate("+t+")")}function Zr(n,t,e,r){n!==t?(n-t>180?t+=360:t-n>180&&(n+=360),r.push({i:e.push(Ir(e)+"rotate(",null,")")-2,x:yr(n,t)})):t&&e.push(Ir(e)+"rotate("+t+")")}function Vr(n,t,e,r){n!==t?r.push({i:e.push(Ir(e)+"skewX(",null,")")-2,x:yr(n,t)}):t&&e.push(Ir(e)+"skewX("+t+")")}function Xr(n,t,e,r){if(n[0]!==t[0]||n[1]!==t[1]){var i=e.push(Ir(e)+"scale(",null,",",null,")");r.push({i:i-4,x:yr(n[0],t[0])},{i:i-2,x:yr(n[1],t[1])})}else 1===t[0]&&1===t[1]||e.push(Ir(e)+"scale("+t+")")}function $r(n,t){var e=[],r=[];return n=ao.transform(n),t=ao.transform(t),Yr(n.translate,t.translate,e,r),Zr(n.rotate,t.rotate,e,r),Vr(n.skew,t.skew,e,r),Xr(n.scale,t.scale,e,r),n=t=null,function(n){for(var t,i=-1,u=r.length;++i<u;)e[(t=r[i]).i]=t.x(n);return e.join("")}}function Br(n,t){return t=(t-=n=+n)||1/t,function(e){return(e-n)/t}}function Wr(n,t){return t=(t-=n=+n)||1/t,function(e){return Math.max(0,Math.min(1,(e-n)/t))}}function Jr(n){for(var t=n.source,e=n.target,r=Kr(t,e),i=[t];t!==r;)t=t.parent,i.push(t);for(var u=i.length;e!==r;)i.splice(u,0,e),e=e.parent;return i}function Gr(n){for(var t=[],e=n.parent;null!=e;)t.push(n),n=e,e=e.parent;return t.push(n),t}function Kr(n,t){if(n===t)return n;for(var e=Gr(n),r=Gr(t),i=e.pop(),u=r.pop(),o=null;i===u;)o=i,i=e.pop(),u=r.pop();return o}function Qr(n){n.fixed|=2}function ni(n){n.fixed&=-7}function ti(n){n.fixed|=4,n.px=n.x,n.py=n.y}function ei(n){n.fixed&=-5}function ri(n,t,e){var r=0,i=0;if(n.charge=0,!n.leaf)for(var u,o=n.nodes,a=o.length,l=-1;++l<a;)u=o[l],null!=u&&(ri(u,t,e),n.charge+=u.charge,r+=u.charge*u.cx,i+=u.charge*u.cy);if(n.point){n.leaf||(n.point.x+=Math.random()-.5,n.point.y+=Math.random()-.5);var c=t*e[n.point.index];n.charge+=n.pointCharge=c,r+=c*n.point.x,i+=c*n.point.y}n.cx=r/n.charge,n.cy=i/n.charge}function ii(n,t){return ao.rebind(n,t,"sort","children","value"),n.nodes=n,n.links=fi,n}function ui(n,t){for(var e=[n];null!=(n=e.pop());)if(t(n),(i=n.children)&&(r=i.length))for(var r,i;--r>=0;)e.push(i[r])}function oi(n,t){for(var e=[n],r=[];null!=(n=e.pop());)if(r.push(n),(u=n.children)&&(i=u.length))for(var i,u,o=-1;++o<i;)e.push(u[o]);for(;null!=(n=r.pop());)t(n)}function ai(n){return n.children}function li(n){return n.value}function ci(n,t){return t.value-n.value}function fi(n){return ao.merge(n.map(function(n){return(n.children||[]).map(function(t){return{source:n,target:t}})}))}function si(n){return n.x}function hi(n){return n.y}function pi(n,t,e){n.y0=t,n.y=e}function gi(n){return ao.range(n.length)}function vi(n){for(var t=-1,e=n[0].length,r=[];++t<e;)r[t]=0;return r}function di(n){for(var t,e=1,r=0,i=n[0][1],u=n.length;u>e;++e)(t=n[e][1])>i&&(r=e,i=t);return r}function yi(n){return n.reduce(mi,0)}function mi(n,t){return n+t[1]}function Mi(n,t){return xi(n,Math.ceil(Math.log(t.length)/Math.LN2+1))}function xi(n,t){for(var e=-1,r=+n[0],i=(n[1]-r)/t,u=[];++e<=t;)u[e]=i*e+r;return u}function bi(n){return[ao.min(n),ao.max(n)]}function _i(n,t){return n.value-t.value}function wi(n,t){var e=n._pack_next;n._pack_next=t,t._pack_prev=n,t._pack_next=e,e._pack_prev=t}function Si(n,t){n._pack_next=t,t._pack_prev=n}function ki(n,t){var e=t.x-n.x,r=t.y-n.y,i=n.r+t.r;return.999*i*i>e*e+r*r}function Ni(n){function t(n){f=Math.min(n.x-n.r,f),s=Math.max(n.x+n.r,s),h=Math.min(n.y-n.r,h),p=Math.max(n.y+n.r,p)}if((e=n.children)&&(c=e.length)){var e,r,i,u,o,a,l,c,f=1/0,s=-(1/0),h=1/0,p=-(1/0);if(e.forEach(Ei),r=e[0],r.x=-r.r,r.y=0,t(r),c>1&&(i=e[1],i.x=i.r,i.y=0,t(i),c>2))for(u=e[2],zi(r,i,u),t(u),wi(r,u),r._pack_prev=u,wi(u,i),i=r._pack_next,o=3;c>o;o++){zi(r,i,u=e[o]);var g=0,v=1,d=1;for(a=i._pack_next;a!==i;a=a._pack_next,v++)if(ki(a,u)){g=1;break}if(1==g)for(l=r._pack_prev;l!==a._pack_prev&&!ki(l,u);l=l._pack_prev,d++);g?(d>v||v==d&&i.r<r.r?Si(r,i=a):Si(r=l,i),o--):(wi(r,u),i=u,t(u))}var y=(f+s)/2,m=(h+p)/2,M=0;for(o=0;c>o;o++)u=e[o],u.x-=y,u.y-=m,M=Math.max(M,u.r+Math.sqrt(u.x*u.x+u.y*u.y));n.r=M,e.forEach(Ai)}}function Ei(n){n._pack_next=n._pack_prev=n}function Ai(n){delete n._pack_next,delete n._pack_prev}function Ci(n,t,e,r){var i=n.children;if(n.x=t+=r*n.x,n.y=e+=r*n.y,n.r*=r,i)for(var u=-1,o=i.length;++u<o;)Ci(i[u],t,e,r)}function zi(n,t,e){var r=n.r+e.r,i=t.x-n.x,u=t.y-n.y;if(r&&(i||u)){var o=t.r+e.r,a=i*i+u*u;o*=o,r*=r;var l=.5+(r-o)/(2*a),c=Math.sqrt(Math.max(0,2*o*(r+a)-(r-=a)*r-o*o))/(2*a);e.x=n.x+l*i+c*u,e.y=n.y+l*u-c*i}else e.x=n.x+r,e.y=n.y}function Li(n,t){return n.parent==t.parent?1:2}function qi(n){var t=n.children;return t.length?t[0]:n.t}function Ti(n){var t,e=n.children;return(t=e.length)?e[t-1]:n.t}function Ri(n,t,e){var r=e/(t.i-n.i);t.c-=r,t.s+=e,n.c+=r,t.z+=e,t.m+=e}function Di(n){for(var t,e=0,r=0,i=n.children,u=i.length;--u>=0;)t=i[u],t.z+=e,t.m+=e,e+=t.s+(r+=t.c)}function Pi(n,t,e){return n.a.parent===t.parent?n.a:e}function Ui(n){return 1+ao.max(n,function(n){return n.y})}function ji(n){return n.reduce(function(n,t){return n+t.x},0)/n.length}function Fi(n){var t=n.children;return t&&t.length?Fi(t[0]):n}function Hi(n){var t,e=n.children;return e&&(t=e.length)?Hi(e[t-1]):n}function Oi(n){return{x:n.x,y:n.y,dx:n.dx,dy:n.dy}}function Ii(n,t){var e=n.x+t[3],r=n.y+t[0],i=n.dx-t[1]-t[3],u=n.dy-t[0]-t[2];return 0>i&&(e+=i/2,i=0),0>u&&(r+=u/2,u=0),{x:e,y:r,dx:i,dy:u}}function Yi(n){var t=n[0],e=n[n.length-1];return e>t?[t,e]:[e,t]}function Zi(n){return n.rangeExtent?n.rangeExtent():Yi(n.range())}function Vi(n,t,e,r){var i=e(n[0],n[1]),u=r(t[0],t[1]);return function(n){return u(i(n))}}function Xi(n,t){var e,r=0,i=n.length-1,u=n[r],o=n[i];return u>o&&(e=r,r=i,i=e,e=u,u=o,o=e),n[r]=t.floor(u),n[i]=t.ceil(o),n}function $i(n){return n?{floor:function(t){return Math.floor(t/n)*n},ceil:function(t){return Math.ceil(t/n)*n}}:Sl}function Bi(n,t,e,r){var i=[],u=[],o=0,a=Math.min(n.length,t.length)-1;for(n[a]<n[0]&&(n=n.slice().reverse(),t=t.slice().reverse());++o<=a;)i.push(e(n[o-1],n[o])),u.push(r(t[o-1],t[o]));return function(t){var e=ao.bisect(n,t,1,a)-1;return u[e](i[e](t))}}function Wi(n,t,e,r){function i(){var i=Math.min(n.length,t.length)>2?Bi:Vi,l=r?Wr:Br;return o=i(n,t,l,e),a=i(t,n,l,Mr),u}function u(n){return o(n)}var o,a;return u.invert=function(n){return a(n)},u.domain=function(t){return arguments.length?(n=t.map(Number),i()):n},u.range=function(n){return arguments.length?(t=n,i()):t},u.rangeRound=function(n){return u.range(n).interpolate(Ur)},u.clamp=function(n){return arguments.length?(r=n,i()):r},u.interpolate=function(n){return arguments.length?(e=n,i()):e},u.ticks=function(t){return Qi(n,t)},u.tickFormat=function(t,e){return nu(n,t,e)},u.nice=function(t){return Gi(n,t),i()},u.copy=function(){return Wi(n,t,e,r)},i()}function Ji(n,t){return ao.rebind(n,t,"range","rangeRound","interpolate","clamp")}function Gi(n,t){return Xi(n,$i(Ki(n,t)[2])),Xi(n,$i(Ki(n,t)[2])),n}function Ki(n,t){null==t&&(t=10);var e=Yi(n),r=e[1]-e[0],i=Math.pow(10,Math.floor(Math.log(r/t)/Math.LN10)),u=t/r*i;return.15>=u?i*=10:.35>=u?i*=5:.75>=u&&(i*=2),e[0]=Math.ceil(e[0]/i)*i,e[1]=Math.floor(e[1]/i)*i+.5*i,e[2]=i,e}function Qi(n,t){return ao.range.apply(ao,Ki(n,t))}function nu(n,t,e){var r=Ki(n,t);if(e){var i=ha.exec(e);if(i.shift(),"s"===i[8]){var u=ao.formatPrefix(Math.max(xo(r[0]),xo(r[1])));return i[7]||(i[7]="."+tu(u.scale(r[2]))),i[8]="f",e=ao.format(i.join("")),function(n){return e(u.scale(n))+u.symbol}}i[7]||(i[7]="."+eu(i[8],r)),e=i.join("")}else e=",."+tu(r[2])+"f";return ao.format(e)}function tu(n){return-Math.floor(Math.log(n)/Math.LN10+.01)}function eu(n,t){var e=tu(t[2]);return n in kl?Math.abs(e-tu(Math.max(xo(t[0]),xo(t[1]))))+ +("e"!==n):e-2*("%"===n)}function ru(n,t,e,r){function i(n){return(e?Math.log(0>n?0:n):-Math.log(n>0?0:-n))/Math.log(t)}function u(n){return e?Math.pow(t,n):-Math.pow(t,-n)}function o(t){return n(i(t))}return o.invert=function(t){return u(n.invert(t))},o.domain=function(t){return arguments.length?(e=t[0]>=0,n.domain((r=t.map(Number)).map(i)),o):r},o.base=function(e){return arguments.length?(t=+e,n.domain(r.map(i)),o):t},o.nice=function(){var t=Xi(r.map(i),e?Math:El);return n.domain(t),r=t.map(u),o},o.ticks=function(){var n=Yi(r),o=[],a=n[0],l=n[1],c=Math.floor(i(a)),f=Math.ceil(i(l)),s=t%1?2:t;if(isFinite(f-c)){if(e){for(;f>c;c++)for(var h=1;s>h;h++)o.push(u(c)*h);o.push(u(c))}else for(o.push(u(c));c++<f;)for(var h=s-1;h>0;h--)o.push(u(c)*h);for(c=0;o[c]<a;c++);for(f=o.length;o[f-1]>l;f--);o=o.slice(c,f)}return o},o.tickFormat=function(n,e){if(!arguments.length)return Nl;arguments.length<2?e=Nl:"function"!=typeof e&&(e=ao.format(e));var r=Math.max(1,t*n/o.ticks().length);return function(n){var o=n/u(Math.round(i(n)));return t-.5>o*t&&(o*=t),r>=o?e(n):""}},o.copy=function(){return ru(n.copy(),t,e,r)},Ji(o,n)}function iu(n,t,e){function r(t){return n(i(t))}var i=uu(t),u=uu(1/t);return r.invert=function(t){return u(n.invert(t))},r.domain=function(t){return arguments.length?(n.domain((e=t.map(Number)).map(i)),r):e},r.ticks=function(n){return Qi(e,n)},r.tickFormat=function(n,t){return nu(e,n,t)},r.nice=function(n){return r.domain(Gi(e,n))},r.exponent=function(o){return arguments.length?(i=uu(t=o),u=uu(1/t),n.domain(e.map(i)),r):t},r.copy=function(){return iu(n.copy(),t,e)},Ji(r,n)}function uu(n){return function(t){return 0>t?-Math.pow(-t,n):Math.pow(t,n)}}function ou(n,t){function e(e){return u[((i.get(e)||("range"===t.t?i.set(e,n.push(e)):NaN))-1)%u.length]}function r(t,e){return ao.range(n.length).map(function(n){return t+e*n})}var i,u,o;return e.domain=function(r){if(!arguments.length)return n;n=[],i=new c;for(var u,o=-1,a=r.length;++o<a;)i.has(u=r[o])||i.set(u,n.push(u));return e[t.t].apply(e,t.a)},e.range=function(n){return arguments.length?(u=n,o=0,t={t:"range",a:arguments},e):u},e.rangePoints=function(i,a){arguments.length<2&&(a=0);var l=i[0],c=i[1],f=n.length<2?(l=(l+c)/2,0):(c-l)/(n.length-1+a);return u=r(l+f*a/2,f),o=0,t={t:"rangePoints",a:arguments},e},e.rangeRoundPoints=function(i,a){arguments.length<2&&(a=0);var l=i[0],c=i[1],f=n.length<2?(l=c=Math.round((l+c)/2),0):(c-l)/(n.length-1+a)|0;return u=r(l+Math.round(f*a/2+(c-l-(n.length-1+a)*f)/2),f),o=0,t={t:"rangeRoundPoints",a:arguments},e},e.rangeBands=function(i,a,l){arguments.length<2&&(a=0),arguments.length<3&&(l=a);var c=i[1]<i[0],f=i[c-0],s=i[1-c],h=(s-f)/(n.length-a+2*l);return u=r(f+h*l,h),c&&u.reverse(),o=h*(1-a),t={t:"rangeBands",a:arguments},e},e.rangeRoundBands=function(i,a,l){arguments.length<2&&(a=0),arguments.length<3&&(l=a);var c=i[1]<i[0],f=i[c-0],s=i[1-c],h=Math.floor((s-f)/(n.length-a+2*l));return u=r(f+Math.round((s-f-(n.length-a)*h)/2),h),c&&u.reverse(),o=Math.round(h*(1-a)),t={t:"rangeRoundBands",a:arguments},e},e.rangeBand=function(){return o},e.rangeExtent=function(){return Yi(t.a[0])},e.copy=function(){return ou(n,t)},e.domain(n)}function au(n,t){function u(){var e=0,r=t.length;for(a=[];++e<r;)a[e-1]=ao.quantile(n,e/r);return o}function o(n){return isNaN(n=+n)?void 0:t[ao.bisect(a,n)]}var a;return o.domain=function(t){return arguments.length?(n=t.map(r).filter(i).sort(e),u()):n},o.range=function(n){return arguments.length?(t=n,u()):t},o.quantiles=function(){return a},o.invertExtent=function(e){return e=t.indexOf(e),0>e?[NaN,NaN]:[e>0?a[e-1]:n[0],e<a.length?a[e]:n[n.length-1]]},o.copy=function(){return au(n,t)},u()}function lu(n,t,e){function r(t){return e[Math.max(0,Math.min(o,Math.floor(u*(t-n))))]}function i(){return u=e.length/(t-n),o=e.length-1,r}var u,o;return r.domain=function(e){return arguments.length?(n=+e[0],t=+e[e.length-1],i()):[n,t]},r.range=function(n){return arguments.length?(e=n,i()):e},r.invertExtent=function(t){return t=e.indexOf(t),t=0>t?NaN:t/u+n,[t,t+1/u]},r.copy=function(){return lu(n,t,e)},i()}function cu(n,t){function e(e){return e>=e?t[ao.bisect(n,e)]:void 0}return e.domain=function(t){return arguments.length?(n=t,e):n},e.range=function(n){return arguments.length?(t=n,e):t},e.invertExtent=function(e){return e=t.indexOf(e),[n[e-1],n[e]]},e.copy=function(){return cu(n,t)},e}function fu(n){function t(n){return+n}return t.invert=t,t.domain=t.range=function(e){return arguments.length?(n=e.map(t),t):n},t.ticks=function(t){return Qi(n,t)},t.tickFormat=function(t,e){return nu(n,t,e)},t.copy=function(){return fu(n)},t}function su(){return 0}function hu(n){return n.innerRadius}function pu(n){return n.outerRadius}function gu(n){return n.startAngle}function vu(n){return n.endAngle}function du(n){return n&&n.padAngle}function yu(n,t,e,r){return(n-e)*t-(t-r)*n>0?0:1}function mu(n,t,e,r,i){var u=n[0]-t[0],o=n[1]-t[1],a=(i?r:-r)/Math.sqrt(u*u+o*o),l=a*o,c=-a*u,f=n[0]+l,s=n[1]+c,h=t[0]+l,p=t[1]+c,g=(f+h)/2,v=(s+p)/2,d=h-f,y=p-s,m=d*d+y*y,M=e-r,x=f*p-h*s,b=(0>y?-1:1)*Math.sqrt(Math.max(0,M*M*m-x*x)),_=(x*y-d*b)/m,w=(-x*d-y*b)/m,S=(x*y+d*b)/m,k=(-x*d+y*b)/m,N=_-g,E=w-v,A=S-g,C=k-v;return N*N+E*E>A*A+C*C&&(_=S,w=k),[[_-l,w-c],[_*e/M,w*e/M]]}function Mu(n){function t(t){function o(){c.push("M",u(n(f),a))}for(var l,c=[],f=[],s=-1,h=t.length,p=En(e),g=En(r);++s<h;)i.call(this,l=t[s],s)?f.push([+p.call(this,l,s),+g.call(this,l,s)]):f.length&&(o(),f=[]);return f.length&&o(),c.length?c.join(""):null}var e=Ce,r=ze,i=zt,u=xu,o=u.key,a=.7;return t.x=function(n){return arguments.length?(e=n,t):e},t.y=function(n){return arguments.length?(r=n,t):r},t.defined=function(n){return arguments.length?(i=n,t):i},t.interpolate=function(n){return arguments.length?(o="function"==typeof n?u=n:(u=Tl.get(n)||xu).key,t):o},t.tension=function(n){return arguments.length?(a=n,t):a},t}function xu(n){return n.length>1?n.join("L"):n+"Z"}function bu(n){return n.join("L")+"Z"}function _u(n){for(var t=0,e=n.length,r=n[0],i=[r[0],",",r[1]];++t<e;)i.push("H",(r[0]+(r=n[t])[0])/2,"V",r[1]);return e>1&&i.push("H",r[0]),i.join("")}function wu(n){for(var t=0,e=n.length,r=n[0],i=[r[0],",",r[1]];++t<e;)i.push("V",(r=n[t])[1],"H",r[0]);return i.join("")}function Su(n){for(var t=0,e=n.length,r=n[0],i=[r[0],",",r[1]];++t<e;)i.push("H",(r=n[t])[0],"V",r[1]);return i.join("")}function ku(n,t){return n.length<4?xu(n):n[1]+Au(n.slice(1,-1),Cu(n,t))}function Nu(n,t){return n.length<3?bu(n):n[0]+Au((n.push(n[0]),n),Cu([n[n.length-2]].concat(n,[n[1]]),t))}function Eu(n,t){return n.length<3?xu(n):n[0]+Au(n,Cu(n,t))}function Au(n,t){if(t.length<1||n.length!=t.length&&n.length!=t.length+2)return xu(n);var e=n.length!=t.length,r="",i=n[0],u=n[1],o=t[0],a=o,l=1;if(e&&(r+="Q"+(u[0]-2*o[0]/3)+","+(u[1]-2*o[1]/3)+","+u[0]+","+u[1],i=n[1],l=2),t.length>1){a=t[1],u=n[l],l++,r+="C"+(i[0]+o[0])+","+(i[1]+o[1])+","+(u[0]-a[0])+","+(u[1]-a[1])+","+u[0]+","+u[1];for(var c=2;c<t.length;c++,l++)u=n[l],a=t[c],r+="S"+(u[0]-a[0])+","+(u[1]-a[1])+","+u[0]+","+u[1]}if(e){var f=n[l];r+="Q"+(u[0]+2*a[0]/3)+","+(u[1]+2*a[1]/3)+","+f[0]+","+f[1]}return r}function Cu(n,t){for(var e,r=[],i=(1-t)/2,u=n[0],o=n[1],a=1,l=n.length;++a<l;)e=u,u=o,o=n[a],r.push([i*(o[0]-e[0]),i*(o[1]-e[1])]);return r}function zu(n){if(n.length<3)return xu(n);var t=1,e=n.length,r=n[0],i=r[0],u=r[1],o=[i,i,i,(r=n[1])[0]],a=[u,u,u,r[1]],l=[i,",",u,"L",Ru(Pl,o),",",Ru(Pl,a)];for(n.push(n[e-1]);++t<=e;)r=n[t],o.shift(),o.push(r[0]),a.shift(),a.push(r[1]),Du(l,o,a);return n.pop(),l.push("L",r),l.join("")}function Lu(n){if(n.length<4)return xu(n);for(var t,e=[],r=-1,i=n.length,u=[0],o=[0];++r<3;)t=n[r],u.push(t[0]),o.push(t[1]);for(e.push(Ru(Pl,u)+","+Ru(Pl,o)),--r;++r<i;)t=n[r],u.shift(),u.push(t[0]),o.shift(),o.push(t[1]),Du(e,u,o);return e.join("")}function qu(n){for(var t,e,r=-1,i=n.length,u=i+4,o=[],a=[];++r<4;)e=n[r%i],o.push(e[0]),a.push(e[1]);for(t=[Ru(Pl,o),",",Ru(Pl,a)],--r;++r<u;)e=n[r%i],o.shift(),o.push(e[0]),a.shift(),a.push(e[1]),Du(t,o,a);return t.join("")}function Tu(n,t){var e=n.length-1;if(e)for(var r,i,u=n[0][0],o=n[0][1],a=n[e][0]-u,l=n[e][1]-o,c=-1;++c<=e;)r=n[c],i=c/e,r[0]=t*r[0]+(1-t)*(u+i*a),r[1]=t*r[1]+(1-t)*(o+i*l);return zu(n)}function Ru(n,t){return n[0]*t[0]+n[1]*t[1]+n[2]*t[2]+n[3]*t[3]}function Du(n,t,e){n.push("C",Ru(Rl,t),",",Ru(Rl,e),",",Ru(Dl,t),",",Ru(Dl,e),",",Ru(Pl,t),",",Ru(Pl,e))}function Pu(n,t){return(t[1]-n[1])/(t[0]-n[0])}function Uu(n){for(var t=0,e=n.length-1,r=[],i=n[0],u=n[1],o=r[0]=Pu(i,u);++t<e;)r[t]=(o+(o=Pu(i=u,u=n[t+1])))/2;return r[t]=o,r}function ju(n){for(var t,e,r,i,u=[],o=Uu(n),a=-1,l=n.length-1;++a<l;)t=Pu(n[a],n[a+1]),xo(t)<Uo?o[a]=o[a+1]=0:(e=o[a]/t,r=o[a+1]/t,i=e*e+r*r,i>9&&(i=3*t/Math.sqrt(i),o[a]=i*e,o[a+1]=i*r));for(a=-1;++a<=l;)i=(n[Math.min(l,a+1)][0]-n[Math.max(0,a-1)][0])/(6*(1+o[a]*o[a])),u.push([i||0,o[a]*i||0]);return u}function Fu(n){return n.length<3?xu(n):n[0]+Au(n,ju(n))}function Hu(n){for(var t,e,r,i=-1,u=n.length;++i<u;)t=n[i],e=t[0],r=t[1]-Io,t[0]=e*Math.cos(r),t[1]=e*Math.sin(r);return n}function Ou(n){function t(t){function l(){v.push("M",a(n(y),s),f,c(n(d.reverse()),s),"Z")}for(var h,p,g,v=[],d=[],y=[],m=-1,M=t.length,x=En(e),b=En(i),_=e===r?function(){
 return p}:En(r),w=i===u?function(){return g}:En(u);++m<M;)o.call(this,h=t[m],m)?(d.push([p=+x.call(this,h,m),g=+b.call(this,h,m)]),y.push([+_.call(this,h,m),+w.call(this,h,m)])):d.length&&(l(),d=[],y=[]);return d.length&&l(),v.length?v.join(""):null}var e=Ce,r=Ce,i=0,u=ze,o=zt,a=xu,l=a.key,c=a,f="L",s=.7;return t.x=function(n){return arguments.length?(e=r=n,t):r},t.x0=function(n){return arguments.length?(e=n,t):e},t.x1=function(n){return arguments.length?(r=n,t):r},t.y=function(n){return arguments.length?(i=u=n,t):u},t.y0=function(n){return arguments.length?(i=n,t):i},t.y1=function(n){return arguments.length?(u=n,t):u},t.defined=function(n){return arguments.length?(o=n,t):o},t.interpolate=function(n){return arguments.length?(l="function"==typeof n?a=n:(a=Tl.get(n)||xu).key,c=a.reverse||a,f=a.closed?"M":"L",t):l},t.tension=function(n){return arguments.length?(s=n,t):s},t}function Iu(n){return n.radius}function Yu(n){return[n.x,n.y]}function Zu(n){return function(){var t=n.apply(this,arguments),e=t[0],r=t[1]-Io;return[e*Math.cos(r),e*Math.sin(r)]}}function Vu(){return 64}function Xu(){return"circle"}function $u(n){var t=Math.sqrt(n/Fo);return"M0,"+t+"A"+t+","+t+" 0 1,1 0,"+-t+"A"+t+","+t+" 0 1,1 0,"+t+"Z"}function Bu(n){return function(){var t,e,r;(t=this[n])&&(r=t[e=t.active])&&(r.timer.c=null,r.timer.t=NaN,--t.count?delete t[e]:delete this[n],t.active+=.5,r.event&&r.event.interrupt.call(this,this.__data__,r.index))}}function Wu(n,t,e){return ko(n,Yl),n.namespace=t,n.id=e,n}function Ju(n,t,e,r){var i=n.id,u=n.namespace;return Y(n,"function"==typeof e?function(n,o,a){n[u][i].tween.set(t,r(e.call(n,n.__data__,o,a)))}:(e=r(e),function(n){n[u][i].tween.set(t,e)}))}function Gu(n){return null==n&&(n=""),function(){this.textContent=n}}function Ku(n){return null==n?"__transition__":"__transition_"+n+"__"}function Qu(n,t,e,r,i){function u(n){var t=v.delay;return f.t=t+l,n>=t?o(n-t):void(f.c=o)}function o(e){var i=g.active,u=g[i];u&&(u.timer.c=null,u.timer.t=NaN,--g.count,delete g[i],u.event&&u.event.interrupt.call(n,n.__data__,u.index));for(var o in g)if(r>+o){var c=g[o];c.timer.c=null,c.timer.t=NaN,--g.count,delete g[o]}f.c=a,qn(function(){return f.c&&a(e||1)&&(f.c=null,f.t=NaN),1},0,l),g.active=r,v.event&&v.event.start.call(n,n.__data__,t),p=[],v.tween.forEach(function(e,r){(r=r.call(n,n.__data__,t))&&p.push(r)}),h=v.ease,s=v.duration}function a(i){for(var u=i/s,o=h(u),a=p.length;a>0;)p[--a].call(n,o);return u>=1?(v.event&&v.event.end.call(n,n.__data__,t),--g.count?delete g[r]:delete n[e],1):void 0}var l,f,s,h,p,g=n[e]||(n[e]={active:0,count:0}),v=g[r];v||(l=i.time,f=qn(u,0,l),v=g[r]={tween:new c,time:l,timer:f,delay:i.delay,duration:i.duration,ease:i.ease,index:t},i=null,++g.count)}function no(n,t,e){n.attr("transform",function(n){var r=t(n);return"translate("+(isFinite(r)?r:e(n))+",0)"})}function to(n,t,e){n.attr("transform",function(n){var r=t(n);return"translate(0,"+(isFinite(r)?r:e(n))+")"})}function eo(n){return n.toISOString()}function ro(n,t,e){function r(t){return n(t)}function i(n,e){var r=n[1]-n[0],i=r/e,u=ao.bisect(Kl,i);return u==Kl.length?[t.year,Ki(n.map(function(n){return n/31536e6}),e)[2]]:u?t[i/Kl[u-1]<Kl[u]/i?u-1:u]:[tc,Ki(n,e)[2]]}return r.invert=function(t){return io(n.invert(t))},r.domain=function(t){return arguments.length?(n.domain(t),r):n.domain().map(io)},r.nice=function(n,t){function e(e){return!isNaN(e)&&!n.range(e,io(+e+1),t).length}var u=r.domain(),o=Yi(u),a=null==n?i(o,10):"number"==typeof n&&i(o,n);return a&&(n=a[0],t=a[1]),r.domain(Xi(u,t>1?{floor:function(t){for(;e(t=n.floor(t));)t=io(t-1);return t},ceil:function(t){for(;e(t=n.ceil(t));)t=io(+t+1);return t}}:n))},r.ticks=function(n,t){var e=Yi(r.domain()),u=null==n?i(e,10):"number"==typeof n?i(e,n):!n.range&&[{range:n},t];return u&&(n=u[0],t=u[1]),n.range(e[0],io(+e[1]+1),1>t?1:t)},r.tickFormat=function(){return e},r.copy=function(){return ro(n.copy(),t,e)},Ji(r,n)}function io(n){return new Date(n)}function uo(n){return JSON.parse(n.responseText)}function oo(n){var t=fo.createRange();return t.selectNode(fo.body),t.createContextualFragment(n.responseText)}var ao={version:"3.5.17"},lo=[].slice,co=function(n){return lo.call(n)},fo=this.document;if(fo)try{co(fo.documentElement.childNodes)[0].nodeType}catch(so){co=function(n){for(var t=n.length,e=new Array(t);t--;)e[t]=n[t];return e}}if(Date.now||(Date.now=function(){return+new Date}),fo)try{fo.createElement("DIV").style.setProperty("opacity",0,"")}catch(ho){var po=this.Element.prototype,go=po.setAttribute,vo=po.setAttributeNS,yo=this.CSSStyleDeclaration.prototype,mo=yo.setProperty;po.setAttribute=function(n,t){go.call(this,n,t+"")},po.setAttributeNS=function(n,t,e){vo.call(this,n,t,e+"")},yo.setProperty=function(n,t,e){mo.call(this,n,t+"",e)}}ao.ascending=e,ao.descending=function(n,t){return n>t?-1:t>n?1:t>=n?0:NaN},ao.min=function(n,t){var e,r,i=-1,u=n.length;if(1===arguments.length){for(;++i<u;)if(null!=(r=n[i])&&r>=r){e=r;break}for(;++i<u;)null!=(r=n[i])&&e>r&&(e=r)}else{for(;++i<u;)if(null!=(r=t.call(n,n[i],i))&&r>=r){e=r;break}for(;++i<u;)null!=(r=t.call(n,n[i],i))&&e>r&&(e=r)}return e},ao.max=function(n,t){var e,r,i=-1,u=n.length;if(1===arguments.length){for(;++i<u;)if(null!=(r=n[i])&&r>=r){e=r;break}for(;++i<u;)null!=(r=n[i])&&r>e&&(e=r)}else{for(;++i<u;)if(null!=(r=t.call(n,n[i],i))&&r>=r){e=r;break}for(;++i<u;)null!=(r=t.call(n,n[i],i))&&r>e&&(e=r)}return e},ao.extent=function(n,t){var e,r,i,u=-1,o=n.length;if(1===arguments.length){for(;++u<o;)if(null!=(r=n[u])&&r>=r){e=i=r;break}for(;++u<o;)null!=(r=n[u])&&(e>r&&(e=r),r>i&&(i=r))}else{for(;++u<o;)if(null!=(r=t.call(n,n[u],u))&&r>=r){e=i=r;break}for(;++u<o;)null!=(r=t.call(n,n[u],u))&&(e>r&&(e=r),r>i&&(i=r))}return[e,i]},ao.sum=function(n,t){var e,r=0,u=n.length,o=-1;if(1===arguments.length)for(;++o<u;)i(e=+n[o])&&(r+=e);else for(;++o<u;)i(e=+t.call(n,n[o],o))&&(r+=e);return r},ao.mean=function(n,t){var e,u=0,o=n.length,a=-1,l=o;if(1===arguments.length)for(;++a<o;)i(e=r(n[a]))?u+=e:--l;else for(;++a<o;)i(e=r(t.call(n,n[a],a)))?u+=e:--l;return l?u/l:void 0},ao.quantile=function(n,t){var e=(n.length-1)*t+1,r=Math.floor(e),i=+n[r-1],u=e-r;return u?i+u*(n[r]-i):i},ao.median=function(n,t){var u,o=[],a=n.length,l=-1;if(1===arguments.length)for(;++l<a;)i(u=r(n[l]))&&o.push(u);else for(;++l<a;)i(u=r(t.call(n,n[l],l)))&&o.push(u);return o.length?ao.quantile(o.sort(e),.5):void 0},ao.variance=function(n,t){var e,u,o=n.length,a=0,l=0,c=-1,f=0;if(1===arguments.length)for(;++c<o;)i(e=r(n[c]))&&(u=e-a,a+=u/++f,l+=u*(e-a));else for(;++c<o;)i(e=r(t.call(n,n[c],c)))&&(u=e-a,a+=u/++f,l+=u*(e-a));return f>1?l/(f-1):void 0},ao.deviation=function(){var n=ao.variance.apply(this,arguments);return n?Math.sqrt(n):n};var Mo=u(e);ao.bisectLeft=Mo.left,ao.bisect=ao.bisectRight=Mo.right,ao.bisector=function(n){return u(1===n.length?function(t,r){return e(n(t),r)}:n)},ao.shuffle=function(n,t,e){(u=arguments.length)<3&&(e=n.length,2>u&&(t=0));for(var r,i,u=e-t;u;)i=Math.random()*u--|0,r=n[u+t],n[u+t]=n[i+t],n[i+t]=r;return n},ao.permute=function(n,t){for(var e=t.length,r=new Array(e);e--;)r[e]=n[t[e]];return r},ao.pairs=function(n){for(var t,e=0,r=n.length-1,i=n[0],u=new Array(0>r?0:r);r>e;)u[e]=[t=i,i=n[++e]];return u},ao.transpose=function(n){if(!(i=n.length))return[];for(var t=-1,e=ao.min(n,o),r=new Array(e);++t<e;)for(var i,u=-1,a=r[t]=new Array(i);++u<i;)a[u]=n[u][t];return r},ao.zip=function(){return ao.transpose(arguments)},ao.keys=function(n){var t=[];for(var e in n)t.push(e);return t},ao.values=function(n){var t=[];for(var e in n)t.push(n[e]);return t},ao.entries=function(n){var t=[];for(var e in n)t.push({key:e,value:n[e]});return t},ao.merge=function(n){for(var t,e,r,i=n.length,u=-1,o=0;++u<i;)o+=n[u].length;for(e=new Array(o);--i>=0;)for(r=n[i],t=r.length;--t>=0;)e[--o]=r[t];return e};var xo=Math.abs;ao.range=function(n,t,e){if(arguments.length<3&&(e=1,arguments.length<2&&(t=n,n=0)),(t-n)/e===1/0)throw new Error("infinite range");var r,i=[],u=a(xo(e)),o=-1;if(n*=u,t*=u,e*=u,0>e)for(;(r=n+e*++o)>t;)i.push(r/u);else for(;(r=n+e*++o)<t;)i.push(r/u);return i},ao.map=function(n,t){var e=new c;if(n instanceof c)n.forEach(function(n,t){e.set(n,t)});else if(Array.isArray(n)){var r,i=-1,u=n.length;if(1===arguments.length)for(;++i<u;)e.set(i,n[i]);else for(;++i<u;)e.set(t.call(n,r=n[i],i),r)}else for(var o in n)e.set(o,n[o]);return e};var bo="__proto__",_o="\x00";l(c,{has:h,get:function(n){return this._[f(n)]},set:function(n,t){return this._[f(n)]=t},remove:p,keys:g,values:function(){var n=[];for(var t in this._)n.push(this._[t]);return n},entries:function(){var n=[];for(var t in this._)n.push({key:s(t),value:this._[t]});return n},size:v,empty:d,forEach:function(n){for(var t in this._)n.call(this,s(t),this._[t])}}),ao.nest=function(){function n(t,o,a){if(a>=u.length)return r?r.call(i,o):e?o.sort(e):o;for(var l,f,s,h,p=-1,g=o.length,v=u[a++],d=new c;++p<g;)(h=d.get(l=v(f=o[p])))?h.push(f):d.set(l,[f]);return t?(f=t(),s=function(e,r){f.set(e,n(t,r,a))}):(f={},s=function(e,r){f[e]=n(t,r,a)}),d.forEach(s),f}function t(n,e){if(e>=u.length)return n;var r=[],i=o[e++];return n.forEach(function(n,i){r.push({key:n,values:t(i,e)})}),i?r.sort(function(n,t){return i(n.key,t.key)}):r}var e,r,i={},u=[],o=[];return i.map=function(t,e){return n(e,t,0)},i.entries=function(e){return t(n(ao.map,e,0),0)},i.key=function(n){return u.push(n),i},i.sortKeys=function(n){return o[u.length-1]=n,i},i.sortValues=function(n){return e=n,i},i.rollup=function(n){return r=n,i},i},ao.set=function(n){var t=new y;if(n)for(var e=0,r=n.length;r>e;++e)t.add(n[e]);return t},l(y,{has:h,add:function(n){return this._[f(n+="")]=!0,n},remove:p,values:g,size:v,empty:d,forEach:function(n){for(var t in this._)n.call(this,s(t))}}),ao.behavior={},ao.rebind=function(n,t){for(var e,r=1,i=arguments.length;++r<i;)n[e=arguments[r]]=M(n,t,t[e]);return n};var wo=["webkit","ms","moz","Moz","o","O"];ao.dispatch=function(){for(var n=new _,t=-1,e=arguments.length;++t<e;)n[arguments[t]]=w(n);return n},_.prototype.on=function(n,t){var e=n.indexOf("."),r="";if(e>=0&&(r=n.slice(e+1),n=n.slice(0,e)),n)return arguments.length<2?this[n].on(r):this[n].on(r,t);if(2===arguments.length){if(null==t)for(n in this)this.hasOwnProperty(n)&&this[n].on(r,null);return this}},ao.event=null,ao.requote=function(n){return n.replace(So,"\\$&")};var So=/[\\\^\$\*\+\?\|\[\]\(\)\.\{\}]/g,ko={}.__proto__?function(n,t){n.__proto__=t}:function(n,t){for(var e in t)n[e]=t[e]},No=function(n,t){return t.querySelector(n)},Eo=function(n,t){return t.querySelectorAll(n)},Ao=function(n,t){var e=n.matches||n[x(n,"matchesSelector")];return(Ao=function(n,t){return e.call(n,t)})(n,t)};"function"==typeof Sizzle&&(No=function(n,t){return Sizzle(n,t)[0]||null},Eo=Sizzle,Ao=Sizzle.matchesSelector),ao.selection=function(){return ao.select(fo.documentElement)};var Co=ao.selection.prototype=[];Co.select=function(n){var t,e,r,i,u=[];n=A(n);for(var o=-1,a=this.length;++o<a;){u.push(t=[]),t.parentNode=(r=this[o]).parentNode;for(var l=-1,c=r.length;++l<c;)(i=r[l])?(t.push(e=n.call(i,i.__data__,l,o)),e&&"__data__"in i&&(e.__data__=i.__data__)):t.push(null)}return E(u)},Co.selectAll=function(n){var t,e,r=[];n=C(n);for(var i=-1,u=this.length;++i<u;)for(var o=this[i],a=-1,l=o.length;++a<l;)(e=o[a])&&(r.push(t=co(n.call(e,e.__data__,a,i))),t.parentNode=e);return E(r)};var zo="http://www.w3.org/1999/xhtml",Lo={svg:"http://www.w3.org/2000/svg",xhtml:zo,xlink:"http://www.w3.org/1999/xlink",xml:"http://www.w3.org/XML/1998/namespace",xmlns:"http://www.w3.org/2000/xmlns/"};ao.ns={prefix:Lo,qualify:function(n){var t=n.indexOf(":"),e=n;return t>=0&&"xmlns"!==(e=n.slice(0,t))&&(n=n.slice(t+1)),Lo.hasOwnProperty(e)?{space:Lo[e],local:n}:n}},Co.attr=function(n,t){if(arguments.length<2){if("string"==typeof n){var e=this.node();return n=ao.ns.qualify(n),n.local?e.getAttributeNS(n.space,n.local):e.getAttribute(n)}for(t in n)this.each(z(t,n[t]));return this}return this.each(z(n,t))},Co.classed=function(n,t){if(arguments.length<2){if("string"==typeof n){var e=this.node(),r=(n=T(n)).length,i=-1;if(t=e.classList){for(;++i<r;)if(!t.contains(n[i]))return!1}else for(t=e.getAttribute("class");++i<r;)if(!q(n[i]).test(t))return!1;return!0}for(t in n)this.each(R(t,n[t]));return this}return this.each(R(n,t))},Co.style=function(n,e,r){var i=arguments.length;if(3>i){if("string"!=typeof n){2>i&&(e="");for(r in n)this.each(P(r,n[r],e));return this}if(2>i){var u=this.node();return t(u).getComputedStyle(u,null).getPropertyValue(n)}r=""}return this.each(P(n,e,r))},Co.property=function(n,t){if(arguments.length<2){if("string"==typeof n)return this.node()[n];for(t in n)this.each(U(t,n[t]));return this}return this.each(U(n,t))},Co.text=function(n){return arguments.length?this.each("function"==typeof n?function(){var t=n.apply(this,arguments);this.textContent=null==t?"":t}:null==n?function(){this.textContent=""}:function(){this.textContent=n}):this.node().textContent},Co.html=function(n){return arguments.length?this.each("function"==typeof n?function(){var t=n.apply(this,arguments);this.innerHTML=null==t?"":t}:null==n?function(){this.innerHTML=""}:function(){this.innerHTML=n}):this.node().innerHTML},Co.append=function(n){return n=j(n),this.select(function(){return this.appendChild(n.apply(this,arguments))})},Co.insert=function(n,t){return n=j(n),t=A(t),this.select(function(){return this.insertBefore(n.apply(this,arguments),t.apply(this,arguments)||null)})},Co.remove=function(){return this.each(F)},Co.data=function(n,t){function e(n,e){var r,i,u,o=n.length,s=e.length,h=Math.min(o,s),p=new Array(s),g=new Array(s),v=new Array(o);if(t){var d,y=new c,m=new Array(o);for(r=-1;++r<o;)(i=n[r])&&(y.has(d=t.call(i,i.__data__,r))?v[r]=i:y.set(d,i),m[r]=d);for(r=-1;++r<s;)(i=y.get(d=t.call(e,u=e[r],r)))?i!==!0&&(p[r]=i,i.__data__=u):g[r]=H(u),y.set(d,!0);for(r=-1;++r<o;)r in m&&y.get(m[r])!==!0&&(v[r]=n[r])}else{for(r=-1;++r<h;)i=n[r],u=e[r],i?(i.__data__=u,p[r]=i):g[r]=H(u);for(;s>r;++r)g[r]=H(e[r]);for(;o>r;++r)v[r]=n[r]}g.update=p,g.parentNode=p.parentNode=v.parentNode=n.parentNode,a.push(g),l.push(p),f.push(v)}var r,i,u=-1,o=this.length;if(!arguments.length){for(n=new Array(o=(r=this[0]).length);++u<o;)(i=r[u])&&(n[u]=i.__data__);return n}var a=Z([]),l=E([]),f=E([]);if("function"==typeof n)for(;++u<o;)e(r=this[u],n.call(r,r.parentNode.__data__,u));else for(;++u<o;)e(r=this[u],n);return l.enter=function(){return a},l.exit=function(){return f},l},Co.datum=function(n){return arguments.length?this.property("__data__",n):this.property("__data__")},Co.filter=function(n){var t,e,r,i=[];"function"!=typeof n&&(n=O(n));for(var u=0,o=this.length;o>u;u++){i.push(t=[]),t.parentNode=(e=this[u]).parentNode;for(var a=0,l=e.length;l>a;a++)(r=e[a])&&n.call(r,r.__data__,a,u)&&t.push(r)}return E(i)},Co.order=function(){for(var n=-1,t=this.length;++n<t;)for(var e,r=this[n],i=r.length-1,u=r[i];--i>=0;)(e=r[i])&&(u&&u!==e.nextSibling&&u.parentNode.insertBefore(e,u),u=e);return this},Co.sort=function(n){n=I.apply(this,arguments);for(var t=-1,e=this.length;++t<e;)this[t].sort(n);return this.order()},Co.each=function(n){return Y(this,function(t,e,r){n.call(t,t.__data__,e,r)})},Co.call=function(n){var t=co(arguments);return n.apply(t[0]=this,t),this},Co.empty=function(){return!this.node()},Co.node=function(){for(var n=0,t=this.length;t>n;n++)for(var e=this[n],r=0,i=e.length;i>r;r++){var u=e[r];if(u)return u}return null},Co.size=function(){var n=0;return Y(this,function(){++n}),n};var qo=[];ao.selection.enter=Z,ao.selection.enter.prototype=qo,qo.append=Co.append,qo.empty=Co.empty,qo.node=Co.node,qo.call=Co.call,qo.size=Co.size,qo.select=function(n){for(var t,e,r,i,u,o=[],a=-1,l=this.length;++a<l;){r=(i=this[a]).update,o.push(t=[]),t.parentNode=i.parentNode;for(var c=-1,f=i.length;++c<f;)(u=i[c])?(t.push(r[c]=e=n.call(i.parentNode,u.__data__,c,a)),e.__data__=u.__data__):t.push(null)}return E(o)},qo.insert=function(n,t){return arguments.length<2&&(t=V(this)),Co.insert.call(this,n,t)},ao.select=function(t){var e;return"string"==typeof t?(e=[No(t,fo)],e.parentNode=fo.documentElement):(e=[t],e.parentNode=n(t)),E([e])},ao.selectAll=function(n){var t;return"string"==typeof n?(t=co(Eo(n,fo)),t.parentNode=fo.documentElement):(t=co(n),t.parentNode=null),E([t])},Co.on=function(n,t,e){var r=arguments.length;if(3>r){if("string"!=typeof n){2>r&&(t=!1);for(e in n)this.each(X(e,n[e],t));return this}if(2>r)return(r=this.node()["__on"+n])&&r._;e=!1}return this.each(X(n,t,e))};var To=ao.map({mouseenter:"mouseover",mouseleave:"mouseout"});fo&&To.forEach(function(n){"on"+n in fo&&To.remove(n)});var Ro,Do=0;ao.mouse=function(n){return J(n,k())};var Po=this.navigator&&/WebKit/.test(this.navigator.userAgent)?-1:0;ao.touch=function(n,t,e){if(arguments.length<3&&(e=t,t=k().changedTouches),t)for(var r,i=0,u=t.length;u>i;++i)if((r=t[i]).identifier===e)return J(n,r)},ao.behavior.drag=function(){function n(){this.on("mousedown.drag",u).on("touchstart.drag",o)}function e(n,t,e,u,o){return function(){function a(){var n,e,r=t(h,v);r&&(n=r[0]-M[0],e=r[1]-M[1],g|=n|e,M=r,p({type:"drag",x:r[0]+c[0],y:r[1]+c[1],dx:n,dy:e}))}function l(){t(h,v)&&(y.on(u+d,null).on(o+d,null),m(g),p({type:"dragend"}))}var c,f=this,s=ao.event.target.correspondingElement||ao.event.target,h=f.parentNode,p=r.of(f,arguments),g=0,v=n(),d=".drag"+(null==v?"":"-"+v),y=ao.select(e(s)).on(u+d,a).on(o+d,l),m=W(s),M=t(h,v);i?(c=i.apply(f,arguments),c=[c.x-M[0],c.y-M[1]]):c=[0,0],p({type:"dragstart"})}}var r=N(n,"drag","dragstart","dragend"),i=null,u=e(b,ao.mouse,t,"mousemove","mouseup"),o=e(G,ao.touch,m,"touchmove","touchend");return n.origin=function(t){return arguments.length?(i=t,n):i},ao.rebind(n,r,"on")},ao.touches=function(n,t){return arguments.length<2&&(t=k().touches),t?co(t).map(function(t){var e=J(n,t);return e.identifier=t.identifier,e}):[]};var Uo=1e-6,jo=Uo*Uo,Fo=Math.PI,Ho=2*Fo,Oo=Ho-Uo,Io=Fo/2,Yo=Fo/180,Zo=180/Fo,Vo=Math.SQRT2,Xo=2,$o=4;ao.interpolateZoom=function(n,t){var e,r,i=n[0],u=n[1],o=n[2],a=t[0],l=t[1],c=t[2],f=a-i,s=l-u,h=f*f+s*s;if(jo>h)r=Math.log(c/o)/Vo,e=function(n){return[i+n*f,u+n*s,o*Math.exp(Vo*n*r)]};else{var p=Math.sqrt(h),g=(c*c-o*o+$o*h)/(2*o*Xo*p),v=(c*c-o*o-$o*h)/(2*c*Xo*p),d=Math.log(Math.sqrt(g*g+1)-g),y=Math.log(Math.sqrt(v*v+1)-v);r=(y-d)/Vo,e=function(n){var t=n*r,e=rn(d),a=o/(Xo*p)*(e*un(Vo*t+d)-en(d));return[i+a*f,u+a*s,o*e/rn(Vo*t+d)]}}return e.duration=1e3*r,e},ao.behavior.zoom=function(){function n(n){n.on(L,s).on(Wo+".zoom",p).on("dblclick.zoom",g).on(R,h)}function e(n){return[(n[0]-k.x)/k.k,(n[1]-k.y)/k.k]}function r(n){return[n[0]*k.k+k.x,n[1]*k.k+k.y]}function i(n){k.k=Math.max(A[0],Math.min(A[1],n))}function u(n,t){t=r(t),k.x+=n[0]-t[0],k.y+=n[1]-t[1]}function o(t,e,r,o){t.__chart__={x:k.x,y:k.y,k:k.k},i(Math.pow(2,o)),u(d=e,r),t=ao.select(t),C>0&&(t=t.transition().duration(C)),t.call(n.event)}function a(){b&&b.domain(x.range().map(function(n){return(n-k.x)/k.k}).map(x.invert)),w&&w.domain(_.range().map(function(n){return(n-k.y)/k.k}).map(_.invert))}function l(n){z++||n({type:"zoomstart"})}function c(n){a(),n({type:"zoom",scale:k.k,translate:[k.x,k.y]})}function f(n){--z||(n({type:"zoomend"}),d=null)}function s(){function n(){a=1,u(ao.mouse(i),h),c(o)}function r(){s.on(q,null).on(T,null),p(a),f(o)}var i=this,o=D.of(i,arguments),a=0,s=ao.select(t(i)).on(q,n).on(T,r),h=e(ao.mouse(i)),p=W(i);Il.call(i),l(o)}function h(){function n(){var n=ao.touches(g);return p=k.k,n.forEach(function(n){n.identifier in d&&(d[n.identifier]=e(n))}),n}function t(){var t=ao.event.target;ao.select(t).on(x,r).on(b,a),_.push(t);for(var e=ao.event.changedTouches,i=0,u=e.length;u>i;++i)d[e[i].identifier]=null;var l=n(),c=Date.now();if(1===l.length){if(500>c-M){var f=l[0];o(g,f,d[f.identifier],Math.floor(Math.log(k.k)/Math.LN2)+1),S()}M=c}else if(l.length>1){var f=l[0],s=l[1],h=f[0]-s[0],p=f[1]-s[1];y=h*h+p*p}}function r(){var n,t,e,r,o=ao.touches(g);Il.call(g);for(var a=0,l=o.length;l>a;++a,r=null)if(e=o[a],r=d[e.identifier]){if(t)break;n=e,t=r}if(r){var f=(f=e[0]-n[0])*f+(f=e[1]-n[1])*f,s=y&&Math.sqrt(f/y);n=[(n[0]+e[0])/2,(n[1]+e[1])/2],t=[(t[0]+r[0])/2,(t[1]+r[1])/2],i(s*p)}M=null,u(n,t),c(v)}function a(){if(ao.event.touches.length){for(var t=ao.event.changedTouches,e=0,r=t.length;r>e;++e)delete d[t[e].identifier];for(var i in d)return void n()}ao.selectAll(_).on(m,null),w.on(L,s).on(R,h),N(),f(v)}var p,g=this,v=D.of(g,arguments),d={},y=0,m=".zoom-"+ao.event.changedTouches[0].identifier,x="touchmove"+m,b="touchend"+m,_=[],w=ao.select(g),N=W(g);t(),l(v),w.on(L,null).on(R,t)}function p(){var n=D.of(this,arguments);m?clearTimeout(m):(Il.call(this),v=e(d=y||ao.mouse(this)),l(n)),m=setTimeout(function(){m=null,f(n)},50),S(),i(Math.pow(2,.002*Bo())*k.k),u(d,v),c(n)}function g(){var n=ao.mouse(this),t=Math.log(k.k)/Math.LN2;o(this,n,e(n),ao.event.shiftKey?Math.ceil(t)-1:Math.floor(t)+1)}var v,d,y,m,M,x,b,_,w,k={x:0,y:0,k:1},E=[960,500],A=Jo,C=250,z=0,L="mousedown.zoom",q="mousemove.zoom",T="mouseup.zoom",R="touchstart.zoom",D=N(n,"zoomstart","zoom","zoomend");return Wo||(Wo="onwheel"in fo?(Bo=function(){return-ao.event.deltaY*(ao.event.deltaMode?120:1)},"wheel"):"onmousewheel"in fo?(Bo=function(){return ao.event.wheelDelta},"mousewheel"):(Bo=function(){return-ao.event.detail},"MozMousePixelScroll")),n.event=function(n){n.each(function(){var n=D.of(this,arguments),t=k;Hl?ao.select(this).transition().each("start.zoom",function(){k=this.__chart__||{x:0,y:0,k:1},l(n)}).tween("zoom:zoom",function(){var e=E[0],r=E[1],i=d?d[0]:e/2,u=d?d[1]:r/2,o=ao.interpolateZoom([(i-k.x)/k.k,(u-k.y)/k.k,e/k.k],[(i-t.x)/t.k,(u-t.y)/t.k,e/t.k]);return function(t){var r=o(t),a=e/r[2];this.__chart__=k={x:i-r[0]*a,y:u-r[1]*a,k:a},c(n)}}).each("interrupt.zoom",function(){f(n)}).each("end.zoom",function(){f(n)}):(this.__chart__=k,l(n),c(n),f(n))})},n.translate=function(t){return arguments.length?(k={x:+t[0],y:+t[1],k:k.k},a(),n):[k.x,k.y]},n.scale=function(t){return arguments.length?(k={x:k.x,y:k.y,k:null},i(+t),a(),n):k.k},n.scaleExtent=function(t){return arguments.length?(A=null==t?Jo:[+t[0],+t[1]],n):A},n.center=function(t){return arguments.length?(y=t&&[+t[0],+t[1]],n):y},n.size=function(t){return arguments.length?(E=t&&[+t[0],+t[1]],n):E},n.duration=function(t){return arguments.length?(C=+t,n):C},n.x=function(t){return arguments.length?(b=t,x=t.copy(),k={x:0,y:0,k:1},n):b},n.y=function(t){return arguments.length?(w=t,_=t.copy(),k={x:0,y:0,k:1},n):w},ao.rebind(n,D,"on")};var Bo,Wo,Jo=[0,1/0];ao.color=an,an.prototype.toString=function(){return this.rgb()+""},ao.hsl=ln;var Go=ln.prototype=new an;Go.brighter=function(n){return n=Math.pow(.7,arguments.length?n:1),new ln(this.h,this.s,this.l/n)},Go.darker=function(n){return n=Math.pow(.7,arguments.length?n:1),new ln(this.h,this.s,n*this.l)},Go.rgb=function(){return cn(this.h,this.s,this.l)},ao.hcl=fn;var Ko=fn.prototype=new an;Ko.brighter=function(n){return new fn(this.h,this.c,Math.min(100,this.l+Qo*(arguments.length?n:1)))},Ko.darker=function(n){return new fn(this.h,this.c,Math.max(0,this.l-Qo*(arguments.length?n:1)))},Ko.rgb=function(){return sn(this.h,this.c,this.l).rgb()},ao.lab=hn;var Qo=18,na=.95047,ta=1,ea=1.08883,ra=hn.prototype=new an;ra.brighter=function(n){return new hn(Math.min(100,this.l+Qo*(arguments.length?n:1)),this.a,this.b)},ra.darker=function(n){return new hn(Math.max(0,this.l-Qo*(arguments.length?n:1)),this.a,this.b)},ra.rgb=function(){return pn(this.l,this.a,this.b)},ao.rgb=mn;var ia=mn.prototype=new an;ia.brighter=function(n){n=Math.pow(.7,arguments.length?n:1);var t=this.r,e=this.g,r=this.b,i=30;return t||e||r?(t&&i>t&&(t=i),e&&i>e&&(e=i),r&&i>r&&(r=i),new mn(Math.min(255,t/n),Math.min(255,e/n),Math.min(255,r/n))):new mn(i,i,i)},ia.darker=function(n){return n=Math.pow(.7,arguments.length?n:1),new mn(n*this.r,n*this.g,n*this.b)},ia.hsl=function(){return wn(this.r,this.g,this.b)},ia.toString=function(){return"#"+bn(this.r)+bn(this.g)+bn(this.b)};var ua=ao.map({aliceblue:15792383,antiquewhite:16444375,aqua:65535,aquamarine:8388564,azure:15794175,beige:16119260,bisque:16770244,black:0,blanchedalmond:16772045,blue:255,blueviolet:9055202,brown:10824234,burlywood:14596231,cadetblue:6266528,chartreuse:8388352,chocolate:13789470,coral:16744272,cornflowerblue:6591981,cornsilk:16775388,crimson:14423100,cyan:65535,darkblue:139,darkcyan:35723,darkgoldenrod:12092939,darkgray:11119017,darkgreen:25600,darkgrey:11119017,darkkhaki:12433259,darkmagenta:9109643,darkolivegreen:5597999,darkorange:16747520,darkorchid:10040012,darkred:9109504,darksalmon:15308410,darkseagreen:9419919,darkslateblue:4734347,darkslategray:3100495,darkslategrey:3100495,darkturquoise:52945,darkviolet:9699539,deeppink:16716947,deepskyblue:49151,dimgray:6908265,dimgrey:6908265,dodgerblue:2003199,firebrick:11674146,floralwhite:16775920,forestgreen:2263842,fuchsia:16711935,gainsboro:14474460,ghostwhite:16316671,gold:16766720,goldenrod:14329120,gray:8421504,green:32768,greenyellow:11403055,grey:8421504,honeydew:15794160,hotpink:16738740,indianred:13458524,indigo:4915330,ivory:16777200,khaki:15787660,lavender:15132410,lavenderblush:16773365,lawngreen:8190976,lemonchiffon:16775885,lightblue:11393254,lightcoral:15761536,lightcyan:14745599,lightgoldenrodyellow:16448210,lightgray:13882323,lightgreen:9498256,lightgrey:13882323,lightpink:16758465,lightsalmon:16752762,lightseagreen:2142890,lightskyblue:8900346,lightslategray:7833753,lightslategrey:7833753,lightsteelblue:11584734,lightyellow:16777184,lime:65280,limegreen:3329330,linen:16445670,magenta:16711935,maroon:8388608,mediumaquamarine:6737322,mediumblue:205,mediumorchid:12211667,mediumpurple:9662683,mediumseagreen:3978097,mediumslateblue:8087790,mediumspringgreen:64154,mediumturquoise:4772300,mediumvioletred:13047173,midnightblue:1644912,mintcream:16121850,mistyrose:16770273,moccasin:16770229,navajowhite:16768685,navy:128,oldlace:16643558,olive:8421376,olivedrab:7048739,orange:16753920,orangered:16729344,orchid:14315734,palegoldenrod:15657130,palegreen:10025880,paleturquoise:11529966,palevioletred:14381203,papayawhip:16773077,peachpuff:16767673,peru:13468991,pink:16761035,plum:14524637,powderblue:11591910,purple:8388736,rebeccapurple:6697881,red:16711680,rosybrown:12357519,royalblue:4286945,saddlebrown:9127187,salmon:16416882,sandybrown:16032864,seagreen:3050327,seashell:16774638,sienna:10506797,silver:12632256,skyblue:8900331,slateblue:6970061,slategray:7372944,slategrey:7372944,snow:16775930,springgreen:65407,steelblue:4620980,tan:13808780,teal:32896,thistle:14204888,tomato:16737095,turquoise:4251856,violet:15631086,wheat:16113331,white:16777215,whitesmoke:16119285,yellow:16776960,yellowgreen:10145074});ua.forEach(function(n,t){ua.set(n,Mn(t))}),ao.functor=En,ao.xhr=An(m),ao.dsv=function(n,t){function e(n,e,u){arguments.length<3&&(u=e,e=null);var o=Cn(n,t,null==e?r:i(e),u);return o.row=function(n){return arguments.length?o.response(null==(e=n)?r:i(n)):e},o}function r(n){return e.parse(n.responseText)}function i(n){return function(t){return e.parse(t.responseText,n)}}function u(t){return t.map(o).join(n)}function o(n){return a.test(n)?'"'+n.replace(/\"/g,'""')+'"':n}var a=new RegExp('["'+n+"\n]"),l=n.charCodeAt(0);return e.parse=function(n,t){var r;return e.parseRows(n,function(n,e){if(r)return r(n,e-1);var i=new Function("d","return {"+n.map(function(n,t){return JSON.stringify(n)+": d["+t+"]"}).join(",")+"}");r=t?function(n,e){return t(i(n),e)}:i})},e.parseRows=function(n,t){function e(){if(f>=c)return o;if(i)return i=!1,u;var t=f;if(34===n.charCodeAt(t)){for(var e=t;e++<c;)if(34===n.charCodeAt(e)){if(34!==n.charCodeAt(e+1))break;++e}f=e+2;var r=n.charCodeAt(e+1);return 13===r?(i=!0,10===n.charCodeAt(e+2)&&++f):10===r&&(i=!0),n.slice(t+1,e).replace(/""/g,'"')}for(;c>f;){var r=n.charCodeAt(f++),a=1;if(10===r)i=!0;else if(13===r)i=!0,10===n.charCodeAt(f)&&(++f,++a);else if(r!==l)continue;return n.slice(t,f-a)}return n.slice(t)}for(var r,i,u={},o={},a=[],c=n.length,f=0,s=0;(r=e())!==o;){for(var h=[];r!==u&&r!==o;)h.push(r),r=e();t&&null==(h=t(h,s++))||a.push(h)}return a},e.format=function(t){if(Array.isArray(t[0]))return e.formatRows(t);var r=new y,i=[];return t.forEach(function(n){for(var t in n)r.has(t)||i.push(r.add(t))}),[i.map(o).join(n)].concat(t.map(function(t){return i.map(function(n){return o(t[n])}).join(n)})).join("\n")},e.formatRows=function(n){return n.map(u).join("\n")},e},ao.csv=ao.dsv(",","text/csv"),ao.tsv=ao.dsv("	","text/tab-separated-values");var oa,aa,la,ca,fa=this[x(this,"requestAnimationFrame")]||function(n){setTimeout(n,17)};ao.timer=function(){qn.apply(this,arguments)},ao.timer.flush=function(){Rn(),Dn()},ao.round=function(n,t){return t?Math.round(n*(t=Math.pow(10,t)))/t:Math.round(n)};var sa=["y","z","a","f","p","n","\xb5","m","","k","M","G","T","P","E","Z","Y"].map(Un);ao.formatPrefix=function(n,t){var e=0;return(n=+n)&&(0>n&&(n*=-1),t&&(n=ao.round(n,Pn(n,t))),e=1+Math.floor(1e-12+Math.log(n)/Math.LN10),e=Math.max(-24,Math.min(24,3*Math.floor((e-1)/3)))),sa[8+e/3]};var ha=/(?:([^{])?([<>=^]))?([+\- ])?([$#])?(0)?(\d+)?(,)?(\.-?\d+)?([a-z%])?/i,pa=ao.map({b:function(n){return n.toString(2)},c:function(n){return String.fromCharCode(n)},o:function(n){return n.toString(8)},x:function(n){return n.toString(16)},X:function(n){return n.toString(16).toUpperCase()},g:function(n,t){return n.toPrecision(t)},e:function(n,t){return n.toExponential(t)},f:function(n,t){return n.toFixed(t)},r:function(n,t){return(n=ao.round(n,Pn(n,t))).toFixed(Math.max(0,Math.min(20,Pn(n*(1+1e-15),t))))}}),ga=ao.time={},va=Date;Hn.prototype={getDate:function(){return this._.getUTCDate()},getDay:function(){return this._.getUTCDay()},getFullYear:function(){return this._.getUTCFullYear()},getHours:function(){return this._.getUTCHours()},getMilliseconds:function(){return this._.getUTCMilliseconds()},getMinutes:function(){return this._.getUTCMinutes()},getMonth:function(){return this._.getUTCMonth()},getSeconds:function(){return this._.getUTCSeconds()},getTime:function(){return this._.getTime()},getTimezoneOffset:function(){return 0},valueOf:function(){return this._.valueOf()},setDate:function(){da.setUTCDate.apply(this._,arguments)},setDay:function(){da.setUTCDay.apply(this._,arguments)},setFullYear:function(){da.setUTCFullYear.apply(this._,arguments)},setHours:function(){da.setUTCHours.apply(this._,arguments)},setMilliseconds:function(){da.setUTCMilliseconds.apply(this._,arguments)},setMinutes:function(){da.setUTCMinutes.apply(this._,arguments)},setMonth:function(){da.setUTCMonth.apply(this._,arguments)},setSeconds:function(){da.setUTCSeconds.apply(this._,arguments)},setTime:function(){da.setTime.apply(this._,arguments)}};var da=Date.prototype;ga.year=On(function(n){return n=ga.day(n),n.setMonth(0,1),n},function(n,t){n.setFullYear(n.getFullYear()+t)},function(n){return n.getFullYear()}),ga.years=ga.year.range,ga.years.utc=ga.year.utc.range,ga.day=On(function(n){var t=new va(2e3,0);return t.setFullYear(n.getFullYear(),n.getMonth(),n.getDate()),t},function(n,t){n.setDate(n.getDate()+t)},function(n){return n.getDate()-1}),ga.days=ga.day.range,ga.days.utc=ga.day.utc.range,ga.dayOfYear=function(n){var t=ga.year(n);return Math.floor((n-t-6e4*(n.getTimezoneOffset()-t.getTimezoneOffset()))/864e5)},["sunday","monday","tuesday","wednesday","thursday","friday","saturday"].forEach(function(n,t){t=7-t;var e=ga[n]=On(function(n){return(n=ga.day(n)).setDate(n.getDate()-(n.getDay()+t)%7),n},function(n,t){n.setDate(n.getDate()+7*Math.floor(t))},function(n){var e=ga.year(n).getDay();return Math.floor((ga.dayOfYear(n)+(e+t)%7)/7)-(e!==t)});ga[n+"s"]=e.range,ga[n+"s"].utc=e.utc.range,ga[n+"OfYear"]=function(n){var e=ga.year(n).getDay();return Math.floor((ga.dayOfYear(n)+(e+t)%7)/7)}}),ga.week=ga.sunday,ga.weeks=ga.sunday.range,ga.weeks.utc=ga.sunday.utc.range,ga.weekOfYear=ga.sundayOfYear;var ya={"-":"",_:" ",0:"0"},ma=/^\s*\d+/,Ma=/^%/;ao.locale=function(n){return{numberFormat:jn(n),timeFormat:Yn(n)}};var xa=ao.locale({decimal:".",thousands:",",grouping:[3],currency:["$",""],dateTime:"%a %b %e %X %Y",date:"%m/%d/%Y",time:"%H:%M:%S",periods:["AM","PM"],days:["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
 shortDays:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],months:["January","February","March","April","May","June","July","August","September","October","November","December"],shortMonths:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]});ao.format=xa.numberFormat,ao.geo={},ft.prototype={s:0,t:0,add:function(n){st(n,this.t,ba),st(ba.s,this.s,this),this.s?this.t+=ba.t:this.s=ba.t},reset:function(){this.s=this.t=0},valueOf:function(){return this.s}};var ba=new ft;ao.geo.stream=function(n,t){n&&_a.hasOwnProperty(n.type)?_a[n.type](n,t):ht(n,t)};var _a={Feature:function(n,t){ht(n.geometry,t)},FeatureCollection:function(n,t){for(var e=n.features,r=-1,i=e.length;++r<i;)ht(e[r].geometry,t)}},wa={Sphere:function(n,t){t.sphere()},Point:function(n,t){n=n.coordinates,t.point(n[0],n[1],n[2])},MultiPoint:function(n,t){for(var e=n.coordinates,r=-1,i=e.length;++r<i;)n=e[r],t.point(n[0],n[1],n[2])},LineString:function(n,t){pt(n.coordinates,t,0)},MultiLineString:function(n,t){for(var e=n.coordinates,r=-1,i=e.length;++r<i;)pt(e[r],t,0)},Polygon:function(n,t){gt(n.coordinates,t)},MultiPolygon:function(n,t){for(var e=n.coordinates,r=-1,i=e.length;++r<i;)gt(e[r],t)},GeometryCollection:function(n,t){for(var e=n.geometries,r=-1,i=e.length;++r<i;)ht(e[r],t)}};ao.geo.area=function(n){return Sa=0,ao.geo.stream(n,Na),Sa};var Sa,ka=new ft,Na={sphere:function(){Sa+=4*Fo},point:b,lineStart:b,lineEnd:b,polygonStart:function(){ka.reset(),Na.lineStart=vt},polygonEnd:function(){var n=2*ka;Sa+=0>n?4*Fo+n:n,Na.lineStart=Na.lineEnd=Na.point=b}};ao.geo.bounds=function(){function n(n,t){M.push(x=[f=n,h=n]),s>t&&(s=t),t>p&&(p=t)}function t(t,e){var r=dt([t*Yo,e*Yo]);if(y){var i=mt(y,r),u=[i[1],-i[0],0],o=mt(u,i);bt(o),o=_t(o);var l=t-g,c=l>0?1:-1,v=o[0]*Zo*c,d=xo(l)>180;if(d^(v>c*g&&c*t>v)){var m=o[1]*Zo;m>p&&(p=m)}else if(v=(v+360)%360-180,d^(v>c*g&&c*t>v)){var m=-o[1]*Zo;s>m&&(s=m)}else s>e&&(s=e),e>p&&(p=e);d?g>t?a(f,t)>a(f,h)&&(h=t):a(t,h)>a(f,h)&&(f=t):h>=f?(f>t&&(f=t),t>h&&(h=t)):t>g?a(f,t)>a(f,h)&&(h=t):a(t,h)>a(f,h)&&(f=t)}else n(t,e);y=r,g=t}function e(){b.point=t}function r(){x[0]=f,x[1]=h,b.point=n,y=null}function i(n,e){if(y){var r=n-g;m+=xo(r)>180?r+(r>0?360:-360):r}else v=n,d=e;Na.point(n,e),t(n,e)}function u(){Na.lineStart()}function o(){i(v,d),Na.lineEnd(),xo(m)>Uo&&(f=-(h=180)),x[0]=f,x[1]=h,y=null}function a(n,t){return(t-=n)<0?t+360:t}function l(n,t){return n[0]-t[0]}function c(n,t){return t[0]<=t[1]?t[0]<=n&&n<=t[1]:n<t[0]||t[1]<n}var f,s,h,p,g,v,d,y,m,M,x,b={point:n,lineStart:e,lineEnd:r,polygonStart:function(){b.point=i,b.lineStart=u,b.lineEnd=o,m=0,Na.polygonStart()},polygonEnd:function(){Na.polygonEnd(),b.point=n,b.lineStart=e,b.lineEnd=r,0>ka?(f=-(h=180),s=-(p=90)):m>Uo?p=90:-Uo>m&&(s=-90),x[0]=f,x[1]=h}};return function(n){p=h=-(f=s=1/0),M=[],ao.geo.stream(n,b);var t=M.length;if(t){M.sort(l);for(var e,r=1,i=M[0],u=[i];t>r;++r)e=M[r],c(e[0],i)||c(e[1],i)?(a(i[0],e[1])>a(i[0],i[1])&&(i[1]=e[1]),a(e[0],i[1])>a(i[0],i[1])&&(i[0]=e[0])):u.push(i=e);for(var o,e,g=-(1/0),t=u.length-1,r=0,i=u[t];t>=r;i=e,++r)e=u[r],(o=a(i[1],e[0]))>g&&(g=o,f=e[0],h=i[1])}return M=x=null,f===1/0||s===1/0?[[NaN,NaN],[NaN,NaN]]:[[f,s],[h,p]]}}(),ao.geo.centroid=function(n){Ea=Aa=Ca=za=La=qa=Ta=Ra=Da=Pa=Ua=0,ao.geo.stream(n,ja);var t=Da,e=Pa,r=Ua,i=t*t+e*e+r*r;return jo>i&&(t=qa,e=Ta,r=Ra,Uo>Aa&&(t=Ca,e=za,r=La),i=t*t+e*e+r*r,jo>i)?[NaN,NaN]:[Math.atan2(e,t)*Zo,tn(r/Math.sqrt(i))*Zo]};var Ea,Aa,Ca,za,La,qa,Ta,Ra,Da,Pa,Ua,ja={sphere:b,point:St,lineStart:Nt,lineEnd:Et,polygonStart:function(){ja.lineStart=At},polygonEnd:function(){ja.lineStart=Nt}},Fa=Rt(zt,jt,Ht,[-Fo,-Fo/2]),Ha=1e9;ao.geo.clipExtent=function(){var n,t,e,r,i,u,o={stream:function(n){return i&&(i.valid=!1),i=u(n),i.valid=!0,i},extent:function(a){return arguments.length?(u=Zt(n=+a[0][0],t=+a[0][1],e=+a[1][0],r=+a[1][1]),i&&(i.valid=!1,i=null),o):[[n,t],[e,r]]}};return o.extent([[0,0],[960,500]])},(ao.geo.conicEqualArea=function(){return Vt(Xt)}).raw=Xt,ao.geo.albers=function(){return ao.geo.conicEqualArea().rotate([96,0]).center([-.6,38.7]).parallels([29.5,45.5]).scale(1070)},ao.geo.albersUsa=function(){function n(n){var u=n[0],o=n[1];return t=null,e(u,o),t||(r(u,o),t)||i(u,o),t}var t,e,r,i,u=ao.geo.albers(),o=ao.geo.conicEqualArea().rotate([154,0]).center([-2,58.5]).parallels([55,65]),a=ao.geo.conicEqualArea().rotate([157,0]).center([-3,19.9]).parallels([8,18]),l={point:function(n,e){t=[n,e]}};return n.invert=function(n){var t=u.scale(),e=u.translate(),r=(n[0]-e[0])/t,i=(n[1]-e[1])/t;return(i>=.12&&.234>i&&r>=-.425&&-.214>r?o:i>=.166&&.234>i&&r>=-.214&&-.115>r?a:u).invert(n)},n.stream=function(n){var t=u.stream(n),e=o.stream(n),r=a.stream(n);return{point:function(n,i){t.point(n,i),e.point(n,i),r.point(n,i)},sphere:function(){t.sphere(),e.sphere(),r.sphere()},lineStart:function(){t.lineStart(),e.lineStart(),r.lineStart()},lineEnd:function(){t.lineEnd(),e.lineEnd(),r.lineEnd()},polygonStart:function(){t.polygonStart(),e.polygonStart(),r.polygonStart()},polygonEnd:function(){t.polygonEnd(),e.polygonEnd(),r.polygonEnd()}}},n.precision=function(t){return arguments.length?(u.precision(t),o.precision(t),a.precision(t),n):u.precision()},n.scale=function(t){return arguments.length?(u.scale(t),o.scale(.35*t),a.scale(t),n.translate(u.translate())):u.scale()},n.translate=function(t){if(!arguments.length)return u.translate();var c=u.scale(),f=+t[0],s=+t[1];return e=u.translate(t).clipExtent([[f-.455*c,s-.238*c],[f+.455*c,s+.238*c]]).stream(l).point,r=o.translate([f-.307*c,s+.201*c]).clipExtent([[f-.425*c+Uo,s+.12*c+Uo],[f-.214*c-Uo,s+.234*c-Uo]]).stream(l).point,i=a.translate([f-.205*c,s+.212*c]).clipExtent([[f-.214*c+Uo,s+.166*c+Uo],[f-.115*c-Uo,s+.234*c-Uo]]).stream(l).point,n},n.scale(1070)};var Oa,Ia,Ya,Za,Va,Xa,$a={point:b,lineStart:b,lineEnd:b,polygonStart:function(){Ia=0,$a.lineStart=$t},polygonEnd:function(){$a.lineStart=$a.lineEnd=$a.point=b,Oa+=xo(Ia/2)}},Ba={point:Bt,lineStart:b,lineEnd:b,polygonStart:b,polygonEnd:b},Wa={point:Gt,lineStart:Kt,lineEnd:Qt,polygonStart:function(){Wa.lineStart=ne},polygonEnd:function(){Wa.point=Gt,Wa.lineStart=Kt,Wa.lineEnd=Qt}};ao.geo.path=function(){function n(n){return n&&("function"==typeof a&&u.pointRadius(+a.apply(this,arguments)),o&&o.valid||(o=i(u)),ao.geo.stream(n,o)),u.result()}function t(){return o=null,n}var e,r,i,u,o,a=4.5;return n.area=function(n){return Oa=0,ao.geo.stream(n,i($a)),Oa},n.centroid=function(n){return Ca=za=La=qa=Ta=Ra=Da=Pa=Ua=0,ao.geo.stream(n,i(Wa)),Ua?[Da/Ua,Pa/Ua]:Ra?[qa/Ra,Ta/Ra]:La?[Ca/La,za/La]:[NaN,NaN]},n.bounds=function(n){return Va=Xa=-(Ya=Za=1/0),ao.geo.stream(n,i(Ba)),[[Ya,Za],[Va,Xa]]},n.projection=function(n){return arguments.length?(i=(e=n)?n.stream||re(n):m,t()):e},n.context=function(n){return arguments.length?(u=null==(r=n)?new Wt:new te(n),"function"!=typeof a&&u.pointRadius(a),t()):r},n.pointRadius=function(t){return arguments.length?(a="function"==typeof t?t:(u.pointRadius(+t),+t),n):a},n.projection(ao.geo.albersUsa()).context(null)},ao.geo.transform=function(n){return{stream:function(t){var e=new ie(t);for(var r in n)e[r]=n[r];return e}}},ie.prototype={point:function(n,t){this.stream.point(n,t)},sphere:function(){this.stream.sphere()},lineStart:function(){this.stream.lineStart()},lineEnd:function(){this.stream.lineEnd()},polygonStart:function(){this.stream.polygonStart()},polygonEnd:function(){this.stream.polygonEnd()}},ao.geo.projection=oe,ao.geo.projectionMutator=ae,(ao.geo.equirectangular=function(){return oe(ce)}).raw=ce.invert=ce,ao.geo.rotation=function(n){function t(t){return t=n(t[0]*Yo,t[1]*Yo),t[0]*=Zo,t[1]*=Zo,t}return n=se(n[0]%360*Yo,n[1]*Yo,n.length>2?n[2]*Yo:0),t.invert=function(t){return t=n.invert(t[0]*Yo,t[1]*Yo),t[0]*=Zo,t[1]*=Zo,t},t},fe.invert=ce,ao.geo.circle=function(){function n(){var n="function"==typeof r?r.apply(this,arguments):r,t=se(-n[0]*Yo,-n[1]*Yo,0).invert,i=[];return e(null,null,1,{point:function(n,e){i.push(n=t(n,e)),n[0]*=Zo,n[1]*=Zo}}),{type:"Polygon",coordinates:[i]}}var t,e,r=[0,0],i=6;return n.origin=function(t){return arguments.length?(r=t,n):r},n.angle=function(r){return arguments.length?(e=ve((t=+r)*Yo,i*Yo),n):t},n.precision=function(r){return arguments.length?(e=ve(t*Yo,(i=+r)*Yo),n):i},n.angle(90)},ao.geo.distance=function(n,t){var e,r=(t[0]-n[0])*Yo,i=n[1]*Yo,u=t[1]*Yo,o=Math.sin(r),a=Math.cos(r),l=Math.sin(i),c=Math.cos(i),f=Math.sin(u),s=Math.cos(u);return Math.atan2(Math.sqrt((e=s*o)*e+(e=c*f-l*s*a)*e),l*f+c*s*a)},ao.geo.graticule=function(){function n(){return{type:"MultiLineString",coordinates:t()}}function t(){return ao.range(Math.ceil(u/d)*d,i,d).map(h).concat(ao.range(Math.ceil(c/y)*y,l,y).map(p)).concat(ao.range(Math.ceil(r/g)*g,e,g).filter(function(n){return xo(n%d)>Uo}).map(f)).concat(ao.range(Math.ceil(a/v)*v,o,v).filter(function(n){return xo(n%y)>Uo}).map(s))}var e,r,i,u,o,a,l,c,f,s,h,p,g=10,v=g,d=90,y=360,m=2.5;return n.lines=function(){return t().map(function(n){return{type:"LineString",coordinates:n}})},n.outline=function(){return{type:"Polygon",coordinates:[h(u).concat(p(l).slice(1),h(i).reverse().slice(1),p(c).reverse().slice(1))]}},n.extent=function(t){return arguments.length?n.majorExtent(t).minorExtent(t):n.minorExtent()},n.majorExtent=function(t){return arguments.length?(u=+t[0][0],i=+t[1][0],c=+t[0][1],l=+t[1][1],u>i&&(t=u,u=i,i=t),c>l&&(t=c,c=l,l=t),n.precision(m)):[[u,c],[i,l]]},n.minorExtent=function(t){return arguments.length?(r=+t[0][0],e=+t[1][0],a=+t[0][1],o=+t[1][1],r>e&&(t=r,r=e,e=t),a>o&&(t=a,a=o,o=t),n.precision(m)):[[r,a],[e,o]]},n.step=function(t){return arguments.length?n.majorStep(t).minorStep(t):n.minorStep()},n.majorStep=function(t){return arguments.length?(d=+t[0],y=+t[1],n):[d,y]},n.minorStep=function(t){return arguments.length?(g=+t[0],v=+t[1],n):[g,v]},n.precision=function(t){return arguments.length?(m=+t,f=ye(a,o,90),s=me(r,e,m),h=ye(c,l,90),p=me(u,i,m),n):m},n.majorExtent([[-180,-90+Uo],[180,90-Uo]]).minorExtent([[-180,-80-Uo],[180,80+Uo]])},ao.geo.greatArc=function(){function n(){return{type:"LineString",coordinates:[t||r.apply(this,arguments),e||i.apply(this,arguments)]}}var t,e,r=Me,i=xe;return n.distance=function(){return ao.geo.distance(t||r.apply(this,arguments),e||i.apply(this,arguments))},n.source=function(e){return arguments.length?(r=e,t="function"==typeof e?null:e,n):r},n.target=function(t){return arguments.length?(i=t,e="function"==typeof t?null:t,n):i},n.precision=function(){return arguments.length?n:0},n},ao.geo.interpolate=function(n,t){return be(n[0]*Yo,n[1]*Yo,t[0]*Yo,t[1]*Yo)},ao.geo.length=function(n){return Ja=0,ao.geo.stream(n,Ga),Ja};var Ja,Ga={sphere:b,point:b,lineStart:_e,lineEnd:b,polygonStart:b,polygonEnd:b},Ka=we(function(n){return Math.sqrt(2/(1+n))},function(n){return 2*Math.asin(n/2)});(ao.geo.azimuthalEqualArea=function(){return oe(Ka)}).raw=Ka;var Qa=we(function(n){var t=Math.acos(n);return t&&t/Math.sin(t)},m);(ao.geo.azimuthalEquidistant=function(){return oe(Qa)}).raw=Qa,(ao.geo.conicConformal=function(){return Vt(Se)}).raw=Se,(ao.geo.conicEquidistant=function(){return Vt(ke)}).raw=ke;var nl=we(function(n){return 1/n},Math.atan);(ao.geo.gnomonic=function(){return oe(nl)}).raw=nl,Ne.invert=function(n,t){return[n,2*Math.atan(Math.exp(t))-Io]},(ao.geo.mercator=function(){return Ee(Ne)}).raw=Ne;var tl=we(function(){return 1},Math.asin);(ao.geo.orthographic=function(){return oe(tl)}).raw=tl;var el=we(function(n){return 1/(1+n)},function(n){return 2*Math.atan(n)});(ao.geo.stereographic=function(){return oe(el)}).raw=el,Ae.invert=function(n,t){return[-t,2*Math.atan(Math.exp(n))-Io]},(ao.geo.transverseMercator=function(){var n=Ee(Ae),t=n.center,e=n.rotate;return n.center=function(n){return n?t([-n[1],n[0]]):(n=t(),[n[1],-n[0]])},n.rotate=function(n){return n?e([n[0],n[1],n.length>2?n[2]+90:90]):(n=e(),[n[0],n[1],n[2]-90])},e([0,0,90])}).raw=Ae,ao.geom={},ao.geom.hull=function(n){function t(n){if(n.length<3)return[];var t,i=En(e),u=En(r),o=n.length,a=[],l=[];for(t=0;o>t;t++)a.push([+i.call(this,n[t],t),+u.call(this,n[t],t),t]);for(a.sort(qe),t=0;o>t;t++)l.push([a[t][0],-a[t][1]]);var c=Le(a),f=Le(l),s=f[0]===c[0],h=f[f.length-1]===c[c.length-1],p=[];for(t=c.length-1;t>=0;--t)p.push(n[a[c[t]][2]]);for(t=+s;t<f.length-h;++t)p.push(n[a[f[t]][2]]);return p}var e=Ce,r=ze;return arguments.length?t(n):(t.x=function(n){return arguments.length?(e=n,t):e},t.y=function(n){return arguments.length?(r=n,t):r},t)},ao.geom.polygon=function(n){return ko(n,rl),n};var rl=ao.geom.polygon.prototype=[];rl.area=function(){for(var n,t=-1,e=this.length,r=this[e-1],i=0;++t<e;)n=r,r=this[t],i+=n[1]*r[0]-n[0]*r[1];return.5*i},rl.centroid=function(n){var t,e,r=-1,i=this.length,u=0,o=0,a=this[i-1];for(arguments.length||(n=-1/(6*this.area()));++r<i;)t=a,a=this[r],e=t[0]*a[1]-a[0]*t[1],u+=(t[0]+a[0])*e,o+=(t[1]+a[1])*e;return[u*n,o*n]},rl.clip=function(n){for(var t,e,r,i,u,o,a=De(n),l=-1,c=this.length-De(this),f=this[c-1];++l<c;){for(t=n.slice(),n.length=0,i=this[l],u=t[(r=t.length-a)-1],e=-1;++e<r;)o=t[e],Te(o,f,i)?(Te(u,f,i)||n.push(Re(u,o,f,i)),n.push(o)):Te(u,f,i)&&n.push(Re(u,o,f,i)),u=o;a&&n.push(n[0]),f=i}return n};var il,ul,ol,al,ll,cl=[],fl=[];Ye.prototype.prepare=function(){for(var n,t=this.edges,e=t.length;e--;)n=t[e].edge,n.b&&n.a||t.splice(e,1);return t.sort(Ve),t.length},tr.prototype={start:function(){return this.edge.l===this.site?this.edge.a:this.edge.b},end:function(){return this.edge.l===this.site?this.edge.b:this.edge.a}},er.prototype={insert:function(n,t){var e,r,i;if(n){if(t.P=n,t.N=n.N,n.N&&(n.N.P=t),n.N=t,n.R){for(n=n.R;n.L;)n=n.L;n.L=t}else n.R=t;e=n}else this._?(n=or(this._),t.P=null,t.N=n,n.P=n.L=t,e=n):(t.P=t.N=null,this._=t,e=null);for(t.L=t.R=null,t.U=e,t.C=!0,n=t;e&&e.C;)r=e.U,e===r.L?(i=r.R,i&&i.C?(e.C=i.C=!1,r.C=!0,n=r):(n===e.R&&(ir(this,e),n=e,e=n.U),e.C=!1,r.C=!0,ur(this,r))):(i=r.L,i&&i.C?(e.C=i.C=!1,r.C=!0,n=r):(n===e.L&&(ur(this,e),n=e,e=n.U),e.C=!1,r.C=!0,ir(this,r))),e=n.U;this._.C=!1},remove:function(n){n.N&&(n.N.P=n.P),n.P&&(n.P.N=n.N),n.N=n.P=null;var t,e,r,i=n.U,u=n.L,o=n.R;if(e=u?o?or(o):u:o,i?i.L===n?i.L=e:i.R=e:this._=e,u&&o?(r=e.C,e.C=n.C,e.L=u,u.U=e,e!==o?(i=e.U,e.U=n.U,n=e.R,i.L=n,e.R=o,o.U=e):(e.U=i,i=e,n=e.R)):(r=n.C,n=e),n&&(n.U=i),!r){if(n&&n.C)return void(n.C=!1);do{if(n===this._)break;if(n===i.L){if(t=i.R,t.C&&(t.C=!1,i.C=!0,ir(this,i),t=i.R),t.L&&t.L.C||t.R&&t.R.C){t.R&&t.R.C||(t.L.C=!1,t.C=!0,ur(this,t),t=i.R),t.C=i.C,i.C=t.R.C=!1,ir(this,i),n=this._;break}}else if(t=i.L,t.C&&(t.C=!1,i.C=!0,ur(this,i),t=i.L),t.L&&t.L.C||t.R&&t.R.C){t.L&&t.L.C||(t.R.C=!1,t.C=!0,ir(this,t),t=i.L),t.C=i.C,i.C=t.L.C=!1,ur(this,i),n=this._;break}t.C=!0,n=i,i=i.U}while(!n.C);n&&(n.C=!1)}}},ao.geom.voronoi=function(n){function t(n){var t=new Array(n.length),r=a[0][0],i=a[0][1],u=a[1][0],o=a[1][1];return ar(e(n),a).cells.forEach(function(e,a){var l=e.edges,c=e.site,f=t[a]=l.length?l.map(function(n){var t=n.start();return[t.x,t.y]}):c.x>=r&&c.x<=u&&c.y>=i&&c.y<=o?[[r,o],[u,o],[u,i],[r,i]]:[];f.point=n[a]}),t}function e(n){return n.map(function(n,t){return{x:Math.round(u(n,t)/Uo)*Uo,y:Math.round(o(n,t)/Uo)*Uo,i:t}})}var r=Ce,i=ze,u=r,o=i,a=sl;return n?t(n):(t.links=function(n){return ar(e(n)).edges.filter(function(n){return n.l&&n.r}).map(function(t){return{source:n[t.l.i],target:n[t.r.i]}})},t.triangles=function(n){var t=[];return ar(e(n)).cells.forEach(function(e,r){for(var i,u,o=e.site,a=e.edges.sort(Ve),l=-1,c=a.length,f=a[c-1].edge,s=f.l===o?f.r:f.l;++l<c;)i=f,u=s,f=a[l].edge,s=f.l===o?f.r:f.l,r<u.i&&r<s.i&&cr(o,u,s)<0&&t.push([n[r],n[u.i],n[s.i]])}),t},t.x=function(n){return arguments.length?(u=En(r=n),t):r},t.y=function(n){return arguments.length?(o=En(i=n),t):i},t.clipExtent=function(n){return arguments.length?(a=null==n?sl:n,t):a===sl?null:a},t.size=function(n){return arguments.length?t.clipExtent(n&&[[0,0],n]):a===sl?null:a&&a[1]},t)};var sl=[[-1e6,-1e6],[1e6,1e6]];ao.geom.delaunay=function(n){return ao.geom.voronoi().triangles(n)},ao.geom.quadtree=function(n,t,e,r,i){function u(n){function u(n,t,e,r,i,u,o,a){if(!isNaN(e)&&!isNaN(r))if(n.leaf){var l=n.x,f=n.y;if(null!=l)if(xo(l-e)+xo(f-r)<.01)c(n,t,e,r,i,u,o,a);else{var s=n.point;n.x=n.y=n.point=null,c(n,s,l,f,i,u,o,a),c(n,t,e,r,i,u,o,a)}else n.x=e,n.y=r,n.point=t}else c(n,t,e,r,i,u,o,a)}function c(n,t,e,r,i,o,a,l){var c=.5*(i+a),f=.5*(o+l),s=e>=c,h=r>=f,p=h<<1|s;n.leaf=!1,n=n.nodes[p]||(n.nodes[p]=hr()),s?i=c:a=c,h?o=f:l=f,u(n,t,e,r,i,o,a,l)}var f,s,h,p,g,v,d,y,m,M=En(a),x=En(l);if(null!=t)v=t,d=e,y=r,m=i;else if(y=m=-(v=d=1/0),s=[],h=[],g=n.length,o)for(p=0;g>p;++p)f=n[p],f.x<v&&(v=f.x),f.y<d&&(d=f.y),f.x>y&&(y=f.x),f.y>m&&(m=f.y),s.push(f.x),h.push(f.y);else for(p=0;g>p;++p){var b=+M(f=n[p],p),_=+x(f,p);v>b&&(v=b),d>_&&(d=_),b>y&&(y=b),_>m&&(m=_),s.push(b),h.push(_)}var w=y-v,S=m-d;w>S?m=d+w:y=v+S;var k=hr();if(k.add=function(n){u(k,n,+M(n,++p),+x(n,p),v,d,y,m)},k.visit=function(n){pr(n,k,v,d,y,m)},k.find=function(n){return gr(k,n[0],n[1],v,d,y,m)},p=-1,null==t){for(;++p<g;)u(k,n[p],s[p],h[p],v,d,y,m);--p}else n.forEach(k.add);return s=h=n=f=null,k}var o,a=Ce,l=ze;return(o=arguments.length)?(a=fr,l=sr,3===o&&(i=e,r=t,e=t=0),u(n)):(u.x=function(n){return arguments.length?(a=n,u):a},u.y=function(n){return arguments.length?(l=n,u):l},u.extent=function(n){return arguments.length?(null==n?t=e=r=i=null:(t=+n[0][0],e=+n[0][1],r=+n[1][0],i=+n[1][1]),u):null==t?null:[[t,e],[r,i]]},u.size=function(n){return arguments.length?(null==n?t=e=r=i=null:(t=e=0,r=+n[0],i=+n[1]),u):null==t?null:[r-t,i-e]},u)},ao.interpolateRgb=vr,ao.interpolateObject=dr,ao.interpolateNumber=yr,ao.interpolateString=mr;var hl=/[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g,pl=new RegExp(hl.source,"g");ao.interpolate=Mr,ao.interpolators=[function(n,t){var e=typeof t;return("string"===e?ua.has(t.toLowerCase())||/^(#|rgb\(|hsl\()/i.test(t)?vr:mr:t instanceof an?vr:Array.isArray(t)?xr:"object"===e&&isNaN(t)?dr:yr)(n,t)}],ao.interpolateArray=xr;var gl=function(){return m},vl=ao.map({linear:gl,poly:Er,quad:function(){return Sr},cubic:function(){return kr},sin:function(){return Ar},exp:function(){return Cr},circle:function(){return zr},elastic:Lr,back:qr,bounce:function(){return Tr}}),dl=ao.map({"in":m,out:_r,"in-out":wr,"out-in":function(n){return wr(_r(n))}});ao.ease=function(n){var t=n.indexOf("-"),e=t>=0?n.slice(0,t):n,r=t>=0?n.slice(t+1):"in";return e=vl.get(e)||gl,r=dl.get(r)||m,br(r(e.apply(null,lo.call(arguments,1))))},ao.interpolateHcl=Rr,ao.interpolateHsl=Dr,ao.interpolateLab=Pr,ao.interpolateRound=Ur,ao.transform=function(n){var t=fo.createElementNS(ao.ns.prefix.svg,"g");return(ao.transform=function(n){if(null!=n){t.setAttribute("transform",n);var e=t.transform.baseVal.consolidate()}return new jr(e?e.matrix:yl)})(n)},jr.prototype.toString=function(){return"translate("+this.translate+")rotate("+this.rotate+")skewX("+this.skew+")scale("+this.scale+")"};var yl={a:1,b:0,c:0,d:1,e:0,f:0};ao.interpolateTransform=$r,ao.layout={},ao.layout.bundle=function(){return function(n){for(var t=[],e=-1,r=n.length;++e<r;)t.push(Jr(n[e]));return t}},ao.layout.chord=function(){function n(){var n,c,s,h,p,g={},v=[],d=ao.range(u),y=[];for(e=[],r=[],n=0,h=-1;++h<u;){for(c=0,p=-1;++p<u;)c+=i[h][p];v.push(c),y.push(ao.range(u)),n+=c}for(o&&d.sort(function(n,t){return o(v[n],v[t])}),a&&y.forEach(function(n,t){n.sort(function(n,e){return a(i[t][n],i[t][e])})}),n=(Ho-f*u)/n,c=0,h=-1;++h<u;){for(s=c,p=-1;++p<u;){var m=d[h],M=y[m][p],x=i[m][M],b=c,_=c+=x*n;g[m+"-"+M]={index:m,subindex:M,startAngle:b,endAngle:_,value:x}}r[m]={index:m,startAngle:s,endAngle:c,value:v[m]},c+=f}for(h=-1;++h<u;)for(p=h-1;++p<u;){var w=g[h+"-"+p],S=g[p+"-"+h];(w.value||S.value)&&e.push(w.value<S.value?{source:S,target:w}:{source:w,target:S})}l&&t()}function t(){e.sort(function(n,t){return l((n.source.value+n.target.value)/2,(t.source.value+t.target.value)/2)})}var e,r,i,u,o,a,l,c={},f=0;return c.matrix=function(n){return arguments.length?(u=(i=n)&&i.length,e=r=null,c):i},c.padding=function(n){return arguments.length?(f=n,e=r=null,c):f},c.sortGroups=function(n){return arguments.length?(o=n,e=r=null,c):o},c.sortSubgroups=function(n){return arguments.length?(a=n,e=null,c):a},c.sortChords=function(n){return arguments.length?(l=n,e&&t(),c):l},c.chords=function(){return e||n(),e},c.groups=function(){return r||n(),r},c},ao.layout.force=function(){function n(n){return function(t,e,r,i){if(t.point!==n){var u=t.cx-n.x,o=t.cy-n.y,a=i-e,l=u*u+o*o;if(l>a*a/y){if(v>l){var c=t.charge/l;n.px-=u*c,n.py-=o*c}return!0}if(t.point&&l&&v>l){var c=t.pointCharge/l;n.px-=u*c,n.py-=o*c}}return!t.charge}}function t(n){n.px=ao.event.x,n.py=ao.event.y,l.resume()}var e,r,i,u,o,a,l={},c=ao.dispatch("start","tick","end"),f=[1,1],s=.9,h=ml,p=Ml,g=-30,v=xl,d=.1,y=.64,M=[],x=[];return l.tick=function(){if((i*=.99)<.005)return e=null,c.end({type:"end",alpha:i=0}),!0;var t,r,l,h,p,v,y,m,b,_=M.length,w=x.length;for(r=0;w>r;++r)l=x[r],h=l.source,p=l.target,m=p.x-h.x,b=p.y-h.y,(v=m*m+b*b)&&(v=i*o[r]*((v=Math.sqrt(v))-u[r])/v,m*=v,b*=v,p.x-=m*(y=h.weight+p.weight?h.weight/(h.weight+p.weight):.5),p.y-=b*y,h.x+=m*(y=1-y),h.y+=b*y);if((y=i*d)&&(m=f[0]/2,b=f[1]/2,r=-1,y))for(;++r<_;)l=M[r],l.x+=(m-l.x)*y,l.y+=(b-l.y)*y;if(g)for(ri(t=ao.geom.quadtree(M),i,a),r=-1;++r<_;)(l=M[r]).fixed||t.visit(n(l));for(r=-1;++r<_;)l=M[r],l.fixed?(l.x=l.px,l.y=l.py):(l.x-=(l.px-(l.px=l.x))*s,l.y-=(l.py-(l.py=l.y))*s);c.tick({type:"tick",alpha:i})},l.nodes=function(n){return arguments.length?(M=n,l):M},l.links=function(n){return arguments.length?(x=n,l):x},l.size=function(n){return arguments.length?(f=n,l):f},l.linkDistance=function(n){return arguments.length?(h="function"==typeof n?n:+n,l):h},l.distance=l.linkDistance,l.linkStrength=function(n){return arguments.length?(p="function"==typeof n?n:+n,l):p},l.friction=function(n){return arguments.length?(s=+n,l):s},l.charge=function(n){return arguments.length?(g="function"==typeof n?n:+n,l):g},l.chargeDistance=function(n){return arguments.length?(v=n*n,l):Math.sqrt(v)},l.gravity=function(n){return arguments.length?(d=+n,l):d},l.theta=function(n){return arguments.length?(y=n*n,l):Math.sqrt(y)},l.alpha=function(n){return arguments.length?(n=+n,i?n>0?i=n:(e.c=null,e.t=NaN,e=null,c.end({type:"end",alpha:i=0})):n>0&&(c.start({type:"start",alpha:i=n}),e=qn(l.tick)),l):i},l.start=function(){function n(n,r){if(!e){for(e=new Array(i),l=0;i>l;++l)e[l]=[];for(l=0;c>l;++l){var u=x[l];e[u.source.index].push(u.target),e[u.target.index].push(u.source)}}for(var o,a=e[t],l=-1,f=a.length;++l<f;)if(!isNaN(o=a[l][n]))return o;return Math.random()*r}var t,e,r,i=M.length,c=x.length,s=f[0],v=f[1];for(t=0;i>t;++t)(r=M[t]).index=t,r.weight=0;for(t=0;c>t;++t)r=x[t],"number"==typeof r.source&&(r.source=M[r.source]),"number"==typeof r.target&&(r.target=M[r.target]),++r.source.weight,++r.target.weight;for(t=0;i>t;++t)r=M[t],isNaN(r.x)&&(r.x=n("x",s)),isNaN(r.y)&&(r.y=n("y",v)),isNaN(r.px)&&(r.px=r.x),isNaN(r.py)&&(r.py=r.y);if(u=[],"function"==typeof h)for(t=0;c>t;++t)u[t]=+h.call(this,x[t],t);else for(t=0;c>t;++t)u[t]=h;if(o=[],"function"==typeof p)for(t=0;c>t;++t)o[t]=+p.call(this,x[t],t);else for(t=0;c>t;++t)o[t]=p;if(a=[],"function"==typeof g)for(t=0;i>t;++t)a[t]=+g.call(this,M[t],t);else for(t=0;i>t;++t)a[t]=g;return l.resume()},l.resume=function(){return l.alpha(.1)},l.stop=function(){return l.alpha(0)},l.drag=function(){return r||(r=ao.behavior.drag().origin(m).on("dragstart.force",Qr).on("drag.force",t).on("dragend.force",ni)),arguments.length?void this.on("mouseover.force",ti).on("mouseout.force",ei).call(r):r},ao.rebind(l,c,"on")};var ml=20,Ml=1,xl=1/0;ao.layout.hierarchy=function(){function n(i){var u,o=[i],a=[];for(i.depth=0;null!=(u=o.pop());)if(a.push(u),(c=e.call(n,u,u.depth))&&(l=c.length)){for(var l,c,f;--l>=0;)o.push(f=c[l]),f.parent=u,f.depth=u.depth+1;r&&(u.value=0),u.children=c}else r&&(u.value=+r.call(n,u,u.depth)||0),delete u.children;return oi(i,function(n){var e,i;t&&(e=n.children)&&e.sort(t),r&&(i=n.parent)&&(i.value+=n.value)}),a}var t=ci,e=ai,r=li;return n.sort=function(e){return arguments.length?(t=e,n):t},n.children=function(t){return arguments.length?(e=t,n):e},n.value=function(t){return arguments.length?(r=t,n):r},n.revalue=function(t){return r&&(ui(t,function(n){n.children&&(n.value=0)}),oi(t,function(t){var e;t.children||(t.value=+r.call(n,t,t.depth)||0),(e=t.parent)&&(e.value+=t.value)})),t},n},ao.layout.partition=function(){function n(t,e,r,i){var u=t.children;if(t.x=e,t.y=t.depth*i,t.dx=r,t.dy=i,u&&(o=u.length)){var o,a,l,c=-1;for(r=t.value?r/t.value:0;++c<o;)n(a=u[c],e,l=a.value*r,i),e+=l}}function t(n){var e=n.children,r=0;if(e&&(i=e.length))for(var i,u=-1;++u<i;)r=Math.max(r,t(e[u]));return 1+r}function e(e,u){var o=r.call(this,e,u);return n(o[0],0,i[0],i[1]/t(o[0])),o}var r=ao.layout.hierarchy(),i=[1,1];return e.size=function(n){return arguments.length?(i=n,e):i},ii(e,r)},ao.layout.pie=function(){function n(o){var a,l=o.length,c=o.map(function(e,r){return+t.call(n,e,r)}),f=+("function"==typeof r?r.apply(this,arguments):r),s=("function"==typeof i?i.apply(this,arguments):i)-f,h=Math.min(Math.abs(s)/l,+("function"==typeof u?u.apply(this,arguments):u)),p=h*(0>s?-1:1),g=ao.sum(c),v=g?(s-l*p)/g:0,d=ao.range(l),y=[];return null!=e&&d.sort(e===bl?function(n,t){return c[t]-c[n]}:function(n,t){return e(o[n],o[t])}),d.forEach(function(n){y[n]={data:o[n],value:a=c[n],startAngle:f,endAngle:f+=a*v+p,padAngle:h}}),y}var t=Number,e=bl,r=0,i=Ho,u=0;return n.value=function(e){return arguments.length?(t=e,n):t},n.sort=function(t){return arguments.length?(e=t,n):e},n.startAngle=function(t){return arguments.length?(r=t,n):r},n.endAngle=function(t){return arguments.length?(i=t,n):i},n.padAngle=function(t){return arguments.length?(u=t,n):u},n};var bl={};ao.layout.stack=function(){function n(a,l){if(!(h=a.length))return a;var c=a.map(function(e,r){return t.call(n,e,r)}),f=c.map(function(t){return t.map(function(t,e){return[u.call(n,t,e),o.call(n,t,e)]})}),s=e.call(n,f,l);c=ao.permute(c,s),f=ao.permute(f,s);var h,p,g,v,d=r.call(n,f,l),y=c[0].length;for(g=0;y>g;++g)for(i.call(n,c[0][g],v=d[g],f[0][g][1]),p=1;h>p;++p)i.call(n,c[p][g],v+=f[p-1][g][1],f[p][g][1]);return a}var t=m,e=gi,r=vi,i=pi,u=si,o=hi;return n.values=function(e){return arguments.length?(t=e,n):t},n.order=function(t){return arguments.length?(e="function"==typeof t?t:_l.get(t)||gi,n):e},n.offset=function(t){return arguments.length?(r="function"==typeof t?t:wl.get(t)||vi,n):r},n.x=function(t){return arguments.length?(u=t,n):u},n.y=function(t){return arguments.length?(o=t,n):o},n.out=function(t){return arguments.length?(i=t,n):i},n};var _l=ao.map({"inside-out":function(n){var t,e,r=n.length,i=n.map(di),u=n.map(yi),o=ao.range(r).sort(function(n,t){return i[n]-i[t]}),a=0,l=0,c=[],f=[];for(t=0;r>t;++t)e=o[t],l>a?(a+=u[e],c.push(e)):(l+=u[e],f.push(e));return f.reverse().concat(c)},reverse:function(n){return ao.range(n.length).reverse()},"default":gi}),wl=ao.map({silhouette:function(n){var t,e,r,i=n.length,u=n[0].length,o=[],a=0,l=[];for(e=0;u>e;++e){for(t=0,r=0;i>t;t++)r+=n[t][e][1];r>a&&(a=r),o.push(r)}for(e=0;u>e;++e)l[e]=(a-o[e])/2;return l},wiggle:function(n){var t,e,r,i,u,o,a,l,c,f=n.length,s=n[0],h=s.length,p=[];for(p[0]=l=c=0,e=1;h>e;++e){for(t=0,i=0;f>t;++t)i+=n[t][e][1];for(t=0,u=0,a=s[e][0]-s[e-1][0];f>t;++t){for(r=0,o=(n[t][e][1]-n[t][e-1][1])/(2*a);t>r;++r)o+=(n[r][e][1]-n[r][e-1][1])/a;u+=o*n[t][e][1]}p[e]=l-=i?u/i*a:0,c>l&&(c=l)}for(e=0;h>e;++e)p[e]-=c;return p},expand:function(n){var t,e,r,i=n.length,u=n[0].length,o=1/i,a=[];for(e=0;u>e;++e){for(t=0,r=0;i>t;t++)r+=n[t][e][1];if(r)for(t=0;i>t;t++)n[t][e][1]/=r;else for(t=0;i>t;t++)n[t][e][1]=o}for(e=0;u>e;++e)a[e]=0;return a},zero:vi});ao.layout.histogram=function(){function n(n,u){for(var o,a,l=[],c=n.map(e,this),f=r.call(this,c,u),s=i.call(this,f,c,u),u=-1,h=c.length,p=s.length-1,g=t?1:1/h;++u<p;)o=l[u]=[],o.dx=s[u+1]-(o.x=s[u]),o.y=0;if(p>0)for(u=-1;++u<h;)a=c[u],a>=f[0]&&a<=f[1]&&(o=l[ao.bisect(s,a,1,p)-1],o.y+=g,o.push(n[u]));return l}var t=!0,e=Number,r=bi,i=Mi;return n.value=function(t){return arguments.length?(e=t,n):e},n.range=function(t){return arguments.length?(r=En(t),n):r},n.bins=function(t){return arguments.length?(i="number"==typeof t?function(n){return xi(n,t)}:En(t),n):i},n.frequency=function(e){return arguments.length?(t=!!e,n):t},n},ao.layout.pack=function(){function n(n,u){var o=e.call(this,n,u),a=o[0],l=i[0],c=i[1],f=null==t?Math.sqrt:"function"==typeof t?t:function(){return t};if(a.x=a.y=0,oi(a,function(n){n.r=+f(n.value)}),oi(a,Ni),r){var s=r*(t?1:Math.max(2*a.r/l,2*a.r/c))/2;oi(a,function(n){n.r+=s}),oi(a,Ni),oi(a,function(n){n.r-=s})}return Ci(a,l/2,c/2,t?1:1/Math.max(2*a.r/l,2*a.r/c)),o}var t,e=ao.layout.hierarchy().sort(_i),r=0,i=[1,1];return n.size=function(t){return arguments.length?(i=t,n):i},n.radius=function(e){return arguments.length?(t=null==e||"function"==typeof e?e:+e,n):t},n.padding=function(t){return arguments.length?(r=+t,n):r},ii(n,e)},ao.layout.tree=function(){function n(n,i){var f=o.call(this,n,i),s=f[0],h=t(s);if(oi(h,e),h.parent.m=-h.z,ui(h,r),c)ui(s,u);else{var p=s,g=s,v=s;ui(s,function(n){n.x<p.x&&(p=n),n.x>g.x&&(g=n),n.depth>v.depth&&(v=n)});var d=a(p,g)/2-p.x,y=l[0]/(g.x+a(g,p)/2+d),m=l[1]/(v.depth||1);ui(s,function(n){n.x=(n.x+d)*y,n.y=n.depth*m})}return f}function t(n){for(var t,e={A:null,children:[n]},r=[e];null!=(t=r.pop());)for(var i,u=t.children,o=0,a=u.length;a>o;++o)r.push((u[o]=i={_:u[o],parent:t,children:(i=u[o].children)&&i.slice()||[],A:null,a:null,z:0,m:0,c:0,s:0,t:null,i:o}).a=i);return e.children[0]}function e(n){var t=n.children,e=n.parent.children,r=n.i?e[n.i-1]:null;if(t.length){Di(n);var u=(t[0].z+t[t.length-1].z)/2;r?(n.z=r.z+a(n._,r._),n.m=n.z-u):n.z=u}else r&&(n.z=r.z+a(n._,r._));n.parent.A=i(n,r,n.parent.A||e[0])}function r(n){n._.x=n.z+n.parent.m,n.m+=n.parent.m}function i(n,t,e){if(t){for(var r,i=n,u=n,o=t,l=i.parent.children[0],c=i.m,f=u.m,s=o.m,h=l.m;o=Ti(o),i=qi(i),o&&i;)l=qi(l),u=Ti(u),u.a=n,r=o.z+s-i.z-c+a(o._,i._),r>0&&(Ri(Pi(o,n,e),n,r),c+=r,f+=r),s+=o.m,c+=i.m,h+=l.m,f+=u.m;o&&!Ti(u)&&(u.t=o,u.m+=s-f),i&&!qi(l)&&(l.t=i,l.m+=c-h,e=n)}return e}function u(n){n.x*=l[0],n.y=n.depth*l[1]}var o=ao.layout.hierarchy().sort(null).value(null),a=Li,l=[1,1],c=null;return n.separation=function(t){return arguments.length?(a=t,n):a},n.size=function(t){return arguments.length?(c=null==(l=t)?u:null,n):c?null:l},n.nodeSize=function(t){return arguments.length?(c=null==(l=t)?null:u,n):c?l:null},ii(n,o)},ao.layout.cluster=function(){function n(n,u){var o,a=t.call(this,n,u),l=a[0],c=0;oi(l,function(n){var t=n.children;t&&t.length?(n.x=ji(t),n.y=Ui(t)):(n.x=o?c+=e(n,o):0,n.y=0,o=n)});var f=Fi(l),s=Hi(l),h=f.x-e(f,s)/2,p=s.x+e(s,f)/2;return oi(l,i?function(n){n.x=(n.x-l.x)*r[0],n.y=(l.y-n.y)*r[1]}:function(n){n.x=(n.x-h)/(p-h)*r[0],n.y=(1-(l.y?n.y/l.y:1))*r[1]}),a}var t=ao.layout.hierarchy().sort(null).value(null),e=Li,r=[1,1],i=!1;return n.separation=function(t){return arguments.length?(e=t,n):e},n.size=function(t){return arguments.length?(i=null==(r=t),n):i?null:r},n.nodeSize=function(t){return arguments.length?(i=null!=(r=t),n):i?r:null},ii(n,t)},ao.layout.treemap=function(){function n(n,t){for(var e,r,i=-1,u=n.length;++i<u;)r=(e=n[i]).value*(0>t?0:t),e.area=isNaN(r)||0>=r?0:r}function t(e){var u=e.children;if(u&&u.length){var o,a,l,c=s(e),f=[],h=u.slice(),g=1/0,v="slice"===p?c.dx:"dice"===p?c.dy:"slice-dice"===p?1&e.depth?c.dy:c.dx:Math.min(c.dx,c.dy);for(n(h,c.dx*c.dy/e.value),f.area=0;(l=h.length)>0;)f.push(o=h[l-1]),f.area+=o.area,"squarify"!==p||(a=r(f,v))<=g?(h.pop(),g=a):(f.area-=f.pop().area,i(f,v,c,!1),v=Math.min(c.dx,c.dy),f.length=f.area=0,g=1/0);f.length&&(i(f,v,c,!0),f.length=f.area=0),u.forEach(t)}}function e(t){var r=t.children;if(r&&r.length){var u,o=s(t),a=r.slice(),l=[];for(n(a,o.dx*o.dy/t.value),l.area=0;u=a.pop();)l.push(u),l.area+=u.area,null!=u.z&&(i(l,u.z?o.dx:o.dy,o,!a.length),l.length=l.area=0);r.forEach(e)}}function r(n,t){for(var e,r=n.area,i=0,u=1/0,o=-1,a=n.length;++o<a;)(e=n[o].area)&&(u>e&&(u=e),e>i&&(i=e));return r*=r,t*=t,r?Math.max(t*i*g/r,r/(t*u*g)):1/0}function i(n,t,e,r){var i,u=-1,o=n.length,a=e.x,c=e.y,f=t?l(n.area/t):0;
-if(t==e.dx){for((r||f>e.dy)&&(f=e.dy);++u<o;)i=n[u],i.x=a,i.y=c,i.dy=f,a+=i.dx=Math.min(e.x+e.dx-a,f?l(i.area/f):0);i.z=!0,i.dx+=e.x+e.dx-a,e.y+=f,e.dy-=f}else{for((r||f>e.dx)&&(f=e.dx);++u<o;)i=n[u],i.x=a,i.y=c,i.dx=f,c+=i.dy=Math.min(e.y+e.dy-c,f?l(i.area/f):0);i.z=!1,i.dy+=e.y+e.dy-c,e.x+=f,e.dx-=f}}function u(r){var i=o||a(r),u=i[0];return u.x=u.y=0,u.value?(u.dx=c[0],u.dy=c[1]):u.dx=u.dy=0,o&&a.revalue(u),n([u],u.dx*u.dy/u.value),(o?e:t)(u),h&&(o=i),i}var o,a=ao.layout.hierarchy(),l=Math.round,c=[1,1],f=null,s=Oi,h=!1,p="squarify",g=.5*(1+Math.sqrt(5));return u.size=function(n){return arguments.length?(c=n,u):c},u.padding=function(n){function t(t){var e=n.call(u,t,t.depth);return null==e?Oi(t):Ii(t,"number"==typeof e?[e,e,e,e]:e)}function e(t){return Ii(t,n)}if(!arguments.length)return f;var r;return s=null==(f=n)?Oi:"function"==(r=typeof n)?t:"number"===r?(n=[n,n,n,n],e):e,u},u.round=function(n){return arguments.length?(l=n?Math.round:Number,u):l!=Number},u.sticky=function(n){return arguments.length?(h=n,o=null,u):h},u.ratio=function(n){return arguments.length?(g=n,u):g},u.mode=function(n){return arguments.length?(p=n+"",u):p},ii(u,a)},ao.random={normal:function(n,t){var e=arguments.length;return 2>e&&(t=1),1>e&&(n=0),function(){var e,r,i;do e=2*Math.random()-1,r=2*Math.random()-1,i=e*e+r*r;while(!i||i>1);return n+t*e*Math.sqrt(-2*Math.log(i)/i)}},logNormal:function(){var n=ao.random.normal.apply(ao,arguments);return function(){return Math.exp(n())}},bates:function(n){var t=ao.random.irwinHall(n);return function(){return t()/n}},irwinHall:function(n){return function(){for(var t=0,e=0;n>e;e++)t+=Math.random();return t}}},ao.scale={};var Sl={floor:m,ceil:m};ao.scale.linear=function(){return Wi([0,1],[0,1],Mr,!1)};var kl={s:1,g:1,p:1,r:1,e:1};ao.scale.log=function(){return ru(ao.scale.linear().domain([0,1]),10,!0,[1,10])};var Nl=ao.format(".0e"),El={floor:function(n){return-Math.ceil(-n)},ceil:function(n){return-Math.floor(-n)}};ao.scale.pow=function(){return iu(ao.scale.linear(),1,[0,1])},ao.scale.sqrt=function(){return ao.scale.pow().exponent(.5)},ao.scale.ordinal=function(){return ou([],{t:"range",a:[[]]})},ao.scale.category10=function(){return ao.scale.ordinal().range(Al)},ao.scale.category20=function(){return ao.scale.ordinal().range(Cl)},ao.scale.category20b=function(){return ao.scale.ordinal().range(zl)},ao.scale.category20c=function(){return ao.scale.ordinal().range(Ll)};var Al=[2062260,16744206,2924588,14034728,9725885,9197131,14907330,8355711,12369186,1556175].map(xn),Cl=[2062260,11454440,16744206,16759672,2924588,10018698,14034728,16750742,9725885,12955861,9197131,12885140,14907330,16234194,8355711,13092807,12369186,14408589,1556175,10410725].map(xn),zl=[3750777,5395619,7040719,10264286,6519097,9216594,11915115,13556636,9202993,12426809,15186514,15190932,8666169,11356490,14049643,15177372,8077683,10834324,13528509,14589654].map(xn),Ll=[3244733,7057110,10406625,13032431,15095053,16616764,16625259,16634018,3253076,7652470,10607003,13101504,7695281,10394312,12369372,14342891,6513507,9868950,12434877,14277081].map(xn);ao.scale.quantile=function(){return au([],[])},ao.scale.quantize=function(){return lu(0,1,[0,1])},ao.scale.threshold=function(){return cu([.5],[0,1])},ao.scale.identity=function(){return fu([0,1])},ao.svg={},ao.svg.arc=function(){function n(){var n=Math.max(0,+e.apply(this,arguments)),c=Math.max(0,+r.apply(this,arguments)),f=o.apply(this,arguments)-Io,s=a.apply(this,arguments)-Io,h=Math.abs(s-f),p=f>s?0:1;if(n>c&&(g=c,c=n,n=g),h>=Oo)return t(c,p)+(n?t(n,1-p):"")+"Z";var g,v,d,y,m,M,x,b,_,w,S,k,N=0,E=0,A=[];if((y=(+l.apply(this,arguments)||0)/2)&&(d=u===ql?Math.sqrt(n*n+c*c):+u.apply(this,arguments),p||(E*=-1),c&&(E=tn(d/c*Math.sin(y))),n&&(N=tn(d/n*Math.sin(y)))),c){m=c*Math.cos(f+E),M=c*Math.sin(f+E),x=c*Math.cos(s-E),b=c*Math.sin(s-E);var C=Math.abs(s-f-2*E)<=Fo?0:1;if(E&&yu(m,M,x,b)===p^C){var z=(f+s)/2;m=c*Math.cos(z),M=c*Math.sin(z),x=b=null}}else m=M=0;if(n){_=n*Math.cos(s-N),w=n*Math.sin(s-N),S=n*Math.cos(f+N),k=n*Math.sin(f+N);var L=Math.abs(f-s+2*N)<=Fo?0:1;if(N&&yu(_,w,S,k)===1-p^L){var q=(f+s)/2;_=n*Math.cos(q),w=n*Math.sin(q),S=k=null}}else _=w=0;if(h>Uo&&(g=Math.min(Math.abs(c-n)/2,+i.apply(this,arguments)))>.001){v=c>n^p?0:1;var T=g,R=g;if(Fo>h){var D=null==S?[_,w]:null==x?[m,M]:Re([m,M],[S,k],[x,b],[_,w]),P=m-D[0],U=M-D[1],j=x-D[0],F=b-D[1],H=1/Math.sin(Math.acos((P*j+U*F)/(Math.sqrt(P*P+U*U)*Math.sqrt(j*j+F*F)))/2),O=Math.sqrt(D[0]*D[0]+D[1]*D[1]);R=Math.min(g,(n-O)/(H-1)),T=Math.min(g,(c-O)/(H+1))}if(null!=x){var I=mu(null==S?[_,w]:[S,k],[m,M],c,T,p),Y=mu([x,b],[_,w],c,T,p);g===T?A.push("M",I[0],"A",T,",",T," 0 0,",v," ",I[1],"A",c,",",c," 0 ",1-p^yu(I[1][0],I[1][1],Y[1][0],Y[1][1]),",",p," ",Y[1],"A",T,",",T," 0 0,",v," ",Y[0]):A.push("M",I[0],"A",T,",",T," 0 1,",v," ",Y[0])}else A.push("M",m,",",M);if(null!=S){var Z=mu([m,M],[S,k],n,-R,p),V=mu([_,w],null==x?[m,M]:[x,b],n,-R,p);g===R?A.push("L",V[0],"A",R,",",R," 0 0,",v," ",V[1],"A",n,",",n," 0 ",p^yu(V[1][0],V[1][1],Z[1][0],Z[1][1]),",",1-p," ",Z[1],"A",R,",",R," 0 0,",v," ",Z[0]):A.push("L",V[0],"A",R,",",R," 0 0,",v," ",Z[0])}else A.push("L",_,",",w)}else A.push("M",m,",",M),null!=x&&A.push("A",c,",",c," 0 ",C,",",p," ",x,",",b),A.push("L",_,",",w),null!=S&&A.push("A",n,",",n," 0 ",L,",",1-p," ",S,",",k);return A.push("Z"),A.join("")}function t(n,t){return"M0,"+n+"A"+n+","+n+" 0 1,"+t+" 0,"+-n+"A"+n+","+n+" 0 1,"+t+" 0,"+n}var e=hu,r=pu,i=su,u=ql,o=gu,a=vu,l=du;return n.innerRadius=function(t){return arguments.length?(e=En(t),n):e},n.outerRadius=function(t){return arguments.length?(r=En(t),n):r},n.cornerRadius=function(t){return arguments.length?(i=En(t),n):i},n.padRadius=function(t){return arguments.length?(u=t==ql?ql:En(t),n):u},n.startAngle=function(t){return arguments.length?(o=En(t),n):o},n.endAngle=function(t){return arguments.length?(a=En(t),n):a},n.padAngle=function(t){return arguments.length?(l=En(t),n):l},n.centroid=function(){var n=(+e.apply(this,arguments)+ +r.apply(this,arguments))/2,t=(+o.apply(this,arguments)+ +a.apply(this,arguments))/2-Io;return[Math.cos(t)*n,Math.sin(t)*n]},n};var ql="auto";ao.svg.line=function(){return Mu(m)};var Tl=ao.map({linear:xu,"linear-closed":bu,step:_u,"step-before":wu,"step-after":Su,basis:zu,"basis-open":Lu,"basis-closed":qu,bundle:Tu,cardinal:Eu,"cardinal-open":ku,"cardinal-closed":Nu,monotone:Fu});Tl.forEach(function(n,t){t.key=n,t.closed=/-closed$/.test(n)});var Rl=[0,2/3,1/3,0],Dl=[0,1/3,2/3,0],Pl=[0,1/6,2/3,1/6];ao.svg.line.radial=function(){var n=Mu(Hu);return n.radius=n.x,delete n.x,n.angle=n.y,delete n.y,n},wu.reverse=Su,Su.reverse=wu,ao.svg.area=function(){return Ou(m)},ao.svg.area.radial=function(){var n=Ou(Hu);return n.radius=n.x,delete n.x,n.innerRadius=n.x0,delete n.x0,n.outerRadius=n.x1,delete n.x1,n.angle=n.y,delete n.y,n.startAngle=n.y0,delete n.y0,n.endAngle=n.y1,delete n.y1,n},ao.svg.chord=function(){function n(n,a){var l=t(this,u,n,a),c=t(this,o,n,a);return"M"+l.p0+r(l.r,l.p1,l.a1-l.a0)+(e(l,c)?i(l.r,l.p1,l.r,l.p0):i(l.r,l.p1,c.r,c.p0)+r(c.r,c.p1,c.a1-c.a0)+i(c.r,c.p1,l.r,l.p0))+"Z"}function t(n,t,e,r){var i=t.call(n,e,r),u=a.call(n,i,r),o=l.call(n,i,r)-Io,f=c.call(n,i,r)-Io;return{r:u,a0:o,a1:f,p0:[u*Math.cos(o),u*Math.sin(o)],p1:[u*Math.cos(f),u*Math.sin(f)]}}function e(n,t){return n.a0==t.a0&&n.a1==t.a1}function r(n,t,e){return"A"+n+","+n+" 0 "+ +(e>Fo)+",1 "+t}function i(n,t,e,r){return"Q 0,0 "+r}var u=Me,o=xe,a=Iu,l=gu,c=vu;return n.radius=function(t){return arguments.length?(a=En(t),n):a},n.source=function(t){return arguments.length?(u=En(t),n):u},n.target=function(t){return arguments.length?(o=En(t),n):o},n.startAngle=function(t){return arguments.length?(l=En(t),n):l},n.endAngle=function(t){return arguments.length?(c=En(t),n):c},n},ao.svg.diagonal=function(){function n(n,i){var u=t.call(this,n,i),o=e.call(this,n,i),a=(u.y+o.y)/2,l=[u,{x:u.x,y:a},{x:o.x,y:a},o];return l=l.map(r),"M"+l[0]+"C"+l[1]+" "+l[2]+" "+l[3]}var t=Me,e=xe,r=Yu;return n.source=function(e){return arguments.length?(t=En(e),n):t},n.target=function(t){return arguments.length?(e=En(t),n):e},n.projection=function(t){return arguments.length?(r=t,n):r},n},ao.svg.diagonal.radial=function(){var n=ao.svg.diagonal(),t=Yu,e=n.projection;return n.projection=function(n){return arguments.length?e(Zu(t=n)):t},n},ao.svg.symbol=function(){function n(n,r){return(Ul.get(t.call(this,n,r))||$u)(e.call(this,n,r))}var t=Xu,e=Vu;return n.type=function(e){return arguments.length?(t=En(e),n):t},n.size=function(t){return arguments.length?(e=En(t),n):e},n};var Ul=ao.map({circle:$u,cross:function(n){var t=Math.sqrt(n/5)/2;return"M"+-3*t+","+-t+"H"+-t+"V"+-3*t+"H"+t+"V"+-t+"H"+3*t+"V"+t+"H"+t+"V"+3*t+"H"+-t+"V"+t+"H"+-3*t+"Z"},diamond:function(n){var t=Math.sqrt(n/(2*Fl)),e=t*Fl;return"M0,"+-t+"L"+e+",0 0,"+t+" "+-e+",0Z"},square:function(n){var t=Math.sqrt(n)/2;return"M"+-t+","+-t+"L"+t+","+-t+" "+t+","+t+" "+-t+","+t+"Z"},"triangle-down":function(n){var t=Math.sqrt(n/jl),e=t*jl/2;return"M0,"+e+"L"+t+","+-e+" "+-t+","+-e+"Z"},"triangle-up":function(n){var t=Math.sqrt(n/jl),e=t*jl/2;return"M0,"+-e+"L"+t+","+e+" "+-t+","+e+"Z"}});ao.svg.symbolTypes=Ul.keys();var jl=Math.sqrt(3),Fl=Math.tan(30*Yo);Co.transition=function(n){for(var t,e,r=Hl||++Zl,i=Ku(n),u=[],o=Ol||{time:Date.now(),ease:Nr,delay:0,duration:250},a=-1,l=this.length;++a<l;){u.push(t=[]);for(var c=this[a],f=-1,s=c.length;++f<s;)(e=c[f])&&Qu(e,f,i,r,o),t.push(e)}return Wu(u,i,r)},Co.interrupt=function(n){return this.each(null==n?Il:Bu(Ku(n)))};var Hl,Ol,Il=Bu(Ku()),Yl=[],Zl=0;Yl.call=Co.call,Yl.empty=Co.empty,Yl.node=Co.node,Yl.size=Co.size,ao.transition=function(n,t){return n&&n.transition?Hl?n.transition(t):n:ao.selection().transition(n)},ao.transition.prototype=Yl,Yl.select=function(n){var t,e,r,i=this.id,u=this.namespace,o=[];n=A(n);for(var a=-1,l=this.length;++a<l;){o.push(t=[]);for(var c=this[a],f=-1,s=c.length;++f<s;)(r=c[f])&&(e=n.call(r,r.__data__,f,a))?("__data__"in r&&(e.__data__=r.__data__),Qu(e,f,u,i,r[u][i]),t.push(e)):t.push(null)}return Wu(o,u,i)},Yl.selectAll=function(n){var t,e,r,i,u,o=this.id,a=this.namespace,l=[];n=C(n);for(var c=-1,f=this.length;++c<f;)for(var s=this[c],h=-1,p=s.length;++h<p;)if(r=s[h]){u=r[a][o],e=n.call(r,r.__data__,h,c),l.push(t=[]);for(var g=-1,v=e.length;++g<v;)(i=e[g])&&Qu(i,g,a,o,u),t.push(i)}return Wu(l,a,o)},Yl.filter=function(n){var t,e,r,i=[];"function"!=typeof n&&(n=O(n));for(var u=0,o=this.length;o>u;u++){i.push(t=[]);for(var e=this[u],a=0,l=e.length;l>a;a++)(r=e[a])&&n.call(r,r.__data__,a,u)&&t.push(r)}return Wu(i,this.namespace,this.id)},Yl.tween=function(n,t){var e=this.id,r=this.namespace;return arguments.length<2?this.node()[r][e].tween.get(n):Y(this,null==t?function(t){t[r][e].tween.remove(n)}:function(i){i[r][e].tween.set(n,t)})},Yl.attr=function(n,t){function e(){this.removeAttribute(a)}function r(){this.removeAttributeNS(a.space,a.local)}function i(n){return null==n?e:(n+="",function(){var t,e=this.getAttribute(a);return e!==n&&(t=o(e,n),function(n){this.setAttribute(a,t(n))})})}function u(n){return null==n?r:(n+="",function(){var t,e=this.getAttributeNS(a.space,a.local);return e!==n&&(t=o(e,n),function(n){this.setAttributeNS(a.space,a.local,t(n))})})}if(arguments.length<2){for(t in n)this.attr(t,n[t]);return this}var o="transform"==n?$r:Mr,a=ao.ns.qualify(n);return Ju(this,"attr."+n,t,a.local?u:i)},Yl.attrTween=function(n,t){function e(n,e){var r=t.call(this,n,e,this.getAttribute(i));return r&&function(n){this.setAttribute(i,r(n))}}function r(n,e){var r=t.call(this,n,e,this.getAttributeNS(i.space,i.local));return r&&function(n){this.setAttributeNS(i.space,i.local,r(n))}}var i=ao.ns.qualify(n);return this.tween("attr."+n,i.local?r:e)},Yl.style=function(n,e,r){function i(){this.style.removeProperty(n)}function u(e){return null==e?i:(e+="",function(){var i,u=t(this).getComputedStyle(this,null).getPropertyValue(n);return u!==e&&(i=Mr(u,e),function(t){this.style.setProperty(n,i(t),r)})})}var o=arguments.length;if(3>o){if("string"!=typeof n){2>o&&(e="");for(r in n)this.style(r,n[r],e);return this}r=""}return Ju(this,"style."+n,e,u)},Yl.styleTween=function(n,e,r){function i(i,u){var o=e.call(this,i,u,t(this).getComputedStyle(this,null).getPropertyValue(n));return o&&function(t){this.style.setProperty(n,o(t),r)}}return arguments.length<3&&(r=""),this.tween("style."+n,i)},Yl.text=function(n){return Ju(this,"text",n,Gu)},Yl.remove=function(){var n=this.namespace;return this.each("end.transition",function(){var t;this[n].count<2&&(t=this.parentNode)&&t.removeChild(this)})},Yl.ease=function(n){var t=this.id,e=this.namespace;return arguments.length<1?this.node()[e][t].ease:("function"!=typeof n&&(n=ao.ease.apply(ao,arguments)),Y(this,function(r){r[e][t].ease=n}))},Yl.delay=function(n){var t=this.id,e=this.namespace;return arguments.length<1?this.node()[e][t].delay:Y(this,"function"==typeof n?function(r,i,u){r[e][t].delay=+n.call(r,r.__data__,i,u)}:(n=+n,function(r){r[e][t].delay=n}))},Yl.duration=function(n){var t=this.id,e=this.namespace;return arguments.length<1?this.node()[e][t].duration:Y(this,"function"==typeof n?function(r,i,u){r[e][t].duration=Math.max(1,n.call(r,r.__data__,i,u))}:(n=Math.max(1,n),function(r){r[e][t].duration=n}))},Yl.each=function(n,t){var e=this.id,r=this.namespace;if(arguments.length<2){var i=Ol,u=Hl;try{Hl=e,Y(this,function(t,i,u){Ol=t[r][e],n.call(t,t.__data__,i,u)})}finally{Ol=i,Hl=u}}else Y(this,function(i){var u=i[r][e];(u.event||(u.event=ao.dispatch("start","end","interrupt"))).on(n,t)});return this},Yl.transition=function(){for(var n,t,e,r,i=this.id,u=++Zl,o=this.namespace,a=[],l=0,c=this.length;c>l;l++){a.push(n=[]);for(var t=this[l],f=0,s=t.length;s>f;f++)(e=t[f])&&(r=e[o][i],Qu(e,f,o,u,{time:r.time,ease:r.ease,delay:r.delay+r.duration,duration:r.duration})),n.push(e)}return Wu(a,o,u)},ao.svg.axis=function(){function n(n){n.each(function(){var n,c=ao.select(this),f=this.__chart__||e,s=this.__chart__=e.copy(),h=null==l?s.ticks?s.ticks.apply(s,a):s.domain():l,p=null==t?s.tickFormat?s.tickFormat.apply(s,a):m:t,g=c.selectAll(".tick").data(h,s),v=g.enter().insert("g",".domain").attr("class","tick").style("opacity",Uo),d=ao.transition(g.exit()).style("opacity",Uo).remove(),y=ao.transition(g.order()).style("opacity",1),M=Math.max(i,0)+o,x=Zi(s),b=c.selectAll(".domain").data([0]),_=(b.enter().append("path").attr("class","domain"),ao.transition(b));v.append("line"),v.append("text");var w,S,k,N,E=v.select("line"),A=y.select("line"),C=g.select("text").text(p),z=v.select("text"),L=y.select("text"),q="top"===r||"left"===r?-1:1;if("bottom"===r||"top"===r?(n=no,w="x",k="y",S="x2",N="y2",C.attr("dy",0>q?"0em":".71em").style("text-anchor","middle"),_.attr("d","M"+x[0]+","+q*u+"V0H"+x[1]+"V"+q*u)):(n=to,w="y",k="x",S="y2",N="x2",C.attr("dy",".32em").style("text-anchor",0>q?"end":"start"),_.attr("d","M"+q*u+","+x[0]+"H0V"+x[1]+"H"+q*u)),E.attr(N,q*i),z.attr(k,q*M),A.attr(S,0).attr(N,q*i),L.attr(w,0).attr(k,q*M),s.rangeBand){var T=s,R=T.rangeBand()/2;f=s=function(n){return T(n)+R}}else f.rangeBand?f=s:d.call(n,s,f);v.call(n,f,s),y.call(n,s,s)})}var t,e=ao.scale.linear(),r=Vl,i=6,u=6,o=3,a=[10],l=null;return n.scale=function(t){return arguments.length?(e=t,n):e},n.orient=function(t){return arguments.length?(r=t in Xl?t+"":Vl,n):r},n.ticks=function(){return arguments.length?(a=co(arguments),n):a},n.tickValues=function(t){return arguments.length?(l=t,n):l},n.tickFormat=function(e){return arguments.length?(t=e,n):t},n.tickSize=function(t){var e=arguments.length;return e?(i=+t,u=+arguments[e-1],n):i},n.innerTickSize=function(t){return arguments.length?(i=+t,n):i},n.outerTickSize=function(t){return arguments.length?(u=+t,n):u},n.tickPadding=function(t){return arguments.length?(o=+t,n):o},n.tickSubdivide=function(){return arguments.length&&n},n};var Vl="bottom",Xl={top:1,right:1,bottom:1,left:1};ao.svg.brush=function(){function n(t){t.each(function(){var t=ao.select(this).style("pointer-events","all").style("-webkit-tap-highlight-color","rgba(0,0,0,0)").on("mousedown.brush",u).on("touchstart.brush",u),o=t.selectAll(".background").data([0]);o.enter().append("rect").attr("class","background").style("visibility","hidden").style("cursor","crosshair"),t.selectAll(".extent").data([0]).enter().append("rect").attr("class","extent").style("cursor","move");var a=t.selectAll(".resize").data(v,m);a.exit().remove(),a.enter().append("g").attr("class",function(n){return"resize "+n}).style("cursor",function(n){return $l[n]}).append("rect").attr("x",function(n){return/[ew]$/.test(n)?-3:null}).attr("y",function(n){return/^[ns]/.test(n)?-3:null}).attr("width",6).attr("height",6).style("visibility","hidden"),a.style("display",n.empty()?"none":null);var l,s=ao.transition(t),h=ao.transition(o);c&&(l=Zi(c),h.attr("x",l[0]).attr("width",l[1]-l[0]),r(s)),f&&(l=Zi(f),h.attr("y",l[0]).attr("height",l[1]-l[0]),i(s)),e(s)})}function e(n){n.selectAll(".resize").attr("transform",function(n){return"translate("+s[+/e$/.test(n)]+","+h[+/^s/.test(n)]+")"})}function r(n){n.select(".extent").attr("x",s[0]),n.selectAll(".extent,.n>rect,.s>rect").attr("width",s[1]-s[0])}function i(n){n.select(".extent").attr("y",h[0]),n.selectAll(".extent,.e>rect,.w>rect").attr("height",h[1]-h[0])}function u(){function u(){32==ao.event.keyCode&&(C||(M=null,L[0]-=s[1],L[1]-=h[1],C=2),S())}function v(){32==ao.event.keyCode&&2==C&&(L[0]+=s[1],L[1]+=h[1],C=0,S())}function d(){var n=ao.mouse(b),t=!1;x&&(n[0]+=x[0],n[1]+=x[1]),C||(ao.event.altKey?(M||(M=[(s[0]+s[1])/2,(h[0]+h[1])/2]),L[0]=s[+(n[0]<M[0])],L[1]=h[+(n[1]<M[1])]):M=null),E&&y(n,c,0)&&(r(k),t=!0),A&&y(n,f,1)&&(i(k),t=!0),t&&(e(k),w({type:"brush",mode:C?"move":"resize"}))}function y(n,t,e){var r,i,u=Zi(t),l=u[0],c=u[1],f=L[e],v=e?h:s,d=v[1]-v[0];return C&&(l-=f,c-=d+f),r=(e?g:p)?Math.max(l,Math.min(c,n[e])):n[e],C?i=(r+=f)+d:(M&&(f=Math.max(l,Math.min(c,2*M[e]-r))),r>f?(i=r,r=f):i=f),v[0]!=r||v[1]!=i?(e?a=null:o=null,v[0]=r,v[1]=i,!0):void 0}function m(){d(),k.style("pointer-events","all").selectAll(".resize").style("display",n.empty()?"none":null),ao.select("body").style("cursor",null),q.on("mousemove.brush",null).on("mouseup.brush",null).on("touchmove.brush",null).on("touchend.brush",null).on("keydown.brush",null).on("keyup.brush",null),z(),w({type:"brushend"})}var M,x,b=this,_=ao.select(ao.event.target),w=l.of(b,arguments),k=ao.select(b),N=_.datum(),E=!/^(n|s)$/.test(N)&&c,A=!/^(e|w)$/.test(N)&&f,C=_.classed("extent"),z=W(b),L=ao.mouse(b),q=ao.select(t(b)).on("keydown.brush",u).on("keyup.brush",v);if(ao.event.changedTouches?q.on("touchmove.brush",d).on("touchend.brush",m):q.on("mousemove.brush",d).on("mouseup.brush",m),k.interrupt().selectAll("*").interrupt(),C)L[0]=s[0]-L[0],L[1]=h[0]-L[1];else if(N){var T=+/w$/.test(N),R=+/^n/.test(N);x=[s[1-T]-L[0],h[1-R]-L[1]],L[0]=s[T],L[1]=h[R]}else ao.event.altKey&&(M=L.slice());k.style("pointer-events","none").selectAll(".resize").style("display",null),ao.select("body").style("cursor",_.style("cursor")),w({type:"brushstart"}),d()}var o,a,l=N(n,"brushstart","brush","brushend"),c=null,f=null,s=[0,0],h=[0,0],p=!0,g=!0,v=Bl[0];return n.event=function(n){n.each(function(){var n=l.of(this,arguments),t={x:s,y:h,i:o,j:a},e=this.__chart__||t;this.__chart__=t,Hl?ao.select(this).transition().each("start.brush",function(){o=e.i,a=e.j,s=e.x,h=e.y,n({type:"brushstart"})}).tween("brush:brush",function(){var e=xr(s,t.x),r=xr(h,t.y);return o=a=null,function(i){s=t.x=e(i),h=t.y=r(i),n({type:"brush",mode:"resize"})}}).each("end.brush",function(){o=t.i,a=t.j,n({type:"brush",mode:"resize"}),n({type:"brushend"})}):(n({type:"brushstart"}),n({type:"brush",mode:"resize"}),n({type:"brushend"}))})},n.x=function(t){return arguments.length?(c=t,v=Bl[!c<<1|!f],n):c},n.y=function(t){return arguments.length?(f=t,v=Bl[!c<<1|!f],n):f},n.clamp=function(t){return arguments.length?(c&&f?(p=!!t[0],g=!!t[1]):c?p=!!t:f&&(g=!!t),n):c&&f?[p,g]:c?p:f?g:null},n.extent=function(t){var e,r,i,u,l;return arguments.length?(c&&(e=t[0],r=t[1],f&&(e=e[0],r=r[0]),o=[e,r],c.invert&&(e=c(e),r=c(r)),e>r&&(l=e,e=r,r=l),e==s[0]&&r==s[1]||(s=[e,r])),f&&(i=t[0],u=t[1],c&&(i=i[1],u=u[1]),a=[i,u],f.invert&&(i=f(i),u=f(u)),i>u&&(l=i,i=u,u=l),i==h[0]&&u==h[1]||(h=[i,u])),n):(c&&(o?(e=o[0],r=o[1]):(e=s[0],r=s[1],c.invert&&(e=c.invert(e),r=c.invert(r)),e>r&&(l=e,e=r,r=l))),f&&(a?(i=a[0],u=a[1]):(i=h[0],u=h[1],f.invert&&(i=f.invert(i),u=f.invert(u)),i>u&&(l=i,i=u,u=l))),c&&f?[[e,i],[r,u]]:c?[e,r]:f&&[i,u])},n.clear=function(){return n.empty()||(s=[0,0],h=[0,0],o=a=null),n},n.empty=function(){return!!c&&s[0]==s[1]||!!f&&h[0]==h[1]},ao.rebind(n,l,"on")};var $l={n:"ns-resize",e:"ew-resize",s:"ns-resize",w:"ew-resize",nw:"nwse-resize",ne:"nesw-resize",se:"nwse-resize",sw:"nesw-resize"},Bl=[["n","e","s","w","nw","ne","se","sw"],["e","w"],["n","s"],[]],Wl=ga.format=xa.timeFormat,Jl=Wl.utc,Gl=Jl("%Y-%m-%dT%H:%M:%S.%LZ");Wl.iso=Date.prototype.toISOString&&+new Date("2000-01-01T00:00:00.000Z")?eo:Gl,eo.parse=function(n){var t=new Date(n);return isNaN(t)?null:t},eo.toString=Gl.toString,ga.second=On(function(n){return new va(1e3*Math.floor(n/1e3))},function(n,t){n.setTime(n.getTime()+1e3*Math.floor(t))},function(n){return n.getSeconds()}),ga.seconds=ga.second.range,ga.seconds.utc=ga.second.utc.range,ga.minute=On(function(n){return new va(6e4*Math.floor(n/6e4))},function(n,t){n.setTime(n.getTime()+6e4*Math.floor(t))},function(n){return n.getMinutes()}),ga.minutes=ga.minute.range,ga.minutes.utc=ga.minute.utc.range,ga.hour=On(function(n){var t=n.getTimezoneOffset()/60;return new va(36e5*(Math.floor(n/36e5-t)+t))},function(n,t){n.setTime(n.getTime()+36e5*Math.floor(t))},function(n){return n.getHours()}),ga.hours=ga.hour.range,ga.hours.utc=ga.hour.utc.range,ga.month=On(function(n){return n=ga.day(n),n.setDate(1),n},function(n,t){n.setMonth(n.getMonth()+t)},function(n){return n.getMonth()}),ga.months=ga.month.range,ga.months.utc=ga.month.utc.range;var Kl=[1e3,5e3,15e3,3e4,6e4,3e5,9e5,18e5,36e5,108e5,216e5,432e5,864e5,1728e5,6048e5,2592e6,7776e6,31536e6],Ql=[[ga.second,1],[ga.second,5],[ga.second,15],[ga.second,30],[ga.minute,1],[ga.minute,5],[ga.minute,15],[ga.minute,30],[ga.hour,1],[ga.hour,3],[ga.hour,6],[ga.hour,12],[ga.day,1],[ga.day,2],[ga.week,1],[ga.month,1],[ga.month,3],[ga.year,1]],nc=Wl.multi([[".%L",function(n){return n.getMilliseconds()}],[":%S",function(n){return n.getSeconds()}],["%I:%M",function(n){return n.getMinutes()}],["%I %p",function(n){return n.getHours()}],["%a %d",function(n){return n.getDay()&&1!=n.getDate()}],["%b %d",function(n){return 1!=n.getDate()}],["%B",function(n){return n.getMonth()}],["%Y",zt]]),tc={range:function(n,t,e){return ao.range(Math.ceil(n/e)*e,+t,e).map(io)},floor:m,ceil:m};Ql.year=ga.year,ga.scale=function(){return ro(ao.scale.linear(),Ql,nc)};var ec=Ql.map(function(n){return[n[0].utc,n[1]]}),rc=Jl.multi([[".%L",function(n){return n.getUTCMilliseconds()}],[":%S",function(n){return n.getUTCSeconds()}],["%I:%M",function(n){return n.getUTCMinutes()}],["%I %p",function(n){return n.getUTCHours()}],["%a %d",function(n){return n.getUTCDay()&&1!=n.getUTCDate()}],["%b %d",function(n){return 1!=n.getUTCDate()}],["%B",function(n){return n.getUTCMonth()}],["%Y",zt]]);ec.year=ga.year.utc,ga.scale.utc=function(){return ro(ao.scale.linear(),ec,rc)},ao.text=An(function(n){return n.responseText}),ao.json=function(n,t){return Cn(n,"application/json",uo,t)},ao.html=function(n,t){return Cn(n,"text/html",oo,t)},ao.xml=An(function(n){return n.responseXML}),"function"==typeof define&&define.amd?(this.d3=ao,define(ao)):"object"==typeof module&&module.exports?module.exports=ao:this.d3=ao}();
-
-;(function (sax) { // wrapper for non-node envs
+if(t==e.dx){for((r||f>e.dy)&&(f=e.dy);++u<o;)i=n[u],i.x=a,i.y=c,i.dy=f,a+=i.dx=Math.min(e.x+e.dx-a,f?l(i.area/f):0);i.z=!0,i.dx+=e.x+e.dx-a,e.y+=f,e.dy-=f}else{for((r||f>e.dx)&&(f=e.dx);++u<o;)i=n[u],i.x=a,i.y=c,i.dx=f,c+=i.dy=Math.min(e.y+e.dy-c,f?l(i.area/f):0);i.z=!1,i.dy+=e.y+e.dy-c,e.x+=f,e.dx-=f}}function u(r){var i=o||a(r),u=i[0];return u.x=u.y=0,u.value?(u.dx=c[0],u.dy=c[1]):u.dx=u.dy=0,o&&a.revalue(u),n([u],u.dx*u.dy/u.value),(o?e:t)(u),h&&(o=i),i}var o,a=ao.layout.hierarchy(),l=Math.round,c=[1,1],f=null,s=Oi,h=!1,p="squarify",g=.5*(1+Math.sqrt(5));return u.size=function(n){return arguments.length?(c=n,u):c},u.padding=function(n){function t(t){var e=n.call(u,t,t.depth);return null==e?Oi(t):Ii(t,"number"==typeof e?[e,e,e,e]:e)}function e(t){return Ii(t,n)}if(!arguments.length)return f;var r;return s=null==(f=n)?Oi:"function"==(r=typeof n)?t:"number"===r?(n=[n,n,n,n],e):e,u},u.round=function(n){return arguments.length?(l=n?Math.round:Number,u):l!=Number},u.sticky=function(n){return arguments.length?(h=n,o=null,u):h},u.ratio=function(n){return arguments.length?(g=n,u):g},u.mode=function(n){return arguments.length?(p=n+"",u):p},ii(u,a)},ao.random={normal:function(n,t){var e=arguments.length;return 2>e&&(t=1),1>e&&(n=0),function(){var e,r,i;do e=2*Math.random()-1,r=2*Math.random()-1,i=e*e+r*r;while(!i||i>1);return n+t*e*Math.sqrt(-2*Math.log(i)/i)}},logNormal:function(){var n=ao.random.normal.apply(ao,arguments);return function(){return Math.exp(n())}},bates:function(n){var t=ao.random.irwinHall(n);return function(){return t()/n}},irwinHall:function(n){return function(){for(var t=0,e=0;n>e;e++)t+=Math.random();return t}}},ao.scale={};var Sl={floor:m,ceil:m};ao.scale.linear=function(){return Wi([0,1],[0,1],Mr,!1)};var kl={s:1,g:1,p:1,r:1,e:1};ao.scale.log=function(){return ru(ao.scale.linear().domain([0,1]),10,!0,[1,10])};var Nl=ao.format(".0e"),El={floor:function(n){return-Math.ceil(-n)},ceil:function(n){return-Math.floor(-n)}};ao.scale.pow=function(){return iu(ao.scale.linear(),1,[0,1])},ao.scale.sqrt=function(){return ao.scale.pow().exponent(.5)},ao.scale.ordinal=function(){return ou([],{t:"range",a:[[]]})},ao.scale.category10=function(){return ao.scale.ordinal().range(Al)},ao.scale.category20=function(){return ao.scale.ordinal().range(Cl)},ao.scale.category20b=function(){return ao.scale.ordinal().range(zl)},ao.scale.category20c=function(){return ao.scale.ordinal().range(Ll)};var Al=[2062260,16744206,2924588,14034728,9725885,9197131,14907330,8355711,12369186,1556175].map(xn),Cl=[2062260,11454440,16744206,16759672,2924588,10018698,14034728,16750742,9725885,12955861,9197131,12885140,14907330,16234194,8355711,13092807,12369186,14408589,1556175,10410725].map(xn),zl=[3750777,5395619,7040719,10264286,6519097,9216594,11915115,13556636,9202993,12426809,15186514,15190932,8666169,11356490,14049643,15177372,8077683,10834324,13528509,14589654].map(xn),Ll=[3244733,7057110,10406625,13032431,15095053,16616764,16625259,16634018,3253076,7652470,10607003,13101504,7695281,10394312,12369372,14342891,6513507,9868950,12434877,14277081].map(xn);ao.scale.quantile=function(){return au([],[])},ao.scale.quantize=function(){return lu(0,1,[0,1])},ao.scale.threshold=function(){return cu([.5],[0,1])},ao.scale.identity=function(){return fu([0,1])},ao.svg={},ao.svg.arc=function(){function n(){var n=Math.max(0,+e.apply(this,arguments)),c=Math.max(0,+r.apply(this,arguments)),f=o.apply(this,arguments)-Io,s=a.apply(this,arguments)-Io,h=Math.abs(s-f),p=f>s?0:1;if(n>c&&(g=c,c=n,n=g),h>=Oo)return t(c,p)+(n?t(n,1-p):"")+"Z";var g,v,d,y,m,M,x,b,_,w,S,k,N=0,E=0,A=[];if((y=(+l.apply(this,arguments)||0)/2)&&(d=u===ql?Math.sqrt(n*n+c*c):+u.apply(this,arguments),p||(E*=-1),c&&(E=tn(d/c*Math.sin(y))),n&&(N=tn(d/n*Math.sin(y)))),c){m=c*Math.cos(f+E),M=c*Math.sin(f+E),x=c*Math.cos(s-E),b=c*Math.sin(s-E);var C=Math.abs(s-f-2*E)<=Fo?0:1;if(E&&yu(m,M,x,b)===p^C){var z=(f+s)/2;m=c*Math.cos(z),M=c*Math.sin(z),x=b=null}}else m=M=0;if(n){_=n*Math.cos(s-N),w=n*Math.sin(s-N),S=n*Math.cos(f+N),k=n*Math.sin(f+N);var L=Math.abs(f-s+2*N)<=Fo?0:1;if(N&&yu(_,w,S,k)===1-p^L){var q=(f+s)/2;_=n*Math.cos(q),w=n*Math.sin(q),S=k=null}}else _=w=0;if(h>Uo&&(g=Math.min(Math.abs(c-n)/2,+i.apply(this,arguments)))>.001){v=c>n^p?0:1;var T=g,R=g;if(Fo>h){var D=null==S?[_,w]:null==x?[m,M]:Re([m,M],[S,k],[x,b],[_,w]),P=m-D[0],U=M-D[1],j=x-D[0],F=b-D[1],H=1/Math.sin(Math.acos((P*j+U*F)/(Math.sqrt(P*P+U*U)*Math.sqrt(j*j+F*F)))/2),O=Math.sqrt(D[0]*D[0]+D[1]*D[1]);R=Math.min(g,(n-O)/(H-1)),T=Math.min(g,(c-O)/(H+1))}if(null!=x){var I=mu(null==S?[_,w]:[S,k],[m,M],c,T,p),Y=mu([x,b],[_,w],c,T,p);g===T?A.push("M",I[0],"A",T,",",T," 0 0,",v," ",I[1],"A",c,",",c," 0 ",1-p^yu(I[1][0],I[1][1],Y[1][0],Y[1][1]),",",p," ",Y[1],"A",T,",",T," 0 0,",v," ",Y[0]):A.push("M",I[0],"A",T,",",T," 0 1,",v," ",Y[0])}else A.push("M",m,",",M);if(null!=S){var Z=mu([m,M],[S,k],n,-R,p),V=mu([_,w],null==x?[m,M]:[x,b],n,-R,p);g===R?A.push("L",V[0],"A",R,",",R," 0 0,",v," ",V[1],"A",n,",",n," 0 ",p^yu(V[1][0],V[1][1],Z[1][0],Z[1][1]),",",1-p," ",Z[1],"A",R,",",R," 0 0,",v," ",Z[0]):A.push("L",V[0],"A",R,",",R," 0 0,",v," ",Z[0])}else A.push("L",_,",",w)}else A.push("M",m,",",M),null!=x&&A.push("A",c,",",c," 0 ",C,",",p," ",x,",",b),A.push("L",_,",",w),null!=S&&A.push("A",n,",",n," 0 ",L,",",1-p," ",S,",",k);return A.push("Z"),A.join("")}function t(n,t){return"M0,"+n+"A"+n+","+n+" 0 1,"+t+" 0,"+-n+"A"+n+","+n+" 0 1,"+t+" 0,"+n}var e=hu,r=pu,i=su,u=ql,o=gu,a=vu,l=du;return n.innerRadius=function(t){return arguments.length?(e=En(t),n):e},n.outerRadius=function(t){return arguments.length?(r=En(t),n):r},n.cornerRadius=function(t){return arguments.length?(i=En(t),n):i},n.padRadius=function(t){return arguments.length?(u=t==ql?ql:En(t),n):u},n.startAngle=function(t){return arguments.length?(o=En(t),n):o},n.endAngle=function(t){return arguments.length?(a=En(t),n):a},n.padAngle=function(t){return arguments.length?(l=En(t),n):l},n.centroid=function(){var n=(+e.apply(this,arguments)+ +r.apply(this,arguments))/2,t=(+o.apply(this,arguments)+ +a.apply(this,arguments))/2-Io;return[Math.cos(t)*n,Math.sin(t)*n]},n};var ql="auto";ao.svg.line=function(){return Mu(m)};var Tl=ao.map({linear:xu,"linear-closed":bu,step:_u,"step-before":wu,"step-after":Su,basis:zu,"basis-open":Lu,"basis-closed":qu,bundle:Tu,cardinal:Eu,"cardinal-open":ku,"cardinal-closed":Nu,monotone:Fu});Tl.forEach(function(n,t){t.key=n,t.closed=/-closed$/.test(n)});var Rl=[0,2/3,1/3,0],Dl=[0,1/3,2/3,0],Pl=[0,1/6,2/3,1/6];ao.svg.line.radial=function(){var n=Mu(Hu);return n.radius=n.x,delete n.x,n.angle=n.y,delete n.y,n},wu.reverse=Su,Su.reverse=wu,ao.svg.area=function(){return Ou(m)},ao.svg.area.radial=function(){var n=Ou(Hu);return n.radius=n.x,delete n.x,n.innerRadius=n.x0,delete n.x0,n.outerRadius=n.x1,delete n.x1,n.angle=n.y,delete n.y,n.startAngle=n.y0,delete n.y0,n.endAngle=n.y1,delete n.y1,n},ao.svg.chord=function(){function n(n,a){var l=t(this,u,n,a),c=t(this,o,n,a);return"M"+l.p0+r(l.r,l.p1,l.a1-l.a0)+(e(l,c)?i(l.r,l.p1,l.r,l.p0):i(l.r,l.p1,c.r,c.p0)+r(c.r,c.p1,c.a1-c.a0)+i(c.r,c.p1,l.r,l.p0))+"Z"}function t(n,t,e,r){var i=t.call(n,e,r),u=a.call(n,i,r),o=l.call(n,i,r)-Io,f=c.call(n,i,r)-Io;return{r:u,a0:o,a1:f,p0:[u*Math.cos(o),u*Math.sin(o)],p1:[u*Math.cos(f),u*Math.sin(f)]}}function e(n,t){return n.a0==t.a0&&n.a1==t.a1}function r(n,t,e){return"A"+n+","+n+" 0 "+ +(e>Fo)+",1 "+t}function i(n,t,e,r){return"Q 0,0 "+r}var u=Me,o=xe,a=Iu,l=gu,c=vu;return n.radius=function(t){return arguments.length?(a=En(t),n):a},n.source=function(t){return arguments.length?(u=En(t),n):u},n.target=function(t){return arguments.length?(o=En(t),n):o},n.startAngle=function(t){return arguments.length?(l=En(t),n):l},n.endAngle=function(t){return arguments.length?(c=En(t),n):c},n},ao.svg.diagonal=function(){function n(n,i){var u=t.call(this,n,i),o=e.call(this,n,i),a=(u.y+o.y)/2,l=[u,{x:u.x,y:a},{x:o.x,y:a},o];return l=l.map(r),"M"+l[0]+"C"+l[1]+" "+l[2]+" "+l[3]}var t=Me,e=xe,r=Yu;return n.source=function(e){return arguments.length?(t=En(e),n):t},n.target=function(t){return arguments.length?(e=En(t),n):e},n.projection=function(t){return arguments.length?(r=t,n):r},n},ao.svg.diagonal.radial=function(){var n=ao.svg.diagonal(),t=Yu,e=n.projection;return n.projection=function(n){return arguments.length?e(Zu(t=n)):t},n},ao.svg.symbol=function(){function n(n,r){return(Ul.get(t.call(this,n,r))||$u)(e.call(this,n,r))}var t=Xu,e=Vu;return n.type=function(e){return arguments.length?(t=En(e),n):t},n.size=function(t){return arguments.length?(e=En(t),n):e},n};var Ul=ao.map({circle:$u,cross:function(n){var t=Math.sqrt(n/5)/2;return"M"+-3*t+","+-t+"H"+-t+"V"+-3*t+"H"+t+"V"+-t+"H"+3*t+"V"+t+"H"+t+"V"+3*t+"H"+-t+"V"+t+"H"+-3*t+"Z"},diamond:function(n){var t=Math.sqrt(n/(2*Fl)),e=t*Fl;return"M0,"+-t+"L"+e+",0 0,"+t+" "+-e+",0Z"},square:function(n){var t=Math.sqrt(n)/2;return"M"+-t+","+-t+"L"+t+","+-t+" "+t+","+t+" "+-t+","+t+"Z"},"triangle-down":function(n){var t=Math.sqrt(n/jl),e=t*jl/2;return"M0,"+e+"L"+t+","+-e+" "+-t+","+-e+"Z"},"triangle-up":function(n){var t=Math.sqrt(n/jl),e=t*jl/2;return"M0,"+-e+"L"+t+","+e+" "+-t+","+e+"Z"}});ao.svg.symbolTypes=Ul.keys();var jl=Math.sqrt(3),Fl=Math.tan(30*Yo);Co.transition=function(n){for(var t,e,r=Hl||++Zl,i=Ku(n),u=[],o=Ol||{time:Date.now(),ease:Nr,delay:0,duration:250},a=-1,l=this.length;++a<l;){u.push(t=[]);for(var c=this[a],f=-1,s=c.length;++f<s;)(e=c[f])&&Qu(e,f,i,r,o),t.push(e)}return Wu(u,i,r)},Co.interrupt=function(n){return this.each(null==n?Il:Bu(Ku(n)))};var Hl,Ol,Il=Bu(Ku()),Yl=[],Zl=0;Yl.call=Co.call,Yl.empty=Co.empty,Yl.node=Co.node,Yl.size=Co.size,ao.transition=function(n,t){return n&&n.transition?Hl?n.transition(t):n:ao.selection().transition(n)},ao.transition.prototype=Yl,Yl.select=function(n){var t,e,r,i=this.id,u=this.namespace,o=[];n=A(n);for(var a=-1,l=this.length;++a<l;){o.push(t=[]);for(var c=this[a],f=-1,s=c.length;++f<s;)(r=c[f])&&(e=n.call(r,r.__data__,f,a))?("__data__"in r&&(e.__data__=r.__data__),Qu(e,f,u,i,r[u][i]),t.push(e)):t.push(null)}return Wu(o,u,i)},Yl.selectAll=function(n){var t,e,r,i,u,o=this.id,a=this.namespace,l=[];n=C(n);for(var c=-1,f=this.length;++c<f;)for(var s=this[c],h=-1,p=s.length;++h<p;)if(r=s[h]){u=r[a][o],e=n.call(r,r.__data__,h,c),l.push(t=[]);for(var g=-1,v=e.length;++g<v;)(i=e[g])&&Qu(i,g,a,o,u),t.push(i)}return Wu(l,a,o)},Yl.filter=function(n){var t,e,r,i=[];"function"!=typeof n&&(n=O(n));for(var u=0,o=this.length;o>u;u++){i.push(t=[]);for(var e=this[u],a=0,l=e.length;l>a;a++)(r=e[a])&&n.call(r,r.__data__,a,u)&&t.push(r)}return Wu(i,this.namespace,this.id)},Yl.tween=function(n,t){var e=this.id,r=this.namespace;return arguments.length<2?this.node()[r][e].tween.get(n):Y(this,null==t?function(t){t[r][e].tween.remove(n)}:function(i){i[r][e].tween.set(n,t)})},Yl.attr=function(n,t){function e(){this.removeAttribute(a)}function r(){this.removeAttributeNS(a.space,a.local)}function i(n){return null==n?e:(n+="",function(){var t,e=this.getAttribute(a);return e!==n&&(t=o(e,n),function(n){this.setAttribute(a,t(n))})})}function u(n){return null==n?r:(n+="",function(){var t,e=this.getAttributeNS(a.space,a.local);return e!==n&&(t=o(e,n),function(n){this.setAttributeNS(a.space,a.local,t(n))})})}if(arguments.length<2){for(t in n)this.attr(t,n[t]);return this}var o="transform"==n?$r:Mr,a=ao.ns.qualify(n);return Ju(this,"attr."+n,t,a.local?u:i)},Yl.attrTween=function(n,t){function e(n,e){var r=t.call(this,n,e,this.getAttribute(i));return r&&function(n){this.setAttribute(i,r(n))}}function r(n,e){var r=t.call(this,n,e,this.getAttributeNS(i.space,i.local));return r&&function(n){this.setAttributeNS(i.space,i.local,r(n))}}var i=ao.ns.qualify(n);return this.tween("attr."+n,i.local?r:e)},Yl.style=function(n,e,r){function i(){this.style.removeProperty(n)}function u(e){return null==e?i:(e+="",function(){var i,u=t(this).getComputedStyle(this,null).getPropertyValue(n);return u!==e&&(i=Mr(u,e),function(t){this.style.setProperty(n,i(t),r)})})}var o=arguments.length;if(3>o){if("string"!=typeof n){2>o&&(e="");for(r in n)this.style(r,n[r],e);return this}r=""}return Ju(this,"style."+n,e,u)},Yl.styleTween=function(n,e,r){function i(i,u){var o=e.call(this,i,u,t(this).getComputedStyle(this,null).getPropertyValue(n));return o&&function(t){this.style.setProperty(n,o(t),r)}}return arguments.length<3&&(r=""),this.tween("style."+n,i)},Yl.text=function(n){return Ju(this,"text",n,Gu)},Yl.remove=function(){var n=this.namespace;return this.each("end.transition",function(){var t;this[n].count<2&&(t=this.parentNode)&&t.removeChild(this)})},Yl.ease=function(n){var t=this.id,e=this.namespace;return arguments.length<1?this.node()[e][t].ease:("function"!=typeof n&&(n=ao.ease.apply(ao,arguments)),Y(this,function(r){r[e][t].ease=n}))},Yl.delay=function(n){var t=this.id,e=this.namespace;return arguments.length<1?this.node()[e][t].delay:Y(this,"function"==typeof n?function(r,i,u){r[e][t].delay=+n.call(r,r.__data__,i,u)}:(n=+n,function(r){r[e][t].delay=n}))},Yl.duration=function(n){var t=this.id,e=this.namespace;return arguments.length<1?this.node()[e][t].duration:Y(this,"function"==typeof n?function(r,i,u){r[e][t].duration=Math.max(1,n.call(r,r.__data__,i,u))}:(n=Math.max(1,n),function(r){r[e][t].duration=n}))},Yl.each=function(n,t){var e=this.id,r=this.namespace;if(arguments.length<2){var i=Ol,u=Hl;try{Hl=e,Y(this,function(t,i,u){Ol=t[r][e],n.call(t,t.__data__,i,u)})}finally{Ol=i,Hl=u}}else Y(this,function(i){var u=i[r][e];(u.event||(u.event=ao.dispatch("start","end","interrupt"))).on(n,t)});return this},Yl.transition=function(){for(var n,t,e,r,i=this.id,u=++Zl,o=this.namespace,a=[],l=0,c=this.length;c>l;l++){a.push(n=[]);for(var t=this[l],f=0,s=t.length;s>f;f++)(e=t[f])&&(r=e[o][i],Qu(e,f,o,u,{time:r.time,ease:r.ease,delay:r.delay+r.duration,duration:r.duration})),n.push(e)}return Wu(a,o,u)},ao.svg.axis=function(){function n(n){n.each(function(){var n,c=ao.select(this),f=this.__chart__||e,s=this.__chart__=e.copy(),h=null==l?s.ticks?s.ticks.apply(s,a):s.domain():l,p=null==t?s.tickFormat?s.tickFormat.apply(s,a):m:t,g=c.selectAll(".tick").data(h,s),v=g.enter().insert("g",".domain").attr("class","tick").style("opacity",Uo),d=ao.transition(g.exit()).style("opacity",Uo).remove(),y=ao.transition(g.order()).style("opacity",1),M=Math.max(i,0)+o,x=Zi(s),b=c.selectAll(".domain").data([0]),_=(b.enter().append("path").attr("class","domain"),ao.transition(b));v.append("line"),v.append("text");var w,S,k,N,E=v.select("line"),A=y.select("line"),C=g.select("text").text(p),z=v.select("text"),L=y.select("text"),q="top"===r||"left"===r?-1:1;if("bottom"===r||"top"===r?(n=no,w="x",k="y",S="x2",N="y2",C.attr("dy",0>q?"0em":".71em").style("text-anchor","middle"),_.attr("d","M"+x[0]+","+q*u+"V0H"+x[1]+"V"+q*u)):(n=to,w="y",k="x",S="y2",N="x2",C.attr("dy",".32em").style("text-anchor",0>q?"end":"start"),_.attr("d","M"+q*u+","+x[0]+"H0V"+x[1]+"H"+q*u)),E.attr(N,q*i),z.attr(k,q*M),A.attr(S,0).attr(N,q*i),L.attr(w,0).attr(k,q*M),s.rangeBand){var T=s,R=T.rangeBand()/2;f=s=function(n){return T(n)+R}}else f.rangeBand?f=s:d.call(n,s,f);v.call(n,f,s),y.call(n,s,s)})}var t,e=ao.scale.linear(),r=Vl,i=6,u=6,o=3,a=[10],l=null;return n.scale=function(t){return arguments.length?(e=t,n):e},n.orient=function(t){return arguments.length?(r=t in Xl?t+"":Vl,n):r},n.ticks=function(){return arguments.length?(a=co(arguments),n):a},n.tickValues=function(t){return arguments.length?(l=t,n):l},n.tickFormat=function(e){return arguments.length?(t=e,n):t},n.tickSize=function(t){var e=arguments.length;return e?(i=+t,u=+arguments[e-1],n):i},n.innerTickSize=function(t){return arguments.length?(i=+t,n):i},n.outerTickSize=function(t){return arguments.length?(u=+t,n):u},n.tickPadding=function(t){return arguments.length?(o=+t,n):o},n.tickSubdivide=function(){return arguments.length&&n},n};var Vl="bottom",Xl={top:1,right:1,bottom:1,left:1};ao.svg.brush=function(){function n(t){t.each(function(){var t=ao.select(this).style("pointer-events","all").style("-webkit-tap-highlight-color","rgba(0,0,0,0)").on("mousedown.brush",u).on("touchstart.brush",u),o=t.selectAll(".background").data([0]);o.enter().append("rect").attr("class","background").style("visibility","hidden").style("cursor","crosshair"),t.selectAll(".extent").data([0]).enter().append("rect").attr("class","extent").style("cursor","move");var a=t.selectAll(".resize").data(v,m);a.exit().remove(),a.enter().append("g").attr("class",function(n){return"resize "+n}).style("cursor",function(n){return $l[n]}).append("rect").attr("x",function(n){return/[ew]$/.test(n)?-3:null}).attr("y",function(n){return/^[ns]/.test(n)?-3:null}).attr("width",6).attr("height",6).style("visibility","hidden"),a.style("display",n.empty()?"none":null);var l,s=ao.transition(t),h=ao.transition(o);c&&(l=Zi(c),h.attr("x",l[0]).attr("width",l[1]-l[0]),r(s)),f&&(l=Zi(f),h.attr("y",l[0]).attr("height",l[1]-l[0]),i(s)),e(s)})}function e(n){n.selectAll(".resize").attr("transform",function(n){return"translate("+s[+/e$/.test(n)]+","+h[+/^s/.test(n)]+")"})}function r(n){n.select(".extent").attr("x",s[0]),n.selectAll(".extent,.n>rect,.s>rect").attr("width",s[1]-s[0])}function i(n){n.select(".extent").attr("y",h[0]),n.selectAll(".extent,.e>rect,.w>rect").attr("height",h[1]-h[0])}function u(){function u(){32==ao.event.keyCode&&(C||(M=null,L[0]-=s[1],L[1]-=h[1],C=2),S())}function v(){32==ao.event.keyCode&&2==C&&(L[0]+=s[1],L[1]+=h[1],C=0,S())}function d(){var n=ao.mouse(b),t=!1;x&&(n[0]+=x[0],n[1]+=x[1]),C||(ao.event.altKey?(M||(M=[(s[0]+s[1])/2,(h[0]+h[1])/2]),L[0]=s[+(n[0]<M[0])],L[1]=h[+(n[1]<M[1])]):M=null),E&&y(n,c,0)&&(r(k),t=!0),A&&y(n,f,1)&&(i(k),t=!0),t&&(e(k),w({type:"brush",mode:C?"move":"resize"}))}function y(n,t,e){var r,i,u=Zi(t),l=u[0],c=u[1],f=L[e],v=e?h:s,d=v[1]-v[0];return C&&(l-=f,c-=d+f),r=(e?g:p)?Math.max(l,Math.min(c,n[e])):n[e],C?i=(r+=f)+d:(M&&(f=Math.max(l,Math.min(c,2*M[e]-r))),r>f?(i=r,r=f):i=f),v[0]!=r||v[1]!=i?(e?a=null:o=null,v[0]=r,v[1]=i,!0):void 0}function m(){d(),k.style("pointer-events","all").selectAll(".resize").style("display",n.empty()?"none":null),ao.select("body").style("cursor",null),q.on("mousemove.brush",null).on("mouseup.brush",null).on("touchmove.brush",null).on("touchend.brush",null).on("keydown.brush",null).on("keyup.brush",null),z(),w({type:"brushend"})}var M,x,b=this,_=ao.select(ao.event.target),w=l.of(b,arguments),k=ao.select(b),N=_.datum(),E=!/^(n|s)$/.test(N)&&c,A=!/^(e|w)$/.test(N)&&f,C=_.classed("extent"),z=W(b),L=ao.mouse(b),q=ao.select(t(b)).on("keydown.brush",u).on("keyup.brush",v);if(ao.event.changedTouches?q.on("touchmove.brush",d).on("touchend.brush",m):q.on("mousemove.brush",d).on("mouseup.brush",m),k.interrupt().selectAll("*").interrupt(),C)L[0]=s[0]-L[0],L[1]=h[0]-L[1];else if(N){var T=+/w$/.test(N),R=+/^n/.test(N);x=[s[1-T]-L[0],h[1-R]-L[1]],L[0]=s[T],L[1]=h[R]}else ao.event.altKey&&(M=L.slice());k.style("pointer-events","none").selectAll(".resize").style("display",null),ao.select("body").style("cursor",_.style("cursor")),w({type:"brushstart"}),d()}var o,a,l=N(n,"brushstart","brush","brushend"),c=null,f=null,s=[0,0],h=[0,0],p=!0,g=!0,v=Bl[0];return n.event=function(n){n.each(function(){var n=l.of(this,arguments),t={x:s,y:h,i:o,j:a},e=this.__chart__||t;this.__chart__=t,Hl?ao.select(this).transition().each("start.brush",function(){o=e.i,a=e.j,s=e.x,h=e.y,n({type:"brushstart"})}).tween("brush:brush",function(){var e=xr(s,t.x),r=xr(h,t.y);return o=a=null,function(i){s=t.x=e(i),h=t.y=r(i),n({type:"brush",mode:"resize"})}}).each("end.brush",function(){o=t.i,a=t.j,n({type:"brush",mode:"resize"}),n({type:"brushend"})}):(n({type:"brushstart"}),n({type:"brush",mode:"resize"}),n({type:"brushend"}))})},n.x=function(t){return arguments.length?(c=t,v=Bl[!c<<1|!f],n):c},n.y=function(t){return arguments.length?(f=t,v=Bl[!c<<1|!f],n):f},n.clamp=function(t){return arguments.length?(c&&f?(p=!!t[0],g=!!t[1]):c?p=!!t:f&&(g=!!t),n):c&&f?[p,g]:c?p:f?g:null},n.extent=function(t){var e,r,i,u,l;return arguments.length?(c&&(e=t[0],r=t[1],f&&(e=e[0],r=r[0]),o=[e,r],c.invert&&(e=c(e),r=c(r)),e>r&&(l=e,e=r,r=l),e==s[0]&&r==s[1]||(s=[e,r])),f&&(i=t[0],u=t[1],c&&(i=i[1],u=u[1]),a=[i,u],f.invert&&(i=f(i),u=f(u)),i>u&&(l=i,i=u,u=l),i==h[0]&&u==h[1]||(h=[i,u])),n):(c&&(o?(e=o[0],r=o[1]):(e=s[0],r=s[1],c.invert&&(e=c.invert(e),r=c.invert(r)),e>r&&(l=e,e=r,r=l))),f&&(a?(i=a[0],u=a[1]):(i=h[0],u=h[1],f.invert&&(i=f.invert(i),u=f.invert(u)),i>u&&(l=i,i=u,u=l))),c&&f?[[e,i],[r,u]]:c?[e,r]:f&&[i,u])},n.clear=function(){return n.empty()||(s=[0,0],h=[0,0],o=a=null),n},n.empty=function(){return!!c&&s[0]==s[1]||!!f&&h[0]==h[1]},ao.rebind(n,l,"on")};var $l={n:"ns-resize",e:"ew-resize",s:"ns-resize",w:"ew-resize",nw:"nwse-resize",ne:"nesw-resize",se:"nwse-resize",sw:"nesw-resize"},Bl=[["n","e","s","w","nw","ne","se","sw"],["e","w"],["n","s"],[]],Wl=ga.format=xa.timeFormat,Jl=Wl.utc,Gl=Jl("%Y-%m-%dT%H:%M:%S.%LZ");Wl.iso=Date.prototype.toISOString&&+new Date("2000-01-01T00:00:00.000Z")?eo:Gl,eo.parse=function(n){var t=new Date(n);return isNaN(t)?null:t},eo.toString=Gl.toString,ga.second=On(function(n){return new va(1e3*Math.floor(n/1e3))},function(n,t){n.setTime(n.getTime()+1e3*Math.floor(t))},function(n){return n.getSeconds()}),ga.seconds=ga.second.range,ga.seconds.utc=ga.second.utc.range,ga.minute=On(function(n){return new va(6e4*Math.floor(n/6e4))},function(n,t){n.setTime(n.getTime()+6e4*Math.floor(t))},function(n){return n.getMinutes()}),ga.minutes=ga.minute.range,ga.minutes.utc=ga.minute.utc.range,ga.hour=On(function(n){var t=n.getTimezoneOffset()/60;return new va(36e5*(Math.floor(n/36e5-t)+t))},function(n,t){n.setTime(n.getTime()+36e5*Math.floor(t))},function(n){return n.getHours()}),ga.hours=ga.hour.range,ga.hours.utc=ga.hour.utc.range,ga.month=On(function(n){return n=ga.day(n),n.setDate(1),n},function(n,t){n.setMonth(n.getMonth()+t)},function(n){return n.getMonth()}),ga.months=ga.month.range,ga.months.utc=ga.month.utc.range;var Kl=[1e3,5e3,15e3,3e4,6e4,3e5,9e5,18e5,36e5,108e5,216e5,432e5,864e5,1728e5,6048e5,2592e6,7776e6,31536e6],Ql=[[ga.second,1],[ga.second,5],[ga.second,15],[ga.second,30],[ga.minute,1],[ga.minute,5],[ga.minute,15],[ga.minute,30],[ga.hour,1],[ga.hour,3],[ga.hour,6],[ga.hour,12],[ga.day,1],[ga.day,2],[ga.week,1],[ga.month,1],[ga.month,3],[ga.year,1]],nc=Wl.multi([[".%L",function(n){return n.getMilliseconds()}],[":%S",function(n){return n.getSeconds()}],["%I:%M",function(n){return n.getMinutes()}],["%I %p",function(n){return n.getHours()}],["%a %d",function(n){return n.getDay()&&1!=n.getDate()}],["%b %d",function(n){return 1!=n.getDate()}],["%B",function(n){return n.getMonth()}],["%Y",zt]]),tc={range:function(n,t,e){return ao.range(Math.ceil(n/e)*e,+t,e).map(io)},floor:m,ceil:m};Ql.year=ga.year,ga.scale=function(){return ro(ao.scale.linear(),Ql,nc)};var ec=Ql.map(function(n){return[n[0].utc,n[1]]}),rc=Jl.multi([[".%L",function(n){return n.getUTCMilliseconds()}],[":%S",function(n){return n.getUTCSeconds()}],["%I:%M",function(n){return n.getUTCMinutes()}],["%I %p",function(n){return n.getUTCHours()}],["%a %d",function(n){return n.getUTCDay()&&1!=n.getUTCDate()}],["%b %d",function(n){return 1!=n.getUTCDate()}],["%B",function(n){return n.getUTCMonth()}],["%Y",zt]]);ec.year=ga.year.utc,ga.scale.utc=function(){return ro(ao.scale.linear(),ec,rc)},ao.text=An(function(n){return n.responseText}),ao.json=function(n,t){return Cn(n,"application/json",uo,t)},ao.html=function(n,t){return Cn(n,"text/html",oo,t)},ao.xml=An(function(n){return n.responseXML}),"function"==typeof define&&define.amd?(this.d3=ao,define(ao)):"object"==typeof module&&module.exports?module.exports=ao:this.d3=ao}();;(function (sax) { // wrapper for non-node envs
   sax.parser = function (strict, opt) { return new SAXParser(strict, opt) };
   sax.SAXParser = SAXParser;
   sax.SAXStream = SAXStream;
@@ -1580,8 +1578,6 @@ if(t==e.dx){for((r||f>e.dy)&&(f=e.dy);++u<o;)i=n[u],i.x=a,i.y=c,i.dy=f,a+=i.dx=M
     }())
   }
 })(typeof exports === 'undefined' ? this.sax = {} : exports);
-
-
 /*! jQuery UI - v1.12.0 - 2016-07-08
 * http://jqueryui.com
 * Includes: widget.js, position.js, data.js, disable-selection.js, effect.js, effects/effect-blind.js, effects/effect-bounce.js, effects/effect-clip.js, effects/effect-drop.js, effects/effect-explode.js, effects/effect-fade.js, effects/effect-fold.js, effects/effect-highlight.js, effects/effect-puff.js, effects/effect-pulsate.js, effects/effect-scale.js, effects/effect-shake.js, effects/effect-size.js, effects/effect-slide.js, effects/effect-transfer.js, focusable.js, form-reset-mixin.js, jquery-1-7.js, keycode.js, labels.js, scroll-parent.js, tabbable.js, unique-id.js, widgets/accordion.js, widgets/autocomplete.js, widgets/button.js, widgets/checkboxradio.js, widgets/controlgroup.js, widgets/datepicker.js, widgets/dialog.js, widgets/draggable.js, widgets/droppable.js, widgets/menu.js, widgets/mouse.js, widgets/progressbar.js, widgets/resizable.js, widgets/selectable.js, widgets/selectmenu.js, widgets/slider.js, widgets/sortable.js, widgets/spinner.js, widgets/tabs.js, widgets/tooltip.js
@@ -20267,9 +20263,7 @@ var widgetsTooltip = $.ui.tooltip;
 
 
 
-}));
-
-/* FileSaver.js
+}));/* FileSaver.js
  * A saveAs() FileSaver implementation.
  * 1.3.2
  * 2016-06-16 18:25:19
@@ -20457,8 +20451,6 @@ if (typeof module !== "undefined" && module.exports) {
     return saveAs;
   });
 }
-
-
 /**
  *  Copyright (C) 2019 Christian M. Zmasek
  *  Copyright (C) 2019 J. Craig Venter Institute
@@ -21942,306 +21934,7 @@ if (typeof module !== "undefined" && module.exports) {
         window.phyloXml = phyloXml;
     else
         this.phyloXml = phyloXml;
-})();
-
-(function rgbcolor() {
-/**
- * A class to parse color values
- * @author Stoyan Stefanov <sstoo@gmail.com>
- * @link   http://www.phpied.com/rgb-color-parser-in-javascript/
- * @license Use it if you like it
- */
-function RGBColor(color_string)
-{
-    this.ok = false;
-
-    // strip any leading #
-    if (color_string.charAt(0) == '#') { // remove # if any
-        color_string = color_string.substr(1,6);
-    }
-
-    color_string = color_string.replace(/ /g,'');
-    color_string = color_string.toLowerCase();
-
-    // before getting into regexps, try simple matches
-    // and overwrite the input
-    var simple_colors = {
-        aliceblue: 'f0f8ff',
-        antiquewhite: 'faebd7',
-        aqua: '00ffff',
-        aquamarine: '7fffd4',
-        azure: 'f0ffff',
-        beige: 'f5f5dc',
-        bisque: 'ffe4c4',
-        black: '000000',
-        blanchedalmond: 'ffebcd',
-        blue: '0000ff',
-        blueviolet: '8a2be2',
-        brown: 'a52a2a',
-        burlywood: 'deb887',
-        cadetblue: '5f9ea0',
-        chartreuse: '7fff00',
-        chocolate: 'd2691e',
-        coral: 'ff7f50',
-        cornflowerblue: '6495ed',
-        cornsilk: 'fff8dc',
-        crimson: 'dc143c',
-        cyan: '00ffff',
-        darkblue: '00008b',
-        darkcyan: '008b8b',
-        darkgoldenrod: 'b8860b',
-        darkgray: 'a9a9a9',
-        darkgreen: '006400',
-        darkkhaki: 'bdb76b',
-        darkmagenta: '8b008b',
-        darkolivegreen: '556b2f',
-        darkorange: 'ff8c00',
-        darkorchid: '9932cc',
-        darkred: '8b0000',
-        darksalmon: 'e9967a',
-        darkseagreen: '8fbc8f',
-        darkslateblue: '483d8b',
-        darkslategray: '2f4f4f',
-        darkturquoise: '00ced1',
-        darkviolet: '9400d3',
-        deeppink: 'ff1493',
-        deepskyblue: '00bfff',
-        dimgray: '696969',
-        dodgerblue: '1e90ff',
-        feldspar: 'd19275',
-        firebrick: 'b22222',
-        floralwhite: 'fffaf0',
-        forestgreen: '228b22',
-        fuchsia: 'ff00ff',
-        gainsboro: 'dcdcdc',
-        ghostwhite: 'f8f8ff',
-        gold: 'ffd700',
-        goldenrod: 'daa520',
-        gray: '808080',
-        green: '008000',
-        greenyellow: 'adff2f',
-        honeydew: 'f0fff0',
-        hotpink: 'ff69b4',
-        indianred : 'cd5c5c',
-        indigo : '4b0082',
-        ivory: 'fffff0',
-        khaki: 'f0e68c',
-        lavender: 'e6e6fa',
-        lavenderblush: 'fff0f5',
-        lawngreen: '7cfc00',
-        lemonchiffon: 'fffacd',
-        lightblue: 'add8e6',
-        lightcoral: 'f08080',
-        lightcyan: 'e0ffff',
-        lightgoldenrodyellow: 'fafad2',
-        lightgrey: 'd3d3d3',
-        lightgreen: '90ee90',
-        lightpink: 'ffb6c1',
-        lightsalmon: 'ffa07a',
-        lightseagreen: '20b2aa',
-        lightskyblue: '87cefa',
-        lightslateblue: '8470ff',
-        lightslategray: '778899',
-        lightsteelblue: 'b0c4de',
-        lightyellow: 'ffffe0',
-        lime: '00ff00',
-        limegreen: '32cd32',
-        linen: 'faf0e6',
-        magenta: 'ff00ff',
-        maroon: '800000',
-        mediumaquamarine: '66cdaa',
-        mediumblue: '0000cd',
-        mediumorchid: 'ba55d3',
-        mediumpurple: '9370d8',
-        mediumseagreen: '3cb371',
-        mediumslateblue: '7b68ee',
-        mediumspringgreen: '00fa9a',
-        mediumturquoise: '48d1cc',
-        mediumvioletred: 'c71585',
-        midnightblue: '191970',
-        mintcream: 'f5fffa',
-        mistyrose: 'ffe4e1',
-        moccasin: 'ffe4b5',
-        navajowhite: 'ffdead',
-        navy: '000080',
-        oldlace: 'fdf5e6',
-        olive: '808000',
-        olivedrab: '6b8e23',
-        orange: 'ffa500',
-        orangered: 'ff4500',
-        orchid: 'da70d6',
-        palegoldenrod: 'eee8aa',
-        palegreen: '98fb98',
-        paleturquoise: 'afeeee',
-        palevioletred: 'd87093',
-        papayawhip: 'ffefd5',
-        peachpuff: 'ffdab9',
-        peru: 'cd853f',
-        pink: 'ffc0cb',
-        plum: 'dda0dd',
-        powderblue: 'b0e0e6',
-        purple: '800080',
-        red: 'ff0000',
-        rosybrown: 'bc8f8f',
-        royalblue: '4169e1',
-        saddlebrown: '8b4513',
-        salmon: 'fa8072',
-        sandybrown: 'f4a460',
-        seagreen: '2e8b57',
-        seashell: 'fff5ee',
-        sienna: 'a0522d',
-        silver: 'c0c0c0',
-        skyblue: '87ceeb',
-        slateblue: '6a5acd',
-        slategray: '708090',
-        snow: 'fffafa',
-        springgreen: '00ff7f',
-        steelblue: '4682b4',
-        tan: 'd2b48c',
-        teal: '008080',
-        thistle: 'd8bfd8',
-        tomato: 'ff6347',
-        turquoise: '40e0d0',
-        violet: 'ee82ee',
-        violetred: 'd02090',
-        wheat: 'f5deb3',
-        white: 'ffffff',
-        whitesmoke: 'f5f5f5',
-        yellow: 'ffff00',
-        yellowgreen: '9acd32'
-    };
-    for (var key in simple_colors) {
-        if (color_string == key) {
-            color_string = simple_colors[key];
-        }
-    }
-    // emd of simple type-in colors
-
-    // array of color definition objects
-    var color_defs = [
-        {
-            re: /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/,
-            example: ['rgb(123, 234, 45)', 'rgb(255,234,245)'],
-            process: function (bits){
-                return [
-                    parseInt(bits[1]),
-                    parseInt(bits[2]),
-                    parseInt(bits[3])
-                ];
-            }
-        },
-        {
-            re: /^(\w{2})(\w{2})(\w{2})$/,
-            example: ['#00ff00', '336699'],
-            process: function (bits){
-                return [
-                    parseInt(bits[1], 16),
-                    parseInt(bits[2], 16),
-                    parseInt(bits[3], 16)
-                ];
-            }
-        },
-        {
-            re: /^(\w{1})(\w{1})(\w{1})$/,
-            example: ['#fb0', 'f0f'],
-            process: function (bits){
-                return [
-                    parseInt(bits[1] + bits[1], 16),
-                    parseInt(bits[2] + bits[2], 16),
-                    parseInt(bits[3] + bits[3], 16)
-                ];
-            }
-        }
-    ];
-
-    // search through the definitions to find a match
-    for (var i = 0; i < color_defs.length; i++) {
-        var re = color_defs[i].re;
-        var processor = color_defs[i].process;
-        var bits = re.exec(color_string);
-        if (bits) {
-            channels = processor(bits);
-            this.r = channels[0];
-            this.g = channels[1];
-            this.b = channels[2];
-            this.ok = true;
-        }
-
-    }
-
-    // validate/cleanup values
-    this.r = (this.r < 0 || isNaN(this.r)) ? 0 : ((this.r > 255) ? 255 : this.r);
-    this.g = (this.g < 0 || isNaN(this.g)) ? 0 : ((this.g > 255) ? 255 : this.g);
-    this.b = (this.b < 0 || isNaN(this.b)) ? 0 : ((this.b > 255) ? 255 : this.b);
-
-    // some getters
-    this.toRGB = function () {
-        return 'rgb(' + this.r + ', ' + this.g + ', ' + this.b + ')';
-    }
-    this.toHex = function () {
-        var r = this.r.toString(16);
-        var g = this.g.toString(16);
-        var b = this.b.toString(16);
-        if (r.length == 1) r = '0' + r;
-        if (g.length == 1) g = '0' + g;
-        if (b.length == 1) b = '0' + b;
-        return '#' + r + g + b;
-    }
-
-    // help
-    this.getHelpXML = function () {
-
-        var examples = new Array();
-        // add regexps
-        for (var i = 0; i < color_defs.length; i++) {
-            var example = color_defs[i].example;
-            for (var j = 0; j < example.length; j++) {
-                examples[examples.length] = example[j];
-            }
-        }
-        // add type-in colors
-        for (var sc in simple_colors) {
-            examples[examples.length] = sc;
-        }
-
-        var xml = document.createElement('ul');
-        xml.setAttribute('id', 'rgbcolor-examples');
-        for (var i = 0; i < examples.length; i++) {
-            try {
-                var list_item = document.createElement('li');
-                var list_color = new RGBColor(examples[i]);
-                var example_div = document.createElement('div');
-                example_div.style.cssText =
-                        'margin: 3px; '
-                        + 'border: 1px solid black; '
-                        + 'background:' + list_color.toHex() + '; '
-                        + 'color:' + list_color.toHex()
-                ;
-                example_div.appendChild(document.createTextNode('test'));
-                var list_item_value = document.createTextNode(
-                    ' ' + examples[i] + ' -> ' + list_color.toRGB() + ' -> ' + list_color.toHex()
-                );
-                list_item.appendChild(example_div);
-                list_item.appendChild(list_item_value);
-                xml.appendChild(list_item);
-
-            } catch(e){}
-        }
-        return xml;
-
-    }
-
-}
-
-    if (typeof module !== 'undefined' && module.exports && !global.xmldocAssumeBrowser)
-        module.exports.RGBColor = RGBColor;
-    else if (typeof window !== "undefined")
-        window.RGBColor = RGBColor;
-    else
-        this.RGBColor = RGBColor;
-})();
-
-/*
+})();/*
 
 StackBlur - a fast almost Gaussian Blur For Canvas
 
@@ -22562,3105 +22255,6 @@ function BlurStack()
 	this.a = 0;
 	this.next = null;
 }
-
-
-/*
- * canvg.js - Javascript SVG parser and renderer on Canvas
- * MIT Licensed
- * Gabe Lerner (gabelerner@gmail.com)
- * http://code.google.com/p/canvg/
- *
- * Requires: rgbcolor.js - http://www.phpied.com/rgb-color-parser-in-javascript/
- */
- (function ( global, factory ) {
-
-	'use strict';
-
-	// export as AMD...
-	if ( typeof define !== 'undefined' && define.amd ) {
-		define('canvgModule', [ 'rgbcolor', 'stackblur' ], factory );
-	}
-
-	// ...or as browserify
-	else if ( typeof module !== 'undefined' && module.exports ) {
-		module.exports = factory( require( 'rgbcolor' ), require( 'stackblur' ) );
-	}
-
-	global.canvg = factory( global.RGBColor, global.stackBlur );
-
-}( typeof window !== 'undefined' ? window : this, function ( RGBColor, stackBlur ) {
-
-	// canvg(target, s)
-	// empty parameters: replace all 'svg' elements on page with 'canvas' elements
-	// target: canvas element or the id of a canvas element
-	// s: svg string, url to svg file, or xml document
-	// opts: optional hash of options
-	//		 ignoreMouse: true => ignore mouse events
-	//		 ignoreAnimation: true => ignore animations
-	//		 ignoreDimensions: true => does not try to resize canvas
-	//		 ignoreClear: true => does not clear canvas
-	//		 offsetX: int => draws at a x offset
-	//		 offsetY: int => draws at a y offset
-	//		 scaleWidth: int => scales horizontally to width
-	//		 scaleHeight: int => scales vertically to height
-	//		 renderCallback: function => will call the function after the first render is completed
-	//		 forceRedraw: function => will call the function on every frame, if it returns true, will redraw
-	var canvg = function (target, s, opts) {
-		// no parameters
-		if (target == null && s == null && opts == null) {
-			var svgTags = document.querySelectorAll('svg');
-			for (var i=0; i<svgTags.length; i++) {
-				var svgTag = svgTags[i];
-				var c = document.createElement('canvas');
-				c.width = svgTag.clientWidth;
-				c.height = svgTag.clientHeight;
-				svgTag.parentNode.insertBefore(c, svgTag);
-				svgTag.parentNode.removeChild(svgTag);
-				var div = document.createElement('div');
-				div.appendChild(svgTag);
-				canvg(c, div.innerHTML);
-			}
-			return;
-		}
-
-		if (typeof target == 'string') {
-			target = document.getElementById(target);
-		}
-
-		// store class on canvas
-		if (target.svg != null) target.svg.stop();
-		var svg = build(opts || {});
-		// on i.e. 8 for flash canvas, we can't assign the property so check for it
-		if (!(target.childNodes.length == 1 && target.childNodes[0].nodeName == 'OBJECT')) target.svg = svg;
-
-		var ctx = target.getContext('2d');
-		if (typeof s.documentElement != 'undefined') {
-			// load from xml doc
-			svg.loadXmlDoc(ctx, s);
-		}
-		else if (s.substr(0,1) == '<') {
-			// load from xml string
-			svg.loadXml(ctx, s);
-		}
-		else {
-			// load from url
-			svg.load(ctx, s);
-		}
-	}
-
-	// see https://developer.mozilla.org/en-US/docs/Web/API/Element.matches
-	var matchesSelector;
-	if (typeof Element.prototype.matches != 'undefined') {
-		matchesSelector = function(node, selector) {
-			return node.matches(selector);
-		};
-	} else if (typeof Element.prototype.webkitMatchesSelector != 'undefined') {
-		matchesSelector = function(node, selector) {
-			return node.webkitMatchesSelector(selector);
-		};
-	} else if (typeof Element.prototype.mozMatchesSelector != 'undefined') {
-		matchesSelector = function(node, selector) {
-			return node.mozMatchesSelector(selector);
-		};
-	} else if (typeof Element.prototype.msMatchesSelector != 'undefined') {
-		matchesSelector = function(node, selector) {
-			return node.msMatchesSelector(selector);
-		};
-	} else if (typeof Element.prototype.oMatchesSelector != 'undefined') {
-		matchesSelector = function(node, selector) {
-			return node.oMatchesSelector(selector);
-		};
-	} else {
-		// requires Sizzle: https://github.com/jquery/sizzle/wiki/Sizzle-Documentation
-		// or jQuery: http://jquery.com/download/
-		// or Zepto: http://zeptojs.com/#
-		// without it, this is a ReferenceError
-
-		if (typeof jQuery === 'function' || typeof Zepto === 'function') {
-			matchesSelector = function (node, selector) {
-				return $(node).is(selector);
-			};
-		}
-
-		if (typeof matchesSelector === 'undefined') {
-			matchesSelector = Sizzle.matchesSelector;
-		}
-	}
-
-	// slightly modified version of https://github.com/keeganstreet/specificity/blob/master/specificity.js
-	var attributeRegex = /(\[[^\]]+\])/g;
-	var idRegex = /(#[^\s\+>~\.\[:]+)/g;
-	var classRegex = /(\.[^\s\+>~\.\[:]+)/g;
-	var pseudoElementRegex = /(::[^\s\+>~\.\[:]+|:first-line|:first-letter|:before|:after)/gi;
-	var pseudoClassWithBracketsRegex = /(:[\w-]+\([^\)]*\))/gi;
-	var pseudoClassRegex = /(:[^\s\+>~\.\[:]+)/g;
-	var elementRegex = /([^\s\+>~\.\[:]+)/g;
-	function getSelectorSpecificity(selector) {
-		var typeCount = [0, 0, 0];
-		var findMatch = function(regex, type) {
-			var matches = selector.match(regex);
-			if (matches == null) {
-				return;
-			}
-			typeCount[type] += matches.length;
-			selector = selector.replace(regex, ' ');
-		};
-
-		selector = selector.replace(/:not\(([^\)]*)\)/g, '     $1 ');
-		selector = selector.replace(/{[\s\S]*/gm, ' ');
-		findMatch(attributeRegex, 1);
-		findMatch(idRegex, 0);
-		findMatch(classRegex, 1);
-		findMatch(pseudoElementRegex, 2);
-		findMatch(pseudoClassWithBracketsRegex, 1);
-		findMatch(pseudoClassRegex, 1);
-		selector = selector.replace(/[\*\s\+>~]/g, ' ');
-		selector = selector.replace(/[#\.]/g, ' ');
-		findMatch(elementRegex, 2);
-		return typeCount.join('');
-	}
-
-	function build(opts) {
-		var svg = { opts: opts };
-
-		svg.FRAMERATE = 30;
-		svg.MAX_VIRTUAL_PIXELS = 30000;
-
-		svg.log = function(msg) {};
-		if (svg.opts['log'] == true && typeof console != 'undefined') {
-			svg.log = function(msg) { console.log(msg); };
-		};
-
-		// globals
-		svg.init = function(ctx) {
-			var uniqueId = 0;
-			svg.UniqueId = function () { uniqueId++; return 'canvg' + uniqueId;	};
-			svg.Definitions = {};
-			svg.Styles = {};
-			svg.StylesSpecificity = {};
-			svg.Animations = [];
-			svg.Images = [];
-			svg.ctx = ctx;
-			svg.ViewPort = new (function () {
-				this.viewPorts = [];
-				this.Clear = function() { this.viewPorts = []; }
-				this.SetCurrent = function(width, height) { this.viewPorts.push({ width: width, height: height }); }
-				this.RemoveCurrent = function() { this.viewPorts.pop(); }
-				this.Current = function() { return this.viewPorts[this.viewPorts.length - 1]; }
-				this.width = function() { return this.Current().width; }
-				this.height = function() { return this.Current().height; }
-				this.ComputeSize = function(d) {
-					if (d != null && typeof d == 'number') return d;
-					if (d == 'x') return this.width();
-					if (d == 'y') return this.height();
-					return Math.sqrt(Math.pow(this.width(), 2) + Math.pow(this.height(), 2)) / Math.sqrt(2);
-				}
-			});
-		}
-		svg.init();
-
-		// images loaded
-		svg.ImagesLoaded = function() {
-			for (var i=0; i<svg.Images.length; i++) {
-				if (!svg.Images[i].loaded) return false;
-			}
-			return true;
-		}
-
-		// trim
-		svg.trim = function(s) { return s.replace(/^\s+|\s+$/g, ''); }
-
-		// compress spaces
-		svg.compressSpaces = function(s) { return s.replace(/[\s\r\t\n]+/gm,' '); }
-
-		// ajax
-		svg.ajax = function(url) {
-			var AJAX;
-			if(window.XMLHttpRequest){AJAX=new XMLHttpRequest();}
-			else{AJAX=new ActiveXObject('Microsoft.XMLHTTP');}
-			if(AJAX){
-			   AJAX.open('GET',url,false);
-			   AJAX.send(null);
-			   return AJAX.responseText;
-			}
-			return null;
-		}
-
-		// parse xml
-		svg.parseXml = function(xml) {
-			if (typeof Windows != 'undefined' && typeof Windows.Data != 'undefined' && typeof Windows.Data.Xml != 'undefined') {
-				var xmlDoc = new Windows.Data.Xml.Dom.XmlDocument();
-				var settings = new Windows.Data.Xml.Dom.XmlLoadSettings();
-				settings.prohibitDtd = false;
-				xmlDoc.loadXml(xml, settings);
-				return xmlDoc;
-			}
-			else if (window.DOMParser)
-			{
-				var parser = new DOMParser();
-				return parser.parseFromString(xml, 'text/xml');
-			}
-			else
-			{
-				xml = xml.replace(/<!DOCTYPE svg[^>]*>/, '');
-				var xmlDoc = new ActiveXObject('Microsoft.XMLDOM');
-				xmlDoc.async = 'false';
-				xmlDoc.loadXML(xml);
-				return xmlDoc;
-			}
-		}
-
-		svg.Property = function(name, value) {
-			this.name = name;
-			this.value = value;
-		}
-			svg.Property.prototype.getValue = function() {
-				return this.value;
-			}
-
-			svg.Property.prototype.hasValue = function() {
-				return (this.value != null && this.value !== '');
-			}
-
-			// return the numerical value of the property
-			svg.Property.prototype.numValue = function() {
-				if (!this.hasValue()) return 0;
-
-				var n = parseFloat(this.value);
-				if ((this.value + '').match(/%$/)) {
-					n = n / 100.0;
-				}
-				return n;
-			}
-
-			svg.Property.prototype.valueOrDefault = function(def) {
-				if (this.hasValue()) return this.value;
-				return def;
-			}
-
-			svg.Property.prototype.numValueOrDefault = function(def) {
-				if (this.hasValue()) return this.numValue();
-				return def;
-			}
-
-			// color extensions
-				// augment the current color value with the opacity
-				svg.Property.prototype.addOpacity = function(opacityProp) {
-					var newValue = this.value;
-					if (opacityProp.value != null && opacityProp.value != '' && typeof this.value == 'string') { // can only add opacity to colors, not patterns
-						var color = new RGBColor(this.value);
-						if (color.ok) {
-							newValue = 'rgba(' + color.r + ', ' + color.g + ', ' + color.b + ', ' + opacityProp.numValue() + ')';
-						}
-					}
-					return new svg.Property(this.name, newValue);
-				}
-
-			// definition extensions
-				// get the definition from the definitions table
-				svg.Property.prototype.getDefinition = function() {
-					var name = this.value.match(/#([^\)'"]+)/);
-					if (name) { name = name[1]; }
-					if (!name) { name = this.value; }
-					return svg.Definitions[name];
-				}
-
-				svg.Property.prototype.isUrlDefinition = function() {
-					return this.value.indexOf('url(') == 0
-				}
-
-				svg.Property.prototype.getFillStyleDefinition = function(e, opacityProp) {
-					var def = this.getDefinition();
-
-					// gradient
-					if (def != null && def.createGradient) {
-						return def.createGradient(svg.ctx, e, opacityProp);
-					}
-
-					// pattern
-					if (def != null && def.createPattern) {
-						if (def.getHrefAttribute().hasValue()) {
-							var pt = def.attribute('patternTransform');
-							def = def.getHrefAttribute().getDefinition();
-							if (pt.hasValue()) { def.attribute('patternTransform', true).value = pt.value; }
-						}
-						return def.createPattern(svg.ctx, e);
-					}
-
-					return null;
-				}
-
-			// length extensions
-				svg.Property.prototype.getDPI = function(viewPort) {
-					return 96.0; // TODO: compute?
-				}
-
-				svg.Property.prototype.getEM = function(viewPort) {
-					var em = 12;
-
-					var fontSize = new svg.Property('fontSize', svg.Font.Parse(svg.ctx.font).fontSize);
-					if (fontSize.hasValue()) em = fontSize.toPixels(viewPort);
-
-					return em;
-				}
-
-				svg.Property.prototype.getUnits = function() {
-					var s = this.value+'';
-					return s.replace(/[0-9\.\-]/g,'');
-				}
-
-				// get the length as pixels
-				svg.Property.prototype.toPixels = function(viewPort, processPercent) {
-					if (!this.hasValue()) return 0;
-					var s = this.value+'';
-					if (s.match(/em$/)) return this.numValue() * this.getEM(viewPort);
-					if (s.match(/ex$/)) return this.numValue() * this.getEM(viewPort) / 2.0;
-					if (s.match(/px$/)) return this.numValue();
-					if (s.match(/pt$/)) return this.numValue() * this.getDPI(viewPort) * (1.0 / 72.0);
-					if (s.match(/pc$/)) return this.numValue() * 15;
-					if (s.match(/cm$/)) return this.numValue() * this.getDPI(viewPort) / 2.54;
-					if (s.match(/mm$/)) return this.numValue() * this.getDPI(viewPort) / 25.4;
-					if (s.match(/in$/)) return this.numValue() * this.getDPI(viewPort);
-					if (s.match(/%$/)) return this.numValue() * svg.ViewPort.ComputeSize(viewPort);
-					var n = this.numValue();
-					if (processPercent && n < 1.0) return n * svg.ViewPort.ComputeSize(viewPort);
-					return n;
-				}
-
-			// time extensions
-				// get the time as milliseconds
-				svg.Property.prototype.toMilliseconds = function() {
-					if (!this.hasValue()) return 0;
-					var s = this.value+'';
-					if (s.match(/s$/)) return this.numValue() * 1000;
-					if (s.match(/ms$/)) return this.numValue();
-					return this.numValue();
-				}
-
-			// angle extensions
-				// get the angle as radians
-				svg.Property.prototype.toRadians = function() {
-					if (!this.hasValue()) return 0;
-					var s = this.value+'';
-					if (s.match(/deg$/)) return this.numValue() * (Math.PI / 180.0);
-					if (s.match(/grad$/)) return this.numValue() * (Math.PI / 200.0);
-					if (s.match(/rad$/)) return this.numValue();
-					return this.numValue() * (Math.PI / 180.0);
-				}
-
-			// text extensions
-				// get the text baseline
-				var textBaselineMapping = {
-					'baseline': 'alphabetic',
-					'before-edge': 'top',
-					'text-before-edge': 'top',
-					'middle': 'middle',
-					'central': 'middle',
-					'after-edge': 'bottom',
-					'text-after-edge': 'bottom',
-					'ideographic': 'ideographic',
-					'alphabetic': 'alphabetic',
-					'hanging': 'hanging',
-					'mathematical': 'alphabetic'
-				};
-				svg.Property.prototype.toTextBaseline = function () {
-					if (!this.hasValue()) return null;
-					return textBaselineMapping[this.value];
-				}
-
-		// fonts
-		svg.Font = new (function() {
-			this.Styles = 'normal|italic|oblique|inherit';
-			this.Variants = 'normal|small-caps|inherit';
-			this.Weights = 'normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900|inherit';
-
-			this.CreateFont = function(fontStyle, fontVariant, fontWeight, fontSize, fontFamily, inherit) {
-				var f = inherit != null ? this.Parse(inherit) : this.CreateFont('', '', '', '', '', svg.ctx.font);
-				return {
-					fontFamily: fontFamily || f.fontFamily,
-					fontSize: fontSize || f.fontSize,
-					fontStyle: fontStyle || f.fontStyle,
-					fontWeight: fontWeight || f.fontWeight,
-					fontVariant: fontVariant || f.fontVariant,
-					toString: function () { return [this.fontStyle, this.fontVariant, this.fontWeight, this.fontSize, this.fontFamily].join(' ') }
-				}
-			}
-
-			var that = this;
-			this.Parse = function(s) {
-				var f = {};
-				var d = svg.trim(svg.compressSpaces(s || '')).split(' ');
-				var set = { fontSize: false, fontStyle: false, fontWeight: false, fontVariant: false }
-				var ff = '';
-				for (var i=0; i<d.length; i++) {
-					if (!set.fontStyle && that.Styles.indexOf(d[i]) != -1) { if (d[i] != 'inherit') f.fontStyle = d[i]; set.fontStyle = true; }
-					else if (!set.fontVariant && that.Variants.indexOf(d[i]) != -1) { if (d[i] != 'inherit') f.fontVariant = d[i]; set.fontStyle = set.fontVariant = true;	}
-					else if (!set.fontWeight && that.Weights.indexOf(d[i]) != -1) {	if (d[i] != 'inherit') f.fontWeight = d[i]; set.fontStyle = set.fontVariant = set.fontWeight = true; }
-					else if (!set.fontSize) { if (d[i] != 'inherit') f.fontSize = d[i].split('/')[0]; set.fontStyle = set.fontVariant = set.fontWeight = set.fontSize = true; }
-					else { if (d[i] != 'inherit') ff += d[i]; }
-				} if (ff != '') f.fontFamily = ff;
-				return f;
-			}
-		});
-
-		// points and paths
-		svg.ToNumberArray = function(s) {
-			var a = svg.trim(svg.compressSpaces((s || '').replace(/,/g, ' '))).split(' ');
-			for (var i=0; i<a.length; i++) {
-				a[i] = parseFloat(a[i]);
-			}
-			return a;
-		}
-		svg.Point = function(x, y) {
-			this.x = x;
-			this.y = y;
-		}
-			svg.Point.prototype.angleTo = function(p) {
-				return Math.atan2(p.y - this.y, p.x - this.x);
-			}
-
-			svg.Point.prototype.applyTransform = function(v) {
-				var xp = this.x * v[0] + this.y * v[2] + v[4];
-				var yp = this.x * v[1] + this.y * v[3] + v[5];
-				this.x = xp;
-				this.y = yp;
-			}
-
-		svg.CreatePoint = function(s) {
-			var a = svg.ToNumberArray(s);
-			return new svg.Point(a[0], a[1]);
-		}
-		svg.CreatePath = function(s) {
-			var a = svg.ToNumberArray(s);
-			var path = [];
-			for (var i=0; i<a.length; i+=2) {
-				path.push(new svg.Point(a[i], a[i+1]));
-			}
-			return path;
-		}
-
-		// bounding box
-		svg.BoundingBox = function(x1, y1, x2, y2) { // pass in initial points if you want
-			this.x1 = Number.NaN;
-			this.y1 = Number.NaN;
-			this.x2 = Number.NaN;
-			this.y2 = Number.NaN;
-
-			this.x = function() { return this.x1; }
-			this.y = function() { return this.y1; }
-			this.width = function() { return this.x2 - this.x1; }
-			this.height = function() { return this.y2 - this.y1; }
-
-			this.addPoint = function(x, y) {
-				if (x != null) {
-					if (isNaN(this.x1) || isNaN(this.x2)) {
-						this.x1 = x;
-						this.x2 = x;
-					}
-					if (x < this.x1) this.x1 = x;
-					if (x > this.x2) this.x2 = x;
-				}
-
-				if (y != null) {
-					if (isNaN(this.y1) || isNaN(this.y2)) {
-						this.y1 = y;
-						this.y2 = y;
-					}
-					if (y < this.y1) this.y1 = y;
-					if (y > this.y2) this.y2 = y;
-				}
-			}
-			this.addX = function(x) { this.addPoint(x, null); }
-			this.addY = function(y) { this.addPoint(null, y); }
-
-			this.addBoundingBox = function(bb) {
-				this.addPoint(bb.x1, bb.y1);
-				this.addPoint(bb.x2, bb.y2);
-			}
-
-			this.addQuadraticCurve = function(p0x, p0y, p1x, p1y, p2x, p2y) {
-				var cp1x = p0x + 2/3 * (p1x - p0x); // CP1 = QP0 + 2/3 *(QP1-QP0)
-				var cp1y = p0y + 2/3 * (p1y - p0y); // CP1 = QP0 + 2/3 *(QP1-QP0)
-				var cp2x = cp1x + 1/3 * (p2x - p0x); // CP2 = CP1 + 1/3 *(QP2-QP0)
-				var cp2y = cp1y + 1/3 * (p2y - p0y); // CP2 = CP1 + 1/3 *(QP2-QP0)
-				this.addBezierCurve(p0x, p0y, cp1x, cp2x, cp1y,	cp2y, p2x, p2y);
-			}
-
-			this.addBezierCurve = function(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y) {
-				// from http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
-				var p0 = [p0x, p0y], p1 = [p1x, p1y], p2 = [p2x, p2y], p3 = [p3x, p3y];
-				this.addPoint(p0[0], p0[1]);
-				this.addPoint(p3[0], p3[1]);
-
-				for (i=0; i<=1; i++) {
-					var f = function(t) {
-						return Math.pow(1-t, 3) * p0[i]
-						+ 3 * Math.pow(1-t, 2) * t * p1[i]
-						+ 3 * (1-t) * Math.pow(t, 2) * p2[i]
-						+ Math.pow(t, 3) * p3[i];
-					}
-
-					var b = 6 * p0[i] - 12 * p1[i] + 6 * p2[i];
-					var a = -3 * p0[i] + 9 * p1[i] - 9 * p2[i] + 3 * p3[i];
-					var c = 3 * p1[i] - 3 * p0[i];
-
-					if (a == 0) {
-						if (b == 0) continue;
-						var t = -c / b;
-						if (0 < t && t < 1) {
-							if (i == 0) this.addX(f(t));
-							if (i == 1) this.addY(f(t));
-						}
-						continue;
-					}
-
-					var b2ac = Math.pow(b, 2) - 4 * c * a;
-					if (b2ac < 0) continue;
-					var t1 = (-b + Math.sqrt(b2ac)) / (2 * a);
-					if (0 < t1 && t1 < 1) {
-						if (i == 0) this.addX(f(t1));
-						if (i == 1) this.addY(f(t1));
-					}
-					var t2 = (-b - Math.sqrt(b2ac)) / (2 * a);
-					if (0 < t2 && t2 < 1) {
-						if (i == 0) this.addX(f(t2));
-						if (i == 1) this.addY(f(t2));
-					}
-				}
-			}
-
-			this.isPointInBox = function(x, y) {
-				return (this.x1 <= x && x <= this.x2 && this.y1 <= y && y <= this.y2);
-			}
-
-			this.addPoint(x1, y1);
-			this.addPoint(x2, y2);
-		}
-
-		// transforms
-		svg.Transform = function(v) {
-			var that = this;
-			this.Type = {}
-
-			// translate
-			this.Type.translate = function(s) {
-				this.p = svg.CreatePoint(s);
-				this.apply = function(ctx) {
-					ctx.translate(this.p.x || 0.0, this.p.y || 0.0);
-				}
-				this.unapply = function(ctx) {
-					ctx.translate(-1.0 * this.p.x || 0.0, -1.0 * this.p.y || 0.0);
-				}
-				this.applyToPoint = function(p) {
-					p.applyTransform([1, 0, 0, 1, this.p.x || 0.0, this.p.y || 0.0]);
-				}
-			}
-
-			// rotate
-			this.Type.rotate = function(s) {
-				var a = svg.ToNumberArray(s);
-				this.angle = new svg.Property('angle', a[0]);
-				this.cx = a[1] || 0;
-				this.cy = a[2] || 0;
-				this.apply = function(ctx) {
-					ctx.translate(this.cx, this.cy);
-					ctx.rotate(this.angle.toRadians());
-					ctx.translate(-this.cx, -this.cy);
-				}
-				this.unapply = function(ctx) {
-					ctx.translate(this.cx, this.cy);
-					ctx.rotate(-1.0 * this.angle.toRadians());
-					ctx.translate(-this.cx, -this.cy);
-				}
-				this.applyToPoint = function(p) {
-					var a = this.angle.toRadians();
-					p.applyTransform([1, 0, 0, 1, this.p.x || 0.0, this.p.y || 0.0]);
-					p.applyTransform([Math.cos(a), Math.sin(a), -Math.sin(a), Math.cos(a), 0, 0]);
-					p.applyTransform([1, 0, 0, 1, -this.p.x || 0.0, -this.p.y || 0.0]);
-				}
-			}
-
-			this.Type.scale = function(s) {
-				this.p = svg.CreatePoint(s);
-				this.apply = function(ctx) {
-					ctx.scale(this.p.x || 1.0, this.p.y || this.p.x || 1.0);
-				}
-				this.unapply = function(ctx) {
-					ctx.scale(1.0 / this.p.x || 1.0, 1.0 / this.p.y || this.p.x || 1.0);
-				}
-				this.applyToPoint = function(p) {
-					p.applyTransform([this.p.x || 0.0, 0, 0, this.p.y || 0.0, 0, 0]);
-				}
-			}
-
-			this.Type.matrix = function(s) {
-				this.m = svg.ToNumberArray(s);
-				this.apply = function(ctx) {
-					ctx.transform(this.m[0], this.m[1], this.m[2], this.m[3], this.m[4], this.m[5]);
-				}
-				this.unapply = function(ctx) {
-					var a = this.m[0];
-					var b = this.m[2];
-					var c = this.m[4];
-					var d = this.m[1];
-					var e = this.m[3];
-					var f = this.m[5];
-					var g = 0.0;
-					var h = 0.0;
-					var i = 1.0;
-					var det = 1 / (a*(e*i-f*h)-b*(d*i-f*g)+c*(d*h-e*g));
-					ctx.transform(
-						det*(e*i-f*h),
-						det*(f*g-d*i),
-						det*(c*h-b*i),
-						det*(a*i-c*g),
-						det*(b*f-c*e),
-						det*(c*d-a*f)
-					);
-				}
-				this.applyToPoint = function(p) {
-					p.applyTransform(this.m);
-				}
-			}
-
-			this.Type.SkewBase = function(s) {
-				this.base = that.Type.matrix;
-				this.base(s);
-				this.angle = new svg.Property('angle', s);
-			}
-			this.Type.SkewBase.prototype = new this.Type.matrix;
-
-			this.Type.skewX = function(s) {
-				this.base = that.Type.SkewBase;
-				this.base(s);
-				this.m = [1, 0, Math.tan(this.angle.toRadians()), 1, 0, 0];
-			}
-			this.Type.skewX.prototype = new this.Type.SkewBase;
-
-			this.Type.skewY = function(s) {
-				this.base = that.Type.SkewBase;
-				this.base(s);
-				this.m = [1, Math.tan(this.angle.toRadians()), 0, 1, 0, 0];
-			}
-			this.Type.skewY.prototype = new this.Type.SkewBase;
-
-			this.transforms = [];
-
-			this.apply = function(ctx) {
-				for (var i=0; i<this.transforms.length; i++) {
-					this.transforms[i].apply(ctx);
-				}
-			}
-
-			this.unapply = function(ctx) {
-				for (var i=this.transforms.length-1; i>=0; i--) {
-					this.transforms[i].unapply(ctx);
-				}
-			}
-
-			this.applyToPoint = function(p) {
-				for (var i=0; i<this.transforms.length; i++) {
-					this.transforms[i].applyToPoint(p);
-				}
-			}
-
-			var data = svg.trim(svg.compressSpaces(v)).replace(/\)([a-zA-Z])/g, ') $1').replace(/\)(\s?,\s?)/g,') ').split(/\s(?=[a-z])/);
-			for (var i=0; i<data.length; i++) {
-				var type = svg.trim(data[i].split('(')[0]);
-				var s = data[i].split('(')[1].replace(')','');
-				var transformType = this.Type[type];
-				if (typeof transformType != 'undefined') {
-					var transform = new transformType(s);
-					transform.type = type;
-					this.transforms.push(transform);
-				}
-			}
-		}
-
-		// aspect ratio
-		svg.AspectRatio = function(ctx, aspectRatio, width, desiredWidth, height, desiredHeight, minX, minY, refX, refY) {
-			// aspect ratio - http://www.w3.org/TR/SVG/coords.html#PreserveAspectRatioAttribute
-			aspectRatio = svg.compressSpaces(aspectRatio);
-			aspectRatio = aspectRatio.replace(/^defer\s/,''); // ignore defer
-			var align = aspectRatio.split(' ')[0] || 'xMidYMid';
-			var meetOrSlice = aspectRatio.split(' ')[1] || 'meet';
-
-			// calculate scale
-			var scaleX = width / desiredWidth;
-			var scaleY = height / desiredHeight;
-			var scaleMin = Math.min(scaleX, scaleY);
-			var scaleMax = Math.max(scaleX, scaleY);
-			if (meetOrSlice == 'meet') { desiredWidth *= scaleMin; desiredHeight *= scaleMin; }
-			if (meetOrSlice == 'slice') { desiredWidth *= scaleMax; desiredHeight *= scaleMax; }
-
-			refX = new svg.Property('refX', refX);
-			refY = new svg.Property('refY', refY);
-			if (refX.hasValue() && refY.hasValue()) {
-				ctx.translate(-scaleMin * refX.toPixels('x'), -scaleMin * refY.toPixels('y'));
-			}
-			else {
-				// align
-				if (align.match(/^xMid/) && ((meetOrSlice == 'meet' && scaleMin == scaleY) || (meetOrSlice == 'slice' && scaleMax == scaleY))) ctx.translate(width / 2.0 - desiredWidth / 2.0, 0);
-				if (align.match(/YMid$/) && ((meetOrSlice == 'meet' && scaleMin == scaleX) || (meetOrSlice == 'slice' && scaleMax == scaleX))) ctx.translate(0, height / 2.0 - desiredHeight / 2.0);
-				if (align.match(/^xMax/) && ((meetOrSlice == 'meet' && scaleMin == scaleY) || (meetOrSlice == 'slice' && scaleMax == scaleY))) ctx.translate(width - desiredWidth, 0);
-				if (align.match(/YMax$/) && ((meetOrSlice == 'meet' && scaleMin == scaleX) || (meetOrSlice == 'slice' && scaleMax == scaleX))) ctx.translate(0, height - desiredHeight);
-			}
-
-			// scale
-			if (align == 'none') ctx.scale(scaleX, scaleY);
-			else if (meetOrSlice == 'meet') ctx.scale(scaleMin, scaleMin);
-			else if (meetOrSlice == 'slice') ctx.scale(scaleMax, scaleMax);
-
-			// translate
-			ctx.translate(minX == null ? 0 : -minX, minY == null ? 0 : -minY);
-		}
-
-		// elements
-		svg.Element = {}
-
-		svg.EmptyProperty = new svg.Property('EMPTY', '');
-
-		svg.Element.ElementBase = function(node) {
-			this.attributes = {};
-			this.styles = {};
-			this.stylesSpecificity = {};
-			this.children = [];
-
-			// get or create attribute
-			this.attribute = function(name, createIfNotExists) {
-				var a = this.attributes[name];
-				if (a != null) return a;
-
-				if (createIfNotExists == true) { a = new svg.Property(name, ''); this.attributes[name] = a; }
-				return a || svg.EmptyProperty;
-			}
-
-			this.getHrefAttribute = function() {
-				for (var a in this.attributes) {
-					if (a == 'href' || a.match(/:href$/)) {
-						return this.attributes[a];
-					}
-				}
-				return svg.EmptyProperty;
-			}
-
-			// get or create style, crawls up node tree
-			this.style = function(name, createIfNotExists, skipAncestors) {
-				var s = this.styles[name];
-				if (s != null) return s;
-
-				var a = this.attribute(name);
-				if (a != null && a.hasValue()) {
-					this.styles[name] = a; // move up to me to cache
-					return a;
-				}
-
-				if (skipAncestors != true) {
-					var p = this.parent;
-					if (p != null) {
-						var ps = p.style(name);
-						if (ps != null && ps.hasValue()) {
-							return ps;
-						}
-					}
-				}
-
-				if (createIfNotExists == true) { s = new svg.Property(name, ''); this.styles[name] = s; }
-				return s || svg.EmptyProperty;
-			}
-
-			// base render
-			this.render = function(ctx) {
-				// don't render display=none
-				if (this.style('display').value == 'none') return;
-
-				// don't render visibility=hidden
-				if (this.style('visibility').value == 'hidden') return;
-
-				ctx.save();
-				if (this.style('mask').hasValue()) { // mask
-					var mask = this.style('mask').getDefinition();
-					if (mask != null) mask.apply(ctx, this);
-				}
-				else if (this.style('filter').hasValue()) { // filter
-					var filter = this.style('filter').getDefinition();
-					if (filter != null) filter.apply(ctx, this);
-				}
-				else {
-					this.setContext(ctx);
-					this.renderChildren(ctx);
-					this.clearContext(ctx);
-				}
-				ctx.restore();
-			}
-
-			// base set context
-			this.setContext = function(ctx) {
-				// OVERRIDE ME!
-			}
-
-			// base clear context
-			this.clearContext = function(ctx) {
-				// OVERRIDE ME!
-			}
-
-			// base render children
-			this.renderChildren = function(ctx) {
-				for (var i=0; i<this.children.length; i++) {
-					this.children[i].render(ctx);
-				}
-			}
-
-			this.addChild = function(childNode, create) {
-				var child = childNode;
-				if (create) child = svg.CreateElement(childNode);
-				child.parent = this;
-				if (child.type != 'title') { this.children.push(child);	}
-			}
-
-			this.addStylesFromStyleDefinition = function () {
-				// add styles
-				for (var selector in svg.Styles) {
-					if (selector[0] != '@' && matchesSelector(node, selector)) {
-						var styles = svg.Styles[selector];
-						var specificity = svg.StylesSpecificity[selector];
-						if (styles != null) {
-							for (var name in styles) {
-								var existingSpecificity = this.stylesSpecificity[name];
-								if (typeof existingSpecificity == 'undefined') {
-									existingSpecificity = '000';
-								}
-								if (specificity > existingSpecificity) {
-									this.styles[name] = styles[name];
-									this.stylesSpecificity[name] = specificity;
-								}
-							}
-						}
-					}
-				}
-			};
-
-			// Microsoft Edge fix
-			var allUppercase = new RegExp("^[A-Z\-]+$");
-			var normalizeAttributeName = function (name) {
-				if (allUppercase.test(name)) {
-					return name.toLowerCase();
-				}
-				return name;
-			};
-
-			if (node != null && node.nodeType == 1) { //ELEMENT_NODE
-				// add attributes
-				for (var i=0; i<node.attributes.length; i++) {
-					var attribute = node.attributes[i];
-					var nodeName = normalizeAttributeName(attribute.nodeName);
-					this.attributes[nodeName] = new svg.Property(nodeName, attribute.value);
-				}
-
-				this.addStylesFromStyleDefinition();
-
-				// add inline styles
-				if (this.attribute('style').hasValue()) {
-					var styles = this.attribute('style').value.split(';');
-					for (var i=0; i<styles.length; i++) {
-						if (svg.trim(styles[i]) != '') {
-							var style = styles[i].split(':');
-							var name = svg.trim(style[0]);
-							var value = svg.trim(style[1]);
-							this.styles[name] = new svg.Property(name, value);
-						}
-					}
-				}
-
-				// add id
-				if (this.attribute('id').hasValue()) {
-					if (svg.Definitions[this.attribute('id').value] == null) {
-						svg.Definitions[this.attribute('id').value] = this;
-					}
-				}
-
-				// add children
-				for (var i=0; i<node.childNodes.length; i++) {
-					var childNode = node.childNodes[i];
-					if (childNode.nodeType == 1) this.addChild(childNode, true); //ELEMENT_NODE
-					if (this.captureTextNodes && (childNode.nodeType == 3 || childNode.nodeType == 4)) {
-						var text = childNode.value || childNode.text || childNode.textContent || '';
-						if (svg.compressSpaces(text) != '') {
-							this.addChild(new svg.Element.tspan(childNode), false); // TEXT_NODE
-						}
-					}
-				}
-			}
-		}
-
-		svg.Element.RenderedElementBase = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.setContext = function(ctx) {
-				// fill
-				if (this.style('fill').isUrlDefinition()) {
-					var fs = this.style('fill').getFillStyleDefinition(this, this.style('fill-opacity'));
-					if (fs != null) ctx.fillStyle = fs;
-				}
-				else if (this.style('fill').hasValue()) {
-					var fillStyle = this.style('fill');
-					if (fillStyle.value == 'currentColor') fillStyle.value = this.style('color').value;
-					if (fillStyle.value != 'inherit') ctx.fillStyle = (fillStyle.value == 'none' ? 'rgba(0,0,0,0)' : fillStyle.value);
-				}
-				if (this.style('fill-opacity').hasValue()) {
-					var fillStyle = new svg.Property('fill', ctx.fillStyle);
-					fillStyle = fillStyle.addOpacity(this.style('fill-opacity'));
-					ctx.fillStyle = fillStyle.value;
-				}
-
-				// stroke
-				if (this.style('stroke').isUrlDefinition()) {
-					var fs = this.style('stroke').getFillStyleDefinition(this, this.style('stroke-opacity'));
-					if (fs != null) ctx.strokeStyle = fs;
-				}
-				else if (this.style('stroke').hasValue()) {
-					var strokeStyle = this.style('stroke');
-					if (strokeStyle.value == 'currentColor') strokeStyle.value = this.style('color').value;
-					if (strokeStyle.value != 'inherit') ctx.strokeStyle = (strokeStyle.value == 'none' ? 'rgba(0,0,0,0)' : strokeStyle.value);
-				}
-				if (this.style('stroke-opacity').hasValue()) {
-					var strokeStyle = new svg.Property('stroke', ctx.strokeStyle);
-					strokeStyle = strokeStyle.addOpacity(this.style('stroke-opacity'));
-					ctx.strokeStyle = strokeStyle.value;
-				}
-				if (this.style('stroke-width').hasValue()) {
-					var newLineWidth = this.style('stroke-width').toPixels();
-					ctx.lineWidth = newLineWidth == 0 ? 0.001 : newLineWidth; // browsers don't respect 0
-			    }
-				if (this.style('stroke-linecap').hasValue()) ctx.lineCap = this.style('stroke-linecap').value;
-				if (this.style('stroke-linejoin').hasValue()) ctx.lineJoin = this.style('stroke-linejoin').value;
-				if (this.style('stroke-miterlimit').hasValue()) ctx.miterLimit = this.style('stroke-miterlimit').value;
-				if (this.style('stroke-dasharray').hasValue() && this.style('stroke-dasharray').value != 'none') {
-					var gaps = svg.ToNumberArray(this.style('stroke-dasharray').value);
-					if (typeof ctx.setLineDash != 'undefined') { ctx.setLineDash(gaps); }
-					else if (typeof ctx.webkitLineDash != 'undefined') { ctx.webkitLineDash = gaps; }
-					else if (typeof ctx.mozDash != 'undefined' && !(gaps.length==1 && gaps[0]==0)) { ctx.mozDash = gaps; }
-
-					var offset = this.style('stroke-dashoffset').numValueOrDefault(1);
-					if (typeof ctx.lineDashOffset != 'undefined') { ctx.lineDashOffset = offset; }
-					else if (typeof ctx.webkitLineDashOffset != 'undefined') { ctx.webkitLineDashOffset = offset; }
-					else if (typeof ctx.mozDashOffset != 'undefined') { ctx.mozDashOffset = offset; }
-				}
-
-				// font
-				if (typeof ctx.font != 'undefined') {
-					ctx.font = svg.Font.CreateFont(
-						this.style('font-style').value,
-						this.style('font-variant').value,
-						this.style('font-weight').value,
-						this.style('font-size').hasValue() ? this.style('font-size').toPixels() + 'px' : '',
-						this.style('font-family').value).toString();
-				}
-
-				// transform
-				if (this.style('transform', false, true).hasValue()) {
-					var transform = new svg.Transform(this.style('transform', false, true).value);
-					transform.apply(ctx);
-				}
-
-				// clip
-				if (this.style('clip-path', false, true).hasValue()) {
-					var clip = this.style('clip-path', false, true).getDefinition();
-					if (clip != null) clip.apply(ctx);
-				}
-
-				// opacity
-				if (this.style('opacity').hasValue()) {
-					ctx.globalAlpha = this.style('opacity').numValue();
-				}
-			}
-		}
-		svg.Element.RenderedElementBase.prototype = new svg.Element.ElementBase;
-
-		svg.Element.PathElementBase = function(node) {
-			this.base = svg.Element.RenderedElementBase;
-			this.base(node);
-
-			this.path = function(ctx) {
-				if (ctx != null) ctx.beginPath();
-				return new svg.BoundingBox();
-			}
-
-			this.renderChildren = function(ctx) {
-				this.path(ctx);
-				svg.Mouse.checkPath(this, ctx);
-				if (ctx.fillStyle != '') {
-					if (this.style('fill-rule').valueOrDefault('inherit') != 'inherit') { ctx.fill(this.style('fill-rule').value); }
-					else { ctx.fill(); }
-				}
-				if (ctx.strokeStyle != '') ctx.stroke();
-
-				var markers = this.getMarkers();
-				if (markers != null) {
-					if (this.style('marker-start').isUrlDefinition()) {
-						var marker = this.style('marker-start').getDefinition();
-						marker.render(ctx, markers[0][0], markers[0][1]);
-					}
-					if (this.style('marker-mid').isUrlDefinition()) {
-						var marker = this.style('marker-mid').getDefinition();
-						for (var i=1;i<markers.length-1;i++) {
-							marker.render(ctx, markers[i][0], markers[i][1]);
-						}
-					}
-					if (this.style('marker-end').isUrlDefinition()) {
-						var marker = this.style('marker-end').getDefinition();
-						marker.render(ctx, markers[markers.length-1][0], markers[markers.length-1][1]);
-					}
-				}
-			}
-
-			this.getBoundingBox = function() {
-				return this.path();
-			}
-
-			this.getMarkers = function() {
-				return null;
-			}
-		}
-		svg.Element.PathElementBase.prototype = new svg.Element.RenderedElementBase;
-
-		// svg element
-		svg.Element.svg = function(node) {
-			this.base = svg.Element.RenderedElementBase;
-			this.base(node);
-
-			this.baseClearContext = this.clearContext;
-			this.clearContext = function(ctx) {
-				this.baseClearContext(ctx);
-				svg.ViewPort.RemoveCurrent();
-			}
-
-			this.baseSetContext = this.setContext;
-			this.setContext = function(ctx) {
-				// initial values and defaults
-				ctx.strokeStyle = 'rgba(0,0,0,0)';
-				ctx.lineCap = 'butt';
-				ctx.lineJoin = 'miter';
-				ctx.miterLimit = 4;
-				if (typeof ctx.font != 'undefined' && typeof window.getComputedStyle != 'undefined') {
-					ctx.font = window.getComputedStyle(ctx.canvas).getPropertyValue('font');
-				}
-
-				this.baseSetContext(ctx);
-
-				// create new view port
-				if (!this.attribute('x').hasValue()) this.attribute('x', true).value = 0;
-				if (!this.attribute('y').hasValue()) this.attribute('y', true).value = 0;
-				ctx.translate(this.attribute('x').toPixels('x'), this.attribute('y').toPixels('y'));
-
-				var width = svg.ViewPort.width();
-				var height = svg.ViewPort.height();
-
-				if (!this.attribute('width').hasValue()) this.attribute('width', true).value = '100%';
-				if (!this.attribute('height').hasValue()) this.attribute('height', true).value = '100%';
-				if (typeof this.root == 'undefined') {
-					width = this.attribute('width').toPixels('x');
-					height = this.attribute('height').toPixels('y');
-
-					var x = 0;
-					var y = 0;
-					if (this.attribute('refX').hasValue() && this.attribute('refY').hasValue()) {
-						x = -this.attribute('refX').toPixels('x');
-						y = -this.attribute('refY').toPixels('y');
-					}
-
-					if (this.attribute('overflow').valueOrDefault('hidden') != 'visible') {
-						ctx.beginPath();
-						ctx.moveTo(x, y);
-						ctx.lineTo(width, y);
-						ctx.lineTo(width, height);
-						ctx.lineTo(x, height);
-						ctx.closePath();
-						ctx.clip();
-					}
-				}
-				svg.ViewPort.SetCurrent(width, height);
-
-				// viewbox
-				if (this.attribute('viewBox').hasValue()) {
-					var viewBox = svg.ToNumberArray(this.attribute('viewBox').value);
-					var minX = viewBox[0];
-					var minY = viewBox[1];
-					width = viewBox[2];
-					height = viewBox[3];
-
-					svg.AspectRatio(ctx,
-									this.attribute('preserveAspectRatio').value,
-									svg.ViewPort.width(),
-									width,
-									svg.ViewPort.height(),
-									height,
-									minX,
-									minY,
-									this.attribute('refX').value,
-									this.attribute('refY').value);
-
-					svg.ViewPort.RemoveCurrent();
-					svg.ViewPort.SetCurrent(viewBox[2], viewBox[3]);
-				}
-			}
-		}
-		svg.Element.svg.prototype = new svg.Element.RenderedElementBase;
-
-		// rect element
-		svg.Element.rect = function(node) {
-			this.base = svg.Element.PathElementBase;
-			this.base(node);
-
-			this.path = function(ctx) {
-				var x = this.attribute('x').toPixels('x');
-				var y = this.attribute('y').toPixels('y');
-				var width = this.attribute('width').toPixels('x');
-				var height = this.attribute('height').toPixels('y');
-				var rx = this.attribute('rx').toPixels('x');
-				var ry = this.attribute('ry').toPixels('y');
-				if (this.attribute('rx').hasValue() && !this.attribute('ry').hasValue()) ry = rx;
-				if (this.attribute('ry').hasValue() && !this.attribute('rx').hasValue()) rx = ry;
-				rx = Math.min(rx, width / 2.0);
-				ry = Math.min(ry, height / 2.0);
-				if (ctx != null) {
-					ctx.beginPath();
-					ctx.moveTo(x + rx, y);
-					ctx.lineTo(x + width - rx, y);
-					ctx.quadraticCurveTo(x + width, y, x + width, y + ry)
-					ctx.lineTo(x + width, y + height - ry);
-					ctx.quadraticCurveTo(x + width, y + height, x + width - rx, y + height)
-					ctx.lineTo(x + rx, y + height);
-					ctx.quadraticCurveTo(x, y + height, x, y + height - ry)
-					ctx.lineTo(x, y + ry);
-					ctx.quadraticCurveTo(x, y, x + rx, y)
-					ctx.closePath();
-				}
-
-				return new svg.BoundingBox(x, y, x + width, y + height);
-			}
-		}
-		svg.Element.rect.prototype = new svg.Element.PathElementBase;
-
-		// circle element
-		svg.Element.circle = function(node) {
-			this.base = svg.Element.PathElementBase;
-			this.base(node);
-
-			this.path = function(ctx) {
-				var cx = this.attribute('cx').toPixels('x');
-				var cy = this.attribute('cy').toPixels('y');
-				var r = this.attribute('r').toPixels();
-
-				if (ctx != null) {
-					ctx.beginPath();
-					ctx.arc(cx, cy, r, 0, Math.PI * 2, true);
-					ctx.closePath();
-				}
-
-				return new svg.BoundingBox(cx - r, cy - r, cx + r, cy + r);
-			}
-		}
-		svg.Element.circle.prototype = new svg.Element.PathElementBase;
-
-		// ellipse element
-		svg.Element.ellipse = function(node) {
-			this.base = svg.Element.PathElementBase;
-			this.base(node);
-
-			this.path = function(ctx) {
-				var KAPPA = 4 * ((Math.sqrt(2) - 1) / 3);
-				var rx = this.attribute('rx').toPixels('x');
-				var ry = this.attribute('ry').toPixels('y');
-				var cx = this.attribute('cx').toPixels('x');
-				var cy = this.attribute('cy').toPixels('y');
-
-				if (ctx != null) {
-					ctx.beginPath();
-					ctx.moveTo(cx, cy - ry);
-					ctx.bezierCurveTo(cx + (KAPPA * rx), cy - ry,  cx + rx, cy - (KAPPA * ry), cx + rx, cy);
-					ctx.bezierCurveTo(cx + rx, cy + (KAPPA * ry), cx + (KAPPA * rx), cy + ry, cx, cy + ry);
-					ctx.bezierCurveTo(cx - (KAPPA * rx), cy + ry, cx - rx, cy + (KAPPA * ry), cx - rx, cy);
-					ctx.bezierCurveTo(cx - rx, cy - (KAPPA * ry), cx - (KAPPA * rx), cy - ry, cx, cy - ry);
-					ctx.closePath();
-				}
-
-				return new svg.BoundingBox(cx - rx, cy - ry, cx + rx, cy + ry);
-			}
-		}
-		svg.Element.ellipse.prototype = new svg.Element.PathElementBase;
-
-		// line element
-		svg.Element.line = function(node) {
-			this.base = svg.Element.PathElementBase;
-			this.base(node);
-
-			this.getPoints = function() {
-				return [
-					new svg.Point(this.attribute('x1').toPixels('x'), this.attribute('y1').toPixels('y')),
-					new svg.Point(this.attribute('x2').toPixels('x'), this.attribute('y2').toPixels('y'))];
-			}
-
-			this.path = function(ctx) {
-				var points = this.getPoints();
-
-				if (ctx != null) {
-					ctx.beginPath();
-					ctx.moveTo(points[0].x, points[0].y);
-					ctx.lineTo(points[1].x, points[1].y);
-				}
-
-				return new svg.BoundingBox(points[0].x, points[0].y, points[1].x, points[1].y);
-			}
-
-			this.getMarkers = function() {
-				var points = this.getPoints();
-				var a = points[0].angleTo(points[1]);
-				return [[points[0], a], [points[1], a]];
-			}
-		}
-		svg.Element.line.prototype = new svg.Element.PathElementBase;
-
-		// polyline element
-		svg.Element.polyline = function(node) {
-			this.base = svg.Element.PathElementBase;
-			this.base(node);
-
-			this.points = svg.CreatePath(this.attribute('points').value);
-			this.path = function(ctx) {
-				var bb = new svg.BoundingBox(this.points[0].x, this.points[0].y);
-				if (ctx != null) {
-					ctx.beginPath();
-					ctx.moveTo(this.points[0].x, this.points[0].y);
-				}
-				for (var i=1; i<this.points.length; i++) {
-					bb.addPoint(this.points[i].x, this.points[i].y);
-					if (ctx != null) ctx.lineTo(this.points[i].x, this.points[i].y);
-				}
-				return bb;
-			}
-
-			this.getMarkers = function() {
-				var markers = [];
-				for (var i=0; i<this.points.length - 1; i++) {
-					markers.push([this.points[i], this.points[i].angleTo(this.points[i+1])]);
-				}
-				if (markers.length > 0) {
-					markers.push([this.points[this.points.length-1], markers[markers.length-1][1]]);
-				}
-				return markers;
-			}
-		}
-		svg.Element.polyline.prototype = new svg.Element.PathElementBase;
-
-		// polygon element
-		svg.Element.polygon = function(node) {
-			this.base = svg.Element.polyline;
-			this.base(node);
-
-			this.basePath = this.path;
-			this.path = function(ctx) {
-				var bb = this.basePath(ctx);
-				if (ctx != null) {
-					ctx.lineTo(this.points[0].x, this.points[0].y);
-					ctx.closePath();
-				}
-				return bb;
-			}
-		}
-		svg.Element.polygon.prototype = new svg.Element.polyline;
-
-		// path element
-		svg.Element.path = function(node) {
-			this.base = svg.Element.PathElementBase;
-			this.base(node);
-
-			var d = this.attribute('d').value;
-			// TODO: convert to real lexer based on http://www.w3.org/TR/SVG11/paths.html#PathDataBNF
-			d = d.replace(/,/gm,' '); // get rid of all commas
-			// As the end of a match can also be the start of the next match, we need to run this replace twice.
-			for(var i=0; i<2; i++)
-				d = d.replace(/([MmZzLlHhVvCcSsQqTtAa])([^\s])/gm,'$1 $2'); // suffix commands with spaces
-			d = d.replace(/([^\s])([MmZzLlHhVvCcSsQqTtAa])/gm,'$1 $2'); // prefix commands with spaces
-			d = d.replace(/([0-9])([+\-])/gm,'$1 $2'); // separate digits on +- signs
-			// Again, we need to run this twice to find all occurances
-			for(var i=0; i<2; i++)
-				d = d.replace(/(\.[0-9]*)(\.)/gm,'$1 $2'); // separate digits when they start with a comma
-			d = d.replace(/([Aa](\s+[0-9]+){3})\s+([01])\s*([01])/gm,'$1 $3 $4 '); // shorthand elliptical arc path syntax
-			d = svg.compressSpaces(d); // compress multiple spaces
-			d = svg.trim(d);
-			this.PathParser = new (function(d) {
-				this.tokens = d.split(' ');
-
-				this.reset = function() {
-					this.i = -1;
-					this.command = '';
-					this.previousCommand = '';
-					this.start = new svg.Point(0, 0);
-					this.control = new svg.Point(0, 0);
-					this.current = new svg.Point(0, 0);
-					this.points = [];
-					this.angles = [];
-				}
-
-				this.isEnd = function() {
-					return this.i >= this.tokens.length - 1;
-				}
-
-				this.isCommandOrEnd = function() {
-					if (this.isEnd()) return true;
-					return this.tokens[this.i + 1].match(/^[A-Za-z]$/) != null;
-				}
-
-				this.isRelativeCommand = function() {
-					switch(this.command)
-					{
-						case 'm':
-						case 'l':
-						case 'h':
-						case 'v':
-						case 'c':
-						case 's':
-						case 'q':
-						case 't':
-						case 'a':
-						case 'z':
-							return true;
-							break;
-					}
-					return false;
-				}
-
-				this.getToken = function() {
-					this.i++;
-					return this.tokens[this.i];
-				}
-
-				this.getScalar = function() {
-					return parseFloat(this.getToken());
-				}
-
-				this.nextCommand = function() {
-					this.previousCommand = this.command;
-					this.command = this.getToken();
-				}
-
-				this.getPoint = function() {
-					var p = new svg.Point(this.getScalar(), this.getScalar());
-					return this.makeAbsolute(p);
-				}
-
-				this.getAsControlPoint = function() {
-					var p = this.getPoint();
-					this.control = p;
-					return p;
-				}
-
-				this.getAsCurrentPoint = function() {
-					var p = this.getPoint();
-					this.current = p;
-					return p;
-				}
-
-				this.getReflectedControlPoint = function() {
-					if (this.previousCommand.toLowerCase() != 'c' &&
-					    this.previousCommand.toLowerCase() != 's' &&
-						this.previousCommand.toLowerCase() != 'q' &&
-						this.previousCommand.toLowerCase() != 't' ){
-						return this.current;
-					}
-
-					// reflect point
-					var p = new svg.Point(2 * this.current.x - this.control.x, 2 * this.current.y - this.control.y);
-					return p;
-				}
-
-				this.makeAbsolute = function(p) {
-					if (this.isRelativeCommand()) {
-						p.x += this.current.x;
-						p.y += this.current.y;
-					}
-					return p;
-				}
-
-				this.addMarker = function(p, from, priorTo) {
-					// if the last angle isn't filled in because we didn't have this point yet ...
-					if (priorTo != null && this.angles.length > 0 && this.angles[this.angles.length-1] == null) {
-						this.angles[this.angles.length-1] = this.points[this.points.length-1].angleTo(priorTo);
-					}
-					this.addMarkerAngle(p, from == null ? null : from.angleTo(p));
-				}
-
-				this.addMarkerAngle = function(p, a) {
-					this.points.push(p);
-					this.angles.push(a);
-				}
-
-				this.getMarkerPoints = function() { return this.points; }
-				this.getMarkerAngles = function() {
-					for (var i=0; i<this.angles.length; i++) {
-						if (this.angles[i] == null) {
-							for (var j=i+1; j<this.angles.length; j++) {
-								if (this.angles[j] != null) {
-									this.angles[i] = this.angles[j];
-									break;
-								}
-							}
-						}
-					}
-					return this.angles;
-				}
-			})(d);
-
-			this.path = function(ctx) {
-				var pp = this.PathParser;
-				pp.reset();
-
-				var bb = new svg.BoundingBox();
-				if (ctx != null) ctx.beginPath();
-				while (!pp.isEnd()) {
-					pp.nextCommand();
-					switch (pp.command) {
-					case 'M':
-					case 'm':
-						var p = pp.getAsCurrentPoint();
-						pp.addMarker(p);
-						bb.addPoint(p.x, p.y);
-						if (ctx != null) ctx.moveTo(p.x, p.y);
-						pp.start = pp.current;
-						while (!pp.isCommandOrEnd()) {
-							var p = pp.getAsCurrentPoint();
-							pp.addMarker(p, pp.start);
-							bb.addPoint(p.x, p.y);
-							if (ctx != null) ctx.lineTo(p.x, p.y);
-						}
-						break;
-					case 'L':
-					case 'l':
-						while (!pp.isCommandOrEnd()) {
-							var c = pp.current;
-							var p = pp.getAsCurrentPoint();
-							pp.addMarker(p, c);
-							bb.addPoint(p.x, p.y);
-							if (ctx != null) ctx.lineTo(p.x, p.y);
-						}
-						break;
-					case 'H':
-					case 'h':
-						while (!pp.isCommandOrEnd()) {
-							var newP = new svg.Point((pp.isRelativeCommand() ? pp.current.x : 0) + pp.getScalar(), pp.current.y);
-							pp.addMarker(newP, pp.current);
-							pp.current = newP;
-							bb.addPoint(pp.current.x, pp.current.y);
-							if (ctx != null) ctx.lineTo(pp.current.x, pp.current.y);
-						}
-						break;
-					case 'V':
-					case 'v':
-						while (!pp.isCommandOrEnd()) {
-							var newP = new svg.Point(pp.current.x, (pp.isRelativeCommand() ? pp.current.y : 0) + pp.getScalar());
-							pp.addMarker(newP, pp.current);
-							pp.current = newP;
-							bb.addPoint(pp.current.x, pp.current.y);
-							if (ctx != null) ctx.lineTo(pp.current.x, pp.current.y);
-						}
-						break;
-					case 'C':
-					case 'c':
-						while (!pp.isCommandOrEnd()) {
-							var curr = pp.current;
-							var p1 = pp.getPoint();
-							var cntrl = pp.getAsControlPoint();
-							var cp = pp.getAsCurrentPoint();
-							pp.addMarker(cp, cntrl, p1);
-							bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-							if (ctx != null) ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-						}
-						break;
-					case 'S':
-					case 's':
-						while (!pp.isCommandOrEnd()) {
-							var curr = pp.current;
-							var p1 = pp.getReflectedControlPoint();
-							var cntrl = pp.getAsControlPoint();
-							var cp = pp.getAsCurrentPoint();
-							pp.addMarker(cp, cntrl, p1);
-							bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-							if (ctx != null) ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-						}
-						break;
-					case 'Q':
-					case 'q':
-						while (!pp.isCommandOrEnd()) {
-							var curr = pp.current;
-							var cntrl = pp.getAsControlPoint();
-							var cp = pp.getAsCurrentPoint();
-							pp.addMarker(cp, cntrl, cntrl);
-							bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
-							if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
-						}
-						break;
-					case 'T':
-					case 't':
-						while (!pp.isCommandOrEnd()) {
-							var curr = pp.current;
-							var cntrl = pp.getReflectedControlPoint();
-							pp.control = cntrl;
-							var cp = pp.getAsCurrentPoint();
-							pp.addMarker(cp, cntrl, cntrl);
-							bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
-							if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
-						}
-						break;
-					case 'A':
-					case 'a':
-						while (!pp.isCommandOrEnd()) {
-						    var curr = pp.current;
-							var rx = pp.getScalar();
-							var ry = pp.getScalar();
-							var xAxisRotation = pp.getScalar() * (Math.PI / 180.0);
-							var largeArcFlag = pp.getScalar();
-							var sweepFlag = pp.getScalar();
-							var cp = pp.getAsCurrentPoint();
-
-							// Conversion from endpoint to center parameterization
-							// http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
-							// x1', y1'
-							var currp = new svg.Point(
-								Math.cos(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.sin(xAxisRotation) * (curr.y - cp.y) / 2.0,
-								-Math.sin(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.cos(xAxisRotation) * (curr.y - cp.y) / 2.0
-							);
-							// adjust radii
-							var l = Math.pow(currp.x,2)/Math.pow(rx,2)+Math.pow(currp.y,2)/Math.pow(ry,2);
-							if (l > 1) {
-								rx *= Math.sqrt(l);
-								ry *= Math.sqrt(l);
-							}
-							// cx', cy'
-							var s = (largeArcFlag == sweepFlag ? -1 : 1) * Math.sqrt(
-								((Math.pow(rx,2)*Math.pow(ry,2))-(Math.pow(rx,2)*Math.pow(currp.y,2))-(Math.pow(ry,2)*Math.pow(currp.x,2))) /
-								(Math.pow(rx,2)*Math.pow(currp.y,2)+Math.pow(ry,2)*Math.pow(currp.x,2))
-							);
-							if (isNaN(s)) s = 0;
-							var cpp = new svg.Point(s * rx * currp.y / ry, s * -ry * currp.x / rx);
-							// cx, cy
-							var centp = new svg.Point(
-								(curr.x + cp.x) / 2.0 + Math.cos(xAxisRotation) * cpp.x - Math.sin(xAxisRotation) * cpp.y,
-								(curr.y + cp.y) / 2.0 + Math.sin(xAxisRotation) * cpp.x + Math.cos(xAxisRotation) * cpp.y
-							);
-							// vector magnitude
-							var m = function(v) { return Math.sqrt(Math.pow(v[0],2) + Math.pow(v[1],2)); }
-							// ratio between two vectors
-							var r = function(u, v) { return (u[0]*v[0]+u[1]*v[1]) / (m(u)*m(v)) }
-							// angle between two vectors
-							var a = function(u, v) { return (u[0]*v[1] < u[1]*v[0] ? -1 : 1) * Math.acos(r(u,v)); }
-							// initial angle
-							var a1 = a([1,0], [(currp.x-cpp.x)/rx,(currp.y-cpp.y)/ry]);
-							// angle delta
-							var u = [(currp.x-cpp.x)/rx,(currp.y-cpp.y)/ry];
-							var v = [(-currp.x-cpp.x)/rx,(-currp.y-cpp.y)/ry];
-							var ad = a(u, v);
-							if (r(u,v) <= -1) ad = Math.PI;
-							if (r(u,v) >= 1) ad = 0;
-
-							// for markers
-							var dir = 1 - sweepFlag ? 1.0 : -1.0;
-							var ah = a1 + dir * (ad / 2.0);
-							var halfWay = new svg.Point(
-								centp.x + rx * Math.cos(ah),
-								centp.y + ry * Math.sin(ah)
-							);
-							pp.addMarkerAngle(halfWay, ah - dir * Math.PI / 2);
-							pp.addMarkerAngle(cp, ah - dir * Math.PI);
-
-							bb.addPoint(cp.x, cp.y); // TODO: this is too naive, make it better
-							if (ctx != null) {
-								var r = rx > ry ? rx : ry;
-								var sx = rx > ry ? 1 : rx / ry;
-								var sy = rx > ry ? ry / rx : 1;
-
-								ctx.translate(centp.x, centp.y);
-								ctx.rotate(xAxisRotation);
-								ctx.scale(sx, sy);
-								ctx.arc(0, 0, r, a1, a1 + ad, 1 - sweepFlag);
-								ctx.scale(1/sx, 1/sy);
-								ctx.rotate(-xAxisRotation);
-								ctx.translate(-centp.x, -centp.y);
-							}
-						}
-						break;
-					case 'Z':
-					case 'z':
-						if (ctx != null) ctx.closePath();
-						pp.current = pp.start;
-					}
-				}
-
-				return bb;
-			}
-
-			this.getMarkers = function() {
-				var points = this.PathParser.getMarkerPoints();
-				var angles = this.PathParser.getMarkerAngles();
-
-				var markers = [];
-				for (var i=0; i<points.length; i++) {
-					markers.push([points[i], angles[i]]);
-				}
-				return markers;
-			}
-		}
-		svg.Element.path.prototype = new svg.Element.PathElementBase;
-
-		// pattern element
-		svg.Element.pattern = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.createPattern = function(ctx, element) {
-				var width = this.attribute('width').toPixels('x', true);
-				var height = this.attribute('height').toPixels('y', true);
-
-				// render me using a temporary svg element
-				var tempSvg = new svg.Element.svg();
-				tempSvg.attributes['viewBox'] = new svg.Property('viewBox', this.attribute('viewBox').value);
-				tempSvg.attributes['width'] = new svg.Property('width', width + 'px');
-				tempSvg.attributes['height'] = new svg.Property('height', height + 'px');
-				tempSvg.attributes['transform'] = new svg.Property('transform', this.attribute('patternTransform').value);
-				tempSvg.children = this.children;
-
-				var c = document.createElement('canvas');
-				c.width = width;
-				c.height = height;
-				var cctx = c.getContext('2d');
-				if (this.attribute('x').hasValue() && this.attribute('y').hasValue()) {
-					cctx.translate(this.attribute('x').toPixels('x', true), this.attribute('y').toPixels('y', true));
-				}
-				// render 3x3 grid so when we transform there's no white space on edges
-				for (var x=-1; x<=1; x++) {
-					for (var y=-1; y<=1; y++) {
-						cctx.save();
-						tempSvg.attributes['x'] = new svg.Property('x', x * c.width);
-						tempSvg.attributes['y'] = new svg.Property('y', y * c.height);
-						tempSvg.render(cctx);
-						cctx.restore();
-					}
-				}
-				var pattern = ctx.createPattern(c, 'repeat');
-				return pattern;
-			}
-		}
-		svg.Element.pattern.prototype = new svg.Element.ElementBase;
-
-		// marker element
-		svg.Element.marker = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.baseRender = this.render;
-			this.render = function(ctx, point, angle) {
-				ctx.translate(point.x, point.y);
-				if (this.attribute('orient').valueOrDefault('auto') == 'auto') ctx.rotate(angle);
-				if (this.attribute('markerUnits').valueOrDefault('strokeWidth') == 'strokeWidth') ctx.scale(ctx.lineWidth, ctx.lineWidth);
-				ctx.save();
-
-				// render me using a temporary svg element
-				var tempSvg = new svg.Element.svg();
-				tempSvg.attributes['viewBox'] = new svg.Property('viewBox', this.attribute('viewBox').value);
-				tempSvg.attributes['refX'] = new svg.Property('refX', this.attribute('refX').value);
-				tempSvg.attributes['refY'] = new svg.Property('refY', this.attribute('refY').value);
-				tempSvg.attributes['width'] = new svg.Property('width', this.attribute('markerWidth').value);
-				tempSvg.attributes['height'] = new svg.Property('height', this.attribute('markerHeight').value);
-				tempSvg.attributes['fill'] = new svg.Property('fill', this.attribute('fill').valueOrDefault('black'));
-				tempSvg.attributes['stroke'] = new svg.Property('stroke', this.attribute('stroke').valueOrDefault('none'));
-				tempSvg.children = this.children;
-				tempSvg.render(ctx);
-
-				ctx.restore();
-				if (this.attribute('markerUnits').valueOrDefault('strokeWidth') == 'strokeWidth') ctx.scale(1/ctx.lineWidth, 1/ctx.lineWidth);
-				if (this.attribute('orient').valueOrDefault('auto') == 'auto') ctx.rotate(-angle);
-				ctx.translate(-point.x, -point.y);
-			}
-		}
-		svg.Element.marker.prototype = new svg.Element.ElementBase;
-
-		// definitions element
-		svg.Element.defs = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.render = function(ctx) {
-				// NOOP
-			}
-		}
-		svg.Element.defs.prototype = new svg.Element.ElementBase;
-
-		// base for gradients
-		svg.Element.GradientBase = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.stops = [];
-			for (var i=0; i<this.children.length; i++) {
-				var child = this.children[i];
-				if (child.type == 'stop') this.stops.push(child);
-			}
-
-			this.getGradient = function() {
-				// OVERRIDE ME!
-			}
-
-			this.gradientUnits = function () {
-				return this.attribute('gradientUnits').valueOrDefault('objectBoundingBox');
-			}
-
-			this.attributesToInherit = ['gradientUnits'];
-
-			this.inheritStopContainer = function (stopsContainer) {
-				for (var i=0; i<this.attributesToInherit.length; i++) {
-					var attributeToInherit = this.attributesToInherit[i];
-					if (!this.attribute(attributeToInherit).hasValue() && stopsContainer.attribute(attributeToInherit).hasValue()) {
-						this.attribute(attributeToInherit, true).value = stopsContainer.attribute(attributeToInherit).value;
-					}
-				}
-			}
-
-			this.createGradient = function(ctx, element, parentOpacityProp) {
-				var stopsContainer = this;
-				if (this.getHrefAttribute().hasValue()) {
-					stopsContainer = this.getHrefAttribute().getDefinition();
-					this.inheritStopContainer(stopsContainer);
-				}
-
-				var addParentOpacity = function (color) {
-					if (parentOpacityProp.hasValue()) {
-						var p = new svg.Property('color', color);
-						return p.addOpacity(parentOpacityProp).value;
-					}
-					return color;
-				};
-
-				var g = this.getGradient(ctx, element);
-				if (g == null) return addParentOpacity(stopsContainer.stops[stopsContainer.stops.length - 1].color);
-				for (var i=0; i<stopsContainer.stops.length; i++) {
-					g.addColorStop(stopsContainer.stops[i].offset, addParentOpacity(stopsContainer.stops[i].color));
-				}
-
-				if (this.attribute('gradientTransform').hasValue()) {
-					// render as transformed pattern on temporary canvas
-					var rootView = svg.ViewPort.viewPorts[0];
-
-					var rect = new svg.Element.rect();
-					rect.attributes['x'] = new svg.Property('x', -svg.MAX_VIRTUAL_PIXELS/3.0);
-					rect.attributes['y'] = new svg.Property('y', -svg.MAX_VIRTUAL_PIXELS/3.0);
-					rect.attributes['width'] = new svg.Property('width', svg.MAX_VIRTUAL_PIXELS);
-					rect.attributes['height'] = new svg.Property('height', svg.MAX_VIRTUAL_PIXELS);
-
-					var group = new svg.Element.g();
-					group.attributes['transform'] = new svg.Property('transform', this.attribute('gradientTransform').value);
-					group.children = [ rect ];
-
-					var tempSvg = new svg.Element.svg();
-					tempSvg.attributes['x'] = new svg.Property('x', 0);
-					tempSvg.attributes['y'] = new svg.Property('y', 0);
-					tempSvg.attributes['width'] = new svg.Property('width', rootView.width);
-					tempSvg.attributes['height'] = new svg.Property('height', rootView.height);
-					tempSvg.children = [ group ];
-
-					var c = document.createElement('canvas');
-					c.width = rootView.width;
-					c.height = rootView.height;
-					var tempCtx = c.getContext('2d');
-					tempCtx.fillStyle = g;
-					tempSvg.render(tempCtx);
-					return tempCtx.createPattern(c, 'no-repeat');
-				}
-
-				return g;
-			}
-		}
-		svg.Element.GradientBase.prototype = new svg.Element.ElementBase;
-
-		// linear gradient element
-		svg.Element.linearGradient = function(node) {
-			this.base = svg.Element.GradientBase;
-			this.base(node);
-
-			this.attributesToInherit.push('x1');
-			this.attributesToInherit.push('y1');
-			this.attributesToInherit.push('x2');
-			this.attributesToInherit.push('y2');
-
-			this.getGradient = function(ctx, element) {
-				var bb = this.gradientUnits() == 'objectBoundingBox' ? element.getBoundingBox() : null;
-
-				if (!this.attribute('x1').hasValue()
-				 && !this.attribute('y1').hasValue()
-				 && !this.attribute('x2').hasValue()
-				 && !this.attribute('y2').hasValue()) {
-					this.attribute('x1', true).value = 0;
-					this.attribute('y1', true).value = 0;
-					this.attribute('x2', true).value = 1;
-					this.attribute('y2', true).value = 0;
-				 }
-
-				var x1 = (this.gradientUnits() == 'objectBoundingBox'
-					? bb.x() + bb.width() * this.attribute('x1').numValue()
-					: this.attribute('x1').toPixels('x'));
-				var y1 = (this.gradientUnits() == 'objectBoundingBox'
-					? bb.y() + bb.height() * this.attribute('y1').numValue()
-					: this.attribute('y1').toPixels('y'));
-				var x2 = (this.gradientUnits() == 'objectBoundingBox'
-					? bb.x() + bb.width() * this.attribute('x2').numValue()
-					: this.attribute('x2').toPixels('x'));
-				var y2 = (this.gradientUnits() == 'objectBoundingBox'
-					? bb.y() + bb.height() * this.attribute('y2').numValue()
-					: this.attribute('y2').toPixels('y'));
-
-				if (x1 == x2 && y1 == y2) return null;
-				return ctx.createLinearGradient(x1, y1, x2, y2);
-			}
-		}
-		svg.Element.linearGradient.prototype = new svg.Element.GradientBase;
-
-		// radial gradient element
-		svg.Element.radialGradient = function(node) {
-			this.base = svg.Element.GradientBase;
-			this.base(node);
-
-			this.attributesToInherit.push('cx');
-			this.attributesToInherit.push('cy');
-			this.attributesToInherit.push('r');
-			this.attributesToInherit.push('fx');
-			this.attributesToInherit.push('fy');
-
-			this.getGradient = function(ctx, element) {
-				var bb = element.getBoundingBox();
-
-				if (!this.attribute('cx').hasValue()) this.attribute('cx', true).value = '50%';
-				if (!this.attribute('cy').hasValue()) this.attribute('cy', true).value = '50%';
-				if (!this.attribute('r').hasValue()) this.attribute('r', true).value = '50%';
-
-				var cx = (this.gradientUnits() == 'objectBoundingBox'
-					? bb.x() + bb.width() * this.attribute('cx').numValue()
-					: this.attribute('cx').toPixels('x'));
-				var cy = (this.gradientUnits() == 'objectBoundingBox'
-					? bb.y() + bb.height() * this.attribute('cy').numValue()
-					: this.attribute('cy').toPixels('y'));
-
-				var fx = cx;
-				var fy = cy;
-				if (this.attribute('fx').hasValue()) {
-					fx = (this.gradientUnits() == 'objectBoundingBox'
-					? bb.x() + bb.width() * this.attribute('fx').numValue()
-					: this.attribute('fx').toPixels('x'));
-				}
-				if (this.attribute('fy').hasValue()) {
-					fy = (this.gradientUnits() == 'objectBoundingBox'
-					? bb.y() + bb.height() * this.attribute('fy').numValue()
-					: this.attribute('fy').toPixels('y'));
-				}
-
-				var r = (this.gradientUnits() == 'objectBoundingBox'
-					? (bb.width() + bb.height()) / 2.0 * this.attribute('r').numValue()
-					: this.attribute('r').toPixels());
-
-				return ctx.createRadialGradient(fx, fy, 0, cx, cy, r);
-			}
-		}
-		svg.Element.radialGradient.prototype = new svg.Element.GradientBase;
-
-		// gradient stop element
-		svg.Element.stop = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.offset = this.attribute('offset').numValue();
-			if (this.offset < 0) this.offset = 0;
-			if (this.offset > 1) this.offset = 1;
-
-			var stopColor = this.style('stop-color', true);
-			if (stopColor.value === '') stopColor.value = '#000';
-			if (this.style('stop-opacity').hasValue()) stopColor = stopColor.addOpacity(this.style('stop-opacity'));
-			this.color = stopColor.value;
-		}
-		svg.Element.stop.prototype = new svg.Element.ElementBase;
-
-		// animation base element
-		svg.Element.AnimateBase = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			svg.Animations.push(this);
-
-			this.duration = 0.0;
-			this.begin = this.attribute('begin').toMilliseconds();
-			this.maxDuration = this.begin + this.attribute('dur').toMilliseconds();
-
-			this.getProperty = function() {
-				var attributeType = this.attribute('attributeType').value;
-				var attributeName = this.attribute('attributeName').value;
-
-				if (attributeType == 'CSS') {
-					return this.parent.style(attributeName, true);
-				}
-				return this.parent.attribute(attributeName, true);
-			};
-
-			this.initialValue = null;
-			this.initialUnits = '';
-			this.removed = false;
-
-			this.calcValue = function() {
-				// OVERRIDE ME!
-				return '';
-			}
-
-			this.update = function(delta) {
-				// set initial value
-				if (this.initialValue == null) {
-					this.initialValue = this.getProperty().value;
-					this.initialUnits = this.getProperty().getUnits();
-				}
-
-				// if we're past the end time
-				if (this.duration > this.maxDuration) {
-					// loop for indefinitely repeating animations
-					if (this.attribute('repeatCount').value == 'indefinite'
-					 || this.attribute('repeatDur').value == 'indefinite') {
-						this.duration = 0.0
-					}
-					else if (this.attribute('fill').valueOrDefault('remove') == 'freeze' && !this.frozen) {
-						this.frozen = true;
-						this.parent.animationFrozen = true;
-						this.parent.animationFrozenValue = this.getProperty().value;
-					}
-					else if (this.attribute('fill').valueOrDefault('remove') == 'remove' && !this.removed) {
-						this.removed = true;
-						this.getProperty().value = this.parent.animationFrozen ? this.parent.animationFrozenValue : this.initialValue;
-						return true;
-					}
-					return false;
-				}
-				this.duration = this.duration + delta;
-
-				// if we're past the begin time
-				var updated = false;
-				if (this.begin < this.duration) {
-					var newValue = this.calcValue(); // tween
-
-					if (this.attribute('type').hasValue()) {
-						// for transform, etc.
-						var type = this.attribute('type').value;
-						newValue = type + '(' + newValue + ')';
-					}
-
-					this.getProperty().value = newValue;
-					updated = true;
-				}
-
-				return updated;
-			}
-
-			this.from = this.attribute('from');
-			this.to = this.attribute('to');
-			this.values = this.attribute('values');
-			if (this.values.hasValue()) this.values.value = this.values.value.split(';');
-
-			// fraction of duration we've covered
-			this.progress = function() {
-				var ret = { progress: (this.duration - this.begin) / (this.maxDuration - this.begin) };
-				if (this.values.hasValue()) {
-					var p = ret.progress * (this.values.value.length - 1);
-					var lb = Math.floor(p), ub = Math.ceil(p);
-					ret.from = new svg.Property('from', parseFloat(this.values.value[lb]));
-					ret.to = new svg.Property('to', parseFloat(this.values.value[ub]));
-					ret.progress = (p - lb) / (ub - lb);
-				}
-				else {
-					ret.from = this.from;
-					ret.to = this.to;
-				}
-				return ret;
-			}
-		}
-		svg.Element.AnimateBase.prototype = new svg.Element.ElementBase;
-
-		// animate element
-		svg.Element.animate = function(node) {
-			this.base = svg.Element.AnimateBase;
-			this.base(node);
-
-			this.calcValue = function() {
-				var p = this.progress();
-
-				// tween value linearly
-				var newValue = p.from.numValue() + (p.to.numValue() - p.from.numValue()) * p.progress;
-				return newValue + this.initialUnits;
-			};
-		}
-		svg.Element.animate.prototype = new svg.Element.AnimateBase;
-
-		// animate color element
-		svg.Element.animateColor = function(node) {
-			this.base = svg.Element.AnimateBase;
-			this.base(node);
-
-			this.calcValue = function() {
-				var p = this.progress();
-				var from = new RGBColor(p.from.value);
-				var to = new RGBColor(p.to.value);
-
-				if (from.ok && to.ok) {
-					// tween color linearly
-					var r = from.r + (to.r - from.r) * p.progress;
-					var g = from.g + (to.g - from.g) * p.progress;
-					var b = from.b + (to.b - from.b) * p.progress;
-					return 'rgb('+parseInt(r,10)+','+parseInt(g,10)+','+parseInt(b,10)+')';
-				}
-				return this.attribute('from').value;
-			};
-		}
-		svg.Element.animateColor.prototype = new svg.Element.AnimateBase;
-
-		// animate transform element
-		svg.Element.animateTransform = function(node) {
-			this.base = svg.Element.AnimateBase;
-			this.base(node);
-
-			this.calcValue = function() {
-				var p = this.progress();
-
-				// tween value linearly
-				var from = svg.ToNumberArray(p.from.value);
-				var to = svg.ToNumberArray(p.to.value);
-				var newValue = '';
-				for (var i=0; i<from.length; i++) {
-					newValue += from[i] + (to[i] - from[i]) * p.progress + ' ';
-				}
-				return newValue;
-			};
-		}
-		svg.Element.animateTransform.prototype = new svg.Element.animate;
-
-		// font element
-		svg.Element.font = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.horizAdvX = this.attribute('horiz-adv-x').numValue();
-
-			this.isRTL = false;
-			this.isArabic = false;
-			this.fontFace = null;
-			this.missingGlyph = null;
-			this.glyphs = [];
-			for (var i=0; i<this.children.length; i++) {
-				var child = this.children[i];
-				if (child.type == 'font-face') {
-					this.fontFace = child;
-					if (child.style('font-family').hasValue()) {
-						svg.Definitions[child.style('font-family').value] = this;
-					}
-				}
-				else if (child.type == 'missing-glyph') this.missingGlyph = child;
-				else if (child.type == 'glyph') {
-					if (child.arabicForm != '') {
-						this.isRTL = true;
-						this.isArabic = true;
-						if (typeof this.glyphs[child.unicode] == 'undefined') this.glyphs[child.unicode] = [];
-						this.glyphs[child.unicode][child.arabicForm] = child;
-					}
-					else {
-						this.glyphs[child.unicode] = child;
-					}
-				}
-			}
-		}
-		svg.Element.font.prototype = new svg.Element.ElementBase;
-
-		// font-face element
-		svg.Element.fontface = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.ascent = this.attribute('ascent').value;
-			this.descent = this.attribute('descent').value;
-			this.unitsPerEm = this.attribute('units-per-em').numValue();
-		}
-		svg.Element.fontface.prototype = new svg.Element.ElementBase;
-
-		// missing-glyph element
-		svg.Element.missingglyph = function(node) {
-			this.base = svg.Element.path;
-			this.base(node);
-
-			this.horizAdvX = 0;
-		}
-		svg.Element.missingglyph.prototype = new svg.Element.path;
-
-		// glyph element
-		svg.Element.glyph = function(node) {
-			this.base = svg.Element.path;
-			this.base(node);
-
-			this.horizAdvX = this.attribute('horiz-adv-x').numValue();
-			this.unicode = this.attribute('unicode').value;
-			this.arabicForm = this.attribute('arabic-form').value;
-		}
-		svg.Element.glyph.prototype = new svg.Element.path;
-
-		// text element
-		svg.Element.text = function(node) {
-			this.captureTextNodes = true;
-			this.base = svg.Element.RenderedElementBase;
-			this.base(node);
-
-			this.baseSetContext = this.setContext;
-			this.setContext = function(ctx) {
-				this.baseSetContext(ctx);
-
-				var textBaseline = this.style('dominant-baseline').toTextBaseline();
-				if (textBaseline == null) textBaseline = this.style('alignment-baseline').toTextBaseline();
-				if (textBaseline != null) ctx.textBaseline = textBaseline;
-			}
-
-			this.getBoundingBox = function () {
-				var x = this.attribute('x').toPixels('x');
-				var y = this.attribute('y').toPixels('y');
-				var fontSize = this.parent.style('font-size').numValueOrDefault(svg.Font.Parse(svg.ctx.font).fontSize);
-				return new svg.BoundingBox(x, y - fontSize, x + Math.floor(fontSize * 2.0 / 3.0) * this.children[0].getText().length, y);
-			}
-
-			this.renderChildren = function(ctx) {
-				this.x = this.attribute('x').toPixels('x');
-				this.y = this.attribute('y').toPixels('y');
-				if (this.attribute('dx').hasValue()) this.x += this.attribute('dx').toPixels('x');
-				if (this.attribute('dy').hasValue()) this.y += this.attribute('dy').toPixels('y');
-				this.x += this.getAnchorDelta(ctx, this, 0);
-				for (var i=0; i<this.children.length; i++) {
-					this.renderChild(ctx, this, this, i);
-				}
-			}
-
-			this.getAnchorDelta = function (ctx, parent, startI) {
-				var textAnchor = this.style('text-anchor').valueOrDefault('start');
-				if (textAnchor != 'start') {
-					var width = 0;
-					for (var i=startI; i<parent.children.length; i++) {
-						var child = parent.children[i];
-						if (i > startI && child.attribute('x').hasValue()) break; // new group
-						width += child.measureTextRecursive(ctx);
-					}
-					return -1 * (textAnchor == 'end' ? width : width / 2.0);
-				}
-				return 0;
-			}
-
-			this.renderChild = function(ctx, textParent, parent, i) {
-				var child = parent.children[i];
-				if (child.attribute('x').hasValue()) {
-					child.x = child.attribute('x').toPixels('x') + textParent.getAnchorDelta(ctx, parent, i);
-					if (child.attribute('dx').hasValue()) child.x += child.attribute('dx').toPixels('x');
-				}
-				else {
-					if (child.attribute('dx').hasValue()) textParent.x += child.attribute('dx').toPixels('x');
-					child.x = textParent.x;
-				}
-				textParent.x = child.x + child.measureText(ctx);
-
-				if (child.attribute('y').hasValue()) {
-					child.y = child.attribute('y').toPixels('y');
-					if (child.attribute('dy').hasValue()) child.y += child.attribute('dy').toPixels('y');
-				}
-				else {
-					if (child.attribute('dy').hasValue()) textParent.y += child.attribute('dy').toPixels('y');
-					child.y = textParent.y;
-				}
-				textParent.y = child.y;
-
-				child.render(ctx);
-
-				for (var i=0; i<child.children.length; i++) {
-					textParent.renderChild(ctx, textParent, child, i);
-				}
-			}
-		}
-		svg.Element.text.prototype = new svg.Element.RenderedElementBase;
-
-		// text base
-		svg.Element.TextElementBase = function(node) {
-			this.base = svg.Element.RenderedElementBase;
-			this.base(node);
-
-			this.getGlyph = function(font, text, i) {
-				var c = text[i];
-				var glyph = null;
-				if (font.isArabic) {
-					var arabicForm = 'isolated';
-					if ((i==0 || text[i-1]==' ') && i<text.length-2 && text[i+1]!=' ') arabicForm = 'terminal';
-					if (i>0 && text[i-1]!=' ' && i<text.length-2 && text[i+1]!=' ') arabicForm = 'medial';
-					if (i>0 && text[i-1]!=' ' && (i == text.length-1 || text[i+1]==' ')) arabicForm = 'initial';
-					if (typeof font.glyphs[c] != 'undefined') {
-						glyph = font.glyphs[c][arabicForm];
-						if (glyph == null && font.glyphs[c].type == 'glyph') glyph = font.glyphs[c];
-					}
-				}
-				else {
-					glyph = font.glyphs[c];
-				}
-				if (glyph == null) glyph = font.missingGlyph;
-				return glyph;
-			}
-
-			this.renderChildren = function(ctx) {
-				var customFont = this.parent.style('font-family').getDefinition();
-				if (customFont != null) {
-					var fontSize = this.parent.style('font-size').numValueOrDefault(svg.Font.Parse(svg.ctx.font).fontSize);
-					var fontStyle = this.parent.style('font-style').valueOrDefault(svg.Font.Parse(svg.ctx.font).fontStyle);
-					var text = this.getText();
-					if (customFont.isRTL) text = text.split("").reverse().join("");
-
-					var dx = svg.ToNumberArray(this.parent.attribute('dx').value);
-					for (var i=0; i<text.length; i++) {
-						var glyph = this.getGlyph(customFont, text, i);
-						var scale = fontSize / customFont.fontFace.unitsPerEm;
-						ctx.translate(this.x, this.y);
-						ctx.scale(scale, -scale);
-						var lw = ctx.lineWidth;
-						ctx.lineWidth = ctx.lineWidth * customFont.fontFace.unitsPerEm / fontSize;
-						if (fontStyle == 'italic') ctx.transform(1, 0, .4, 1, 0, 0);
-						glyph.render(ctx);
-						if (fontStyle == 'italic') ctx.transform(1, 0, -.4, 1, 0, 0);
-						ctx.lineWidth = lw;
-						ctx.scale(1/scale, -1/scale);
-						ctx.translate(-this.x, -this.y);
-
-						this.x += fontSize * (glyph.horizAdvX || customFont.horizAdvX) / customFont.fontFace.unitsPerEm;
-						if (typeof dx[i] != 'undefined' && !isNaN(dx[i])) {
-							this.x += dx[i];
-						}
-					}
-					return;
-				}
-
-				if (ctx.fillStyle != '') ctx.fillText(svg.compressSpaces(this.getText()), this.x, this.y);
-				if (ctx.strokeStyle != '') ctx.strokeText(svg.compressSpaces(this.getText()), this.x, this.y);
-			}
-
-			this.getText = function() {
-				// OVERRIDE ME
-			}
-
-			this.measureTextRecursive = function(ctx) {
-				var width = this.measureText(ctx);
-				for (var i=0; i<this.children.length; i++) {
-					width += this.children[i].measureTextRecursive(ctx);
-				}
-				return width;
-			}
-
-			this.measureText = function(ctx) {
-				var customFont = this.parent.style('font-family').getDefinition();
-				if (customFont != null) {
-					var fontSize = this.parent.style('font-size').numValueOrDefault(svg.Font.Parse(svg.ctx.font).fontSize);
-					var measure = 0;
-					var text = this.getText();
-					if (customFont.isRTL) text = text.split("").reverse().join("");
-					var dx = svg.ToNumberArray(this.parent.attribute('dx').value);
-					for (var i=0; i<text.length; i++) {
-						var glyph = this.getGlyph(customFont, text, i);
-						measure += (glyph.horizAdvX || customFont.horizAdvX) * fontSize / customFont.fontFace.unitsPerEm;
-						if (typeof dx[i] != 'undefined' && !isNaN(dx[i])) {
-							measure += dx[i];
-						}
-					}
-					return measure;
-				}
-
-				var textToMeasure = svg.compressSpaces(this.getText());
-				if (!ctx.measureText) return textToMeasure.length * 10;
-
-				ctx.save();
-				this.setContext(ctx);
-				var width = ctx.measureText(textToMeasure).width;
-				ctx.restore();
-				return width;
-			}
-		}
-		svg.Element.TextElementBase.prototype = new svg.Element.RenderedElementBase;
-
-		// tspan
-		svg.Element.tspan = function(node) {
-			this.captureTextNodes = true;
-			this.base = svg.Element.TextElementBase;
-			this.base(node);
-
-			this.text = svg.compressSpaces(node.value || node.text || node.textContent || '');
-			this.getText = function() {
-				// if this node has children, then they own the text
-				if (this.children.length > 0) { return ''; }
-				return this.text;
-			}
-		}
-		svg.Element.tspan.prototype = new svg.Element.TextElementBase;
-
-		// tref
-		svg.Element.tref = function(node) {
-			this.base = svg.Element.TextElementBase;
-			this.base(node);
-
-			this.getText = function() {
-				var element = this.getHrefAttribute().getDefinition();
-				if (element != null) return element.children[0].getText();
-			}
-		}
-		svg.Element.tref.prototype = new svg.Element.TextElementBase;
-
-		// a element
-		svg.Element.a = function(node) {
-			this.base = svg.Element.TextElementBase;
-			this.base(node);
-
-			this.hasText = node.childNodes.length > 0;
-			for (var i=0; i<node.childNodes.length; i++) {
-				if (node.childNodes[i].nodeType != 3) this.hasText = false;
-			}
-
-			// this might contain text
-			this.text = this.hasText ? node.childNodes[0].value : '';
-			this.getText = function() {
-				return this.text;
-			}
-
-			this.baseRenderChildren = this.renderChildren;
-			this.renderChildren = function(ctx) {
-				if (this.hasText) {
-					// render as text element
-					this.baseRenderChildren(ctx);
-					var fontSize = new svg.Property('fontSize', svg.Font.Parse(svg.ctx.font).fontSize);
-					svg.Mouse.checkBoundingBox(this, new svg.BoundingBox(this.x, this.y - fontSize.toPixels('y'), this.x + this.measureText(ctx), this.y));
-				}
-				else if (this.children.length > 0) {
-					// render as temporary group
-					var g = new svg.Element.g();
-					g.children = this.children;
-					g.parent = this;
-					g.render(ctx);
-				}
-			}
-
-			this.onclick = function() {
-				window.open(this.getHrefAttribute().value);
-			}
-
-			this.onmousemove = function() {
-				svg.ctx.canvas.style.cursor = 'pointer';
-			}
-		}
-		svg.Element.a.prototype = new svg.Element.TextElementBase;
-
-		// image element
-		svg.Element.image = function(node) {
-			this.base = svg.Element.RenderedElementBase;
-			this.base(node);
-
-			var href = this.getHrefAttribute().value;
-			if (href == '') { return; }
-			var isSvg = href.match(/\.svg$/)
-
-			svg.Images.push(this);
-			this.loaded = false;
-			if (!isSvg) {
-				this.img = document.createElement('img');
-				if (svg.opts['useCORS'] == true) { this.img.crossOrigin = 'Anonymous'; }
-				var self = this;
-				this.img.onload = function() { self.loaded = true; }
-				this.img.onerror = function() { svg.log('ERROR: image "' + href + '" not found'); self.loaded = true; }
-				this.img.src = href;
-			}
-			else {
-				this.img = svg.ajax(href);
-				this.loaded = true;
-			}
-
-			this.renderChildren = function(ctx) {
-				var x = this.attribute('x').toPixels('x');
-				var y = this.attribute('y').toPixels('y');
-
-				var width = this.attribute('width').toPixels('x');
-				var height = this.attribute('height').toPixels('y');
-				if (width == 0 || height == 0) return;
-
-				ctx.save();
-				if (isSvg) {
-					ctx.drawSvg(this.img, x, y, width, height);
-				}
-				else {
-					ctx.translate(x, y);
-					svg.AspectRatio(ctx,
-									this.attribute('preserveAspectRatio').value,
-									width,
-									this.img.width,
-									height,
-									this.img.height,
-									0,
-									0);
-					ctx.drawImage(this.img, 0, 0);
-				}
-				ctx.restore();
-			}
-
-			this.getBoundingBox = function() {
-				var x = this.attribute('x').toPixels('x');
-				var y = this.attribute('y').toPixels('y');
-				var width = this.attribute('width').toPixels('x');
-				var height = this.attribute('height').toPixels('y');
-				return new svg.BoundingBox(x, y, x + width, y + height);
-			}
-		}
-		svg.Element.image.prototype = new svg.Element.RenderedElementBase;
-
-		// group element
-		svg.Element.g = function(node) {
-			this.base = svg.Element.RenderedElementBase;
-			this.base(node);
-
-			this.getBoundingBox = function() {
-				var bb = new svg.BoundingBox();
-				for (var i=0; i<this.children.length; i++) {
-					bb.addBoundingBox(this.children[i].getBoundingBox());
-				}
-				return bb;
-			};
-		}
-		svg.Element.g.prototype = new svg.Element.RenderedElementBase;
-
-		// symbol element
-		svg.Element.symbol = function(node) {
-			this.base = svg.Element.RenderedElementBase;
-			this.base(node);
-
-			this.render = function(ctx) {
-				// NO RENDER
-			};
-		}
-		svg.Element.symbol.prototype = new svg.Element.RenderedElementBase;
-
-		// style element
-		svg.Element.style = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			// text, or spaces then CDATA
-			var css = ''
-			for (var i=0; i<node.childNodes.length; i++) {
-			  css += node.childNodes[i].data;
-			}
-			css = css.replace(/(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(^[\s]*\/\/.*)/gm, ''); // remove comments
-			css = svg.compressSpaces(css); // replace whitespace
-			var cssDefs = css.split('}');
-			for (var i=0; i<cssDefs.length; i++) {
-				if (svg.trim(cssDefs[i]) != '') {
-					var cssDef = cssDefs[i].split('{');
-					var cssClasses = cssDef[0].split(',');
-					var cssProps = cssDef[1].split(';');
-					for (var j=0; j<cssClasses.length; j++) {
-						var cssClass = svg.trim(cssClasses[j]);
-						if (cssClass != '') {
-							var props = svg.Styles[cssClass] || {};
-							for (var k=0; k<cssProps.length; k++) {
-								var prop = cssProps[k].indexOf(':');
-								var name = cssProps[k].substr(0, prop);
-								var value = cssProps[k].substr(prop + 1, cssProps[k].length - prop);
-								if (name != null && value != null) {
-									props[svg.trim(name)] = new svg.Property(svg.trim(name), svg.trim(value));
-								}
-							}
-							svg.Styles[cssClass] = props;
-							svg.StylesSpecificity[cssClass] = getSelectorSpecificity(cssClass);
-							if (cssClass == '@font-face') {
-								var fontFamily = props['font-family'].value.replace(/"/g,'');
-								var srcs = props['src'].value.split(',');
-								for (var s=0; s<srcs.length; s++) {
-									if (srcs[s].indexOf('format("svg")') > 0) {
-										var urlStart = srcs[s].indexOf('url');
-										var urlEnd = srcs[s].indexOf(')', urlStart);
-										var url = srcs[s].substr(urlStart + 5, urlEnd - urlStart - 6);
-										var doc = svg.parseXml(svg.ajax(url));
-										var fonts = doc.getElementsByTagName('font');
-										for (var f=0; f<fonts.length; f++) {
-											var font = svg.CreateElement(fonts[f]);
-											svg.Definitions[fontFamily] = font;
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		svg.Element.style.prototype = new svg.Element.ElementBase;
-
-		// use element
-		svg.Element.use = function(node) {
-			this.base = svg.Element.RenderedElementBase;
-			this.base(node);
-
-			this.baseSetContext = this.setContext;
-			this.setContext = function(ctx) {
-				this.baseSetContext(ctx);
-				if (this.attribute('x').hasValue()) ctx.translate(this.attribute('x').toPixels('x'), 0);
-				if (this.attribute('y').hasValue()) ctx.translate(0, this.attribute('y').toPixels('y'));
-			}
-
-			var element = this.getHrefAttribute().getDefinition();
-
-			this.path = function(ctx) {
-				if (element != null) element.path(ctx);
-			}
-
-			this.getBoundingBox = function() {
-				if (element != null) return element.getBoundingBox();
-			}
-
-			this.renderChildren = function(ctx) {
-				if (element != null) {
-					var tempSvg = element;
-					if (element.type == 'symbol') {
-						// render me using a temporary svg element in symbol cases (http://www.w3.org/TR/SVG/struct.html#UseElement)
-						tempSvg = new svg.Element.svg();
-						tempSvg.type = 'svg';
-						tempSvg.attributes['viewBox'] = new svg.Property('viewBox', element.attribute('viewBox').value);
-						tempSvg.attributes['preserveAspectRatio'] = new svg.Property('preserveAspectRatio', element.attribute('preserveAspectRatio').value);
-						tempSvg.attributes['overflow'] = new svg.Property('overflow', element.attribute('overflow').value);
-						tempSvg.children = element.children;
-					}
-					if (tempSvg.type == 'svg') {
-						// if symbol or svg, inherit width/height from me
-						if (this.attribute('width').hasValue()) tempSvg.attributes['width'] = new svg.Property('width', this.attribute('width').value);
-						if (this.attribute('height').hasValue()) tempSvg.attributes['height'] = new svg.Property('height', this.attribute('height').value);
-					}
-					var oldParent = tempSvg.parent;
-					tempSvg.parent = null;
-					tempSvg.render(ctx);
-					tempSvg.parent = oldParent;
-				}
-			}
-		}
-		svg.Element.use.prototype = new svg.Element.RenderedElementBase;
-
-		// mask element
-		svg.Element.mask = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.apply = function(ctx, element) {
-				// render as temp svg
-				var x = this.attribute('x').toPixels('x');
-				var y = this.attribute('y').toPixels('y');
-				var width = this.attribute('width').toPixels('x');
-				var height = this.attribute('height').toPixels('y');
-
-				if (width == 0 && height == 0) {
-					var bb = new svg.BoundingBox();
-					for (var i=0; i<this.children.length; i++) {
-						bb.addBoundingBox(this.children[i].getBoundingBox());
-					}
-					var x = Math.floor(bb.x1);
-					var y = Math.floor(bb.y1);
-					var width = Math.floor(bb.width());
-					var	height = Math.floor(bb.height());
-				}
-
-				// temporarily remove mask to avoid recursion
-				var mask = element.attribute('mask').value;
-				element.attribute('mask').value = '';
-
-					var cMask = document.createElement('canvas');
-					cMask.width = x + width;
-					cMask.height = y + height;
-					var maskCtx = cMask.getContext('2d');
-					this.renderChildren(maskCtx);
-
-					var c = document.createElement('canvas');
-					c.width = x + width;
-					c.height = y + height;
-					var tempCtx = c.getContext('2d');
-					element.render(tempCtx);
-					tempCtx.globalCompositeOperation = 'destination-in';
-					tempCtx.fillStyle = maskCtx.createPattern(cMask, 'no-repeat');
-					tempCtx.fillRect(0, 0, x + width, y + height);
-
-					ctx.fillStyle = tempCtx.createPattern(c, 'no-repeat');
-					ctx.fillRect(0, 0, x + width, y + height);
-
-				// reassign mask
-				element.attribute('mask').value = mask;
-			}
-
-			this.render = function(ctx) {
-				// NO RENDER
-			}
-		}
-		svg.Element.mask.prototype = new svg.Element.ElementBase;
-
-		// clip element
-		svg.Element.clipPath = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.apply = function(ctx) {
-				var oldBeginPath = CanvasRenderingContext2D.prototype.beginPath;
-				CanvasRenderingContext2D.prototype.beginPath = function () { };
-
-				var oldClosePath = CanvasRenderingContext2D.prototype.closePath;
-				CanvasRenderingContext2D.prototype.closePath = function () { };
-
-				oldBeginPath.call(ctx);
-				for (var i=0; i<this.children.length; i++) {
-					var child = this.children[i];
-					if (typeof child.path != 'undefined') {
-						var transform = null;
-						if (child.style('transform', false, true).hasValue()) {
-							transform = new svg.Transform(child.style('transform', false, true).value);
-							transform.apply(ctx);
-						}
-						child.path(ctx);
-						CanvasRenderingContext2D.prototype.closePath = oldClosePath;
-						if (transform) { transform.unapply(ctx); }
-					}
-				}
-				oldClosePath.call(ctx);
-				ctx.clip();
-
-				CanvasRenderingContext2D.prototype.beginPath = oldBeginPath;
-				CanvasRenderingContext2D.prototype.closePath = oldClosePath;
-			}
-
-			this.render = function(ctx) {
-				// NO RENDER
-			}
-		}
-		svg.Element.clipPath.prototype = new svg.Element.ElementBase;
-
-		// filters
-		svg.Element.filter = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.apply = function(ctx, element) {
-				// render as temp svg
-				var bb = element.getBoundingBox();
-				var x = Math.floor(bb.x1);
-				var y = Math.floor(bb.y1);
-				var width = Math.floor(bb.width());
-				var	height = Math.floor(bb.height());
-
-				// temporarily remove filter to avoid recursion
-				var filter = element.style('filter').value;
-				element.style('filter').value = '';
-
-				var px = 0, py = 0;
-				for (var i=0; i<this.children.length; i++) {
-					var efd = this.children[i].extraFilterDistance || 0;
-					px = Math.max(px, efd);
-					py = Math.max(py, efd);
-				}
-
-				var c = document.createElement('canvas');
-				c.width = width + 2*px;
-				c.height = height + 2*py;
-				var tempCtx = c.getContext('2d');
-				tempCtx.translate(-x + px, -y + py);
-				element.render(tempCtx);
-
-				// apply filters
-				for (var i=0; i<this.children.length; i++) {
-					if (typeof this.children[i].apply == 'function') {
-						this.children[i].apply(tempCtx, 0, 0, width + 2*px, height + 2*py);
-					}
-				}
-
-				// render on me
-				ctx.drawImage(c, 0, 0, width + 2*px, height + 2*py, x - px, y - py, width + 2*px, height + 2*py);
-
-				// reassign filter
-				element.style('filter', true).value = filter;
-			}
-
-			this.render = function(ctx) {
-				// NO RENDER
-			}
-		}
-		svg.Element.filter.prototype = new svg.Element.ElementBase;
-
-		svg.Element.feMorphology = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.apply = function(ctx, x, y, width, height) {
-				// TODO: implement
-			}
-		}
-		svg.Element.feMorphology.prototype = new svg.Element.ElementBase;
-
-		svg.Element.feComposite = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.apply = function(ctx, x, y, width, height) {
-				// TODO: implement
-			}
-		}
-		svg.Element.feComposite.prototype = new svg.Element.ElementBase;
-
-		svg.Element.feColorMatrix = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			var matrix = svg.ToNumberArray(this.attribute('values').value);
-			switch (this.attribute('type').valueOrDefault('matrix')) { // http://www.w3.org/TR/SVG/filters.html#feColorMatrixElement
-				case 'saturate':
-					var s = matrix[0];
-					matrix = [0.213+0.787*s,0.715-0.715*s,0.072-0.072*s,0,0,
-							  0.213-0.213*s,0.715+0.285*s,0.072-0.072*s,0,0,
-							  0.213-0.213*s,0.715-0.715*s,0.072+0.928*s,0,0,
-							  0,0,0,1,0,
-							  0,0,0,0,1];
-					break;
-				case 'hueRotate':
-					var a = matrix[0] * Math.PI / 180.0;
-					var c = function (m1,m2,m3) { return m1 + Math.cos(a)*m2 + Math.sin(a)*m3; };
-					matrix = [c(0.213,0.787,-0.213),c(0.715,-0.715,-0.715),c(0.072,-0.072,0.928),0,0,
-							  c(0.213,-0.213,0.143),c(0.715,0.285,0.140),c(0.072,-0.072,-0.283),0,0,
-							  c(0.213,-0.213,-0.787),c(0.715,-0.715,0.715),c(0.072,0.928,0.072),0,0,
-							  0,0,0,1,0,
-							  0,0,0,0,1];
-					break;
-				case 'luminanceToAlpha':
-					matrix = [0,0,0,0,0,
-							  0,0,0,0,0,
-							  0,0,0,0,0,
-							  0.2125,0.7154,0.0721,0,0,
-							  0,0,0,0,1];
-					break;
-			}
-
-			function imGet(img, x, y, width, height, rgba) {
-				return img[y*width*4 + x*4 + rgba];
-			}
-
-			function imSet(img, x, y, width, height, rgba, val) {
-				img[y*width*4 + x*4 + rgba] = val;
-			}
-
-			function m(i, v) {
-				var mi = matrix[i];
-				return mi * (mi < 0 ? v - 255 : v);
-			}
-
-			this.apply = function(ctx, x, y, width, height) {
-				// assuming x==0 && y==0 for now
-				var srcData = ctx.getImageData(0, 0, width, height);
-				for (var y = 0; y < height; y++) {
-					for (var x = 0; x < width; x++) {
-						var r = imGet(srcData.data, x, y, width, height, 0);
-						var g = imGet(srcData.data, x, y, width, height, 1);
-						var b = imGet(srcData.data, x, y, width, height, 2);
-						var a = imGet(srcData.data, x, y, width, height, 3);
-						imSet(srcData.data, x, y, width, height, 0, m(0,r)+m(1,g)+m(2,b)+m(3,a)+m(4,1));
-						imSet(srcData.data, x, y, width, height, 1, m(5,r)+m(6,g)+m(7,b)+m(8,a)+m(9,1));
-						imSet(srcData.data, x, y, width, height, 2, m(10,r)+m(11,g)+m(12,b)+m(13,a)+m(14,1));
-						imSet(srcData.data, x, y, width, height, 3, m(15,r)+m(16,g)+m(17,b)+m(18,a)+m(19,1));
-					}
-				}
-				ctx.clearRect(0, 0, width, height);
-				ctx.putImageData(srcData, 0, 0);
-			}
-		}
-		svg.Element.feColorMatrix.prototype = new svg.Element.ElementBase;
-
-		svg.Element.feGaussianBlur = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.blurRadius = Math.floor(this.attribute('stdDeviation').numValue());
-			this.extraFilterDistance = this.blurRadius;
-
-			this.apply = function(ctx, x, y, width, height) {
-				if (typeof stackBlur.canvasRGBA == 'undefined') {
-					svg.log('ERROR: StackBlur.js must be included for blur to work');
-					return;
-				}
-
-				// StackBlur requires canvas be on document
-				ctx.canvas.id = svg.UniqueId();
-				ctx.canvas.style.display = 'none';
-				document.body.appendChild(ctx.canvas);
-				stackBlur.canvasRGBA(ctx.canvas.id, x, y, width, height, this.blurRadius);
-				document.body.removeChild(ctx.canvas);
-			}
-		}
-		svg.Element.feGaussianBlur.prototype = new svg.Element.ElementBase;
-
-		// title element, do nothing
-		svg.Element.title = function(node) {
-		}
-		svg.Element.title.prototype = new svg.Element.ElementBase;
-
-		// desc element, do nothing
-		svg.Element.desc = function(node) {
-		}
-		svg.Element.desc.prototype = new svg.Element.ElementBase;
-
-		svg.Element.MISSING = function(node) {
-			svg.log('ERROR: Element \'' + node.nodeName + '\' not yet implemented.');
-		}
-		svg.Element.MISSING.prototype = new svg.Element.ElementBase;
-
-		// element factory
-		svg.CreateElement = function(node) {
-			var className = node.nodeName.replace(/^[^:]+:/,''); // remove namespace
-			className = className.replace(/\-/g,''); // remove dashes
-			var e = null;
-			if (typeof svg.Element[className] != 'undefined') {
-				e = new svg.Element[className](node);
-			}
-			else {
-				e = new svg.Element.MISSING(node);
-			}
-
-			e.type = node.nodeName;
-			return e;
-		}
-
-		// load from url
-		svg.load = function(ctx, url) {
-			svg.loadXml(ctx, svg.ajax(url));
-		}
-
-		// load from xml
-		svg.loadXml = function(ctx, xml) {
-			svg.loadXmlDoc(ctx, svg.parseXml(xml));
-		}
-
-		svg.loadXmlDoc = function(ctx, dom) {
-			svg.init(ctx);
-
-			var mapXY = function(p) {
-				var e = ctx.canvas;
-				while (e) {
-					p.x -= e.offsetLeft;
-					p.y -= e.offsetTop;
-					e = e.offsetParent;
-				}
-				if (window.scrollX) p.x += window.scrollX;
-				if (window.scrollY) p.y += window.scrollY;
-				return p;
-			}
-
-			// bind mouse
-			if (svg.opts['ignoreMouse'] != true) {
-				ctx.canvas.onclick = function(e) {
-					var p = mapXY(new svg.Point(e != null ? e.clientX : event.clientX, e != null ? e.clientY : event.clientY));
-					svg.Mouse.onclick(p.x, p.y);
-				};
-				ctx.canvas.onmousemove = function(e) {
-					var p = mapXY(new svg.Point(e != null ? e.clientX : event.clientX, e != null ? e.clientY : event.clientY));
-					svg.Mouse.onmousemove(p.x, p.y);
-				};
-			}
-
-			var e = svg.CreateElement(dom.documentElement);
-			e.root = true;
-			e.addStylesFromStyleDefinition();
-
-			// render loop
-			var isFirstRender = true;
-			var draw = function() {
-				svg.ViewPort.Clear();
-				if (ctx.canvas.parentNode) svg.ViewPort.SetCurrent(ctx.canvas.parentNode.clientWidth, ctx.canvas.parentNode.clientHeight);
-
-				if (svg.opts['ignoreDimensions'] != true) {
-					// set canvas size
-					if (e.style('width').hasValue()) {
-						ctx.canvas.width = e.style('width').toPixels('x');
-						ctx.canvas.style.width = ctx.canvas.width + 'px';
-					}
-					if (e.style('height').hasValue()) {
-						ctx.canvas.height = e.style('height').toPixels('y');
-						ctx.canvas.style.height = ctx.canvas.height + 'px';
-					}
-				}
-				var cWidth = ctx.canvas.clientWidth || ctx.canvas.width;
-				var cHeight = ctx.canvas.clientHeight || ctx.canvas.height;
-				if (svg.opts['ignoreDimensions'] == true && e.style('width').hasValue() && e.style('height').hasValue()) {
-					cWidth = e.style('width').toPixels('x');
-					cHeight = e.style('height').toPixels('y');
-				}
-				svg.ViewPort.SetCurrent(cWidth, cHeight);
-
-				if (svg.opts['offsetX'] != null) e.attribute('x', true).value = svg.opts['offsetX'];
-				if (svg.opts['offsetY'] != null) e.attribute('y', true).value = svg.opts['offsetY'];
-				if (svg.opts['scaleWidth'] != null || svg.opts['scaleHeight'] != null) {
-					var xRatio = null, yRatio = null, viewBox = svg.ToNumberArray(e.attribute('viewBox').value);
-
-					if (svg.opts['scaleWidth'] != null) {
-						if (e.attribute('width').hasValue()) xRatio = e.attribute('width').toPixels('x') / svg.opts['scaleWidth'];
-						else if (!isNaN(viewBox[2])) xRatio = viewBox[2] / svg.opts['scaleWidth'];
-					}
-
-					if (svg.opts['scaleHeight'] != null) {
-						if (e.attribute('height').hasValue()) yRatio = e.attribute('height').toPixels('y') / svg.opts['scaleHeight'];
-						else if (!isNaN(viewBox[3])) yRatio = viewBox[3] / svg.opts['scaleHeight'];
-					}
-
-					if (xRatio == null) { xRatio = yRatio; }
-					if (yRatio == null) { yRatio = xRatio; }
-
-					e.attribute('width', true).value = svg.opts['scaleWidth'];
-					e.attribute('height', true).value = svg.opts['scaleHeight'];
-					e.style('transform', true, true).value += ' scale('+(1.0/xRatio)+','+(1.0/yRatio)+')';
-				}
-
-				// clear and render
-				if (svg.opts['ignoreClear'] != true) {
-					ctx.clearRect(0, 0, cWidth, cHeight);
-				}
-				e.render(ctx);
-				if (isFirstRender) {
-					isFirstRender = false;
-					if (typeof svg.opts['renderCallback'] == 'function') svg.opts['renderCallback'](dom);
-				}
-			}
-
-			var waitingForImages = true;
-			if (svg.ImagesLoaded()) {
-				waitingForImages = false;
-				draw();
-			}
-			svg.intervalID = setInterval(function() {
-				var needUpdate = false;
-
-				if (waitingForImages && svg.ImagesLoaded()) {
-					waitingForImages = false;
-					needUpdate = true;
-				}
-
-				// need update from mouse events?
-				if (svg.opts['ignoreMouse'] != true) {
-					needUpdate = needUpdate | svg.Mouse.hasEvents();
-				}
-
-				// need update from animations?
-				if (svg.opts['ignoreAnimation'] != true) {
-					for (var i=0; i<svg.Animations.length; i++) {
-						needUpdate = needUpdate | svg.Animations[i].update(1000 / svg.FRAMERATE);
-					}
-				}
-
-				// need update from redraw?
-				if (typeof svg.opts['forceRedraw'] == 'function') {
-					if (svg.opts['forceRedraw']() == true) needUpdate = true;
-				}
-
-				// render if needed
-				if (needUpdate) {
-					draw();
-					svg.Mouse.runEvents(); // run and clear our events
-				}
-			}, 1000 / svg.FRAMERATE);
-		}
-
-		svg.stop = function() {
-			if (svg.intervalID) {
-				clearInterval(svg.intervalID);
-			}
-		}
-
-		svg.Mouse = new (function() {
-			this.events = [];
-			this.hasEvents = function() { return this.events.length != 0; }
-
-			this.onclick = function(x, y) {
-				this.events.push({ type: 'onclick', x: x, y: y,
-					run: function(e) { if (e.onclick) e.onclick(); }
-				});
-			}
-
-			this.onmousemove = function(x, y) {
-				this.events.push({ type: 'onmousemove', x: x, y: y,
-					run: function(e) { if (e.onmousemove) e.onmousemove(); }
-				});
-			}
-
-			this.eventElements = [];
-
-			this.checkPath = function(element, ctx) {
-				for (var i=0; i<this.events.length; i++) {
-					var e = this.events[i];
-					if (ctx.isPointInPath && ctx.isPointInPath(e.x, e.y)) this.eventElements[i] = element;
-				}
-			}
-
-			this.checkBoundingBox = function(element, bb) {
-				for (var i=0; i<this.events.length; i++) {
-					var e = this.events[i];
-					if (bb.isPointInBox(e.x, e.y)) this.eventElements[i] = element;
-				}
-			}
-
-			this.runEvents = function() {
-				svg.ctx.canvas.style.cursor = '';
-
-				for (var i=0; i<this.events.length; i++) {
-					var e = this.events[i];
-					var element = this.eventElements[i];
-					while (element) {
-						e.run(element);
-						element = element.parent;
-					}
-				}
-
-				// done running, clear
-				this.events = [];
-				this.eventElements = [];
-			}
-		});
-
-		return svg;
-	};
-
-	if (typeof CanvasRenderingContext2D  != 'undefined') {
-		CanvasRenderingContext2D.prototype.drawSvg = function(s, dx, dy, dw, dh, opts) {
-			var cOpts = {
-				ignoreMouse: true,
-				ignoreAnimation: true,
-				ignoreDimensions: true,
-				ignoreClear: true,
-				offsetX: dx,
-				offsetY: dy,
-				scaleWidth: dw,
-				scaleHeight: dh
-			}
-
-			for(var prop in opts) {
-				if(opts.hasOwnProperty(prop)){
-					cOpts[prop] = opts[prop];
-				}
-			}
-			canvg(this.canvas, s, cOpts);
-		}
-	}
-
-	return canvg;
-
-}));
-
-
 /**
  *  Copyright (C) 2021 Christian M. Zmasek
  *  Copyright (C) 2021 Yun Zhang
@@ -25683,8 +22277,8 @@ function BlurStack()
  *
  */
 
-// v 1.8.7b3
-// 2021-06-23
+// v 1.9.0b1
+// 2021-10-01
 //
 // forester.js is a general suite for dealing with phylogenetic trees.
 // 
@@ -25706,10 +22300,10 @@ function BlurStack()
 //
 // Change './forester' to 'forester' if you use this code outside of this package
 //
-// var forester = require('./forester').forester;
+// let forester = require('./forester').forester;
 //
-// var newHampshireFormattedString = "(((a:1,b:1,c:1)N:2,(d:1,e:1)M:4)O:4,f:1)R:1;";
-// var phylogeneticTree = forester.parseNewHampshire(newHampshireFormattedString);
+// let newHampshireFormattedString = "(((a:1,b:1,c:1)N:2,(d:1,e:1)M:4)O:4,f:1)R:1;";
+// let phylogeneticTree = forester.parseNewHampshire(newHampshireFormattedString);
 //
 // console.log('Pre-order traversal:');
 // forester.preOrderTraversalAll(forester.getTreeRoot(phylogeneticTree), function (n) {
@@ -25722,7 +22316,7 @@ function BlurStack()
 // });
 //
 // console.log('In New Hampshire format:');
-// var nh = forester.toNewHampshire(phylogeneticTree);
+// let nh = forester.toNewHampshire(phylogeneticTree);
 // console.log(nh);
 
 
@@ -25775,8 +22369,8 @@ function BlurStack()
      */
     forester.addParents = function (phy) {
         if (phy.children) {
-            for (var i = phy.children.length - 1; i >= 0; --i) {
-                var c = phy.children[i];
+            for (let i = phy.children.length - 1; i >= 0; --i) {
+                let c = phy.children[i];
                 c.parent = phy;
                 forester.addParents(c);
             }
@@ -25792,7 +22386,7 @@ function BlurStack()
      * @returns {*} - The real tree root node.
      */
     forester.getTreeRoot = function (phy) {
-        var root = phy;
+        let root = phy;
         if (!root.parent && root.children && root.children.length === 1) {
             root = root.children[0];
         }
@@ -25812,7 +22406,7 @@ function BlurStack()
     forester.preOrderTraversal = function (node, fn) {
         fn(node);
         if (node.children) {
-            for (var i = node.children.length - 1; i >= 0; --i) {
+            for (let i = node.children.length - 1; i >= 0; --i) {
                 forester.preOrderTraversal(node.children[i], fn);
             }
         }
@@ -25828,12 +22422,11 @@ function BlurStack()
     forester.preOrderTraversalAll = function (node, fn) {
         fn(node);
         if (node.children) {
-            for (var i = node.children.length - 1; i >= 0; --i) {
+            for (let i = node.children.length - 1; i >= 0; --i) {
                 forester.preOrderTraversalAll(node.children[i], fn);
             }
-        }
-        else if (node._children) {
-            for (var ii = node._children.length - 1; ii >= 0; --ii) {
+        } else if (node._children) {
+            for (let ii = node._children.length - 1; ii >= 0; --ii) {
                 forester.preOrderTraversalAll(node._children[ii], fn);
             }
         }
@@ -25841,14 +22434,13 @@ function BlurStack()
 
     forester.postOrderTraversalAll = function (node, fn) {
         if (node.children) {
-            var l = node.children.length;
-            for (var i = 0; i < l; ++i) {
+            let l = node.children.length;
+            for (let i = 0; i < l; ++i) {
                 forester.postOrderTraversalAll(node.children[i], fn);
             }
-        }
-        else if (node._children) {
-            var ll = node._children.length;
-            for (var ii = 0; ii < ll; ++ii) {
+        } else if (node._children) {
+            let ll = node._children.length;
+            for (let ii = 0; ii < ll; ++ii) {
                 forester.postOrderTraversalAll(node._children[ii], fn);
             }
         }
@@ -25857,7 +22449,7 @@ function BlurStack()
 
 
     forester.findByNodeName = function (node, name) {
-        var found = [];
+        let found = [];
         forester.preOrderTraversalAll(node, function (n) {
             if (n.name === name) {
                 found.push(n);
@@ -25867,7 +22459,7 @@ function BlurStack()
     };
 
     forester.findByTaxonomyCode = function (node, code) {
-        var found = [];
+        let found = [];
         forester.preOrderTraversalAll(node, function (n) {
             if (n.taxonomies && n.taxonomies.length > 0 && n.taxonomies[0].code === code) {
                 found.push(n);
@@ -25877,7 +22469,7 @@ function BlurStack()
     };
 
     forester.findByTaxonomyScientificName = function (node, scientificName) {
-        var found = [];
+        let found = [];
         forester.preOrderTraversalAll(node, function (n) {
             if (n.taxonomies && n.taxonomies.length > 0 && n.taxonomies[0].scientific_name === scientificName) {
                 found.push(n);
@@ -25889,25 +22481,24 @@ function BlurStack()
 
     forester.filterByNodeProperty = function (positive, phy, propertyMap) {
         if (!phy) {
-            throw ( "cannot delete null tree" );
+            throw ("cannot delete null tree");
         }
         if (!propertyMap) {
-            throw ( "property list is null" );
+            throw ("property list is null");
         }
         const toDelete = [];
         forester.preOrderTraversalAll(phy, function (n) {
             if (!n.children && !n._children) {
                 if (n.properties && n.properties.length > 0) {
                     const propertiesLength = n.properties.length;
-                    for (var i = 0; i < propertiesLength; ++i) {
+                    for (let i = 0; i < propertiesLength; ++i) {
                         const property = n.properties[i];
                         if (property.ref && property.value && property.applies_to === 'node') {
                             if (positive) {
                                 if (property.ref in propertyMap && !propertyMap[property.ref].includes(property.value)) {
                                     toDelete.push(n);
                                 }
-                            }
-                            else {
+                            } else {
                                 if (property.ref in propertyMap && propertyMap[property.ref].includes(property.value)) {
                                     toDelete.push(n);
                                 }
@@ -25919,7 +22510,7 @@ function BlurStack()
         });
         const l = toDelete.length;
         console.log(toDelete);
-        for (var i = 0; i < l; ++i) {
+        for (let i = 0; i < l; ++i) {
             forester.deleteSubtree(phy, toDelete[i]);
         }
     };
@@ -25933,43 +22524,43 @@ function BlurStack()
      */
     forester.deleteSubtree = function (phy, nodeToDelete) {
         if (!phy) {
-            throw ( "cannot delete null tree" );
+            throw ("cannot delete null tree");
         }
         if (!nodeToDelete) {
-            throw ( "cannot delete null node" );
+            throw ("cannot delete null node");
         }
         if (!nodeToDelete.parent || !nodeToDelete.parent.parent) {
-            throw ( "cannot delete root" );
+            throw ("cannot delete root");
         }
         if (!nodeToDelete.parent.parent.parent) {
-            throw ( "cannot delete direct child of root" );
+            throw ("cannot delete direct child of root");
         }
 
-        var p = nodeToDelete.parent;
+        let p = nodeToDelete.parent;
 
         if ((p.children) && (p.children.length > 1)) {
-            var i = p.children.indexOf(nodeToDelete);
+            let i = p.children.indexOf(nodeToDelete);
             if (i !== -1) {
                 p.children.splice(i, 1);
             }
         }
         if ((p._children) && (p._children.length > 1)) {
-            var ii = p._children.indexOf(nodeToDelete);
+            let ii = p._children.indexOf(nodeToDelete);
             if (ii !== -1) {
                 p._children.splice(ii, 1);
             }
         }
 
         if (p.children.length === 1) {
-            var pp = p.parent;
-            var cni = forester.getChildNodeIndex(pp, p);
-            if ((cni < 0) || (cni > ( pp.children.length - 1 ) )) {
-                throw ( "this should never have happened, child node index = " + cni );
+            let pp = p.parent;
+            let cni = forester.getChildNodeIndex(pp, p);
+            if ((cni < 0) || (cni > (pp.children.length - 1))) {
+                throw ("this should never have happened, child node index = " + cni);
             }
-            var x = p.children[0];
-            var nbl = undefined;
+            let x = p.children[0];
+            let nbl = undefined;
             if (x.branch_length || p.branch_length) {
-                nbl = ( x.branch_length > 0 ? x.branch_length : 0 ) + ( p.branch_length > 0 ? p.branch_length : 0  );
+                nbl = (x.branch_length > 0 ? x.branch_length : 0) + (p.branch_length > 0 ? p.branch_length : 0);
             }
             x.parent = pp;
             pp.children[cni] = x;
@@ -25989,57 +22580,53 @@ function BlurStack()
      */
     forester.reRoot = function (phy, node, branchLength) {
         if (!phy) {
-            throw ( "cannot re-root null tree" );
+            throw ("cannot re-root null tree");
         }
         if (!node) {
-            throw ( "cannot re-root on null node" );
+            throw ("cannot re-root on null node");
         }
         if (!branchLength) {
             branchLength = -1;
         }
         if (forester.isString(node)) {
-            var nodes = forester.findByNodeName(phy, node);
+            let nodes = forester.findByNodeName(phy, node);
             if (nodes.length > 1) {
                 throw ("node name '" + node + "' is not unique");
-            }
-            else if (nodes.length < 1) {
+            } else if (nodes.length < 1) {
                 throw ("node name '" + node + "' is not found");
             }
             node = nodes[0];
         }
 
         phy.rooted = true;
-        var root = forester.getTreeRoot(phy);
+        let root = forester.getTreeRoot(phy);
 
         if (!node.parent || !node.parent.parent) {
             //do noting
-        }
-        else if (!node.parent.parent.parent) {
-            if (( node.parent.children.length === 2 ) && ( branchLength >= 0 )) {
-                var d = node.parent.children[0].branch_length
+        } else if (!node.parent.parent.parent) {
+            if ((node.parent.children.length === 2) && (branchLength >= 0)) {
+                let d = node.parent.children[0].branch_length
                     + node.parent.children[1].branch_length;
-                var other;
+                let other;
                 if (node.parent.children[0] === node) {
                     other = node.parent.children[1];
-                }
-                else {
+                } else {
                     other = node.parent.children[0];
                 }
                 node.branch_length = branchLength;
-                var dm = d - branchLength;
+                let dm = d - branchLength;
                 if (dm >= 0) {
                     other.branch_length = dm;
-                }
-                else {
+                } else {
                     other.branch_length = 0;
                 }
             }
             if (node.parent.children.length > 2) {
-                var index = forester.getChildNodeIndex(node.parent, node);
-                var dn = node.branch_length;
-                var prev_root = root;
+                let index = forester.getChildNodeIndex(node.parent, node);
+                let dn = node.branch_length;
+                let prev_root = root;
                 prev_root.children.splice(index, 1);
-                var nr = {};
+                let nr = {};
                 nr.children = [];
                 forester.setChildNode(nr, 0, node);
                 forester.setChildNode(nr, 1, prev_root);
@@ -26050,32 +22637,29 @@ function BlurStack()
                 nr.parent = phy;
                 if (branchLength >= 0) {
                     node.branch_length = branchLength;
-                    var dnmp = dn - branchLength;
+                    let dnmp = dn - branchLength;
                     if (dnmp >= 0) {
                         prev_root.branch_length = dnmp;
-                    }
-                    else {
+                    } else {
                         prev_root.branch_length = 0;
                     }
-                }
-                else {
+                } else {
                     if (dn >= 0) {
-                        var dn2 = dn / 2.0;
+                        let dn2 = dn / 2.0;
                         node.branch_length = dn2;
                         prev_root.branch_length = dn2;
                     }
                 }
             }
-        }
-        else {
-            var a = node;
-            var new_root = {};
-            var distance1;
-            var distance2 = 0.0;
-            var branch_data_1;
-            var branch_data_2 = null;
-            var b = a.parent;
-            var c = b.parent;
+        } else {
+            let a = node;
+            let new_root = {};
+            let distance1;
+            let distance2 = 0.0;
+            let branch_data_1;
+            let branch_data_2 = null;
+            let b = a.parent;
+            let c = b.parent;
 
             new_root.children = [];
             forester.setChildNode(new_root, 0, a);
@@ -26093,15 +22677,13 @@ function BlurStack()
             // New root is always placed in the middle of the branch:
             if (!a.branch_length) {
                 b.branch_length = undefined;
-            }
-            else {
+            } else {
                 if (branchLength >= 0.0) {
-                    var diff = a.branch_length - branchLength;
+                    let diff = a.branch_length - branchLength;
                     a.branch_length = branchLength;
-                    b.branch_length = ( diff >= 0.0 ? diff : 0.0 );
-                }
-                else {
-                    var d2 = a.branch_length / 2.0;
+                    b.branch_length = (diff >= 0.0 ? diff : 0.0);
+                } else {
+                    let d2 = a.branch_length / 2.0;
                     a.branch_length = d2;
                     b.branch_length = d2;
                 }
@@ -26122,30 +22704,28 @@ function BlurStack()
                 branch_data_1 = branch_data_2;
             }
             // removing the old root:
-            if (c.children.length == 2) {
-                var node2 = c.children[1 - forester.getChildNodeIndex(c, b)];
+            if (c.children.length === 2) {
+                let node2 = c.children[1 - forester.getChildNodeIndex(c, b)];
                 node2.parent = b;
-                if (( !c.branch_length  )
-                    && ( !node2.branch_length  )) {
+                if ((!c.branch_length)
+                    && (!node2.branch_length)) {
                     node2.branch_length = undefined;
+                } else {
+                    node2.branch_length = (c.branch_length >= 0.0 ? c.branch_length : 0.0)
+                        + (node2.branch_length >= 0.0 ? node2.branch_length : 0.0);
                 }
-                else {
-                    node2.branch_length = ( c.branch_length >= 0.0 ? c.branch_length : 0.0 )
-                        + ( node2.branch_length >= 0.0 ? node2.branch_length : 0.0 );
-                }
-                var cbd = forester.getBranchData(c);
+                let cbd = forester.getBranchData(c);
                 if (cbd) {
                     forester.setBranchData(node2, cbd);
                 }
-                var l = b.children.length;
-                for (var i = 0; i < l; ++i) {
+                let l = b.children.length;
+                for (let i = 0; i < l; ++i) {
                     if (b.children[i] === c) {
                         setChildNodeOnly(b, i, node2);
                         break;
                     }
                 }
-            }
-            else {
+            } else {
                 c.parent = b;
                 forester.removeChildNode(c, forester.getChildNodeIndex(c, b));
             }
@@ -26157,50 +22737,48 @@ function BlurStack()
         function setChildNodeOnly(parentNode, i, node) {
             if (parentNode.children.length <= i) {
                 parentNode.children.push(node);
-            }
-            else {
+            } else {
                 parentNode.children[i] = node;
             }
         }
     };
 
     forester.midpointRoot = function (phy) {
-        var root = forester.getTreeRoot(phy);
-        var extNodes = forester.getAllExternalNodes(root);
-        if (( extNodes.length < 2 ) || ( forester.calcMaxBranchLength(root) <= 0 )) {
+        let root = forester.getTreeRoot(phy);
+        let extNodes = forester.getAllExternalNodes(root);
+        if ((extNodes.length < 2) || (forester.calcMaxBranchLength(root) <= 0)) {
             return;
         }
-        var counter = 0;
-        var totalNodes = forester.getAllNodes(phy).length;
+        let counter = 0;
+        let totalNodes = forester.getAllNodes(phy).length;
         while (true) {
             if (++counter > (totalNodes + 1)) {
-                throw( 'this should not have happened: midpoint rooting does not converge' );
+                throw('this should not have happened: midpoint rooting does not converge');
             }
-            var a = null;
-            var da = 0;
-            var db = 0;
-            var cl = forester.getTreeRoot(phy).children.length;
-            for (var i = 0; i < cl; ++i) {
-                var f = forester.getFurthestDescendant(forester.getTreeRoot(phy).children[i]);
-                var df = forester.getDistance(f, forester.getTreeRoot(phy));
+            let a = null;
+            let da = 0;
+            let db = 0;
+            let cl = forester.getTreeRoot(phy).children.length;
+            for (let i = 0; i < cl; ++i) {
+                let f = forester.getFurthestDescendant(forester.getTreeRoot(phy).children[i]);
+                let df = forester.getDistance(f, forester.getTreeRoot(phy));
                 if (df > 0) {
                     if (df > da) {
                         db = da;
                         da = df;
                         a = f;
-                    }
-                    else if (df > db) {
+                    } else if (df > db) {
                         db = df;
                     }
                 }
             }
-            var diff = da - db;
+            let diff = da - db;
             if (diff < 0.0001) {
                 break;
             }
-            var x = da - ( diff / 2.0 );
-            while (( x > a.branch_length ) && a.parent) {
-                x -= ( a.branch_length > 0 ? a.branch_length : 0 );
+            let x = da - (diff / 2.0);
+            while ((x > a.branch_length) && a.parent) {
+                x -= (a.branch_length > 0 ? a.branch_length : 0);
                 a = a.parent;
             }
             forester.reRoot(phy, a, x);
@@ -26208,12 +22786,12 @@ function BlurStack()
     };
 
     forester.getFurthestDescendant = function (node) {
-        var children = forester.getAllExternalNodes(node);
-        var farthest = null;
-        var longest = -1000000;
-        var l = children.length;
-        for (var i = 0; i < l; ++i) {
-            var dist = forester.getDistance(children[i], node);
+        let children = forester.getAllExternalNodes(node);
+        let farthest = null;
+        let longest = -1000000;
+        let l = children.length;
+        for (let i = 0; i < l; ++i) {
+            let dist = forester.getDistance(children[i], node);
             if (dist > longest) {
                 farthest = children[i];
                 longest = dist;
@@ -26231,7 +22809,7 @@ function BlurStack()
      * @returns {number} distance between n1 and n2
      */
     forester.getDistance = function (n1, n2) {
-        var d = 0.0;
+        let d = 0.0;
         while (n1 !== n2) {
             if (n1.branch_length > 0.0) {
                 d += n1.branch_length;
@@ -26243,11 +22821,11 @@ function BlurStack()
 
     forester.removeChildNode = function (parentNode, i) {
         if (!parentNode.children) {
-            throw ( "cannot remove the child node for a external node" );
+            throw ("cannot remove the child node for a external node");
         }
-        if (( i >= parentNode.children.length ) || ( i < 0 )) {
-            throw ( "attempt to get child node " + i + " of a node with "
-            + parentNode.children.length + " child nodes." );
+        if ((i >= parentNode.children.length) || (i < 0)) {
+            throw ("attempt to get child node " + i + " of a node with "
+                + parentNode.children.length + " child nodes.");
         }
         parentNode.children[i].parent = undefined;
         parentNode.children.splice(i, 1);
@@ -26264,15 +22842,14 @@ function BlurStack()
         node.parent = parentNode;
         if (parentNode.children.length <= i) {
             parentNode.children.push(node);
-        }
-        else {
+        } else {
             parentNode.children[i] = node;
         }
     };
 
 
     forester.getBranchData = function (node) {
-        var branchData = null;
+        let branchData = null;
         if (node.width || node.color || node.confidences) {
             branchData = {};
             branchData.width = node.width;
@@ -26309,15 +22886,15 @@ function BlurStack()
 
     forester.getChildNodeIndex = function (parentNode, childNode) {
         if (!parentNode) {
-            throw ( "cannot get the child index for a root node" );
+            throw ("cannot get the child index for a root node");
         }
-        var c = parentNode.children.length;
-        for (var i = 0; i < c; ++i) {
+        let c = parentNode.children.length;
+        for (let i = 0; i < c; ++i) {
             if (parentNode.children[i] === childNode) {
                 return i;
             }
         }
-        throw ( "unexpected exception: Could not determine the child index for a node" );
+        throw ("unexpected exception: Could not determine the child index for a node");
     };
 
 
@@ -26327,12 +22904,12 @@ function BlurStack()
 
 
     forester.calcAverageTreeHeight = function (node, externalDescendants) {
-        var c = externalDescendants ? externalDescendants : forester.getAllExternalNodes(node);
-        var l = c.length;
-        var s = 0;
-        for (var i = 0; i < l; ++i) {
-            var cc = c[i];
-            while (cc != node) {
+        let c = externalDescendants ? externalDescendants : forester.getAllExternalNodes(node);
+        let l = c.length;
+        let s = 0;
+        for (let i = 0; i < l; ++i) {
+            let cc = c[i];
+            while (cc !== node) {
                 if (cc.branch_length > 0) {
                     s += cc.branch_length;
                 }
@@ -26343,7 +22920,7 @@ function BlurStack()
     };
 
     forester.setToArray = function (set) {
-        var array = [];
+        let array = [];
         if (set) {
             set.forEach(function (e) {
                 array.push(e);
@@ -26353,7 +22930,7 @@ function BlurStack()
     };
 
     forester.setToSortedArray = function (set) {
-        var array = [];
+        let array = [];
         if (set) {
             set.forEach(function (e) {
                 array.push(e);
@@ -26363,10 +22940,10 @@ function BlurStack()
     };
 
     forester.calcMinMaxInSet = function (set) {
-        var array = [];
-        var first = true;
-        var min = 0;
-        var max = 0;
+        let array = [];
+        let first = true;
+        let min = 0;
+        let max = 0;
         if (set) {
             set.forEach(function (e) {
                 e = parseFloat(e);
@@ -26374,8 +22951,7 @@ function BlurStack()
                     first = false;
                     min = e;
                     max = e;
-                }
-                else {
+                } else {
                     if (e < min) {
                         min = e;
                     }
@@ -26391,13 +22967,13 @@ function BlurStack()
     };
 
     forester.calcMinMeanMaxInSet = function (set) {
-        var array = [];
-        var first = true;
-        var min = 0;
-        var max = 0;
-        var mean = 0;
-        var sum = 0;
-        var n = 0;
+        let array = [];
+        let first = true;
+        let min = 0;
+        let max = 0;
+        let mean = 0;
+        let sum = 0;
+        let n = 0;
         if (set) {
             set.forEach(function (e) {
                 e = parseFloat(e);
@@ -26407,8 +22983,7 @@ function BlurStack()
                     first = false;
                     min = e;
                     max = e;
-                }
-                else {
+                } else {
                     if (e < min) {
                         min = e;
                     }
@@ -26443,16 +23018,16 @@ function BlurStack()
      * @returns {{}}
      */
     forester.collectProperties = function (phy, appliesTo, externalOnly) {
-        var props = {};
+        let props = {};
         forester.preOrderTraversalAll(phy, function (n) {
 
             if (!externalOnly || externalOnly !== true || (!n.children && !n._children)) {
                 if (n.properties && n.properties.length > 0) {
-                    var propertiesLength = n.properties.length;
-                    for (var i = 0; i < propertiesLength; ++i) {
-                        var property = n.properties[i];
+                    let propertiesLength = n.properties.length;
+                    for (let i = 0; i < propertiesLength; ++i) {
+                        let property = n.properties[i];
                         if (property.ref && property.value && property.datatype && property.applies_to && property.applies_to === appliesTo) {
-                            var ref = property.ref;
+                            let ref = property.ref;
                             if (!props[ref]) {
                                 props[ref] = new Set();
                             }
@@ -26478,23 +23053,22 @@ function BlurStack()
      * @returns {boolean}
      */
     forester.splitProperty = function (phy, targetValue, fromRef, toRef) {
-        var found = false;
-        var targetValue_ = targetValue + ' ';
+        let found = false;
+        let targetValue_ = targetValue + ' ';
         forester.preOrderTraversalAll(phy, function (n) {
             if (n.properties && n.properties.length > 0) {
-                var propertiesLength = n.properties.length;
-                for (var i = 0; i < propertiesLength; ++i) {
-                    var property = n.properties[i];
+                let propertiesLength = n.properties.length;
+                for (let i = 0; i < propertiesLength; ++i) {
+                    let property = n.properties[i];
                     if (property.ref === fromRef && property.value) {
-                        var newValue = '';
+                        let newValue = '';
                         if (property.value.startsWith(targetValue_)) {
                             newValue = targetValue;
                             found = true;
-                        }
-                        else {
+                        } else {
                             newValue = property.value;
                         }
-                        var newproperty = {};
+                        let newproperty = {};
                         newproperty.ref = toRef;
                         newproperty.value = newValue;
                         newproperty.datatype = 'xsd:string';
@@ -26508,14 +23082,14 @@ function BlurStack()
     };
 
     forester.collectPropertyRefs = function (phy, appliesTo, externalOnly) {
-        var propertyRefs = new Set();
+        let propertyRefs = new Set();
         forester.preOrderTraversalAll(phy, function (n) {
 
             if (!externalOnly || externalOnly !== true || (!n.children && !n._children)) {
                 if (n.properties && n.properties.length > 0) {
-                    var propertiesLength = n.properties.length;
-                    for (var i = 0; i < propertiesLength; ++i) {
-                        var property = n.properties[i];
+                    let propertiesLength = n.properties.length;
+                    for (let i = 0; i < propertiesLength; ++i) {
+                        let property = n.properties[i];
                         if (property.ref && property.value && property.datatype && property.applies_to && property.applies_to === appliesTo) {
                             propertyRefs.add(property.ref);
                         }
@@ -26531,19 +23105,18 @@ function BlurStack()
         forester.preOrderTraversalAll(phy, function (n) {
             if (!externalOnly || externalOnly !== true || (!n.children && !n._children)) {
                 if (n.properties && n.properties.length > 0) {
-                    var propertiesLength = n.properties.length;
-                    for (var i = 0; i < propertiesLength; ++i) {
-                        var property = n.properties[i];
+                    let propertiesLength = n.properties.length;
+                    for (let i = 0; i < propertiesLength; ++i) {
+                        let property = n.properties[i];
                         if (property.ref && property.value && property.datatype && property.applies_to && property.applies_to === appliesTo) {
                             if (property.ref === sourceRef) {
-                                var s = property.value.trim().split(/\s+/);
+                                let s = property.value.trim().split(/\s+/);
                                 if (s && s.length > 1) {
-                                    var newProp = {};
+                                    let newProp = {};
                                     newProp.ref = targetRef;
-                                    if (s.length == 2) {
+                                    if (s.length === 2) {
                                         newProp.value = s[0];
-                                    }
-                                    else {
+                                    } else {
                                         newProp.value = s[0] + ' ' + s[1];
                                     }
                                     newProp.datatype = property.datatype;
@@ -26559,7 +23132,7 @@ function BlurStack()
     };
 
     forester.collectBasicTreeProperties = function (tree) {
-        var properties = {};
+        let properties = {};
         properties.internalNodeData = false;
         properties.nodeNames = false;
         properties.longestNodeName = 0;
@@ -26573,16 +23146,16 @@ function BlurStack()
         properties.externalNodesCount = 0;
         properties.molSeqResiduesPerPosition = null;
         properties.averageBranchLength = 0;
-        var bl_counter = 0;
-        var bl_sum = 0;
-        var molSeqs = [];
+        let bl_counter = 0;
+        let bl_sum = 0;
+        let molSeqs = [];
         forester.preOrderTraversalAll(tree, function (n) {
             if (n.name && n.name.length > 0) {
                 properties.nodeNames = true;
                 if (n.name.length > properties.longestNodeName) {
                     properties.longestNodeName = n.name.length;
                 }
-                if ((n.children || n._children) && ( n.parent )) {
+                if ((n.children || n._children) && (n.parent)) {
                     properties.internalNodeData = true;
                 }
             }
@@ -26602,17 +23175,15 @@ function BlurStack()
 
                 if (n.children || n._children) {
                     properties.internalNodeData = true;
-                }
-                else {
-                    var s = n.sequences[0];
+                } else {
+                    let s = n.sequences[0];
                     if (s.mol_seq && s.mol_seq.value) {
                         if (s.mol_seq.value.length > properties.maxMolSeqLength) {
                             properties.maxMolSeqLength = s.mol_seq.value.length;
                         }
                         if (!s.mol_seq.is_aligned) {
                             properties.alignedMolSeqs = false;
-                        }
-                        else {
+                        } else {
                             molSeqs.push(s.mol_seq.value);
                         }
                     }
@@ -26628,8 +23199,8 @@ function BlurStack()
                 properties.confidences = true;
             }
             if (n.properties && n.properties.length > 0) {
-                var l = n.properties.length;
-                for (var p = 0; p < l; ++p) {
+                let l = n.properties.length;
+                for (let p = 0; p < l; ++p) {
                     if (n.properties[p].ref === BRANCH_EVENT_REF
                         && n.properties[p].datatype === BRANCH_EVENT_DATATYPE
                         && n.properties[p].applies_to === BRANCH_EVENT_APPLIES_TO) {
@@ -26642,21 +23213,21 @@ function BlurStack()
 
         if (properties.alignedMolSeqs) {
             properties.molSeqResiduesPerPosition = [];
-            for (var p = 0, maxLen = properties.maxMolSeqLength; p < maxLen; ++p) {
-                var mySet = new Set();
-                for (var i = 0, seqsLen = molSeqs.length; i < seqsLen; ++i) {
-                    var molSeq = molSeqs[i];
-                    var c = molSeq[p];
+            for (let p = 0, maxLen = properties.maxMolSeqLength; p < maxLen; ++p) {
+                let mySet = new Set();
+                for (let i = 0, seqsLen = molSeqs.length; i < seqsLen; ++i) {
+                    let molSeq = molSeqs[i];
+                    let c = molSeq[p];
                     if (c) {
                         c = c.toUpperCase();
                         mySet.add(c);
                         if (!MSA_RESIDUE_SORT_MAP.has(c)) {
-                            throw ( "Unknown MSA residue '" + c + "'" );
+                            throw ("Unknown MSA residue '" + c + "'");
                         }
                     }
 
                 }
-                var myArray = forester.setToArray(mySet);
+                let myArray = forester.setToArray(mySet);
                 myArray.sort(function (a, b) {
                     return MSA_RESIDUE_SORT_MAP.get(a) - MSA_RESIDUE_SORT_MAP.get(b);
                 });
@@ -26679,11 +23250,11 @@ function BlurStack()
                                     partial,
                                     regex,
                                     searchProperties) {
-        var nodes = new Set();
+        let nodes = new Set();
         if (!phy || !query || query.length < 1) {
             return nodes;
         }
-        var my_query = query.trim();
+        let my_query = query.trim();
         if (my_query.length < 1) {
             return nodes;
         }
@@ -26693,18 +23264,17 @@ function BlurStack()
             my_query = my_query.replace(/\+\++/g, '+');
         }
 
-        var queries = [];
+        let queries = [];
 
-        if (!regex && ( my_query.indexOf(",") >= 0 )) {
+        if (!regex && (my_query.indexOf(",") >= 0)) {
             queries = my_query.split(",");
-        }
-        else {
+        } else {
             queries.push(my_query);
         }
-        var queriesLength = queries.length;
-
-        for (var i = 0; i < queriesLength; ++i) {
-            var q = queries[i];
+        let queriesLength = queries.length;
+        let q;
+        for (let i = 0; i < queriesLength; ++i) {
+            q = queries[i];
             if (q) {
                 q = q.trim();
                 if (q.length > 0) {
@@ -26715,35 +23285,32 @@ function BlurStack()
 
         return nodes;
 
-
         function matcher(node) {
-            var mqueries = [];
-            if (!regex && ( q.indexOf("+") >= 0 )) {
+            let mqueries = [];
+            if (!regex && (q.indexOf("+") >= 0)) {
                 mqueries = q.split("+");
-            }
-            else {
+            } else {
                 mqueries.push(q);
             }
-            var mqueriesLength = mqueries.length;
-            var match = true;
-            for (var i = 0; i < mqueriesLength; ++i) {
-                var mq = mqueries[i];
+            let mqueriesLength = mqueries.length;
+            let match = true;
+            for (let i = 0; i < mqueriesLength; ++i) {
+                let mq = mqueries[i];
                 if (mq) {
                     mq = mq.trim();
                     if (mq.length > 0) {
-                        var ndf = null;
-                        if (( mq.length > 3 ) && ( mq.indexOf(":") === 2 )) {
+                        let ndf = null;
+                        if ((mq.length > 3) && (mq.indexOf(":") === 2)) {
                             ndf = makeNDF(mq);
                             if (ndf) {
                                 mq = mq.substring(3);
                             }
                         }
-                        var lmatch = false;
-                        if (( ( ndf === null ) || ( ndf === "NN" ) )
+                        let lmatch = false;
+                        if (((ndf === null) || (ndf === "NN"))
                             && matchme(node.name, mq, caseSensitive, partial, regex)) {
                             lmatch = true;
-                        }
-                        else if (( ( ndf === null ) || ( ndf === "TC" ) ) && node.taxonomies
+                        } else if (((ndf === null) || (ndf === "TC")) && node.taxonomies
                             && node.taxonomies.length > 0
                             && matchme(node.taxonomies[0].code,
                                 mq,
@@ -26751,8 +23318,7 @@ function BlurStack()
                                 partial,
                                 regex)) {
                             lmatch = true;
-                        }
-                        else if (( ( ndf === null ) || ( ndf === "TS" ) ) && node.taxonomies
+                        } else if (((ndf === null) || (ndf === "TS")) && node.taxonomies
                             && node.taxonomies.length > 0
                             && matchme(node.taxonomies[0].scientific_name,
                                 mq,
@@ -26760,8 +23326,7 @@ function BlurStack()
                                 partial,
                                 regex)) {
                             lmatch = true;
-                        }
-                        else if (( ( ndf === null ) || ( ndf === "TN" ) ) && node.taxonomies
+                        } else if (((ndf === null) || (ndf === "TN")) && node.taxonomies
                             && node.taxonomies.length > 0
                             && matchme(node.taxonomies[0].common_name,
                                 mq,
@@ -26769,8 +23334,7 @@ function BlurStack()
                                 partial,
                                 regex)) {
                             lmatch = true;
-                        }
-                        else if (( ( ndf === null ) || ( ndf === "SY" ) ) && node.taxonomies
+                        } else if (((ndf === null) || (ndf === "SY")) && node.taxonomies
                             && node.taxonomies.length > 0
                             && matchme(node.taxonomies[0].synonym,
                                 mq,
@@ -26778,8 +23342,7 @@ function BlurStack()
                                 partial,
                                 regex)) {
                             lmatch = true;
-                        }
-                        else if (( ( ndf === null ) || ( ndf === "TI" ) ) && node.taxonomies
+                        } else if (((ndf === null) || (ndf === "TI")) && node.taxonomies
                             && node.taxonomies.length > 0 && node.taxonomies[0].id
                             && matchme(node.taxonomies[0].id.value,
                                 mq,
@@ -26787,8 +23350,7 @@ function BlurStack()
                                 partial,
                                 regex)) {
                             lmatch = true;
-                        }
-                        else if (( ( ndf === null ) || ( ndf === "SN" ) ) && node.sequences
+                        } else if (((ndf === null) || (ndf === "SN")) && node.sequences
                             && node.sequences.length > 0
                             && matchme(node.sequences[0].name,
                                 mq,
@@ -26796,8 +23358,7 @@ function BlurStack()
                                 partial,
                                 regex)) {
                             lmatch = true;
-                        }
-                        else if (( ( ndf === null ) || ( ndf === "GN" ) ) && node.sequences
+                        } else if (((ndf === null) || (ndf === "GN")) && node.sequences
                             && node.sequences.length > 0
                             && matchme(node.sequences[0].gene_name,
                                 mq,
@@ -26805,8 +23366,7 @@ function BlurStack()
                                 partial,
                                 regex)) {
                             lmatch = true;
-                        }
-                        else if (( ( ndf === null ) || ( ndf === "SS" ) ) && node.sequences
+                        } else if (((ndf === null) || (ndf === "SS")) && node.sequences
                             && node.sequences.length > 0
                             && matchme(node.sequences[0].symbol,
                                 mq,
@@ -26814,8 +23374,7 @@ function BlurStack()
                                 partial,
                                 regex)) {
                             lmatch = true;
-                        }
-                        else if (( ( ndf === null ) || ( ndf === "SA" ) ) && node.sequences
+                        } else if (((ndf === null) || (ndf === "SA")) && node.sequences
                             && node.sequences.length > 0 && node.sequences[0].accession
                             && matchme(node.sequences[0].accession.value,
                                 mq,
@@ -26823,18 +23382,17 @@ function BlurStack()
                                 partial,
                                 regex)) {
                             lmatch = true;
-                        }
-                        else if (( ( ndf === null ) && ( searchProperties === true ) ) && node.properties
+                        } else if (((ndf === null) && (searchProperties === true)) && node.properties
                             && node.properties.length > 0) {
 
-                            var propertiesLength = node.properties.length;
-                            for (var i = 0; i < propertiesLength; ++i) {
-                                var p = node.properties[i];
+                            let propertiesLength = node.properties.length;
+                            for (let i = 0; i < propertiesLength; ++i) {
+                                let p = node.properties[i];
                                 if (p.value && matchme(p.value,
-                                        mq,
-                                        caseSensitive,
-                                        partial,
-                                        regex)) {
+                                    mq,
+                                    caseSensitive,
+                                    partial,
+                                    regex)) {
                                     lmatch = true;
                                     break;
                                 }
@@ -26854,7 +23412,7 @@ function BlurStack()
                 else {
                     match = false;
                 }
-            } //  for (var i = 0; i < mqueriesLength; ++i)
+            } //  for (let i = 0; i < mqueriesLength; ++i)
             if (match) {
                 nodes.add(node);
             }
@@ -26868,41 +23426,35 @@ function BlurStack()
             if (!s || !query) {
                 return false;
             }
-            var my_s = s.trim();
-            var my_query = query.trim();
+            let my_s = s.trim();
+            let my_query = query.trim();
             if (!caseSensitive && !regex) {
                 my_s = my_s.toLowerCase();
                 my_query = my_query.toLowerCase();
             }
             if (regex) {
-                var re = null;
+                let re = null;
                 try {
                     if (caseSensitive) {
                         re = new RegExp(my_query);
-                    }
-                    else {
+                    } else {
                         re = new RegExp(my_query, 'i');
                     }
-                }
-                catch (err) {
+                } catch (err) {
                     return false;
                 }
                 if (re) {
-                    return ( my_s.search(re) > -1 );
-                }
-                else {
+                    return (my_s.search(re) > -1);
+                } else {
                     return false;
                 }
-            }
-            else if (partial) {
-                return ( my_s.indexOf(my_query) > -1 );
-            }
-            else {
-                var np = new RegExp("(^|\\s)" + escapeRegExp(my_query) + "($|\\s)");
+            } else if (partial) {
+                return (my_s.indexOf(my_query) > -1);
+            } else {
+                let np = new RegExp("(^|\\s)" + escapeRegExp(my_query) + "($|\\s)");
                 if (np) {
-                    return ( my_s.search(np) > -1 );
-                }
-                else {
+                    return (my_s.search(np) > -1);
+                } else {
                     return false;
                 }
             }
@@ -26913,7 +23465,7 @@ function BlurStack()
         }
 
         function makeNDF(query) {
-            var str = query.substring(0, 2);
+            let str = query.substring(0, 2);
             if (str === "NN"
                 || str === "TC"
                 || str === "TN"
@@ -26928,8 +23480,7 @@ function BlurStack()
                 || str === "XR"
                 || str === "MS") {
                 return str;
-            }
-            else {
+            } else {
                 return null;
             }
         }
@@ -26945,7 +23496,7 @@ function BlurStack()
      * @returns {number} - The sum of external descendants.
      */
     forester.calcSumOfExternalDescendants = function (node) {
-        var nodes = 0;
+        let nodes = 0;
         forester.preOrderTraversal(node, function (n) {
             if (!n.children) {
                 ++nodes;
@@ -26963,7 +23514,7 @@ function BlurStack()
      * @returns {number} - The sum of all external descendants.
      */
     forester.calcSumOfAllExternalDescendants = function (node) {
-        var nodes = 0;
+        let nodes = 0;
         forester.preOrderTraversalAll(node, function (n) {
             if (!(n.children || n._children)) {
                 ++nodes;
@@ -26981,7 +23532,7 @@ function BlurStack()
      * collapsed
      */
     forester.isHasCollapsedNodes = function (node) {
-        var collapsed = false;
+        let collapsed = false;
         forester.preOrderTraversalAll(node, function (n) {
             if (n._children) {
                 collapsed = true;
@@ -26992,7 +23543,7 @@ function BlurStack()
     };
 
     forester.getAllExternalNodes = function (node) {
-        var nodes = [];
+        let nodes = [];
         forester.preOrderTraversalAll(node, function (n) {
             if (!n.children && !n._children) {
                 nodes.push(n);
@@ -27002,7 +23553,7 @@ function BlurStack()
     };
 
     forester.getAllNodes = function (phy) {
-        var nodes = [];
+        let nodes = [];
         forester.preOrderTraversalAll(forester.getTreeRoot(phy), function (n) {
             nodes.push(n);
         });
@@ -27010,10 +23561,10 @@ function BlurStack()
     };
 
     forester.calcMaxDepth = function (node) {
-        var max = 0;
+        let max = 0;
         forester.preOrderTraversalAll(node, function (n) {
             if (!n.children && !n._children) {
-                var steps = forester.calcDepth(n);
+                let steps = forester.calcDepth(n);
                 if (steps > max) {
                     max = steps;
                 }
@@ -27024,7 +23575,7 @@ function BlurStack()
 
     forester.calcDepth = function (node) {
 
-        var steps = 0;
+        let steps = 0;
         while (node.parent && node.parent.parent) {
             steps++;
             node = node.parent;
@@ -27034,12 +23585,12 @@ function BlurStack()
 
 
     forester.calcBranchLengthSimpleStatistics = function (node) {
-        var stats = {};
+        let stats = {};
         stats.mean = 0;
         stats.min = Number.MAX_VALUE;
         stats.max = 0;
         stats.n = 0;
-        var sum = 0;
+        let sum = 0;
         forester.preOrderTraversalAll(node, function (n) {
             if (n !== node && n.branch_length && n.branch_length >= 0) {
                 ++stats.n;
@@ -27059,7 +23610,7 @@ function BlurStack()
     };
 
     forester.calcMaxBranchLength = function (node) {
-        var max = 0;
+        let max = 0;
         forester.preOrderTraversalAll(node, function (n) {
             if (n !== node && n.branch_length && (n.branch_length > max)) {
                 max = n.branch_length;
@@ -27070,10 +23621,10 @@ function BlurStack()
 
 
     forester.isHasNodeData = function (node) {
-        return ( (node.name && node.name.length > 0 ) ||
-        (node.taxonomies && node.taxonomies.length > 0) ||
-        (node.sequences && node.sequences.length > 0) ||
-        (node.properties && node.properties.length > 0) );
+        return ((node.name && node.name.length > 0) ||
+            (node.taxonomies && node.taxonomies.length > 0) ||
+            (node.sequences && node.sequences.length > 0) ||
+            (node.properties && node.properties.length > 0));
     };
 
 
@@ -27099,13 +23650,12 @@ function BlurStack()
             if (!n.max) {
                 n.max = forester.calcMaxBranchLength(n);
             }
-            var max = n.max;
+            let max = n.max;
             if (max < branchLength) {
                 forester.collapse(n);
-            }
-            else {
+            } else {
                 forester.unCollapse(n);
-                for (var i = n.children.length - 1; i >= 0; i--) {
+                for (let i = n.children.length - 1; i >= 0; i--) {
                     collapseToBranchLengthHelper(n.children[i], branchLength);
                 }
             }
@@ -27123,11 +23673,10 @@ function BlurStack()
             }
             if (d >= depth) {
                 forester.collapse(n);
-            }
-            else {
+            } else {
                 forester.unCollapse(n);
                 ++d;
-                for (var i = n.children.length - 1; i >= 0; i--) {
+                for (let i = n.children.length - 1; i >= 0; i--) {
                     collapseToDepthHelper(n.children[i], d, depth);
                 }
             }
@@ -27160,156 +23709,137 @@ function BlurStack()
      */
     forester.parseNewHampshire = function (nhStr, confidenceValuesInBrackets, confidenceValuesAsInternalNames) {
 
-        var NH_FORMAT_ERR_OPEN_PARENS = NH_FORMAT_ERR + 'likely cause: number of open parentheses is larger than number of close parentheses';
-        var NH_FORMAT_ERR_CLOSE_PARENS = NH_FORMAT_ERR + 'likely cause: number of close parentheses is larger than number of open parentheses';
+        let NH_FORMAT_ERR_OPEN_PARENS = NH_FORMAT_ERR + 'likely cause: number of open parentheses is larger than number of close parentheses';
+        let NH_FORMAT_ERR_CLOSE_PARENS = NH_FORMAT_ERR + 'likely cause: number of close parentheses is larger than number of open parentheses';
 
-        if (confidenceValuesInBrackets == undefined) {
+        if (confidenceValuesInBrackets === undefined) {
             confidenceValuesInBrackets = true;
         }
-        if (confidenceValuesAsInternalNames == undefined) {
+        if (confidenceValuesAsInternalNames === undefined) {
             confidenceValuesAsInternalNames = false;
         }
-        if ((confidenceValuesInBrackets === true ) && (confidenceValuesAsInternalNames === true)) {
-            throw ( "confidence values cannot be both in brackets and as internal node names" );
+        if ((confidenceValuesInBrackets === true) && (confidenceValuesAsInternalNames === true)) {
+            throw ("confidence values cannot be both in brackets and as internal node names");
         }
 
-        var ancs = [];
-        var x = {};
-        var ss = nhStr.split(/(;|\(|\)|,|:|"|')/);
-        var ssl = ss.length;
-        var in_double_q = false;
-        var in_single_q = false;
-        var buffer = '';
-        for (var i = 0; i < ssl; ++i) {
-            var element = ss[i].replace(/\s+/g, '');
+        let ancs = [];
+        let x = {};
+        let ss = nhStr.split(/(;|\(|\)|,|:|"|')/);
+        let ssl = ss.length;
+        let in_double_q = false;
+        let in_single_q = false;
+        let buffer = '';
+        for (let i = 0; i < ssl; ++i) {
+            let element = ss[i].replace(/\s+/g, '');
 
             if (element === '"' && !in_single_q) {
                 if (!in_double_q) {
                     in_double_q = true;
-                }
-                else {
+                } else {
                     in_double_q = false;
                     if (x.name && x.name.length > 0) {
                         x.name = x.name + buffer;
-                    }
-                    else {
+                    } else {
                         x.name = buffer;
                     }
                     buffer = '';
                 }
-            }
-            else if (element === "'" && !in_double_q) {
+            } else if (element === "'" && !in_double_q) {
                 if (!in_single_q) {
                     in_single_q = true;
-                }
-                else {
+                } else {
                     in_single_q = false;
                     if (x.name && x.name.length > 0) {
                         x.name = x.name + buffer;
-                    }
-                    else {
+                    } else {
                         x.name = buffer;
                     }
                     buffer = '';
                 }
-            }
-            else {
+            } else {
                 if (in_double_q || in_single_q) {
                     buffer += ss[i].replace(/\s+/g, ' ');
-                }
-                else {
+                } else {
                     if (element === '(') {
                         if (!x) {
-                            throw ( NH_FORMAT_ERR_CLOSE_PARENS );
+                            throw (NH_FORMAT_ERR_CLOSE_PARENS);
                         }
-                        var subtree1 = {};
+                        let subtree1 = {};
                         x.children = [subtree1];
                         ancs.push(x);
                         x = subtree1;
-                    }
-                    else if (element === ',') {
+                    } else if (element === ',') {
                         if (ancs.length === 0) {
                             throw (NH_FORMAT_ERR_CLOSE_PARENS);
                         }
-                        var subtree2 = {};
+                        let subtree2 = {};
                         ancs[ancs.length - 1].children.push(subtree2);
                         x = subtree2;
-                    }
-                    else if (element === ')') {
+                    } else if (element === ')') {
                         x = ancs.pop();
-                    }
-                    else if (element === ':') {
-                    }
-                    else {
-                        var e = ss[i - 1];
+                    } else if (element === ':') {
+                    } else {
+                        let e = ss[i - 1];
                         if (e) {
                             e = e.trim();
-                            if (( e === ')' ) || ( e === '(' ) || ( e === ',')) {
+                            if ((e === ')') || (e === '(') || (e === ',')) {
                                 if (element && element.length > 0) {
                                     if (element.charAt(element.length - 1) === "]") {
-                                        var o = element.indexOf('[');
+                                        let o = element.indexOf('[');
                                         if (o > -1) {
                                             if (confidenceValuesInBrackets === true) {
                                                 addConfidence(x, element);
                                             }
                                             x.name = element.substring(0, o);
-                                        }
-                                        else {
+                                        } else {
                                             x.name = element;
                                         }
-                                    }
-                                    else {
+                                    } else {
                                         x.name = element;
-                                        var op = x.name.indexOf('[');
+                                        let op = x.name.indexOf('[');
                                         if (op > -1) {
-                                            var cl = x.name.indexOf(']');
+                                            let cl = x.name.indexOf(']');
                                             if (cl > op) {
                                                 x.name = x.name.substring(0, op) + x.name.substring(cl + 1, x.name.length);
                                             }
                                         }
                                     }
                                 }
-                            }
-                            else if (e === ':') {
+                            } else if (e === ':') {
                                 if (element && element.length > 0) {
                                     if (element.charAt(element.length - 1) === ']') {
-                                        var o1 = element.indexOf('[');
+                                        let o1 = element.indexOf('[');
                                         if (o1 > -1) {
                                             if (confidenceValuesInBrackets === true) {
                                                 addConfidence(x, element);
                                             }
-                                            var bl = parseFloat(element.substring(0, o1));
+                                            let bl = parseFloat(element.substring(0, o1));
                                             if (forester.isNumber(bl)) {
                                                 x.branch_length = bl;
                                             }
                                         }
-                                    }
-                                    else {
-                                        var b = parseFloat(parseFloat(element));
+                                    } else {
+                                        let b = parseFloat(element);
                                         if (forester.isNumber(b)) {
                                             x.branch_length = b;
-                                        }
-                                        else {
-                                            throw ( NH_FORMAT_ERR + 'could not parse branch-length from "' + element + '"' );
+                                        } else {
+                                            throw (NH_FORMAT_ERR + 'could not parse branch-length from "' + element + '"');
                                         }
                                     }
                                 }
-                            }
-                            else if (e === '"' || e === "'") {
-                                if ((element && element.length > 0) && (x.name && x.name.length > 0 )) {
+                            } else if (e === '"' || e === "'") {
+                                if ((element && element.length > 0) && (x.name && x.name.length > 0)) {
                                     if (element.charAt(element.length - 1) === "]") {
-                                        var opp = element.indexOf('[');
+                                        let opp = element.indexOf('[');
                                         if (opp > -1) {
                                             if (confidenceValuesInBrackets === true) {
                                                 addConfidence(x, element);
                                             }
                                             x.name = x.name + element.substring(0, opp);
-                                        }
-                                        else {
+                                        } else {
                                             x.name = x.name + element;
                                         }
-                                    }
-                                    else {
+                                    } else {
                                         x.name = x.name + element;
                                     }
                                 }
@@ -27320,13 +23850,13 @@ function BlurStack()
             }
         }
         if (ancs.length !== 0) {
-            throw ( NH_FORMAT_ERR_OPEN_PARENS );
+            throw (NH_FORMAT_ERR_OPEN_PARENS);
         }
         if (!x) {
-            throw ( NH_FORMAT_ERR_CLOSE_PARENS );
+            throw (NH_FORMAT_ERR_CLOSE_PARENS);
         }
 
-        var phy = {};
+        let phy = {};
         phy.children = [x];
 
         forester.addParents(phy);
@@ -27338,27 +23868,26 @@ function BlurStack()
         return phy;
 
         function addConfidence(x, element) {
-            var confValue = parseConfidence(element);
+            let confValue = parseConfidence(element);
             if (confValue != null) {
                 x.confidences = [];
-                var conf = {};
+                let conf = {};
                 conf.value = confValue;
                 conf.type = 'unknown';
                 x.confidences.push(conf);
             }
         }
 
-        function parseConfidence(str) {
-            var o = str.indexOf('[');
+        function parseConfidence(element) {
+            let o = element.indexOf('[');
             if (o > -1) {
-                var s = str.substring(o + 1, element.length - 1);
+                let s = element.substring(o + 1, element.length - 1);
                 if (NUMBERS_ONLY_PATTERN.test(s)) {
-                    var confValue = parseFloat(s);
+                    let confValue = parseFloat(s);
                     if (forester.isNumber(confValue)) {
                         return confValue;
-                    }
-                    else {
-                        throw ( NH_FORMAT_ERR + 'could not parse confidence value from "' + str + '"' );
+                    } else {
+                        throw (NH_FORMAT_ERR + 'could not parse confidence value from "' + element + '"');
                     }
                 }
             }
@@ -27369,12 +23898,12 @@ function BlurStack()
             forester.preOrderTraversalAll(node, function (n) {
                 if (n.children || n._children) {
                     if (n.name) {
-                        var s = n.name;
+                        let s = n.name;
                         if (NUMBERS_ONLY_PATTERN.test(s)) {
-                            var confValue = parseFloat(s);
+                            let confValue = parseFloat(s);
                             if ((confValue != null) && (forester.isNumber(confValue))) {
                                 n.confidences = [];
-                                var conf1 = {};
+                                let conf1 = {};
                                 conf1.value = confValue;
                                 conf1.type = 'unknown';
                                 n.confidences.push(conf1);
@@ -27391,7 +23920,7 @@ function BlurStack()
         if (v === undefined || v === null) {
             return false;
         }
-        if (v !== v) {
+        if (v != v) {
             // This can only be true if the v is NaN
             return false;
         }
@@ -27399,21 +23928,20 @@ function BlurStack()
     };
 
     forester.getOneDistinctTaxonomy = function (node) {
-        var id = null;
-        var code = null;
-        var sn = null;
-        var cn = null;
-        var result = true;
-        var sawTax = false;
+        let id = null;
+        let code = null;
+        let sn = null;
+        let cn = null;
+        let result = true;
+        let sawTax = false;
         forester.preOrderTraversalAll(node, function (n) {
             if (n.taxonomies && n.taxonomies.length === 1) {
-                var tax = n.taxonomies[0];
+                let tax = n.taxonomies[0];
                 if (tax.code && tax.code.length > 0) {
                     sawTax = true;
                     if (code === null) {
                         code = tax.code;
-                    }
-                    else if (code != tax.code) {
+                    } else if (code !== tax.code) {
                         result = false;
                         return;
                     }
@@ -27422,8 +23950,7 @@ function BlurStack()
                     sawTax = true;
                     if (sn === null) {
                         sn = tax.scientific_name;
-                    }
-                    else if (sn != tax.scientific_name) {
+                    } else if (sn !== tax.scientific_name) {
                         result = false;
                         return;
                     }
@@ -27432,31 +23959,27 @@ function BlurStack()
                     sawTax = true;
                     if (cn === null) {
                         cn = tax.common_name;
-                    }
-                    else if (cn != tax.common_name) {
+                    } else if (cn !== tax.common_name) {
                         result = false;
                         return;
                     }
                 }
                 if (tax.id && tax.id.value && tax.id.value.length > 0) {
                     sawTax = true;
-                    var myid;
+                    let myid;
                     if (tax.id.provider && tax.id.provider.length > 0) {
                         myid = tax.id.provider + ':' + tax.id.value;
-                    }
-                    else {
+                    } else {
                         myid = tax.id.value;
                     }
                     if (id === null) {
                         id = myid;
-                    }
-                    else if (id != myid) {
+                    } else if (id !== myid) {
                         result = false;
 
                     }
                 }
-            }
-            else if (!n.children && !n._children) {
+            } else if (!n.children && !n._children) {
                 // If an external node lacks taxonomy, return false.
                 result = false;
             }
@@ -27468,14 +23991,11 @@ function BlurStack()
 
             if (sn) {
                 return sn;
-            }
-            else if (code) {
+            } else if (code) {
                 return code;
-            }
-            else if (cn) {
+            } else if (cn) {
                 return cn;
-            }
-            else if (id) {
+            } else if (id) {
                 return id;
             }
         }
@@ -27483,19 +24003,18 @@ function BlurStack()
     };
 
     forester.getOneDistinctNodePropertyValue = function (node, propertyRef) {
-        var propValue = null;
-        var result = true;
+        let propValue = null;
+        let result = true;
         forester.preOrderTraversalAll(node, function (n) {
             if (n.properties && n.properties.length > 0) {
-                var propertiesLength = n.properties.length;
-                var gotIt = false;
-                for (var i = 0; i < propertiesLength; ++i) {
-                    var property = n.properties[i];
-                    if (property.ref && property.value && (property.applies_to === 'node') && ( property.ref === propertyRef) && ( property.value.length > 0)) {
+                let propertiesLength = n.properties.length;
+                let gotIt = false;
+                for (let i = 0; i < propertiesLength; ++i) {
+                    let property = n.properties[i];
+                    if (property.ref && property.value && (property.applies_to === 'node') && (property.ref === propertyRef) && (property.value.length > 0)) {
                         if (propValue === null) {
                             propValue = property.value;
-                        }
-                        else if (propValue != property.value) {
+                        } else if (propValue !== property.value) {
                             result = false;
                             return;
                         }
@@ -27514,8 +24033,7 @@ function BlurStack()
         }
         if (result === true) {
             return propValue;
-        }
-        else {
+        } else {
             return null;
         }
     };
@@ -27527,27 +24045,26 @@ function BlurStack()
      * @returns {{}}
      */
     forester.moveSimpleCharacteristicsToProperties = function (phy) {
-        var apptype;
+        let apptype;
         if (phy.desc) {
             apptype = 'ird:'
-        }
-        else {
+        } else {
             apptype = 'vipr:'
         }
 
-        var HOST = apptype + 'Host';
-        var COUNTRY = apptype + 'Country';
-        var YEAR = apptype + 'Year';
-        var HA = apptype + 'HA';
-        var NA = apptype + 'NA';
-        var NODE = 'node';
-        var STRING = 'xsd:string';
-        var INT = 'xsd:integer';
+        let HOST = apptype + 'Host';
+        let COUNTRY = apptype + 'Country';
+        let YEAR = apptype + 'Year';
+        let HA = apptype + 'HA';
+        let NA = apptype + 'NA';
+        let NODE = 'node';
+        let STRING = 'xsd:string';
+        let INT = 'xsd:integer';
 
         forester.preOrderTraversalAll(phy, function (n) {
             if (n.simple_characteristics) {
-                var sc = n.simple_characteristics;
-                var props;
+                let sc = n.simple_characteristics;
+                let props;
                 if (sc.country && sc.country.length > 0) {
                     props = {};
                     props.ref = COUNTRY;
@@ -27591,14 +24108,15 @@ function BlurStack()
                 n.simple_characteristics = undefined;
             }
         });
+
         function addProperties(n, props) {
             if (props) {
                 if (!n.properties) {
                     n.properties = [];
                 }
-                var alreadyHave = false;
-                var l = n.properties.length;
-                for (var i = 0; i < l; ++i) {
+                let alreadyHave = false;
+                let l = n.properties.length;
+                for (let i = 0; i < l; ++i) {
                     if (n.properties[i].ref === props.ref) {
                         alreadyHave = true;
                         break;
@@ -27622,7 +24140,7 @@ function BlurStack()
      * @returns {*} - a New Hampshire (Newick) formatted string.
      */
     forester.toNewHampshire = function (phy, decPointsMax, replaceChars, writeConfidences) {
-        var nh = "";
+        let nh = "";
         if (phy.children && phy.children.length === 1) {
             toNewHampshireHelper(phy.children[0], true);
         }
@@ -27633,17 +24151,16 @@ function BlurStack()
 
         function toNewHampshireHelper(node, last) {
             if (node.children) {
-                var l = node.children.length;
+                let l = node.children.length;
                 nh += "(";
-                for (var i = 0; i < l; ++i) {
+                for (let i = 0; i < l; ++i) {
                     toNewHampshireHelper(node.children[i], i === l - 1);
                 }
                 nh += ")";
-            }
-            else if (node._children) {
-                var ll = node._children.length;
+            } else if (node._children) {
+                let ll = node._children.length;
                 nh += "(";
-                for (var ii = 0; ii < ll; ++ii) {
+                for (let ii = 0; ii < ll; ++ii) {
                     toNewHampshireHelper(node._children[ii], ii === ll - 1);
                 }
                 nh += ")";
@@ -27651,21 +24168,17 @@ function BlurStack()
             if (node.name && node.name.length > 0) {
                 if (replaceChars === true) {
                     nh += replaceUnsafeChars(node.name);
-                }
-                else {
-                    var myName = node.name.replace(/\s+/g, ' ');
+                } else {
+                    let myName = node.name.replace(/\s+/g, ' ');
                     if (/[\s,():;'"\[\]]/.test(myName)) {
-                        if ((myName.indexOf('"') > -1) && (myName.indexOf("'") > -1 )) {
+                        if ((myName.indexOf('"') > -1) && (myName.indexOf("'") > -1)) {
                             nh += '"' + myName.replace(/"/g, "'") + '"';
-                        }
-                        else if (myName.indexOf('"') > -1) {
+                        } else if (myName.indexOf('"') > -1) {
                             nh += "'" + myName + "'";
-                        }
-                        else {
+                        } else {
                             nh += '"' + myName + '"';
                         }
-                    }
-                    else {
+                    } else {
                         nh += myName;
                     }
                 }
@@ -27673,16 +24186,14 @@ function BlurStack()
             if (node.branch_length !== undefined && node.branch_length !== null) {
                 if (decPointsMax && decPointsMax > 0) {
                     nh += ":" + forester.roundNumber(node.branch_length, decPointsMax);
-                }
-                else {
+                } else {
                     nh += ":" + node.branch_length;
                 }
             }
             if (writeConfidences && node.confidences && node.confidences.length === 1 && node.confidences[0].value !== undefined && node.confidences[0].value !== null) {
                 if (decPointsMax && decPointsMax > 0) {
                     nh += "[" + forester.roundNumber(node.confidences[0].value, decPointsMax) + "]";
-                }
-                else {
+                } else {
                     nh += "[" + node.confidences[0].value + "]";
                 }
             }
@@ -27715,9 +24226,7 @@ function BlurStack()
     else
         this.forester = forester;
 })();
-    
-
-/**
+    /**
  *  Copyright (C) 2021 Christian M. Zmasek
  *  Copyright (C) 2021 Yun Zhang
  *  Copyright (C) 2021 J. Craig Venter Institute
@@ -27740,8 +24249,8 @@ function BlurStack()
  *
  */
 
-// v 1.8.7b3
-// 2021-06-23
+// v 1.9.0b1
+// 2021-10-01
 //
 // Archaeopteryx.js is a software tool for the visualization and
 // analysis of highly annotated phylogenetic trees.
@@ -27792,7 +24301,7 @@ if (!phyloXml) {
 
     "use strict";
 
-    const VERSION = '1.8.7b3';
+    const VERSION = '1.9.0b1';
     const WEBSITE = 'https://sites.google.com/view/archaeopteryxjs';
     const NAME = 'Archaeopteryx.js';
 
@@ -27854,7 +24363,6 @@ if (!phyloXml) {
     const CONTROLS_FONT_SIZE_DEFAULT = 8;
     const DISPLY_HEIGHT_DEFAULT = 600;
     const DISPLAY_WIDTH_DEFAULT = 800;
-    // const MOLSEQ_FONT_DEFAULTS = ['Courier', 'Courier New', 'Lucida Console', 'Monaco', 'Arial', 'Helvetica', 'Times'];
     const MOLSEQ_FONT_DEFAULTS = ['Courier', 'Courier New', 'Arial', 'Helvetica', 'Times'];
 
     const ROOTOFFSET_DEFAULT = 180;
@@ -27908,7 +24416,6 @@ if (!phyloXml) {
     const NODE_TOOLTIP_BACKGROUND_COLOR = '#606060';
     const NODE_TOOLTIP_TEXT_ACTIVE_COLOR = COLOR_FOR_ACTIVE_ELEMENTS;
     const NODE_TOOLTIP_TEXT_COLOR = WHITE;
-    const NONE = 'none';
     const OFF_FEATURE = 'off';
     const ORDINAL_SCALE = 'ordinal';
     const PDF_EXPORT_FORMAT = 'PDF';
@@ -27917,7 +24424,6 @@ if (!phyloXml) {
     const MSA_RESIDUE = 'MSA Residue';
     const RESET_SEARCH_A_BTN_TOOLTIP = 'reset (remove) search result A';
     const RESET_SEARCH_B_BTN_TOOLTIP = 'reset (remove) search result B';
-    const SAME_AS_FILL = 'sameasfill';
     const SHORTEN_NAME_MAX_LENGTH = 18;
     const SLIDER_STEP = 0.5;
     const SPECIATION_COLOR = '#00ff00';
@@ -28000,6 +24506,7 @@ if (!phyloXml) {
     const RESET_SEARCH_A_BTN = 'reset_s_a';
     const RESET_SEARCH_B_BTN = 'reset_s_b';
     const RETURN_TO_SUPERTREE_BUTTON = 'ret_b';
+    const RETURN_TO_SUPERTREE_BUTTON_BY_ONE = 'ret1_b';
     const SEARCH_FIELD_0 = 'sf0';
     const SEARCH_FIELD_1 = 'sf1';
     const SEARCH_OPTIONS_CASE_SENSITIVE_CB = 'so_cs_cb';
@@ -28244,71 +24751,72 @@ if (!phyloXml) {
     // ---------------------------
     // "Instance variables"
     // ---------------------------
-    var _baseSvg = null;
-    var _basicTreeProperties = null;
-    var _branch_length_collapse_data = {};
-    var _branch_length_collapse_level = -1;
-    var _colorPickerData = null;
-    var _colorsForColorPicker = null;
-    var _currentLabelColorVisualization = null;
-    var _currentNodeBorderColorVisualization = null;
-    var _currentNodeFillColorVisualization = null;
-    var _currentNodeShapeVisualization = null;
-    var _currentNodeSizeVisualization = null;
-    var _depth_collapse_level = -1;
-    var _displayHeight = 0;
-    var _displayWidth = 0;
-    var _dynahide_counter = 0;
-    var _dynahide_factor = 0;
-    var _external_nodes = 0;
-    var _foundNodes0 = new Set();
-    var _foundNodes1 = new Set();
-    var _foundSum = 0;
-    var _i = 0;
-    var _id = null;
-    var _intervalId = 0;
-    var _legendColorScales = {};
-    var _legendShapeScales = {};
-    var _legendSizeScales = {};
-    var _maxLabelLength = 0;
-    var _msa_residue_vis_curr_res_pos = 0;
-    var _nodeVisualizations = null;
-    var _specialVisualizations = null;
-    var _offsetTop = 0;
-    var _options = null;
-    var _rank_collapse_level = -1;
-    var _root = null;
-    var _scale = null;
-    var _searchBox0Empty = true;
-    var _searchBox1Empty = true;
-    var _settings = null;
-    var _showColorPicker = false;
-    var _showLegends = true;
-    var _superTreeRoots = [];
-    var _svgGroup = null;
-    var _totalSearchedWithData = 0;
-    var _translate = null;
-    var _treeData = null;
-    var _treeFn = null;
-    var _usedColorCategories = new Set();
-    var _visualizations = null;
-    var _w = null;
-    var _yScale = null;
-    var _zoomListener = null;
-    var _zoomed_x_or_y = false;
-    var _node_mouseover_div;
-    var _visualizations2_color = null;
-    var _visualizations3_color = null;
-    var _visualizations4_color = null;
-    var _visualizations2_applies_to_ref = null;
-    var _visualizations3_applies_to_ref = null;
-    var _visualizations4_applies_to_ref = null;
-    var _visualizations2_property_datatype = null;
-    var _visualizations3_property_datatype = null;
-    var _visualizations4_property_datatype = null;
-    var _visualizations2_property_applies_to = null;
-    var _visualizations3_property_applies_to = null;
-    var _visualizations4_property_applies_to = null;
+    let _baseSvg = null;
+    let _basicTreeProperties = null;
+    let _branch_length_collapse_data = {};
+    let _branch_length_collapse_level = -1;
+    let _colorPickerData = null;
+    let _colorsForColorPicker = null;
+    let _currentLabelColorVisualization = null;
+    let _currentNodeBorderColorVisualization = null;
+    let _currentNodeFillColorVisualization = null;
+    let _currentNodeShapeVisualization = null;
+    let _currentNodeSizeVisualization = null;
+    let _depth_collapse_level = -1;
+    let _displayHeight = 0;
+    let _displayWidth = 0;
+    let _dynahide_counter = 0;
+    let _dynahide_factor = 0;
+    let _external_nodes = 0;
+    let _foundNodes0 = new Set();
+    let _foundNodes1 = new Set();
+    let _foundSum = 0;
+    let _i = 0;
+    let _id = null;
+    let _intervalId = 0;
+    let _legendColorScales = {};
+    let _legendShapeScales = {};
+    let _legendSizeScales = {};
+    let _maxLabelLength = 0;
+    let _msa_residue_vis_curr_res_pos = 0;
+    let _nodeVisualizations = null;
+    let _specialVisualizations = null;
+    let _offsetTop = 0;
+    let _options = null;
+    let _rank_collapse_level = -1;
+    let _root = null;
+    let _root_const = null;
+    let _in_subtree = false;
+    let _scale = null;
+    let _searchBox0Empty = true;
+    let _searchBox1Empty = true;
+    let _settings = null;
+    let _showColorPicker = false;
+    let _showLegends = true;
+    let _svgGroup = null;
+    let _totalSearchedWithData = 0;
+    let _translate = null;
+    let _treeData = null;
+    let _treeFn = null;
+    let _usedColorCategories = new Set();
+    let _visualizations = null;
+    let _w = null;
+    let _yScale = null;
+    let _zoomListener = null;
+    let _zoomed_x_or_y = false;
+    let _node_mouseover_div;
+    let _visualizations2_color = null;
+    let _visualizations3_color = null;
+    let _visualizations4_color = null;
+    let _visualizations2_applies_to_ref = null;
+    let _visualizations3_applies_to_ref = null;
+    let _visualizations4_applies_to_ref = null;
+    let _visualizations2_property_datatype = null;
+    let _visualizations3_property_datatype = null;
+    let _visualizations4_property_datatype = null;
+    let _visualizations2_property_applies_to = null;
+    let _visualizations3_property_applies_to = null;
+    let _visualizations4_property_applies_to = null;
 
     function branchLengthScaling(nodes, width) {
 
@@ -28318,11 +24826,11 @@ if (!phyloXml) {
         forester.preOrderTraversalAll(_root, function (n) {
             n.distToRoot = (n.parent ? n.parent.distToRoot : 0) + bl(n);
         });
-        var distsToRoot = nodes.map(function (n) {
+        let distsToRoot = nodes.map(function (n) {
             return n.distToRoot;
         });
 
-        var yScale = d3.scale.linear()
+        let yScale = d3.scale.linear()
             .domain([0, d3.max(distsToRoot)])
             .range([0, width]);
         forester.preOrderTraversalAll(_root, function (n) {
@@ -28333,8 +24841,7 @@ if (!phyloXml) {
         function bl(node) {
             if (!node.branch_length || node.branch_length < 0) {
                 return 0;
-            }
-            else if (!node.parent || !node.parent.parent) {
+            } else if (!node.parent || !node.parent.parent) {
                 return _basicTreeProperties.averageBranchLength * 0.5;
             }
             return node.branch_length;
@@ -28347,29 +24854,26 @@ if (!phyloXml) {
                 _scale = _zoomListener.scale();
                 _translate = _zoomListener.translate();
             }
-        }
-        else {
+        } else {
             if (_scale !== null && _translate !== null) {
                 _zoomListener.scale(_scale);
                 _zoomListener.translate(_translate);
                 _svgGroup.attr('transform', 'translate(' + _translate + ')scale(' + _scale + ')');
                 _scale = null;
                 _translate = null;
-            }
-            else {
+            } else {
                 _svgGroup.attr('transform', 'translate(' + d3.event.translate + ')scale(' + d3.event.scale + ')');
             }
         }
     }
 
     function centerNode(source, x, y) {
-        var scale = _zoomListener.scale();
+        let scale = _zoomListener.scale();
         if (!x) {
             x = -source.y0;
             if (_settings.enableDynamicSizing) {
                 x = x * scale + (_baseSvg.attr('width')) / 2;
-            }
-            else {
+            } else {
                 x = x * scale + _displayWidth / 2;
             }
         }
@@ -28383,13 +24887,13 @@ if (!phyloXml) {
     }
 
     function calcMaxTreeLengthForDisplay() {
-        return _settings.rootOffset + _options.nodeLabelGap + LABEL_SIZE_CALC_ADDITION + ( _maxLabelLength * _options.externalNodeFontSize * LABEL_SIZE_CALC_FACTOR );
+        return _settings.rootOffset + _options.nodeLabelGap + LABEL_SIZE_CALC_ADDITION + (_maxLabelLength * _options.externalNodeFontSize * LABEL_SIZE_CALC_FACTOR);
     }
 
     function isCanDoMsaResidueVisualizations() {
-        return ( ( _settings.enableNodeVisualizations === true )
-        && (_settings.enableMsaResidueVisualizations === true ) && ( _basicTreeProperties.alignedMolSeqs === true )
-        && (_basicTreeProperties.maxMolSeqLength && ( _basicTreeProperties.maxMolSeqLength > 1) ) );
+        return ((_settings.enableNodeVisualizations === true)
+            && (_settings.enableMsaResidueVisualizations === true) && (_basicTreeProperties.alignedMolSeqs === true)
+            && (_basicTreeProperties.maxMolSeqLength && (_basicTreeProperties.maxMolSeqLength > 1)));
     }
 
     function isAddVisualization2() {
@@ -28415,15 +24919,15 @@ if (!phyloXml) {
     }
 
     function mousemove(d) {
-        var txt = '';
-        if (d.name && d.name != null) {
+        let txt = '';
+        if (d.name) {
             txt = d.name;
         }
-        if (d.properties && d.properties != null) {
+        if (d.properties) {
             const l = d.properties.length;
-            var mut = '';
-            var first = true;
-            for (var p = 0; p < l; ++p) {
+            let mut = '';
+            let first = true;
+            for (let p = 0; p < l; ++p) {
                 if (d.properties[p].ref === 'vipr:PANGO_Lineage'
                     && d.properties[p].datatype === 'xsd:string'
                     && d.properties[p].applies_to === 'node') {
@@ -28435,8 +24939,7 @@ if (!phyloXml) {
                     if (first) {
                         mut = d.properties[p].value;
                         first = false;
-                    }
-                    else {
+                    } else {
                         mut = mut + ' ' + d.properties[p].value
                     }
                 }
@@ -28448,7 +24951,7 @@ if (!phyloXml) {
 
         _node_mouseover_div
             .text(txt)
-            .style('left', (d3.event.pageX ) + 'px')
+            .style('left', (d3.event.pageX) + 'px')
             .style('top', (d3.event.pageY) + 'px');
     }
 
@@ -28470,37 +24973,34 @@ if (!phyloXml) {
                                  scaleType,
                                  altMappingFn) {
         if (arguments.length < 8) {
-            throw( 'expected at least 8 arguments, got ' + arguments.length);
+            throw('expected at least 8 arguments, got ' + arguments.length);
         }
 
         if (!label || label.length < 1) {
-            throw( 'need to have label');
+            throw('need to have label');
         }
-        var visualization = {};
+        let visualization = {};
         visualization.label = label;
         if (description) {
             visualization.description = description;
         }
         if (field) {
             if (cladePropertyRef) {
-                throw( 'need to have either field or clade property ref (but not both)');
+                throw('need to have either field or clade property ref (but not both)');
             }
             visualization.field = field;
-        }
-        else if (cladePropertyRef) {
+        } else if (cladePropertyRef) {
             visualization.cladePropertyRef = cladePropertyRef;
-        }
-        else {
-            throw( 'need to have either field or clade property ref');
+        } else {
+            throw('need to have either field or clade property ref');
         }
         visualization.isRegex = isRegex;
         if (mapping) {
             if (mappingFn) {
-                throw( 'need to have either mapping or mappingFn');
+                throw('need to have either mapping or mappingFn');
             }
             visualization.mapping = mapping;
-        }
-        else if (mappingFn) {
+        } else if (mappingFn) {
 
             visualization.mappingFn = mappingFn;
             if (scaleType === ORDINAL_SCALE) {
@@ -28508,17 +25008,15 @@ if (!phyloXml) {
                     if (altMappingFn && altMappingFn.domain() && altMappingFn.range()) {
                         visualization.mappingFn = altMappingFn;
                         scaleType = LINEAR_SCALE;
-                    }
-                    else {
-                        var s = cladePropertyRef ? cladePropertyRef : field;
+                    } else {
+                        let s = cladePropertyRef ? cladePropertyRef : field;
                         console.log(WARNING + ': Ordinal scale mapping for ' + label + ' (' + s + '): domain > range: ' +
                             mappingFn.domain().length + ' > ' + mappingFn.range().length);
                     }
                 }
             }
-        }
-        else {
-            throw( 'need to have either mapping or mappingFn');
+        } else {
+            throw('need to have either mapping or mappingFn');
         }
         visualization.scaleType = scaleType;
         return visualization;
@@ -28526,33 +25024,31 @@ if (!phyloXml) {
 
     function initializeNodeVisualizations(nodeProperties) {
         if (_nodeVisualizations) {
-            for (var key in _nodeVisualizations) {
+            for (let key in _nodeVisualizations) {
                 if (_nodeVisualizations.hasOwnProperty(key)) {
 
-                    var nodeVisualization = _nodeVisualizations[key];
+                    let nodeVisualization = _nodeVisualizations[key];
 
                     if (nodeVisualization.label) {
 
-                        var scaleType = '';
+                        let scaleType = '';
                         if (nodeVisualization.shapes &&
                             Array.isArray(nodeVisualization.shapes) &&
-                            (nodeVisualization.shapes.length > 0 )) {
+                            (nodeVisualization.shapes.length > 0)) {
 
-                            var shapeScale = null;
+                            let shapeScale = null;
                             if (nodeVisualization.label === MSA_RESIDUE) {
                                 shapeScale = d3.scale.ordinal()
                                     .range(nodeVisualization.shapes)
                                     .domain(_basicTreeProperties.molSeqResiduesPerPosition[0]);
                                 scaleType = ORDINAL_SCALE;
-                            }
-                            else if (nodeVisualization.cladeRef && nodeProperties[nodeVisualization.cladeRef] &&
+                            } else if (nodeVisualization.cladeRef && nodeProperties[nodeVisualization.cladeRef] &&
                                 forester.setToArray(nodeProperties[nodeVisualization.cladeRef]).length > 0) {
                                 shapeScale = d3.scale.ordinal()
                                     .range(nodeVisualization.shapes)
                                     .domain(forester.setToSortedArray(nodeProperties[nodeVisualization.cladeRef]));
                                 scaleType = ORDINAL_SCALE;
-                            }
-                            else if (nodeVisualization.field && nodeProperties[nodeVisualization.field] &&
+                            } else if (nodeVisualization.field && nodeProperties[nodeVisualization.field] &&
                                 forester.setToArray(nodeProperties[nodeVisualization.field]).length > 0) {
                                 shapeScale = d3.scale.ordinal()
                                     .range(nodeVisualization.shapes)
@@ -28577,8 +25073,8 @@ if (!phyloXml) {
                             // TODO: Not dealing with nodeVisualization.field, yet.
                             if ((nodeVisualization.cladeRef && nodeProperties[nodeVisualization.cladeRef] && forester.setToArray(nodeProperties[nodeVisualization.cladeRef]).length > 0)
                                 || (nodeVisualization.label === MSA_RESIDUE)) {
-                                var colorScale = null;
-                                var altColorScale = null;
+                                let colorScale = null;
+                                let altColorScale = null;
 
                                 if (Array.isArray(nodeVisualization.colors)) {
                                     scaleType = LINEAR_SCALE;
@@ -28586,13 +25082,11 @@ if (!phyloXml) {
                                         colorScale = d3.scale.linear()
                                             .range(nodeVisualization.colors)
                                             .domain(forester.calcMinMeanMaxInSet(nodeProperties[nodeVisualization.cladeRef]));
-                                    }
-                                    else if (nodeVisualization.colors.length === 2) {
+                                    } else if (nodeVisualization.colors.length === 2) {
                                         colorScale = d3.scale.linear()
                                             .range(nodeVisualization.colors)
                                             .domain(forester.calcMinMaxInSet(nodeProperties[nodeVisualization.cladeRef]));
-                                    }
-                                    else {
+                                    } else {
                                         throw 'Number of colors has to be either 2 or 3';
                                     }
                                 }
@@ -28602,13 +25096,11 @@ if (!phyloXml) {
                                         altColorScale = d3.scale.linear()
                                             .range(nodeVisualization.colorsAlt)
                                             .domain(forester.calcMinMeanMaxInSet(nodeProperties[nodeVisualization.cladeRef]));
-                                    }
-                                    else if (nodeVisualization.colorsAlt.length === 2) {
+                                    } else if (nodeVisualization.colorsAlt.length === 2) {
                                         altColorScale = d3.scale.linear()
                                             .range(nodeVisualization.colorsAlt)
                                             .domain(forester.calcMinMaxInSet(nodeProperties[nodeVisualization.cladeRef]));
-                                    }
-                                    else {
+                                    } else {
                                         throw 'Number of colors has to be either 2 or 3';
                                     }
                                 }
@@ -28619,44 +25111,36 @@ if (!phyloXml) {
                                         colorScale = d3.scale.category20()
                                             .domain(_basicTreeProperties.molSeqResiduesPerPosition[0]);
                                         _usedColorCategories.add('category20');
-                                    }
-                                    else {
+                                    } else {
                                         if (nodeVisualization.colors === 'category20') {
                                             colorScale = d3.scale.category20()
                                                 .domain(forester.setToSortedArray(nodeProperties[nodeVisualization.cladeRef]));
                                             _usedColorCategories.add('category20');
-                                        }
-                                        else if (nodeVisualization.colors === 'category20b') {
+                                        } else if (nodeVisualization.colors === 'category20b') {
                                             colorScale = d3.scale.category20b()
                                                 .domain(forester.setToSortedArray(nodeProperties[nodeVisualization.cladeRef]));
                                             _usedColorCategories.add('category20b');
-                                        }
-                                        else if (nodeVisualization.colors === 'category20c') {
+                                        } else if (nodeVisualization.colors === 'category20c') {
                                             colorScale = d3.scale.category20c()
                                                 .domain(forester.setToSortedArray(nodeProperties[nodeVisualization.cladeRef]));
                                             _usedColorCategories.add('category20c');
-                                        }
-                                        else if (nodeVisualization.colors === 'category10') {
+                                        } else if (nodeVisualization.colors === 'category10') {
                                             colorScale = d3.scale.category10()
                                                 .domain(forester.setToSortedArray(nodeProperties[nodeVisualization.cladeRef]));
                                             _usedColorCategories.add('category10');
-                                        }
-                                        else if (nodeVisualization.colors === 'category50') {
+                                        } else if (nodeVisualization.colors === 'category50') {
                                             colorScale = category50()
                                                 .domain(forester.setToSortedArray(nodeProperties[nodeVisualization.cladeRef]));
                                             _usedColorCategories.add('category50');
-                                        }
-                                        else if (nodeVisualization.colors === 'category50b') {
+                                        } else if (nodeVisualization.colors === 'category50b') {
                                             colorScale = category50b()
                                                 .domain(forester.setToSortedArray(nodeProperties[nodeVisualization.cladeRef]));
                                             _usedColorCategories.add('category50b');
-                                        }
-                                        else if (nodeVisualization.colors === 'category50c') {
+                                        } else if (nodeVisualization.colors === 'category50c') {
                                             colorScale = category50c()
                                                 .domain(forester.setToSortedArray(nodeProperties[nodeVisualization.cladeRef]));
                                             _usedColorCategories.add('category50c');
-                                        }
-                                        else {
+                                        } else {
                                             throw 'do not know how to process ' + nodeVisualization.colors;
                                         }
                                     }
@@ -28696,21 +25180,19 @@ if (!phyloXml) {
                             }
                         }
 
-                        if (nodeVisualization.sizes && Array.isArray(nodeVisualization.sizes) && (nodeVisualization.sizes.length > 0  )) {
+                        if (nodeVisualization.sizes && Array.isArray(nodeVisualization.sizes) && (nodeVisualization.sizes.length > 0)) {
                             if (nodeVisualization.cladeRef && nodeProperties[nodeVisualization.cladeRef] && forester.setToArray(nodeProperties[nodeVisualization.cladeRef]).length > 0) {
-                                var sizeScale = null;
-                                var scaleType = LINEAR_SCALE;
+                                let sizeScale = null;
+                                let scaleType = LINEAR_SCALE;
                                 if (nodeVisualization.sizes.length === 3) {
                                     sizeScale = d3.scale.linear()
                                         .range(nodeVisualization.sizes)
                                         .domain(forester.calcMinMeanMaxInSet(nodeProperties[nodeVisualization.cladeRef]));
-                                }
-                                else if (nodeVisualization.sizes.length === 2) {
+                                } else if (nodeVisualization.sizes.length === 2) {
                                     sizeScale = d3.scale.linear()
                                         .range(nodeVisualization.sizes)
                                         .domain(forester.calcMinMaxInSet(nodeProperties[nodeVisualization.cladeRef]));
-                                }
-                                else {
+                                } else {
                                     throw 'Number of sizes has to be either 2 or 3';
                                 }
                                 if (sizeScale) {
@@ -28740,8 +25222,8 @@ if (!phyloXml) {
                                       mapping,
                                       mappingFn,
                                       scaleType) {
-        if (arguments.length != 8) {
-            throw( 'expected 8 arguments, got ' + arguments.length);
+        if (arguments.length !== 8) {
+            throw('expected 8 arguments, got ' + arguments.length);
         }
         if (!_visualizations) {
             _visualizations = {};
@@ -28752,7 +25234,7 @@ if (!phyloXml) {
         if (_visualizations.nodeSize[label]) {
             throw('node size visualization for "' + label + '" already exists');
         }
-        var vis = createVisualization(label,
+        let vis = createVisualization(label,
             description,
             field,
             cladePropertyRef,
@@ -28775,7 +25257,7 @@ if (!phyloXml) {
                                            scaleType,
                                            altMappingFn) {
         if (arguments.length < 8) {
-            throw( 'expected at least 8 arguments, got ' + arguments.length);
+            throw('expected at least 8 arguments, got ' + arguments.length);
         }
         if (!_visualizations) {
             _visualizations = {};
@@ -28786,7 +25268,7 @@ if (!phyloXml) {
         if (_visualizations.nodeFillColor[label]) {
             throw('node fill color visualization for "' + label + '" already exists');
         }
-        var vis = createVisualization(label,
+        let vis = createVisualization(label,
             description,
             field,
             cladePropertyRef,
@@ -28811,7 +25293,7 @@ if (!phyloXml) {
                                              scaleType,
                                              altMappingFn) {
         if (arguments.length < 8) {
-            throw( 'expected at least 8 arguments, got ' + arguments.length);
+            throw('expected at least 8 arguments, got ' + arguments.length);
         }
         if (!_visualizations) {
             _visualizations = {};
@@ -28822,7 +25304,7 @@ if (!phyloXml) {
         if (_visualizations.nodeBorderColor[label]) {
             throw('node border color visualization for "' + label + '" already exists');
         }
-        var vis = createVisualization(label,
+        let vis = createVisualization(label,
             description,
             field,
             cladePropertyRef,
@@ -28844,8 +25326,8 @@ if (!phyloXml) {
                                        mapping,
                                        mappingFn,
                                        scaleType) {
-        if (arguments.length != 8) {
-            throw( 'expected 8 arguments, got ' + arguments.length);
+        if (arguments.length !== 8) {
+            throw('expected 8 arguments, got ' + arguments.length);
         }
         if (!_visualizations) {
             _visualizations = {};
@@ -28856,7 +25338,7 @@ if (!phyloXml) {
         if (_visualizations.nodeShape[label]) {
             throw('node shape visualization for "' + label + '" already exists');
         }
-        var vis = createVisualization(label,
+        let vis = createVisualization(label,
             description,
             field,
             cladePropertyRef,
@@ -28879,7 +25361,7 @@ if (!phyloXml) {
                                         scaleType,
                                         altMappingFn) {
         if (arguments.length < 8) {
-            throw( 'expected at least 8 arguments, got ' + arguments.length);
+            throw('expected at least 8 arguments, got ' + arguments.length);
         }
         if (!_visualizations) {
             _visualizations = {};
@@ -28890,7 +25372,7 @@ if (!phyloXml) {
         if (_visualizations.labelColor[label]) {
             throw('label color visualization for "' + label + '" already exists');
         }
-        var vis = createVisualization(label,
+        let vis = createVisualization(label,
             description,
             field,
             cladePropertyRef,
@@ -28930,36 +25412,35 @@ if (!phyloXml) {
             throw 'legend label is missing';
         }
 
-        var linearRangeLabel = ' (gradient)';
-        var outOfRangeSymbol = ' *';
-        var isLinearRange = scaleType === LINEAR_SCALE;
-        var linearRangeLength = 0;
+        let linearRangeLabel = ' (gradient)';
+        let outOfRangeSymbol = ' *';
+        let isLinearRange = scaleType === LINEAR_SCALE;
+        let linearRangeLength = 0;
         if (isLinearRange) {
             label += linearRangeLabel;
             linearRangeLength = colorScale.domain().length;
-        }
-        else {
+        } else {
             if (colorScale.domain().length > colorScale.range().length) {
                 label += outOfRangeSymbol;
             }
         }
 
-        var counter = 0;
+        let counter = 0;
 
-        var legendRectSize = 10;
-        var legendSpacing = 4;
+        let legendRectSize = 10;
+        let legendSpacing = 4;
 
-        var xCorrectionForLabel = -1;
-        var yFactorForLabel = -1.5;
-        var yFactorForDesc = -0.5;
+        let xCorrectionForLabel = -1;
+        let yFactorForLabel = -1.5;
+        let yFactorForDesc = -0.5;
 
-        var legend = _baseSvg.selectAll('g.' + id)
+        let legend = _baseSvg.selectAll('g.' + id)
             .data(colorScale.domain());
 
-        var legendEnter = legend.enter().append('g')
+        let legendEnter = legend.enter().append('g')
             .attr('class', id);
 
-        var fs = _settings.controlsFontSize.toString() + 'px';
+        let fs = _settings.controlsFontSize.toString() + 'px';
 
         legendEnter.append('rect')
             .style('cursor', 'pointer')
@@ -28997,13 +25478,13 @@ if (!phyloXml) {
             .style('text-decoration', 'none');
 
 
-        var legendUpdate = legend.transition()
+        let legendUpdate = legend.transition()
             .duration(0)
             .attr('transform', function (d, i) {
                 ++counter;
-                var height = legendRectSize;
-                var x = xPos;
-                var y = yPos + i * height;
+                let height = legendRectSize;
+                let x = xPos;
+                let y = yPos + i * height;
                 return 'translate(' + x + ',' + y + ')';
             });
 
@@ -29020,12 +25501,10 @@ if (!phyloXml) {
                 if (isLinearRange) {
                     if (i === 0) {
                         return d + ' (min)';
-                    }
-                    else if (((linearRangeLength === 2 && i === 1) ||
-                        (linearRangeLength === 3 && i === 2)  )) {
+                    } else if (((linearRangeLength === 2 && i === 1) ||
+                        (linearRangeLength === 3 && i === 2))) {
                         return d + ' (max)';
-                    }
-                    else if (linearRangeLength === 3 && i === 1) {
+                    } else if (linearRangeLength === 3 && i === 1) {
                         return preciseRound(d, _options.decimalsForLinearRangeMeanValue) + ' (mean)';
                     }
                 }
@@ -29047,7 +25526,7 @@ if (!phyloXml) {
             .text(function (d, i) {
                 if (i === 0 && description) {
                     if (description === MSA_RESIDUE) {
-                        return description + ' ' + ( _msa_residue_vis_curr_res_pos + 1 );
+                        return description + ' ' + (_msa_residue_vis_curr_res_pos + 1);
 
                     }
                     return description;
@@ -29066,28 +25545,28 @@ if (!phyloXml) {
             throw 'legend label is missing';
         }
 
-        var outOfRangeSymbol = ' *';
+        let outOfRangeSymbol = ' *';
 
         if (shapeScale.domain().length > shapeScale.range().length) {
             label += outOfRangeSymbol;
         }
 
-        var counter = 0;
+        let counter = 0;
 
-        var legendRectSize = 10;
-        var legendSpacing = 4;
+        let legendRectSize = 10;
+        let legendSpacing = 4;
 
-        var xCorrectionForLabel = -1;
-        var yFactorForLabel = -1.5;
-        var yFactorForDesc = -0.5;
+        let xCorrectionForLabel = -1;
+        let yFactorForLabel = -1.5;
+        let yFactorForDesc = -0.5;
 
-        var legend = _baseSvg.selectAll('g.' + id)
+        let legend = _baseSvg.selectAll('g.' + id)
             .data(shapeScale.domain());
 
-        var legendEnter = legend.enter().append('g')
+        let legendEnter = legend.enter().append('g')
             .attr('class', id);
 
-        var fs = _settings.controlsFontSize.toString() + 'px';
+        let fs = _settings.controlsFontSize.toString() + 'px';
 
         legendEnter.append('path');
 
@@ -29118,16 +25597,16 @@ if (!phyloXml) {
             .style('font-weight', 'bold')
             .style('text-decoration', 'none');
 
-        var legendUpdate = legend
+        let legendUpdate = legend
             .attr('transform', function (d, i) {
                 ++counter;
-                var height = legendRectSize;
-                var x = xPos;
-                var y = yPos + i * height;
+                let height = legendRectSize;
+                let x = xPos;
+                let y = yPos + i * height;
                 return 'translate(' + x + ',' + y + ')';
             });
 
-        var values = [];
+        let values = [];
 
         legendUpdate.select('text.' + LEGEND)
             .attr('x', legendRectSize + legendSpacing)
@@ -29152,7 +25631,7 @@ if (!phyloXml) {
             .text(function (d, i) {
                 if (i === 0 && description) {
                     if (description === MSA_RESIDUE) {
-                        return description + ' ' + ( _msa_residue_vis_curr_res_pos + 1 );
+                        return description + ' ' + (_msa_residue_vis_curr_res_pos + 1);
                     }
                     return description;
                 }
@@ -29183,30 +25662,30 @@ if (!phyloXml) {
         if (!label) {
             throw 'legend label is missing';
         }
-        var linearRangeLabel = ' (range)';
-        var isLinearRange = scaleType === LINEAR_SCALE;
-        var linearRangeLength = 0;
+        let linearRangeLabel = ' (range)';
+        let isLinearRange = scaleType === LINEAR_SCALE;
+        let linearRangeLength = 0;
         if (isLinearRange) {
             label += linearRangeLabel;
             linearRangeLength = sizeScale.domain().length;
         }
 
-        var counter = 0;
+        let counter = 0;
 
-        var legendRectSize = 10;
-        var legendSpacing = 4;
+        let legendRectSize = 10;
+        let legendSpacing = 4;
 
-        var xCorrectionForLabel = -1;
-        var yFactorForLabel = -1.5;
-        var yFactorForDesc = -0.5;
+        let xCorrectionForLabel = -1;
+        let yFactorForLabel = -1.5;
+        let yFactorForDesc = -0.5;
 
-        var legend = _baseSvg.selectAll('g.' + id)
+        let legend = _baseSvg.selectAll('g.' + id)
             .data(sizeScale.domain());
 
-        var legendEnter = legend.enter().append('g')
+        let legendEnter = legend.enter().append('g')
             .attr('class', id);
 
-        var fs = _settings.controlsFontSize.toString() + 'px';
+        let fs = _settings.controlsFontSize.toString() + 'px';
 
         legendEnter.append('path');
 
@@ -29237,16 +25716,16 @@ if (!phyloXml) {
             .style('font-weight', 'bold')
             .style('text-decoration', 'none');
 
-        var legendUpdate = legend
+        let legendUpdate = legend
             .attr('transform', function (d, i) {
                 ++counter;
-                var height = legendRectSize;
-                var x = xPos;
-                var y = yPos + i * height;
+                let height = legendRectSize;
+                let x = xPos;
+                let y = yPos + i * height;
                 return 'translate(' + x + ',' + y + ')';
             });
 
-        var values = [];
+        let values = [];
 
         legendUpdate.select('text.' + LEGEND)
             .attr('x', legendRectSize + legendSpacing)
@@ -29256,12 +25735,10 @@ if (!phyloXml) {
                 if (isLinearRange) {
                     if (i === 0) {
                         return d + ' (min)';
-                    }
-                    else if (((linearRangeLength === 2 && i === 1) ||
-                        (linearRangeLength === 3 && i === 2)  )) {
+                    } else if (((linearRangeLength === 2 && i === 1) ||
+                        (linearRangeLength === 3 && i === 2))) {
                         return d + ' (max)';
-                    }
-                    else if (linearRangeLength === 3 && i === 1) {
+                    } else if (linearRangeLength === 3 && i === 1) {
                         return preciseRound(d, _options.decimalsForLinearRangeMeanValue) + ' (mean)';
                     }
                 }
@@ -29292,7 +25769,7 @@ if (!phyloXml) {
             })
             .attr('d', d3.svg.symbol()
                 .size(function (d, i) {
-                    var scale = _zoomListener.scale();
+                    let scale = _zoomListener.scale();
                     return scale * _options.nodeSizeDefault * sizeScale(values[i]);
                 })
                 .type(function () {
@@ -29307,30 +25784,28 @@ if (!phyloXml) {
     }
 
     function preciseRound(num, decimals) {
-        var t = Math.pow(10, decimals);
+        let t = Math.pow(10, decimals);
         return (Math.round((num * t) + (decimals > 0 ? 1 : 0) * (Math.sign(num) * (10 / Math.pow(100, decimals)))) / t).toFixed(decimals);
     }
 
     function addLegends() {
-        var xPos = _options.visualizationsLegendXpos;
-        var yPos = _options.visualizationsLegendYpos;
-        var xPosIncr = 0;
-        var yPosIncr = 0;
-        var yPosIncrConst = 0;
+        let xPos = _options.visualizationsLegendXpos;
+        let yPos = _options.visualizationsLegendYpos;
+        let xPosIncr = 0;
+        let yPosIncr = 0;
+        let yPosIncrConst = 0;
         if (_options.visualizationsLegendOrientation === HORIZONTAL) {
             xPosIncr = 130;
-        }
-        else if (_options.visualizationsLegendOrientation === VERTICAL) {
+        } else if (_options.visualizationsLegendOrientation === VERTICAL) {
             yPosIncr = 10;
             yPosIncrConst = 40;
-        }
-        else {
+        } else {
             throw ('unknown direction for legends ' + _options.visualizationsLegendOrientation);
         }
-        var label = '';
-        var desc = '';
-        var counter = 0;
-        var scaleType = '';
+        let label = '';
+        let desc = '';
+        let counter = 0;
+        let scaleType = '';
 
         if (_showLegends && _legendColorScales[LEGEND_LABEL_COLOR] && _visualizations.labelColor[_currentLabelColorVisualization]) {
             removeColorLegend(LEGEND_LABEL_COLOR);
@@ -29344,9 +25819,8 @@ if (!phyloXml) {
                 scaleType,
                 label, desc);
             xPos += xPosIncr;
-            yPos += ((counter * yPosIncr ) + yPosIncrConst);
-        }
-        else {
+            yPos += ((counter * yPosIncr) + yPosIncrConst);
+        } else {
             removeColorLegend(LEGEND_LABEL_COLOR);
         }
 
@@ -29362,9 +25836,8 @@ if (!phyloXml) {
                 scaleType,
                 label, desc);
             xPos += xPosIncr;
-            yPos += ((counter * yPosIncr ) + yPosIncrConst);
-        }
-        else {
+            yPos += ((counter * yPosIncr) + yPosIncrConst);
+        } else {
             removeColorLegend(LEGEND_NODE_FILL_COLOR);
         }
 
@@ -29380,9 +25853,8 @@ if (!phyloXml) {
                 scaleType,
                 label, desc);
             xPos += xPosIncr;
-            yPos += ((counter * yPosIncr ) + yPosIncrConst);
-        }
-        else {
+            yPos += ((counter * yPosIncr) + yPosIncrConst);
+        } else {
             removeColorLegend(LEGEND_NODE_BORDER_COLOR);
         }
 
@@ -29391,9 +25863,8 @@ if (!phyloXml) {
             desc = _currentNodeShapeVisualization;
             counter = makeShapeLegend(LEGEND_NODE_SHAPE, xPos, yPos, _legendShapeScales[LEGEND_NODE_SHAPE], label, desc);
             xPos += xPosIncr;
-            yPos += ((counter * yPosIncr ) + yPosIncrConst);
-        }
-        else {
+            yPos += ((counter * yPosIncr) + yPosIncrConst);
+        } else {
             removeShapeLegend(LEGEND_NODE_SHAPE);
         }
 
@@ -29402,8 +25873,7 @@ if (!phyloXml) {
             desc = _currentNodeSizeVisualization;
             scaleType = _visualizations.nodeSize[_currentNodeSizeVisualization].scaleType;
             makeSizeLegend(LEGEND_NODE_SIZE, xPos, yPos, _legendSizeScales[LEGEND_NODE_SIZE], scaleType, label, desc);
-        }
-        else {
+        } else {
             removeSizeLegend(LEGEND_NODE_SIZE);
         }
 
@@ -29414,50 +25884,43 @@ if (!phyloXml) {
     // Functions for color picker
     // --------------------------------------------------------------
     function obtainPredefinedColors(name) {
-        var twenty = [Array(20).keys()];
-        var fifty = [Array(50).keys()];
-        var colorScale = null;
-        var l = 0;
+        let twenty = [Array(20).keys()];
+        let fifty = [Array(50).keys()];
+        let colorScale = null;
+        let l = 0;
         if (name === 'category20') {
             l = 20;
             colorScale = d3.scale.category20()
                 .domain(twenty);
-        }
-        else if (name === 'category20b') {
+        } else if (name === 'category20b') {
             l = 20;
             colorScale = d3.scale.category20b()
                 .domain(twenty);
-        }
-        else if (name === 'category20c') {
+        } else if (name === 'category20c') {
             l = 20;
             colorScale = d3.scale.category20c()
                 .domain(twenty);
-        }
-        else if (name === 'category10') {
+        } else if (name === 'category10') {
             l = 10;
             colorScale = d3.scale.category10()
                 .domain([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-        }
-        else if (name === 'category50') {
+        } else if (name === 'category50') {
             l = 50;
             colorScale = category50()
                 .domain(fifty);
-        }
-        else if (name === 'category50b') {
+        } else if (name === 'category50b') {
             l = 50;
             colorScale = category50b()
                 .domain(fifty);
-        }
-        else if (name === 'category50c') {
+        } else if (name === 'category50c') {
             l = 50;
             colorScale = category50c()
                 .domain(fifty);
-        }
-        else {
+        } else {
             throw 'do not know ' + name;
         }
-        var colors = [];
-        for (var i = 0; i < l; ++i) {
+        let colors = [];
+        for (let i = 0; i < l; ++i) {
             colors.push(colorScale(i));
         }
         return colors;
@@ -29526,14 +25989,14 @@ if (!phyloXml) {
         _colorsForColorPicker = [];
 
         const dcpl = DEFAULT_COLORS_FOR_COLORPICKER.length;
-        for (var dci = 0; dci < dcpl; ++dci) {
+        for (let dci = 0; dci < dcpl; ++dci) {
             _colorsForColorPicker.push(DEFAULT_COLORS_FOR_COLORPICKER[dci]);
         }
 
         _usedColorCategories.forEach(function (e) {
-            var cs = obtainPredefinedColors(e);
-            var csl = cs.length;
-            for (var csi = 0; csi < csl; ++csi) {
+            let cs = obtainPredefinedColors(e);
+            let csl = cs.length;
+            for (let csi = 0; csi < csl; ++csi) {
                 _colorsForColorPicker.push(cs[csi]);
             }
         });
@@ -29541,14 +26004,13 @@ if (!phyloXml) {
 
     function makeColorPicker(id) {
 
-        var xPos = 0;
-        var yPos = 0;
+        let xPos = 0;
+        let yPos = 0;
 
         if (_options.visualizationsLegendOrientation === VERTICAL) {
             xPos = _options.visualizationsLegendXpos + 140;
             yPos = _options.visualizationsLegendYpos - 10;
-        }
-        else {
+        } else {
             xPos = _options.visualizationsLegendXpos;
             yPos = _options.visualizationsLegendYpos + 180;
         }
@@ -29564,39 +26026,39 @@ if (!phyloXml) {
             prepareColorsForColorPicker();
         }
 
-        var fs = _settings.controlsFontSize.toString() + 'px';
+        let fs = _settings.controlsFontSize.toString() + 'px';
 
-        var clickedOrigColorIndex = -1;
+        let clickedOrigColorIndex = -1;
 
-        var lbls = [];
-        for (var ii = 0; ii < _colorsForColorPicker.length; ++ii) {
+        let lbls = [];
+        for (let ii = 0; ii < _colorsForColorPicker.length; ++ii) {
             lbls[ii] = ii;
             if (clickedOrigColorIndex < 0 && (colorToHex(_colorsForColorPicker[ii]) === colorToHex(_colorPickerData.clickedOrigColor))) {
                 clickedOrigColorIndex = ii;
             }
         }
 
-        var colorPickerColors = d3.scale.linear()
+        let colorPickerColors = d3.scale.linear()
             .domain(lbls)
             .range(_colorsForColorPicker);
 
-        var colorPickerSize = 14;
-        var rectSize = 10;
+        let colorPickerSize = 14;
+        let rectSize = 10;
 
-        var xCorrectionForLabel = -1;
-        var yFactorForDesc = -0.5;
+        let xCorrectionForLabel = -1;
+        let yFactorForDesc = -0.5;
 
-        var colorPicker = _baseSvg.selectAll('g.' + id)
+        let colorPicker = _baseSvg.selectAll('g.' + id)
             .data(colorPickerColors.domain());
 
-        var colorPickerEnter = colorPicker.enter().append('g')
+        let colorPickerEnter = colorPicker.enter().append('g')
             .attr('class', id);
 
         colorPickerEnter.append('rect')
             .style('cursor', 'pointer')
             .attr('width', null)
             .attr('height', null)
-            .on('click', function (d, i) {
+            .on('click', function (d) {
                 colorPickerClicked(colorPickerColors(d));
             });
 
@@ -29609,7 +26071,7 @@ if (!phyloXml) {
             .style('font-weight', 'bold')
             .style('text-decoration', 'none');
 
-        var colorPickerUpdate = colorPicker
+        let colorPickerUpdate = colorPicker
             .attr('transform', function (d, i) {
                 if (i >= 234) {
                     i += 4;
@@ -29638,8 +26100,8 @@ if (!phyloXml) {
                         i += 4;
                     }
                 }
-                var x = xPos + Math.floor(( i / colorPickerSize )) * rectSize;
-                var y = yPos + (( i % colorPickerSize ) * rectSize);
+                let x = xPos + Math.floor((i / colorPickerSize)) * rectSize;
+                let y = yPos + ((i % colorPickerSize) * rectSize);
                 return 'translate(' + x + ',' + y + ')';
             });
 
@@ -29651,8 +26113,7 @@ if (!phyloXml) {
                 function (d, i) {
                     if (i === clickedOrigColorIndex) {
                         return COLOR_PICKER_CLICKED_ORIG_COLOR_BORDER_COLOR;
-                    }
-                    else if (i === 263) {
+                    } else if (i === 263) {
                         return COLOR_PICKER_BACKGROUND_BORDER_COLOR;
                     }
                     return WHITE;
@@ -29675,7 +26136,7 @@ if (!phyloXml) {
         function colorToHex(color) {
             // From http://stackoverflow.com/questions/1573053/javascript-function-to-convert-color-names-to-hex-codes
             // Convert any CSS color to a hex representation
-            var rgba, hex;
+            let rgba, hex;
             rgba = colorToRGBA(color);
             hex = [0, 1, 2].map(
                 function (idx) {
@@ -29685,7 +26146,7 @@ if (!phyloXml) {
             return '#' + hex;
 
             function colorToRGBA(color) {
-                var cvs, ctx;
+                let cvs, ctx;
                 cvs = document.createElement('canvas');
                 cvs.height = 1;
                 cvs.width = 1;
@@ -29705,38 +26166,35 @@ if (!phyloXml) {
 
     function colorPickerClicked(colorPicked) {
 
-        var vis = _visualizations.labelColor[_colorPickerData.legendDescription];
-        var mf = vis.mappingFn;
+        let vis = _visualizations.labelColor[_colorPickerData.legendDescription];
+        let mf = vis.mappingFn;
 
-        var scaleType = vis.scaleType;
+        let scaleType = vis.scaleType;
         if (scaleType === ORDINAL_SCALE) {
-            var ord = _colorPickerData.targetScale;
-            var domain = ord.domain();
-            var range = ord.range();
-            var newColorRange = range.slice();
-            for (var di = 0, len = range.length; di < len; ++di) {
-                var curName = domain[di];
-                if (curName != undefined) {
+            let ord = _colorPickerData.targetScale;
+            let domain = ord.domain();
+            let range = ord.range();
+            let newColorRange = range.slice();
+            for (let di = 0, len = range.length; di < len; ++di) {
+                let curName = domain[di];
+                if (curName !== undefined) {
                     if (curName === _colorPickerData.clickedName) {
                         newColorRange[di] = colorPicked;
-                    }
-                    else {
+                    } else {
                         newColorRange[di] = ord(curName);
                     }
                 }
             }
             mf.range(newColorRange);
-        }
-        else if (scaleType === LINEAR_SCALE) {
-            var lin = _colorPickerData.targetScale;
-            var domain = lin.domain();
-            var newColorRange = [];
-            for (var dii = 0, domainLength = domain.length; dii < domainLength; ++dii) {
-                var curName = domain[dii];
+        } else if (scaleType === LINEAR_SCALE) {
+            let lin = _colorPickerData.targetScale;
+            let domain = lin.domain();
+            let newColorRange = [];
+            for (let dii = 0, domainLength = domain.length; dii < domainLength; ++dii) {
+                let curName = domain[dii];
                 if (curName === _colorPickerData.clickedName) {
                     newColorRange[dii] = colorPicked;
-                }
-                else {
+                } else {
                     newColorRange[dii] = lin(curName);
                 }
             }
@@ -29774,14 +26232,14 @@ if (!phyloXml) {
         _treeFn = _treeFn.size([_displayHeight - (2 * TOP_AND_BOTTOM_BORDER_HEIGHT), _w]);
 
         _treeFn = _treeFn.separation(function separation(a, b) {
-            return a.parent == b.parent ? 1 : 1;
+            return a.parent === b.parent ? 1 : 1;
         });
 
         _external_nodes = forester.calcSumOfAllExternalDescendants(_root);
-        var uncollsed_nodes = forester.calcSumOfExternalDescendants(_root);
-        var nodes = _treeFn.nodes(_root).reverse();
-        var links = _treeFn.links(nodes);
-        var gap = _options.nodeLabelGap;
+        let uncollsed_nodes = forester.calcSumOfExternalDescendants(_root);
+        let nodes = _treeFn.nodes(_root).reverse();
+        let links = _treeFn.links(nodes);
+        let gap = _options.nodeLabelGap;
 
         if (_options.phylogram === true) {
             _yScale = branchLengthScaling(forester.getAllExternalNodes(_root), _w);
@@ -29789,12 +26247,11 @@ if (!phyloXml) {
 
         if (_options.dynahide) {
             _dynahide_counter = 0;
-            _dynahide_factor = Math.round(_options.externalNodeFontSize / ( ( 0.8 * _displayHeight) / uncollsed_nodes ));
+            _dynahide_factor = Math.round(_options.externalNodeFontSize / ((0.8 * _displayHeight) / uncollsed_nodes));
             forester.preOrderTraversal(_root, function (n) {
                 if (!n.children && _dynahide_factor >= 2 && (++_dynahide_counter % _dynahide_factor !== 0)) {
                     n.hide = true;
-                }
-                else {
+                } else {
                     n.hide = false;
                 }
             });
@@ -29810,12 +26267,12 @@ if (!phyloXml) {
             }
         }
 
-        var node = _svgGroup.selectAll('g.node')
+        let node = _svgGroup.selectAll('g.node')
             .data(nodes, function (d) {
                 return d.id || (d.id = ++_i);
             });
 
-        var nodeEnter = node.enter().append('g')
+        let nodeEnter = node.enter().append('g')
             .attr('class', 'node')
             .attr('transform', function () {
                 return 'translate(' + source.y0 + ',' + source.x0 + ')';
@@ -29872,7 +26329,7 @@ if (!phyloXml) {
 
         nodeEnter.append('text')
             .attr('class', 'collapsedText')
-            .attr('dy', function (d) {
+            .attr('dy', function () {
                 return 0.3 * _options.externalNodeFontSize + 'px';
             })
             .style('font-family', _options.defaultFont);
@@ -29889,12 +26346,10 @@ if (!phyloXml) {
                 if (!(d.children || d._children)) {
                     if (_options.phylogram && _options.alignPhylogram) {
                         return (-_yScale(d.distToRoot) + _w + gap);
-                    }
-                    else {
+                    } else {
                         return gap;
                     }
-                }
-                else {
+                } else {
                     return -gap;
                 }
             });
@@ -29905,8 +26360,7 @@ if (!phyloXml) {
             .attr('x', function (d) {
                 if (d.parent) {
                     return (d.parent.y - d.y + 1);
-                }
-                else {
+                } else {
                     return 0;
                 }
             });
@@ -29916,9 +26370,8 @@ if (!phyloXml) {
             .attr('dy', _options.branchDataFontSize)
             .attr('x', function (d) {
                 if (d.parent) {
-                    return (0.5 * (d.parent.y - d.y) );
-                }
-                else {
+                    return (0.5 * (d.parent.y - d.y));
+                } else {
                     return 0;
                 }
             });
@@ -29928,14 +26381,14 @@ if (!phyloXml) {
             .attr('dy', '-.25em')
             .attr('x', function (d) {
                 if (d.parent) {
-                    return (0.5 * (d.parent.y - d.y) );
+                    return (0.5 * (d.parent.y - d.y));
                 }
             });
 
         node.select('circle.nodeCircle')
             .attr('r', function (d) {
-                if (( (_options.showNodeVisualizations && !_options.showNodeEvents ) &&
-                    ( makeNodeFillColor(d) === _options.backgroundColorDefault ) )) {
+                if (((_options.showNodeVisualizations && !_options.showNodeEvents) &&
+                    (makeNodeFillColor(d) === _options.backgroundColorDefault))) {
                     return 0;
                 }
                 return makeNodeSize(d);
@@ -29945,14 +26398,14 @@ if (!phyloXml) {
             })
             .style('stroke-width', _options.branchWidthDefault)
             .style('fill', function (d) {
-                return ( _options.showNodeVisualizations || _options.showNodeEvents || isNodeFound(d)) ? makeNodeFillColor(d) : _options.backgroundColorDefault;
+                return (_options.showNodeVisualizations || _options.showNodeEvents || isNodeFound(d)) ? makeNodeFillColor(d) : _options.backgroundColorDefault;
             });
 
 
-        var start = _options.phylogram ? (-1) : (-10);
-        var ylength = _displayHeight / ( 3 * uncollsed_nodes );
+        let start = _options.phylogram ? (-1) : (-10);
+        let ylength = _displayHeight / (3 * uncollsed_nodes);
 
-        var nodeUpdate = node.transition()
+        let nodeUpdate = node.transition()
             .duration(transitionDuration)
             .attr('transform', function (d) {
                 return 'translate(' + d.y + ',' + d.x + ')';
@@ -29987,17 +26440,17 @@ if (!phyloXml) {
 
         node.each(function (d) {
             if (d._children) {
-                var yl = ylength;
-                var descs = forester.getAllExternalNodes(d);
+                let yl = ylength;
+                let descs = forester.getAllExternalNodes(d);
                 if (descs.length < 5) {
                     yl = 0.5 * yl;
                 }
-                var avg = forester.calcAverageTreeHeight(d, descs);
+                let avg = forester.calcAverageTreeHeight(d, descs);
 
-                var xlength = _options.phylogram ? _yScale(avg) : 0;
+                let xlength = _options.phylogram ? _yScale(avg) : 0;
                 d.avg = xlength;
-                var l = d.width ? (d.width / 2) : _options.branchWidthDefault / 2;
-                var collapsedColor = makeCollapsedColor(d);
+                let l = d.width ? (d.width / 2) : _options.branchWidthDefault / 2;
+                let collapsedColor = makeCollapsedColor(d);
                 d3.select(this).select('path').transition().duration(transitionDuration)
                     .attr('d', function () {
                         return 'M' + start + ',' + (-l) + 'L' + xlength + ',' + (-yl) + 'L' + xlength + ',' + (yl) + 'L' + start + ',' + l + 'L' + start + ',' + (-l);
@@ -30005,7 +26458,7 @@ if (!phyloXml) {
                     .style('stroke', collapsedColor)
                     .style('fill', collapsedColor);
 
-                d3.select(this).select('.collapsedText').attr('font-size', function (d) {
+                d3.select(this).select('.collapsedText').attr('font-size', function () {
                     return _options.externalNodeFontSize + 'px';
                 });
 
@@ -30015,18 +26468,17 @@ if (!phyloXml) {
                     .style('fill', function (d) {
                         return makeLabelColorForCollapsed(d, collapsedColor);
                     })
-                    .attr('dy', function (d) {
+                    .attr('dy', function () {
                         return 0.3 * _options.externalNodeFontSize + 'px';
                     })
                     .attr('x', function (d) {
                         if (_options.phylogram && _options.alignPhylogram) {
-                            var w = d;
+                            let w = d;
                             while (w.children && w.children.length > 0) {
                                 w = w.children[0];
                             }
                             return (-_yScale(w.distToRoot) + _w + gap);
-                        }
-                        else {
+                        } else {
                             return xlength + gap;
                         }
                     });
@@ -30048,7 +26500,7 @@ if (!phyloXml) {
             }
         });
 
-        var nodeExit = node.exit().transition()
+        let nodeExit = node.exit().transition()
             .duration(transitionDuration)
             .attr('transform', function () {
                 return "translate(" + source.y + "," + source.x + ")";
@@ -30061,7 +26513,7 @@ if (!phyloXml) {
         nodeExit.select('text')
             .style('fill-opacity', 0);
 
-        var link = _svgGroup.selectAll('path.link')
+        let link = _svgGroup.selectAll('path.link')
             .attr('d', elbow)
             .attr('stroke-width', makeBranchWidth)
             .data(links, function (d) {
@@ -30074,7 +26526,7 @@ if (!phyloXml) {
             .attr('stroke-width', makeBranchWidth)
             .attr('stroke', makeBranchColor)
             .attr('d', function () {
-                var o = {
+                let o = {
                     x: source.x0,
                     y: source.y0
                 };
@@ -30091,7 +26543,7 @@ if (!phyloXml) {
 
         link.exit()
             .attr('d', function () {
-                var o = {
+                let o = {
                     x: source.x,
                     y: source.y
                 };
@@ -30104,13 +26556,13 @@ if (!phyloXml) {
 
 
         if (_options.phylogram && _options.alignPhylogram && _options.showExternalLabels
-            && ( _options.showNodeName || _options.showTaxonomy || _options.showSequence
-            || _options.showLineage || _options.showMutations )) {
-            var linkExtension = _svgGroup.append("g")
+            && (_options.showNodeName || _options.showTaxonomy || _options.showSequence
+                || _options.showLineage || _options.showMutations)) {
+            let linkExtension = _svgGroup.append("g")
                 .selectAll('path')
                 .data(links.filter(function (d) {
                     return (!d.target.children
-                        && !( _options.dynahide && d.target.hide)
+                        && !(_options.dynahide && d.target.hide)
                     );
                 }));
 
@@ -30125,78 +26577,76 @@ if (!phyloXml) {
                 });
         }
 
-        for (var i = 0, len = nodes.length; i !== len; ++i) {
-            var d = nodes[i];
+        for (let i = 0, len = nodes.length; i !== len; ++i) {
+            let d = nodes[i];
             d.x0 = d.x;
             d.y0 = d.y;
         }
     }
 
-    var makeNodeSize = function (node) {
+    let makeNodeSize = function (node) {
 
         if ((_options.showNodeEvents && node.events && node.children
-            && ( node.events.duplications
-            || node.events.speciations))
+                && (node.events.duplications
+                    || node.events.speciations))
             || isNodeFound(node)) {
             return _options.nodeSizeDefault;
         }
 
         return (
-            ( _options.nodeSizeDefault > 0 && node.parent && !( _options.showNodeVisualizations && node.hasVis) )
-            && ( ( node.children && _options.showInternalNodes )
-                || ( ( !node._children && !node.children ) && _options.showExternalNodes )
+            (_options.nodeSizeDefault > 0 && node.parent && !(_options.showNodeVisualizations && node.hasVis))
+            && ((node.children && _options.showInternalNodes)
+                || ((!node._children && !node.children) && _options.showExternalNodes)
             )
-            || ( _options.phylogram && node.parent && !node.parent.parent && (!node.branch_length || node.branch_length <= 0))
+            || (_options.phylogram && node.parent && !node.parent.parent && (!node.branch_length || node.branch_length <= 0))
 
         ) ? makeVisNodeSize(node, 0.05) : 0;
     };
 
-    var makeBranchWidth = function (link) {
+    let makeBranchWidth = function (link) {
         if (link.target.width) {
             return link.target.width;
         }
         return _options.branchWidthDefault;
     };
 
-    var makeBranchColor = function (link) {
+    let makeBranchColor = function (link) {
 
         const n = link.target;
         if (_options.showBranchVisualizations && n != null) {
             if (
-                ( _currentLabelColorVisualization === MSA_RESIDUE
+                (_currentLabelColorVisualization === MSA_RESIDUE
                     || _currentNodeBorderColorVisualization === MSA_RESIDUE
                     || _currentNodeFillColorVisualization === MSA_RESIDUE
                 ) && isCanDoMsaResidueVisualizations()) {
 
-                var exts = forester.getAllExternalNodes(n);
-                var residue = null;
-                for (var i = 0, l = exts.length; i < l; ++i) {
-                    var ext = exts[i];
+                let exts = forester.getAllExternalNodes(n);
+                let residue = null;
+                for (let i = 0, l = exts.length; i < l; ++i) {
+                    let ext = exts[i];
                     if (ext.sequences && ext.sequences.length > 0) {
-                        var s = ext.sequences[0];
+                        let s = ext.sequences[0];
                         if (s.mol_seq && s.mol_seq.value && (s.mol_seq.value.length > _msa_residue_vis_curr_res_pos)) {
-                            var res = s.mol_seq.value.charAt(_msa_residue_vis_curr_res_pos).toUpperCase();
+                            let res = s.mol_seq.value.charAt(_msa_residue_vis_curr_res_pos).toUpperCase();
 
                             if (residue != null) {
-                                if (residue != res) {
+                                if (residue !== res) {
                                     residue = null;
                                     break;
                                 }
-                            }
-                            else {
+                            } else {
                                 residue = res;
                             }
                         }
                     }
                 }
-                if (residue != null && residue != '-' && residue != '.' && residue != '?') {
-                    var vis = _visualizations.nodeFillColor[MSA_RESIDUE];
+                if (residue != null && residue !== '-' && residue !== '.' && residue !== '?') {
+                    let vis = _visualizations.nodeFillColor[MSA_RESIDUE];
                     return vis.mappingFn ? vis.mappingFn(residue) : vis.mapping[residue];
                 }
-            }
-            else if (( isAddVisualization2() || isAddVisualization3() || isAddVisualization4() ) && ( _specialVisualizations != null ) && (n.properties != null)) {
+            } else if ((isAddVisualization2() || isAddVisualization3() || isAddVisualization4()) && (_specialVisualizations != null) && (n.properties != null)) {
                 const l = n.properties.length;
-                for (var p = 0; p < l; ++p) {
+                for (let p = 0; p < l; ++p) {
                     if (n.properties[p].ref === _visualizations4_applies_to_ref
                         && n.properties[p].datatype === _visualizations4_property_datatype
                         && n.properties[p].applies_to === _visualizations4_property_applies_to) {
@@ -30206,8 +26656,7 @@ if (!phyloXml) {
                         ) {
                             return _visualizations4_color;
                         }
-                    }
-                    else if (n.properties[p].ref === _visualizations3_applies_to_ref
+                    } else if (n.properties[p].ref === _visualizations3_applies_to_ref
                         && n.properties[p].datatype === _visualizations3_property_datatype
                         && n.properties[p].applies_to === _visualizations3_property_applies_to) {
                         if (_currentNodeFillColorVisualization === n.properties[p].value
@@ -30216,8 +26665,7 @@ if (!phyloXml) {
                         ) {
                             return _visualizations3_color;
                         }
-                    }
-                    else if (n.properties[p].ref === _visualizations2_applies_to_ref
+                    } else if (n.properties[p].ref === _visualizations2_applies_to_ref
                         && n.properties[p].datatype === _visualizations2_property_datatype
                         && n.properties[p].applies_to === _visualizations2_property_applies_to) {
                         if (_currentNodeFillColorVisualization === n.properties[p].value
@@ -30226,15 +26674,13 @@ if (!phyloXml) {
                         ) {
                             return _visualizations2_color;
                         }
-                    }
-                    else if (n.properties[p].ref === 'vipr:PANGO_Lineage'
+                    } else if (n.properties[p].ref === 'vipr:PANGO_Lineage'
                         && n.properties[p].datatype === 'xsd:string'
                         && n.properties[p].applies_to === 'node') {
-                        var viz = null;
+                        let vis = null;
                         if (_visualizations.nodeFillColor[_currentNodeFillColorVisualization]) {
                             vis = _visualizations.nodeFillColor[_currentNodeFillColorVisualization];
-                        }
-                        else if (_visualizations.nodeFillColor[_currentLabelColorVisualization]) {
+                        } else if (_visualizations.nodeFillColor[_currentLabelColorVisualization]) {
                             vis = _visualizations.nodeFillColor[_currentLabelColorVisualization];
                         }
                         if (vis != null) {
@@ -30243,15 +26689,13 @@ if (!phyloXml) {
                                 return color;
                             }
                         }
-                    }
-                    else if (n.properties[p].ref === 'vipr:PANGO_Lineage_L0'
+                    } else if (n.properties[p].ref === 'vipr:PANGO_Lineage_L0'
                         && n.properties[p].datatype === 'xsd:string'
                         && n.properties[p].applies_to === 'node') {
-                        var viz = null;
+                        let vis = null;
                         if (_visualizations.nodeFillColor[_currentNodeFillColorVisualization]) {
                             vis = _visualizations.nodeFillColor[_currentNodeFillColorVisualization];
-                        }
-                        else if (_visualizations.nodeFillColor[_currentLabelColorVisualization]) {
+                        } else if (_visualizations.nodeFillColor[_currentLabelColorVisualization]) {
                             vis = _visualizations.nodeFillColor[_currentLabelColorVisualization];
                         }
                         if (vis != null) {
@@ -30260,15 +26704,13 @@ if (!phyloXml) {
                                 return color;
                             }
                         }
-                    }
-                    else if (n.properties[p].ref === 'vipr:PANGO_Lineage_L1'
+                    } else if (n.properties[p].ref === 'vipr:PANGO_Lineage_L1'
                         && n.properties[p].datatype === 'xsd:string'
                         && n.properties[p].applies_to === 'node') {
-                        var viz = null;
+                        let vis = null;
                         if (_visualizations.nodeFillColor[_currentNodeFillColorVisualization]) {
                             vis = _visualizations.nodeFillColor[_currentNodeFillColorVisualization];
-                        }
-                        else if (_visualizations.nodeFillColor[_currentLabelColorVisualization]) {
+                        } else if (_visualizations.nodeFillColor[_currentLabelColorVisualization]) {
                             vis = _visualizations.nodeFillColor[_currentLabelColorVisualization];
                         }
                         if (vis != null) {
@@ -30282,66 +26724,61 @@ if (!phyloXml) {
             }
         }
         if (!_options.showBranchVisualizations && _options.showBranchColors && link.target.color) {
-            var c = link.target.color;
+            let c = link.target.color;
             return 'rgb(' + c.red + ',' + c.green + ',' + c.blue + ')';
         }
         return _options.branchColorDefault;
     };
 
     function makeNodeEventsDependentColor(ev) {
-        if (ev.duplications > 0 && ( !ev.speciations || ev.speciations <= 0 )) {
+        if (ev.duplications > 0 && (!ev.speciations || ev.speciations <= 0)) {
             return DUPLICATION_COLOR;
-        }
-        else if (ev.speciations > 0 && ( !ev.duplications || ev.duplications <= 0 )) {
+        } else if (ev.speciations > 0 && (!ev.duplications || ev.duplications <= 0)) {
             return SPECIATION_COLOR;
-        }
-        else if (ev.speciations > 0 && ev.duplications > 0) {
+        } else if (ev.speciations > 0 && ev.duplications > 0) {
             return DUPLICATION_AND_SPECIATION_COLOR_COLOR;
         }
         return null;
     }
 
-    var makeNodeFillColor = function (phynode) {
-        var foundColor = getFoundColor(phynode);
+    let makeNodeFillColor = function (phynode) {
+        let foundColor = getFoundColor(phynode);
         if (foundColor !== null) {
             return foundColor;
         }
         if (_options.showNodeEvents && phynode.events && phynode.children
-            && (phynode.events.speciations || phynode.events.duplications )) {
-            var evColor = makeNodeEventsDependentColor(phynode.events);
+            && (phynode.events.speciations || phynode.events.duplications)) {
+            let evColor = makeNodeEventsDependentColor(phynode.events);
             if (evColor !== null) {
                 return evColor;
-            }
-            else {
+            } else {
                 return _options.backgroundColorDefault;
             }
         }
         return makeVisNodeFillColor(phynode);
     };
 
-    var makeNodeStrokeColor = function (phynode) {
-        var foundColor = getFoundColor(phynode);
+    let makeNodeStrokeColor = function (phynode) {
+        let foundColor = getFoundColor(phynode);
         if (foundColor !== null) {
             return foundColor;
         }
         if (_options.showNodeEvents && phynode.events && phynode.children) {
-            var evColor = makeNodeEventsDependentColor(phynode.events);
+            let evColor = makeNodeEventsDependentColor(phynode.events);
             if (evColor !== null) {
                 return evColor;
             }
-        }
-        else if (_options.showNodeVisualizations) {
+        } else if (_options.showNodeVisualizations) {
             return makeVisNodeBorderColor(phynode);
-        }
-        else if (_options.showBranchColors && phynode.color) {
-            var c = phynode.color;
+        } else if (_options.showBranchColors && phynode.color) {
+            let c = phynode.color;
             return "rgb(" + c.red + "," + c.green + "," + c.blue + ")";
         }
         return _options.branchColorDefault;
     };
 
-    var makeCollapsedColor = function (node) {
-        var c = calcCollapsedColorInSubtree(node);
+    let makeCollapsedColor = function (node) {
+        let c = calcCollapsedColorInSubtree(node);
         if (c) {
             return c;
         }
@@ -30355,55 +26792,55 @@ if (!phyloXml) {
         return _options.branchColorDefault;
     };
 
-    var makeLabelColor = function (phynode) {
-        var foundColor = getFoundColor(phynode);
+    let makeLabelColor = function (phynode) {
+        let foundColor = getFoundColor(phynode);
         if (foundColor !== null) {
             return foundColor;
         }
         if (_currentLabelColorVisualization) {
-            var color = makeVisLabelColor(phynode);
+            let color = makeVisLabelColor(phynode);
             if (color) {
                 return color;
             }
         }
         if (_options.showBranchColors && phynode.color) {
-            var c = phynode.color;
+            let c = phynode.color;
             return "rgb(" + c.red + "," + c.green + "," + c.blue + ")";
         }
         return _options.labelColorDefault;
     };
 
-    var makeLabelColorForCollapsed = function (phynode, color) {
-        if (color && color != _options.branchColorDefault) {
+    let makeLabelColorForCollapsed = function (phynode, color) {
+        if (color && color !== _options.branchColorDefault) {
             return color
         }
         if (_currentLabelColorVisualization) {
-            var ncolor = makeVisLabelColorForSubtree(phynode);
+            let ncolor = makeVisLabelColorForSubtree(phynode);
             if (ncolor) {
                 return ncolor;
             }
         }
         if (_options.showBranchColors && phynode.color) {
-            var c = phynode.color;
+            let c = phynode.color;
             return "rgb(" + c.red + "," + c.green + "," + c.blue + ")";
         }
         return _options.labelColorDefault;
     };
 
-    var makeNodeVisShape = function (node) {
+    let makeNodeVisShape = function (node) {
         if (_currentNodeShapeVisualization && _visualizations && !node._children && _visualizations.nodeShape
             && _visualizations.nodeShape[_currentNodeShapeVisualization] && !isNodeFound(node)
-            && !(_options.showNodeEvents && ( node.events && (node.events.duplications
-            || node.events.speciations)))) {
-            var vis = _visualizations.nodeShape[_currentNodeShapeVisualization];
+            && !(_options.showNodeEvents && (node.events && (node.events.duplications
+                || node.events.speciations)))) {
+            let vis = _visualizations.nodeShape[_currentNodeShapeVisualization];
             if (_currentNodeShapeVisualization === MSA_RESIDUE) {
 
                 if (isCanDoMsaResidueVisualizations()) {
                     if (node.sequences && node.sequences.length > 0) {
 
-                        var s = node.sequences[0];
+                        let s = node.sequences[0];
                         if (s.mol_seq && s.mol_seq.value && (s.mol_seq.value.length > _msa_residue_vis_curr_res_pos)) {
-                            var res = s.mol_seq.value.charAt(_msa_residue_vis_curr_res_pos).toUpperCase();
+                            let res = s.mol_seq.value.charAt(_msa_residue_vis_curr_res_pos).toUpperCase();
                             if (vis.mappingFn) {
                                 vis.mappingFn.domain(_basicTreeProperties.molSeqResiduesPerPosition[_msa_residue_vis_curr_res_pos]);
                             }
@@ -30415,38 +26852,35 @@ if (!phyloXml) {
                     }
                 }
                 return null;
-            }
-            else {
+            } else {
                 if (vis.field) {
-                    var fieldValue = node[vis.field];
+                    let fieldValue = node[vis.field];
                     if (fieldValue) {
                         if (vis.isRegex) {
-                            for (var key in vis.mapping) {
+                            for (let key in vis.mapping) {
                                 if (vis.mapping.hasOwnProperty(key)) {
-                                    var re = new RegExp(key);
+                                    let re = new RegExp(key);
                                     if (re && fieldValue.search(re) > -1) {
                                         return produceVis(vis, key);
                                     }
                                 }
                             }
-                        }
-                        else {
+                        } else {
                             return produceVis(vis, fieldValue);
                         }
                     }
-                }
-                else if (vis.cladePropertyRef && node.properties && node.properties.length > 0) {
+                } else if (vis.cladePropertyRef && node.properties && node.properties.length > 0) {
 
-                    var ref_name = vis.cladePropertyRef;
-                    var propertiesLength = node.properties.length;
-                    for (var i = 0; i < propertiesLength; ++i) {
-                        var p = node.properties[i];
+                    let ref_name = vis.cladePropertyRef;
+                    let propertiesLength = node.properties.length;
+                    for (let i = 0; i < propertiesLength; ++i) {
+                        let p = node.properties[i];
                         if (p.value && p.ref === ref_name) {
                             if (_settings.valuesToIgnoreForNodeVisualization) {
                                 if (p.ref in _settings.valuesToIgnoreForNodeVisualization) {
-                                    var ignoreValues = _settings.valuesToIgnoreForNodeVisualization[p.ref];
-                                    var arrayLength = ignoreValues.length;
-                                    for (var i = 0; i < arrayLength; i++) {
+                                    let ignoreValues = _settings.valuesToIgnoreForNodeVisualization[p.ref];
+                                    let arrayLength = ignoreValues.length;
+                                    for (let i = 0; i < arrayLength; i++) {
                                         if (p.value === ignoreValues[i]) {
                                             return null;
                                         }
@@ -30467,8 +26901,7 @@ if (!phyloXml) {
                 if (vis.mappingFn(key)) {
                     return makeShape(node, vis.mappingFn(key));
                 }
-            }
-            else if (vis.mapping[key]) {
+            } else if (vis.mapping[key]) {
                 return makeShape(node, vis.mapping[key]);
             }
             return null;
@@ -30480,39 +26913,35 @@ if (!phyloXml) {
         }
     };
 
-    var makeVisNodeFillColor = function (node) {
+    let makeVisNodeFillColor = function (node) {
 
         if (_options.showNodeVisualizations && !node._children && _currentNodeFillColorVisualization
             && _visualizations && _visualizations.nodeFillColor) {
 
             if (_currentNodeFillColorVisualization === MSA_RESIDUE) {
                 return makeMsaResidueVisualizationColor(node, _visualizations.nodeFillColor[MSA_RESIDUE]);
-            }
-            else if (_visualizations.nodeFillColor[_currentNodeFillColorVisualization]) {
-                var vis = _visualizations.nodeFillColor[_currentNodeFillColorVisualization];
-                var color = makeVisColor(node, vis);
+            } else if (_visualizations.nodeFillColor[_currentNodeFillColorVisualization]) {
+                let vis = _visualizations.nodeFillColor[_currentNodeFillColorVisualization];
+                let color = makeVisColor(node, vis);
                 if (color) {
                     return color;
                 }
-            }
-            else if (node.properties != null) {
+            } else if (node.properties != null) {
                 const l = node.properties.length;
-                for (var p = 0; p < l; ++p) {
+                for (let p = 0; p < l; ++p) {
                     if (node.properties[p].ref === _visualizations4_applies_to_ref
                         && node.properties[p].datatype === _visualizations4_property_datatype
                         && node.properties[p].applies_to === _visualizations4_property_applies_to) {
                         if (_currentNodeFillColorVisualization === node.properties[p].value) {
                             return _visualizations4_color;
                         }
-                    }
-                    else if (node.properties[p].ref === _visualizations3_applies_to_ref
+                    } else if (node.properties[p].ref === _visualizations3_applies_to_ref
                         && node.properties[p].datatype === _visualizations3_property_datatype
                         && node.properties[p].applies_to === _visualizations3_property_applies_to) {
                         if (_currentNodeFillColorVisualization === node.properties[p].value) {
                             return _visualizations3_color;
                         }
-                    }
-                    else if (node.properties[p].ref === _visualizations2_applies_to_ref
+                    } else if (node.properties[p].ref === _visualizations2_applies_to_ref
                         && node.properties[p].datatype === _visualizations2_property_datatype
                         && node.properties[p].applies_to === _visualizations2_property_applies_to) {
                         if (_currentNodeFillColorVisualization === node.properties[p].value) {
@@ -30525,17 +26954,16 @@ if (!phyloXml) {
         return _options.backgroundColorDefault;
     };
 
-    var makeMsaResidueVisualizationColor = function (node, vis) {
+    let makeMsaResidueVisualizationColor = function (node, vis) {
         if (isCanDoMsaResidueVisualizations()) {
             if (node.sequences && node.sequences.length > 0) {
-                var s = node.sequences[0];
+                let s = node.sequences[0];
                 if (s.mol_seq && s.mol_seq.value && s.mol_seq.value.length > _msa_residue_vis_curr_res_pos) {
-                    var res = s.mol_seq.value.charAt(_msa_residue_vis_curr_res_pos).toUpperCase();
+                    let res = s.mol_seq.value.charAt(_msa_residue_vis_curr_res_pos).toUpperCase();
                     if (vis.mappingFn) {
                         vis.mappingFn.domain(_basicTreeProperties.molSeqResiduesPerPosition[_msa_residue_vis_curr_res_pos]);
                         return vis.mappingFn(res);
-                    }
-                    else if (vis.mapping) {
+                    } else if (vis.mapping) {
                         vis.mapping.domain(_basicTreeProperties.molSeqResiduesPerPosition[_msa_residue_vis_curr_res_pos]);
                         return vis.mapping[res];
                     }
@@ -30546,38 +26974,36 @@ if (!phyloXml) {
     };
 
 
-    var makeVisColor = function (node, vis) {
+    let makeVisColor = function (node, vis) {
         if (vis.field) {
-            var fieldValue = node[vis.field];
+            let fieldValue = node[vis.field];
             if (fieldValue) {
                 if (vis.isRegex) {
-                    for (var key in vis.mapping) {
+                    for (let key in vis.mapping) {
                         if (vis.mapping.hasOwnProperty(key)) {
-                            var re = new RegExp(key);
+                            let re = new RegExp(key);
                             if (re && fieldValue.search(re) > -1) {
                                 return produceVis(vis, key);
                             }
                         }
                     }
-                }
-                else {
+                } else {
                     return produceVis(vis, fieldValue);
                 }
             }
-        }
-        else if (vis.cladePropertyRef && node.properties && node.properties.length > 0) {
-            var ref_name = vis.cladePropertyRef;
-            var propertiesLength = node.properties.length;
-            for (var i = 0; i < propertiesLength; ++i) {
-                var p = node.properties[i];
+        } else if (vis.cladePropertyRef && node.properties && node.properties.length > 0) {
+            let ref_name = vis.cladePropertyRef;
+            let propertiesLength = node.properties.length;
+            for (let i = 0; i < propertiesLength; ++i) {
+                let p = node.properties[i];
                 if (p.value && p.ref === ref_name) {
                     if (_settings.valuesToIgnoreForNodeVisualization) {
-                        var ignore = _settings.valuesToIgnoreForNodeVisualization;
-                        // for (var key in nodeProperties) {
+                        let ignore = _settings.valuesToIgnoreForNodeVisualization;
+                        // for (let key in nodeProperties) {
                         if (p.ref in ignore) {
-                            var toIgnores = ignore[p.ref];
-                            var arrayLength = toIgnores.length;
-                            for (var i = 0; i < arrayLength; i++) {
+                            let toIgnores = ignore[p.ref];
+                            let arrayLength = toIgnores.length;
+                            for (let i = 0; i < arrayLength; i++) {
                                 if (p.value === toIgnores[i]) {
                                     return null;
                                 }
@@ -30626,7 +27052,7 @@ if (!phyloXml) {
         _legendSizeScales[type] = null;
     }
 
-    var makeVisNodeBorderColor = function (node) {
+    let makeVisNodeBorderColor = function (node) {
         const c = makeVisNodeFillColor(node);
         if (c === _options.backgroundColorDefault) {
             return _options.branchColorDefault
@@ -30634,38 +27060,35 @@ if (!phyloXml) {
         return c;
     };
 
-    var makeVisLabelColor = function (node) {
+    let makeVisLabelColor = function (node) {
         if (_currentLabelColorVisualization === MSA_RESIDUE) {
             return makeMsaResidueVisualizationColor(node, _visualizations.labelColor[MSA_RESIDUE]);
         }
         if (!node._children && _currentLabelColorVisualization) {
             if (_visualizations && _visualizations.labelColor
                 && _visualizations.labelColor[_currentLabelColorVisualization]) {
-                var vis = _visualizations.labelColor[_currentLabelColorVisualization];
-                var color = makeVisColor(node, vis);
+                let vis = _visualizations.labelColor[_currentLabelColorVisualization];
+                let color = makeVisColor(node, vis);
 
                 if (color) {
                     return color;
                 }
-            }
-            else if (node.properties != null) {
+            } else if (node.properties != null) {
                 const l = node.properties.length;
-                for (var p = 0; p < l; ++p) {
+                for (let p = 0; p < l; ++p) {
                     if (node.properties[p].ref === _visualizations4_applies_to_ref
                         && node.properties[p].datatype === _visualizations4_property_datatype
                         && node.properties[p].applies_to === _visualizations4_property_applies_to) {
                         if (_currentLabelColorVisualization === node.properties[p].value) {
                             return _visualizations4_color;
                         }
-                    }
-                    else if (node.properties[p].ref === _visualizations3_applies_to_ref
+                    } else if (node.properties[p].ref === _visualizations3_applies_to_ref
                         && node.properties[p].datatype === _visualizations3_property_datatype
                         && node.properties[p].applies_to === _visualizations3_property_applies_to) {
                         if (_currentLabelColorVisualization === node.properties[p].value) {
                             return _visualizations3_color;
                         }
-                    }
-                    else if (node.properties[p].ref === _visualizations2_applies_to_ref
+                    } else if (node.properties[p].ref === _visualizations2_applies_to_ref
                         && node.properties[p].datatype === _visualizations2_property_datatype
                         && node.properties[p].applies_to === _visualizations2_property_applies_to) {
                         if (_currentLabelColorVisualization === node.properties[p].value) {
@@ -30678,22 +27101,20 @@ if (!phyloXml) {
         return _options.labelColorDefault;
     };
 
-    var makeVisLabelColorForSubtree = function (node) {
-        var color = null;
-        var success = true;
+    let makeVisLabelColorForSubtree = function (node) {
+        let color = null;
+        let success = true;
         if (_currentLabelColorVisualization && _visualizations && _visualizations.labelColor
             && _visualizations.labelColor[_currentLabelColorVisualization]) {
-            var vis = _visualizations.labelColor[_currentLabelColorVisualization];
+            let vis = _visualizations.labelColor[_currentLabelColorVisualization];
             forester.preOrderTraversalAll(node, function (n) {
                 if (forester.isHasNodeData(n)) {
-                    var c = makeVisColor(n, vis);
+                    let c = makeVisColor(n, vis);
                     if (!c) {
                         success = false;
-                    }
-                    else if (color == null) {
+                    } else if (color == null) {
                         color = c;
-                    }
-                    else if (color != c) {
+                    } else if (color !== c) {
                         success = false;
                     }
                 }
@@ -30706,19 +27127,19 @@ if (!phyloXml) {
     };
 
 
-    var makeVisNodeSize = function (node, correctionFactor) {
+    let makeVisNodeSize = function (node, correctionFactor) {
         if (_options.showNodeVisualizations && _currentNodeSizeVisualization) {
             if (_visualizations && !node._children && _visualizations.nodeSize
                 && _visualizations.nodeSize[_currentNodeSizeVisualization]) {
-                var vis = _visualizations.nodeSize[_currentNodeSizeVisualization];
-                var size;
+                let vis = _visualizations.nodeSize[_currentNodeSizeVisualization];
+                let size;
                 if (vis.field) {
-                    var fieldValue = node[vis.field];
+                    let fieldValue = node[vis.field];
                     if (fieldValue) {
                         if (vis.isRegex) {
-                            for (var key in vis.mapping) {
+                            for (let key in vis.mapping) {
                                 if (vis.mapping.hasOwnProperty(key)) {
-                                    var re = new RegExp(key);
+                                    let re = new RegExp(key);
                                     if (re && fieldValue.search(re) > -1) {
                                         size = produceVis(vis, key, correctionFactor);
                                         if (size) {
@@ -30727,20 +27148,18 @@ if (!phyloXml) {
                                     }
                                 }
                             }
-                        }
-                        else {
+                        } else {
                             size = produceVis(vis, fieldValue, correctionFactor);
                             if (size) {
                                 return size;
                             }
                         }
                     }
-                }
-                else if (vis.cladePropertyRef && node.properties && node.properties.length > 0) {
-                    var ref_name = vis.cladePropertyRef;
-                    var propertiesLength = node.properties.length;
-                    for (var i = 0; i < propertiesLength; ++i) {
-                        var p = node.properties[i];
+                } else if (vis.cladePropertyRef && node.properties && node.properties.length > 0) {
+                    let ref_name = vis.cladePropertyRef;
+                    let propertiesLength = node.properties.length;
+                    for (let i = 0; i < propertiesLength; ++i) {
+                        let p = node.properties[i];
                         if (p.ref === ref_name && p.value) {
                             size = produceVis(vis, p.value, correctionFactor);
                             if (size) {
@@ -30753,25 +27172,22 @@ if (!phyloXml) {
         }
         if (correctionFactor) {
             return _options.nodeSizeDefault;
-        }
-        else {
+        } else {
             return 2 * _options.nodeSizeDefault * _options.nodeSizeDefault;
         }
 
 
         function produceVis(vis, key, correctionFactor) {
-            var size;
+            let size;
             if (vis.mappingFn) {
                 size = vis.mappingFn(key);
-            }
-            else {
+            } else {
                 size = vis.mapping[key];
             }
             if (size) {
                 if (correctionFactor) {
                     return correctionFactor * size * _options.nodeSizeDefault;
-                }
-                else {
+                } else {
                     return size * _options.nodeSizeDefault;
                 }
             }
@@ -30780,21 +27196,19 @@ if (!phyloXml) {
     };
 
     function calcCollapsedColorInSubtree(node) {
-        var found0 = 0;
-        var found1 = 0;
-        var found0and1 = 0;
-        var total = 0;
+        let found0 = 0;
+        let found1 = 0;
+        let found0and1 = 0;
+        let total = 0;
         if (_foundNodes0 && _foundNodes1) {
             forester.preOrderTraversalAll(node, function (n) {
                 if (forester.isHasNodeData(n)) {
                     ++total;
                     if (_foundNodes0.has(n) && _foundNodes1.has(n)) {
                         ++found0and1;
-                    }
-                    else if (_foundNodes0.has(n)) {
+                    } else if (_foundNodes0.has(n)) {
                         ++found0;
-                    }
-                    else if (_foundNodes1.has(n)) {
+                    } else if (_foundNodes1.has(n)) {
                         ++found1;
                     }
                 }
@@ -30804,23 +27218,21 @@ if (!phyloXml) {
         _totalSearchedWithData = total;
 
         if (total > 0 && _foundSum > 0) {
-            if ((found0and1 > 0) || ((found0 > 0) && ( found1 > 0) )) {
+            if ((found0and1 > 0) || ((found0 > 0) && (found1 > 0))) {
                 if (found0and1 === total) {
                     return _options.found0and1ColorDefault;
                 }
                 return d3.scale.linear()
                     .domain([0, total])
                     .range([_options.branchColorDefault, _options.found0and1ColorDefault])(_foundSum);
-            }
-            else if (found0 > 0) {
+            } else if (found0 > 0) {
                 if (found0 === total) {
                     return _options.found0ColorDefault;
                 }
                 return d3.scale.linear()
                     .domain([0, total])
                     .range([_options.branchColorDefault, _options.found0ColorDefault])(found0);
-            }
-            else if (found1 > 0) {
+            } else if (found1 > 0) {
                 if (found1 === total) {
                     return _options.found1ColorDefault;
                 }
@@ -30837,22 +27249,17 @@ if (!phyloXml) {
         if (!_options.searchNegateResult) {
             if (_foundNodes0 && _foundNodes1 && _foundNodes0.has(phynode) && _foundNodes1.has(phynode)) {
                 return _options.found0and1ColorDefault;
-            }
-            else if (_foundNodes0 && _foundNodes0.has(phynode)) {
+            } else if (_foundNodes0 && _foundNodes0.has(phynode)) {
                 return _options.found0ColorDefault;
-            }
-            else if (_foundNodes1 && _foundNodes1.has(phynode)) {
+            } else if (_foundNodes1 && _foundNodes1.has(phynode)) {
                 return _options.found1ColorDefault;
             }
-        }
-        else if (forester.isHasNodeData(phynode)) {
+        } else if (forester.isHasNodeData(phynode)) {
             if ((_foundNodes0 && !_searchBox0Empty) && (_foundNodes1 && !_searchBox1Empty) && !_foundNodes0.has(phynode) && !_foundNodes1.has(phynode)) {
                 return _options.found0and1ColorDefault;
-            }
-            else if ((_foundNodes0 && !_searchBox0Empty) && !_foundNodes0.has(phynode)) {
+            } else if ((_foundNodes0 && !_searchBox0Empty) && !_foundNodes0.has(phynode)) {
                 return _options.found0ColorDefault;
-            }
-            else if ((_foundNodes1 && !_searchBox1Empty) && !_foundNodes1.has(phynode)) {
+            } else if ((_foundNodes1 && !_searchBox1Empty) && !_foundNodes1.has(phynode)) {
                 return _options.found1ColorDefault;
             }
         }
@@ -30864,8 +27271,7 @@ if (!phyloXml) {
             if ((_foundNodes0 && _foundNodes0.has(phynode)) || (_foundNodes1 && _foundNodes1.has(phynode))) {
                 return true;
             }
-        }
-        else if (forester.isHasNodeData(phynode)) {
+        } else if (forester.isHasNodeData(phynode)) {
             if (((_foundNodes0 && !_searchBox0Empty) && !_foundNodes0.has(phynode)) || ((_foundNodes1 && !_searchBox1Empty) && !_foundNodes1.has(phynode))) {
                 return true
             }
@@ -30873,11 +27279,11 @@ if (!phyloXml) {
         return false;
     }
 
-    var makeNodeLabel = function (phynode) {
-        if (!_options.showExternalLabels && !( phynode.children || phynode._children)) {
+    let makeNodeLabel = function (phynode) {
+        if (!_options.showExternalLabels && !(phynode.children || phynode._children)) {
             return null;
         }
-        if (!_options.showInternalLabels && ( phynode.children || phynode._children)) {
+        if (!_options.showInternalLabels && (phynode.children || phynode._children)) {
             return null;
         }
         if (!phynode.parent) {
@@ -30885,21 +27291,20 @@ if (!phyloXml) {
             return null;
         }
 
-        var l = "";
+        let l = "";
         if (_options.showNodeName && phynode.name) {
             if (_options.shortenNodeNames && phynode.name.length > SHORTEN_NAME_MAX_LENGTH) {
                 l = append(l, shortenName(phynode.name, 8));
-            }
-            else {
+            } else {
                 l = append(l, phynode.name);
             }
         }
         if (_options.showLineage) {
-            if (phynode.properties && phynode.properties != null) {
+            if (phynode.properties) {
                 const props_length = phynode.properties.length;
                 if (props_length > 0) {
-                    var lin_text = '';
-                    for (var pl = 0; pl < props_length; ++pl) {
+                    let lin_text = '';
+                    for (let pl = 0; pl < props_length; ++pl) {
                         if (phynode.properties[pl].ref === 'vipr:PANGO_Lineage'
                             && phynode.properties[pl].datatype === 'xsd:string'
                             && phynode.properties[pl].applies_to === 'node') {
@@ -30918,8 +27323,8 @@ if (!phyloXml) {
             if (phynode.properties && phynode.properties != null) {
                 const props_length = phynode.properties.length;
                 if (props_length > 0) {
-                    var mut_text = '';
-                    for (var pm = 0; pm < props_length; ++pm) {
+                    let mut_text = '';
+                    for (let pm = 0; pm < props_length; ++pm) {
                         if (phynode.properties[pm].ref === 'vipr:Mutation'
                             && phynode.properties[pm].datatype === 'xsd:string'
                             && phynode.properties[pm].applies_to === 'node') {
@@ -30934,7 +27339,7 @@ if (!phyloXml) {
             }
         }
         if (_options.showTaxonomy && phynode.taxonomies && phynode.taxonomies.length > 0) {
-            var t = phynode.taxonomies[0];
+            let t = phynode.taxonomies[0];
             if (_options.showTaxonomyCode) {
                 l = append(l, t.code);
             }
@@ -30949,15 +27354,15 @@ if (!phyloXml) {
             }
             if (_options.showTaxonomySynonyms) {
                 if (t.synonyms && t.synonyms.length > 0) {
-                    var syn = t.synonyms;
-                    for (var i = 0; i < syn.length; ++i) {
+                    let syn = t.synonyms;
+                    for (let i = 0; i < syn.length; ++i) {
                         l = appendB(l, syn[i]);
                     }
                 }
             }
         }
         if (_options.showSequence && phynode.sequences && phynode.sequences.length > 0) {
-            var s = phynode.sequences[0];
+            let s = phynode.sequences[0];
             if (_options.showSequenceSymbol) {
                 l = append(l, s.symbol);
             }
@@ -30972,8 +27377,8 @@ if (!phyloXml) {
             }
         }
         if (_options.showDistributions && phynode.distributions && phynode.distributions.length > 0) {
-            var d = phynode.distributions;
-            for (var ii = 0; i < d.length; ++ii) {
+            let d = phynode.distributions;
+            for (let ii = 0; i < d.length; ++ii) {
                 l = appendB(l, d[ii].desc);
             }
         }
@@ -30982,9 +27387,8 @@ if (!phyloXml) {
         function append(str1, str2) {
             if (str2 && str2.length > 0) {
                 if (str1.length > 0) {
-                    str1 += ( " " + str2 );
-                }
-                else {
+                    str1 += (" " + str2);
+                } else {
                     str1 = str2;
                 }
             }
@@ -30994,9 +27398,8 @@ if (!phyloXml) {
         function appendP(str1, str2) {
             if (str2 && str2.length > 0) {
                 if (str1.length > 0) {
-                    str1 += ( " (" + str2 + ")");
-                }
-                else {
+                    str1 += (" (" + str2 + ")");
+                } else {
                     str1 = "(" + str2 + ")";
                 }
             }
@@ -31006,9 +27409,8 @@ if (!phyloXml) {
         function appendB(str1, str2) {
             if (str2 && str2.length > 0) {
                 if (str1.length > 0) {
-                    str1 += ( " [" + str2 + "]");
-                }
-                else {
+                    str1 += (" [" + str2 + "]");
+                } else {
                     str1 = "[" + str2 + "]";
                 }
             }
@@ -31016,42 +27418,41 @@ if (!phyloXml) {
         }
 
         function shortenName(name, n) {
-            var nlength = name.length;
+            let nlength = name.length;
             return name.substring(0, n) + '..' + name.substring(nlength - n, nlength);
         }
     };
 
 
-    var makeCollapsedLabel = function (node, descs) {
+    let makeCollapsedLabel = function (node, descs) {
         if (node.hide) {
             return;
         }
 
-        var first;
-        var last;
+        let first;
+        let last;
         if (descs.length > 1) {
             first = descs[0];
             last = descs[descs.length - 1];
         }
-        var text = null;
+        let text = null;
         if (first && last) {
-            var first_label = makeNodeLabel(first);
-            var last_label = makeNodeLabel(last);
+            let first_label = makeNodeLabel(first);
+            let last_label = makeNodeLabel(last);
 
             if (first_label && last_label) {
                 text = first_label.substring(0, _options.collapsedLabelLength)
                     + " ... " + last_label.substring(0, _options.collapsedLabelLength)
                     + " [" + descs.length + "]";
                 if (_foundSum > 0 && _totalSearchedWithData) {
-                    text += (' [' + _foundSum + '/' + _totalSearchedWithData + ']' );
+                    text += (' [' + _foundSum + '/' + _totalSearchedWithData + ']');
                 }
             }
 
             if (node[KEY_FOR_COLLAPSED_FEATURES_SPECIAL_LABEL]) {
                 if (text) {
                     text = node[KEY_FOR_COLLAPSED_FEATURES_SPECIAL_LABEL] + ': ' + text;
-                }
-                else {
+                } else {
                     text = node[KEY_FOR_COLLAPSED_FEATURES_SPECIAL_LABEL];
                 }
             }
@@ -31059,7 +27460,7 @@ if (!phyloXml) {
         return text;
     };
 
-    var makeBranchLengthLabel = function (phynode) {
+    let makeBranchLengthLabel = function (phynode) {
         if (phynode.branch_length) {
             if (_options.phylogram
                 && _options.minBranchLengthValueToShow
@@ -31070,13 +27471,13 @@ if (!phyloXml) {
         }
     };
 
-    var makeConfidenceValuesLabel = function (phynode) {
+    let makeConfidenceValuesLabel = function (phynode) {
         if (phynode.confidences && phynode.confidences.length > 0) {
-            var c = phynode.confidences;
-            var cl = c.length;
+            let c = phynode.confidences;
+            let cl = c.length;
             if (_options.minConfidenceValueToShow) {
-                var show = false;
-                for (var i = 0; i < cl; ++i) {
+                let show = false;
+                for (let i = 0; i < cl; ++i) {
                     if (c[i].value >= _options.minConfidenceValueToShow) {
                         show = true;
                         break;
@@ -31086,14 +27487,13 @@ if (!phyloXml) {
                     return;
                 }
             }
-            if (cl == 1) {
+            if (cl === 1) {
                 if (c[0].value) {
                     return +c[0].value.toFixed(CONFIDENCE_VALUE_DIGITS_DEFAULT);
                 }
-            }
-            else {
-                var s = "";
-                for (var ii = 0; ii < cl; ++ii) {
+            } else {
+                let s = "";
+                for (let ii = 0; ii < cl; ++ii) {
                     if (c[ii].value) {
                         if (ii > 0) {
                             s += "/";
@@ -31106,19 +27506,18 @@ if (!phyloXml) {
         }
     };
 
-    var makeBranchEventsLabel = function (phynode) {
+    let makeBranchEventsLabel = function (phynode) {
         if (phynode.properties && phynode.properties.length > 0) {
-            var l = phynode.properties.length;
-            var str = null;
-            for (var p = 0; p < l; ++p) {
+            let l = phynode.properties.length;
+            let str = null;
+            for (let p = 0; p < l; ++p) {
                 if (phynode.properties[p].ref === BRANCH_EVENT_REF
                     && phynode.properties[p].datatype === BRANCH_EVENT_DATATYPE
                     && phynode.properties[p].applies_to === BRANCH_EVENT_APPLIES_TO) {
                     if (str === null) {
                         str = phynode.properties[p].value;
-                    }
-                    else {
-                        str += ( ', ' + phynode.properties[p].value );
+                    } else {
+                        str += (', ' + phynode.properties[p].value);
                     }
                 }
             }
@@ -31128,19 +27527,19 @@ if (!phyloXml) {
         }
     };
 
-    var elbow = function (d) {
+    let elbow = function (d) {
         return 'M' + d.source.y + ',' + d.source.x
             + 'V' + d.target.x + 'H' + d.target.y;
     };
 
-    var connection = function (n) {
+    let connection = function (n) {
         if (_options.phylogram) {
-            var x1 = n.y + 5;
+            let x1 = n.y + 5;
             if (n._children) {
                 x1 += n.avg;
             }
-            var y = n.x;
-            var x = (n.y - _yScale(n.distToRoot) + _w );
+            let y = n.x;
+            let x = (n.y - _yScale(n.distToRoot) + _w);
             if ((x - x1) > 5) {
                 return 'M' + x1 + ',' + y
                     + 'L' + x + ',' + y;
@@ -31159,8 +27558,7 @@ if (!phyloXml) {
             if (_options.alignPhylogram === undefined) {
                 _options.alignPhylogram = false;
             }
-        }
-        else {
+        } else {
             _options.phylogram = false;
             _options.alignPhylogram = false;
         }
@@ -31173,15 +27571,13 @@ if (!phyloXml) {
         if (_options.searchAinitialValue && (typeof _options.searchAinitialValue === 'string' || _options.searchAinitialValue instanceof String) && _options.searchAinitialValue.trim().length > 0) {
             _options.searchAinitialValue = _options.searchAinitialValue.trim();
             console.log(MESSAGE + 'Setting initial search value for A to: ' + _options.searchAinitialValue);
-        }
-        else {
+        } else {
             _options.searchAinitialValue = null;
         }
         if (_options.searchBinitialValue && (typeof _options.searchBinitialValue === 'string' || _options.searchBinitialValue instanceof String) && _options.searchBinitialValue.trim().length > 0) {
             _options.searchBinitialValue = _options.searchBinitialValue.trim();
             console.log(MESSAGE + 'Setting initial search value for B to: ' + _options.searchBinitialValue);
-        }
-        else {
+        } else {
             _options.searchBinitialValue = null;
         }
         if (_options.showBranchLengthValues === undefined) {
@@ -31337,42 +27733,36 @@ if (!phyloXml) {
         }
         if (_options.treeName) {
             _options.treeName = _options.treeName.trim().replace(/\W+/g, '_');
-        }
-        else if (_treeData.name) {
+        } else if (_treeData.name) {
             _options.treeName = _treeData.name.trim().replace(/\W+/g, '_');
-        }
-        else {
+        } else {
             _options.treeName = null;
         }
         if (!_options.nameForNhDownload) {
             if (_options.treeName) {
                 _options.nameForNhDownload = _options.treeName + NH_SUFFIX;
-            }
-            else {
+            } else {
                 _options.nameForNhDownload = NAME_FOR_NH_DOWNLOAD_DEFAULT;
             }
         }
         if (!_options.nameForPhyloXmlDownload) {
             if (_options.treeName) {
                 _options.nameForPhyloXmlDownload = _options.treeName + XML_SUFFIX;
-            }
-            else {
+            } else {
                 _options.nameForPhyloXmlDownload = NAME_FOR_PHYLOXML_DOWNLOAD_DEFAULT;
             }
         }
         if (!_options.nameForPngDownload) {
             if (_options.treeName) {
                 _options.nameForPngDownload = _options.treeName + PNG_SUFFIX;
-            }
-            else {
+            } else {
                 _options.nameForPngDownload = NAME_FOR_PNG_DOWNLOAD_DEFAULT;
             }
         }
         if (!_options.nameForSvgDownload) {
             if (_options.treeName) {
                 _options.nameForSvgDownload = _options.treeName + SVG_SUFFIX;
-            }
-            else {
+            } else {
                 _options.nameForSvgDownload = NAME_FOR_SVG_DOWNLOAD_DEFAULT;
             }
         }
@@ -31497,16 +27887,14 @@ if (!phyloXml) {
         if (_settings.showDynahideButton === undefined) {
             if (_basicTreeProperties.externalNodesCount > 20) {
                 _settings.showDynahideButton = true;
-            }
-            else {
+            } else {
                 _settings.showDynahideButton = false;
             }
         }
         if (_settings.showShortenNodeNamesButton === undefined) {
             if (_basicTreeProperties.longestNodeName > SHORTEN_NAME_MAX_LENGTH) {
                 _settings.showShortenNodeNamesButton = true;
-            }
-            else {
+            } else {
                 _settings.showShortenNodeNamesButton = false;
             }
         }
@@ -31524,8 +27912,7 @@ if (!phyloXml) {
             && _basicTreeProperties.alignedMolSeqs === true
             && _basicTreeProperties.maxMolSeqLength > 1) {
             _settings.enableMsaResidueVisualizations = true;
-        }
-        else {
+        } else {
             _settings.enableMsaResidueVisualizations === false;
         }
         if (_settings.zoomToFitUponWindowResize === undefined) {
@@ -31576,42 +27963,39 @@ if (!phyloXml) {
             if (_baseSvg) {
                 _displayHeight = _baseSvg.attr('height');
                 _displayWidth = _baseSvg.attr('width');
-            }
-            else {
-                var element = d3.select(_id).node();
-                var width = element.getBoundingClientRect().width - WIDTH_OFFSET;
-                var top = element.getBoundingClientRect().top;
-                var height = window.innerHeight - ( top + HEIGHT_OFFSET );
-                _displayHeight = height;
+            } else {
+                let element = d3.select(_id).node();
+                let width = element.getBoundingClientRect().width - WIDTH_OFFSET;
+                let top = element.getBoundingClientRect().top;
+                _displayHeight = window.innerHeight - (top + HEIGHT_OFFSET);
                 _displayWidth = width;
             }
-        }
-        else {
+        } else {
             _displayHeight = _settings.displayHeight;
             _displayWidth = _settings.displayWidth;
         }
     }
 
     function mouseDown() {
-        if (d3.event.which === 1 && ( d3.event.altKey || d3.event.shiftKey )) {
-            if ((_showLegends && ( _settings.enableNodeVisualizations || _settings.enableBranchVisualizations ) && ( _legendColorScales[LEGEND_LABEL_COLOR] ||
-                (_options.showNodeVisualizations && ( _legendColorScales[LEGEND_NODE_FILL_COLOR] ||
-                _legendColorScales[LEGEND_NODE_BORDER_COLOR] ||
-                _legendShapeScales[LEGEND_NODE_SHAPE] ||
-                _legendSizeScales[LEGEND_NODE_SIZE]))))) {
+        if (d3.event.which === 1 && (d3.event.altKey || d3.event.shiftKey)) {
+            if ((_showLegends && (_settings.enableNodeVisualizations || _settings.enableBranchVisualizations) && (_legendColorScales[LEGEND_LABEL_COLOR] ||
+                (_options.showNodeVisualizations && (_legendColorScales[LEGEND_NODE_FILL_COLOR] ||
+                    _legendColorScales[LEGEND_NODE_BORDER_COLOR] ||
+                    _legendShapeScales[LEGEND_NODE_SHAPE] ||
+                    _legendSizeScales[LEGEND_NODE_SIZE]))))) {
                 moveLegendWithMouse(d3.event);
             }
         }
     }
 
     function deleteValuesFromNodeProperties(valuesToIgnoreForNodeVisualization, nodeProperties) {
-        for (var key in nodeProperties) {
+        for (let key in nodeProperties) {
             if (key in valuesToIgnoreForNodeVisualization) {
-                var ignoreValues = valuesToIgnoreForNodeVisualization[key];
-                var arrayLength = ignoreValues.length;
-                for (var i = 0; i < arrayLength; i++) {
-                    var ignoreValue = ignoreValues[i];
-                    var deleted = nodeProperties[key].delete(ignoreValue);
+                let ignoreValues = valuesToIgnoreForNodeVisualization[key];
+                let arrayLength = ignoreValues.length;
+                for (let i = 0; i < arrayLength; i++) {
+                    let ignoreValue = ignoreValues[i];
+                    let deleted = nodeProperties[key].delete(ignoreValue);
                     if (deleted === true) {
                         console.log(MESSAGE + 'Ignoring \"' + key + '=' + ignoreValue + '\" for visualizations');
                     }
@@ -31623,16 +28007,16 @@ if (!phyloXml) {
 
     function groupYears(phy, sourceRef, targetRef, yearsToIgnore, yearsPerGroup) {
 
-        var minYear = 10000000;
-        var maxYear = -10000000;
+        let minYear = 10000000;
+        let maxYear = -10000000;
         forester.preOrderTraversalAll(phy, function (n) {
             if (n.properties && n.properties.length > 0) {
-                var propertiesLength = n.properties.length;
-                for (var i = 0; i < propertiesLength; ++i) {
-                    var property = n.properties[i];
+                let propertiesLength = n.properties.length;
+                for (let i = 0; i < propertiesLength; ++i) {
+                    let property = n.properties[i];
                     if (property.ref && property.value && property.datatype && property.applies_to && property.applies_to === 'node') {
                         if (property.ref === sourceRef) {
-                            var year = property.value;
+                            let year = property.value;
                             if (yearsToIgnore.indexOf(year) < 0) {
                                 if (year > maxYear) {
                                     maxYear = year;
@@ -31647,13 +28031,12 @@ if (!phyloXml) {
             }
         });
 
-        var MAX_COLORS = 20;
+        let MAX_COLORS = 20;
 
-        var d;
-        if (( maxYear - minYear ) < (yearsPerGroup * MAX_COLORS)) {
+        let d;
+        if ((maxYear - minYear) < (yearsPerGroup * MAX_COLORS)) {
             d = yearsPerGroup;
-        }
-        else {
+        } else {
             d = parseInt((maxYear - minYear) / MAX_COLORS);
         }
 
@@ -31662,21 +28045,21 @@ if (!phyloXml) {
         forester.preOrderTraversalAll(phy, function (n) {
 
             if (n.properties && n.properties.length > 0) {
-                var propertiesLength = n.properties.length;
-                for (var i = 0; i < propertiesLength; ++i) {
-                    var property = n.properties[i];
+                let propertiesLength = n.properties.length;
+                for (let i = 0; i < propertiesLength; ++i) {
+                    let property = n.properties[i];
                     if (property.ref && property.value && property.datatype && property.applies_to && property.applies_to === 'node') {
                         if (property.ref === sourceRef) {
                             const year = property.value;
                             if (yearsToIgnore.indexOf(year) < 0) {
-                                var x = parseInt((year - minYear) / d);
+                                let x = parseInt((year - minYear) / d);
                                 minYear = parseInt(minYear);
-                                var newProp = {};
+                                let newProp = {};
                                 newProp.ref = targetRef;
-                                var lb = minYear + ( x * d );
-                                var hb = minYear + ((x + 1) * d) - 1;
+                                let lb = minYear + (x * d);
+                                let hb = minYear + ((x + 1) * d) - 1;
                                 newProp.value = lb + "-" + hb;
-                                if (( year < lb ) || ( year > hb )) {
+                                if ((year < lb) || (year > hb)) {
                                     alert(ERROR + year + ' not in ' + newProp.value);
                                 }
                                 newProp.datatype = property.datatype;
@@ -31696,14 +28079,14 @@ if (!phyloXml) {
         forester.preOrderTraversalAll(phy, function (n) {
             if (n.properties && n.properties.length > 0) {
                 const propertiesLength = n.properties.length;
-                for (var i = 0; i < propertiesLength; ++i) {
+                for (let i = 0; i < propertiesLength; ++i) {
                     const property = n.properties[i];
                     if (property.ref && property.value && property.datatype && property.applies_to && property.applies_to === 'node') {
                         if (property.ref === source) {
                             const value = property.value;
                             const l = pass.length;
-                            var present = false;
-                            for (var j = 0; j < l; j++) {
+                            let present = false;
+                            for (let j = 0; j < l; j++) {
                                 if (value === pass[j]) {
                                     present = true;
                                     break;
@@ -31738,7 +28121,7 @@ if (!phyloXml) {
             alert(ERROR + 'input tree is undefined or null');
             return;
         }
-        if ((!phylo.children) || ( phylo.children.length < 1)) {
+        if ((!phylo.children) || (phylo.children.length < 1)) {
             console.log(ERROR + 'input tree is empty or illegally formatted');
             alert(ERROR + 'input tree is empty or illegally formatted');
             return;
@@ -31748,7 +28131,6 @@ if (!phyloXml) {
         _id = id;
         _zoomListener = d3.behavior.zoom().scaleExtent([0.1, 10]).on('zoom', zoom);
         _basicTreeProperties = forester.collectBasicTreeProperties(_treeData);
-
 
         if (settings.groupSpecies) {
             if (settings.groupSpecies.source && settings.groupSpecies.target) {
@@ -31805,19 +28187,18 @@ if (!phyloXml) {
         initializeSettings(settings);
 
         if (settings.specialProcessing && settings.specialProcessing.includes('ird_split_avian_host')) {
-            var avianFound = forester.splitProperty(_treeData, 'Avian', 'ird:Host', 'ird:HostGroup');
+            let avianFound = forester.splitProperty(_treeData, 'Avian', 'ird:Host', 'ird:HostGroup');
             if (!avianFound) {
                 delete _nodeVisualizations.HostGroup;
                 console.log(MESSAGE + 'Deactivated Host Group visualization for Avian issue in IRD')
-            }
-            else {
+            } else {
                 console.log(MESSAGE + 'Activated Host Group visualization for Avian issue in IRD')
             }
         }
 
         if (settings.enableNodeVisualizations) {
-            if (settings.enableMsaResidueVisualizations && (_basicTreeProperties.alignedMolSeqs === true )
-                && ( _basicTreeProperties.maxMolSeqLength && _basicTreeProperties.maxMolSeqLength > 1 )) {
+            if (settings.enableMsaResidueVisualizations && (_basicTreeProperties.alignedMolSeqs === true)
+                && (_basicTreeProperties.maxMolSeqLength && _basicTreeProperties.maxMolSeqLength > 1)) {
                 if (_nodeVisualizations == null) {
                     _nodeVisualizations = {};
                 }
@@ -31834,16 +28215,16 @@ if (!phyloXml) {
             }
 
             if (_settings.dynamicallyAddNodeVisualizations === true) {
-                var refsSet = forester.collectPropertyRefs(_treeData, 'node', false);
-                var re = new RegExp('.*:(.+)'); // For extracting the substring after the ':'
+                let refsSet = forester.collectPropertyRefs(_treeData, 'node', false);
+                let re = new RegExp('.*:(.+)'); // For extracting the substring after the ':'
 
                 refsSet.forEach(function (value) {
-                    var arr = re.exec(value);
-                    var propertyName = arr[1]; // The substring after the ':'
+                    let arr = re.exec(value);
+                    let propertyName = arr[1]; // The substring after the ':'
 
                     if ((!_nodeVisualizations.hasOwnProperty(propertyName))
                         &&
-                        (!_settings.propertiesToIgnoreForNodeVisualization || ( _settings.propertiesToIgnoreForNodeVisualization.indexOf(propertyName) < 0 ))) {
+                        (!_settings.propertiesToIgnoreForNodeVisualization || (_settings.propertiesToIgnoreForNodeVisualization.indexOf(propertyName) < 0))) {
 
                         _nodeVisualizations[propertyName] = {
                             label: propertyName,
@@ -31860,7 +28241,7 @@ if (!phyloXml) {
                 });
             }
 
-            var nodeProperties = forester.collectProperties(_treeData, 'node', false);
+            let nodeProperties = forester.collectProperties(_treeData, 'node', false);
             if (settings.valuesToIgnoreForNodeVisualization) {
                 deleteValuesFromNodeProperties(settings.valuesToIgnoreForNodeVisualization, nodeProperties);
             }
@@ -31880,8 +28261,7 @@ if (!phyloXml) {
             .style('border', function () {
                 if (_settings.border) {
                     return _settings.border;
-                }
-                else {
+                } else {
                     return '';
                 }
             })
@@ -31890,19 +28270,22 @@ if (!phyloXml) {
         if (_settings.enableDynamicSizing) {
             d3.select(window)
                 .on('resize', function () {
-                    var element = d3.select(_id).node();
-                    var width = element.getBoundingClientRect().width - WIDTH_OFFSET;
-                    var top = element.getBoundingClientRect().top;
-                    var height = window.innerHeight - ( top + HEIGHT_OFFSET );
+                    let element = d3.select(_id).node();
+                    let width = element.getBoundingClientRect().width - WIDTH_OFFSET;
+                    let top = element.getBoundingClientRect().top;
+                    let height = window.innerHeight - (top + HEIGHT_OFFSET);
+
+                    _baseSvg.style('overflow', 'scroll !important;');
+
                     _baseSvg.attr('width', width);
                     _baseSvg.attr('height', height);
                     if ((_settings.zoomToFitUponWindowResize === true)
-                        && ( _zoomed_x_or_y == false )
+                        && (_zoomed_x_or_y === false)
                         && (Math.abs(_zoomListener.scale() - 1.0) < 0.001)) {
                         zoomToFit();
                     }
                     if (_settings.enableNodeVisualizations || _settings.enableBranchVisualizations) {
-                        var c1 = $('#' + _settings.controls1);
+                        let c1 = $('#' + _settings.controls1);
                         if (c1) {
                             c1.css({
                                 'left': width - _settings.controls1Width
@@ -31918,6 +28301,7 @@ if (!phyloXml) {
         _treeFn.clickEvent = getClickEventListenerNode(phylo);
 
         _root = phylo;
+        _root_const = _root;
 
         calcMaxExtLabel();
 
@@ -31940,12 +28324,12 @@ if (!phyloXml) {
         }
 
         if (_options.initialCollapseFeature) {
-            var feature = _options.initialCollapseFeature;
-            var refs = forester.collectPropertyRefs(_root, 'node', false);
-            var found = false;
+            let feature = _options.initialCollapseFeature;
+            let refs = forester.collectPropertyRefs(_root, 'node', false);
+            let found = false;
             if (refs) {
                 refs.forEach(function (v) {
-                    if (v == feature) {
+                    if (v === feature) {
                         found = true;
                     }
                 });
@@ -31953,18 +28337,16 @@ if (!phyloXml) {
             if (found) {
                 console.log(MESSAGE + 'Setting initial value for collapse by feature to: ' + feature);
                 collapseSpecificSubtrees(_root, feature, KEY_FOR_COLLAPSED_FEATURES_SPECIAL_LABEL);
-                var s = $('#' + COLLAPSE_BY_FEATURE_SELECT);
+                let s = $('#' + COLLAPSE_BY_FEATURE_SELECT);
                 if (s) {
                     s.val(feature);
                 }
-            }
-            else {
+            } else {
                 console.log(WARNING + ' initial value for collapse by feature [' + feature + '] not present');
             }
-        }
-        else if (_options.initialCollapseDepth > 0) {
+        } else if (_options.initialCollapseDepth > 0) {
             _depth_collapse_level = _options.initialCollapseDepth;
-            var max_depth = forester.calcMaxDepth(_root);
+            let max_depth = forester.calcMaxDepth(_root);
             if (_depth_collapse_level >= max_depth) {
                 console.log(WARNING + ' initial value for collapse depth [' + _depth_collapse_level + '] is larger than or equal to maximum depth [' + max_depth + ']');
                 _depth_collapse_level = max_depth - 1;
@@ -31980,13 +28362,13 @@ if (!phyloXml) {
 
 
         ////////////////////////////////////////////////////////////////
-        // var filter = {'vipr:Country': [ 'Chile', 'Peru']};
+        // let filter = {'vipr:Country': [ 'Chile', 'Peru']};
         // forester.filterByNodeProperty(true, _treeData, filter);
 
-        //   var filter = {'vipr:Country': [ 'USA', 'China']};
+        //   let filter = {'vipr:Country': [ 'USA', 'China']};
         //  forester.filterByNodeProperty(false, _treeData, filter);
 
-        // var filter = {'vipr:Host': [ 'Human']};
+        // let filter = {'vipr:Host': [ 'Human']};
         //  forester.filterByNodeProperty(false, _treeData, filter);
 
 
@@ -32002,7 +28384,7 @@ if (!phyloXml) {
     };
 
     archaeopteryx.parsePhyloXML = function (data) {
-        var phy = phyloXml.parse(data, {trim: true, normalize: true})[0];
+        let phy = phyloXml.parse(data, {trim: true, normalize: true})[0];
         forester.addParents(phy);
         return phy;
     };
@@ -32016,9 +28398,8 @@ if (!phyloXml) {
         forester.preOrderTraversal(_root, function (d) {
             if (d._children) {
                 _maxLabelLength = Math.max((2 * _options.collapsedLabelLength) + 8, _maxLabelLength);
-            }
-            else if (!d.children) {
-                var l = makeNodeLabel(d);
+            } else if (!d.children) {
+                let l = makeNodeLabel(d);
                 if (l) {
                     _maxLabelLength = Math.max(l.length, _maxLabelLength);
                 }
@@ -32042,9 +28423,10 @@ if (!phyloXml) {
                 removeColorPicker();
                 update();
             }
+
             function displayNodeData(n) {
-                var title = n.name ? 'Node Data: ' + n.name : 'Node Data';
-                var text = '';
+                let title = n.name ? 'Node Data: ' + n.name : 'Node Data';
+                let text = '';
                 if (n.name) {
                     text += 'Name: ' + n.name + '<br>';
                 }
@@ -32052,14 +28434,13 @@ if (!phyloXml) {
                     text += 'Distance to Parent: ' + n.branch_length + '<br>';
                 }
                 text += 'Depth: ' + forester.calcDepth(n) + '<br>';
-                var i = 0;
+                let i = 0;
                 if (n.confidences) {
                     for (i = 0; i < n.confidences.length; ++i) {
-                        var c = n.confidences[i];
+                        let c = n.confidences[i];
                         if (c.type) {
                             text += 'Confidence [' + c.type + ']: ' + c.value + '<br>';
-                        }
-                        else {
+                        } else {
                             text += 'Confidence: ' + c.value + '<br>';
                         }
                         if (c.stddev) {
@@ -32070,12 +28451,11 @@ if (!phyloXml) {
                 if (n.taxonomies) {
                     for (i = 0; i < n.taxonomies.length; ++i) {
                         text += 'Taxonomy<br>';
-                        var t = n.taxonomies[i];
+                        let t = n.taxonomies[i];
                         if (t.id) {
                             if (t.id.provider) {
                                 text += '- Id [' + t.id.provider + ']: ' + t.id.value + '<br>';
-                            }
-                            else {
+                            } else {
                                 text += '- Id: ' + t.id.value + '<br>';
                             }
                         }
@@ -32096,12 +28476,11 @@ if (!phyloXml) {
                 if (n.sequences) {
                     for (i = 0; i < n.sequences.length; ++i) {
                         text += 'Sequence<br>';
-                        var s = n.sequences[i];
+                        let s = n.sequences[i];
                         if (s.accession) {
                             if (s.accession.source) {
                                 text += '- Accession [' + s.accession.source + ']: ' + s.accession.value + '<br>';
-                            }
-                            else {
+                            } else {
                                 text += '- Accession: ' + s.accession.value + '<br>';
                             }
                             if (s.accession.comment) {
@@ -32126,7 +28505,7 @@ if (!phyloXml) {
                     }
                 }
                 if (n.distributions) {
-                    var distributions = n.distributions;
+                    let distributions = n.distributions;
                     for (i = 0; i < distributions.length; ++i) {
                         text += 'Distribution: ';
                         if (distributions[i].desc) {
@@ -32136,14 +28515,14 @@ if (!phyloXml) {
                 }
                 if (n.date) {
                     text += 'Date: ';
-                    var date = n.date;
+                    let date = n.date;
                     if (date.desc) {
                         text += date.desc + '<br>';
                     }
                 }
                 if (n.events) {
                     text += 'Events<br>';
-                    var ev = n.events;
+                    let ev = n.events;
                     if (ev.type && ev.type.length > 0) {
                         text += '- Type: ' + ev.type + '<br>';
                     }
@@ -32158,14 +28537,13 @@ if (!phyloXml) {
                     }
                 }
                 if (n.properties && n.properties.length > 0) {
-                    var propertiesLength = n.properties.length;
+                    let propertiesLength = n.properties.length;
                     for (i = 0; i < propertiesLength; ++i) {
-                        var property = n.properties[i];
+                        let property = n.properties[i];
                         if (property.ref && property.value) {
                             if (property.unit) {
                                 text += property.ref + ': ' + property.value + property.unit + '<br>';
-                            }
-                            else {
+                            } else {
                                 text += property.ref + ': ' + property.value + '<br>';
                             }
                         }
@@ -32178,9 +28556,9 @@ if (!phyloXml) {
                 $('#' + NODE_DATA).dialog("destroy");
 
                 $("<div id='" + NODE_DATA + "'>" + text + "</div>").dialog();
-                var dialog = $('#' + NODE_DATA);
+                let dialog = $('#' + NODE_DATA);
 
-                var fs = (_settings.controlsFontSize + 4).toString() + 'px';
+                let fs = (_settings.controlsFontSize + 4).toString() + 'px';
 
                 $('.ui-dialog').css({
                     'text-align': 'left',
@@ -32213,29 +28591,29 @@ if (!phyloXml) {
 
             function listExternalNodeData(node) {
 
-                var addSep = function (t) {
+                let addSep = function (t) {
                     if (t.length > 0) {
                         t += ', ';
                     }
                     return t;
                 };
-                var text_all = '';
+                let text_all = '';
 
-                var ext_nodes = forester.getAllExternalNodes(node).reverse();
+                let ext_nodes = forester.getAllExternalNodes(node).reverse();
 
-                var title = 'External Node Data for ' + ext_nodes.length + ' Nodes';
+                let title = 'External Node Data for ' + ext_nodes.length + ' Nodes';
 
-                for (var j = 0, l = ext_nodes.length; j < l; ++j) {
-                    var text = '';
-                    var n = ext_nodes[j];
+                for (let j = 0, l = ext_nodes.length; j < l; ++j) {
+                    let text = '';
+                    let n = ext_nodes[j];
                     if (_options.showNodeName && n.name) {
                         text += n.name
                     }
                     if (_options.showLineage) {
-                        var lin_text = '';
-                        if (n.properties && n.properties != null) {
+                        let lin_text = '';
+                        if (n.properties) {
                             const l = n.properties.length;
-                            for (var pl = 0; pl < l; ++pl) {
+                            for (let pl = 0; pl < l; ++pl) {
                                 if (n.properties[pl].ref === 'vipr:PANGO_Lineage'
                                     && n.properties[pl].datatype === 'xsd:string'
                                     && n.properties[pl].applies_to === 'node') {
@@ -32247,10 +28625,10 @@ if (!phyloXml) {
                         text = text + '\t' + lin_text;
                     }
                     if (_options.showMutations) {
-                        var mut_text = '';
-                        if (n.properties && n.properties != null) {
+                        let mut_text = '';
+                        if (n.properties) {
                             const l = n.properties.length;
-                            for (var pm = 0; pm < l; ++pm) {
+                            for (let pm = 0; pm < l; ++pm) {
                                 if (n.properties[pm].ref === 'vipr:Mutation'
                                     && n.properties[pm].datatype === 'xsd:string'
                                     && n.properties[pm].applies_to === 'node') {
@@ -32262,15 +28640,14 @@ if (!phyloXml) {
                         text = text + '\t' + mut_text;
                     }
                     if (_options.showTaxonomy && n.taxonomies) {
-                        var tax_text = '';
-                        for (var i = 0; i < n.taxonomies.length; ++i) {
-                            var t = n.taxonomies[i];
+                        let tax_text = '';
+                        for (let i = 0; i < n.taxonomies.length; ++i) {
+                            let t = n.taxonomies[i];
                             if (t.id) {
                                 if (t.id.provider) {
                                     tax_text = addSep(tax_text);
                                     tax_text += '[' + t.id.provider + ']:' + t.id.value;
-                                }
-                                else {
+                                } else {
                                     tax_text = addSep(tax_text);
                                     tax_text += t.id.value;
                                 }
@@ -32295,15 +28672,14 @@ if (!phyloXml) {
                         text = text + '\t' + tax_text;
                     }
                     if (_options.showSequence && n.sequences) {
-                        var seq_text = '';
-                        for (i = 0; i < n.sequences.length; ++i) {
-                            var s = n.sequences[i];
+                        let seq_text = '';
+                        for (let i = 0; i < n.sequences.length; ++i) {
+                            let s = n.sequences[i];
                             if (_options.showSequenceAccession && s.accession) {
                                 if (s.accession.source) {
                                     seq_text = addSep(seq_text);
                                     seq_text += '[' + s.accession.source + ']:' + s.accession.value;
-                                }
-                                else {
+                                } else {
                                     seq_text = addSep(seq_text);
                                     seq_text += s.accession.value;
                                 }
@@ -32335,9 +28711,9 @@ if (!phyloXml) {
                 $('#' + NODE_DATA).dialog("destroy");
 
                 $("<div id='" + NODE_DATA + "'>" + text_all + "</div>").dialog();
-                var dialog = $('#' + NODE_DATA);
+                let dialog = $('#' + NODE_DATA);
 
-                var fs = (_settings.controlsFontSize + 2).toString() + 'px';
+                let fs = (_settings.controlsFontSize + 2).toString() + 'px';
 
                 $('.ui-dialog').css({
                     'text-align': 'left',
@@ -32368,51 +28744,367 @@ if (!phyloXml) {
                 update();
             }
 
+            function downloadExternalNodeDataAll(node) {
+
+                let addSep = function (t) {
+                    if (t.length > 0) {
+                        t += ', ';
+                    }
+                    return t;
+                };
+                let text_all = '';
+
+                const ext_nodes = forester.getAllExternalNodes(node).reverse();
+
+                let filename;
+                if (ext_nodes.length === 1 && ext_nodes[0].name) {
+                    filename = 'External_Node_Data_for_Node_' + ext_nodes[0].name.replace(/\W/g, '_') + '.txt';
+                } else {
+                    filename = 'External_Node_Data_for_' + ext_nodes.length + '_Nodes.txt';
+                }
+
+                for (let j = 0, l = ext_nodes.length; j < l; ++j) {
+                    let text = '';
+                    let n = ext_nodes[j];
+                    if (n.name) {
+                        text += n.name
+                    }
+                    //
+                    let lin_text = '';
+                    if (n.properties) {
+                        const l = n.properties.length;
+                        for (let pl = 0; pl < l; ++pl) {
+                            if (n.properties[pl].ref === 'vipr:PANGO_Lineage'
+                                && n.properties[pl].datatype === 'xsd:string'
+                                && n.properties[pl].applies_to === 'node') {
+                                lin_text = addSep(lin_text);
+                                lin_text += n.properties[pl].value;
+                            }
+                        }
+                    }
+                    text = text + '\t' + lin_text;
+
+                    let mut_text = '';
+                    if (n.properties) {
+                        const l = n.properties.length;
+                        for (let pm = 0; pm < l; ++pm) {
+                            if (n.properties[pm].ref === 'vipr:Mutation'
+                                && n.properties[pm].datatype === 'xsd:string'
+                                && n.properties[pm].applies_to === 'node') {
+                                mut_text = addSep(mut_text);
+                                mut_text += n.properties[pm].value;
+                            }
+                        }
+                    }
+                    text = text + '\t' + mut_text;
+
+                    let year_month_text = '';
+                    if (n.properties) {
+                        const l = n.properties.length;
+                        for (let pl = 0; pl < l; ++pl) {
+                            if (n.properties[pl].ref === 'vipr:Year_Month'
+                                && n.properties[pl].datatype === 'xsd:string'
+                                && n.properties[pl].applies_to === 'node') {
+                                year_month_text = addSep(year_month_text);
+                                year_month_text += n.properties[pl].value;
+                            }
+                        }
+                    }
+                    text = text + '\t' + year_month_text;
+
+                    let year_text = '';
+                    if (n.properties) {
+                        const l = n.properties.length;
+                        for (let pl = 0; pl < l; ++pl) {
+                            if (n.properties[pl].ref === 'vipr:Year'
+                                && n.properties[pl].datatype === 'xsd:string'
+                                && n.properties[pl].applies_to === 'node') {
+                                year_text = addSep(year_text);
+                                year_text += n.properties[pl].value;
+                            }
+                        }
+                    }
+                    text = text + '\t' + year_text;
+
+                    let country_text = '';
+                    if (n.properties) {
+                        const l = n.properties.length;
+                        for (let pl = 0; pl < l; ++pl) {
+                            if (n.properties[pl].ref === 'vipr:Country'
+                                && n.properties[pl].datatype === 'xsd:string'
+                                && n.properties[pl].applies_to === 'node') {
+                                country_text = addSep(country_text);
+                                country_text += n.properties[pl].value;
+                            }
+                        }
+                    }
+                    text = text + '\t' + country_text;
+
+                    let region_text = '';
+                    if (n.properties) {
+                        const l = n.properties.length;
+                        for (let pl = 0; pl < l; ++pl) {
+                            if (n.properties[pl].ref === 'vipr:Region'
+                                && n.properties[pl].datatype === 'xsd:string'
+                                && n.properties[pl].applies_to === 'node') {
+                                region_text = addSep(region_text);
+                                region_text += n.properties[pl].value;
+                            }
+                        }
+                    }
+                    text = text + '\t' + region_text;
+
+                    let host_text = '';
+                    if (n.properties) {
+                        const l = n.properties.length;
+                        for (let pl = 0; pl < l; ++pl) {
+                            if (n.properties[pl].ref === 'vipr:Host'
+                                && n.properties[pl].datatype === 'xsd:string'
+                                && n.properties[pl].applies_to === 'node') {
+                                host_text = addSep(host_text);
+                                host_text += n.properties[pl].value;
+                            }
+                        }
+                    }
+                    text = text + '\t' + host_text;
+
+                    if (n.taxonomies) {
+                        let tax_text = '';
+                        for (let i = 0; i < n.taxonomies.length; ++i) {
+                            let t = n.taxonomies[i];
+                            if (t.id) {
+                                if (t.id.provider) {
+                                    tax_text = addSep(tax_text);
+                                    tax_text += '[' + t.id.provider + ']:' + t.id.value;
+                                } else {
+                                    tax_text = addSep(tax_text);
+                                    tax_text += t.id.value;
+                                }
+                            }
+                            if (_options.showTaxonomyCode && t.code) {
+                                tax_text = addSep(tax_text);
+                                tax_text += t.code;
+                            }
+                            if (_options.showTaxonomyScientificName && t.scientific_name) {
+                                tax_text = addSep(tax_text);
+                                tax_text += t.scientific_name;
+                            }
+                            if (_options.showTaxonomyCommonName && t.common_name) {
+                                tax_text = addSep(tax_text);
+                                tax_text += t.common_name;
+                            }
+                            if (_options.showTaxonomyRank && t.rank) {
+                                tax_text = addSep(tax_text);
+                                tax_text += t.rank;
+                            }
+                        }
+                        text = text + '\t' + tax_text;
+                    }
+                    if (n.sequences) {
+                        let seq_text = '';
+                        for (let i = 0; i < n.sequences.length; ++i) {
+                            let s = n.sequences[i];
+                            if (_options.showSequenceAccession && s.accession) {
+                                if (s.accession.source) {
+                                    seq_text = addSep(seq_text);
+                                    seq_text += '[' + s.accession.source + ']:' + s.accession.value;
+                                } else {
+                                    seq_text = addSep(seq_text);
+                                    seq_text += s.accession.value;
+                                }
+                            }
+                            if (_options.showSequenceSymbol && s.symbol) {
+                                seq_text = addSep(seq_text);
+                                seq_text += s.symbol;
+                            }
+                            if (_options.showSequenceName && s.name) {
+                                seq_text = addSep(seq_text);
+                                seq_text += s.name;
+                            }
+                            if (s.gene_name) {
+                                seq_text = addSep(seq_text);
+                                seq_text += s.gene_name;
+                            }
+                            if (s.location) {
+                                seq_text = addSep(seq_text);
+                                seq_text += s.location;
+                            }
+                        }
+                        text = text + '\t' + seq_text;
+                    }
+                    if (text.length > 0) {
+                        text_all += text + '\n';
+                    }
+                }
+
+                saveAs(new Blob([text_all], {type: "application/txt"}), filename);
+
+                update();
+            }
+
+            function downloadExternalNodeData(node) {
+
+                let addSep = function (t) {
+                    if (t.length > 0) {
+                        t += ', ';
+                    }
+                    return t;
+                };
+                let text_all = '';
+
+                const ext_nodes = forester.getAllExternalNodes(node).reverse();
+
+                let filename;
+                if (ext_nodes.length === 1 && ext_nodes[0].name) {
+                    filename = 'External_Node_Data_for_Node_' + ext_nodes[0].name.replace(/\W/g, '_') + '.txt';
+                } else {
+                    filename = 'External_Node_Data_for_' + ext_nodes.length + '_Nodes.txt';
+                }
+                for (let j = 0, l = ext_nodes.length; j < l; ++j) {
+                    let text = '';
+                    let n = ext_nodes[j];
+                    if (_options.showNodeName && n.name) {
+                        text += n.name
+                    }
+                    if (_options.showLineage) {
+                        let lin_text = '';
+                        if (n.properties) {
+                            const l = n.properties.length;
+                            for (let pl = 0; pl < l; ++pl) {
+                                if (n.properties[pl].ref === 'vipr:PANGO_Lineage'
+                                    && n.properties[pl].datatype === 'xsd:string'
+                                    && n.properties[pl].applies_to === 'node') {
+                                    lin_text = addSep(lin_text);
+                                    lin_text += n.properties[pl].value;
+                                }
+                            }
+                        }
+                        text = text + '\t' + lin_text;
+                    }
+                    if (_options.showMutations) {
+                        let mut_text = '';
+                        if (n.properties) {
+                            const l = n.properties.length;
+                            for (let pm = 0; pm < l; ++pm) {
+                                if (n.properties[pm].ref === 'vipr:Mutation'
+                                    && n.properties[pm].datatype === 'xsd:string'
+                                    && n.properties[pm].applies_to === 'node') {
+                                    mut_text = addSep(mut_text);
+                                    mut_text += n.properties[pm].value;
+                                }
+                            }
+                        }
+                        text = text + '\t' + mut_text;
+                    }
+                    if (_options.showTaxonomy && n.taxonomies) {
+                        let tax_text = '';
+                        for (let i = 0; i < n.taxonomies.length; ++i) {
+                            let t = n.taxonomies[i];
+                            if (t.id) {
+                                if (t.id.provider) {
+                                    tax_text = addSep(tax_text);
+                                    tax_text += '[' + t.id.provider + ']:' + t.id.value;
+                                } else {
+                                    tax_text = addSep(tax_text);
+                                    tax_text += t.id.value;
+                                }
+                            }
+                            if (_options.showTaxonomyCode && t.code) {
+                                tax_text = addSep(tax_text);
+                                tax_text += t.code;
+                            }
+                            if (_options.showTaxonomyScientificName && t.scientific_name) {
+                                tax_text = addSep(tax_text);
+                                tax_text += t.scientific_name;
+                            }
+                            if (_options.showTaxonomyCommonName && t.common_name) {
+                                tax_text = addSep(tax_text);
+                                tax_text += t.common_name;
+                            }
+                            if (_options.showTaxonomyRank && t.rank) {
+                                tax_text = addSep(tax_text);
+                                tax_text += t.rank;
+                            }
+                        }
+                        text = text + '\t' + tax_text;
+                    }
+                    if (_options.showSequence && n.sequences) {
+                        let seq_text = '';
+                        for (let i = 0; i < n.sequences.length; ++i) {
+                            let s = n.sequences[i];
+                            if (_options.showSequenceAccession && s.accession) {
+                                if (s.accession.source) {
+                                    seq_text = addSep(seq_text);
+                                    seq_text += '[' + s.accession.source + ']:' + s.accession.value;
+                                } else {
+                                    seq_text = addSep(seq_text);
+                                    seq_text += s.accession.value;
+                                }
+                            }
+                            if (_options.showSequenceSymbol && s.symbol) {
+                                seq_text = addSep(seq_text);
+                                seq_text += s.symbol;
+                            }
+                            if (_options.showSequenceName && s.name) {
+                                seq_text = addSep(seq_text);
+                                seq_text += s.name;
+                            }
+                            if (s.gene_name) {
+                                seq_text = addSep(seq_text);
+                                seq_text += s.gene_name;
+                            }
+                            if (s.location) {
+                                seq_text = addSep(seq_text);
+                                seq_text += s.location;
+                            }
+                        }
+                        text = text + '\t' + seq_text;
+                    }
+                    if (text.length > 0) {
+                        text_all += text + '\n';
+                    }
+                }
+
+                saveAs(new Blob([text_all], {type: "application/txt"}), filename);
+
+                update();
+            }
+
 
             function accessDatabase(node) {
-                var url = null;
+                let url = null;
                 if (node.sequences) {
-                    for (var i = 0; i < node.sequences.length; ++i) {
-                        var s = node.sequences[i];
+                    for (let i = 0; i < node.sequences.length; ++i) {
+                        let s = node.sequences[i];
                         if (s.accession && s.accession.value && s.accession.source) {
-                            var value = s.accession.value;
-                            var source = s.accession.source.toUpperCase();
+                            let value = s.accession.value;
+                            let source = s.accession.source.toUpperCase();
 
                             if (source === ACC_GENBANK || source === ACC_NCBI) {
                                 if (RE_GENBANK_PROT.test(value)) {
                                     url = 'https://www.ncbi.nlm.nih.gov/protein/' + value;
-                                }
-                                else if (RE_GENBANK_NUC.test(value)) {
+                                } else if (RE_GENBANK_NUC.test(value)) {
                                     //url = 'https://www.ncbi.nlm.nih.gov/nuccore/' + value; //TODO
                                     url = 'https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=' + value;
                                 }
-                            }
-                            else if (source === ACC_REFSEQ) {
+                            } else if (source === ACC_REFSEQ) {
                                 url = 'https://www.ncbi.nlm.nih.gov/nuccore/' + value;
-                            }
-                            else if (source === ACC_UNIPROT || source === ACC_UNIPROTKB) {
+                            } else if (source === ACC_UNIPROT || source === ACC_UNIPROTKB) {
                                 url = 'https://www.uniprot.org/uniprot/' + value;
-                            }
-                            else if (source === ACC_SWISSPROT || source === ACC_TREMBL) {
+                            } else if (source === ACC_SWISSPROT || source === ACC_TREMBL) {
                                 url = 'https://www.uniprot.org/uniprot/' + value;
-                            }
-                            else if (source === 'UNKNOWN' || source === '?') {
+                            } else if (source === 'UNKNOWN' || source === '?') {
                                 if (RE_GENBANK_PROT.test(value)) {
                                     url = 'https://www.ncbi.nlm.nih.gov/protein/' + value;
-                                }
-                                else if (RE_GENBANK_NUC.test(value)) {
+                                } else if (RE_GENBANK_NUC.test(value)) {
                                     url = 'https://www.ncbi.nlm.nih.gov/nuccore/' + value;
-                                }
-                                else if (RE_REFSEQ.test(value)) {
+                                } else if (RE_REFSEQ.test(value)) {
                                     url = 'https://www.ncbi.nlm.nih.gov/nuccore/' + value;
-                                }
-                                else if (RE_UNIPROTKB.test(value)) {
+                                } else if (RE_UNIPROTKB.test(value)) {
                                     url = 'https://www.uniprot.org/uniprot/' + value;
-                                }
-                                else if (RE_SWISSPROT_TREMBL.test(value)) {
+                                } else if (RE_SWISSPROT_TREMBL.test(value)) {
                                     url = 'https://www.uniprot.org/uniprot/' + value;
-                                }
-                                else if (RE_SWISSPROT_TREMBL_PFAM.test(value)) {
+                                } else if (RE_SWISSPROT_TREMBL_PFAM.test(value)) {
                                     url = 'https://www.uniprot.org/uniprot/' + RE_SWISSPROT_TREMBL_PFAM.exec(value)[1];
                                 }
                             }
@@ -32422,17 +29114,15 @@ if (!phyloXml) {
                 if (node.name) {
                     if (RE_SWISSPROT_TREMBL.test(node.name)) {
                         url = 'https://www.uniprot.org/uniprot/' + node.name;
-                    }
-                    else if (RE_SWISSPROT_TREMBL_PFAM.test(node.name)) {
+                    } else if (RE_SWISSPROT_TREMBL_PFAM.test(node.name)) {
                         url = 'https://www.uniprot.org/uniprot/' + RE_SWISSPROT_TREMBL_PFAM.exec(node.name)[1];
                     }
                 }
 
                 if (url) {
-                    var win = window.open(url, '_blank');
+                    let win = window.open(url, '_blank');
                     win.focus();
-                }
-                else {
+                } else {
                     alert("Don't know how to interpret sequence accession \'" + value + "\'");
                 }
 
@@ -32441,33 +29131,32 @@ if (!phyloXml) {
 
             function listMolecularSequences(node) {
 
-                var text_all = '';
+                let text_all = '';
 
-                var ext_nodes = forester.getAllExternalNodes(node).reverse();
-                var title = 'Sequences in Fasta-format for ' + ext_nodes.length + ' Nodes';
+                let ext_nodes = forester.getAllExternalNodes(node).reverse();
+                let title = 'Sequences in Fasta-format for ' + ext_nodes.length + ' Nodes';
 
-                for (var j = 0, l = ext_nodes.length; j < l; ++j) {
-                    var n = ext_nodes[j];
+                for (let j = 0, l = ext_nodes.length; j < l; ++j) {
+                    let n = ext_nodes[j];
                     if (n.sequences) {
-                        for (var i = 0; i < n.sequences.length; ++i) {
-                            var s = n.sequences[i];
+                        for (let i = 0; i < n.sequences.length; ++i) {
+                            let s = n.sequences[i];
                             if (s.mol_seq && s.mol_seq.value && s.mol_seq.value.length > 0) {
-                                var seq = s.mol_seq.value;
-                                var seqname = j;
+                                let seq = s.mol_seq.value;
+                                let seqname = j;
                                 if (s.name && s.name.length > 0) {
                                     seqname = s.name
-                                }
-                                else if (n.name && n.name.length > 0) {
+                                } else if (n.name && n.name.length > 0) {
                                     seqname = n.name
                                 }
 
-                                var split_seq_ary = seq.match(/.{1,80}/g);
-                                var split_seq = '';
-                                for (var ii = 0; ii < split_seq_ary.length; ++ii) {
+                                let split_seq_ary = seq.match(/.{1,80}/g);
+                                let split_seq = '';
+                                for (let ii = 0; ii < split_seq_ary.length; ++ii) {
                                     split_seq += split_seq_ary[ii] + '<br>';
                                 }
 
-                                var fasta = '>' + seqname + '<br>' + split_seq;
+                                let fasta = '>' + seqname + '<br>' + split_seq;
                                 text_all += fasta;
                             }
                         }
@@ -32477,9 +29166,9 @@ if (!phyloXml) {
                 $('#' + NODE_DATA).dialog("destroy");
 
                 $("<div id='" + NODE_DATA + "'>" + text_all + "</div>").dialog();
-                var dialog = $('#' + NODE_DATA);
+                let dialog = $('#' + NODE_DATA);
 
-                var fs = (_settings.controlsFontSize + 2).toString() + 'px';
+                let fs = (_settings.controlsFontSize + 2).toString() + 'px';
 
                 $('.ui-dialog').css({
                     'text-align': 'left',
@@ -32511,21 +29200,19 @@ if (!phyloXml) {
             }
 
             function goToSubTree(node) {
-                if (node.parent && ( node.children || node._children )) {
-                    if (_superTreeRoots.length > 0 && node === _root.children[0]) {
-                        _root = _superTreeRoots.pop();
-                        _basicTreeProperties = forester.collectBasicTreeProperties(_root);
-                        updateNodeVisualizationsAndLegends(_root);
-                        resetDepthCollapseDepthValue();
-                        resetRankCollapseRankValue();
-                        resetBranchLengthCollapseValue();
-                        search0();
-                        search1();
-                        zoomToFit();
+                if (node.parent) {
+                    if (!(node.children || node._children)) {
+                        if (node.parent.parent) {
+                            node = node.parent;
+                        } else {
+                            return;
+                        }
                     }
-                    else if (node.parent.parent) {
-                        _superTreeRoots.push(_root);
-                        var fakeNode = {};
+
+                    if (node.parent.parent) {
+                        _in_subtree = true;
+
+                        let fakeNode = {};
                         fakeNode.children = [node];
                         fakeNode.x = 0;
                         fakeNode.x0 = 0;
@@ -32550,11 +29237,11 @@ if (!phyloXml) {
             }
 
             function swapChildren(d) {
-                var c = d.children;
-                var l = c.length;
+                let c = d.children;
+                let l = c.length;
                 if (l > 1) {
-                    var first = c[0];
-                    for (var i = 0; i < l - 1; ++i) {
+                    let first = c[0];
+                    for (let i = 0; i < l - 1; ++i) {
                         c[i] = c[i + 1];
                     }
                     c[l - 1] = first;
@@ -32565,14 +29252,13 @@ if (!phyloXml) {
                 if (node.children) {
                     node._children = node.children;
                     node.children = null;
-                }
-                else {
+                } else {
                     unCollapseAll(node);
                 }
             }
 
-            var rectWidth = 130;
-            var rectHeight = 230;
+            let rectWidth = 130;
+            let rectHeight = 230;
 
             removeTooltips();
 
@@ -32587,12 +29273,12 @@ if (!phyloXml) {
                 .style('fill-opacity', 0.9)
                 .style('fill', NODE_TOOLTIP_BACKGROUND_COLOR);
 
-            var rightPad = 10;
-            var topPad = 20;
-            var textSum = 0;
-            var textInc = 20;
+            let rightPad = 10;
+            let topPad = 20;
+            let textSum = 0;
+            let textInc = 20;
 
-            var fs = _settings.controlsFontSize.toString() + 'px';
+            let fs = _settings.controlsFontSize.toString() + 'px';
 
             d3.select(this).append('text')
                 .attr('class', 'tooltipElem tooltipElemText')
@@ -32631,8 +29317,7 @@ if (!phyloXml) {
                         if (d._children) {
                             textSum += textInc;
                             return 'Uncollapse';
-                        }
-                        else if (d.children) {
+                        } else if (d.children) {
                             textSum += textInc;
                             return 'Collapse';
                         }
@@ -32659,13 +29344,13 @@ if (!phyloXml) {
                 .style('font-weight', 'bold')
                 .style('text-decoration', 'none')
                 .text(function (d) {
-                    var cc = 0;
+                    let cc = 0;
                     forester.preOrderTraversalAll(d, function (e) {
                         if (e._children) {
                             ++cc;
                         }
                     });
-                    if (cc > 1 || ( cc == 1 && !d._children )) {
+                    if (cc > 1 || (cc === 1 && !d._children)) {
                         textSum += textInc;
                         return 'Uncollapse All';
                     }
@@ -32691,17 +29376,10 @@ if (!phyloXml) {
                 .style('font-weight', 'bold')
                 .style('text-decoration', 'none')
                 .text(function (d) {
-                    if (d.parent && ( d.children || d._children )) {
-                        if (_superTreeRoots.length > 0 && d === _root.children[0]) {
-                            textSum += textInc;
-                            return 'Return to Supertree';
-                        }
-                        else if (d.parent.parent) {
-                            textSum += textInc;
-                            return 'Go to Subtree';
-                        }
+                    if (d.parent && d.parent.parent) {
+                        textSum += textInc;
+                        return 'Go to Subtree';
                     }
-
                 })
                 .on('click', function (d) {
                     goToSubTree(d);
@@ -32776,8 +29454,8 @@ if (!phyloXml) {
                 .style('font-weight', 'bold')
                 .style('text-decoration', 'none')
                 .text(function (d) {
-                    if (d.parent && d.parent.parent && _superTreeRoots.length < 1
-                        && ( (_treeData.rerootable === undefined) || (_treeData.rerootable === true) )) {
+                    if (!_in_subtree && d.parent && d.parent.parent
+                        && ((_treeData.rerootable === undefined) || (_treeData.rerootable === true))) {
                         textSum += textInc;
                         return 'Reroot';
                     }
@@ -32814,6 +29492,7 @@ if (!phyloXml) {
                     listExternalNodeData(d);
                 });
 
+
             d3.select(this).append('text')
                 .attr('class', 'tooltipElem tooltipElemText')
                 .attr('y', topPad + textSum)
@@ -32826,7 +29505,49 @@ if (!phyloXml) {
                 .style('font-weight', 'bold')
                 .style('text-decoration', 'none')
                 .text(function (d) {
-                    if (d.parent && _basicTreeProperties.sequences && (_basicTreeProperties.maxMolSeqLength && ( _basicTreeProperties.maxMolSeqLength > 0))) {
+                    if (d.parent) {
+                        textSum += textInc;
+                        return 'Download Ext Node Data';
+                    }
+                })
+                .on('click', function (d) {
+                    downloadExternalNodeData(d);
+                });
+
+            d3.select(this).append('text')
+                .attr('class', 'tooltipElem tooltipElemText')
+                .attr('y', topPad + textSum)
+                .attr('x', +rightPad)
+                .style('text-align', 'left')
+                .style('fill', NODE_TOOLTIP_TEXT_COLOR)
+                .style('font-size', fs)
+                .style('font-family', 'Helvetica')
+                .style('font-style', 'normal')
+                .style('font-weight', 'bold')
+                .style('text-decoration', 'none')
+                .text(function (d) {
+                    if (d.parent) {
+                        textSum += textInc;
+                        return 'Download All Ext Node Data';
+                    }
+                })
+                .on('click', function (d) {
+                    downloadExternalNodeDataAll(d);
+                });
+
+            d3.select(this).append('text')
+                .attr('class', 'tooltipElem tooltipElemText')
+                .attr('y', topPad + textSum)
+                .attr('x', +rightPad)
+                .style('text-align', 'left')
+                .style('fill', NODE_TOOLTIP_TEXT_COLOR)
+                .style('font-size', fs)
+                .style('font-family', 'Helvetica')
+                .style('font-style', 'normal')
+                .style('font-weight', 'bold')
+                .style('text-decoration', 'none')
+                .text(function (d) {
+                    if (d.parent && _basicTreeProperties.sequences && (_basicTreeProperties.maxMolSeqLength && (_basicTreeProperties.maxMolSeqLength > 0))) {
                         textSum += textInc;
                         return 'List Sequences in Fasta';
                     }
@@ -32848,34 +29569,33 @@ if (!phyloXml) {
                     .style('font-weight', 'bold')
                     .style('text-decoration', 'none')
                     .text(function (d) {
-                            var show = false;
-                        var value = null;
-                            if (d.sequences) {
-                                for (var i = 0; i < d.sequences.length; ++i) {
-                                    var s = d.sequences[i];
-                                    if (s.accession && s.accession.value && s.accession.source) {
-                                        var source = s.accession.source.toUpperCase();
-                                        if (source === ACC_GENBANK || source === ACC_NCBI || source === ACC_REFSEQ || source === ACC_UNIPROT
-                                            || source === ACC_UNIPROTKB
-                                            || source === ACC_SWISSPROT
-                                            || source === ACC_TREMBL
-                                            || source === 'UNKNOWN' || source === '?') {
-                                            show = true;
-                                            value = s.accession.value;
-                                            break;
+                        let show = false;
+                        let value = null;
+                        if (d.sequences) {
+                            for (let i = 0; i < d.sequences.length; ++i) {
+                                let s = d.sequences[i];
+                                if (s.accession && s.accession.value && s.accession.source) {
+                                    let source = s.accession.source.toUpperCase();
+                                    if (source === ACC_GENBANK || source === ACC_NCBI || source === ACC_REFSEQ || source === ACC_UNIPROT
+                                        || source === ACC_UNIPROTKB
+                                        || source === ACC_SWISSPROT
+                                        || source === ACC_TREMBL
+                                        || source === 'UNKNOWN' || source === '?') {
+                                        show = true;
+                                        value = s.accession.value;
+                                        break;
                                         }
                                     }
                                 }
                             }
-                        if (d.name) {
-                            if (RE_SWISSPROT_TREMBL.test(d.name)) {
-                                show = true;
-                                value = d.name;
+                            if (d.name) {
+                                if (RE_SWISSPROT_TREMBL.test(d.name)) {
+                                    show = true;
+                                    value = d.name;
+                                } else if (RE_SWISSPROT_TREMBL_PFAM.test(d.name)) {
+                                    show = true;
+                                    value = RE_SWISSPROT_TREMBL_PFAM.exec(d.name)[1];
                                 }
-                            else if (RE_SWISSPROT_TREMBL_PFAM.test(d.name)) {
-                                show = true;
-                                value = RE_SWISSPROT_TREMBL_PFAM.exec(d.name)[1];
-                            }
                             }
                             if (show) {
                                 textSum += textInc;
@@ -32902,17 +29622,15 @@ if (!phyloXml) {
                     .style('font-weight', 'bold')
                     .style('text-decoration', 'none')
                     .text(function (d) {
-                        if (d.parent && d.parent.parent && d.parent.parent.parent && _superTreeRoots.length < 1) {
+                        if (!_in_subtree && d.parent && d.parent.parent && d.parent.parent.parent) {
                             textSum += textInc;
                             if (d.children || d._children) {
-                                if (( d.children ) && (d.children.length > 1 )) {
+                                if ((d.children) && (d.children.length > 1)) {
                                     return 'Delete Subtree';
-                                }
-                                else if (( d._children ) && (d._children.length > 1 )) {
+                                } else if ((d._children) && (d._children.length > 1)) {
                                     return 'Delete Collapsed Subtree';
                                 }
-                            }
-                            else {
+                            } else {
                                 return 'Delete External Node';
                             }
                         }
@@ -32939,11 +29657,11 @@ if (!phyloXml) {
                 });
             };
             d3.select(this).moveToFront();
-            d3.select(this).selectAll('.tooltipElemText').each(function (d) {
-                d3.select(this).on('mouseover', function (d) {
+            d3.select(this).selectAll('.tooltipElemText').each(function () {
+                d3.select(this).on('mouseover', function () {
                     d3.select(this).transition().duration(50).style('fill', NODE_TOOLTIP_TEXT_ACTIVE_COLOR);
                 });
-                d3.select(this).on('mouseout', function (d) {
+                d3.select(this).on('mouseout', function () {
                     d3.select(this).transition().duration(50).style('fill', NODE_TOOLTIP_TEXT_COLOR);
                 });
             });
@@ -32954,8 +29672,8 @@ if (!phyloXml) {
 
 
     $('html').click(function (d) {
-        var attrClass = d.target.getAttribute('class');
-        if (( attrClass !== 'nodeCircleOptions')) {
+        let attrClass = d.target.getAttribute('class');
+        if ((attrClass !== 'nodeCircleOptions')) {
             removeTooltips();
         }
         if (attrClass === BASE_BACKGROUND) {
@@ -32968,18 +29686,18 @@ if (!phyloXml) {
 
     function updateNodeVisualizationsAndLegends(tree) {
         _visualizations = null;
-        var nodeProperties = forester.collectProperties(tree, 'node', false);
+        let nodeProperties = forester.collectProperties(tree, 'node', false);
 
         if (_settings.valuesToIgnoreForNodeVisualization) {
             deleteValuesFromNodeProperties(_settings.valuesToIgnoreForNodeVisualization, nodeProperties);
         }
         initializeNodeVisualizations(nodeProperties);
 
-        if ((_showLegends && ( _settings.enableNodeVisualizations || _settings.enableBranchVisualizations ) && ( _legendColorScales[LEGEND_LABEL_COLOR] ||
-            (_options.showNodeVisualizations && ( _legendColorScales[LEGEND_NODE_FILL_COLOR] ||
-            _legendColorScales[LEGEND_NODE_BORDER_COLOR] ||
-            _legendShapeScales[LEGEND_NODE_SHAPE] ||
-            _legendSizeScales[LEGEND_NODE_SIZE]))))) {
+        if ((_showLegends && (_settings.enableNodeVisualizations || _settings.enableBranchVisualizations) && (_legendColorScales[LEGEND_LABEL_COLOR] ||
+            (_options.showNodeVisualizations && (_legendColorScales[LEGEND_NODE_FILL_COLOR] ||
+                _legendColorScales[LEGEND_NODE_BORDER_COLOR] ||
+                _legendShapeScales[LEGEND_NODE_SHAPE] ||
+                _legendSizeScales[LEGEND_NODE_SIZE]))))) {
             if (_legendColorScales[LEGEND_LABEL_COLOR]) {
                 removeLegend(LEGEND_LABEL_COLOR);
                 addLegend(LEGEND_LABEL_COLOR, _visualizations.labelColor[_currentLabelColorVisualization]);
@@ -33009,8 +29727,7 @@ if (!phyloXml) {
         _zoomed_x_or_y = true;
         if (zoomInFactor) {
             _displayWidth = _displayWidth * zoomInFactor;
-        }
-        else {
+        } else {
             _displayWidth = _displayWidth * BUTTON_ZOOM_IN_FACTOR;
         }
         update(null, 0);
@@ -33020,8 +29737,7 @@ if (!phyloXml) {
         _zoomed_x_or_y = true;
         if (zoomInFactor) {
             _displayHeight = _displayHeight * zoomInFactor;
-        }
-        else {
+        } else {
             _displayHeight = _displayHeight * BUTTON_ZOOM_IN_FACTOR;
         }
         update(null, 0);
@@ -33029,14 +29745,13 @@ if (!phyloXml) {
 
     function zoomOutX(zoomOutFactor) {
         _zoomed_x_or_y = true;
-        var newDisplayWidth;
+        let newDisplayWidth;
         if (zoomOutFactor) {
             newDisplayWidth = _displayWidth * zoomOutFactor;
-        }
-        else {
+        } else {
             newDisplayWidth = _displayWidth * BUTTON_ZOOM_OUT_FACTOR;
         }
-        if ((newDisplayWidth - calcMaxTreeLengthForDisplay() ) >= 1) {
+        if ((newDisplayWidth - calcMaxTreeLengthForDisplay()) >= 1) {
             _displayWidth = newDisplayWidth;
             update(null, 0);
         }
@@ -33046,11 +29761,10 @@ if (!phyloXml) {
         _zoomed_x_or_y = true;
         if (zoomOutFactor) {
             _displayHeight = _displayHeight * zoomOutFactor;
-        }
-        else {
+        } else {
             _displayHeight = _displayHeight * BUTTON_ZOOM_OUT_FACTOR;
         }
-        var min = 40;
+        let min = 40;
         if (_displayHeight < min) {
             _displayHeight = min;
         }
@@ -33070,9 +29784,10 @@ if (!phyloXml) {
         }
     }
 
-    function returnToSupertreeButtonPressedOLD() {
-        if (_root && _superTreeRoots.length > 0) {
-            _root = _superTreeRoots.pop();
+    function returnToSupertreeButtonPressed() {
+        if (_in_subtree) {
+            _root = _root_const;
+            _in_subtree = false;
             _basicTreeProperties = forester.collectBasicTreeProperties(_root);
             updateNodeVisualizationsAndLegends(_root);
             resetDepthCollapseDepthValue();
@@ -33084,19 +29799,52 @@ if (!phyloXml) {
         }
     }
 
-    function returnToSupertreeButtonPressed() {
-        if (_root && _superTreeRoots.length > 0) {
-            _root = _superTreeRoots.pop();
-            _basicTreeProperties = forester.collectBasicTreeProperties(_root);
-            updateNodeVisualizationsAndLegends(_root);
-            resetDepthCollapseDepthValue();
-            resetRankCollapseRankValue();
-            resetBranchLengthCollapseValue();
-            search0();
-            search1();
-            zoomToFit();
+
+    function returnToSupertreeButtonByOnePressed() {
+        if (_in_subtree && _root.parent !== _root_const) {
+            const prev_root = _root.children[0];
+            _root = _root_const;
+            let found = null;
+            forester.preOrderTraversalAll(_root, function (n) {
+                if (n.children) {
+                    const l = n.children.length;
+                    for (let i = 0; i < l; ++i) {
+                        if (n.children[i] === prev_root) {
+                            found = n;
+                            return;
+                        }
+                    }
+                }
+            });
+            if (found) {
+                if (!found.parent || found.parent === _root_const || found === _root_const) {
+                    _in_subtree = false;
+                    _root = _root_const;
+                } else {
+                    const fakeNode = {};
+                    fakeNode.children = [found];
+                    fakeNode.x = 0;
+                    fakeNode.x0 = 0;
+                    fakeNode.y = 0;
+                    fakeNode.y0 = 0;
+                    _root = fakeNode;
+                }
+
+                _basicTreeProperties = forester.collectBasicTreeProperties(_root);
+                initializeInitialVisualization(_root);
+                updateNodeVisualizationsAndLegends(_root);
+                resetDepthCollapseDepthValue();
+                resetRankCollapseRankValue();
+                resetBranchLengthCollapseValue();
+                search0();
+                search1();
+                zoomToFit();
+            } else {
+                _in_subtree = false;
+            }
         }
     }
+
 
     function orderButtonPressed() {
         if (_root) {
@@ -33124,8 +29872,8 @@ if (!phyloXml) {
     }
 
     function midpointRootButtonPressed() {
-        if (_root && (_superTreeRoots.length < 1)
-            && ( (_treeData.rerootable === undefined) || (_treeData.rerootable === true) )) {
+        if (!_in_subtree && _root
+            && ((_treeData.rerootable === undefined) || (_treeData.rerootable === true))) {
             unCollapseAll(_root);
             forester.midpointRoot(_root);
             resetDepthCollapseDepthValue();
@@ -33137,9 +29885,9 @@ if (!phyloXml) {
     }
 
     function escPressed() {
-        var width = 0;
+        let width = 0;
         if (_settings.enableDynamicSizing) {
-            var container = document.getElementById(_id.replace('#', ''));
+            let container = document.getElementById(_id.replace('#', ''));
             if (container) {
                 _displayHeight = container.clientHeight;
                 _displayWidth = container.clientWidth;
@@ -33151,22 +29899,21 @@ if (!phyloXml) {
         }
         zoomToFit();
         if (_settings.enableNodeVisualizations || _settings.enableBranchVisualizations) {
-            var c0 = $('#' + _settings.controls0);
+            let c0 = $('#' + _settings.controls0);
             if (c0) {
                 c0.css({
                     'left': _settings.controls0Left,
                     'top': _settings.controls0Top + _offsetTop
                 });
             }
-            var c1 = $('#' + _settings.controls1);
+            let c1 = $('#' + _settings.controls1);
             if (c1) {
                 if (_settings.enableDynamicSizing) {
                     c1.css({
                         'left': width - _settings.controls1Width,
                         'top': _settings.controls1Top + _offsetTop
                     });
-                }
-                else {
+                } else {
                     c1.css({
                         'left': _settings.controls1Left,
                         'top': _settings.controls1Top + _offsetTop
@@ -33188,9 +29935,9 @@ if (!phyloXml) {
     function search0() {
         _foundNodes0.clear();
         _searchBox0Empty = true;
-        var query = $('#' + SEARCH_FIELD_0).val();
+        let query = $('#' + SEARCH_FIELD_0).val();
         if (query && query.length > 0) {
-            var my_query = query.trim();
+            let my_query = query.trim();
             if (my_query.length > 0) {
                 _searchBox0Empty = false;
                 _foundNodes0 = search(my_query);
@@ -33202,9 +29949,9 @@ if (!phyloXml) {
     function search1() {
         _foundNodes1.clear();
         _searchBox1Empty = true;
-        var query = $('#' + SEARCH_FIELD_1).val();
+        let query = $('#' + SEARCH_FIELD_1).val();
         if (query && query.length > 0) {
-            var my_query = query.trim();
+            let my_query = query.trim();
             if (my_query.length > 0) {
                 _searchBox1Empty = false;
                 _foundNodes1 = search(my_query);
@@ -33379,15 +30126,15 @@ if (!phyloXml) {
     }
 
     function downloadButtonPressed() {
-        var s = $('#' + EXPORT_FORMAT_SELECT);
+        let s = $('#' + EXPORT_FORMAT_SELECT);
         if (s) {
-            var format = s.val();
+            let format = s.val();
             downloadTree(format);
         }
     }
 
     function changeBaseBackgoundColor(color) {
-        var bg = $('.' + BASE_BACKGROUND);
+        let bg = $('.' + BASE_BACKGROUND);
         if (bg) {
             bg.css({
                 'fill': color
@@ -33500,7 +30247,7 @@ if (!phyloXml) {
         if (!x) {
             x = 10;
         }
-        if (_options.visualizationsLegendXpos < ( _displayWidth - 20 )) {
+        if (_options.visualizationsLegendXpos < (_displayWidth - 20)) {
             _options.visualizationsLegendXpos += x;
             removeColorPicker();
             update(null, 0);
@@ -33519,8 +30266,8 @@ if (!phyloXml) {
     }
 
     function moveLegendWithMouse(ev) {
-        var x = ev.layerX;
-        var y = ev.layerY - _offsetTop;
+        let x = ev.layerX;
+        let y = ev.layerY - _offsetTop;
         if (x > 0 && x < _displayWidth) {
             _options.visualizationsLegendXpos = x;
         }
@@ -33534,8 +30281,7 @@ if (!phyloXml) {
     function legendHorizVertClicked() {
         if (_options.visualizationsLegendOrientation === VERTICAL) {
             _options.visualizationsLegendOrientation = HORIZONTAL;
-        }
-        else {
+        } else {
             _options.visualizationsLegendOrientation = VERTICAL;
         }
         removeColorPicker();
@@ -33568,7 +30314,7 @@ if (!phyloXml) {
     }
 
     function setRadioButtonValue(id, value) {
-        var radio = $('#' + id);
+        let radio = $('#' + id);
         if (radio) {
             radio[0].checked = value;
             radio.button('refresh');
@@ -33576,7 +30322,7 @@ if (!phyloXml) {
     }
 
     function setCheckboxValue(id, value) {
-        var cb = $('#' + id);
+        let cb = $('#' + id);
         if (cb && cb[0]) {
             cb[0].checked = value;
             cb.button('refresh');
@@ -33599,14 +30345,14 @@ if (!phyloXml) {
     }
 
     function setSliderValue(id, value) {
-        var sli = $('#' + id);
+        let sli = $('#' + id);
         if (sli) {
             sli.slider('value', value);
         }
     }
 
     function updateMsaResidueVisCurrResPosSliderValue() {
-        var sli = $('#' + MSA_RESIDUE_VIS_CURR_RES_POS_SLIDER_1);
+        let sli = $('#' + MSA_RESIDUE_VIS_CURR_RES_POS_SLIDER_1);
         if (sli) {
             sli.slider('value', _msa_residue_vis_curr_res_pos + 1);
         }
@@ -33614,9 +30360,9 @@ if (!phyloXml) {
 
 
     function increaseFontSizes() {
-        var step = SLIDER_STEP * 2;
-        var max = FONT_SIZE_MAX - step;
-        var up = false;
+        let step = SLIDER_STEP * 2;
+        let max = FONT_SIZE_MAX - step;
+        let up = false;
         if (_options.externalNodeFontSize <= max) {
             _options.externalNodeFontSize += step;
             up = true;
@@ -33638,9 +30384,9 @@ if (!phyloXml) {
     }
 
     function decreaseFontSizes() {
-        var step = SLIDER_STEP * 2;
-        var min = FONT_SIZE_MIN + step;
-        var up = false;
+        let step = SLIDER_STEP * 2;
+        let min = FONT_SIZE_MIN + step;
+        let up = false;
         if (_options.externalNodeFontSize >= min) {
             _options.externalNodeFontSize -= step;
             up = true;
@@ -33664,9 +30410,9 @@ if (!phyloXml) {
 
     function createGui() {
 
-        var d3selectId = d3.select(_id);
+        let d3selectId = d3.select(_id);
         if (d3selectId && d3selectId[0]) {
-            var phyloDiv = d3selectId[0][0];
+            let phyloDiv = d3selectId[0][0];
             if (phyloDiv) {
                 _offsetTop = phyloDiv.offsetTop;
                 phyloDiv.style.textAlign = 'left';
@@ -33674,7 +30420,7 @@ if (!phyloXml) {
         }
 
 
-        var container = $(_id);
+        let container = $(_id);
 
         container.css({
             'font-style': 'normal',
@@ -33690,7 +30436,7 @@ if (!phyloXml) {
             .style("opacity", 1e-6);
 
 
-        var c0 = $('#' + _settings.controls0);
+        let c0 = $('#' + _settings.controls0);
 
         if (c0) {
             c0.css({
@@ -33720,7 +30466,7 @@ if (!phyloXml) {
 
             c0.append(makeZoomControl());
 
-            var pn = $('.' + PROG_NAME);
+            let pn = $('.' + PROG_NAME);
             if (pn) {
                 pn.css({
                     'text-align': 'center',
@@ -33733,7 +30479,7 @@ if (!phyloXml) {
                     'text-decoration': 'none'
                 });
             }
-            var pnl = $('.' + PROGNAMELINK);
+            let pnl = $('.' + PROGNAMELINK);
             if (pnl) {
                 pnl.css({
                     'color': COLOR_FOR_ACTIVE_ELEMENTS,
@@ -33798,7 +30544,7 @@ if (!phyloXml) {
             }
         }
 
-        var c1 = $('#' + _settings.controls1);
+        let c1 = $('#' + _settings.controls1);
         if (c1) {
             c1.css({
                 'position': 'absolute',
@@ -33932,7 +30678,7 @@ if (!phyloXml) {
             });
 
 
-        var downloadButton = $('#' + DOWNLOAD_BUTTON);
+        let downloadButton = $('#' + DOWNLOAD_BUTTON);
 
         if (downloadButton) {
             downloadButton.css({
@@ -34007,13 +30753,12 @@ if (!phyloXml) {
                 setSelectMenuValue(LABEL_COLOR_SELECT_MENU_4, DEFAULT);
             }
 
-            if (v && v != DEFAULT) {
+            if (v && v !== DEFAULT) {
                 _currentLabelColorVisualization = v;
                 if (_visualizations.labelColor[_currentLabelColorVisualization] != null) {
                     addLegend(LEGEND_LABEL_COLOR, _visualizations.labelColor[_currentLabelColorVisualization]);
                 }
-            }
-            else {
+            } else {
                 _currentLabelColorVisualization = null;
                 removeLegend(LEGEND_LABEL_COLOR);
             }
@@ -34030,12 +30775,11 @@ if (!phyloXml) {
             if (isAddVisualization4()) {
                 setSelectMenuValue(LABEL_COLOR_SELECT_MENU_4, DEFAULT);
             }
-            if (v && v != DEFAULT) {
+            if (v && v !== DEFAULT) {
                 _currentLabelColorVisualization = v;
                 _options.showExternalLabels = true;
                 setCheckboxValue(EXTERNAL_LABEL_CB, true);
-            }
-            else {
+            } else {
                 _currentLabelColorVisualization = null;
             }
             removeColorPicker();
@@ -34052,12 +30796,11 @@ if (!phyloXml) {
             if (isAddVisualization4()) {
                 setSelectMenuValue(LABEL_COLOR_SELECT_MENU_4, DEFAULT);
             }
-            if (v && v != DEFAULT) {
+            if (v && v !== DEFAULT) {
                 _currentLabelColorVisualization = v;
                 _options.showExternalLabels = true;
                 setCheckboxValue(EXTERNAL_LABEL_CB, true);
-            }
-            else {
+            } else {
                 _currentLabelColorVisualization = null;
             }
             removeColorPicker();
@@ -34073,12 +30816,11 @@ if (!phyloXml) {
             if (isAddVisualization3()) {
                 setSelectMenuValue(LABEL_COLOR_SELECT_MENU_3, DEFAULT);
             }
-            if (v && v != DEFAULT) {
+            if (v && v !== DEFAULT) {
                 _currentLabelColorVisualization = v;
                 _options.showExternalLabels = true;
                 setCheckboxValue(EXTERNAL_LABEL_CB, true);
-            }
-            else {
+            } else {
                 _currentLabelColorVisualization = null;
             }
             removeColorPicker();
@@ -34086,7 +30828,7 @@ if (!phyloXml) {
         });
 
         $('#' + NODE_FILL_COLOR_SELECT_MENU).on('change', function () {
-            var v = this.value;
+            let v = this.value;
             if (isAddVisualization2()) {
                 setSelectMenuValue(NODE_FILL_COLOR_SELECT_MENU_2, DEFAULT);
             }
@@ -34096,9 +30838,9 @@ if (!phyloXml) {
             if (isAddVisualization4()) {
                 setSelectMenuValue(NODE_FILL_COLOR_SELECT_MENU_4, DEFAULT);
             }
-            if (v && v != DEFAULT) {
+            if (v && v !== DEFAULT) {
                 if (!_options.showExternalNodes && !_options.showInternalNodes
-                    && ( _currentNodeShapeVisualization == null )) {
+                    && (_currentNodeShapeVisualization == null)) {
                     _options.showExternalNodes = true;
                     setCheckboxValue(EXTERNAL_NODES_CB, true);
                 }
@@ -34106,8 +30848,7 @@ if (!phyloXml) {
                 setCheckboxValue(NODE_VIS_CB, true);
                 _currentNodeFillColorVisualization = v;
                 addLegend(LEGEND_NODE_FILL_COLOR, _visualizations.nodeFillColor[_currentNodeFillColorVisualization]);
-            }
-            else {
+            } else {
                 _currentNodeFillColorVisualization = null;
                 removeLegend(LEGEND_NODE_FILL_COLOR);
             }
@@ -34125,7 +30866,7 @@ if (!phyloXml) {
             if (isAddVisualization4()) {
                 setSelectMenuValue(NODE_FILL_COLOR_SELECT_MENU_4, DEFAULT);
             }
-            if (v && v != DEFAULT) {
+            if (v && v !== DEFAULT) {
                 _options.showExternalNodes = true;
                 setCheckboxValue(EXTERNAL_NODES_CB, true);
                 _options.showInternalNodes = true;
@@ -34135,8 +30876,7 @@ if (!phyloXml) {
                 setCheckboxValue(NODE_VIS_CB, true);
                 _currentNodeFillColorVisualization = v;
 
-            }
-            else {
+            } else {
                 _currentNodeFillColorVisualization = null;
                 removeLegend(LEGEND_NODE_FILL_COLOR);
             }
@@ -34153,7 +30893,7 @@ if (!phyloXml) {
             if (isAddVisualization4()) {
                 setSelectMenuValue(NODE_FILL_COLOR_SELECT_MENU_4, DEFAULT);
             }
-            if (v && v != DEFAULT) {
+            if (v && v !== DEFAULT) {
                 _options.showExternalNodes = true;
                 setCheckboxValue(EXTERNAL_NODES_CB, true);
                 _options.showInternalNodes = true;
@@ -34163,8 +30903,7 @@ if (!phyloXml) {
                 setCheckboxValue(NODE_VIS_CB, true);
                 _currentNodeFillColorVisualization = v;
 
-            }
-            else {
+            } else {
                 _currentNodeFillColorVisualization = null;
                 removeLegend(LEGEND_NODE_FILL_COLOR);
             }
@@ -34181,7 +30920,7 @@ if (!phyloXml) {
             if (isAddVisualization3()) {
                 setSelectMenuValue(NODE_FILL_COLOR_SELECT_MENU_3, DEFAULT);
             }
-            if (v && v != DEFAULT) {
+            if (v && v !== DEFAULT) {
                 _options.showExternalNodes = true;
                 setCheckboxValue(EXTERNAL_NODES_CB, true);
                 _options.showInternalNodes = true;
@@ -34191,8 +30930,7 @@ if (!phyloXml) {
                 setCheckboxValue(NODE_VIS_CB, true);
                 _currentNodeFillColorVisualization = v;
 
-            }
-            else {
+            } else {
                 _currentNodeFillColorVisualization = null;
                 removeLegend(LEGEND_NODE_FILL_COLOR);
             }
@@ -34202,14 +30940,13 @@ if (!phyloXml) {
 
 
         $('#' + NODE_SHAPE_SELECT_MENU).on('change', function () {
-            var v = this.value;
-            if (v && v != DEFAULT) {
+            let v = this.value;
+            if (v && v !== DEFAULT) {
                 _currentNodeShapeVisualization = v;
                 addLegendForShapes(LEGEND_NODE_SHAPE, _visualizations.nodeShape[_currentNodeShapeVisualization]);
                 _options.showNodeVisualizations = true;
                 setCheckboxValue(NODE_VIS_CB, true);
-            }
-            else {
+            } else {
                 _currentNodeShapeVisualization = null;
                 removeLegendForShapes(LEGEND_NODE_SHAPE);
             }
@@ -34220,19 +30957,18 @@ if (!phyloXml) {
         });
 
         $('#' + NODE_SIZE_SELECT_MENU).on('change', function () {
-            var v = this.value;
-            if (v && v != DEFAULT) {
+            let v = this.value;
+            if (v && v !== DEFAULT) {
                 _currentNodeSizeVisualization = v;
                 addLegendForSizes(LEGEND_NODE_SIZE, _visualizations.nodeSize[_currentNodeSizeVisualization]);
                 if (!_options.showExternalNodes && !_options.showInternalNodes
-                    && ( _currentNodeShapeVisualization == null )) {
+                    && (_currentNodeShapeVisualization == null)) {
                     _options.showExternalNodes = true;
                     setCheckboxValue(EXTERNAL_NODES_CB, true);
                 }
                 _options.showNodeVisualizations = true;
                 setCheckboxValue(NODE_VIS_CB, true);
-            }
-            else {
+            } else {
                 _currentNodeSizeVisualization = null;
                 removeLegendForSizes(LEGEND_NODE_SIZE);
             }
@@ -34376,6 +31112,8 @@ if (!phyloXml) {
 
         $('#' + RETURN_TO_SUPERTREE_BUTTON).mousedown(returnToSupertreeButtonPressed);
 
+        $('#' + RETURN_TO_SUPERTREE_BUTTON_BY_ONE).mousedown(returnToSupertreeButtonByOnePressed);
+
         $('#' + ORDER_BUTTON).mousedown(orderButtonPressed);
 
         $('#' + UNCOLLAPSE_ALL_BUTTON).mousedown(uncollapseAllButtonPressed);
@@ -34453,9 +31191,9 @@ if (!phyloXml) {
             });
 
         $('#' + COLLAPSE_BY_FEATURE_SELECT).on('change', function () {
-            var s = $('#' + COLLAPSE_BY_FEATURE_SELECT);
+            let s = $('#' + COLLAPSE_BY_FEATURE_SELECT);
             if (s) {
-                var f = s.val();
+                let f = s.val();
                 if (f) {
                     collapseByFeature(f);
                 }
@@ -34562,22 +31300,20 @@ if (!phyloXml) {
             });
 
         $('#' + MSA_RESIDUE_VIS_CURR_RES_POS_LABEL).keyup(function (e) {
-            var keycode = e.keyCode;
+            let keycode = e.keyCode;
             if ((((keycode >= VK_0) && (keycode <= VK_9)) || ((keycode >= VK_0_NUMPAD)) && (keycode <= VK_9_NUMPAD)) || (keycode === VK_BACKSPACE) || (keycode === VK_DELETE)) {
-                var i = 0;
+                let i = 0;
                 if ((((keycode >= VK_0) && (keycode <= VK_9))
-                    || ((keycode >= VK_0_NUMPAD) && (keycode <= VK_9_NUMPAD)))
+                        || ((keycode >= VK_0_NUMPAD) && (keycode <= VK_9_NUMPAD)))
                     && _basicTreeProperties.maxMolSeqLength
                     && (_msa_residue_vis_curr_res_pos >= (_basicTreeProperties.maxMolSeqLength - 1))) {
                     if (((keycode >= VK_0) && (keycode <= VK_9))) {
                         i = keycode - 48;
-                    }
-                    else {
+                    } else {
                         i = keycode - 96;
                     }
-                }
-                else {
-                    var x = $('#' + MSA_RESIDUE_VIS_CURR_RES_POS_LABEL).val().trim();
+                } else {
+                    let x = $('#' + MSA_RESIDUE_VIS_CURR_RES_POS_LABEL).val().trim();
                     if (x === '') {
                         return;
                     }
@@ -34591,8 +31327,7 @@ if (!phyloXml) {
                 updateMsaResidueVisCurrResPosLabel();
                 updateMsaResidueVisCurrResPosSliderValue();
                 update(null, 0, true);
-            }
-            else {
+            } else {
                 update(null, 0, true);
             }
         });
@@ -34618,41 +31353,31 @@ if (!phyloXml) {
             if (e.altKey) {
                 if (e.keyCode === VK_O) {
                     orderButtonPressed();
-                }
-                else if (e.keyCode === VK_R) {
-                    returnToSupertreeButtonPressed();
-                }
-                else if (e.keyCode === VK_U) {
+                } else if (e.keyCode === VK_R) {
+                    returnToSupertreeButtonByOnePressed();
+                } else if (e.keyCode === VK_U) {
                     uncollapseAllButtonPressed();
-                }
-                else if (e.keyCode === VK_M) {
+                } else if (e.keyCode === VK_M) {
                     midpointRootButtonPressed();
-                }
-                else if (e.keyCode === VK_C || e.keyCode === VK_DELETE
+                } else if (e.keyCode === VK_C || e.keyCode === VK_DELETE
                     || e.keyCode === VK_BACKSPACE || e.keyCode === VK_HOME) {
                     zoomToFit();
-                }
-                else if (e.keyCode === VK_P) {
+                } else if (e.keyCode === VK_P) {
                     cycleDisplay();
-                }
-                else if (e.keyCode === VK_L) {
+                } else if (e.keyCode === VK_L) {
                     toggleAlignPhylogram();
-                }
-                else if (e.keyCode === VK_OPEN_BRACKET) {
+                } else if (e.keyCode === VK_OPEN_BRACKET) {
                     if (isCanDoMsaResidueVisualizations()) {
                         decrMsaResidueVisCurrResPos();
                     }
-                }
-                else if (e.keyCode === VK_CLOSE_BRACKET) {
+                } else if (e.keyCode === VK_CLOSE_BRACKET) {
                     if (isCanDoMsaResidueVisualizations()) {
                         incrMsaResidueVisCurrResPos();
                     }
                 }
-            }
-            else if (e.keyCode === VK_HOME) {
+            } else if (e.keyCode === VK_HOME) {
                 zoomToFit();
-            }
-            else if (e.keyCode === VK_ESC) {
+            } else if (e.keyCode === VK_ESC) {
                 escPressed();
             }
         });
@@ -34661,45 +31386,35 @@ if (!phyloXml) {
             if (e.altKey) {
                 if (e.keyCode === VK_UP) {
                     zoomInY(BUTTON_ZOOM_IN_FACTOR_SLOW);
-                }
-                else if (e.keyCode === VK_DOWN) {
+                } else if (e.keyCode === VK_DOWN) {
                     zoomOutY(BUTTON_ZOOM_OUT_FACTOR_SLOW);
-                }
-                else if (e.keyCode === VK_LEFT) {
+                } else if (e.keyCode === VK_LEFT) {
                     zoomOutX(BUTTON_ZOOM_OUT_FACTOR_SLOW);
-                }
-                else if (e.keyCode === VK_RIGHT) {
+                } else if (e.keyCode === VK_RIGHT) {
                     zoomInX(BUTTON_ZOOM_IN_FACTOR_SLOW);
-                }
-                else if (e.keyCode === VK_PLUS || e.keyCode === VK_PLUS_N) {
+                } else if (e.keyCode === VK_PLUS || e.keyCode === VK_PLUS_N) {
                     if (e.shiftKey) {
                         increaseFontSizes();
-                    }
-                    else {
+                    } else {
                         zoomInY(BUTTON_ZOOM_IN_FACTOR_SLOW);
                         zoomInX(BUTTON_ZOOM_IN_FACTOR_SLOW);
                     }
-                }
-                else if (e.keyCode === VK_MINUS || e.keyCode === VK_MINUS_N) {
+                } else if (e.keyCode === VK_MINUS || e.keyCode === VK_MINUS_N) {
                     if (e.shiftKey) {
                         decreaseFontSizes();
-                    }
-                    else {
+                    } else {
                         zoomOutY(BUTTON_ZOOM_OUT_FACTOR_SLOW);
                         zoomOutX(BUTTON_ZOOM_OUT_FACTOR_SLOW);
                     }
-                }
-                else if (e.keyCode === VK_A) {
+                } else if (e.keyCode === VK_A) {
                     decrDepthCollapseLevel();
-                }
-                else if (e.keyCode === VK_S) {
+                } else if (e.keyCode === VK_S) {
                     incrDepthCollapseLevel();
                 }
             }
             if (e.keyCode === VK_PAGE_UP) {
                 increaseFontSizes();
-            }
-            else if (e.keyCode === VK_PAGE_DOWN) {
+            } else if (e.keyCode === VK_PAGE_DOWN) {
                 decreaseFontSizes();
             }
         });
@@ -34708,26 +31423,21 @@ if (!phyloXml) {
         $(document).on('mousewheel DOMMouseScroll', function (e) {
             if (e.shiftKey) {
                 if (e.originalEvent) {
-                    var oe = e.originalEvent;
+                    let oe = e.originalEvent;
                     if (oe.detail > 0 || oe.wheelDelta < 0) {
                         if (e.ctrlKey) {
                             decreaseFontSizes();
-                        }
-                        else if (e.altKey) {
+                        } else if (e.altKey) {
                             zoomOutX(BUTTON_ZOOM_OUT_FACTOR_SLOW);
-                        }
-                        else {
+                        } else {
                             zoomOutY(BUTTON_ZOOM_OUT_FACTOR_SLOW);
                         }
-                    }
-                    else {
+                    } else {
                         if (e.ctrlKey) {
                             increaseFontSizes();
-                        }
-                        else if (e.altKey) {
+                        } else if (e.altKey) {
                             zoomInX(BUTTON_ZOOM_IN_FACTOR_SLOW);
-                        }
-                        else {
+                        } else {
                             zoomInY(BUTTON_ZOOM_IN_FACTOR_SLOW);
                         }
                     }
@@ -34742,7 +31452,7 @@ if (!phyloXml) {
         // --------------------------------------------------------------
 
         function makeProgramDesc() {
-            var h = "";
+            let h = "";
             h = h.concat('<div class=' + PROG_NAME + '>');
             h = h.concat('<a class="' + PROGNAMELINK + '" href="' + WEBSITE + '" target="_blank">' + NAME + ' ' + VERSION + '</a>');
             h = h.concat('</div>');
@@ -34750,8 +31460,8 @@ if (!phyloXml) {
         }
 
         function makePhylogramControl() {
-            var radioGroup = 'phylogram_control_radio';
-            var h = "";
+            let radioGroup = 'phylogram_control_radio';
+            let h = "";
             h = h.concat('<fieldset>');
             h = h.concat('<div class="' + PHYLOGRAM_CLADOGRAM_CONTROLGROUP + '">');
             h = h.concat(makeRadioButton('P', PHYLOGRAM_BUTTON, radioGroup, 'phylogram display (uses branch length values)  (use Alt+P to cycle between display types)'));
@@ -34763,7 +31473,7 @@ if (!phyloXml) {
         }
 
         function makeDisplayControl() {
-            var h = "";
+            let h = "";
 
             h = h.concat('<fieldset><legend>Display Data</legend>');
             h = h.concat('<div class="' + DISPLAY_DATA_CONTROLGROUP + '">');
@@ -34822,7 +31532,7 @@ if (!phyloXml) {
         }
 
         function makeZoomControl() {
-            var h = "";
+            let h = "";
             h = h.concat('<fieldset>');
             h = h.concat('<legend>Zoom</legend>');
             h = h.concat(makeButton('Y+', ZOOM_IN_Y, 'zoom in vertically (Alt+Up or Shift+mousewheel)'));
@@ -34837,13 +31547,13 @@ if (!phyloXml) {
         }
 
         function makeControlButtons() {
-            var h = "";
+            let h = "";
             h = h.concat('<fieldset>');
             h = h.concat('<legend>Tools</legend>');
             h = h.concat('<div>');
             h = h.concat(makeButton('O', ORDER_BUTTON, 'order all (Alt+O)'));
-            h = h.concat(makeButton('R', RETURN_TO_SUPERTREE_BUTTON, 'return to the supertree (if in subtree) (Alt+R)'));
-            //h = h.concat('<br>');
+            h = h.concat(makeButton('R1', RETURN_TO_SUPERTREE_BUTTON_BY_ONE, 'return to supertree by one branch (if in subtree) (Alt+R)'));
+            h = h.concat(makeButton('R', RETURN_TO_SUPERTREE_BUTTON, 'return to supertree (if in subtree)'));
             h = h.concat(makeButton('U', UNCOLLAPSE_ALL_BUTTON, 'uncollapse all (Alt+U)'));
             h = h.concat(makeButton('M', MIDPOINT_ROOT_BUTTON, 'midpoint re-root (Alt+M)'));
             h = h.concat('</div>');
@@ -34852,7 +31562,7 @@ if (!phyloXml) {
         }
 
         function makeDownloadSection() {
-            var h = "";
+            let h = "";
             h = h.concat('<form action="#">');
             h = h.concat('<fieldset>');
             h = h.concat('<input type="button" value="Download" name="' + DOWNLOAD_BUTTON + '" title="download/export tree in a selected format" id="' + DOWNLOAD_BUTTON + '">');
@@ -34870,7 +31580,7 @@ if (!phyloXml) {
         }
 
         function makeSliders() {
-            var h = "";
+            let h = "";
             h = h.concat('<fieldset>');
             h = h.concat(makeSlider('External label size:', EXTERNAL_FONT_SIZE_SLIDER));
             if (_basicTreeProperties.internalNodeData) {
@@ -34887,7 +31597,7 @@ if (!phyloXml) {
         }
 
         function makeAutoCollapse() {
-            var h = "";
+            let h = "";
             h = h.concat('<fieldset>');
             h = h.concat('<legend>Collapse Depth</legend>');
             h = h.concat(makeButton('-', DECR_DEPTH_COLLAPSE_LEVEL, 'to decrease the depth threshold (wraps around) (Alt+A)'));
@@ -34912,12 +31622,12 @@ if (!phyloXml) {
                 if (_basicTreeProperties.taxonomies) {
                     h = h.concat('<option value="' + SPECIES_FEATURE + '">' + SPECIES_FEATURE + '</option>');
                 }
-                var refs = forester.collectPropertyRefs(_treeData, 'node', false);
+                let refs = forester.collectPropertyRefs(_treeData, 'node', false);
                 if (refs) {
                     refs.forEach(function (v) {
-                        var label = v;
+                        let label = v;
                         label = label.replace(/^.+:/, '');
-                        if (!_settings.propertiesToIgnoreForNodeVisualization || ( _settings.propertiesToIgnoreForNodeVisualization.indexOf(label) < 0 )) {
+                        if (!_settings.propertiesToIgnoreForNodeVisualization || (_settings.propertiesToIgnoreForNodeVisualization.indexOf(label) < 0)) {
                             if (label.length > (MAX_LENGTH_FOR_COLLAPSE_BY_FEATURE_LABEL + 2)) {
                                 label = label.substring(0, MAX_LENGTH_FOR_COLLAPSE_BY_FEATURE_LABEL) + "..";
                             }
@@ -34936,10 +31646,10 @@ if (!phyloXml) {
         // --------------------------------------------------------------
         function makeSearchBoxes() {
 
-            var tooltip = "enter text to search for (use ',' for logical OR and '+' for logical AND," +
+            let tooltip = "enter text to search for (use ',' for logical OR and '+' for logical AND," +
                 " use expressions in form of XX:term for typed search -- e.g. NN:node name, TC:taxonomy code," +
                 " TS:taxonomy scientific name, SN:sequence name, GN:gene name, SS:sequence symbol, MS:molecular sequence, ...)";
-            var h = "";
+            let h = "";
             h = h.concat('<fieldset>');
             h = h.concat('<legend>Search</legend>');
             h = h.concat(makeTextInput(SEARCH_FIELD_0, tooltip));
@@ -34954,7 +31664,7 @@ if (!phyloXml) {
         }
 
         function makeSearchControls() {
-            var h = "";
+            let h = "";
             h = h.concat('<div class="' + SEARCH_OPTIONS_GROUP + '">');
             h = h.concat(makeCheckboxButton('Cas', SEARCH_OPTIONS_CASE_SENSITIVE_CB, 'to search in a case-sensitive manner'));
             h = h.concat(makeCheckboxButton('Wrd', SEARCH_OPTIONS_COMPLETE_TERMS_ONLY_CB, ' to match complete terms (separated by spaces) only (does not apply to regular expression search)'));
@@ -34971,7 +31681,7 @@ if (!phyloXml) {
         }
 
         function makeSearchControlsCompact() {
-            var h = "";
+            let h = "";
             h = h.concat('<div class="' + SEARCH_OPTIONS_GROUP + '">');
             h = h.concat(makeCheckboxButton('C', SEARCH_OPTIONS_CASE_SENSITIVE_CB, 'to search in a case-sensitive manner'));
             h = h.concat(makeCheckboxButton('W', SEARCH_OPTIONS_COMPLETE_TERMS_ONLY_CB, ' to match complete terms (separated by spaces or underscores) only (does not apply to regular expression search)'));
@@ -34989,7 +31699,7 @@ if (!phyloXml) {
         // Functions to make visualization controls
         // --------------------------------------------------------------
         function makeVisualControls() {
-            var h = "";
+            let h = "";
             h = h.concat('<form action="#">');
             h = h.concat('<fieldset>');
             h = h.concat('<legend>Visualizations</legend>');
@@ -35006,7 +31716,7 @@ if (!phyloXml) {
         }
 
         function makeVisualization2(title) {
-            var h = "";
+            let h = "";
             h = h.concat('<form action="#">');
             h = h.concat('<fieldset>');
             h = h.concat('<legend>' + title + '</legend>');
@@ -35019,7 +31729,7 @@ if (!phyloXml) {
         }
 
         function makeVisualization3(title) {
-            var h = "";
+            let h = "";
             h = h.concat('<form action="#">');
             h = h.concat('<fieldset>');
             h = h.concat('<legend>' + title + '</legend>');
@@ -35032,7 +31742,7 @@ if (!phyloXml) {
         }
 
         function makeVisualization4(title) {
-            var h = "";
+            let h = "";
             h = h.concat('<form action="#">');
             h = h.concat('<fieldset>');
             h = h.concat('<legend>' + title + '</legend>');
@@ -35045,7 +31755,7 @@ if (!phyloXml) {
         }
 
         function makeMsaResidueVisCurrResPositionControl() {
-            var h = "";
+            let h = "";
             h = h.concat('<fieldset>');
             h = h.concat('<legend>MSA Residue Pos.</legend>');
             h = h.concat(makeSlider(null, MSA_RESIDUE_VIS_CURR_RES_POS_SLIDER_1));
@@ -35057,8 +31767,8 @@ if (!phyloXml) {
         }
 
         function makeLegendControl() {
-            var mouseTip = ' (alternatively, place legend with mouse using shift+left-mouse-button click, or alt+left-mouse-button click)';
-            var h = "";
+            let mouseTip = ' (alternatively, place legend with mouse using shift+left-mouse-button click, or alt+left-mouse-button click)';
+            let h = "";
             h = h.concat('<fieldset>');
             h = h.concat('<legend>Vis Legend</legend>');
             h = h.concat(makeButton('Show', LEGENDS_SHOW_BTN, 'to show/hide legend(s)'));
@@ -35136,10 +31846,10 @@ if (!phyloXml) {
         setCheckboxValue(SHORTEN_NODE_NAME_CB, _options.shortenNodeNames);
         initializeVisualizationMenu();
         initializeSearchOptions();
-        makeBackgorund();
+        makeBackground();
     }
 
-    function makeBackgorund() {
+    function makeBackground() {
         _baseSvg.append('rect')
             .attr('width', '100%')
             .attr('height', '100%')
@@ -35202,7 +31912,7 @@ if (!phyloXml) {
 
         if (_visualizations) {
             if (_visualizations.labelColor) {
-                for (var key in _visualizations.labelColor) {
+                for (let key in _visualizations.labelColor) {
                     if (_visualizations.labelColor.hasOwnProperty(key)) {
                         $('select#' + LABEL_COLOR_SELECT_MENU).append($('<option>')
                             .val(key)
@@ -35212,7 +31922,7 @@ if (!phyloXml) {
                 }
             }
             if (_visualizations.nodeShape) {
-                for (var key in _visualizations.nodeShape) {
+                for (let key in _visualizations.nodeShape) {
                     if (_visualizations.nodeShape.hasOwnProperty(key)) {
                         $('select#' + NODE_SHAPE_SELECT_MENU).append($('<option>')
                             .val(key)
@@ -35222,7 +31932,7 @@ if (!phyloXml) {
                 }
             }
             if (_visualizations.nodeFillColor) {
-                for (var key in _visualizations.nodeFillColor) {
+                for (let key in _visualizations.nodeFillColor) {
                     if (_visualizations.nodeFillColor.hasOwnProperty(key)) {
                         $('select#' + NODE_FILL_COLOR_SELECT_MENU).append($('<option>')
                             .val(key)
@@ -35232,7 +31942,7 @@ if (!phyloXml) {
                 }
             }
             if (_visualizations.nodeBorderColor) {
-                for (var key in _visualizations.nodeBorderColor) {
+                for (let key in _visualizations.nodeBorderColor) {
                     if (_visualizations.nodeBorderColor.hasOwnProperty(key)) {
                         $('select#' + NODE_BORDER_COLOR_SELECT_MENU).append($('<option>')
                             .val(key)
@@ -35242,7 +31952,7 @@ if (!phyloXml) {
                 }
             }
             if (_visualizations.nodeSize) {
-                for (var key in _visualizations.nodeSize) {
+                for (let key in _visualizations.nodeSize) {
                     if (_visualizations.nodeSize.hasOwnProperty(key)) {
                         $('select#' + NODE_SIZE_SELECT_MENU).append($('<option>')
                             .val(key)
@@ -35259,7 +31969,7 @@ if (!phyloXml) {
                 if (mutations != null && mutations.property_values != null) {
                     const properties = mutations.property_values;
                     const arrayLength = properties.length;
-                    for (var i = 0; i < arrayLength; i++) {
+                    for (let i = 0; i < arrayLength; i++) {
                         const key = properties[i];
                         $('select#' + LABEL_COLOR_SELECT_MENU_2).append($('<option>')
                             .val(key)
@@ -35279,7 +31989,7 @@ if (!phyloXml) {
                 if (conv_mutations != null && conv_mutations.property_values != null) {
                     const properties = conv_mutations.property_values;
                     const arrayLength = properties.length;
-                    for (var i = 0; i < arrayLength; i++) {
+                    for (let i = 0; i < arrayLength; i++) {
                         const key = properties[i];
                         $('select#' + LABEL_COLOR_SELECT_MENU_3).append($('<option>')
                             .val(key)
@@ -35299,7 +32009,7 @@ if (!phyloXml) {
                 if (lineages != null && lineages.property_values != null) {
                     const properties = lineages.property_values;
                     const arrayLength = properties.length;
-                    for (var i = 0; i < arrayLength; i++) {
+                    for (let i = 0; i < arrayLength; i++) {
                         const key = properties[i];
                         $('select#' + LABEL_COLOR_SELECT_MENU_4).append($('<option>')
                             .val(key)
@@ -35352,7 +32062,7 @@ if (!phyloXml) {
 
     function initializeInitialVisualization() {
         if (_options.initialNodeFillColorVisualization
-            && _options.initialNodeFillColorVisualization != DEFAULT
+            && _options.initialNodeFillColorVisualization !== DEFAULT
             && _visualizations.nodeFillColor[_options.initialNodeFillColorVisualization] != null) {
             _currentNodeFillColorVisualization = _options.initialNodeFillColorVisualization;
             setSelectMenuValue(NODE_FILL_COLOR_SELECT_MENU, _currentNodeFillColorVisualization);
@@ -35361,7 +32071,7 @@ if (!phyloXml) {
             setCheckboxValue(EXTERNAL_NODES_CB, true);
         }
         if (_options.initialLabelColorVisualization
-            && _options.initialLabelColorVisualization != DEFAULT
+            && _options.initialLabelColorVisualization !== DEFAULT
             && _visualizations.labelColor[_options.initialLabelColorVisualization] != null) {
             _currentLabelColorVisualization = _options.initialLabelColorVisualization;
             setSelectMenuValue(LABEL_COLOR_SELECT_MENU, _currentLabelColorVisualization);
@@ -35371,29 +32081,30 @@ if (!phyloXml) {
 
 
     function orderSubtree(n, order) {
-        var changed = false;
+        let changed = false;
         ord(n);
         if (!changed) {
             order = !order;
             ord(n);
         }
+
         function ord(n) {
             if (!n.children) {
                 return;
             }
-            var c = n.children;
-            var l = c.length;
-            if (l == 2) {
-                var e0 = forester.calcSumOfAllExternalDescendants(c[0]);
-                var e1 = forester.calcSumOfAllExternalDescendants(c[1]);
+            let c = n.children;
+            let l = c.length;
+            if (l === 2) {
+                let e0 = forester.calcSumOfAllExternalDescendants(c[0]);
+                let e1 = forester.calcSumOfAllExternalDescendants(c[1]);
                 if (e0 !== e1 && e0 < e1 === order) {
                     changed = true;
-                    var c0 = c[0];
+                    let c0 = c[0];
                     c[0] = c[1];
                     c[1] = c0;
                 }
             }
-            for (var i = 0; i < l; ++i) {
+            for (let i = 0; i < l; ++i) {
                 ord(c[i]);
             }
         }
@@ -35403,12 +32114,10 @@ if (!phyloXml) {
         if (_options.phylogram && !_options.alignPhylogram) {
             _options.alignPhylogram = true;
 
-        }
-        else if (_options.phylogram && _options.alignPhylogram) {
+        } else if (_options.phylogram && _options.alignPhylogram) {
             _options.phylogram = false;
             _options.alignPhylogram = false;
-        }
-        else if (!_options.phylogram && !_options.alignPhylogram) {
+        } else if (!_options.phylogram && !_options.alignPhylogram) {
             _options.phylogram = true;
         }
         setDisplayTypeButtons();
@@ -35441,12 +32150,11 @@ if (!phyloXml) {
         _rank_collapse_level = -1;
         _branch_length_collapse_level = -1;
         resetCollapseByFeature();
-        if (_root && _treeData && ( _external_nodes > 2 )) {
+        if (_root && _treeData && (_external_nodes > 2)) {
             if (_depth_collapse_level <= 1) {
                 _depth_collapse_level = forester.calcMaxDepth(_root);
                 unCollapseAll(_root);
-            }
-            else {
+            } else {
                 --_depth_collapse_level;
                 forester.collapseToDepth(_root, _depth_collapse_level);
             }
@@ -35458,12 +32166,11 @@ if (!phyloXml) {
         _rank_collapse_level = -1;
         _branch_length_collapse_level = -1;
         resetCollapseByFeature();
-        if (( _root && _treeData  ) && ( _external_nodes > 2 )) {
-            var max = forester.calcMaxDepth(_root);
+        if ((_root && _treeData) && (_external_nodes > 2)) {
+            let max = forester.calcMaxDepth(_root);
             if (_depth_collapse_level >= max) {
                 _depth_collapse_level = 1;
-            }
-            else {
+            } else {
                 unCollapseAll(_root);
                 ++_depth_collapse_level;
             }
@@ -35476,7 +32183,7 @@ if (!phyloXml) {
         _rank_collapse_level = -1;
         _depth_collapse_level = -1;
         resetCollapseByFeature();
-        if (_root && _treeData && ( _external_nodes > 2 )) {
+        if (_root && _treeData && (_external_nodes > 2)) {
             if (_branch_length_collapse_level <= _branch_length_collapse_data.min) {
                 _branch_length_collapse_level = _branch_length_collapse_data.max;
             }
@@ -35490,7 +32197,7 @@ if (!phyloXml) {
         _rank_collapse_level = -1;
         _depth_collapse_level = -1;
         resetCollapseByFeature();
-        if (( _root && _treeData  ) && ( _external_nodes > 2 )) {
+        if ((_root && _treeData) && (_external_nodes > 2)) {
             if (_branch_length_collapse_level >= _branch_length_collapse_data.max
                 || _branch_length_collapse_level < 0) {
                 _branch_length_collapse_level = _branch_length_collapse_data.min;
@@ -35498,8 +32205,7 @@ if (!phyloXml) {
             _branch_length_collapse_level += _branch_length_collapse_data.step;
             if (_branch_length_collapse_level >= _branch_length_collapse_data.max) {
                 unCollapseAll(_root);
-            }
-            else {
+            } else {
                 forester.collapseToBranchLength(_root, _branch_length_collapse_level);
             }
         }
@@ -35509,8 +32215,7 @@ if (!phyloXml) {
     function decrMsaResidueVisCurrResPos() {
         if (_msa_residue_vis_curr_res_pos <= 0) {
             _msa_residue_vis_curr_res_pos = _basicTreeProperties.maxMolSeqLength - 1;
-        }
-        else {
+        } else {
             _msa_residue_vis_curr_res_pos -= 1;
         }
         updateMsaResidueVisCurrResPosSliderValue();
@@ -35519,10 +32224,9 @@ if (!phyloXml) {
     }
 
     function incrMsaResidueVisCurrResPos() {
-        if (_msa_residue_vis_curr_res_pos >= ( _basicTreeProperties.maxMolSeqLength - 1)) {
+        if (_msa_residue_vis_curr_res_pos >= (_basicTreeProperties.maxMolSeqLength - 1)) {
             _msa_residue_vis_curr_res_pos = 0;
-        }
-        else {
+        } else {
             _msa_residue_vis_curr_res_pos += 1;
         }
         updateMsaResidueVisCurrResPosSliderValue();
@@ -35532,10 +32236,10 @@ if (!phyloXml) {
 
     function showMsaResidueVisualizationAsLabelColorIfNotAlreadyShown() {
 
-        if ((_currentLabelColorVisualization == null || _currentLabelColorVisualization === DEFAULT )
-            && (_currentNodeFillColorVisualization != MSA_RESIDUE)
-            && (_currentNodeBorderColorVisualization != MSA_RESIDUE)
-            && (_currentNodeShapeVisualization != MSA_RESIDUE)
+        if ((_currentLabelColorVisualization == null || _currentLabelColorVisualization === DEFAULT)
+            && (_currentNodeFillColorVisualization !== MSA_RESIDUE)
+            && (_currentNodeBorderColorVisualization !== MSA_RESIDUE)
+            && (_currentNodeShapeVisualization !== MSA_RESIDUE)
             && isCanDoMsaResidueVisualizations()) {
 
             _currentLabelColorVisualization = MSA_RESIDUE;
@@ -35545,11 +32249,10 @@ if (!phyloXml) {
                 _options.showBranchVisualizations = true;
                 setCheckboxValue(BRANCH_VIS_CB, _options.showBranchVisualizations);
             }
-        }
-        else if ((_currentLabelColorVisualization != MSA_RESIDUE )
+        } else if ((_currentLabelColorVisualization !== MSA_RESIDUE)
             && (_currentNodeFillColorVisualization == null || _currentNodeFillColorVisualization === DEFAULT)
-            && (_currentNodeBorderColorVisualization != MSA_RESIDUE)
-            && (_currentNodeShapeVisualization != MSA_RESIDUE)
+            && (_currentNodeBorderColorVisualization !== MSA_RESIDUE)
+            && (_currentNodeShapeVisualization !== MSA_RESIDUE)
             && isCanDoMsaResidueVisualizations()) {
             _currentNodeFillColorVisualization = MSA_RESIDUE;
             $('#' + NODE_FILL_COLOR_SELECT_MENU).val(MSA_RESIDUE);
@@ -35558,11 +32261,10 @@ if (!phyloXml) {
                 _options.showBranchVisualizations = true;
                 setCheckboxValue(BRANCH_VIS_CB, _options.showBranchVisualizations);
             }
-        }
-        else if ((_currentLabelColorVisualization != MSA_RESIDUE )
-            && (_currentNodeFillColorVisualization != MSA_RESIDUE)
+        } else if ((_currentLabelColorVisualization !== MSA_RESIDUE)
+            && (_currentNodeFillColorVisualization !== MSA_RESIDUE)
             && (_currentNodeBorderColorVisualization == null || _currentNodeBorderColorVisualization === DEFAULT)
-            && (_currentNodeShapeVisualization != MSA_RESIDUE)
+            && (_currentNodeShapeVisualization !== MSA_RESIDUE)
             && isCanDoMsaResidueVisualizations()) {
             _currentNodeBorderColorVisualization = MSA_RESIDUE;
             $('#' + NODE_BORDER_COLOR_SELECT_MENU).val(MSA_RESIDUE);
@@ -35571,10 +32273,9 @@ if (!phyloXml) {
                 _options.showBranchVisualizations = true;
                 setCheckboxValue(BRANCH_VIS_CB, _options.showBranchVisualizations);
             }
-        }
-        else if ((_currentLabelColorVisualization != MSA_RESIDUE )
-            && (_currentNodeFillColorVisualization != MSA_RESIDUE)
-            && (_currentNodeBorderColorVisualization != MSA_RESIDUE)
+        } else if ((_currentLabelColorVisualization !== MSA_RESIDUE)
+            && (_currentNodeFillColorVisualization !== MSA_RESIDUE)
+            && (_currentNodeBorderColorVisualization !== MSA_RESIDUE)
             && (_currentNodeShapeVisualization == null || _currentNodeShapeVisualization === DEFAULT)
             && isCanDoMsaResidueVisualizations()) {
             _currentNodeShapeVisualization = MSA_RESIDUE;
@@ -35585,13 +32286,13 @@ if (!phyloXml) {
 
 
     function updateDepthCollapseDepthDisplay() {
-        var v = obtainDepthCollapseDepthValue();
+        let v = obtainDepthCollapseDepthValue();
         $('#' + DEPTH_COLLAPSE_LABEL)
             .val(" " + v);
     }
 
     function updateBranchLengthCollapseBranchLengthDisplay() {
-        var v = obtainBranchLengthCollapseBranchLengthValue();
+        let v = obtainBranchLengthCollapseBranchLengthValue();
         $('#' + BL_COLLAPSE_LABEL)
             .val(v);
     }
@@ -35602,11 +32303,9 @@ if (!phyloXml) {
         _branch_length_collapse_level = -1;
         if (feature === SPECIES_FEATURE) {
             collapseSpecificSubtrees(_root, null, KEY_FOR_COLLAPSED_FEATURES_SPECIAL_LABEL);
-        }
-        else if (feature === OFF_FEATURE) {
+        } else if (feature === OFF_FEATURE) {
             unCollapseAll(_root)
-        }
-        else {
+        } else {
             collapseSpecificSubtrees(_root, feature, KEY_FOR_COLLAPSED_FEATURES_SPECIAL_LABEL);
         }
         update(null, 0);
@@ -35626,8 +32325,8 @@ if (!phyloXml) {
 
         if (nodePropertyRef && nodePropertyRef.length > 0) {
             forester.preOrderTraversalAll(phy, function (n) {
-                if (n.children && !n._children && ( n.children.length > 1 )) {
-                    var pv = forester.getOneDistinctNodePropertyValue(n, nodePropertyRef);
+                if (n.children && !n._children && (n.children.length > 1)) {
+                    let pv = forester.getOneDistinctNodePropertyValue(n, nodePropertyRef);
                     if (pv != null) {
                         forester.collapse(n);
                         if (keyForCollapsedFeatureSpecialLabel) {
@@ -35636,11 +32335,10 @@ if (!phyloXml) {
                     }
                 }
             });
-        }
-        else {
+        } else {
             forester.preOrderTraversalAll(phy, function (n) {
-                if (n.children && !n._children && ( n.children.length > 1 )) {
-                    var tv = forester.getOneDistinctTaxonomy(n);
+                if (n.children && !n._children && (n.children.length > 1)) {
+                    let tv = forester.getOneDistinctTaxonomy(n);
                     if (tv != null) {
                         forester.collapse(n);
                         if (keyForCollapsedFeatureSpecialLabel) {
@@ -35654,10 +32352,10 @@ if (!phyloXml) {
     }
 
     function resetCollapseByFeature() {
-        var s = $('#' + COLLAPSE_BY_FEATURE_SELECT);
+        let s = $('#' + COLLAPSE_BY_FEATURE_SELECT);
         if (s) {
-            var f = s.val();
-            if (f != OFF_FEATURE) {
+            let f = s.val();
+            if (f !== OFF_FEATURE) {
                 s.val(OFF_FEATURE);
                 removeForCollapsedFeatureSpecialLabel(_root, KEY_FOR_COLLAPSED_FEATURES_SPECIAL_LABEL);
             }
@@ -35671,36 +32369,33 @@ if (!phyloXml) {
     function setMsaResidueVisCurrResPos(position) {
         if (position <= 0) {
             _msa_residue_vis_curr_res_pos = 0;
-        }
-        else if (_basicTreeProperties.maxMolSeqLength && (position >= (_basicTreeProperties.maxMolSeqLength - 1))) {
+        } else if (_basicTreeProperties.maxMolSeqLength && (position >= (_basicTreeProperties.maxMolSeqLength - 1))) {
             _msa_residue_vis_curr_res_pos = _basicTreeProperties.maxMolSeqLength - 1;
-        }
-        else {
+        } else {
             _msa_residue_vis_curr_res_pos = position;
         }
     }
 
     function updateButtonEnabledState() {
-        if (_superTreeRoots && _superTreeRoots.length > 0) {
+        if (_in_subtree) { //~~
+            enableButton($('#' + RETURN_TO_SUPERTREE_BUTTON_BY_ONE));
             enableButton($('#' + RETURN_TO_SUPERTREE_BUTTON));
-        }
-        else {
+        } else {
+            disableButton($('#' + RETURN_TO_SUPERTREE_BUTTON_BY_ONE));
             disableButton($('#' + RETURN_TO_SUPERTREE_BUTTON));
         }
 
         if (forester.isHasCollapsedNodes(_root)) {
             enableButton($('#' + UNCOLLAPSE_ALL_BUTTON));
-        }
-        else {
+        } else {
             disableButton($('#' + UNCOLLAPSE_ALL_BUTTON));
         }
-        if ((_superTreeRoots.length < 1) && ( (_treeData.rerootable === undefined) || (_treeData.rerootable === true) )) {
+        if (!_in_subtree && ((_treeData.rerootable === undefined) || (_treeData.rerootable === true))) {
             enableButton($('#' + MIDPOINT_ROOT_BUTTON));
-        }
-        else {
+        } else {
             disableButton($('#' + MIDPOINT_ROOT_BUTTON));
         }
-        var b = null;
+        let b;
         if (_foundNodes0 && !_searchBox0Empty) {
             b = $('#' + RESET_SEARCH_A_BTN);
             if (b) {
@@ -35708,16 +32403,14 @@ if (!phyloXml) {
                 if (_foundNodes0.size < 1) {
                     b.css('background', '');
                     b.css('color', '');
-                }
-                else {
+                } else {
                     b.css('background', _options.found0ColorDefault);
                     b.css('color', WHITE);
                 }
-                var nd0 = _foundNodes0.size === 1 ? 'node' : 'nodes';
+                let nd0 = _foundNodes0.size === 1 ? 'node' : 'nodes';
                 b.prop('title', 'found ' + _foundNodes0.size + ' ' + nd0 + ' [click to ' + RESET_SEARCH_A_BTN_TOOLTIP + ']');
             }
-        }
-        else {
+        } else {
             b = $('#' + RESET_SEARCH_A_BTN);
             if (b) {
                 b.prop('disabled', true);
@@ -35734,16 +32427,14 @@ if (!phyloXml) {
                 if (_foundNodes1.size < 1) {
                     b.css('background', '');
                     b.css('color', '');
-                }
-                else {
+                } else {
                     b.css('background', _options.found1ColorDefault);
                     b.css('color', WHITE);
                 }
-                var nd1 = _foundNodes1.size === 1 ? 'node' : 'nodes';
+                let nd1 = _foundNodes1.size === 1 ? 'node' : 'nodes';
                 b.prop('title', 'found ' + _foundNodes1.size + ' ' + nd1 + ' [click to ' + RESET_SEARCH_B_BTN_TOOLTIP + ']');
             }
-        }
-        else {
+        } else {
             b = $('#' + RESET_SEARCH_B_BTN);
             if (b) {
                 b.prop('disabled', true);
@@ -35755,30 +32446,28 @@ if (!phyloXml) {
     }
 
     function updateLegendButtonEnabledState() {
-        var b = $('#' + LEGENDS_SHOW_BTN);
+        let b = $('#' + LEGENDS_SHOW_BTN);
         if (b) {
             if (_showLegends) {
                 b.css('background', COLOR_FOR_ACTIVE_ELEMENTS);
                 b.css('color', WHITE);
-            }
-            else {
+            } else {
                 b.css('background', '');
                 b.css('color', '');
             }
         }
-        if (_showLegends && ( _legendColorScales[LEGEND_LABEL_COLOR] ||
-            (_options.showNodeVisualizations && ( _legendColorScales[LEGEND_NODE_FILL_COLOR] ||
-            _legendColorScales[LEGEND_NODE_BORDER_COLOR] ||
-            _legendShapeScales[LEGEND_NODE_SHAPE] ||
-            _legendSizeScales[LEGEND_NODE_SIZE])))) {
+        if (_showLegends && (_legendColorScales[LEGEND_LABEL_COLOR] ||
+            (_options.showNodeVisualizations && (_legendColorScales[LEGEND_NODE_FILL_COLOR] ||
+                _legendColorScales[LEGEND_NODE_BORDER_COLOR] ||
+                _legendShapeScales[LEGEND_NODE_SHAPE] ||
+                _legendSizeScales[LEGEND_NODE_SIZE])))) {
             enableButton($('#' + LEGENDS_HORIZ_VERT_BTN));
             enableButton($('#' + LEGENDS_MOVE_UP_BTN));
             enableButton($('#' + LEGENDS_MOVE_DOWN_BTN));
             enableButton($('#' + LEGENDS_MOVE_LEFT_BTN));
             enableButton($('#' + LEGENDS_MOVE_RIGHT_BTN));
             enableButton($('#' + LEGENDS_RESET_BTN));
-        }
-        else {
+        } else {
             disableButton($('#' + LEGENDS_HORIZ_VERT_BTN));
             disableButton($('#' + LEGENDS_MOVE_UP_BTN));
             disableButton($('#' + LEGENDS_MOVE_DOWN_BTN));
@@ -35790,7 +32479,7 @@ if (!phyloXml) {
 
     function disableCheckbox(cb) {
         if (cb) {
-            var b = $(cb);
+            let b = $(cb);
             if (b) {
                 b.checkboxradio({
                     disabled: true
@@ -35819,12 +32508,10 @@ if (!phyloXml) {
         }
         if (_external_nodes < 3) {
             return "off";
-        }
-        else if (_depth_collapse_level < 0) {
+        } else if (_depth_collapse_level < 0) {
             _depth_collapse_level = forester.calcMaxDepth(_root);
             return "off";
-        }
-        else if (_depth_collapse_level == forester.calcMaxDepth(_root)) {
+        } else if (_depth_collapse_level === forester.calcMaxDepth(_root)) {
             return "off";
         }
         return _depth_collapse_level;
@@ -35840,11 +32527,9 @@ if (!phyloXml) {
 
         if (_external_nodes < 3) {
             return "off";
-        }
-        else if (_branch_length_collapse_level <= _branch_length_collapse_data.min) {
+        } else if (_branch_length_collapse_level <= _branch_length_collapse_data.min) {
             return "off";
-        }
-        else if (_branch_length_collapse_level >= _branch_length_collapse_data.max) {
+        } else if (_branch_length_collapse_level >= _branch_length_collapse_data.max) {
             return "off";
         }
         return _branch_length_collapse_level;
@@ -35866,25 +32551,24 @@ if (!phyloXml) {
 
         if (_root) {
             forester.removeMaxBranchLength(_root);
-            var stats = forester.calcBranchLengthSimpleStatistics(_root);
+            let stats = forester.calcBranchLengthSimpleStatistics(_root);
             _branch_length_collapse_data.min = stats.min;
             _branch_length_collapse_data.max = stats.max;
-            _branch_length_collapse_data.max = 0.25 * ( (3 * _branch_length_collapse_data.max) + _branch_length_collapse_data.min );
-            var x = stats.n < 200 ? ( stats.n / 4) : 50;
+            _branch_length_collapse_data.max = 0.25 * ((3 * _branch_length_collapse_data.max) + _branch_length_collapse_data.min);
+            let x = stats.n < 200 ? (stats.n / 4) : 50;
             _branch_length_collapse_data.step = (_branch_length_collapse_data.max - _branch_length_collapse_data.min) / x;
 
         }
     }
 
     function getTreeAsSvg() {
-        var container = _id.replace('#', '');
-        var wrapper = document.getElementById(container);
-        var svg = wrapper.querySelector('svg');
-        var svgTree = null;
+        let container = _id.replace('#', '');
+        let wrapper = document.getElementById(container);
+        let svg = wrapper.querySelector('svg');
+        let svgTree = null;
         if (typeof window.XMLSerializer !== 'undefined') {
             svgTree = (new XMLSerializer()).serializeToString(svg);
-        }
-        else if (typeof svg.xml !== 'undefined') {
+        } else if (typeof svg.xml !== 'undefined') {
             svgTree = svg.xml;
         }
         return svgTree;
@@ -35895,19 +32579,15 @@ if (!phyloXml) {
             changeBaseBackgoundColor(_options.backgroundColorForPrintExportDefault);
             downloadAsPng();
             changeBaseBackgoundColor(_options.backgroundColorDefault);
-        }
-        else if (format === SVG_EXPORT_FORMAT) {
+        } else if (format === SVG_EXPORT_FORMAT) {
             changeBaseBackgoundColor(_options.backgroundColorForPrintExportDefault);
             downloadAsSVG();
             changeBaseBackgoundColor(_options.backgroundColorDefault);
-        }
-        else if (format === NH_EXPORT_FORMAT) {
+        } else if (format === NH_EXPORT_FORMAT) {
             downloadAsNH();
-        }
-        else if (format === PHYLOXML_EXPORT_FORMAT) {
+        } else if (format === PHYLOXML_EXPORT_FORMAT) {
             downloadAsPhyloXml();
-        }
-        else if (format === PDF_EXPORT_FORMAT) {
+        } else if (format === PDF_EXPORT_FORMAT) {
             changeBaseBackgoundColor(_options.backgroundColorForPrintExportDefault);
             downloadAsPdf();
             changeBaseBackgoundColor(_options.backgroundColorDefault);
@@ -35915,17 +32595,17 @@ if (!phyloXml) {
     }
 
     function downloadAsPhyloXml() {
-        var x = phyloXml.toPhyloXML(_root, 9);
+        let x = phyloXml.toPhyloXML(_root, 9);
         saveAs(new Blob([x], {type: "application/xml"}), _options.nameForPhyloXmlDownload);
     }
 
     function downloadAsNH() {
-        var nh = forester.toNewHampshire(_root, 9, _settings.nhExportReplaceIllegalChars, _settings.nhExportWriteConfidences);
+        let nh = forester.toNewHampshire(_root, 9, _settings.nhExportReplaceIllegalChars, _settings.nhExportWriteConfidences);
         saveAs(new Blob([nh], {type: "application/txt"}), _options.nameForNhDownload);
     }
 
     function downloadAsSVG() {
-        var svg = getTreeAsSvg();
+        let svg = getTreeAsSvg();
         saveAs(new Blob([decodeURIComponent(encodeURIComponent(svg))], {type: "application/svg+xml"}), _options.nameForSvgDownload);
     }
 
@@ -35933,8 +32613,8 @@ if (!phyloXml) {
     }
 
     function downloadAsPng() {
-        var svg = getTreeAsSvg();
-        var canvas = document.createElement('canvas');
+        let svg = getTreeAsSvg();
+        let canvas = document.createElement('canvas');
         canvg(canvas, svg);
         canvas.toBlob(function (blob) {
             saveAs(blob, _options.nameForPngDownload);
@@ -35958,17 +32638,16 @@ if (!phyloXml) {
                                         data,
                                         newHamphshireConfidenceValuesInBrackets,
                                         newHamphshireConfidenceValuesAsInternalNames) {
-        if (newHamphshireConfidenceValuesInBrackets == undefined) {
+        if (newHamphshireConfidenceValuesInBrackets === undefined) {
             newHamphshireConfidenceValuesInBrackets = true;
         }
-        if (newHamphshireConfidenceValuesAsInternalNames == undefined) {
+        if (newHamphshireConfidenceValuesAsInternalNames === undefined) {
             newHamphshireConfidenceValuesAsInternalNames = false;
         }
-        var tree = null;
+        let tree;
         if (location.substr(-3, 3).toLowerCase() === 'xml') {
             tree = archaeopteryx.parsePhyloXML(data);
-        }
-        else {
+        } else {
             tree = archaeopteryx.parseNewHampshire(data,
                 newHamphshireConfidenceValuesInBrackets,
                 newHamphshireConfidenceValuesAsInternalNames);
@@ -35996,21 +32675,19 @@ if (!phyloXml) {
                                                   newHamphshireConfidenceValuesInBrackets,
                                                   newHamphshireConfidenceValuesAsInternalNames,
                                                   nodeVisualizations) {
-        var tree = null;
+        let tree = null;
         try {
             tree = archaeopteryx.parseTree(location,
                 data,
                 newHamphshireConfidenceValuesInBrackets,
                 newHamphshireConfidenceValuesAsInternalNames);
-        }
-        catch (e) {
+        } catch (e) {
             alert(ERROR + 'error while parsing tree: ' + e);
         }
         if (tree) {
             try {
                 archaeopteryx.launch(label, tree, options, settings, nodeVisualizations);
-            }
-            catch (e) {
+            } catch (e) {
                 alert(ERROR + 'error while launching archaeopteryx: ' + e);
             }
         }
@@ -36028,4 +32705,3 @@ if (!phyloXml) {
         this.archaeopteryx = archaeopteryx;
 })
 ();
-

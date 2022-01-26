@@ -66,7 +66,6 @@ define([
     dataModel: 'pathway',
     type: 'pathway',
     primaryKey: 'id',
-    maxDownloadSize: 25000,
     typeMap: {
       pathway: 'pathway_id',
       ec_number: 'ec_number',
@@ -167,21 +166,21 @@ define([
               data.forEach(function (row) {
                 content.push([row.pathway_id, JSON.stringify(row.pathway_name), JSON.stringify(row.pathway_class), row.annotation, row.genome_count, row.gene_count, row.ec_count, row.ec_cons, row.gene_cons]);
               });
-              filename = 'PATRIC_pathways';
+              filename = 'BVBRC_pathways';
               break;
             case 'ec_number':
               headers = ['Pathway ID', 'Pathway Name', 'Pathway Class', 'Annotation', 'EC Number', 'Description', 'Genome Count', 'Unique Gene Count'];
               data.forEach(function (row) {
                 content.push([row.pathway_id, JSON.stringify(row.pathway_name), JSON.stringify(row.pathway_class), row.annotation, row.ec_number, JSON.stringify(row.ec_description), row.genome_count, row.gene_count]);
               });
-              filename = 'PATRIC_pathways_ecnumbers';
+              filename = 'BVBRC_pathways_ecnumbers';
               break;
             case 'gene':
-              headers = ['Genome Name', 'Accession', 'PATRIC ID', 'Refseq Locus Tag', 'Alt Locus Tag', 'Gene', 'Product', 'Annotation', 'Pathway Name', 'EC Description'];
+              headers = ['Genome Name', 'Accession', 'BRC ID', 'Refseq Locus Tag', 'Alt Locus Tag', 'Gene', 'Product', 'Annotation', 'Pathway Name', 'EC Description'];
               data.forEach(function (row) {
                 content.push([row.genome_name, row.accession, row.patric_id, row.refseq_locus_tag, row.alt_locus_tag, row.gene, JSON.stringify(row.product), row.annotation, JSON.stringify(row.pathway_name), JSON.stringify(row.ec_description)]);
               });
-              filename = 'PATRIC_pathways_genes';
+              filename = 'BVBRC_pathways_genes';
               break;
             default:
               break;

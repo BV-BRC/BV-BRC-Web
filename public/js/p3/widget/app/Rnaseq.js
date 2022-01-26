@@ -22,7 +22,7 @@ define([
     requireAuth: true,
     applicationLabel: 'RNA-Seq Analysis',
     applicationDescription: 'The RNA-Seq Analysis Service provides services for aligning, assembling, and testing differential expression on RNA-Seq data.',
-    applicationHelp: 'user_guides/services/rna_seq_analysis_service.html',
+    applicationHelp: 'quick_references/services/rna_seq_analysis_service.html',
     tutorialLink: 'tutorial/rna_seq_submission/submitting_rna_seq_job.html',
     pageTitle: 'RNA-Seq Analysis',
     libraryData: null,
@@ -115,6 +115,16 @@ define([
       // this.single_end_libs.set('value',"/" +  window.App.user.id +"/home/");
       // this.output_path.set('value',"/" +  window.App.user.id +"/home/");
       this._started = true;
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
+        }
+      }
     },
 
     onDesignToggle: function () {
@@ -247,83 +257,16 @@ define([
     getValues: function () {
       var assembly_values = {};
       var values = this.inherited(arguments);
-      var pairedList = this.libraryStore.query({ type: 'paired' });
-      var pairedAttrs = ['read1', 'read2'];
-      var singleAttrs = ['read'];
-      var srrAttrs = ['srr_accession'];
-      var condList = this.conditionStore.data;
-      var contrastList = this.contrastStore.data;
-      var singleList = this.libraryStore.query({ type: 'single' });
-      var srrList = this.libraryStore.query({ type: 'srr_accession' });
-      var condLibs = [];
-      var pairedLibs = [];
-      var singleLibs = [];
-      var srrLibs = [];
-      var contrastPairs = [];
-      this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
+
+      assembly_values = this.checkBaseParameters(values, assembly_values);
+      if (!this.form_flag) {
+        this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
+      }
       // for (var k in values) {
       //   if(!k.startsWith("libdat_")){
       //     assembly_values[k]=values[k];
       //   }
       // }
-      var combinedList = pairedList.concat(singleList).concat(srrList);
-      assembly_values.reference_genome_id = values.genome_name;
-      if (this.exp_design.checked) {
-        condList.forEach(function (condRecord) {
-          for (var i = 0; i < combinedList.length; i++) {
-            if (combinedList[i].condition == condRecord.condition) {
-              condLibs.push(condRecord.condition);
-              break;
-            }
-          }
-        });
-        contrastList.forEach(function (contrastRecord) {
-          contrastPairs.push([condLibs.indexOf(contrastRecord.condition1) + 1, condLibs.indexOf(contrastRecord.condition2) + 1]);
-        });
-        assembly_values.contrasts = contrastPairs;
-      }
-      pairedList.forEach(function (libRecord) {
-        var toAdd = {};
-        if ('condition' in libRecord && this.exp_design.checked) {
-          toAdd.condition = condLibs.indexOf(libRecord.condition) + 1;
-        }
-        pairedAttrs.forEach(function (attr) {
-          toAdd[attr] = libRecord[attr];
-        });
-        pairedLibs.push(toAdd);
-      }, this);
-      if (pairedLibs.length) {
-        assembly_values.paired_end_libs = pairedLibs;
-      }
-      if (condLibs.length) {
-        assembly_values.experimental_conditions = condLibs;
-      }
-      singleList.forEach(function (libRecord) {
-        var toAdd = {};
-        if ('condition' in libRecord && this.exp_design.checked) {
-          toAdd.condition = condLibs.indexOf(libRecord.condition) + 1;
-        }
-        singleAttrs.forEach(function (attr) {
-          toAdd[attr] = libRecord[attr];
-        });
-        singleLibs.push(toAdd);
-      }, this);
-      if (singleLibs.length) {
-        assembly_values.single_end_libs = singleLibs;
-      }
-      srrList.forEach(function (libRecord) {
-        var toAdd = {};
-        if ('condition' in libRecord && this.exp_design.checked) {
-          toAdd.condition = condLibs.indexOf(libRecord.condition) + 1;
-        }
-        srrAttrs.forEach(function (attr) {
-          toAdd[attr] = libRecord[attr];
-        });
-        srrLibs.push(toAdd);
-      }, this);
-      if (srrLibs.length) {
-        assembly_values.srr_libs = srrLibs;
-      }
       if (Boolean(this.genome_nameWidget.item.host) && 'ftp' in this.genome_nameWidget.item) {
         assembly_values['host_ftp'] = this.genome_nameWidget.item['ftp'];
       }
@@ -807,6 +750,9 @@ define([
             label: 'Tuxedo', value: 'RNA-Rocket', selected: false, disabled: true
           },
           {
+            label: 'HTSeq-DESeq', value: 'HTSeq-DESeq', selected: false, disabled: true
+          },
+          {
             label: 'Host HISAT2', value: 'Host', selected: true, disabled: false
           }];
         this.recipe.set('options', newOptions).reset();
@@ -818,18 +764,24 @@ define([
             label: 'Tuxedo', value: 'RNA-Rocket', selected: false, disabled: false
           },
           {
+            label: 'HTSeq-DESeq', value: 'HTSeq-DESeq', selected: false, disabled: false
+          },
+          {
             label: 'Host HISAT2', value: 'Host', selected: false, disabled: true
           }];
         this.recipe.set('options', newOptions).reset();
         if (curRecipe == 'RNA-Rocket') {
           this.recipe.set('value', 'RNA-Rocket');
         }
+        else if (curRecipe == 'HTSeq-DESeq') {
+          this.recipe.set('value', 'HTSeq-DESeq');
+        }
       }
     },
 
     onAddPair: function () {
       console.log('Create New Row', domConstruct);
-      if (this.read1.searchBox.get('value') == this.read2.searchBox.get('value')) {
+      if (this.read1.get('value') == this.read2.get('value')) {
         var msg = 'READ FILE 1 and READ FILE 2 cannot be the same.';
         new Dialog({ title: 'Notice', content: msg }).show();
         return;
@@ -879,6 +831,307 @@ define([
         this.createLib(lrec);
         this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
       }
+    },
+
+    checkBaseParameters: function (values, assembly_values) {
+
+      var pairedList = this.libraryStore.query({ type: 'paired' });
+      var pairedAttrs = ['read1', 'read2'];
+      var singleAttrs = ['read'];
+      var srrAttrs = ['srr_accession'];
+      var condList = this.conditionStore.data;
+      var contrastList = this.contrastStore.data;
+      var singleList = this.libraryStore.query({ type: 'single' });
+      var srrList = this.libraryStore.query({ type: 'srr_accession' });
+      var condLibs = [];
+      var contrastPairs = [];
+
+      var combinedList = pairedList.concat(singleList).concat(srrList);
+      if (this.exp_design.checked) {
+        condList.forEach(function (condRecord) {
+          for (var i = 0; i < combinedList.length; i++) {
+            if (combinedList[i].condition == condRecord.condition) {
+              condLibs.push(condRecord.condition);
+              break;
+            }
+          }
+        });
+        contrastList.forEach(function (contrastRecord) {
+          contrastPairs.push([condLibs.indexOf(contrastRecord.condition1) + 1, condLibs.indexOf(contrastRecord.condition2) + 1]);
+        });
+        assembly_values.contrasts = contrastPairs;
+      }
+      // reads or sra TODO bam
+      pairedList.forEach(function (libRecord) {
+        var toAdd = {};
+        if ('condition' in libRecord && this.exp_design.checked) {
+          toAdd.condition = condLibs.indexOf(libRecord.condition) + 1;
+        }
+        pairedAttrs.forEach(function (attr) {
+          toAdd[attr] = libRecord[attr];
+        });
+        this.paired_end_libs.push(toAdd);
+      }, this);
+      if (this.paired_end_libs.length) {
+        assembly_values.paired_end_libs = this.paired_end_libs;
+      }
+      if (condLibs.length) {
+        assembly_values.experimental_conditions = condLibs;
+      }
+      singleList.forEach(function (libRecord) {
+        var toAdd = {};
+        if ('condition' in libRecord && this.exp_design.checked) {
+          toAdd.condition = condLibs.indexOf(libRecord.condition) + 1;
+        }
+        singleAttrs.forEach(function (attr) {
+          toAdd[attr] = libRecord[attr];
+        });
+        this.single_end_libs.push(toAdd);
+      }, this);
+      if (this.single_end_libs.length) {
+        assembly_values.single_end_libs = this.single_end_libs;
+      }
+      srrList.forEach(function (libRecord) {
+        var toAdd = {};
+        if ('condition' in libRecord && this.exp_design.checked) {
+          toAdd.condition = condLibs.indexOf(libRecord.condition) + 1;
+        }
+        srrAttrs.forEach(function (attr) {
+          toAdd[attr] = libRecord[attr];
+        });
+        this.sra_libs.push(toAdd);
+      }, this);
+      if (this.sra_libs.length) {
+        assembly_values.srr_libs = this.sra_libs;
+      }
+
+      // strategy (recipe)
+      assembly_values.recipe = values.recipe;
+      if (values.recipe == 'HTSeq-DESeq') {
+        assembly_values.feature_count = 'htseq';
+        assembly_values.recipe = 'RNA-Rocket';
+      } else if (values.recipe == 'RNA-Rocket') {
+        assembly_values.feature_count = 'cufflinks';
+      } else { // host
+        assembly_values.feature_count = 'htseq';
+      }
+
+      // target_genome
+      assembly_values.reference_genome_id = values.genome_name;
+      // output_folder
+      assembly_values.output_path = values.output_path;
+      this.output_folder = values.output_path;
+      // output_file
+      assembly_values.output_file = values.output_file;
+      this.output_name = values.output_file;
+
+      return assembly_values;
+    },
+
+    intakeRerunForm: function () {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path', 'strategy': 'recipe', 'target_genome_id': 'reference_genome_id' };
+        var widget_map = { 'reference_genome_id': 'genome_nameWidget' };
+        param_dict['widget_map'] = widget_map;
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
+        job_data = this.formatRerunJson(job_data);
+        this.checkConditionsFormFill(job_data);
+        this.checkContrastsFormFill(job_data);
+        // TODO: check conditions/library pairing
+        job_data = this.addConditionInfoFormFill(job_data);
+        AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+        this.form_flag = true;
+        localStorage.removeItem('bvbrc_rerun_job');
+      }
+    },
+
+    // Sometimes RNASeq jobs put single ends reads into paired_end_libs
+    // This function puts all reads from paired_end_libs with 1 read into single_end_libs
+    formatRerunJson: function (job_data) {
+      if (!job_data.paired_end_libs) {
+        job_data.paired_end_libs = [];
+      }
+      if (!job_data.single_end_libs) {
+        job_data.single_end_libs = [];
+      }
+      for (var x = job_data.paired_end_libs.length - 1; x >= 0; x--) {
+        var paired_record = job_data.paired_end_libs[x];
+        if (paired_record.hasOwnProperty('read1') && !paired_record.hasOwnProperty('read2')) {
+          if (!job_data.hasOwnProperty('single_end_libs')) {
+            job_data.single_end_libs = [];
+          }
+          var single_record = paired_record;
+          single_record['read'] = paired_record['read1'];
+          delete single_record['read1'];
+          job_data.single_end_libs.push(single_record);
+          job_data.paired_end_libs.splice(x, 1);
+        }
+      }
+      if (!job_data.hasOwnProperty('srr_libs')) {
+        job_data.srr_libs = [];
+      }
+      if (!job_data.hasOwnProperty('sra_libs')) {
+        job_data['sra_libs'] = job_data.srr_libs;
+      }
+      return job_data;
+    },
+
+    // /add icon information
+    addConditionInfoFormFill: function (job_data) {
+      var conditions = job_data.experimental_conditions;
+      // paired libs
+      for (var x = 0; x < job_data.paired_end_libs.length; x++) {
+        var curr_reads = job_data.paired_end_libs[x];
+        if (curr_reads.hasOwnProperty('condition')) {
+          var curr_cond = conditions[parseInt(curr_reads['condition']) - 1];
+          job_data.paired_end_libs[x].icon = this.getConditionIcon(curr_cond);
+          job_data.paired_end_libs[x].condition = curr_cond;
+        }
+      }
+      // single libs
+      for (var x = 0; x < job_data.single_end_libs.length; x++) {
+        var curr_read = job_data.single_end_libs[x];
+        if (curr_read.hasOwnProperty('condition')) {
+          var curr_cond = conditions[parseInt(curr_read['condition']) - 1];
+          job_data.single_end_libs[x].icon = this.getConditionIcon(curr_cond);
+          job_data.single_end_libs[x].condition = curr_cond;
+        }
+      }
+      // sra library
+      for (var x = 0; x < job_data.srr_libs.length; x++) {
+        var curr_srr = job_data.srr_libs[x];
+        if (curr_srr.hasOwnProperty('condition')) {
+          var curr_cond = conditions[parseInt(curr_srr['condition']) - 1];
+          job_data.srr_libs[x].icon = this.getConditionIcon(curr_cond);
+          job_data.srr_libs[x].condition = curr_cond;
+        }
+      }
+      return job_data;
+    },
+
+    checkConditionsFormFill: function (job_data) {
+      if (job_data['experimental_conditions'].length > 0) {
+        this.exp_design.checked = true;
+        this.exp_design.value = this.exp_design.checked ? 'on' : 'off';
+        this.onDesignToggle();
+        var condition_counts = this.getConditionCounts(job_data);
+        // for each
+        job_data['experimental_conditions'].forEach(function (cond) {
+          var lrec = { count: condition_counts[cond], type: 'condition', condition: cond };
+          lrec.icon = this.getConditionIcon();
+          lrec.id = cond;
+          lrec._id = cond;
+          if (this.addedCond.counter < this.maxConditions) {
+            this.updateConditionStore(lrec, false);
+            this.updateContrasts();
+          }
+          var tr = this.condTable.insertRow(0);
+          var td = domConstruct.create('td', { 'class': 'textcol conditiondata', innerHTML: '' }, tr);
+          td.libRecord = lrec;
+          td.innerHTML = "<div class='libraryrow'>" + lrec.condition + '</div>';
+          domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon }, tr);
+          var td2 = domConstruct.create('td', {
+            'class': 'iconcol',
+            innerHTML: "<i class='fa icon-x fa-1x' />"
+          }, tr);
+          if (this.addedCond.counter < this.initConditions) {
+            this.condTable.deleteRow(-1);
+          }
+
+          var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+            console.log('Delete Row');
+            domConstruct.destroy(tr);
+            this.destroyLib(lrec, lrec.condition, 'condition');
+            this.destroyContrastRow(query_id = lrec['condition']);
+            this.updateConditionStore(lrec, true);
+            this.decreaseRows(this.condTable, this.addedCond, this.numCondWidget);
+            if (this.addedCond.counter < this.maxConditions) {
+              var ntr = this.condTable.insertRow(-1);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            }
+            this.condition_single.reset();
+            this.condition_srr.reset();
+            this.condition_paired.reset();
+            handle.remove();
+          }));
+          this.increaseRows(this.condTable, this.addedCond, this.numCondWidget);
+        }, this);
+      }
+    },
+
+    checkContrastsFormFill: function (job_data) {
+      // var disable = !this.exp_design.checked;
+      // var contrastSize = this.contrastStore.data.length;
+      var conditions = job_data['experimental_conditions'];
+      var offset = 1;
+      job_data['contrasts'].forEach(function (contrast) {
+        var curr_contrast = contrast;
+        var condition1 = conditions[parseInt(curr_contrast[0]) - offset];
+        var condition2 = conditions[parseInt(curr_contrast[1]) - offset];
+        // var condition1 = ''+curr_contrast[0];
+        // var condition2 = ''+curr_contrast[1];
+        var lrec = { type: 'contrast' };
+        lrec.condition1 = condition1;
+        lrec.condition2 = condition2;
+        lrec.icon1 = this.getConditionIcon(condition1);
+        lrec.icon2 = this.getConditionIcon(condition2);
+        if (this.addedContrast.counter < this.maxContrasts) {
+          this.updateContrastStore(lrec, false);
+        }
+        var tr = this.contrastTable.insertRow(0);
+        lrec.row = tr;
+        lrec._row = tr;
+
+        var td_cd1 = domConstruct.create('td', { 'class': 'conditiondata', innerHTML: '' }, tr);
+        td_cd1.innerHTML = "<div class='contrastrow'>" + this.makeConditionName(condition1) + '</div>';
+        domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon1 }, tr);
+
+        var td_cd2 = domConstruct.create('td', { 'class': 'conditiondata', innerHTML: '' }, tr);
+        td_cd2.innerHTML = "<div class='contrastrow'>" + this.makeConditionName(condition2) + '</div>';
+        domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon2 }, tr);
+
+        var tdx = domConstruct.create('td', { 'class': 'iconcol', innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+        if (this.addedContrast.counter < this.initContrasts) {
+          this.contrastTable.deleteRow(-1);
+        }
+
+        var handle = on(tdx, 'click', lang.hitch(this, function (evt) {
+          console.log('Delete Row');
+          domConstruct.destroy(tr);
+          this.updateContrastStore(lrec, true);
+          this.decreaseRows(this.contrastTable, this.addedContrast, this.numContrastWidget);
+          if (this.addedContrast.counter < this.maxContrasts) {
+            var ntr = this.condTable.insertRow(-1);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          }
+          handle.remove();
+          this.destroyContrastRow(lrec.contrast, 'contrast');
+        }));
+        this.increaseRows(this.contrastTable, this.addedContrast, this.numContrastWidget);
+      }, this);
+    },
+
+    getConditionCounts: function (job_data) {
+      var counts = {};
+      var conditions = job_data['experimental_conditions'];
+      conditions.forEach(function (cond) {
+        counts[cond] = 0;
+      });
+      var offset = 1;
+      var combinedList = job_data.paired_end_libs.concat(job_data.single_end_libs).concat(job_data.sra_libs);
+      for (var x = 0; x < combinedList.length; x++) {
+        var curr_lib = combinedList[x];
+        counts[conditions[parseInt(curr_lib['condition']) - offset]]++;
+      }
+      return counts;
     }
 
   });

@@ -1,4 +1,4 @@
-# Contributing to PATRIC WebApp
+# Contributing to the BV-BRC Web Application
 
 Thanks for your contribution. The following is a set of guidlines and code commit procedures. Feel free to propose changes to this document in a pull request.
 
@@ -11,7 +11,7 @@ If you're contributing for the first time, configure your local git
 3. confgure `upstream` remote for later sync.
 
 ```shell
-git remote add upstream https://github.com/BV-BRC/website.git
+git remote add upstream https://github.com/BV-BRC/bvbrc_website.git
 ```
 
 4. whenever you need to sync your local
@@ -69,7 +69,10 @@ If you're making a **hot fix**, which has to be deployed immediately.
 1. pull request to `develop` **and** `master` branch
 
 ## UI Development
-https://github.com/BV-BRC/website/blob/master/docs/README.md
+
+Refer to:
+
+https://github.com/BV-BRC/bvbrc_website/blob/master/docs/README.md
 
 
 ## Preparing Release

@@ -3,14 +3,14 @@ define([
   './SubSystemsMemoryGrid', 'dijit/popup', 'dojo/topic', 'dojo/request', 'dojo/when',
   'dijit/TooltipDialog', './FilterContainerActionBar', 'FileSaver', '../util/PathJoin',
   'dojo/_base/lang', 'dojo/dom-construct', './PerspectiveToolTip',
-  './SelectionToGroup', 'dijit/Dialog', './DownloadTooltipDialog', 'dojo/_base/Deferred'
+  './SelectionToGroup', 'dijit/Dialog', './DownloadTooltipDialog'
 
 ], function (
   declare, GridContainer, on,
   SubSystemsGrid, popup, Topic, request, when,
   TooltipDialog, ContainerActionBar, saveAs, PathJoin,
   lang, domConstruct, PerspectiveToolTipDialog,
-  SelectionToGroup, Dialog, DownloadTooltipDialog, Deferred
+  SelectionToGroup, Dialog, DownloadTooltipDialog
 ) {
 
   var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
@@ -93,7 +93,6 @@ define([
     dataModel: 'subsystem',
     type: 'subsystem',
     primaryKey: 'id',
-    maxDownloadSize: 25000,
     typeMap: {
       subsystems: 'subsystem_id',
       role_id: 'role_id',
@@ -264,7 +263,7 @@ define([
                 });
               }
 
-              filename = 'PATRIC_subsystems';
+              filename = 'BVBRC_subsystems';
               break;
 
             case 'genes':
@@ -276,7 +275,7 @@ define([
                 'Role ID',
                 'Role Name',
                 'Active',
-                'PATRIC ID',
+                'BRC ID',
                 'Gene',
                 'Product'
               ];
@@ -295,7 +294,7 @@ define([
                   JSON.stringify(row.product)
                 ]);
               });
-              filename = 'PATRIC_subsystems';
+              filename = 'BVBRC_subsystems';
               break;
 
             default:
@@ -470,7 +469,7 @@ define([
                 selectedRow['Role ID'] = row.role_id;
                 selectedRow['Role Name'] = row.role_name;
                 selectedRow.Active = row.active;
-                selectedRow['PATRIC ID'] = row.patric_id;
+                selectedRow['BRC ID'] = row.patric_id;
                 selectedRow.Gene = row.gene;
                 selectedRow.Product = row.product;
                 selectedRow.subsystem_id = row.subsystem_id;
@@ -707,8 +706,6 @@ define([
     ]),
     _setStateAttr: function (state) {
       this._set('state', state);
-      // console.log("from _setState", state)
-      // this.filterPanel.set("state", lang.mixin({}, state));
       this.filterPanel.set('state', lang.mixin({}, state, { hashParams: lang.mixin({}, state.hashParams) }));
       if (this.grid) {
         this.grid.set('state', lang.mixin({}, state, { hashParams: lang.mixin({}, state.hashParams) }));

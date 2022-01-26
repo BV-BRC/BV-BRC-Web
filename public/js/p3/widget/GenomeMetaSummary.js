@@ -1,27 +1,23 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang',
-  'dojo/on', 'dojo/promise/all', 'dojo/when', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/request',
+  'dojo/dom-construct',
   'dojo/topic', 'dojo/query', 'dojo/dom-style',
-  'dijit/_WidgetBase', 'dijit/layout/ContentPane',
-  'dojox/charting/Chart2D', 'dojox/charting/action2d/MoveSlice', 'dojox/charting/plot2d/Pie',
-  'dojox/charting/action2d/Tooltip', 'dojo/fx/easing',
-  '../util/PathJoin', './SummaryWidget', './PATRICTheme'
+  'dojox/charting/Chart2D', 'dojox/charting/plot2d/Pie',
+  '../DataAPI',
+  './SummaryWidget', './PATRICTheme'
 ], function (
   declare, lang,
-  on, All, when, domClass, domConstruct, xhr,
+  domConstruct,
   Topic, domQuery, domStyle,
-  WidgetBase, ContentPane,
-  Chart2D, MoveSlice, Pie,
-  ChartTooltip, easing,
-  PathJoin, SummaryWidget, Theme
+  Chart2D, Pie,
+  DataAPI,
+  SummaryWidget, Theme
 ) {
 
   var categoryName = {
-    host_name: 'Host Name',
-    disease: 'Disease',
-    reference_genome: 'Reference Genome',
-    genome_status: 'Genome Status',
-    isolation_country: 'Isolation Country'
+    host_group: 'Host',
+    isolation_country: 'Isolation Country',
+    collection_year: 'Collection Year'
   };
 
   return declare([SummaryWidget], {
@@ -45,33 +41,32 @@ define([
     }],
     onSetQuery: function (attr, oldVal, query) {
 
-      var url = PathJoin(this.apiServiceUrl, this.dataModel) + '/';
-
-      var defMetadata = when(xhr.post(url, {
-        handleAs: 'json',
-        headers: this.headers,
-        data: this.query + '&facet((field,host_name),(field,disease),(field,genome_status),(field,isolation_country),(mincount,1))' + this.baseQuery
-      }), function (response) {
-        return response.facet_counts.facet_fields;
-      });
-
-      return when(All([defMetadata]), lang.hitch(this, 'processData'));
+      return DataAPI.query('genome',
+        `${this.query}&facet((field,host_group),(field,isolation_country),(field,collection_year),(mincount,1))${this.baseQuery}`,
+        {
+          accept: 'application/solr+json'
+        })
+        .then((res) => {
+          const facets = res.facet_counts.facet_fields;
+          return this.processData(facets)
+        })
     },
     processData: function (results) {
 
-      this._tableData = Object.keys(results[0]).map(function (cat) {
+      this._tableData = Object.keys(results).map(function (cat) {
         var categories = [];
         var others = { count: 0 };
-        Object.keys(results[0][cat]).forEach(function (d) {
-          if (d) {
+        var sorted = Object.entries(results[cat]).sort(([, a], [, b]) => b - a)
+        sorted.forEach(function ([label, val]) {
+          if (label) {
             if (categories.length < 4) {
               categories.push({
-                label: d,
-                count: results[0][cat][d],
-                link: '#view_tab=genomes&filter=eq(' + cat + ',' + encodeURIComponent(d) + ')'
+                label: label,
+                count: val,
+                link: `#view_tab=genomes&filter=eq(${cat},${encodeURIComponent(label)})`
               });
             }
-            others.count += results[0][cat][d];
+            others.count += val;
           }
         });
         if (others.count > 0) {
@@ -83,21 +78,21 @@ define([
       });
 
       var data = {};
-      Object.keys(results[0]).forEach(function (cat) {
-        var m = results[0][cat];
+      Object.keys(results).forEach(function (cat) {
         var categories = [];
         var others = { x: 'Others', y: 0 };
-        Object.keys(m).forEach(function (val) {
-          if (val) {
+        var sorted = Object.entries(results[cat]).sort(([, a], [, b]) => b - a)
+        sorted.forEach(function ([label, val]) {
+          if (label) {
             if (categories.length < 4) {
               categories.push({
-                text: val + ' (' + m[val] + ')',
-                link: '#view_tab=genomes&filter=eq(' + cat + ',' + encodeURIComponent(val) + ')',
-                x: val,
-                y: m[val]
+                text: `${label} (${val})`,
+                link: `#view_tab=genomes&filter=eq(${cat},${encodeURIComponent(label)})`,
+                x: label,
+                y: val
               });
             } else {
-              others.y += m[val];
+              others.y += val;
             }
           }
         });
@@ -154,11 +149,11 @@ define([
       };
 
       if (!this.host_chart) {
-        var cpHostNode = domConstruct.create('div', { 'class': 'pie-chart-widget host_name' });
+        var cpHostNode = domConstruct.create('div', { 'class': 'pie-chart-widget host_group' });
         domConstruct.place(cpHostNode, this.chartNode, 'last');
 
         this.host_chart = new Chart2D(cpHostNode, {
-          title: 'Host Name',
+          title: 'Host',
           titleGap: 30,
           titleFontColor: '#424242',
           titleFont: 'normal normal bold 12pt Tahoma',
@@ -170,26 +165,7 @@ define([
             radius: 70,
             labelStyle: 'columns'
           });
-        // new MoveSlice(this.host_chart, "default");
         this.host_chart.connectToPlot('default', onClickEventHandler);
-
-        var cpDiseaseNode = domConstruct.create('div', { 'class': 'pie-chart-widget disease' });
-        domConstruct.place(cpDiseaseNode, this.chartNode, 'last');
-
-        this.disease_chart = new Chart2D(cpDiseaseNode, {
-          title: 'Disease',
-          titleFontColor: '#424242',
-          titleFont: 'normal normal bold 12pt Tahoma',
-          titlePos: 'top'
-        })
-          .setTheme(Theme)
-          .addPlot('default', {
-            type: this.DonutChart,
-            radius: 70,
-            labelStyle: 'columns'
-          });
-        // new MoveSlice(this.disease_chart, "default");
-        this.disease_chart.connectToPlot('default', onClickEventHandler);
 
         var cpIsolationCountry = domConstruct.create('div', { 'class': 'pie-chart-widget isolation_country' });
         domConstruct.place(cpIsolationCountry, this.chartNode, 'last');
@@ -205,13 +181,12 @@ define([
             radius: 70,
             labelStyle: 'columns'
           });
-        // new MoveSlice(this.isolation_country_chart, "default");
         this.isolation_country_chart.connectToPlot('default', onClickEventHandler);
 
-        var cpGenomeStatus = domConstruct.create('div', { 'class': 'pie-chart-widget genome_status' });
-        domConstruct.place(cpGenomeStatus, this.chartNode, 'last');
-        this.genome_status_chart = new Chart2D(cpGenomeStatus, {
-          title: 'Genome Status',
+        var cpCollectionYear = domConstruct.create('div', { 'class': 'pie-chart-widget collection_year' });
+        domConstruct.place(cpCollectionYear, this.chartNode, 'last');
+        this.collection_year_chart = new Chart2D(cpCollectionYear, {
+          title: 'Collection Year',
           titleFontColor: '#424242',
           titleFont: 'normal normal bold 12pt Tahoma',
           titlePos: 'top'
@@ -222,26 +197,21 @@ define([
             radius: 70,
             labelStyle: 'columns'
           });
-        // new MoveSlice(this.genome_status_chart, "default");
-        this.genome_status_chart.connectToPlot('default', onClickEventHandler);
+        this.collection_year_chart.connectToPlot('default', onClickEventHandler);
 
         Object.keys(this.data).forEach(lang.hitch(this, function (key) {
           switch (key) {
-            case 'host_name':
+            case 'host_group':
               this.host_chart.addSeries(key, this.data[key]);
               this.host_chart.render();
-              break;
-            case 'disease':
-              this.disease_chart.addSeries(key, this.data[key]);
-              this.disease_chart.render();
               break;
             case 'isolation_country':
               this.isolation_country_chart.addSeries(key, this.data[key]);
               this.isolation_country_chart.render();
               break;
-            case 'genome_status':
-              this.genome_status_chart.addSeries(key, this.data[key]);
-              this.genome_status_chart.render();
+            case 'collection_year':
+              this.collection_year_chart.addSeries(key, this.data[key]);
+              this.collection_year_chart.render();
               break;
             default:
               break;
@@ -249,24 +219,20 @@ define([
         }));
 
       } else {
-
+        // update existing chart
         Object.keys(this.data).forEach(lang.hitch(this, function (key) {
           switch (key) {
-            case 'host_name':
+            case 'host_group':
               this.host_chart.updateSeries(key, this.data[key]);
               this.host_chart.render();
-              break;
-            case 'disease':
-              this.disease_chart.updateSeries(key, this.data[key]);
-              this.disease_chart.render();
               break;
             case 'isolation_country':
               this.isolation_country_chart.updateSeries(key, this.data[key]);
               this.isolation_country_chart.render();
               break;
-            case 'genome_status':
-              this.genome_status_chart.updateSeries(key, this.data[key]);
-              this.genome_status_chart.render();
+            case 'collection_year':
+              this.collection_year_chart.updateSeries(key, this.data[key]);
+              this.collection_year_chart.render();
               break;
             default:
               break;

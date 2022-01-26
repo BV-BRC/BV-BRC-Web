@@ -15,20 +15,8 @@ define([
     token: '',
     apiUrl: '',
     userId: '',
-
-    downloadTypes: ['bam', 'bai', 'bigwig', 'biochemistry', 'contigs', 'csv',
-      'de_novo_assembled_transcripts', 'diffexp_experiment', 'diffexp_expression',
-      'diffexp_input_data', 'diffexp_input_metadata', 'diffexp_mapping',
-      'diffexp_sample', 'doc', 'docx', 'embl', 'fba',
-      'feature_dna_fasta', 'feature_protein_fasta',
-      'feature_table', 'genbank_file', 'genome', 'genome_annotation_result',
-      'genome_comparison_table', 'gff', 'gif', 'html', 'jpg',
-      'json', 'mapping', 'media', 'model', 'modelfolder', 'model_edit',
-      'modeltemplate', 'nwk', 'pdf', 'png', 'ppt', 'pptx', 'proteomics_experiment',
-      'reads', 'rxnprobs', 'string', 'svg', 'tar_gz', 'tbi',
-      'transcriptomics_experiment', 'transcripts', 'txt', 'unspecified', 'vcf',
-      'vcf_gz', 'wig', 'xls', 'xlsx', 'zip', 'contigset', 'xml'],
-
+    forbiddenDownloadTypes: ['experiment_group', 'feature_group', 'genome_group', 'modelfolder'],
+    // forbiddenDownloadTypes: ['experiment_group', 'feature_group', 'genome_group', 'folder', 'job_result'],
     viewableTypes: ['txt', 'html', 'json', 'csv', 'tsv', 'diffexp_experiment',
       'diffexp_expression', 'diffexp_mapping', 'diffexp_sample', 'pdf',
       'diffexp_input_data', 'diffexp_input_metadata', 'svg', 'gif', 'png', 'jpg'],
@@ -131,6 +119,11 @@ define([
         label: 'PDF',
         formats: ['.pdf'],
         description: 'A pdf file.'
+      },
+      phyloxml: {
+        label: 'PHYLOXML',
+        formats: ['.xml'],
+        description: 'An phyloxml file.'
       },
       png: {
         label: 'PNG Image',
@@ -329,7 +322,7 @@ define([
     addToGroup: function (groupPath, idType, ids) {
       Topic.publish('/Notification', {
         message: '<span class="default">Adding ' + ids.length +
-        ' item' + (ids.length > 1 ? 's' : '') + '...</span>'
+          ' item' + (ids.length > 1 ? 's' : '') + '...</span>'
       });
 
       var _self = this;
@@ -341,7 +334,7 @@ define([
           // add logic to remove duplicate from ids
           var idsFiltered = [];
           ids.forEach(function (id) {
-            if (idsFiltered.indexOf(id)  == -1) {
+            if (idsFiltered.indexOf(id) == -1) {
               idsFiltered.push(id);
             }
           });
@@ -394,7 +387,7 @@ define([
             Topic.publish('/Notification', {
               message: ids.length + ' Item removed from group ' + groupPath,
               type: 'message',
-              duration: 0
+              duration: 3000
             });
             return r;
           });
@@ -403,7 +396,7 @@ define([
         Topic.publish('/Notification', {
           message: 'Unable to remove items from group.  Invalid group structure',
           type: 'error',
-          duration: 0
+          duration: 3000
         });
         return new Error('Unable to remove from group.  Group structure incomplete');
       });
@@ -417,7 +410,7 @@ define([
       // add logic to remove duplicate from ids
       var idsFiltered = [];
       ids.forEach(function (id) {
-        if (idsFiltered.indexOf(id)  == -1) {
+        if (idsFiltered.indexOf(id) == -1) {
           idsFiltered.push(id);
         }
       });
@@ -570,7 +563,46 @@ define([
         return workspace;
       }));
     },
+    getObjectsAtPathByType: function (types, specialPath) {
+      types = (types instanceof Array) ? types : [types];
 
+      return Deferred.when(this.get('currentWorkspace'), lang.hitch(this, function (current) {
+        var _self = this;
+
+        var path = specialPath || current.path;
+        return Deferred.when(this.api('Workspace.ls', [{
+          paths: [path],
+          excludeDirectories: false,
+          excludeObjects: false,
+          query: { type: types },
+          recursive: false
+        }]), function (results) {
+          if (!results[0] || !results[0][path]) {
+            return [];
+          }
+          var res = results[0][path];
+
+          res = res.map(function (r) {
+            return _self.metaListToObj(r);
+          }).filter(function (r) {
+            if (r.type == 'folder') {
+              if (r.path.split('/').some(function (p) {
+                return p.charAt(0) == '.';
+              })) {
+                return false;
+              }
+            }
+            return (types.indexOf(r.type) >= 0);
+          });
+          /* .filter(function(r){
+            if (!showHidden && r.name.charAt(0)=="."){ return false };
+            return true;
+          }) */
+
+          return res;
+        });
+      }));
+    },
     getObjectsByType: function (types, specialPath) {
       types = (types instanceof Array) ? types : [types];
 
@@ -623,6 +655,19 @@ define([
         // console.log("download Urls: ", urls);
         // window.open(urls[0]); // window.open can be blocked by pop-up blockers
         window.location.assign(urls[0]);
+      });
+    },
+
+    downloadArchiveFile: function (path_list, archive_name, archive_type, recursive) {
+      // var archive_params = [path_list, recursive, archive_name, archive_type];
+      return Deferred.when(this.api('Workspace.get_archive_url', [{
+        objects: path_list,
+        recursive: recursive,
+        archive_name: archive_name,
+        archive_type: archive_type
+      }]), function (url) {
+        console.log(url[0]);
+        window.location.assign(url[0]);
       });
     },
 
@@ -817,7 +862,7 @@ define([
       var newPath = path.slice(0, path.lastIndexOf('/')) + '/' + newName;
 
       // ensure path doesn't already exist
-      console.log('Checking for "', newPath, '" before rename...' );
+      console.log('Checking for "', newPath, '" before rename...');
       return Deferred.when(
         this.getObjects(newPath, true),
         function (response) {
@@ -900,7 +945,7 @@ define([
       var newPath = path.slice(0, path.lastIndexOf('/')) + '/.' + newName;
 
       // log what is happening so that console error is expected
-      console.log('Checking for job data "', newPath, '" before rename...' );
+      console.log('Checking for job data "', newPath, '" before rename...');
       return Deferred.when(
         this.getObjects(newPath, true),
         function (response) {
@@ -1050,7 +1095,7 @@ define([
         },
 
         function (err) {
-        // console.log("Error Loading Workspace:", err);
+          // console.log("Error Loading Workspace:", err);
           _self.showError(err);
         }
       );
@@ -1169,7 +1214,7 @@ define([
         }]), function (res) {
           var pathHash = res[0];
           Object.keys(pathHash).forEach(function (path) {
-          // server sometimes returns 'none' permissions, ignore them.
+            // server sometimes returns 'none' permissions, ignore them.
             var permObjs = pathHash[path].filter(function (p) {
               return p[1] != 'n' || (includeGlobal && p[0] == 'global_permission');
             }).map(function (p) {

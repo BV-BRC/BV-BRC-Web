@@ -108,7 +108,7 @@ define([
 
           switch (this.type) {
             case 'genome_feature':
-              headers = ['Genome', 'Genome ID', 'PATRIC ID', 'RefSeq Locus Tag', 'Gene', 'Product', 'Length (NT)', 'Length (AA)', 'ALN Length', 'Identity', 'Query cover', 'Subject cover', 'Hit from', 'Hit to', 'Score', 'E value'];
+              headers = ['Genome', 'Genome ID', 'BRC ID', 'RefSeq Locus Tag', 'Gene', 'Product', 'Length (NT)', 'Length (AA)', 'ALN Length', 'Identity', 'Query cover', 'Subject cover', 'Hit from', 'Hit to', 'Score', 'E value'];
               content = data.map(function (row) {
                 return [row.genome_name, row.genome_id, row.patric_id, row.refseq_locus_tag, row.gene, JSON.stringify(row['function']), row.na_length, row.aa_length, row.length, row.pident, row.query_coverage, row.subject_coverage, row.hit_from, row.hit_to, row.bitscore, row.evalue];
               });

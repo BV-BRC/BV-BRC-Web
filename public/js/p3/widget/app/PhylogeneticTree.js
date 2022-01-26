@@ -18,9 +18,9 @@ define([
     requireAuth: true,
     applicationLabel: 'Phylogenetic Tree Building',
     applicationDescription: 'The Phylogenetic Tree Building Service enables construction of custom phylogenetic trees for user-selected genomes.',
-    applicationHelp: 'user_guides/services/phylogenetic_tree_building_service.html',
-    tutorialLink: 'tutorial/codon_tree_building/codon_tree_building.html',
-    videoLink: 'videos/phylogenetic_codon_tree.html',
+    applicationHelp: 'quick_references/services/phylogenetic_tree_building_service.html',
+    tutorialLink: 'tutorial/phylogenetic_tree/phylogenetic_tree.html',
+    videoLink: '',
     pageTitle: 'Phylogenetic Tree Building',
     defaultPath: '',
     startingRows: 9,
@@ -68,6 +68,16 @@ define([
       this.outGroupNumGenomes.startup();
       this.codonGroupNumGenomes.startup();
       this._started = true;
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
+        }
+      }
     },
 
     emptyTable: function (target, rowLimit) {
@@ -451,6 +461,8 @@ define([
     },
 
     checkParameterRequiredFields: function () {
+      var bool = this.output_path.get('value') && this.output_nameWidget.get('displayedValue');
+      console.log('bool=', bool);
       if (this.output_path.get('value') && this.output_nameWidget.get('displayedValue') ) {
         this.validate();
       }
@@ -486,7 +498,86 @@ define([
         this.codonGroupNumGenomes.constraints.min = 0;
         this.checkParameterRequiredFields();
       }
-    }
+    },
 
+    intakeRerunForm: function () {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path' };
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        if (job_data.hasOwnProperty('genome_group')) {
+          // this.codon_genomes_genomegroup.set("value",job_data["genome_group"]);
+          this.addGenomeGroupFormFill(job_data['genome_group']);
+        } else {
+          this.addGenomesFormFill(job_data['genome_ids']);
+        }
+        this.form_flag = true;
+        localStorage.removeItem('bvbrc_rerun_job');
+      }
+    },
+
+    addGenomeGroupFormFill: function (genome_group_path) {
+      WorkspaceManager.getObjects(genome_group_path, false).then(lang.hitch(this, function (objs) {
+        var genomeIdHash = {};
+        objs.forEach(function (obj) {
+          var data = JSON.parse(obj.data);
+          data.id_list.genome_id.forEach(function (d) {
+            if (!Object.prototype.hasOwnProperty.call(genomeIdHash, d)) {
+              genomeIdHash[d] = true;
+            }
+          });
+        });
+        var genome_list = []
+        Object.keys(genomeIdHash).forEach(function (genome_id) {
+          genome_list.push(genome_id);
+        }, this);
+        this.addGenomesFormFill(genome_list);
+      }));
+    },
+
+    // Some discrepancies:
+    addGenomesFormFill: function (genome_id_list) {
+      var genome_ids = genome_id_list;
+      genome_ids.forEach(function (gid) {
+        var name_promise = this.scientific_nameWidget.store.get(gid);
+        name_promise.then(lang.hitch(this, function (tax_obj) {
+          if (tax_obj) {
+            this.scientific_nameWidget.set('item', tax_obj);
+            this.scientific_nameWidget.validate();
+            var genome_name = this.scientific_nameWidget.get('displayedValue');
+            var lrec = {};
+            lrec.groupType = 'codonGroup';
+            var groupType = 'codonGroup';
+            var newGenomeIds = gid;
+            var tr = this.codonGroupGenomeTable.insertRow(0);
+            lrec.row = tr;
+            var td = domConstruct.create('td', { 'class': 'textcol ' + groupType + 'GenomeData', innerHTML: '' }, tr);
+            td.genomeRecord = lrec;
+            td.innerHTML = "<div class='libraryrow'>" + this.genDisplayName(genome_name, 36) + '</div>';
+
+            var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+            if (this[groupType].addedNum < this.startingRows) {
+              this['codonGroupGenomeTable'].deleteRow(-1);
+            }
+            var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+              // console.log("Delete Row: groupType ="+groupType+" newGenomeIds = " + newGenomeIds);
+              domConstruct.destroy(tr);
+              this.decreaseGenome(groupType, [newGenomeIds]);
+              if (this[groupType].addedNum < this.startingRows) {
+                var ntr = this.codonGroupGenomeTable.insertRow(-1);
+                domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+                domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+                domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              }
+              handle.remove();
+            }));
+            lrec.handle = handle;
+            this.selectedTR.push(lrec);
+            this.increaseGenome(groupType, [newGenomeIds]);
+          }
+        }));
+      }, this);
+    }
   });
 });

@@ -3,13 +3,13 @@ define([
   'dojo/on', 'dojo/request',
   'dijit/layout/ContentPane',
   './TabViewerBase', '../../util/PathJoin',
-  '../GenomeGridContainer', '../SequenceGridContainer', '../FeatureGridContainer'
+  '../GenomeGridContainer', '../SequenceGridContainer', '../FeatureGridContainer', '../ExperimentsContainer',
 ], function (
   declare, lang,
   on, request,
   ContentPane,
   TabViewerBase, PathJoin,
-  GenomeGridContainer, SequenceGridContainer, FeatureGridContainer
+  GenomeGridContainer, SequenceGridContainer, FeatureGridContainer, ExperimentsContainer
 ) {
 
   return declare([TabViewerBase], {
@@ -112,6 +112,11 @@ define([
             activeTab.set('state', activeQueryState);
           }
           break;
+        case 'experiments':
+          activeTab.set('state', lang.mixin({}, this.state, {
+            search: 'eq(taxon_lineage_ids,2759)'
+          }));
+          break;
         default:
 
           if (this.state && this.state.genome_ids) {
@@ -180,11 +185,16 @@ define([
         id: this.viewer.id + '_features',
         disabled: false
       });
+      this.experiments = new ExperimentsContainer({
+        title: 'Experiments',
+        id: this.viewer.id + '_experiments'
+      });
 
       // this.viewer.addChild(this.overview);
       this.viewer.addChild(this.genomes);
       this.viewer.addChild(this.sequences);
       this.viewer.addChild(this.features);
+      this.viewer.addChild(this.experiments);
     }
   });
 });

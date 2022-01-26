@@ -20,8 +20,8 @@ define([
     requireAuth: true,
     applicationLabel: 'Comprehensive Genome Analysis',
     applicationDescription: 'The Comprehensive Genome Analysis Service provides a streamlined analysis "meta-service" that accepts raw reads and performs a comprehensive analysis including assembly, annotation, identification of nearest neighbors, a basic comparative analysis that includes a subsystem summary, phylogenetic tree, and the features that distinguish the genome from its nearest neighbors.',
-    applicationHelp: 'user_guides/services/comprehensive_genome_analysis_service.html',
-    tutorialLink: 'tutorial/comprehensive-genome-analysis/comprehensive-genome-analysis2.html',
+    applicationHelp: 'quick_references/services/comprehensive_genome_analysis_service.html',
+    tutorialLink: 'tutorial/comprehensive_genome_analysis/comprehensive_genome_analysis.html',
     libraryData: null,
     defaultPath: '',
     startingRows: 6,
@@ -34,7 +34,7 @@ define([
     constructor: function () {
       this.addedLibs = { counter: 0 };
       this.pairToAttachPt = ['read1', 'read2'];
-      this.singleToAttachPt = ['single_end_libs'];
+      this.singleToAttachPt = ['single_end_libsWidget'];
       this.libraryStore = new Memory({ data: [], idProperty: '_id' });
       this._autoTaxSet = false;
       this._autoNameSet = false;
@@ -67,6 +67,16 @@ define([
         });
       }));
       this._started = true;
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
+        }
+      }
     },
 
     getValues: function () {
@@ -78,62 +88,8 @@ define([
           delete values[key];
         }
       });
-      if (this.startWithRead.checked) { // start from read file
-        var pairedList = this.libraryStore.query({ _type: 'paired' });
-        var singleList = this.libraryStore.query({ _type: 'single' });
-        var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
-        var pairedLibs = [];
-        var singleLibs = [];
-        var srrAccessions = [];
-
-        pairedLibs = pairedList.map(function (lrec) {
-          var rrec = {};
-          Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
-            if (!attr.startsWith('_')) {
-              rrec[attr] = lrec[attr];
-            }
-          }));
-          return rrec;
-        });
-        if (pairedLibs.length) {
-          values.paired_end_libs = pairedLibs;
-        }
-
-        singleLibs = singleList.map(function (lrec) {
-          var rrec = {};
-          Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
-            if (!attr.startsWith('_')) {
-              rrec[attr] = lrec[attr];
-            }
-          }));
-          return rrec;
-        });
-        if (singleLibs.length) {
-          values.single_end_libs = singleLibs;
-        }
-
-        srrAccessions = srrAccessionList.map(function (lrec) {
-          return lrec._id;
-        });
-        if (srrAccessions.length) {
-          values.srr_ids = srrAccessions;
-        }
-        delete values.contigs;       // contigs file is not needed
-        values.input_type = 'reads'; // set input_type to be 'reads'
-
-      } // startWithRead
-
-      values.scientific_name = this.output_nameWidget.get('displayedValue');
-      values.taxonomy_id = this.tax_idWidget.get('displayedValue');
-      if (this.startWithContigs.checked) {  // starting from contigs
-        values.input_type = 'contigs'; // set input_type to be 'contigs'
-        var assembly_inputs = ['recipe', 'genome_size', 'trim', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
-        assembly_inputs.forEach(function (key) {
-          if (Object.prototype.hasOwnProperty.call(values, key)) {
-            delete values[key];
-          }
-        });
-      }
+      // moved common fields to standard function
+      values = this.checkBaseParameters(values);
 
       return values;
     },
@@ -151,7 +107,7 @@ define([
         var incomplete = 0;
         var browser_select = 0;
         var alias = attachname;
-        if (attachname == 'read1' || attachname == 'read2' || attachname == 'single_end_libs') {
+        if (attachname == 'read1' || attachname == 'read2' || attachname == 'single_end_libsWidget') {
           cur_value = this[attachname].searchBox.value;
           browser_select = 1;
         }
@@ -164,7 +120,7 @@ define([
         }
 
         // Assign cur_value to target
-        if (attachname == 'single_end_libs') {
+        if (attachname == 'single_end_libsWidget') {
           alias = 'read';
         }
         if (typeof (cur_value) === 'string') {
@@ -212,7 +168,7 @@ define([
           return 'P(' + fn + ', ' + fn2 + ')';
 
         case 'single':
-          var fn = this.single_end_libs.searchBox.get('displayedValue');
+          var fn = this.single_end_libsWidget.searchBox.get('displayedValue');
           maxName = 24;
           if (fn.length > maxName) {
             fn = fn.substr(0, (maxName / 2) - 2) + '...' + fn.substr((fn.length - (maxName / 2)) + 2);
@@ -236,7 +192,7 @@ define([
           return fn + fn2;
 
         case 'single':
-          var fn = this.single_end_libs.searchBox.get('value');
+          var fn = this.single_end_libsWidget.searchBox.get('value');
           return fn;
 
         case 'srr_accession':
@@ -510,6 +466,112 @@ define([
         this.contigsFile.set('required', true);
         this.checkParameterRequiredFields();
       }
+    },
+
+    checkBaseParameters: function (values) {
+      if (this.startWithRead.checked) { // start from read file
+        var pairedList = this.libraryStore.query({ _type: 'paired' });
+        var singleList = this.libraryStore.query({ _type: 'single' });
+        var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
+
+        this.paired_end_libs = pairedList.map(function (lrec) {
+          var rrec = {};
+          Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
+            if (!attr.startsWith('_')) {
+              rrec[attr] = lrec[attr];
+            }
+          }));
+          return rrec;
+        });
+        if (this.paired_end_libs.length) {
+          values.paired_end_libs = this.paired_end_libs;
+        }
+
+        this.single_end_libs = singleList.map(function (lrec) {
+          var rrec = {};
+          Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
+            if (!attr.startsWith('_')) {
+              rrec[attr] = lrec[attr];
+            }
+          }));
+          return rrec;
+        });
+        if (this.single_end_libs.length) {
+          values.single_end_libs = this.single_end_libs;
+        }
+
+        this.sra_libs = srrAccessionList.map(function (lrec) {
+          return lrec._id;
+        });
+        if (this.sra_libs.length) {
+          values.srr_ids = this.sra_libs;
+        }
+        delete values.contigs;       // contigs file is not needed
+        values.input_type = 'reads'; // set input_type to be 'reads'
+
+      } // startWithRead
+      this.output_file = this.output_nameWidget.get('displayedValue');
+      values.scientific_name = this.output_file;
+      this.target_genome_id = this.tax_idWidget.get('displayedValue');
+      values.taxonomy_id = this.target_genome_id;
+      if (this.startWithContigs.checked) {  // starting from contigs
+        values.input_type = 'contigs'; // set input_type to be 'contigs'
+        var assembly_inputs = ['recipe', 'genome_size', 'trim', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
+        assembly_inputs.forEach(function (key) {
+          if (Object.prototype.hasOwnProperty.call(values, key)) {
+            delete values[key];
+          }
+        });
+        this.contigs = this.contigsFile;
+      }
+
+      return values;
+    },
+
+    intakeRerunForm: function () {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = {
+          'output_folder': 'output_path', 'strategy': 'recipe', 'target_genome_id': 'taxonomy_id', 'contigs': 'contigs'
+        };
+        // var widget_map = {"scientific_name":"scientific_nameWidget","tax_id":"tax_idWidget"};
+        var widget_map = { 'taxonomy_id': 'tax_idWidget', 'contigs': 'contigsFile' };
+        param_dict['widget_map'] = widget_map;
+        var service_spec = {
+          'trim': 'trim', 'min_contig_len': 'min_contig_len', 'racon_iter': 'racon_iter', 'pilon_iter': 'pilon_iter', 'min_contig_cov': 'min_contig_cov'
+        }; // job : attach_point
+        param_dict['service_specific'] = service_spec;
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
+        this.selectStartWith(job_data);
+        job_data = this.formatRerunJson(job_data);
+        if (this.startWithRead.checked) {
+          AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+        }
+        localStorage.removeItem('bvbrc_rerun_job');
+        this.form_flag = true;
+      }
+    },
+
+    // Selects the start with button: reads or contigs
+    // Checking it helps the rest of the form filling run smoothly
+    selectStartWith: function (job_data) {
+      if (job_data.input_type == 'contigs') {
+        this.startWithContigs.set('checked', true);
+      }
+      else {
+        this.startWithRead.set('checked', true);
+      }
+    },
+
+    formatRerunJson: function (job_data) {
+      if (!job_data.paired_end_libs) {
+        job_data.paired_end_libs = [];
+      }
+      if (!job_data.single_end_libs) {
+        job_data.single_end_libs = [];
+      }
+      return job_data;
     }
   });
 });

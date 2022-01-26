@@ -13,21 +13,18 @@ define([
 ) {
 
   return declare([BorderContainer], {
-    // id: "PFContainer",
     tooltip: 'The "Protein Families" tab contains a list of Protein Families for genomes associated with the current view',
 
     gutters: false,
     state: null,
     pfState: null,
     loadingMask: null,
-    maxGenomeCount: 500,
     apiServer: window.App.dataServiceURL,
     constructor: function (options) {
       // console.log(options);
       this.topicId = 'ProteinFamilies_' + options.id.split('_proteinFamilies')[0];
 
       Topic.subscribe(this.topicId, lang.hitch(this, function () {
-        // console.log("ProteinFamiliesHeatmapContainer:", arguments);
         var key = arguments[0],
           value = arguments[1];
 
@@ -61,10 +58,6 @@ define([
       this.loadingMask.startup();
     },
     onSetState: function (attr, oldVal, state) {
-      if (state.genome_ids && state.genome_ids.length > this.maxGenomeCount) {
-        console.log('Too Many Genomes for Protein Families Display', state.genome_ids.length);
-        return;
-      }
 
       if (this.mainGridContainer) {
         this.mainGridContainer.set('state', state);
@@ -139,10 +132,10 @@ define([
 
       // <sup style="vertical-align: super; background: #76a72d; color: #fff; padding: 1px 3px 3px 3px; border-radius: 3px;">
       this.heatmapContainerNew = new HeatmapContainerNew({
-        title: 'Heatmap (new)',
+        title: 'Heatmap',
         type: 'webGLHeatmap',
         topicId: this.topicId,
-        content: 'Heatmap (new)'
+        content: 'Heatmap'
       });
 
       this.watch('state', lang.hitch(this, 'onSetState'));

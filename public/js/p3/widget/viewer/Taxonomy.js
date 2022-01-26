@@ -12,6 +12,7 @@ define([
     taxon_id: '',
     apiServiceUrl: window.App.dataAPI,
     taxonomy: null,
+    context: 'bacteria',
     perspectiveLabel: 'Taxon View',
     perspectiveIconClass: 'icon-selection-Taxonomy',
     postCreate: function () {
@@ -51,16 +52,69 @@ define([
 
     },
 
+    changeToBacteriaContext: function () {
+      this.overview.set('context', 'bacteria');
+
+      this.viewer.addChild(this.phylogeny, 1);
+      this.viewer.addChild(this.amr, 4);
+      this.viewer.addChild(this.sequences, 5)
+      this.viewer.addChild(this.specialtyGenes, 8);
+      // this.viewer.addChild(this.proteinFamilies, 10);
+      this.viewer.addChild(this.pathways, 11);
+      this.viewer.addChild(this.subsystems, 12);
+      // this.viewer.addChild(this.transcriptomics, 13);
+      this.viewer.addChild(this.interactions, 14);
+    },
+
+    changeToVirusContext: function () {
+      this.viewer.removeChild(this.phylogeny);
+      this.viewer.removeChild(this.amr);
+      this.viewer.removeChild(this.sequences);
+      this.viewer.removeChild(this.specialtyGenes);
+      // this.viewer.removeChild(this.proteinFamilies);
+      this.viewer.removeChild(this.pathways);
+      this.viewer.removeChild(this.subsystems);
+      // this.viewer.removeChild(this.transcriptomics);
+      this.viewer.removeChild(this.interactions);
+    },
+
     onSetTaxonomy: function (attr, oldVal, taxonomy) {
-      // console.log("onSetTaxonomy: ", taxonomy);
       this.queryNode.innerHTML = this.buildHeaderContent(taxonomy);
 
+      // customization for viruses only when the context is changed
+      if (this.context === 'bacteria') {
+        if (this.taxonomy.lineage_names.includes('Influenza A virus') || this.taxonomy.lineage_names.includes('Rhinovirus A')) {
+          this.viewer.addChild(this.surveillance);
+          this.viewer.addChild(this.serology);
+        } else {
+          this.viewer.removeChild(this.surveillance);
+          this.viewer.removeChild(this.serology);
+        }
+
+        // strains
+        if (this.taxonomy.lineage_names.includes('Orthomyxoviridae') || this.taxonomy.lineage_names.includes('Bunyavirales')) {
+          this.viewer.addChild(this.strains, 3);
+        } else {
+          this.viewer.removeChild(this.strains);
+        }
+      }
+
+      // switch tab configuration & view context
+      if (this.taxonomy.lineage_names.includes('Bacteria') && this.context === 'virus') {
+        this.set('context', 'bacteria')
+        this.changeToBacteriaContext();
+      } else if (this.taxonomy.lineage_names.includes('Viruses') && this.context === 'bacteria') {
+        this.set('context', 'virus');
+        this.changeToVirusContext();
+      }
+
       this.taxonomy = this.state.taxonomy = taxonomy;
-      // this.set('state', lang.mixin({},this.state,{taxonomy:taxonomy}));
       this.setActivePanelState();
-      // this.overview.set('taxonomy', taxonomy);
     },
     onSetQuery: function (attr, oldVal, newVal) {
+      // prevent default action
+    },
+    onSetReferenceGenomes: function () {
       // prevent default action
     },
     buildTaxonIdByState: function (state) {
@@ -68,7 +122,6 @@ define([
       var parts = state.pathname.split('/');
 
       var taxon_id_or_name = parts[parts.length - 1];
-      // console.log('taxon_id_or_name', typeof taxon_id_or_name, parseInt(taxon_id_or_name), taxon_id_or_name == parseInt(taxon_id_or_name));
       if (taxon_id_or_name == parseInt(taxon_id_or_name)) {
         def.resolve(parseInt(taxon_id_or_name));
       }
@@ -93,22 +146,18 @@ define([
       return def;
     },
     onSetState: function (attr, oldState, state) {
-      // console.log("Taxonomy onSetState", JSON.stringify(state, null, 4));
       oldState = oldState || {};
       if (!state) {
         throw Error('No State Set');
-        // return;
       }
 
       this.buildTaxonIdByState(state).then( lang.hitch(this, function (taxon_id) {
         state.taxon_id = taxon_id;
         this.set('taxon_id', state.taxon_id);
 
-        // this.set("taxon_id", parts[parts.length - 1]);
         var s = 'eq(taxon_lineage_ids,' + state.taxon_id + ')';
         state.search = state.search.replace(s, '');
         if (state.search) {
-          // console.log("GENERATE ENGLISH QUERY for ", state.search, s);
           this.filteredTaxon = QueryToEnglish(state.search.replace(s, ''));
           var sx = [s];
           if (state.search && state.search != s) {
@@ -120,7 +169,6 @@ define([
           }
 
         } else {
-          // console.log("USE state.search: ", s);
           state.search = s;
           this.filteredTaxon = false;
           if (this.taxonomy) {
@@ -129,13 +177,9 @@ define([
         }
 
         if (!state.taxonomy && state.taxon_id) {
-          // console.log("No state.taxonomy.  state.taxon_id: ", state.taxon_id);
           if (oldState && oldState.taxon_id) {
-            // console.log("oldState.taxon_id: ", oldState.taxon_id)
-
             if ((state.taxon_id == oldState.taxon_id)) {
               if (oldState.taxonomy || this.taxonomy) {
-                // console.log("oldState Taxonomy: ", oldState.taxonomy||this.taxonomy);
                 state.taxonomy = oldState.taxonomy || this.taxonomy;
               } else {
                 console.log('oldState missing Taxonomy');
@@ -144,22 +188,7 @@ define([
           }
         }
 
-        if (!state.genome_ids) {
-          // console.log("NO Genome_IDS: old: ", oldState.search, " new: ", state.search);
-          if (state.search == oldState.search) {
-            // console.log("Same Search")
-            // console.log("OLD Genome_IDS: ", oldState.genome_ids);
-            this.set('state', lang.mixin({}, state, {
-              genome_ids: oldState.genome_ids,
-              referenceGenomes: oldState.referenceGenomes || []
-            }));
-            return;
-          }
-          this.set('query', state.search);
-
-        } else if (state.search != oldState.search) {
-          this.set('query', state.search);
-        }
+        this.set('query', state.search);
 
         if (!state.hashParams) {
           if (oldState.hashParams && oldState.hashParams.view_tab) {
@@ -168,13 +197,10 @@ define([
             state.hashParams = { view_tab: this.defaultTab };
           }
         }
-        // console.log("    Check for Hash Params: ", state.hashParams);
         if (state.hashParams) {
           if (!state.hashParams.view_tab) {
             state.hashParams.view_tab = this.defaultTab;
           }
-
-          // console.log("Looking for Active Tab: ", state.hashParams.view_tab);
 
           if (this[state.hashParams.view_tab]) {
             var vt = this[state.hashParams.view_tab];
@@ -189,7 +215,9 @@ define([
         this.totalCountNode.innerHTML = '';
       }));
     },
-
+    onSetGenomeIds: function (attr, oldVal, genome_ids) {
+      // stop
+    },
     setActivePanelState: function () {
 
       var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : 'overview';
@@ -205,150 +233,40 @@ define([
         return;
       }
       switch (active) {
-        case 'overview':
-          if (this.state && this.state.genome_ids) {
-            activeTab.set('state', lang.mixin({}, this.state, {
-              search: 'in(genome_id,(' + this.state.genome_ids.join(',') + '))',
-              hashParams: lang.mixin({}, this.state.hashParams)
-            }));
-          }
-          break;
         case 'taxontree':
-          // activeTab.set('query',"eq(taxon_id," + this.state.taxon_id + ")")
           activeTab.set('state', lang.mixin({}, this.state, {
             search: 'eq(taxon_id,' + encodeURIComponent(this.state.taxon_id) + ')',
             hashParams: lang.mixin({}, this.state.hashParams)
           }));
           break;
         case 'phylogeny':
-        case 'genomes':
           activeTab.set('state', lang.mixin({}, this.state));
           break;
-        case 'amr':
-          // need to show all (prevent referenceGenomes)
-          if (this.state.genome_ids) {
-            activeTab.set('state', lang.mixin({}, this.state, {
-              search: 'in(genome_id,(' + this.state.genome_ids.join(',') + '))'
-            }));
-          }
+        case 'structures':
+        case 'surveillance':
+        case 'serology':
+        case 'strains':
+        case 'epitope':
+        case 'experiments':
+          activeTab.set('state', lang.mixin({}, this.state, {
+            search: 'eq(taxon_lineage_ids,' + this.state.taxon_id + ')'
+          }));
           break;
-        case 'interactions':
-          // console.log("interactions tab", this.setActivePanelState.caller, this.state);
-          if (this.state.genome_ids) {
-            var genome_ids;
-            if (this.state.referenceGenomes) {
-              genome_ids = this.state.referenceGenomes.map(function (g) {
-                return g.genome_id;
-              });
-            } else {
-              if (this.state.genome_ids.length > 1000) {
-                return;
-              }
-              genome_ids = this.state.genome_ids;
-            }
-            var searchStr = (genome_ids.length > 0) ? 'or(in(genome_id_a,(' + genome_ids.join(',') + ')),in(genome_id_b,(' + genome_ids.join(',') + ')))' : 'eq(genome_id_a,NONE)';
-            activeTab.set('state', lang.mixin({}, this.state, {
-              search: searchStr
-            }));
-          }
-          break;
+
         default:
           var activeQueryState;
           var prop = 'genome_id';
-          if (active == 'transcriptomics') {
-            prop = 'genome_ids';
+          if (active === 'interactions') {
+            prop = 'genome_id_a';
           }
-          var activeMax = activeTab.maxGenomeCount || this.maxGenomesPerList;
-          // console.log("ACTIVE MAX: ", activeMax);
-          var autoFilterMessage;
-          if (this.state && this.state.genome_ids) {
-            // console.log("Found Genome_IDS in state object");
-            if (this.state.genome_ids.length <= activeMax) {
-              // console.log("USING ALL GENOME_IDS. count: ", this.state.genome_ids.length);
-              activeQueryState = lang.mixin({}, this.state, {
-                search: 'in(' + prop + ',(' + this.state.genome_ids.join(',') + '))',
-                hashParams: lang.mixin({}, this.state.hashParams)
-              });
-            } else if (this.state.referenceGenomes && this.state.referenceGenomes.length <= activeMax) {
-              var ids = this.state.referenceGenomes.map(function (x) {
-                return x.genome_id;
-              });
-              // console.log("USING ALL REFERENCE AND REP GENOMES. Count: ", ids.length);
-              autoFilterMessage = 'This tab has been filtered to view data limited to Reference and Representative Genomes in your view.';
-              activeQueryState = lang.mixin({}, this.state, {
-                genome_ids: ids,
-                autoFilterMessage: autoFilterMessage,
-                search: 'in(' + prop + ',(' + ids.join(',') + '))',
-                hashParams: lang.mixin({}, this.state.hashParams)
-              });
-            } else if (this.state.referenceGenomes) {
-              var referenceOnly = this.state.referenceGenomes.filter(function (x) {
-                return x.reference_genome == 'Reference';
-              }).map(function (x) {
-                return x.genome_id;
-              });
-              console.log('USING ONLY REFERENCE GENOMES. Count: ' + referenceOnly.length);
-              if (referenceOnly.length <= activeMax) {
-                autoFilterMessage = 'This tab has been filtered to view data limited to Reference Genomes in your view.';
-                activeQueryState = lang.mixin({}, this.state, {
-                  genome_ids: referenceOnly,
-                  autoFilterMessage: autoFilterMessage,
-                  search: 'in(' + prop + ',(' + referenceOnly.join(',') + '))',
-                  hashParams: lang.mixin({}, this.state.hashParams)
-                });
-              } else if (!referenceOnly || referenceOnly.length < 1) {
-                autoFilterMessage = 'There are too many genomes in your view.  This tab will not show any data';
-                activeQueryState = lang.mixin({}, this.state, {
-                  genome_ids: [],
-                  referenceGenomsautoFilterMessage: autoFilterMessage,
-                  search: '',
-                  hashParams: lang.mixin({}, this.state.hashParams)
-                });
-              }
-            }
+          var context = [`eq(taxon_lineage_ids,${this.state.taxon_id})`]
+          if (this.state.search) {
+            context = this.state.search.split('&')
           }
-
-          if (activeQueryState && active == 'proteinFamilies') {
-            activeQueryState.search = '';
-            // console.log(this.setActivePanelState.caller, this.setActivePanelState.caller === this.onSetGenomeIds, this.setActivePanelState.caller === this.onSetState);
-            if (this.setActivePanelState.caller === this.onSetGenomeIds || this.setActivePanelState.caller === this.onSetState) {
-              if (activeTab._firstView) {
-                Topic.publish(activeTab.topicId, 'showMainGrid');
-              }
-            } else {
-              activeQueryState = null;
-            }
-          }
-
-          // special case for host genomes
-          if (active == 'features' && this.state && this.state.genome_ids && !this.state.hashParams.filter) {
-            var q = 'in(genome_id,(' + this.state.genome_ids.join(',') + '))&select(taxon_lineage_ids)&limit(1)';
-            // console.log("q = ", q, "this.apiServiceUrl=", this.apiServiceUrl, "PathJoin", PathJoin(this.apiServiceUrl, "genome", q));
-            xhr.post(PathJoin(this.apiServiceUrl, 'genome'), {
-              headers: {
-                accept: 'application/json',
-                'X-Requested-With': null,
-                Authorization: (window.App.authorizationToken || '')
-              },
-              data: q,
-              handleAs: 'json'
-            }).then(lang.hitch(this, function (genome_data) {
-
-              if (genome_data.some(function (el, idx, arr) {
-                return el.taxon_lineage_ids.indexOf('2759') > -1;
-              })) {
-
-                activeQueryState = lang.mixin({}, this.state, {
-                  search: 'in(genome_id,(' + this.state.genome_ids.join(',') + '))',
-                  hashParams: lang.mixin({}, this.state.hashParams, {
-                    filter: 'eq(feature_type,%22CDS%22)'
-                  })
-                });
-              }
-
-              activeTab.set('state', activeQueryState);
-            }));
-          }
+          activeQueryState = lang.mixin({}, this.state, {
+            search: `eq(${prop},*)&genome(${(prop !== 'genome_id') ? `to(${prop}),` : ''}${(context.length > 1 ? `and(${context.join(',')})` : context[0])})`,
+            hashParams: lang.mixin({}, this.state.hashParams)
+          });
 
           if (activeQueryState) {
             activeTab.set('state', activeQueryState);
@@ -360,7 +278,6 @@ define([
 
       if (this.taxonomy) {
         var pageTitle = this.taxonomy.taxon_name + '::Taxonomy ' + activeTab.title;
-        // console.log("Taxonomy setActivePanelState: ", pageTitle);
         if (window.document.title !== pageTitle) {
           window.document.title = pageTitle;
         }

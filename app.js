@@ -51,6 +51,7 @@ app.use(function (req, res, next) {
     appServiceURL: config.get('appServiceURL'),
     dataServiceURL: config.get('dataServiceURL'),
     homologyServiceURL: config.get('homologyServiceURL'),
+    mailinglistURL: config.get("mailinglistURL"),
     genomedistanceServiceURL: config.get('genomedistanceServiceURL'),
     compareregionServiceURL: config.get('compareregionServiceURL'),
     docsServiceURL: config.get('docsServiceURL'),
@@ -94,7 +95,6 @@ app.use('/js/' + packageJSON.version + '/', [
     }
   })
 ]);
-app.use('/js/swfobject/', express.static(path.join(__dirname, 'node_modules/swfobject-amd/')));
 app.use('/js/', express.static(path.join(__dirname, 'public/js/')));
 app.use('/patric/images', express.static(path.join(__dirname, 'public/patric/images/'), {
   maxage: '365d',
@@ -119,9 +119,12 @@ app.use('/content', contentViewer);
 app.use('/webpage', contentViewer);
 app.use('/user', contentViewer);
 app.use('/sulogin', contentViewer);
+app.use('/login', contentViewer);
+app.use('/register', contentViewer);
 app.use('/remote', remotePage);
 app.use('/view', viewers);
 app.use('/search', search);
+app.use('/searches', search);
 app.use('/app', apps);
 app.use('/job', jobs);
 app.use('/status', systemStatus);  // system status page

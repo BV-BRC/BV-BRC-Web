@@ -22,8 +22,8 @@ define([
     requireAuth: true,
     applicationLabel: 'Fastq Utilities',
     applicationDescription: 'The Fastq Utilites Service provides capability for aligning, measuring base call quality, and trimmiing fastq read files.',
-    applicationHelp: 'user_guides/services/fastq_utilities_service.html',
-    tutorialLink: 'tutorial/fastq-utilities/fastq-utilities.html',
+    applicationHelp: 'quick_references/services/fastq_utilities_service.html',
+    tutorialLink: 'tutorial/fastq_utilities/fastq_utilities.html',
     pageTitle: 'Fastq Utilities',
     libraryData: null,
     defaultPath: '',
@@ -114,6 +114,16 @@ define([
       // this.single_end_libs.set('value',"/" +  window.App.user.id +"/home/");
       // this.output_path.set('value',"/" +  window.App.user.id +"/home/");
       this._started = true;
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
+        }
+      }
     },
 
     addLibraryInfo: function (lrec, infoLabels, tr) {
@@ -207,61 +217,23 @@ define([
     getValues: function () {
       var assembly_values = {};
       var values = this.inherited(arguments);
-      var pairedList = this.libraryStore.query({ type: 'paired' });
-      var pairedAttrs = ['read1', 'read2'];
-      var singleAttrs = ['read'];
-      var srrAttrs = ['srr_accession'];
       var condList = this.activeConditionStore.data;
-      var singleList = this.libraryStore.query({ type: 'single' });
-      var srrList = this.libraryStore.query({ type: 'srr_accession' });
       var condLibs = [];
-      var pairedLibs = [];
-      var singleLibs = [];
-      var srrLibs = [];
-      this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
+      condList.forEach(function (condRecord) {
+        condLibs.push(condRecord.condition);
+      });
+      if (condLibs.length) {
+        assembly_values.recipe = condLibs;
+      }
+      if (!this.form_flag) {
+        this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
+      }
       // for (var k in values) {
       //   if(!k.startsWith("libdat_")){
       //     assembly_values[k]=values[k];
       //   }
       // }
-      assembly_values.reference_genome_id = values.genome_name;
-      condList.forEach(function (condRecord) {
-        condLibs.push(condRecord.condition);
-      });
-
-      pairedList.forEach(function (libRecord) {
-        var toAdd = {};
-        pairedAttrs.forEach(function (attr) {
-          toAdd[attr] = libRecord[attr];
-        });
-        pairedLibs.push(toAdd);
-      }, this);
-      if (pairedLibs.length) {
-        assembly_values.paired_end_libs = pairedLibs;
-      }
-      if (condLibs.length) {
-        assembly_values.recipe = condLibs;
-      }
-      singleList.forEach(function (libRecord) {
-        var toAdd = {};
-        singleAttrs.forEach(function (attr) {
-          toAdd[attr] = libRecord[attr];
-        });
-        singleLibs.push(toAdd);
-      }, this);
-      if (singleLibs.length) {
-        assembly_values.single_end_libs = singleLibs;
-      }
-      srrList.forEach(function (libRecord) {
-        var toAdd = {};
-        srrAttrs.forEach(function (attr) {
-          toAdd[attr] = libRecord[attr];
-        });
-        srrLibs.push(toAdd);
-      }, this);
-      if (srrLibs.length) {
-        assembly_values.srr_libs = srrLibs;
-      }
+      assembly_values = this.checkBaseParameters(values, assembly_values);
       return assembly_values;
 
     },
@@ -698,7 +670,143 @@ define([
         this.createLib(lrec);
         this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
       }
-    }
+    },
 
+    checkBaseParameters: function (values, assembly_values) {
+      // reads,sra
+      var pairedList = this.libraryStore.query({ type: 'paired' });
+      var pairedAttrs = ['read1', 'read2'];
+      var singleAttrs = ['read'];
+      var srrAttrs = ['srr_accession'];
+      var singleList = this.libraryStore.query({ type: 'single' });
+      var srrList = this.libraryStore.query({ type: 'srr_accession' });
+
+      pairedList.forEach(function (libRecord) {
+        var toAdd = {};
+        pairedAttrs.forEach(function (attr) {
+          toAdd[attr] = libRecord[attr];
+        });
+        this.paired_end_libs.push(toAdd);
+      }, this);
+      if (this.paired_end_libs.length) {
+        assembly_values.paired_end_libs = this.paired_end_libs;
+      }
+      singleList.forEach(function (libRecord) {
+        var toAdd = {};
+        singleAttrs.forEach(function (attr) {
+          toAdd[attr] = libRecord[attr];
+        });
+        this.single_end_libs.push(toAdd);
+      }, this);
+      if (this.single_end_libs.length) {
+        assembly_values.single_end_libs = this.single_end_libs;
+      }
+      srrList.forEach(function (libRecord) {
+        var toAdd = {};
+        srrAttrs.forEach(function (attr) {
+          toAdd[attr] = libRecord[attr];
+        });
+        this.sra_libs.push(toAdd);
+      }, this);
+      if (this.sra_libs.length) {
+        assembly_values.srr_libs = this.sra_libs;
+      }
+      // strategy = pipeline
+      this.strategy = assembly_values.recipe;
+      // output_folder
+      this.output_folder = values.output_path;
+      assembly_values.output_path = values.output_path;
+      // output_name
+      this.output_name = values.output_file;
+      assembly_values.output_file = values.output_file;
+      // target_genome
+      assembly_values.reference_genome_id = values.genome_name;
+      this.target_genome_id = assembly_values.reference_genome_id;
+
+      return assembly_values;
+    },
+
+    intakeRerunForm: function () {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path', 'target_genome_id': 'reference_genome_id' };
+        var widget_map = { 'reference_genome_id': 'genome_nameWidget' };
+        param_dict['widget_map'] = widget_map;
+        var job_data = this.formatRerunJson(JSON.parse(localStorage.getItem('bvbrc_rerun_job')));
+        this.checkConditionsFormFill(job_data);
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+        // TODO: service specific items
+        localStorage.removeItem('bvbrc_rerun_job');
+        this.form_flag = true;
+      }
+    },
+
+    formatRerunJson: function (job_data) {
+      if (!job_data.paired_end_libs) {
+        job_data.paired_end_libs = [];
+      }
+      if (!job_data.single_end_libs) {
+        job_data.single_end_libs = [];
+      }
+      if (!job_data.srr_libs) {
+        job_data.srr_libs = [];
+      }
+      if (!job_data.hasOwnProperty('sra_libs')) {
+        job_data.sra_libs = job_data.srr_libs;
+      }
+      return job_data;
+    },
+
+    checkConditionsFormFill: function (job_data) {
+      for (var x = 0; x < job_data.recipe.length; x++) {
+        var curr_recipe = job_data.recipe[x];
+        var lrec = { count: 0, type: 'action_select', condition: curr_recipe }; // initialized to the number of libraries assigned
+        console.log('Create New Row', domConstruct);
+        if (this.addedCond.counter < this.maxConditions) {
+          this.updateActiveStore(lrec, false);
+        }
+        lrec.icon = this.getConditionIcon();
+        if (this.addedCond.counter < this.initConditions) {
+          this.condTable.deleteRow(0);
+        }
+        var tr = this.condTable.insertRow();
+        var td = domConstruct.create('td', { 'class': 'textcol conditiondata', innerHTML: '' }, tr);
+        td.libRecord = lrec;
+        td.innerHTML = "<div class='libraryrow'>" + this.makeConditionName(lrec.condition) + '</div>';
+        domConstruct.create('td', { 'class': 'iconcol', innerHTML: lrec.icon }, tr);
+        var td2 = domConstruct.create('td', {
+          'class': 'iconcol',
+          innerHTML: "<i class='fa icon-x fa-1x' />"
+        }, tr);
+
+        if (lrec.condition == 'Align') {
+          this.numAlign += 1;
+          this.toggleGenome();
+        }
+
+        var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+          console.log('Delete Row');
+          domConstruct.destroy(tr);
+          this.destroyLib(lrec, lrec.condition, 'condition');
+          if (lrec.condition == 'Align') {
+            this.numAlign -= 1;
+            this.toggleGenome();
+          }
+          // this.destroyContrastRow(query_id = lrec["condition"]);
+          this.updateActiveStore(lrec, true);
+          this.decreaseRows(this.condTable, this.addedCond, this.numCondWidget);
+          if (this.addedCond.counter < this.maxConditions) {
+            var ntr = this.condTable.insertRow(0);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          }
+          this.action_select.reset();
+          handle.remove();
+        }));
+        this.increaseRows(this.condTable, this.addedCond, this.numCondWidget);
+      }
+    }
   });
 });

@@ -8,9 +8,68 @@ dojoConfig = {
   ]
 }
 </script>
+<script type="text/javascript"> // Twitter Widget
+  window.twttr = (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0],
+      t = window.twttr || {};
+    if (d.getElementById(id)) return t;
+    js = d.createElement(s);
+    js.id = id;
+    js.src = "https://platform.twitter.com/widgets.js";
+    fjs.parentNode.insertBefore(js, fjs);
+
+    t._e = [];
+    t.ready = function(f) {
+      t._e.push(f);
+    };
+
+    return t;
+  }(document, "script", "twitter-wjs"));
+  // twitter load function
+  // twttr.widgets.load();
+</script>
 <script type="text/javascript" src="/js/mauve_viewer/dist/mauve-viewer.js"></script>
 <script type="text/javascript" src="/js/msa/dist/msa.min.js"></script>
+<script src="/js/bvbrc_js_client/dist/bvbrc_client.js"></script>
 <script src="/js/bundle/bundle.js"></script>
+<script> // News & Announcements Carousel
+  $.getJSON("https://www.bv-brc.org/docs/_static/carousel.json", function (feed) {
+      for (var i = 0; i < feed.length; i++) {
+          var link = feed[i].link;
+          var title = feed[i].title;
+          var desc = feed[i].desc;
+          var word_limit = (feed[i].img == "") ? 60 : 20
+          var descSnippit = desc.split(" ", word_limit).join(" ");
+          var img = feed[i].img;
+          $("#slides").append(
+              `<li class="slide">
+                  <a href="${link}" class="feed-link">
+                      <h4 class="feed-title">${title}</h4>
+                  </a>
+                  <p class="feed-description">${descSnippit} ... <a href="${link}">read more</a></p>
+                  <img src="${img}" class="feed-img">
+              </li>`
+          );
+          $("#slides .slide").first().addClass("showing");
+          $("#dot-navigation .dot").first().addClass("selected");
+          $("#dot-navigation").append(
+              `<div class="dot"></div>`
+          );
+      }
+      var slides = $('#slides .slide');
+      var dots = $("#dot-navigation .dot");
+      var index = 0;
+      slides.eq(0).addClass("current-slide");
+      dots.eq(0).addClass("current-dot");
+      dots.click(function () {
+          dots.eq(index).removeClass("current-dot");
+          slides.eq(index).removeClass("current-slide");
+          $(this).addClass("current-dot");
+          index = $(this).index();
+          slides.eq(index).addClass("current-slide");
+      });
+  });
+</script>
 <script src="/js/bundle/bundle2.js"></script>
 <!-- // use bundle.js
 <script type="text/javascript" src="/js/cytoscape/dist/cytoscape.min.js"></script>
@@ -34,6 +93,7 @@ dojoConfig = {
         appOpts.serviceAPI = "<%= request.applicationOptions.appServiceURL %>";
         appOpts.dataAPI = "<%= request.applicationOptions.dataServiceURL %>";
         appOpts.userServiceURL = "<%= request.applicationOptions.userServiceURL %>";
+        appOpts.mailinglistURL = "<%= request.applicationOptions.mailinglistURL %>";
         appOpts.localStorageCheckInterval = "<%= request.applicationOptions.localStorageCheckInterval %>";
         window.App = new App(appOpts);
       });

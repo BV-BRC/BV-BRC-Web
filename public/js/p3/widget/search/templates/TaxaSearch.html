@@ -1,0 +1,60 @@
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onsubmit:onSubmit">
+  <div class="appTemplate">
+    <div class="appTitle">
+      <span class="breadcrumb">Advanced Search</span>
+      <h3>${searchAppName}</h3>
+      <!-- tutorial, doc link -->
+      <p>Search for taxa using taxon id or name and jump to taxon level pages to access relevant data and analysis tools. For further explanation, please see <a href="#">Taxa Search User Guide</a>. </p>
+    </div>
+    <div style="width:550px;margin:auto" class="formFieldsContainer">
+      <div class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Keyword</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'Search term'" data-dojo-attach-point="keywordNode" name="keyword" style="width: 500px"></div>
+          </div>
+        </div>
+      </div>
+      <div class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Taxon ID</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. 11320'" data-dojo-attach-point="taxonIDNode" name="taxon_id" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Taxon Name</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. Influenza A virus'" data-dojo-attach-point="taxonNameNode" name="taxon_name" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Taxon Rank</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. genus'" data-dojo-attach-point="taxonRankNode" name="taxon_rank" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Additional Criteria</label>
+        </div
+        <div class="appRow">
+          <div dojoAttachPoint="AdvancedSearchPanel"></div>
+        </div>
+      </div>
+    </div>
+    <div class="appSubmissionArea">
+      <div style="margin-top: 10px; text-align:center;">
+        <div data-dojo-attach-point="submitButton"
+          type="submit" data-dojo-type="dijit/form/Button">Search</div>
+      </div>
+    </div>
+  </div>
+</form>

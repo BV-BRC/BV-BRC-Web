@@ -3,14 +3,24 @@ define([
   'dojo/dom-construct', 'dojo/dom-geometry', 'dojo/dom-style', 'dojo/dom-class',
   'dijit/form/TextBox', './FacetFilter', 'dojo/request', 'dojo/on',
   'rql/parser', './FilteredValueButton', 'dojo/query', 'dojo/_base/Deferred',
+  'dojo/data/ObjectStore', 'dojo/store/Memory', 'dojox/form/CheckedMultiSelect',
+  'dijit/form/DropDownButton', 'dijit/DropDownMenu',
+  'dijit/Dialog', 'dijit/form/Button', 'dijit/form/Select', './AdvancedSearchRowForm',
   'dijit/focus', '../util/PathJoin'
 ], function (
   declare, ContainerActionBar, lang,
   domConstruct, domGeometry, domStyle, domClass,
   Textbox, FacetFilter, xhr, on,
   RQLParser, FilteredValueButton, Query, Deferred,
+  ObjectStore, Memory, CheckedMultiSelect,
+  DropDownButton, DropDownMenu,
+  Dialog, Button, Select, AdvancedSearchRowForm,
   focusUtil, PathJoin
 ) {
+
+  function sortByLabel(firstEl, secondEl) {
+    return (firstEl['label'] < secondEl['label']) ? -1 : (firstEl['label'] > secondEl['label'] ? 1 : 0)
+  }
 
   function parseFacetCounts(facets) {
     var out = {};
@@ -25,6 +35,7 @@ define([
         out[cat].push({ label: data[i], value: data[i], count: data[i + 1] });
         i += 2;
       }
+      out[cat].sort(sortByLabel)
     });
     return out;
   }
@@ -77,6 +88,14 @@ define([
 
   }
 
+  function setDifference(setA, setB) {
+    let _diff = new Set(setA)
+    for (let elem of setB) {
+      _diff.delete(elem)
+    }
+    return _diff
+  }
+
   return declare([ContainerActionBar], {
     style: 'height: 52px; margin:0px; padding:0px; overflow: hidden;',
     minimized: true,
@@ -94,6 +113,8 @@ define([
       this._ffWidgets = {};
       this._ffValueButtons = {};
       this._filter = {};
+      this._Searches = {};
+      this._SearchesIdx = 0;
       this.minimized = true;
     },
     _setStateAttr: function (state) {
@@ -344,19 +365,35 @@ define([
         }, setAnchor, true, this.rightButtons);
       }
 
+      // control menu bar
+      this.filterWidget = domConstruct.create('div', {
+        style: {
+          display: 'flex',
+        }
+      }, this.domNode)
+
       this.fullViewContentNode = this.fullViewNode = domConstruct.create('div', {
         'class': 'FullFilterView',
         style: {
           'white-space': 'nowrap',
           'vertical-align': 'top',
           margin: '0px',
-          'margin-top': '5px',
+          // 'margin-top': '5px',
           background: '#333',
           padding: '0px',
           'overflow-y': 'hidden',
           'overflow-x': 'auto'
         }
-      }, this.domNode);
+      }, this.filterWidget);
+
+      this.fullViewControlNode = domConstruct.create('div', {
+        'class': 'FullFilterControl',
+        style: {
+          width: '20px',
+          background: '#333'
+        }
+      }, this.filterWidget)
+      this.buildAddFilters();
 
       // this keeps the user from accidentally going 'back' with a left swipe while horizontally scrolling
       on(this.fullViewNode, 'mousewheel', function (event) {
@@ -532,6 +569,15 @@ define([
 
       }));
 
+      // advanced search
+      this.buildAdvancedSearchPanel()
+      this.addAction('AdvSearch', 'fa icon-rocket fa-2x', {
+        style: { 'font-size': '.5em' },
+        label: 'ADV Search',
+        tooltip: ''
+      }, lang.hitch(this, () => {
+        this.AdvancedSearchDialog.show()
+      }), true, this.containerNode);
     },
 
     _setFilterAttr: function (filter) {
@@ -669,14 +715,168 @@ define([
         return;
       }
 
-      // removed the sorting here to allow us to specify the order on the categories appear on the filter panel. This is particular important for the Genome List page
-      // fields.sort().forEach(lang.hitch(this, function(f){
-      fields.forEach(lang.hitch(this, function (f) {
-        // console.log("Field: ",f)
-        this.addCategory(f);
+      // filter when hidden attr is true
+      fields.filter((el) => {
+        return !el.facet_hidden
+      }).forEach(lang.hitch(this, function (el) {
+        this.addCategory(el.field || el, null, el.type || 'str');
       }));
     },
-    addCategory: function (name, values) {
+    buildAddFilters: function () {
+      const fields = this.facetFields.map((ff) => {
+        const field = ff.field || ff;
+        return { id: field, label: field.replace(/_/g, ' '), value: field }
+      })
+      const m_store = new Memory({
+        data: fields
+      })
+      const os = new ObjectStore({ objectStore: m_store });
+      const selectBox = new CheckedMultiSelect({
+        style: 'height: 400px',
+        multiple: true,
+        sortByLabel: false,
+        store: os
+      })
+      // pre-populate existing facets
+      const pre_selected = this.facetFields.filter((ff) => !ff.facet_hidden).map((ff) => ff.field)
+      selectBox.set('value', pre_selected)
+
+      on(selectBox, 'click', lang.hitch(this, function () {
+        const all_selected = selectBox.get('value')
+        const set_selected = new Set(all_selected)
+        const all_exists = this.facetFields.filter(ff => !ff.facet_hidden).map(ff => ff.field)
+        const set_exists = new Set(all_exists)
+        const set_added = setDifference(set_selected, set_exists)
+        const set_removed = setDifference(set_exists, set_selected)
+
+        set_added.forEach((ff) => {
+          const idx = os.objectStore.index[ff]
+          this.facetFields[idx].facet_hidden = false
+          if (this._ffWidgets[ff]) {
+            this._ffWidgets[ff].toggleHidden()
+          } else {
+            this.addNewCategory(ff, this.facetFields[idx].type)
+          }
+        })
+        set_removed.forEach((ff) => {
+          const idx = os.objectStore.index[ff]
+          this.facetFields[idx].facet_hidden = true
+          this.removeCategory(ff)
+        })
+      }))
+
+      // or activate dropdown
+      const menu = new DropDownMenu({
+        class: 'facetColumnSelector',
+        style: 'display: none'
+      })
+      menu.addChild(selectBox)
+      const button = new DropDownButton({
+        iconClass: 'fa icon-gear fa-lg',
+        label: '',
+        dropDown: menu
+      })
+
+      domConstruct.place(button.domNode, this.fullViewControlNode, 'last');
+    },
+
+    createAdvancedSearchRow: function (_evt, isFirst = false) {
+      const _row = AdvancedSearchRowForm({
+        columnOptions: this.fieldSelectOptions,
+        columnTypes: this.fieldTypes,
+        isFirst: isFirst,
+        index: this._SearchesIdx
+      })
+      domConstruct.place(_row.domNode, this.AdvancedSearchPanel, 'last')
+
+      on(_row, 'remove', (evt) => {
+        this._Searches[evt.idx].destroyRecursive()
+      })
+      on(_row, 'create', lang.hitch(this, 'createAdvancedSearchRow'))
+      this._Searches[this._SearchesIdx] = _row
+      this._SearchesIdx++;
+    },
+    buildAdvancedSearchPanel: function () {
+      this.AdvancedSearchPanel = domConstruct.create('div', {
+        'class': 'FormPanel'
+      })
+
+      const searchableFields = this.advancedSearchFields || this.facetFields.filter((ff) => ff.search)
+      this.fieldSelectOptions = searchableFields.map((ff) => {
+        const field = ff.field || ff;
+        return { label: field.replace(/_/g, ' '), value: field }
+      })
+      this.fieldTypes = {}
+      searchableFields.forEach((ff) => {
+        this.fieldTypes[ff.field] = ff.type
+      })
+
+      // initial
+      this.createAdvancedSearchRow(null, true)
+
+      this.AdvancedSearchDialog = Dialog({
+        style: 'width: 500px, height: 700px',
+        content: this.AdvancedSearchPanel
+      })
+
+      const AdvSearchBtn = Button({
+        label: 'Search',
+        onClick: lang.hitch(this, 'buildFilterQueryFromAdvancedSearch')
+      })
+      domStyle.set(this.AdvancedSearchDialog.containerNode, {
+        'text-align': 'center'
+      })
+      domConstruct.place(AdvSearchBtn.domNode, this.AdvancedSearchDialog.containerNode, 'last');
+    },
+    resetAdvancedSearchPanel: function () {
+      // TODO: implement this and trigger when context has changed
+    },
+    buildFilterQueryFromAdvancedSearch: function () {
+      this._filter = {}
+      Object.keys(this._Searches).map((idx) => {
+        const col = this._Searches[idx]
+        const condition = col.getValues()
+        let q;
+        if (condition.type === 'str') {
+          q = `${condition.op === 'NOT' ? 'ne' : 'eq'}(${condition.column},${condition.value})`
+        } else {
+          // numeric
+          const lowerBound = parseInt(condition.from)
+          const upperBound = parseInt(condition.to)
+
+          if (!isNaN(lowerBound) && !isNaN(upperBound)) {
+            q = `between(${condition.column},${lowerBound},${upperBound})`;
+          } else if (!isNaN(lowerBound) && isNaN(upperBound)) {
+            q = `gt(${condition.column},${lowerBound})`
+          } else if (isNaN(lowerBound) && !isNaN(upperBound)) {
+            q = `lt(${condition.column},${upperBound})`
+          } else {
+            // both NaN, skip
+            return
+          }
+          if (condition.op === 'NOT') {
+            q = `not(${q})`
+          }
+        }
+        if (this._filter.hasOwnProperty(condition.column)) {
+          this._filter[condition.column].push(q)
+        } else {
+          this._filter[condition.column] = [q]
+        }
+      })
+      on.emit(this.domNode, 'UpdateFilterCategory', {})
+      this.AdvancedSearchDialog.hide()
+    },
+    addNewCategory: function (field, type) {
+      this.addCategory(field, null, type)
+      this._updateFilteredCounts(field, undefined, [])
+    },
+    removeCategory: function (category) {
+      if (this._ffWidgets[category]) {
+        this._ffWidgets[category].setHidden()
+      }
+    },
+    addCategory: function (name, values, type) {
       // console.log("Add Category: ", name, values)
       var cs = [];
       if (this.selected) {
@@ -688,7 +888,9 @@ define([
         }, this);
       }
 
-      var f = this._ffWidgets[name] = new FacetFilter({ category: name, data: values || undefined, selected: cs });
+      var f = this._ffWidgets[name] = new FacetFilter({
+        category: name, data: values || undefined, selected: cs, type: type
+      });
       domConstruct.place(f.domNode, this.fullViewContentNode, 'last');
     },
 
@@ -743,7 +945,7 @@ define([
       var facetFields = facetFields || this.facetFields;
 
       var f = '&facet(' + facetFields.map(function (field) {
-        return '(field,' + field + ')';
+        return ( typeof (field) === 'string' ) ? `(field,${field})` : `(field,${field.field})`;
       }).join(',') + ',(mincount,1))';
       var q = query; // || "?keyword(*)"
       // console.log(idx, " dataModel: ", this.dataModel)

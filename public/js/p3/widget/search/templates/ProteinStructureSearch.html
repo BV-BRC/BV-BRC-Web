@@ -1,0 +1,100 @@
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onsubmit:onSubmit">
+  <div class="appTemplate">
+    <div class="appTitle">
+      <span class="breadcrumb">Advanced Search</span>
+      <h3>${searchAppName}</h3>
+      <!-- tutorial, doc link -->
+      <p>Search for experimentally characterized protein structures of interest using generic keywords, pathogen group or taxon name, PDB id, description, or protein product. For further explanation, please see <a href="#">Protein Structure Search User Guide</a>.</p>
+    </div>
+    <div style="width:550px;margin:auto" class="formFieldsContainer">
+      <div class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Keyword</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'Search term'" data-dojo-attach-point="keywordNode" name="keyword" style="width: 500px"></div>
+          </div>
+        </div>
+      </div>
+      <div class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Taxon Name</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="p3/widget/TaxonNameSelector" required="false" name="taxon_name" style="width: 500px" data-dojo-attach-point="taxonNameNode"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">PDB ID</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. 1EA3'" data-dojo-attach-point="pdbIDNode" name="pdb_id" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Genome ID</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'444178.3'" data-dojo-attach-point="genomeIDNode" name="genomeID" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">BRC ID</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'fig|114727.5.CDS.1'" data-dojo-attach-point="brcIDNode" name="brcID" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Description</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'Description'" data-dojo-attach-point="descriptionNode" name="description" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Gene</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'dnaA'" data-dojo-attach-point="geneNode" name="gene" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Product</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'ABC transporter'" data-dojo-attach-point="productNode" name="product" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Method</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. X-ray diffraction'" data-dojo-attach-point="methodNode" required="false" name="method" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Additional</label>
+        </div
+        <div class="appRow">
+          <div dojoAttachPoint="AdvancedSearchPanel"></div>
+        </div>
+      </div>
+    </div>
+    <div class="appSubmissionArea">
+      <div style="margin-top: 10px; text-align:center;">
+        <div data-dojo-attach-point="submitButton"
+          type="submit" data-dojo-type="dijit/form/Button">Search</div>
+      </div>
+    </div>
+  </div>
+</form>

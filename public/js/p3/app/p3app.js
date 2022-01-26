@@ -57,7 +57,7 @@ define([
         // var meta = document.getElementsByTagName("meta[name='Keyword']");
         var meta = domQuery("meta[name='Keywords']")[0];
         if (meta) {
-          meta.content = 'PATRIC,' + (document.title).replace('::', ',');
+          meta.content = 'BRC,' + (document.title).replace('::', ',');
         }
         if (window.gtag) {
           // console.log("document title changed to", document.title);
@@ -148,6 +148,36 @@ define([
         window.postMessage('RemoteReady', '*');
       });
 
+      Router.register('/login', function (params, oldPath, newPath, state) {
+        // console.log("Workspace URL Callback", params.newPath);
+        var newState = populateState(params);
+
+        /* istanbul ignore next */
+        var path = params.params[0] || '/';
+        newState.widgetClass = 'p3/widget/LoginForm';
+        newState.value = path;
+        newState.set = 'path';
+        newState.requireAuth = false;
+        newState.pageTitle = 'BVBRC Login';
+        // console.log("Navigate to ", newState);
+        _self.navigate(newState);
+      });
+
+      Router.register('/register(.*)', function (params, oldPath, newPath, state) {
+        // console.log("Workspace URL Callback", params.newPath);
+        var newState = populateState(params);
+        // console.log("newState /register", params)
+        /* istanbul ignore next */
+        // var path = params.params[0] || '/';
+        newState.widgetClass = 'p3/widget/UserProfileForm';
+        newState.value = '/register'
+        newState.set = 'path';
+        newState.requireAuth = false;
+        newState.pageTitle = 'BVBRC Registration';
+        // console.log("Navigate to ", newState);
+        _self.navigate(newState);
+      });
+
       Router.register('/job(/.*)', function (params, oldPath, newPath, state) {
         // console.log("Workspace URL Callback", params.newPath);
         var newState = populateState(params);
@@ -158,7 +188,7 @@ define([
         newState.value = path;
         newState.set = 'path';
         newState.requireAuth = true;
-        newState.pageTitle = 'PATRIC Jobs';
+        newState.pageTitle = 'BRC Jobs';
         // console.log("Navigate to ", newState);
         _self.navigate(newState);
       });
@@ -197,7 +227,7 @@ define([
         newState.value = PathJoin(_self.dataAPI, 'content', path);
         newState.set = 'href';
         newState.requireAuth = false;
-        newState.pageTitle = 'PATRIC';
+        newState.pageTitle = 'BRC';
         // console.log("Navigate to ", newState);
         _self.navigate(newState);
       });
@@ -253,7 +283,7 @@ define([
         newState.value = /* _self.dataAPI +*/ '/public/help/' + path;
         newState.set = 'href';
         newState.requireAuth = false;
-        newState.pageTitle = 'PATRIC';
+        newState.pageTitle = 'BRC';
         // console.log("Navigate to ", newState);
         _self.navigate(newState);
       });
@@ -264,20 +294,20 @@ define([
         var newState = populateState(params);
 
         /* istanbul ignore next */
-        var path = params.params[0] || ('/' + _self.user.id ); //  + "/home/")
+        var path = params.params[0] || ('/' + _self.user.id); //  + "/home/")
         var parts = path.split('/');
         /* istanbul ignore next */
         if (path.replace(/\/+/g, '') === 'public') {
           path = '/public/';
         } else if (parts.length < 3) {
-          path = ('/' + _self.user.id );  // + "/home/"
+          path = ('/' + _self.user.id);  // + "/home/"
         }
 
         newState.widgetClass = 'p3/widget/WorkspaceManager';
         newState.value = path;
         newState.set = 'path';
         newState.requireAuth = false;
-        newState.pageTitle = 'PATRIC Workspace';
+        newState.pageTitle = 'BRC Workspace';
         _self.navigate(newState);
       });
 
@@ -306,6 +336,25 @@ define([
         _self.navigate(newState);
       });
 
+      Router.register('/searches(/.*)', function (params, path) {
+        var parts = path.split('/');
+        parts.shift();
+        var type = parts.shift();
+        var viewerParams;
+        if (parts.length > 0) {
+          viewerParams = parts.join('/');
+        } else {
+          viewerParams = '';
+        }
+
+        var newState = populateState(params);
+        newState.widgetClass = 'p3/widget/search/' + type;
+        newState.value = viewerParams;
+        newState.set = 'params';
+        newState.requireAuth = false;
+
+        _self.navigate(newState);
+      });
 
       Router.register('/app(/.*)', function (params, path) {
         // console.log("view URL Callback", arguments);
@@ -356,6 +405,7 @@ define([
           this.dataAPI = this.dataAPI + '/';
         }
         DataAPI.init(this.dataAPI, this.authorizationToken || '');
+        this.api.client = DataAPI;
         this.api.data = RPC(this.dataAPI, this.authorizationToken);
       }
 
@@ -367,7 +417,7 @@ define([
         var n = dom.byId('signedInAs');
         /* istanbul ignore else */
         if (n) {
-          n.innerHTML = this.user.id.replace(/@patricbrc\.org|@viprbrc\.org/, '');
+          n.innerHTML = this.user.id.replace('@' + localStorage.getItem('realm'), '');
         }
       }
 
@@ -436,10 +486,6 @@ define([
           // console.log(docbody);
           window.App.user = JSON.parse(localStorage.getItem('userProfile'));
 
-          // remove account settings if using a non-patric login (for now)
-          if (window.App.user.altLogin) {
-            document.querySelector('.userProfile').style.display = 'none';
-          }
           window.App.authorizationToken = localStorage.getItem('tokenstring');
           // show the upload and jobs widget
           window.App.uploadJobsWidget('show');
@@ -550,8 +596,10 @@ define([
         localStorage.setItem('auth', JSON.stringify(data));
         localStorage.setItem('tokenstring', token);
         // localStorage.setItem('tokenid', data.tokenid);
-        var userid = data.un.replace('@patricbrc.org', '');
+        var parts = data.un.split('@')
+        var userid = data.un.replace('@' + parts[1], '');
         localStorage.setItem('userid', userid);
+        localStorage.setItem('realm', parts[1])
         var userServiceURL = window.App.userServiceURL;
         userServiceURL.replace(/\/+$/, '');
         xhr.get(userServiceURL + '/user/' + userid, {
@@ -563,11 +611,16 @@ define([
           .then(
             function (user) {
               var userObj = JSON.parse(user);
-              userObj.id += '@patricbrc.org';
+              userObj.id += '@' + localStorage.getItem('realm');
               user = JSON.stringify(userObj);
               localStorage.removeItem('userProfile');
               localStorage.setItem('userProfile', user);
-              window.location.reload();
+              console.log('window.location.path: ', window.location.pathname)
+              if (window.location.pathname === '/login') {
+                window.location = '/'
+              } else {
+                window.location.reload();
+              }
             },
             /* istanbul ignore next */
             function (err) {
@@ -578,7 +631,7 @@ define([
         console.log('i am not logged in yet');
       }
     },
-    loginWithVipr: function (data, token) {
+    WithVipr: function (data, token) {
       if (data !== undefined) {
         localStorage.setItem('auth', JSON.stringify(data));
         localStorage.setItem('tokenstring', token);
@@ -622,7 +675,7 @@ define([
           function (user) {
             var userObj = JSON.parse(user);
             // console.log(userObj);
-            userObj.id += '@patricbrc.org';
+            userObj.id += '@' + localStorage.getItem('realm');
             // console.log(userObj);
             user = JSON.stringify(userObj);
             localStorage.removeItem('userProfile');

@@ -1,6 +1,15 @@
 
 # Changelog
 
+## 3.6.17 - Sep 30, 2021
+* [Release] BVBRC Integration beta release
+
+
+## 3.6.16 - Sep 8, 2021
+* [Enhancement] Phylogenetic Tree update (iteration 6)
+* [Enhancement] CrossBRC compatible authentication
+
+
 ## 3.6.15 - June 25, 2021
 * [Minor] promote B.1.617.2 to VoC
 

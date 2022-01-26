@@ -14,10 +14,10 @@ define([
     applicationName: 'GenomeAnnotation',
     requireAuth: true,
     applicationLabel: 'Genome Annotation',
-    applicationDescription: 'The Genome Annotation Service uses the RAST tool kit (RASTtk) to provide annotation of genomic features.',
-    applicationHelp: 'user_guides/services/genome_annotation_service.html',
-    tutorialLink: 'tutorial/genome_annotation/annotation.html',
-    videoLink: 'videos/genome_annotation_service.html',
+    applicationDescription: 'The Genome Annotation Service provides annotation of genomic featuers using the RAST tool kit (RASTtk) for bacteria and VIGOR4 for viruses.  The service accepts a FASTA formatted contig file and an annotation recipe based on taxonomy to provide an annotated genome.',
+    applicationHelp: 'quick_references/services/genome_annotation_service.html',
+    tutorialLink: 'tutorial/genome_annotation/genome_annotation.html',
+    videoLink: '',
     pageTitle: 'Genome Annotation Service',
     required: true,
     genera_four: ['Acholeplasma', 'Entomoplasma', 'Hepatoplasma', 'Hodgkinia', 'Mesoplasma', 'Mycoplasma', 'Spiroplasma', 'Ureaplasma'],
@@ -37,17 +37,17 @@ define([
         return;
       }
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
-      _self.output_pathWidget.set('value', _self.defaultPath);
-    },
-
-    changeCode: function (item) {
-      this.code_four = false;
-      item.lineage_names.forEach(lang.hitch(this, function (lname) {
-        if (array.indexOf(this.genera_four, lname) >= 0) {
-          this.code_four = true;
+      _self.output_path.set('value', _self.defaultPath);
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
-      }));
-      this.code_four ? this.genetic_code.set('value', '4') : this.genetic_code.set('value', '11');
+      }
     },
 
     onTaxIDChange: function (val) {
@@ -64,7 +64,6 @@ define([
           if (tax_obj) {
             this.scientific_nameWidget.set('item', tax_obj);
             this.scientific_nameWidget.validate();
-            this.changeCode(this.tax_idWidget.get('item'));
           }
         }));
         // this.scientific_nameWidget.set('value',sci_name);
@@ -74,6 +73,18 @@ define([
 
       }
       this._autoTaxSet = false;
+    },
+
+    onRecipeChange: function (val) {
+      if (this.viral.checked) {
+        this.scientific_nameWidget.set('placeHolder', 'e.g. Bat coronavirus');
+      }
+      else if (this.default.checked) {
+        this.scientific_nameWidget.set('placeHolder', 'e.g. Bacillus Cereus');
+      }
+      else if (this.phage.checked) {
+        this.scientific_nameWidget.set('placeHolder', 'e.g. Bacteriophage sp.');
+      }
     },
 
     updateOutputName: function () {
@@ -108,7 +119,6 @@ define([
         // }));
         this.tax_idWidget.set('displayedValue', tax_id);
         this.tax_idWidget.set('value', tax_id);
-        this.changeCode(this.scientific_nameWidget.get('item'));
         this.updateOutputName();
       }
       this._autoNameSet = false;
@@ -121,9 +131,49 @@ define([
 
     getValues: function () {
       var values = this.inherited(arguments);
-      values.scientific_name = this.output_nameWidget.get('displayedValue');
-      values.taxonomy_id = this.tax_idWidget.get('displayedValue');
+      // values.scientific_name = this.output_nameWidget.get('displayedValue');
+      // values.taxonomy_id = this.tax_idWidget.get('displayedValue');
+      values = this.checkBaseParameters(values);
       return values;
+    },
+
+    checkBaseParameters: function (values) {
+      this.contigs = values.contigs;
+      this.output_name = this.output_nameWidget.get('displayedValue');
+      values.scientific_name = this.output_name;
+      this.target_genome_id = this.tax_idWidget.get('displayedValue');
+      values.taxonomy_id = this.target_genome_id;
+
+      return values;
+    },
+
+    addRerunFields: function (job_params) {
+      if (job_params['recipe'] === 'default') {
+        this.default.set('checked', true);
+      }
+      else if (job_params['recipe'] === 'viral') {
+        this.viral.set('checked', true);
+      }
+      else { // bacteriophages
+        this.phage.set('checked', true);
+      }
+      // must set tax_idWidget before scientific_nameWidget
+      this.tax_idWidget.set('value', job_params['taxonomy_id']);
+      this.tax_idWidget.set('displayedValue', job_params['taxonomy_id']);
+      this.scientific_nameWidget.set('item', job_params['scientific_name']);
+    },
+
+    intakeRerunForm: function () {
+      var localStorage = window.localStorage;
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path', 'strategy': 'recipe' };
+        // var widget_map = {"tax_id":"tax_idWidget"};
+        // param_dict["widget_map"] = widget_map;
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        this.addRerunFields(JSON.parse(localStorage.getItem('bvbrc_rerun_job')));
+        localStorage.removeItem('bvbrc_rerun_job');
+        this.form_flag = true;
+      }
     }
   });
 });
