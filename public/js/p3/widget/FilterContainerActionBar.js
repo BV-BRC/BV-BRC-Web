@@ -67,7 +67,7 @@ define([
         case 'eq':
           var f = decodeURIComponent(term.args[0]);
           var v = decodeURIComponent(term.args[1]);
-          parsed.selected.push({ field: f, value: v });
+          parsed.selected.push({ field: f, value: v, op: term.name });
           if (!parsed.byCategory[f]) {
             parsed.byCategory[f] = [v];
           } else {
@@ -77,8 +77,20 @@ define([
         case 'keyword':
           parsed.keywords.push(term.args[0]);
           break;
+        case 'gt':
+        case 'lt':
+          var f = decodeURIComponent(term.args[0]);
+          var v = decodeURIComponent(term.args[1]);
+          parsed.selected.push({ field: f, value: v, op: term.name });
+          break;
+        case 'between':
+          var f = decodeURIComponent(term.args[0]);
+          var v = decodeURIComponent(term.args[1]);
+          var w = decodeURIComponent(term.args[2]);
+          parsed.selected.push({ field: f, value: [v, w], op: term.name });
+          break
         default:
-        // console.log("Skipping Unused term: ", term.name, term.args);
+          // console.log('Skipping Unused term: ', term.name, term.args);
       }
     }
 
@@ -209,9 +221,15 @@ define([
           if (sel.field && !this._filter[sel.field]) {
             this._filter[sel.field] = [];
           }
-          var qval = 'eq(' + sel.field + ',' + encodeURIComponent(sel.value) + ')';
+          // build RQL query based on operator
+          let qval
+          if (sel.op === 'between') {
+            qval = `between(${sel.field},${encodeURIComponent(sel.value[0])},${encodeURIComponent(sel.value[1])})`
+          } else {
+            qval = `${sel.op}(${sel.field},${encodeURIComponent(sel.value)})`
+          }
           if (this._filter[sel.field].indexOf(qval) < 0) {
-            this._filter[sel.field].push('eq(' + sel.field + ',' + encodeURIComponent(sel.value) + ')');
+            this._filter[sel.field].push(qval);
           }
 
           if (this._ffWidgets[sel.field]) {
@@ -470,7 +488,7 @@ define([
             });
             this._filterKeywords = val;
           }
-        } else {
+        } else if (evt.category) {
           // console.log("Updating Category Filters: ", evt.category);
           if (evt.filter) {
             // console.log("Fount evt.filter.  Set this._filter[" + evt.category + "]", evt.filter);
