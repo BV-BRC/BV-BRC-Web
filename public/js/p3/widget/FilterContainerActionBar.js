@@ -53,6 +53,7 @@ define([
       parsed: _parsed,
       selected: [],
       byCategory: {},
+      byRange: {},
       keywords: []
     };
 
@@ -84,6 +85,7 @@ define([
           key = decodeURIComponent(term.args[0]);
           val = decodeURIComponent(term.args[1]);
           parsed.selected.push({ field: key, value: val, op: term.name });
+          parsed.byRange[key] = val
           break;
         // eslint-disable-next-line no-case-declarations
         case 'between':
@@ -91,6 +93,7 @@ define([
           const lb = decodeURIComponent(term.args[1]);
           const ub = decodeURIComponent(term.args[2]);
           parsed.selected.push({ field: key, value: [lb, ub], op: term.name });
+          parsed.byRange[key] = [lb, ub]
           break
         default:
           // console.log('Skipping Unused term: ', term.name, term.args);
@@ -219,6 +222,7 @@ define([
 
       // build/toggle the top level selected filter buttons
       if (parsedFilter && parsedFilter.byCategory) {
+        // build buttons from byCategory list
         Object.keys(parsedFilter.byCategory).forEach(function (cat) {
           if (!this._ffValueButtons[cat]) {
             const ffv = this._ffValueButtons[cat] = new FilteredValueButton({
@@ -233,8 +237,35 @@ define([
           }
         }, this);
 
+        // build buttons from byRange list
+        Object.keys(parsedFilter.byRange).forEach(function (cat) {
+          const op = parsedFilter.selected.filter((sel) => sel.field == cat)[0].op
+          let selectedVal;
+          if (op === 'lt') {
+            selectedVal = `< ${parsedFilter.byRange[cat]}`
+          } else if (op === 'gt') {
+            selectedVal = `> ${parsedFilter.byRange[cat]}`
+          } else {
+            selectedVal = `between ${parsedFilter.byRange[cat][0]} and ${parsedFilter.byRange[cat][1]}`
+          }
+
+          if (!this._ffValueButtons[cat]) {
+            const ffv = this._ffValueButtons[cat] = new FilteredValueButton({
+              category: cat,
+              selected: [selectedVal]
+            });
+            domConstruct.place(ffv.domNode, this.centerButtons, 'last');
+            ffv.startup();
+          } else {
+            // update existing button
+            this._ffValueButtons[cat].set('selected', [selectedVal]);
+          }
+        }, this)
+
         Object.keys(this._ffValueButtons).forEach(function (cat) {
-          if (!parsedFilter || !parsedFilter.byCategory[cat]) {
+          if (parsedFilter && (parsedFilter.byCategory[cat] || parsedFilter.byRange[cat])) {
+            // legitimate
+          } else {
             const b = this._ffValueButtons[cat];
             b.destroy();
             delete this._ffValueButtons[cat];
@@ -502,7 +533,7 @@ define([
           }
         } else {
           const inner = cats.map(function (c) {
-            if (this._filter[c] instanceof Array) {
+            if (this._filter[c] instanceof Array && this._filter[c].length > 1) {
               return 'or(' + this._filter[c].join(',') + ')';
             }
             return this._filter[c];
@@ -600,7 +631,7 @@ define([
     },
 
     updateFacets: function (selected) {
-      // console.log("updateFacets(selected)", selected);
+      // console.log('updateFacets(selected)', selected);
 
       this.set('selected', selected);
     },
