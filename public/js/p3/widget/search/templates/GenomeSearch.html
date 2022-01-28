@@ -17,6 +17,7 @@
           </div>
         </div>
       </div>
+
       <div class="appBox appShadow">
         <div class="headerrow">
           <label class="appBoxLabel">Pathogen Group</label>
@@ -98,12 +99,40 @@
         </div>
         <div class="headerrow">
           <label class="appBoxLabel">Additional Criteria</label>
-        </div
+        </div>
         <div class="appRow">
           <div dojoAttachPoint="AdvancedSearchPanel"></div>
         </div>
       </div>
+
+      <div class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Subtype</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. H7N9'" data-dojo-attach-point="subtypeNode" name="subtype" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Segment</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. 8'" data-dojo-attach-point="segmentNode" name="segment" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Season</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. 02-03'" data-dojo-attach-point="seasonNode" name="season" style="width: 500px"></div>
+          </div>
+        </div>
+      </div>
     </div>
+
     <div class="appSubmissionArea">
       <div style="margin-top: 10px; text-align:center;">
         <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
