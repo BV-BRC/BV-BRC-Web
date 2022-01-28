@@ -825,6 +825,7 @@ define([
         this[db_attach_points[param]].set('value', job_data[param]);
       }, this);
       // Check database value and populate with genome id
+      //TODO: any more options?
       if (this.database.getValue() === 'selGenome') {
         job_data['db_genome_list'].forEach(function (g_id) {
           this.addGenomeFormFill(g_id);
