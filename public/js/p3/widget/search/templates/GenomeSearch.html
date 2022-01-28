@@ -97,38 +97,52 @@
             <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'X'" data-dojo-attach-point="genomeLengthToNode" name="genome_length_to" style="width:80px"></div>
           </div>
         </div>
+
+        <!-- Specific to Influenza A virus -->
+        <div data-dojo-attach-point="influenzaCriteriaNode" style="display: none">
+          <div class="headerrow">
+            <label class="appBoxLabel">Subtype</label>
+          </div>
+          <div class="appRow">
+            <div class="appFieldLong">
+              <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. H7N9'" data-dojo-attach-point="subtypeNode" name="subtype" style="width: 500px"></div>
+            </div>
+          </div>
+          <div class="headerrow">
+            <label class="appBoxLabel">Segment</label>
+          </div>
+          <div class="appRow">
+            <div class="appFieldLong">
+              <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. 8'" data-dojo-attach-point="segmentNode" name="segment" style="width: 500px"></div>
+            </div>
+          </div>
+          <div class="headerrow">
+            <label class="appBoxLabel">Season</label>
+          </div>
+          <div class="appRow">
+            <div class="appFieldLong">
+              <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. 02-03'" data-dojo-attach-point="seasonNode" name="season" style="width: 500px"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Specific to SARS-CoV-2 -->
+        <div data-dojo-attach-point="sarsCoV2CriteriaNode" style="display: none;">
+          <div class="headerrow">
+            <label class="appBoxLabel">Lineage</label>
+          </div>
+          <div class="appRow">
+            <div class="appFieldLong">
+              <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. BA.1'" data-dojo-attach-point="lineageNode" name="lineage" style="width: 500px"></div>
+            </div>
+          </div>
+        </div>
+
         <div class="headerrow">
           <label class="appBoxLabel">Additional Criteria</label>
         </div>
         <div class="appRow">
           <div dojoAttachPoint="AdvancedSearchPanel"></div>
-        </div>
-      </div>
-
-      <div class="appBox appShadow" data-dojo-attach-point="influenzaCriteriaNode" style="display: none">
-        <div class="headerrow">
-          <label class="appBoxLabel">Subtype</label>
-        </div>
-        <div class="appRow">
-          <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. H7N9'" data-dojo-attach-point="subtypeNode" name="subtype" style="width: 500px"></div>
-          </div>
-        </div>
-        <div class="headerrow">
-          <label class="appBoxLabel">Segment</label>
-        </div>
-        <div class="appRow">
-          <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. 8'" data-dojo-attach-point="segmentNode" name="segment" style="width: 500px"></div>
-          </div>
-        </div>
-        <div class="headerrow">
-          <label class="appBoxLabel">Season</label>
-        </div>
-        <div class="appRow">
-          <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. 02-03'" data-dojo-attach-point="seasonNode" name="season" style="width: 500px"></div>
-          </div>
         </div>
       </div>
     </div>
