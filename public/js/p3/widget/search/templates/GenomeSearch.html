@@ -24,7 +24,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'Influenza A virus'" required="false" data-dojo-attach-point="pathogenGroupNode" name="pathogen_group" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'Influenza A virus'" required="false" data-dojo-attach-point="pathogenGroupNode" data-dojo-attach-event="onChange:onPathogenGroupChange" name="pathogen_group" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -105,7 +105,7 @@
         </div>
       </div>
 
-      <div class="appBox appShadow">
+      <div class="appBox appShadow" data-dojo-attach-point="influenzaCriteriaNode" style="display: none">
         <div class="headerrow">
           <label class="appBoxLabel">Subtype</label>
         </div>

@@ -58,6 +58,14 @@ define([
         this.seasonNode.store = store
       }))
     },
+    onPathogenGroupChange: function () {
+      if (this.pathogenGroupNode.get('value') === '11320') {
+        this.influenzaCriteriaNode.style.display = 'block'
+      }
+      else {
+        this.influenzaCriteriaNode.style.display = 'none'
+      }
+    },
     buildQuery: function () {
       let queryArr = []
 
