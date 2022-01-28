@@ -45,6 +45,26 @@ define([
       storeBuilder('genome', 'isolation_country').then(lang.hitch(this, (store) => {
         this.isolationCountryNode.store = store
       }))
+
+      storeBuilder('genome', 'subtype').then(lang.hitch(this, (store) => {
+        this.subtypeNode.store = store
+      }))
+
+      storeBuilder('genome', 'segment').then(lang.hitch(this, (store) => {
+        this.segmentNode.store = store
+      }))
+
+      storeBuilder('genome', 'season').then(lang.hitch(this, (store) => {
+        this.seasonNode.store = store
+      }))
+    },
+    onPathogenGroupChange: function () {
+      if (this.pathogenGroupNode.get('value') === '11320') {
+        this.influenzaCriteriaNode.style.display = 'block'
+      }
+      else {
+        this.influenzaCriteriaNode.style.display = 'none'
+      }
     },
     buildQuery: function () {
       let queryArr = []
@@ -115,6 +135,21 @@ define([
       const advancedQueryArr = this._buildAdvancedQuery()
       if (advancedQueryArr.length > 0) {
         queryArr = queryArr.concat(advancedQueryArr)
+      }
+
+      const subtypeValue = this.subtypeNode.get('value')
+      if (subtypeValue !== '') {
+        queryArr.push(`eq(subtype,${sanitizeInput(subtypeValue)})`)
+      }
+
+      const segmentValue = this.segmentNode.get('value')
+      if (segmentValue !== '') {
+        queryArr.push(`eq(segment,${sanitizeInput(segmentValue)})`)
+      }
+
+      const seasonValue = this.seasonNode.get('value')
+      if (seasonValue !== '') {
+        queryArr.push(`eq(season,${sanitizeInput(seasonValue)})`)
       }
 
       // return queryArr.join('&')
