@@ -154,7 +154,7 @@ define([
 
       const lineageValue = this.lineageNode.get('value')
       if (lineageValue !== '') {
-        queryArr.push(`eq(lineage,${sanitizeInput(lineageValue)})`)
+        queryArr.push(`eq(lineage,${lineageValue})`)
       }
 
       if (genomeQueryArr.length > 0) {
