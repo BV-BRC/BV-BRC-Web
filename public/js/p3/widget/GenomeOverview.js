@@ -282,24 +282,14 @@ define([
         console.log('genome_id is empty');
         return;
       }
-      var params = {};
-      params['blast'] = {
-        'db_precomputed_database': 'selGenome',
-        'db_genome_list': [
-          this.genome.genome_id
-        ],
-        'db_source': 'genome_list',
-        'db_type': 'fna',
-        'blast_program': 'blastn'
-      };
-      params['genome_distance'] = {
-        'genome_id': this.genome.genome_id
-      };
-      var params =
+      var data = {};
+      data.genome = this.genome;
+      data.data_context = 'genome';
       popup.open({
         popup: new ServicesTooltipDialog({
-          context: 'genome',
-          data: params
+          context: 'genome_overview',
+          data: data,
+          multiple: false
         }),
         parent: this,
         around: this.genomeServiceSelectionButton,

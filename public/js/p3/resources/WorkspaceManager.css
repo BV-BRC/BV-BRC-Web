@@ -73,6 +73,26 @@ a.HelpLink:active {
 	cursor: pointer;
 }
 
+.serviceActionTooltip {
+	padding: 2px;
+}
+
+.serviceActionTooltip:hover {
+	background:#d2d2d2;
+	cursor: pointer;
+}
+
+.closeServiceTooltip {
+	color:#09456f;
+	position:absolute;
+	bottom:0;
+	right:5px
+}
+
+.closeServiceTooltip:hover {
+	color:#a94442
+}
+
 .objSelectorActionIcon{
 	cursor: pointer;
 	vertical-align: bottom;
