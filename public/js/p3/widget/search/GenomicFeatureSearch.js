@@ -139,22 +139,22 @@ define([
 
       const subtypeValue = this.subtypeNode.get('value')
       if (subtypeValue !== '') {
-        queryArr.push(`eq(subtype,${sanitizeInput(subtypeValue)})`)
+        genomeQueryArr.push(`eq(subtype,${sanitizeInput(subtypeValue)})`)
       }
 
       const segmentValue = this.segmentNode.get('value')
       if (segmentValue !== '') {
-        queryArr.push(`eq(segment,${sanitizeInput(segmentValue)})`)
+        genomeQueryArr.push(`eq(segment,${sanitizeInput(segmentValue)})`)
       }
 
       const seasonValue = this.seasonNode.get('value')
       if (seasonValue !== '') {
-        queryArr.push(`eq(season,${sanitizeInput(seasonValue)})`)
+        genomeQueryArr.push(`eq(season,${sanitizeInput(seasonValue)})`)
       }
 
       const lineageValue = this.lineageNode.get('value')
       if (lineageValue !== '') {
-        queryArr.push(`eq(lineage,${lineageValue})`)
+        genomeQueryArr.push(`eq(lineage,${lineageValue})`)
       }
 
       if (genomeQueryArr.length > 0) {
