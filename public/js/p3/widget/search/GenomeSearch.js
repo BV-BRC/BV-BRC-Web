@@ -76,6 +76,16 @@ define([
         this.sarsCoV2CriteriaNode.style.display = 'none'
       }
     },
+    onGenomeCompleteChecked: function () {
+      if (this.genomeCompleteNode.checked) {
+        this.genomeLengthFromNode.setAttribute('disabled', true)
+        this.genomeLengthToNode.setAttribute('disabled', true)
+      }
+      else {
+        this.genomeLengthFromNode.setAttribute('disabled', false)
+        this.genomeLengthToNode.setAttribute('disabled', false)
+      }
+    },
     buildQuery: function () {
       let queryArr = []
 
@@ -140,6 +150,11 @@ define([
         queryArr.push(`gt(genome_length,${genomeLengthFromValue})`)
       } else if (!isNaN(genomeLengthToValue)) {
         queryArr.push(`lt(genome_length,${genomeLengthToValue})`)
+      }
+
+      const genomeCompleteCheckbox = this.genomeCompleteNode.get('value')
+      if (genomeCompleteCheckbox) {
+        queryArr.push(`eq(genome_status,${'Complete'})`)
       }
 
       const advancedQueryArr = this._buildAdvancedQuery()

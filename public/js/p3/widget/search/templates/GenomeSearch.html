@@ -95,6 +95,8 @@
             <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'X'" data-dojo-attach-point="genomeLengthFromNode" name="genome_length_from" style="width:80px"></div>
             <label>To</label>
             <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'X'" data-dojo-attach-point="genomeLengthToNode" name="genome_length_to" style="width:80px"></div>
+            <input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="genomeCompleteNode" data-dojo-attach-event="onChange:onGenomeCompleteChecked" style="margin-left: 10px;"/>
+            <label for="genomeComplete" style="font-size:8pt">Complete?</label>
           </div>
         </div>
 
