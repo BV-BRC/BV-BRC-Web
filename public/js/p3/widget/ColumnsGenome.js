@@ -156,6 +156,30 @@ define(['./formatter'], function (formatter) {
       hidden: true,
       group: 'Type Info'
     },
+    h1_clade_gobal: {
+      label: 'H1 Clade Global',
+      field: 'h1_clade_global',
+      hidden: true,
+      group: 'Type Info'
+    },
+    h1_clade_us: {
+      label: 'H1 Clade US',
+      field: 'h1_clade_us',
+      hidden: true,
+      group: 'Type Info'
+    },
+    h5_clade: {
+      label: 'H5 Clade',
+      field: 'h5_clade',
+      hidden: true,
+      group: 'Type Info'
+    },
+    ph1n1_like: {
+      label: 'pH1N1 Like',
+      field: 'ph1n1_like',
+      hidden: true,
+      group: 'Type Info'
+    },
     lineage: {
       label: 'Lineage',
       field: 'lineage',

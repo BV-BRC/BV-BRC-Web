@@ -3001,6 +3001,18 @@ define([
           name: 'N Type',
           text: 'n_type',
         }, {
+          name: 'H1 Clade Global',
+          text: 'h1_clade_global',
+        }, {
+          name: 'H1 Clade US',
+          text: 'h1_clade_us',
+        }, {
+          name: 'H5 Clade',
+          text: 'h5_clade',
+        }, {
+          name: 'pH1N1 Like',
+          text: 'ph1n1_like',
+        }, {
           name: 'Lineage',
           text: 'lineage',
         }, {
