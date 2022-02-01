@@ -175,7 +175,7 @@ define(['./formatter'], function (formatter) {
       group: 'Type Info'
     },
     ph1n1_like: {
-      label: 'pH1N1 Like',
+      label: 'pH1N1-like',
       field: 'ph1n1_like',
       hidden: true,
       group: 'Type Info'
