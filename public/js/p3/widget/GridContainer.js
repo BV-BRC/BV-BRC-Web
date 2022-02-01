@@ -683,6 +683,30 @@ define([
       ],
 
       [
+        'ViewSurveillanceMapItem',
+        'MultiButton fa icon-map-o fa-2x',
+        {
+          label: 'MAP',
+          validTypes: ['*'],
+          multiple: true,
+          max: 5000,
+          tooltip: 'Switch to Surveillance Data Map View.',
+          ignoreDataType: true,
+          validContainerTypes: ['surveillance_data']
+        },
+        function (selection) {
+          const idList = Array.from(selection.reduce((p, v) => {
+            return p.add(v.id)
+          }, new Set()));
+          Topic.publish('/navigate', {
+            href: '/view/SurveillanceDataMap/?in(id,(' + idList.join(',') + '))',
+            target: 'blank'
+          });
+        },
+        false
+      ],
+
+      [
         'ViewSerologyItem',
         'MultiButton fa icon-selection-Sequence fa-2x',
         {
