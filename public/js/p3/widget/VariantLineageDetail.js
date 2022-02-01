@@ -545,7 +545,7 @@ define([
       },
       'P.2': {
         'Lineage': 'P.2',
-        'WHO name': '---',
+        'WHO name': 'Zeta',
         'WHO classification': '---',
         'PANGO lineage': '<a href="https://cov-lineages.org/global_report_P.2.html" target=_blank>P.2</a>',
         'NextStrain lineage': '20J',
