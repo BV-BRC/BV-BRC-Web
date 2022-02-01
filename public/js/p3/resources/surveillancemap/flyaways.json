@@ -1,0 +1,1157 @@
+[
+  {
+    "name": "Atlantic Americas",
+    "points": [
+      {
+        "order": 0,
+        "latitude": 46.195,
+        "longitude": -51.679
+      },
+      {
+        "order": 1,
+        "latitude": 40.714,
+        "longitude": -66.269
+      },
+      {
+        "order": 2,
+        "latitude": 35.46,
+        "longitude": -72.246
+      },
+      {
+        "order": 3,
+        "latitude": 31.503,
+        "longitude": -74.355
+      },
+      {
+        "order": 4,
+        "latitude": 26.431,
+        "longitude": -71.718
+      },
+      {
+        "order": 5,
+        "latitude": 19.973,
+        "longitude": -63.984
+      },
+      {
+        "order": 6,
+        "latitude": 17.978,
+        "longitude": -59.238
+      },
+      {
+        "order": 7,
+        "latitude": 7.013,
+        "longitude": -47.812
+      },
+      {
+        "order": 8,
+        "latitude": 2.284,
+        "longitude": -34.628
+      },
+      {
+        "order": 9,
+        "latitude": -4.565,
+        "longitude": -29.355
+      },
+      {
+        "order": 10,
+        "latitude": -9.795,
+        "longitude": -30.234
+      },
+      {
+        "order": 11,
+        "latitude": -37.3,
+        "longitude": -51.855
+      },
+      {
+        "order": 12,
+        "latitude": -46.92,
+        "longitude": -54.667
+      },
+      {
+        "order": 13,
+        "latitude": -55.478,
+        "longitude": -62.051
+      },
+      {
+        "order": 14,
+        "latitude": -56.365,
+        "longitude": -66.972
+      },
+      {
+        "order": 15,
+        "latitude": -52.589,
+        "longitude": -70.488
+      },
+      {
+        "order": 16,
+        "latitude": -39.774,
+        "longitude": -65.742
+      },
+      {
+        "order": 17,
+        "latitude": -33.284,
+        "longitude": -58.886
+      },
+      {
+        "order": 18,
+        "latitude": -21.616,
+        "longitude": -54.14
+      },
+      {
+        "order": 19,
+        "latitude": -11.35,
+        "longitude": -51.855
+      },
+      {
+        "order": 20,
+        "latitude": -1.23,
+        "longitude": -56.953
+      },
+      {
+        "order": 21,
+        "latitude": 4.565,
+        "longitude": -63.281
+      },
+      {
+        "order": 22,
+        "latitude": 10.833,
+        "longitude": -74.531
+      },
+      {
+        "order": 23,
+        "latitude": 16.972,
+        "longitude": -79.98
+      },
+      {
+        "order": 24,
+        "latitude": 48.458,
+        "longitude": -91.758
+      },
+      {
+        "order": 25,
+        "latitude": 54.47,
+        "longitude": -97.91
+      },
+      {
+        "order": 26,
+        "latitude": 60.844,
+        "longitude": -100.37
+      },
+      {
+        "order": 27,
+        "latitude": 74.355,
+        "longitude": -125.33
+      },
+      {
+        "order": 28,
+        "latitude": 77.157,
+        "longitude": -123.045
+      },
+      {
+        "order": 29,
+        "latitude": 77.989,
+        "longitude": -110.566
+      },
+      {
+        "order": 30,
+        "latitude": 77.428,
+        "longitude": -97.734
+      },
+      {
+        "order": 31,
+        "latitude": 69.099,
+        "longitude": -60.117
+      },
+      {
+        "order": 32,
+        "latitude": 60.93,
+        "longitude": -58.535
+      },
+      {
+        "order": 33,
+        "latitude": 56.365,
+        "longitude": -51.679
+      },
+      {
+        "order": 34,
+        "latitude": 46.195,
+        "longitude": -51.679
+      }
+    ]
+  },
+  {
+    "name": "Pacific Americas",
+    "points": [
+      {
+        "order": 0,
+        "latitude": 70.884,
+        "longitude": -145.898
+      },
+      {
+        "order": 1,
+        "latitude": 49.61,
+        "longitude": -120.233
+      },
+      {
+        "order": 2,
+        "latitude": 20.632,
+        "longitude": -95.623
+      },
+      {
+        "order": 3,
+        "latitude": 9.102,
+        "longitude": -79.101
+      },
+      {
+        "order": 4,
+        "latitude": -4.915,
+        "longitude": -73.476
+      },
+      {
+        "order": 5,
+        "latitude": -8.059,
+        "longitude": -74.179
+      },
+      {
+        "order": 6,
+        "latitude": -11.178,
+        "longitude": -68.906
+      },
+      {
+        "order": 7,
+        "latitude": -12.211,
+        "longitude": -65.39
+      },
+      {
+        "order": 8,
+        "latitude": -19.973,
+        "longitude": -63.984
+      },
+      {
+        "order": 9,
+        "latitude": -26.115,
+        "longitude": -67.148
+      },
+      {
+        "order": 10,
+        "latitude": -49.61,
+        "longitude": -70.664
+      },
+      {
+        "order": 11,
+        "latitude": -52.268,
+        "longitude": -67.148
+      },
+      {
+        "order": 12,
+        "latitude": -55.379,
+        "longitude": -73.476
+      },
+      {
+        "order": 13,
+        "latitude": -48.458,
+        "longitude": -79.453
+      },
+      {
+        "order": 14,
+        "latitude": -39.639,
+        "longitude": -77.343
+      },
+      {
+        "order": 15,
+        "latitude": -19.311,
+        "longitude": -76.992
+      },
+      {
+        "order": 16,
+        "latitude": 8.059,
+        "longitude": -93.867
+      },
+      {
+        "order": 17,
+        "latitude": 23.563,
+        "longitude": -117.421
+      },
+      {
+        "order": 18,
+        "latitude": 43.834,
+        "longitude": -130.781
+      },
+      {
+        "order": 19,
+        "latitude": 55.178,
+        "longitude": -138.867
+      },
+      {
+        "order": 20,
+        "latitude": 56.944,
+        "longitude": -150.117
+      },
+      {
+        "order": 21,
+        "latitude": 58.631,
+        "longitude": -167.695
+      },
+      {
+        "order": 22,
+        "latitude": 65.802,
+        "longitude": -169.013
+      },
+      {
+        "order": 23,
+        "latitude": 69.472,
+        "longitude": -168.222
+      },
+      {
+        "order": 24,
+        "latitude": 72.1,
+        "longitude": -157.236
+      },
+      {
+        "order": 25,
+        "latitude": 70.884,
+        "longitude": -145.898
+      }
+    ]
+  },
+  {
+    "name": "Mississippi Americas",
+    "points": [
+      {
+        "order": 0,
+        "latitude": 69.9,
+        "longitude": -151.523
+      },
+      {
+        "order": 1,
+        "latitude": 52.268,
+        "longitude": -135.7
+      },
+      {
+        "order": 2,
+        "latitude": 46.073,
+        "longitude": -123.75
+      },
+      {
+        "order": 3,
+        "latitude": 40.979,
+        "longitude": -113.906
+      },
+      {
+        "order": 4,
+        "latitude": 23.241,
+        "longitude": -102.656
+      },
+      {
+        "order": 5,
+        "latitude": 15.961,
+        "longitude": -94.57
+      },
+      {
+        "order": 6,
+        "latitude": 13.581,
+        "longitude": -92.46
+      },
+      {
+        "order": 7,
+        "latitude": 8.059,
+        "longitude": -83.496
+      },
+      {
+        "order": 8,
+        "latitude": -3.68,
+        "longitude": -72.07
+      },
+      {
+        "order": 9,
+        "latitude": -17.811,
+        "longitude": -66.01
+      },
+      {
+        "order": 10,
+        "latitude": -45.951,
+        "longitude": -66.445
+      },
+      {
+        "order": 11,
+        "latitude": -46.558,
+        "longitude": -64.511
+      },
+      {
+        "order": 12,
+        "latitude": -43.58,
+        "longitude": -59.589
+      },
+      {
+        "order": 13,
+        "latitude": -39.096,
+        "longitude": -53.789
+      },
+      {
+        "order": 14,
+        "latitude": -25.483,
+        "longitude": -42.89
+      },
+      {
+        "order": 15,
+        "latitude": -15.453,
+        "longitude": -43.593
+      },
+      {
+        "order": 16,
+        "latitude": -10.66,
+        "longitude": -46.757
+      },
+      {
+        "order": 17,
+        "latitude": -2.811,
+        "longitude": -58.007
+      },
+      {
+        "order": 18,
+        "latitude": 11.35,
+        "longitude": -68.906
+      },
+      {
+        "order": 19,
+        "latitude": 13.239,
+        "longitude": -71.894
+      },
+      {
+        "order": 20,
+        "latitude": 21.779,
+        "longitude": -79.628
+      },
+      {
+        "order": 21,
+        "latitude": 31.5,
+        "longitude": -83.146
+      },
+      {
+        "order": 22,
+        "latitude": 60.9304,
+        "longitude": -94.3945
+      },
+      {
+        "order": 23,
+        "latitude": 67.876,
+        "longitude": -100.195
+      },
+      {
+        "order": 24,
+        "latitude": 72.289,
+        "longitude": -97.734
+      },
+      {
+        "order": 25,
+        "latitude": 76.557,
+        "longitude": -103.007
+      },
+      {
+        "order": 26,
+        "latitude": 77.235,
+        "longitude": -116.718
+      },
+      {
+        "order": 27,
+        "latitude": 76.999,
+        "longitude": -124.101
+      },
+      {
+        "order": 28,
+        "latitude": 72.607,
+        "longitude": -147.48
+      },
+      {
+        "order": 29,
+        "latitude": 69.9,
+        "longitude": -151.523
+      }
+    ]
+  },
+  {
+    "name": "East Atlantic",
+    "points": [
+      {
+        "order": 0,
+        "latitude": 58.631,
+        "longitude": -43.242
+      },
+      {
+        "order": 1,
+        "latitude": 58.5,
+        "longitude": -27.773
+      },
+      {
+        "order": 2,
+        "latitude": 58.4,
+        "longitude": -17.226
+      },
+      {
+        "order": 3,
+        "latitude": 53.33,
+        "longitude": -14.765
+      },
+      {
+        "order": 4,
+        "latitude": 33.137,
+        "longitude": -16.523
+      },
+      {
+        "order": 5,
+        "latitude": 26.116,
+        "longitude": -21.445
+      },
+      {
+        "order": 6,
+        "latitude": 11.178,
+        "longitude": -22.148
+      },
+      {
+        "order": 7,
+        "latitude": 4.565,
+        "longitude": -14.765
+      },
+      {
+        "order": 8,
+        "latitude": 0.351,
+        "longitude": -6.328
+      },
+      {
+        "order": 9,
+        "latitude": 0.703,
+        "longitude": 3.164
+      },
+      {
+        "order": 10,
+        "latitude": -34.886,
+        "longitude": 13.359
+      },
+      {
+        "order": 11,
+        "latitude": -35.746,
+        "longitude": 18.632
+      },
+      {
+        "order": 12,
+        "latitude": -31.952,
+        "longitude": 24.259
+      },
+      {
+        "order": 13,
+        "latitude": -21.943,
+        "longitude": 19.335
+      },
+      {
+        "order": 14,
+        "latitude": 2.46,
+        "longitude": 18.984
+      },
+      {
+        "order": 15,
+        "latitude": 15.284,
+        "longitude": 10.195
+      },
+      {
+        "order": 16,
+        "latitude": 21.616,
+        "longitude": -4.57
+      },
+      {
+        "order": 17,
+        "latitude": 38.822,
+        "longitude": -6.68
+      },
+      {
+        "order": 18,
+        "latitude": 42.811,
+        "longitude": -2.461
+      },
+      {
+        "order": 19,
+        "latitude": 55.777,
+        "longitude": 21.445
+      },
+      {
+        "order": 20,
+        "latitude": 67.875,
+        "longitude": 85.781
+      },
+      {
+        "order": 21,
+        "latitude": 72.816,
+        "longitude": 97.734
+      },
+      {
+        "order": 22,
+        "latitude": 72.501,
+        "longitude": 106.523
+      },
+      {
+        "order": 23,
+        "latitude": 73.628,
+        "longitude": 116.718
+      },
+      {
+        "order": 24,
+        "latitude": 77.157,
+        "longitude": 118.476
+      },
+      {
+        "order": 25,
+        "latitude": 79.432,
+        "longitude": 111.445
+      },
+      {
+        "order": 26,
+        "latitude": 81.972,
+        "longitude": 95.976
+      },
+      {
+        "order": 27,
+        "latitude": 84.052,
+        "longitude": -31.64
+      },
+      {
+        "order": 28,
+        "latitude": 83.599,
+        "longitude": -78.75
+      },
+      {
+        "order": 29,
+        "latitude": 79.302,
+        "longitude": -108.984
+      },
+      {
+        "order": 30,
+        "latitude": 73.428,
+        "longitude": -111.796
+      },
+      {
+        "order": 31,
+        "latitude": 71.635,
+        "longitude": -105.468
+      },
+      {
+        "order": 32,
+        "latitude": 70.728,
+        "longitude": -100.195
+      },
+      {
+        "order": 33,
+        "latitude": 69.657,
+        "longitude": -93.515
+      },
+      {
+        "order": 34,
+        "latitude": 64.623,
+        "longitude": -74.531
+      },
+      {
+        "order": 35,
+        "latitude": 60.413,
+        "longitude": -61.172
+      },
+      {
+        "order": 36,
+        "latitude": 58.631,
+        "longitude": -43.242
+      }
+    ]
+  },
+  {
+    "name": "West Asia/East Africa",
+    "points": [
+      {
+        "order": 0,
+        "latitude": 6.315,
+        "longitude": 3.516
+      },
+      {
+        "order": 1,
+        "latitude": -18.97,
+        "longitude": 6.328
+      },
+      {
+        "order": 2,
+        "latitude": -35.461,
+        "longitude": 20.039
+      },
+      {
+        "order": 3,
+        "latitude": -34.016,
+        "longitude": 31.64
+      },
+      {
+        "order": 4,
+        "latitude": -24.846,
+        "longitude": 49.218
+      },
+      {
+        "order": 5,
+        "latitude": -10.142,
+        "longitude": 52.383
+      },
+      {
+        "order": 6,
+        "latitude": 5.966,
+        "longitude": 51.679
+      },
+      {
+        "order": 7,
+        "latitude": 64.2,
+        "longitude": 107.929
+      },
+      {
+        "order": 8,
+        "latitude": 68.528,
+        "longitude": 119.531
+      },
+      {
+        "order": 9,
+        "latitude": 71.3,
+        "longitude": 133.593
+      },
+      {
+        "order": 10,
+        "latitude": 73.327,
+        "longitude": 132.188
+      },
+      {
+        "order": 11,
+        "latitude": 78.242,
+        "longitude": 108.984
+      },
+      {
+        "order": 12,
+        "latitude": 77.542,
+        "longitude": 99.843
+      },
+      {
+        "order": 13,
+        "latitude": 75.231,
+        "longitude": 75.41
+      },
+      {
+        "order": 14,
+        "latitude": 70.496,
+        "longitude": 70.839
+      },
+      {
+        "order": 15,
+        "latitude": 68.138,
+        "longitude": 70.136
+      },
+      {
+        "order": 16,
+        "latitude": 30.9022,
+        "longitude": 30.41
+      },
+      {
+        "order": 17,
+        "latitude": 21.125,
+        "longitude": 23.027
+      },
+      {
+        "order": 18,
+        "latitude": 6.315,
+        "longitude": 3.516
+      }
+    ]
+  },
+  {
+    "name": "Black Sea/Mediterranean",
+    "points": [
+      {
+        "order": 0,
+        "latitude": 82.166,
+        "longitude": 61.875
+      },
+      {
+        "order": 1,
+        "latitude": 79.171,
+        "longitude": 73.476
+      },
+      {
+        "order": 2,
+        "latitude": 74.02,
+        "longitude": 86.133
+      },
+      {
+        "order": 3,
+        "latitude": 69.9,
+        "longitude": 85.429
+      },
+      {
+        "order": 4,
+        "latitude": -2.811,
+        "longitude": 13.71
+      },
+      {
+        "order": 5,
+        "latitude": -3.864,
+        "longitude": 5.976
+      },
+      {
+        "order": 6,
+        "latitude": 3.513,
+        "longitude": -10.898
+      },
+      {
+        "order": 7,
+        "latitude": 15.284,
+        "longitude": -20.039
+      },
+      {
+        "order": 8,
+        "latitude": 28.304,
+        "longitude": -17.57
+      },
+      {
+        "order": 9,
+        "latitude": 37.996,
+        "longitude": -7.734
+      },
+      {
+        "order": 10,
+        "latitude": 44.59,
+        "longitude": 3.339
+      },
+      {
+        "order": 11,
+        "latitude": 54.16,
+        "longitude": 14.414
+      },
+      {
+        "order": 12,
+        "latitude": 58.171,
+        "longitude": 19.512
+      },
+      {
+        "order": 13,
+        "latitude": 71.188,
+        "longitude": 28.476
+      },
+      {
+        "order": 14,
+        "latitude": 78.171,
+        "longitude": 32.695
+      },
+      {
+        "order": 15,
+        "latitude": 80.386,
+        "longitude": 30.938
+      },
+      {
+        "order": 16,
+        "latitude": 81.99,
+        "longitude": 39.902
+      },
+      {
+        "order": 17,
+        "latitude": 82.166,
+        "longitude": 61.875
+      }
+    ]
+  },
+  {
+    "name": "East Asia/Australasia",
+    "points": [
+      {
+        "order": 0,
+        "latitude": 78.5,
+        "longitude": 99.14
+      },
+      {
+        "order": 1,
+        "latitude": 78.23,
+        "longitude": 110.39
+      },
+      {
+        "order": 2,
+        "latitude": 76.841,
+        "longitude": 123.05
+      },
+      {
+        "order": 3,
+        "latitude": 75.845,
+        "longitude": 155.039
+      },
+      {
+        "order": 4,
+        "latitude": 71.413,
+        "longitude": -144.14
+      },
+      {
+        "order": 5,
+        "latitude": 69.411,
+        "longitude": -139.218
+      },
+      {
+        "order": 6,
+        "latitude": 65.658,
+        "longitude": -140.625
+      },
+      {
+        "order": 7,
+        "latitude": 57.704,
+        "longitude": -146.601
+      },
+      {
+        "order": 8,
+        "latitude": 55.178,
+        "longitude": -153.281
+      },
+      {
+        "order": 9,
+        "latitude": 50.289,
+        "longitude": 179.648
+      },
+      {
+        "order": 10,
+        "latitude": 44.339,
+        "longitude": 158.554
+      },
+      {
+        "order": 11,
+        "latitude": 26.431,
+        "longitude": 131.836
+      },
+      {
+        "order": 12,
+        "latitude": 16.636,
+        "longitude": 129.375
+      },
+      {
+        "order": 13,
+        "latitude": 4.565,
+        "longitude": 137.109
+      },
+      {
+        "order": 14,
+        "latitude": -3.162,
+        "longitude": 157.5
+      },
+      {
+        "order": 15,
+        "latitude": -37.718,
+        "longitude": -176.132
+      },
+      {
+        "order": 16,
+        "latitude": -50.958,
+        "longitude": 169.453
+      },
+      {
+        "order": 17,
+        "latitude": -47.989,
+        "longitude": 135.703
+      },
+      {
+        "order": 18,
+        "latitude": -34.885,
+        "longitude": 111.796
+      },
+      {
+        "order": 19,
+        "latitude": -14.945,
+        "longitude": 106.875
+      },
+      {
+        "order": 20,
+        "latitude": 5.266,
+        "longitude": 91.054
+      },
+      {
+        "order": 21,
+        "latitude": 18.145,
+        "longitude": 92.812
+      },
+      {
+        "order": 22,
+        "latitude": 65.548,
+        "longitude": 99.84
+      },
+      {
+        "order": 23,
+        "latitude": 78.5,
+        "longitude": 99.14
+      }
+    ]
+  },
+  {
+    "name": "Central Asia",
+    "points": [
+      {
+        "order": 0,
+        "latitude": 5.966,
+        "longitude": 73.828
+      },
+      {
+        "order": 1,
+        "latitude": 20.303,
+        "longitude": 69.609
+      },
+      {
+        "order": 2,
+        "latitude": 66.653,
+        "longitude": 67.148
+      },
+      {
+        "order": 3,
+        "latitude": 73.023,
+        "longitude": 73.828
+      },
+      {
+        "order": 4,
+        "latitude": 78.207,
+        "longitude": 106.523
+      },
+      {
+        "order": 5,
+        "latitude": 75.759,
+        "longitude": 155.39
+      },
+      {
+        "order": 6,
+        "latitude": 69.657,
+        "longitude": 160.312
+      },
+      {
+        "order": 7,
+        "latitude": 69.411,
+        "longitude": 157.851
+      },
+      {
+        "order": 8,
+        "latitude": 66.792,
+        "longitude": 112.851
+      },
+      {
+        "order": 9,
+        "latitude": 65.219,
+        "longitude": 108.281
+      },
+      {
+        "order": 10,
+        "latitude": 58.631,
+        "longitude": 101.25
+      },
+      {
+        "order": 11,
+        "latitude": 20.632,
+        "longitude": 90.351
+      },
+      {
+        "order": 12,
+        "latitude": 14.605,
+        "longitude": 84.375
+      },
+      {
+        "order": 13,
+        "latitude": 12.897,
+        "longitude": 82.265
+      },
+      {
+        "order": 14,
+        "latitude": 6.315,
+        "longitude": 83.672
+      },
+      {
+        "order": 15,
+        "latitude": 5.416,
+        "longitude": 81.211
+      },
+      {
+        "order": 16,
+        "latitude": 5.79,
+        "longitude": 77.51
+      },
+      {
+        "order": 17,
+        "latitude": 5.966,
+        "longitude": 73.828
+      }
+    ]
+  },
+  {
+    "name": "Central Pacific",
+    "points": [
+      {
+        "order": 0,
+        "latitude": 63.154,
+        "longitude": -164.003
+      },
+      {
+        "order": 1,
+        "latitude": 60.759,
+        "longitude": -149.765
+      },
+      {
+        "order": 2,
+        "latitude": 17.14,
+        "longitude": -112.148
+      },
+      {
+        "order": 3,
+        "latitude": -1.406,
+        "longitude": -95.273
+      },
+      {
+        "order": 4,
+        "latitude": -5.965,
+        "longitude": -90.527
+      },
+      {
+        "order": 5,
+        "latitude": -42.682,
+        "longitude": -83.32
+      },
+      {
+        "order": 6,
+        "latitude": -49.267,
+        "longitude": -85.078
+      },
+      {
+        "order": 7,
+        "latitude": -53.956,
+        "longitude": -102.305
+      },
+      {
+        "order": 8,
+        "latitude": -52.696,
+        "longitude": -179.29
+      },
+      {
+        "order": 9,
+        "latitude": -36.315,
+        "longitude": 150.82
+      },
+      {
+        "order": 10,
+        "latitude": -1.406,
+        "longitude": 148.359
+      },
+      {
+        "order": 11,
+        "latitude": 30.145,
+        "longitude": 155.039
+      },
+      {
+        "order": 12,
+        "latitude": 48.456,
+        "longitude": 172.123
+      },
+      {
+        "order": 13,
+        "latitude": 59.712,
+        "longitude": -178.242
+      },
+      {
+        "order": 14,
+        "latitude": 63.154,
+        "longitude": -164.003
+      }
+    ]
+  }
+]
