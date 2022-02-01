@@ -85,4 +85,10 @@ router.get('/tools', function (req, res) {
   res.render('pages/tools', { title: 'PATRIC', request: req, response: res });
 });
 
+/* GET privacy policy page. */
+router.get('/privacy-policy', function (req, res) {
+  req.applicationModule = 'p3/app/p3app';
+  res.render('pages/privacy-policy', { title: 'PATRIC', request: req, response: res });
+});
+
 module.exports = router;
