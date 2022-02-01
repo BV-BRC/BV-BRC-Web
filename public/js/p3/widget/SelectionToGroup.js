@@ -130,7 +130,7 @@ define([
     },
 
     onCancel: function (evt) {
-      on.emit(this.domNode, 'dialogAction', { action: 'close', bubbles: true });
+      on.emit(this.domNode, 'dialogAction', { action: 'close', bubbles: true , button: 'cancel'});
     },
     onCopy: function (evt) {
       this.copyButton.set('disabled', true);
@@ -162,7 +162,7 @@ define([
         })));
       }
       def.then(lang.hitch(this, function () {
-        on.emit(this.domNode, 'dialogAction', { action: 'close', bubbles: true });
+        on.emit(this.domNode, 'dialogAction', { action: 'close', bubbles: true , button: 'add'});
       }));
     }
 

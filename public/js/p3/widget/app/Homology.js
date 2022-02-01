@@ -3,13 +3,12 @@ define([
   'dojo/on', 'dojo/query', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/topic',
   './AppBase',
   'dojo/text!./templates/Homology.html', 'dijit/form/Form',
-  '../viewer/Homology', '../../util/PathJoin', '../../WorkspaceManager', '../WorkspaceObjectSelector'
+  '../../util/PathJoin', '../../WorkspaceManager', '../WorkspaceObjectSelector'
 ], function (
   declare, lang, Deferred,
   on, query, domClass, domConstruct, domStyle, Topic,
   AppBase,
-  Template, FormMixin,
-  HomologyResultContainer, PathJoin, WorkspaceManager, WorkspaceObjectSelector
+  Template, FormMixin, PathJoin, WorkspaceManager, WorkspaceObjectSelector
 ) {
 
   var NA = 'nucleotide',
@@ -374,30 +373,7 @@ define([
         submit_values['db_precomputed_database'] = database.split('.')[0];
       }
       if (this.validate()) {
-        // var start_params = {
-        //   'base_url': window.App.appBaseURL
-        // }
-        // var values = this.getValues();
-        var callback = function () {
-          // the state set here shows up again in the HomologyMemoryStore onSetState
-          _self.result = new HomologyResultContainer({
-            id: this.id + '_blastResult',
-            style: 'min-height: 700px; visibility:hidden;',
-            state: {
-              query: q, resultType: resultType, resultPath: output_path + '/.' + output_file, 'submit_values': submit_values
-            }
-          });
-          _self.result.placeAt(query('.blast_result')[0]);
-          _self.result.loadingMask.show();
-          query('.blast_result .GridContainer').style('visibility', 'visible');
-          domClass.add(query('.service_form')[0], 'hidden');
-          domClass.add(query('.appSubmissionArea')[0], 'hidden');
-          domClass.add(query('.service_error')[0], 'hidden');
-          query('.reSubmitBtn').style('visibility', 'visible');
-          // _self.result.set('state', { query: q, resultType: resultType, resultPath: output_path+"/."+output_file, "submit_values":submit_values});
-          _self.result.startup();
-          // Topic.publish('/navigate', { href: `/workspace/${output_path}/.${output_file}/blast_out.txt`});
-        };
+
         // set job hook before submission
         if (_self.live_job.value) {
           _self.setJobHook(function () {
@@ -405,9 +381,6 @@ define([
           }, function (error) {
             // Topic.publish('BLAST_UI', 'showErrorMessage', error);
           });
-        }
-        if (this.demo) {
-          callback();
         }
         else {
           // changing the submit() function to be getValues() in shift away from form/viewer
@@ -792,12 +765,15 @@ define([
       if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
         this.form_flag = true;
         var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
+        console.log('job_data=',job_data);
         // job_data['program'] = 'blastp';
         var param_dict = { 'output_folder': 'output_path' };
         var service_specific = { 'input_fasta_data': 'sequence', 'blast_evalue_cutoff': 'evalue', 'blast_max_hits': 'max_hits' };
         param_dict['service_specific'] = service_specific;
         this.setProgramButton(job_data);
         this.setInputSource(job_data);
+        console.log("query_featuregroup=",this.query_featuregroup.value);
+        console.log("query_featuregroup(value)=",this.query_featuregroup.get('value'));
         AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
         this.database.set('disabled', false);
         this.search_for.set('disabled', false);
@@ -824,16 +800,17 @@ define([
         this.sequence.set('value', job_data['input_fasta_data']);
       }
       else if (s === 'fasta_file') {
-        this.input_sequence.set('checked', false);
         this.input_fasta.set('checked', true);
+        this.input_sequence.set('checked', false);
         this.input_group.set('checked', false);
         this.query_fasta.set('value', job_data['input_fasta_file']);
       }
       else if (s === 'feature_group') {
+        this.input_group.set('checked', true);
         this.input_sequence.set('checked', false);
         this.input_fasta.set('checked', false);
-        this.input_group.set('checked', true);
         this.query_featuregroup.set('value', job_data['input_feature_group']);
+        
       }
     },
 
@@ -848,6 +825,7 @@ define([
         this[db_attach_points[param]].set('value', job_data[param]);
       }, this);
       // Check database value and populate with genome id
+      //TODO: any more options?
       if (this.database.getValue() === 'selGenome') {
         job_data['db_genome_list'].forEach(function (g_id) {
           this.addGenomeFormFill(g_id);
