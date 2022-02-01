@@ -276,7 +276,7 @@ define([
         'Emergence date': 'November 2021',
         'Amino acid substitutions vs Wuhan-Hu-1: Spike': 'T19I, L24del, P25del, P26del, A27S, G142D, V213G, G339D, S371F, S373P, S375F, T376A, D405N, R408S, K417N, N440K, S477N, T478K, E484A, Q493R, Q498R, N501Y, Y505H, D614G, H655Y, N679K, P681H, N764K, D796Y, Q954H, N969K',
         'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike': 'nsp1: S135R;  nsp3: T24I, G489S, nsp4: L264F, T327I, L438F, T492I: nsp5: F108del, P132H; nsp6: S106del, G107del, F108del; nsp12: P323L; nsp13: R392C; nsp14: I42V; nsp15: T112I; ORF3a: T223I; E: T9I; M: Q19E , A63T; N: P13L, E31del, R32del, S33del, R203K, G204R, S413R',
-        'ViPR representative strain link': 'N/A',
+        'ViPR representative strain link': '<a href="https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=OM371884" target=_blank>SARS-CoV-2/human/USA/FL-CDC-STM-77CPCCUR3/2022</a>',
         'Relevant publications': [
           '<a href="https://github.com/cov-lineages/pango-designation/issues/361" target=_blank>https://github.com/cov-lineages/pango-designation/issues/361</a>',
         ]
@@ -291,7 +291,7 @@ define([
         'Emergence date': 'November 2021',
         'Amino acid substitutions vs Wuhan-Hu-1: Spike': 'A67V, H69del, V70del, T95I, G142D, V143del, Y144del, Y145del, N211del, L212I, G339D, S371F, S373P, S375F, D405N, K417N, N440K, G446S, S477N, T478K, E484A, Q493R, Q498R, N501Y, Y505H, D614G, H655Y, N679K, P681H, N764K, D796Y, Q954H, N969K',
         'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike': 'nsp1: S135R; nsp3: G489S; nsp: T327I, T492I; nsp5: P132H; nsp6: A88V, S106del, G107del, F108del; nsp12: P323L; nsp14: I42V; ORF3a: T223I; E: T9I; M: A63T; M: Q19E; N: P13L, E31del, R32del, S33del, R203K, G204R, S413R',
-        'ViPR representative strain link': 'N/A',
+        'ViPR representative strain link': '<a href="https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=OV494217" target=_blank>UNKNOWN-OV494217</a>',
         'Relevant publications': [
           '<a href="https://github.com/cov-lineages/pango-designation/issues/367" target=_blank>https://github.com/cov-lineages/pango-designation/issues/367</a>',
         ]
