@@ -51,7 +51,8 @@ define([
     setSubTitle: function (locations) {
       if (locations) {
         if (locations.length === 1 && locations[0].items.length === 1) {
-          this.queryNode.innerHTML = locations[0].sample_identifier + ' | ' + locations[0].host_common_name + ' | ' + locations[0].collection_country;
+          const item = locations[0].items[0];
+          this.queryNode.innerHTML = `${item.sample_identifier} | ${item.host_common_name} | ${item.collection_country}`;
         } else {
           let totalCount = 0;
           for (let location of locations) {
