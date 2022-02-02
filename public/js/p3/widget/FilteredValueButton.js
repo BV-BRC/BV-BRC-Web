@@ -1,13 +1,11 @@
 define([
-  'dojo/_base/declare', 'dojo/on', 'dojo/_base/Deferred', 'dijit/_Templated',
-  'dojo/dom-class', 'dojo/dom-construct', 'dijit/_WidgetBase',
-  'dojo/_base/xhr', 'dojo/_base/lang', 'dojo/dom-attr', 'dojo/query',
-  'dojo/dom-geometry', 'dojo/dom-style', 'dojo/when', 'dojo/text!./templates/FilterValueButton.html'
+  'dojo/_base/declare', 'dojo/on',
+  'dijit/_Templated', 'dijit/_WidgetBase',
+  'dojo/text!./templates/FilterValueButton.html'
 ], function (
-  declare, on, Deferred, Templated,
-  domClass, domConstruct, WidgetBase,
-  xhr, lang, domAttr, Query,
-  domGeometry, domStyle, when, template
+  declare, on,
+  Templated, WidgetBase,
+  template
 ) {
 
   return declare([WidgetBase, Templated], {
@@ -17,9 +15,9 @@ define([
     selected: null,
 
     _setSelectedAttr: function (selected) {
-      // console.log("FFV _setSelected: ", selected);
+      console.log('FilteredValueButton _setSelected: ', selected);
 
-      var content = [];
+      const content = [];
       selected = selected.map(function (s, idx) {
         var s = s.replace(/"/g, '');
         var co = [];
@@ -29,10 +27,11 @@ define([
         content.push(co.join(''));
         return s;
       }, this);
-      this._set('selected', selected);
+      // console.log(content, selected)
+      // this._set('selected', selected);
 
       if (!this._started) {
-        this._set('selected', selected);
+        // this._set('selected', selected);
         return;
       }
 
@@ -43,27 +42,23 @@ define([
       } else {
         this.selectedNode.innerHTML = content.slice(0, -1).join(',&nbsp;') + '&nbsp;or&nbsp;' + content[content.length - 1];
       }
-      this._set('selected', selected);
+      // this._set('selected', selected);
 
     },
     clearAll: function () {
-      // console.log("Clear Selected")
       this.innerHTML = '';
-      // console.log("clear Category: ", this.category);
       on.emit(this.domNode, 'UpdateFilterCategory', {
         category: this.category,
         selected: [],
         bubbles: true,
         cancelable: true
       });
-      // this._set("selected",[])
     },
     startup: function () {
       if (this._started) {
         return;
       }
       this.inherited(arguments);
-      // console.log("FilteredValueButton Startup()", this.selected);
       this.set('selected', this.selected);
     },
     postCreate: function () {

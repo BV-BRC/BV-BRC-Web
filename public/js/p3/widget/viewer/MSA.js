@@ -252,7 +252,7 @@ define([
       this.contentPane.set('content', '<div style="background:red; color: #fff;">' + msg + '</div>');
     },
     onSetData: function (attr, oldVal, data) {
-      // console.log("data", data);
+      console.log("data", data);
       this.createDataMap();
       this.render();
     },
@@ -262,18 +262,18 @@ define([
       var cur = this.selection.map(lang.hitch(this, function (selected) {
         return this.dataMap[selected.id];
       }));
-      // console.log("dataMap", this.dataMap);
-      // console.log("data", this.data);
-      // console.log("cur", cur);
-      // console.log("this.itemDetailPanel", this.itemDetailPanel);
+      console.log("dataMap", this.dataMap);
+      console.log("data", this.data);
+      console.log("cur", cur);
+      console.log("this.itemDetailPanel", this.itemDetailPanel);
       this.selectionActionBar._setSelectionAttr(cur);
       var self = this;
       if (cur.length == 1) {
         var curr_selection = cur[0].feature_id;
-        // console.log("curr_selection", curr_selection);
+        console.log("curr_selection", curr_selection);
         this.featureData.forEach(function (sel) {
-          // console.log("sel", sel);
-          // console.log("this.itemDetailPanel", self.itemDetailPanel);
+          console.log("sel", sel);
+          console.log("this.itemDetailPanel", self.itemDetailPanel);
           if (sel.feature_id == curr_selection) {
             self.itemDetailPanel.set('containerWidget', { containerType: 'feature_data' });
             self.itemDetailPanel.set('selection', [sel]);
@@ -298,14 +298,14 @@ define([
       this.dataStats.minLength = 1000000;
       this.dataStats.maxLength = 0;
       this.dataStats.genomeIDs = {};
-      // console.log("this.data ", this.data);
-      // console.log("this.dataMap ", this.dataMap);
+      console.log("this.data ", this.data);
+      console.log("this.dataMap ", this.dataMap);
       this.data.alignment.split('\n').forEach(function (line) {
         if (line.slice(0, 1) == '>') {
           var regex = /^>([^\s]+)\s+\[(.*?)\]/g;
           var headerInfo = regex.exec(line);
           var record = { sequence: [] };
-          // console.log("headerInfo ", headerInfo);
+          console.log("headerInfo ", headerInfo);
           if (!(headerInfo[1] in this.dataMap)) {
             geneID = headerInfo[1];
             clustal.push(geneID + '\t');
@@ -374,10 +374,10 @@ define([
       this.dataStats.clustal_txt = clustal_txt.join('\n');
       this.dataStats.tree_newick = tree_newick;
       this.dataStats.fasta = fasta;
-      // console.log("this.dataStats ", this.dataStats);
-      // console.log("this.dataMap ", this.dataMap);
-      // console.log("this.data ", this.data);
-      // console.log("fasta ", fasta);
+       console.log("this.dataStats ", this.dataStats);
+       console.log("this.dataMap ", this.dataMap);
+       console.log("this.data ", this.data);
+       console.log("fasta ", fasta);
 
     },
 
@@ -792,7 +792,7 @@ define([
           tooltip: 'Toggle Details Pane'
         },
         function (selection, container, button) {
-          // console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
+          console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
 
           var children = this.getChildren();
           // console.log("Children: ", children);
@@ -959,7 +959,7 @@ define([
           validContainerTypes: ['*']
         },
         function (selection) {
-          // console.log("MSA Selection: ", selection);
+          console.log("MSA Selection: ", selection);
           var ids = selection.map(function (d) {
             return d.feature_id;
           });

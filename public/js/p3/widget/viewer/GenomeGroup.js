@@ -1,18 +1,16 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang',
-  'dojo/topic', 'dojo/request', '../../util/PathJoin',
   './TabViewerBase', './_GenomeList', '../AMRPanelGridContainer',
   '../GenomeListOverview', '../GroupGenomeGridContainer', '../SequenceGridContainer',
-  '../FeatureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFamiliesContainer',
-  '../PathwayGridContainer', '../ExperimentsContainer',  '../SubsystemGridContainer'
+  '../FeatureGridContainer', '../SpecialtyGeneGridContainer',
+  '../PathwayGridContainer', '../SubsystemGridContainer'
 
 ], function (
   declare, lang,
-  Topic, xhr, PathJoin,
   TabViewerBase, GenomeList, AMRPanelGridContainer,
   Overview, GroupGenomeGridContainer, SequenceGridContainer,
-  FeatureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
-  PathwaysContainer, ExperimentsContainer, SubSystemsContainer
+  FeatureGridContainer, SpecialtyGeneGridContainer,
+  PathwaysContainer, SubSystemsContainer
 ) {
 
   return declare([GenomeList], {
@@ -34,81 +32,44 @@ define([
         throw Error('No State Set');
       }
 
-      var path = '/' + state.pathname.split('/').slice(2).map(decodeURIComponent).join('/');
-      this.set('groupPath', path);
+      if (oldVal.search !== state.search) {
+        const path = '/' + state.pathname.split('/').slice(2).map(decodeURIComponent).join('/');
+        this.set('groupPath', path);
 
-      state.search = 'in(genome_id,GenomeGroup(' + encodeURIComponent(path) + '))';
-      state.ws_path = path;
-      this.inherited(arguments);
+        state.search = `in(genome_id,GenomeGroup(${encodeURIComponent(path)}))`
+        state.ws_path = path;
+        this.inherited(arguments);
+      }
+      this.setActivePanelState()
     },
 
     setActivePanelState: function () {
 
-      var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : 'overview';
-      var activeTab = this[active];
+      const active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : 'overview';
+      const activeTab = this[active];
 
       if (!activeTab) {
         return;
       }
       switch (active) {
         case 'transcriptomics':
-          var groupPath = encodeURIComponent('/' + this.groupPath);
-
-          activeTab.set('state', lang.mixin({}, this.state, { search: 'in(genome_ids,GenomeGroup(' + groupPath + '))' }));
+          activeTab.set('state', lang.mixin({}, this.state, { search: `in(genome_ids,GenomeGroup(${encodeURIComponent('/' + this.groupPath)}))` }));
           break;
 
+        // eslint-disable-next-line no-case-declarations
         default:
-          var activeQueryState;
-          if (this.state && this.state.genome_ids) {
-            activeQueryState = this.state;
-          }
-
-          if (activeQueryState && active == 'proteinFamilies') {
-            if (activeTab._firstView) {
-              Topic.publish(activeTab.topicId, 'showMainGrid');
-            }
-          }
-
-          // special case for host genomes
-          if (active == 'features' && this.state && this.state.genome_ids && !this.state.hashParams.filter) {
-            var q = 'in(genome_id,(' + this.state.genome_ids.join(',') + '))&select(taxon_lineage_ids)&limit(' + this.state.genome_ids.length + ')';
-
-            xhr.post(PathJoin(this.apiServiceUrl, 'genome'), {
-              headers: {
-                accept: 'application/json',
-                'X-Requested-With': null,
-                Authorization: (window.App.authorizationToken || '')
-              },
-              data: q,
-              handleAs: 'json'
-            }).then(lang.hitch(this, function (genome_data) {
-
-              if (genome_data.some(function (el, idx, arr) {
-                return el.taxon_lineage_ids.indexOf('2759') > -1;
-              })) {
-
-                activeQueryState = lang.mixin({}, this.state, {
-                  search: 'in(genome_id,(' + this.state.genome_ids.join(',') + '))',
-                  hashParams: lang.mixin({}, this.state.hashParams, {
-                    filter: 'eq(feature_type,%22CDS%22)'
-                  })
-                });
-              }
-
-              activeTab.set('state', activeQueryState);
-            }));
-          }
+          const activeQueryState = lang.mixin({}, this.state)
 
           if (activeQueryState) {
-            activeTab.set('state', activeQueryState);
+            activeTab.set('state', activeQueryState)
           } else {
-            console.warn('MISSING activeQueryState for PANEL: ' + active);
+            console.warn(`MISSING activeQueryState for PANEL: ${active}`)
           }
           break;
       }
 
       if (activeTab) {
-        var pageTitle = 'Genome Group ' + activeTab.title;
+        const pageTitle = 'Genome Group ' + activeTab.title;
         if (window.document.title !== pageTitle) {
           window.document.title = pageTitle;
         }
@@ -118,9 +79,6 @@ define([
     postCreate: function () {
       TabViewerBase.prototype.postCreate.call(this, arguments);
 
-      this.watch('query', lang.hitch(this, 'onSetQuery'));
-      this.watch('genome_ids', lang.hitch(this, 'onSetGenomeIds'));
-      this.watch('referenceGenomes', lang.hitch(this, 'onSetReferenceGenomes'));
       this.watch('total_genomes', lang.hitch(this, 'onSetTotalGenomes'));
 
       this.overview = this.createOverviewPanel();
@@ -131,7 +89,6 @@ define([
         state: this.state,
         disable: false,
         onRefresh: lang.hitch(this, function () {
-          console.log('Refreshed Genome Grid....');
           this.set('query', this.state.search, true);
         })
       });
@@ -173,29 +130,14 @@ define([
         disabled: false
       });
 
-      // this.proteinFamilies = new ProteinFamiliesContainer({
-      //   title: 'Protein Families',
-      //   id: this.viewer.id + '_proteinFamilies',
-      //   disabled: false
-      // });
-      // this.experiments = new ExperimentsContainer({
-      //   title: 'Experiments',
-      //   id: this.viewer.id + '_experiments',
-      //   disabled: false,
-      //   state: this.state
-      // });
-
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.genomes);
       this.viewer.addChild(this.sequences);
       this.viewer.addChild(this.amr);
       this.viewer.addChild(this.features);
       this.viewer.addChild(this.specialtyGenes);
-      // this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);
-      // this.viewer.addChild(this.experiments);
-
     },
 
     buildHeaderContent: function () {

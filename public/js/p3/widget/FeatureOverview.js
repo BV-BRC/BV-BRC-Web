@@ -708,20 +708,18 @@ define([
         console.log('nucleotide md5 hash is empty');
         return;
       }
-      DataAPI.getFeatureSequence(this.feature.na_sequence_md5).then((result) => {
-        var params = {
-          'patric_id': this.feature.patric_id,
-          'sequence': result.sequence
-        };
-        popup.open({
-          popup: new ServicesTooltipDialog({
-            context: 'feature',
-            data: params
-          }),
-          parent: this,
-          around: this.featureServiceSelectionButton,
-          orient: ['below']
-        });
+      var data = {};
+      data.feature = this.feature;
+      data.data_context = 'feature';
+      popup.open({
+        popup: new ServicesTooltipDialog({
+          context: 'feature_overview',
+          data: data, 
+          multiple: false
+        }),
+        parent: this,
+        around: this.featureServiceSelectionButton,
+        orient: ['below']
       });
     }
   });

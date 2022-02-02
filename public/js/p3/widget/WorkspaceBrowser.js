@@ -208,7 +208,8 @@ define([
         }
       }, false);
 
-      // /START: ServicesGenomeGroups functionality
+      // /START: ServicesGenomeGroups 
+      // TODO: see if ServicesTooltipDialog works here now
       var dstContent = domConstruct.create('div', {});
       var viewGGServices = new TooltipDialog({
         content: dstContent,
@@ -286,7 +287,9 @@ define([
           orient: ['below']
         });
       }, false);
-      // /END: ServicesGenomeGroups functionality
+      // /END: ServicesGenomeGroups 
+
+      // /START: 
 
       this.actionPanel.addAction('ViewFeatureGroup', 'MultiButton fa icon-selection-FeatureList fa-2x', {
         label: 'VIEW',
@@ -1392,6 +1395,29 @@ define([
 
       // TODO: in order to make this button appear "inside" the job result:
       // look into validContainerTypes???
+      // /START: Rerun functionality
+      var service_app_map = {
+        'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
+        'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
+        'DifferentialExpression': 'Expression',
+        'FastqUtils': 'FastqUtil',
+        'GeneTree': 'GeneTree',
+        'GenomeAssembly2': 'Assembly2',
+        'GenomeAlignment': 'GenomeAlignment',
+        'GenomeAnnotation': 'Annotation',
+        'GenomeComparison': 'SeqComparison',
+        'Homology': 'Homology',
+        'MetaCATS': 'MetaCATS',
+        'MetagenomeBinning': 'MetagenomicBinning',
+        'MetagenomicReadMapping': 'MetagenomicReadMapping',
+        'MSA': 'MSA',
+        'CodonTree': 'PhylogeneticTree',
+        'PrimerDesign': 'PrimerDesign',
+        'RNASeq': 'Rnaseq',
+        'TaxonomicClassification': 'TaxonomicClassification',
+        'TnSeq': 'Tnseq',
+        'Variation': 'Variation'
+      };
       this.actionPanel.addAction('Rerun', 'fa icon-rotate-left fa-2x', {
         label: 'RERUN',
         allowMultiTypes: true,
@@ -1400,35 +1426,12 @@ define([
         tooltip: 'Reset job form with current parameters'
       }, function (selection) {
         var job_params = JSON.stringify(selection[0].autoMeta.parameters);
-        // TODO: make sure service_id variable is present for every service
         var service_id = selection[0].autoMeta.app.id;
         var localStorage = window.localStorage;
         if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
           localStorage.removeItem('bvbrc_rerun_job');
         }
         localStorage.setItem('bvbrc_rerun_job', job_params);
-        var service_app_map = {
-          'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
-          'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
-          'DifferentialExpression': 'Expression',
-          'FastqUtils': 'FastqUtil',
-          'GeneTree': 'GeneTree',
-          'GenomeAssembly2': 'Assembly2',
-          'GenomeAlignment': 'GenomeAlignment',
-          'GenomeAnnotation': 'Annotation',
-          'GenomeComparison': 'SeqComparison',
-          'Homology': 'Homology',
-          'MetaCATS': 'MetaCATS',
-          'MetagenomeBinning': 'MetagenomicBinning',
-          'MetagenomicReadMapping': 'MetagenomicReadMapping',
-          'MSA': 'MSA',
-          'CodonTree': 'PhylogeneticTree',
-          'PrimerDesign': 'PrimerDesign',
-          'RNASeq': 'Rnaseq',
-          'TaxonomicClassification': 'TaxonomicClassification',
-          'TnSeq': 'Tnseq',
-          'Variation': 'Variation'
-        };
         if (service_app_map.hasOwnProperty(service_id)) {
           Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] });
         }
@@ -1446,12 +1449,26 @@ define([
         // TODO: does not last past the
         validTypes: ['RNASeq', 'TnSeq', 'Variation'],
         tooltip: 'Reset job form with current parameters'
-      }, function (selection) {
+      }, function (selection, container, button) {
         // console.log("View Tracks: ", this);
-        console.log(selection);
-
+        console.log("selection=",selection);
+        var job_params = JSON.stringify(selection[0].autoMeta.parameters);
+        var service_id = selection[0].autoMeta.app.id;
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
+        }
+        localStorage.setItem('bvbrc_rerun_job', job_params);
+        if (service_app_map.hasOwnProperty(service_id)) {
+          Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] });
+        }
+        else {
+          console.log('Rerun not enabled for: ', service_id);
+        }
       }, false);
       */
+
+      // /END: Rerun functionality
 
       // listen for opening user permisssion dialog
       Topic.subscribe('/openUserPerms', function (selection) {

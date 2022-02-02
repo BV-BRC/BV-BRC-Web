@@ -131,7 +131,19 @@ define([], function () {
         field: 'n_type', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'lineage', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'h1_clade_global', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'h1_clade_us', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'h5_clade', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'ph1n1_like', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'lineage', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'clade', type: 'str', facet: false, facet_hidden: true, search: true

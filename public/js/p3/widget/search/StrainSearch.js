@@ -46,6 +46,16 @@ define([
         this.isolationCountryNode.store = store
       }))
     },
+    onPathogenGroupChange: function () {
+      if (this.pathogenGroupNode.get('value') === '11320') {
+        this.influenzaSegmentsNode.style.display = 'block';
+        this.viralSegmentsNode.style.display = 'none';
+      }
+      else {
+        this.viralSegmentsNode.style.display = 'block';
+        this.influenzaSegmentsNode.style.display = 'none';
+      }
+    },
     buildQuery: function () {
       let queryArr = []
 
