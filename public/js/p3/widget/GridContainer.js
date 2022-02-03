@@ -5,7 +5,7 @@ define([
   'dojo/topic', 'dojo/query', 'dijit/layout/ContentPane', 'dojo/text!./templates/IDMapping.html',
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog', './DownloadTooltipDialog', './PerspectiveToolTip',
   './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin',
-  './FeatureDetailsTooltipDialog'
+  './FeatureDetailsTooltipDialog', './ServicesTooltipDialog'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
@@ -13,7 +13,7 @@ define([
   Topic, query, ContentPane, IDMappingTemplate,
   Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
   CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin,
-  FeatureDetailsTooltipDialog
+  FeatureDetailsTooltipDialog, ServicesTooltipDialog
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -413,6 +413,65 @@ define([
         },
         false
       ], [
+        'Services',
+        'fa icon-cog fa-2x',
+        {
+          label: 'SERVICES',
+          multiple: true,
+          max: 100,
+          tooltip: 'Submit selection to a service',
+          //tooltipDialog: ,
+          validTypes: ['*'], //TODO: check this
+          validContainerTypes: ['*'] //TODO: probably have to change this instead
+        },
+        function (selection, container, button) {
+          //TODO: containerTypes: amr(?), sequence_data, feature_data, structure_data, spgene_data, proteinFeatures_data, pathway_data, subsystems(?) 
+          console.log("selection=",selection);
+          console.log("container=",container);
+          var context = null;
+          var multiple = false;
+          var params = {};
+          if (selection.length > 1) {
+            multiple = true;
+          }
+          var type;
+          if (container.containerType === 'sequence_data' || container.containerType == 'genome_data') {
+            type = 'genome_group';
+            context = 'genome';
+          } else if (container.containerType == 'feature_data' || container.containerType == 'transcriptomics_gene_data' || container.containerType == 'spgene_data' || container.containerType == 'strain_data') {
+            type = 'feature_group';
+            context = 'feature';
+          } else if (container.containerType == 'transcriptomics_experiment_data') {
+            type = 'experiment_group';
+          }
+          if (!type) {
+            console.error('Missing or invalid type for Services');
+            return;
+          }
+          if (!context) {
+            context = '';
+          }
+          params.type = type;
+          params.data_context = context;
+          params.multiple = multiple;
+          params.selection = selection;
+          params.container = container;
+          popup.open({
+            popup: new ServicesTooltipDialog({
+              context: 'grid_container',
+              button: button,
+              data: params,
+            }),
+            parent: this,
+            around: button,
+            orient: ['below'],
+            onClose: function() {
+              console.log('closing');
+            }
+          });
+        },
+        false
+      ], [
         'ViewFeatureItem',
         'MultiButton fa icon-selection-Feature fa-2x',
         {
@@ -619,6 +678,30 @@ define([
         function (selection) {
           var sel = selection[0];
           Topic.publish('/navigate', { href: '/view/Surveillance/' + sel.sample_identifier, target: 'blank' });
+        },
+        false
+      ],
+
+      [
+        'ViewSurveillanceMapItem',
+        'MultiButton fa icon-map-o fa-2x',
+        {
+          label: 'MAP',
+          validTypes: ['*'],
+          multiple: true,
+          max: 5000,
+          tooltip: 'Switch to Surveillance Data Map View.',
+          ignoreDataType: true,
+          validContainerTypes: ['surveillance_data']
+        },
+        function (selection) {
+          const idList = Array.from(selection.reduce((p, v) => {
+            return p.add(v.id)
+          }, new Set()));
+          Topic.publish('/navigate', {
+            href: '/view/SurveillanceDataMap/?in(id,(' + idList.join(',') + '))',
+            target: 'blank'
+          });
         },
         false
       ],

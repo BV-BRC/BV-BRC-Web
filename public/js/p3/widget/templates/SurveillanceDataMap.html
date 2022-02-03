@@ -1,0 +1,161 @@
+<div style="margin-left: 5px; margin-right: 5px;">
+    <div class="third left">
+        <div class="section">
+            <h3 class="section-title close"><span class="wrap">Information</span></h3>
+            <p>The markers on the map below show the locations of the selected surveillance records. The number inside a
+                marker indicates the number of records found at that location. Each marker can be clicked to provide
+                additional details about the records at that location, including the percent positive samples at that
+                location. Be aware that the percent of flu-positive samples may be affected by sampling and/or reporting
+                bias. When more than 20 records are found at a single location, a summary of the records is given.</p>
+            <br>
+            <p> The controls on the map can be used to zoom in or out or switch to a satellite view. The map can be
+                dragged to move to navigate to different areas </p>
+        </div>
+
+        <div class="section">
+            <h3 class="section-title close"><span class="wrap">Flu-positive Samples</span></h3>
+            <div>
+                <div>
+                    <input data-dojo-type="dijit/form/CheckBox"
+                           id="percentageCheckBox"
+                           data-dojo-attach-point="percentageCheckBox"
+                           checked="false"
+                           data-dojo-attach-event="onChange:showHidePercent"
+                    />
+                    <label for="percentageCheckBox">Show percentage by color gradient</label>
+                    </br>
+                    <div id="fluPercents">
+                        <table style="margin: 0; border: 0 none; text-align: center;">
+                            <tbody>
+                            <tr>
+                                <td style="color: black; background-color: #FF0000; width: 16%;">
+                                    50-100%
+                                </td>
+                                <td style="color: black; background-color: #E86500; width: 16%;">
+                                    25-50%
+                                </td>
+                                <td style="color: black; background-color: #DC950D; width: 16%;">
+                                    15-25%
+                                </td>
+                                <td style="color: black; background-color: #FFFF00; width: 16%;">
+                                    7-15%
+                                </td>
+                                <td style="color: black; background-color: #869832; width: 16%;">
+                                    0-7%
+                                </td>
+                                <td style="color: black; background-color: #00FF00; width: 16%;">
+                                    0%
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3 class="section-title close"><span class="wrap">Highlight Flyways</span></h3>
+            <div>
+                <p>The flyways of wild birds can be superimposed on the map using the "Highlight Flyways" option.</p>
+                </br>
+                <div id="flyawayDiv"></div>
+            </div>
+        </div>
+
+        <div class="section" id="partition-section">
+            <h3 class="section-title close"><span class="wrap">Partition</span></h3>
+            <div>
+                <p>Partition all surveillance samples that map to these hosts by time interval.</p>
+                <div>
+                    <label for="dateRange">Partition by time interval:</label>
+                    <select id="dateRange" data-dojo-attach-point="partitionDateRange" width="100">
+                        <option value="0.5">0.5 Year</option>
+                        <option value="1">1 Year</option>
+                        <option value="2">2 Years</option>
+                        <option value="3">3 Years</option>
+                        <option value="5">5 Years</option>
+                        <option value="10">10 Years</option>
+                    </select>
+                    <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="onClick:partitionByYear">
+                        Submit
+                    </button>
+                    <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="onClick:clearPartition">
+                        Clear
+                    </button>
+                </div>
+                <div id="partitionDataDiv" style="max-height: 150px; overflow-y: auto;"></div>
+
+                <style>
+                    .partition-item {
+                        display: flex;
+                        position: relative;
+                        align-items: center;
+                    }
+
+                    .partition-modal {
+                        display: none;
+                        border-radius: 8px;
+                        height: auto;
+                        width: auto;
+                        position: absolute;
+                        background: #fff;
+                        border: 1px solid #000;
+                        z-index: 1;
+                        line-height: initial;
+                    }
+
+                    .partition-modal > div {
+                        padding: 5px;
+                        width: 350px;
+                        text-align: left;
+                    }
+
+                    .partition-modal table th {
+                        width: 50%;
+                        font-weight: bold;
+                    }
+
+                    .partition-modal-close-btn {
+                        background: none;
+                        display: block;
+                        border: 0px;
+                        margin: 0px;
+                        padding: 0px;
+                        text-transform: none;
+                        appearance: none;
+                        position: absolute;
+                        cursor: pointer;
+                        user-select: none;
+                        top: -6px;
+                        right: -6px;
+                        width: 30px;
+                        height: 30px;
+                    }
+
+                    .partition-modal-close-btn > img {
+                        pointer-events: none;
+                        display: block;
+                        width: 14px;
+                        height: 14px;
+                        margin: 8px;
+                    }
+                </style>
+            </div>
+        </div>
+    </div>
+
+    <div class="two-third right">
+        <div class="section" style="margin: 0px 5px; ">
+            <h3 class="section-title close"><span class="wrap">Map</span></h3>
+            <div id="surveillanceMapCanvas" style="width: 100%; height: 600px;">
+                Loading Surveillance Data Map...
+            </div>
+            <div class="BrowserHeader right">
+                <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="onClick:resetMapToDefault">
+                    Reset Map
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

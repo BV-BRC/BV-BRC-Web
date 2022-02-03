@@ -1,11 +1,11 @@
 define([
-  'dojo/_base/declare', 'dojo/on', 'dojo/dom-construct',
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/dom-construct', 'dojo/topic',
   'dijit/popup', 'dijit/TooltipDialog',
   './SequenceGrid', './AdvancedSearchFields', './GridContainer',
   '../util/PathJoin'
 
 ], function (
-  declare, on, domConstruct,
+  declare, lang, on, domConstruct, Topic,
   popup, TooltipDialog,
   SequenceGrid, AdvancedSearchFields, GridContainer,
   PathJoin

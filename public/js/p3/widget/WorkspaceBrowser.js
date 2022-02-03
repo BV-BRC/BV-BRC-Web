@@ -208,7 +208,8 @@ define([
         }
       }, false);
 
-      // /START: ServicesGenomeGroups functionality
+      // /START: ServicesGenomeGroups 
+      // TODO: see if ServicesTooltipDialog works here now
       var dstContent = domConstruct.create('div', {});
       var viewGGServices = new TooltipDialog({
         content: dstContent,
@@ -286,7 +287,9 @@ define([
           orient: ['below']
         });
       }, false);
-      // /END: ServicesGenomeGroups functionality
+      // /END: ServicesGenomeGroups 
+
+      // /START: 
 
       this.actionPanel.addAction('ViewFeatureGroup', 'MultiButton fa icon-selection-FeatureList fa-2x', {
         label: 'VIEW',
@@ -586,17 +589,14 @@ define([
       }, function (selection, container, button) {
         console.log(selection);
         var path;
-        selection[0].autoMeta.output_files.forEach(lang.hitch(this,function(meta_file_data) {
-          var meta_file = meta_file_data[0].split("-");
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (meta_file_data) {
+          var meta_file = meta_file_data[0].split('-');
           if (meta_file[meta_file.length - 1] === 'chisqTable.tsv') {
-            path = meta_file.join("-");
-          }
-          if (path) { 
-            return;
+            path = meta_file.join('-');
           }
         }));
         if (path) {
-          Topic.publish('/navigate',{ href: '/workspace' + encodePath(path) });
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
         } else {
           console.log('Error: could not find chisqTable.tsv output file');
         }
@@ -863,7 +863,7 @@ define([
           if (gt_file[gt_file.length - 1] === 'nwk') {
             path = gt_file.join(".");
           }
-          if (path) { 
+          if (path) {
             return;
           }
         }));
@@ -909,16 +909,13 @@ define([
         multiple: false,
         validTypes: ['GeneTree'],
         tooltip: 'View Archaeopteryx Tree'
-      }, function (selection, container, button) { 
+      }, function (selection, container, button) {
         console.log(selection);
         var path;
-        selection[0].autoMeta.output_files.forEach(lang.hitch(this,function(file_data) {
-          var gt_file = file_data[0].split(".");
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
+          var gt_file = file_data[0].split('.');
           if (gt_file[gt_file.length - 1] === 'nwk') {
-            path = gt_file.join(".");
-          }
-          if (path) { 
-            return;
+            path = gt_file.join('.');
           }
         }));
         if (path) {
@@ -946,29 +943,26 @@ define([
         Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + path, target: 'blank' });
       }, false);
 
-      this.browserHeader.addAction('ViewAFA','fa icon-bars fa-2x', {
+      this.browserHeader.addAction('ViewAFA', 'fa icon-bars fa-2x', {
         label: 'MSA',
         multiple: false,
         validTypes: ['MSA'],
         tooltip: 'View aligned fasta'
-      }, function(selection,container,button) {
-        //console.log(self.actionPanel.currentContainerWidget.path);
-        console.log("selection=",selection);
+      }, function (selection, container, button) {
+        // console.log(self.actionPanel.currentContainerWidget.path);
+        console.log('selection=', selection);
         var alignType = selection[0].autoMeta.parameters.alphabet;
         var afa_file;
-        selection[0].autoMeta.output_files.forEach(lang.hitch(this,function(msa_file_data) {
-          var msa_file = msa_file_data[0].split(".");
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (msa_file_data) {
+          var msa_file = msa_file_data[0].split('.');
           if (msa_file[msa_file.length - 1] === 'afa') {
-            afa_file = msa_file.join(".");
-          }
-          if (afa_file) { 
-            return;
+            afa_file = msa_file.join('.');
           }
         }));
         if ((!afa_file) | (!alignType)) {
           console.log('Error: Alignment file doesnt exist or alignment alphabet could not be determined');
         } else {
-          Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + afa_file, target: 'blank'});
+          Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
         }
       }, false);
 
@@ -1401,6 +1395,29 @@ define([
 
       // TODO: in order to make this button appear "inside" the job result:
       // look into validContainerTypes???
+      // /START: Rerun functionality
+      var service_app_map = {
+        'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
+        'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
+        'DifferentialExpression': 'Expression',
+        'FastqUtils': 'FastqUtil',
+        'GeneTree': 'GeneTree',
+        'GenomeAssembly2': 'Assembly2',
+        'GenomeAlignment': 'GenomeAlignment',
+        'GenomeAnnotation': 'Annotation',
+        'GenomeComparison': 'SeqComparison',
+        'Homology': 'Homology',
+        'MetaCATS': 'MetaCATS',
+        'MetagenomeBinning': 'MetagenomicBinning',
+        'MetagenomicReadMapping': 'MetagenomicReadMapping',
+        'MSA': 'MSA',
+        'CodonTree': 'PhylogeneticTree',
+        'PrimerDesign': 'PrimerDesign',
+        'RNASeq': 'Rnaseq',
+        'TaxonomicClassification': 'TaxonomicClassification',
+        'TnSeq': 'Tnseq',
+        'Variation': 'Variation'
+      };
       this.actionPanel.addAction('Rerun', 'fa icon-rotate-left fa-2x', {
         label: 'RERUN',
         allowMultiTypes: true,
@@ -1409,35 +1426,12 @@ define([
         tooltip: 'Reset job form with current parameters'
       }, function (selection) {
         var job_params = JSON.stringify(selection[0].autoMeta.parameters);
-        // TODO: make sure service_id variable is present for every service
         var service_id = selection[0].autoMeta.app.id;
         var localStorage = window.localStorage;
         if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
           localStorage.removeItem('bvbrc_rerun_job');
         }
         localStorage.setItem('bvbrc_rerun_job', job_params);
-        var service_app_map = {
-          'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
-          'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
-          'DifferentialExpression': 'Expression',
-          'FastqUtils': 'FastqUtil',
-          'GeneTree': 'GeneTree',
-          'GenomeAssembly2': 'Assembly2',
-          'GenomeAlignment': 'GenomeAlignment',
-          'GenomeAnnotation': 'Annotation',
-          'GenomeComparison': 'SeqComparison',
-          'Homology': 'Homology',
-          'MetaCATS': 'MetaCATS',
-          'MetagenomeBinning': 'MetagenomicBinning',
-          'MetagenomicReadMapping': 'MetagenomicReadMapping',
-          'MSA': 'MSA',
-          'CodonTree': 'PhylogeneticTree',
-          'PrimerDesign': 'PrimerDesign',
-          'RNASeq': 'Rnaseq',
-          'TaxonomicClassification': 'TaxonomicClassification',
-          'TnSeq': 'Tnseq',
-          'Variation': 'Variation'
-        };
         if (service_app_map.hasOwnProperty(service_id)) {
           Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] });
         }
@@ -1455,12 +1449,26 @@ define([
         // TODO: does not last past the
         validTypes: ['RNASeq', 'TnSeq', 'Variation'],
         tooltip: 'Reset job form with current parameters'
-      }, function (selection) {
+      }, function (selection, container, button) {
         // console.log("View Tracks: ", this);
-        console.log(selection);
-
+        console.log("selection=",selection);
+        var job_params = JSON.stringify(selection[0].autoMeta.parameters);
+        var service_id = selection[0].autoMeta.app.id;
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
+        }
+        localStorage.setItem('bvbrc_rerun_job', job_params);
+        if (service_app_map.hasOwnProperty(service_id)) {
+          Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] });
+        }
+        else {
+          console.log('Rerun not enabled for: ', service_id);
+        }
       }, false);
       */
+
+      // /END: Rerun functionality
 
       // listen for opening user permisssion dialog
       Topic.subscribe('/openUserPerms', function (selection) {

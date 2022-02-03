@@ -23,7 +23,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'Influenza A virus'" required="false" data-dojo-attach-point="pathogenGroupNode" name="pathogen_group" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'Influenza A virus'" required="false" data-dojo-attach-point="pathogenGroupNode" data-dojo-attach-event="onChange:onPathogenGroupChange" name="pathogen_group" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -31,7 +31,15 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="p3/widget/TaxonNameSelector" required="false" name="taxon_name" style="width: 500px" data-dojo-attach-point="taxonNameNode"></div>
+            <div data-dojo-type="p3/widget/TaxonNameSelector" required="false" name="taxon_name" style="width: 500px" data-dojo-props="placeHolder: 'e.g. Influenza A virus (A/Shanghai/02/2013(H7N9))'" data-dojo-attach-point="taxonNameNode"></div>
+          </div>
+        </div>
+        <div class="headerrow">
+          <label class="appBoxLabel">Genome ID</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. 1332244.20'" data-dojo-attach-point="genomeIDNode" name="genomeID" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -39,7 +47,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Human, or Non-human Mammal'" data-dojo-attach-point="hostGroupNode" name="host_group" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Human'" data-dojo-attach-point="hostGroupNode" name="host_group" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -47,7 +55,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Human, or Pig'" data-dojo-attach-point="hostNameNode" name="host_name" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Homo sapiens'" data-dojo-attach-point="hostNameNode" name="host_name" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -55,7 +63,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. North America, or Europe'" data-dojo-attach-point="geographicGroupNode" name="geographic_group" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Asia'" data-dojo-attach-point="geographicGroupNode" name="geographic_group" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -63,7 +71,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. USA, or United Kingdom'" data-dojo-attach-point="isolationCountryNode" name="isolation_country" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. China'" data-dojo-attach-point="isolationCountryNode" name="isolation_country" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -86,32 +94,66 @@
             <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'X'" data-dojo-attach-point="genomeLengthFromNode" name="genome_length_from" style="width:80px"></div>
             <label>To</label>
             <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'X'" data-dojo-attach-point="genomeLengthToNode" name="genome_length_to" style="width:80px"></div>
+            <input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="genomeCompleteNode" data-dojo-attach-event="onChange:onGenomeCompleteChecked" style="margin-left: 10px;"/>
+            <label for="genomeComplete" style="font-size:8pt">Complete?</label>
           </div>
         </div>
-      </div>
-      <div class="appBox appShadow">
+
+        <!-- Specific to Influenza A virus -->
+        <div data-dojo-attach-point="influenzaCriteriaNode" style="display: none">
+          <div class="headerrow">
+            <label class="appBoxLabel">Subtype</label>
+          </div>
+          <div class="appRow">
+            <div class="appFieldLong">
+              <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. H7N9'" data-dojo-attach-point="subtypeNode" name="subtype" style="width: 500px"></div>
+            </div>
+          </div>
+          <div class="headerrow">
+            <label class="appBoxLabel">Segment</label>
+          </div>
+          <div class="appRow">
+            <div class="appFieldLong">
+              <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. 8'" data-dojo-attach-point="segmentNode" name="segment" style="width: 500px"></div>
+            </div>
+          </div>
+          <div class="headerrow">
+            <label class="appBoxLabel">Season</label>
+          </div>
+          <div class="appRow">
+            <div class="appFieldLong">
+              <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. 02-03'" data-dojo-attach-point="seasonNode" name="season" style="width: 500px"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Specific to SARS-CoV-2 -->
+        <div data-dojo-attach-point="sarsCoV2CriteriaNode" style="display: none;">
+          <div class="headerrow">
+            <label class="appBoxLabel">Lineage</label>
+          </div>
+          <div class="appRow">
+            <div class="appFieldLong">
+              <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. BA.1'" data-dojo-attach-point="lineageNode" name="lineage" style="width: 500px"></div>
+            </div>
+          </div>
+        </div>
+
         <!-- <div class="headerrow">
-          <label class="appBoxLabel">Feature Type</label>
+          <label class="appBoxLabel">Additional Genome Criteria</label>
         </div>
         <div class="appRow">
-          <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'CDS'" data-dojo-attach-point="featureTypeNode" name="feature_type" style="width: 500px"></div>
-          </div>
+          <div dojoAttachPoint="AdvancedSearchPanel"></div>
         </div> -->
-        <div class="headerrow">
-          <label class="appBoxLabel">Genome ID</label>
-        </div>
-        <div class="appRow">
-          <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'529.8'" data-dojo-attach-point="genomeIDNode" name="genomeID" style="width: 500px"></div>
-          </div>
-        </div>
+      </div>
+
+      <div class="appBox appShadow">
         <div class="headerrow">
           <label class="appBoxLabel">BRC ID</label>
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'fig|114727.5.CDS.1'" data-dojo-attach-point="brcIDNode" name="brcID" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'fig|1332244.20.CDS.1'" data-dojo-attach-point="brcIDNode" name="brcID" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -119,7 +161,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'dnaA'" data-dojo-attach-point="geneNode" name="gene" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'NS1'" data-dojo-attach-point="geneNode" name="gene" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -127,12 +169,12 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'ABC transporter'" data-dojo-attach-point="productNode" name="product" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'	nonstructural protein 1'" data-dojo-attach-point="productNode" name="product" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
-          <label class="appBoxLabel">Additional</label>
-        </div
+          <label class="appBoxLabel">Additional Protein Criteria</label>
+        </div>
         <div class="appRow">
           <div dojoAttachPoint="AdvancedSearchPanel"></div>
         </div>
@@ -140,6 +182,7 @@
     </div>
     <div class="appSubmissionArea">
       <div style="margin-top: 10px; text-align:center;">
+        <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
         <div data-dojo-attach-point="submitButton"
           type="submit" data-dojo-type="dijit/form/Button">Search</div>
       </div>

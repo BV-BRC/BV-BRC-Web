@@ -45,6 +45,46 @@ define([
       storeBuilder('genome', 'isolation_country').then(lang.hitch(this, (store) => {
         this.isolationCountryNode.store = store
       }))
+
+      storeBuilder('genome', 'subtype').then(lang.hitch(this, (store) => {
+        this.subtypeNode.store = store
+      }))
+
+      storeBuilder('genome', 'segment').then(lang.hitch(this, (store) => {
+        this.segmentNode.store = store
+      }))
+
+      storeBuilder('genome', 'season').then(lang.hitch(this, (store) => {
+        this.seasonNode.store = store
+      }))
+
+      storeBuilder('genome', 'lineage').then(lang.hitch(this, (store) => {
+        this.lineageNode.store = store
+      }))
+    },
+    onPathogenGroupChange: function () {
+      if (this.pathogenGroupNode.get('value') === '11320') {
+        this.influenzaCriteriaNode.style.display = 'block'
+        this.sarsCoV2CriteriaNode.style.display = 'none'
+      }
+      else if (this.pathogenGroupNode.get('value') === '2697049') {
+        this.influenzaCriteriaNode.style.display = 'none'
+        this.sarsCoV2CriteriaNode.style.display = 'block'
+      }
+      else {
+        this.influenzaCriteriaNode.style.display = 'none'
+        this.sarsCoV2CriteriaNode.style.display = 'none'
+      }
+    },
+    onGenomeCompleteChecked: function () {
+      if (this.genomeCompleteNode.checked) {
+        this.genomeLengthFromNode.setAttribute('disabled', true)
+        this.genomeLengthToNode.setAttribute('disabled', true)
+      }
+      else {
+        this.genomeLengthFromNode.setAttribute('disabled', false)
+        this.genomeLengthToNode.setAttribute('disabled', false)
+      }
     },
     buildQuery: function () {
       let queryArr = []
@@ -112,9 +152,34 @@ define([
         queryArr.push(`lt(genome_length,${genomeLengthToValue})`)
       }
 
+      const genomeCompleteCheckbox = this.genomeCompleteNode.get('value')
+      if (genomeCompleteCheckbox) {
+        queryArr.push(`eq(genome_status,${'Complete'})`)
+      }
+
       const advancedQueryArr = this._buildAdvancedQuery()
       if (advancedQueryArr.length > 0) {
         queryArr = queryArr.concat(advancedQueryArr)
+      }
+
+      const subtypeValue = this.subtypeNode.get('value')
+      if (subtypeValue !== '') {
+        queryArr.push(`eq(subtype,${sanitizeInput(subtypeValue)})`)
+      }
+
+      const segmentValue = this.segmentNode.get('value')
+      if (segmentValue !== '') {
+        queryArr.push(`eq(segment,${sanitizeInput(segmentValue)})`)
+      }
+
+      const seasonValue = this.seasonNode.get('value')
+      if (seasonValue !== '') {
+        queryArr.push(`eq(season,${sanitizeInput(seasonValue)})`)
+      }
+
+      const lineageValue = this.lineageNode.get('value')
+      if (lineageValue !== '') {
+        queryArr.push(`eq(lineage,${lineageValue})`)
       }
 
       // return queryArr.join('&')
