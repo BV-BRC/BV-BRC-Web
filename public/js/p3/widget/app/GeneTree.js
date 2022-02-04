@@ -56,6 +56,7 @@ define([
       this.numref = 0;
       this.emptyTable(this.genomeTable, this.startingRows);
       this.numgenomes.startup();
+      this.setTooltips();
       this._started = true;
       this.form_flag = false;
       try {
@@ -511,6 +512,13 @@ define([
       }));
 
       // console.log(lrec);
+    },
+
+    setTooltips: function () {
+      new Tooltip({
+        connectId: ['genomeGroup_tooltip'],
+        label: 'Each GenomeGroup Member Must: <br>- Be a Virus <br>- Have a single sequence (segmented viruses permitted) <br>- Be less than 1,000 BP in length '
+      });
     },
 
     getValues: function () {
