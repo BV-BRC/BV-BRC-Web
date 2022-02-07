@@ -208,7 +208,7 @@ define([
         }
       }, false);
 
-      // /START: ServicesGenomeGroups 
+      // /START: ServicesGenomeGroups
       // TODO: see if ServicesTooltipDialog works here now
       var dstContent = domConstruct.create('div', {});
       var viewGGServices = new TooltipDialog({
@@ -287,9 +287,9 @@ define([
           orient: ['below']
         });
       }, false);
-      // /END: ServicesGenomeGroups 
+      // /END: ServicesGenomeGroups
 
-      // /START: 
+      // /START:
 
       this.actionPanel.addAction('ViewFeatureGroup', 'MultiButton fa icon-selection-FeatureList fa-2x', {
         label: 'VIEW',

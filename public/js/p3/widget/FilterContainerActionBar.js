@@ -210,7 +210,7 @@ define([
             this._filter[sel.field].push(qval);
           }
 
-          if (this._ffWidgets[sel.field]) {
+          if (this._ffWidgets[sel.field] && sel.op === 'eq') {
             this._ffWidgets[sel.field].toggle(sel.value, true);
           }
         }, this);
