@@ -103,8 +103,12 @@ define([
       var align = {
         id: 'align', condition: 'align', label: 'Align', icon: this.getConditionIcon()
       };
+      var filter = {
+        id: 'paired_filter', condition: 'paired_filter', label: 'Paired_Filter', icon: this.getConditionIcon()
+      };
       // temporary until contrasts table added
       this.updateConditionStore(trim, false);
+      this.updateConditionStore(filter, false);
       this.updateConditionStore(fastqc, false);
       this.updateConditionStore(align, false);
       this.action_select.labelFunc = this.showConditionLabels;
@@ -219,6 +223,8 @@ define([
       var values = this.inherited(arguments);
       var condList = this.activeConditionStore.data;
       var condLibs = [];
+      var pairedLibs = [];
+      var singleLibs = [];
       condList.forEach(function (condRecord) {
         condLibs.push(condRecord.condition);
       });
@@ -680,6 +686,7 @@ define([
       var srrAttrs = ['srr_accession'];
       var singleList = this.libraryStore.query({ type: 'single' });
       var srrList = this.libraryStore.query({ type: 'srr_accession' });
+      assembly_values.reference_genome_id = values.genome_name;
 
       pairedList.forEach(function (libRecord) {
         var toAdd = {};
