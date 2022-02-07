@@ -244,17 +244,19 @@ define([
       var output_file = this.output_file.get('value');
       var output_path = this.output_path.get('value');
       var max_hits = parseInt(this.max_hits.get('value'));
-      var resultType;
+      // var resultType;
       var genomeIds = [];
       if (useDatabase) {
         resultType = database.split('.')[1] == 'fna' ? 'genome_sequence' : 'genome_feature';
         if (database == 'spgenes.faa') {
           resultType = 'specialty_genes';
         }
+        /*
         var q = {
           method: 'HomologyService.blast_fasta_to_database',
           params: [encodeURIComponent(sequence), program, database, evalue, max_hits, 0]
         };
+        */
         // def.resolve(q);
       } else {
         // blast against genomes/groups/taxon/fasta
@@ -271,11 +273,12 @@ define([
               return;
             }
             this.genome_id_message.innerHTML = '';
-
+            /*
             var q = {
               method: 'HomologyService.blast_fasta_to_genomes',
               params: [sequence, program, genomeIds, search_for, evalue, max_hits, 0]
             };
+            */
             // def.resolve(q);
             break;
           // case 'selGroup':
@@ -289,10 +292,12 @@ define([
               this.taxonomy_message.innerHTML = 'No taxon was selected.';
               return;
             }
+            /*
             var q = {
               method: 'HomologyService.blast_fasta_to_taxon',
               params: [sequence, program, taxon, search_for, evalue, max_hits, 0]
             };
+            */
             // def.resolve(q);
             break;
           case 'selFasta':
@@ -302,10 +307,12 @@ define([
               this.db_fasta_file_message.innerHTML = 'No fasta file was selected.';
               return;
             }
+            /*
             var q = {
               method: 'HomologyService.blast_fasta_to_fasta',
               params: [sequence, program, fasta, search_for, evalue, max_hits, 0]
             };
+            */
             break;
           default:
             break;
