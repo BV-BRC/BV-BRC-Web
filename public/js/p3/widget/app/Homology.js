@@ -382,11 +382,9 @@ define([
             // Topic.publish('BLAST_UI', 'showErrorMessage', error);
           });
         }
-        else {
-          // changing the submit() function to be getValues() in shift away from form/viewer
-          // _self.doSubmit(submit_values, start_params);
-          return submit_values;
-        }
+        // changing the submit() function to be getValues() in shift away from form/viewer
+        // _self.doSubmit(submit_values, start_params);
+        return submit_values;
       }
     },
 
