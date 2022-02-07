@@ -714,7 +714,7 @@ define([
       popup.open({
         popup: new ServicesTooltipDialog({
           context: 'feature_overview',
-          data: data, 
+          data: data,
           multiple: false
         }),
         parent: this,

@@ -99,7 +99,7 @@ define([
 
     _getService(data_context) {
       var service_div = domConstruct.create('div', {});
-      domConstruct.create('div', {style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;', innerHTML: 'Services' }, service_div);
+      domConstruct.create('div', { style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;', innerHTML: 'Services' }, service_div);
       switch (data_context) {
         case 'feature':
           domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'blast', innerHTML: 'Blast' }, service_div);
@@ -311,10 +311,14 @@ define([
     checkSaveGroup: function (service) {
       // var saveContent = '<div style="background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;">Save Selection?</div>';
       // saveContent = saveContent + '<div class="wsActionTooltip" rel="save_group" save="true">Yes</div><div class="wsActionTooltip" rel="save_group" save="false">No</div>';
-      var saveContent = domConstruct.create('div',{});
-      domConstruct.create('div', { style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;', innerHTML: 'Save Selection?'}, saveContent);
-      domConstruct.create('div', { 'class': 'wsActionTooltip', 'rel': 'save_group', 'save': 'true', innerHTML: 'Yes', 'service':service }, saveContent);
-      domConstruct.create('div', { 'class': 'wsActionTooltip', 'rel': 'save_group', 'save': 'false', innerHTML: 'No', 'service':service }, saveContent);
+      var saveContent = domConstruct.create('div', {});
+      domConstruct.create('div', { style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;', innerHTML: 'Save Selection?' }, saveContent);
+      domConstruct.create('div', {
+        'class': 'wsActionTooltip', 'rel': 'save_group', 'save': 'true', innerHTML: 'Yes', 'service': service
+      }, saveContent);
+      domConstruct.create('div', {
+        'class': 'wsActionTooltip', 'rel': 'save_group', 'save': 'false', innerHTML: 'No', 'service': service
+      }, saveContent);
       // this.set('content',saveContent);
       this._setDivContent(saveContent);
     },
@@ -375,10 +379,10 @@ define([
       else if (data.data_context === 'genome') {
         if (service === 'blast') {
           if (this.context === 'genome_overview') {
-            params = this._setupBlastParams(service,null,data.data_context,data,false);
+            params = this._setupBlastParams(service, null, data.data_context, data, false);
           }
           else {
-            params = this._setupBlastParams(service,group_path,data.data_context,data,false);
+            params = this._setupBlastParams(service, group_path, data.data_context, data, false);
           }
           service_content = new Homology();
           service_title = 'BLAST';
@@ -407,7 +411,7 @@ define([
           content: service_content,
           onHide: function () {
             if (data.save_group) {
-              _self._saveSelection(true,service,data);
+              _self._saveSelection(true, service, data);
             }
             service_content.destroy();
             d.destroy();
@@ -422,8 +426,12 @@ define([
       if (check_source) {
         var query_content = domConstruct.create('div', {});
         domConstruct.create('div', { style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;', innerHTML: 'Select Source' }, query_content);
-        domConstruct.create('div', { class: 'wsActionTooltip', 'rel': 'blast_feature_source_query', 'source': 'query', 'service': service, 'group_path': group_path, innerHTML:'Query' }, query_content);
-        domConstruct.create('div', { class: 'wsActionTooltip', 'rel': 'blast_feature_source_query', 'source': 'database', 'service': service, 'group_path': group_path, innerHTML:'Database' }, query_content);
+        domConstruct.create('div', {
+          class: 'wsActionTooltip', 'rel': 'blast_feature_source_query', 'source': 'query', 'service': service, 'group_path': group_path, innerHTML: 'Query'
+        }, query_content);
+        domConstruct.create('div', {
+          class: 'wsActionTooltip', 'rel': 'blast_feature_source_query', 'source': 'database', 'service': service, 'group_path': group_path, innerHTML: 'Database'
+        }, query_content);
         // this.set('content',query_content);
         this._setDivContent(query_content);
         return;
@@ -441,7 +449,7 @@ define([
         else if (this.context === 'grid_container') {
           params['blast_program'] = 'blastn';
           params['db_type'] = 'fna';
-          console.log('db_source=',data.source);
+          console.log('db_source=', data.source);
           if (data.source === 'query') {
             params['input_source'] = 'feature_group';
             params['input_feature_group'] = group_path;
