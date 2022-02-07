@@ -303,6 +303,7 @@ define([
 
         // TODO: WorkspaceManager.createGroup is throwing some sort of error, not sure if I need to worry about it
         var def = WorkspaceManager.createGroup(group_name, data.type, group_dir, data.type, selection_list);
+        console.log('def = ', def);
 
         return group_path;
       }
