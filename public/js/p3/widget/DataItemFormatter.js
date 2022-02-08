@@ -1600,6 +1600,9 @@ define([
         }, {
           name: 'Collection Longitude',
           text: 'collection_longitude'
+        }, {
+          name: 'Geographic Group',
+          text: 'geographic_group'
         }],
 
         'Sample Tests': [{
@@ -1901,6 +1904,9 @@ define([
         }, {
           name: 'Collection Year',
           text: 'collection_year'
+        }, {
+          name: 'Geographic Group',
+          text: 'geographic_group'
         }],
 
         'Sample Tests': [{
