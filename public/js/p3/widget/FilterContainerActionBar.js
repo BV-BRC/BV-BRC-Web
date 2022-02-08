@@ -63,11 +63,13 @@ define([
       switch (term.name) {
         case 'and':
         case 'or':
+        case 'not':
           term.args.forEach(function (t) {
             walk(t);
           });
           break;
         case 'eq':
+        case 'ne':
           key = decodeURIComponent(term.args[0]);
           val = decodeURIComponent(term.args[1]);
           parsed.selected.push({ field: key, value: val, op: term.name });
@@ -224,16 +226,24 @@ define([
       if (parsedFilter && parsedFilter.byCategory) {
         // build buttons from byCategory list
         Object.keys(parsedFilter.byCategory).forEach(function (cat) {
+          const op = parsedFilter.selected.filter((sel) => sel.field === cat)[0].op;
+          let selectedVals // array
+
+          if (op === 'ne') {
+            selectedVals = [`${parsedFilter.byCategory[cat]}`]
+          } else {
+            selectedVals = parsedFilter.byCategory[cat]
+          }
           if (!this._ffValueButtons[cat]) {
             const ffv = this._ffValueButtons[cat] = new FilteredValueButton({
               category: cat,
-              selected: parsedFilter.byCategory[cat]
+              selected: selectedVals
             });
             domConstruct.place(ffv.domNode, this.centerButtons, 'last');
             ffv.startup();
           } else {
             // update existing button
-            this._ffValueButtons[cat].set('selected', parsedFilter.byCategory[cat]);
+            this._ffValueButtons[cat].set('selected', selectedVals);
           }
         }, this);
 
