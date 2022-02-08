@@ -420,14 +420,14 @@ define([
           multiple: true,
           max: 100,
           tooltip: 'Submit selection to a service',
-          //tooltipDialog: ,
-          validTypes: ['*'], //TODO: check this
-          validContainerTypes: ['*'] //TODO: probably have to change this instead
+          // tooltipDialog: ,
+          validTypes: ['*'], // TODO: check this
+          validContainerTypes: ['*'] // TODO: probably have to change this instead
         },
         function (selection, container, button) {
-          //TODO: containerTypes: amr(?), sequence_data, feature_data, structure_data, spgene_data, proteinFeatures_data, pathway_data, subsystems(?) 
-          console.log("selection=",selection);
-          console.log("container=",container);
+          // TODO: containerTypes: amr(?), sequence_data, feature_data, structure_data, spgene_data, proteinFeatures_data, pathway_data, subsystems(?)
+          console.log('selection=', selection);
+          console.log('container=', container);
           var context = null;
           var multiple = false;
           var params = {};
@@ -465,7 +465,7 @@ define([
             parent: this,
             around: button,
             orient: ['below'],
-            onClose: function() {
+            onClose: function () {
               console.log('closing');
             }
           });

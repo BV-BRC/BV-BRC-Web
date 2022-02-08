@@ -163,7 +163,7 @@ define([
               }).filter(function (d) {
                 return d !== '';
               });
-              query.q = 'accession:(' + resultIds.join(' OR ') + ')';
+              query.q = 'sequence_id:(' + resultIds.join(' OR ') + ')';
               query.fl = 'genome_id,genome_name,taxon_id,sequence_id,accession,sequence_type';
             } else if (this.type == 'genome_feature') {
               // doQuery = true;
@@ -214,7 +214,7 @@ define([
               var keyMap = {};
               keys.forEach(function (f) {
                 if (this.type == 'genome_sequence') {
-                  keyMap[f.accession] = f;
+                  keyMap[f.sequence_id] = f;
                 } else {
                   if (f.annotation == 'RefSeq') {
                     keyMap[f.refseq_locus_tag] = f;
@@ -234,7 +234,6 @@ define([
               this.setData(data);
               this.set('loaded', true)
               this._loadingDeferred.resolve(true)
-
             }));
           }), function (err) {
             this.setData([]);

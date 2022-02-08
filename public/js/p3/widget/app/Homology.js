@@ -244,17 +244,19 @@ define([
       var output_file = this.output_file.get('value');
       var output_path = this.output_path.get('value');
       var max_hits = parseInt(this.max_hits.get('value'));
-      var resultType;
+      // var resultType;
       var genomeIds = [];
       if (useDatabase) {
         resultType = database.split('.')[1] == 'fna' ? 'genome_sequence' : 'genome_feature';
         if (database == 'spgenes.faa') {
           resultType = 'specialty_genes';
         }
+        /*
         var q = {
           method: 'HomologyService.blast_fasta_to_database',
           params: [encodeURIComponent(sequence), program, database, evalue, max_hits, 0]
         };
+        */
         // def.resolve(q);
       } else {
         // blast against genomes/groups/taxon/fasta
@@ -271,11 +273,12 @@ define([
               return;
             }
             this.genome_id_message.innerHTML = '';
-
+            /*
             var q = {
               method: 'HomologyService.blast_fasta_to_genomes',
               params: [sequence, program, genomeIds, search_for, evalue, max_hits, 0]
             };
+            */
             // def.resolve(q);
             break;
           // case 'selGroup':
@@ -289,10 +292,12 @@ define([
               this.taxonomy_message.innerHTML = 'No taxon was selected.';
               return;
             }
+            /*
             var q = {
               method: 'HomologyService.blast_fasta_to_taxon',
               params: [sequence, program, taxon, search_for, evalue, max_hits, 0]
             };
+            */
             // def.resolve(q);
             break;
           case 'selFasta':
@@ -302,10 +307,12 @@ define([
               this.db_fasta_file_message.innerHTML = 'No fasta file was selected.';
               return;
             }
+            /*
             var q = {
               method: 'HomologyService.blast_fasta_to_fasta',
               params: [sequence, program, fasta, search_for, evalue, max_hits, 0]
             };
+            */
             break;
           default:
             break;
@@ -382,11 +389,9 @@ define([
             // Topic.publish('BLAST_UI', 'showErrorMessage', error);
           });
         }
-        else {
-          // changing the submit() function to be getValues() in shift away from form/viewer
-          // _self.doSubmit(submit_values, start_params);
-          return submit_values;
-        }
+        // changing the submit() function to be getValues() in shift away from form/viewer
+        // _self.doSubmit(submit_values, start_params);
+        return submit_values;
       }
     },
 
@@ -765,15 +770,15 @@ define([
       if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
         this.form_flag = true;
         var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
-        console.log('job_data=',job_data);
+        console.log('job_data=', job_data);
         // job_data['program'] = 'blastp';
         var param_dict = { 'output_folder': 'output_path' };
         var service_specific = { 'input_fasta_data': 'sequence', 'blast_evalue_cutoff': 'evalue', 'blast_max_hits': 'max_hits' };
         param_dict['service_specific'] = service_specific;
         this.setProgramButton(job_data);
         this.setInputSource(job_data);
-        console.log("query_featuregroup=",this.query_featuregroup.value);
-        console.log("query_featuregroup(value)=",this.query_featuregroup.get('value'));
+        console.log('query_featuregroup=', this.query_featuregroup.value);
+        console.log('query_featuregroup(value)=', this.query_featuregroup.get('value'));
         AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
         this.database.set('disabled', false);
         this.search_for.set('disabled', false);
@@ -810,7 +815,7 @@ define([
         this.input_sequence.set('checked', false);
         this.input_fasta.set('checked', false);
         this.query_featuregroup.set('value', job_data['input_feature_group']);
-        
+
       }
     },
 
@@ -825,7 +830,7 @@ define([
         this[db_attach_points[param]].set('value', job_data[param]);
       }, this);
       // Check database value and populate with genome id
-      //TODO: any more options?
+      // TODO: any more options?
       if (this.database.getValue() === 'selGenome') {
         job_data['db_genome_list'].forEach(function (g_id) {
           this.addGenomeFormFill(g_id);
