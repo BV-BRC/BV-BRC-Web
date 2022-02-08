@@ -27,6 +27,7 @@ define([
     defaultPath: '',
     startingRows: 3,
     maxGenomes: 6,
+    maxGenomeLength: 100000,
 
     constructor: function () {
       this._selfSet = true;
@@ -458,58 +459,20 @@ define([
 
     // implement adding a genome group
     onAddGenomeGroup: function () {
-      var lrec = {};
-      var chkPassed = this.ingestAttachPoints(this.genomeGroupToAttachPt, lrec);
       // console.log("this.genomeGroupToAttachPt = " + this.genomeGroupToAttachPt);
       // console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
+      var lrec = {};
+      this.ingestAttachPoints(this.genomeGroupToAttachPt, lrec);
       var path = lrec[this.genomeGroupToAttachPt];
-      var newGenomeIds = [];
       when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
         if (typeof res.data == 'string') {
           res.data = JSON.parse(res.data);
         }
         if (res && res.data && res.data.id_list) {
           if (res.data.id_list.genome_id) {
-            newGenomeIds =  res.data.id_list.genome_id;
+            // viral genome checks
+            this.checkViralGenomes(res.data.id_list.genome_id);
           }
-        }
-        // viral genome checks
-        this.checkViralGenomes(res.data.id_list.genome_id);
-        // display a notice if adding new genome group exceeds maximum allowed number
-        var count = this.addedGenomes + newGenomeIds.length;
-        if (count > this.maxGenomes) {
-          var msg = 'Sorry, you can only add up to ' + this.maxGenomes + ' genomes';
-          msg += ' and you are trying to select ' + count + '.';
-          new Dialog({ title: 'Notice', content: msg }).show();
-        }
-        // console.log("newGenomeIds = ", newGenomeIds);
-
-        if (chkPassed && this.addedGenomes < this.maxGenomes
-          && newGenomeIds.length > 0
-          && count <= this.maxGenomes)
-        {
-          var tr = this.genomeTable.insertRow(0);
-          var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
-          td.genomeRecord = lrec;
-          td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeGroupName() + '</div>';
-          domConstruct.create('td', { innerHTML: '' }, tr);
-          var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
-          if (this.addedGenomes < this.startingRows) {
-            this.genomeTable.deleteRow(-1);
-          }
-          var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-            // console.log("Delete Row");
-            domConstruct.destroy(tr);
-            this.decreaseGenome('genome_group', newGenomeIds);
-            if (this.addedGenomes < this.startingRows) {
-              var ntr = this.genomeTable.insertRow(-1);
-              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            }
-            handle.remove();
-          }));
-          this.increaseGenome('genome_group', newGenomeIds);
         }
       }));
 
@@ -528,18 +491,60 @@ define([
             if (obj.superkingdom != 'Viruses') {
               all_valid = false;
             }
-            // TODO: contigs and genome_length check
+            if (obj.contigs > 1) {
+              all_valid = false;
+            }
+            if (obj.genome_length > this.maxGenomeLength) {
+              all_valid = false;
+            }
           } else {
             all_valid = false;
           }
         }));
-        this.addGenomeGroupToTable(all_valid);
+        this.addGenomeGroupToTable(all_valid, genome_id_list);
       }));
     },
 
-    addGenomeGroupToTable: function (all_valid) {
+    addGenomeGroupToTable: function (all_valid, genome_id_list) {
+      var lrec = {};
+      var chkPassed = this.ingestAttachPoints(this.genomeGroupToAttachPt, lrec);
       if (all_valid) {
-        
+        // display a notice if adding new genome group exceeds maximum allowed number
+        var count = this.addedGenomes + genome_id_list.length;
+        if (count > this.maxGenomes) {
+          var msg = 'Sorry, you can only add up to ' + this.maxGenomes + ' genomes';
+          msg += ' and you are trying to select ' + count + '.';
+          new Dialog({ title: 'Notice', content: msg }).show();
+        }
+        // console.log("newGenomeIds = ", newGenomeIds);
+
+        if (chkPassed && this.addedGenomes < this.maxGenomes
+          && genome_id_list.length > 0
+          && count <= this.maxGenomes)
+        {
+          var tr = this.genomeTable.insertRow(0);
+          var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
+          td.genomeRecord = lrec;
+          td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeGroupName() + '</div>';
+          domConstruct.create('td', { innerHTML: '' }, tr);
+          var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+          if (this.addedGenomes < this.startingRows) {
+            this.genomeTable.deleteRow(-1);
+          }
+          var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+            // console.log("Delete Row");
+            domConstruct.destroy(tr);
+            this.decreaseGenome('genome_group', genome_id_list);
+            if (this.addedGenomes < this.startingRows) {
+              var ntr = this.genomeTable.insertRow(-1);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            }
+            handle.remove();
+          }));
+          this.increaseGenome('genome_group', genome_id_list);
+        }
       }
     },
 
