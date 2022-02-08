@@ -330,7 +330,7 @@ define([
       this.dataStats.maxLength = 0;
       this.dataStats.genomeIDs = {};
 	  var genomeList = [];
-	  var default_value = "not available";
+	  var default_value = "N/A";
 	  
       console.log("this.data ", this.data);
       console.log("this.dataMap ", this.dataMap);
