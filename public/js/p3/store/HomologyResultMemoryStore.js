@@ -233,7 +233,7 @@ define([
               })
               this.setData(data);
               this.set('loaded', true)
-              this._loadingDeferred.resolve(true) 
+              this._loadingDeferred.resolve(true)
             }));
           }), function (err) {
             this.setData([]);
