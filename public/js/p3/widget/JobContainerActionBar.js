@@ -264,6 +264,7 @@ define([
         if (Object.prototype.hasOwnProperty.call(info, k)) {
           var facet = {
             label: formatter.serviceLabel(k) + ' (' + info[k] + ')',
+            serviceLabel: formatter.serviceLabel(k),
             value: k,
             count: info[k]
           };
@@ -271,7 +272,8 @@ define([
           apps.push(facet);
         }
       }
-      apps.sort(function (a, b) { return b.count - a.count; });
+      // apps.sort(function (a, b) { return b.count - a.count; });
+      apps.sort(function (a, b) { return (b.serviceLabel < a.serviceLabel) ? 1 : -1; });
 
       return apps;
     }
