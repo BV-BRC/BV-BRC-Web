@@ -223,8 +223,8 @@ define([
       var values = this.inherited(arguments);
       var condList = this.activeConditionStore.data;
       var condLibs = [];
-      var pairedLibs = [];
-      var singleLibs = [];
+      // var pairedLibs = [];
+      // var singleLibs = [];
       condList.forEach(function (condRecord) {
         condLibs.push(condRecord.condition);
       });
