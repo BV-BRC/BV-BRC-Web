@@ -1,6 +1,9 @@
 
 # Changelog
 
+## 3.7.0 - Feb 8, 2022
+* [Release] BV-BRC January Update
+
 ## 3.6.17 - Sep 30, 2021
 * [Release] BVBRC Integration beta release
 
