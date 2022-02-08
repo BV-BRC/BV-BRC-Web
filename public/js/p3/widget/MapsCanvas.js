@@ -26,10 +26,7 @@ define([
       // location item object for template
       item: {},
       singleIndex: null,
-      centerMapFunction: this.centerMapAndZoomToLocation,
-      test: function(){
-        console.log('asdadasd');
-      }
+      centerMapFunction: this.centerMapAndZoomToLocation
     }),
     LocationInfoWindowShortList: declare([WidgetBase, Templated, DtlTemplated, _WidgetsInTemplateMixin], {
       templateString: InfoWindowShortListTemplate,
@@ -138,11 +135,11 @@ define([
     },
 
     partitionByYear: function () {
-      console.log("Partition by year", this.partitionDateRange.value);
+      console.log('Partition by year', this.partitionDateRange.value);
       let hostIds = [];
       for (let location of this.mapData.locations) {
         for (let item of location.items) {
-          if (item.host_identifier && item.host_identifier.indexOf(' ') < 0&& item.host_identifier.indexOf('/') < 0) {
+          if (item.host_identifier && item.host_identifier.indexOf(' ') < 0 && item.host_identifier.indexOf('/') < 0) {
             hostIds.push(item.host_identifier);
           }
         }
@@ -213,7 +210,7 @@ define([
           }
         }
 
-        const dateFormat = [{month: 'short'}, {day: 'numeric'}, {year: 'numeric'}];
+        const dateFormat = [{ month: 'short' }, { day: 'numeric' }, { year: 'numeric' }];
 
         // Clear existing data
         this.clearPartition();
@@ -227,23 +224,23 @@ define([
 
             // Create partition item div to have checkbox and label for the time interval inside
             const partitionItemDiv = domConstruct.create('div',
-                {
-                  'class': 'partition-item',
-                  'id': `partition-item-${id}`,
-                });
+              {
+                'class': 'partition-item',
+                'id': `partition-item-${id}`,
+              });
 
             domConstruct.create('input',
-                {
-                  'type': 'checkbox',
-                  'id': `pb-checkbox-${id}`
-                }, partitionItemDiv);
+              {
+                'type': 'checkbox',
+                'id': `pb-checkbox-${id}`
+              }, partitionItemDiv);
 
             domConstruct.create('label',
-                {
-                  'for': `pb-checkbox-${id}`,
-                  'style': 'margin-left: 2px;',
-                  'innerHTML': `${dateText} (${date.count})`
-                }, partitionItemDiv);
+              {
+                'for': `pb-checkbox-${id}`,
+                'style': 'margin-left: 2px;',
+                'innerHTML': `${dateText} (${date.count})`
+              }, partitionItemDiv);
 
             dojo.place(partitionItemDiv, dojo.byId('partitionDataDiv'));
 
@@ -252,12 +249,12 @@ define([
               $(`#partition-modal-${id}`).toggle();
 
               // Calculate position of the checbox for placing modal
-              const $checkboxLabel = $("#pb-checkbox-" + id).next();
+              const $checkboxLabel = $('#pb-checkbox-' + id).next();
               const offset = $checkboxLabel.offset();
               let topPosition = (offset.top - $(window).scrollTop() - $('.dijitTabPaneWrapper').offset().top) + 'px';
-              const leftPosition = offset.left + $checkboxLabel.width() + 10 + "px";
+              const leftPosition = offset.left + $checkboxLabel.width() + 10 + 'px';
 
-              dojo.query(`#partition-modal-${id}`).style({'top': topPosition, 'left': leftPosition});
+              dojo.query(`#partition-modal-${id}`).style({ 'top': topPosition, 'left': leftPosition });
             });
 
             // Create partition modal to display species
@@ -271,27 +268,27 @@ define([
             }
 
             const partitionModalDiv = domConstruct.create('div',
-                {
-                  'class': 'partition-modal',
-                  'id': `partition-modal-${id}`
-                });
+              {
+                'class': 'partition-modal',
+                'id': `partition-modal-${id}`
+              });
 
             const partitionModalInnerDiv = domConstruct.create('div', null, partitionModalDiv);
 
             // Create button for closing modal
             const closeModalBtn = domConstruct.create('button',
-                {
-                  'type': 'button',
-                  'class': 'gm-ui-hover-effect partition-modal-close-btn',
-                  'onclick': `$('#partition-modal-${id}').hide();$('#pb-checkbox-${id}').prop('checked', false);`,
-                  'draggable': 'false',
-                  'aria-label': 'Close',
-                  'title': 'Close',
-                }, partitionModalInnerDiv);
+              {
+                'type': 'button',
+                'class': 'gm-ui-hover-effect partition-modal-close-btn',
+                'onclick': `$('#partition-modal-${id}').hide();$('#pb-checkbox-${id}').prop('checked', false);`,
+                'draggable': 'false',
+                'aria-label': 'Close',
+                'title': 'Close',
+              }, partitionModalInnerDiv);
             domConstruct.create('img',
-                {
-                  'src': 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M19%206.41L17.59%205%2012%2010.59%206.41%205%205%206.41%2010.59%2012%205%2017.59%206.41%2019%2012%2013.41%2017.59%2019%2019%2017.59%2013.41%2012z%22/%3E%3Cpath%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%3C/svg%3E'
-                }, closeModalBtn);
+              {
+                'src': 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M19%206.41L17.59%205%2012%2010.59%206.41%205%205%206.41%2010.59%2012%205%2017.59%206.41%2019%2012%2013.41%2017.59%2019%2019%2017.59%2013.41%2012z%22/%3E%3Cpath%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%3C/svg%3E'
+              }, closeModalBtn);
 
             // Create top table to display Collection Date Range and Flu Positive
             const topTable = domConstruct.create('table', null, partitionModalInnerDiv);
@@ -328,13 +325,13 @@ define([
             dojo.place(partitionModalDiv, dojo.byId('partition-section'));
 
             // Overlap selected modal over others
-            on(dom.byId(`partition-modal-${id}`), 'click', function(evt){
+            on(dom.byId(`partition-modal-${id}`), 'click', function (evt) {
               dojo.query('.partition-modal').style('z-index', '1');
               dojo.query(`#partition-modal-${id}`).style('z-index', '2');
             });
           }
         }
-      })).catch(err => console.log('error', err));;
+      })).catch(err => console.log('error', err));
     },
 
     generateSpeciesCount: function (items) {
@@ -356,7 +353,7 @@ define([
       dojo.query('.partition-modal').forEach(dojo.destroy);
     },
 
-    formatDate: function(t, a, s) {
+    formatDate: function (t, a, s) {
       function format(m) {
         let f = new Intl.DateTimeFormat('en', m);
         return f.format(t);
@@ -402,22 +399,22 @@ define([
 
     // Changes the icon color based on percentage number for positive tests
     showHidePercent: function () {
-      const isChecked = this.percentageCheckBox.checked;;
+      const isChecked = this.percentageCheckBox.checked;
       if (isChecked) {
         // Show percentage/color gradient
         // domStyle.set("fluPercents", 'display', "block");
 
-        for (let {marker, prevalence} of this.markers) {
+        for (let { marker, prevalence } of this.markers) {
           let icon = marker.getIcon();
           const percentage = prevalence === null ? 0 : parseFloat(prevalence);
           icon.fillColor = percentage > 50 ? '#FF0000' :
-              percentage > 25 ? '#E86500' :
-                  percentage > 15 ? '#DC950D' :
-                      percentage > 7 ? '#FFFF00' :
-                          percentage > 0 ? '#869832' :
-                              '#00FF00';
+            percentage > 25 ? '#E86500' :
+              percentage > 15 ? '#DC950D' :
+                percentage > 7 ? '#FFFF00' :
+                  percentage > 0 ? '#869832' :
+                    '#00FF00';
           marker.setIcon(icon);
-          google.maps.event.addListener(marker, 'mouseout', function() {
+          google.maps.event.addListener(marker, 'mouseout', function () {
             marker.setIcon(icon);
           });
         }
@@ -426,11 +423,11 @@ define([
         // domStyle.set("fluPercents", 'display', "none");
 
         // Reset marker colors back to default
-        for (let {marker} of this.markers) {
+        for (let { marker } of this.markers) {
           let icon = marker.getIcon();
           icon.fillColor = this.defaultMarkerColor;
           marker.setIcon(icon);
-          google.maps.event.addListener(marker, 'mouseout', function() {
+          google.maps.event.addListener(marker, 'mouseout', function () {
             marker.setIcon(icon);
           });
         }
@@ -473,16 +470,15 @@ define([
 
       if (items.length === 1) {
         // Send the surveillance object to single info template
-        content = new this.LocationInfoWindowSingle({...contentValues, item: items[0], id: this.index++});
+        content = new this.LocationInfoWindowSingle(Object.assign({}, contentValues, { item: items[0], id: this.index++ }));
       } else {
-        contentValues = {
-          ...contentValues,
-          items,
+        contentValues = Object.assign({}, contentValues, {
+          items: items,
           collectionState: items[0].collection_state_province,
           collectionCountry: items[0].collection_country,
           locationLat: items[0].collection_latitude,
-          locationLng: items[0].collection_longitude,
-        };
+          locationLng: items[0].collection_longitude
+        });
 
         if (items.length <= 20) {
           content = new this.LocationInfoWindowShortList(contentValues);
@@ -490,14 +486,11 @@ define([
           // Create species map object to display if surveillance data is more than 20
           let speciesMap = this.generateSpeciesCount(items);
 
-          content = new this.LocationInfoWindowSummary({
-            ...contentValues,
-            speciesMap,
-          });
+          content = new this.LocationInfoWindowSummary(Object.assign({}, contentValues, speciesMap));
         }
       }
 
-      return {infoContent: content.domNode.innerHTML, prevalence};
+      return { infoContent: content.domNode.innerHTML, prevalence };
     },
 
     addMarkerToMap: function (location, showCount) {
@@ -509,7 +502,7 @@ define([
       const icon = this.createMarkerIcon(count);
       const markerLabel = showCount ? count.toString() : '';
       const anchorPoint = count < 10 ? -7 : count < 100 ? -3 : count < 10000 ? -6 : -7;
-      const {infoContent, prevalence} = this.createInfoWindowContent(location.items);
+      const { infoContent, prevalence } = this.createInfoWindowContent(location.items);
 
       const marker = new google.maps.Marker({
         position: latLng,
@@ -518,7 +511,7 @@ define([
         icon: icon,
         map: this.map
       });
-      this.markers.push({marker, prevalence});
+      this.markers.push({ marker, prevalence });
 
       const infoWindow = new google.maps.InfoWindow({
         content: infoContent
@@ -575,7 +568,7 @@ define([
           // Display 3 fly away option per row
           if (i % 3 === 0) {
             divGroupId = 'flyawayGroup' + i;
-            dojo.create('div', {id: divGroupId, style: 'display: flex;'}, 'flyawayDiv');
+            dojo.create('div', { id: divGroupId, style: 'display: flex;' }, 'flyawayDiv');
 
             // Align color display to the end for last items
             if (i !== 0) {
@@ -584,7 +577,7 @@ define([
           }
 
           // Create main div for flyaway options
-          dojo.create('div', {id: divId, style: 'flex: 1; display: flex; position: relative;'}, divGroupId);
+          dojo.create('div', { id: divId, style: 'flex: 1; display: flex; position: relative;' }, divGroupId);
 
           const checkbox = new CheckBox({
             name: checkboxId,
@@ -594,12 +587,12 @@ define([
             style: 'align-self: center;',
             onChange: this.handleFlywayHighlightChange.bind(null, this, region, colorDisplayId)
           });
-          const label = domConstruct.create('label', {'for': checkboxId, 'innerHTML': region, 'style': 'align-self: center;'});
+          const label = domConstruct.create('label', { 'for': checkboxId, 'innerHTML': region, 'style': 'align-self: center;' });
 
           const colorPalette = new ColorPalette({
             id: colorPaletteId,
             onChange: this.updateColorPalette.bind(null, colorPaletteId, colorDisplayId),
-            palette:'3x4',
+            palette: '3x4',
             style: 'display: none; position: absolute; z-index: 1; top: 0; right: 0;'
           });
 
@@ -613,10 +606,10 @@ define([
           dojo.place(colorDisplay, dojo.byId(divId));
           colorPalette.placeAt(divId);
 
-          on(dom.byId(colorDisplayId), mouse.enter, function(evt){
+          on(dom.byId(colorDisplayId), mouse.enter, function (evt) {
             domStyle.set(dom.byId(colorPaletteId), 'display', 'inline');
           });
-          on(dom.byId(colorPaletteId), mouse.leave, function(evt){
+          on(dom.byId(colorPaletteId), mouse.leave, function (evt) {
             domStyle.set(dom.byId(colorPaletteId), 'display', 'none');
           });
 
@@ -631,11 +624,11 @@ define([
           this.addMarkerToMap(location, mapData.showCount);
         }
 
-          dojo.create('a', {
-              href: 'foo.html',
-              title: 'Goto FOO!',
-              innerHTML: 'link'
-          }, dojo.byId('sd-zoom-3'));
+        dojo.create('a', {
+          href: 'foo.html',
+          title: 'Goto FOO!',
+          innerHTML: 'link'
+        }, dojo.byId('sd-zoom-3'));
       }
     }
   });
