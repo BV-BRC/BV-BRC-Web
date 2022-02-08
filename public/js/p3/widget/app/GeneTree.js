@@ -3,14 +3,14 @@ define([
   'dojo/dom-class',
   'dojo/text!./templates/GeneTree.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox',
-  'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog',
+  'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog', '../../DataAPI',
   'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when'
 ], function (
   declare, WidgetBase, on,
   domClass,
   Template, AppBase, domConstruct, registry,
   Deferred, aspect, lang, domReady, NumberTextBox,
-  query, dom, popup, Tooltip, Dialog, TooltipDialog,
+  query, dom, popup, Tooltip, Dialog, TooltipDialog, DataAPI,
   children, WorkspaceManager, Memory, Standby, when
 ) {
   return declare([AppBase], {
@@ -473,6 +473,8 @@ define([
             newGenomeIds =  res.data.id_list.genome_id;
           }
         }
+        // viral genome checks
+        this.checkViralGenomes(res.data.id_list.genome_id);
         // display a notice if adding new genome group exceeds maximum allowed number
         var count = this.addedGenomes + newGenomeIds.length;
         if (count > this.maxGenomes) {
@@ -512,6 +514,33 @@ define([
       }));
 
       // console.log(lrec);
+    },
+
+    checkViralGenomes: function (genome_id_list) {
+      // As far as I have seen Bacteria do not have a superkingdom field, only viruses
+      var query = `in(genome_id,(${genome_id_list.toString()}))&select(genome_id,superkingdom,genome_length,contigs)`;
+      console.log('query = ', query);
+      DataAPI.queryGenomes(query).then(lang.hitch(this, function (res) {
+        console.log('result = ', res);
+        var all_valid = true;
+        res.items.forEach(lang.hitch(this, function (obj) {
+          if (obj.superkingdom) {
+            if (obj.superkingdom != 'Viruses') {
+              all_valid = false;
+            }
+            // TODO: contigs and genome_length check
+          } else {
+            all_valid = false;
+          }
+        }));
+        this.addGenomeGroupToTable(all_valid);
+      }));
+    },
+
+    addGenomeGroupToTable: function (all_valid) {
+      if (all_valid) {
+        
+      }
     },
 
     setTooltips: function () {
