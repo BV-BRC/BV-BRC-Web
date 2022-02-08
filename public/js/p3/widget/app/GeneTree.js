@@ -551,7 +551,7 @@ define([
     setTooltips: function () {
       new Tooltip({
         connectId: ['genomeGroup_tooltip'],
-        label: 'Each GenomeGroup Member Must: <br>- Be a Virus <br>- Have a single sequence (segmented viruses permitted) <br>- Be less than 1,000 BP in length '
+        label: 'Each GenomeGroup Member Must: <br>- Be a Virus <br>- Have a single sequence<br>- Be less than 1,000 BP in length '
       });
     },
 
