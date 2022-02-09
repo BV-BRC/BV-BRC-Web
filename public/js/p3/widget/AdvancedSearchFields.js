@@ -862,6 +862,9 @@ define([], function () {
         field: 'collection_longitude', type: 'str', facet: false, facet_hidden: true, search: false
       },
       {
+        field: 'geographic_group', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
         field: 'pathogen_test_type', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
@@ -1129,6 +1132,9 @@ define([], function () {
       },
       {
         field: 'collection_year', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'geographic_group', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'test_type', type: 'str', facet: true, facet_hidden: false, search: true

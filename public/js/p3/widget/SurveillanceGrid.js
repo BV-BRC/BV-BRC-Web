@@ -49,6 +49,7 @@ define([
       collection_poi: { label: 'Collection POI', field: 'collection_poi', hidden: true },
       collection_latitude: { label: 'Collection Latitude', field: 'collection_latitude', hidden: true },
       collection_longitude: { label: 'Collection Longitude', field: 'collection_longitude', hidden: true },
+      geographic_group: { label: 'Geographic Group', field: 'geographic_group', hidden: true },
 
       // Sample Tests
       pathogen_test_type: { label: 'Pathogen Test Type', field: 'pathogen_test_type', hidden: false },
