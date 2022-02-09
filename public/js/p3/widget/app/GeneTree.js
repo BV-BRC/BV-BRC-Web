@@ -27,8 +27,7 @@ define([
     defaultPath: '',
     startingRows: 3,
     maxGenomes: 500,
-    // maxGenomeLength: 100000,
-    maxGenomeLength: 100000000,
+    maxGenomeLength: 100000,
 
     constructor: function () {
       this._selfSet = true;
