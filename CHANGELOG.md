@@ -1,6 +1,13 @@
 
 # Changelog
 
+## 3.7.1 - Feb 9, 2022 (Alpha)
+* [Update] Bump follow-redirects from 1.14.6 to 1.14.7
+* [Update] Bump node-fetch from 3.1.0 to 3.2.0
+* [Feature] Add geographic_group to serology/surveillance areas
+* [Feature] GeneTree GenomeGroup tooltips
+* [Feature] Add limited fasta file types to generic file viewer
+
 ## 3.7.0 - Feb 8, 2022
 * [Release] BV-BRC January Update
 

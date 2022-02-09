@@ -3,14 +3,14 @@ define([
   'dojo/dom-class',
   'dojo/text!./templates/GeneTree.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox',
-  'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog',
+  'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog', '../../DataAPI',
   'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when'
 ], function (
   declare, WidgetBase, on,
   domClass,
   Template, AppBase, domConstruct, registry,
   Deferred, aspect, lang, domReady, NumberTextBox,
-  query, dom, popup, Tooltip, Dialog, TooltipDialog,
+  query, dom, popup, Tooltip, Dialog, TooltipDialog, DataAPI,
   children, WorkspaceManager, Memory, Standby, when
 ) {
   return declare([AppBase], {
@@ -27,6 +27,7 @@ define([
     defaultPath: '',
     startingRows: 3,
     maxGenomes: 6,
+    maxGenomeLength: 100000,
 
     constructor: function () {
       this._selfSet = true;
@@ -56,6 +57,7 @@ define([
       this.numref = 0;
       this.emptyTable(this.genomeTable, this.startingRows);
       this.numgenomes.startup();
+      this.setTooltips();
       this._started = true;
       this.form_flag = false;
       try {
@@ -457,23 +459,58 @@ define([
 
     // implement adding a genome group
     onAddGenomeGroup: function () {
-      var lrec = {};
-      var chkPassed = this.ingestAttachPoints(this.genomeGroupToAttachPt, lrec);
       // console.log("this.genomeGroupToAttachPt = " + this.genomeGroupToAttachPt);
       // console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
+      var lrec = {};
+      this.ingestAttachPoints(this.genomeGroupToAttachPt, lrec);
       var path = lrec[this.genomeGroupToAttachPt];
-      var newGenomeIds = [];
       when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
         if (typeof res.data == 'string') {
           res.data = JSON.parse(res.data);
         }
         if (res && res.data && res.data.id_list) {
           if (res.data.id_list.genome_id) {
-            newGenomeIds =  res.data.id_list.genome_id;
+            // viral genome checks
+            this.checkViralGenomes(res.data.id_list.genome_id);
           }
         }
+      }));
+
+      // console.log(lrec);
+    },
+
+    checkViralGenomes: function (genome_id_list) {
+      // As far as I have seen Bacteria do not have a superkingdom field, only viruses
+      var query = `in(genome_id,(${genome_id_list.toString()}))&select(genome_id,superkingdom,genome_length,contigs)`;
+      console.log('query = ', query);
+      DataAPI.queryGenomes(query).then(lang.hitch(this, function (res) {
+        console.log('result = ', res);
+        var all_valid = true;
+        res.items.forEach(lang.hitch(this, function (obj) {
+          if (obj.superkingdom) {
+            if (obj.superkingdom != 'Viruses') {
+              all_valid = false;
+            }
+            if (obj.contigs > 1) {
+              all_valid = false;
+            }
+            if (obj.genome_length > this.maxGenomeLength) {
+              all_valid = false;
+            }
+          } else {
+            all_valid = false;
+          }
+        }));
+        this.addGenomeGroupToTable(all_valid, genome_id_list);
+      }));
+    },
+
+    addGenomeGroupToTable: function (all_valid, genome_id_list) {
+      var lrec = {};
+      var chkPassed = this.ingestAttachPoints(this.genomeGroupToAttachPt, lrec);
+      if (all_valid) {
         // display a notice if adding new genome group exceeds maximum allowed number
-        var count = this.addedGenomes + newGenomeIds.length;
+        var count = this.addedGenomes + genome_id_list.length;
         if (count > this.maxGenomes) {
           var msg = 'Sorry, you can only add up to ' + this.maxGenomes + ' genomes';
           msg += ' and you are trying to select ' + count + '.';
@@ -482,7 +519,7 @@ define([
         // console.log("newGenomeIds = ", newGenomeIds);
 
         if (chkPassed && this.addedGenomes < this.maxGenomes
-          && newGenomeIds.length > 0
+          && genome_id_list.length > 0
           && count <= this.maxGenomes)
         {
           var tr = this.genomeTable.insertRow(0);
@@ -497,7 +534,7 @@ define([
           var handle = on(td2, 'click', lang.hitch(this, function (evt) {
             // console.log("Delete Row");
             domConstruct.destroy(tr);
-            this.decreaseGenome('genome_group', newGenomeIds);
+            this.decreaseGenome('genome_group', genome_id_list);
             if (this.addedGenomes < this.startingRows) {
               var ntr = this.genomeTable.insertRow(-1);
               domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
@@ -506,11 +543,16 @@ define([
             }
             handle.remove();
           }));
-          this.increaseGenome('genome_group', newGenomeIds);
+          this.increaseGenome('genome_group', genome_id_list);
         }
-      }));
+      }
+    },
 
-      // console.log(lrec);
+    setTooltips: function () {
+      new Tooltip({
+        connectId: ['genomeGroup_tooltip'],
+        label: 'Each GenomeGroup Member Must: <br>- Be a Virus <br>- Have a single sequence<br>- Be less than 1,000 BP in length '
+      });
     },
 
     getValues: function () {
