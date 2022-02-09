@@ -551,6 +551,7 @@ define([
       // console.log(lrec);
     },
 
+    // TODO: add a warning depending on what fails
     checkViralGenomes: function (genome_id_list) {
       // As far as I have seen Bacteria do not have a superkingdom field, only viruses
       var query = `in(genome_id,(${genome_id_list.toString()}))&select(genome_id,superkingdom,genome_length,contigs)&limit(${genome_id_list.length})`;
