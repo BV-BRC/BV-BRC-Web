@@ -1,6 +1,11 @@
 # Temp Changelog
 **For Alpha/Beta (these versions not deployed to Production yet)**
 
+## 3.7.3 - Feb 10, 2022
+* [Enhancement] Add taxon_name and taxon_rank dropdown in tax search
+* [Enhancement] Remove fields from taxa adv search
+* [Enhancement] Hide species column in Genomes tab
+
 ## 3.7.2 - Feb 10, 2022
 * [Enhancement] Display genome_name in Genomes tab
 * [Enhancement] Add additional metadata attributes in MSA viewer
