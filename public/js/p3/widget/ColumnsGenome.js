@@ -89,7 +89,7 @@ define(['./formatter'], function (formatter) {
     species: {
       label: 'Species',
       field: 'species',
-      hidden: false,
+      hidden: true,
       group: 'Taxonomy Info'
     },
 
