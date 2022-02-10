@@ -18,25 +18,25 @@ define([], function () {
         field: 'genetic_code', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'lineage', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'lineage', type: 'str', facet: true, facet_hidden: false, search: false
       },
       {
-        field: 'lineage_ids', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'lineage_ids', type: 'str', facet: true, facet_hidden: false, search: false
       },
       {
-        field: 'lineage_names', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'lineage_names', type: 'str', facet: true, facet_hidden: false, search: false
       },
       {
-        field: 'lineage_ranks', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'lineage_ranks', type: 'str', facet: true, facet_hidden: false, search: false
       },
       {
-        field: 'parent_id', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'parent_id', type: 'str', facet: true, facet_hidden: false, search: false
       },
       {
         field: 'division', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'description', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'description', type: 'str', facet: true, facet_hidden: false, search: false
       },
       {
         field: 'genomes', type: 'numeric', facet: true, facet_hidden: false, search: true
