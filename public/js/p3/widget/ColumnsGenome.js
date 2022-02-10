@@ -15,7 +15,7 @@ define(['./formatter'], function (formatter) {
         return item;
       },
       formatter: formatter.genomeName,
-      hidden: true,
+      hidden: false,
       group: 'General Info'
     },
     other_names: {
