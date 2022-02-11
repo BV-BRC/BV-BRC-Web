@@ -732,7 +732,7 @@ define([
         Topic.publish('/navigate', { href: '/view/Genome/' + gid + '#view_tab=browser' });
       }, false);
 
-      this.browserHeader.addAction('ViewBlastResults', 'fa icon-genome-browser fa-2x', {
+      this.browserHeader.addAction('ViewBlastResults', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
         validTypes: ['Homology'],
@@ -798,7 +798,7 @@ define([
         });
       }, self.path.split('/').length < 3);
 
-      this.browserHeader.addAction('ViewTree', 'fa icon-tree2 fa-2x', {
+      this.browserHeader.addAction('ViewTree', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
         validTypes: ['PhylogeneticTree', 'CodonTree'],
@@ -904,7 +904,7 @@ define([
         Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) + '&fileType=' + fileType });
       }, false);
 
-      this.browserHeader.addAction('ViewNwkXml', 'fa icon-tree2 fa-2x', {
+      this.browserHeader.addAction('ViewNwkXml', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
         validTypes: ['GeneTree'],
@@ -943,7 +943,7 @@ define([
         Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + path, target: 'blank' });
       }, false);
 
-      this.browserHeader.addAction('ViewAFA', 'fa icon-bars fa-2x', {
+      this.browserHeader.addAction('ViewAFA', 'fa icon-eye fa-2x', {
         label: 'MSA',
         multiple: false,
         validTypes: ['MSA'],
