@@ -31,7 +31,7 @@ define([
     dataModel: 'strain',
     primaryKey: 'id',
     defaultFilter: '',
-    tooltip: '',
+    tooltip: 'The “Strains” tab shows list of unique strains, corresponding genomic segments, and related metadata for multi-segment viruses.',
     getFilterPanel: function (opts) {
 
     },

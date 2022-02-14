@@ -29,7 +29,7 @@ define([
     dataModel: 'pathway',
     primaryKey: 'id',
     defaultFilter: '',
-    tooltip: '',
+    tooltip: 'The “Pathways” tab shows the list of metabolic pathways annotated for the genomes associated with the current view.',
     getFilterPanel: function (opts) {
 
     },

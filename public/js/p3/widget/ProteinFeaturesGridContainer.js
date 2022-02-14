@@ -29,7 +29,7 @@ define([
     dataModel: 'protein_feature',
     primaryKey: 'id',
     defaultFilter: '',
-    tooltip: '',
+    tooltip: 'The “Domains and Motifs” tab shows predicted domains and motifs for proteins from reference and representative genomes associated with the current view.',
     getFilterPanel: function (opts) {
 
     },

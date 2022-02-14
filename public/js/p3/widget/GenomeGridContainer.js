@@ -23,6 +23,7 @@ define([
     gridCtor: GenomeGrid,
     containerType: 'genome_data',
     tutorialLink: 'user_guides/organisms_taxon/genome_table.html',
+    tooltip: 'The "Genomes" tab lists all genomes or segments associated with the current view and associated metadata',
     facetFields: AdvancedSearchFields['genome'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['genome'].filter((ff) => ff.search),
     getFilterPanel: function (opts) {

@@ -29,7 +29,7 @@ define([
     dataModel: 'surveillance',
     primaryKey: 'id',
     defaultFilter: '',
-    tooltip: '',
+    tooltip: 'The “Surveillance” tab shows human, animal and avian surveillance records for select pathogen groups.',
     getFilterPanel: function (opts) {
 
     },

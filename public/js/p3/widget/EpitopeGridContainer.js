@@ -29,7 +29,7 @@ define([
     dataModel: 'epitope',
     primaryKey: 'epitope_id',
     defaultFilter: '',
-    tooltip: '',
+    tooltip: 'The “Epitopes” tab shows the list of experimentally characterized epitopes associated with the current view.',
     getFilterPanel: function (opts) {
 
     },
