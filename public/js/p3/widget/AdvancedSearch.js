@@ -24,7 +24,7 @@ define([
       strain: 'Strains',
       genome_feature: 'Genomic Features',
       genome_sequence: 'Genomic Sequences',
-      protein_feature: 'Protein Features',
+      protein_feature: 'Domains and Motifs',
       protein_structure: 'Protein Structures',
       pathway: 'Pathways',
       subsystem: 'Subsystems',
@@ -296,7 +296,7 @@ define([
 
     formatprotein_feature: function (docs, total) {
       var q = this.state.search;
-      var out = ['<div class="searchResultsContainer proteinFeaturesResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ProteinFeaturesList/?', q, '">Protein Features</a>&nbsp;(', total, ')</div>'];
+      var out = ['<div class="searchResultsContainer proteinFeaturesResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ProteinFeaturesList/?', q, '">Domains and Motifs</a>&nbsp;(', total, ')</div>'];
 
       docs.forEach(function (doc) {
         out.push("<div class='searchResult'>");

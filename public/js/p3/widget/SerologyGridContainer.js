@@ -29,7 +29,7 @@ define([
     dataModel: 'serology',
     primaryKey: 'id',
     defaultFilter: '',
-    tooltip: '',
+    tooltip: 'The “Serology” tab shows list of records from serology studies for select pathogen groups.',
     getFilterPanel: function (opts) {
 
     },

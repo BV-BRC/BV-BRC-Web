@@ -72,6 +72,9 @@ define([], function () {
         field: 'taxon_lineage_names', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
+        field: 'superkingdom', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
         field: 'kingdom', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {

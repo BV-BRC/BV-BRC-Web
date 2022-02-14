@@ -29,7 +29,7 @@ define([
     dataModel: 'subsystem',
     primaryKey: 'id',
     defaultFilter: '',
-    tooltip: '',
+    tooltip: 'The “Subsystems” tab shows the list of subsystems assignments for the genomes associated with the current view.',
     getFilterPanel: function (opts) {
 
     },

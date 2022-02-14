@@ -54,7 +54,7 @@ define([
     docsServiceURL: window.App.docsServiceURL,
     tutorialLink: 'user_guides/organisms_taxon/phylogeny.html',
     selection: null,
-    tooltip: 'The "Phylogeny" tab provides order or genus level phylogenetic tree, constructed using core protein families',
+    tooltip: 'The "Phylogeny" tab provides order or genus level phylogenetic tree, constructed using core protein families.',
     startup: function () {
       this.containerPane = new ContentPane({ region: 'center' });// domConstruct.create("div", {id: this.id + "_canvas"}, this.domNode);
       this.containerActionBar = new ContainerActionBar({

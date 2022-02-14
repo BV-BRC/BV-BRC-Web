@@ -30,7 +30,7 @@ define([
     dataModel: 'protein_structure',
     primaryKey: 'pdb_id',
     defaultFilter: '',
-    tooltip: '',
+    tooltip: 'The “Protein Structures” tab shows list of protein structures available for the current view.',
     getFilterPanel: function (opts) {
 
     },

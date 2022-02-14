@@ -12,6 +12,7 @@ define([
 
   return declare([BorderContainer], {
     gutters: false,
+    tooltip: 'The “Interactions” tab shows a list of protein-protein interactions, inferred using computational and laboratory methods.',
     constructor: function (options) {
       this.topicId = 'Interactions_' + options.id.split('_interactions')[0];
 
