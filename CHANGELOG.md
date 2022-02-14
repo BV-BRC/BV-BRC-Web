@@ -1,6 +1,10 @@
 # Temp Changelog
 **For Alpha/Beta (these versions not deployed to Production yet)**
 
+## 3.7.4 - Feb 13, 2022
+* [Enhancement] Update tooltips for all tab types
+* [Enhancement] Add superkingdom to genome facets/adv search
+
 ## 3.7.3 - Feb 10, 2022
 * [Enhancement] Add taxon_name and taxon_rank dropdown in tax search
 * [Enhancement] Remove fields from taxa adv search
