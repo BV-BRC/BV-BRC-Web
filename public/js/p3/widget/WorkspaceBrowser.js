@@ -821,6 +821,18 @@ define([
         Topic.publish('/navigate', { href: '/workspace' + path });
       }, false);
 
+      this.browserHeader.addAction('ViewCGASarsFullGenomeReport', 'fa icon-bars fa-2x', {
+        label: 'REPORT',
+        multiple: false,
+        validTypes: ['ComprehensiveSARS2Analysis'],
+        tooltip: 'View Full Genome Report'
+      }, function (selection) {
+        console.log('self.actionPanel.currentContainerWidget.containerType', self.actionPanel.currentContainerWidget.containerType);
+        console.log('self.browserHeader', self.browserHeader);
+        var path = self.actionPanel.currentContainerWidget.getReportPath();
+        Topic.publish('/navigate', { href: '/workspace' + path });
+      });
+
       /*
       this.actionPanel.addAction('ViewNwk', 'fa icon-tree2 fa-2x', {
         label: 'VIEW',
