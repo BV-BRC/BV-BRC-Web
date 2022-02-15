@@ -25,12 +25,6 @@ router.get('/citation', function (req, res) {
   res.render('pages/citation', { title: 'PATRIC', request: req, response: res });
 });
 
-/* GET contact page. */
-router.get('/contact', function (req, res) {
-  req.applicationModule = 'p3/app/p3app';
-  res.render('pages/contact', { title: 'PATRIC', request: req, response: res });
-});
-
 /* GET publications page. */
 router.get('/publications', function (req, res) {
   req.applicationModule = 'p3/app/p3app';
@@ -68,9 +62,9 @@ router.get('/docs/tutorials/sars-cov-2', function (req, res) {
 });
 
 /* GET outreach page. */
-router.get('/outreach', function (req, res) {
+router.get('/brc-calendar', function (req, res) {
   req.applicationModule = 'p3/app/p3app';
-  res.render('pages/outreach', { title: 'PATRIC', request: req, response: res });
+  res.render('pages/brc-calendar', { title: 'PATRIC', request: req, response: res });
 });
 
 /* GET all searches page. */
