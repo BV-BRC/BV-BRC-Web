@@ -29,6 +29,7 @@
 # Changlog
 ## 3.7.6 - Feb 14, 2022
 * [Release] BV-BRC Mid February Update
+* [Minor] Fix homepage layout due to notice banner
 * [Minor] Bump follow-redirects from 1.14.6 to 1.14.8
 * [Enhancement] Change Protein Features to Domains and Motifs in global search
 * [Enhancement] Update tooltips for all tab types
