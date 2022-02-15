@@ -25,12 +25,6 @@ router.get('/citation', function (req, res) {
   res.render('pages/citation', { title: 'PATRIC', request: req, response: res });
 });
 
-/* GET contact page. */
-router.get('/contact', function (req, res) {
-  req.applicationModule = 'p3/app/p3app';
-  res.render('pages/contact', { title: 'PATRIC', request: req, response: res });
-});
-
 /* GET publications page. */
 router.get('/publications', function (req, res) {
   req.applicationModule = 'p3/app/p3app';
