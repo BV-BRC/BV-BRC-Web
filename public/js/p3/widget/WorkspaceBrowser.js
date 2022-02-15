@@ -809,7 +809,7 @@ define([
 
       }, false);
 
-      this.browserHeader.addAction('ViewCGAFullGenomeReport', 'fa icon-bars fa-2x', {
+      this.browserHeader.addAction('ViewCGAFullGenomeReport', 'fa icon-eye fa-2x', {
         label: 'REPORT',
         multiple: false,
         validTypes: ['ComprehensiveGenomeAnalysis'],
@@ -821,16 +821,176 @@ define([
         Topic.publish('/navigate', { href: '/workspace' + path });
       }, false);
 
-      this.browserHeader.addAction('ViewCGASarsFullGenomeReport', 'fa icon-bars fa-2x', {
+      this.browserHeader.addAction('ViewCGASarsFullGenomeReport', 'fa icon-eye fa-2x', {
         label: 'REPORT',
         multiple: false,
         validTypes: ['ComprehensiveSARS2Analysis'],
         tooltip: 'View Full Genome Report'
       }, function (selection) {
-        console.log('self.actionPanel.currentContainerWidget.containerType', self.actionPanel.currentContainerWidget.containerType);
-        console.log('self.browserHeader', self.browserHeader);
-        var path = self.actionPanel.currentContainerWidget.getReportPath();
-        Topic.publish('/navigate', { href: '/workspace' + path });
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
+          var filepath = file_data[0].split('/');
+          if (filepath[filepath.length - 1] === 'FullGenomeReport.html') {
+            path = filepath.join('/');
+          }
+        }));
+        if (path) {
+          Topic.publish('/navigate', { href: '/workspace' + path });
+        } else {
+          console.log('Error: could not find FullGenomeReport.html');
+        }
+      });
+
+      // TODO: Paired_Filter report??
+      this.browserHeader.addAction('ViewFastqUtilsOutput', 'fa icon-eye fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['FastqUtils'],
+        tooltip: 'View FastqUtils Report'
+      }, function (selection, container, button) {
+        var path;
+        console.log('selection = ', selection);
+        var recipes = selection[0].autoMeta.parameters.recipe;
+        if (recipes.length > 1) {
+          var dropdown = domConstruct.create('div', {});
+          domConstruct.create('div', {
+            innerHTML: 'Select View',
+            style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;'
+          }, dropdown);
+          recipes.forEach(lang.hitch(this, function (pipeline) {
+            domConstruct.create('div', {
+              innerHTML: pipeline,
+              'pipeline': pipeline,
+              'class': 'wsActionTooltip'
+            }, dropdown);
+          }));
+          on(dropdown, '.wsActionTooltip:click', lang.hitch(this, function (evt) {
+            console.log('sel = ', evt);
+            var pipeline = evt.target.attributes.pipeline.value;
+            console.log('pipeline = ', pipeline);
+            selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
+              var filepath = file_data[0].split('/');
+              if (pipeline === 'Trim') {
+                if (filepath[filepath.length - 1].includes('fastq_trimming_report.txt')) {
+                  path = filepath.join('/');
+                }
+              } else if (pipeline === 'FastQC') {
+                if (filepath[filepath.length - 1].includes('fastqc.html')) {
+                  path = filepath.join('/');
+                }
+              } else if (pipeline === 'Align') {
+                if (filepath[filepath.length - 1].includes('samstat.html')) {
+                  path = filepath.join('/');
+                }
+              } else {
+                console.log('invalid pipeline recipe: not opening report');
+              }
+            }));
+            if (path) {
+              Topic.publish('/navigate', { href: '/workspace' + path });
+            } else {
+              console.log('Error: could not find ', pipeline, ' report');
+            }
+          }));
+          var _self = this;
+          var recipeTT = new TooltipDialog({
+            content: dropdown,
+            onMouseLeave: function () {
+              popup.close(recipeTT);
+            }
+          });
+          popup.open({
+            popup: recipeTT,
+            around: _self._actions.ViewFastqUtilsOutput.button,
+            orient: ['below']
+          });
+        }
+        else {
+          var pipeline = recipes[0];
+          selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
+            var filepath = file_data[0].split('/');
+            if (pipeline === 'Trim') {
+              if (filepath[filepath.length - 1].includes('fastq_trimming_report.txt')) {
+                path = filepath.join('/');
+              }
+            } else if (pipeline === 'FastQC') {
+              if (filepath[filepath.length - 1].includes('fastqc.html')) {
+                path = filepath.join('/');
+              }
+            } else if (pipeline === 'Align') {
+              if (filepath[filepath.length - 1].includes('samstat.html')) {
+                path = filepath.join('/');
+              }
+            } else {
+              console.log('invalid pipeline recipe: not opening report');
+            }
+          }));
+          if (path) {
+            Topic.publish('/navigate', { href: '/workspace' + path });
+          } else {
+            console.log('Error: could not find ', pipeline, ' report');
+          }
+        }
+      });
+
+      this.browserHeader.addAction('ViewBinningReport', 'fa icon-eye fa-2x', {
+        label: 'REPORT',
+        multiple: false,
+        validTypes: ['MetagenomeBinning'],
+        tooltip: 'View Binning Report'
+      }, function (selection) {
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
+          var filepath = file_data[0].split('/');
+          if (filepath[filepath.length - 1] === 'BinningReport.html') {
+            path = filepath.join('/');
+          }
+        }));
+        if (path) {
+          Topic.publish('/navigate', { href: '/workspace' + path });
+        } else {
+          console.log('Error: could not find BinningReport.html');
+        }
+      });
+
+      this.browserHeader.addAction('ViewReadMappingReport', 'fa icon-eye fa-2x', {
+        label: 'REPORT',
+        multiple: false,
+        validTypes: ['MetagenomicReadMapping'],
+        tooltip: 'View Metagenomic Read Mapping Report'
+      }, function (selection) {
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
+          var filepath = file_data[0].split('/');
+          if (filepath[filepath.length - 1] === 'MetagenomicReadMappingReport.html') {
+            path = filepath.join('/');
+          }
+        }));
+        if (path) {
+          Topic.publish('/navigate', { href: '/workspace' + path });
+        } else {
+          console.log('Error: could not find MetagenomicReadMappingReport.html');
+        }
+      });
+
+      this.browserHeader.addAction('ViewPrimerDesignReport', 'fa icon-eye fa-2x', {
+        label: 'REPORT',
+        multiple: false,
+        validTypes: ['PrimerDesign'],
+        tooltip: 'View Primer Design Report'
+      }, function (selection) {
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
+          var filepath = file_data[0].split('/');
+          if (filepath[filepath.length - 1].includes('primers_table.html')) {
+            path = filepath.join('/');
+          }
+        }));
+        if (path) {
+          Topic.publish('/navigate', { href: '/workspace' + path });
+        } else {
+          console.log('Error: could not find Primer Design report');
+        }
       });
 
       /*
