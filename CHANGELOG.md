@@ -1,5 +1,11 @@
 # Temp Changelog
 **For Alpha/Beta (these versions not deployed to Production yet)**
+## 3.7.7 - Feb 15, 2022
+* [Enhancement] Update about, citation, and related resources pagees
+* [Enhancement] Update performance and usage metrics to January 2022
+* [Feature] Change Outreach to BV-BRC Calendar and change route
+* [Feature] Change Contact Us to /feedback route instead of Contact Us page
+
 ## 3.7.6 - Feb 14, 2022
 * [Release] BV-BRC Mid February Update (Production)
 
