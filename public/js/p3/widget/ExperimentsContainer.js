@@ -17,7 +17,7 @@ define([
     containerActions: ExperimentGridContainer.prototype.containerActions,
     apiServer: window.App.dataAPI,
     authorizationToken: window.App.authorizationToken,
-    tooltip: 'The "Experiments" tab contains a list of Experiment Data for genomes associated with the current view',
+    tooltip: 'The "Experiments" tab shows a list of Experiment Data, such as transcriptomics and proteomics, for the genomes associated with the current view.',
     eids: null,
 
     onSetQuery: function (attr, oldVal, query) {

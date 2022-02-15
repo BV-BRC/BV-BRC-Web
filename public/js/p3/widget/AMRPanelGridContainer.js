@@ -23,6 +23,7 @@ define([
   return declare([GridContainer], {
     containerType: 'genome_amr_data',
     tutorialLink: 'user_guides/organisms_taxon/amr_phenotypes.html',
+    tooltip: 'The “AMR Phenotype” lists antimicrobial resistant phenotypes for genomes, inferred using computational and laboratory methods.',
     facetFields: ['public', 'antibiotic', 'resistant_phenotype', 'evidence', 'laboratory_typing_method', 'computational_method'],
     dataModel: 'genome_amr',
     primaryKey: 'id',

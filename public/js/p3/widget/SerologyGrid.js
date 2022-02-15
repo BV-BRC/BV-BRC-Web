@@ -40,6 +40,7 @@ define([
       collection_city: { label: 'Collection City', field: 'collection_city', hidden: true },
       collection_date: { label: 'Collection Date', field: 'collection_date', hidden: false },
       collection_year: { label: 'Collection Year', field: 'collection_year', hidden: true },
+      geographic_group: { label: 'Geographic Group', field: 'geographic_group', hidden: true },
 
       test_type: { label: 'Test Type', field: 'test_type', hidden: false },
       test_result: { label: 'Test Result', field: 'test_result', hidden: false },

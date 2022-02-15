@@ -53,14 +53,22 @@
                       <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddFasta" class="fa icon-plus-circle fa-lg"></i>
                       </div>
                       <br>
-                      <label>feature group or unaligned feature fasta</label><br>
-                      <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="sequences" required="false" data-dojo-attach-point="user_genomes_featuregroup" data-dojo-props="type:['feature_group','feature_dna_fasta'],multi:false,promptMessage:'Select a feature group from your workspace for Comparison',missingMessage:'Feature group is optional.', placeHolder:'Optional'"></div>
+                      <label>unaligned gene fasta</label><br>
+                      <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="sequences" required="false" data-dojo-attach-point="user_genomes_unaligned_fasta" data-dojo-props="type:['feature_dna_fasta'],multi:false,promptMessage:'Select or Upload DNA or protein unaligned fasta file from your workspace for Comparison',missingMessage:'Feature group is optional.', placeHolder:'Optional'"></div>
+                      <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddUnalignedFasta" class="fa icon-plus-circle fa-lg"></i></div>
+                      <br>
+                      <label>feature group</label><br>
+                      <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="sequences" required="false" data-dojo-attach-point="user_genomes_featuregroup" data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace for Comparison',missingMessage:'Feature group is optional.', placeHolder:'Optional'"></div>
                       <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddFeatureGroup" class="fa icon-plus-circle fa-lg"></i></div>
                       <br>
-      <!--                 <label>And/or select genome group</label><br>
+                      <label>And/or select genome group</label>
+                      <div name="genomeGroup_tooltip" id="genomeGroup_tooltip" data-dojo-attach-point="genomeGroup_tooltip" class="infobox iconbox infobutton tooltipinfo">
+                        <i class="fa icon-question-circle fa"></i>
+                      </div>
+                      <br>
                       <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_genomegroup" required="false" data-dojo-attach-point="user_genomes_genomegroup" data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace for Comparison',missingMessage:'Genome group is optional.', placeHolder:'Optional'"></div>
                       <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddGenomeGroup" class="fa icon-plus-circle fa-lg"></i></div>
-                      <br> -->
+                      <br> 
                     </div>
                     <div class="appRow">
                       <label> selected file/feature table</label>
@@ -77,7 +85,7 @@
                   <div class="appBox appShadow">
                     <div class="headerrow">
                       <div style="width:85%;display:inline-block;">
-                        <label class="appBoxLabel">Parameters</label>
+                        <label class="appBoxLabel">Alignment Parameters</label>
                         <div name="parameters" class="infobox iconbox infobutton dialoginfo">
                           <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                         </div>
@@ -116,6 +124,17 @@
                         <option value="1.0">1.0</option>
                       </select>
                     </div>
+                  </div>
+                  <div class="appBox appShadow">
+                    <div class="headerrow">
+                      <div style="width:85%;display:inline-block;">
+                        <label class="appBoxLabel">Tree Parameters</label>
+                        <div name="parameters" class="infobox iconbox infobutton dialoginfo">
+                          <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                        </div>
+                      </div>
+                    </div>
+                    <br>
                     <div class="appRow">
                       <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="recipeRAxML" name="recipe" value="RAxML" checked />
                       <label for="radio1" style="font-size:8pt">RAxML</label>

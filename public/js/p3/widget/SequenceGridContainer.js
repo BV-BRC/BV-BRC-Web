@@ -27,7 +27,7 @@ define([
     advancedSearchFields: AdvancedSearchFields['genome_sequence'].filter((ff) => ff.search),
     dataModel: 'genome_sequence',
     primaryKey: 'sequence_id',
-    tooltip: 'The "Sequences" tab contains a list of genomic sequences (e.g. chromosomes, plasmids, contigs) for genomes associated with the current view',
+    tooltip: 'The "Sequences" tab lists genomic sequences (e.g. chromosomes, plasmids, contigs) for genomes associated with the current view.',
     containerActions: GridContainer.prototype.containerActions.concat([
       [
         'DownloadTable',

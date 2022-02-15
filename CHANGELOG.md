@@ -1,5 +1,29 @@
+# Temp Changelog
+**For Alpha/Beta (these versions not deployed to Production yet)**
 
-# Changelog
+## 3.7.4 - Feb 13, 2022
+* [Enhancement] Update tooltips for all tab types
+* [Enhancement] Add superkingdom to genome facets/adv search
+
+## 3.7.3 - Feb 10, 2022
+* [Enhancement] Add taxon_name and taxon_rank dropdown in tax search
+* [Enhancement] Remove fields from taxa adv search
+* [Enhancement] Hide species column in Genomes tab
+
+## 3.7.2 - Feb 10, 2022
+* [Enhancement] Display genome_name in Genomes tab
+* [Enhancement] Add additional metadata attributes in MSA viewer
+* [Enhancement] Update GeneTree UI
+* [Bug] Fix GeneTree bugs
+
+## 3.7.1 - Feb 9, 2022
+* [Update] Bump follow-redirects from 1.14.6 to 1.14.7
+* [Update] Bump node-fetch from 3.1.0 to 3.2.0
+* [Feature] Add geographic_group to serology/surveillance areas
+* [Feature] GeneTree GenomeGroup tooltips
+* [Feature] Add limited fasta file types to generic file viewer
+
+# Changlog
 
 ## 3.7.0 - Feb 8, 2022
 * [Release] BV-BRC January Update

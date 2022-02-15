@@ -31,7 +31,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. Influenza A virus'" data-dojo-attach-point="taxonNameNode" name="taxon_name" style="width: 500px"></div>
+            <div data-dojo-type="p3/widget/TaxonNameSelector" data-dojo-props="placeHolder: 'e.g. Influenza A virus (A/Shanghai/02/2013(H7N9))'" required="false" name="taxon_name" style="width: 500px" data-dojo-attach-point="taxonNameNode"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -39,12 +39,12 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. genus'" data-dojo-attach-point="taxonRankNode" name="taxon_rank" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. genus'" data-dojo-attach-point="taxonRankNode" name="taxon_rank" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
           <label class="appBoxLabel">Additional Criteria</label>
-        </div
+        </div>
         <div class="appRow">
           <div dojoAttachPoint="AdvancedSearchPanel"></div>
         </div>

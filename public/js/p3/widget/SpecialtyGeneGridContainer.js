@@ -28,7 +28,7 @@ define([
     getFilterPanel: function (opts) {
     },
     primaryKey: 'id',
-    tooltip: 'The "Specialty Genes" tab contains a list of specialty genes (e.g., antimicrobial resistance genes, virulence factors, drug targets, and human homologs) for genomes associated with the current view',
+    tooltip: 'The "Specialty Genes" tab contains a list of specialty genes (e.g., antimicrobial resistance genes, virulence factors, drug targets, and human homologs) for genomes associated with the current view.',
     containerActions: GridContainer.prototype.containerActions.concat([
       [
         'DownloadTable',

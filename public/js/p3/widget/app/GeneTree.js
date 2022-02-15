@@ -3,14 +3,14 @@ define([
   'dojo/dom-class',
   'dojo/text!./templates/GeneTree.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox',
-  'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog',
+  'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog', '../../DataAPI',
   'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when'
 ], function (
   declare, WidgetBase, on,
   domClass,
   Template, AppBase, domConstruct, registry,
   Deferred, aspect, lang, domReady, NumberTextBox,
-  query, dom, popup, Tooltip, Dialog, TooltipDialog,
+  query, dom, popup, Tooltip, Dialog, TooltipDialog, DataAPI,
   children, WorkspaceManager, Memory, Standby, when
 ) {
   return declare([AppBase], {
@@ -26,13 +26,15 @@ define([
     pageTitle: 'Gene Tree',
     defaultPath: '',
     startingRows: 3,
-    maxGenomes: 6,
+    maxGenomes: 500,
+    maxGenomeLength: 100000,
 
     constructor: function () {
       this._selfSet = true;
       this.addedGenomes = 0;
       this.genomeToAttachPt = ['comp_genome_id'];
       this.fastaToAttachPt = ['user_genomes_fasta'];
+      this.unalignedFastaToAttachPt = ['user_genomes_unaligned_fasta'];
       this.featureGroupToAttachPt = ['user_genomes_featuregroup'];
       this.genomeGroupToAttachPt = ['user_genomes_genomegroup'];
       this.userGenomeList = [];
@@ -56,6 +58,7 @@ define([
       this.numref = 0;
       this.emptyTable(this.genomeTable, this.startingRows);
       this.numgenomes.startup();
+      this.setTooltips();
       this._started = true;
       this.form_flag = false;
       try {
@@ -102,7 +105,7 @@ define([
           cur_value = this[attachname].searchBox.value;// ? "/_uuid/"+this[attachname].searchBox.value : "";
           browser_select = 1;
         }
-        else if (attachname == 'user_genomes_fasta') {
+        else if (attachname == 'user_genomes_fasta' || attachname == 'user_genomes_unaligned_fasta') {
           cur_value = this[attachname].searchBox.value;// ? "/_uuid/"+this[attachname].searchBox.value : "";
           var compGenomeList = query('.genomedata');
           var genomeIds = [];
@@ -201,8 +204,29 @@ define([
       while (this.genomeTable.rows.length > 0) {
         this.genomeTable.deleteRow(-1);
       }
-      this.emptyTable(this.genomeTable, this.startingRows);
-      this.fastaNamesAndTypes = [];
+      // Only clear away aligned and unaligned fasta files, leave feature and genome groups in table
+      for (var x = this.fastaNamesAndTypes.length - 1; x >= 0; x--) {
+        if (this.fastaNamesAndTypes[x].type != 'feature_group' && this.fastaNamesAndTypes[x].type != 'genome_group') {
+          this.fastaNamesAndTypes.splice(x, 1);
+        }
+      }
+      var numRows = this.startingRows;
+      if (this.fastaNamesAndTypes.length > 0) {
+        numRows = this.fastaNamesAndTypes.length >= this.startingRows ? -1 : this.startingRows - this.fastaNamesAndTypes.length;
+      }
+      this.emptyTable(this.genomeTable, numRows);
+      // this.fastaNamesAndTypes = [];
+
+      // Add featuregroups and genomegroups back to table
+      var groups = {};
+      groups['sequences'] = [];
+      this.fastaNamesAndTypes.forEach(lang.hitch(this, function (obj) {
+        var new_seq = {};
+        new_seq.type = obj.type;
+        new_seq.filename = obj.filename;
+        groups['sequences'].push(new_seq);
+      }));
+      this.addSequenceFilesFormFill(groups, true);
 
       this.substitution_model.options = [];
       if (this.dna.checked) {
@@ -229,7 +253,7 @@ define([
         }];
         this.substitution_model.set('options', newOptions);
         this.user_genomes_fasta.set('type', 'aligned_dna_fasta');
-        this.user_genomes_featuregroup.set('type', ['feature_group', 'feature_dna_fasta']);
+        this.user_genomes_unaligned_fasta.set('type', 'feature_dna_fasta');
       }
       else {
         var newOptions = [{
@@ -255,7 +279,7 @@ define([
         }];
         this.substitution_model.set('options', newOptions);
         this.user_genomes_fasta.set('type', 'aligned_protein_fasta');
-        this.user_genomes_featuregroup.set('type', ['feature_group', 'feature_protein_fasta']);
+        this.user_genomes_unaligned_fasta.set('type', 'feature_protein_fasta');
       }
       this.substitution_model.reset();
     },
@@ -273,6 +297,18 @@ define([
 
     makeFastaName: function () {
       var name = this.user_genomes_fasta.searchBox.get('displayedValue');
+      var maxName = 36;
+      var display_name = name;
+
+      if (name.length > maxName) {
+        display_name = name.substr(0, (maxName / 2) - 2) + '...' + name.substr((name.length - (maxName / 2)) + 2);
+      }
+
+      return display_name;
+    },
+
+    makeUnalignedFastaName: function () {
+      var name = this.user_genomes_unaligned_fasta.searchBox.get('displayedValue');
       var maxName = 36;
       var display_name = name;
 
@@ -413,6 +449,44 @@ define([
       // console.log(lrec);
     },
 
+    onAddUnalignedFasta: function ()  {
+      // console.log("Create New Row", domConstruct);
+      var lrec = {};
+      var chkPassed = this.ingestAttachPoints(this.unalignedFastaToAttachPt, lrec);
+      if (chkPassed && this.addedGenomes < this.maxGenomes) {
+        var newGenomeIds = [lrec[this.unalignedFastaToAttachPt]];
+        var tr = this.genomeTable.insertRow(0);
+        var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
+        td.genomeRecord = lrec;
+        td.innerHTML = "<div class='libraryrow'>" + this.makeUnalignedFastaName() + '</div>';
+        domConstruct.create('td', { innerHTML: '' }, tr);
+        var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+        if (this.addedGenomes < this.startingRows) {
+          this.genomeTable.deleteRow(-1);
+        }
+        var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+          // console.log("Delete Row");
+          domConstruct.destroy(tr);
+          this.decreaseGenome('fasta', newGenomeIds);
+          if (this.addedGenomes < this.startingRows) {
+            var ntr = this.genomeTable.insertRow(-1);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          }
+          handle.remove();
+        }));
+        this.increaseGenome('fasta', newGenomeIds);
+        this.sequenceSource = 'ws';
+
+        var path = lrec[this.unalignedFastaToAttachPt];
+        when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
+          var fileType = res.metadata.type;
+          this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType });
+        }));
+      }
+    },
+
     onAddFeatureGroup: function () {
       console.log('Create New Row', domConstruct);
       var lrec = {};
@@ -457,23 +531,61 @@ define([
 
     // implement adding a genome group
     onAddGenomeGroup: function () {
-      var lrec = {};
-      var chkPassed = this.ingestAttachPoints(this.genomeGroupToAttachPt, lrec);
       // console.log("this.genomeGroupToAttachPt = " + this.genomeGroupToAttachPt);
       // console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
+      var lrec = {};
+      this.ingestAttachPoints(this.genomeGroupToAttachPt, lrec);
       var path = lrec[this.genomeGroupToAttachPt];
-      var newGenomeIds = [];
       when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
         if (typeof res.data == 'string') {
           res.data = JSON.parse(res.data);
         }
         if (res && res.data && res.data.id_list) {
           if (res.data.id_list.genome_id) {
-            newGenomeIds =  res.data.id_list.genome_id;
+            // viral genome checks
+            this.checkViralGenomes(res.data.id_list.genome_id);
           }
         }
+      }));
+
+      // console.log(lrec);
+    },
+
+    // TODO: add a warning depending on what fails
+    // TODO: there may be a limit to the number of genome_ids that can be passed into the query, check that
+    checkViralGenomes: function (genome_id_list) {
+      // As far as I have seen Bacteria do not have a superkingdom field, only viruses
+      var query = `in(genome_id,(${genome_id_list.toString()}))&select(genome_id,superkingdom,genome_length,contigs)&limit(${genome_id_list.length})`;
+      console.log('query = ', query);
+      DataAPI.queryGenomes(query).then(lang.hitch(this, function (res) {
+        console.log('result = ', res);
+        var all_valid = true;
+        res.items.forEach(lang.hitch(this, function (obj) {
+          if (obj.superkingdom) {
+            if (obj.superkingdom != 'Viruses') {
+              all_valid = false;
+            }
+            if (obj.contigs > 1) {
+              all_valid = false;
+            }
+            if (obj.genome_length > this.maxGenomeLength) {
+              all_valid = false;
+            }
+          } else {
+            all_valid = false;
+          }
+        }));
+        this.addGenomeGroupToTable(all_valid, genome_id_list);
+      }));
+    },
+
+    addGenomeGroupToTable: function (all_valid, genome_id_list) {
+      var lrec = {};
+      var chkPassed = this.ingestAttachPoints(this.genomeGroupToAttachPt, lrec);
+      console.log('all genomes valid = ', all_valid);
+      if (all_valid) {
         // display a notice if adding new genome group exceeds maximum allowed number
-        var count = this.addedGenomes + newGenomeIds.length;
+        var count = this.addedGenomes + genome_id_list.length;
         if (count > this.maxGenomes) {
           var msg = 'Sorry, you can only add up to ' + this.maxGenomes + ' genomes';
           msg += ' and you are trying to select ' + count + '.';
@@ -482,7 +594,7 @@ define([
         // console.log("newGenomeIds = ", newGenomeIds);
 
         if (chkPassed && this.addedGenomes < this.maxGenomes
-          && newGenomeIds.length > 0
+          && genome_id_list.length > 0
           && count <= this.maxGenomes)
         {
           var tr = this.genomeTable.insertRow(0);
@@ -497,7 +609,7 @@ define([
           var handle = on(td2, 'click', lang.hitch(this, function (evt) {
             // console.log("Delete Row");
             domConstruct.destroy(tr);
-            this.decreaseGenome('genome_group', newGenomeIds);
+            this.decreaseGenome('genome_group', genome_id_list);
             if (this.addedGenomes < this.startingRows) {
               var ntr = this.genomeTable.insertRow(-1);
               domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
@@ -506,11 +618,23 @@ define([
             }
             handle.remove();
           }));
-          this.increaseGenome('genome_group', newGenomeIds);
-        }
-      }));
+          this.increaseGenome('genome_group', genome_id_list);
+          this.sequenceSource = 'genome_group';
 
-      // console.log(lrec);
+          var path = lrec[this.genomeGroupToAttachPt];
+          when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
+            var fileType = res.metadata.type;
+            this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType });
+          }));
+        }
+      }
+    },
+
+    setTooltips: function () {
+      new Tooltip({
+        connectId: ['genomeGroup_tooltip'],
+        label: 'Each GenomeGroup Member Must: <br>- Be a Virus <br>- Consist of a single sequence<br>- Be less than 1,000 BP in length '
+      });
     },
 
     getValues: function () {
@@ -567,7 +691,7 @@ define([
         this.setAlphabetFormFill(job_data);
         this.setRecipeFormFill(job_data);
         AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-        this.addSequenceFilesFormFill(job_data);
+        this.addSequenceFilesFormFill(job_data, false);
         localStorage.removeItem('bvbrc_rerun_job');
         this.form_flag = true;
       }
@@ -603,7 +727,7 @@ define([
       }
     },
 
-    addSequenceFilesFormFill: function (job_data) {
+    addSequenceFilesFormFill: function (job_data, skipNameList) {
       var sequence_files = job_data['sequences'];
       sequence_files.forEach(function (seq_file) {
         var lrec = { 'type': seq_file.type, 'filename': seq_file.filename };
@@ -634,14 +758,19 @@ define([
         if (lrec.type == 'feature_group') {
           this.sequenceSource = 'feature_group';
         }
+        else if (lrec.type == 'genome_group') {
+          this.sequenceSource = 'genome_group';
+        }
         else {
           this.sequenceSource = 'ws';
         }
         var path = seq_file['filename'];
-        when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
-          var fileType = res.metadata.type;
-          this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType });
-        }));
+        if (!skipNameList) {
+          when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
+            var fileType = res.metadata.type;
+            this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType });
+          }));
+        }
       }, this);
     },
 
