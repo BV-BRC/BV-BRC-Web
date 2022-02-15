@@ -1,7 +1,7 @@
 # Temp Changelog
 **For Alpha/Beta (these versions not deployed to Production yet)**
 ## 3.7.7 - Feb 15, 2022
-* [Feature] Add View buttons for services
+* [Feature] Add View buttons for services.
 * [Enhancement] Update about, citation, and related resources pagees
 * [Enhancement] Update performance and usage metrics to January 2022
 * [Feature] Change Outreach to BV-BRC Calendar and change route
