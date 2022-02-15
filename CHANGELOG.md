@@ -1,4 +1,4 @@
-# Temp Changelog
+<!-- # Temp Changelog
 **For Alpha/Beta (these versions not deployed to Production yet)**
 ## 3.7.5 - Feb 14, 2022
 * [Minor] Bump follow-redirects from 1.14.6 to 1.14.8
@@ -24,9 +24,28 @@
 * [Update] Bump node-fetch from 3.1.0 to 3.2.0
 * [Feature] Add geographic_group to serology/surveillance areas
 * [Feature] GeneTree GenomeGroup tooltips
-* [Feature] Add limited fasta file types to generic file viewer
+* [Feature] Add limited fasta file types to generic file viewer -->
 
 # Changlog
+## 3.7.6 - Feb 14, 2022
+* [Release] BV-BRC Mid February Update
+* [Minor] Bump follow-redirects from 1.14.6 to 1.14.8
+* [Enhancement] Change Protein Features to Domains and Motifs in global search
+* [Enhancement] Update tooltips for all tab types
+* [Enhancement] Add superkingdom to genome facets/adv search
+* [Enhancement] Add taxon_name and taxon_rank dropdown in tax search
+* [Enhancement] Remove fields from taxa adv search
+* [Enhancement] Hide species column in Genomes tab
+* [Enhancement] Display genome_name in Genomes tab
+* [Enhancement] Add additional metadata attributes in MSA viewer
+* [Enhancement] Update GeneTree UI
+* [Bug] Fix GeneTree bugs
+* [Update] Bump follow-redirects from 1.14.6 to 1.14.7
+* [Update] Bump node-fetch from 3.1.0 to 3.2.0
+* [Feature] Add geographic_group to serology/surveillance areas
+* [Feature] GeneTree GenomeGroup tooltips
+* [Feature] Add limited fasta file types to generic file viewer
+
 
 ## 3.7.0 - Feb 8, 2022
 * [Release] BV-BRC January Update
