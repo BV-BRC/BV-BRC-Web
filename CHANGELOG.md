@@ -1,5 +1,8 @@
 <!-- # Temp Changelog
 **For Alpha/Beta (these versions not deployed to Production yet)**
+## 3.7.6 - Feb 14, 2022
+* [Release] BV-BRC Mid February Update (Production)
+
 ## 3.7.5 - Feb 14, 2022
 * [Minor] Bump follow-redirects from 1.14.6 to 1.14.8
 * [Enhancement] Change Protein Features to Domains and Motifs in global search
