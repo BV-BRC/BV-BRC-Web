@@ -1,5 +1,8 @@
 <!-- # Temp Changelog
 **For Alpha/Beta (these versions not deployed to Production yet)**
+## 3.7.8 - Feb 15, 2022
+* [Minor] Update BRC Calendar page
+
 ## 3.7.7 - Feb 15, 2022
 * [Feature] Add View buttons for services.
 * [Enhancement] Update about, citation, brc calendar and related resources pagees
