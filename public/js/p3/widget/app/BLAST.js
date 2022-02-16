@@ -143,6 +143,7 @@ define([
         }
       }));
     },
+
     toggleAdvanced: function (flag) {
       if (flag) {
         this.advancedOptions.style.display = 'block';

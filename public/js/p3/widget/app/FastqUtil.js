@@ -1,5 +1,5 @@
 define([
-  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
+  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/topic', 'dojo/on',
   'dojo/dom-class',
   'dojo/text!./templates/FastqUtil.html', './AppBase', 'dojo/dom-construct',
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox',
@@ -7,7 +7,7 @@ define([
   'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby',
   'dojox/xml/parser', 'dojo/request'
 ], function (
-  declare, WidgetBase, on,
+  declare, WidgetBase, Topic, on,
   domClass,
   Template, AppBase, domConstruct,
   Deferred, aspect, lang, domReady, NumberTextBox,
@@ -128,6 +128,10 @@ define([
           localStorage.removeItem('bvbrc_rerun_job');
         }
       }
+    },
+
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
     },
 
     addLibraryInfo: function (lrec, infoLabels, tr) {

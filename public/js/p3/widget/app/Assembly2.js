@@ -1,11 +1,11 @@
 define([
-  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/_base/lang', 'dojo/_base/Deferred',
+  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/topic', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/on', 'dojo/request', 'dojo/dom-class', 'dojo/dom-construct',
   'dojo/text!./templates/Assembly2.html', 'dojo/NodeList-traverse', 'dojo/store/Memory',
   'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
   './AppBase', '../../WorkspaceManager'
 ], function (
-  declare, WidgetBase, lang, Deferred,
+  declare, WidgetBase, Topic, lang, Deferred,
   on, xhr, domClass, domConstruct,
   Template, children, Memory,
   popup, TooltipDialog, Dialog,
@@ -130,6 +130,10 @@ define([
           localStorage.removeItem('bvbrc_rerun_job');
         }
       }
+    },
+
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
     },
 
     getValues: function () {

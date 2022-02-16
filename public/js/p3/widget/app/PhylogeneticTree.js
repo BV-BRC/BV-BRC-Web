@@ -1,11 +1,11 @@
 define([
-  'dojo/_base/declare', 'dojo/on', 'dojo/dom-class',
+  'dojo/_base/declare', 'dojo/on', 'dojo/topic', 'dojo/dom-class',
   'dojo/text!./templates/PhylogeneticTree.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/lang', 'dojo/domReady!', 'dojo/query', 'dojo/dom', 'dojo/dom-style',
   'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
   '../../WorkspaceManager', 'dojo/when'
 ], function (
-  declare, on, domClass,
+  declare, on, Topic, domClass,
   Template, AppBase, domConstruct, registry,
   lang, domReady, query, dom, domStyle,
   popup, TooltipDialog, Dialog,
@@ -78,6 +78,10 @@ define([
           localStorage.removeItem('bvbrc_rerun_job');
         }
       }
+    },
+
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
     },
 
     emptyTable: function (target, rowLimit) {

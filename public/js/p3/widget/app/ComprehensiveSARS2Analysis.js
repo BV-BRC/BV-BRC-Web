@@ -11,13 +11,13 @@
  */
 
 define([
-  'dojo/_base/declare', 'dojo/_base/lang',
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/topic',
   'dojo/on', 'dojo/request', 'dojo/dom-class', 'dojo/dom-construct',
   'dojo/text!./templates/ComprehensiveSARS2Analysis.html', 'dojo/store/Memory', 'dojox/xml/parser',
   'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
   './AppBase', '../../WorkspaceManager'
 ], function (
-  declare, lang,
+  declare, lang, Topic,
   on, xhr, domClass, domConstruct,
   Template, Memory, xmlParser,
   popup, TooltipDialog, Dialog,
@@ -101,6 +101,10 @@ define([
           localStorage.removeItem('bvbrc_rerun_job');
         }
       }
+    },
+
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
     },
 
     getValues: function () {

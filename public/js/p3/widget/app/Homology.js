@@ -177,6 +177,10 @@ define([
       }
     },
 
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
+    },
+
     toggleAdvanced: function (flag) {
       if (flag) {
         this.advancedOptions.style.display = 'block';
