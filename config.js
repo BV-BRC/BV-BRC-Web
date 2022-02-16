@@ -23,7 +23,7 @@ const defaults = {
   userServiceURL: '',
   localStorageCheckInterval: 86400,
   enableDevTools: false,
-  reportProblemEmailAddress: 'help@patricbrc.org',
+  reportProblemEmailAddress: 'help@bv-brc.atlassian.net',
   'email': {
     'localSendmail': false,
     'defaultFrom': 'PATRIC <do-not-reply@patricbrc.org>',
