@@ -1,12 +1,12 @@
 define([
-  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
+  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/topic', 'dojo/on',
   'dojo/dom-class',
   'dojo/text!./templates/MSA.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox', 'dijit/form/Textarea',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when'
 ], function (
-  declare, WidgetBase, on,
+  declare, WidgetBase, Topic, on,
   domClass,
   Template, AppBase, domConstruct, registry,
   Deferred, aspect, lang, domReady, NumberTextBox, Textarea,
@@ -39,6 +39,7 @@ define([
       if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
+
       this.inherited(arguments);
 
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
@@ -143,6 +144,10 @@ define([
       }
       this.submitButton.set('disabled', true);
       return false;
+    },
+
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
     },
 
     getValues: function () {
