@@ -700,20 +700,20 @@
   #bv-brc-home .grid-container {
     display: grid;
     grid-template-columns: 440px 440px 300px;
-    grid-template-rows: 80px 310px 110px 90px 100px 260px;
+    grid-template-rows: 290px 100px 100px 100px 260px;
     grid-gap: 20px;
   }
-  #bv-brc-home .home-banner {
+  /* #bv-brc-home .home-banner {
     grid-column: 1 / 3;
     grid-row: 1 / 2
-  }
+  } */
   #bv-brc-home .bv-brc-info {
     grid-column: 1 / 3;
-    grid-row: 2 / 3;
+    grid-row: 1 / 2;
   }
   #bv-brc-home .bv-brc-mid {
     grid-column: 1 / 3;
-    grid-row: 3 / 6;
+    grid-row: 2 / 5;
   }
   #bv-brc-home .announcements {
     grid-column: 3 / 4;
@@ -721,7 +721,7 @@
   }
   #bv-brc-home .twitter-feed {
     grid-column: 3 / 4;
-    grid-row: 3 / 7;
+    grid-row: 3 / 6;
   }
 }
 
