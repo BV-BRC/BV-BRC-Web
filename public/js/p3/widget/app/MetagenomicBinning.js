@@ -1,11 +1,11 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/array', 'dijit/_WidgetBase', 'dojo/_base/lang', 'dojo/_base/Deferred',
+  'dojo/_base/declare', 'dojo/_base/array', 'dojo/topic', 'dijit/_WidgetBase', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/on', 'dojo/request', 'dojo/dom-class', 'dojo/dom-construct',
   'dojo/text!./templates/MetagenomicBinning.html', 'dojo/NodeList-traverse', 'dojo/store/Memory',
   'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
   './AppBase', '../../WorkspaceManager'
 ], function (
-  declare, array, WidgetBase, lang, Deferred,
+  declare, array, Topic, WidgetBase, lang, Deferred,
   on, xhr, domClass, domConstruct,
   Template, children, Memory,
   popup, TooltipDialog, Dialog,
@@ -77,6 +77,10 @@ define([
           localStorage.removeItem('bvbrc_rerun_job');
         }
       }
+    },
+
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
     },
 
     getValues: function () {

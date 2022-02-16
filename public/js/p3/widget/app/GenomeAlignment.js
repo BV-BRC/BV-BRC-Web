@@ -1,10 +1,10 @@
 define([
-  'dojo/_base/declare', 'dojo/on', 'dojo/dom-class',
+  'dojo/_base/declare', 'dojo/on', 'dojo/topic', 'dojo/dom-class',
   'dojo/text!./templates/GenomeAlignment.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/lang', 'dojo/query', 'dijit/Dialog', 'dojo/dom-style',
   '../../WorkspaceManager', 'dojo/when', 'dojo/request', '../SelectedTable'
 ], function (
-  declare, on, domClass,
+  declare, on, Topic, domClass,
   Template, AppBase, domConstruct, registry,
   lang, query, Dialog, domStyle,
   WorkspaceManager, when, request, SelectedTable
@@ -78,6 +78,10 @@ define([
           localStorage.removeItem('bvbrc_rerun_job');
         }
       }
+    },
+
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
     },
 
 

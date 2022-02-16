@@ -413,8 +413,9 @@
             <div style="width:400px; margin:auto" class="workingMessage messageContainer">
                 Submitting Primer Design Job
             </div>
-            <div style="width:400px; margin:auto" class="submittedMessage messageContainer">
-                Primer Design Job has been queued.
+            <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+            style="margin-top:10px; text-align:center;" >
+                Your job has been submitted successfully. Please visit your <a data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job and access the results.
             </div>
             <div style="width:400px; margin:auto" class="errorMessage messageContainer">
                 <div style="font-weight:900;font-size:1.1em;">Error Submitting Primer Design Job</div>

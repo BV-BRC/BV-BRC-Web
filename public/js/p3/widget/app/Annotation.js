@@ -1,10 +1,10 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/array', 'dijit/_WidgetBase', 'dojo/on',
+  'dojo/_base/declare', 'dojo/_base/array', 'dojo/topic', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/Annotation.html', './AppBase',
   'dojo/_base/lang', '../../WorkspaceManager'
 ], function (
-  declare, array, WidgetBase, on,
+  declare, array, Topic, WidgetBase, on,
   domClass, Templated, WidgetsInTemplate,
   Template, AppBase, lang, WorkspaceManager
 ) {
@@ -85,6 +85,10 @@ define([
       else if (this.phage.checked) {
         this.scientific_nameWidget.set('placeHolder', 'e.g. Bacteriophage sp.');
       }
+    },
+
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
     },
 
     updateOutputName: function () {
