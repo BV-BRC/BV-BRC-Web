@@ -263,6 +263,7 @@ define([
       var values = this.inherited(arguments);
 
       assembly_values = this.checkBaseParameters(values, assembly_values);
+
       if (!this.form_flag) {
         this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
       }
@@ -274,6 +275,11 @@ define([
       if (Boolean(this.genome_nameWidget.item.host) && 'ftp' in this.genome_nameWidget.item) {
         assembly_values['host_ftp'] = this.genome_nameWidget.item['ftp'];
       }
+      /*
+      if (this.localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        this.localStorage.removeItem('bvbrc_rerun_job');
+      }
+      */
       return assembly_values;
     },
 
@@ -849,7 +855,7 @@ define([
       var srrList = this.libraryStore.query({ type: 'srr_accession' });
       var condLibs = [];
       var contrastPairs = [];
-
+      console.log('assembly_values = ', assembly_values);
       var combinedList = pairedList.concat(singleList).concat(srrList);
       if (this.exp_design.checked) {
         condList.forEach(function (condRecord) {
@@ -928,6 +934,12 @@ define([
       // output_file
       assembly_values.output_file = values.output_file;
       this.output_name = values.output_file;
+
+      // TODO: HERE, checking this works
+      // empty paired, single, and sra libs
+      this.paired_end_libs = [];
+      this.single_end_libs = [];
+      this.sra_libs = [];
 
       return assembly_values;
     },
