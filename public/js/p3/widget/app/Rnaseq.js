@@ -275,11 +275,7 @@ define([
       if (Boolean(this.genome_nameWidget.item.host) && 'ftp' in this.genome_nameWidget.item) {
         assembly_values['host_ftp'] = this.genome_nameWidget.item['ftp'];
       }
-      /*
-      if (this.localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-        this.localStorage.removeItem('bvbrc_rerun_job');
-      }
-      */
+
       return assembly_values;
     },
 
