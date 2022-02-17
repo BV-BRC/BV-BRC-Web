@@ -935,7 +935,6 @@ define([
       assembly_values.output_file = values.output_file;
       this.output_name = values.output_file;
 
-      // TODO: HERE, checking this works
       // empty paired, single, and sra libs
       this.paired_end_libs = [];
       this.single_end_libs = [];

@@ -734,6 +734,11 @@ define([
       assembly_values.reference_genome_id = values.genome_name;
       this.target_genome_id = assembly_values.reference_genome_id;
 
+      // empty paired, single, and sra libs
+      this.paired_end_libs = [];
+      this.single_end_libs = [];
+      this.sra_libs = [];
+
       return assembly_values;
     },
 
