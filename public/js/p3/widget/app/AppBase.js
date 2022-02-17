@@ -475,10 +475,6 @@ define([
       }
     },
 
-    /*
-    //FUNCTIONS BELOW RELATED TO FORM FILLING
-    */
-
     // Assumes the localStorage ID is "bvbrc_rerun_job"
     // Note: delete "bvbrc_rerun_job" key in function defined in each service (intakeRerunForm)
     // Note: omit "output_name" since the user should fill this out every time
@@ -564,6 +560,7 @@ define([
         this.addLibraryRowFormFill(lrec, infoLabels, 'singledata');
       }));
       // load SRA names: can be in eithers srr_ids (list of ids) or sra_libs (list of key-item entries)
+      // TODO: change this to one list
       if (local_job.srr_ids) {
         local_job.srr_ids.forEach(lang.hitch(this, function (srr_id) {
           var lrec = { _type: 'srr_accession', type: 'srr_accession', title: srr_id };
@@ -654,6 +651,7 @@ define([
       var handle = on(td2, 'click', lang.hitch(this, function (evt) {
         this.destroyLibRow(lrec._id, '_id');
       }));
+      // TODO: standardize this across services 
       lrec._handle = handle;
       lrec.handle = handle;
       this.libraryStore.put(lrec);
