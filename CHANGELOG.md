@@ -1,5 +1,12 @@
-<!-- # Temp Changelog
+# Temp Changelog
 **For Alpha/Beta (these versions not deployed to Production yet)**
+## 3.7.9 - Feb 16, 2022
+* [Feature] Add 'Jobs List' link in all services submission message
+* [Minor] Update Publications page
+* [Minor] Change feedback links to report popup modal
+* [Minor] Adjust config file
+* [Minor] UI tweaks
+
 ## 3.7.8 - Feb 15, 2022
 * [Minor] Update BRC Calendar page
 
@@ -37,7 +44,7 @@
 * [Update] Bump node-fetch from 3.1.0 to 3.2.0
 * [Feature] Add geographic_group to serology/surveillance areas
 * [Feature] GeneTree GenomeGroup tooltips
-* [Feature] Add limited fasta file types to generic file viewer -->
+* [Feature] Add limited fasta file types to generic file viewer
 
 # Changlog
 ## 3.7.6 - Feb 14, 2022

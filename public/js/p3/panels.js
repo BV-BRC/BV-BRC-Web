@@ -2,7 +2,7 @@ define([], function () {
 
   return {
     reportProblem: {
-      title: 'Provide Feedback',
+      title: 'Contact Us',
       layer: 'p3/layer/panels',
       ctor: 'p3/widget/ReportProblem',
       requireAuth: false,
