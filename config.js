@@ -29,7 +29,7 @@ const defaults = {
     'defaultFrom': 'PATRIC <do-not-reply@patricbrc.org>',
     'defaultSender': 'PATRIC <do-not-reply@patricbrc.org>',
     'host': '',
-    'port': 587
+    'port': 25
   },
   proxy: {
     'brcdownloads': 'http://brcdownloads.patricbrc.org'

@@ -488,6 +488,12 @@ define([
       if (this.sra_libs.length) {
         submit_values.srr_ids = this.sra_libs;
       }
+
+      // empty paired, single, and sra libs
+      this.paired_end_libs = [];
+      this.single_end_libs = [];
+      this.sra_libs = [];
+
       return submit_values;
     },
 
