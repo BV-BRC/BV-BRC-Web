@@ -167,60 +167,41 @@ define([
     },
 
     getValues: function () {
+      var values = this.inherited(arguments);
 
-        var values = this.inherited(arguments);
+      if (this.addedLibs === 0) return;
 
-        if (this.addedLibs === 0) return;
+      console.log('addedList', this.addedList);
+      console.log('addedLibs', this.addedLibs);
+      // if(values['taxon_id'] !== ""){
+      //   Topic.publish("/navigate", {href: "/view/Taxonomy/" + values['taxon_id'] + "#view_tab=pathways"});
+      //   return;
+      // }
 
-        console.log("addedList", this.addedList);
-        console.log("addedLibs", this.addedLibs);
-        // if(values['taxon_id'] !== ""){
-        //   Topic.publish("/navigate", {href: "/view/Taxonomy/" + values['taxon_id'] + "#view_tab=pathways"});
-        //   return;
-        // }
-				
-          var genomeList = [];
-          var genomeGroup = [];
-          this.addedList.forEach(function (rec) {
-          		if (rec.type == "genome") {
-          			genomeList.push(rec.genome_ids[0]);
-          		} else if (rec.type == "genome_group") {
-          			genomeGroup.push(rec.path + "/" + rec.label)
-          		}
-            });
+      var genomeList = [];
+      var genomeGroup = [];
+      this.addedList.forEach(function (rec) {
+        if (rec.type == 'genome') {
+          genomeList.push(rec.genome_ids[0]);
+        } else if (rec.type == 'genome_group') {
+          genomeGroup.push(rec.path + '/' + rec.label)
+        }
+      });
 
-        console.log(values);
-        console.log(genomeList);
-        console.log(genomeGroup);
-     
-         // prepare submission values
-	  	var submit_values = {
-			'genome_ids': genomeList,
-			'genome_groups': genomeGroup,
-			'output_path': values.output_path,
-			'output_file': values.output_file
-	  	};
-      
-		console.log(submit_values);
-      	return submit_values;
+      console.log(values);
+      console.log(genomeList);
+      console.log(genomeGroup);
+
+      // prepare submission values
+      var submit_values = {
+        'genome_ids': genomeList,
+        'genome_groups': genomeGroup,
+        'output_path': values.output_path,
+        'output_file': values.output_file
+      };
+
+      console.log(submit_values);
+      return submit_values;
     }
-
-/*
-    onSubmit: function (evt) {
-      evt.preventDefault();
-      evt.stopPropagation();
-      if (this.validate()) {
-        var values = this.getValues();
-        console.log(values);
-
-          // log GA
-          if (window.gtag) {
-            gtag('event', 'ComparativePathways', { event_category: 'Services', search_on: values.search_on, keyword: values.keyword });
-          }
-      } else {
-        console.error('Form is incomplete');
-      }
-    }
-*/    
   });
 });
