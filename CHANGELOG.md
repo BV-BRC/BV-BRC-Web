@@ -1,6 +1,7 @@
 # Temp Changelog
 **For Alpha/Beta (these versions not deployed to Production yet)**
 ## 3.8.1 - Feb 23, 2022
+* [Update] Update to most recent archaeopteryx-js commit
 * [Feature] Implementation of the submission form for the ComparativeSystems app service
 * [Enhancement] Update calendar iframe
 
