@@ -1,5 +1,8 @@
-<!-- # Temp Changelog
+# Temp Changelog
 **For Alpha/Beta (these versions not deployed to Production yet)**
+## 3.8.1 - Feb 23, 2022
+* [Feature] Implementation of the submission form for the ComparativeSystems app service
+* [Enhancement] Update calendar iframe
 
 ## 3.7.9 - Feb 16, 2022
 * [Feature] Add 'Jobs List' link in all services submission message
@@ -45,7 +48,7 @@
 * [Update] Bump node-fetch from 3.1.0 to 3.2.0
 * [Feature] Add geographic_group to serology/surveillance areas
 * [Feature] GeneTree GenomeGroup tooltips
-* [Feature] Add limited fasta file types to generic file viewer -->
+* [Feature] Add limited fasta file types to generic file viewer
 
 # Changelog
 ## 3.8.0 - February 16, 2022
