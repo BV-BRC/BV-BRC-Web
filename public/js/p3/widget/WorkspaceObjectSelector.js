@@ -581,11 +581,12 @@ define([
         }
         return 0;
       }
+      console.log('wos type = ', this.type);
       if (target_path) {
         this._refreshing = WorkspaceManager.getObjectsAtPathByType(this.type, target_path)
           .then(lang.hitch(this, function (items) {
             delete this._refreshing;
-
+            console.log('getObjectsAtPathByType ', this.type, ' items = ', items);
             // sort by most recent
             items.sort(function (a, b) {
               return b.timestamp - a.timestamp;
@@ -609,7 +610,7 @@ define([
         this._refreshing = WorkspaceManager.getObjectsByType(this.type, target_path)
           .then(lang.hitch(this, function (items) {
             delete this._refreshing;
-
+            console.log('getObjectsByType ', this.type, ' items = ', items);
             // sort by most recent
             items.sort(function (a, b) {
               return b.timestamp - a.timestamp;
@@ -667,11 +668,13 @@ define([
 
       var _self = this;
       if (!this.path) {
+        console.log('no path');
         Deferred.when(WorkspaceManager.get('currentPath'), function (path) {
           _self.set('path', path);
           _self.refreshWorkspaceItems();
         });
       } else {
+        console.log('path');
         this.refreshWorkspaceItems();
       }
       Topic.subscribe('/refreshWorkspace', lang.hitch(this, 'refreshWorkspaceItems'));

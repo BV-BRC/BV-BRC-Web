@@ -249,6 +249,7 @@ define([
     },
 
     startup: function () {
+      console.log('WorkspaceExplorerView');
       if (this._started) {
         return;
       }
