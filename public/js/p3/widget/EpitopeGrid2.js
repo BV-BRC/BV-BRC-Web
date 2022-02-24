@@ -34,6 +34,7 @@ define([
 
       start: { label: 'Start', field: 'start', hidden: true },
       end: { label: 'End', field: 'end', hidden: true },
+      host_name: { label: 'Host Name', field: 'host_name', hidden: true },
       total_assays: { label: 'Total Assays', field: 'total_assays', hidden: false },
       assay_results: { label: 'Assay Results', field: 'assay_results', hidden: true },
 

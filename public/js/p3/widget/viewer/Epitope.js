@@ -130,7 +130,7 @@ define([
         this.overview = this.createOverviewPanel(this.state);
         this.assays = new EpitopeAssayGridContainer({
           title: 'Assays',
-          enableFilterPanel: false,
+          enableFilterPanel: true,
           id: this.viewer.id + '_assays',
           disabled: false
         });

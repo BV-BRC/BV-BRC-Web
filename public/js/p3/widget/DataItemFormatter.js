@@ -2191,6 +2191,9 @@ define([
         name: 'End',
         text: 'end',
       }, {
+        name: 'Host Name',
+        text: 'host_name',
+      }, {
         name: 'Total Assays',
         text: 'total_assays',
       }, {
