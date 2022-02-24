@@ -1,3 +1,7 @@
+# Changelog
+## 3.9.0 - Feb 24, 2022
+* [Release] Production Release of all previous changes
+
 ## 3.8.2 - Feb 24, 2022
 * [Feature] Add facets to Epitope Assays tab
 * [Feature] Add ADV Search to Epitope Assays tab
@@ -9,7 +13,6 @@
 * [Feature] Implementation of the submission form for the ComparativeSystems app service
 * [Enhancement] Update calendar iframe
 
-# Changelog
 ## 3.8.0 - February 16, 2022
 * [Release] BV-BRC Public Beta Release
 
