@@ -2,6 +2,7 @@
 * [Feature] Add facets to Epitope Assays tab
 * [Feature] Add ADV Search to Epitope Assays tab
 * [Enhancement] Add host_name / protein_name to Epitopes facets, adv search, details, columns
+* [Bug] Partially resolve issue when genome viewer doesn't load with missing taxon data
 
 ## 3.8.1 - Feb 23, 2022
 * [Update] Update to most recent archaeopteryx-js commit
