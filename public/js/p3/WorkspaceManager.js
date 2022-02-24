@@ -564,7 +564,6 @@ define([
       }));
     },
     getObjectsAtPathByType: function (types, specialPath) {
-      console.log('getObjectsAtPathByType, types = ', types);
       types = (types instanceof Array) ? types : [types];
 
       return Deferred.when(this.get('currentWorkspace'), lang.hitch(this, function (current) {
@@ -605,7 +604,6 @@ define([
       }));
     },
     getObjectsByType: function (types, specialPath) {
-      console.log('getObjectsByType, types = ', types);
       types = (types instanceof Array) ? types : [types];
 
       return Deferred.when(this.get('currentWorkspace'), lang.hitch(this, function (current) {

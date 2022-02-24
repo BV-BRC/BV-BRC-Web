@@ -581,28 +581,29 @@ define([
         }
         return 0;
       }
-      console.log('wos type = ', this.type);
       if (target_path) {
         this._refreshing = WorkspaceManager.getObjectsAtPathByType(this.type, target_path)
           .then(lang.hitch(this, function (items) {
             delete this._refreshing;
-            console.log('getObjectsAtPathByType ', this.type, ' items = ', items);
             // sort by most recent
             items.sort(function (a, b) {
               return b.timestamp - a.timestamp;
             });
-            this.store = new Memory({ data: items, idProperty: 'path' });
-            if (this.isSortAlpha) {
-            // sort alphabetically
-              var dataArr = this.store.data;
-              dataArr.sort(compare);
+            if (items.length > 0) {
+              this.store = new Memory({ data: items, idProperty: 'path' });
 
-              this.store.data = dataArr;
-            }
-            // ASW not sure should be doing this when path set. Also be culprit in blanking in the original else block below
-            this.searchBox.set('store', this.store);
-            if (this.value) {
-              this.searchBox.set('value', this.value);
+              if (this.isSortAlpha) {
+                // sort alphabetically
+                var dataArr = this.store.data;
+                dataArr.sort(compare);
+
+                this.store.data = dataArr;
+              }
+              // ASW not sure should be doing this when path set. Also be culprit in blanking in the original else block below
+              this.searchBox.set('store', this.store);
+              if (this.value) {
+                this.searchBox.set('value', this.value);
+              }
             }
           }));
       }
@@ -610,22 +611,23 @@ define([
         this._refreshing = WorkspaceManager.getObjectsByType(this.type, target_path)
           .then(lang.hitch(this, function (items) {
             delete this._refreshing;
-            console.log('getObjectsByType ', this.type, ' items = ', items);
             // sort by most recent
             items.sort(function (a, b) {
               return b.timestamp - a.timestamp;
             });
-            this.store = new Memory({ data: items, idProperty: 'path' });
-            if (this.isSortAlpha) {
-            // sort alphabetically
-              var dataArr = this.store.data;
-              dataArr.sort(compare);
+            if (items.length > 0) {
+              this.store = new Memory({ data: items, idProperty: 'path' });
+              if (this.isSortAlpha) {
+                // sort alphabetically
+                var dataArr = this.store.data;
+                dataArr.sort(compare);
 
-              this.store.data = dataArr;
-            }
-            this.searchBox.set('store', this.store);
-            if (this.value) {
-              this.searchBox.set('value', this.value);
+                this.store.data = dataArr;
+              }
+              this.searchBox.set('store', this.store);
+              if (this.value) {
+                this.searchBox.set('value', this.value);
+              }
             }
           }));
       }
@@ -668,13 +670,11 @@ define([
 
       var _self = this;
       if (!this.path) {
-        console.log('no path');
         Deferred.when(WorkspaceManager.get('currentPath'), function (path) {
           _self.set('path', path);
           _self.refreshWorkspaceItems();
         });
       } else {
-        console.log('path');
         this.refreshWorkspaceItems();
       }
       Topic.subscribe('/refreshWorkspace', lang.hitch(this, 'refreshWorkspaceItems'));
