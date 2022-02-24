@@ -1,9 +1,16 @@
-# Temp Changelog
-**For Alpha/Beta (these versions not deployed to Production yet)**
+## 3.8.2 - Feb 24, 2022
+* [Feature] Add facets to Epitope Assays tab
+* [Feature] Add ADV Search to Epitope Assays tab
+* [Enhancement] Add host_name / protein_name to Epitopes facets, adv search, details, columns
+
 ## 3.8.1 - Feb 23, 2022
 * [Update] Update to most recent archaeopteryx-js commit
 * [Feature] Implementation of the submission form for the ComparativeSystems app service
 * [Enhancement] Update calendar iframe
+
+# Changelog
+## 3.8.0 - February 16, 2022
+* [Release] BV-BRC Public Beta Release
 
 ## 3.7.9 - Feb 16, 2022
 * [Feature] Add 'Jobs List' link in all services submission message
@@ -50,42 +57,6 @@
 * [Feature] Add geographic_group to serology/surveillance areas
 * [Feature] GeneTree GenomeGroup tooltips
 * [Feature] Add limited fasta file types to generic file viewer
-
-# Changelog
-## 3.8.0 - February 16, 2022
-* [Release] BV-BRC Public Beta Release
-* [Feature] Add 'Jobs List' link in all services submission message
-* [Minor] Update Publications page
-* [Minor] Change feedback links to report popup modal
-* [Minor] Adjust config file
-* [Minor] UI tweaks
-* [Minor] Update BRC Calendar page
-* [Feature] Add View buttons for services.
-* [Enhancement] Update about, citation, brc calendar and related resources pagees
-* [Enhancement] Update performance and usage metrics to January 2022
-* [Feature] Change Outreach to BV-BRC Calendar and change route
-* [Feature] Change Contact Us to /feedback route instead of Contact Us page
-
-## 3.7.6 - Feb 14, 2022
-* [Release] BV-BRC Mid February Update
-* [Minor] Fix homepage layout due to notice banner
-* [Minor] Bump follow-redirects from 1.14.6 to 1.14.8
-* [Enhancement] Change Protein Features to Domains and Motifs in global search
-* [Enhancement] Update tooltips for all tab types
-* [Enhancement] Add superkingdom to genome facets/adv search
-* [Enhancement] Add taxon_name and taxon_rank dropdown in tax search
-* [Enhancement] Remove fields from taxa adv search
-* [Enhancement] Hide species column in Genomes tab
-* [Enhancement] Display genome_name in Genomes tab
-* [Enhancement] Add additional metadata attributes in MSA viewer
-* [Enhancement] Update GeneTree UI
-* [Bug] Fix GeneTree bugs
-* [Update] Bump follow-redirects from 1.14.6 to 1.14.7
-* [Update] Bump node-fetch from 3.1.0 to 3.2.0
-* [Feature] Add geographic_group to serology/surveillance areas
-* [Feature] GeneTree GenomeGroup tooltips
-* [Feature] Add limited fasta file types to generic file viewer
-
 
 ## 3.7.0 - Feb 8, 2022
 * [Release] BV-BRC January Update
