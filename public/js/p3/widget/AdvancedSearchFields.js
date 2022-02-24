@@ -1282,7 +1282,7 @@ define([], function () {
         field: 'taxon_lineage_names', type: 'str', facet: false, facet_hidden: true, search: false
       },
       {
-        field: 'protein_name', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'protein_name', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'protein_id', type: 'str', facet: false, facet_hidden: true, search: true
@@ -1295,6 +1295,9 @@ define([], function () {
       },
       {
         field: 'end', type: 'int', facet: false, facet_hidden: true, search: false
+      },
+      {
+        field: 'host_name', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'total_assays', type: 'int', facet: false, facet_hidden: true, search: false
