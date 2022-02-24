@@ -1,14 +1,18 @@
+# Changelog
+## 3.9.0 - Feb 24, 2022
+* [Release] Production Release of all previous changes
+
 ## 3.8.2 - Feb 24, 2022
 * [Feature] Add facets to Epitope Assays tab
 * [Feature] Add ADV Search to Epitope Assays tab
 * [Enhancement] Add host_name / protein_name to Epitopes facets, adv search, details, columns
+* [Bug] Partially resolve issue when genome viewer doesn't load with missing taxon data
 
 ## 3.8.1 - Feb 23, 2022
 * [Update] Update to most recent archaeopteryx-js commit
 * [Feature] Implementation of the submission form for the ComparativeSystems app service
 * [Enhancement] Update calendar iframe
 
-# Changelog
 ## 3.8.0 - February 16, 2022
 * [Release] BV-BRC Public Beta Release
 
