@@ -171,7 +171,11 @@ define([
           return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + taxon_lineage_names[idx] + '</a>';
         });
         this.queryNode.innerHTML = out.join(' &raquo; ') + ' &raquo; <span class="current">' + genome.genome_name + '</span>';
-      }));
+      }), (err) => {
+        // on reject
+        this.queryNode.innerHTML = 'unable to load taxonomy';
+        console.error(err.message)
+      });
     },
 
     changeToVirusContext: function () {
@@ -205,7 +209,7 @@ define([
         }
       }
 
-      if (genome.taxon_lineage_names.includes('Viruses') && this.context === 'bacteria') {
+      if (genome && genome.taxon_lineage_names && genome.taxon_lineage_names.includes('Viruses') && this.context === 'bacteria') {
         this.set('context', 'virus')
         this.changeToVirusContext();
       }
