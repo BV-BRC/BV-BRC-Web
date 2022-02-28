@@ -1107,7 +1107,7 @@ define([], function () {
         field: 'host_species', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'host_common_names', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'host_common_name', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'host_sex', type: 'str', facet: true, facet_hidden: true, search: true
