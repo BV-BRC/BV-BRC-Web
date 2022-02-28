@@ -1004,6 +1004,9 @@ define([
         name: 'Genetic Code',
         text: 'genetic_code'
       }, {
+        name: 'Lineage Names',
+        text: 'lineage_names'
+      }, {
         name: 'Parent ID',
         text: 'parent_id'
       }, {
