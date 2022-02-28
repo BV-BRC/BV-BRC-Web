@@ -1,4 +1,7 @@
 # Changelog
+## 3.9.1 - Feb 28, 2022
+* [Minor] Remove homepage link and adjust CSS
+
 ## 3.9.0 - Feb 24, 2022
 * [Release] Production Release of all previous changes
 
