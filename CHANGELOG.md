@@ -1,6 +1,9 @@
 # Changelog
 ## 3.9.1 - Feb 28, 2022
 * [Minor] Remove homepage link and adjust CSS
+* [Enhancement] add lineage_names to taxa detail pane
+* [Enahncement] Change host_common_names to host_common_name for serology facets/adv search
+* [Bug] Change CGA job submission message to Metagenomic Binning Job Submission message
 
 ## 3.9.0 - Feb 24, 2022
 * [Release] Production Release of all previous changes
