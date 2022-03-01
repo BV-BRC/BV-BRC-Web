@@ -18,11 +18,11 @@ define([
     disabled: false,
     state: null,
     templateString: Template,
-    searchTypes: ['genome', 'strain', 'genome_feature', 'genome_sequence', 'protein_feature', 'protein_structure', 'pathway', 'subsystem', 'surveillance', 'serology', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics', 'epitope'],
+    searchTypes: ['genome', 'strain', 'genome_feature', 'genome_sequence', 'protein_feature', 'protein_structure', 'pathway', 'subsystem', 'surveillance', 'serology', 'taxonomy', 'sp_gene', 'experiment', 'antibiotics', 'epitope'],
     labelsByType: {
       genome: 'Genomes',
       strain: 'Strains',
-      genome_feature: 'Genomic Features',
+      genome_feature: 'Proteins',
       genome_sequence: 'Genomic Sequences',
       protein_feature: 'Domains and Motifs',
       protein_structure: 'Protein Structures',
@@ -32,7 +32,7 @@ define([
       serology: 'Serology',
       taxonomy: 'Taxonomy',
       sp_gene: 'Specialty Genes',
-      transcriptomics_experiment: 'Transcriptomics Experiments',
+      experiment: 'Experiments',
       antibiotics: 'Antibiotics',
       epitope: 'Epitopes'
     },
@@ -141,7 +141,7 @@ define([
         return ['/view/SpecialtyGeneList/?', this.state.search, '#view_tab=specialtyGenes'].join('');
       },
 
-      transcriptomics_experiment: function (docs, total) {
+      experiment: function (docs, total) {
         if (total == 1) {
           return ['/view/ExperimentComparison/', docs[0].eid, '#view_tab=overview'].join('');
         }
@@ -435,45 +435,18 @@ define([
       return out.join('');
     },
 
-    formattranscriptomics_experiment: function (docs, total) {
-      // console.log("formattranscriptomics_experiment docs: ", docs);
-      var out;
-      if (total == 1) {
-        out = ['<div class="searchResultsContainer featureResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ExperimentComparison/', docs[0].eid, '#view_tab=overview', '">Experiments&nbsp;(', total, ')</div> </a>'];
-      } else if (total > 1) {
-        out = ['<div class="searchResultsContainer featureResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ExperimentList/?', this.state.search, '#view_tab=experiments', '">Experiments&nbsp;(', total, ')</div> </a>'];
-      }
+    formatexperiment: function (docs, total) {
+      var q = this.state.search;
+      var out = ['<div class="searchResultsContainer experimentResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ExperimentList/?', q, '">Experiments</a>&nbsp;(', total, ')</div>'];
 
       docs.forEach(function (doc) {
         out.push("<div class='searchResult'>");
-        out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/ExperimentComparison/" + doc.eid + "#view_tab=overview'>" + doc.title + '</a>');
-        out.push('</div>');
-        out.push("<div class='resultInfo'>" + doc.organism);
-
-        if (doc.strain) {
-          out.push('&nbsp;|&nbsp;' + doc.strain);
-
-        }
-
-        out.push('</div>');
-
-        out.push("<div class='resultInfo'>");
-        out.push(doc.genes + '&nbsp;Genes&nbsp;|&nbsp;' + doc.samples + ' Comparisons');
-        out.push('</div>');
-
-        out.push("<div class='resultInfo'>");
-        out.push(doc.mutant);
-        out.push('</div>');
-
-
-        out.push("<div class='resultInfo'>");
-        out.push(doc.condition);
-        out.push('</div>');
-
-
+        out.push("<div class='resultHead'><a class=\"navigationLinkOut\" href='/view/ExperimentComparison/" + doc.exp_id + "'>" + doc.exp_name + ' | ' + doc.exp_id + '</a></div>');
+        out.push("<div class='resultInfo'>" + doc.exp_description + '</div>');
         out.push('</div>');
       });
       out.push('</div>');
+
       return out.join('');
     },
 
