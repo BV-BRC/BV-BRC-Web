@@ -1,4 +1,12 @@
 # Changelog
+## 3.9.2 - March 2, 2022
+* [Enhancement] Update Phylogeny Tree Viewer data .xml file to Iteration 13
+* [Enhancement] Add Experiments / Change Genomic Features label to Proteins
+* [Enhancement] Remove feature_id from features detail panel
+* [Enhancement] Add Experiments tab to Genome View
+* [Enhancement] Protein Structures Tab: Add organism_name as default facet and remove taxon_lineage_names
+* [Minor] ESLint Fixes
+
 ## 3.9.1 - Feb 28, 2022
 * [Minor] Remove homepage link and adjust CSS
 * [Enhancement] add lineage_names to taxa detail pane
