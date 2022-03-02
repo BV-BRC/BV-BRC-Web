@@ -357,11 +357,11 @@ define([
         state: this.state
       });
 
-      // this.experiments = new ExperimentsContainer({
-      //   title: 'Experiments',
-      //   id: this.viewer.id + '_experiments',
-      //   state: this.state
-      // });
+      this.experiments = new ExperimentsContainer({
+        title: 'Experiments',
+        id: this.viewer.id + '_experiments',
+        state: this.state
+      });
 
       // this.interactions = new InteractionsContainer({
       //   title: 'Interactions',
@@ -382,7 +382,7 @@ define([
       this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);
-      // this.viewer.addChild(this.experiments);
+      this.viewer.addChild(this.experiments);
       // this.viewer.addChild(this.interactions);
     }
   });
