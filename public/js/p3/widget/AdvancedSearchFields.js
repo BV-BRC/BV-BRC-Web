@@ -640,7 +640,7 @@ define([], function () {
         field: 'title', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'organism_name', type: 'str', facet: true, facet_hidden: true, search: true
+        field: 'organism_name', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'taxon_id', type: 'str', facet: false, facet_hidden: true, search: true
@@ -649,7 +649,7 @@ define([], function () {
         field: 'taxon_lineage_ids', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'taxon_lineage_names', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'taxon_lineage_names', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
         field: 'genome_id', type: 'str', facet: false, facet_hidden: true, search: true
