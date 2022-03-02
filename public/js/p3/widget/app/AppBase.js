@@ -651,7 +651,7 @@ define([
       var handle = on(td2, 'click', lang.hitch(this, function (evt) {
         this.destroyLibRow(lrec._id, '_id');
       }));
-      // TODO: standardize this across services 
+      // TODO: standardize this across services
       lrec._handle = handle;
       lrec.handle = handle;
       this.libraryStore.put(lrec);
