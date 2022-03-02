@@ -604,9 +604,6 @@ define([
         }],
 
         'Identifiers': [{
-          name: 'Feature ID',
-          text: 'feature_id',
-        }, {
           name: 'BRC ID',
           text: 'patric_id',
         }],
