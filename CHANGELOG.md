@@ -1,4 +1,7 @@
 # Changelog
+## 3.9.4 - March 4, 2022
+* [Enhancement] Add Interactions tab to Genome View
+
 ## 3.9.3 - March 3, 2022
 * [Enhancement] Make lineage a default facet for genomes
 
