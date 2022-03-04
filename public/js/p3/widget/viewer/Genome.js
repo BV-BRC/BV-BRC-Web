@@ -363,11 +363,11 @@ define([
         state: this.state
       });
 
-      // this.interactions = new InteractionsContainer({
-      //   title: 'Interactions',
-      //   id: this.viewer.id + '_interactions',
-      //   state: this.state
-      // });
+      this.interactions = new InteractionsContainer({
+        title: 'Interactions',
+        id: this.viewer.id + '_interactions',
+        state: this.state
+      });
 
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.amr);
@@ -383,7 +383,7 @@ define([
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);
       this.viewer.addChild(this.experiments);
-      // this.viewer.addChild(this.interactions);
+      this.viewer.addChild(this.interactions);
     }
   });
 });
