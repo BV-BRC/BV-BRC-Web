@@ -146,7 +146,7 @@ define([], function () {
         field: 'ph1n1_like', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'lineage', type: 'str', facet: true, facet_hidden: true, search: true
+        field: 'lineage', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'clade', type: 'str', facet: false, facet_hidden: true, search: true
