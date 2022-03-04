@@ -1,4 +1,7 @@
 # Changelog
+## 3.9.3 - March 3, 2022
+* [Enhancement] Make lineage a default facet for genomes
+
 ## 3.9.2 - March 2, 2022
 * [Enhancement] Update Phylogeny Tree Viewer data .xml file to Iteration 13
 * [Enhancement] Add Experiments / Change Genomic Features label to Proteins
