@@ -1004,6 +1004,9 @@ define([
         name: 'Genetic Code',
         text: 'genetic_code'
       }, {
+        name: 'Lineage Names',
+        text: 'lineage_names'
+      }, {
         name: 'Parent ID',
         text: 'parent_id'
       }, {
@@ -2190,6 +2193,9 @@ define([
       }, {
         name: 'End',
         text: 'end',
+      }, {
+        name: 'Host Name',
+        text: 'host_name',
       }, {
         name: 'Total Assays',
         text: 'total_assays',

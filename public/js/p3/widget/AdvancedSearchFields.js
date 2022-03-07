@@ -1107,7 +1107,7 @@ define([], function () {
         field: 'host_species', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'host_common_names', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'host_common_name', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'host_sex', type: 'str', facet: true, facet_hidden: true, search: true
@@ -1282,7 +1282,7 @@ define([], function () {
         field: 'taxon_lineage_names', type: 'str', facet: false, facet_hidden: true, search: false
       },
       {
-        field: 'protein_name', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'protein_name', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'protein_id', type: 'str', facet: false, facet_hidden: true, search: true
@@ -1295,6 +1295,9 @@ define([], function () {
       },
       {
         field: 'end', type: 'int', facet: false, facet_hidden: true, search: false
+      },
+      {
+        field: 'host_name', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'total_assays', type: 'int', facet: false, facet_hidden: true, search: false
@@ -1314,6 +1317,90 @@ define([], function () {
       {
         field: 'comments', type: 'str', facet: false, facet_hidden: true, search: true
       },
+    ],
+    'epitope_assay': [
+      {
+        field: 'assay_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'assay_type', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'epitope_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'epitope_type', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'epitope_sequence', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'organism', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'taxon_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'taxon_lineage_ids', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'taxon_lineage_names', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'protein_name', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'protein_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'protein_accession', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'pdb_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'start', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'end', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'host_name', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'host_taxon_id', type: 'int', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'assay_group', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'assay_method', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'assay_result', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'assay_measurement', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'assay_measurement_unit', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'mhc_allele', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'mhc_allele_class', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'pmid', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'authors', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'title', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+
     ],
     'experiment': [
       {
