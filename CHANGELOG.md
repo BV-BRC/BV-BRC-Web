@@ -1,4 +1,9 @@
 # Changelog
+## 3.9.5 - March 8, 2022
+* [Enhancement] Enhancements for Archaeopteryx tree
+* [Enhancement] Update archaeopteryx.js to 2.0.0a3 and bundle2.js
+* [Enhancement] Modify global search results summary
+
 ## 3.9.4 - March 4, 2022
 * [Enhancement] Add Interactions tab to Genome View
 
