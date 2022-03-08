@@ -65,14 +65,12 @@ define([
     canvasId: 'surveillanceMapCanvas',
     /* Page level variables to hold the map state */
     initialCenter: null, // Store the center location for future reset
-    initialZoomLevel: 2, // Default to -1 to make sure it has been set later
-    mapTypeId: google.maps.MapTypeId.TERRAIN, // Default to -1 to make sure it has been set later
+    initialZoomLevel: -1, // Default to -1 to make sure it has been set later
     defaultMarkerColor: '#FE7569',
     defaultMapOptions: {
       backgroundColor: '#E7F1FA',
-      mapTypeId: this.mapTypeId,
-      scaleControl: true,
-      zoom: this.initialZoomLevel
+      mapTypeId: google.maps.MapTypeId.TERRAIN,
+      scaleControl: true
     },
     flywayJSON: [],
 
@@ -115,7 +113,7 @@ define([
     resetMapToDefault: function () {
       this.map.setCenter(this.initialCenter);
       this.map.setZoom(this.initialZoomLevel);
-      this.map.setMapTypeId(this.mapTypeId);
+      this.map.setMapTypeId(this.defaultMapOptions.mapTypeId);
 
       // Close all the info  windows
       for (let infoWindow of this.infoWindows) {
@@ -548,11 +546,11 @@ define([
         this.map = new google.maps.Map(document.getElementById(this.canvasId), options);
         this.map.fitBounds(bounds);
 
-        /* google.maps.event.addListenerOnce(this.map, 'bounds_changed', function () {
-          const initialZoomLevel = this.getZoom();
-          this.set('initialZoomLevel', initialZoomLevel);
-          this.setZoom(initialZoomLevel);
-        }); */
+        google.maps.event.addListenerOnce(this.map, 'bounds_changed', lang.hitch(this, function () {
+          const initialZoomLevel = this.map.getZoom();
+          this.initialZoomLevel = initialZoomLevel;
+          this.map.setZoom(initialZoomLevel);
+        }));
 
         this.flywayJSON = JSON.parse(flyawaysData);
         const palettes = ['white', 'lime', 'green', 'blue', 'silver', 'yellow', 'fuchsia', 'navy', 'gray', 'red', 'purple', 'black'];
