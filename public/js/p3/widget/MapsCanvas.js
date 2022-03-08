@@ -1,16 +1,16 @@
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dijit/_OnDijitClickMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/dom', 'dojo/dom-class', 'dijit/_TemplatedMixin', 'dojox/dtl/_Templated', 'dojo/dom-construct', 'dojo/dom-style',  'dojo/mouse',
-  'dojo/text!./templates/SurveillanceDataMap.html', 'dojo/text!./templates/SurveillanceDataMapInfoWindowSingle.html',
-  'dojo/text!./templates/SurveillanceDataMapInfoWindowShortList.html', 'dojo/text!./templates/SurveillanceDataMapInfoWindowSummary.html',
+  'dojo/text!./templates/SurveillanceDataMap.html', './mapsInfoWindows/LocationInfoWindowSingle',
+  './mapsInfoWindows/LocationInfoWindowShortList', './mapsInfoWindows/LocationInfoWindowSummary',
   'dojo/json', 'dojo/text!/public/js/p3/resources/surveillancemap/flyaways.json', 'dijit/form/CheckBox', 'dijit/ColorPalette',
   '../util/PathJoin', 'dojo/request', 'dojo/_base/lang',
   'https://maps.googleapis.com/maps/api/js?key=AIzaSyAo6Eq83tcpiWufvVpw_uuqdoRfWbFXfQ8&sensor=false&libraries=drawing'
 ], function (
   declare, WidgetBase, on, OnDijitClickMixin, _WidgetsInTemplateMixin,
   dom, domClass, Templated, DtlTemplated, domConstruct, domStyle, mouse,
-  Template, InfoWindowSingleTemplate,
-  InfoWindowShortListTemplate, InfoWindowSummaryTemplate,
+  Template, LocationInfoWindowSingle,
+  LocationInfoWindowShortList, LocationInfoWindowSummary,
   JSON, flyawaysData, CheckBox, ColorPalette,
   PathJoin, xhr, lang
 ) {
@@ -21,41 +21,6 @@ define([
     templateString: Template,
     apiServiceUrl: window.App.dataAPI,
     index: 0,
-    LocationInfoWindowSingle: declare([WidgetBase, OnDijitClickMixin, Templated, DtlTemplated, _WidgetsInTemplateMixin], {
-      templateString: InfoWindowSingleTemplate,
-      // location item object for template
-      item: {},
-      singleIndex: null,
-      centerMapFunction: this.centerMapAndZoomToLocation
-    }),
-    LocationInfoWindowShortList: declare([WidgetBase, Templated, DtlTemplated, _WidgetsInTemplateMixin], {
-      templateString: InfoWindowShortListTemplate,
-      // location item object for template
-      items: {},
-      locationLat: null,
-      locationLng: null,
-      collectionState: null,
-      collectionCountry: null,
-      positiveCount: null,
-      testedCount: null,
-      prevalence: null,
-      centerMapFunction: this.centerMapAndZoomToLocation
-    }),
-    LocationInfoWindowSummary: declare([WidgetBase, Templated, DtlTemplated, _WidgetsInTemplateMixin], {
-      templateString: InfoWindowSummaryTemplate,
-      // location item object for template
-      item: {},
-      locationLat: null,
-      locationLng: null,
-      collectionState: null,
-      collectionCountry: null,
-      speciesMap: {},
-      positiveCount: null,
-      testedCount: null,
-      prevalence: null,
-      centerMapFunction: this.centerMapAndZoomToLocation,
-
-    }),
     state: null,
     map: null,
     infoWindows: [],
@@ -119,17 +84,6 @@ define([
       for (let infoWindow of this.infoWindows) {
         infoWindow.close();
       }
-    },
-
-    // Centers the map at the specified location and then zooms it in
-    centerMapAndZoomToLocation: function (latitude, longitude) {
-    // Zoom to level 12 unless it is already zoomed in further than 12
-      let zoomLevel = 12;
-      if (this.map.getZoom() > 12) {
-        zoomLevel = this.map.getZoom();
-      }
-      this.map.setCenter(new google.maps.LatLng(latitude, longitude));
-      this.map.setZoom(zoomLevel);
     },
 
     partitionByYear: function () {
@@ -451,7 +405,7 @@ define([
       let content;
       let prevalence = null;
 
-      let contentValues = {};
+      let contentValues = { map: this.map, index: this.index++ };
 
       // Calculate prevalence if there is any tested data
       const testedCount = this.getTestedCountByLocation(items);
@@ -459,19 +413,18 @@ define([
         const positiveCount = this.getPositiveTestedCountByLocation(items);
         prevalence = (positiveCount / testedCount * 100).toFixed(2);
 
-        contentValues = {
+        contentValues = Object.assign({}, contentValues, {
           positiveCount,
           testedCount,
           prevalence
-        };
+        });
       }
 
       if (items.length === 1) {
         // Send the surveillance object to single info template
-        content = new this.LocationInfoWindowSingle(Object.assign({}, contentValues, { item: items[0], id: this.index++ }));
+        content = new LocationInfoWindowSingle(Object.assign({}, contentValues, { item: items[0] }));
       } else {
         contentValues = Object.assign({}, contentValues, {
-          items: items,
           collectionState: items[0].collection_state_province,
           collectionCountry: items[0].collection_country,
           locationLat: items[0].collection_latitude,
@@ -479,12 +432,12 @@ define([
         });
 
         if (items.length <= 20) {
-          content = new this.LocationInfoWindowShortList(contentValues);
+          content = new LocationInfoWindowShortList(Object.assign({}, contentValues, { items: items }));
         } else {
           // Create species map object to display if surveillance data is more than 20
           let speciesMap = this.generateSpeciesCount(items);
 
-          content = new this.LocationInfoWindowSummary(Object.assign({}, contentValues, speciesMap));
+          content = new LocationInfoWindowSummary(Object.assign({}, contentValues, speciesMap));
         }
       }
 
@@ -621,12 +574,6 @@ define([
         for (let location of mapData.locations) {
           this.addMarkerToMap(location, mapData.showCount);
         }
-
-        dojo.create('a', {
-          href: 'foo.html',
-          title: 'Goto FOO!',
-          innerHTML: 'link'
-        }, dojo.byId('sd-zoom-3'));
       }
     }
   });
