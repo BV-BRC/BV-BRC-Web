@@ -104,12 +104,14 @@ define([
     },
 
     // sets path, which is used for the dialog state (not for the dropbox)
+    // JSP: Need to check if the workspace changes to change the dropbox memory store.
     _setPathAttr: function (val) {
       if (!val) return; // for group selection (hacky)
 
       var self = this;
 
       // remove trailing '/' in path for consistency
+      var oldWorkspace = this.extractWorkspace(this.path);
       this.path = val[val.length - 1] === '/' ? val.substring(0, val.length - 1) : val;
       if (this.grid) {
         this.grid.set('path', val);
@@ -149,8 +151,11 @@ define([
         }
       }
 
-      this.cancelRefresh();
-      this.refreshWorkspaceItems(val);
+      var newWorkspace = this.extractWorkspace(val);
+      if (this.onWorkspace(newWorkspace) && newWorkspace !== oldWorkspace) {
+        this.cancelRefresh();
+        this.refreshWorkspaceItems(newWorkspace);
+      }
 
       // whether or not to allow top level
       var allowedLevel = this.allowUserSpaceSelection ? true : self.path.split('/').length > 2;
@@ -171,6 +176,19 @@ define([
       }
     },
 
+    onWorkspace: function (val) {
+      val = val[val.length - 1] === '/' ? val.substring(0, val.length - 1) : val;
+      if (val.split('/', 3).length <= 2) {
+        return false;
+      }
+      return true;
+    },
+
+    extractWorkspace: function (val) {
+      val = val[val.length - 1] === '/' ? val.substring(0, val.length - 1) : val;
+      return val.split('/', 3).join('/');
+    },
+
     _setTypeAttr: function (type) {
       this.type = Array.isArray(type) ? type : [type];
 
@@ -178,7 +196,7 @@ define([
         this.grid.set('types', (['folder'].concat(this.type)));
       }
       this.cancelRefresh();
-      this.refreshWorkspaceItems();
+      this.refreshWorkspaceItems(this.extractWorkspace(this.path));
     },
 
     // sets value of object selector dropdown
@@ -352,7 +370,8 @@ define([
     },
 
     openChooser: function () {
-      this.refreshWorkspaceItems(this.path);
+      // JSP: Simply opening the chooser probably doesn't require changing the drop down memory store.
+      // this.refreshWorkspaceItems(this.path);
       var _self = this;
 
       // if dialog is already built, just show it
@@ -563,7 +582,10 @@ define([
     },
 
     refreshWorkspaceItems: function (target_path) {
-      if (this.disableDropdownSelector || this._refreshing) {
+      if (this.disableDropdownSelector || this._refreshing || target_path === '') {
+        return;
+      }
+      if (typeof target_path === 'object' && target_path !== undefined) {
         return;
       }
       function compare(a, b) {
@@ -575,53 +597,27 @@ define([
         }
         return 0;
       }
-      if (target_path) {
-        this._refreshing = WorkspaceManager.getObjectsAtPathByType(this.type, target_path)
-          .then(lang.hitch(this, function (items) {
-            delete this._refreshing;
+      this._refreshing = WorkspaceManager.getObjectsByType(this.type, target_path)
+        .then(lang.hitch(this, function (items) {
+          delete this._refreshing;
 
-            // sort by most recent
-            items.sort(function (a, b) {
-              return b.timestamp - a.timestamp;
-            });
-            this.store = new Memory({ data: items, idProperty: 'path' });
-            if (this.isSortAlpha) {
-              // sort alphabetically
-              var dataArr = this.store.data;
-              dataArr.sort(compare);
+          // sort by most recent
+          items.sort(function (a, b) {
+            return b.timestamp - a.timestamp;
+          });
+          this.store = new Memory({ data: items, idProperty: 'path' });
+          if (this.isSortAlpha) {
+            // sort alphabetically
+            var dataArr = this.store.data;
+            dataArr.sort(compare);
 
-              this.store.data = dataArr;
-            }
-            // ASW not sure should be doing this when path set. Also be culprit in blanking in the original else block below
-            this.searchBox.set('store', this.store);
-            if (this.value) {
-              this.searchBox.set('value', this.value);
-            }
-          }));
-      }
-      else {
-        this._refreshing = WorkspaceManager.getObjectsByType(this.type, target_path)
-          .then(lang.hitch(this, function (items) {
-            delete this._refreshing;
-
-            // sort by most recent
-            items.sort(function (a, b) {
-              return b.timestamp - a.timestamp;
-            });
-            this.store = new Memory({ data: items, idProperty: 'path' });
-            if (this.isSortAlpha) {
-              // sort alphabetically
-              var dataArr = this.store.data;
-              dataArr.sort(compare);
-
-              this.store.data = dataArr;
-            }
-            this.searchBox.set('store', this.store);
-            if (this.value) {
-              this.searchBox.set('value', this.value);
-            }
-          }));
-      }
+            this.store.data = dataArr;
+          }
+          this.searchBox.set('store', this.store);
+          if (this.value) {
+            this.searchBox.set('value', this.value);
+          }
+        }));
     },
 
     onSearchChange: function (value) {
