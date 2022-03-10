@@ -4,6 +4,7 @@
 * [Enhancement] Update Publications Page
 * [Bug] Fix RNA-Seq tutorial link
 * [Bug] Fix dead link from genomes tab to quick reference guide
+* [Bug] Fix the search functionality of WorkspaceObjectSelector objects
 
 ## 3.9.5 - March 8, 2022
 * [Enhancement] Enhancements for Archaeopteryx tree
