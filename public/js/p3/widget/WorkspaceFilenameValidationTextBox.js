@@ -31,7 +31,7 @@ define([
     trim: true,
 
     _setPathAttr: function (val) {
-      console.log('_setPathAttr: ', val);
+      // console.log('_setPathAttr: ', val);
       this.path = val;
 
       if (this.value) {
