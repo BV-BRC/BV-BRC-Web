@@ -2,6 +2,7 @@
 ## 3.9.6 - March 10, 2022
 * [Minor] Point Announcements header link to docs site newsfeed
 * [Enhancement] Update Publications Page
+* [Enhancement] Remove the old viewer for the CodonTree
 * [Bug] Fix RNA-Seq tutorial link
 * [Bug] Fix dead link from genomes tab to quick reference guide
 * [Bug] Fix the search functionality of WorkspaceObjectSelector objects
