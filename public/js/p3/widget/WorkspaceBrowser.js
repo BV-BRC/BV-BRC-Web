@@ -798,6 +798,7 @@ define([
         });
       }, self.path.split('/').length < 3);
 
+/*
       this.browserHeader.addAction('ViewTree', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
@@ -808,7 +809,7 @@ define([
         Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFolder=' + encodePath(expPath) });
 
       }, false);
-
+*/
       this.browserHeader.addAction('ViewCGAFullGenomeReport', 'fa icon-eye fa-2x', {
         label: 'REPORT',
         multiple: false,
@@ -1079,7 +1080,7 @@ define([
       this.browserHeader.addAction('ViewNwkXml', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
-        validTypes: ['GeneTree'],
+        validTypes: ['GeneTree', 'CodonTree'],
         tooltip: 'View Archaeopteryx Tree'
       }, function (selection, container, button) {
         console.log(selection);

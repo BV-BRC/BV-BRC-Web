@@ -23,7 +23,7 @@ define([
     applicationLabel: 'RNA-Seq Analysis',
     applicationDescription: 'The RNA-Seq Analysis Service provides services for aligning, assembling, and testing differential expression on RNA-Seq data.',
     applicationHelp: 'quick_references/services/rna_seq_analysis_service.html',
-    tutorialLink: 'tutorial/rna_seq_submission/submitting_rna_seq_job.html',
+    tutorialLink: 'tutorial/rna_seq/rna_seq.html',
     pageTitle: 'RNA-Seq Analysis',
     libraryData: null,
     defaultPath: '',

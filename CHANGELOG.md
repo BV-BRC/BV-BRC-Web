@@ -1,4 +1,17 @@
 # Changelog
+## 3.9.6 - March 10, 2022
+* [Minor] Point Announcements header link to docs site newsfeed
+* [Enhancement] Update Publications Page
+* [Enhancement] Remove the old viewer for the CodonTree
+* [Bug] Fix RNA-Seq tutorial link
+* [Bug] Fix dead link from genomes tab to quick reference guide
+* [Bug] Fix the search functionality of WorkspaceObjectSelector objects
+
+## 3.9.5 - March 8, 2022
+* [Enhancement] Enhancements for Archaeopteryx tree
+* [Enhancement] Update archaeopteryx.js to 2.0.0a3 and bundle2.js
+* [Enhancement] Modify global search results summary
+
 ## 3.9.4 - March 4, 2022
 * [Enhancement] Add Interactions tab to Genome View
 
