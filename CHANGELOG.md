@@ -1,4 +1,7 @@
 # Changelog
+## 3.10.0 - March 10, 2022
+* [Release] Production Release 3.10.0
+
 ## 3.9.6 - March 10, 2022
 * [Minor] Point Announcements header link to docs site newsfeed
 * [Enhancement] Update Publications Page
