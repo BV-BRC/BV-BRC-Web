@@ -1,4 +1,8 @@
 # Changelog
+## 3.10.1 - March 15, 2022
+* [Enhancement] Update Performance and Usage Metrics Reports to February 2022
+* [Bug] Display additional_metadata field as multi-value so content displays correctly
+
 ## 3.10.0 - March 10, 2022
 * [Release] Production Release 3.10.0
 
