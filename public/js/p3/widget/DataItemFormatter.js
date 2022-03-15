@@ -3333,6 +3333,7 @@ define([
 
         'Additional Info': [{
           name: 'Additional Metadata',
+          multiValued: true,
           text: 'additional_metadata',
         }, {
           name: 'Comments',
