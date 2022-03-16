@@ -1,7 +1,21 @@
 # Changelog
+## 3.10.2 - March 16, 2022
+* [Minor] Keep the memory store fixed to the home workspace
+* [Bug] Fix primer design input validation issue
+* [Bug] Change Gene Tree genome group limit to 500 genomes
+
+## 3.10.1 - March 15, 2022
+* [Enhancement] Update Performance and Usage Metrics Reports to February 2022
+* [Enhancement] Update listserv links on registration / profile pages
+* [Bug] Display additional_metadata field as multi-value so content displays correctly
+
+## 3.10.0 - March 10, 2022
+* [Release] Production Release 3.10.0
+
 ## 3.9.6 - March 10, 2022
 * [Minor] Point Announcements header link to docs site newsfeed
 * [Enhancement] Update Publications Page
+* [Enhancement] Remove the old viewer for the CodonTree
 * [Bug] Fix RNA-Seq tutorial link
 * [Bug] Fix dead link from genomes tab to quick reference guide
 * [Bug] Fix the search functionality of WorkspaceObjectSelector objects

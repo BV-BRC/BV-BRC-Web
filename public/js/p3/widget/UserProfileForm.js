@@ -229,7 +229,7 @@ define([
         this.setValues(this.userprofileStored);
         this.UNF.set('value', window.localStorage.getItem('userid'))
         this.UNF.set('disabled', true)
-        this.notificationsContainer.innerHTML = `Click <a href="${window.App.mailinglistURL}" target="_blank">HERE</a> to manage your BV-BRC Mailing List subscriptions`
+        this.notificationsContainer.innerHTML = 'Click <a href="https://lists.bv-brc.org/mailman/listinfo/all-users" target="_blank">HERE</a> to manage your BV-BRC mailing list subscription.'
         domClass.add(this.registrationHeading, 'dijitHidden')
         // this.UNF.destroy();
         // domConstruct.create("span",{innerHTML: this.userprofileStored.id.replace('@' + localStorage.getItem("realm"), '')},this.usernameContainer)
