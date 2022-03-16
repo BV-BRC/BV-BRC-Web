@@ -86,16 +86,16 @@ define([
     },
 
     checkDuplicate: function (cur_value, attachType) {
-      var success = 1;
+      var duplicate = 0;
       var genomeIds = [];
       var genomeList = query('.genomedata');
       genomeList.forEach(function (item) {
         genomeIds.push(item.genomeRecord[attachType]);
       });
       if (genomeIds.length > 0 && genomeIds.indexOf(cur_value) > -1) { // found duplicate
-        success = 0;
+        duplicate = 1;
       }
-      return success;
+      return duplicate;
     },
 
     ingestAttachPoints: function (input_pts, target, req) {
@@ -155,8 +155,10 @@ define([
         }
         else if (attachname == 'user_genomes_genomegroup') {
           cur_value = this[attachname].searchBox.value;
-          var duplicate = this.checkDuplicate(cur_value, 'user_genomes_genomegroup');
-          success *= duplicate;
+          var duplicate_genome = this.checkDuplicate(cur_value, 'user_genomes_genomegroup');
+          if (duplicate_genome) {
+            success = 0;
+          }
         }
         else {
           cur_value = this[attachname].value;
@@ -209,29 +211,55 @@ define([
         this.genomeTable.deleteRow(-1);
       }
       // Only clear away aligned and unaligned fasta files, leave feature and genome groups in table
-      for (var x = this.fastaNamesAndTypes.length - 1; x >= 0; x--) {
-        if (this.fastaNamesAndTypes[x].type != 'feature_group' && this.fastaNamesAndTypes[x].type != 'genome_group') {
-          this.fastaNamesAndTypes.splice(x, 1);
+      var feature_groups = [];
+      var genome_groups = [];
+      console.log('onAlphabetChanged fastaNamesAndTypes:', this.fastaNamesAndTypes);
+      for (var x = 0; x < this.fastaNamesAndTypes.length; x++) {
+        if (this.fastaNamesAndTypes[x].type == 'feature_group') {
+          feature_groups.push(this.fastaNamesAndTypes[x]);
+          this.decreaseGenome('feature_group', this.fastaNamesAndTypes[x]['filename']);
+        }
+        else if (this.fastaNamesAndTypes[x].type == 'genome_group') {
+          genome_groups.push(this.fastaNamesAndTypes[x]);
+          this.decreaseGenome('genome_group', this.fastaNamesAndTypes[x]['genome_ids'])
+        }
+        else {
+          this.decreaseGenome(this.fastaNamesAndTypes[x]['type'], this.fastaNamesAndTypes[x]['filename']);
         }
       }
-      var numRows = this.startingRows;
-      if (this.fastaNamesAndTypes.length > 0) {
-        numRows = this.fastaNamesAndTypes.length >= this.startingRows ? -1 : this.startingRows - this.fastaNamesAndTypes.length;
-      }
-      this.emptyTable(this.genomeTable, numRows);
+      this.fastaNamesAndTypes = [];
+      // this.fastaNamesAndTypes = new_fastaNamesAndTypes;
+      // this.userGenomeList = [];
+      // var numRows = this.startingRows;
+      var total_groups = feature_groups.length + genome_groups.length;
+      // var numRows = total_groups.length >= this.startingRows ? -1 : this.startingRows - total_groups.length;
+      this.emptyTable(this.genomeTable, this.startingRows);
+      // this.userGenomeList = [];
       // this.fastaNamesAndTypes = [];
 
       // Add featuregroups and genomegroups back to table
+      // TODO: add each individually
+      console.log('feature_groups', feature_groups);
+      console.log('genome_groups', genome_groups);
+
+      feature_groups.forEach(lang.hitch(this, function (obj) {
+        this.addFeatureGroupAlphabetChange(obj.filename);
+      }));
+      genome_groups.forEach(lang.hitch(this, function (obj) {
+        this.addGenomeGroupToTableAlphabetChanged(obj.filename, obj.genome_ids)
+      }))
+      /*
       var groups = {};
       groups['sequences'] = [];
-      this.fastaNamesAndTypes.forEach(lang.hitch(this, function (obj) {
+      keep_fastaNamesAndTypes.forEach(lang.hitch(this, function (obj) {
+        console.log(obj);
         var new_seq = {};
         new_seq.type = obj.type;
         new_seq.filename = obj.filename;
         groups['sequences'].push(new_seq);
       }));
       this.addSequenceFilesFormFill(groups, true);
-
+      */
       this.substitution_model.options = [];
       if (this.dna.checked) {
         var newOptions = [{
@@ -519,6 +547,7 @@ define([
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
+          // TODO: remove entry from this.fastaNamesAndTypes
         }));
         this.increaseGenome('feature_group', newGenomeIds);
         this.sequenceSource = 'feature_group';
@@ -533,7 +562,42 @@ define([
       // console.log(lrec);
     },
 
-    // implement adding a genome group
+    addFeatureGroupAlphabetChange: function (feature_group) {
+      var lrec = { 'user_genomes_featuregroup': feature_group };
+      var newGenomeIds = [lrec[this.featureGroupToAttachPt]];
+      var tr = this.genomeTable.insertRow(0);
+      var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
+      td.genomeRecord = lrec;
+      td.innerHTML = "<div class='libraryrow'>" + this.makeFeatureGroupName() + '</div>';
+      domConstruct.create('td', { innerHTML: '' }, tr);
+      var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+      if (this.addedGenomes < this.startingRows) {
+        this.genomeTable.deleteRow(-1);
+      }
+      var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+        // console.log("Delete Row");
+        domConstruct.destroy(tr);
+        this.decreaseGenome('feature_group', newGenomeIds);
+        if (this.addedGenomes < this.startingRows) {
+          var ntr = this.genomeTable.insertRow(-1);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+        }
+        handle.remove();
+        // TODO: remove entry from this.fastaNamesAndTypes
+      }));
+      this.increaseGenome('feature_group', newGenomeIds);
+      this.sequenceSource = 'feature_group';
+
+      var path = lrec[this.featureGroupToAttachPt];
+      when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
+        var fileType = res.metadata.type;
+        this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType });
+      }));
+    },
+
+    // adding a genome group
     onAddGenomeGroup: function () {
       // console.log("this.genomeGroupToAttachPt = " + this.genomeGroupToAttachPt);
       // console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
@@ -555,7 +619,6 @@ define([
       // console.log(lrec);
     },
 
-    // TODO: add a warning depending on what fails
     // TODO: there may be a limit to the number of genome_ids that can be passed into the query, check that
     checkViralGenomes: function (genome_id_list) {
       // As far as I have seen Bacteria do not have a superkingdom field, only viruses
@@ -564,29 +627,94 @@ define([
       DataAPI.queryGenomes(query).then(lang.hitch(this, function (res) {
         console.log('result = ', res);
         var all_valid = true;
+        var errors = {};
         res.items.forEach(lang.hitch(this, function (obj) {
           if (obj.superkingdom) {
+            var duplicate_genome = this.checkDuplicate(obj.genome_id, 'user_genomes_genomegroup');
+            if (duplicate_genome) {
+              all_valid = false;
+              if (!Object.keys(errors).includes('duplicate_error')) {
+                errors['duplicate_error'] = 'Duplicate GenomeIds:<br> First occurence for genome_id: ' + obj.genome_id;
+              }
+            }
             if (obj.superkingdom != 'Viruses') {
               all_valid = false;
+              if (!Object.keys(errors).includes('kingdom_error')) {
+                errors['kingdom_error'] = 'Invalid Superkingdom: only virus genomes are permitted<br>First occurence for genome_id: ' + obj.genome_id;
+              }
             }
             if (obj.contigs > 1) {
               all_valid = false;
+              if (!Object.keys(errors).includes('contigs_error')) {
+                errors['kingdom_error'] = 'Error: only 1 contig is permitted<br>First occurence for genome_id: ' + obj.genome_id;
+              }
             }
             if (obj.genome_length > this.maxGenomeLength) {
               all_valid = false;
+              if (!Object.keys(errors).includes('genomelength_error')) {
+                errors['genomelength_error'] = 'Error: genome exceeds maximum length ' + this.maxGenomeLength.toString() + '<br>First occurence for genome_id: ' + obj.genome_id;
+              }
             }
-          } else {
+          } else { // TODO: don't think this is correct, add other criteria
             all_valid = false;
           }
         }));
-        this.addGenomeGroupToTable(all_valid, genome_id_list);
+        this.addGenomeGroupToTable(all_valid, genome_id_list, errors);
       }));
     },
 
-    addGenomeGroupToTable: function (all_valid, genome_id_list) {
+    addGenomeGroupToTableAlphabetChanged: function (genome_group, genome_id_list) {
+      var lrec = { 'user_genomes_genomegroup': genome_group };
+      var count = this.addedGenomes + genome_id_list.length;
+      if (count > this.maxGenomes) {
+        var msg = 'Sorry, you can only add up to ' + this.maxGenomes + ' genomes';
+        msg += ' and you are trying to select ' + count + '.';
+        new Dialog({ title: 'Notice', content: msg }).show();
+      }
+      console.log("genome_id_list = ", genome_id_list);
+
+      if (this.addedGenomes < this.maxGenomes
+          && genome_id_list.length > 0
+          && count <= this.maxGenomes)
+      {
+        var tr = this.genomeTable.insertRow(0);
+        var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
+        td.genomeRecord = lrec;
+        td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeGroupName() + '</div>';
+        domConstruct.create('td', { innerHTML: '' }, tr);
+        var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+        if (this.addedGenomes < this.startingRows) {
+          this.genomeTable.deleteRow(-1);
+        }
+        var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+          // console.log("Delete Row");
+          domConstruct.destroy(tr);
+          this.decreaseGenome('genome_group', genome_id_list);
+          if (this.addedGenomes < this.startingRows) {
+            var ntr = this.genomeTable.insertRow(-1);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          }
+          handle.remove();
+          // TODO: remove entry from this.fastaNamesAndTypes
+        }));
+        this.increaseGenome('genome_group', genome_id_list);
+        this.sequenceSource = 'genome_group';
+
+        var path = lrec[this.genomeGroupToAttachPt];
+        when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
+          var fileType = res.metadata.type;
+          this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType, 'genome_ids': genome_id_list });
+        }));
+      }
+    },
+
+    addGenomeGroupToTable: function (all_valid, genome_id_list, errors) {
       var lrec = {};
       var chkPassed = this.ingestAttachPoints(this.genomeGroupToAttachPt, lrec);
       console.log('all genomes valid = ', all_valid);
+      console.log('chkPassed = ', chkPassed);
       if (all_valid) {
         // display a notice if adding new genome group exceeds maximum allowed number
         var count = this.addedGenomes + genome_id_list.length;
@@ -595,7 +723,6 @@ define([
           msg += ' and you are trying to select ' + count + '.';
           new Dialog({ title: 'Notice', content: msg }).show();
         }
-        // console.log("newGenomeIds = ", newGenomeIds);
 
         if (chkPassed && this.addedGenomes < this.maxGenomes
           && genome_id_list.length > 0
@@ -621,6 +748,7 @@ define([
               domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
             }
             handle.remove();
+            // TODO: remove entry from this.fastaNamesAndTypes
           }));
           this.increaseGenome('genome_group', genome_id_list);
           this.sequenceSource = 'genome_group';
@@ -628,16 +756,26 @@ define([
           var path = lrec[this.genomeGroupToAttachPt];
           when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
             var fileType = res.metadata.type;
-            this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType });
+            this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType, 'genome_ids': genome_id_list });
           }));
         }
+      }
+      else {
+        var error_msg = 'This looks like an invalid genome group. The following errors were found:';
+        Object.values(errors).forEach(lang.hitch(this, function (err) {
+          error_msg = error_msg + '<br>- ' + err;
+        }));
+        this.genomegroup_message.innerHTML = error_msg;
+        setTimeout(lang.hitch(this, function () {
+          this.genomegroup_message.innerHTML = '';
+        }), 5000);
       }
     },
 
     setTooltips: function () {
       new Tooltip({
         connectId: ['genomeGroup_tooltip'],
-        label: 'Each GenomeGroup Member Must: <br>- Be a Virus <br>- Consist of a single sequence<br>- Be less than 1,000 BP in length '
+        label: 'Each GenomeGroup Member Must: <br>- Be a Virus <br>- Consist of a single sequence<br>- Be less than ' + this.maxGenomeLength.toString() + ' BP in length '
       });
     },
 
