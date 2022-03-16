@@ -17,7 +17,7 @@
     </div>
     <div class="formFieldsContainer">
       <div style="display: none;">
-        <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="false" data-dojo-attach-point="numgenomes" data-dojo-props="constraints:{min:1,max:10}," />
+        <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="false" data-dojo-attach-point="numgenomes" data-dojo-props="constraints:{min:1,max:500}," />
         <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="false" data-dojo-attach-point="numref" data-dojo-props="constraints:{min:0}," />
       </div>
       <table class="assemblyblocks">
@@ -40,7 +40,7 @@
                     <div class="appRow">
                       <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="dna" name="alphabet" value="DNA" checked data-dojo-attach-event="onChange:onAlphabetChanged"/>
                       <label for="radio1" style="font-size:8pt">DNA</label>
-                      <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="protein" name="alphabet" value="Protein" />
+                      <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="protein" name="alphabet" value="Protein"/>
                       <label for="radio2" style="font-size:8pt">Protein</label>
                     </div>
                     <div class="appRow">
