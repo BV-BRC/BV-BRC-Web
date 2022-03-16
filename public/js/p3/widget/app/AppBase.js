@@ -253,7 +253,6 @@ define([
 
     validate: function () {
       var valid = this.inherited(arguments);
-      console.log('valid = ', valid);
       if (valid && this.activeUploads.length == 0) {
         if (this.submitButton) { this.submitButton.set('disabled', false); }
         return valid;
