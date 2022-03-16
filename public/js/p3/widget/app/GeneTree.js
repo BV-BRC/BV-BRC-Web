@@ -564,26 +564,36 @@ define([
       DataAPI.queryGenomes(query).then(lang.hitch(this, function (res) {
         console.log('result = ', res);
         var all_valid = true;
+        var errors = {};
         res.items.forEach(lang.hitch(this, function (obj) {
           if (obj.superkingdom) {
             if (obj.superkingdom != 'Viruses') {
               all_valid = false;
+              if (!Object.keys(errors).includes('kingdom_error')) {
+                errors['kingdom_error'] = 'Invalid Superkingdom: only virus genomes are permitted<br>First occurence for genome_id: ' + obj.genome_id;
+              }
             }
             if (obj.contigs > 1) {
               all_valid = false;
+              if (!Object.keys(errors).includes('contigs_error')) {
+                errors['kingdom_error'] = 'Error: only 1 contig is permitted<br>First occurence for genome_id: ' + obj.genome_id;
+              }
             }
             if (obj.genome_length > this.maxGenomeLength) {
               all_valid = false;
+              if (!Object.keys(errors).includes('genomelength_error')) {
+                errors['genomelength_error'] = 'Error: genome exceeds maximum length ' + this.maxGenomeLength.toString() + '<br>First occurence for genome_id: ' + obj.genome_id;
+              }
             }
-          } else {
+          } else { // TODO: don't think this is correct, add other criteria
             all_valid = false;
           }
         }));
-        this.addGenomeGroupToTable(all_valid, genome_id_list);
+        this.addGenomeGroupToTable(all_valid, genome_id_list, errors);
       }));
     },
 
-    addGenomeGroupToTable: function (all_valid, genome_id_list) {
+    addGenomeGroupToTable: function (all_valid, genome_id_list, errors) {
       var lrec = {};
       var chkPassed = this.ingestAttachPoints(this.genomeGroupToAttachPt, lrec);
       console.log('all genomes valid = ', all_valid);
@@ -631,6 +641,16 @@ define([
             this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType });
           }));
         }
+      }
+      else {
+        var error_msg = 'This looks like an invalid genome group. The following errors were found:';
+        Object.values(errors).forEach(lang.hitch(this, function (err) {
+          error_msg = error_msg + '<br>- ' + err;
+        }));
+        this.genomegroup_message.innerHTML = error_msg;
+        setTimeout(lang.hitch(this, function () {
+          this.genomegroup_message.innerHTML = '';
+        }), 5000);
       }
     },
 

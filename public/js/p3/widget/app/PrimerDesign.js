@@ -278,7 +278,6 @@ define([
         // case insensitive replace a,g,c,t,>,<,[,],{,}
         line = line.replace(/a|g|c|t|n/gi, '');
         line = line.replace(/[\[\]{}<>']+/g, '');
-        console.log('line = ', line);
         if (line.length > 0) {
           return true;
         }
