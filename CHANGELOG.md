@@ -1,4 +1,9 @@
 # Changelog
+## 3.10.2 - March 16, 2022
+* [Minor] Keep the memory store fixed to the home workspace
+* [Bug] Fix primer design input validation issue
+* [Bug] Change Gene Tree genome group limit to 500 genomes
+
 ## 3.10.1 - March 15, 2022
 * [Enhancement] Update Performance and Usage Metrics Reports to February 2022
 * [Enhancement] Update listserv links on registration / profile pages
