@@ -70,8 +70,9 @@ define([
     sortAlpha: function () {
       // but, isSortAlpha is never set to false
       // it should be possible to toggle instead
+      console.log('sort alpha');
       this.isSortAlpha = true;
-      this.refreshWorkspaceItems();
+      // this.refreshWorkspaceItems();
     },
 
     _setShowHiddenAttr: function (val) {
@@ -111,7 +112,7 @@ define([
       var self = this;
 
       // remove trailing '/' in path for consistency
-      var oldWorkspace = this.extractWorkspace(this.path);
+      // var oldWorkspace = this.extractWorkspace(this.path);
       this.path = val[val.length - 1] === '/' ? val.substring(0, val.length - 1) : val;
       if (this.grid) {
         this.grid.set('path', val);
@@ -151,11 +152,11 @@ define([
         }
       }
 
-      var newWorkspace = this.extractWorkspace(val);
-      if (this.onWorkspace(newWorkspace) && newWorkspace !== oldWorkspace) {
-        this.cancelRefresh();
-        this.refreshWorkspaceItems(newWorkspace);
-      }
+      // var newWorkspace = this.extractWorkspace(val);
+      // if (this.onWorkspace(newWorkspace) && newWorkspace !== oldWorkspace) {
+      //   this.cancelRefresh();
+      //   this.refreshWorkspaceItems(newWorkspace);
+      // }
 
       // whether or not to allow top level
       var allowedLevel = this.allowUserSpaceSelection ? true : self.path.split('/').length > 2;
@@ -176,13 +177,13 @@ define([
       }
     },
 
-    onWorkspace: function (val) {
-      val = val[val.length - 1] === '/' ? val.substring(0, val.length - 1) : val;
-      if (val.split('/', 3).length <= 2) {
-        return false;
-      }
-      return true;
-    },
+    // onWorkspace: function (val) {
+    //   val = val[val.length - 1] === '/' ? val.substring(0, val.length - 1) : val;
+    //   if (val.split('/', 3).length <= 2) {
+    //     return false;
+    //   }
+    //   return true;
+    // },
 
     extractWorkspace: function (val) {
       val = val[val.length - 1] === '/' ? val.substring(0, val.length - 1) : val;
@@ -196,19 +197,22 @@ define([
         this.grid.set('types', (['folder'].concat(this.type)));
       }
       this.cancelRefresh();
-      this.refreshWorkspaceItems(this.extractWorkspace(this.path));
+      // this.refreshWorkspaceItems(this.extractWorkspace(this.path));
+      this.refreshWorkspaceItems();
     },
 
     // sets value of object selector dropdown
     _setValueAttr: function (value, refresh) {
       this.value = value;
-      if (this._started) {
-        if (refresh) {
-          this.refreshWorkspaceItems();
-        } else {
-          this.searchBox.set('value', this.value);
-        }
-      }
+      this.searchBox.set('value', this.value);
+
+      // if (this._started) {
+      //   if (refresh) {
+      //     this.refreshWorkspaceItems(this.extractWorkspace(this.path));
+      //   } else {
+      //     this.searchBox.set('value', this.value);
+      //   }
+      // }
     },
 
     _getValueAttr: function (value) {
@@ -658,11 +662,12 @@ define([
       if (!this.path) {
         Deferred.when(WorkspaceManager.get('currentPath'), function (path) {
           _self.set('path', path);
-          _self.refreshWorkspaceItems();
+          // _self.refreshWorkspaceItems();
         });
-      } else {
-        this.refreshWorkspaceItems();
       }
+      // else {
+      // this.refreshWorkspaceItems();
+      // }
       Topic.subscribe('/refreshWorkspace', lang.hitch(this, 'refreshWorkspaceItems'));
       this.searchBox.set('disabled', this.disabled);
       this.searchBox.set('required', this.required);
@@ -811,7 +816,7 @@ define([
         }
         Deferred.when(WorkspaceManager.createFolder(self.path + '/' + name), function () {
           self.grid.refreshWorkspace();
-          self.refreshWorkspaceItems();
+          // self.refreshWorkspaceItems();
         });
       });
       grid.allowSelect = function (row) {
