@@ -277,7 +277,7 @@ define([
         }
         // case insensitive replace a,g,c,t,>,<,[,],{,}
         line = line.replace(/a|g|c|t|n/gi, '');
-        line = line.replace(/(><{}\[\]])/g, '');
+        line = line.replace(/[\[\]{}<>']+/g, '');
         if (line.length > 0) {
           return true;
         }
