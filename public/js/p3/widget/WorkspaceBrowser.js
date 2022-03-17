@@ -798,7 +798,7 @@ define([
         });
       }, self.path.split('/').length < 3);
 
-/*
+      /*
       this.browserHeader.addAction('ViewTree', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
@@ -1086,12 +1086,12 @@ define([
         console.log('browserHeader selection ', selection);
         console.log('browserHeader container ', container);
 
-	    var labelSearch = 'true';
-	    var idType = 'patric_id';
-	    var labelType = 'feature_name';
-	    var fileType = 'phyloxml';  
+        var labelSearch = 'true';
+        var idType = 'patric_id';
+        var labelType = 'feature_name';
+        var fileType = 'phyloxml';
         var path;
-        
+
         selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
           var gt_file = file_data[0].split('.');
           if (gt_file[gt_file.length - 1] === 'xml') {
