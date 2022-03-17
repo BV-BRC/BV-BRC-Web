@@ -5,7 +5,7 @@ define([
   '../PathwayGridContainer',
   '../ExperimentsContainer', '../InteractionContainer', '../GenomeGridContainer',
   '../AMRPanelGridContainer', '../SubsystemGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
-  '../SequenceGridContainer', '../StrainGridContainer', '../StrainGridContainer_Ortho', '../StrainGridContainer_Buny', '../EpitopeGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog'
+  '../SequenceGridContainer', '../StrainGridContainer', '../StrainGridContainer_Orthomyxoviridae', '../StrainGridContainer_Bunyavirales', '../EpitopeGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog'
 ], function (
   declare, TabViewerBase, on, lang, xhr,
   ContentPane, Topic,
@@ -13,7 +13,7 @@ define([
   PathwayGridContainer,
   ExperimentsContainer, InteractionsContainer, GenomeGridContainer,
   AMRPanelGridContainer, SubsystemGridContainer, SurveillanceGridContainer, SerologyGridContainer,
-  SequenceGridContainer, StrainGridContainer, StrainGridContainer_Ortho, StrainGridContainer_Buny, EpitopeGridContainer, PathJoin, QueryToEnglish, Dialog
+  SequenceGridContainer, StrainGridContainer, StrainGridContainer_Orthomyxoviridae, StrainGridContainer_Bunyavirales, EpitopeGridContainer, PathJoin, QueryToEnglish, Dialog
 ) {
   return declare([TabViewerBase], {
     totalGenomes: 0,
@@ -217,14 +217,14 @@ define([
         id: this.viewer.id + '_strains',
         state: this.state
       });
-      this.strains_ortho = new StrainGridContainer_Ortho({
+      this.strains_orthomyxoviridae = new StrainGridContainer_Orthomyxoviridae({
         title: 'Strains',
-        id: this.viewer.id + '_strains_ortho',
+        id: this.viewer.id + '_strains_orthomyxoviridae',
         state: this.state
       });
-      this.strains_buny = new StrainGridContainer_Buny({
+      this.strains_bunyavirales = new StrainGridContainer_Bunyavirales({
         title: 'Strains',
-        id: this.viewer.id + '_strains_buny',
+        id: this.viewer.id + '_strains_bunyavirales',
         state: this.state
       });
       this.sequences = new SequenceGridContainer({
