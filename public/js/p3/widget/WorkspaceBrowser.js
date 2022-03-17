@@ -983,7 +983,7 @@ define([
         var path;
         selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
           var filepath = file_data[0].split('/');
-          if (filepath[filepath.length - 1].includes('primers_table.html')) {
+          if (filepath[filepath.length - 1].includes('_table.html')) {
             path = filepath.join('/');
           }
         }));
