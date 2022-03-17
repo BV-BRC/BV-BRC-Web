@@ -1,4 +1,8 @@
 # Changelog
+## 3.10.3 - March 17, 2022
+* [Enhancement] MSA viewer enhancements
+* [Bug] Fix Primer Design report button output issue
+
 ## 3.10.2 - March 16, 2022
 * [Minor] Keep the memory store fixed to the home workspace
 * [Bug] Fix primer design input validation issue
