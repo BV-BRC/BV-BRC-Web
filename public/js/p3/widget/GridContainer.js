@@ -1370,12 +1370,12 @@ define([
         false
       ], [
         'ViewTaxon',
-        'fa icon-selection-Taxonomy fa-2x',
+        'fa icon-eye fa-2x',
         {
-          label: 'TAXONOMY',
+          label: 'TAXON OVERVIEW',
           multiple: false,
           validTypes: ['*'],
-          tooltip: 'Switch to Taxonomy View. Press and Hold for more options.',
+          tooltip: 'Switch to Taxon Overview for the selected taxa and access genomes or genes/proteins associated with it. Press and Hold for more options.',
           validContainerTypes: ['taxonomy_data', 'taxon_data'],
           pressAndHold: function (selection, button, opts, evt) {
             popup.open({
@@ -1393,6 +1393,36 @@ define([
           Topic.publish('/navigate', { href: '/view/Taxonomy/' + sel.taxon_id + '#view_tab=overview' });
         },
         false
+      ], [
+        'ViewGenomeFromTaxon',
+        'MultiButton fa icon-selection-GenomeList fa-2x',
+        {
+          label: 'GENOMES',
+          validTypes: ['*'],
+          multiple: false,
+          tooltip: 'Switch to the Genomes tab view for the selected taxon.',
+          ignoreDataType: true,
+          validContainerTypes: ['taxonomy_data'],
+        },
+        function (selection) {
+          var sel = selection[0];
+          Topic.publish('/navigate', { href: '/view/Taxonomy/' + sel.taxon_id + '#view_tab=genomes' });
+        },
+      ], [
+        'ViewFeatureFromTaxon',
+        'MultiButton fa icon-selection-FeatureList fa-2x',
+        {
+          label: 'FEATURES',
+          validTypes: ['*'],
+          multiple: false,
+          tooltip: 'Switch to the Features / Proteins tab view for the selected taxon.',
+          ignoreDataType: true,
+          validContainerTypes: ['taxonomy_data'],
+        },
+        function (selection) {
+          var sel = selection[0];
+          Topic.publish('/navigate', { href: '/view/Taxonomy/' + sel.taxon_id + '#view_tab=features' });
+        },
       ],
       [
         'ViewGenomesFromTaxons',
