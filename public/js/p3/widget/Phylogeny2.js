@@ -149,8 +149,8 @@ define([
       }));
 
       this.selection = cur;
-      this.selectionActionBar.set('selection', this.selection);
       this.selectionActionBar.set('currentContainerType', this.containerType);
+      this.selectionActionBar.set('selection', this.selection);
 
       console.log('onNodeSelection before query this.nodeType', this.nodeType);
       console.log('onNodeSelection this.nodeSelection', this.nodeSelection);
@@ -309,7 +309,7 @@ define([
       options.showDisributions = true;
       options.showExternalLabels = true;
       options.showExternalNodes = false;
-      options.showInternalLabels = false;
+      options.showInternalLabels = true;
       options.showInternalNodes = false;
       options.showNodeEvents = true;
       options.showNodeName = true;
@@ -342,7 +342,8 @@ define([
       settings.nhExportWriteConfidences = true;
       settings.rootOffset = 180;
       settings.allowManualNodeSelection = true;
-
+      settings.orderTree = true;
+      
       var nodeVisualizations = {};
       var specialVisualizations = {};
       var nodeLabels = {};
