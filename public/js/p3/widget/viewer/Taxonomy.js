@@ -92,10 +92,12 @@ define([
         }
 
         // strains
-        if (this.taxonomy.lineage_names.includes('Orthomyxoviridae') || this.taxonomy.lineage_names.includes('Bunyavirales')) {
-          this.viewer.addChild(this.strains, 3);
+        if (this.taxonomy.lineage_names.includes('Orthomyxoviridae')) {
+          this.viewer.addChild(this.strains_ortho, 3);
+        } else if (this.taxonomy.lineage_names.includes('Bunyavirales')) {
+          this.viewer.addChild(this.strains_buny, 3);
         } else {
-          this.viewer.removeChild(this.strains);
+          this.viewer.removeChild(this.strains || this.strains_ortho || this.strains_buny);
         }
       }
 
@@ -246,6 +248,8 @@ define([
         case 'surveillance':
         case 'serology':
         case 'strains':
+        case 'strains_ortho':
+        case 'strains_buny':
         case 'epitope':
         case 'experiments':
           activeTab.set('state', lang.mixin({}, this.state, {

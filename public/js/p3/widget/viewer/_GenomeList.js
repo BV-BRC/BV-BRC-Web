@@ -5,7 +5,7 @@ define([
   '../PathwayGridContainer',
   '../ExperimentsContainer', '../InteractionContainer', '../GenomeGridContainer',
   '../AMRPanelGridContainer', '../SubsystemGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
-  '../SequenceGridContainer', '../StrainGridContainer', '../EpitopeGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog'
+  '../SequenceGridContainer', '../StrainGridContainer', '../StrainGridContainer_Ortho', '../StrainGridContainer_Buny', '../EpitopeGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog'
 ], function (
   declare, TabViewerBase, on, lang, xhr,
   ContentPane, Topic,
@@ -13,7 +13,7 @@ define([
   PathwayGridContainer,
   ExperimentsContainer, InteractionsContainer, GenomeGridContainer,
   AMRPanelGridContainer, SubsystemGridContainer, SurveillanceGridContainer, SerologyGridContainer,
-  SequenceGridContainer, StrainGridContainer, EpitopeGridContainer, PathJoin, QueryToEnglish, Dialog
+  SequenceGridContainer, StrainGridContainer, StrainGridContainer_Ortho, StrainGridContainer_Buny, EpitopeGridContainer, PathJoin, QueryToEnglish, Dialog
 ) {
   return declare([TabViewerBase], {
     totalGenomes: 0,
@@ -215,6 +215,16 @@ define([
       this.strains = new StrainGridContainer({
         title: 'Strains',
         id: this.viewer.id + '_strains',
+        state: this.state
+      });
+      this.strains_ortho = new StrainGridContainer_Ortho({
+        title: 'Strains',
+        id: this.viewer.id + '_strains_ortho',
+        state: this.state
+      });
+      this.strains_buny = new StrainGridContainer_Buny({
+        title: 'Strains',
+        id: this.viewer.id + '_strains_buny',
         state: this.state
       });
       this.sequences = new SequenceGridContainer({
