@@ -1,6 +1,7 @@
 # Changelog
 ## 3.10.3 - March 17, 2022
-* [Feature] Enable diffferent column views on strain tabs for two different organisms.
+* [Feature] Enable diffferent column views on strain tabs for two different organisms
+* [Enhancement] Update Taxonomy Overview icon and add additional genome/feature icons
 * [Enhancement] MSA viewer enhancements
 * [Bug] Fix Primer Design report button output issue
 
