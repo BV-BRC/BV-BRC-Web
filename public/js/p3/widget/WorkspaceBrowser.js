@@ -1083,19 +1083,29 @@ define([
         validTypes: ['GeneTree', 'CodonTree'],
         tooltip: 'View Archaeopteryx Tree'
       }, function (selection, container, button) {
-        console.log(selection);
+        console.log('browserHeader selection ', selection);
+        console.log('browserHeader container ', container);
+
+	    var labelSearch = 'true';
+	    var idType = 'patric_id';
+	    var labelType = 'feature_name';
+	    var fileType = 'phyloxml';  
         var path;
+        
         selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
           var gt_file = file_data[0].split('.');
-          if (gt_file[gt_file.length - 1] === 'nwk') {
+          if (gt_file[gt_file.length - 1] === 'xml') {
             path = gt_file.join('.');
+            fileType = 'phyloxml';
+          }
+          else if (gt_file[gt_file.length - 1] === 'nwk') {
+            path = gt_file.join('.');
+            fileType = 'nwk';
           }
         }));
+        console.log('browserHeader path ', path);
+
         if (path) {
-          var labelSearch = 'true';
-          var idType = 'patric_id';
-          var labelType = 'feature_name';
-          var fileType = 'nwk';
           Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path) + '&fileType=' + fileType });
         } else {
           console.log('Error: could not find chisqTable.tsv output file');
