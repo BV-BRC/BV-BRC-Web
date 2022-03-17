@@ -212,11 +212,18 @@ define([
     query: null,
     loading: false,
     data: null,
+    dataMap: {},
+    idMap: {},
     dataStats: { _formatterType: 'msa_details' },
     alignType: 'protein',
     maxSequences: 500,
     numSequences: 0,
     selection: null,
+    featureData: null,
+    genomeData: null,
+    nodeType: 'feature',
+    alt_labels: {},
+    containerType: 'feature_data',
 
     onSetLoading: function (attr, oldVal, loading) {
       if (loading) {
@@ -233,43 +240,385 @@ define([
         this.alignType = 'dna';
       }
       WorkspaceManager.getObjects([objPath]).then(lang.hitch(this, function (objs) {
-        var myFasta = objs[0].data;
-        var geneID = null;
-        var clustal = ['CLUSTAL'];
-        var fasta = [];
-        var seq = '';
-        var count = 0;
-        myFasta.split('\n').forEach(function (line) {
-          if (line.slice(0, 1) == '>') {
-            count += 1;
-            geneID = line.slice(1, line.length);
-            geneID = geneID.split(' ')[0];
-            geneID = geneID.replaceAll('|', ':');
-            if (seq.length > 0) {
-              clustal[clustal.length - 1] = clustal[clustal.length - 1] + seq;
-              fasta.push(seq);
-              seq = '';
-            }
-            clustal.push(geneID + '\t');
-            fasta.push('>' + geneID);
-          } else {
-            seq += line.trim();
-          }
-        });
-        if (seq.length > 0) {
-          clustal[clustal.length - 1] = clustal[clustal.length - 1] + seq;
-          fasta.push(seq);
-        }
-        this.dataStats.clustal = clustal.join('\n');
-        this.numSequences = count;
-        this.dataStats.fasta = fasta.join('\n');
+        console.log('WorkspaceManager ', objs);
+        this.data = objs[0].data;
+        this.createDataMap();
         this.loading = false;
         this.render();
       }));
+
+      console.log('onSetState this.dataStats ', this.dataStats);
     },
 
     showError: function (msg) {
       this.contentPane.set('content', '<div style="background:red; color: #fff;">' + msg + '</div>');
+    },
+
+    onSetData: function (attr, oldVal, data) {
+      console.log('data', data);
+    },
+
+    onSelection: function () {
+      console.log('onSelection this.selection', this.selection);
+      console.log('onSelection this.idMap', this.idMap);
+
+      var cur = [];
+      this.selection.forEach(lang.hitch(this, function (sel) {
+        // console.log('onSelection sel.attributes.seqId=', sel.attributes.seqId);
+        // console.log('cur onSelection this.idMap', this.idMap);
+        // console.log('cur onSelection this.idMap[sel.attributes.seqId]', this.idMap[sel.attributes.seqId]);
+        if (this.idMap[sel.attributes.seqId]) {
+          cur.push(this.idMap[sel.attributes.seqId]);
+        }
+      }));
+
+      console.log('onSelection cur', cur);
+      console.log('onSelection currentContainerType', this.containerType);
+
+      this.selection = cur;
+      this.selectionActionBar.set('currentContainerType', this.containerType);
+      this.selectionActionBar.set('selection', this.selection);
+
+      console.log('onSelection before query this.nodeType', this.nodeType);
+      console.log('onSelection this.selectionActionBar', this.selectionActionBar);
+      console.log('onSelection this.itemDetailPanel', this.itemDetailPanel);
+
+      if (cur && cur.length == 1) {
+        if (this.nodeType == 'feature') {
+          xhr.get(PathJoin(window.App.dataAPI, 'genome_feature', cur[0].feature_id), {
+            headers: {
+              accept: 'application/json'
+            },
+            handleAs: 'json'
+          }).then(lang.hitch(this, function (record) {
+            this.itemDetailPanel.set('selection', [record]);
+          }));
+        }
+        else {
+          xhr.get(PathJoin(window.App.dataAPI, 'genome', cur[0].genome_id), {
+            headers: {
+              accept: 'application/json'
+            },
+            handleAs: 'json'
+          }).then(lang.hitch(this, function (record) {
+            this.itemDetailPanel.set('selection', [record]);
+          }));
+        }
+      }
+      else if (cur && cur.length > 1) {
+        this.itemDetailPanel.set('selection', cur);
+      }
+    },
+
+    setAltLabel: function (dataMap) {
+      var default_value = 'N/A';
+      this.alt_labels = {
+        gene_id: {},
+        genome_id: {},
+        genome_name: {},
+        genbank_accessions: {},
+        species: {},
+        strain: {},
+        geographic_group: {},
+        isolation_country: {},
+        host_group: {},
+        host_common_name: {},
+        collection_year: {},
+        subtype: {},
+        lineage: {},
+        clade: {}
+      };
+
+      var self = this;
+      Object.keys(dataMap).forEach(lang.hitch(this, function (geneID) {
+        self.alt_labels.gene_id[geneID] = geneID;
+        self.alt_labels.genome_id[geneID] = default_value;
+        self.alt_labels.genome_name[geneID] = default_value;
+        self.alt_labels.genbank_accessions[geneID] = default_value;
+        self.alt_labels.species[geneID] = default_value;
+        self.alt_labels.strain[geneID] = default_value;
+        self.alt_labels.geographic_group[geneID] = default_value;
+        self.alt_labels.isolation_country[geneID] = default_value;
+        self.alt_labels.host_group[geneID] = default_value;
+        self.alt_labels.host_common_name[geneID] = default_value;
+        self.alt_labels.collection_year[geneID] = default_value;
+        self.alt_labels.subtype[geneID] = default_value;
+        self.alt_labels.lineage[geneID] = default_value;
+        self.alt_labels.clade[geneID] = default_value;
+
+        this.genomeData.forEach(function (genome) {
+          // console.log('in setAltLabel genomeData genome', genome);
+          // console.log('in setAltLabel self.dataMap', self.dataMap);
+          // console.log('in setAltLabel dataMap', dataMap);
+          // console.log('in setAltLabel genomeData geneID', geneID);
+          // console.log('in setAltLabel self.alt_labels', self.alt_labels);
+
+          if (dataMap[geneID].genome_id == genome.genome_id) {
+            if (genome.genome_id) {
+              self.alt_labels.genome_id[geneID] = genome.genome_id;
+            }
+            if (genome.genome_name) {
+              self.alt_labels.genome_name[geneID] = genome.genome_name;
+            }
+            if (genome.genbank_accessions) {
+              self.alt_labels.genbank_accessions[geneID] = genome.genbank_accessions;
+            }
+            if (genome.species) {
+              self.alt_labels.species[geneID] = genome.species;
+            }
+            if (genome.strain) {
+              self.alt_labels.strain[geneID] = genome.strain;
+            }
+            if (genome.geographic_group) {
+              self.alt_labels.geographic_group[geneID] = genome.geographic_group;
+            }
+            if (genome.isolation_country) {
+              self.alt_labels.isolation_country[geneID] = genome.isolation_country;
+            }
+            if (genome.host_group) {
+              self.alt_labels.host_group[geneID] = genome.host_group;
+            }
+            if (genome.host_group) {
+              self.alt_labels.host_common_name[geneID] = genome.host_common_name;
+            }
+            if (genome.collection_year) {
+              self.alt_labels.collection_year[geneID] = genome.collection_year.toString();
+            }
+            if (genome.subtype) {
+              self.alt_labels.subtype[geneID] = genome.subtype;
+            }
+            if (genome.lineage) {
+              self.alt_labels.lineage[geneID] = genome.lineage;
+            }
+            if (genome.clade) {
+              self.alt_labels.clade[geneID] = genome.clade;
+            }
+          }
+        });
+      }));
+      console.log('in setAltLabel this.alt_labels', this.alt_labels);
+    },
+
+    createDataMap: function () {
+      var myFasta = this.data;
+      var geneID = null;
+      var clustal = ['CLUSTAL'];
+      var fasta = [];
+      var seq = '';
+      var count = 0;
+      var seqIds = [];
+
+      myFasta.split('\n').forEach(function (line) {
+        if (line.slice(0, 1) == '>') {
+          count += 1;
+          geneID = line.slice(1, line.length);
+          geneID = geneID.split(' ')[0];
+          geneID = geneID.replaceAll('|', ':');
+          if (seq.length > 0) {
+            clustal[clustal.length - 1] = clustal[clustal.length - 1] + seq;
+            fasta.push(seq);
+            seq = '';
+          }
+          clustal.push(geneID + '\t');
+          fasta.push('>' + geneID);
+        } else {
+          seq += line.trim();
+        }
+      });
+      if (seq.length > 0) {
+        clustal[clustal.length - 1] = clustal[clustal.length - 1] + seq;
+        fasta.push(seq);
+      }
+      this.dataStats.clustal = clustal.join('\n');
+      this.numSequences = count;
+      this.dataStats.fasta = fasta.join('\n');
+
+      var msa_models = {
+        seqs: msa.io.clustal.parse(this.dataStats.clustal)
+      };
+
+      var rearrangeSeqs = {};
+      var id_count = 0;
+      msa_models.seqs.forEach(lang.hitch(this, function (s) {
+        rearrangeSeqs[s.name] = s;
+        s.id = id_count;
+        id_count += 1;
+        seqIds[s.name.replaceAll(':', '|')] = id_count;
+      }));
+      console.log('msa_models= ', msa_models);
+      console.log('seqIds= ', seqIds);
+
+      this.dataStats.seqs = msa_models.seqs;
+      console.log('this.dataStats ', this.dataStats);
+
+      var ids = this.dataStats.seqs.map(function (node) { return node.name.replaceAll(':', '|'); });
+
+      var pIDs = [];
+      ids.forEach((id) => {
+        pIDs.push(encodeURIComponent(id))
+      });
+      console.log('processTree pIDs ', pIDs);
+      var genomeList = [];
+
+      var self = this;
+      if (ids[0].match(/^fig/) || ids[0].match(/CDS/)) {
+        this.nodeType = 'feature';
+        this.containerType = 'feature_data';
+        var fetchedIds = when(xhr.post(PathJoin(window.App.dataAPI, 'genome_feature'), {
+          handleAs: 'json',
+          // headers: this.headers,
+          data: 'or(in(patric_id,(' +  pIDs.join(',') + ')),in(feature_id,(' + pIDs.join(',') + ')))&select(feature_id,patric_id,genome_id,genome_name,product)&limit(1000)'
+        }), function (response) {
+          console.log('in when response response', response);
+          self.featureData = response.map(function (feature) {
+            if (genomeList.indexOf(feature.genome_id) === -1) {
+              genomeList.push(feature.genome_id);
+            }
+            var seqIdIndex = 0;
+            if (seqIds[feature.patric_id] > 0 ) {
+              seqIdIndex = seqIds[feature.patric_id] - 1;
+            } else {
+              seqIdIndex = seqIds[feature.feature_id] - 1;
+            }
+            self.idMap[seqIdIndex] = {
+              seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+            };
+            if (ids[0].match(/^fig/)) {
+              self.dataMap[feature.patric_id] = {
+                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+              };
+              return {
+                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+              };
+            }
+            else {
+              self.dataMap[feature.feature_id] = {
+                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+              };
+              return {
+                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+              };
+            }
+          });
+          console.log('self.featureData', self.featureData);
+          console.log('self.featureData genomeList ', genomeList);
+          var q = 'in(genome_id,(' + genomeList.join(',') + '))&select(genome_id,genome_name,genbank_accessions,species,strain,geographic_group,isolation_country,host_group,host_common_name,collection_year,subtype,lineage,clade)&limit(25000)';
+          console.log('before getGenomeData, q =', q );
+
+          when(xhr.post(PathJoin(window.App.dataAPI, 'genome'), {
+            handleAs: 'json',
+            // headers: this.headers,
+            data: q
+          }), function (res) {
+            console.log('in when response response', res);
+            self.genomeData = res.map(function (genome) {
+              var seqIdIndex = 0;
+              if (seqIds[genome.genome_id] > 0 ) {
+                seqIdIndex = seqIds[genome.genome_id] - 1;
+              }
+              return {
+                seq_id: seqIdIndex,
+                genome_id: genome.genome_id,
+                genome_name: genome.genome_name,
+                genbank_accessions: genome.genbank_accessions,
+                species: genome.species,
+                strain: genome.strain,
+                geographic_group: genome.geographic_group,
+                isolation_country: genome.isolation_country,
+                host_group: genome.host_group,
+                host_common_name: genome.host_common_name,
+                collection_year: genome.collection_year,
+                subtype: genome.subtype,
+                lineage: genome.lineage,
+                clade: genome.clade
+              };
+            });
+            console.log('feature self.genomeData', self.genomeData);
+            console.log('feature self.dataMap', self.dataMap);
+            self.setAltLabel(self.dataMap);
+            console.log('genome when alt_labels ', self.alt_labels);
+            return res;
+          });
+          return response;
+        });
+        console.log('feature this.featureData ', this.featureData);
+        console.log('feature fetchedIds ', fetchedIds);
+        // console.log('feature genomes ', genomes);
+      }
+      else if (ids[0].match(/\d+\.\d+/)) {
+        this.nodeType = 'genome';
+        this.containerType = 'genome_data';
+        var q = 'in(genome_id,(' + ids.join(',') + '))&select(genome_id,genome_name,genbank_accessions,species,strain,geographic_group,isolation_country,host_group,host_common_name,collection_year,subtype,lineage,clade)&limit(25000)';
+        var genomes = when(xhr.post(PathJoin(window.App.dataAPI, 'genome'), {
+          handleAs: 'json',
+          data: q
+        }), function (res) {
+          console.log('in when response response', res);
+          var seqIdIndex = 0;
+          self.genomeData = res.map(function (genome) {
+            seqIdIndex = seqIds[genome.genome_id] - 1;
+            self.idMap[seqIdIndex] = {
+              seq_id: seqIdIndex,
+              genome_id: genome.genome_id,
+              genome_name: genome.genome_name,
+              genbank_accessions: genome.genbank_accessions,
+              species: genome.species,
+              strain: genome.strain,
+              geographic_group: genome.geographic_group,
+              isolation_country: genome.isolation_country,
+              host_group: genome.host_group,
+              host_common_name: genome.host_common_name,
+              collection_year: genome.collection_year,
+              subtype: genome.subtype,
+              lineage: genome.lineage,
+              clade: genome.clade
+            };
+            self.dataMap[genome.genome_id] = {
+              seq_id: seqIdIndex,
+              genome_id: genome.genome_id,
+              genome_name: genome.genome_name,
+              genbank_accessions: genome.genbank_accessions,
+              species: genome.species,
+              strain: genome.strain,
+              geographic_group: genome.geographic_group,
+              isolation_country: genome.isolation_country,
+              host_group: genome.host_group,
+              host_common_name: genome.host_common_name,
+              collection_year: genome.collection_year,
+              subtype: genome.subtype,
+              lineage: genome.lineage,
+              clade: genome.clade
+            };
+            return {
+              seq_id: seqIdIndex,
+              genome_id: genome.genome_id,
+              genome_name: genome.genome_name,
+              genbank_accessions: genome.genbank_accessions,
+              species: genome.species,
+              strain: genome.strain,
+              geographic_group: genome.geographic_group,
+              isolation_country: genome.isolation_country,
+              host_group: genome.host_group,
+              host_common_name: genome.host_common_name,
+              collection_year: genome.collection_year,
+              subtype: genome.subtype,
+              lineage: genome.lineage,
+              clade: genome.clade
+            };
+          });
+          console.log('genome self.genomeData', self.genomeData);
+          console.log('genome self.dataMap', self.dataMap);
+          self.setAltLabel(self.dataMap);
+          console.log('genome when alt_labels ', self.alt_labels);
+          return res;
+        });
+        console.log('genome this.genomeData ', this.genomeData);
+        console.log('genome genomes ', genomes);
+        console.log('genome genomes this.containerType ', this.containerType);
+      }
+      else {
+        console.log('node names are not genome nor feature ids');
+      }
     },
 
     render: function () {
@@ -278,6 +627,7 @@ define([
       var combineDiv = domConstruct.create('table', { style: { width: '100%' } }, this.contentPane.containerNode);// domConstruct.create("div",{"style":{"width":"100%"}},this.contentPane.containerNode);
       var combineRow = domConstruct.create('tr', {}, combineDiv);
       var cell2 = domConstruct.create('td', { width: '100%' }, combineRow);
+
       var msaDiv = domConstruct.create('div', { style: { width: '100%' } }, cell2);
       msaDiv.style.display = 'inline-block';
       msaDiv.style.overflowY = 'hidden';
@@ -294,7 +644,11 @@ define([
         rearrangeSeqs[s.name] = s;
         s.id = id_count;
         id_count += 1;
+        s.name = s.name.replaceAll(':', '|');
       }));
+      console.log('msa_models= ', msa_models);
+      console.log('msaDiv= ', msaDiv);
+
       var opts = {};
       // set your custom properties
       // @see: https://github.com/greenify/biojs-vis-msa/tree/master/src/g
@@ -325,7 +679,7 @@ define([
       opts.zoomer = {
         menuFontsize: '12px',
         autoResize: true,
-        labelNameLength: 150,
+        labelNameLength: 250,
         alignmentHeight: 14.04 * this.numSequences,
         // alignmentWidth: msa_models.seqs[0].seq.length*15.1,
         residueFont: '12',
@@ -339,6 +693,26 @@ define([
       msaDiv.setAttribute('style', 'white-space: nowrap;');
       menuOpts.msa = m;
       new msa.menu.defaultmenu(menuOpts);
+      console.log('m= ', m);
+      console.log('menuOpts= ', menuOpts);
+      console.log('msaDiv= ', msaDiv);
+      var idMenuDivs = [];
+      idMenuDivs.push('<div class="wsActionTooltip" rel="gene_id">Gene ID</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="genome_name">Genome Name</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="genome_id">Genome ID</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="genbank_accessions">Accession</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="species">Species</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="strain">Strain</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="geographic_group">Geographic Group</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="isolation_country">Isolation Country</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="host_group">Host Group</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="host_common_name">Host Common Name</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="collection_year">Collection Year</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="subtype">Subtype</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="lineage">Lineage</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="clade">Clade</div>');
+      idMenu.set('content', idMenuDivs.join(''));
+      console.log('idMenuDivs ', idMenuDivs);
 
       on(colorMenu.domNode, 'click', function (evt) {
         var rel = evt.target.attributes.rel.value;
@@ -346,6 +720,99 @@ define([
         m.g.colorscheme.set('scheme', rel);
         popup.close(colorMenu);
       });
+
+      on(idMenu.domNode, 'click', lang.hitch(this, function (evt) {
+        var rel = evt.target.attributes.rel.value;
+        console.log('rel=', rel);
+        console.log('idMenu alt_labels=', this.alt_labels);
+        // var sel = idMenu.selection;
+        delete idMenu.selection;
+        var msa_models2 = {
+          seqs: msa.io.clustal.parse(this.dataStats.clustal)
+          // seqs: msa.io.fasta.parse(this.dataStats.fasta)
+        };
+
+        var rearrangeSeqs = {};
+        var id_count = 0;
+        console.log('msa_models= ', msa_models);
+        console.log('msaDiv= ', msaDiv);
+
+        msa_models2.seqs.forEach(lang.hitch(this, function (s) {
+          console.log('idMenu s=', s);
+          rearrangeSeqs[s.name] = s;
+          s.id = id_count;
+          id_count += 1;
+          console.log('idMenu s.name=', s.name);
+          console.log('idMenu this.alt_labels.rel=', this.alt_labels[rel]);
+          console.log('idMenu this.alt_labels.genome_name=', this.alt_labels.genome_name);
+          var label = this.alt_labels[rel];
+          s.name = label[s.name.replaceAll(':', '|')];
+        }));
+        console.log('msa_models2= ', msa_models2);
+
+        var opts = {};
+        // set your custom properties
+        // @see: https://github.com/greenify/biojs-vis-msa/tree/master/src/g
+        opts.seqs = msa_models2.seqs;
+        opts.el = msaDiv;
+        opts.bootstrapMenu = false;
+        if (this.alignType == 'protein') {
+          opts.colorscheme = { scheme: 'taylor' };
+        }
+        else if (this.alignType == 'dna') {
+          opts.colorscheme = { scheme: 'nucleotide' };
+        }
+        opts.vis = {
+          conserv: true,
+          overviewbox: false,
+          seqlogo: true,
+          sequences: true,
+          labelName: true,
+          labelId: true,
+          markers: true
+        };
+        opts.conf = {
+          dropImport: true,
+          registerWheelCanvas: false,
+          registerMouseHover: false,
+          debug: true
+        };
+        opts.zoomer = {
+          menuFontsize: '12px',
+          autoResize: true,
+          labelNameLength: 250,
+          alignmentHeight: 14.04 * this.numSequences,
+          // alignmentWidth: msa_models.seqs[0].seq.length*15.1,
+          residueFont: '12',
+          rowHeight: 14.04
+        };
+
+        // init msa
+        var m = new msa.msa(opts);
+        var menuOpts = {};
+        menuOpts.el = menuDiv;
+        msaDiv.setAttribute('style', 'white-space: nowrap;');
+        menuOpts.msa = m;
+        new msa.menu.defaultmenu(menuOpts);
+        console.log('m= ', m);
+        console.log('menuOpts= ', menuOpts);
+        console.log('msaDiv= ', msaDiv);
+
+        // reset node selection
+        this.selection = [];
+        this.itemDetailPanel.set('selection', []);
+        this.onSelection();
+
+        popup.close(idMenu);
+        m.render();
+        var self = this;
+        m.listenTo(m.g, 'row:click', function (e) {
+          console.log('idMenu e=', e);
+          self.selection = m.g.selcol.models;
+          console.log('idMenu listen self.selection=', self.selection);
+          self.onSelection();
+        });
+      }));
 
       on(visualMenu.domNode, 'click', lang.hitch(this, function (evt) {
         var rel = evt.target.attributes.rel.value;
@@ -527,6 +994,17 @@ define([
       msaDiv.style.overflowY = 'hidden';
       msaDiv.style.verticalAlign = 'bottom';
       msaDiv.style.paddingBottom = '10px';
+      var self = this;
+      m.listenTo(m.g, 'row:click', function (e) {
+        console.log('e=', e);
+        console.log('m.g.selcol=', m.g.selcol);
+        self.selection = m.g.selcol.models;
+        console.log('listen self.selection=', self.selection);
+        console.log('listen self.dataMap=', this.dataMap);
+        console.log('listen self.featureData=', self.featureData);
+        self.onSelection();
+      });
+      console.log('outside listen this.selection=', this.selection);
     },
 
     postCreate: function () {
@@ -540,11 +1018,68 @@ define([
         splitter: false,
         currentContainerWidget: this
       });
+      this.itemDetailPanel = new ItemDetailPanel({
+        region: 'right',
+        style: 'width:300px',
+        splitter: true,
+        layoutPriority: 1,
+        containerWidget: this
+      });
       this.addChild(this.selectionActionBar);
+      this.addChild(this.itemDetailPanel);
+      this.itemDetailPanel.startup();
       this.setupActions();
     },
 
     selectionActions: [
+      [
+        'ToggleItemDetail',
+        'fa icon-chevron-circle-left fa-2x',
+        {
+          label: 'DETAILS',
+          persistent: true,
+          validTypes: ['*'],
+          tooltip: 'Toggle Details Pane'
+        },
+        function (selection, container, button) {
+          console.log('Toggle Item Detail Panel', this.itemDetailPanel.id, this.itemDetailPanel);
+
+          var children = this.getChildren();
+          // console.log("Children: ", children);
+          if (children.some(function (child) {
+            return this.itemDetailPanel && (child.id == this.itemDetailPanel.id);
+          }, this)) {
+            console.log('Remove Item Detail Panel');
+            this.removeChild(this.itemDetailPanel);
+            console.log('Button Node: ', button);
+
+            query('.ActionButtonText', button).forEach(function (node) {
+              node.innerHTML = 'DETAILS';
+            });
+
+            query('.ActionButton', button).forEach(function (node) {
+              console.log('ActionButtonNode: ', node);
+              domClass.remove(node, 'icon-chevron-circle-right');
+              domClass.add(node, 'icon-chevron-circle-left');
+            });
+          }
+          else {
+            // console.log("Re-add child: ", this.itemDetailPanel);
+            this.addChild(this.itemDetailPanel);
+
+            query('.ActionButtonText', button).forEach(function (node) {
+              node.innerHTML = 'HIDE';
+            });
+
+            query('.ActionButton', button).forEach(function (node) {
+              console.log('ActionButtonNode: ', node);
+              domClass.remove(node, 'icon-chevron-circle-left');
+              domClass.add(node, 'icon-chevron-circle-right');
+            });
+          }
+        },
+        true
+      ],
       [
         'ColorSelection',
         'fa icon-paint-brush fa-2x',
@@ -568,10 +1103,35 @@ define([
         true
       ],
       [
+        'IDSelection',
+        'fa icon-pencil-square fa-2x',
+        {
+          label: 'ID TYPE',
+          persistent: true,
+          validTypes: ['*'],
+          validContainerTypes: ['*'],
+          tooltip: 'Set ID Type',
+          tooltipDialog: idMenu,
+          ignoreDataType: true
+        },
+        function (selection) {
+          // console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
+
+          idMenu.selection = selection;
+          // console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
+          popup.open({
+            popup: this.selectionActionBar._actions.IDSelection.options.tooltipDialog,
+            around: this.selectionActionBar._actions.IDSelection.button,
+            orient: ['below']
+          });
+        },
+        true
+      ],
+      [
         'FilterSelection',
         'fa icon-filter fa-2x',
         {
-          label: 'FILTER',
+          label: 'Filter',
           persistent: true,
           validTypes: ['*'],
           validContainerTypes: ['*'],
@@ -580,7 +1140,10 @@ define([
           ignoreDataType: true
         },
         function (selection) {
+          // console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
+
           filterMenu.selection = selection;
+          // console.log("ViewFasta Sel: ", this.selectionActionBar._actions.ViewFASTA.options.tooltipDialog)
           popup.open({
             popup: this.selectionActionBar._actions.FilterSelection.options.tooltipDialog,
             around: this.selectionActionBar._actions.FilterSelection.button,
@@ -588,6 +1151,202 @@ define([
           });
         },
         true
+      ],
+      [
+        'AddGroup',
+        'fa icon-object-group fa-2x',
+        {
+          label: 'GROUP',
+          ignoreDataType: true,
+          multiple: true,
+          validTypes: ['*'],
+          requireAuth: true,
+          max: 10000,
+          tooltip: 'Add selection to a new or existing group',
+          validContainerTypes: ['genome_data', 'feature_data']
+        },
+        function (selection, containerWidget) {
+          // console.log("Add Items to Group", selection);
+          var dlg = new Dialog({ title: 'Add selected items to group' });
+          var type;
+
+          if (!containerWidget) {
+            // console.log("Container Widget not setup for addGroup");
+            return;
+          }
+
+          if (containerWidget.containerType == 'genome_data') {
+            type = 'genome_group';
+          } else if (containerWidget.containerType == 'feature_data') {
+            type = 'feature_group';
+          }
+
+          if (!type) {
+            console.error('Missing type for AddGroup');
+            return;
+          }
+          var stg = new SelectionToGroup({
+            selection: selection,
+            selectType: true,
+            type: type,
+            inputType: containerWidget.containerType,
+            path: containerWidget.get('path')
+          });
+          on(dlg.domNode, 'dialogAction', function (evt) {
+            dlg.hide();
+            setTimeout(function () {
+              dlg.destroy();
+            }, 2000);
+          });
+          domConstruct.place(stg.domNode, dlg.containerNode, 'first');
+          stg.startup();
+          dlg.startup();
+          dlg.show();
+        },
+        false
+      ],
+      [
+        'ViewFeatureItem',
+        'MultiButton fa icon-selection-Feature fa-2x',
+        {
+          label: 'FEATURE',
+          validTypes: ['*'],
+          multiple: false,
+          // disabled: false,
+          tooltip: 'Switch to Feature View. Press and Hold for more options.',
+          validContainerTypes: ['feature_data'],
+          pressAndHold: function (selection, button, opts, evt) {
+            popup.open({
+              popup: new PerspectiveToolTipDialog({
+                perspective: 'Feature',
+                perspectiveUrl: '/view/Feature/' + selection[0].feature_id
+              }),
+              around: button,
+              orient: ['below']
+            });
+          }
+        },
+        function (selection) {
+          console.log('ViewFeatureItem this.containerType ', this.containerType);
+          var sel = selection[0];
+          Topic.publish('/navigate', {
+            href: '/view/Feature/' + sel.patric_id + '#view_tab=overview',
+            target: 'blank'
+          });
+        },
+        false
+      ],
+      [
+        'ViewFeatureItems',
+        'MultiButton fa icon-selection-FeatureList fa-2x',
+        {
+          label: 'FEATURES',
+          validTypes: ['*'],
+          multiple: true,
+          min: 2,
+          max: 5000,
+          tooltip: 'Switch to Feature List View. Press and Hold for more options.',
+          validContainerTypes: ['feature_data'],
+          pressAndHold: function (selection, button, opts, evt) {
+            console.log('PressAndHold');
+            console.log('Selection: ', selection, selection[0]);
+            popup.open({
+              popup: new PerspectiveToolTipDialog({
+                perspective: 'FeatureList',
+                perspectiveUrl: '/view/FeatureList/?in(feature_id,(' + selection.map(function (x) {
+                  return x.feature_id;
+                }).join(',') + '))'
+              }),
+              around: button,
+              orient: ['below']
+            });
+
+          }
+        },
+        function (selection) {
+          Topic.publish('/navigate', {
+            href: '/view/FeatureList/?in(feature_id,(' + selection.map(function (x) {
+              return x.feature_id;
+            }).join(',') + '))',
+            target: 'blank'
+          });
+        },
+        false
+      ],
+      [
+        'ViewGenomeItem',
+        'MultiButton fa icon-selection-Genome fa-2x',
+        {
+          label: 'GENOME',
+          validTypes: ['*'],
+          multiple: false,
+          tooltip: 'Switch to Genome View. Press and Hold for more options.',
+          ignoreDataType: true,
+          validContainerTypes: ['*'],
+          pressAndHold: function (selection, button, opts, evt) {
+            console.log('PressAndHold');
+            console.log('Selection: ', selection, selection[0]);
+            popup.open({
+              popup: new PerspectiveToolTipDialog({
+                perspective: 'Genome',
+                perspectiveUrl: '/view/Genome/' + selection[0].genome_id
+              }),
+              around: button,
+              orient: ['below']
+            });
+
+          }
+        },
+        function (selection) {
+          var sel = selection[0];
+          // console.log("sel: ", sel)
+          // console.log("Nav to: ", "/view/Genome/" + sel.genome_id);
+          Topic.publish('/navigate', { href: '/view/Genome/' + sel.genome_id, target: 'blank' });
+        },
+        false
+      ],
+      [
+        'ViewGenomeItems',
+        'MultiButton fa icon-selection-GenomeList fa-2x',
+        {
+          label: 'GENOMES',
+          validTypes: ['*'],
+          multiple: true,
+          min: 2,
+          max: 1000,
+          tooltip: 'Switch to Genome List View. Press and Hold for more options.',
+          ignoreDataType: true,
+          validContainerTypes: ['*'],
+          pressAndHold: function (selection, button, opts, evt) {
+            var map = {};
+            selection.forEach(function (sel) {
+              if (!map[sel.genome_id]) {
+                map[sel.genome_id] = true;
+              }
+            });
+            var genome_ids = Object.keys(map);
+            popup.open({
+              popup: new PerspectiveToolTipDialog({
+                perspective: 'GenomeList',
+                perspectiveUrl: '/view/GenomeList/?in(genome_id,(' + genome_ids.join(',') + '))'
+              }),
+              around: button,
+              orient: ['below']
+            });
+
+          }
+        },
+        function (selection) {
+          var map = {};
+          selection.forEach(function (sel) {
+            if (!map[sel.genome_id]) {
+              map[sel.genome_id] = true;
+            }
+          });
+          var genome_ids = Object.keys(map);
+          Topic.publish('/navigate', { href: '/view/GenomeList/?in(genome_id,(' + genome_ids.join(',') + '))', target: 'blank' });
+        },
+        false
       ],
       [
         'VisualOptions',
@@ -641,15 +1400,17 @@ define([
       ]
     ],
 
+
     setupActions: function () {
       if (this.containerActionBar) {
         this.containerActions.forEach(function (a) {
-          this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
+          this.containerActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5], a[6], a[7], a[8], a[9], a[10]);
         }, this);
       }
       this.selectionActions.forEach(function (a) {
-        this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
+        this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5], a[6], a[7], a[8], a[9], a[10]);
       }, this);
+
     },
 
     startup: function () {
@@ -657,6 +1418,8 @@ define([
         return;
       }
       this.watch('loading', lang.hitch(this, 'onSetLoading'));
+      this.watch('data', lang.hitch(this, 'onSetData'));
+      this.watch('selection', lang.hitch(this, 'onSelection'));
       this.inherited(arguments);
     }
 
