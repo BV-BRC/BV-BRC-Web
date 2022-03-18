@@ -3,6 +3,7 @@
 * [Feature] Enable diffferent column views on strain tabs for two different organisms
 * [Enhancement] Update Taxonomy Overview icon and add additional genome/feature icons
 * [Enhancement] MSA viewer enhancements
+* [Enhancement] Set the view button on GeneTree and CodonTree service result page to view xml file by default
 * [Bug] Fix Primer Design report button output issue
 
 ## 3.10.2 - March 16, 2022
