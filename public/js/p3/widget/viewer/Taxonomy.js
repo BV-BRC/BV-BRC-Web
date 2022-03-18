@@ -92,12 +92,18 @@ define([
         }
 
         // strains
+        // if (this.taxonomy.lineage_names.includes('Orthomyxoviridae') || this.taxonomy.lineage_names.includes('Bunyavirales')) {
+        //   this.viewer.addChild(this.strains, 3);
+        // } else {
+        //   this.viewer.removeChild(this.strains);
+        // }
+
         if (this.taxonomy.lineage_names.includes('Orthomyxoviridae')) {
-          this.viewer.addChild(this.strains_ortho, 3);
+          this.viewer.addChild(this.strains_orthomyxoviridae, 3);
         } else if (this.taxonomy.lineage_names.includes('Bunyavirales')) {
-          this.viewer.addChild(this.strains_buny, 3);
+          this.viewer.addChild(this.strains_bunyavirales, 3);
         } else {
-          this.viewer.removeChild(this.strains || this.strains_ortho || this.strains_buny);
+          this.viewer.removeChild(this.strains || this.strains_orthomyxoviridae || this.strains_bunyavirales);
         }
       }
 
