@@ -20,8 +20,8 @@ define([
     columns: {
       'Selection Checkboxes': selector({ unhidable: true }),
       taxon_id: { label: 'Taxon ID', field: 'taxon_id', hidden: true },
-      taxon_lineage_ids: { label: 'Taxon Lineage IDs', field: 'taxon_lineage_ids', hidden: true },
-      taxon_lineage_names: { label: 'Taxon Lineage Names', field: 'taxon_lineage_names', hidden: true },
+      // taxon_lineage_ids: { label: 'Taxon Lineage IDs', field: 'taxon_lineage_ids', hidden: true },
+      // taxon_lineage_names: { label: 'Taxon Lineage Names', field: 'taxon_lineage_names', hidden: true },
 
       family: { label: 'Family', field: 'family', hidden: true },
       genus: { label: 'Genus', field: 'genus', hidden: true },

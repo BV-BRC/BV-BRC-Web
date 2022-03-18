@@ -20,8 +20,8 @@ define([
     columns: {
       'Selection Checkboxes': selector({ unhidable: true }),
       taxon_id: { label: 'Taxon ID', field: 'taxon_id', hidden: true },
-      taxon_lineage_ids: { label: 'Taxon Lineage IDs', field: 'taxon_lineage_ids', hidden: true },
-      taxon_lineage_names: { label: 'Taxon Lineage Names', field: 'taxon_lineage_names', hidden: true },
+      // taxon_lineage_ids: { label: 'Taxon Lineage IDs', field: 'taxon_lineage_ids', hidden: true },
+      // taxon_lineage_names: { label: 'Taxon Lineage Names', field: 'taxon_lineage_names', hidden: true },
 
       family: { label: 'Family', field: 'family', hidden: true },
       genus: { label: 'Genus', field: 'genus', hidden: true },
@@ -29,8 +29,8 @@ define([
       strain: { label: 'Strain', field: 'strain', hidden: false },
 
       subtype: { label: 'Subtype', field: 'subtype', hidden: true },
-      h_type: { label: 'H Type', field: 'h_type', hidden: true },
-      n_type: { label: 'N Type', field: 'n_type', hidden: true },
+      // h_type: { label: 'H Type', field: 'h_type', hidden: true },
+      // n_type: { label: 'N Type', field: 'n_type', hidden: true },
 
       genome_ids: { label: 'Genome IDs', field: 'genome_ids', hidden: true },
       genbank_accessions: { label: 'Genbank Accessions', field: 'genbank_accessions', hidden: true },
@@ -45,7 +45,7 @@ define([
       isolation_country: { label: 'Isolation Country', field: 'isolation_country', hidden: false },
       collection_year: { label: 'Collection Year', field: 'collection_year', hidden: true },
       collection_date: { label: 'Collection Date', field: 'collection_date', hidden: false },
-      season: { label: 'Season', field: 'season', hidden: true },
+      // season: { label: 'Season', field: 'season', hidden: true },
 
       // s_1_pb2: { label: '1_PB2', field: '1_pb2', hidden: false },
       // s_2_pb1: { label: '2_PB1', field: '2_pb1', hidden: false },
