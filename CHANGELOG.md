@@ -1,4 +1,7 @@
 # Changelog
+## 3.11.0 - March 17, 2022
+* [Release] Production Release 3.11.0
+
 ## 3.10.3 - March 17, 2022
 * [Feature] Enable diffferent column views on strain tabs for two different organisms
 * [Enhancement] Update Taxonomy Overview icon and add additional genome/feature icons
