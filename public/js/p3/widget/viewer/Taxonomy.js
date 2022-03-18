@@ -254,8 +254,8 @@ define([
         case 'surveillance':
         case 'serology':
         case 'strains':
-        case 'strains_ortho':
-        case 'strains_buny':
+        case 'strains_orthomyxoviridae':
+        case 'strains_bunyavirales':
         case 'epitope':
         case 'experiments':
           activeTab.set('state', lang.mixin({}, this.state, {
