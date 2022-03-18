@@ -1,14 +1,14 @@
 define([
   'dojo/_base/declare', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
   'dijit/popup', 'dijit/Dialog', 'dijit/TooltipDialog',
-  './StrainGrid_Buny', './AdvancedSearchFields', './GridContainer',
+  './StrainGrid_Bunyavirales', './AdvancedSearchFields', './GridContainer',
   './PerspectiveToolTip', './SelectionToGroup',
   '../util/PathJoin'
 
 ], function (
   declare, on, Topic, domConstruct,
   popup, Dialog, TooltipDialog,
-  StrainGrid_Buny, AdvancedSearchFields, GridContainer,
+  StrainGrid_Bunyavirales, AdvancedSearchFields, GridContainer,
   PerspectiveToolTipDialog, SelectionToGroup,
   PathJoin
 ) {
@@ -22,7 +22,7 @@ define([
   });
 
   return declare([GridContainer], {
-    gridCtor: StrainGrid_Buny,
+    gridCtor: StrainGrid_Bunyavirales,
     containerType: 'strain_data',
     tutorialLink: '',
     facetFields: AdvancedSearchFields['strain'].filter((ff) => ff.facet),

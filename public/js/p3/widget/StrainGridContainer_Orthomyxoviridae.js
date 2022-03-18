@@ -1,14 +1,14 @@
 define([
   'dojo/_base/declare', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
   'dijit/popup', 'dijit/Dialog', 'dijit/TooltipDialog',
-  './StrainGrid_Ortho', './AdvancedSearchFields', './GridContainer',
+  './StrainGrid_Orthomyxoviridae', './AdvancedSearchFields', './GridContainer',
   './PerspectiveToolTip', './SelectionToGroup',
   '../util/PathJoin'
 
 ], function (
   declare, on, Topic, domConstruct,
   popup, Dialog, TooltipDialog,
-  StrainGrid_Ortho, AdvancedSearchFields, GridContainer,
+  StrainGrid_Orthomyxoviridae, AdvancedSearchFields, GridContainer,
   PerspectiveToolTipDialog, SelectionToGroup,
   PathJoin
 ) {
@@ -22,7 +22,7 @@ define([
   });
 
   return declare([GridContainer], {
-    gridCtor: StrainGrid_Ortho,
+    gridCtor: StrainGrid_Orthomyxoviridae,
     containerType: 'strain_data',
     tutorialLink: '',
     facetFields: AdvancedSearchFields['strain'].filter((ff) => ff.facet),
