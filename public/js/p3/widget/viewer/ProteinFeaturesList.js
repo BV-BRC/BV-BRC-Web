@@ -14,7 +14,7 @@ define([
     containerType: 'proteinFeatures_data',
     query: null,
     defaultTab: 'proteinFeatures',
-    perspectiveLabel: 'Protein Features List View',
+    perspectiveLabel: 'Domains and Motifs List View',
     perspectiveIconClass: 'icon-selection-Feature',
     totalFeatures: 0,
     warningContent: 'Your query returned too many results for detailed analysis.',
@@ -66,7 +66,7 @@ define([
 
     onSetQuery: function (attr, oldVal, newVal) {
       var content = QueryToEnglish(newVal);
-      this.queryNode.innerHTML = '<span class="queryModel">Protein Features: </span>  ' + content;
+      this.queryNode.innerHTML = '<span class="queryModel">Domains and Motifs: </span>  ' + content;
     },
 
     setActivePanelState: function () {
@@ -103,7 +103,7 @@ define([
 
 
       this.proteinFeatures = new ProteinFeaturesGridContainer({
-        title: 'Protein Features',
+        title: 'Domains and Motifs',
         id: this.viewer.id + '_proteinFeatures',
         state: this.state,
         disable: false
@@ -113,7 +113,7 @@ define([
     },
     onSetTotalStructures: function (attr, oldVal, newVal) {
       // console.log("ON SET TOTAL GENOMES: ", newVal);
-      this.totalCountNode.innerHTML = ' ( ' + newVal + '  Features ) ';
+      this.totalCountNode.innerHTML = ' ( ' + newVal + '  Records ) ';
     },
     hideWarning: function () {
       if (this.warningPanel) {
