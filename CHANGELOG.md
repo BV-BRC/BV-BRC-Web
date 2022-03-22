@@ -2,6 +2,7 @@
 ## 3.11.1 - March 22, 2022
 * [Enhancement] Update Protein Features List view labels to Domain and Motifs
 * [Enhancement] Update URL for Domain and Motif related things. Update corresponding Links.
+* [Enhancement] Update strain data type with new schema fields
 * [Bug] Query and display all facets instead of only 100
 
 ## 3.11.0 - March 17, 2022

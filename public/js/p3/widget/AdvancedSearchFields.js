@@ -1193,6 +1193,12 @@ define([], function () {
         field: 'genbank_accessions', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
+        field: 'segment_count', type: 'int', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'status', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
         field: 'host_group', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
@@ -1256,7 +1262,7 @@ define([], function () {
         field: 'l', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'others', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'other_segments', type: 'str', facet: false, facet_hidden: true, search: true
       },
     ],
     'epitope': [

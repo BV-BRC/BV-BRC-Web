@@ -2068,6 +2068,12 @@ define([
         text: 'genbank_accessions',
         link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
       }, {
+        name: 'Segment Count',
+        text: 'segment_count',
+      }, {
+        name: 'Status',
+        text: 'status',
+      }, {
         name: 'Host Group',
         text: 'host_group',
       }, {
@@ -2142,8 +2148,8 @@ define([
         text: 'l',
         link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
       }, {
-        name: 'Others',
-        text: 'others',
+        name: 'Other Segments',
+        text: 'other_segments',
       }];
 
       var div = domConstruct.create('div');
