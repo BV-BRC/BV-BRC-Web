@@ -116,7 +116,7 @@ define([
       },
 
       protein_feature: function (docs, total) {
-        return ['/view/ProteinFeaturesList/?', this.state.search].join('');
+        return ['/view/DomainsAndMotifsList/?', this.state.search].join('');
       },
 
       epitope: function (docs, total) {
@@ -312,7 +312,7 @@ define([
 
     formatprotein_feature: function (docs, total) {
       var q = this.state.search;
-      var out = ['<div class="searchResultsContainer proteinFeaturesResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ProteinFeaturesList/?', q, '">Domains and Motifs</a>&nbsp;(', total, ')</div>'];
+      var out = ['<div class="searchResultsContainer proteinFeaturesResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/DomainsAndMotifsList/?', q, '">Domains and Motifs</a>&nbsp;(', total, ')</div>'];
 
       docs.forEach(function (doc) {
         out.push("<div class='searchResult'>");

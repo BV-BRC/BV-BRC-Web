@@ -9,7 +9,7 @@ define([
   PathJoin, xhr, lang
 ) {
   return declare([TabViewerBase], {
-    baseClass: 'ProteinFeaturesList',
+    baseClass: 'DomainsAndMotifsList',
     disabled: false,
     containerType: 'proteinFeatures_data',
     query: null,
