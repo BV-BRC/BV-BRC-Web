@@ -34,8 +34,8 @@ define([
 
       genome_ids: { label: 'Genome IDs', field: 'genome_ids', hidden: true },
       genbank_accessions: { label: 'Genbank Accessions', field: 'genbank_accessions', hidden: true },
-      segment_count: { label: 'Segment Count', field: 'segment_count', hidden: true },
-      status: { label: 'Status', field: 'status', hidden: true },
+      segment_count: { label: 'Segment Count', field: 'segment_count', hidden: false },
+      status: { label: 'Status', field: 'status', hidden: false },
 
       host_group: { label: 'Host Group', field: 'host_group', hidden: true },
       host_common_name: { label: 'Host Common Name', field: 'host_common_name', hidden: false },
