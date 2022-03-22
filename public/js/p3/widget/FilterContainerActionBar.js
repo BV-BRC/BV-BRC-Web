@@ -893,7 +893,7 @@ define([
 
       const facets = 'facet(' + (facetFields || this.facetFields).map((field) => {
         return ( typeof (field) === 'string' ) ? `(field,${field})` : `(field,${field.field})`;
-      }).join(',') + ',(mincount,1))';
+      }).join(',') + ',(mincount,1),(limit,-1))';
 
       const url = PathJoin(this.apiServer, this.dataModel, `?${query}&limit(1)&${facets}`)
       const fr = xhr(url, {
