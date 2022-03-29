@@ -1,4 +1,7 @@
 # Changelog
+## 3.12.0 - March 29, 2022
+* [Release] Production Release
+
 ## 3.11.1 - March 22, 2022
 * [Enhancement] Update Protein Features List view labels to Domain and Motifs
 * [Enhancement] Update URL for Domain and Motif related things. Update corresponding Links.
