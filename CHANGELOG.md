@@ -1,4 +1,8 @@
 # Changelog
+## 3.13.0 - April 5, 2022
+* [Release] Production Release
+* [Enhancement] Update SARS-CoV-2 phylo viewer to iteration 14
+
 ## 3.12.0 - March 29, 2022
 * [Release] Production Release
 
