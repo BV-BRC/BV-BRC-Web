@@ -151,7 +151,7 @@ define([
               'Submit Time: ' + sel.submit_time + '\n' +
               'Start Time: ' + sel.submit_time + '\n' +
               'Completed Time: ' + sel.submit_time + '\n\n' +
-              'Paremeters:\n' +
+              'Parameters:\n' +
               '{code}\n' +
               JSON.stringify(sel.parameters, null, 4) +
               '\n{code}\n';
