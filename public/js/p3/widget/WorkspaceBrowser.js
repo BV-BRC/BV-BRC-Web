@@ -47,7 +47,7 @@ define([
     design: 'sidebar',
     splitter: false,
     docsServiceURL: window.App.docsServiceURL,
-    tutorialLink: 'user_guides/workspaces/workspace.html',
+    tutorialLink: 'quick_references/workspace_groups_upload.html',
     tsvCsvFilename: '',
 
     startup: function () {

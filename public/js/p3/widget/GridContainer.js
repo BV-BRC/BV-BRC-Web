@@ -111,7 +111,7 @@ define([
     store: null,
     apiServer: window.App.dataServiceURL,
     docsServiceURL: window.App.docsServiceURL,
-    tutorialLink: 'user_guides/',
+    tutorialLink: 'quick_references/',
     queryOptions: null,
     columns: null,
     enableAnchorButton: false,
