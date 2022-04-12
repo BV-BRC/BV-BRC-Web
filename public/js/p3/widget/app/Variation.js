@@ -1,12 +1,12 @@
 define([
-  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
+  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/topic', 'dojo/on',
   'dojo/dom-class',
   'dojo/text!./templates/Variation.html', './AppBase', 'dojo/dom-construct',
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby'
 ], function (
-  declare, WidgetBase, on,
+  declare, WidgetBase, Topic, on,
   domClass,
   Template, AppBase, domConstruct,
   Deferred, aspect, lang, domReady, NumberTextBox, query,
@@ -90,10 +90,14 @@ define([
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
+    },
+
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
     },
 
     emptyTable: function (target, rowLimit) {
@@ -109,7 +113,7 @@ define([
       var submit_values = {};
       var values = this.inherited(arguments);
 
-      submit_values = this.checkBaseParameters(values,submit_values);
+      submit_values = this.checkBaseParameters(values, submit_values);
       if (!this.form_flag) {
         this.ingestAttachPoints(this.paramToAttachPt, submit_values);
       }
@@ -444,7 +448,7 @@ define([
       }
     },
 
-    checkBaseParameters: function(values,submit_values) {
+    checkBaseParameters: function (values, submit_values) {
       var pairedList = this.libraryStore.query({ _type: 'paired' });
       var pairedAttrs = ['read1', 'read2'];
       var singleAttrs = ['read'];
@@ -484,26 +488,32 @@ define([
       if (this.sra_libs.length) {
         submit_values.srr_ids = this.sra_libs;
       }
+
+      // empty paired, single, and sra libs
+      this.paired_end_libs = [];
+      this.single_end_libs = [];
+      this.sra_libs = [];
+
       return submit_values;
     },
 
-    intakeRerunForm: function() {
+    intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        var param_dict = {"output_folder":"output_path","target_genome_id":"reference_genome_id"};
-        var widget_map = {"reference_genome_id":"genome_nameWidget"};
-        param_dict["widget_map"] = widget_map;
-        var service_specific = {"mapper":"mapper","caller":"caller"};
-        param_dict["service_specific"] = service_specific;
-        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path', 'target_genome_id': 'reference_genome_id' };
+        var widget_map = { 'reference_genome_id': 'genome_nameWidget' };
+        param_dict['widget_map'] = widget_map;
+        var service_specific = { 'mapper': 'mapper', 'caller': 'caller' };
+        param_dict['service_specific'] = service_specific;
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
         job_data = this.formatRerunJson(job_data);
-        AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
-        localStorage.removeItem("bvbrc_rerun_job");
+        AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+        localStorage.removeItem('bvbrc_rerun_job');
       }
     },
 
-    formatRerunJson: function(job_data) {
+    formatRerunJson: function (job_data) {
       if (!job_data.paired_end_libs) {
         job_data.paired_end_libs = [];
       }

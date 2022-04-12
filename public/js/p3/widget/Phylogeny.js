@@ -54,7 +54,7 @@ define([
     docsServiceURL: window.App.docsServiceURL,
     tutorialLink: 'user_guides/organisms_taxon/phylogeny.html',
     selection: null,
-    tooltip: 'The "Phylogeny" tab provides order or genus level phylogenetic tree, constructed using core protein families',
+    tooltip: 'The "Phylogeny" tab provides order or genus level phylogenetic tree, constructed using core protein families.',
     startup: function () {
       this.containerPane = new ContentPane({ region: 'center' });// domConstruct.create("div", {id: this.id + "_canvas"}, this.domNode);
       this.containerActionBar = new ContainerActionBar({
@@ -119,18 +119,12 @@ define([
 
       on(snapMenu.domNode, 'click', lang.hitch(this, function (evt) {
         var rel = evt.target.attributes.rel ? evt.target.attributes.rel.value : null;
-        // var sel = snapMenu.selection;
         delete snapMenu.selection;
         if (rel == 'tree-svg') {
-          // console.log("this...",this);
-          // console.log("this.tree.svgContainer[0]...",this.tree.svgContainer[0]);
-          // console.log("this.tree.svgContainer[0][0].outerHTML...",this.tree.svgContainer[0][0].outerHTML);
-          // console.log("[query(svg)[0]...",query("svg")[0]);
-          // saveAs(new Blob([query("svg")[0].outerHTML]), "PATRIC_phylogeny_tree.svg"); // there are multiple svg images from other tabs that may affect this
-          saveAs(new Blob([this.tree.svgContainer[0][0].outerHTML]), 'PATRIC_phylogeny_tree.svg');
+          saveAs(new Blob([this.tree.svgContainer[0][0].outerHTML]), 'BVBRC_phylogeny_tree.svg');
         }
         else if (rel == 'tree-newick') {
-          saveAs(new Blob([this.newick]), 'PATRIC_phylogeny_tree.nwk');
+          saveAs(new Blob([this.newick]), 'BVBRC_phylogeny_tree.nwk');
         }
         popup.close(snapMenu);
       }));

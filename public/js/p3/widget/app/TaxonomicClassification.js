@@ -1,11 +1,11 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/array', 'dijit/_WidgetBase', 'dojo/_base/lang', 'dojo/_base/Deferred',
+  'dojo/_base/declare', 'dojo/_base/array', 'dojo/topic', 'dijit/_WidgetBase', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/on', 'dojo/request', 'dojo/dom-class', 'dojo/dom-construct',
   'dojo/text!./templates/TaxonomicClassification.html', 'dojo/NodeList-traverse', 'dojo/store/Memory',
   'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
   './AppBase', '../../WorkspaceManager'
 ], function (
-  declare, array, WidgetBase, lang, Deferred,
+  declare, array, Topic, WidgetBase, lang, Deferred,
   on, xhr, domClass, domConstruct,
   Template, children, Memory,
   popup, TooltipDialog, Dialog,
@@ -68,10 +68,14 @@ define([
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
+    },
+
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
     },
 
     getValues: function () {
@@ -392,8 +396,8 @@ define([
       }
     },
 
-    checkBaseParameters: function(values) {
-      //reads and sra or contigs
+    checkBaseParameters: function (values) {
+      // reads and sra or contigs
       if (this.startWithRead.checked) { // start from read file
         var pairedList = this.libraryStore.query({ _type: 'paired' });
         var singleList = this.libraryStore.query({ _type: 'single' });
@@ -438,58 +442,58 @@ define([
         values.input_type = 'contigs'; // set input_type to be 'contigs'
         this.contigs = values.contigs;
       }
-      //strategy (algorithm)
+      // strategy (algorithm)
       this.strategy = values.algorithm;
-      //output folder
+      // output folder
       this.output_folder = values.output_path;
-      //output name
+      // output name
       this.output_name = values.output_file;
 
       return values;
     },
 
-    intakeRerunForm: function() {
+    intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        var param_dict = {"output_folder":"output_path","contigs":"contigs"};
-        var widget_map = {"contigs":"contigsFile"};
-        param_dict["widget_map"] = widget_map;
-        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path', 'contigs': 'contigs' };
+        var widget_map = { 'contigs': 'contigsFile' };
+        param_dict['widget_map'] = widget_map;
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
         this.selectStartWith(job_data);
         job_data = this.formatRerunJson(job_data);
         if (this.startWithRead.checked) {
-          AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
+          AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
         }
-        //TODO: more specific stuff
-        localStorage.removeItem("bvbrc_rerun_job");
+        // TODO: more specific stuff
+        localStorage.removeItem('bvbrc_rerun_job');
         this.form_flag = true;
       }
     },
 
-    //Selects the start with button: reads or contigs
-    //Checking it helps the rest of the form filling run smoothly
-    selectStartWith: function(job_data) {
-      if (job_data.input_type == "contigs") {
-        this.startWithContigs.set("checked",true);
+    // Selects the start with button: reads or contigs
+    // Checking it helps the rest of the form filling run smoothly
+    selectStartWith: function (job_data) {
+      if (job_data.input_type == 'contigs') {
+        this.startWithContigs.set('checked', true);
       }
       else {
-        this.startWithRead.set("checked",true);
+        this.startWithRead.set('checked', true);
       }
     },
 
-    setSequenceOptions: function(job_data) {
-      if (job_data["save_classified_sequences"]) {
-        this.save_classified_sequences_no.set("value",false);
-        this.save_classified_sequences_yes.set("value",true);
+    setSequenceOptions: function (job_data) {
+      if (job_data['save_classified_sequences']) {
+        this.save_classified_sequences_no.set('value', false);
+        this.save_classified_sequences_yes.set('value', true);
       }
-      if (job_data["save_unclassified_sequences"]) {
-        this.save_unclassified_sequences_no.set("value",false);
-        this.save_unclassified_sequences_yes.set("value",true);
+      if (job_data['save_unclassified_sequences']) {
+        this.save_unclassified_sequences_no.set('value', false);
+        this.save_unclassified_sequences_yes.set('value', true);
       }
     },
 
-    formatRerunJson: function(job_data) {
+    formatRerunJson: function (job_data) {
       if (!job_data.paired_end_libs) {
         job_data.paired_end_libs = [];
       }

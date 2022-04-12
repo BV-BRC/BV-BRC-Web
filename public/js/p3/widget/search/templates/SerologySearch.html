@@ -4,7 +4,7 @@
       <span class="breadcrumb">Advanced Search</span>
       <h3>${searchAppName}</h3>
       <!-- tutorial, doc link -->
-      <p>Search for serology data for select viral families using generic keywords, test type, test result, host, country, or collection year.  For further explanation, please see <a href="#">Serology Search User Guide</a>.</p>
+      <p>Search for serology data for select viral families using generic keywords, test type, test result, host, country, or collection year.  For further explanation, please see the <a href="https://www.bv-brc.org/docs/quick_references/searches_menu.html" target="_blank">Advanced Search Quick Reference Guide</a>.</p>
     </div>
     <div style="width:550px;margin:auto" class="formFieldsContainer">
       <div class="appBox appShadow">
@@ -71,7 +71,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. North America, or Europe'" data-dojo-attach-point="geographicGroupNode" name="geographic_group" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Asia'" data-dojo-attach-point="geographicGroupNode" name="geographic_group" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -79,7 +79,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. USA, or United Kingdom'" data-dojo-attach-point="collectionCountryNode" name="collection_country" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. China'" data-dojo-attach-point="collectionCountryNode" name="collection_country" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
@@ -114,6 +114,7 @@
     </div>
     <div class="appSubmissionArea">
       <div style="margin-top: 10px; text-align:center;">
+        <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
         <div data-dojo-attach-point="submitButton"
           type="submit" data-dojo-type="dijit/form/Button">Search</div>
       </div>

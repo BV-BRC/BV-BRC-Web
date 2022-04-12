@@ -1,0 +1,68 @@
+<div>
+    <div>
+        <table>
+            {% if collectionState || collectionCountry %}
+            <tr>
+                <td>Location:
+                    {% if collectionState %}
+                    {{ collectionState }},
+                    {% endif %}
+                    {% if collectionCountry %}
+                    {{ collectionCountry }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endif %}
+            {% if prevalence %}
+            <tr>
+                <td>Flu Positive: {{ prevalence }}% | {{ positiveCount }} / {{ testedCount }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td>Lat: {{ locationLat }} Long: {{ locationLng }}</td>
+                <td>
+                    <span class="dijitButton" id="sd-zoom-{{ index }}">
+                        <span class="dijitButtonNode" role="presentation">
+                            <span class="dijitButtonText">Zoom Here</span>
+                        </span>
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <br>
+    <p>
+        Click
+        <a href="/view/SurveillanceList/#view_tab=surveillance&filter=and(eq(collection_latitude,{{ locationLat }}),eq(collection_longitude,{{ locationLng }}))"
+           target="_blank">here</a>
+        to view more data about the records at this location.
+    </p>
+    <br/>
+    <p>The following were found at this location:</p>
+    <table>
+        <thead>
+        <th style="width: 10%">
+            Details
+        </th>
+        <th style="width: 30%">
+            Collection Date
+        </th>
+        <th style="width: 30%">
+            Virus Subtype
+        </th>
+        <th style="width: 30%">
+            Host Species
+        </th>
+        </thead>
+        <tbody>
+        {% for item in items %}
+        <tr>
+            <td><a href="/view/Surveillance/{{ item.sample_identifier }}" target="_blank">Details</a></td>
+            <td>{{ item.collection_date }}</td>
+            <td>{% if item.subtype %} {{ item.subtype }} {% endif %}</td>
+            <td>{% if item.host_common_name %} {{ item.host_common_name }} {% endif %}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

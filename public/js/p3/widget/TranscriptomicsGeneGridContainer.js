@@ -109,7 +109,7 @@ define([
               content.push([row.genome_name, row.patric_id, row.refseq_locus_tag, row.alt_locus_tag, row.gene, '"' + row.product + '"', row.start, row.end, row.strand, row.sample_size, row.up, row.down].join(DELIMITER));
             });
 
-            saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], { type: rel }), 'PATRIC_transcriptomics_genes.' + ext);
+            saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], { type: rel }), 'BVBRC_transcriptomics_genes.' + ext);
 
             popup.close(downloadTT);
           }));

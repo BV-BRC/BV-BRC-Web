@@ -1,5 +1,138 @@
-
 # Changelog
+## 3.13.0 - April 5, 2022
+* [Release] Production Release
+* [Enhancement] Update SARS-CoV-2 phylo viewer to iteration 14
+
+## 3.12.0 - March 29, 2022
+* [Release] Production Release
+
+## 3.11.1 - March 22, 2022
+* [Enhancement] Update Protein Features List view labels to Domain and Motifs
+* [Enhancement] Update URL for Domain and Motif related things. Update corresponding Links.
+* [Enhancement] Update strain data type with new schema fields
+* [Bug] Query and display all facets instead of only 100
+
+## 3.11.0 - March 17, 2022
+* [Release] Production Release 3.11.0
+
+## 3.10.3 - March 17, 2022
+* [Feature] Enable diffferent column views on strain tabs for two different organisms
+* [Enhancement] Update Taxonomy Overview icon and add additional genome/feature icons
+* [Enhancement] MSA viewer enhancements
+* [Enhancement] Set the view button on GeneTree and CodonTree service result page to view xml file by default
+* [Bug] Fix Primer Design report button output issue
+
+## 3.10.2 - March 16, 2022
+* [Minor] Keep the memory store fixed to the home workspace
+* [Bug] Fix primer design input validation issue
+* [Bug] Change Gene Tree genome group limit to 500 genomes
+
+## 3.10.1 - March 15, 2022
+* [Enhancement] Update Performance and Usage Metrics Reports to February 2022
+* [Enhancement] Update listserv links on registration / profile pages
+* [Bug] Display additional_metadata field as multi-value so content displays correctly
+
+## 3.10.0 - March 10, 2022
+* [Release] Production Release 3.10.0
+
+## 3.9.6 - March 10, 2022
+* [Minor] Point Announcements header link to docs site newsfeed
+* [Enhancement] Update Publications Page
+* [Enhancement] Remove the old viewer for the CodonTree
+* [Bug] Fix RNA-Seq tutorial link
+* [Bug] Fix dead link from genomes tab to quick reference guide
+* [Bug] Fix the search functionality of WorkspaceObjectSelector objects
+
+## 3.9.5 - March 8, 2022
+* [Enhancement] Enhancements for Archaeopteryx tree
+* [Enhancement] Update archaeopteryx.js to 2.0.0a3 and bundle2.js
+* [Enhancement] Modify global search results summary
+
+## 3.9.4 - March 4, 2022
+* [Enhancement] Add Interactions tab to Genome View
+
+## 3.9.3 - March 3, 2022
+* [Enhancement] Make lineage a default facet for genomes
+
+## 3.9.2 - March 2, 2022
+* [Enhancement] Update Phylogeny Tree Viewer data .xml file to Iteration 13
+* [Enhancement] Add Experiments / Change Genomic Features label to Proteins
+* [Enhancement] Remove feature_id from features detail panel
+* [Enhancement] Add Experiments tab to Genome View
+* [Enhancement] Protein Structures Tab: Add organism_name as default facet and remove taxon_lineage_names
+* [Minor] ESLint Fixes
+
+## 3.9.1 - Feb 28, 2022
+* [Minor] Remove homepage link and adjust CSS
+* [Enhancement] add lineage_names to taxa detail pane
+* [Enahncement] Change host_common_names to host_common_name for serology facets/adv search
+* [Bug] Change CGA job submission message to Metagenomic Binning Job Submission message
+
+## 3.9.0 - Feb 24, 2022
+* [Release] Production Release of all previous changes
+
+## 3.8.2 - Feb 24, 2022
+* [Feature] Add facets to Epitope Assays tab
+* [Feature] Add ADV Search to Epitope Assays tab
+* [Enhancement] Add host_name / protein_name to Epitopes facets, adv search, details, columns
+* [Bug] Partially resolve issue when genome viewer doesn't load with missing taxon data
+
+## 3.8.1 - Feb 23, 2022
+* [Update] Update to most recent archaeopteryx-js commit
+* [Feature] Implementation of the submission form for the ComparativeSystems app service
+* [Enhancement] Update calendar iframe
+
+## 3.8.0 - February 16, 2022
+* [Release] BV-BRC Public Beta Release
+
+## 3.7.9 - Feb 16, 2022
+* [Feature] Add 'Jobs List' link in all services submission message
+* [Minor] Update Publications page
+* [Minor] Change feedback links to report popup modal
+* [Minor] Adjust config file
+* [Minor] UI tweaks
+
+## 3.7.8 - Feb 15, 2022
+* [Minor] Update BRC Calendar page
+
+## 3.7.7 - Feb 15, 2022
+* [Feature] Add View buttons for services.
+* [Enhancement] Update about, citation, brc calendar and related resources pagees
+* [Enhancement] Update performance and usage metrics to January 2022
+* [Feature] Change Outreach to BV-BRC Calendar and change route
+* [Feature] Change Contact Us to /feedback route instead of Contact Us page
+
+## 3.7.6 - Feb 14, 2022
+* [Release] BV-BRC Mid February Update (Production)
+
+## 3.7.5 - Feb 14, 2022
+* [Minor] Bump follow-redirects from 1.14.6 to 1.14.8
+* [Enhancement] Change Protein Features to Domains and Motifs in global search
+
+## 3.7.4 - Feb 13, 2022
+* [Enhancement] Update tooltips for all tab types
+* [Enhancement] Add superkingdom to genome facets/adv search
+
+## 3.7.3 - Feb 10, 2022
+* [Enhancement] Add taxon_name and taxon_rank dropdown in tax search
+* [Enhancement] Remove fields from taxa adv search
+* [Enhancement] Hide species column in Genomes tab
+
+## 3.7.2 - Feb 10, 2022
+* [Enhancement] Display genome_name in Genomes tab
+* [Enhancement] Add additional metadata attributes in MSA viewer
+* [Enhancement] Update GeneTree UI
+* [Bug] Fix GeneTree bugs
+
+## 3.7.1 - Feb 9, 2022
+* [Update] Bump follow-redirects from 1.14.6 to 1.14.7
+* [Update] Bump node-fetch from 3.1.0 to 3.2.0
+* [Feature] Add geographic_group to serology/surveillance areas
+* [Feature] GeneTree GenomeGroup tooltips
+* [Feature] Add limited fasta file types to generic file viewer
+
+## 3.7.0 - Feb 8, 2022
+* [Release] BV-BRC January Update
 
 ## 3.6.17 - Sep 30, 2021
 * [Release] BVBRC Integration beta release

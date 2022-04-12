@@ -310,7 +310,7 @@ define([
               domConstruct.place(row, tbody);
             }
           });
-        } else {
+        } else if (item.genome_id !== undefined) {
           var query = 'q=genome_id:(' + item.genome_id + ') AND subsystem_id:("' + item.subsystem_id + '")&facet=true&facet.field=role_name&facet.mincount=1&facet.limit-1&rows=25000';
 
           when(request.post(PathJoin(window.App.dataAPI, '/subsystem/'), {
@@ -512,6 +512,51 @@ define([
       return div;
     },
 
+    taxonomy_overview_data: function (item, options) {
+      options = options || {};
+
+      var columns = [{
+        name: 'Taxon ID',
+        text: 'taxon_id',
+        link: 'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
+      }, {
+        name: 'Taxon Name',
+        text: 'taxon_name',
+      }, {
+        name: 'Taxon Rank',
+        text: 'taxon_rank'
+      }, {
+        name: 'Families',
+        text: 'unique_family'
+      }, {
+        name: 'Genera',
+        text: 'unique_genus'
+      }, {
+        name: 'Species',
+        text: 'unique_species'
+      }, {
+        name: 'Strains',
+        text: 'unique_strain'
+      }, {
+        name: 'Genomes / Segments',
+        text: 'count'
+      }, {
+        name: 'Protein Coding Genes (CDS)',
+        text: 'CDS'
+      }, {
+        name: 'Mature Peptides',
+        text: 'mat_peptide'
+      }, {
+        name: '3D Protein Structures (PDB)',
+        text: 'PDB'
+      }];
+
+      var div = domConstruct.create('div');
+      displayDetail(item, columns, div, options);
+
+      return div;
+    },
+
     feature_data: function (item, options) {
       options = options || {};
 
@@ -548,7 +593,7 @@ define([
           name: 'Taxon ID',
           text: 'taxon_id',
           link: '/view/Taxonomy/'
-        },],
+        }],
 
         'Source': [{
           name: 'Annotation',
@@ -556,15 +601,12 @@ define([
         }, {
           name: 'Feature Type',
           text: 'feature_type',
-        },],
+        }],
 
         'Identifiers': [{
-          name: 'Feature ID',
-          text: 'feature_id',
-        }, {
           name: 'BRC ID',
           text: 'patric_id',
-        },],
+        }],
 
         'Database Cross References': [{
           name: 'RefSeq Locus Tag',
@@ -581,17 +623,12 @@ define([
         }, {
           name: 'UniProtKB Accession',
           text: 'uniprotkb_accession',
-          link: function (obj) {
-            var ids = obj.uniprotkb_accession;
-            return obj.uniprotkb_accession.map(function (d, idx) {
-              return lang.replace('<a href="https://www.uniprot.org/uniprot/{0}">{1}</a>', [ids[idx], d]);
-            }).join(', ');
-          }
+          link: 'https://www.uniprot.org/uniprot/'
         }, {
           name: 'PDB Accession',
           text: 'pdb_accession',
           link: 'https://www.rcsb.org/structure/'
-        },],
+        }],
 
         'Location': [{
           name: 'Start',
@@ -606,10 +643,12 @@ define([
           name: 'Location',
           text: 'location',
           mini: true
-        }, {
-          name: 'Segments',
-          text: 'segments',
-        }, {
+        },
+        // {
+        //   name: 'Segments',
+        //   text: 'segments',
+        // },
+        {
           name: 'Codon Start',
           text: 'codon_start',
         }],
@@ -632,7 +671,7 @@ define([
           link: function (obj) {
             return '<button onclick="window.open(\'/view/FASTA/protein/?in(feature_id,(' + obj.feature_id + '))\')">view</button>';
           }
-        },],
+        }],
 
         'Annotation': [{
           name: 'Gene',
@@ -640,7 +679,7 @@ define([
         }, {
           name: 'Product',
           text: 'product',
-        },],
+        }],
 
         'Families': [{
           name: 'PATRIC Local Family',
@@ -681,7 +720,7 @@ define([
         }, {
           name: 'GO',
           text: 'go',
-        },],
+        }],
 
         'Misc': [{
           name: 'Property',
@@ -961,6 +1000,9 @@ define([
       }, {
         name: 'Genetic Code',
         text: 'genetic_code'
+      }, {
+        name: 'Lineage Names',
+        text: 'lineage_names'
       }, {
         name: 'Parent ID',
         text: 'parent_id'
@@ -1558,6 +1600,9 @@ define([
         }, {
           name: 'Collection Longitude',
           text: 'collection_longitude'
+        }, {
+          name: 'Geographic Group',
+          text: 'geographic_group'
         }],
 
         'Sample Tests': [{
@@ -1574,7 +1619,7 @@ define([
           text: 'species'
         }, {
           name: 'Type',
-          text: 'type'
+          text: 'pathogen_type'
         }, {
           name: 'Subtype',
           text: 'subtype'
@@ -1583,7 +1628,8 @@ define([
           text: 'strain'
         }, {
           name: 'Sequence Accession',
-          text: 'sequence_accession'
+          text: 'sequence_accession',
+          link: 'https://www.ncbi.nlm.nih.gov/nuccore/',
         }],
 
         'Host Info': [{
@@ -1858,6 +1904,9 @@ define([
         }, {
           name: 'Collection Year',
           text: 'collection_year'
+        }, {
+          name: 'Geographic Group',
+          text: 'geographic_group'
         }],
 
         'Sample Tests': [{
@@ -2006,11 +2055,24 @@ define([
       }, {
         name: 'Genome IDs',
         text: 'genome_ids',
-        link: '/view/Genome/'
+        link: function (obj) {
+          if (obj.genome_ids.length > 1) {
+            return `<a href="/view/GenomeList/?eq(*,*)&genome(in(genome_id,(${obj.genome_ids.join(',')})))">${obj.genome_ids}</a>`;
+          } else if (obj.genome_ids.length == 1) {
+            return `<a href="/view/Genome/${obj.genome_ids[0]}">${obj.genome_ids[0]}</a>`;
+          }
+          return '';
+        }
       }, {
         name: 'Genbank Accessions',
         text: 'genbank_accessions',
         link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+      }, {
+        name: 'Segment Count',
+        text: 'segment_count',
+      }, {
+        name: 'Status',
+        text: 'status',
       }, {
         name: 'Host Group',
         text: 'host_group',
@@ -2086,8 +2148,8 @@ define([
         text: 'l',
         link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
       }, {
-        name: 'Others',
-        text: 'others',
+        name: 'Other Segments',
+        text: 'other_segments',
       }];
 
       var div = domConstruct.create('div');
@@ -2134,6 +2196,9 @@ define([
       }, {
         name: 'End',
         text: 'end',
+      }, {
+        name: 'Host Name',
+        text: 'host_name',
       }, {
         name: 'Total Assays',
         text: 'total_assays',
@@ -2248,41 +2313,73 @@ define([
       return div;
     },
 
-    transcriptomics_experiment_data: function (item, options) {
+    experiment_data: function (item, options) {
       options = options || {};
 
-      var sectionList = ['Experiment Info', 'Additional Metadata'];
+      var sectionList = ['Study Info', 'Experiment Info', 'Additional Metadata'];
       var section = {};
 
-      section['Experiment Info'] = [{
-        name: 'Experiment ID',
-        text: 'eid'
+      section['Study Info'] = [{
+        name: 'Name',
+        text: 'study_name'
       }, {
-        name: 'Accession',
-        text: 'accession',
-        link: 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='
+        name: 'Title',
+        text: 'study_title'
       }, {
-        name: 'Institution',
-        text: 'institution'
+        name: 'Description',
+        text: 'study_description'
       }, {
         name: 'PI',
-        text: 'pi'
+        text: 'study_pi'
       }, {
-        name: 'Author',
-        text: 'author'
+        name: 'Institution',
+        text: 'study_institution'
+      }]
+
+      section['Experiment Info'] = [{
+        name: 'ID',
+        text: 'exp_id'
+      }, {
+        name: 'Name',
+        text: 'exp_name'
+      }, {
+        name: 'Title',
+        text: 'exp_title'
+      }, {
+        name: 'Description',
+        text: 'exp_description'
+      }, {
+        name: 'PoC',
+        text: 'exp_poc'
+      }, {
+        name: 'Experimenters',
+        text: 'experimenters'
+      }, {
+        name: 'Public Repository',
+        text: 'public_repository'
+      }, {
+        name: 'Public Identifier',
+        text: 'public_identifier'
       }, {
         name: 'PubMed',
         text: 'pmid',
         link: 'http://www.ncbi.nlm.nih.gov/pubmed/'
       }, {
-        name: 'Release Date',
-        text: 'release_date'
+        name: 'DOI',
+        text: 'doi',
+        link: 'https://doi.org/'
       }, {
-        name: 'Title',
-        text: 'title'
+        name: 'Experiment Type',
+        text: 'exp_type'
       }, {
-        name: 'Description',
-        text: 'description'
+        name: 'Measurement Technique',
+        text: 'measurement_technique'
+      }, {
+        name: 'Detection Instrument',
+        text: 'detection_instrument'
+      }, {
+        name: 'Experiment Protocol',
+        text: 'exp_protocol'
       }, {
         name: 'Organism',
         text: 'organism'
@@ -2290,26 +2387,26 @@ define([
         name: 'Strain',
         text: 'strain'
       }, {
-        name: 'Gene Modification',
-        text: 'mutant'
+        name: 'Treatment Type',
+        text: 'treatment_type'
       }, {
-        name: 'Time Series',
-        text: 'timeseries'
+        name: 'Treatment Name',
+        text: 'treatment_name'
       }, {
-        name: 'Experimental Condition',
-        text: 'condition'
+        name: 'Treatment Amount',
+        text: 'treatment_amount'
       }, {
-        name: 'Comparisons',
+        name: 'Treatment Duration',
+        text: 'treatment_duration'
+      }, {
+        name: 'Samples',
         text: 'samples'
       }, {
-        name: 'Platforms',
-        text: 'platforms'
+        name: 'Biosets',
+        text: 'biosets'
       }, {
-        name: 'Genes',
-        text: 'genes'
-      }, {
-        name: 'Genome IDs',
-        text: 'genome_ids'
+        name: 'Genome ID',
+        text: 'genome_id'
       }
       ];
 
@@ -2320,79 +2417,146 @@ define([
       }];
 
       var div = domConstruct.create('div');
-      displayHeader(div, item.title, 'fa icon-experiments fa-2x', '/view/TranscriptomicsExperiment/' + item.eid, options);
+      displayHeader(div, item.exp_title, 'fa icon-experiments fa-2x', '/view/TranscriptomicsExperiment/' + item.exp_id, options);
       displayDetailBySections(item, sectionList, section, div, options);
 
       return div;
     },
 
-    transcriptomics_sample_data: function (item, options) {
+    bioset_data: function (item, options) {
       options = options || {};
 
-      var columns = [{
-        name: 'Sample ID',
-        text: 'pid'
+      const sectionList = ['Experiment Info', 'Bioset Info', 'Treatment', 'Additional Metadata'];
+      const section = {};
+
+      section['Experiment Info'] = [{
+        name: 'ID',
+        text: 'exp_id'
       }, {
-        name: 'Experiment ID',
-        text: 'eid'
+        name: 'Name',
+        text: 'exp_name'
       }, {
         name: 'Title',
-        text: 'expname'
+        text: 'exp_title'
       }, {
-        name: 'Samples',
-        text: 'samples'
+        name: 'Type',
+        text: 'exp_type'
+      }
+      ]
+
+      section['Bioset Info'] = [{
+        name: 'Bioset ID',
+        text: 'bioset_id'
       }, {
-        name: 'Genes',
-        text: 'genes'
+        name: 'Name',
+        text: 'bioset_name'
       }, {
-        name: 'Significant Genes (Log Ratio)',
-        text: 'sig_log_ratio'
+        name: 'Description',
+        text: 'bioset_description'
       }, {
-        name: 'Significant Genes (Z Score)',
-        text: 'sig_z_score'
+        name: 'Type',
+        text: 'bioset_type'
       }, {
-        name: 'PubMed',
-        text: 'pmid',
-        link: 'http://www.ncbi.nlm.nih.gov/pubmed/'
+        name: 'Analysis Method',
+        text: 'analysis_method'
       }, {
-        name: 'Link Out',
-        text: 'accession',
-        link: 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='
+        name: 'Criteria',
+        text: 'bioset_criter'
       }, {
-        name: 'Organism',
-        text: 'organism'
+        name: 'Result Type',
+        text: 'result_type'
       }, {
-        name: 'Strain',
-        text: 'strain'
+        name: 'Protocol',
+        text: 'protocol'
       }, {
-        name: 'Gene Modification',
-        text: 'mutant'
+        name: 'Result',
+        text: 'bioset_result'
+      }
+      ]
+
+      section['Treatment'] = [{
+        name: 'Type',
+        text: 'treatment_type'
       }, {
-        name: 'Experimental Condition',
-        text: 'condition'
+        name: 'Name',
+        text: 'treatment_name'
       }, {
-        name: 'Time Point',
-        text: 'timepoint'
+        name: 'Amount',
+        text: 'treatment_amount'
       }, {
-        name: 'Channels',
-        text: 'channels'
+        name: 'Duration',
+        text: 'treatment_duration'
       }, {
-        name: 'Platform',
-        text: 'platform'
+        name: 'Entity Type',
+        text: 'entity_type'
       }, {
-        name: 'Genome IDs',
-        text: 'genome_ids'
-      }, {
-        name: 'Release Date',
-        text: 'release_date'
+        name: 'Entity Count',
+        text: 'entity_count'
+      }
+      ]
+
+      section['Additional Metadata'] = [{
+        name: 'Additional Metadata',
+        text: 'additional_metadata'
       }];
 
       var div = domConstruct.create('div');
-      displayHeader(div, item.expname, 'fa icon-experiments fa-2x', '/view/TranscriptomicsComparison/' + item.pid, options);
+      displayHeader(div, item.bioset_name, 'fa icon-experiments fa-2x', '/view/TranscriptomicsComparison/' + item.bioset_id, options);
+      displayDetailBySections(item, sectionList, section, div, options);
+
+      return div;
+    },
+
+    bioset_result_data: function (item, options) {
+      options = options || {};
+
+
+      const columns = [{
+        name: 'Entity ID',
+        text: 'entity_id'
+      }, {
+        name: 'Name',
+        text: 'entity_name'
+      }, {
+        name: 'BRC ID',
+        text: 'patric_id'
+      }, {
+        name: 'Locus Tag',
+        text: 'locus_tag'
+      }, {
+        name: 'Gene ID',
+        text: 'gene_id'
+      }, {
+        name: 'protein ID',
+        text: 'protein_id'
+      }, {
+        name: 'Uniprot ID',
+        text: 'uniprot_id'
+      }, {
+        name: 'Gene',
+        text: 'gene'
+      }, {
+        name: 'Product',
+        text: 'product'
+      }, {
+        name: 'Samples',
+        text: 'sample_size'
+      }, {
+        name: 'Up',
+        text: 'up'
+      }, {
+        name: 'Down',
+        text: 'down'
+      }
+      ]
+
+      var div = domConstruct.create('div');
+      displayHeader(div, item.entity_name || item.entity_id, 'fa icon-experiments fa-2x', '', options);
       displayDetail(item, columns, div, options);
 
       return div;
     },
+
 
     transcriptomics_gene_data: function (item, options) {
       options = options || {};
@@ -2786,7 +2950,8 @@ define([
           text: 'other_names',
           mini: true,
           editable: true
-        },],
+        }
+        ],
 
         'Taxonomy Info': [{
           name: 'Taxon ID',
@@ -2850,6 +3015,18 @@ define([
         }, {
           name: 'N Type',
           text: 'n_type',
+        }, {
+          name: 'H1 Clade Global',
+          text: 'h1_clade_global',
+        }, {
+          name: 'H1 Clade US',
+          text: 'h1_clade_us',
+        }, {
+          name: 'H5 Clade',
+          text: 'h5_clade',
+        }, {
+          name: 'pH1N1 Like',
+          text: 'ph1n1_like',
         }, {
           name: 'Lineage',
           text: 'lineage',
@@ -3162,6 +3339,7 @@ define([
 
         'Additional Info': [{
           name: 'Additional Metadata',
+          multiValued: true,
           text: 'additional_metadata',
         }, {
           name: 'Comments',

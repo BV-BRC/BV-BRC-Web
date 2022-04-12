@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
-  '../PageGrid', '../formatter', '../TranscriptomicsComparisonGridContainer',
+  '../PageGrid', '../formatter', '../BiosetGridContainer',
   '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang', '../DataItemFormatter'
 ], function (
   declare, TabViewerBase, on,
   domClass, ContentPane, domConstruct,
-  Grid, formatter, TranscriptomicsComparisonGridContainer,
+  Grid, formatter, BiosetGridContainer,
   PathJoin, xhr, lang, DataItemFormatter
 ) {
   return declare([TabViewerBase], {
@@ -38,8 +38,8 @@ define([
         return;
       }
 
-      this.queryNode.innerHTML = experiment.title;
-      this.totalCountNode.innerHTML = ' ( ' + experiment.samples + ' Comparisons )';
+      this.queryNode.innerHTML = experiment.exp_title;
+      this.totalCountNode.innerHTML = ' ( ' + experiment.biosets + ' Biosets )';
 
       // if (this.eid == experiment.eid) {
 
@@ -83,7 +83,7 @@ define([
       }
 
       if (this.state.eid) {
-        activeQueryState = lang.mixin({}, this.state, { search: 'eq(eid,' + this.state.eid + ')' });
+        activeQueryState = lang.mixin({}, this.state, { search: 'eq(exp_id,' + this.state.eid + ')' });
       }
 
       var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : 'overview';
@@ -124,7 +124,7 @@ define([
 
       // this.totalCountNode.innerHTML = " (1 Experiment) ";
 
-      xhr.get(PathJoin(this.apiServiceUrl, 'transcriptomics_experiment', this.eid), {
+      xhr.get(PathJoin(this.apiServiceUrl, 'experiment', this.eid), {
         headers: {
           accept: 'application/json',
           'X-Requested-With': null,
@@ -132,17 +132,16 @@ define([
         },
         handleAs: 'json'
       }).then(lang.hitch(this, function (experiment) {
-        console.log('experiment result ', experiment);
         this.overview = this.createOverviewPanel(this.state);
-        this.comparisons = new TranscriptomicsComparisonGridContainer({
-          title: 'Comparisons',
+        this.biosets = new BiosetGridContainer({
+          title: 'Biosets',
           enableFilterPanel: false,
-          id: this.viewer.id + '_comparisons',
+          id: this.viewer.id + '_biosets',
           disabled: false
         });
 
         this.viewer.addChild(this.overview);
-        this.viewer.addChild(this.comparisons);
+        this.viewer.addChild(this.biosets);
 
         this.set('experiment', experiment);
         // console.log('Experiment : ', experiment);
@@ -150,7 +149,7 @@ define([
         this.setActivePanelState();
 
         var node = domConstruct.create('div', { style: 'width: 90%' }, this.overview.containerNode);
-        domConstruct.place(DataItemFormatter(experiment, 'transcriptomics_experiment_data', {}), node, 'first');
+        domConstruct.place(DataItemFormatter(experiment, 'experiment_data', {}), node, 'first');
       }));
     }
   });

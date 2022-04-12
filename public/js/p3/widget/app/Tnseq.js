@@ -1,12 +1,12 @@
 define([
-  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
+  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/topic', 'dojo/on',
   'dojo/dom-class',
   'dojo/text!./templates/Tnseq.html', './AppBase', 'dojo/dom-construct',
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby'
 ], function (
-  declare, WidgetBase, on,
+  declare, WidgetBase, Topic, on,
   domClass,
   Template, AppBase, domConstruct,
   Deferred, aspect, lang, domReady, NumberTextBox,
@@ -128,10 +128,14 @@ define([
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
+    },
+
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
     },
 
     onRecipeChange: function () {
@@ -214,7 +218,7 @@ define([
       var assembly_values = {};
       var values = this.inherited(arguments);
 
-      assembly_values = this.checkBaseParameters(values,assembly_values);
+      assembly_values = this.checkBaseParameters(values, assembly_values);
       if (!this.form_flag) {
         this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
       }
@@ -580,8 +584,8 @@ define([
       }
     },
 
-    checkBaseParameters: function(values,assembly_values) {
-      //reads and sra
+    checkBaseParameters: function (values, assembly_values) {
+      // reads and sra
       var pairedList = this.libraryStore.query({ type: 'paired' });
       var pairedAttrs = ['read1', 'read2'];
       var singleAttrs = ['read'];
@@ -661,70 +665,70 @@ define([
       //   assembly_values["single_end_libs"] = singleLibs;
       // }
       assembly_values.read_files = allLibs;
-      //strategy (not protocol)
-      //target genome
+      // strategy (not protocol)
+      // target genome
       assembly_values.reference_genome_id = values.genome_name;
       this.target_genome_id = assembly_values.reference_genome_id;
-      //output_folder
+      // output_folder
       assembly_values.output_path = values.output_path;
       this.output_folder = values.output_path;
-      //output_name
+      // output_name
       assembly_values.output_file = values.output_file;
       this.output_name = values.output_file;
 
       return assembly_values;
     },
 
-    intakeRerunForm: function() {
+    intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if(localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        var job_data = this.formatJsonRerun(JSON.parse(localStorage.getItem("bvbrc_rerun_job")));
-        var param_dict = {"output_folder":"output_path","strategy":"recipe","target_genome_id":"reference_genome_id"};
-        var widget_map = {"reference_genome_id":"genome_nameWidget"};
-        param_dict["widget_map"] = widget_map;
-        //No service specific parameters in job output
-        //var service_specific = {"protocol":"protocol","primer":"primer"};
-        //param_dict["service_specific"] = service_specific;
-        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
-        localStorage.removeItem("bvbrc_rerun_job");
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var job_data = this.formatJsonRerun(JSON.parse(localStorage.getItem('bvbrc_rerun_job')));
+        var param_dict = { 'output_folder': 'output_path', 'strategy': 'recipe', 'target_genome_id': 'reference_genome_id' };
+        var widget_map = { 'reference_genome_id': 'genome_nameWidget' };
+        param_dict['widget_map'] = widget_map;
+        // No service specific parameters in job output
+        // var service_specific = {"protocol":"protocol","primer":"primer"};
+        // param_dict["service_specific"] = service_specific;
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+        localStorage.removeItem('bvbrc_rerun_job');
         this.form_flag = true;
       }
     },
 
-    //Formate the json input to AppBase.loadLibrary() so it populates the library field correctly
-    formatJsonRerun: function(job_data) {
-      var read_files = job_data["read_files"];
+    // Formate the json input to AppBase.loadLibrary() so it populates the library field correctly
+    formatJsonRerun: function (job_data) {
+      var read_files = job_data['read_files'];
       var single_libs = [];
       var paired_libs = [];
-      //go through control
-      var control_reps = read_files["control"]["replicates"];
+      // go through control
+      var control_reps = read_files['control']['replicates'];
       for (var idx = 0; idx < control_reps.length; idx++) {
         var curr_rep = control_reps[idx];
-        curr_rep.icon = this.getConditionIcon("control");
-        curr_rep.condition = "control";
-        if (curr_rep.hasOwnProperty("read")) {
+        curr_rep.icon = this.getConditionIcon('control');
+        curr_rep.condition = 'control';
+        if (curr_rep.hasOwnProperty('read')) {
           single_libs.push(curr_rep);
-        } else{
+        } else {
           paired_libs.push(curr_rep);
         }
       }
-      //go through treatment, if it exists
-      if (read_files.hasOwnProperty("treatment")) {
-        var treatment_reps = read_files["treatment"]["replicates"];
+      // go through treatment, if it exists
+      if (read_files.hasOwnProperty('treatment')) {
+        var treatment_reps = read_files['treatment']['replicates'];
         for (var idx = 0; idx < treatment_reps.length; idx++) {
           var curr_rep = treatment_reps[idx];
-          curr_rep.icon = this.getConditionIcon("treatment");
-          curr_rep.condition = "treatment";
-          if (curr_rep.hasOwnProperty("read")) {
+          curr_rep.icon = this.getConditionIcon('treatment');
+          curr_rep.condition = 'treatment';
+          if (curr_rep.hasOwnProperty('read')) {
             single_libs.push(curr_rep);
           } else {
             paired_libs.push(curr_rep);
           }
         }
       }
-      job_data["single_end_libs"] = single_libs;
-      job_data["paired_end_libs"] = paired_libs;
+      job_data['single_end_libs'] = single_libs;
+      job_data['paired_end_libs'] = paired_libs;
       return job_data;
     }
   });

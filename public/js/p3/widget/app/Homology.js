@@ -3,13 +3,12 @@ define([
   'dojo/on', 'dojo/query', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/topic',
   './AppBase',
   'dojo/text!./templates/Homology.html', 'dijit/form/Form',
-  '../viewer/Homology', '../../util/PathJoin', '../../WorkspaceManager', '../WorkspaceObjectSelector'
+  '../../util/PathJoin', '../../WorkspaceManager', '../WorkspaceObjectSelector'
 ], function (
   declare, lang, Deferred,
   on, query, domClass, domConstruct, domStyle, Topic,
   AppBase,
-  Template, FormMixin,
-  HomologyResultContainer, PathJoin, WorkspaceManager, WorkspaceObjectSelector
+  Template, FormMixin, PathJoin, WorkspaceManager, WorkspaceObjectSelector
 ) {
 
   var NA = 'nucleotide',
@@ -178,6 +177,10 @@ define([
       }
     },
 
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
+    },
+
     toggleAdvanced: function (flag) {
       if (flag) {
         this.advancedOptions.style.display = 'block';
@@ -245,17 +248,19 @@ define([
       var output_file = this.output_file.get('value');
       var output_path = this.output_path.get('value');
       var max_hits = parseInt(this.max_hits.get('value'));
-      var resultType;
+      // var resultType;
       var genomeIds = [];
       if (useDatabase) {
         resultType = database.split('.')[1] == 'fna' ? 'genome_sequence' : 'genome_feature';
         if (database == 'spgenes.faa') {
           resultType = 'specialty_genes';
         }
+        /*
         var q = {
           method: 'HomologyService.blast_fasta_to_database',
           params: [encodeURIComponent(sequence), program, database, evalue, max_hits, 0]
         };
+        */
         // def.resolve(q);
       } else {
         // blast against genomes/groups/taxon/fasta
@@ -272,11 +277,12 @@ define([
               return;
             }
             this.genome_id_message.innerHTML = '';
-
+            /*
             var q = {
               method: 'HomologyService.blast_fasta_to_genomes',
               params: [sequence, program, genomeIds, search_for, evalue, max_hits, 0]
             };
+            */
             // def.resolve(q);
             break;
           // case 'selGroup':
@@ -290,10 +296,12 @@ define([
               this.taxonomy_message.innerHTML = 'No taxon was selected.';
               return;
             }
+            /*
             var q = {
               method: 'HomologyService.blast_fasta_to_taxon',
               params: [sequence, program, taxon, search_for, evalue, max_hits, 0]
             };
+            */
             // def.resolve(q);
             break;
           case 'selFasta':
@@ -303,10 +311,12 @@ define([
               this.db_fasta_file_message.innerHTML = 'No fasta file was selected.';
               return;
             }
+            /*
             var q = {
               method: 'HomologyService.blast_fasta_to_fasta',
               params: [sequence, program, fasta, search_for, evalue, max_hits, 0]
             };
+            */
             break;
           default:
             break;
@@ -374,30 +384,7 @@ define([
         submit_values['db_precomputed_database'] = database.split('.')[0];
       }
       if (this.validate()) {
-        // var start_params = {
-        //   'base_url': window.App.appBaseURL
-        // }
-        // var values = this.getValues();
-        var callback = function () {
-          // the state set here shows up again in the HomologyMemoryStore onSetState
-          _self.result = new HomologyResultContainer({
-            id: this.id + '_blastResult',
-            style: 'min-height: 700px; visibility:hidden;',
-            state: {
-              query: q, resultType: resultType, resultPath: output_path + '/.' + output_file, 'submit_values': submit_values
-            }
-          });
-          _self.result.placeAt(query('.blast_result')[0]);
-          _self.result.loadingMask.show();
-          query('.blast_result .GridContainer').style('visibility', 'visible');
-          domClass.add(query('.service_form')[0], 'hidden');
-          domClass.add(query('.appSubmissionArea')[0], 'hidden');
-          domClass.add(query('.service_error')[0], 'hidden');
-          query('.reSubmitBtn').style('visibility', 'visible');
-          // _self.result.set('state', { query: q, resultType: resultType, resultPath: output_path+"/."+output_file, "submit_values":submit_values});
-          _self.result.startup();
-          // Topic.publish('/navigate', { href: `/workspace/${output_path}/.${output_file}/blast_out.txt`});
-        };
+
         // set job hook before submission
         if (_self.live_job.value) {
           _self.setJobHook(function () {
@@ -406,14 +393,9 @@ define([
             // Topic.publish('BLAST_UI', 'showErrorMessage', error);
           });
         }
-        if (this.demo) {
-          callback();
-        }
-        else {
-          // changing the submit() function to be getValues() in shift away from form/viewer
-          // _self.doSubmit(submit_values, start_params);
-          return submit_values;
-        }
+        // changing the submit() function to be getValues() in shift away from form/viewer
+        // _self.doSubmit(submit_values, start_params);
+        return submit_values;
       }
     },
 
@@ -792,12 +774,15 @@ define([
       if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
         this.form_flag = true;
         var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
-        //job_data['program'] = 'blastp';
+        console.log('job_data=', job_data);
+        // job_data['program'] = 'blastp';
         var param_dict = { 'output_folder': 'output_path' };
         var service_specific = { 'input_fasta_data': 'sequence', 'blast_evalue_cutoff': 'evalue', 'blast_max_hits': 'max_hits' };
         param_dict['service_specific'] = service_specific;
         this.setProgramButton(job_data);
         this.setInputSource(job_data);
+        console.log('query_featuregroup=', this.query_featuregroup.value);
+        console.log('query_featuregroup(value)=', this.query_featuregroup.get('value'));
         AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
         this.database.set('disabled', false);
         this.search_for.set('disabled', false);
@@ -806,61 +791,63 @@ define([
       }
     },
 
-    //blastn,blastp,blastx,tblastn, no tblastx button
+    // blastn,blastp,blastx,tblastn, no tblastx button
     setProgramButton: function (job_data) {
-      var p = job_data["blast_program"];
-      p === "blastn" ? this.blastn.set("checked", true) : this.blastn.set("checked", false);
-      p === "blastp" ? this.blastp.set("checked", true) : this.blastp.set("checked", false);
-      p === "blastx" ? this.blastx.set("checked", true) : this.blastx.set("checked", false);
-      p === "tblastn" ? this.tblastn.set("checked", true) : this.tblastn.set("checked", false);
+      var p = job_data['blast_program'];
+      p === 'blastn' ? this.blastn.set('checked', true) : this.blastn.set('checked', false);
+      p === 'blastp' ? this.blastp.set('checked', true) : this.blastp.set('checked', false);
+      p === 'blastx' ? this.blastx.set('checked', true) : this.blastx.set('checked', false);
+      p === 'tblastn' ? this.tblastn.set('checked', true) : this.tblastn.set('checked', false);
     },
 
     setInputSource: function (job_data) {
-      var s = job_data["input_source"];
-      if (s === "fasta_data") {
-        this.input_sequence.set("checked", true);
-        this.input_fasta.set("checked", false);
-        this.input_group.set("checked", false);
-        this.sequence.set("value", job_data["input_fasta_data"]);
+      var s = job_data['input_source'];
+      if (s === 'fasta_data') {
+        this.input_sequence.set('checked', true);
+        this.input_fasta.set('checked', false);
+        this.input_group.set('checked', false);
+        this.sequence.set('value', job_data['input_fasta_data']);
       }
-      else if (s === "fasta_file") {
-        this.input_sequence.set("checked", false);
-        this.input_fasta.set("checked", true);
-        this.input_group.set("checked", false);
-        this.query_fasta.set("value", job_data["input_fasta_file"]);
+      else if (s === 'fasta_file') {
+        this.input_fasta.set('checked', true);
+        this.input_sequence.set('checked', false);
+        this.input_group.set('checked', false);
+        this.query_fasta.set('value', job_data['input_fasta_file']);
       }
-      else if (s === "feature_group") {
-        this.input_sequence.set("checked", false);
-        this.input_fasta.set("checked", false);
-        this.input_group.set("checked", true);
-        this.query_featuregroup.set("value", job_data["input_feature_group"]);
+      else if (s === 'feature_group') {
+        this.input_group.set('checked', true);
+        this.input_sequence.set('checked', false);
+        this.input_fasta.set('checked', false);
+        this.query_featuregroup.set('value', job_data['input_feature_group']);
+
       }
     },
 
     setDatabaseInfoFormFill: function (job_data) {
-      var db_attach_points = { "db_precomputed_database": "database", "db_type": "search_for" };
-      var db_order = ["db_precomputed_database", "db_type"];
+      var db_attach_points = { 'db_precomputed_database': 'database', 'db_type': 'search_for' };
+      var db_order = ['db_precomputed_database', 'db_type'];
       db_order.forEach(function (param) {
-        if (param === "db_type") {
-          this.onChangeDatabase(job_data["db_precomputed_database"]);
+        if (param === 'db_type') {
+          this.onChangeDatabase(job_data['db_precomputed_database']);
         }
-        this[db_attach_points[param]].set("disabled", false);
+        this[db_attach_points[param]].set('disabled', false);
         this[db_attach_points[param]].set('value', job_data[param]);
       }, this);
-      //Check database value and populate with genome id
-      if (this.database.getValue() === "selGenome") {
-        job_data["db_genome_list"].forEach(function (g_id) {
+      // Check database value and populate with genome id
+      // TODO: any more options?
+      if (this.database.getValue() === 'selGenome') {
+        job_data['db_genome_list'].forEach(function (g_id) {
           this.addGenomeFormFill(g_id);
         }, this);
       }
-      if (this.database.getValue() === "selGroup") {
-        this.genome_group.set("value", job_data["db_genome_group"]);
+      if (this.database.getValue() === 'selGroup') {
+        this.genome_group.set('value', job_data['db_genome_group']);
       }
-      if (this.database.getValue() === "selFeatureGroup") {
-        this.feature_group.set("value", job_data["db_feature_group"]);
+      if (this.database.getValue() === 'selFeatureGroup') {
+        this.feature_group.set('value', job_data['db_feature_group']);
       }
-      if (this.database.getValue() === "selTaxon") {
-        this.taxonomy.set("value", job_data["db_taxon_list"][0]);
+      if (this.database.getValue() === 'selTaxon') {
+        this.taxonomy.set('value', job_data['db_taxon_list'][0]);
       }
     },
 

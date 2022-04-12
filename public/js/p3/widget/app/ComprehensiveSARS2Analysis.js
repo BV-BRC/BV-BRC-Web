@@ -11,13 +11,13 @@
  */
 
 define([
-  'dojo/_base/declare', 'dojo/_base/lang',
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/topic',
   'dojo/on', 'dojo/request', 'dojo/dom-class', 'dojo/dom-construct',
   'dojo/text!./templates/ComprehensiveSARS2Analysis.html', 'dojo/store/Memory', 'dojox/xml/parser',
   'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
   './AppBase', '../../WorkspaceManager'
 ], function (
-  declare, lang,
+  declare, lang, Topic,
   on, xhr, domClass, domConstruct,
   Template, Memory, xmlParser,
   popup, TooltipDialog, Dialog,
@@ -97,10 +97,14 @@ define([
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
+    },
+
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
     },
 
     getValues: function () {
@@ -588,11 +592,11 @@ define([
 
     onRecipeChange: function () {
       if (this.recipe.value == 'canu') {
-        //this.genome_size_block.style.display = 'block';
+        // this.genome_size_block.style.display = 'block';
         this.checkParameterRequiredFields();
       }
       else {
-        //this.genome_size_block.style.display = 'none';
+        // this.genome_size_block.style.display = 'none';
         this.checkParameterRequiredFields();
       }
     },
@@ -620,39 +624,41 @@ define([
       }
     },
 
-    //TODO:
-    //checkBaseParameters: function() {},
+    // TODO:
+    // checkBaseParameters: function() {},
 
-    intakeRerunForm: function() {
+    intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
-        var param_dict = {"output_folder":"output_path","strategy":"recipe","target_genome_id":"taxonomy_id","contigs":"contigs"};
-        var widget_map = {"taxonomy_id":"tax_idWidget","contigs":"contigsFile"};
-        param_dict["widget_map"] = widget_map;
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
+        var param_dict = {
+          'output_folder': 'output_path', 'strategy': 'recipe', 'target_genome_id': 'taxonomy_id', 'contigs': 'contigs'
+        };
+        var widget_map = { 'taxonomy_id': 'tax_idWidget', 'contigs': 'contigsFile' };
+        param_dict['widget_map'] = widget_map;
         job_data = this.formatRerunJson(job_data);
         this.selectStartWith(job_data);
-        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
         if (this.startWithRead.checked == true) {
-          AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
+          AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
         }
-        localStorage.removeItem("bvbrc_rerun_job");
+        localStorage.removeItem('bvbrc_rerun_job');
         this.form_flag = true;
       }
     },
 
-    //Selects the start with button: reads or contigs
-    //Checking it helps the rest of the form filling run smoothly
-    selectStartWith: function(job_data) {
-      if (job_data.input_type == "contigs") {
-        this.startWithContigs.set("checked",true);
+    // Selects the start with button: reads or contigs
+    // Checking it helps the rest of the form filling run smoothly
+    selectStartWith: function (job_data) {
+      if (job_data.input_type == 'contigs') {
+        this.startWithContigs.set('checked', true);
       }
       else {
-        this.startWithRead.set("checked",true);
+        this.startWithRead.set('checked', true);
       }
     },
 
-    formatRerunJson: function(job_data) {
+    formatRerunJson: function (job_data) {
       if (!job_data.paired_end_libs) {
         job_data.paired_end_libs = [];
       }
@@ -660,12 +666,6 @@ define([
         job_data.single_end_libs = [];
       }
       return job_data;
-    },
-
-    //For some reason the button that is supposed to trigger onAddSRR is not doing so,
-    //so this function just calls the function the button was supposed to invoke on click
-    callOnAddSRR: function() {
-      AppBase.prototype.onAddSRR.call(this);
     }
   });
 });

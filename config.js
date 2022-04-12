@@ -23,13 +23,13 @@ const defaults = {
   userServiceURL: '',
   localStorageCheckInterval: 86400,
   enableDevTools: false,
-  reportProblemEmailAddress: 'help@patricbrc.org',
+  reportProblemEmailAddress: 'help@bv-brc.org',
   'email': {
     'localSendmail': false,
-    'defaultFrom': 'PATRIC <do-not-reply@patricbrc.org>',
-    'defaultSender': 'PATRIC <do-not-reply@patricbrc.org>',
+    'defaultFrom': 'BV-BRC <do-not-reply@bv-brc.org>',
+    'defaultSender': 'BV-BRC <do-not-reply@bv-brc.org>',
     'host': '',
-    'port': 587
+    'port': 25
   },
   proxy: {
     'brcdownloads': 'http://brcdownloads.patricbrc.org'

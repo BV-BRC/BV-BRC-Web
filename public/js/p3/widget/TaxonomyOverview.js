@@ -21,6 +21,7 @@ define([
     searchName: null,
     docsServiceURL: window.App.docsServiceURL,
     tutorialLink: 'user_guides/organisms_taxon/overview.html',
+    tooltip: 'The “Overview” tab provides a summary of available data, metadata, and list of reference genomes for current taxon level.',
 
     _setStateAttr: function (state) {
       this._set('state', state);
@@ -67,7 +68,7 @@ define([
       }).then(lang.hitch(this, function (summary) {
         domConstruct.empty(this.taxonomySummaryNode);
         const taxonSummary = lang.mixin(taxon, summary)
-        domConstruct.place(DataItemFormatter(taxonSummary, 'taxonomy_data', {}), this.taxonomySummaryNode, 'first');
+        domConstruct.place(DataItemFormatter(taxonSummary, 'taxonomy_overview_data', {}), this.taxonomySummaryNode, 'first');
       }))
     },
     createPubmedLinks: function (taxon) {

@@ -47,13 +47,7 @@ define([
       segments: { label: 'Segments', field: 'segments', hidden: true },
       length: { label: 'Length', field: 'length', hidden: true },
       sequence: { label: 'Sequence', field: 'sequence', hidden: true },
-      comments: { label: 'Comments', field: 'comments', hidden: true },
-      text: { label: 'Text', field: 'text', hidden: true },
-      _version_: { label: 'Version', field: '_version_', hidden: true },
-      date_inserted: { label: 'Date Inserted', field: 'date_inserted', hidden: true },
-      date_modified: { label: 'Date Modified', field: 'date_modfied', hidden: true },
-
-
+      comments: { label: 'Comments', field: 'comments', hidden: true }
     },
     startup: function () {
       var _self = this;

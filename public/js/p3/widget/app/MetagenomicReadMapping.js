@@ -1,11 +1,11 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/array', 'dijit/_WidgetBase', 'dojo/_base/lang', 'dojo/_base/Deferred',
+  'dojo/_base/declare', 'dojo/_base/array', 'dojo/topic', 'dijit/_WidgetBase', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/on', 'dojo/request', 'dojo/dom-class', 'dojo/dom-construct',
   'dojo/text!./templates/MetagenomicReadMapping.html', 'dojo/NodeList-traverse', 'dojo/store/Memory',
   'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
   './AppBase', '../../WorkspaceManager'
 ], function (
-  declare, array, WidgetBase, lang, Deferred,
+  declare, array, Topic, WidgetBase, lang, Deferred,
   on, xhr, domClass, domConstruct,
   Template, children, Memory,
   popup, TooltipDialog, Dialog,
@@ -68,10 +68,14 @@ define([
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
+    },
+
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
     },
 
     getValues: function () {
@@ -392,8 +396,8 @@ define([
       }
     },
 
-    checkBaseParameters: function(values) {
-      //reads and sr
+    checkBaseParameters: function (values) {
+      // reads and sr
       var pairedList = this.libraryStore.query({ _type: 'paired' });
       var singleList = this.libraryStore.query({ _type: 'single' });
       var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
@@ -430,29 +434,29 @@ define([
       if (this.sra_libs.length) {
         values.srr_ids = this.sra_libs;
       }
-      //output_folder
+      // output_folder
       this.output_folder = values.output_path;
-      //output_name
+      // output_name
       this.output_name = values.output_file;
 
       return values;
     },
 
-    intakeRerunForm: function() {
+    intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        var param_dict = {"output_folder":"output_path","strategy":"gene_set_name"};
-        //widget_map
-        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path', 'strategy': 'gene_set_name' };
+        // widget_map
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
         job_data = this.formatRerunJson(job_data);
-        AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
-        localStorage.removeItem("bvbrc_rerun_job");
+        AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+        localStorage.removeItem('bvbrc_rerun_job');
         this.form_flag = true;
       }
     },
 
-    formatRerunJson: function(job_data) {
+    formatRerunJson: function (job_data) {
       if (!job_data.paired_end_libs) {
         job_data.paired_end_libs = [];
       }

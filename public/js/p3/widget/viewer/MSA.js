@@ -196,6 +196,8 @@ define([
     maxSequences: 500,
     numSequences: 0,
     featureData: null,
+    genomeData: null,
+
     selection: null,
     onSetLoading: function (attr, oldVal, loading) {
       if (loading) {
@@ -252,7 +254,7 @@ define([
       this.contentPane.set('content', '<div style="background:red; color: #fff;">' + msg + '</div>');
     },
     onSetData: function (attr, oldVal, data) {
-      // console.log("data", data);
+      console.log('data', data);
       this.createDataMap();
       this.render();
     },
@@ -262,18 +264,18 @@ define([
       var cur = this.selection.map(lang.hitch(this, function (selected) {
         return this.dataMap[selected.id];
       }));
-      // console.log("dataMap", this.dataMap);
-      // console.log("data", this.data);
-      // console.log("cur", cur);
-      // console.log("this.itemDetailPanel", this.itemDetailPanel);
+      console.log('dataMap', this.dataMap);
+      console.log('data', this.data);
+      console.log('cur', cur);
+      console.log('this.itemDetailPanel', this.itemDetailPanel);
       this.selectionActionBar._setSelectionAttr(cur);
       var self = this;
       if (cur.length == 1) {
         var curr_selection = cur[0].feature_id;
-        // console.log("curr_selection", curr_selection);
+        console.log('curr_selection', curr_selection);
         this.featureData.forEach(function (sel) {
-          // console.log("sel", sel);
-          // console.log("this.itemDetailPanel", self.itemDetailPanel);
+          console.log('sel', sel);
+          console.log('this.itemDetailPanel', self.itemDetailPanel);
           if (sel.feature_id == curr_selection) {
             self.itemDetailPanel.set('containerWidget', { containerType: 'feature_data' });
             self.itemDetailPanel.set('selection', [sel]);
@@ -285,27 +287,75 @@ define([
       }
     },
 
+
+    getGenomeData: function (genome_ids) {
+      var def = new Deferred();
+      var url = PathJoin(this.apiServiceUrl, 'genome') + '/';
+      var q = 'in(genome_id,(' + genome_ids + '))&select(genome_id,genome_name,genbank_accessions,species,strain,geographic_group,isolation_country,host_group,host_common_name,collection_year,subtype,lineage,clade)&limit(25000)';
+      console.log('CheckSeqCount URL: ', url);
+      xhr.post(url, {
+        data: q,
+        headers: {
+          accept: 'application/solr+json',
+          'content-type': 'application/rqlquery+x-www-form-urlencoded',
+          'X-Requested-With': null,
+          Authorization: (window.App.authorizationToken || '')
+        },
+        handleAs: 'json'
+      }).then(lang.hitch(this, function (res) {
+        console.log('Check Res: ', res.response);
+        if (res && res.response && res.response.docs) {
+          console.log('  Amount OK');
+          this.genomeData = res.response.docs;
+          def.resolve(res.response.docs);
+
+        }
+      }));
+
+      return def.promise;
+    },
+
     createDataMap: function () {
       var geneID = null;
       var clustal = ['CLUSTAL'];
       var clustal_txt = ['CLUSTAL'];
       var fasta = '';
       var tree_newick = this.data.tree;
-      this.alt_labels = { genome_name: {}, patric_id: {} };
+      this.alt_labels = {
+        genome_name: {},
+        patric_id: {},
+        genome_id: {},
+        genome_name: {},
+        genbank_accessions: {},
+        species: {},
+        strain: {},
+        geographic_group: {},
+        isolation_country: {},
+        host_group: {},
+        host_common_name: {},
+        collection_year: {},
+        subtype: {},
+        lineage: {},
+        clade: {}
+      };
       this.dataStats.idType = null;
       this.dataStats.numFeatures = 0;
       this.dataStats.numOrganisms = 0;
       this.dataStats.minLength = 1000000;
       this.dataStats.maxLength = 0;
       this.dataStats.genomeIDs = {};
-      // console.log("this.data ", this.data);
-      // console.log("this.dataMap ", this.dataMap);
+      var genomeList = [];
+      var default_value = 'N/A';
+
+      console.log('this.data ', this.data);
+      console.log('this.dataMap ', this.dataMap);
+
       this.data.alignment.split('\n').forEach(function (line) {
         if (line.slice(0, 1) == '>') {
           var regex = /^>([^\s]+)\s+\[(.*?)\]/g;
           var headerInfo = regex.exec(line);
           var record = { sequence: [] };
-          // console.log("headerInfo ", headerInfo);
+          console.log('headerInfo ', headerInfo);
           if (!(headerInfo[1] in this.dataMap)) {
             geneID = headerInfo[1];
             clustal.push(geneID + '\t');
@@ -337,6 +387,7 @@ define([
             if (!(headerInfo[2] in this.dataStats.genomeIDs)) {
               this.dataStats.genomeIDs[headerInfo[2]] = 1;
               this.dataStats.numOrganisms += 1;
+              genomeList.push(record.genome_id);
             }
             this.dataMap[geneID] = record;
             this.alt_labels.genome_name[geneID] = this.data.map[geneID].genome_name;
@@ -349,7 +400,18 @@ define([
             else {
               this.alt_labels.patric_id[geneID] = this.data.map[geneID].feature_id;
             }
-
+            this.alt_labels.genome_id[geneID] = default_value;
+            this.alt_labels.genbank_accessions[geneID] = default_value;
+            this.alt_labels.species[geneID] = default_value;
+            this.alt_labels.strain[geneID] = default_value;
+            this.alt_labels.geographic_group[geneID] = default_value;
+            this.alt_labels.isolation_country[geneID] = default_value;
+            this.alt_labels.host_group[geneID] = default_value;
+            this.alt_labels.host_common_name[geneID] = default_value;
+            this.alt_labels.collection_year[geneID] = default_value;
+            this.alt_labels.subtype[geneID] = default_value;
+            this.alt_labels.lineage[geneID] = default_value;
+            this.alt_labels.clade[geneID] = default_value;
           }
         }
         else if (line.trim() != '' && geneID in this.dataMap) {
@@ -362,6 +424,7 @@ define([
           geneID = null;
         }
       }, this);
+
       Object.keys(this.data.map).forEach(lang.hitch(this, function (geneID) {
         if (this.data.map[geneID].aa_length > this.dataStats.maxLength) {
           this.dataStats.maxLength = this.data.map[geneID].aa_length;
@@ -374,11 +437,63 @@ define([
       this.dataStats.clustal_txt = clustal_txt.join('\n');
       this.dataStats.tree_newick = tree_newick;
       this.dataStats.fasta = fasta;
-      // console.log("this.dataStats ", this.dataStats);
-      // console.log("this.dataMap ", this.dataMap);
-      // console.log("this.data ", this.data);
-      // console.log("fasta ", fasta);
 
+      var self = this;
+      when(this.getGenomeData(genomeList), lang.hitch(this, function (genomeData) {
+        console.log('in when genomeData ', self.genomeData);
+
+        Object.keys(self.data.map).forEach(lang.hitch(self, function (geneID) {
+          self.genomeData.forEach(function (genome) {
+            console.log('in when genomeData genome', genome);
+            console.log('in when dataMap', self.dataMap);
+            console.log('in when data ', self.data);
+
+            if (self.dataMap[geneID].genome_id == genome.genome_id) {
+              if (genome.genome_id) {
+                self.alt_labels.genome_id[geneID] = genome.genome_id;
+              }
+              if (genome.genbank_accessions) {
+                self.alt_labels.genbank_accessions[geneID] = genome.genbank_accessions;
+              }
+              if (genome.species) {
+                self.alt_labels.species[geneID] = genome.species;
+              }
+              if (genome.strain) {
+                self.alt_labels.strain[geneID] = genome.strain;
+              }
+              if (genome.geographic_group) {
+                self.alt_labels.geographic_group[geneID] = genome.geographic_group;
+              }
+              if (genome.isolation_country) {
+                self.alt_labels.isolation_country[geneID] = genome.isolation_country;
+              }
+              if (genome.host_group) {
+                self.alt_labels.host_group[geneID] = genome.host_group;
+              }
+              if (genome.host_group) {
+                self.alt_labels.host_common_name[geneID] = genome.host_common_name;
+              }
+              if (genome.collection_year) {
+                self.alt_labels.collection_year[geneID] = genome.collection_year.toString();
+              }
+              if (genome.subtype) {
+                self.alt_labels.subtype[geneID] = genome.subtype;
+              }
+              if (genome.lineage) {
+                self.alt_labels.lineage[geneID] = genome.lineage;
+              }
+              if (genome.clade) {
+                self.alt_labels.clade[geneID] = genome.clade;
+              }
+            }
+          });
+        }));
+
+        console.log('in when alt_labels ', self.alt_labels);
+
+      }), lang.hitch(this, function (genomeData) {
+        self.showError('Error retrieving genome data.');
+      }));
     },
 
     createViewerData: function () {
@@ -456,13 +571,51 @@ define([
       this.tree.d3Tree('#' + this.id + 'tree-container', { phylogram: this.phylogram, fontSize: 12 });
       this.tree.setTree(this.data.tree);
       // this.tree.setTree(this.data.tree);
-
       var idMenuDivs = [];
       this.tree.addLabels(this.alt_labels.genome_name, 'Genome Name');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Genome Name">Genome Name</div>');
+
       this.tree.addLabels(this.alt_labels.patric_id, 'Gene ID');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Gene ID">Gene ID</div>');
+
+      this.tree.addLabels(this.alt_labels.genbank_accessions, 'Accession');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="Accession">Accession</div>');
+
+      this.tree.addLabels(this.alt_labels.species, 'Species');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="Species">Species</div>');
+
+      this.tree.addLabels(this.alt_labels.strain, 'Strain');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="Strain">Strain</div>');
+
+      this.tree.addLabels(this.alt_labels.geographic_group, 'Geographic Group');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="Geographic Group">Geographic Group</div>');
+
+      this.tree.addLabels(this.alt_labels.isolation_country, 'Isolation Country');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="Isolation Country">Isolation Country</div>');
+
+      this.tree.addLabels(this.alt_labels.host_group, 'Host Group');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="Host Group">Host Group</div>');
+
+      this.tree.addLabels(this.alt_labels.host_common_name, 'Host Common Name');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="Host Common Name">Host Common Name</div>');
+
+      this.tree.addLabels(this.alt_labels.collection_year, 'Collection Year');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="Collection Year">Collection Year</div>');
+
+      this.tree.addLabels(this.alt_labels.subtype, 'Subtype');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="Subtype">Subtype</div>');
+
+      this.tree.addLabels(this.alt_labels.lineage, 'Lineage');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="Lineage">Lineage</div>');
+
+      this.tree.addLabels(this.alt_labels.clade, 'Clade');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="Clade">Clade</div>');
+
+
       idMenu.set('content', idMenuDivs.join(''));
+
+      console.log('idMenuDivs ', idMenuDivs);
+      console.log('idMenu ', idMenu);
 
       this.tree.startup();
       this.tree.selectLabels('Genome Name');
@@ -676,21 +829,19 @@ define([
 
         delete snapMenu.selection;
         if (rel == 'msa') {
-          msa.utils.export.saveAsImg(m, 'PATRIC_msa.png');
+          msa.utils.export.saveAsImg(m, 'BVBRC_msa.png');
         }
         else if (rel == 'msa-txt') {
-          saveAs(new Blob([this.dataStats.clustal_txt]), 'PATRIC_msa.txt');
+          saveAs(new Blob([this.dataStats.clustal_txt]), 'BVBRC_msa.txt');
         }
         else if (rel == 'msa-fasta') {
-          // msa.utils.export.saveAsFile(m, "PATRIC_msa.fasta");
-          // console.log("this.dataStats.fasta ", this.dataStats.fasta);
-          saveAs(new Blob([this.dataStats.fasta]), 'PATRIC_msa.fasta');
+          saveAs(new Blob([this.dataStats.fasta]), 'BVBRC_msa.fasta');
         }
         else if (rel == 'tree-svg') {
-          saveAs(new Blob([query('svg')[0].outerHTML]), 'PATRIC_msa_tree.svg');
+          saveAs(new Blob([query('svg')[0].outerHTML]), 'BVBRC_msa_tree.svg');
         }
         else if (rel == 'tree-newick') {
-          saveAs(new Blob([this.dataStats.tree_newick]), 'PATRIC_msa_tree.nwk');
+          saveAs(new Blob([this.dataStats.tree_newick]), 'BVBRC_msa_tree.nwk');
         }
         popup.close(snapMenu);
       }));
@@ -743,7 +894,7 @@ define([
 
     doAlignment: function () {
       console.log('doAlignment()');
-      // console.log("this.state.search ", this.state.search);
+      console.log('this.state.search ', this.state.search);
       this.set('loading', true);
       if (this.state && this.state.search) {
         var q = this.state.search + '&limit(' + this.maxSequences + ')';
@@ -794,7 +945,7 @@ define([
           tooltip: 'Toggle Details Pane'
         },
         function (selection, container, button) {
-          // console.log("Toggle Item Detail Panel",this.itemDetailPanel.id, this.itemDetailPanel);
+          console.log('Toggle Item Detail Panel', this.itemDetailPanel.id, this.itemDetailPanel);
 
           var children = this.getChildren();
           // console.log("Children: ", children);
@@ -961,7 +1112,7 @@ define([
           validContainerTypes: ['*']
         },
         function (selection) {
-          // console.log("MSA Selection: ", selection);
+          console.log('MSA Selection: ', selection);
           var ids = selection.map(function (d) {
             return d.feature_id;
           });

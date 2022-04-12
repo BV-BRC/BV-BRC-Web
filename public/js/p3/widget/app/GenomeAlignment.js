@@ -1,10 +1,10 @@
 define([
-  'dojo/_base/declare', 'dojo/on', 'dojo/dom-class',
+  'dojo/_base/declare', 'dojo/on', 'dojo/topic', 'dojo/dom-class',
   'dojo/text!./templates/GenomeAlignment.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/lang', 'dojo/query', 'dijit/Dialog', 'dojo/dom-style',
   '../../WorkspaceManager', 'dojo/when', 'dojo/request', '../SelectedTable'
 ], function (
-  declare, on, domClass,
+  declare, on, Topic, domClass,
   Template, AppBase, domConstruct, registry,
   lang, query, Dialog, domStyle,
   WorkspaceManager, when, request, SelectedTable
@@ -74,10 +74,14 @@ define([
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
+    },
+
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
     },
 
 
@@ -170,7 +174,7 @@ define([
         var info = genomeIDs.map(function (id) {
           var res_filter = res.filter(function (obj) { return obj.genome_id == id; });
           if (res_filter.length == 0) {
-            console.log("No genome_name found for genome_id: ",id);
+            console.log('No genome_name found for genome_id: ', id);
             return null;
           }
           var name = res_filter[0].genome_name;
@@ -204,31 +208,31 @@ define([
       // if seedWeight isn't specified, let mauve figure it out
       if (!this.seedWeightSwitch.checked) obj.seedWeight = null;
 
-      obj = this.checkBaseParameters(values,obj);
+      obj = this.checkBaseParameters(values, obj);
 
       return obj;
     },
 
-    checkBaseParameters: function(values,obj) {
+    checkBaseParameters: function (values, obj) {
       // get the ids from table selection
       var genomeIDs = this.selectedTable.getRows().map(function (obj) { return obj.id; });
-      //genome_ids and genome group
+      // genome_ids and genome group
       obj.genome_ids = genomeIDs;
       this.target_genome_id = genomeIDs;
-      //strategy/recipe
+      // strategy/recipe
       obj.recipe = 'progressiveMauve';
       this.strategy = 'progressiveMauve';
-      //output_folder
+      // output_folder
       obj.output_path = values.output_path;
       this.output_path = values.output_path;
-      //output_name
+      // output_name
       obj.output_file = values.output_file;
       this.output_name = values.output_file;
 
       return obj;
     },
 
-    addGenomeList: function(job_data) {
+    addGenomeList: function (job_data) {
       var self = this;
       when(self.getGenomeInfo(job_data.genome_ids), function (genomeInfos) {
         genomeInfos.forEach(function (info) {
@@ -238,32 +242,32 @@ define([
       });
     },
 
-    intakeRerunForm: function() {
+    intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        var param_dict = {"output_folder":"output_path"};
-        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
-        if (job_data.hasOwnProperty("genome_group")) { //support for filling in the form based on genome groups
-          this.genomeGroupSelector.set("value",job_data["genome_group"]);
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path' };
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
+        if (job_data.hasOwnProperty('genome_group')) { // support for filling in the form based on genome groups
+          this.genomeGroupSelector.set('value', job_data['genome_group']);
           this.genomeGroupButton.onClick();
         } else {
-          this.addGenomeList(JSON.parse(localStorage.getItem("bvbrc_rerun_job")));
-          this.serviceSpecific(JSON.parse(localStorage.getItem("bvbrc_rerun_job")));
+          this.addGenomeList(JSON.parse(localStorage.getItem('bvbrc_rerun_job')));
+          this.serviceSpecific(JSON.parse(localStorage.getItem('bvbrc_rerun_job')));
         }
-        localStorage.removeItem("bvbrc_rerun_job");
+        localStorage.removeItem('bvbrc_rerun_job');
         this.form_flag = true;
       }
     },
 
-    serviceSpecific: function(job_data) {
-      //TODO: Skipping setting seed weight
-      var attach_list = ["maxGappedAlignerLength","maxBreakpointDistanceScale","conservationDistanceScale","weight","minScaledPenalty","hmmPGoHomologous","hmmPGoUnrelated"];
-      attach_list.forEach(function(attach_point) {
+    serviceSpecific: function (job_data) {
+      // TODO: Skipping setting seed weight
+      var attach_list = ['maxGappedAlignerLength', 'maxBreakpointDistanceScale', 'conservationDistanceScale', 'weight', 'minScaledPenalty', 'hmmPGoHomologous', 'hmmPGoUnrelated'];
+      attach_list.forEach(function (attach_point) {
         if (job_data[attach_point]) {
-          this[attach_point].set("value",job_data[attach_point]);
+          this[attach_point].set('value', job_data[attach_point]);
         }
-      },this);
+      }, this);
     }
   });
 

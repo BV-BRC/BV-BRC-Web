@@ -4,14 +4,14 @@ define([
   '../formatter', '../TabContainer', '../FeatureOverview',
   'dojo/request', 'dojo/_base/lang',
   '../ActionBar', '../ContainerActionBar', '../PathwaysContainer',
-  '../TranscriptomicsContainer', '../CorrelatedGenesContainer', '../../util/PathJoin'
+  '../ExperimentsContainer', '../CorrelatedGenesContainer', '../../util/PathJoin'
 ], function (
   declare, TabViewerBase, on, Topic,
   domClass, ContentPane, domConstruct,
   formatter, TabContainer, FeatureOverview,
   xhr, lang,
   ActionBar, ContainerActionBar, PathwaysContainer,
-  TranscriptomicsContainer, CorrelatedGenesContainer, PathJoin
+  ExperimentsContainer, CorrelatedGenesContainer, PathJoin
 ) {
   return declare([TabViewerBase], {
     baseClass: 'FeatureGroup',

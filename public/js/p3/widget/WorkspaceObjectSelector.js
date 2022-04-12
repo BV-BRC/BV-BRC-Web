@@ -44,11 +44,13 @@ define([
     reset: function () {
       this.searchBox.set('value', '');
     },
+
     _setPlaceHolderAttr: function (val) {
       if (this.searchBox) {
         this.searchBox.set('placeHolder', val);
       }
     },
+
     _setShowUnspecifiedAttr: function (val) {
       this.showUnspecified = val;
       if (val) {
@@ -64,12 +66,15 @@ define([
         this.grid.set('types', this.type);
       }
     },
+
     sortAlpha: function () {
       // but, isSortAlpha is never set to false
       // it should be possible to toggle instead
+      console.log('sort alpha');
       this.isSortAlpha = true;
-      this.refreshWorkspaceItems();
+      // this.refreshWorkspaceItems();
     },
+
     _setShowHiddenAttr: function (val) {
       this.showHidden = val;
       window.App.showHiddenFiles = val;
@@ -91,6 +96,7 @@ define([
         this.searchBox.set('disabled', val);
       }
     },
+
     _setRequiredAttr: function (val) {
       this.required = val;
       if (this.searchBox) {
@@ -99,12 +105,14 @@ define([
     },
 
     // sets path, which is used for the dialog state (not for the dropbox)
+    // JSP: Need to check if the workspace changes to change the dropbox memory store.
     _setPathAttr: function (val) {
       if (!val) return; // for group selection (hacky)
 
       var self = this;
 
       // remove trailing '/' in path for consistency
+      // var oldWorkspace = this.extractWorkspace(this.path);
       this.path = val[val.length - 1] === '/' ? val.substring(0, val.length - 1) : val;
       if (this.grid) {
         this.grid.set('path', val);
@@ -126,29 +134,29 @@ define([
           domClass.add(query('[rel="createFolder"]', self.selectionPane.domNode)[0], 'dijitHidden');
           domClass.add(query('[rel="createWS"]', self.selectionPane.domNode)[0], 'dijitHidden');
 
-          if (this.allowUpload)
-          { domClass.add(query('[rel="upload"]', self.selectionPane.domNode)[0], 'dijitHidden'); }
+          if (this.allowUpload) { domClass.add(query('[rel="upload"]', self.selectionPane.domNode)[0], 'dijitHidden'); }
 
           // if usual workspace
         } else if (parts.length < 3) {
           domClass.add(query('[rel="createFolder"]', self.selectionPane.domNode)[0], 'dijitHidden');
           domClass.remove(query('[rel="createWS"]', self.selectionPane.domNode)[0], 'dijitHidden');
 
-          if (this.allowUpload)
-          { domClass.add(query('[rel="upload"]', self.selectionPane.domNode)[0], 'dijitHidden'); }
+          if (this.allowUpload) { domClass.add(query('[rel="upload"]', self.selectionPane.domNode)[0], 'dijitHidden'); }
 
           // else, is usual folder
         } else {
           domClass.remove(query('[rel="createFolder"]', self.selectionPane.domNode)[0], 'dijitHidden');
           domClass.add(query('[rel="createWS"]', self.selectionPane.domNode)[0], 'dijitHidden');
 
-          if (this.allowUpload)
-          { domClass.remove(query('[rel="upload"]', self.selectionPane.domNode)[0], 'dijitHidden'); }
+          if (this.allowUpload) { domClass.remove(query('[rel="upload"]', self.selectionPane.domNode)[0], 'dijitHidden'); }
         }
       }
 
-      this.cancelRefresh();
-      this.refreshWorkspaceItems();
+      // var newWorkspace = this.extractWorkspace(val);
+      // if (this.onWorkspace(newWorkspace) && newWorkspace !== oldWorkspace) {
+      //   this.cancelRefresh();
+      //   this.refreshWorkspaceItems(newWorkspace);
+      // }
 
       // whether or not to allow top level
       var allowedLevel = this.allowUserSpaceSelection ? true : self.path.split('/').length > 2;
@@ -167,8 +175,21 @@ define([
       if (this.autoSelectCurrent && !allowedLevel) {
         self.set('selection', '*N/A*');
       }
-
     },
+
+    // onWorkspace: function (val) {
+    //   val = val[val.length - 1] === '/' ? val.substring(0, val.length - 1) : val;
+    //   if (val.split('/', 3).length <= 2) {
+    //     return false;
+    //   }
+    //   return true;
+    // },
+
+    extractWorkspace: function (val) {
+      val = val[val.length - 1] === '/' ? val.substring(0, val.length - 1) : val;
+      return val.split('/', 3).join('/');
+    },
+
     _setTypeAttr: function (type) {
       this.type = Array.isArray(type) ? type : [type];
 
@@ -176,20 +197,22 @@ define([
         this.grid.set('types', (['folder'].concat(this.type)));
       }
       this.cancelRefresh();
+      // this.refreshWorkspaceItems(this.extractWorkspace(this.path));
       this.refreshWorkspaceItems();
     },
 
     // sets value of object selector dropdown
     _setValueAttr: function (value, refresh) {
       this.value = value;
-      if (this._started) {
-        if (refresh) {
-          this.refreshWorkspaceItems();
-        } else {
-          this.searchBox.set('value', this.value);
-        }
-      }
+      this.searchBox.set('value', this.value);
 
+      // if (this._started) {
+      //   if (refresh) {
+      //     this.refreshWorkspaceItems(this.extractWorkspace(this.path));
+      //   } else {
+      //     this.searchBox.set('value', this.value);
+      //   }
+      // }
     },
 
     _getValueAttr: function (value) {
@@ -220,9 +243,9 @@ define([
       // give help text for auto selecting parent folder
       var isCurrentlyViewed = (
         this.autoSelectCurrent &&
-          this.type.length == 1 &&
-          this.type[0] == 'folder' &&
-          val.path == this.path
+        this.type.length == 1 &&
+        this.type[0] == 'folder' &&
+        val.path == this.path
       );
 
       if (val == '*N/A*') {
@@ -262,7 +285,6 @@ define([
         innerHTML: '<span class="selectedDest"><b>' + this.selectionText + ':</b> None.</span>',
         style: { margin: '5px 0', 'float': 'left' }
       }, wrap);
-
 
       // create workspace button
       var createWSBtn = domConstr.create('i', {
@@ -307,8 +329,7 @@ define([
         innerHTML: ''
       }, wrap);
 
-
-        // upload button, if needed
+      // upload button, if needed
       if (this.allowUpload) {
         var uploadBtn = domConstr.create('i', {
           rel: 'upload',
@@ -330,16 +351,15 @@ define([
 
       if (this.path.split('/').length <= 2) {
         domClass.add(query('[rel="createFolder"]', wrap)[0], 'dijitHidden');
-        if (this.allowUpload)
-        { domClass.add(query('[rel="upload"]', wrap)[0], 'dijitHidden'); }
+        if (this.allowUpload) { domClass.add(query('[rel="upload"]', wrap)[0], 'dijitHidden'); }
       } else {
         domClass.add(query('[rel="createWS"]', wrap)[0], 'dijitHidden');
-        if (this.allowUpload)
-        { domClass.remove(query('[rel="upload"]', wrap)[0], 'dijitHidden'); }
+        if (this.allowUpload) { domClass.remove(query('[rel="upload"]', wrap)[0], 'dijitHidden'); }
       }
 
       return wrap;
     },
+
     focus: function () {
       // summary:
       //  Put focus on this widget
@@ -354,7 +374,8 @@ define([
     },
 
     openChooser: function () {
-      this.refreshWorkspaceItems();
+      // JSP: Simply opening the chooser probably doesn't require changing the drop down memory store.
+      // this.refreshWorkspaceItems(this.path);
       var _self = this;
 
       // if dialog is already built, just show it
@@ -363,7 +384,6 @@ define([
         this.dialog.show();
         return;
       }
-
 
       this.dialog = new Dialog({
         title: this.title,
@@ -453,7 +473,6 @@ define([
         position: ['above']
       });
 
-
       // dialog cancel/ok buttons
       var cancelButton = new Button({ label: 'Cancel' });
       cancelButton.on('click', function () {
@@ -467,9 +486,12 @@ define([
       okButton.on('click', function (evt) {
         if (_self.selection) {
           // if autoSelectCurrent we need to implicitly select current
-          if (_self.autoSelectCurrent) {
-            _self.set('selection', _self.selection);
-          }
+          // ASW: it's not clear this  check actually needs to happen given the value is being set anyway
+          // commenting out to remove "public annotation selection bug"
+          // if (_self.autoSelectCurrent) {
+          //  _self.set('selection', _self.selection);
+          // }
+          _self.set('selection', _self.selection);
 
           _self.set('value', _self.selection.path);
         }
@@ -497,7 +519,6 @@ define([
       frontBC.addChild(buttonsPane);
       frontBC.startup();
 
-
       // add uploader to back side of dialog
       if (_self.allowUpload) {
         var backhead = new ContentPane({
@@ -513,7 +534,6 @@ define([
               break;
           }
         });
-
 
         this.dialog.backpaneTitleBar.innerHTML = 'Upload files to Workspace';
         var uploader = this.uploader = new Uploader({
@@ -565,8 +585,11 @@ define([
       }
     },
 
-    refreshWorkspaceItems: function () {
-      if (this.disableDropdownSelector || this._refreshing) {
+    refreshWorkspaceItems: function (target_path) {
+      if (this.disableDropdownSelector || this._refreshing || target_path === '') {
+        return;
+      }
+      if (typeof target_path === 'object' && target_path !== undefined) {
         return;
       }
       function compare(a, b) {
@@ -578,8 +601,7 @@ define([
         }
         return 0;
       }
-
-      this._refreshing = WorkspaceManager.getObjectsByType(this.type)
+      this._refreshing = WorkspaceManager.getObjectsByType(this.type, target_path)
         .then(lang.hitch(this, function (items) {
           delete this._refreshing;
 
@@ -601,6 +623,7 @@ define([
           }
         }));
     },
+
     onSearchChange: function (value) {
       this.set('value', value);
       this.onChange(value);
@@ -621,7 +644,6 @@ define([
           popup.close(ihandle);
         });
       }
-
     },
 
     onChange: function (value) {
@@ -630,28 +652,27 @@ define([
     onSelection: function () {
       /* can be overwritten */
     },
+
     startup: function () {
       if (this._started) {
         return;
       }
-
       this.inherited(arguments);
-
       var _self = this;
       if (!this.path) {
         Deferred.when(WorkspaceManager.get('currentPath'), function (path) {
           _self.set('path', path);
-          _self.refreshWorkspaceItems();
+          // _self.refreshWorkspaceItems();
         });
-      } else {
-        this.refreshWorkspaceItems();
       }
+      // else {
+      // this.refreshWorkspaceItems();
+      // }
       Topic.subscribe('/refreshWorkspace', lang.hitch(this, 'refreshWorkspaceItems'));
       this.searchBox.set('disabled', this.disabled);
       this.searchBox.set('required', this.required);
       this.searchBox.set('placeHolder', this.placeHolder);
       this.searchBox.labelFunc = this.labelFunc;
-
       // window.App.refreshSelector = this.refreshWorkspaceItems;
     },
 
@@ -692,7 +713,6 @@ define([
           obj.validate();
         });
       }
-
       return isValid;
     },
 
@@ -712,9 +732,7 @@ define([
 
     createGrid: function () {
       var self = this;
-
-
-      var grid =  new Grid({
+      var grid = new Grid({
         region: 'center',
         path: this.path,
         selectionMode: 'single',
@@ -730,8 +748,7 @@ define([
               if (item.type == 'job_result' && item.autoMeta && item.autoMeta.app) {
                 return item.type + '_' + (item.autoMeta.app.id ? item.autoMeta.app.id : item.autoMeta.app);
               } else if (item.type == 'folder' && item.path.split('/').length <= 3) {
-                if (item.global_permission != 'n')
-                { return 'publicWorkspace'; }
+                if (item.global_permission != 'n') { return 'publicWorkspace'; }
 
                 // determine if shared or not
                 return item.permissions.length > 1 ? 'sharedWorkspace' : 'workspace';
@@ -799,7 +816,7 @@ define([
         }
         Deferred.when(WorkspaceManager.createFolder(self.path + '/' + name), function () {
           self.grid.refreshWorkspace();
-          self.refreshWorkspaceItems();
+          // self.refreshWorkspaceItems();
         });
       });
       grid.allowSelect = function (row) {
@@ -808,7 +825,6 @@ define([
         }
         return false;
       };
-
 
       // Note: this event also applies to clicking on folder/object icons grid
       grid.on('ItemDblClick', function (evt) {

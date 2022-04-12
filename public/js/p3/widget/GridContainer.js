@@ -5,7 +5,7 @@ define([
   'dojo/topic', 'dojo/query', 'dijit/layout/ContentPane', 'dojo/text!./templates/IDMapping.html',
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog', './DownloadTooltipDialog', './PerspectiveToolTip',
   './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin',
-  './FeatureDetailsTooltipDialog'
+  './FeatureDetailsTooltipDialog', './ServicesTooltipDialog'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
@@ -13,7 +13,7 @@ define([
   Topic, query, ContentPane, IDMappingTemplate,
   Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
   CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin,
-  FeatureDetailsTooltipDialog
+  FeatureDetailsTooltipDialog, ServicesTooltipDialog
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -111,13 +111,12 @@ define([
     store: null,
     apiServer: window.App.dataServiceURL,
     docsServiceURL: window.App.docsServiceURL,
-    tutorialLink: 'user_guides/',
+    tutorialLink: 'quick_references/',
     queryOptions: null,
     columns: null,
     enableAnchorButton: false,
     showAutoFilterMessage: true,
-    maxDownloadSize: 2500000,
-    containerType: "",
+    containerType: '',
 
     _setColumnsAttr: function (columns) {
       if (this.grid) {
@@ -133,13 +132,13 @@ define([
       return this.columns || {};
     },
 
-    _setContainerTypeAttr: function(containerType) {
+    _setContainerTypeAttr: function (containerType) {
       this.containerType = containerType;
-      if (this.selectionActionBar){
-        this.selectionActionBar.set("currentContainerWidget", this)
+      if (this.selectionActionBar) {
+        this.selectionActionBar.set('currentContainerWidget', this)
       }
-      if (this.itemDetailPanel){
-        this.itemDetailPanel.set("containerWidget",this)
+      if (this.itemDetailPanel) {
+        this.itemDetailPanel.set('containerWidget', this)
       }
     },
 
@@ -359,7 +358,7 @@ define([
           tooltip: 'Download Selection',
           max: 10000,
           tooltipDialog: downloadSelectionTT,
-          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'surveillance_data', 'serology_data', 'strain_data', 'epitope_data']
+          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'surveillance_data', 'serology_data', 'epitope_data']
         },
         function (selection, container) {
 
@@ -411,6 +410,65 @@ define([
             });
           }), 10);
 
+        },
+        false
+      ], [
+        'Services',
+        'fa icon-cog fa-2x',
+        {
+          label: 'SERVICES',
+          multiple: true,
+          max: 100,
+          tooltip: 'Submit selection to a service',
+          // tooltipDialog: ,
+          validTypes: ['*'], // TODO: check this
+          validContainerTypes: ['*'] // TODO: probably have to change this instead
+        },
+        function (selection, container, button) {
+          // TODO: containerTypes: amr(?), sequence_data, feature_data, structure_data, spgene_data, proteinFeatures_data, pathway_data, subsystems(?)
+          console.log('selection=', selection);
+          console.log('container=', container);
+          var context = null;
+          var multiple = false;
+          var params = {};
+          if (selection.length > 1) {
+            multiple = true;
+          }
+          var type;
+          if (container.containerType === 'sequence_data' || container.containerType == 'genome_data') {
+            type = 'genome_group';
+            context = 'genome';
+          } else if (container.containerType == 'feature_data' || container.containerType == 'transcriptomics_gene_data' || container.containerType == 'spgene_data' || container.containerType == 'strain_data') {
+            type = 'feature_group';
+            context = 'feature';
+          } else if (container.containerType == 'transcriptomics_experiment_data') {
+            type = 'experiment_group';
+          }
+          if (!type) {
+            console.error('Missing or invalid type for Services');
+            return;
+          }
+          if (!context) {
+            context = '';
+          }
+          params.type = type;
+          params.data_context = context;
+          params.multiple = multiple;
+          params.selection = selection;
+          params.container = container;
+          popup.open({
+            popup: new ServicesTooltipDialog({
+              context: 'grid_container',
+              button: button,
+              data: params,
+            }),
+            parent: this,
+            around: button,
+            orient: ['below'],
+            onClose: function () {
+              console.log('closing');
+            }
+          });
         },
         false
       ], [
@@ -555,7 +613,7 @@ define([
           multiple: false,
           tooltip: 'Switch to Genome View. Press and Hold for more options.',
           ignoreDataType: true,
-          validContainerTypes: ['sequence_data', 'feature_data', 'spgene_data', 'sequence_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'strain_data'],
+          validContainerTypes: ['sequence_data', 'feature_data', 'spgene_data', 'sequence_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data'],
           pressAndHold: function (selection, button, opts, evt) {
             popup.open({
               popup: new PerspectiveToolTipDialog({ perspectiveUrl: '/view/Genome/' + selection[0].genome_id }),
@@ -620,6 +678,30 @@ define([
         function (selection) {
           var sel = selection[0];
           Topic.publish('/navigate', { href: '/view/Surveillance/' + sel.sample_identifier, target: 'blank' });
+        },
+        false
+      ],
+
+      [
+        'ViewSurveillanceMapItem',
+        'MultiButton fa icon-map-o fa-2x',
+        {
+          label: 'MAP',
+          validTypes: ['*'],
+          multiple: true,
+          max: 5000,
+          tooltip: 'Switch to Surveillance Data Map View.',
+          ignoreDataType: true,
+          validContainerTypes: ['surveillance_data']
+        },
+        function (selection) {
+          const idList = Array.from(selection.reduce((p, v) => {
+            return p.add(v.id)
+          }, new Set()));
+          Topic.publish('/navigate', {
+            href: '/view/SurveillanceDataMap/?in(id,(' + idList.join(',') + '))',
+            target: 'blank'
+          });
         },
         false
       ],
@@ -990,12 +1072,12 @@ define([
           label: 'EXPRMNT',
           multiple: false,
           validTypes: ['*'],
-          validContainerTypes: ['transcriptomics_experiment_data'],
+          validContainerTypes: ['experiment_data'],
           tooltip: 'View Experiment'
         },
         function (selection) {
           var experimentIdList = selection.map(function (exp) {
-            return exp.eid;
+            return exp.exp_id;
           });
           Topic.publish('/navigate', {
             href: '/view/ExperimentComparison/' + experimentIdList + '#view_tab=overview',
@@ -1004,7 +1086,7 @@ define([
         },
         false
       ], [
-        'TranscriptomicsExperimentList',
+        'ExperimentList',
         'fa icon-selection-ExperimentList fa-2x',
         {
           label: 'EXPRMNTS',
@@ -1012,16 +1094,16 @@ define([
           min: 2,
           max: 5000,
           validTypes: ['*'],
-          validContainerTypes: ['transcriptomics_experiment_data'],
+          validContainerTypes: ['experiment_data'],
           tooltip: 'View Experiment List'
         },
         function (selection) {
           var experimentIdList = selection.map(function (exp) {
-            return exp.eid;
+            return exp.exp_id;
           });
 
           Topic.publish('/navigate', {
-            href: '/view/TranscriptomicsExperimentList/?in(eid,(' + experimentIdList.join(',') + '))#view_tab=experiments',
+            href: '/view/ExperimentList/?in(exp_id,(' + experimentIdList.join(',') + '))#view_tab=experiments',
             target: 'blank'
           });
         },
@@ -1030,28 +1112,22 @@ define([
         'ExperimentGeneList',
         'fa icon-list-unordered fa-2x',
         {
-          label: 'GENES',
+          label: 'BIOSETS',
           multiple: true,
           validTypes: ['*'],
           max: 5000,
-          validContainerTypes: ['transcriptomics_experiment_data', 'transcriptomics_sample_data'],
+          validContainerTypes: ['experiment_data', 'bioset_data'],
           tooltip: 'View Experiment Gene List'
         },
         function (selection) {
-          var experimentIdList = selection.map(function (exp) {
-            return exp.eid;
+          const experimentIdSet = new Set(selection.map(function (exp) {
+            return exp.exp_id;
+          }))
+
+          Topic.publish('/navigate', {
+            href: '/view/BiosetResult/?in(exp_id,(' + Array.from(experimentIdSet).join(',') + '))',
+            target: 'blank'
           });
-          if (experimentIdList.length == 1) {
-            Topic.publish('/navigate', {
-              href: '/view/TranscriptomicsExperiment/?eq(eid,(' + experimentIdList + '))',
-              target: 'blank'
-            });
-          } else {
-            Topic.publish('/navigate', {
-              href: '/view/TranscriptomicsExperiment/?in(eid,(' + experimentIdList.join(',') + '))',
-              target: 'blank'
-            });
-          }
         },
         false
       ], [
@@ -1064,7 +1140,7 @@ define([
           max: 5000,
           validTypes: ['*'],
           tooltip: 'Pathway Summary',
-          validContainerTypes: ['spgene_data', 'transcriptomics_gene_data', 'proteinfamily_data', 'pathway_data']
+          validContainerTypes: ['spgene_data', 'transcriptomics_gene_data', 'proteinfamily_data', 'pathway_data', 'pathwayTab_data']
         },
         function (selection, containerWidget) {
 
@@ -1194,7 +1270,7 @@ define([
           requireAuth: true,
           max: 10000,
           tooltip: 'Add selection to a new or existing group',
-          validContainerTypes: ['genome_data', 'feature_data', 'transcriptomics_experiment_data', 'transcriptomics_gene_data', 'spgene_data', 'strain_data']
+          validContainerTypes: ['genome_data', 'feature_data', 'transcriptomics_experiment_data', 'transcriptomics_gene_data', 'spgene_data']
         },
         function (selection, containerWidget) {
           var dlg = new Dialog({ title: 'Add selected items to group' });
@@ -1206,7 +1282,7 @@ define([
 
           if (containerWidget.containerType == 'genome_data') {
             type = 'genome_group';
-          } else if (containerWidget.containerType == 'feature_data' || containerWidget.containerType == 'transcriptomics_gene_data' || containerWidget.containerType == 'spgene_data' || containerWidget.containerType == 'strain_data') {
+          } else if (containerWidget.containerType == 'feature_data' || containerWidget.containerType == 'transcriptomics_gene_data' || containerWidget.containerType == 'spgene_data') {
             type = 'feature_group';
           } else if (containerWidget.containerType == 'transcriptomics_experiment_data') {
             type = 'experiment_group';
@@ -1294,12 +1370,12 @@ define([
         false
       ], [
         'ViewTaxon',
-        'fa icon-selection-Taxonomy fa-2x',
+        'fa icon-eye fa-2x',
         {
-          label: 'TAXONOMY',
+          label: 'TAXON OVERVIEW',
           multiple: false,
           validTypes: ['*'],
-          tooltip: 'Switch to Taxonomy View. Press and Hold for more options.',
+          tooltip: 'Switch to Taxon Overview for the selected taxa and access genomes or genes/proteins associated with it. Press and Hold for more options.',
           validContainerTypes: ['taxonomy_data', 'taxon_data'],
           pressAndHold: function (selection, button, opts, evt) {
             popup.open({
@@ -1317,6 +1393,36 @@ define([
           Topic.publish('/navigate', { href: '/view/Taxonomy/' + sel.taxon_id + '#view_tab=overview' });
         },
         false
+      ], [
+        'ViewGenomeFromTaxon',
+        'MultiButton fa icon-selection-GenomeList fa-2x',
+        {
+          label: 'GENOMES',
+          validTypes: ['*'],
+          multiple: false,
+          tooltip: 'Switch to the Genomes tab view for the selected taxon.',
+          ignoreDataType: true,
+          validContainerTypes: ['taxonomy_data'],
+        },
+        function (selection) {
+          var sel = selection[0];
+          Topic.publish('/navigate', { href: '/view/Taxonomy/' + sel.taxon_id + '#view_tab=genomes' });
+        },
+      ], [
+        'ViewFeatureFromTaxon',
+        'MultiButton fa icon-selection-FeatureList fa-2x',
+        {
+          label: 'FEATURES',
+          validTypes: ['*'],
+          multiple: false,
+          tooltip: 'Switch to the Features / Proteins tab view for the selected taxon.',
+          ignoreDataType: true,
+          validContainerTypes: ['taxonomy_data'],
+        },
+        function (selection) {
+          var sel = selection[0];
+          Topic.publish('/navigate', { href: '/view/Taxonomy/' + sel.taxon_id + '#view_tab=features' });
+        },
       ],
       [
         'ViewGenomesFromTaxons',
@@ -1625,7 +1731,9 @@ define([
                 this.grid.selectedData[rownum] = row.data;
               }
               else {
-                this.grid.selectedData = {};
+                if (!this.grid.selectedData) {
+                  this.grid.selectedData = {}
+                }
                 this.grid.selectedData.primaryKey = this.grid.primaryKey;
                 this.grid.selectedData[rownum] = row.data;
               }

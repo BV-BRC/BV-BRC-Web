@@ -44,14 +44,15 @@ define([
     downloadSelection: function (type, selection) {
 
       var conf = this.downloadableConfig[this.containerType];
-      var dataType,
-        pkField;
+      var dataType, pkField, sortField;
       if ((type == 'dna+fasta' || type == 'protein+fasta') && conf.secondaryDataType && conf.secondartyPK) {
         dataType = conf.secondaryDataType;
         pkField = conf.secondartyPK;
+        sortField = (conf.secondarySortField) ? conf.secondarySortField : pkField;
       } else {
         dataType = conf.dataType;
         pkField = conf.pk;
+        sortField = conf.sortField || pkField;
       }
 
       var sel;
@@ -66,18 +67,18 @@ define([
         });
       }
 
-      console.log('DOWNLOAD TYPE: ', type);
+      // console.log('DOWNLOAD TYPE: ', type);
       if (conf.generateDownloadFromStore && this.grid && this.grid.store && type && this['_to' + type]) {
         var query = 'in(' + pkField + ',(' + sel.join(',') + '))&sort(+' + pkField + ')&limit(2500000)';
         when(this.grid.store.query({}), lang.hitch(this, function (results) {
 
           if (pkField === 'subsystem_id') {
             var data = this['_to' + type.toLowerCase()](selection);
-            saveAs(new Blob([data]), 'PATRIC_' + this.containerType + '.' + type);
+            saveAs(new Blob([data]), 'BVBRC_' + this.containerType + '.' + type);
           } else {
             results = rql.query(query, {}, results);
             var data = this['_to' + type.toLowerCase()](results);
-            saveAs(new Blob([data]), 'PATRIC_' + this.containerType + '.' + type);
+            saveAs(new Blob([data]), 'BVBRC_' + this.containerType + '.' + type);
           }
 
         }));
@@ -103,8 +104,8 @@ define([
           baseUrl += '/';
         }
         baseUrl = baseUrl + dataType + '/';
-        var query = 'in(' + pkField + ',(' + sel.join(',') + '))&sort(+' + pkField + ')&limit(2500000)';
-        console.log('Download Query: ', query);
+        var query = 'in(' + pkField + ',(' + sel.join(',') + '))&sort(+' + sortField + ')&limit(2500000)';
+        // console.log('Download Query: ', query);
 
         baseUrl = baseUrl + '?&http_download=true&http_accept=' + accept;
 
@@ -264,7 +265,11 @@ define([
         dataType: 'genome',
         pk: 'genome_id',
         tableData: true,
-        advanced: true
+        otherData: ['dna+fasta'],
+        secondaryDataType: 'genome_sequence',
+        secondartyPK: 'genome_id',
+        secondarySortField: 'sequence_id',
+        advanced: false
       },
       sequence_data: {
         label: 'Sequences',
@@ -279,6 +284,12 @@ define([
         pk: 'feature_id',
         tableData: true,
         otherData: ['dna+fasta', 'protein+fasta']
+      },
+      structure_data: {
+        label: 'Protien Structure',
+        dataType: 'protein_structure',
+        pk: 'pdb_id',
+        tableData: true
       },
       spgene_data: {
         dataType: 'sp_gene',
@@ -295,6 +306,18 @@ define([
         dataType: 'sp_gene_ref',
         pk: 'id',
         label: 'Specialty VF Genes',
+        tableData: true
+      },
+      proteinFeatures_data: {
+        label: 'Domains and Motifs',
+        dataType: 'protein_feature',
+        pk: 'id',
+        tableData: true
+      },
+      epitope_data: {
+        label: 'Epitopes',
+        dataType: 'epitope',
+        pk: 'epitope_id',
         tableData: true
       },
       pathway_data: {
@@ -333,6 +356,18 @@ define([
         dataType: 'transcriptomics_sample',
         pk: 'pid',
         label: 'Comparisons',
+        tableData: true
+      },
+      experiment_data: {
+        dataType: 'experiment',
+        pk: 'exp_id',
+        label: 'Experiments',
+        tableData: true
+      },
+      bioset_data: {
+        dataType: 'bioset',
+        pk: 'bioset_id',
+        label: 'Biosets',
         tableData: true
       },
       interaction_data: {

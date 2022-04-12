@@ -1,21 +1,20 @@
 define([
-  'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on', 'dojo/_base/lang',
-  './ActionBar', './ContainerActionBar', 'dijit/layout/StackContainer', 'dijit/layout/TabController',
-  './SubSystemsMemoryGridContainer', 'dijit/layout/ContentPane', './GridContainer', 'dijit/TooltipDialog',
-  '../store/SubSystemMemoryStore', '../store/SubsystemsOverviewMemoryStore', 'dojo/dom-construct', 'dojo/topic',
+  'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/_base/lang',
+  'dijit/layout/StackContainer', 'dijit/layout/TabController',
+  './SubSystemsMemoryGridContainer',
+  '../store/SubSystemMemoryStore', '../store/SubsystemsOverviewMemoryStore', 'dojo/topic',
   './GridSelector', './SubSystemsOverview', 'dojox/widget/Standby'
 ], function (
-  declare, BorderContainer, on, lang,
-  ActionBar, ContainerActionBar, TabContainer, StackController,
-  SubSystemsGridContainer, ContentPane, GridContainer, TooltipDialog,
-  SubSystemMemoryStore, SubsystemsOverviewMemoryStore, domConstruct, Topic,
+  declare, BorderContainer, lang,
+  TabContainer, StackController,
+  SubSystemsGridContainer,
+  SubSystemMemoryStore, SubsystemsOverviewMemoryStore, Topic,
   selector, SubSystemsOverview, Standby
 ) {
 
   return declare([BorderContainer], {
     gutters: false,
     state: null,
-    maxGenomeCount: 500,
     tooltip: 'The "Subsystems" tab contains a list of subsystems for genomes associated with the current view',
     apiServer: window.App.dataServiceURL,
 
@@ -202,9 +201,9 @@ define([
         }
       }));
 
-      Topic.subscribe(this.subsystemsOverviewGrid.id, lang.hitch(this, function (page) {
-        console.log(page);
-      }));
+      // Topic.subscribe(this.subsystemsOverviewGrid.id, lang.hitch(this, function (page) {
+      //   console.log(page);
+      // }));
 
       Topic.subscribe('navigateToSubsystemsSubTab', lang.hitch(this, function (val) {
 

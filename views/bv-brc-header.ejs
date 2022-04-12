@@ -73,8 +73,8 @@
         <div id="bv-brc-header-container">
             <div class="nav-logo">
                 <a class="nav-logo-link" href="/">
-                    <!-- <img class="bv-brc-logo" src="/patric/images/bv-brc/patric-logo.png" alt="BV-BRC Logo" style="height: 32px;"/> -->
-                    <span>BV-BRC <i style="color: #ffffff; font-size: 12px;"><%- request.applicationOptions.appLabel || " " %></i></span>
+                    <img class="bv-brc-logo" src="/patric/images/bv-brc/bv-brc-header-logo.png" alt="BV-BRC Logo" style="height: 28px;"/>
+                    <span><i style="color: #ffffff; font-size: 12px; padding-left: 2px;"><%- request.applicationOptions.appLabel || " " %></i></i></span>
                 </a>
             </div>
 
@@ -157,45 +157,6 @@
                     </div>
                 </div>
 
-                <!-- <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-                    <span>DATA</span>
-                    <div data-dojo-type="p3/widget/TooltipDialog">
-                        <div>
-                            <div style="vertical-align: top;width:150px;display:inline-block;margin-right: 5px;">
-                                <div class="menuHeader">Data Types</div>
-                                <div class="menuItems">
-                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/antimicrobial_resistance.html">Antimicrobial Resistance (AMR)</a></div>
-                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/genomes.html">Genomes</a></div>
-                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/genomic_features.html">Genomic Features</a></div>
-                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/pathways.html">Pathways</a></div>
-                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/protein_families.html">Protein Families</a></div>
-                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/specialty_genes.html">Specialty Genes</a></div>
-                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/data_types/transcriptomics.html">Transcriptomics</a></div>
-                                </div>
-                                <div class="menuHeader">Download Data</div>
-                                <div class="menuItems">
-                                    <div><a class="navigationLinkOut" href="ftp://ftp.patricbrc.org/"
-                                            target="_blank" rel="noopener">FTP Server</a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="vertical-align:top;width:200px;display: inline-block">
-                                <div class="menuHeader">Specialty Data Collections</div>
-                                <div class="menuItems">
-                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/patric_collaborations.html">PATRIC Collaborations</a></div>
-                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/patric_dbps.html">PATRIC DBPS</a></div>
-                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_clinical_proteomics.html">NIAID Clinical Proteomics</a></div>
-                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_genome_sequencing.html">NIAID Genome Sequencing</a></div>
-                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_structural_genomics.html">NIAID Structural Genomics</a></div>
-                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_systems_biology.html">NIAID Systems Biology</a></div>
-                                    <div><a class="navigationLinkOut" href="<%- request.applicationOptions.docsServiceURL %>user_guides/data/specialty_data_collections/niaid_functional_genomics.html">NIAID Functional Genomics</a></div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
-
                 <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
                     <span>SEARCHES</span>
 
@@ -205,17 +166,14 @@
                         <div><a class="navigationLink" href="/searches/GenomeSearch">Genomes</a></div>
                         <div><a class="navigationLink" href="/searches/StrainSearch">Strains</a></div>
                         <div><a class="navigationLink" href="/searches/GenomicFeatureSearch">Proteins</a></div>
-                        <!-- <div><a class="navigationLink" href="/searches/GenomicSequenceSearch">Genomic Sequences</a></div> -->
                         <div><a class="navigationLink" href="/searches/SpecialtyGeneSearch">Specialty Genes</a></div>
-                        <div><a class="navigationLink" href="/searches/ProteinFeatureSearch">Domains and Motifs</a></div>
+                        <div><a class="navigationLink" href="/searches/DomainAndMotifSearch">Domains and Motifs</a></div>
                         <div><a class="navigationLink" href="/searches/EpitopeSearch">Epitopes</a></div>
                         <div><a class="navigationLink" href="/searches/ProteinStructureSearch">Protein Structures</a></div>
                         <div><a class="navigationLink" href="/searches/PathwaySearch">Pathways</a></div>
                         <div><a class="navigationLink" href="/searches/SubsystemSearch">Subsystems</a></div>
                         <div><a class="navigationLink" href="/searches/SurveillanceSearch">Surveillance</a></div>
                         <div><a class="navigationLink" href="/searches/SerologySearch">Serology</a></div>
-                        <!-- <div><a class="navigationLink" href="/searches/TranscriptomicExperimentSearch">Transcriptomics Experiments</a></div> -->
-                        <!-- <div><a class="navigationLink" href="/searches/AntibioticSearch">Antibiotics</a></div> -->
                     </div>
                 </div>
 
@@ -227,11 +185,11 @@
                             <div style="vertical-align: top;width: 180px;margin-right:5px;display:inline-block">
                                 <div class="menuHeader">Genomics</div>
                                 <div class="menuItems">
-                                    <a class="navigationLink" href="/app/Assembly2">Assembly</a>
+                                    <a class="navigationLink" href="/app/Assembly2">Assembly <span style="font-style: italic;">(B)</span></a>
                                     <div><a class="navigationLink" href="/app/Annotation">Annotation</a></div>
-                                    <div><a class="navigationLink" href="/app/ComprehensiveGenomeAnalysis">Comprehensive Genome Analysis</a></div>
+                                    <div><a class="navigationLink" href="/app/ComprehensiveGenomeAnalysis">Comprehensive Genome Analysis <span style="font-style: italic;">(B)</span></a></div>
                                     <div><a class="navigationLink" href="/app/Homology">BLAST</a></div>
-                                    <div><a class="navigationLink" href="/app/ComprehensiveSARS2Analysis">SARS-CoV-2 Genome Assembly and Annotation</a></div>
+                                    <div><a class="navigationLink" href="/app/ComprehensiveSARS2Analysis">SARS-CoV-2 Genome Assembly and Annotation <span style="font-style: italic;">(V)</span></a></div>
                                     <div><a class="navigationLink" href="/app/GenomeDistance">Similar Genome Finder <span style="font-style: italic;">(B)</span></a></div>
                                     <div><a class="navigationLink" href="/app/MetaCATS">Meta-CATS</a></div>
                                     <div><a class="navigationLink" href="/app/PhylogeneticTree">Phylogenetic Tree <span style="font-style: italic;">(B)</span></a></div>
@@ -240,23 +198,23 @@
                                     <div><a class="navigationLink" href="/app/Variation">Variation Analysis <span style="font-style: italic;">(B)</span></a></div>
                                     <div><a class="navigationLink" href="/app/Tnseq">Tn-Seq Analysis <span style="font-style: italic;">(B)</span></a></div>
                                     <br>
-                                    <div><a class="navigationLink" href="/view/VariantLineage/#view_tab=overview" style="font-weight: bold;">SARS-CoV-2 Variant Tracker</a></div>
+                                    <div><a class="navigationLink" href="/view/VariantLineage/#view_tab=overview" style="font-weight: bold;">SARS-CoV-2 Variant Tracker <span style="font-style: italic;">(V)</span></a></div>
                                 </div>
                                 <p></p>
                             </div>
 
-                            <div style="vertical-align:top;width:180px;display:inline-block">
+                            <div style="vertical-align:top;width:200px;display:inline-block">
                                 <div class="menuHeader">Protein Tools</div>
                                 <div class="menuItems">
                                     <div><a class="navigationLink" href="/app/MSA">MSA and SNP Analysis</a></div>
                                     <div><a class="navigationLink" href="/app/GeneTree">Gene Tree</a></div>
-                                    <div><a class="navigationLink" href="/app/ProteinFamily">Protein Family Sorter <span style="font-style: italic;">(B)</span></a></div>
+                                    <!-- <div><a class="navigationLink" href="/app/ProteinFamily">Protein Family Sorter <span style="font-style: italic;">(B)</span></a></div> -->
                                     <div><a class="navigationLink" href="/app/SeqComparison">Proteome Comparison <span style="font-style: italic;">(B)</span></a></div>
-                                    <div><a class="navigationLink" href="/app/ComparativePathway">Comparative Pathway <span style="font-style: italic;">(B)</span></a></div>
+                                    <!-- <div><a class="navigationLink" href="/app/ComparativePathway">Comparative Pathway <span style="font-style: italic;">(B)</span></a></div> -->
                                 </div>
                                 <div class="menuHeader">Metagenomics</div>
                                 <div class="menuItems">
-                                    <div><a class="navigationLink" href="/app/MetagenomicReadMapping">Metagenomic Read Mapping</a></div>
+                                    <div><a class="navigationLink" href="/app/MetagenomicReadMapping">Metagenomic Read Mapping <span style="font-style: italic;">(B)</span></a></div>
                                     <div><a class="navigationLink" href="/app/TaxonomicClassification">Taxonomic Classification</a></div>
                                     <div><a class="navigationLink" href="/app/MetagenomicBinning">Metagenomic Binning</a></div>
                                 </div>
@@ -266,7 +224,7 @@
                                   <div><a class="navigationLink" href="/app/Rnaseq">RNA-Seq Analysis</a></div>
                               </div>
                               <p></p>
-                              <div class="menuHeader">Utility</div>
+                              <div class="menuHeader">Utilities</div>
                               <div class="menuItems">
                                   <div><a class="navigationLink" href="/app/IDMapper">ID Mapper</a></div>
                                   <div><a class="navigationLink" href="/app/FastqUtil">Fastq Utilities</a></div>
@@ -277,7 +235,7 @@
                 </div>
 
                 <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
-                    <span style="font-size: 1em; line-height: 1.5; margin-top: -10px;">WORKSPACES</span>
+                    <span>WORKSPACES</span>
 
                     <div data-dojo-type="p3/widget/TooltipDialog">
                         <div>
@@ -309,16 +267,16 @@
                     <span>HELP</span>
 
                     <div data-dojo-type="p3/widget/TooltipDialog">
-                        <div><a class="navigationLinkOut" href="https://bv-brc.org/docs/quick_references/index.html">Quick References</a></div>
-                        <div><a class="navigationLinkOut" href="https://bv-brc.org/docs/tutorial/index.html">Tutorials</a></div>
-                        <div><a class="navigationLinkOut" href="https://bv-brc.org/docs/common_tasks/index.html">Common Tasks</a></div>
-                        <div><a class="navigationLinkOut" href="https://bv-brc.org/docs/cli_tutorial/index.html">CLI Tutorial</a></div>
-                        <div><a class="navigationLinkOut" href="https://bv-brc.org/docs/webinar/index.html">Webinars</a></div>
-                        <div><a class="navigationLinkOut" href="https://bv-brc.org/docs/videos/index.html">Instructional Videos</a></div>
-                        <div><a class="navigationLinkOut" href="https://bv-brc.org/docs/workshops.html">Workshops</a></div>
+                        <div><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/quick_start/index.html">Quick Start</a></div>
+                        <div><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/quick_references/index.html">Quick References</a></div>
+                        <div><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/tutorial/index.html">Tutorials</a></div>
+                        <div><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/common_tasks/index.html">Common Tasks</a></div>
+                        <div><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/cli_tutorial/index.html">CLI Tutorial</a></div>
+                        <div><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/webinar/index.html">Webinars</a></div>
+                        <div><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/videos/index.html">Instructional Videos</a></div>
+                        <div><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/workshops.html">Workshops</a></div>
                         <hr>
-                        <div><a class="DialogButton" rel="reportProblem:">Provide Feedback</a></div>
-                        <div><a class="" href="/contact">Contact Us</a></div>
+                        <div><a class="DialogButton" rel="reportProblem:">Contact Us</a></div>
                     </div>
                 </div>
 
@@ -327,15 +285,16 @@
 
                     <div data-dojo-type="p3/widget/TooltipDialog">
                         <div><a class="TopMenuLink" href="/about">About BV-BRC</a></div>
-                        <div><a class="TopMenuLink" href="/contact">Contact Us</a></div>
+                        <div><a class="DialogButton" rel="reportProblem:">Contact Us</a></div>
                         <div><a class="TopMenuLink" href="/team">Our Team</a></div>
-                        <div><a class="TopMenuLink" href="/announcements">Announcements</a></div>
-                        <div><a class="TopMenuLink" href="/outreach">Outreach</a></div>
+                        <div><a class="TopMenuLink" href="https://www.bv-brc.org/docs/news/index.html" target="_blank">Announcements</a></div>
+                        <div><a class="TopMenuLink" href="/brc-calendar">BRC Calendar</a></div>
                         <hr>
                         <div><a class="TopMenuLink" href="/publications">Publications</a></div>
                         <div><a class="TopMenuLink" href="/citation">Citation</a></div>
                         <div><a class="TopMenuLink" href="/related-resources">Related Resources</a></div>
                         <div><a class="TopMenuLink navigationLinkOut" href="https://github.com/BV-BRC" target="_blank" rel="noopener">BV-BRC GitHub</a></div>
+                        <div><a class="TopMenuLink" href="/privacy-policy">Privacy Policy</a></div>
                     </div>
                 </div>
             </div>
@@ -352,24 +311,6 @@
                 <a class="LoginButton navigationLink" href="/login">Sign In</a>
             </div>
 
-            <!-- <div>
-                <div class="topMenuButtonIcon showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton"
-                     data-dojo-props="iconClass:'icon-bars fa-2x'">
-                    <span></span>
-                    <div data-dojo-type="p3/widget/TooltipDialog">
-                        <div><a class="TopMenuLink" href="/about">About BV-BRC</a></div>
-                        <div><a class="TopMenuLink" href="/contact">Contact Us</a></div>
-                        <div><a class="TopMenuLink" href="/team">Our Team</a></div>
-                        <div><a class="TopMenuLink" href="/announcements">Announcements</a></div>
-                        <div><a class="TopMenuLink" href="/outreach">Outreach</a></div>
-                        <hr>
-                        <div><a class="TopMenuLink" href="/publications">Publications</a></div>
-                        <div><a class="TopMenuLink" href="/citation">Citation</a></div>
-                        <div><a class="TopMenuLink" href="/related-resources">Related Resources</a></div>
-                        <div><a class="TopMenuLink navigationLinkOut" href="https://github.com/BV-BRC" target="_blank" rel="noopener">BV-BRC GitHub</a></div>
-                    </div>
-                </div>
-            </div> -->
 
             <div class="showOnLoad ShowWithAuth dijitHidden">
                 <div class="showOnLoad ShowWithAuth dijitHidden topMenuButtonIcon"

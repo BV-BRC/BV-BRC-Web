@@ -2,7 +2,7 @@ define([
   'dojo/_base/declare',
   'dojo/_base/lang',
   './SearchBase',
-  'dojo/text!./templates/ProteinFeatureSearch.html',
+  'dojo/text!./templates/DomainAndMotifSearch.html',
   './TextInputEncoder',
   './FacetStoreBuilder',
   './PathogenGroups',
@@ -24,7 +24,7 @@ define([
     templateString: template,
     searchAppName: 'Domain and Motif Search',
     dataKey: 'protein_feature',
-    resultUrlBase: '/view/ProteinFeaturesList/?',
+    resultUrlBase: '/view/DomainsAndMotifsList/?',
     resultUrlHash: '#view_tab',
     postCreate: function () {
       this.inherited(arguments)
@@ -59,6 +59,11 @@ define([
       const keywordValue = this.keywordNode.get('value')
       if (keywordValue !== '') {
         queryArr.push(`keyword(${TextInputEncoder(sanitizeInput(keywordValue))})`)
+      }
+
+      const genomeIDValue = this.genomeIDNode.get('value')
+      if (genomeIDValue !== '') {
+        queryArr.push(`eq(genome_id,${TextInputEncoder(genomeIDValue)})`)
       }
 
       const brcIDValue = this.brcIDNode.get('value')

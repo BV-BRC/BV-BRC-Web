@@ -1,11 +1,11 @@
 define([
-  'dojo/_base/declare', 'dojo/on', 'dojo/dom-class',
+  'dojo/_base/declare', 'dojo/on', 'dojo/topic', 'dojo/dom-class',
   'dojo/text!./templates/PhylogeneticTree.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/lang', 'dojo/domReady!', 'dojo/query', 'dojo/dom', 'dojo/dom-style',
   'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
   '../../WorkspaceManager', 'dojo/when'
 ], function (
-  declare, on, domClass,
+  declare, on, Topic, domClass,
   Template, AppBase, domConstruct, registry,
   lang, domReady, query, dom, domStyle,
   popup, TooltipDialog, Dialog,
@@ -74,10 +74,14 @@ define([
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
+    },
+
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
     },
 
     emptyTable: function (target, rowLimit) {
@@ -462,7 +466,7 @@ define([
 
     checkParameterRequiredFields: function () {
       var bool = this.output_path.get('value') && this.output_nameWidget.get('displayedValue');
-      console.log("bool=",bool);
+      console.log('bool=', bool);
       if (this.output_path.get('value') && this.output_nameWidget.get('displayedValue') ) {
         this.validate();
       }
@@ -500,25 +504,25 @@ define([
       }
     },
 
-    intakeRerunForm: function() {
+    intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        var param_dict = {"output_folder":"output_path"};
-        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
-        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        if (job_data.hasOwnProperty("genome_group")) {
-          //this.codon_genomes_genomegroup.set("value",job_data["genome_group"]);
-          this.addGenomeGroupFormFill(job_data["genome_group"]);
-        }else {
-          this.addGenomesFormFill(job_data["genome_ids"]);
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path' };
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        if (job_data.hasOwnProperty('genome_group')) {
+          // this.codon_genomes_genomegroup.set("value",job_data["genome_group"]);
+          this.addGenomeGroupFormFill(job_data['genome_group']);
+        } else {
+          this.addGenomesFormFill(job_data['genome_ids']);
         }
         this.form_flag = true;
-        localStorage.removeItem("bvbrc_rerun_job");
+        localStorage.removeItem('bvbrc_rerun_job');
       }
     },
 
     addGenomeGroupFormFill: function (genome_group_path) {
-      WorkspaceManager.getObjects(genome_group_path,false).then(lang.hitch(this,function(objs) {
+      WorkspaceManager.getObjects(genome_group_path, false).then(lang.hitch(this, function (objs) {
         var genomeIdHash = {};
         objs.forEach(function (obj) {
           var data = JSON.parse(obj.data);
@@ -529,17 +533,17 @@ define([
           });
         });
         var genome_list = []
-        Object.keys(genomeIdHash).forEach(function(genome_id) {
+        Object.keys(genomeIdHash).forEach(function (genome_id) {
           genome_list.push(genome_id);
-        },this);
+        }, this);
         this.addGenomesFormFill(genome_list);
       }));
     },
 
-    //Some discrepancies:
-    addGenomesFormFill: function(genome_id_list) {
+    // Some discrepancies:
+    addGenomesFormFill: function (genome_id_list) {
       var genome_ids = genome_id_list;
-      genome_ids.forEach(function(gid) {
+      genome_ids.forEach(function (gid) {
         var name_promise = this.scientific_nameWidget.store.get(gid);
         name_promise.then(lang.hitch(this, function (tax_obj) {
           if (tax_obj) {
@@ -547,14 +551,14 @@ define([
             this.scientific_nameWidget.validate();
             var genome_name = this.scientific_nameWidget.get('displayedValue');
             var lrec = {};
-            lrec.groupType = "codonGroup";
-            var groupType = "codonGroup";
+            lrec.groupType = 'codonGroup';
+            var groupType = 'codonGroup';
             var newGenomeIds = gid;
             var tr = this.codonGroupGenomeTable.insertRow(0);
             lrec.row = tr;
             var td = domConstruct.create('td', { 'class': 'textcol ' + groupType + 'GenomeData', innerHTML: '' }, tr);
             td.genomeRecord = lrec;
-            td.innerHTML = "<div class='libraryrow'>" + this.genDisplayName(genome_name,36) + '</div>';
+            td.innerHTML = "<div class='libraryrow'>" + this.genDisplayName(genome_name, 36) + '</div>';
 
             var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
             if (this[groupType].addedNum < this.startingRows) {
@@ -577,7 +581,7 @@ define([
             this.increaseGenome(groupType, [newGenomeIds]);
           }
         }));
-      },this);
+      }, this);
     }
   });
 });

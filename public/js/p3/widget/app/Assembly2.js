@@ -1,11 +1,11 @@
 define([
-  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/_base/lang', 'dojo/_base/Deferred',
+  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/topic', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/on', 'dojo/request', 'dojo/dom-class', 'dojo/dom-construct',
   'dojo/text!./templates/Assembly2.html', 'dojo/NodeList-traverse', 'dojo/store/Memory',
   'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
   './AppBase', '../../WorkspaceManager'
 ], function (
-  declare, WidgetBase, lang, Deferred,
+  declare, WidgetBase, Topic, lang, Deferred,
   on, xhr, domClass, domConstruct,
   Template, children, Memory,
   popup, TooltipDialog, Dialog,
@@ -126,20 +126,24 @@ define([
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
+    },
+
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
     },
 
     getValues: function () {
       var assembly_values = {};
       var values = this.inherited(arguments);
 
-      //Generic JSON parameters are added to assembly values in this function
-      assembly_values = this.checkBaseParameters(values,assembly_values);
+      // Generic JSON parameters are added to assembly values in this function
+      assembly_values = this.checkBaseParameters(values, assembly_values);
 
-      if (!this.form_flag){
+      if (!this.form_flag) {
         this.ingestAttachPoints(this.paramToAttachPt, assembly_values, true);
       }
       if (Object.prototype.hasOwnProperty.call(values, 'racon_iter') && values.racon_iter) {
@@ -449,12 +453,12 @@ define([
       }
     },
 
-    checkBaseParameters: function (values,assembly_values) {
+    checkBaseParameters: function (values, assembly_values) {
       var pairedList = this.libraryStore.query({ _type: 'paired' });
       var singleList = this.libraryStore.query({ _type: 'single' });
       var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
 
-      //TODO: standardize data type or define for each service??
+      // TODO: standardize data type or define for each service??
       this.paired_end_libs = pairedList.map(function (lrec) {
         var rrec = {};
         Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
@@ -488,10 +492,10 @@ define([
         assembly_values.srr_ids = this.sra_libs;
       }
 
-      //recipe
+      // recipe
       this.strategy = values.recipe;
       assembly_values.recipe = values.recipe;
-      //output_path and output_file
+      // output_path and output_file
       assembly_values.output_path = values.output_path;
       this.output_folder = values.output_path;
       assembly_values.output_file = values.output_file;
@@ -500,24 +504,26 @@ define([
       return assembly_values;
     },
 
-    intakeRerunForm: function() {
+    intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        var param_dict = {"output_folder":"output_path","strategy":"recipe"};
-        var widget_map = {"single_end_libs":"single_end_libsWidget"}; //TODO: remove this line?
-        param_dict["widget_map"] = widget_map;
-        var service_spec = {"trim":"trim","min_contig_len":"min_contig_len","racon_iter":"racon_iter","pilon_iter":"pilon_iter","min_contig_cov":"min_contig_cov"}; //job : attach_point
-        param_dict["service_specific"] = service_spec;
-        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        var job_data = JSON.parse(localStorage.getItem("bvbrc_rerun_job"));
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path', 'strategy': 'recipe' };
+        var widget_map = { 'single_end_libs': 'single_end_libsWidget' }; // TODO: remove this line?
+        param_dict['widget_map'] = widget_map;
+        var service_spec = {
+          'trim': 'trim', 'min_contig_len': 'min_contig_len', 'racon_iter': 'racon_iter', 'pilon_iter': 'pilon_iter', 'min_contig_cov': 'min_contig_cov'
+        }; // job : attach_point
+        param_dict['service_specific'] = service_spec;
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
         job_data = this.formatRerunJson(job_data);
-        AppBase.prototype.loadLibrary.call(this,job_data,param_dict);
-        localStorage.removeItem("bvbrc_rerun_job");
+        AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+        localStorage.removeItem('bvbrc_rerun_job');
         this.form_flag = true;
       }
     },
 
-    formatRerunJson: function(job_data) {
+    formatRerunJson: function (job_data) {
       if (!job_data.paired_end_libs) {
         job_data.paired_end_libs = [];
       }

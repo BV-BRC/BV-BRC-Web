@@ -4,12 +4,14 @@ define([
   './SearchBase',
   'dojo/text!./templates/TaxaSearch.html',
   './TextInputEncoder',
+  './FacetStoreBuilder',
 ], function (
   declare,
   lang,
   SearchBase,
   template,
   TextInputEncoder,
+  storeBuilder,
 ) {
 
   function sanitizeInput(str) {
@@ -22,6 +24,12 @@ define([
     dataKey: 'taxa',
     resultUrlBase: '/view/TaxonList/?',
     resultUrlHash: '#view_tab',
+    postCreate: function () {
+      storeBuilder('taxonomy', 'taxon_rank').then(lang.hitch(this, (store) => {
+        this.inherited(arguments)
+        this.taxonRankNode.store = store
+      }))
+    },
     buildQuery: function () {
       let queryArr = []
 
@@ -37,7 +45,7 @@ define([
 
       const taxonNameValue = this.taxonNameNode.get('value')
       if (taxonNameValue !== '') {
-        queryArr.push(`eq(taxon_id,${sanitizeInput(taxonNameValue)})`)
+        queryArr.push(`eq(taxon_name,${sanitizeInput(taxonNameValue)})`)
       }
 
       const taxonRankValue = this.taxonRankNode.get('value')

@@ -49,13 +49,14 @@ define([
       collection_poi: { label: 'Collection POI', field: 'collection_poi', hidden: true },
       collection_latitude: { label: 'Collection Latitude', field: 'collection_latitude', hidden: true },
       collection_longitude: { label: 'Collection Longitude', field: 'collection_longitude', hidden: true },
+      geographic_group: { label: 'Geographic Group', field: 'geographic_group', hidden: true },
 
       // Sample Tests
       pathogen_test_type: { label: 'Pathogen Test Type', field: 'pathogen_test_type', hidden: false },
       pathogen_test_result: { label: 'Pathogen Test Result', field: 'pathogen_test_result', hidden: false },
       pathogen_test_interpretation: { label: 'Pathogen Test Interpretation', field: 'pathogen_test_interpretation', hidden: true },
       species: { label: 'Species', field: 'species', hidden: true },
-      type: { label: 'Type', field: 'Type', hidden: false },
+      pathogen_type: { label: 'Pathogen Type', field: 'pathogen_type', hidden: false },
       subtype: { label: 'Subtype', field: 'subtype', hidden: false },
       strain: { label: 'Strain', field: 'strain', hidden: false },
       sequence_accession: { label: 'Sequence Accession', field: 'sequence_accession', hidden: true },
@@ -156,7 +157,7 @@ define([
       });
 
       this.on('dgrid-select', function (evt) {
-        console.log('dgrid-select: ', evt);
+        // console.log('dgrid-select: ', evt);
         var newEvt = {
           rows: evt.rows,
           selected: evt.grid.selection,
@@ -167,7 +168,7 @@ define([
         on.emit(_self.domNode, 'select', newEvt);
       });
       this.on('dgrid-deselect', function (evt) {
-        console.log('dgrid-select');
+        // console.log('dgrid-select');
         var newEvt = {
           rows: evt.rows,
           selected: evt.grid.selection,

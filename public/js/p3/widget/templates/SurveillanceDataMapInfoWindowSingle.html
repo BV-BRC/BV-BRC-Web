@@ -1,0 +1,82 @@
+<div>
+    <div>
+        <table>
+            {% if item.collection_state_province || item.collection_country %}
+            <tr>
+                <td>Location:
+                    {% if item.collection_state_province %}
+                    {{ item.collection_state_province }},
+                    {% endif %}
+                    {% if item.collection_country %}
+                    {{ item.collection_country }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endif %}
+            {% if item.pathogen_test_result %}
+            <tr>
+                <td>Test Result: {{ item.pathogen_test_result }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td>Lat: {{ item.collection_latitude }} Long: {{ item.collection_longitude }}</td>
+                <td>
+                    <span class="dijitButton" id="sd-zoom-{{ index }}">
+                        <span class="dijitButtonNode" role="presentation">
+                            <span class="dijitButtonText">Zoom Here</span>
+                        </span>
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <br/>
+    <table>
+        <tr>
+            <td colspan="2" style="text-align: center;margin-bottom: 2px;font-weight: 500;">Surveillance Record Details</td>
+        </tr>
+        <tr></tr>
+        <tr>
+            <th style="width: 30%">ID</th>
+            <td style="width: 70%">{{ item.host_identifier }} (<a href="/view/Surveillance/{{ item.sample_identifier }}"
+                                                                  target="_blank">More Details</a>)
+            </td>
+        </tr>
+        {% if item.collection_date %}
+        <tr>
+            <th>Collection Date</th>
+            <td>{{ item.collection_date }}</td>
+        </tr>
+        {% endif %}
+        {% if item.host_common_name %}
+        <tr>
+            <th>Host Name</th>
+            <td>{{ item.host_common_name }}</td>
+        </tr>
+        {% endif %}
+        {% if false %}
+        <tr>
+            <th>Host Age</th>
+            <td>{{ item.host_age }}</td>
+        </tr>
+        {% endif %}
+        {% if item.host_health %}
+        <tr>
+            <th>Host Health</th>
+            <td>{{ item.host_health }}</td>
+        </tr>
+        {% endif %}
+        {% if item.subtype %}
+        <tr>
+            <th>Virus Subtype</th>
+            <td>{{ item.subtype }}</td>
+        </tr>
+        {% endif %}
+        {% if item.strain %}
+        <tr>
+            <th>Virus Strain Name</th>
+            <td>{{ item.strain }}</td>
+        </tr>
+        {% endif %}
+    </table>
+</div>

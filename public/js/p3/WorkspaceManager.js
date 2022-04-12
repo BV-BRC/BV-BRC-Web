@@ -16,10 +16,11 @@ define([
     apiUrl: '',
     userId: '',
     forbiddenDownloadTypes: ['experiment_group', 'feature_group', 'genome_group', 'modelfolder'],
-    //forbiddenDownloadTypes: ['experiment_group', 'feature_group', 'genome_group', 'folder', 'job_result'],
+    // forbiddenDownloadTypes: ['experiment_group', 'feature_group', 'genome_group', 'folder', 'job_result'],
     viewableTypes: ['txt', 'html', 'json', 'csv', 'tsv', 'diffexp_experiment',
       'diffexp_expression', 'diffexp_mapping', 'diffexp_sample', 'pdf',
-      'diffexp_input_data', 'diffexp_input_metadata', 'svg', 'gif', 'png', 'jpg'],
+      'diffexp_input_data', 'diffexp_input_metadata', 'svg', 'gif', 'png', 'jpg',
+      'aligned_dna_fasta', 'aligned_protein_fasta', 'feature_dna_fasta', 'feature_protein_fasta'],
 
     knownUploadTypes: {
       unspecified: {
@@ -441,7 +442,6 @@ define([
 
       return Deferred.when(this.api('Workspace.create', [{ objects: objs }]), function (results) {
         var createdPath = results[0][0];
-
         if (!createdPath) {
           throw new Error('Please try a new name.');
         } else {
@@ -563,7 +563,46 @@ define([
         return workspace;
       }));
     },
+    getObjectsAtPathByType: function (types, specialPath) {
+      types = (types instanceof Array) ? types : [types];
 
+      return Deferred.when(this.get('currentWorkspace'), lang.hitch(this, function (current) {
+        var _self = this;
+
+        var path = specialPath || current.path;
+        return Deferred.when(this.api('Workspace.ls', [{
+          paths: [path],
+          excludeDirectories: false,
+          excludeObjects: false,
+          query: { type: types },
+          recursive: false
+        }]), function (results) {
+          if (!results[0] || !results[0][path]) {
+            return [];
+          }
+          var res = results[0][path];
+
+          res = res.map(function (r) {
+            return _self.metaListToObj(r);
+          }).filter(function (r) {
+            if (r.type == 'folder') {
+              if (r.path.split('/').some(function (p) {
+                return p.charAt(0) == '.';
+              })) {
+                return false;
+              }
+            }
+            return (types.indexOf(r.type) >= 0);
+          });
+          /* .filter(function(r){
+            if (!showHidden && r.name.charAt(0)=="."){ return false };
+            return true;
+          }) */
+
+          return res;
+        });
+      }));
+    },
     getObjectsByType: function (types, specialPath) {
       types = (types instanceof Array) ? types : [types];
 
@@ -619,14 +658,14 @@ define([
       });
     },
 
-    downloadArchiveFile: function (path_list,archive_name,archive_type,recursive) {
-      var archive_params = [path_list,recursive,archive_name,archive_type];
-      return Deferred.when(this.api('Workspace.get_archive_url',[{
-        objects:path_list,
+    downloadArchiveFile: function (path_list, archive_name, archive_type, recursive) {
+      // var archive_params = [path_list, recursive, archive_name, archive_type];
+      return Deferred.when(this.api('Workspace.get_archive_url', [{
+        objects: path_list,
         recursive: recursive,
         archive_name: archive_name,
         archive_type: archive_type
-      }]),function(url) {
+      }]), function (url) {
         console.log(url[0]);
         window.location.assign(url[0]);
       });

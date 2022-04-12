@@ -5,7 +5,7 @@ define([
   '../GenomeOverview', '../AMRPanelGridContainer', '../Phylogeny',
   '../GenomeBrowser', '../CircularViewerContainer', '../SequenceGridContainer',
   '../FeatureGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer', '../ProteinFamiliesContainer',
-  '../PathwaysContainer', '../SubSystemsContainer', '../TranscriptomicsContainer', '../InteractionContainer',
+  '../PathwaysContainer', '../SubSystemsContainer', '../ExperimentsContainer', '../InteractionContainer',
   '../../util/PathJoin'
 ], function (
   declare, lang,
@@ -14,7 +14,7 @@ define([
   GenomeOverview, AMRPanelGridContainer, Phylogeny,
   GenomeBrowser, CircularViewerContainer, SequenceGridContainer,
   FeatureGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer, ProteinFamiliesContainer,
-  PathwaysContainer, SubSystemsContainer, TranscriptomicsContainer, InteractionsContainer,
+  PathwaysContainer, SubSystemsContainer, ExperimentsContainer, InteractionsContainer,
   PathJoin
 ) {
   return declare([TabViewerBase], {
@@ -102,9 +102,9 @@ define([
           }
           break;
 
-        case 'transcriptomics':
-          activeTab.set('state', lang.mixin({}, this.state, { search: 'eq(genome_ids,' + this.genome_id + ')' }));
-          break;
+        // case 'experiments':
+        //   activeTab.set('state', lang.mixin({}, this.state, { search: 'eq(genome_ids,' + this.genome_id + ')' }));
+        //   break;
         case 'proteinFamilies':
           // do not set state, the container is built by setVisible already
           break;
@@ -171,7 +171,11 @@ define([
           return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + taxon_lineage_names[idx] + '</a>';
         });
         this.queryNode.innerHTML = out.join(' &raquo; ') + ' &raquo; <span class="current">' + genome.genome_name + '</span>';
-      }));
+      }), (err) => {
+        // on reject
+        this.queryNode.innerHTML = 'unable to load taxonomy';
+        console.error(err.message)
+      });
     },
 
     changeToVirusContext: function () {
@@ -185,7 +189,7 @@ define([
       this.viewer.removeChild(this.proteinFamilies);
       this.viewer.removeChild(this.pathways);
       this.viewer.removeChild(this.subsystems);
-      // this.viewer.removeChild(this.transcriptomics);
+      // this.viewer.removeChild(this.experiments);
       // this.viewer.removeChild(this.interactions);
     },
 
@@ -205,7 +209,7 @@ define([
         }
       }
 
-      if (genome.taxon_lineage_names.includes('Viruses') && this.context === 'bacteria') {
+      if (genome && genome.taxon_lineage_names && genome.taxon_lineage_names.includes('Viruses') && this.context === 'bacteria') {
         this.set('context', 'virus')
         this.changeToVirusContext();
       }
@@ -249,9 +253,6 @@ define([
           var vt = this[state.hashParams.view_tab];
 
           if (state.hashParams.view_tab === 'proteinFamilies') {
-            // state.hashParams = lang.mixin({}, state.hashParams, {
-            //   params: JSON.stringify({"family_type": "plfam"})
-            // });
 
             this.proteinFamilies.state = lang.mixin({}, state, {
               hashParams: lang.mixin({}, state.hashParams, {
@@ -356,17 +357,17 @@ define([
         state: this.state
       });
 
-      // this.transcriptomics = new TranscriptomicsContainer({
-      //   title: 'Transcriptomics',
-      //   id: this.viewer.id + '_transcriptomics',
-      //   state: this.state
-      // });
+      this.experiments = new ExperimentsContainer({
+        title: 'Experiments',
+        id: this.viewer.id + '_experiments',
+        state: this.state
+      });
 
-      // this.interactions = new InteractionsContainer({
-      //   title: 'Interactions',
-      //   id: this.viewer.id + '_interactions',
-      //   state: this.state
-      // });
+      this.interactions = new InteractionsContainer({
+        title: 'Interactions',
+        id: this.viewer.id + '_interactions',
+        state: this.state
+      });
 
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.amr);
@@ -381,8 +382,8 @@ define([
       this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);
-      // this.viewer.addChild(this.transcriptomics);
-      // this.viewer.addChild(this.interactions);
+      this.viewer.addChild(this.experiments);
+      this.viewer.addChild(this.interactions);
     }
   });
 });

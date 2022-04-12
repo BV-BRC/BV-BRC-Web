@@ -1,11 +1,9 @@
 define([
-  'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on',
-  'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
-  './PageGrid', './formatter', '../store/StrainJsonRest', './GridSelector'
+  'dojo/_base/declare', 'dojo/on',
+  './PageGrid', '../store/StrainJsonRest', './GridSelector'
 ], function (
-  declare, BorderContainer, on,
-  domClass, ContentPane, domConstruct,
-  Grid, formatter, Store, selector
+  declare, on,
+  Grid, Store, selector
 ) {
 
   var store = new Store({});
@@ -36,6 +34,8 @@ define([
 
       genome_ids: { label: 'Genome IDs', field: 'genome_ids', hidden: true },
       genbank_accessions: { label: 'Genbank Accessions', field: 'genbank_accessions', hidden: true },
+      segment_count: { label: 'Segment Count', field: 'segment_count', hidden: false },
+      status: { label: 'Status', field: 'status', hidden: false },
 
       host_group: { label: 'Host Group', field: 'host_group', hidden: true },
       host_common_name: { label: 'Host Common Name', field: 'host_common_name', hidden: false },
@@ -60,7 +60,7 @@ define([
       s_s: { label: 'S', field: 's', hidden: false },
       s_m: { label: 'M', field: 'm', hidden: false },
       s_l: { label: 'L', field: 'l', hidden: false },
-      s_others: { label: 'Others', field: 'others', hidden: false },
+      s_other_segments: { label: 'Other Segments', field: 'other_segments', hidden: false },
     },
     startup: function () {
       var _self = this;
@@ -76,7 +76,6 @@ define([
       });
 
       this.on('dgrid-select', function (evt) {
-        console.log('dgrid-select: ', evt);
         var newEvt = {
           rows: evt.rows,
           selected: evt.grid.selection,
@@ -87,7 +86,6 @@ define([
         on.emit(_self.domNode, 'select', newEvt);
       });
       this.on('dgrid-deselect', function (evt) {
-        console.log('dgrid-select');
         var newEvt = {
           rows: evt.rows,
           selected: evt.grid.selection,

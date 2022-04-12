@@ -1,10 +1,10 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/array', 'dijit/_WidgetBase', 'dojo/on',
+  'dojo/_base/declare', 'dojo/_base/array', 'dojo/topic', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/Annotation.html', './AppBase',
   'dojo/_base/lang', '../../WorkspaceManager'
 ], function (
-  declare, array, WidgetBase, on,
+  declare, array, Topic, WidgetBase, on,
   domClass, Templated, WidgetsInTemplate,
   Template, AppBase, lang, WorkspaceManager
 ) {
@@ -44,8 +44,8 @@ define([
       } catch (error) {
         console.error(error);
         var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-          localStorage.removeItem("bvbrc_rerun_job");
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
         }
       }
     },
@@ -85,6 +85,10 @@ define([
       else if (this.phage.checked) {
         this.scientific_nameWidget.set('placeHolder', 'e.g. Bacteriophage sp.');
       }
+    },
+
+    openJobsList: function () {
+      Topic.publish('/navigate', { href: '/job/' });
     },
 
     updateOutputName: function () {
@@ -131,13 +135,13 @@ define([
 
     getValues: function () {
       var values = this.inherited(arguments);
-      //values.scientific_name = this.output_nameWidget.get('displayedValue');
-      //values.taxonomy_id = this.tax_idWidget.get('displayedValue');
+      // values.scientific_name = this.output_nameWidget.get('displayedValue');
+      // values.taxonomy_id = this.tax_idWidget.get('displayedValue');
       values = this.checkBaseParameters(values);
       return values;
     },
 
-    checkBaseParameters: function(values) {
+    checkBaseParameters: function (values) {
       this.contigs = values.contigs;
       this.output_name = this.output_nameWidget.get('displayedValue');
       values.scientific_name = this.output_name;
@@ -147,31 +151,31 @@ define([
       return values;
     },
 
-    addRerunFields: function(job_params) {
-      if (job_params["recipe"] === "default") {
-        this.default.set("checked",true);
+    addRerunFields: function (job_params) {
+      if (job_params['recipe'] === 'default') {
+        this.default.set('checked', true);
       }
-      else if (job_params["recipe"] === "viral") {
-        this.viral.set("checked",true);
+      else if (job_params['recipe'] === 'viral') {
+        this.viral.set('checked', true);
       }
-      else { //bacteriophages
-        this.phage.set("checked",true);
+      else { // bacteriophages
+        this.phage.set('checked', true);
       }
-      //must set tax_idWidget before scientific_nameWidget
-      this.tax_idWidget.set("value",job_params["taxonomy_id"]);
-      this.tax_idWidget.set("displayedValue",job_params["taxonomy_id"]);
-      this.scientific_nameWidget.set("item",job_params["scientific_name"]);
+      // must set tax_idWidget before scientific_nameWidget
+      this.tax_idWidget.set('value', job_params['taxonomy_id']);
+      this.tax_idWidget.set('displayedValue', job_params['taxonomy_id']);
+      this.scientific_nameWidget.set('item', job_params['scientific_name']);
     },
 
-    intakeRerunForm: function() {
+    intakeRerunForm: function () {
       var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty("bvbrc_rerun_job")) {
-        var param_dict = {"output_folder":"output_path","strategy":"recipe"};
-        //var widget_map = {"tax_id":"tax_idWidget"};
-        //param_dict["widget_map"] = widget_map;
-        AppBase.prototype.intakeRerunFormBase.call(this,param_dict);
-        this.addRerunFields(JSON.parse(localStorage.getItem("bvbrc_rerun_job")));
-        localStorage.removeItem("bvbrc_rerun_job");
+      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+        var param_dict = { 'output_folder': 'output_path', 'strategy': 'recipe' };
+        // var widget_map = {"tax_id":"tax_idWidget"};
+        // param_dict["widget_map"] = widget_map;
+        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        this.addRerunFields(JSON.parse(localStorage.getItem('bvbrc_rerun_job')));
+        localStorage.removeItem('bvbrc_rerun_job');
         this.form_flag = true;
       }
     }

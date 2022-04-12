@@ -4,7 +4,7 @@
       <span class="breadcrumb">Advanced Search</span>
       <h3>${searchAppName}</h3>
       <!-- tutorial, doc link -->
-      <p>Search for metabolic pathways annotated in microbial genomes using generic keywords, pathogen group or taxon name, pathway id, name, product, or EC number. For further explanation, please see <a href="#">Pathway Search User Guide</a>.</p>
+      <p>Search for metabolic pathways annotated in microbial genomes using generic keywords, pathogen group or taxon name, pathway id, name, product, or EC number. For further explanation, please see the <a href="https://www.bv-brc.org/docs/quick_references/searches_menu.html" target="_blank">Advanced Search Quick Reference Guide</a>.</p>
     </div>
     <div style="width:550px;margin:auto" class="formFieldsContainer">
       <div class="appBox appShadow">
@@ -36,6 +36,14 @@
         </div>
       </div>
       <div class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Genome ID</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'444178.3'" data-dojo-attach-point="genomeIDNode" name="genomeID" style="width: 500px"></div>
+          </div>
+        </div>
         <div class="headerrow">
           <label class="appBoxLabel">BRC ID</label>
         </div>
@@ -94,6 +102,7 @@
     </div>
     <div class="appSubmissionArea">
       <div style="margin-top: 10px; text-align:center;">
+        <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
         <div data-dojo-attach-point="submitButton"
           type="submit" data-dojo-type="dijit/form/Button">Search</div>
       </div>

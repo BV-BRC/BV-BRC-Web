@@ -18,23 +18,39 @@ define([
     disabled: false,
     state: null,
     templateString: Template,
-    searchTypes: ['genome', 'strain', 'genome_feature', 'genome_sequence', 'protein_feature', 'protein_structure', 'pathway', 'subsystem', 'surveillance', 'serology', 'taxonomy', 'sp_gene', 'transcriptomics_experiment', 'antibiotics', 'epitope'],
+    searchTypes: [
+      'taxonomy',
+      'genome',
+      'strain',
+      'genome_feature',
+      'sp_gene',
+      'protein_feature',
+      'epitope',
+      'protein_structure',
+      'pathway',
+      'subsystem',
+      'surveillance',
+      'serology',
+      'experiment',
+      'antibiotics',
+      'genome_sequence',
+    ],
     labelsByType: {
+      taxonomy: 'Taxa',
       genome: 'Genomes',
       strain: 'Strains',
-      genome_feature: 'Genomic Features',
-      genome_sequence: 'Genomic Sequences',
-      protein_feature: 'Protein Features',
+      genome_feature: 'Proteins',
+      sp_gene: 'Specialty Genes',
+      protein_feature: 'Domains and Motifs',
+      epitope: 'Epitopes',
       protein_structure: 'Protein Structures',
       pathway: 'Pathways',
       subsystem: 'Subsystems',
       surveillance: 'Surveillance',
       serology: 'Serology',
-      taxonomy: 'Taxonomy',
-      sp_gene: 'Specialty Genes',
-      transcriptomics_experiment: 'Transcriptomics Experiments',
+      experiment: 'Experiments',
       antibiotics: 'Antibiotics',
-      epitope: 'Epitopes'
+      genome_sequence: 'Genomic Sequences',
     },
 
     advancedSearchDef: {
@@ -100,7 +116,7 @@ define([
       },
 
       protein_feature: function (docs, total) {
-        return ['/view/ProteinFeaturesList/?', this.state.search].join('');
+        return ['/view/DomainsAndMotifsList/?', this.state.search].join('');
       },
 
       epitope: function (docs, total) {
@@ -141,11 +157,11 @@ define([
         return ['/view/SpecialtyGeneList/?', this.state.search, '#view_tab=specialtyGenes'].join('');
       },
 
-      transcriptomics_experiment: function (docs, total) {
+      experiment: function (docs, total) {
         if (total == 1) {
           return ['/view/ExperimentComparison/', docs[0].eid, '#view_tab=overview'].join('');
         }
-        return ['/view/TranscriptomicsExperimentList/?', this.state.search, '#view_tab=experiments'].join('');
+        return ['/view/ExperimentList/?', this.state.search, '#view_tab=experiments'].join('');
       },
 
       antibiotics: function (docs, total) {
@@ -239,7 +255,7 @@ define([
 
       docs.forEach(function (doc) {
         out.push("<div class='searchResult'>");
-        out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/StrainList/?eq(strain," + '"' + doc.strain + '"' + ")'>" + doc.strain + '</a></div>');
+        out.push(`<div class='resultHead'><a class='navigationLink' href='/view/StrainList/?eq(strain,"${doc.strain}")'>${doc.strain}</a></div>`);
         out.push("<div class='resultInfo'>" + doc.species + '</div>');
         out.push('</div>');
       });
@@ -296,7 +312,7 @@ define([
 
     formatprotein_feature: function (docs, total) {
       var q = this.state.search;
-      var out = ['<div class="searchResultsContainer proteinFeaturesResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ProteinFeaturesList/?', q, '">Protein Features</a>&nbsp;(', total, ')</div>'];
+      var out = ['<div class="searchResultsContainer proteinFeaturesResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/DomainsAndMotifsList/?', q, '">Domains and Motifs</a>&nbsp;(', total, ')</div>'];
 
       docs.forEach(function (doc) {
         out.push("<div class='searchResult'>");
@@ -435,45 +451,18 @@ define([
       return out.join('');
     },
 
-    formattranscriptomics_experiment: function (docs, total) {
-      // console.log("formattranscriptomics_experiment docs: ", docs);
-      var out;
-      if (total == 1) {
-        out = ['<div class="searchResultsContainer featureResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ExperimentComparison/', docs[0].eid, '#view_tab=overview', '">Transcriptomics Experiments&nbsp;(', total, ')</div> </a>'];
-      } else if (total > 1) {
-        out = ['<div class="searchResultsContainer featureResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/TranscriptomicsExperimentList/?', this.state.search, '#view_tab=experiments', '">Transcriptomics Experiments&nbsp;(', total, ')</div> </a>'];
-      }
+    formatexperiment: function (docs, total) {
+      var q = this.state.search;
+      var out = ['<div class="searchResultsContainer experimentResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ExperimentList/?', q, '">Experiments</a>&nbsp;(', total, ')</div>'];
 
       docs.forEach(function (doc) {
         out.push("<div class='searchResult'>");
-        out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/ExperimentComparison/" + doc.eid + "#view_tab=overview'>" + doc.title + '</a>');
-        out.push('</div>');
-        out.push("<div class='resultInfo'>" + doc.organism);
-
-        if (doc.strain) {
-          out.push('&nbsp;|&nbsp;' + doc.strain);
-
-        }
-
-        out.push('</div>');
-
-        out.push("<div class='resultInfo'>");
-        out.push(doc.genes + '&nbsp;Genes&nbsp;|&nbsp;' + doc.samples + ' Comparisons');
-        out.push('</div>');
-
-        out.push("<div class='resultInfo'>");
-        out.push(doc.mutant);
-        out.push('</div>');
-
-
-        out.push("<div class='resultInfo'>");
-        out.push(doc.condition);
-        out.push('</div>');
-
-
+        out.push("<div class='resultHead'><a class=\"navigationLinkOut\" href='/view/ExperimentComparison/" + doc.exp_id + "'>" + doc.exp_name + ' | ' + doc.exp_id + '</a></div>');
+        out.push("<div class='resultInfo'>" + doc.exp_description + '</div>');
         out.push('</div>');
       });
       out.push('</div>');
+
       return out.join('');
     },
 
@@ -538,21 +527,38 @@ define([
 
       }, this);
 
-      var keys = Object.keys(resultCounts).sort();
+      var keys = Object.keys(resultCounts);
 
-      var out = ['<div style="width:700px;margin:auto;font-size:1.5em;border:1px solid #333;background:#efefef;border-radius:3px;padding:4px;"><table>'];
+      var out = ['<div style="width:850px;margin:auto;font-size:1.5em;border:1px solid #333;background:#efefef;border-radius:3px;padding:4px;"><table>'];
+      out.push('<tr>');
+      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[0], resultCounts[keys[0]].docs, resultCounts[keys[0]].total) + '">' + this.labelsByType[keys[0]] + ': ' + resultCounts[keys[0]].total + '</a></td>');
+      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[5], resultCounts[keys[5]].docs, resultCounts[keys[5]].total) + '">' + this.labelsByType[keys[5]] + ': ' + resultCounts[keys[5]].total + '</a></td>');
+      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[10], resultCounts[keys[10]].docs, resultCounts[keys[10]].total) + '">' + this.labelsByType[keys[10]] + ': ' + resultCounts[keys[10]].total + '</a></td>');
+      out.push('</tr>')
 
-      for (var i = 0; i < keys.length; i += 3) {
-        out.push('<tr>');
-        out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[i], resultCounts[keys[i]].docs, resultCounts[keys[i]].total) + '">' + this.labelsByType[keys[i]] + ': ' + resultCounts[keys[i]].total + '</a></td>');
-        if (keys[i + 1]) {
-          out.push('<td><a class="navigationLink" href="' + this.generateLink(keys[i + 1], resultCounts[keys[i + 1]].docs, resultCounts[keys[i + 1]].total)  + '">' + this.labelsByType[keys[i + 1]] + ': ' + resultCounts[keys[i + 1]].total + '</a></td>');
-        } else { out.push('<td></td>'); }
-        if (keys[i + 2]) {
-          out.push('<td><a class="navigationLink" href="' + this.generateLink(keys[i + 2], resultCounts[keys[i + 2]].docs, resultCounts[keys[i + 2]].total)  + '">' + this.labelsByType[keys[i + 2]] + ': ' + resultCounts[keys[i + 2]].total + '</a></td>');
-        } else { out.push('<td></td>'); }
-        out.push('</tr>');
-      }
+      out.push('<tr>');
+      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[1], resultCounts[keys[1]].docs, resultCounts[keys[1]].total) + '">' + this.labelsByType[keys[1]] + ': ' + resultCounts[keys[1]].total + '</a></td>');
+      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[6], resultCounts[keys[6]].docs, resultCounts[keys[6]].total) + '">' + this.labelsByType[keys[6]] + ': ' + resultCounts[keys[6]].total + '</a></td>');
+      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[11], resultCounts[keys[11]].docs, resultCounts[keys[11]].total) + '">' + this.labelsByType[keys[11]] + ': ' + resultCounts[keys[11]].total + '</a></td>');
+      out.push('</tr>');
+
+      out.push('<tr>');
+      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[2], resultCounts[keys[2]].docs, resultCounts[keys[2]].total) + '">' + this.labelsByType[keys[2]] + ': ' + resultCounts[keys[2]].total + '</a></td>');
+      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[7], resultCounts[keys[7]].docs, resultCounts[keys[7]].total) + '">' + this.labelsByType[keys[7]] + ': ' + resultCounts[keys[7]].total + '</a></td>');
+      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[12], resultCounts[keys[12]].docs, resultCounts[keys[12]].total) + '">' + this.labelsByType[keys[12]] + ': ' + resultCounts[keys[12]].total + '</a></td>');
+      out.push('</tr>');
+
+      out.push('<tr>');
+      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[3], resultCounts[keys[3]].docs, resultCounts[keys[3]].total) + '">' + this.labelsByType[keys[3]] + ': ' + resultCounts[keys[3]].total + '</a></td>');
+      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[8], resultCounts[keys[8]].docs, resultCounts[keys[8]].total) + '">' + this.labelsByType[keys[8]] + ': ' + resultCounts[keys[8]].total + '</a></td>');
+      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[13], resultCounts[keys[13]].docs, resultCounts[keys[13]].total) + '">' + this.labelsByType[keys[13]] + ': ' + resultCounts[keys[13]].total + '</a></td>');
+      out.push('</tr>');
+
+      out.push('<tr>');
+      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[4], resultCounts[keys[4]].docs, resultCounts[keys[4]].total) + '">' + this.labelsByType[keys[4]] + ': ' + resultCounts[keys[4]].total + '</a></td>');
+      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[9], resultCounts[keys[9]].docs, resultCounts[keys[9]].total) + '">' + this.labelsByType[keys[9]] + ': ' + resultCounts[keys[9]].total + '</a></td>');
+      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[14], resultCounts[keys[14]].docs, resultCounts[keys[14]].total) + '">' + this.labelsByType[keys[14]] + ': ' + resultCounts[keys[14]].total + '</a></td>');
+      out.push('</tr>');
       out.push('</table></div>');
 
       if (content.length > 0) {
