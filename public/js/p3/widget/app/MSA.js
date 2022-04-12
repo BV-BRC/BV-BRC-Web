@@ -19,7 +19,7 @@ define([
     applicationName: 'MSA',
     requireAuth: true,
     applicationLabel: 'Multiple Sequence Alignment and SNP/Variation Analysis',
-    applicationDescription: 'The multiple sequence alignment service with variation and SNP analysis can be used with feature groups, fasta files, aligned fasta files, and user input fasta records. If a single alignment file is given, then only the variation analysis is run.',
+    applicationDescription: 'The multiple sequence alignment service produces a multiple sequence alignment in multiple file formats.',
     applicationHelp: 'quick_references/services/msa_snp_variation_service.html',
     tutorialLink: 'tutorial/msa_snp_variation/msa_snp_variation.html',
     videoLink: '',
@@ -27,7 +27,8 @@ define([
     appBaseURL: 'MSA',
     defaultPath: '',
     startingRows: 14,
-    // maxGenomes: 256,
+    alphabet: '',
+    maxGenomes: 128,
     validFasta: false,
     textInput: false,
 
@@ -41,7 +42,6 @@ define([
       }
 
       this.inherited(arguments);
-
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
       _self.output_path.set('value', _self.defaultPath);
       this._started = true;
@@ -82,7 +82,10 @@ define([
       this.user_genomes_fasta.set('disabled', true);
       this.fasta_keyboard_input.set('disabled', true);
       this.user_genomes_alignment.set('disabled', true);
+      this.select_genomegroup.set('disabled', true);
       // Do not require anything
+      this.sequence_message.innerHTML = '';
+      this.genomegroup_message.innerHTML = '';
       this.aligner.set('required', false);
       this.user_genomes_featuregroup.set('required', false);
       this.dna.set('required', false);
@@ -90,6 +93,7 @@ define([
       this.user_genomes_fasta.set('required', false);
       this.fasta_keyboard_input.set('required', false);
       this.user_genomes_alignment.set('required', false);
+      this.select_genomegroup.set('required', false);
     },
 
     onChangeType: function () {
@@ -101,12 +105,16 @@ define([
         this.user_genomes_featuregroup.set('disabled', false);
         this.dna.set('disabled', false);
         this.protein.set('disabled', false);
+      } else if (this.input_genomegroup.checked == true) {
+        this.select_genomegroup.set('required', true);
+        this.select_genomegroup.set('disabled', false);
       } else if (this.input_fasta.checked == true) {
         this.user_genomes_fasta.set('required', true);
         this.user_genomes_fasta.set('disabled', false);
       } else if (this.input_sequence.checked == true) {
         this.fasta_keyboard_input.set('required', true);
         this.fasta_keyboard_input.set('disabled', false);
+        this.checkFasta();
       }
       this.validate();
     },
@@ -134,6 +142,16 @@ define([
     },
 
     validate: function () {
+      this.genomegroup_message.innerHTML = '';
+      this.submitButton.set('disabled', false);
+      if (this.select_genomegroup.get('required') && this.select_genomegroup.searchBox.item) {
+        var item_count = this.select_genomegroup.searchBox.item.autoMeta.item_count;
+        if (item_count > this.maxGenomes) {
+          this.genomegroup_message.innerHTML = 'The genome group has ' + item_count + ' genomes. Only ' + this.maxGenomes + ' are allowed.'
+          this.submitButton.set('disabled', true);
+          return false;
+        }
+      }
       if (this.inherited(arguments)) {
         if (this.input_sequence.get('checked') && (!this.fasta_keyboard_input.get('value') || !this.validFasta)) {
           this.submitButton.set('disabled', true);
@@ -156,9 +174,11 @@ define([
         values.fasta_keyboard_input = '';
       }
       if (values.user_genomes_featuregroup) {
-        var featureGroups = [values.user_genomes_featuregroup];
-        values.feature_groups = featureGroups;
+        values.feature_groups = [values.user_genomes_featuregroup];
         delete values.user_genomes_featuregroup;
+      }
+      if (values.select_genomegroup) {
+        values.select_genomegroup = [values.select_genomegroup];
       }
       var fastaFiles = [];
       var my_input_type = '';
@@ -167,9 +187,11 @@ define([
       } else if (values.user_genomes_fasta) {
         my_input_type = 'user_genomes_fasta';
       }
+      // Set the alphabet
       if (!values.alphabet) {
         values.alphabet = 'dna';
       }
+      // Create array of fasta files if needed.
       if (my_input_type) {
         var rec = {};
         rec.type = this[my_input_type].searchBox.onChange.target.item.type;
@@ -236,27 +258,28 @@ define([
       if (job_data['input_status'] === 'aligned') {
         return;
       }
+      this.input_group.set('checked', false);
+      this.input_genomegroup.set('checked', false);
+      this.input_fasta.set('checked', false);
+      this.input_sequence.set('checked', false);
       if (job_data['input_type'] === 'input_group') {
         this.input_group.set('checked', true);
-        this.input_fasta.set('checked', false);
-        this.input_sequence.set('checked', false);
         this.user_genomes_featuregroup.set('value', job_data['feature_groups'][0]);
       }
       else if (job_data['input_type'] === 'input_fasta') {
-        this.input_group.set('checked', false);
         this.input_fasta.set('checked', true);
-        this.input_sequence.set('checked', false);
         this.user_genomes_fasta.set('value', job_data['fasta_files'][0]['file']);
       }
       else if (job_data['input_type'] === 'input_sequence') {
-        this.input_group.set('checked', false);
-        this.input_fasta.set('checked', false);
         this.input_sequence.set('checked', true);
         this.fasta_keyboard_input.set('value', job_data['fasta_keyboard_input']);
       }
+      else if (job_data['input_type'] === 'input_genomegroup') {
+        this.input_genomegroup.set('checked', true);
+        this.select_genomegroup.set('value', job_data['select_genomegroup'][0]);
+      }
       else {
         console.log('Error: invalid unaligned input');
-
       }
     }
   });

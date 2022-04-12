@@ -85,6 +85,23 @@
             <tr>
               <div class="appRow">
                 <td>
+                  <input type="radio" id="${id}_input_genomegroup" value="input_genomegroup"
+                    data-dojo-attach-point="input_genomegroup" data-dojo-type="dijit/form/RadioButton" name="input_type"
+                    data-dojo-attach-event="onChange:onChangeType" />
+                </td>
+                <td>
+                  <label for="input_genomegroup">Select genome group</label><br>
+                  <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                    name="select_genomegroup" required="false" data-dojo-attach-point="select_genomegroup"
+                    data-dojo-attach-event="onChange:validate"
+                    data-dojo-props="type:['genome_group'], disabled:true,multi:false,promptMessage:'Select a genome group from your workspace for alignment.',missingMessage:'Genome group is required.', placeHolder:'Genome group'">
+                  </div>
+                  <div class="warning" data-dojo-attach-point="genomegroup_message"></div>
+                </td>
+              </div>
+            <tr>
+              <div class="appRow">
+                <td>
                   <input type="radio" id="${id}_input_fasta" value="input_fasta" data-dojo-attach-point="input_fasta"
                     data-dojo-type="dijit/form/RadioButton" name="input_type"
                     data-dojo-attach-event="onChange:onChangeType" />
