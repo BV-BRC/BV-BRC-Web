@@ -3,14 +3,14 @@ define([
   'dojo/dom-class',
   'dojo/text!./templates/MSA.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox', 'dijit/form/Textarea',
-  'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog',
+  'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog', '../../DataAPI',
   'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when'
 ], function (
   declare, WidgetBase, Topic, on,
   domClass,
   Template, AppBase, domConstruct, registry,
   Deferred, aspect, lang, domReady, NumberTextBox, Textarea,
-  query, dom, popup, Tooltip, Dialog, TooltipDialog,
+  query, dom, popup, Tooltip, Dialog, TooltipDialog, DataAPI,
   children, WorkspaceManager, Memory, Standby, when
 ) {
   return declare([AppBase], {
@@ -29,6 +29,7 @@ define([
     startingRows: 14,
     alphabet: '',
     maxGenomes: 128,
+    maxGenomeLength: 100000,
     validFasta: false,
     textInput: false,
 
@@ -46,6 +47,7 @@ define([
       _self.output_path.set('value', _self.defaultPath);
       this._started = true;
       this.form_flag = false;
+      this.setTooltips();
       try {
         this.intakeRerunForm();
       } catch (error) {
@@ -100,6 +102,8 @@ define([
       this.inputInitialize();
       this.aligner.set('required', true);
       this.aligner.set('disabled', false);
+      // this.select_genomegroup.searchBox.set('value', '');
+      this.genomegroup_message.innerHTML = '';
       if (this.input_group.checked == true) {
         this.user_genomes_featuregroup.set('required', true);
         this.user_genomes_featuregroup.set('disabled', false);
@@ -141,27 +145,98 @@ define([
       return false
     },
 
+    setTooltips: function () {
+      new Tooltip({
+        connectId: ['genomeGroup_tooltip'],
+        label: 'The genome group must have less than ' + this.maxGenomes.toString() + ' genomes.<br> Each genome must: <br>- Be a virus <br>- Be less than ' + this.maxGenomeLength.toString() + ' base pairs in length '
+      });
+    },
+
     validate: function () {
       this.genomegroup_message.innerHTML = '';
       this.submitButton.set('disabled', false);
-      if (this.select_genomegroup.get('required') && this.select_genomegroup.searchBox.item) {
-        var item_count = this.select_genomegroup.searchBox.item.autoMeta.item_count;
-        if (item_count > this.maxGenomes) {
-          this.genomegroup_message.innerHTML = 'The genome group has ' + item_count + ' genomes. Only ' + this.maxGenomes + ' are allowed.'
-          this.submitButton.set('disabled', true);
-          return false;
-        }
+      var def = this.inherited(arguments);
+      if (this.select_genomegroup.get('required') && this.select_genomegroup.searchBox.item && (this.input_genomegroup.checked == true) && (this.unaligned.checked == true)) {
+        this.submitButton.set('disabled', true);
+        // var item_count = this.select_genomegroup.searchBox.item.autoMeta.item_count;
+        var path = this.select_genomegroup.searchBox.item.path;
+        var all_valid = true;
+        when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
+          if (typeof res.data == 'string') {
+            res.data = JSON.parse(res.data);
+          }
+          if (res && res.data && res.data.id_list) {
+            if (res.data.id_list.genome_id) {
+              // viral genome checks
+              all_valid = this.checkViralGenomes(res.data.id_list.genome_id, def);
+            }
+          }
+        }));
+        return all_valid;
       }
-      if (this.inherited(arguments)) {
+      else if (def) {
         if (this.input_sequence.get('checked') && (!this.fasta_keyboard_input.get('value') || !this.validFasta)) {
           this.submitButton.set('disabled', true);
           return false;
         }
         this.submitButton.set('disabled', false);
         return true;
+      } else {
+        this.submitButton.set('disabled', true);
+        return false;
       }
-      this.submitButton.set('disabled', true);
-      return false;
+    },
+
+    // TODO: there may be a limit to the number of genome_ids that can be passed into the query, check that
+    checkViralGenomes: function (genome_id_list, def) {
+      // As far as I have seen Bacteria do not have a superkingdom field, only viruses
+      var query = `in(genome_id,(${genome_id_list.toString()}))&select(genome_id,superkingdom,genome_length,contigs)&limit(${genome_id_list.length})`;
+      // console.log('query = ', query);
+      var all_valid = true;
+      DataAPI.queryGenomes(query).then(lang.hitch(this, function (res) {
+        // console.log('result = ', res);
+        var errors = {};
+        if (genome_id_list.length > this.maxGenomes) {
+          errors['genomecount_error'] = 'Error: the number of genomes ( ' + genome_id_list.length + ' ) exceeds the maximum count of ' + this.maxGenomes.toString();
+          all_valid = false;
+        }
+        res.items.forEach(lang.hitch(this, function (obj) {
+          if (obj.superkingdom) {
+            if (obj.superkingdom != 'Viruses') {
+              all_valid = false;
+              if (!Object.keys(errors).includes('kingdom_error')) {
+                errors['kingdom_error'] = 'Invalid Superkingdom: only virus genomes are permitted<br>First occurence for genome_id: ' + obj.genome_id;
+              }
+            }
+            // if (obj.contigs > 1) {
+            //   all_valid = false;
+            //   if (!Object.keys(errors).includes('contigs_error')) {
+            //     errors['kingdom_error'] = 'Error: only 1 contig is permitted<br>First occurence for genome_id: ' + obj.genome_id;
+            //   }
+            // }
+            if (obj.genome_length > this.maxGenomeLength) {
+              all_valid = false;
+              if (!Object.keys(errors).includes('genomelength_error')) {
+                errors['genomelength_error'] = 'Error: genome exceeds maximum length ' + this.maxGenomeLength.toString() + '<br>First occurence for genome_id: ' + obj.genome_id;
+              }
+            }
+          } else { // TODO: don't think this is correct, add other criteria
+            all_valid = false;
+          }
+        }));
+        if (all_valid && def) {
+          this.submitButton.set('disabled', false);
+          this.genomegroup_message.innerHTML = '';
+        } else if (!all_valid) {
+          this.submitButton.set('disabled', true);
+          var error_msg = 'This is an invalid genome group. The following errors were found:';
+          Object.values(errors).forEach(lang.hitch(this, function (err) {
+            error_msg = error_msg + '<br>- ' + err;
+          }));
+          this.genomegroup_message.innerHTML = error_msg;
+        }
+      }));
+      return all_valid && def;
     },
 
     openJobsList: function () {
