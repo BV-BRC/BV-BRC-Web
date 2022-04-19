@@ -369,12 +369,17 @@ define([
 
               var property_line = a.split(':');
               // console.log('property_line', property_line);
+              var selected = false;
 
               if (property_line.length == 1) {
                 property_name = property_line[0];
               }
               else if (property_line.length > 1) {
                 property_name = property_line[1];
+              }
+              
+              if (property_name.toLowerCase() == 'species' || property_name.toLowerCase() == 'strain') {
+              	selected = true;
               }
               nodeVisualizations[property_name] =  {
                 label: property_name,
@@ -390,7 +395,7 @@ define([
                 label: property_name,
                 description: property_name,
                 propertyRef: 'BVBRC:' + property_name,
-                selected: false,
+                selected: selected,
                 showButton: true
               };
             });
