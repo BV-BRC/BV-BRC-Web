@@ -343,7 +343,7 @@ define([
       settings.rootOffset = 180;
       settings.allowManualNodeSelection = true;
       settings.orderTree = true;
-      
+
       var nodeVisualizations = {};
       var specialVisualizations = {};
       var nodeLabels = {};
@@ -377,9 +377,9 @@ define([
               else if (property_line.length > 1) {
                 property_name = property_line[1];
               }
-              
+
               if (property_name.toLowerCase() == 'species' || property_name.toLowerCase() == 'strain') {
-              	selected = true;
+                selected = true;
               }
               nodeVisualizations[property_name] =  {
                 label: property_name,
