@@ -1,4 +1,10 @@
 # Changelog
+## 3.13.2 - April 22, 2022
+* [Feature] Genome Group tab customization based on bacteria or virus context
+
+## 3.13.1 - April 15, 2022
+* [Enhancement] Genome Group Merge
+
 ## 3.13.0 - April 5, 2022
 * [Release] Production Release
 * [Enhancement] Update SARS-CoV-2 phylo viewer to iteration 14
