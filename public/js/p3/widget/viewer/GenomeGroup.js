@@ -223,10 +223,13 @@ define([
     },
 
     changeToViruses: function () {
+      this.viewer.removeChild(this.amr)
+      this.viewer.removeChild(this.sequences)
       this.viewer.removeChild(this.specialtyGenes);
       this.viewer.removeChild(this.proteinFamilies);
       this.viewer.removeChild(this.pathways);
       this.viewer.removeChild(this.subsystems);
+      this.viewer.removeChild(this.experiments);
       this.viewer.removeChild(this.interactions);
     },
 
