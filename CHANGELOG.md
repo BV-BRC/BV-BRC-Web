@@ -1,4 +1,7 @@
 # Changelog
+## 3.13.3 - April 25, 2022
+* [Minor] Remove UVA members no longer with the team
+
 ## 3.13.2 - April 22, 2022
 * [Feature] Genome Group tab customization based on bacteria or virus context
 
