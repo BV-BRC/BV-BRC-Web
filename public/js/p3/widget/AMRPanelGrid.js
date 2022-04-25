@@ -26,7 +26,7 @@ define([
       antibiotic: { label: 'Antibiotic', field: 'antibiotic' },
       phenotype: { label: 'Resistant Phenotype', field: 'resistant_phenotype' },
       m_sign: { label: 'Measurement Sign', field: 'measurement_sign' },
-      m_value: { label: 'Measurement Value', field: 'measurement_value' },
+      m_value: { label: 'Measurement Value', field: 'measurement_sign' },
       m_unit: { label: 'Measurement Units', field: 'measurement_unit' },
       l_method: { label: 'Lab typing Method', field: 'laboratory_typing_method' },
       l_version: { label: 'Lab typing Version', field: 'laboratory_typing_method_version', hidden: true },
@@ -35,7 +35,7 @@ define([
       test_standard: { label: 'Testing standard', field: 'testing_standard', hidden: true },
       test_year: { label: 'Testing standard year', field: 'testing_standard_year', hidden: true },
       c_method: { label: 'Computational Method', field: 'computational_method' },
-      c_version: { label: 'Computational Method Version', field: 'computational_method', hidden: true },
+      c_version: { label: 'Computational Method Version', field: 'computational_method_version', hidden: true },
       c_performance: { label: 'Computational Method Performance', field: 'computational_method_performance', hidden: true },
       evidence: { label: 'Evidence', field: 'evidence' },
       pmid: { label: 'Pubmed', field: 'pmid' }
