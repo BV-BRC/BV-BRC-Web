@@ -1,5 +1,7 @@
 # Changelog
 ## 3.13.3 - April 25, 2022
+* [Bug] Fix typo bug in Computation Method Version column
+* [Feature] Add advanced search fields to AMR Phenotypes tab
 * [Minor] Remove UVA members no longer with the team
 
 ## 3.13.2 - April 22, 2022

@@ -3,13 +3,13 @@ define([
   'dojo/dom-construct', 'dojo/on', 'dojo/topic',
   'dijit/TooltipDialog', 'dijit/popup', 'dijit/Dialog',
   './GridContainer', './AMRPanelGrid', './PerspectiveToolTip', './SelectionToGroup',
-  '../util/PathJoin'
+  '../util/PathJoin', './AdvancedSearchFields',
 ], function (
   declare, lang,
   domConstruct, on, Topic,
   TooltipDialog, popup, Dialog,
   GridContainer, Grid, PerspectiveToolTipDialog, SelectionToGroup,
-  PathJoin
+  PathJoin, AdvancedSearchFields
 ) {
 
   const dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
@@ -24,7 +24,8 @@ define([
     containerType: 'genome_amr_data',
     tutorialLink: 'user_guides/organisms_taxon/amr_phenotypes.html',
     tooltip: 'The “AMR Phenotype” lists antimicrobial resistant phenotypes for genomes, inferred using computational and laboratory methods.',
-    facetFields: ['public', 'antibiotic', 'resistant_phenotype', 'evidence', 'laboratory_typing_method', 'computational_method'],
+    facetFields: AdvancedSearchFields['genome_amr'].filter((ff) => ff.facet),
+    advancedSearchFields: AdvancedSearchFields['genome_amr'].filter((ff) => ff.search),
     dataModel: 'genome_amr',
     primaryKey: 'id',
     containerActions: GridContainer.prototype.containerActions.concat([
