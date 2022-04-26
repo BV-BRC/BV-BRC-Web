@@ -184,7 +184,7 @@ define([
         if (rec.type == 'genome') {
           genomeList.push(rec.genome_ids[0]);
         } else if (rec.type == 'genome_group') {
-          genomeGroup.push(rec.path + '/' + rec.label)
+          genomeGroup.push(rec.path);
         }
       });
 
