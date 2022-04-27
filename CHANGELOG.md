@@ -1,4 +1,7 @@
 # Changelog
+## 3.13.4 - April 27, 2022
+* [Minor] Add PMID as facet for AMR Phenotypes tab
+
 ## 3.13.3 - April 25, 2022
 * [Bug] Fix typo bug in Computation Method Version column
 * [Feature] Add advanced search fields to AMR Phenotypes tab

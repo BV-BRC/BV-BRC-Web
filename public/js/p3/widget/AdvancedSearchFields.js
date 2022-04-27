@@ -1484,7 +1484,7 @@ define([], function () {
         field: 'evidence', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'pmid', type: 'str', facet: true, facet_hidden: true, search: true
+        field: 'pmid', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'public', type: 'str', facet: true, facet_hidden: false, search: true
