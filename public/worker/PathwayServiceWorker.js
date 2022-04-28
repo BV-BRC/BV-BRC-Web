@@ -1,10 +1,7 @@
 function parseData(data, genome_list, primaryKey) {
   var data_dict = {};
   var key_list = [];
-  var print_one = true;
-  console.log('data = ', data);
-  console.log('genome_list = ', genome_list);
-  console.log('primaryKey = ', primaryKey);
+  var print_one = false;
   data.forEach(function (obj) {
     if (!obj['genome_id']) {
       return; // TODO: shouldn't happen but did for EC-numbers
@@ -39,7 +36,6 @@ function parseData(data, genome_list, primaryKey) {
       key_list.push(pathwayKey);
     }
   });
-  console.log('data_dict = ', data_dict);
   return Object.values(data_dict);
 }
 

@@ -18,13 +18,16 @@ define([
   focusUtil, PathJoin
 ) {
 
+  /*
   function sortByLabel(firstEl, secondEl) {
     return (firstEl['label'] < secondEl['label']) ? -1 : (firstEl['label'] > secondEl['label'] ? 1 : 0)
   }
+  */
 
+  /*
   function parseFacetCounts(facets) {
     const out = {};
-    
+
     Object.keys(facets).forEach(function (cat) {
       const data = facets[cat];
       if (!out[cat]) {
@@ -39,6 +42,7 @@ define([
     });
     return out;
   }
+  */
 
   // referencing FilterContainerActionBar.js
   return declare([ContainerActionBar], {
@@ -176,8 +180,6 @@ define([
           tmp_counts[facet.field][facet_label]++;
         }));
       }));
-      console.log('return getFacets: ', tmp_counts);
-      // return parseFacetCounts(tmp_counts);
       const out = {};
 
       Object.keys(tmp_counts).forEach(function (cat) {

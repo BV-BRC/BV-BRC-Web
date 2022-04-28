@@ -28,19 +28,8 @@ define([
         container_type: 'pathway',
         columns: {
           'Selection Checkboxes': selector({ label: '', sortable: false, unhidable: true }),
-          /*
-          expand: {
-            label: '',
-            field: '',
-            sortable: false,
-            unhidable: true,
-            renderCell: function (obj, val, node) {
-              node.innerHTML = '<div class="dgrid-expando-icon ui-icon ui-icon-triangle-1-e"></div>'
-            }
-          },
-          */
           annotation : { label: 'Annotation', field: 'annotation' },
-          //idx : { label: 'Index', field: 'idx' },
+          // idx : { label: 'Index', field: 'idx' },
           pathway_id : { label: 'Pathway ID', field: 'pathway_id' },
           pathway_name : { label: 'Pathway Name', field: 'pathway_name' },
           pathway_class : { label: 'Pathway Class', field: 'pathway_class' },
@@ -54,19 +43,8 @@ define([
         container_type: 'ecNum',
         columns: {
           'Selection Checkboxes': selector({ label: '', sortable: false, unhidable: true }),
-          /*
-          expand: {
-            label: '',
-            field: '',
-            sortable: false,
-            unhidable: true,
-            renderCell: function (obj, val, node) {
-              node.innerHTML = '<div class="dgrid-expando-icon ui-icon ui-icon-triangle-1-e"></div>'
-            }
-          },
-          */
           annotation : { label: 'Annotation', field: 'annotation' },
-          //idx : { label: 'Index', field: 'idx', },
+          // idx : { label: 'Index', field: 'idx', },
           pathway_id : { label: 'Pathway ID', field: 'pathway_id' },
           pathway_name : { label: 'Pathway Name', field: 'pathway_name' },
           pathway_class : { label: 'Pathway Class', field: 'pathway_class' },
@@ -82,19 +60,8 @@ define([
         container_type: 'genes',
         columns: {
           'Selection Checkboxes': selector({ label: '', sortable: false, unhidable: true }),
-          /*
-          expand: {
-            label: '',
-            field: '',
-            sortable: false,
-            unhidable: true,
-            renderCell: function (obj, val, node) {
-              node.innerHTML = '<div class="dgrid-expando-icon ui-icon ui-icon-triangle-1-e"></div>'
-            }
-          },
-          */
           annotation : { label: 'Annotation', field: 'annotation' },
-          //idx : { label: 'Index', field: 'idx' },
+          // idx : { label: 'Index', field: 'idx' },
           pathway_id : { label: 'Pathway ID', field: 'pathway_id' },
           pathway_name : { label: 'Pathway Name', field: 'pathway_name' },
           accession : { label: 'Accession', field: 'accession' },
@@ -166,10 +133,8 @@ define([
       console.log('_SetStoreType');
       this.storeType = type;
       console.log('type = ', type);
-      
+
       console.log('Set Container Type: ', this.container_type, 'storetype: ', this.storeType);
-      
-      
       */
     },
 
@@ -206,7 +171,7 @@ define([
         domClass.toggle(target, 'ui-icon-triangle-1-se', collapsed)
 
       });
-      
+
       this.on('dgrid-select', function (evt) {
         var newEvt = {
           rows: evt.rows,

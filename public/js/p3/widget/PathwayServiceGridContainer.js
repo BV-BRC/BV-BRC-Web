@@ -62,7 +62,6 @@ define([
     createFilterPanel: function () {
       console.log('create pathway filter panel');
       var _self = this;
-      console.log('facetFields',this.facetFields);
       this.containerActionBar = this.filterPanel = new ContainerActionBar({
         region: 'top',
         layoutPriority: 7,

@@ -45,7 +45,6 @@ define([
     apiServer: window.App.dataServiceURL,
 
     onSetState: function (attr, oldVal, state) {
-      console.log('memory onSetState');
       if (!state) {
         return;
       }
@@ -54,17 +53,14 @@ define([
         this.genome_ids = state.data.genome_ids; // copy elements
         this.is_first_load = false;
       } else if (arraysEqual(state.data.genome_ids, this.genome_ids)) {
-        // console.log("do not duplicate");
         this._loaded = true;
         // Topic.publish(this.topicId, 'hideLoadingMask');
         return;
       }
 
       if (state && state.data.genome_ids) {
-        console.log('setting pfState');
         this._loaded = false;
         this.pfState = lang.mixin({}, this.pfState, pfStateDefault);
-        console.log('pfstate', this.pfState);
         this.pfState.genomeFilterStatus = {}; // lang.mixin does not override deeply
         this._filtered = undefined; // reset flag prevent to read stored _original
         this.setGenomeIds();
@@ -84,8 +80,6 @@ define([
         // console.log("received:", arguments);
         var key = arguments[0],
           value = arguments[1];
-        console.log('set ', key);
-        // TODO: Rewrite all these switch cases
 
         switch (key) {
           case 'setFamilyType':
@@ -99,16 +93,10 @@ define([
             break;
           case 'anchorByGenome':
             this.anchorByGenome(value);
-            console.log('anchorByGenome')
             break;
           case 'applyConditionFilter':
             this.pfState = value;
             this.changeData({ 'familyType': this.pfState.familyType });
-            // Call topic.publish(familyType) after data loads in changeData
-            // this.setData(this.changeData({ 'familyType': this.pfState.familyType }));
-            // Topic.publish(this.topicId, 'updatePfState', this.pfState);
-            // var currentData = this.getHeatmapData();
-            // Topic.publish(this.topicId, 'updateHeatmapData', currentData);
             break;
           case 'requestHeatmapData':
             this.pfState = value;
@@ -212,11 +200,9 @@ define([
       var worker = new window.Worker('/public/worker/ProteinFamiliesServiceWorker.js', { type: 'module' });
       worker.onerror = (err) => console.log(err);
       worker.onmessage = lang.hitch(this, function (e) {
-        console.log('return message', e);
         // Data should have pgfam and plfam tables
         this.pgfam_data = e.data['pgfam'];
         this.plfam_data = e.data['plfam'];
-        console.log('pgfam_data', this.pgfam_data);
         def.resolve(true);
         worker.terminate();
       });
@@ -238,14 +224,11 @@ define([
     // Applies a genome filter or other filter
     changeData: function (query) {
       var change_genomes = this.checkChangeGenomeFilter();
-      console.log('change_genomes is ', change_genomes);
       if (change_genomes) {
         // TODO: add loading wheel
         if (window.Worker) {
           Topic.publish(this.topicId, 'showLoadingMask');
           this.loadGenomeDataBackground().then(lang.hitch(this, function (res) {
-            console.log('finished loading background');
-            console.log('res = ', res);
             Topic.publish(this.topicId, 'updatePfState', this.pfState);
             Topic.publish(this.topicId, 'applyConditionFilterRefresh', this.pfState);
             var currentData = this.getHeatmapData();
@@ -264,8 +247,6 @@ define([
       }
     },
 
-    // TODO: still need to do std dev logic
-    // TODO: need to rework this and the other components to deal with background loading
     query: function (query, opts) {
       console.log('query = ', query);
       console.log('opts = ', opts);
@@ -319,9 +300,7 @@ define([
     checkChangeGenomeFilter: function () {
       var filter_data = false;
       var current_filter = this.currentFilter ? JSON.stringify(this.currentFilter) : JSON.stringify({});
-      console.log('current_filter = ', current_filter);
       var genome_filter = JSON.stringify(this.pfState.genomeFilterStatus);
-      console.log('pfState filter = ', genome_filter);
       if (current_filter !== genome_filter) {
         // make deep copy
         this.currentFilter = JSON.parse(JSON.stringify(this.pfState.genomeFilterStatus));
@@ -330,116 +309,6 @@ define([
       return filter_data;
     },
 
-    parseData: function (data) {
-      // get selected genomes
-      var genome_filter = this.pfState.genomeFilterStatus;
-      console.log('genome_filter = ', genome_filter);
-      var mixed_genomes = []; // don't think this one needs to be used
-      var present_genomes = [];
-      var absent_genomes = [];
-      Object.values(genome_filter).forEach(lang.hitch(this, function (genome) {
-        if (genome.status == 2) {
-          mixed_genomes.push(genome.label);
-        }
-        if (genome.status == 1) {
-          absent_genomes.push(genome.label);
-        }
-        if (genome.status == 0) {
-          present_genomes.push(genome.label);
-        }
-      }));
-      var parsed_data = {};
-      var family_counts = {};
-      var family_list = [];
-      var genomes_dict = {};
-      data.forEach(lang.hitch(this, function (obj) {
-        // filter by genome
-        if (present_genomes.length > 0 && !present_genomes.includes(obj['genome_id'])) {
-          return;
-        }
-        if (absent_genomes.length > 0 && absent_genomes.includes(obj['genome_id'])) {
-          return;
-        }
-        if (family_list.includes(obj['family_id'])) {
-          // readjust
-          parsed_data[obj['family_id']]['aa_length_max'] = this.getMax(parsed_data[obj['family_id']]['aa_length_max'], obj['aa_length_max']);
-          parsed_data[obj['family_id']]['aa_length_min'] = this.getMin(parsed_data[obj['family_id']]['aa_length_min'], obj['aa_length_min']);
-          parsed_data[obj['family_id']]['aa_length_mean'] = this.getAvg(parsed_data[obj['family_id']]['aa_length_mean'], obj['aa_length_mean'], family_counts['family_id']);
-          // TODO: adjust std deviation
-          parsed_data[obj['family_id']]['feature_count'] = (parseInt(parsed_data[obj['family_id']]['feature_count']) + parseInt(obj['feature_count']));
-          parsed_data[obj['family_id']]['genome_count'] = (parseInt(parsed_data[obj['family_id']]['genome_count']) + parseInt(obj['genome_count']));
-          // eslint-disable-next-line operator-assignment
-          // parsed_data[obj['family_id']]['genomes'] = parsed_data[obj['family_id']]['genomes'] + obj['genomes'];
-          genomes_dict[obj['family_id']][obj['genome_id']] = obj['genomes'];
-          family_counts['family_id']++;
-        }
-        else {
-          family_list.push(obj['family_id']);
-          parsed_data[obj['family_id']] = {};
-          parsed_data[obj['family_id']]['family_id'] = obj['family_id'];
-          parsed_data[obj['family_id']]['aa_length_max'] = parseInt(obj['aa_length_max']);
-          parsed_data[obj['family_id']]['aa_length_min'] = parseInt(obj['aa_length_min']);
-          parsed_data[obj['family_id']]['aa_length_mean'] = parseFloat(obj['aa_length_mean']);
-          parsed_data[obj['family_id']]['aa_length_std'] = parseFloat(obj['aa_length_std']);
-          parsed_data[obj['family_id']]['feature_count'] = parseInt(obj['feature_count']);
-          parsed_data[obj['family_id']]['genome_count'] = parseInt(obj['genome_count']);
-          genomes_dict[obj['family_id']] = {};
-          genomes_dict[obj['family_id']][obj['genome_id']] = obj['genomes'];
-          // parsed_data[obj['family_id']]['genomes'] = obj['genomes'];
-          parsed_data[obj['family_id']]['description'] = obj['product'];
-          family_counts['family_id'] = 1;
-        }
-      }));
-      // Add genome hexvalues to parsed_data['genomes']
-      Object.keys(parsed_data).forEach(lang.hitch(this, function (family_id) {
-        var hexstr = '';
-        Object.keys(genome_filter).forEach(lang.hitch(this, function (genome_id) {
-          if (genomes_dict[family_id].hasOwnProperty(genome_id)) { // if it contains a genomes entry for that family_id, genome_id
-            hexstr += genomes_dict[family_id][genome_id];
-          }
-          else { // if not add 00
-            hexstr += '00';
-          }
-        }));
-        parsed_data[family_id]['genomes'] = hexstr;
-      }));
-      return Object.values(parsed_data);
-    },
-
-    /*
-    getStd: function (oldVal, newVal, currCounts) {
-
-    },
-    */
-
-    getAvg: function (oldVal, newVal, currCounts) {
-      newVal = parseFloat(newVal);
-      oldVal = parseFloat(oldVal);
-      var adjustVal = (newVal + currCounts * oldVal) / (currCounts + 1);
-      return adjustVal;
-    },
-
-    getMax: function (val1, val2) {
-      val1 = parseInt(val1);
-      val2 = parseInt(val2);
-      if (val1 >= val2) {
-        return val1;
-      }
-      else {
-        return val2;
-      }
-    },
-
-    getMin: function (val1, val2) {
-      val1 = parseInt(val1);
-      val2 = parseInt(val2);
-      if (val1 >= val2) {
-        return val2;
-      }
-      else {
-        return val1;
-      }
-    },
     filter: function (filter) {
       console.log('filter = ', filter);
       // this.inherited(arguments);
@@ -608,9 +477,8 @@ define([
         opts.sort = this.pfState.columnSort;
       }
 
-      // TODO: change query()
       var data = this.query({ 'familyType': this.pfState.familyType });
-      console.log('heatmap data', data);
+      // console.log('heatmap data', data);
 
       var familyOrderMap = {};
       if (familyOrder !== [] && familyOrder.length > 0) {
@@ -622,7 +490,7 @@ define([
           familyOrderMap[family.family_id] = idx;
         });
       }
-      var print_one = true;
+      var print_one = false;
       data.filter(function (f) {
         return f !== undefined && f.family_id !== undefined;
       }).forEach(function (family) {

@@ -1,9 +1,6 @@
 function parse_data(data, filter) {
   // get selected genomes
-  console.log('data = ', data);
-  console.log('filter = ', filter);
   var genome_filter = filter;
-  console.log('genome_filter = ', genome_filter);
   var mixed_genomes = []; // don't think this one needs to be used
   var present_genomes = [];
   var absent_genomes = [];

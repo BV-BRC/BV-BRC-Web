@@ -37,8 +37,7 @@ define([
     },
 
     onSetState: function (attr, oldVal, state) {
-      console.log("PathwaysServiceContainer set STATE.  state: ", state, " First View: ", this._firstView);
-      console.log('loaded = ', this.loaded);
+      // console.log("PathwaysServiceContainer set STATE.  state: ", state, " First View: ", this._firstView);
       if (!this.loaded) {
         // wait for directory contents to load
         return;
