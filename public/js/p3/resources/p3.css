@@ -544,6 +544,28 @@ body.patric.claro .dijitTabDisabled {
     margin: 3px 15px;
 }
 
+.TextTabButtonsViewer {
+    margin: 0;
+    padding: 4px;
+    background: #eee;
+    border-bottom: 1px solid #bbb;
+    height: 25px;
+}
+
+.TextTabButtonsViewer .dijitTab {
+    display: inline-block;
+    transition-duration: 0s;
+}
+
+.TextTabButtonsViewer .dijitTab,
+.TextTabButtonsViewer .dijitToggleButton .dijitButtonNode {
+    border: 0;
+    background-color: inherit;
+    box-shadow: none;
+    border-radius: 0;
+    margin: 3px 15px;
+}
+
 .claro .dijitTab:first-child {
     margin-left: 10px;
 }
