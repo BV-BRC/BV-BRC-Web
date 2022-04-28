@@ -28,7 +28,6 @@ define([
 
     constructor: function (options) {
       this.data = options.data
-      console.log('data = ', this.data);
       this.storeType = options.storeType;
       this.primaryKey = options.primaryKey;
       this.state = options.state;
@@ -39,52 +38,7 @@ define([
     },
 
     setContainer: function (container) {
-      console.log('container = ', container);
       this.container = container;
-    },
-
-    // Each row has an associated genome id
-    // Modify the stats to account for different genomes/combinations
-    parseData: function (data, genome_list) {
-      var data_dict = {};
-      var key_list = [];
-      var print_one = true;
-      console.log('genome_list', genome_list);
-      console.log('data = ', data);
-      data.forEach(lang.hitch(this, function (obj) {
-        if (!obj['genome_id']) {
-          return; // TODO: shouldn't happen but did for EC-numbers
-        }
-        if (!genome_list.includes(obj['genome_id'].toString())) {
-          return;
-        }
-        var pathwayKey = obj[this.primaryKey];
-        if (key_list.includes(pathwayKey)) { // add values per genome to get final counts
-          if (print_one) {
-            console.log('key = ', pathwayKey);
-            console.log('genomeData genome_count: ', data_dict[pathwayKey]['genome_count']);
-            console.log('obj genome_count: ', obj['genome_count']);
-            print_one = false;
-          }
-          data_dict[pathwayKey]['genome_count'] += parseInt(obj['genome_count']);
-          data_dict[pathwayKey]['ec_count'] += parseInt(obj['ec_count']);
-          data_dict[pathwayKey]['gene_count'] += parseInt(obj['gene_count']);
-          data_dict[pathwayKey]['genome_ec'] += parseInt(obj['genome_ec']);
-        } else { // initialize entry with first occurence, includes other information fields which may differ per genome
-          data_dict[pathwayKey] = {};
-          Object.keys(obj).forEach(lang.hitch(this, function (field) {
-            if (field !== 'genome_id') {
-              if (Number.isInteger(parseInt(obj[field]))) {
-                data_dict[pathwayKey][field] = parseInt(obj[field]);
-              } else {
-                data_dict[pathwayKey][field] = obj[field];
-              }
-            }
-          }));
-          key_list.push(pathwayKey);
-        }
-      }));
-      return Object.values(data_dict);
     },
 
     checkChangeFilter: function (query) {
@@ -106,7 +60,7 @@ define([
       var worker = new window.Worker('/public/worker/PathwayServiceWorker.js', { type: 'module' });
       worker.onerror = (err) => console.log(err);
       worker.onmessage = lang.hitch(this, function (e) {
-        console.log('return message', e);
+        // console.log('return message', e);
         // do something with data
         // TODO: set data, this.setData
         this.setData(e.data.data); // e.data contains { type, data }
@@ -122,9 +76,7 @@ define([
     filterData: function (data) {
       var query_filter = this.currentFilter;
       var keyword_filter = query_filter['fwks'];
-      console.log('keyword_filter ', keyword_filter)
       var facet_filter = query_filter['facets'];
-      console.log('facet_filter = ', facet_filter);
       // Facets looks like this:
       // - {'annotation':['PATRIC'],'pathway_class':['Carbohydrate Metabolism','Lipid Mtabolism'],etc}
       var filtered_data = data;
@@ -223,7 +175,6 @@ define([
     },
 
     filter: function (filter) {
-      console.log('filter = ', filter);
       return this.inherited(arguments);
     }
   });
