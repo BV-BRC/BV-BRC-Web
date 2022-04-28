@@ -1,4 +1,8 @@
 # Changelog
+## 3.13.5 - April 28, 2022
+* [Enhancement] Modified the genome query to exclude genomes of some length
+* [Enhancement] ComparativeSystems Viewers
+
 ## 3.13.4 - April 27, 2022
 * [Minor] Add PMID as facet for AMR Phenotypes tab
 
