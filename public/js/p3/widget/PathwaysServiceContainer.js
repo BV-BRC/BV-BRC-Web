@@ -74,8 +74,8 @@ define([
       });
       this.tabController = tabController;
 
-      this.addChild(this.tabController);
       this.addChild(this.tabContainer);
+      this.addChild(this.tabController);
 
       topic.subscribe('tab_container-selectChild', lang.hitch(this, function (page) {
         page.set('state', this.state);
@@ -106,8 +106,13 @@ define([
         }
       });
       this.state.data['pathway'] = pathway_data;
-      var pathway_store = new PathwayMemoryStore({ data: pathway_data, state: this.state, storeType: 'pathway', primaryKey: 'pathway_id' });
-      this.pathwaysGrid = new PathwaysGridContainer({ title: 'Pathways', store: pathway_store, type: 'pathway', });
+      var pathway_store = new PathwayMemoryStore({
+        data: pathway_data,
+        state: this.state,
+        storeType: 'pathway',
+        primaryKey: 'pathway_id'
+      });
+      this.pathwaysGrid = new PathwaysGridContainer({ title: 'Pathways', store: pathway_store, type: 'pathway' });
       this.pathwaysGrid.setFilterUpdateTrigger();
       this.pathwaysGrid.store.setContainer(this.pathwaysGrid);
       // Hide loading mask
@@ -155,11 +160,15 @@ define([
         }
       });
       this.state.data['gene'] = genes_data;
-      var gene_store = new PathwayMemoryStore({ data: genes_data, state: this.state, storeType: 'genes', primaryKey: 'gene' });
+      var gene_store = new PathwayMemoryStore({
+        data: genes_data,
+        state: this.state,
+        storeType: 'genes',
+        primaryKey: 'gene'
+      });
       this.genesGrid = new PathwaysGridContainer({ title: 'Genes', store: gene_store, type: 'gene' });
       this.genesGrid.setFilterUpdateTrigger();
       this.tabContainer.addChild(this.genesGrid);
     }
   });
 });
-  
