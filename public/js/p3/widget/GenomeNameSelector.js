@@ -26,6 +26,8 @@ define([
     includeOtherPublic: true,
     referenceOnly: true,
     ncbiHost: true,
+    excludeLength: false,
+    lengthLimit: 10000000,
     representativeOnly: true,
     pageSize: 25,
     highlightMatch: 'all',
@@ -55,6 +57,7 @@ define([
           searchAttrStripped = '*'.concat(query[_self.searchAttr].toString().replace(/[`~!@#$%^&*()_|+\-=?;:'",<>\s]/g, ''), '*');
           // unfooling the highlighting `~!@#$%^&*()_|+\-=?;:'",<>\s]/g, ''), '*');
 
+
           if (_self.extraSearch) {
             var components = ['eq(' + _self.searchAttr + ',' + searchAttrStripped + ')'];
             _self.extraSearch.forEach(lang.hitch(this, function (attr) {
@@ -72,14 +75,17 @@ define([
         if (_self.queryFilter) {
           q += _self.queryFilter;
         }
-
         if (_self.resultFields && _self.resultFields.length > 0) {
           q += '&select(' + _self.resultFields.join(',') + ')';
         }
-        // console.log("Q: ", q);
+        if (_self.excludeLength) {
+          // q += '&lt(genome_length,' + String(_self.lengthLimit) + ')&gt(genome_length,-' + String(_self.lengthLimit) + ')';
+          q += '&lt(genome_length,' + _self.lengthLimit + ')';
+          // q += '&gt(genome_length,-' + _self.lengthLimit + ')';
+        }
+        // console.log('Q: ', q);
         return api_query.apply(_self.store, [q, options]);
       });
-
 
       if (_self.ncbiHost) {
 
@@ -171,12 +177,14 @@ define([
       // console.log("Query Filter set to: " + this.queryFilter);
     },
     onChange: function () {
-      var tax_id = this.item.taxon_id;
-      if (tax_id in this.hostInfo.index) {
-        var ncbi_idx = this.hostInfo.index[tax_id];
-        var ncbi_rec = this.hostInfo.data[ncbi_idx];
-        this.item.host = true;
-        this.item.ftp = ncbi_rec['patric_ftp'];
+      if (this.item) {
+        var tax_id = this.item.taxon_id;
+        if (tax_id in this.hostInfo.index) {
+          var ncbi_idx = this.hostInfo.index[tax_id];
+          var ncbi_rec = this.hostInfo.data[ncbi_idx];
+          this.item.host = true;
+          this.item.ftp = ncbi_rec['patric_ftp'];
+        }
       }
     },
 
