@@ -127,7 +127,6 @@ define([
         }
 
         const format_filter = function (keywords, facets) {
-          console.log('facets = ', facets);
           var result = { };
           if (keywords) {
             console.log('enable keyword filtering:', keywords);
@@ -156,7 +155,6 @@ define([
         let filter = format_filter(fkws, this._filter);
 
         this.set('filter', filter);
-        console.log('this.filter = ', this.filter);
       }));
     },
 

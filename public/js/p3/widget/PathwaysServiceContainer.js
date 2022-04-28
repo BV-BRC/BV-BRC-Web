@@ -90,6 +90,7 @@ define([
       var pathway_data = [];
       var header = true;
       var pathway_keys = null;
+      var idx = 0;
       this.state.data['pathway'].split('\n').forEach(function (line) {
         if (header) {
           pathway_keys = line.split('\t');
@@ -102,8 +103,14 @@ define([
             new_data[key] = l[index];
           }));
           pathway_data.push(new_data);
+          idx++;
+          if (idx == 2490) {
+            console.log(line);
+          }
         }
       });
+      // TODO: the last entry is undefined, not sure why it's being added: for now just remove
+      pathway_data.pop();
       this.state.data['pathway'] = pathway_data;
       var pathway_store = new PathwayMemoryStore({
         data: pathway_data,
@@ -135,6 +142,8 @@ define([
           ec_data.push(new_data);
         }
       });
+      // TODO: the last entry is undefined, not sure why it's being added: for now just remove
+      ec_data.pop();
       this.state.data['ecnumber'] = ec_data;
       var ec_store = new PathwayMemoryStore({ data: ec_data, state: this.state, storeType: 'ecNum', primaryKey: 'ec_number' });
       this.ecGrid = new PathwaysGridContainer({ title: 'EC Number', store: ec_store, type: 'ec_number' });
@@ -158,6 +167,8 @@ define([
           genes_data.push(new_data);
         }
       });
+      // TODO: the last entry is undefined, not sure why it's being added: for now just remove
+      genes_data.pop();
       this.state.data['gene'] = genes_data;
       var gene_store = new PathwayMemoryStore({
         data: genes_data,
