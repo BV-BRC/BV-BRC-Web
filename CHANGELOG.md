@@ -3,6 +3,7 @@
 * [Feature] Add Comparative Systems to BV-BRC header menu
 * [Feature] Add Comparative Systems to BV-BRC tools page
 * [Enhancement] Update quick reference / tutorial for Compartive Systems Tool
+* [Enhancement] Modify strain search template
 
 ## 3.13.5 - April 28, 2022
 * [Enhancement] Modified the genome query to exclude genomes of some length
