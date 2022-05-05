@@ -1,4 +1,9 @@
 # Changelog
+## 3.13.7 - May 5, 2022
+* [Enhancement] Add and update SARS-CoV-2 overview of lineages
+* [Enhancement] Add and update SARS-CoV-2 lineage detail pages
+
+
 ## 3.13.6 - May 3, 2022
 * [Feature] Add Comparative Systems to BV-BRC header menu
 * [Feature] Add Comparative Systems to BV-BRC tools page
