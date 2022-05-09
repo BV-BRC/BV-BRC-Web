@@ -1425,5 +1425,70 @@ define([], function () {
         field: 'treatment_duration', type: 'str', facet: true, facet_hidden: false, search: false
       }
     ],
+    'genome_amr': [
+      {
+        field: 'taxon_id', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'genome_id', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'genome_name', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'genome_id', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'antibiotic', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'resistant_phenotype', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'measurement_sign', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'measurement_sign', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'measurement_unit', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'laboratory_typing_method', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'laboratory_typing_method_version', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'laboratory_typing_platform', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'vendor', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'testing_standard', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'testing_standard_year', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'computational_method', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'computational_method_version', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'computational_method_performance', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
+        field: 'evidence', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'pmid', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'public', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+    ],
   }
 })

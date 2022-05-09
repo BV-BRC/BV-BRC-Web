@@ -47,7 +47,7 @@ define([
     design: 'sidebar',
     splitter: false,
     docsServiceURL: window.App.docsServiceURL,
-    tutorialLink: 'user_guides/workspaces/workspace.html',
+    tutorialLink: 'quick_references/workspace_groups_upload.html',
     tsvCsvFilename: '',
 
     startup: function () {
@@ -146,6 +146,44 @@ define([
 
         window.open(PathJoin(self.docsServiceURL, path), '_blank');
       }, true);
+
+      this.browserHeader.addAction('PathwaysServiceViewer', 'MultiButton fa icon-eye fa -2x', {
+        label: 'Pathways',
+        validTypes: ['ComparativeSystems'],
+        tooltip: 'View Pathways Tables'
+      }, function (selection, container, button) {
+        console.log(selection);
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (data_file) {
+          if (data_file[0].includes('_pathways_tables.json')) {
+            path = data_file[0];
+          }
+        }));
+        if (path) {
+          Topic.publish('/navigate', { href: '/view/PathwayService' + path });
+        } else {
+          console.log('Error: could not find pathways data file');
+        }
+      }, false);
+
+      this.browserHeader.addAction('ProteinFamiliesServiceViewer', 'MultiButton fa icon-eye fa -2x', {
+        label: 'ProteinFamilies',
+        validTypes: ['ComparativeSystems'],
+        tooltip: 'View Pathways Tables'
+      }, function (selection, container, button) {
+        console.log(selection);
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (data_file) {
+          if (data_file[0].includes('_proteinfams_tables.json')) {
+            path = data_file[0];
+          }
+        }));
+        if (path) {
+          Topic.publish('/navigate', { href: '/view/ProteinFamiliesService' + path });
+        } else {
+          console.log('Error: could not find pathways data file');
+        }
+      }, false);
 
       this.actionPanel.addAction('ViewGenomeGroup', 'MultiButton fa icon-selection-GenomeList fa-2x', {
         label: 'VIEW',

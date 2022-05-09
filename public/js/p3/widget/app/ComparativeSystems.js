@@ -17,8 +17,8 @@ define([
     baseClass: 'App Assembly',
     templateString: Template,
     applicationName: 'ComparativeSystems',
-    applicationHelp: 'quick_references/services/comparative_pathway_service.html',
-    tutorialLink: 'tutorial/comparative_pathways/comparative_pathways.html',
+    applicationHelp: 'quick_references/services/comparative_systems.html',
+    tutorialLink: 'tutorial/comparative_systems/comparative_systems.html',
     pageTitle: 'Comparative Systems Tool',
     libraryData: null,
     defaultPath: '',
@@ -184,7 +184,7 @@ define([
         if (rec.type == 'genome') {
           genomeList.push(rec.genome_ids[0]);
         } else if (rec.type == 'genome_group') {
-          genomeGroup.push(rec.path + '/' + rec.label)
+          genomeGroup.push(rec.path);
         }
       });
 

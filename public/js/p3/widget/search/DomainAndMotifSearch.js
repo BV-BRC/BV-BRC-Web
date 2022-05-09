@@ -93,7 +93,7 @@ define([
 
       const query = queryArr.join('&')
       if (genomeQuery !== '') {
-        return query + genomeQuery
+        return query + `eq(genome_id,*)&${genomeQuery}`
       } else {
         return query
       }

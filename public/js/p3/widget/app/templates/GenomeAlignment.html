@@ -1,12 +1,13 @@
-<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,keyup:validate">
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
+  dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,keyup:validate">
 
   <div class="appTemplate">
     <div class="appTitle">
       <span class="breadcrumb">Services</span>
       <h3>
-       ${applicationLabel}
+        ${applicationLabel}
         <div name="overview" class="infobox iconbox infobutton dialoginfo">
-            <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+          <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
         </div>
         <!--
         <div class="infobox iconbox tutorialButton tutorialInfo">
@@ -15,8 +16,11 @@
         -->
       </h3>
       <p>
-        The Whole Genome Alignment Service aligns genomes using <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0011147" target="_blank">progressiveMauve</a>.
-        For further explanation, please see the Genome Alignment <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a>.
+        The Whole Genome Alignment Service aligns genomes using <a
+          href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0011147"
+          target="_blank">progressiveMauve</a>.
+        For further explanation, please see the Genome Alignment <a href="${docsServiceURL}${applicationHelp}"
+          target="_blank">Quick Reference Guide</a>.
       </p>
     </div>
     <br>
@@ -31,15 +35,12 @@
         </div>
 
         <div class="appRow">
-          <small>Add at least 2 (up to 20) genomes.  Note the first genome selected will be the reference (anchor) genome.</small><br>
+          <small>Add at least 2 (up to 20) genomes. Note the first genome selected will be the reference (anchor)
+            genome.</small><br>
           <label>Select genome</label><br>
-          <div style="width:490px;"
-            data-dojo-type="p3/widget/GenomeNameSelector"
-            name="genomeSelector"
-            maxHeight="200"
-            required="false"
-            data-dojo-attach-point="genomeSelector"
-            data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551'">
+          <div style="width:490px;" data-dojo-type="p3/widget/GenomeNameSelector" name="genomeSelector" maxHeight="200"
+            required="false" data-dojo-attach-point="genomeSelector"
+            data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551', excludeLength:true">
           </div>
 
           <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:onAddGenome" class="app-btn">
@@ -50,18 +51,16 @@
 
           <!-- floating since the width on object selector is odd -->
           <div class="left">
-          <label>And/or select genome group</label><br>
-            <div style="width: 495px;"
-            data-dojo-type="p3/widget/WorkspaceObjectSelector"
-              name="genomeGroupSelector"
-            required="false"
-              data-dojo-attach-point="genomeGroupSelector"
+            <label>And/or select genome group</label><br>
+            <div style="width: 495px;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="genomeGroupSelector"
+              required="false" data-dojo-attach-point="genomeGroupSelector"
               data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is optional.', placeHolder:'Optional'">
             </div>
           </div>
 
           <div class="left" style="margin-top: 13px;">
-            <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:onAddGenomeGroup" class="app-btn" data-dojo-attach-point="genomeGroupButton">
+            <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:onAddGenomeGroup" class="app-btn"
+              data-dojo-attach-point="genomeGroupButton">
               <i class="icon-plus"></i> Add
             </button>
           </div>
@@ -70,7 +69,8 @@
 
 
         <div class="appRow">
-          <label>Selected Genomes:</label> <small class="loading-status pull-right" style="margin-right: 20px; display: none;">loading...</small>
+          <label>Selected Genomes:</label> <small class="loading-status pull-right"
+            style="margin-right: 20px; display: none;">loading...</small>
         </div>
 
         <div data-dojo-attach-point="genomeTable" style="margin-right: 20px;">
@@ -89,22 +89,19 @@
 
         <div class="appRow">
           <label>Output Folder</label><br>
-          <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
-            name="output_path"
-            data-dojo-attach-point="output_path"
-            required="true"
-            data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange">
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
+            data-dojo-attach-point="output_path" required="true"
+            data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false"
+            data-dojo-attach-event="onChange:onOutputPathChange">
           </div>
         </div>
 
         <div class="appRow">
-          <label>Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+          <label>Output Name</label><span class="charError"
+            style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
           <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
-            data-dojo-attach-event="onChange:checkOutputName"
-            name="output_file"
-            data-dojo-attach-point="output_file"
-            style="width:85%"
-            required="true"
+            data-dojo-attach-event="onChange:checkOutputName" name="output_file" data-dojo-attach-point="output_file"
+            style="width:85%" required="true"
             data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
           </div>
         </div>
@@ -132,13 +129,9 @@
         <div class="appRow" data-dojo-attach-point="advrow" style="display: none;">
           <div class="appRowSegment pull-left" style="text-align: left; margin-right: 20px;">
             <label>Manually Set Seed Weight</label>
-            <div data-dojo-attach-point="seedWeightSwitch"
-              data-dojo-attach-event="onClick:onSeedWeightSwitch"
+            <div data-dojo-attach-point="seedWeightSwitch" data-dojo-attach-event="onClick:onSeedWeightSwitch"
               class="onoffswitch">
-              <input type="checkbox"
-                value="off"
-                name="onoffswitch"
-                class="onoffswitch-checkbox"
+              <input type="checkbox" value="off" name="onoffswitch" class="onoffswitch-checkbox"
                 data-dojo-attach-point="seedWeightSwitch" />
 
               <label class="onoffswitch-label">
@@ -150,60 +143,54 @@
 
           <div class="appRowSegment pull-left" data-dojo-attach-point="seedContainer" style="display: none;">
             <label>Seed Weight</label><br>
-            <div name="seedWeight"
-              class="medInput"
-              data-dojo-type="dijit/form/HorizontalSlider"
-              data-dojo-attach-point="seedWeight"
-              data-dojo-props="value:15,
+            <div name="seedWeight" class="medInput" data-dojo-type="dijit/form/HorizontalSlider"
+              data-dojo-attach-point="seedWeight" data-dojo-props="value:15,
                 minimum:3,
                 maximum:21,
                 discreteValues:19,
                 intermediateChanges:true,
-                showButtons:false"
-              required="false"
-              >
-                <div data-dojo-type="dijit/form/HorizontalRule"
-                  container="bottomDecoration"
-                  count=19
-                  style="height:5px;">
-                </div>
-                <ol data-dojo-type="dijit/form/HorizontalRuleLabels"
-                  container="bottomDecoration"
-                  style="height:1em;font-size:75%;color:gray;">
-                  <li>3</li>
-                  <li>5</li>
-                  <li>7</li>
-                  <li>9</li>
-                  <li>11</li>
-                  <li>13</li>
-                  <li>15</li>
-                  <li>17</li>
-                  <li>19</li>
-                  <li>21</li>
-                </ol>
+                showButtons:false" required="false">
+              <div data-dojo-type="dijit/form/HorizontalRule" container="bottomDecoration" count=19 style="height:5px;">
+              </div>
+              <ol data-dojo-type="dijit/form/HorizontalRuleLabels" container="bottomDecoration"
+                style="height:1em;font-size:75%;color:gray;">
+                <li>3</li>
+                <li>5</li>
+                <li>7</li>
+                <li>9</li>
+                <li>11</li>
+                <li>13</li>
+                <li>15</li>
+                <li>17</li>
+                <li>19</li>
+                <li>21</li>
+              </ol>
             </div>
           </div>
           <div class="clear"></div>
 
           <br>
-          <style>.param-table td:first-child { width: 32%; padding-right: 7px; text-align: right;}</style>
+          <style>
+            .param-table td:first-child {
+              width: 32%;
+              padding-right: 7px;
+              text-align: right;
+            }
+          </style>
           <table class="param-table">
             <thead>
               <th>
-                <td></td>
-                <td></td>
+              <td></td>
+              <td></td>
               </th>
             </thead>
             <tbody>
               <tr>
                 <td><label>Max Gapped Aligner Length:</label></td>
                 <td>
-                  <div name="maxGappedAlignerLength"
-                  class="medInput"
-                    data-dojo-type="dijit/form/NumberTextBox"
+                  <div name="maxGappedAlignerLength" class="medInput" data-dojo-type="dijit/form/NumberTextBox"
                     data-dojo-attach-point="maxGappedAlignerLength"
-                    data-dojo-props="placeholder: 'Max number of base pairs'"
-                    required="false">
+                    data-dojo-props="placeholder: 'Max number of base pairs'" required="false">
                   </div>
                 </td>
               </tr>
@@ -211,12 +198,9 @@
               <tr>
                 <td><label>Max Breakpoint distance Scale:</label></td>
                 <td>
-                  <div name="maxBreakpointDistanceScale"
-                  class="medInput"
-                    data-dojo-type="dijit/form/NumberTextBox"
+                  <div name="maxBreakpointDistanceScale" class="medInput" data-dojo-type="dijit/form/NumberTextBox"
                     data-dojo-attach-point="maxBreakpointDistanceScale"
-                    data-dojo-props="placeholder: 0.9,constraints:{min:0,max:1}"
-                    required="false">
+                    data-dojo-props="placeholder: 0.9,constraints:{min:0,max:1}" required="false">
                   </div>
                 </td>
               </tr>
@@ -224,12 +208,9 @@
               <tr>
                 <td><label>Conservation Distance:</label></td>
                 <td>
-                  <div name="conservationDistanceScale"
-                    class="medInput"
-                    data-dojo-type="dijit/form/NumberTextBox"
+                  <div name="conservationDistanceScale" class="medInput" data-dojo-type="dijit/form/NumberTextBox"
                     data-dojo-attach-point="conservationDistanceScale"
-                    data-dojo-props="placeholder: 1.0,constraints:{min:0,max:1}"
-                    required="false">
+                    data-dojo-props="placeholder: 1.0,constraints:{min:0,max:1}" required="false">
                   </div>
                 </td>
               </tr>
@@ -237,11 +218,8 @@
               <tr>
                 <td><label>Weight:</label></td>
                 <td>
-                  <div name="weight"
-                    class="medInput"
-                    data-dojo-type="dijit/form/NumberTextBox"
-                    data-dojo-attach-point="weight"
-                    data-dojo-props="placeholder: 'Min pairwise LCB score'"
+                  <div name="weight" class="medInput" data-dojo-type="dijit/form/NumberTextBox"
+                    data-dojo-attach-point="weight" data-dojo-props="placeholder: 'Min pairwise LCB score'"
                     required="false">
                   </div>
                 </td>
@@ -250,12 +228,9 @@
               <tr>
                 <td><label>Minimum Scaled Penalty:</label></td>
                 <td>
-                  <div name="minScaledPenalty"
-                    class="medInput"
-                    data-dojo-type="dijit/form/NumberTextBox"
+                  <div name="minScaledPenalty" class="medInput" data-dojo-type="dijit/form/NumberTextBox"
                     data-dojo-attach-point="minScaledPenalty"
-                    data-dojo-props="placeholder: 'Min breakpoint penalty after scaling'"
-                    required="false">
+                    data-dojo-props="placeholder: 'Min breakpoint penalty after scaling'" required="false">
                   </div>
                 </td>
               </tr>
@@ -263,28 +238,20 @@
               <tr>
                 <td><label>hmm-p-go-homologous:</label></td>
                 <td>
-                  <div name="hmmPGoHomologous"
-                    class="medInput"
-                    data-dojo-type="dijit/form/NumberTextBox"
-                    data-dojo-attach-point="hmmPGoHomologous"
-                    data-dojo-props="placeholder: 0.0001"
-                    required="false">
+                  <div name="hmmPGoHomologous" class="medInput" data-dojo-type="dijit/form/NumberTextBox"
+                    data-dojo-attach-point="hmmPGoHomologous" data-dojo-props="placeholder: 0.0001" required="false">
                   </div>
                 </td>
               </tr>
 
               <tr>
-                  <td><label>hmm-p-go-homologous:</label></td>
-                  <td>
-                    <div name="hmmPGoUnrelated"
-                      class="medInput"
-                      data-dojo-type="dijit/form/NumberTextBox"
-                      data-dojo-attach-point="hmmPGoUnrelated"
-                      data-dojo-props="placeholder: 0.000001"
-                      required="false">
-                    </div>
-                  </td>
-                </tr>
+                <td><label>hmm-p-go-homologous:</label></td>
+                <td>
+                  <div name="hmmPGoUnrelated" class="medInput" data-dojo-type="dijit/form/NumberTextBox"
+                    data-dojo-attach-point="hmmPGoUnrelated" data-dojo-props="placeholder: 0.000001" required="false">
+                  </div>
+                </td>
+              </tr>
             </tbody>
           </table>
 
@@ -297,15 +264,19 @@
 
 
   <div class="appSubmissionArea">
-    <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
+    <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
+      style="margin-top:10px; text-align:center;">
       Submitting Genome Alignment Job
     </div>
-    <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
+    <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
+      style="margin-top:10px; text-align:center;">
       Error Submitting Job. Please check the submission form.
     </div>
     <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
-      style="margin-top:10px; text-align:center;" >
-      Your job has been submitted successfully. Please visit your <a data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job and access the results.
+      style="margin-top:10px; text-align:center;">
+      Your job has been submitted successfully. Please visit your <a
+        data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job and access
+      the results.
     </div>
     <div style="margin-top: 10px; text-align:center;">
       <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>

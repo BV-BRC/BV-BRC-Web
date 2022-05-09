@@ -1,4 +1,40 @@
 # Changelog
+## 3.13.9 - May 9, 2022
+* [Bug] Fix Domain & Motif List Viewer query issue
+
+## 3.13.8 - May 8, 2022
+* [Bug] Fix Bartonella link from Bacteria Overview page
+* [Bug] Reset the memory stores for libraries and conditions.
+
+## 3.13.7 - May 5, 2022
+* [Enhancement] Add and update SARS-CoV-2 overview of lineages
+* [Enhancement] Add and update SARS-CoV-2 lineage detail pages
+
+
+## 3.13.6 - May 3, 2022
+* [Feature] Add Comparative Systems to BV-BRC header menu
+* [Feature] Add Comparative Systems to BV-BRC tools page
+* [Enhancement] Update quick reference / tutorial for Compartive Systems Tool
+* [Enhancement] Modify strain search template
+
+## 3.13.5 - April 28, 2022
+* [Enhancement] Modified the genome query to exclude genomes of some length
+* [Enhancement] ComparativeSystems Viewers
+
+## 3.13.4 - April 27, 2022
+* [Minor] Add PMID as facet for AMR Phenotypes tab
+
+## 3.13.3 - April 25, 2022
+* [Bug] Fix typo bug in Computation Method Version column
+* [Feature] Add advanced search fields to AMR Phenotypes tab
+* [Minor] Remove UVA members no longer with the team
+
+## 3.13.2 - April 22, 2022
+* [Feature] Genome Group tab customization based on bacteria or virus context
+
+## 3.13.1 - April 15, 2022
+* [Enhancement] Genome Group Merge
+
 ## 3.13.0 - April 5, 2022
 * [Release] Production Release
 * [Enhancement] Update SARS-CoV-2 phylo viewer to iteration 14

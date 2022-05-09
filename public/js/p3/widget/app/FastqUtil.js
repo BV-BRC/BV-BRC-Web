@@ -385,6 +385,15 @@ define([
       domClass.remove(this.domNode, 'Working');
       domClass.remove(this.domNode, 'Error');
       domClass.remove(this.domNode, 'Submitted');
+      var condRows = this.condTable.rows.length;
+      this.activeConditionStore = new Memory({ data: [] });
+      for (var i = 0; i < condRows; i++) {
+        this.condTable.deleteRow(0);
+      }
+      this.emptyTable(this.condTable, this.initConditions, 3);
+      this.addedCond = { counter: 0 };
+      this.numAlign = 0;
+      this.toggleGenome();
       var toDestroy = [];
       this.libraryStore.data.forEach(lang.hitch(this, function (lrec) {
         toDestroy.push(lrec.id);
@@ -393,6 +402,7 @@ define([
       toDestroy.forEach(lang.hitch(this, function (id) {
         this.destroyLib({}, id, 'id');
       }));
+      this.libraryStore = new Memory({ data: [], idProperty: 'id' });
     },
 
     makeConditionName: function (conditionName) {

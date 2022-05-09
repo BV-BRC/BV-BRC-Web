@@ -85,6 +85,27 @@
             <tr>
               <div class="appRow">
                 <td>
+                  <input type="radio" id="${id}_input_genomegroup" value="input_genomegroup"
+                    data-dojo-attach-point="input_genomegroup" data-dojo-type="dijit/form/RadioButton" name="input_type"
+                    data-dojo-attach-event="onChange:onChangeType" />
+                </td>
+                <td>
+                  <label for="${id}_input_genomegroup">Select viral genome group</label>
+                  <div name="genomeGroup_tooltip" id="genomeGroup_tooltip" data-dojo-attach-point="genomeGroup_tooltip"
+                    class="infobox iconbox infobutton tooltipinfo">
+                    <i class="fa icon-question-circle fa"></i>
+                  </div><br>
+                  <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                    name="select_genomegroup" required="false" data-dojo-attach-point="select_genomegroup"
+                    data-dojo-attach-event="onChange:validate"
+                    data-dojo-props="type:['genome_group'], disabled:true,multi:false,promptMessage:'Select a viral genome group from your workspace for alignment.',missingMessage:'Genome group is required.', placeHolder:'Viral genome group'">
+                  </div>
+                  <div class="warning" data-dojo-attach-point="genomegroup_message"></div>
+                </td>
+              </div>
+            <tr>
+              <div class="appRow">
+                <td>
                   <input type="radio" id="${id}_input_fasta" value="input_fasta" data-dojo-attach-point="input_fasta"
                     data-dojo-type="dijit/form/RadioButton" name="input_type"
                     data-dojo-attach-event="onChange:onChangeType" />
@@ -181,8 +202,10 @@
       Error Submitting Job. Check the input.
     </div>
     <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
-      style="margin-top:10px; text-align:center;" >
-      Your job has been submitted successfully. Please visit your <a data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job and access the results.
+      style="margin-top:10px; text-align:center;">
+      Your job has been submitted successfully. Please visit your <a
+        data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job and access
+      the results.
     </div>
     <div style="margin-top: 10px; text-align:center;">
       <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>

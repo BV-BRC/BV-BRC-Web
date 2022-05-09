@@ -1,22 +1,27 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang',
+  'dojo/_base/declare', 'dojo/_base/lang', '../../util/PathJoin', 'dojo/request',
   './TabViewerBase', './_GenomeList', '../AMRPanelGridContainer',
-  '../GenomeListOverview', '../GroupGenomeGridContainer', '../SequenceGridContainer',
-  '../FeatureGridContainer', '../SpecialtyGeneGridContainer',
-  '../PathwayGridContainer', '../SubsystemGridContainer'
+  '../GenomeListOverview', '../StrainGridContainer', '../GroupGenomeGridContainer', '../AMRPanelGridContainer', '../SequenceGridContainer',
+  '../FeatureGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer',
+  '../ProteinFamiliesContainer', '../PathwayGridContainer', '../SubsystemGridContainer', '../ExperimentsContainer', '../InteractionsContainer',
+  '../EpitopeGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
 
 ], function (
-  declare, lang,
+  declare, lang, PathJoin, xhr,
   TabViewerBase, GenomeList, AMRPanelGridContainer,
-  Overview, GroupGenomeGridContainer, SequenceGridContainer,
-  FeatureGridContainer, SpecialtyGeneGridContainer,
-  PathwaysContainer, SubSystemsContainer
+  Overview, StrainGridContainer, GroupGenomeGridContainer, AMRPanelGridContainer, SequenceGridContainer,
+  FeatureGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer,
+  ProteinFamiliesContainer, PathwayGridContainer, SubsystemGridContainer, ExperimentsContainer, InteractionsContainer,
+  EpitopeGridContainer, SurveillanceGridContainer, SerologyGridContainer
 ) {
 
   return declare([GenomeList], {
     groupPath: null,
     perspectiveLabel: 'Genome Group View',
     perspectiveIconClass: 'icon-selection-GenomeList',
+    dataAPI: window.App.dataAPI,
+    authToken: window.App.authorizationToken,
+
     onSetQuery: function (attr, oldVal, newVal) {
       // prevent default action
     },
@@ -27,7 +32,6 @@ define([
     },
 
     onSetState: function (attr, oldVal, state) {
-
       if (!state) {
         throw Error('No State Set');
       }
@@ -40,11 +44,30 @@ define([
         state.ws_path = path;
         this.inherited(arguments);
       }
+
+      // Check if genome group contains bacteria, viruses, or both.
+      const dataAPI = this.dataAPI;
+      const authToken = this.authToken;
+      const query = this.state.search;
+      var _self = this;
+
+      xhr.get(PathJoin(dataAPI, 'data/taxon_category/', `?${query}`), {
+        headers: {
+          Authorization: authToken,
+          Accept: 'application/solr+json',
+        },
+        handleAs: 'json',
+      }).then(function (data) {
+        if (data.superkingdom[0] === 'Bacteria' && data.superkingdom.length === 1) {
+          _self.changeToBacteria();
+        } else if (data.superkingdom[0] === 'Viruses' && data.superkingdom.length === 1) {
+          _self.changeToViruses();
+        }
+      });
       this.setActivePanelState()
     },
 
     setActivePanelState: function () {
-
       const active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : 'overview';
       const activeTab = this[active];
 
@@ -83,6 +106,12 @@ define([
 
       this.overview = this.createOverviewPanel();
 
+      this.strains = new StrainGridContainer({
+        title: 'Strains',
+        id: this.viewer.id + '_strains',
+        disabled: false,
+        state: this.state
+      })
       this.genomes = new GroupGenomeGridContainer({
         title: 'Genomes',
         id: this.viewer.id + '_genomes',
@@ -92,25 +121,29 @@ define([
           this.set('query', this.state.search, true);
         })
       });
-
-      this.sequences = new SequenceGridContainer({
-        title: 'Sequences',
-        id: this.viewer.id + '_sequences',
-        state: this.state,
-        disable: false
-      });
-
       this.amr = new AMRPanelGridContainer({
         title: 'AMR Phenotypes',
         id: this.viewer.id + '_amr',
         disabled: false,
         state: this.state
       });
-
+      this.sequences = new SequenceGridContainer({
+        title: 'Sequences',
+        id: this.viewer.id + '_sequences',
+        disabled: false,
+        state: this.state
+      });
       this.features = new FeatureGridContainer({
         title: 'Proteins',
         id: this.viewer.id + '_features',
-        disabled: false
+        disabled: false,
+        state: this.state
+      });
+      this.proteinStructures = new ProteinStructureGridContainer({
+        title: 'Protein Structures',
+        id: this.viewer.id + '_proteinStructures',
+        disabled: false,
+        state: this.state
       });
       this.specialtyGenes = new SpecialtyGeneGridContainer({
         title: 'Specialty Genes',
@@ -118,26 +151,86 @@ define([
         disabled: false,
         state: this.state
       });
-      this.pathways = new PathwaysContainer({
+      this.proteinFeatures = new ProteinFeaturesGridContainer({
+        title: 'Domains and Motifs',
+        id: this.viewer.id + '_proteinFeatures',
+        disabled: false,
+        state: this.state
+      });
+      this.proteinFamilies = new ProteinFamiliesContainer({
+        title: 'Protein Families',
+        id: this.viewer.id + '_proteinFamilies',
+        state: this.state
+      });
+      this.pathways = new PathwayGridContainer({
         title: 'Pathways',
         id: this.viewer.id + '_pathways',
-        disabled: false
+        state: this.state
       });
-
-      this.subsystems = new SubSystemsContainer({
+      this.subsystems = new SubsystemGridContainer({
         title: 'Subsystems',
         id: this.viewer.id + '_subsystems',
-        disabled: false
+        state: this.state
+      });
+      this.experiments = new ExperimentsContainer({
+        title: 'Experiments',
+        id: this.viewer.id + '_experiments'
+      });
+      this.interactions = new InteractionsContainer({
+        title: 'Interactions',
+        id: this.viewer.id + '_interactions',
+        state: this.state
+      });
+      this.epitope = new EpitopeGridContainer({
+        title: 'Epitopes',
+        id: this.viewer.id + '_epitope',
+        state: this.state
+      });
+      this.surveillance = new SurveillanceGridContainer({
+        title: 'Surveillance',
+        id: this.viewer.id + '_surveillance',
+        state: this.state
+      });
+      this.serology = new SerologyGridContainer({
+        title: 'Serology',
+        id: this.viewer.id + '_serology',
+        state: this.state
       });
 
       this.viewer.addChild(this.overview);
+      this.viewer.addChild(this.strains);
       this.viewer.addChild(this.genomes);
-      this.viewer.addChild(this.sequences);
       this.viewer.addChild(this.amr);
+      this.viewer.addChild(this.sequences);
       this.viewer.addChild(this.features);
+      this.viewer.addChild(this.proteinStructures);
       this.viewer.addChild(this.specialtyGenes);
+      this.viewer.addChild(this.proteinFeatures);
+      this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);
+      this.viewer.addChild(this.experiments);
+      this.viewer.addChild(this.interactions);
+      this.viewer.addChild(this.epitope);
+      this.viewer.addChild(this.surveillance);
+      this.viewer.addChild(this.serology);
+    },
+
+    changeToBacteria: function () {
+      this.viewer.removeChild(this.strains);
+      this.viewer.removeChild(this.surveillance);
+      this.viewer.removeChild(this.serology);
+    },
+
+    changeToViruses: function () {
+      this.viewer.removeChild(this.amr)
+      this.viewer.removeChild(this.sequences)
+      this.viewer.removeChild(this.specialtyGenes);
+      this.viewer.removeChild(this.proteinFamilies);
+      this.viewer.removeChild(this.pathways);
+      this.viewer.removeChild(this.subsystems);
+      this.viewer.removeChild(this.experiments);
+      this.viewer.removeChild(this.interactions);
     },
 
     buildHeaderContent: function () {
