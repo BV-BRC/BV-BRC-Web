@@ -1,4 +1,7 @@
 # Changelog
+## 3.14.0 - May 9, 2022
+* [Release] BV-BRC Production Release
+
 ## 3.13.9 - May 9, 2022
 * [Bug] Fix Domain & Motif List Viewer query issue
 
