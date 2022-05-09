@@ -1,4 +1,7 @@
 # Changelog
+## 3.13.9 - May 9, 2022
+* [Bug] Fix Domain & Motif List Viewer query issue
+
 ## 3.13.8 - May 8, 2022
 * [Bug] Fix Bartonella link from Bacteria Overview page
 * [Bug] Reset the memory stores for libraries and conditions.
