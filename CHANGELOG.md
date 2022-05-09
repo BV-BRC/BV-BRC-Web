@@ -1,4 +1,7 @@
 # Changelog
+## 3.13.8 - May 8, 2022
+* [Bug] Fix Bartonella link from Bacteria Overview page
+
 ## 3.13.7 - May 5, 2022
 * [Enhancement] Add and update SARS-CoV-2 overview of lineages
 * [Enhancement] Add and update SARS-CoV-2 lineage detail pages
