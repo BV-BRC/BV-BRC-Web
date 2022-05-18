@@ -654,6 +654,11 @@ define([
         }],
 
         'Sequences': [{
+          name: 'Accession',
+          text: 'accession',
+          link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+          mini: true
+        }, {
           name: 'NA Length',
           text: 'na_length'
         }, {
@@ -1089,7 +1094,7 @@ define([
         },
       }, {
         name: 'Accession',
-        text: 'accession'
+        text: 'accession',
       }, {
         name: 'Annotation',
         text: 'annotation'

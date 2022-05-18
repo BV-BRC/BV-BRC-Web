@@ -1,4 +1,7 @@
 # Changelog
+## 3.14.1 - May 16, 2022
+* [Enahncement] Add accession number and link to feature detail panel and feature overview page
+
 ## 3.14.0 - May 9, 2022
 * [Release] BV-BRC Production Release
 
