@@ -127,14 +127,12 @@ define([
               limit: -1,
               facet: {
                 subsystem_count: 'unique(subsystem_id)',
-                gene_count: 'unique(feature_id)',
                 subclass: {
                   type: 'field',
                   field: 'subclass',
                   limit: -1,
                   facet: {
                     subsystem_count: 'unique(subsystem_id)',
-                    gene_count: 'unique(feature_id)'
                   }
                 }
               }
