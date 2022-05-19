@@ -26,7 +26,7 @@ define([
       antibiotic: { label: 'Antibiotic', field: 'antibiotic' },
       phenotype: { label: 'Resistant Phenotype', field: 'resistant_phenotype' },
       m_sign: { label: 'Measurement Sign', field: 'measurement_sign' },
-      m_value: { label: 'Measurement Value', field: 'measurement_sign' },
+      m_value: { label: 'Measurement Value', field: 'measurement_value' },
       m_unit: { label: 'Measurement Units', field: 'measurement_unit' },
       l_method: { label: 'Lab typing Method', field: 'laboratory_typing_method' },
       l_version: { label: 'Lab typing Version', field: 'laboratory_typing_method_version', hidden: true },
