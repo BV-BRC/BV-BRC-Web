@@ -117,9 +117,7 @@ define([
             field: 'subsystem_id',
             limit: -1,
             facet: {
-              genome_count: 'unique(genome_id)',
               gene_count: 'unique(feature_id)',
-              role_count: 'unique(role_id)'
             }
           }
         }
@@ -131,7 +129,8 @@ define([
       var q = [];
       if (this.state) {
         if (this.state.search) {
-          q.push((this.state.search.charAt(0) == '?') ? this.state.search.substr(1) : this.state.search);
+          // q.push((this.state.search.charAt(0) == '?') ? this.state.search.substr(1) : this.state.search);
+          q.push(`eq(subsystem_id,*)&genome(${this.state.search})`)
         } else if (this.state.genome_ids) {
           q.push('in(genome_id,(' + this.state.genome_ids.map(encodeURIComponent).join(',') + '))');
         }
@@ -190,6 +189,7 @@ define([
           'X-Requested-With': null,
           Authorization: this.token ? this.token : (window.App.authorizationToken || '')
         },
+        timeout: 1200000,
         data: q
 
       }), lang.hitch(this, function (response) {
