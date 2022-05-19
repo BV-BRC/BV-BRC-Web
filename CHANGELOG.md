@@ -1,4 +1,8 @@
 # Changelog
+## 3.14.2 - May 19, 2022
+* [Bug] AMR Phenotype measurement value showing measurement sign instead
+* [Feature] Add editable metadata fields to Genome Overview
+
 ## 3.14.1 - May 16, 2022
 * [Enahncement] Add accession number and link to feature detail panel and feature overview page
 
