@@ -1,4 +1,9 @@
 # Changelog
+## 3.14.3 - May 23, 2022
+* [Feature] ID mapper genome id support
+* [Feature] Add support for genome and feature groups in compare regions
+* [Enhancement] Removed unnecessary upload buttons.
+
 ## 3.14.2 - May 19, 2022
 * [Bug] AMR Phenotype measurement value showing measurement sign instead
 * [Feature] Add editable metadata fields to Genome Overview
