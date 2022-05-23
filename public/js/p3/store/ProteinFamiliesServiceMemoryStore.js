@@ -206,6 +206,7 @@ define([
         def.resolve(true);
         worker.terminate();
       });
+      // debugger;
       var payload = { genomeFilter: this.pfState.genomeFilterStatus, data: this.state.data['table'] };
       // Parse both plfam and pgfam data in worker
       worker.postMessage(JSON.stringify({ type: 'process_data', payload: payload }));

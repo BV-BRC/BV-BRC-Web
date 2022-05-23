@@ -112,6 +112,10 @@ define([
         case 'genome':
           domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'blast', innerHTML: 'Blast' }, service_div);
           if (this.context === 'grid_container') {
+            // TODO: to enable this
+            //  - must ensure each genome is a virus + length is below threshold
+            //  - save or dont save group: are places other than Genome Groups accessible now?
+            // domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'msa', innerHTML: 'MSA' });
             domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'phylogenetic_tree', innerHTML: 'Phylogenetic Tree' }, service_div);
           }
           // TODO: fix genome distance?

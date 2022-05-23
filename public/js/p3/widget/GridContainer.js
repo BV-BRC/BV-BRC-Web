@@ -435,7 +435,7 @@ define([
             multiple = true;
           }
           var type;
-          if (container.containerType === 'sequence_data' || container.containerType == 'genome_data') {
+          if (container.containerType === 'sequence_data' || container.containerType == 'genome_data') { // taxon view
             type = 'genome_group';
             context = 'genome';
           } else if (container.containerType == 'feature_data' || container.containerType == 'transcriptomics_gene_data' || container.containerType == 'spgene_data' || container.containerType == 'strain_data') {
