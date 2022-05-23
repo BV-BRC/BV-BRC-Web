@@ -4,14 +4,14 @@ define([
   'dijit/layout/BorderContainer', 'dijit/layout/ContentPane', 'dijit/form/Select', 'dijit/form/Button', 'dijit/Dialog',
   'dojox/widget/Standby',
   'FileSaver',
-  './SEEDClient', './CompareRegionViewer'
+  './SEEDClient', './CompareRegionViewer', './WorkspaceObjectSelector'
 ], function (
   declare, lang,
   domConstruct, when, Topic,
   BorderContainer, ContentPane, Select, Button, Dialog,
   Standby,
   saveAs,
-  SEEDClient, CompareRegionViewer
+  SEEDClient, CompareRegionViewer, WorkspaceObjectSelector
 ) {
 
   return declare([BorderContainer], {
@@ -75,8 +75,16 @@ define([
 
     render: function (peg, window, n_genomes, method, filter) {
       this.loadingMask.show();
-      this.service.compare_regions_for_peg(
-        peg, window, n_genomes, method, filter,
+      var options = {};
+      if (filter == 'genome_group') {
+	  options.genome_group = this.genome_group_selector.get('value');
+      } else if (filter == 'feature_group') {
+	  options.feature_group = this.feature_group_selector.get('value');
+      }
+	console.log(options);
+
+      this.service.compare_regions_for_peg2(
+        peg, window, n_genomes, method, filter, options,
         function (data) {
           // console.log(data);
           this.compare_regions.set_data(data);
@@ -244,10 +252,42 @@ define([
           value: 'representative+reference', label: 'Reference & Representative'
         }, {
           value: 'all', label: 'All public genomes'
-        }]
+        }, {
+	  value: 'genome_group', label: 'Selected genome group'
+        }, {
+	  value: 'feature_group', label: 'Selected feature group'
+	}]
       });
-      domConstruct.place(label_g_filter, filterPanel.containerNode, 'last');
-      domConstruct.place(this.g_filter.domNode, filterPanel.containerNode, 'last');
+	this.g_filter.onChange = lang.hitch(this, function(val) { 
+	    if (val == "genome_group") {
+console.log("enable group ", this.genome_group_selector);
+		this.genome_group_selector.set('disabled', false);
+		this.feature_group_selector.set('disabled', true);
+	    } else if (val == "feature_group") {
+console.log("enable feature ", this.feature_group_selector);
+		this.genome_group_selector.set('disabled', true);
+		this.feature_group_selector.set('disabled', false);
+	    } else {
+		this.genome_group_selector.set('disabled', true);
+		this.feature_group_selector.set('disabled', true);
+	    }
+	});
+	domConstruct.place(label_g_filter, filterPanel.containerNode, 'last');
+	domConstruct.place(this.g_filter.domNode, filterPanel.containerNode, 'last');
+
+	var label_genome_group_selector = domConstruct.create('label', { innerHTML: 'Genome group : ' });
+	domConstruct.place(label_genome_group_selector, filterPanel.containerNode, 'last');
+	this.genome_group_selector = new WorkspaceObjectSelector({ style: "width: 200px" });
+	this.genome_group_selector.set('type', ['genome_group']);
+	domConstruct.place(this.genome_group_selector.domNode, filterPanel.containerNode, 'last');
+	this.genome_group_selector.set('disabled', true);
+
+	var label_feature_group_selector = domConstruct.create('label', { innerHTML: 'Feature group : ' });
+	domConstruct.place(label_feature_group_selector, filterPanel.containerNode, 'last');
+	this.feature_group_selector = new WorkspaceObjectSelector({ style: "width: 200px" });
+	this.feature_group_selector.set('type', ['feature_group']);
+	domConstruct.place(this.feature_group_selector.domNode, filterPanel.containerNode, 'last');
+	this.feature_group_selector.set('disabled', true);
 
       // domConstruct.place("<br/>", filterPanel.containerNode, "last");
 
