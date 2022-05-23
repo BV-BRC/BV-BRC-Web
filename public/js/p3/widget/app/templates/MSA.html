@@ -68,7 +68,7 @@
                   <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
                     name="user_genomes_featuregroup" required="true" data-dojo-attach-point="user_genomes_featuregroup"
                     data-dojo-attach-event="onChange:validate"
-                    data-dojo-props="type:['feature_group'], disabled:false,multi:false,promptMessage:'Select a feature group from your workspace for alignment.',missingMessage:'Feature group is required.', placeHolder:'Feature group'">
+                    data-dojo-props="type:['feature_group'], disabled:false,allowUpload:false,multi:false,promptMessage:'Select a feature group from your workspace for alignment.',missingMessage:'Feature group is required.', placeHolder:'Feature group'">
                   </div>
                   <div class="appRow">
                     <input type="radio" data-dojo-type="dijit/form/RadioButton" id="${id}_dna"
@@ -98,7 +98,7 @@
                   <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
                     name="select_genomegroup" required="false" data-dojo-attach-point="select_genomegroup"
                     data-dojo-attach-event="onChange:validate"
-                    data-dojo-props="type:['genome_group'], disabled:true,multi:false,promptMessage:'Select a viral genome group from your workspace for alignment.',missingMessage:'Genome group is required.', placeHolder:'Viral genome group'">
+                    data-dojo-props="type:['genome_group'], disabled:true,allowUpload:false,multi:false,promptMessage:'Select a viral genome group from your workspace for alignment.',missingMessage:'Genome group is required.', placeHolder:'Viral genome group'">
                   </div>
                   <div class="warning" data-dojo-attach-point="genomegroup_message"></div>
                 </td>
@@ -176,7 +176,7 @@
           <label class="paramlabel">Output Folder</label><br>
           <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
             data-dojo-attach-point="output_path" required="true"
-            data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false,placeHolder:'Output Folder'"
+            data-dojo-props="allowUpload:false,title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false,placeHolder:'Output Folder'"
             data-dojo-attach-event="onChange:onOutputPathChange"></div>
         </div>
         <div class="appRow">
