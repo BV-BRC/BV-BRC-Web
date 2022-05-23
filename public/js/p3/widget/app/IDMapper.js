@@ -13,6 +13,7 @@ define([
   WorkspaceObjectSelector, query, lang,
   Tooltip, popup
 ) {
+  //IDMappingMemoryStore contains the bulk of the query logic. in the store folder.  
   return declare([AppBase], {
     baseClass: 'IDMapper',
     applicationName: 'IDMapper',
@@ -156,7 +157,7 @@ define([
       var fromIdGroup = null;
       var toIdGroup = null;
       var patricIdGroup = {
-        patric_id: '', feature_id: '', P2_feature_id: '', alt_locus_tag: '', refseq_locus_tag: '', gene_id: '', gi: '', protein_id: ''
+          patric_id: '', feature_id: '', P2_feature_id: '', alt_locus_tag: '', refseq_locus_tag: '', gene_id: '', gi: '', protein_id: '', genome_id: ''
       };
 
       fromIdGroup = (from in patricIdGroup) ? 'PATRIC' : 'OTHER';
