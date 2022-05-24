@@ -39,7 +39,6 @@ define([
     },
 
     reload: function () {
-
       if (this._loadingDeferred && !this._loadingDeferred.isResolved()) {
         this._loadingDeferred.cancel('reloaded');
       }
@@ -69,7 +68,6 @@ define([
       return when(this.loadData(), lang.hitch(this, function () {
         return this.get(id, opts);
       }));
-
     },
 
     keywordFilter: function () {
@@ -79,7 +77,6 @@ define([
       }
       var data = this._original;
       var newData = [];
-
       if (this.filterOptions.keyword !== '') {
         var keywordRegex = this.filterOptions.keyword.trim().toLowerCase().replace(/,/g, '~').replace(/\n/g, '~')
           .split('~')
@@ -87,11 +84,9 @@ define([
       } else {
         keywordRegex = '';    // on Reset
       }
-
       if (this.filterOptions.keyword !== '') {
         var keyword = this.filterOptions.keyword;
         var columnSelection = this.filterOptions.columnSelection;
-
         // all columns
         if (columnSelection == 'All Columns') {
           data.forEach(function (dataLine) {
@@ -110,7 +105,6 @@ define([
                 }
               });
             }
-
             if (!skip) {
               newData.push(dataLine);
             }
@@ -119,7 +113,6 @@ define([
           // keyword search
           data.forEach(function (dataLine) {
             var skip = false;
-
             if (!skip && keyword !== '') {
               skip = !keywordRegex.some(function (needle) {
                 if (dataLine[columnSelection]) {
@@ -128,10 +121,8 @@ define([
                   return needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0);
                 }
                 skip = true;  // no Function
-
               });
             }
-
             if (!skip) {
               newData.push(dataLine);
             }
@@ -143,19 +134,15 @@ define([
         this.setData(this._original);
       }
       this.set('refresh');
-
     },
 
     loadData: function () {
       if (this._loadingDeferred) {
         return this._loadingDeferred;
       }
-
       // console.warn("loadData", this.type, this.state);
-
       if (!this.state) {
         // console.log("No state, use empty data set for initial store");
-
         // this is done as a deferred instead of returning an empty array
         // in order to make it happen on the next tick.  Otherwise it
         // in the query() function above, the callback happens before qr exists
@@ -167,7 +154,6 @@ define([
         }), 0);
         return def.promise;
       }
-
       // does this file have column headers in the first line?
       var _self = this.state;
       var keyList = Object.keys(tsvCsvFeatures);
@@ -180,7 +166,6 @@ define([
           }
         }
       });
-
       // get data for tsv (currently typed as txt)
       if (this.state.dataType == 'txt' || this.state.dataType == 'tsv') {
         // split on new lines, to get the grid rows
@@ -210,7 +195,6 @@ define([
         }
         gridColumns.push(columnHeaders);
       }
-
       // fill with data, start with second line of dataLines
       var columnData = [];
       for (var i = rowStart; i < dataLines.length; i++) {  // temporary. start at 1 because columns are hard-coded
@@ -230,7 +214,6 @@ define([
       gridColumns.unshift(selector({ label: selector({ unidable: true }) }));  // add checkboxes to beginning of array
       this.columns = gridColumns;
       this.setData(columnData);
-
       this._loaded = true;
       return this._loadingDeferred;
     }
