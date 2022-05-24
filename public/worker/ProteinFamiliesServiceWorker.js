@@ -4,15 +4,15 @@ function parse_data(data, filter) {
   var mixed_genomes = []; // don't think this one needs to be used
   var present_genomes = [];
   var absent_genomes = [];
-  Object.values(genome_filter).forEach(function (genome) {
-    if (genome.status == 2) {
-      mixed_genomes.push(genome.label);
+  Object.keys(genome_filter).forEach(function (genome) {
+    if (genome_filter[genome].status == 2) {
+      mixed_genomes.push(genome);
     }
-    if (genome.status == 1) {
-      absent_genomes.push(genome.label);
+    if (genome_filter[genome].status == 1) {
+      absent_genomes.push(genome);
     }
-    if (genome.status == 0) {
-      present_genomes.push(genome.label);
+    if (genome_filter[genome].status == 0) {
+      present_genomes.push(genome);
     }
   });
   var parsed_data = {};
