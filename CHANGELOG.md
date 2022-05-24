@@ -1,4 +1,8 @@
 # Changelog
+## 3.14.4 - May 24, 2022
+* [Update] Add new publications
+* [Bug] Fix issues in Protein Families Viewer
+
 ## 3.14.3 - May 23, 2022
 * [Feature] ID mapper genome id support
 * [Feature] Add support for genome and feature groups in compare regions
