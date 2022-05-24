@@ -23,7 +23,6 @@ define([
         return;
       }
       this.reload();
-
       this._filtered = undefined; // reset flag prevent to read stored _original
     },
 
@@ -31,13 +30,11 @@ define([
       this._loaded = false;
       this.topicId = options.topicId;
       this.userDefinedColumnHeaders = options.userDefinedColumnHeaders;
-
       // for keyword filtering
       Topic.subscribe('applyKeywordFilter', lang.hitch(this, function () {
         this.filterOptions = arguments[0];
         this.keywordFilter();
       }));
-
       this.watch('state', lang.hitch(this, 'onSetState'));
     },
 
@@ -46,7 +43,6 @@ define([
       if (this._loadingDeferred && !this._loadingDeferred.isResolved()) {
         this._loadingDeferred.cancel('reloaded');
       }
-
       delete this._loadingDeferred;
       this._loaded = false;
       this.loadData();
@@ -58,15 +54,12 @@ define([
       if (this._loaded) {
         return this.inherited(arguments);
       }
-
       var results;
       var qr = QueryResults(when(this.loadData(), lang.hitch(this, function () {
         results = this.query(query, opts);
         return results;
       })));
-
       return qr;
-
     },
 
     get: function (id, opts) {
@@ -215,7 +208,6 @@ define([
         } else {
           var columnHeaders = { label: 'Column ' + (i + 1), field: 'Column ' + (i + 1) };
         }
-
         gridColumns.push(columnHeaders);
       }
 
