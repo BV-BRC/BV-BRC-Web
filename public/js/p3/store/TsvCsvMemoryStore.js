@@ -108,7 +108,7 @@ define([
                 if (dataLine) {
                   var dataLineArray = Object.values(dataLine);  // array elems can be searched for partial words
                   dataLineArray.shift();  // remove row number, first element
-                  skip = !dataLineArray.some( function (dataValue) {
+                  skip = !dataLineArray.some(function (dataValue) {
                     // console.log(needle && (dataValue.toLowerCase().indexOf(needle) >= 0 || dataValue.toLowerCase().indexOf(needle) >= 0));
                     return needle && (dataValue.toLowerCase().indexOf(needle) >= 0 || dataValue.toLowerCase().indexOf(needle) >= 0);
                   });
@@ -123,15 +123,15 @@ define([
             }
           }, this);
         } else {
-        // keyword search
+          // keyword search
           data.forEach(function (dataLine) {
             var skip = false;
 
             if (!skip && keyword !== '') {
               skip = !keywordRegex.some(function (needle) {
                 if (dataLine[columnSelection]) {
-                // console.log (dataLine[columnSelection]);
-                // console.log(needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0));
+                  // console.log (dataLine[columnSelection]);
+                  // console.log(needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0));
                   return needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0);
                 }
                 skip = true;  // no Function
@@ -200,11 +200,13 @@ define([
         var dataLines = this.state.data.split(/\r?\n/);
         var tmpColumnHeaders = dataLines[0].split(/,(?=(?:[^"]*"[^"]*")*(?![^"]*"))/);
       }
-
+      var last = dataLines.length - 1;
+      if (dataLines && dataLines[last] === '') {
+        dataLines.pop();
+      }
       var rowStart = 0;
       var gridColumns = [];
       for (var i = 0; i < tmpColumnHeaders.length; i++) {
-
         // make column labels from the first line of dataLines or if column headers are not present
         // then name them as "Column 1", "Column 2", etc.
         if (hasColumnHeaders || this.userDefinedColumnHeaders) {
