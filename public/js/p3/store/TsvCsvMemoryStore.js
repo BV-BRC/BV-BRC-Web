@@ -136,6 +136,10 @@ define([
       this.set('refresh');
     },
 
+    isNumeric: function (n) {
+      return !isNaN(parseFloat(n)) && isFinite(n);
+    },
+
     loadData: function () {
       if (this._loadingDeferred) {
         return this._loadingDeferred;
@@ -213,6 +217,21 @@ define([
       }
       gridColumns.unshift(selector({ label: selector({ unidable: true }) }));  // add checkboxes to beginning of array
       this.columns = gridColumns;
+      // Set a numeric column to numbers.
+      for (var i = 1; i < gridColumns.length; i++) {
+        var mynum = true;
+        for (var j = 0; j < columnData.length; j++) {
+          mynum = mynum && this.isNumeric(columnData[j][gridColumns[i].field]);
+          if (!mynum) {
+            break;
+          }
+        }
+        if (mynum) {
+          for (var j = 0; j < columnData.length; j++) {
+            columnData[j][gridColumns[i].field] = parseFloat(columnData[j][gridColumns[i].field])
+          }
+        }
+      }
       this.setData(columnData);
       this._loaded = true;
       return this._loadingDeferred;
