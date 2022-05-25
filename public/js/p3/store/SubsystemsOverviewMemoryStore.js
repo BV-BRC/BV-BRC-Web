@@ -110,64 +110,6 @@ define([
 
     },
 
-    queryTypes: {
-
-      subsystems_overview: '&limit(1)' +
-        '&json(facet,' + encodeURIComponent(JSON.stringify({
-
-        stat: {
-          type: 'field',
-          field: 'superclass',
-          limit: -1,
-          facet: {
-            subsystem_count: 'unique(subsystem_id)',
-            'class': {
-              type: 'field',
-              field: 'class',
-              limit: -1,
-              facet: {
-                subsystem_count: 'unique(subsystem_id)',
-                subclass: {
-                  type: 'field',
-                  field: 'subclass',
-                  limit: -1,
-                  facet: {
-                    subsystem_count: 'unique(subsystem_id)',
-                  }
-                }
-              }
-            }
-          }
-        }
-      })) + ')'
-    },
-    buildQuery: function () {
-      var q = [];
-      if (this.state) {
-        if (this.state.search) {
-          // q.push((this.state.search.charAt(0) == '?') ? this.state.search.substr(1) : this.state.search);
-          q.push(`eq(subsystem_id,*)&genome(${this.state.search})`)
-        } else if (this.state.genome_ids) {
-          q.push('in(genome_id,(' + this.state.genome_ids.map(encodeURIComponent).join(',') + '))');
-        }
-
-        if (q.length < 1) {
-          q = '';
-        }
-        else if (q.length == 1) {
-          q = q[0];
-        }
-        else {
-          q = 'and(' + q.join(',') + ')';
-        }
-      } else {
-        q = '';
-      }
-      q += this.queryTypes[this.type];
-
-      return (q.charAt(0) == '?') ? q.substr(1) : q;
-    },
-
     loadData: function () {
       if (this._loadingDeferred) {
         return this._loadingDeferred;
@@ -189,33 +131,22 @@ define([
 
       }
 
-      var q = this.buildQuery();
-
       var _self = this;
 
-      this._loadingDeferred = when(request.post(PathJoin(this.apiServer, 'subsystem') + '/', {
+      this._loadingDeferred = when(request.get(PathJoin(this.apiServer, 'data/subsystem_summary', this.state.genome_id), {
         handleAs: 'json',
         headers: {
-          Accept: 'application/solr+json',
-          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+          Accept: 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
           'X-Requested-With': null,
           Authorization: this.token ? this.token : (window.App.authorizationToken || '')
         },
-        timeout: 1200000,
-        data: q
+        timeout: 1200000
 
       }), lang.hitch(this, function (response) {
 
-        // var docs = [];
-        // var props = {
-        //   subsystems_overview: 'subsystem_id'
-        // };
-
-        // flat queries return a different data format
-        if ( response && response.facets ) {
-          var buckets = response.facets.stat.buckets;
-
-          _self.setData(buckets.filter(function (row) { return row.val !== ''; }));
+        if ( response ) {
+          _self.setData(response.filter(function (row) { return row.name !== ''; }));
           _self._loaded = true;
           return true;
         }
