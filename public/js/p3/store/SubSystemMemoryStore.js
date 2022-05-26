@@ -110,7 +110,7 @@ define([
 
     queryTypes: {
 
-      subsystems: '&select(superclass,class,subclass,subsystem_name,active,subsystem_id)&group((field,subsystem_id),(format,simple),(limit,1),(facet,true))' +
+      subsystems: '&select(superclass,class,subclass,subsystem_name,active,subsystem_id)&limit(25000)' +
         '&json(facet,' + encodeURIComponent(JSON.stringify({
         stat: {
           field: {
@@ -179,9 +179,9 @@ define([
 
       }
 
-      var q = this.buildQuery();
+      const q = this.buildQuery();
 
-      var _self = this;
+      const _self = this;
       this._loadingDeferred = when(request.post(PathJoin(this.apiServer, 'subsystem') + '/', {
         handleAs: 'json',
         headers: {
@@ -195,55 +195,49 @@ define([
 
       }), lang.hitch(this, function (response) {
 
-        var docs = [];
-        var props = {
-          subsystems: 'subsystem_id',
-          genes: 'feature_id',
-          subsystems_overview: 'subsystem_id'
-        };
-
         // flat queries return a different data format
-        if ( response && response.grouped && response.facets ) {
+        if (this.type === 'subsystems') {
           // subsystems tab
-          if ( response.grouped[props[this.type]] ) {
-            var ds = response.grouped[props[this.type]].doclist.docs;
-            if (response.facets.stat && response.facets.stat.buckets) {
-              var buckets = response.facets.stat.buckets;
-              var map = {};
-              buckets.forEach(function (b) {
-                map[b.val] = b;
-                delete b.val;
-              });
-              docs = ds.map(function (doc) {
-                var p = props[this.type];
-                var pv = doc[p];
+          const ds = response.response.docs;  // redundant list of superclass,class,subclass,subsystem_name,active,subsystem_id
+          const docs = []
+
+          if (response.facets.stat) {
+            const buckets = response.facets.stat.buckets;
+            const map = {};
+            buckets.forEach(function (b) {
+              map[b.val] = b;
+              delete b.val;
+            });
+
+            const processed = {} // skip list
+
+            ds.forEach(function (doc) {
+              const pv = doc.subsystem_id
+
+              if (map[pv] && !processed.hasOwnProperty(pv)) {
                 lang.mixin(doc, map[pv] || {});
 
-                doc.id = doc[p]
+                doc.id = doc.subsystem_id
                 doc.document_type = 'subsystems_subsystem'
 
-                return doc;
-              }, this);
-            }
-            else {
-              this.state.filter = false;
-            }
-
-            _self.setData(docs);
-            _self._loaded = true;
-            return true;
-
+                docs.push(doc)
+                processed[pv] = true
+              } else {
+                // already exists skip
+              }
+            }, this);
           }
-          console.error('Unable to Process Response: ', response);
-          _self.setData([]);
+          else {
+            this.state.filter = false;
+          }
+
+          _self.setData(docs);
           _self._loaded = true;
-          return false;
+          return true;
 
-
-        } else if ( response ) {
+        } else if (this.type === 'genes') {
           // genes tab
-          var ds = response.response.docs;
-          docs = ds.map(function (doc) {
+          const docs = response.response.docs.map(function (doc) {
             doc.id = doc.feature_id;
             doc.document_type = 'subsystems_gene';
 
