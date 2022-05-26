@@ -21,6 +21,11 @@ define([], function () {
 
     // MSA/SNP service
     '.snp.tsv': { columnHeaders: true },
+
+    // RNA-Seq service
+    'deseq2.tsv': { columnHeaders: true },
+    'gene_counts.tsv': { columnHeaders: true },
+    'tpms.tsv': { columnHeaders: true },
   };
 
 });
