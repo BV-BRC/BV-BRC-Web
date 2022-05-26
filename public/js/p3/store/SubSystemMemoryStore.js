@@ -124,7 +124,7 @@ define([
         }
       })) + ')',
 
-      genes: '&select(superclass,class,subclass,subsystem_name,role_id,role_name,active,feature_id,patric_id,gene,refseq_locus_tag,alt_locus_tag,product,genome_id,genome_name,taxon_id,subsystem_id)&group((field,subsystem_id),(format,simple),(limit,25000),(facet,false))'
+      genes: '&select(superclass,class,subclass,subsystem_name,role_id,role_name,active,feature_id,patric_id,gene,refseq_locus_tag,alt_locus_tag,product,genome_id,genome_name,taxon_id,subsystem_id)&limit(25000)'
     },
     buildQuery: function () {
       var q = [];
@@ -198,7 +198,6 @@ define([
         var docs = [];
         var props = {
           subsystems: 'subsystem_id',
-          roleid: 'role_id',
           genes: 'feature_id',
           subsystems_overview: 'subsystem_id'
         };
@@ -221,21 +220,7 @@ define([
                 lang.mixin(doc, map[pv] || {});
 
                 doc.id = doc[p]
-                switch (this.type) {
-                  case 'subsystems':
-                    doc.document_type = 'subsystems_subsystem';
-                    break;
-                  case 'subsystems_overview':
-                    doc.document_type = 'subsystems_overview';
-                    break;
-                  case 'roleid':
-                    break;
-                  case 'genes':
-                    doc.document_type = 'subsystems_gene';
-                    break;
-                  default:
-                    break;
-                }
+                doc.document_type = 'subsystems_subsystem'
 
                 return doc;
               }, this);
@@ -257,21 +242,10 @@ define([
 
         } else if ( response ) {
           // genes tab
-          var ds = response.grouped.subsystem_id.doclist.docs;
+          var ds = response.response.docs;
           docs = ds.map(function (doc) {
             doc.id = doc.feature_id;
-            switch (this.type) {
-              case 'subsystems':
-                doc.document_type = 'subsystems_subsystem';
-                break;
-              case 'roleid':
-                break;
-              case 'genes':
-                doc.document_type = 'subsystems_gene';
-                break;
-              default:
-                break;
-            }
+            doc.document_type = 'subsystems_gene';
 
             return doc;
           }, this);
