@@ -118,6 +118,7 @@ define([
             limit: -1,
             facet: {
               gene_count: 'unique(feature_id)',
+              role_count: 'unique(role_id)',
             }
           }
         }
