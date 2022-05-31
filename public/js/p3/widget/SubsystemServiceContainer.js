@@ -2,65 +2,22 @@ define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/_base/lang',
   'dijit/layout/StackContainer', 'dijit/layout/TabController',
   './SubSystemsMemoryGridContainer',
-  '../store/SubSystemMemoryStore', '../store/SubsystemsOverviewMemoryStore', 'dojo/topic',
-  './GridSelector', './SubSystemsOverview', 'dojox/widget/Standby'
+  '../store/SubSystemMemoryStore', '../store/SubsystemServiceOverviewMemoryStore', 'dojo/topic',
+  './GridSelector', './SubsystemServiceOverview', 'dojox/widget/Standby', 'dojo/dom-construct', './SubSystemsContainer'
 ], function (
   declare, BorderContainer, lang,
   TabContainer, StackController,
   SubSystemsGridContainer,
   SubSystemMemoryStore, SubsystemsOverviewMemoryStore, Topic,
-  selector, SubSystemsOverview, Standby
+  selector, SubSystemsOverview, Standby, domConstruct, oldSubsystemsContainer
 ) {
-  return declare([BorderContainer], {
+  return declare([oldSubsystemsContainer], {
     gutters: false,
     state: null,
     tooltip: 'TODO tooltip for subsystems container',
 
-    constructor: function (options) {
-      console.log(options);
-      // this.topicId = 'SubSystemMap_' + options.id.split('_subsystems')[0];
-      this.topicId = 'SubSystemMap_';
-
-      Topic.subscribe(this.topicId, lang.hitch(this, function () {
-        var key = arguments[0],
-          value = arguments[1];
-
-        switch (key) {
-          case 'showMainGrid':
-            this.tabContainer.selectChild(this.mainGridContainer);
-            break;
-          case 'updatePfState':
-            this.pfState = value;
-            // this.updateFilterPanel(value);
-            break;
-          case 'showLoadingMask':
-            this.loadingMask.show();
-            break;
-          case 'hideLoadingMask':
-            this.loadingMask.hide();
-            break;
-          default:
-            break;
-        }
-      }));
-    },
-
-    selectChild: function (child) {
-      Topic.publish(this.id + '-selectChild', child);
-    },
-
     setLoaded: function () {
       this.loaded = true;
-    },
-
-    onSetState: function (attr, oldVal, state) {
-      if (!this.loaded) {
-        return;
-      }
-      if (state) {
-        this.state = state;
-        this.onFirstView();
-      }
     },
 
     onFirstView: function () {
@@ -70,7 +27,39 @@ define([
 
       this.tabContainer = new TabContainer({ region: 'center', id: this.id + '_TabContainer' });
 
-      // TODO: load overview data into SubsystemServiceOverviewMemoryStore
+      // TODO: load data into state variable (?)
+
+
+      // load data into memory stores
+      this.subsystemsStore = new SubsystemsOverviewMemoryStore({
+        type: 'subsystems_overview',
+        state: this.state
+      });
+
+      // TODO: setup tab controller
+      var tabController = new StackController({
+        containerId: this.id + '_TabContainer',
+        region: 'top',
+        'class': 'TextTabButtons'
+      });
+
+      // TODO: load subystemsOverviewGrid, pass in memory store
+      this.subsystemsOverviewGrid = new SubSystemsOverview({
+        title: 'Subsystems Overview',
+        type: 'subsystems_overview',
+        store: this.subsystemsStore,
+        facetFields: ['class'],
+        queryOptions: {
+          sort: [{ attribute: 'subsystem_name' }]
+        },
+        enableFilterPanel: true,
+        visible: true
+      });
+
+      this.addChild(tabController);
+      this.addChild(this.tabContainer);
+
+      this.tabContainer.addChild(this.subsystemsOverviewGrid);
 
       this._firstView = true;
     }

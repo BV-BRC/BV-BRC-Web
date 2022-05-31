@@ -110,6 +110,7 @@ define([
         }
       });
       // TODO: the last entry is undefined, not sure why it's being added: for now just remove
+      // make sure not an issue with the backend outputting an extra line??
       pathway_data.pop();
       this.state.data['pathway'] = pathway_data;
       var pathway_store = new PathwayMemoryStore({

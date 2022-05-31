@@ -74,7 +74,7 @@ define([
       var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : 'overview';
       var activeTab = this[active];
       // console.log("Active Panel: ", active);
-
+      debugger;
       switch (active) {
         case 'phylogeny':
         case 'overview':

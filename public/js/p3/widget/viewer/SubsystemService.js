@@ -31,9 +31,12 @@ define([
           this.state.data['genome_ids'] = genome_ids.map(String);
           this.state.data['overview'] = overview_data;
           this.loaded = true;
-          this.state = state;
+          // this.state = state;
           this.serviceContainer.setLoaded();
-          this.setContainerState(this.state);
+          console.log('calling set state in serviceContainer');
+          debugger;
+          this.serviceContainer.set('state', state);
+          // this.setContainerState(this.state);
         }));
       }
     },
@@ -49,15 +52,17 @@ define([
     },
 
     postCreate: function ()  {
-      this.serviceContainer = new ServiceContainer({ region: 'center', state: this.state, loaded: false });
+      this.serviceContainer = new ServiceContainer({ id: this.id + '_serviceContainer', region: 'center', state: this.state, loaded: false });
       this.addChild(this.serviceContainer);
       this.inherited(arguments);
     },
 
+    /*
     setContainerState: function (state) {
       if (this.serviceContainer) {
         this.serviceContainer.onSetState(null, null, state);
       }
     }
+    */
   });
 });
