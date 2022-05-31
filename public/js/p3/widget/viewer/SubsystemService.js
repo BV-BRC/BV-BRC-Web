@@ -26,15 +26,16 @@ define([
           var resData = JSON.parse(response.data);
           var genome_ids = resData['genome_ids'];
           var overview_data = resData['overview'];
-          // TODO: load data
+          var subsystem_table = resData['subsystems'];
+          // TODO: load genes data
           this.state.genome_ids = genome_ids.map(String); // Used in action bar functions (TODO: check)
           this.state.data['genome_ids'] = genome_ids.map(String);
           this.state.data['overview'] = overview_data;
+          this.state.data['subsystems'] = subsystem_table;
           this.loaded = true;
           // this.state = state;
           this.serviceContainer.setLoaded();
           console.log('calling set state in serviceContainer');
-          debugger;
           this.serviceContainer.set('state', state);
           // this.setContainerState(this.state);
         }));
@@ -42,6 +43,7 @@ define([
     },
 
     onSetState: function (attr, oldVal, state) {
+      console.log('on set state = ', state);
       if (this.loaded) {
         if (!state) {
           console.log('no state');
@@ -52,7 +54,7 @@ define([
     },
 
     postCreate: function ()  {
-      this.serviceContainer = new ServiceContainer({ id: this.id + '_serviceContainer', region: 'center', state: this.state, loaded: false });
+      this.serviceContainer = new ServiceContainer({ id: this.id + '_serviceContainer', region: 'center', loaded: false });
       this.addChild(this.serviceContainer);
       this.inherited(arguments);
     },

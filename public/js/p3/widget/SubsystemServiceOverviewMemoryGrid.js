@@ -21,7 +21,6 @@ define([
       this.loadingMask.show();
 
       this.state = state;
-      console.log('this.store = ', this.store);
       if (!this.store) {
         this.set('store', this.createStore());
       } else {
@@ -29,13 +28,15 @@ define([
       }
 
       var that = this;
-
       Deferred.when(this.store.query(), function (data) {
-        debugger;
-        // TODO: change implementation to not use id 'subsystempiechart'
-        if (oldState) {
-          d3.select('#subsystemspiechart').selectAll('*').remove();
+        if (!data) {
+          return;
         }
+        // debugger;
+        // TODO: change implementation to not use id 'subsystempiechart'
+        // if (oldState) {
+        d3.select('#subsystemspiechart').selectAll('*').remove();
+        // }
         that.drawSubsystemPieChartGraph(data);
         that.loadingMask.hide();
       });

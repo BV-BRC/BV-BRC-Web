@@ -33,6 +33,13 @@ define([
 
     query: function (query, opts) {
       console.log('query');
+      // debugger;
+      if (this.data) {
+        return QueryResults(this.data);
+      }
+      else {
+        return null;
+      }
     },
 
     loadData: function () {
@@ -49,16 +56,16 @@ define([
           var superclass_dict;
           var superclass_data = genome_data[superclass];
           if (value_dict.hasOwnProperty(superclass)) {
-            superclass_dict = parsed_data.find(entry => entry.val === superclass);
-            superclass_dict['count'] += superclass_data['gene_counts'];
+            superclass_dict = parsed_data.find(entry => entry.name === superclass);
+            superclass_dict['gene_count'] += superclass_data['gene_counts'];
             superclass_dict['subsystem_count'] += superclass_data['class_counts'];
           } else {
             var new_superclass = {};
-            new_superclass['val'] = superclass;
-            new_superclass['count'] = superclass_data['gene_counts'];
+            new_superclass['name'] = superclass;
+            new_superclass['gene_count'] = superclass_data['gene_counts'];
             new_superclass['subsystem_count'] = superclass_data['class_counts'];
-            new_superclass['class'] = {};
-            new_superclass['class']['buckets'] = [];
+            // new_superclass['class'] = {};
+            new_superclass['children'] = [];
             parsed_data.push(new_superclass);
             value_dict[superclass] = {};
             superclass_dict = new_superclass;
@@ -70,17 +77,17 @@ define([
             var class_dict;
             var class_data = superclass_data[clss];
             if (value_dict[superclass].hasOwnProperty(clss)) { // if superclass is new then it should not have this class
-              class_dict = superclass_dict['class']['buckets'].find(entry => entry.val === clss);
-              class_dict['count'] += class_data['gene_counts'];
+              class_dict = superclass_dict['children'].find(entry => entry.name === clss);
+              class_dict['gene_count'] += class_data['gene_counts'];
               class_dict['subsystem_count'] += class_data['subclass_counts'];
             } else {
               var new_class = {};
-              new_class['val'] = clss;
-              new_class['count'] = class_data['gene_counts'];
+              new_class['name'] = clss;
+              new_class['gene_count'] = class_data['gene_counts'];
               new_class['subsystem_count'] = class_data['subclass_counts'];
-              new_class['subclass'] = {};
-              new_class['subclass']['buckets'] = [];
-              superclass_dict['class']['buckets'].push(new_class);
+              // new_class['subclass'] = {};
+              new_class['children'] = [];
+              superclass_dict['children'].push(new_class);
               value_dict[superclass][clss] = {};
               class_dict = new_class;
             }
@@ -91,15 +98,15 @@ define([
               var subclass_dict;
               var subclass_data = class_data[subclass];
               if (value_dict[superclass][clss].hasOwnProperty(subclass)) {
-                subclass_dict = class_dict['subclass']['buckets'].find(entry => entry.val === subclass);
-                subclass_dict['count'] += subclass_data['gene_counts'];
+                subclass_dict = class_dict['children'].find(entry => entry.name === subclass);
+                subclass_dict['gene_count'] += subclass_data['gene_counts'];
                 subclass_dict['subsystem_count'] += subclass_data['subsystem_name_counts'];
               } else {
                 var new_subclass = {};
-                new_subclass['val'] = subclass;
-                new_subclass['count'] = subclass_data['gene_counts'];
+                new_subclass['name'] = subclass;
+                new_subclass['gene_count'] = subclass_data['gene_counts'];
                 new_subclass['subsystem_count'] = subclass_data['subsystem_name_counts'];
-                class_dict['subclass']['buckets'].push(new_subclass);
+                class_dict['children'].push(new_subclass);
                 value_dict[superclass][clss][subclass] = class_data[subclass];
                 subclass_dict = new_subclass;
               }

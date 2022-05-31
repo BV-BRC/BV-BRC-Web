@@ -56,7 +56,6 @@ define([
       var that = this;
 
       Deferred.when(this.store.query(), function (data) {
-
         if (oldState) {
           d3.select('#subsystemspiechart').selectAll('*').remove();
         }
