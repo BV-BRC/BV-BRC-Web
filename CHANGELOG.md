@@ -1,4 +1,10 @@
 # Changelog
+## 3.14.5 - May 27, 2022
+* [Enhancement] Enhancements to the TSV viewer for BV-BRC issue 157
+* [Enhancement] Avoid ngroup query for subsystem tab
+* [Enhancement] Avoid ngroup query for genes tab
+* [Feature] Use new data api route for subsystem overview
+
 ## 3.14.4 - May 24, 2022
 * [Update] Add new publications
 * [Bug] Fix issues in Protein Families Viewer
