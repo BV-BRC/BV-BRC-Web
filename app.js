@@ -58,6 +58,7 @@ app.use(function (req, res, next) {
     enableDevTools: config.get('enableDevTools'),
     accountURL: config.get('accountURL'),
     appLabel: config.get('appLabel'),
+    jiraLabel: config.get('jiraLabel'),
     appVersion: packageJSON.version,
     userServiceURL: config.get('userServiceURL'),
     localStorageCheckInterval: config.get('localStorageCheckInterval')
