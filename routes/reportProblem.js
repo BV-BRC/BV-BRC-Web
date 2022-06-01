@@ -96,7 +96,7 @@ function buildSubject(formBody) {
 function buildMessage(formBody) {
   var content = [];
 
-  content.push('Version: ' + formBody.appVersion;
+  content.push('Version: ' + formBody.appVersion);
   content.push('Label: ' + formBody.jiraLabel);
   content.push('URL: ' + formBody.url);
   content.push('User ID: ' + formBody.userId);
