@@ -89,8 +89,8 @@ function mail(message, subject, from, files, options) {
 
 function buildSubject(formBody) {
   var content = [];
-  if (formBody.appLabel) {
-    content.push('[' + formBody.appLabel + ']');
+  if (formBody.jiraLabel) {
+    content.push('[' + formBody.jiraLabel + ']');
   }
   content.push(formBody.subject);
 
@@ -99,7 +99,7 @@ function buildSubject(formBody) {
 function buildMessage(formBody) {
   var content = [];
 
-  content.push('Version: ' + formBody.appVersion + ' ' + (formBody.appLabel || ''));
+  content.push('Version: ' + formBody.appVersion + ' ' + (formBody.jiraLabel));
   content.push('URL: ' + formBody.url);
   content.push('User ID: ' + formBody.userId);
   content.push('Email: ' + formBody.email);
