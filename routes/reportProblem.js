@@ -90,6 +90,8 @@ function mail(message, subject, from, files, options) {
 function buildSubject(formBody) {
   var content = [];
 
+  console.log(formBody.jiraLabel);
+
   // eslint-disable-next-line no-useless-concat
   content.push(formBody.jiraLabel + formBody.subject);
   return content.join(' ');
