@@ -91,7 +91,7 @@ function buildSubject(formBody) {
   var content = [];
 
   // eslint-disable-next-line no-useless-concat
-  content.push('[' + formBody.jiraLabel + ']' + ' ' + formBody.subject);
+  content.push(formBody.jiraLabel + formBody.subject);
   return content.join(' ');
 }
 function buildMessage(formBody) {
