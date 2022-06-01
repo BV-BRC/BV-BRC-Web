@@ -60,7 +60,7 @@ define([
       if (this.validate()) {
         var values = this.getValues();
         values.appVersion = window.App.appVersion;
-        values.appLabel = window.App.appLabel || '';
+        values.jiraLabel = window.App.jiraLabel || '';
         values.url = window.location.href;
 
         if (window.App.user && window.App.user.id) {
