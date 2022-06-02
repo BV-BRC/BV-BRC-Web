@@ -89,17 +89,15 @@ function mail(message, subject, from, files, options) {
 
 function buildSubject(formBody) {
   var content = [];
-  if (formBody.appLabel) {
-    content.push('[' + formBody.appLabel + ']');
-  }
-  content.push(formBody.subject);
 
+  // eslint-disable-next-line no-useless-concat
+  content.push('[' + formBody.jiraLabel + ']' + ' ' + formBody.subject);
   return content.join(' ');
 }
 function buildMessage(formBody) {
   var content = [];
 
-  content.push('Version: ' + formBody.appVersion + ' ' + (formBody.appLabel || ''));
+  content.push('Version: ' + formBody.appVersion + ' ' + formBody.jiraLabel);
   content.push('URL: ' + formBody.url);
   content.push('User ID: ' + formBody.userId);
   content.push('Email: ' + formBody.email);
