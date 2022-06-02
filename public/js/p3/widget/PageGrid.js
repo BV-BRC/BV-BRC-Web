@@ -216,6 +216,7 @@ define([
             _self.selection = {};
 
             // console.log("Select " + ids.length + " Items");
+
             ids.forEach(function (id) {
 
               _self._select(id, null, true);

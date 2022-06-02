@@ -88,9 +88,11 @@ define([
         title: 'Subsystems',
         type: 'subsystems',
         store: this.subsystemsStore,
+        state: this.state,
         getFilterPanel: function (opts) {
 
         },
+        facetFields: ['superclass', 'class', 'subclass', 'active', 'subsystem_name'],
         columns: {
           'Selection Checkboxes': selector({ unhidable: true }),
           superclass: { label: 'Superclass', field: 'superclass' },
@@ -134,6 +136,7 @@ define([
             }
             new_data[key] = l[index];
           }));
+          new_data['document_type'] = 'subsystems_subsystem'; // used in ItemDetailPanel
           subsystem_data.push(new_data);
         }
       });
