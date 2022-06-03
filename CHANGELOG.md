@@ -1,4 +1,7 @@
 # Changelog
+## 3.15.1 - June 3, 2022
+* [Feature] Add Monkeypox virus to header and virus overview page
+
 ## 3.15.0 - June 3, 2022
 * [Release] Production Release
 
