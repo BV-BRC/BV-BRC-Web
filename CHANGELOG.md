@@ -1,4 +1,10 @@
 # Changelog
+## 3.15.0 - June 3, 2022
+* [Release] Production Release
+
+## 3.14.6 - June 2, 2022
+* [Bug] Fixed RNASeq recipe option
+
 ## 3.14.5 - May 27, 2022
 * [Enhancement] Enhancements to the TSV viewer for BV-BRC issue 157
 * [Enhancement] Avoid ngroup query for subsystem tab
