@@ -152,6 +152,9 @@ define([
             if (el != colId && columnHeaders[el].headerNode.firstChild.firstElementChild.checked) {
               toggleSelection(columnHeaders[el].headerNode.firstChild.firstElementChild, false);
             }
+            if (el == colId && !columnHeaders[el].headerNode.firstChild.firstElementChild.checked) {
+              toggleSelection(columnHeaders[el].headerNode.firstChild.firstElementChild, true);
+            }
           });
         }
 

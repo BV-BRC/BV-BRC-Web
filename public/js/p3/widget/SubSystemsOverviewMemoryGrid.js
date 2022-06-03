@@ -125,7 +125,7 @@ define([
         .outerRadius(radius);
 
       var pie = d3.layout.pie()
-        .value(function (d) { return d.count; })
+        .value(function (d) { return d.gene_count; })
         .sort(null);
 
       var tooltip = d3.select('body')
@@ -141,7 +141,7 @@ define([
         .append('path')
         .attr('d', arc)
         .on('mouseover', function (d) {
-          return tooltip.style('visibility', 'visible').text(d.data.val + ' (' + d.data.count + ')');
+          return tooltip.style('visibility', 'visible').text(d.data.name + ' (' + d.data.gene_count + ')');
         })
         .on('click', function (d) {
           that.navigateToSubsystemsSubTab(d);
@@ -152,8 +152,8 @@ define([
         .attr('stroke-width', '1px')
         .attr('fill', function (d) {
           // return color(d.data.val + " (" + d.data.count + ")");
-          if (Object.prototype.hasOwnProperty.call(that.superClassColorCodes, d.data.val.toUpperCase())) {
-            return that.superClassColorCodes[d.data.val.toUpperCase()];
+          if (Object.prototype.hasOwnProperty.call(that.superClassColorCodes, d.data.name.toUpperCase())) {
+            return that.superClassColorCodes[d.data.name.toUpperCase()];
           }
 
           return '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
@@ -175,7 +175,7 @@ define([
 
     getArrayIndex: function (arr, value) {
       for (var i = arr.length - 1; i >= 0; i--) {
-        if (arr[i].val === value) {
+        if (arr[i].name === value) {
           return i;
         }
       }
@@ -190,7 +190,7 @@ define([
       var legendSpacing = 5;
 
       subsystemData.forEach(function (data) {
-        data.colorCodeKey = data.val.toUpperCase();
+        data.colorCodeKey = data.name.toUpperCase();
         data.chevronOpened = true;
       });
 
@@ -240,11 +240,11 @@ define([
           classData.colorCodeKey = parentClassData.colorCodeKey;
         });
 
-        var classIndex = this.getArrayIndex(originalSubsystemData, parentClassData.val);
-        for (var i = 0; i < parentClassData.subclass.buckets.length; i++) {
+        var classIndex = this.getArrayIndex(originalSubsystemData, parentClassData.name);
+        for (var i = 0; i < parentClassData.children.length; i++) {
           // place behind index
           var index = classIndex + i + 1;
-          newSubsystemData.splice(index, 0, parentClassData.subclass.buckets[i]);
+          newSubsystemData.splice(index, 0, parentClassData.children[i]);
         }
       }
 
@@ -252,20 +252,20 @@ define([
         that.expandedSubsystemData = $.extend(true, [], newSubsystemData);
       }
       else if (parentClassData && !childClassData) {
-        parentClassData['class'].buckets.forEach(function (classData) {
+        parentClassData.children.forEach(function (classData) {
           classData.chevronOpened = true;
           classData.classScope = true;
           classData.colorCodeKey = parentClassData.colorCodeKey;
           if (that.establishProps) {
-            that.selectedClassDictionary[classData.val] = false;
+            that.selectedClassDictionary[classData.name] = false;
           }
         });
         that.establishProps = false;
-        var superClassIndex = newSubsystemData.map(function (e) { return e.val; }).indexOf(parentClassData.val);
-        for (var i = 0; i < parentClassData['class'].buckets.length; i++) {
+        var superClassIndex = newSubsystemData.map(function (e) { return e.name; }).indexOf(parentClassData.name);
+        for (var i = 0; i < parentClassData.children.length; i++) {
           // place behind index
           var index = superClassIndex + i + 1;
-          newSubsystemData.splice(index, 0, parentClassData['class'].buckets[i]);
+          newSubsystemData.splice(index, 0, parentClassData.children[i]);
         }
         that.expandedSubsystemData = $.extend(true, [], newSubsystemData);
       }
@@ -334,17 +334,17 @@ define([
           else if (d.classScope) {
 
             // that.selectedClassDictionary
-            if (that.selectedClass === d.val) {
+            if (that.selectedClass === d.name) {
               that.drawSubsystemLegend(that.expandedSubsystemData, svg, radius, false, false);
             }
 
-            that.subclasses = d.subclass.buckets;
-            that.selectedClass = d.val;
-            if (that.selectedClassDictionary[d.val] === false) {
-              that.selectedClassDictionary[d.val] = true;
+            that.subclasses = d.children;
+            that.selectedClass = d.name;
+            if (that.selectedClassDictionary[d.name] === false) {
+              that.selectedClassDictionary[d.name] = true;
               that.drawSubsystemLegend(that.expandedSubsystemData, svg, radius, d, that.subclasses);
             } else {
-              that.selectedClassDictionary[d.val] = false;
+              that.selectedClassDictionary[d.name] = false;
               that.drawSubsystemLegend(that.expandedSubsystemData, svg, radius, d, 'closeSubclass');
             }
           }
@@ -403,7 +403,7 @@ define([
         })
         .attr('y', legendRectSize - legendSpacing + 2)
         .text(function (d) {
-          return d.val;
+          return d.name;
         })
         .on('click', function (d) {
           if (Object.prototype.hasOwnProperty.call(d, 'subclassScope')) {
@@ -452,7 +452,7 @@ define([
         })
         .attr('y', legendRectSize - legendSpacing + 2)
         .text(function (d) {
-          return d.count + ')';
+          return d.gene_count + ')';
         })
         .style('fill', '#ffcb00')
         .on('click', function (d) {
@@ -657,45 +657,45 @@ define([
     },
 
     navigateToSubsystemsSubTab: function (d) {
-      switch (d.data.val) {
+      switch (d.data.name) {
         case 'Other':
           // do nothing
           break;
         default:
-          Topic.publish('navigateToSubsystemsSubTab', d.data.val);
+          Topic.publish('navigateToSubsystemsSubTab', d.data.name);
           break;
       }
     },
 
     navigateToSubsystemsSubTabSuperclass: function (d) {
-      switch (d.val) {
+      switch (d.name) {
         case 'Other':
           // do nothing
           break;
         default:
-          Topic.publish('navigateToSubsystemsSubTabSuperclass', d.val);
+          Topic.publish('navigateToSubsystemsSubTabSuperclass', d.name);
           break;
       }
     },
 
     navigateToSubsystemsSubTabClass: function (d) {
-      switch (d.val) {
+      switch (d.name) {
         case 'Other':
           // do nothing
           break;
         default:
-          Topic.publish('navigateToSubsystemsSubTabClass', d.val);
+          Topic.publish('navigateToSubsystemsSubTabClass', d.name);
           break;
       }
     },
 
     navigateToSubsystemsSubTabSubclass: function (d) {
-      switch (d.val) {
+      switch (d.name) {
         case 'Other':
           // do nothing
           break;
         default:
-          Topic.publish('navigateToSubsystemsSubTabSubclass', d.val);
+          Topic.publish('navigateToSubsystemsSubTabSubclass', d.name);
           break;
       }
     },

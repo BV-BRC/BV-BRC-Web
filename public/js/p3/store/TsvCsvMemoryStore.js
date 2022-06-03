@@ -23,7 +23,6 @@ define([
         return;
       }
       this.reload();
-
       this._filtered = undefined; // reset flag prevent to read stored _original
     },
 
@@ -31,22 +30,18 @@ define([
       this._loaded = false;
       this.topicId = options.topicId;
       this.userDefinedColumnHeaders = options.userDefinedColumnHeaders;
-
       // for keyword filtering
       Topic.subscribe('applyKeywordFilter', lang.hitch(this, function () {
         this.filterOptions = arguments[0];
         this.keywordFilter();
       }));
-
       this.watch('state', lang.hitch(this, 'onSetState'));
     },
 
     reload: function () {
-
       if (this._loadingDeferred && !this._loadingDeferred.isResolved()) {
         this._loadingDeferred.cancel('reloaded');
       }
-
       delete this._loadingDeferred;
       this._loaded = false;
       this.loadData();
@@ -58,15 +53,12 @@ define([
       if (this._loaded) {
         return this.inherited(arguments);
       }
-
       var results;
       var qr = QueryResults(when(this.loadData(), lang.hitch(this, function () {
         results = this.query(query, opts);
         return results;
       })));
-
       return qr;
-
     },
 
     get: function (id, opts) {
@@ -76,7 +68,6 @@ define([
       return when(this.loadData(), lang.hitch(this, function () {
         return this.get(id, opts);
       }));
-
     },
 
     keywordFilter: function () {
@@ -86,7 +77,6 @@ define([
       }
       var data = this._original;
       var newData = [];
-
       if (this.filterOptions.keyword !== '') {
         var keywordRegex = this.filterOptions.keyword.trim().toLowerCase().replace(/,/g, '~').replace(/\n/g, '~')
           .split('~')
@@ -94,11 +84,9 @@ define([
       } else {
         keywordRegex = '';    // on Reset
       }
-
       if (this.filterOptions.keyword !== '') {
         var keyword = this.filterOptions.keyword;
         var columnSelection = this.filterOptions.columnSelection;
-
         // all columns
         if (columnSelection == 'All Columns') {
           data.forEach(function (dataLine) {
@@ -108,7 +96,7 @@ define([
                 if (dataLine) {
                   var dataLineArray = Object.values(dataLine);  // array elems can be searched for partial words
                   dataLineArray.shift();  // remove row number, first element
-                  skip = !dataLineArray.some( function (dataValue) {
+                  skip = !dataLineArray.some(function (dataValue) {
                     // console.log(needle && (dataValue.toLowerCase().indexOf(needle) >= 0 || dataValue.toLowerCase().indexOf(needle) >= 0));
                     return needle && (dataValue.toLowerCase().indexOf(needle) >= 0 || dataValue.toLowerCase().indexOf(needle) >= 0);
                   });
@@ -117,28 +105,24 @@ define([
                 }
               });
             }
-
             if (!skip) {
               newData.push(dataLine);
             }
           }, this);
         } else {
-        // keyword search
+          // keyword search
           data.forEach(function (dataLine) {
             var skip = false;
-
             if (!skip && keyword !== '') {
               skip = !keywordRegex.some(function (needle) {
                 if (dataLine[columnSelection]) {
-                // console.log (dataLine[columnSelection]);
-                // console.log(needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0));
+                  // console.log (dataLine[columnSelection]);
+                  // console.log(needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0));
                   return needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0);
                 }
                 skip = true;  // no Function
-
               });
             }
-
             if (!skip) {
               newData.push(dataLine);
             }
@@ -150,19 +134,19 @@ define([
         this.setData(this._original);
       }
       this.set('refresh');
+    },
 
+    isNumeric: function (n) {
+      return !isNaN(parseFloat(n)) && isFinite(n);
     },
 
     loadData: function () {
       if (this._loadingDeferred) {
         return this._loadingDeferred;
       }
-
       // console.warn("loadData", this.type, this.state);
-
       if (!this.state) {
         // console.log("No state, use empty data set for initial store");
-
         // this is done as a deferred instead of returning an empty array
         // in order to make it happen on the next tick.  Otherwise it
         // in the query() function above, the callback happens before qr exists
@@ -174,7 +158,6 @@ define([
         }), 0);
         return def.promise;
       }
-
       // does this file have column headers in the first line?
       var _self = this.state;
       var keyList = Object.keys(tsvCsvFeatures);
@@ -187,7 +170,6 @@ define([
           }
         }
       });
-
       // get data for tsv (currently typed as txt)
       if (this.state.dataType == 'txt' || this.state.dataType == 'tsv') {
         // split on new lines, to get the grid rows
@@ -200,11 +182,13 @@ define([
         var dataLines = this.state.data.split(/\r?\n/);
         var tmpColumnHeaders = dataLines[0].split(/,(?=(?:[^"]*"[^"]*")*(?![^"]*"))/);
       }
-
+      var last = dataLines.length - 1;
+      if (dataLines && dataLines[last] === '') {
+        dataLines.pop();
+      }
       var rowStart = 0;
       var gridColumns = [];
       for (var i = 0; i < tmpColumnHeaders.length; i++) {
-
         // make column labels from the first line of dataLines or if column headers are not present
         // then name them as "Column 1", "Column 2", etc.
         if (hasColumnHeaders || this.userDefinedColumnHeaders) {
@@ -213,10 +197,8 @@ define([
         } else {
           var columnHeaders = { label: 'Column ' + (i + 1), field: 'Column ' + (i + 1) };
         }
-
         gridColumns.push(columnHeaders);
       }
-
       // fill with data, start with second line of dataLines
       var columnData = [];
       for (var i = rowStart; i < dataLines.length; i++) {  // temporary. start at 1 because columns are hard-coded
@@ -235,8 +217,22 @@ define([
       }
       gridColumns.unshift(selector({ label: selector({ unidable: true }) }));  // add checkboxes to beginning of array
       this.columns = gridColumns;
+      // Set a numeric column to numbers.
+      for (var i = 1; i < gridColumns.length; i++) {
+        var mynum = true;
+        for (var j = 0; j < columnData.length; j++) {
+          mynum = mynum && this.isNumeric(columnData[j][gridColumns[i].field]);
+          if (!mynum) {
+            break;
+          }
+        }
+        if (mynum) {
+          for (var j = 0; j < columnData.length; j++) {
+            columnData[j][gridColumns[i].field] = parseFloat(columnData[j][gridColumns[i].field])
+          }
+        }
+      }
       this.setData(columnData);
-
       this._loaded = true;
       return this._loadingDeferred;
     }

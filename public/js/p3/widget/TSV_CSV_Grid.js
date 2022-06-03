@@ -45,9 +45,7 @@ define([
       if (!state) {
         return;
       }
-
       this.set('dataFilename', state.dataFile);
-
       if (!this.store) {
         this.set('store', this.createStore());
       } else {
@@ -61,12 +59,10 @@ define([
     createStore: function () {
       this.store.watch('refresh', lang.hitch(this, 'refresh'));
       return this.store;
-
     },
 
     startup: function () {
       var _self = this;
-
       this.on('.dgrid-content .dgrid-row:dblclick', function (evt) {
         var row = _self.row(evt);
         on.emit(_self.domNode, 'ItemDblClick', {
@@ -76,11 +72,8 @@ define([
           cancelable: true
         });
       });
-
       this.on('dgrid-select', function (evt) {
-
         _self.rowIsSelected = true;
-
         var newEvt = {
           rows: evt.rows,
           selected: evt.grid.selection,
@@ -89,14 +82,10 @@ define([
           cancelable: true
         };
         on.emit(_self.domNode, 'select', newEvt);
-
         _self.storedEvt = newEvt;
       });
-
       this.on('dgrid-deselect', function (evt) {
-
         _self.rowIsSelected = false;
-
         var newEvt = {
           rows: evt.rows,
           selected: evt.grid.selection,
@@ -112,7 +101,6 @@ define([
     triggerSelectionEvent: function () {
       on.emit(this.domNode, 'select', this.storedEvt);
       this.rowIsSelected = false;
-
     },
 
     setData: function (newData) {
@@ -120,14 +108,12 @@ define([
     },
 
     _selectAll: function () {
-
       this._unloadedData = {};
       return Deferred.when(this.store.data.map(function (obj) {
         this._unloadedData[obj[this.primaryKey]] = obj;
         return obj[this.primaryKey];
       }, this));
-    }
-
+    },
 
   });
 });

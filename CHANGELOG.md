@@ -1,4 +1,35 @@
 # Changelog
+## 3.15.1 - June 3, 2022
+* [Feature] Add Monkeypox virus to header and virus overview page
+
+## 3.15.0 - June 3, 2022
+* [Release] Production Release
+
+## 3.14.6 - June 2, 2022
+* [Bug] Fixed RNASeq recipe option
+
+## 3.14.5 - May 27, 2022
+* [Enhancement] Enhancements to the TSV viewer for BV-BRC issue 157
+* [Enhancement] Avoid ngroup query for subsystem tab
+* [Enhancement] Avoid ngroup query for genes tab
+* [Feature] Use new data api route for subsystem overview
+
+## 3.14.4 - May 24, 2022
+* [Update] Add new publications
+* [Bug] Fix issues in Protein Families Viewer
+
+## 3.14.3 - May 23, 2022
+* [Feature] ID mapper genome id support
+* [Feature] Add support for genome and feature groups in compare regions
+* [Enhancement] Removed unnecessary upload buttons.
+
+## 3.14.2 - May 19, 2022
+* [Bug] AMR Phenotype measurement value showing measurement sign instead
+* [Feature] Add editable metadata fields to Genome Overview
+
+## 3.14.1 - May 16, 2022
+* [Enahncement] Add accession number and link to feature detail panel and feature overview page
+
 ## 3.14.0 - May 9, 2022
 * [Release] BV-BRC Production Release
 

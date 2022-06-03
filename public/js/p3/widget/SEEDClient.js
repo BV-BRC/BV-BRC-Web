@@ -33,6 +33,13 @@ define([
       );
     },
 
+    compare_regions_for_peg2: function (peg, width, n_genomes, coloring_method, genome_filter, options, _callback, _errorCallback) {
+      return this.json_call_ajax(
+        'SEED.compare_regions_for_peg2',
+        [peg, width, n_genomes, coloring_method, genome_filter, options], 1, _callback, _errorCallback
+      );
+    },
+
     get_ncbi_cdd_url: function (feature, _callback, _errorCallback) {
       return this.json_call_ajax(
         'SEED.get_ncbi_cdd_url',

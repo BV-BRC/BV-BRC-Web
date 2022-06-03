@@ -134,7 +134,6 @@ define([
           'class': { label: 'Class', field: 'class' },
           subclass: { label: 'Subclass', field: 'subclass' },
           subsystem_name: { label: 'Subsystem Name', field: 'subsystem_name' },
-          genome_count: { label: 'Genome Count', field: 'genome_count' },
           gene_count: { label: 'Gene Count', field: 'gene_count' },
           role_count: { label: 'Role Count', field: 'role_count' },
           active: { label: 'Variant', field: 'active', hidden: true },

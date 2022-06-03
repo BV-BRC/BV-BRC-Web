@@ -654,6 +654,11 @@ define([
         }],
 
         'Sequences': [{
+          name: 'Accession',
+          text: 'accession',
+          link: 'http://www.ncbi.nlm.nih.gov/nuccore/',
+          mini: true
+        }, {
           name: 'NA Length',
           text: 'na_length'
         }, {
@@ -1089,7 +1094,7 @@ define([
         },
       }, {
         name: 'Accession',
-        text: 'accession'
+        text: 'accession',
       }, {
         name: 'Annotation',
         text: 'annotation'
@@ -2991,54 +2996,71 @@ define([
         'Type Info': [{
           name: 'Strain',
           text: 'strain',
+          editable: true
         }, {
           name: 'Serovar',
           text: 'serovar',
+          editable: true
         }, {
           name: 'Biovar',
           text: 'biovar',
+          editable: true
         }, {
           name: 'Pathovar',
           text: 'pathovar',
+          editable: true
         }, {
           name: 'MLST',
           text: 'mlst',
+          editable: true
         }, {
           name: 'Segment',
           text: 'segment',
+          editable: true
         }, {
           name: 'Subtype',
           text: 'subtype',
+          editable: true
         }, {
           name: 'H Type',
           text: 'h_type',
+          editable: true
         }, {
           name: 'N Type',
           text: 'n_type',
+          editable: true
         }, {
           name: 'H1 Clade Global',
           text: 'h1_clade_global',
+          editable: true
         }, {
           name: 'H1 Clade US',
           text: 'h1_clade_us',
+          editable: true
         }, {
           name: 'H5 Clade',
           text: 'h5_clade',
+          editable: true
         }, {
           name: 'pH1N1 Like',
           text: 'ph1n1_like',
+          editable: true
         }, {
           name: 'Lineage',
           text: 'lineage',
+          editable: true
         }, {
           name: 'Clade',
           text: 'clade',
+          editable: true
         }, {
           name: 'Subclade',
           text: 'subclade',
+          editable: true
         }, {
           name: 'Other Typing',
           text: 'other_typing',
+          editable: true
         }, {
           name: 'Culture Collection',
           text: 'culture_collection',
@@ -3073,7 +3095,8 @@ define([
           editable: true
         }, {
           name: 'Reference Genome',
-          text: 'reference_genome'
+          text: 'reference_genome',
+          editable: true
         }],
 
         'Database Cross Reference': [{
@@ -3127,18 +3150,23 @@ define([
         'Sequence Info': [{
           name: 'Sequencing Centers',
           text: 'sequencing_centers',
+          editable: true
         }, {
           name: 'Sequencing Status',
           text: 'sequencing_status',
+          editable: true
         }, {
           name: 'Sequencing Platform',
           text: 'sequencing_platform',
+          editable: true
         }, {
           name: 'Sequencing Depth',
           text: 'sequencing_depth',
+          editable: true
         }, {
           name: 'Assembly Method',
           text: 'assembly_method',
+          editable: true
         }],
 
         'Genome Statistics': [{
@@ -3247,103 +3275,134 @@ define([
         'Isolate Info': [{
           name: 'Isolation Source',
           text: 'isolation_source',
+          editable: true
         }, {
           name: 'Isolation Comments',
           text: 'isolation_comments',
+          editable: true
         }, {
           name: 'Collection Date',
           text: 'collection_date',
+          editable: true
         }, {
           name: 'Collection Year',
           text: 'collection_year',
+          editable: true
         }, {
           name: 'Season',
           text: 'season',
+          editable: true
         }, {
           name: 'Isolation Country',
           text: 'isolation_country',
+          editable: true
         }, {
           name: 'Geographic Group',
           text: 'geographic_group',
+          editable: true
         }, {
           name: 'Geographic Location',
           text: 'geographic_location',
+          editable: true
         }, {
           name: 'Other Environmental',
           text: 'other_environmental',
+          editable: true
         }],
 
         'Host Info': [{
           name: 'Host Name',
           text: 'host_name',
+          editable: true
         }, {
           name: 'Host Common Name',
           text: 'host_common_name',
+          editable: true
         }, {
           name: 'Host Gender',
           text: 'host_gender',
+          editable: true
         }, {
           name: 'Host Age',
           text: 'host_age',
+          editable: true
         }, {
           name: 'Host Health',
           text: 'host_health',
+          editable: true
         }, {
           name: 'Host Group',
           text: 'host_group',
+          editable: true
         }, {
           name: 'Lab Host',
           text: 'lab_host',
+          editable: true
         }, {
           name: 'Passage',
           text: 'passage',
+          editable: true
         }, {
           name: 'Other Clinical',
           text: 'other_clinical',
+          editable: true
         }],
 
         'Phenotype Info': [{
           name: 'Phenotype',
           text: 'phenotype',
+          editable: true
         }, {
           name: 'Gram Stain',
           text: 'gram_stain',
+          editable: true
         }, {
           name: 'Cell Shape',
           text: 'cell_shape',
+          editable: true
         }, {
           name: 'Motility',
           text: 'motility',
+          editable: true
         }, {
           name: 'Sporulation',
           text: 'sporulation',
+          editable: true
         }, {
           name: 'Temperature Range',
           text: 'temperature_range',
+          editable: true
         }, {
           name: 'Optimal Temperature',
           text: 'optimal_temperature',
+          editable: true
         }, {
           name: 'Salinity',
           text: 'salinity',
+          editable: true
         }, {
           name: 'Oxygen Requirement',
           text: 'oxygen_requirement',
+          editable: true
         }, {
           name: 'Habitat',
           text: 'habitat',
+          editable: true
         }, {
           name: 'Disease',
           text: 'disease',
+          editable: true
         }],
 
         'Additional Info': [{
           name: 'Additional Metadata',
           multiValued: true,
           text: 'additional_metadata',
+          editable: true
         }, {
           name: 'Comments',
           text: 'comments',
+          editable: true
         }, {
           name: 'Date Inserted',
           text: 'date_inserted',
