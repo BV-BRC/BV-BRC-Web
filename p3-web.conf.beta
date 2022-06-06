@@ -1,0 +1,16 @@
+{
+  "appLabel": "BETA",
+  "jiraLabel": "BETA",
+  "production": true,
+  "http_port": 3020,
+  "appBaseURL": "https://beta.bv-brc.org",
+  "accountURL": "https://user.bv-brc.org",
+  "authorizationURL": "https://user.bv-brc.org/login",
+  "userServiceURL": "https://user.bv-brc.org",
+  "dataServiceURL": "https://alpha.bv-brc.org/api",
+  "docsServiceURL": "https://bv-brc.org/docs/",
+  "mailinglistURL": "https://lists.brcgateway.org/",
+  "gaID": "",
+  "newrelic_license_key": "",
+  "enableDevTools": false
+}
