@@ -53,6 +53,11 @@ define([
 
       // load data tables
       this.loadSubsystemsTable();
+      this.loadGenesTable();
+
+      // Topic ids
+      var subsystemsTopicId = 'subsystems topicId';
+      var genesTopicId = 'genes topicId';
 
       // load data into memory stores
       this.subsystemsOverviewStore = new SubsystemsOverviewMemoryStore({
@@ -63,6 +68,13 @@ define([
         type: 'subsystems',
         state: this.state
       });
+      this.subsystemsStore.setTopicId(subsystemsTopicId);
+      this.geneSubsystemsStore = new SubSystemMemoryStore({
+        type: 'genes',
+        state: this.state
+      });
+      this.geneSubsystemsStore.setTopicId(genesTopicId);
+
       // TODO: gene memory store
 
       // setup tab controller
@@ -104,19 +116,57 @@ define([
           active: { label: 'Variant', field: 'active', hidden: true },
           subsystem_id: { label: 'Subsystem ID', field: 'subsystem_id', hidden: true }
         },
+        // enableFilterPanel: true,
+        // visible: true
       });
+      this.subsystemsGrid.setTopicId(subsystemsTopicId);
+
+      this.genesGrid = new SubSystemsGridContainer({
+        title: 'Genes',
+        type: 'genes',
+        store: this.geneSubsystemsStore,
+        state: this.state,
+        getFilterPanel: function (opts) {
+
+        },
+        facetFields: ['superclass', 'class', 'subclass', 'active', 'subsystem_name'],
+        columns: {
+          'Selection Checkboxes': selector({ unhidable: true }),
+          superclass: { label: 'Superclass', field: 'superclass' },
+          'class': { label: 'Class', field: 'class' },
+          subclass: { label: 'Subclass', field: 'subclass' },
+          subsystem_name: { label: 'Subsystem Name', field: 'subsystem_name' },
+          role_id: { label: 'Role ID', field: 'role_id', hidden: true },
+          role_name: { label: 'Role Name', field: 'role_name' },
+          active: { label: 'Variant', field: 'active', hidden: true },
+          patric_id: { label: 'BRC ID', field: 'patric_id' },
+          gene: { label: 'Gene', field: 'gene' },
+          refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: true },
+          alt_locus_tag: { label: 'Alt Locus Tag', field: 'alt_locus_tag', hidden: true },
+          product: { label: 'Product', field: 'product' },
+          genome_id: { label: 'Genome ID', field: 'genome_id', hidden: true },
+          genome_name: { label: 'Genome Name', field: 'genome_name', hidden: true },
+          taxon_id: { label: 'Taxon ID', field: 'taxon_id', hidden: true },
+          subsystem_id: { label: 'Subsystem ID', field: 'subsystem_id', hidden: true }
+        },
+        // enableFilterPanel: true,
+        // visible: true
+      });
+      this.genesGrid.setTopicId(genesTopicId);
 
       this.addChild(tabController);
       this.addChild(this.tabContainer);
 
       this.tabContainer.addChild(this.subsystemsOverviewGrid);
       this.tabContainer.addChild(this.subsystemsGrid);
+      this.tabContainer.addChild(this.genesGrid);
 
       this.resize(); // this fixes a bug where relayout is not triggered properly
 
       this._firstView = true;
     },
 
+    // TODO: move to a service worker
     loadSubsystemsTable: function () {
       var subsystem_data = [];
       var header = true;
@@ -131,7 +181,7 @@ define([
           var new_data = {};
           var l = line.split('\t');
           subsystem_keys.forEach(lang.hitch(this, function (key, index) {
-            if (key === 'subsystem_id') {
+            if (key === 'subsystem_name') {
               new_data['id'] = l[index];
             }
             new_data[key] = l[index];
@@ -140,7 +190,39 @@ define([
           subsystem_data.push(new_data);
         }
       });
+      // TODO: the last entry is undefined, not sure why it's being added: for now just remove
+      subsystem_data.pop();
+      // debugger;
       this.state.data['subsystem_table'] = subsystem_data;
+    },
+
+    // TODO: move to a service worker
+    loadGenesTable: function () {
+      var genes_data = [];
+      var header = true;
+      var genes_keys = null;
+      this.state.data['genes'].split('\n').forEach(function (line) {
+        if (header) {
+          genes_keys = line.split('\t');
+          header = false;
+          console.log(genes_keys);
+        }
+        else {
+          var new_data = {};
+          var l = line.split('\t');
+          genes_keys.forEach(lang.hitch(this, function (key, index) {
+            if (key === 'feature_id') {
+              new_data['id'] = l[index];
+            }
+            new_data[key] = l[index];
+            new_data['document_type'] = 'subsystems_gene'; // used in ItemDetailPanel
+            genes_data.push(new_data);
+          }))
+        }
+      });
+      // TODO: the last entry is undefined, not sure why it's being added: for now just remove
+      genes_data.pop();
+      this.state.data['genes_table'] = genes_data;
     }
   });
 });

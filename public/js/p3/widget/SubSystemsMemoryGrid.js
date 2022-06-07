@@ -174,6 +174,7 @@ define([
     _selectAll: function () {
       var _self = this;
       var def = new Deferred();
+      debugger;
       when(this.store.query({}, this.queryOptions), function (results) {
         _self._unloadedData = {};
 

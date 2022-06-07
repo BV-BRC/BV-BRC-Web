@@ -27,11 +27,12 @@ define([
           var genome_ids = resData['genome_ids'];
           var overview_data = resData['overview'];
           var subsystem_table = resData['subsystems'];
-          // TODO: load genes data
+          var genes_table = resData['genes'];
           this.state.genome_ids = genome_ids.map(String); // Used in action bar functions (TODO: check)
           this.state.data['genome_ids'] = genome_ids.map(String);
           this.state.data['overview'] = overview_data;
           this.state.data['subsystems'] = subsystem_table;
+          this.state.data['genes'] = genes_table;
           this.loaded = true;
           // this.state = state;
           this.serviceContainer.setLoaded();
@@ -57,14 +58,6 @@ define([
       this.serviceContainer = new ServiceContainer({ id: this.id + '_serviceContainer', region: 'center', loaded: false });
       this.addChild(this.serviceContainer);
       this.inherited(arguments);
-    },
-
-    /*
-    setContainerState: function (state) {
-      if (this.serviceContainer) {
-        this.serviceContainer.onSetState(null, null, state);
-      }
     }
-    */
   });
 });
