@@ -28,8 +28,8 @@ define([
     defaultPath: '',
     startingRows: 14,
     alphabet: '',
-    maxGenomes: 128,
-    maxGenomeLength: 100000,
+    maxGenomes: 500,
+    maxGenomeLength: 250000,
     validFasta: false,
     textInput: false,
 

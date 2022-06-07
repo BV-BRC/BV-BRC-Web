@@ -27,7 +27,7 @@ define([
     defaultPath: '',
     startingRows: 3,
     maxGenomes: 500,
-    maxGenomeLength: 100000,
+    maxGenomeLength: 250000,
 
     constructor: function () {
       this._selfSet = true;
@@ -481,7 +481,7 @@ define([
       // console.log(lrec);
     },
 
-    onAddUnalignedFasta: function ()  {
+    onAddUnalignedFasta: function () {
       // console.log("Create New Row", domConstruct);
       var lrec = {};
       var chkPassed = this.ingestAttachPoints(this.unalignedFastaToAttachPt, lrec);
@@ -674,9 +674,8 @@ define([
       console.log("genome_id_list = ", genome_id_list);
 
       if (this.addedGenomes < this.maxGenomes
-          && genome_id_list.length > 0
-          && count <= this.maxGenomes)
-      {
+        && genome_id_list.length > 0
+        && count <= this.maxGenomes) {
         var tr = this.genomeTable.insertRow(0);
         var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
         td.genomeRecord = lrec;
@@ -726,8 +725,7 @@ define([
 
         if (chkPassed && this.addedGenomes < this.maxGenomes
           && genome_id_list.length > 0
-          && count <= this.maxGenomes)
-        {
+          && count <= this.maxGenomes) {
           var tr = this.genomeTable.insertRow(0);
           var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
           td.genomeRecord = lrec;
