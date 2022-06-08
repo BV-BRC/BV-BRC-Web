@@ -22,5 +22,7 @@ define([
       // set topic id in grid
       this.grid.setTopicId(this.topicId);
     }
+
+    // TODO: START HERE create filter panel after data is loaded
   });
 });

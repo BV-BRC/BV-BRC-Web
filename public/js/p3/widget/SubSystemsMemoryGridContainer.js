@@ -114,7 +114,6 @@ define([
     },
 
     createFilterPanel: function () {
-
       if (this.type === 'genes') {
         this.inherited(arguments);
       } else {

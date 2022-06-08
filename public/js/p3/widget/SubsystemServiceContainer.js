@@ -116,7 +116,7 @@ define([
           active: { label: 'Variant', field: 'active', hidden: true },
           subsystem_id: { label: 'Subsystem ID', field: 'subsystem_id', hidden: true }
         },
-        // enableFilterPanel: true,
+        enableFilterPanel: true,
         // visible: true
       });
       this.subsystemsGrid.setTopicId(subsystemsTopicId);
@@ -149,7 +149,7 @@ define([
           taxon_id: { label: 'Taxon ID', field: 'taxon_id', hidden: true },
           subsystem_id: { label: 'Subsystem ID', field: 'subsystem_id', hidden: true }
         },
-        // enableFilterPanel: true,
+        enableFilterPanel: true,
         // visible: true
       });
       this.genesGrid.setTopicId(genesTopicId);
