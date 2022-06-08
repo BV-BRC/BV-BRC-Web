@@ -1,6 +1,7 @@
 # Changelog
 ## 3.15.2 - June 7, 2022
 * [Enahncement] Updated SARS-CoV-2 tracker table
+* [Feature] Raise genome limit size to 250k for MSA/SNP service
 
 ## 3.15.1 - June 3, 2022
 * [Feature] Add Monkeypox virus to header and virus overview page
