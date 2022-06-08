@@ -1,4 +1,7 @@
 # Changelog
+## 3.15.3 - June 8, 2022
+* [Bug] Fix pathways issue
+
 ## 3.15.2 - June 7, 2022
 * [Enahncement] Updated SARS-CoV-2 tracker table
 * [Feature] Raise genome limit size to 250k for MSA/SNP service
