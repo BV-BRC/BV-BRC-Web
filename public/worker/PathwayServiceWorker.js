@@ -25,7 +25,9 @@ function parseData(data, genome_list, primaryKey) {
       data_dict[pathwayKey] = {};
       Object.keys(obj).forEach(function (field) {
         if (field !== 'genome_id') {
-          if (field !== 'pathway_id' && Number.isInteger(parseInt(obj[field]))) {
+          var isnum = /^\d+$/.test(obj[field]);
+          // Number.isInteger(parseInt(obj[field]))
+          if (field !== 'pathway_id' && isnum) {
             data_dict[pathwayKey][field] = parseInt(obj[field]);
           } else {
             data_dict[pathwayKey][field] = obj[field];
