@@ -548,15 +548,48 @@ define([
       else if (ids[0].match(/\d+\.\d+/)) {
         this.nodeType = 'genome';
         this.containerType = 'genome_data';
-        var q = 'in(genome_id,(' + ids.join(',') + '))&select(genome_id,genome_name,genbank_accessions,species,strain,geographic_group,isolation_country,host_group,host_common_name,collection_year,subtype,lineage,clade)&limit(25000)';
+        var genome_ids = [];
+        console.log('ids=', ids);
+
+        if (ids[0].match(/^\d+\.\d+$/)) {
+          genome_ids = ids;
+        } else {
+          ids.forEach((id) => {
+            var myid = id.match(/.*\|(\d+\.\d+).*/);
+            // console.log('id=', id);
+            // console.log('myid=', myid);
+            genome_ids.push(myid[1]) });
+        }
+        // console.log('genome_ids=', genome_ids);
+        var q = 'in(genome_id,(' + genome_ids.join(',') + '))&select(genome_id,genome_name,genbank_accessions,species,strain,geographic_group,isolation_country,host_group,host_common_name,collection_year,subtype,lineage,clade)&limit(25000)';
+        // console.log('q =', q);
+
         var genomes = when(xhr.post(PathJoin(window.App.dataAPI, 'genome'), {
           handleAs: 'json',
           data: q
         }), function (res) {
           console.log('in when response response', res);
+          console.log('in when response seqIds', seqIds);
           var seqIdIndex = 0;
           self.genomeData = res.map(function (genome) {
-            seqIdIndex = seqIds[genome.genome_id] - 1;
+            var keys = Object.keys(seqIds);
+            // console.log('in when response keys', keys);
+
+            if (keys[0].match(/^\d+\.\d+$/)) {
+              seqIdIndex = seqIds[genome.genome_id] - 1;
+            } else {
+              for (var i = 0; i < keys.length; i++) {
+                var mykey = keys[i].match(/.*\|(\d+\.\d+).*/);
+                // console.log('in when response genome.genome_id, keys, mykey', genome.genome_id, keys[i], mykey);
+                if (genome.genome_id == mykey[1]) {
+                  // console.log('in when response mykey', mykey[1]);
+                  seqIdIndex = seqIds[keys[i]] - 1;
+                }
+              }
+            }
+
+            // console.log('in when response seqIdIndex', seqIdIndex);
+
             self.idMap[seqIdIndex] = {
               seq_id: seqIdIndex,
               genome_id: genome.genome_id,
@@ -743,10 +776,22 @@ define([
           s.id = id_count;
           id_count += 1;
           console.log('idMenu s.name=', s.name);
+          console.log('idMenu this.alt_labels=', this.alt_labels);
           console.log('idMenu this.alt_labels.rel=', this.alt_labels[rel]);
           console.log('idMenu this.alt_labels.genome_name=', this.alt_labels.genome_name);
           var label = this.alt_labels[rel];
-          s.name = label[s.name.replaceAll(':', '|')];
+          console.log('idMenu label=', label);
+          s.name = s.name.replaceAll(':', '|');
+
+          if (s.name.match(/^\d+\.\d+$/) || s.name.match(/^fig/)) {
+            s.name = label[s.name];
+            // console.log('idMenu match genome id or fig s.name=', s.name);
+          } else {
+            var myid = s.name.match(/.*\|(\d+\.\d+).*/);
+            // console.log('idMenu match accn id ', myid);
+            s.name = label[myid[1]];
+            // console.log('idMenu s.name=   myid= ', s.name, myid[1]);
+          }
         }));
         console.log('msa_models2= ', msa_models2);
 
@@ -988,7 +1033,9 @@ define([
         // }
         popup.close(snapMenu);
       }));
+      console.log('before m.render m=', m);
       m.render();
+      console.log('after m.render m=', m);
       msaDiv.style.display = 'inline-block';
       msaDiv.style.overflowX = 'hidden';
       msaDiv.style.overflowY = 'hidden';
