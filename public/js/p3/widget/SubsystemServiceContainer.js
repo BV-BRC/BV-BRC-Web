@@ -66,7 +66,8 @@ define([
       });
       this.subsystemsStore = new SubSystemMemoryStore({
         type: 'subsystems',
-        state: this.state
+        state: this.state,
+        facetFields: ['superclass', 'class', 'subclass', 'active', 'subsystem_name']
       });
       this.subsystemsStore.setTopicId(subsystemsTopicId);
       this.geneSubsystemsStore = new SubSystemMemoryStore({
@@ -104,7 +105,7 @@ define([
         getFilterPanel: function (opts) {
 
         },
-        facetFields: ['superclass', 'class', 'subclass', 'active', 'subsystem_name'],
+        // facetFields: ['superclass', 'class', 'subclass', 'active', 'subsystem_name'],
         columns: {
           'Selection Checkboxes': selector({ unhidable: true }),
           superclass: { label: 'Superclass', field: 'superclass' },
@@ -120,6 +121,7 @@ define([
         // visible: true
       });
       this.subsystemsGrid.setTopicId(subsystemsTopicId);
+      this.subsystemsGrid.setFilterUpdateTrigger();
 
       this.genesGrid = new SubSystemsGridContainer({
         title: 'Genes',

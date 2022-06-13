@@ -12,6 +12,7 @@ define([
 
     onSetState: function (attr, oldVal, state) {
       console.log('memory store set state');
+      this.currentFilter = {};
       if (this.type === 'subsystems') {
         if (!this._loaded) {
           this.setData([]);
@@ -20,6 +21,7 @@ define([
             this._loaded = true;
             this.setData(this.state.data['parsed_subsystem_table']);
             Topic.publish(this.topicId, 'refreshGrid');
+            Topic.publish(this.topicId, 'createFilterPanel');
           }));
         }
       } else if (this.type === 'genes') {
@@ -41,8 +43,6 @@ define([
       }
       console.log('query = ', query);
       console.log('opts = ', opts);
-      // TODO: insert condition filter
-      var total_length = this.data.length;
       var data;
       if (this.type === 'subsystems') {
         data = this.state.data['parsed_subsystem_table'];
@@ -50,6 +50,9 @@ define([
       if (this.type === 'genes') {
         data = this.state.data['genes_table'];
       }
+      // TODO: insert condition filter
+      // this.checkChangeFilter(query);
+      data = this.filterData(data);
       if (opts && opts.sort) {
         var sort_field = opts.sort[0].attribute;
         if (opts.sort[0].descending) {
@@ -58,6 +61,7 @@ define([
           data = data.sort((a, b) => (a[sort_field] > b[sort_field]) ? 1 : -1);
         }
       }
+      var total_length = data.length;
       var start = 0;
       var count = 200;
       if (opts && opts.start) {
@@ -93,12 +97,14 @@ define([
         worker.onmessage = lang.hitch(this, function (e) {
           if (e.data.type === 'processed_subsystem_data') {
             this.state.data['parsed_subsystem_table'] = e.data['parsed_data'];
+            this.state.facetCounts = e.data['facet_counts'];
           }
           def.resolve(true);
           worker.terminate();
         });
         // TODO: add genome filter
-        var payload = { data: this.state.data['subsystem_table'] };
+        var facet_fields = this.facetFields;
+        var payload = { data: this.state.data['subsystem_table'], facetFields: facet_fields };
         worker.postMessage(JSON.stringify({ type: 'parse_subsystems', payload: payload }));
         return def;
       }
@@ -116,6 +122,48 @@ define([
             break;
         }
       }));
-    }
+    },
+
+    updateDataFilter: function (filter) {
+      this.currentFilter = filter;
+      this.setData(this.query());
+      Topic.publish(this.topicId, 'refreshGrid');
+    },
+
+    filterData: function (data) {
+      if (JSON.stringify(this.currentFilter) === '{}') {
+        return data;
+      }
+      var query_filter = this.currentFilter;
+      var keyword_filter = query_filter['fwks'];
+      var facet_filter = query_filter['facets'];
+      // Facets looks like this:
+      // - {'annotation':['PATRIC'],'pathway_class':['Carbohydrate Metabolism','Lipid Mtabolism'],etc}
+      var filtered_data = data;
+      if (facet_filter) {
+        Object.keys(facet_filter).forEach(lang.hitch(this, function (cat) {
+          var ff_list = facet_filter[cat];
+          filtered_data = filtered_data.filter(function (el) {
+            return ff_list.includes(el[cat]);
+          });
+        }));
+      }
+      if (keyword_filter) {
+        filtered_data = filtered_data.filter(function (el) {
+          var keyword_found = false;
+          Object.values(el).forEach(lang.hitch(this, function (val) {
+            keyword_filter.forEach(lang.hitch(this, function (kwd) {
+              if (typeof val === 'string' || val instanceof String) {
+                if (val.toLocaleLowerCase().includes(kwd.toLocaleLowerCase())) {
+                  keyword_found = true;
+                }
+              }
+            }));
+          }));
+          return keyword_found;
+        });
+      }
+      return filtered_data;
+    },
   });
 });

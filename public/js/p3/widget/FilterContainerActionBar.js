@@ -466,7 +466,6 @@ define([
       this.keywordSearch = Textbox({ style: 'width: 300px;' });
 
       this.keywordSearch.on('change', lang.hitch(this, function (val) {
-
         if (val) {
           domClass.remove(clear, 'dijitHidden');
         } else {
