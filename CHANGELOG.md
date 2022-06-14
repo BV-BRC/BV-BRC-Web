@@ -1,8 +1,8 @@
 # Changelog
 ## 3.15.4 - June 14, 2022
-* [Enhancement] Enable the MSA viewer to map and display the additional genome attributes for viral genomes [345](https://github.com/BV-BRC/bvbrc_website/pull/345)
-* [Enhancement] Update help menu [#2146471](https://github.com/BV-BRC/bvbrc_website/commit/2fe6094a518c2469dc900a5b09b581d20fd57192)
-* [Update] Update performance and usage metrics for May 2022 [#2fe6094](https://github.com/BV-BRC/bvbrc_website/commit/d376c7220c621b9117f654b449dddf4e2f36f76e)
+* [Enhancement] Enable the MSA viewer to map and display the additional genome attributes for viral genomes [PR #345](https://github.com/BV-BRC/bvbrc_website/pull/345)
+* [Enhancement] Update help menu [Commit #2146471](https://github.com/BV-BRC/bvbrc_website/commit/2fe6094a518c2469dc900a5b09b581d20fd57192)
+* [Update] Update performance and usage metrics for May 2022 [Commit #2fe6094](https://github.com/BV-BRC/bvbrc_website/commit/d376c7220c621b9117f654b449dddf4e2f36f76e)
 
 ## 3.15.3 - June 8, 2022
 * [Bug] Fix pathways issue
