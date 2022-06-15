@@ -187,10 +187,9 @@ define([
 
       this.browserHeader.addAction('SubsystemsServiceViewer', 'MultiButton fa icon-eye fa -2x', {
         label: 'Subsystems',
-        validTypes: ['folder'],
+        validTypes: ['ComparativeSystems'],
         tooltip: 'View Subsystems Tables'
       }, function (selection, container, button) {
-        /*
         console.log(selection);
         var path;
         selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (data_file) {
@@ -198,8 +197,6 @@ define([
             path = data_file[0];
           }
         }));
-        */
-        var path = '/clark.cucinell@patricbrc.org/home/ComparativeSystemsTesting/test_compsystems_subsystems_tables.json';
         if (path) {
           Topic.publish('/navigate', { href: '/view/SubsystemService' + path });
         } else {

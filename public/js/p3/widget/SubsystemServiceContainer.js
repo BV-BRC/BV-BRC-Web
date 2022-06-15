@@ -155,6 +155,7 @@ define([
         // visible: true
       });
       this.genesGrid.setTopicId(genesTopicId);
+      this.genesGrid.setFilterUpdateTrigger();
 
       this.addChild(tabController);
       this.addChild(this.tabContainer);
@@ -213,13 +214,10 @@ define([
           var new_data = {};
           var l = line.split('\t');
           genes_keys.forEach(lang.hitch(this, function (key, index) {
-            if (key === 'feature_id') {
-              new_data['id'] = l[index];
-            }
             new_data[key] = l[index];
             new_data['document_type'] = 'subsystems_gene'; // used in ItemDetailPanel
-            genes_data.push(new_data);
-          }))
+          }));
+          genes_data.push(new_data);
         }
       });
       // TODO: the last entry is undefined, not sure why it's being added: for now just remove

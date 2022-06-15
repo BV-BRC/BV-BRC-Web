@@ -57,13 +57,13 @@ define([
           var superclass_data = genome_data[superclass];
           if (value_dict.hasOwnProperty(superclass)) {
             superclass_dict = parsed_data.find(entry => entry.name === superclass);
-            superclass_dict['gene_count'] += superclass_data['gene_counts'];
-            superclass_dict['subsystem_count'] += superclass_data['class_counts'];
+            superclass_dict['gene_count'] += parseInt(superclass_data['gene_counts']);
+            superclass_dict['subsystem_count'] += parseInt(superclass_data['class_counts']);
           } else {
             var new_superclass = {};
             new_superclass['name'] = superclass;
-            new_superclass['gene_count'] = superclass_data['gene_counts'];
-            new_superclass['subsystem_count'] = superclass_data['class_counts'];
+            new_superclass['gene_count'] = parseInt(superclass_data['gene_counts']);
+            new_superclass['subsystem_count'] = parseInt(superclass_data['class_counts']);
             // new_superclass['class'] = {};
             new_superclass['children'] = [];
             parsed_data.push(new_superclass);

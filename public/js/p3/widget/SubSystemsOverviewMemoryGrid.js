@@ -77,6 +77,9 @@ define([
       else if (this.state.taxonomy) {
         titleText = this.state.taxonomy.taxon_name;
       }
+      else if (this.state.job_name && !this.state.genome) {
+        titleText = this.state.job_name;
+      }
       else {
         titleText = '';
       }

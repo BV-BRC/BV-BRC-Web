@@ -38,6 +38,7 @@ define([
         d3.select('#subsystemspiechart').selectAll('*').remove();
         // }
         that.drawSubsystemPieChartGraph(data);
+        that.drawCountsLabel(data);
         that.loadingMask.hide();
       });
     },
@@ -60,6 +61,54 @@ define([
       else {
         return null;
       }
+    },
+
+    drawCountsLabel: function (data) {
+
+      var width = $( window ).width() * 0.85;
+      var height = $( window ).height() * 0.6;
+      var radius = Math.min(width, height) / 2 - 50;
+
+      var that = this;
+
+      if (width < 800) {
+        width = 800;
+      }
+
+      if (height < 450) {
+        height = 450;
+      }
+      var legendTitleOffset = 100;
+      var legendHorizontalOffset = (radius + 50) * 2 + 300;
+
+      that.subsystemReferenceData = $.extend(true, [], data);
+
+      // only render legend title once
+      d3.select('#subsystemspiechart svg').append('text')
+        .attr('x', legendHorizontalOffset)
+        .attr('y', legendTitleOffset)
+        .attr('text-anchor', 'top')
+        .style('font-weight', 'bold')
+        .style('font-size', '14px')
+        .text('Subsystem Counts');
+
+      d3.select('#subsystemspiechart svg').append('text')
+        .attr('x', legendHorizontalOffset + 135)
+        .attr('y', legendTitleOffset)
+        .attr('text-anchor', 'top')
+        .style('font-weight', 'bold')
+        .style('font-size', '14px')
+        .style('fill', '#76a72d')
+        .text(' (Subsystems, ');
+
+      d3.select('#subsystemspiechart svg').append('text')
+        .attr('x', legendHorizontalOffset + 230)
+        .attr('y', legendTitleOffset)
+        .attr('text-anchor', 'top')
+        .style('font-weight', 'bold')
+        .style('font-size', '14px')
+        .style('fill', '#ffcb00')
+        .text('Genes)');
     }
   });
 });
