@@ -134,7 +134,7 @@ define([
         'DownloadSelection',
         'fa icon-download fa-2x',
         {
-          label: 'DWNLD2',
+          label: 'DWNLD',
           multiple: true,
           validTypes: ['*'],
           ignoreDataType: true,

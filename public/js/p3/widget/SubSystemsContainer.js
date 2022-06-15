@@ -60,12 +60,15 @@ define([
     },
 
     onSetState: function (attr, oldVal, state) {
+
       if (!state) {
         return;
       }
+
       if (this.tabContainer && this.tabContainer.selectedChildWidget && this._firstView && this.tabContainer.selectedChildWidget.state != state) {
         this.tabContainer.selectedChildWidget.set('state', state);
       }
+
       if (this.mainGridContainer) {
         this.mainGridContainer.set('state', state);
       }
@@ -73,7 +76,6 @@ define([
 
     visible: false,
     _setVisibleAttr: function (visible) {
-      console.log('visible = ', visible);
       this.visible = visible;
       if (this.visible && !this._firstView) {
         this.onFirstView();
