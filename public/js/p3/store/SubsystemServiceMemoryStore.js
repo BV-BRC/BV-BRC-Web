@@ -26,9 +26,13 @@ define([
         }
       } else if (this.type === 'genes') {
         if (!this._loaded) {
-          this.setData(this.state.data['genes_table']);
-          this._loaded = true;
-          Topic.publish(this.topicId, 'refreshGrid');
+          this.setData([]);
+          this.loadGenesData().then(lang.hitch(this, function (res) {
+            this._loaded = true;
+            this.setData(this.state.data['parsed_genes_table']);
+            Topic.publish(this.topicId, 'refreshGrid');
+            Topic.publish(this.topicId, 'createFilterPanel');
+          }));
           // TODO: service worker??
           // this.loadGenesData();
         }
@@ -48,7 +52,7 @@ define([
         data = this.state.data['parsed_subsystem_table'];
       }
       if (this.type === 'genes') {
-        data = this.state.data['genes_table'];
+        data = this.state.data['parsed_genes_table'];
       }
       // TODO: insert condition filter
       // this.checkChangeFilter(query);
@@ -106,6 +110,30 @@ define([
         var facet_fields = this.facetFields;
         var payload = { data: this.state.data['subsystem_table'], facetFields: facet_fields };
         worker.postMessage(JSON.stringify({ type: 'parse_subsystems', payload: payload }));
+        return def;
+      }
+    },
+
+    loadGenesData: function () {
+      if (!this.state.data.hasOwnProperty('genes_table')) {
+        console.log('state missing genes table');
+      }
+      else {
+        var def = new Deferred();
+        var worker = new window.Worker('/public/worker/SubsystemServiceWorker.js', { type: 'module' });
+        worker.onerror = (err) => console.log(err);
+        worker.onmessage = lang.hitch(this, function (e) {
+          if (e.data.type === 'processed_genes_data') {
+            this.state.data['parsed_genes_table'] = e.data['parsed_data'];
+            this.state.facetCounts = e.data['facet_counts'];
+          }
+          def.resolve(true);
+          worker.terminate();
+        });
+        // TODO: add genome filter
+        var facet_fields = this.facetFields;
+        var payload = { data: this.state.data['genes_table'], facetFields: facet_fields };
+        worker.postMessage(JSON.stringify({ type: 'parse_genes', payload: payload }));
         return def;
       }
     },
