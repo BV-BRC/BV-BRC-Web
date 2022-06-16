@@ -185,6 +185,25 @@ define([
         }
       }, false);
 
+      this.browserHeader.addAction('SubsystemsServiceViewer', 'MultiButton fa icon-eye fa -2x', {
+        label: 'Subsystems',
+        validTypes: ['ComparativeSystems'],
+        tooltip: 'View Subsystems Tables'
+      }, function (selection, container, button) {
+        console.log(selection);
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (data_file) {
+          if (data_file[0].includes('_subsystems_tables.json')) {
+            path = data_file[0];
+          }
+        }));
+        if (path) {
+          Topic.publish('/navigate', { href: '/view/SubsystemService' + path });
+        } else {
+          console.log('Error: could not find pathways data file');
+        }
+      }, false);
+
       this.actionPanel.addAction('ViewGenomeGroup', 'MultiButton fa icon-selection-GenomeList fa-2x', {
         label: 'VIEW',
         validTypes: ['genome_group'],
