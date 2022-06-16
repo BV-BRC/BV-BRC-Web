@@ -56,7 +56,6 @@ define([
       var that = this;
 
       Deferred.when(this.store.query(), function (data) {
-
         if (oldState) {
           d3.select('#subsystemspiechart').selectAll('*').remove();
         }
@@ -77,6 +76,9 @@ define([
       }
       else if (this.state.taxonomy) {
         titleText = this.state.taxonomy.taxon_name;
+      }
+      else if (this.state.job_name && !this.state.genome) {
+        titleText = this.state.job_name;
       }
       else {
         titleText = '';

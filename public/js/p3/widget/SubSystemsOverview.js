@@ -1,4 +1,3 @@
-define.amd.jQuery = true;
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic',
   'dojo/query', 'dojo/request', 'dojo/dom-construct', 'dojo/dom-style',
@@ -15,6 +14,7 @@ define([
     gutters: false,
     visible: false,
     state: null,
+    gridCtor: SubSystemsOverviewMemoryGrid,
 
     containerActions: [
       [
@@ -30,6 +30,7 @@ define([
     ],
 
     onSetState: function (attr, oldState, state) {
+      console.log('overview called');
       if (!state) {
         console.log('!state in grid container; return;');
         return;
@@ -71,10 +72,10 @@ define([
         style: 'padding:0'
       });
 
-      this.addChild(this.piechartviewer);
-      this.chart = new SubSystemsOverviewMemoryGrid();
-
       this.watch('state', lang.hitch(this, 'onSetState'));
+
+      this.addChild(this.piechartviewer);
+      this.chart = new this.gridCtor({ store: this.store });
 
       this.inherited(arguments);
       this._firstView = true;
