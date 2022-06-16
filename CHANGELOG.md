@@ -1,4 +1,7 @@
 # Changelog
+## 3.15.5 - June 16, 2022
+* [Feature] Adding Subsystems viewer for Comparative Systems [PR #347](https://github.com/BV-BRC/bvbrc_website/pull/347)
+
 ## 3.15.4 - June 14, 2022
 * [Enhancement] Enable the MSA viewer to map and display the additional genome attributes for viral genomes [PR #345](https://github.com/BV-BRC/bvbrc_website/pull/345)
 * [Enhancement] Update help menu [Commit #2146471](https://github.com/BV-BRC/bvbrc_website/commit/2fe6094a518c2469dc900a5b09b581d20fd57192)
