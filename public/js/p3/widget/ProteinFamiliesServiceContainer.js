@@ -26,7 +26,7 @@ define([
     // - This container contains the tables and switch between heatmap view and table view
 
     constructor: function (options) {
-      this.topicId = 'plfam';
+      this.topicId = 'pgfam';
 
       Topic.subscribe(this.topicId, lang.hitch(this, function () {
         var key = arguments[0],
@@ -144,6 +144,17 @@ define([
 
       // Query for genome information then start
       DataAPI.getGenome(this.state.data.genome_ids).then(lang.hitch(this, function (res) {
+      // TODO: get all relevant genome data on the backend
+      /*
+      this.state.data.genome_data = [];
+      this.state.data.genome_ids.forEach(lang.hitch(this, function (gi) {
+        var new_genome_data = {
+          'genome_id': gi,
+          'genome_name': gi
+        };
+        this.state.data.genome_data.push(new_genome_data);
+      }));
+      */
         this.state.data.genome_data = res;
         this.heatmapContainer = new HeatmapContainer({
           title: 'Heatmap',
@@ -297,7 +308,7 @@ define([
 
       var cbType = this.family_type_selector = new Select({
         name: 'familyType',
-        value: 'plfam', // default value on load
+        value: 'pgfam', // default value on load
         options: [{
           value: 'plfam', label: 'PATRIC genus-specific families (PLfams)'
         }, {

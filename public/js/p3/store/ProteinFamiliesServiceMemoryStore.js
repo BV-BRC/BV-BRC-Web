@@ -11,7 +11,7 @@ define([
 ) {
 
   var pfStateDefault = {
-    familyType: 'plfam', // default
+    familyType: 'pgfam', // default
     heatmapAxis: '',
     genomeIds: [],
     genomeFilterStatus: {},
