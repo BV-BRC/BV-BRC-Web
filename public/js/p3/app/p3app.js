@@ -362,6 +362,10 @@ define([
         var parts = path.split('/');
         parts.shift();
         var type = parts.shift();
+        // for rerun functionality
+        var type_parts = type.split('?');
+        var type = type_parts[0];
+        var rerun_key = type_parts[1];
         var viewerParams;
         /* istanbul ignore if */
         if (parts.length > 0) {
