@@ -941,22 +941,26 @@ define([
 
     intakeRerunForm: function () {
       var service_fields = window.location.search.replace('?', '');
-      var rerun_key = service_fields.split('=')[1];
-      var sessionStorage = window.sessionStorage;
-      if (sessionStorage.hasOwnProperty(rerun_key)) {
-        var param_dict = { 'output_folder': 'output_path', 'strategy': 'recipe', 'target_genome_id': 'reference_genome_id' };
-        var widget_map = { 'reference_genome_id': 'genome_nameWidget' };
-        param_dict['widget_map'] = widget_map;
-        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-        var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-        job_data = this.formatRerunJson(job_data);
-        this.checkConditionsFormFill(job_data);
-        this.checkContrastsFormFill(job_data);
-        // TODO: check conditions/library pairing
-        job_data = this.addConditionInfoFormFill(job_data);
-        AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
-        this.form_flag = true;
-        sessionStorage.removeItem(rerun_key);
+      var rerun_fields = service_fields.split('=');
+      var rerun_key;
+      if (rerun_fields.length > 1) {
+        rerun_key = rerun_fields[1];
+        var sessionStorage = window.sessionStorage;
+        if (sessionStorage.hasOwnProperty(rerun_key)) {
+          var param_dict = { 'output_folder': 'output_path', 'strategy': 'recipe', 'target_genome_id': 'reference_genome_id' };
+          var widget_map = { 'reference_genome_id': 'genome_nameWidget' };
+          param_dict['widget_map'] = widget_map;
+          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+          job_data = this.formatRerunJson(job_data);
+          this.checkConditionsFormFill(job_data);
+          this.checkContrastsFormFill(job_data);
+          // TODO: check conditions/library pairing
+          job_data = this.addConditionInfoFormFill(job_data);
+          AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+          this.form_flag = true;
+          sessionStorage.removeItem(rerun_key);
+        }
       }
     },
 
