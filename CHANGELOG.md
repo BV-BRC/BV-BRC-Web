@@ -1,4 +1,7 @@
 # Changelog
+## 3.16.1 - July 8, 2022
+* [Bug] Fixing an issue with rerun functionality [PR #348](https://github.com/BV-BRC/bvbrc_website/pull/348)
+
 ## 3.16.0 - July 8, 2022
 * [Release] Production Release
 
