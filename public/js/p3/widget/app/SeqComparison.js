@@ -600,15 +600,22 @@ define([
     },
 
     intakeRerunForm: function () {
-      var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-        var param_dict = { 'output_folder': 'output_path' };
-        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
-        this.setReferenceGenomeFormFill(job_data);
-        this.addGenomesFormFill(job_data);
-        localStorage.removeItem('bvbrc_rerun_job');
-        this.form_flag = false;
+      // assuming only one key
+      var service_fields = window.location.search.replace('?', '');
+      var rerun_fields = service_fields.split('=');
+      var rerun_key;
+      if (rerun_fields.length > 1) {
+        rerun_key = rerun_fields[1];
+        var sessionStorage = window.sessionStorage;
+        if (sessionStorage.hasOwnProperty(rerun_key)) {
+          var param_dict = { 'output_folder': 'output_path' };
+          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+          this.setReferenceGenomeFormFill(job_data);
+          this.addGenomesFormFill(job_data);
+          sessionStorage.removeItem(rerun_key);
+          this.form_flag = false;
+        }
       }
     },
 

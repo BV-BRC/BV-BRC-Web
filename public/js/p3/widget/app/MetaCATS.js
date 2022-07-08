@@ -482,19 +482,26 @@ define([
     },
 
     intakeRerunForm: function () {
-      var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-        var param_dict = { 'output_folder': 'output_path' };
-        var service_specific = { 'p_value': 'p_value' };
-        param_dict['service_specific'] = service_specific;
-        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
-        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-        this.setInputFormFill(job_data);
-        localStorage.removeItem('bvbrc_rerun_job');
-        this.form_flag = true;
-        // const rows = this.grid.store.query(function (object) {
-        //   return true;
-        // });
+      // assuming only one key
+      var service_fields = window.location.search.replace('?', '');
+      var rerun_fields = service_fields.split('=');
+      var rerun_key;
+      if (rerun_fields.length > 1) {
+        rerun_key = rerun_fields[1];
+        var sessionStorage = window.sessionStorage;
+        if (sessionStorage.hasOwnProperty(rerun_key)) {
+          var param_dict = { 'output_folder': 'output_path' };
+          var service_specific = { 'p_value': 'p_value' };
+          param_dict['service_specific'] = service_specific;
+          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+          this.setInputFormFill(job_data);
+          sessionStorage.removeItem(rerun_key);
+          this.form_flag = true;
+          // const rows = this.grid.store.query(function (object) {
+          //   return true;
+          // });
+        }
       }
     },
 
