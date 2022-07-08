@@ -520,6 +520,10 @@ define([
             // this.codon_genomes_genomegroup.set("value",job_data["genome_group"]);
             this.addGenomeGroupFormFill(job_data['genome_group']);
           } else {
+            var genome_ids = job_data['genome_ids'];
+            if (genome_ids === undefined) {
+              genome_ids = [];
+            }
             this.addGenomesFormFill(job_data['genome_ids']);
           }
           this.form_flag = true;
@@ -550,6 +554,10 @@ define([
     // Some discrepancies:
     addGenomesFormFill: function (genome_id_list) {
       var genome_ids = genome_id_list;
+      debugger;
+      if (genome_ids.length == 0) {
+        return;
+      }
       genome_ids.forEach(function (gid) {
         var name_promise = this.scientific_nameWidget.store.get(gid);
         name_promise.then(lang.hitch(this, function (tax_obj) {

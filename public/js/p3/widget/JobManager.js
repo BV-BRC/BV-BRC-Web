@@ -203,7 +203,8 @@ define([
             'GenomeAssembly2': 'Assembly2',
             'GenomeAssembly': 'Assembly2',
             'GenomeAlignment': 'GenomeAlignment',
-            'GenomeAnnotation': 'Annotation',
+            // TODO: rerun for annotation needs to be updated
+            // 'GenomeAnnotation': 'Annotation',
             'GenomeComparison': 'SeqComparison',
             'Homology': 'Homology',
             'MetaCATS': 'MetaCATS',
@@ -211,6 +212,8 @@ define([
             'MetagenomicReadMapping': 'MetagenomicReadMapping',
             'MSA': 'MSA',
             'CodonTree': 'PhylogeneticTree',
+            // TODO: need to fix this
+            // 'PhylogeneticTree': 'PhylogeneticTree',
             'PrimerDesign': 'PrimerDesign',
             'RNASeq': 'Rnaseq',
             'TaxonomicClassification': 'TaxonomicClassification',
