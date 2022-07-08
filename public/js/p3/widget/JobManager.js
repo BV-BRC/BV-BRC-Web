@@ -197,7 +197,7 @@ define([
           var service_app_map = {
             'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
             'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
-            'DifferentialExpression': 'Expression',
+            // 'DifferentialExpression': 'Expression',
             'FastqUtils': 'FastqUtil',
             'GeneTree': 'GeneTree',
             'GenomeAssembly2': 'Assembly2',
@@ -218,7 +218,7 @@ define([
             'Variation': 'Variation'
           };
           if (service_app_map.hasOwnProperty(service_id)) {
-            Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] });
+            Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] + '?rerun_key=' + rerun_key  });
           }
           else {
             console.log('Rerun not enabled for: ', service_id);

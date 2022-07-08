@@ -297,6 +297,7 @@ define([
       var rerun_fields = service_fields.split('=');
       var rerun_key;
       if (rerun_fields.length > 1) {
+        rerun_key = rerun_fields[1];
         var sessionStorage = window.sessionStorage;
         if (sessionStorage.hasOwnProperty(rerun_key)) {
           var param_dict = { 'output_folder': 'output_path', 'strategy': 'aligner' };

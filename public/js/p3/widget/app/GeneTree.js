@@ -821,19 +821,26 @@ define([
     },
 
     intakeRerunForm: function () {
-      var localStorage = window.localStorage;
-      if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-        var job_data = JSON.parse(localStorage.getItem('bvbrc_rerun_job'));
-        console.log(job_data);
-        var param_dict = { 'output_folder': 'output_path' };
-        var service_specific = { 'gap_threshold': 'gap_threshold', 'trim_threshold': 'trim_threshold', 'substitution_model': 'substitution_model' };
-        param_dict['service_specific'] = service_specific;
-        this.setAlphabetFormFill(job_data);
-        this.setRecipeFormFill(job_data);
-        AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-        this.addSequenceFilesFormFill(job_data, false);
-        localStorage.removeItem('bvbrc_rerun_job');
-        this.form_flag = true;
+      // assuming only one key
+      var service_fields = window.location.search.replace('?', '');
+      var rerun_fields = service_fields.split('=');
+      var rerun_key;
+      if (rerun_fields.length > 1) {
+        rerun_key = rerun_fields[1];
+        var sessionStorage = window.sessionStorage;
+        if (sessionStorage.hasOwnProperty(rerun_key)) {
+          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+          console.log(job_data);
+          var param_dict = { 'output_folder': 'output_path' };
+          var service_specific = { 'gap_threshold': 'gap_threshold', 'trim_threshold': 'trim_threshold', 'substitution_model': 'substitution_model' };
+          param_dict['service_specific'] = service_specific;
+          this.setAlphabetFormFill(job_data);
+          this.setRecipeFormFill(job_data);
+          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+          this.addSequenceFilesFormFill(job_data, false);
+          sessionStorage.removeItem(rerun_key);
+          this.form_flag = true;
+        }
       }
     },
 
