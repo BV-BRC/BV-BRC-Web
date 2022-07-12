@@ -109,6 +109,10 @@ define([
         });
       });
 
+      if (!this.store && this.dataModel) {
+        this.store = this.createStore(this.dataModel);
+      }
+
       this.inherited(arguments);
       this._started = true;
     },

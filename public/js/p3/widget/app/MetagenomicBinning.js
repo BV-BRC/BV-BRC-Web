@@ -236,7 +236,7 @@ define([
     // counter is a widget for requirements checking
     increaseRows: function (targetTable, counter, counterWidget) {
       counter.counter += 1;
-      if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == 'paired') {
+      if (this.libraryStore.data.length == 1 && (this.libraryStore.data[0]._type == 'paired' || this.libraryStore.data[0]._type == 'srr_accession')) {
         this.metaspades.set('disabled', false);
         this.metaspades.set('checked', true);
       }
