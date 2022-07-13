@@ -27,12 +27,20 @@ define([
           var resData = JSON.parse(response.data);
           var plfam_data = resData['plfam'];
           var pgfam_data = resData['pgfam'];
-          // TODO: figfam data
           var genome_ids = resData['genome_ids'];
           this.state.data = {};
           this.state.data['plfam'] = plfam_data;
           this.state.data['pgfam'] = pgfam_data;
           this.state.data['genome_ids'] = genome_ids.map(String);
+          // TODO: add to job json
+          this.state.data.genome_data = [];
+          [...Array(genome_ids.length).keys()].forEach(lang.hitch(this, function (idx) {
+            var data = {
+              'genome_id': this.state.data['genome_ids'][idx],
+              'genome_name': resData['genome_names'][idx]
+            };
+            this.state.data.genome_data.push(data);
+          }))
           this.state.genome_ids = genome_ids.map(String); // Used in action bar functions
           this.loaded = true;
           this.state = state;
