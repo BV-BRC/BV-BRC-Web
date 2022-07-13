@@ -143,10 +143,10 @@ define([
       console.log('this.state = ', this.state);
 
       // Query for genome information then start
-      DataAPI.getGenome(this.state.data.genome_ids).then(lang.hitch(this, function (res) {
+      // DataAPI.getGenome(this.state.data.genome_ids).then(lang.hitch(this, function (res) {
       // TODO: get all relevant genome data on the backend
+      // this.state.data.genome_data = [];
       /*
-      this.state.data.genome_data = [];
       this.state.data.genome_ids.forEach(lang.hitch(this, function (gi) {
         var new_genome_data = {
           'genome_id': gi,
@@ -154,39 +154,39 @@ define([
         };
         this.state.data.genome_data.push(new_genome_data);
       }));
+      this.state.data.genome_data = res;
       */
-        this.state.data.genome_data = res;
-        this.heatmapContainer = new HeatmapContainer({
-          title: 'Heatmap',
-          type: 'webGLHeatmap',
-          topicId: this.topicId,
-          content: 'Heatmap'
-        });
-        this.mainGridContainer = new MainGridContainer({
-          title: 'Table',
-          content: 'Protein Families Table',
-          state: this.state,
-          topicId: this.topicId
-        });
-        this.tabContainer.addChild(this.mainGridContainer);
-        this.tabContainer.addChild(this.heatmapContainer);
+      this.heatmapContainer = new HeatmapContainer({
+        title: 'Heatmap',
+        type: 'webGLHeatmap',
+        topicId: this.topicId,
+        content: 'Heatmap'
+      });
+      this.mainGridContainer = new MainGridContainer({
+        title: 'Table',
+        content: 'Protein Families Table',
+        state: this.state,
+        topicId: this.topicId
+      });
+      this.tabContainer.addChild(this.mainGridContainer);
+      this.tabContainer.addChild(this.heatmapContainer);
 
-        Topic.publish(this.topicId, 'updatePfState', this.pfState);
+      Topic.publish(this.topicId, 'updatePfState', this.pfState);
 
-        var self = this;
-        this.tabContainer.watch('selectedChildWidget', function (name, oldTab, newTab) {
-          if (newTab.type === 'webGLHeatmap') {
-            self.heatmapContainer.set('visible', true);
+      var self = this;
+      this.tabContainer.watch('selectedChildWidget', function (name, oldTab, newTab) {
+        if (newTab.type === 'webGLHeatmap') {
+          self.heatmapContainer.set('visible', true);
 
-            if (!self._chartStaged) {
-              setTimeout(function () {
-                self.heatmapContainer.update();
-                self._chartStaged = true;
-              });
-            }
+          if (!self._chartStaged) {
+            setTimeout(function () {
+              self.heatmapContainer.update();
+              self._chartStaged = true;
+            });
           }
-        });
-      }));
+        }
+      });
+      // }));
 
     },
 

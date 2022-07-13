@@ -33,14 +33,14 @@ define([
           this.state.data['pgfam'] = pgfam_data;
           this.state.data['genome_ids'] = genome_ids.map(String);
           // TODO: add to job json
-          this.state.data.genome_data = [];
-          [...Array(genome_ids.length).keys()].forEach(lang.hitch(this, function (idx) {
+          this.state.data['genome_data'] = [];
+          for (var idx = 0; idx < genome_ids.length; idx++) {
             var data = {
               'genome_id': this.state.data['genome_ids'][idx],
               'genome_name': resData['genome_names'][idx]
             };
-            this.state.data.genome_data.push(data);
-          }))
+            this.state.data['genome_data'].push(data);
+          }
           this.state.genome_ids = genome_ids.map(String); // Used in action bar functions
           this.loaded = true;
           this.state = state;
