@@ -163,10 +163,12 @@ define([
         });
         this.queryNode.innerHTML = out.join(' &raquo; ') + ' &raquo; ' + lang.replace('<a href="/view/Genome/{feature.genome_id}">{feature.genome_name}</a>', { feature: feature });
 
+/*
         if (taxon_lineage_names.includes('Viruses') && this.context === 'bacteria') {
           this.set('context', 'virus')
           this.changeToVirusContext();
         }
+	*/
       }));
 
       var content = [];

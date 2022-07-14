@@ -380,10 +380,48 @@ define([
       return parent.createPolyline(p2);
     },
 
-    make_rect: function (parent, x1, x2, height) {
+    make_rect: function (parent, x1, x2, height, radius) {
       var dat = {
         y: -height,
         height: 2 * height
+      };
+      if (x1 < x2) {
+        dat.x = x1;
+        dat.width = x2 - x1;
+      }
+      else {
+        dat.x = x2;
+        dat.width = x1 - x2;
+      }
+      dat.r = radius;
+
+      return parent.createRect(dat);
+    },
+
+    // Make a thin rounded rectangle for the blast hit
+    make_blast_rect: function (parent, x1, x2, height) {
+      var dat = {
+        y: -(height * .5),
+        height:  height
+      };
+      if (x1 < x2) {
+        dat.x = x1;
+        dat.width = x2 - x1;
+      }
+      else {
+        dat.x = x2;
+        dat.width = x1 - x2;
+      }
+      dat.r = height;
+
+      return parent.createRect(dat);
+    },
+
+    // Make a thin rectangle for the pg feature
+    make_pg_rect: function (parent, x1, x2, height) {
+      var dat = {
+        y: -(height * .5),
+        height:  height
       };
       if (x1 < x2) {
         dat.x = x1;
@@ -419,9 +457,8 @@ define([
         color = 'rgb(240,240,240)';
       }
       else {
-        glyph = this.make_rect(row, x1, x2, height);
-
         if (feature.type === 'blast') {
+          glyph = this.make_blast_rect(row, x1, x2, height);
           var sat = Math.trunc(feature.blast_identity);
 
           var rgb = this.hsvToRgb(0, sat, 100);
@@ -429,17 +466,26 @@ define([
           color = 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
           // console.log("have blast feature " + feature.blast_identity + " " + rgb + " " + color)
         }
+	else if (feature.type === 'pseudogene') {
+	  glyph = this.make_pg_rect(row, x1, x2, height);
+	}
+	else {
+	  glyph = this.make_rect(row, x1, x2, height);
+	}
+	  
       }
 
       /**
        * Pinned features are red.
        */
+      var pinned = 0;
       if (feature.fid == row_data.pinned_peg && typeof feature.blast_identity !== 'undefined') {
         var sat = Math.trunc(feature.blast_identity);
 
         var rgb = this.hsvToRgb(0, sat, 100);
 
         color = 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
+	pinned = 1;
       }
 
       if (feature.type !== 'intergenic') {
@@ -453,7 +499,9 @@ define([
 
           if (this.selected_fids[feature.fid]) {
             glyph.setStroke({ width: 3, cap: 'round' });
-          }
+          } else if (pinned) {
+	    glyph.setStroke({ width: 2, cap: 'round' });
+	  }
 
           if (typeof feature.set_number !== 'undefined') {
             var t = row.createText({ text: feature.set_number, align: 'center' });
