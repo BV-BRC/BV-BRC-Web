@@ -554,7 +554,6 @@ define([
     // Some discrepancies:
     addGenomesFormFill: function (genome_id_list) {
       var genome_ids = genome_id_list;
-      debugger;
       if (genome_ids.length == 0) {
         return;
       }

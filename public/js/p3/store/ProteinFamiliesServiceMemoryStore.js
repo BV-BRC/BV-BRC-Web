@@ -101,6 +101,9 @@ define([
           case 'requestHeatmapData':
             this.pfState = value;
             var currentData = this.getHeatmapData();
+            if (!currentData) {
+              break;
+            }
             Topic.publish(this.topicId, 'updateHeatmapData', currentData);
             break;
           default:
@@ -111,20 +114,17 @@ define([
       this.currentFilter = JSON.parse(JSON.stringify(this.pfState.genomeFilterStatus));
     },
     conditionFilter: function (data) {
-
       if (this._filtered == undefined) { // first time: I don't think it's really used
         this._filtered = true;
       }
       var newData = [];
       var gfs = this.pfState.genomeFilterStatus;
-
       // var tsStart = window.performance.now();
       var keywordRegex = this.pfState.keyword.trim().toLowerCase().replace(/,/g, '~').replace(/\n/g, '~')
         .split('~')
         .map(function (k) { return k.trim(); });
-
+      console.log('conditionFilter');
       Object.keys(data).forEach(function (family) {
-
         var skip = false;
         family = data[family];
         // genomes
@@ -406,10 +406,16 @@ define([
         // re-draw heatmap
         var currentData = this.getHeatmapData();
         Topic.publish(this.topicId, 'updateHeatmapData', currentData);
+        // Topic.publish(this.topicId, 'requestHeatmapData');
+        // Topic.publish(this.topicId, 'hideLoadingMask');
       }));
     },
 
     getHeatmapData: function () {
+
+      if (!this.pfState) {
+        return null;
+      }
 
       var rows = [];
       var cols = [];
@@ -478,6 +484,7 @@ define([
       }
 
       var data = this.query({ 'familyType': this.pfState.familyType });
+
       // console.log('heatmap data', data);
 
       var familyOrderMap = {};
@@ -580,6 +587,7 @@ define([
 
       // var end = window.performance.now();
       // console.log('getHeatmapData() took: ', (end - start), "ms");
+
       return currentData;
     },
   });

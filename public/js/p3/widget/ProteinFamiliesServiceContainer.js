@@ -323,6 +323,7 @@ define([
           familyType: value
         });
         Topic.publish(this.topicId, 'setFamilyType', this.pfState); // subscribed in ProteinFamiliesServiceMemoryStore
+        Topic.publish(this.topicId, 'requestHeatmapData');
       }));
       domConstruct.place(cbType.domNode, familyTypePanel.containerNode, 'last');
 

@@ -168,7 +168,6 @@ define([
 
           conditionStatus[conditionId].setStatus(status);
         }, this);
-
         this.pfState = lang.mixin({}, this.pfState, {
           genomeFilterStatus: conditionStatus,
           clusterColumnOrder: []

@@ -16,6 +16,8 @@ define([
 ) {
 
   return declare([HeatmapContainerNew], {
+
+    /*
     cluster: function (param) {
       var p = param || { g: 2, e: 2, m: 'a' };
 
@@ -45,6 +47,7 @@ define([
 
         // re-draw heatmap
         Topic.publish(this.topicId, 'refreshHeatmap');
+        debugger;
       }), function (err) {
 
         Topic.publish(this.topicId, 'hideLoadingMask');
@@ -54,7 +57,77 @@ define([
           content: err.text || err
         }).show();
       });
+    },
+
+    formatData: function (data) {
+      if (!data) return;
+
+      if (data.columns.length == 0)  {
+        debugger;
+        new Confirmation({
+          title: 'No results',
+          content: '<div>No ' + data.colLabel + ' found.</div><br>',
+          cancelLabel: null,
+          onCancel: function () { this.hideAndDestroy(); },
+          onConfirm: function () { this.hideAndDestroy(); }
+        }).show();
+        return null;
+      }
+
+      if (data.rows.length == 0) {
+        new Confirmation({
+          title: 'No results',
+          content: '<div>No ' + data.rowLabel + ' found.</div><br>',
+          cancelLabel: null,
+          onCancel: function () { this.hideAndDestroy(); },
+          onConfirm: function () { this.hideAndDestroy(); }
+        }).show();
+        return null;
+      }
+
+      var rows = data.rows.map(function (r) {
+        return {
+          name: r.rowLabel,
+          id: r.rowID
+        };
+      });
+      var cols = data.columns.map(function (c) {
+        return {
+          name: c.colLabel,
+          id: c.colID,
+          distribution: c.distribution,
+          meta: {
+            id: c.colID
+          }
+        };
+      });
+
+      // get lists of vals for each column
+      var vals = cols.map(function (c) {
+        var hexStrs = c.distribution.match(/.{2}/g), // convert hex string to vals
+          vals = hexStrs.map(function (hex) { return  parseInt(hex, 16); });
+
+        delete c.distribution; // we no longer need the distribution
+        return vals;
+      });
+
+      // make pass of all column val data (i times, where i = number of rows)
+      var matrix = [];
+      vals = vals.filter(x => { return x !== null });
+      for (var i = 0; i < vals[0].length; i++) {
+        var row = [];
+        for (var j = 0; j < vals.length; j++) {
+          if (!vals[j]) {
+            debugger;
+          }
+          row.push(vals[j][i]);
+        }
+        matrix.push(row);
+      }
+
+      return { cols: cols, rows: rows, matrix: matrix };
     }
+    */
 
   });
 });
