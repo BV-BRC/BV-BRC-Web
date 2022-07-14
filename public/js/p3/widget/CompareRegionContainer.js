@@ -237,7 +237,7 @@ define([
       var label_region_size = domConstruct.create('label', { innerHTML: 'Region Size: ' });
       this.region_size = new Select({
         name: 'region_size',
-        value: 5000,
+        value: 10000,
         style: 'width: 100px; margin-right: 10px',
         options: [{
           value: 5000, label: '5,000bp'
