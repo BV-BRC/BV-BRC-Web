@@ -99,6 +99,7 @@ define([
       }
       else if (values.organism == 'viral') {
         values.perform_viral_annotation = true;
+        values.perform_viral_binning = true;
       }
       else if (values.organism == 'both') {
         values.perform_bacterial_annotation = true;
