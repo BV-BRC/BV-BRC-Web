@@ -237,8 +237,12 @@ define([
     increaseRows: function (targetTable, counter, counterWidget) {
       counter.counter += 1;
       if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == 'paired') {
-        this.metaspades.set('disabled', false);
-        this.metaspades.set('checked', true);
+        this.metaspades.set('disabled', true);
+        this.auto.set('checked', true);
+      }
+      else if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == 'single') {
+        this.metaspades.set('disabled', true);
+        this.auto.set('checked', true);
       }
       else if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == 'srr_accession') {
         this.metaspades.set('disabled', true);
@@ -246,7 +250,7 @@ define([
       }
       else {
         this.metaspades.set('disabled', true);
-        this.megahit.set('checked', true);
+        this.auto.set('checked', true);
       }
       if (typeof counterWidget !== 'undefined') {
         counterWidget.set('value', Number(counter.counter));
