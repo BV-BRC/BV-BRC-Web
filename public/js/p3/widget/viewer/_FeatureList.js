@@ -4,6 +4,7 @@ define([
   'dijit/layout/ContentPane',
   './TabViewerBase',
   '../FeatureListOverview', '../FeatureGridContainer',
+  '../CompareRegionContainer',
   '../../util/PathJoin', '../../util/QueryToEnglish'
 ], function (
   declare, lang,
@@ -11,6 +12,7 @@ define([
   ContentPane,
   TabViewerBase,
   Overview, FeatureGridContainer,
+  CompareRegionContainer,
   PathJoin, QueryToEnglish
 ) {
 
@@ -85,6 +87,7 @@ define([
       switch (active) {
         case 'overview':
         case 'features':
+        case 'compareRegionViewer':
           activeTab.set('state', this.state); // lang.mixin({},this.state));
           break;
         default:
@@ -135,8 +138,16 @@ define([
         disabled: false
       });
 
+      this.compareRegionViewer = new CompareRegionContainer({
+        title: 'Compare Region Viewer',
+        style: 'overflow-y:auto',
+        id: this.viewer.id + '_compareRegionViewer'
+      });
+
+
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.features);
+      this.viewer.addChild(this.compareRegionViewer);
     },
 
     onSetTotalFeatures: function (attr, oldVal, newVal) {

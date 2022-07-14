@@ -1,11 +1,13 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang',
   './_FeatureList', './TabViewerBase',
-  '../FeatureListOverview', '../GroupFeatureGridContainer'
+  '../FeatureListOverview', '../GroupFeatureGridContainer',
+  '../CompareRegionContainer'
 ], function (
   declare, lang,
   FeatureList, TabViewerBase,
-  Overview, GroupFeatureGridContainer
+  Overview, GroupFeatureGridContainer,
+  CompareRegionContainer
 ) {
 
   return declare([FeatureList], {
@@ -102,8 +104,15 @@ define([
         })
       });
 
+      this.compareRegionViewer = new CompareRegionContainer({
+        title: 'Compare Region Viewer',
+        style: 'overflow-y:auto',
+        id: this.viewer.id + '_compareRegionViewer'
+      });
+
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.features);
+      this.viewer.addChild(this.compareRegionViewer);
     }
   });
 });
