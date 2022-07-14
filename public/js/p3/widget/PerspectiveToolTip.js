@@ -74,7 +74,8 @@ define([
       ],
       FeatureList: [
         { label: 'Overview', link: 'overview' },
-        { label: 'Features', link: 'features' }
+        { label: 'Features', link: 'features' },
+        { label: 'Compare regions', link: 'feature' }
       ]
     },
 

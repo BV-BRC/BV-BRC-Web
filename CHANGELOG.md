@@ -1,4 +1,9 @@
 # Changelog
+## 3.16.2 - July 14, 2022
+* [Update] Add compare regions to feature group and feature list pages. Adjust width back to the original default. [PR #352](https://github.com/BV-BRC/bvbrc_website/pull/352)
+* [Bug] Fix bug with viral-only setting in metagenomic binning service [Commit #8e10923](https://github.com/BV-BRC/bvbrc_website/commit/8e109238b6de678b2323663e8fa56d706b5dc4ad)
+* [Feature] Set Metagenomic binning default parameter to auto for paired libraries, single library and srr runs. [Commit #c7c8cf8](https://github.com/BV-BRC/bvbrc_website/commit/58c2ec43426569866bbc6708f3b6a52331259ae5)
+
 ## 3.16.1 - July 8, 2022
 * [Bug] Fixing an issue with rerun functionality [PR #348](https://github.com/BV-BRC/bvbrc_website/pull/348)
 

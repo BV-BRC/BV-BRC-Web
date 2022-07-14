@@ -99,6 +99,7 @@ define([
       }
       else if (values.organism == 'viral') {
         values.perform_viral_annotation = true;
+        values.perform_viral_binning = true;
       }
       else if (values.organism == 'both') {
         values.perform_bacterial_annotation = true;
@@ -236,9 +237,13 @@ define([
     // counter is a widget for requirements checking
     increaseRows: function (targetTable, counter, counterWidget) {
       counter.counter += 1;
-      if (this.libraryStore.data.length == 1 && (this.libraryStore.data[0]._type == 'paired' || this.libraryStore.data[0]._type == 'srr_accession')) {
-        this.metaspades.set('disabled', false);
-        this.metaspades.set('checked', true);
+      if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == 'paired') {
+        this.metaspades.set('disabled', true);
+        this.auto.set('checked', true);
+      }
+      else if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == 'single') {
+        this.metaspades.set('disabled', true);
+        this.auto.set('checked', true);
       }
       else if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == 'srr_accession') {
         this.metaspades.set('disabled', true);
@@ -246,7 +251,7 @@ define([
       }
       else {
         this.metaspades.set('disabled', true);
-        this.megahit.set('checked', true);
+        this.auto.set('checked', true);
       }
       if (typeof counterWidget !== 'undefined') {
         counterWidget.set('value', Number(counter.counter));

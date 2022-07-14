@@ -43,46 +43,104 @@ define([
     },
 
     onSetState: function (attr, oldVal, state) {
-      if (!state) {
+      console.log("onSetState", attr, oldVal, state);
+      if (!state)
+      {
         return;
       }
 
-      if (!state.feature) {
-        return;
+      if (state.feature && state.feature.patric_id)
+      {
+	if (this.patric_id == state.feature.patric_id) {
+	  return;
+	}
+	this.patric_id = state.feature.patric_id;
       }
 
-      if (this.patric_id == state.feature.patric_id) {
-        return;
-      }
-      this.patric_id = state.feature.patric_id;
-
+      /*
+       * Determine our view mode. If we have a state.feature we are viewing
+       * a single feature. (We should also see widgetClass == p3/widget/viewerFeature)
+       *
+       * Otherwise we need to look at 
+       */
 
       if (this.viewer) {
-        // this.viewer.set('state', state);
-        if (state.feature.feature_type === 'CDS') {
-          this.render(state.feature.patric_id, 10000, 10, 'pgfam', 'representative+reference');
-        } else {
-          new Dialog({
-            title: '',
-            content: 'Compare Region Viewer is only available for CDS features.',
-            style: 'width: 400px'
-          }).show();
-        }
-      }
 
-      this._set('state', state);
-    },
+	switch (state.widgetClass) {
+	  
+	  case 'p3/widget/viewer/FeatureGroup':
+	  {
+            var window = this.region_size.get('value');
+            var n_genomes = this.n_genomes.get('value');
+            var method = this.method.get('value');
+            var filter = 'feature_query';
+	    
+            this.render('', window, n_genomes, method, filter, state.search);
+	  }
 
-    render: function (peg, window, n_genomes, method, filter) {
+	  break;
+	  
+	  case 'p3/widget/viewer/FeatureList':
+	  {
+            var window = this.region_size.get('value');
+            var n_genomes = this.n_genomes.get('value');
+            var method = this.method.get('value');
+            var filter = 'feature_query';
+	    
+            this.render('', window, n_genomes, method, filter, state.search);
+	  }
+
+	  break;
+
+	  case 'p3/widget/viewer/Feature':
+	  {
+	    if (!state.feature)
+	    {
+	      console.log("Skipping due to missing feature");
+	      return;
+	    }
+	    if (state.feature.feature_type === 'CDS')
+	    {
+              var window = this.region_size.get('value');
+              var n_genomes = this.n_genomes.get('value');
+              var method = this.method.get('value');
+              var filter = this.g_filter.get('value');
+	      
+	      console.log("initial render", state.feature.patric_id, window, n_genomes, method, filter);
+              this.render(state.feature.patric_id, window, n_genomes, method, filter);
+              // this.render(state.feature.patric_id, 10000, 10, 'pgfam', 'representative+reference');
+            }
+	    else
+	    {
+              new Dialog({
+		title: '',
+		content: 'Compare Region Viewer is only available for CDS features.',
+		style: 'width: 400px'
+              }).show();
+            }
+	  }
+	  break;
+	  }
+	}
+
+	this._set('state', state);
+      },
+
+    render: function (peg, window, n_genomes, method, filter, val) {
       this.loadingMask.show();
+      console.log("RENDER:", peg, method, filter, val);
       var options = {};
       if (filter == 'genome_group') {
-	  options.genome_group = this.genome_group_selector.get('value');
+	options.genome_group = this.genome_group_selector.get('value');
       } else if (filter == 'feature_group') {
-	  options.feature_group = this.feature_group_selector.get('value');
+	options.feature_group = this.feature_group_selector.get('value');
       }
-	console.log(options);
-
+      else if (filter == 'feature_query') {
+	options.feature_query = val;
+      }
+      
+      console.log(options);
+      
       this.service.compare_regions_for_peg2(
         peg, window, n_genomes, method, filter, options,
         function (data) {
@@ -300,7 +358,14 @@ console.log("enable feature ", this.feature_group_selector);
           var method = this.method.get('value');
           var filter = this.g_filter.get('value');
 
-          this.render(this.patric_id, window, n_genomes, method, filter);
+	  //
+	  // Use the state-change mechanism to implement the update since that
+	  // is where we have the logic to determine the correct render() parameters
+	  // based on in which page the compare region is embedded.
+	  //
+	  this._set('state', structuredClone(this.state));
+	  
+          // this.render(this.patric_id, window, n_genomes, method, filter);
         })
       });
       domConstruct.place(btn_submit.domNode, filterPanel.containerNode, 'last');
