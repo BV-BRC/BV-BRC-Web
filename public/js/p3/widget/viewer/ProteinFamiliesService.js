@@ -43,9 +43,9 @@ define([
           }
           this.state.genome_ids = genome_ids.map(String); // Used in action bar functions
           this.loaded = true;
-          this.state = state;
+          // this.state = state;
           this.serviceContainer.setLoaded();
-          this.setContainerState(this.state);
+          this.serviceContainer.onSetState(null, null, state); // set('state',state) not working here
         }));
       }
     },
@@ -62,15 +62,17 @@ define([
 
     postCreate: function () {
       console.log('prot fams postcreate');
-      this.serviceContainer = new ServiceContainer({ region: 'center', state: this.state, loaded: false });
+      // this.serviceContainer = new ServiceContainer({ region: 'center', state: this.state, loaded: false });
+      this.serviceContainer = new ServiceContainer({ region: 'center', loaded: false });
       this.addChild(this.serviceContainer);
       this.inherited(arguments);
-    },
-
+    }
+    /*
     setContainerState: function (state) {
       if (this.serviceContainer) {
         this.serviceContainer.onSetState(null, null, state);
       }
     }
+    */
   });
 });

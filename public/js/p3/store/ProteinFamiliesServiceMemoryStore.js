@@ -75,7 +75,6 @@ define([
 
       this.currentType = null;
       // TODO: figfam
-
       Topic.subscribe(this.topicId, lang.hitch(this, function () {
         // console.log("received:", arguments);
         var key = arguments[0],
@@ -85,9 +84,10 @@ define([
           case 'setFamilyType':
             this.pfState = value;
             this._filtered = null;
-
+            console.log('pfState value setFamilyType: ', value);
             this.setData(this.query({ 'familyType': this.pfState.familyType }));
             Topic.publish(this.topicId, 'updatePfState', this.pfState);
+            console.log('pfState2 = ', this.pfState);
             var currentData = this.getHeatmapData();
             Topic.publish(this.topicId, 'updateHeatmapData', currentData);
             break;
@@ -101,9 +101,6 @@ define([
           case 'requestHeatmapData':
             this.pfState = value;
             var currentData = this.getHeatmapData();
-            if (!currentData) {
-              break;
-            }
             Topic.publish(this.topicId, 'updateHeatmapData', currentData);
             break;
           default:
@@ -229,6 +226,7 @@ define([
         if (window.Worker) {
           Topic.publish(this.topicId, 'showLoadingMask');
           this.loadGenomeDataBackground().then(lang.hitch(this, function (res) {
+            debugger;
             Topic.publish(this.topicId, 'updatePfState', this.pfState);
             Topic.publish(this.topicId, 'applyConditionFilterRefresh', this.pfState);
             var currentData = this.getHeatmapData();
@@ -248,6 +246,7 @@ define([
     },
 
     query: function (query, opts) {
+      console.log('pfState = ', this.pfState, this);
       console.log('query = ', query);
       console.log('opts = ', opts);
       // add fields if needed

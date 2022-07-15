@@ -73,7 +73,7 @@ define([
         // wait for directory contents to load
         return;
       }
-      if (state) {
+      if (!this.firstView) {
         this.state = state;
         this.onFirstView();
       }
@@ -130,6 +130,7 @@ define([
 
     loadWorkspaceData: function () {
 
+      // debugger;
       this.state.data['table'] = [];
 
       // set data in state
@@ -322,6 +323,7 @@ define([
         this.pfState = lang.mixin({}, this.pfState, {
           familyType: value
         });
+        console.log('pfState', JSON.stringify(this.pfState));
         Topic.publish(this.topicId, 'setFamilyType', this.pfState); // subscribed in ProteinFamiliesServiceMemoryStore
         Topic.publish(this.topicId, 'requestHeatmapData');
       }));
