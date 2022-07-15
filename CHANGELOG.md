@@ -1,4 +1,7 @@
 # Changelog
+## 3.17.0 - July 15, 2022
+* [Release] Production Release
+
 ## 3.16.3 - July 15, 2022
 * [Enhancement] Change label to be "All genomes" since private genomes are included. [PR #353](https://github.com/BV-BRC/bvbrc_website/pull/353)
 
