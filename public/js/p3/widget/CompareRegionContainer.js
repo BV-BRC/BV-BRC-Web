@@ -309,7 +309,7 @@ define([
         options: [{
           value: 'representative+reference', label: 'Reference & Representative'
         }, {
-          value: 'all', label: 'All public genomes'
+          value: 'all', label: 'All genomes'
         }, {
 	  value: 'genome_group', label: 'Selected genome group'
         }, {
