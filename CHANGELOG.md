@@ -1,5 +1,6 @@
 # Changelog
 ## 3.17.1 - July 17, 2022
+* [Update] Update SARS-CoV-2 reference tree display - Iteration 17 [Commit #4d04962](https://github.com/BV-BRC/bvbrc_website/commit/4d04962781571fe57d93c72bc6d17c592e5b4e2e)
 * [Bug] Fix view of jobs that were copied into public workspace [PR #355](https://github.com/BV-BRC/bvbrc_website/pull/355)
 * [Bug] Fix bug in viewing homology output in public workspace [PR #354](https://github.com/BV-BRC/bvbrc_website/pull/355)
 
