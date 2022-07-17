@@ -1,4 +1,8 @@
 # Changelog
+## 3.17.1 - July 17, 2022
+* [Bug] Fix view of jobs that were copied into public workspace [PR #355](https://github.com/BV-BRC/bvbrc_website/pull/355)
+* [Bug] Fix bug in viewing homology output in public workspace [PR #354](https://github.com/BV-BRC/bvbrc_website/pull/355)
+
 ## 3.17.0 - July 15, 2022
 * [Release] Production Release
 
