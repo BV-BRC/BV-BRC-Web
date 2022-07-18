@@ -1,4 +1,8 @@
 # Changelog
+## 3.17.2 - July 18, 2022
+* [Bug] Bugfix for compare regions [PR #356](https://github.com/BV-BRC/bvbrc_website/pull/356)
+* [Enhancement] Add 'BV-BRC Workshop' link to workspaces menu [Commit #4c63416](https://github.com/BV-BRC/bvbrc_website/commit/4c6341609277a10641a2f76287364a34f52842fa)
+
 ## 3.17.1 - July 17, 2022
 * [Update] Update SARS-CoV-2 reference tree display - Iteration 17 [Commit #4d04962](https://github.com/BV-BRC/bvbrc_website/commit/4d04962781571fe57d93c72bc6d17c592e5b4e2e)
 * [Bug] Fix view of jobs that were copied into public workspace [PR #355](https://github.com/BV-BRC/bvbrc_website/pull/355)
