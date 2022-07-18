@@ -51,9 +51,9 @@ define([
 
       if (state.feature && state.feature.patric_id)
       {
-	if (this.patric_id == state.feature.patric_id) {
-	  return;
-	}
+//	if (this.patric_id == state.feature.patric_id) {
+//	  return;
+//	}
 	this.patric_id = state.feature.patric_id;
       }
 
