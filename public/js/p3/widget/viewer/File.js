@@ -133,7 +133,7 @@ define([
 	        if (this.file.metadata.name == 'GenomeReport.html')
 	        {
 	          iframe_contents = iframe_contents.replaceAll('="https://www.patricbrc.org/view/Feature',
-							       '="https://www.bv-brc.org/view/Feature');
+							       '="' + window.App.appBaseURL + '/view/Feature');
 		}
 
                 var bookmark_regex = /<a\s+(?:[^>]*?\s+)?href=(["'])(#.*?)\1/gi;
