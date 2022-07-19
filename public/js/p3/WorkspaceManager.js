@@ -142,7 +142,7 @@ define([
       reads: {
         label: 'Reads',
         formats: ['.fq', '.fastq', '.fa', '.fasta', '.gz', '.bz2'],
-        description: 'Reads must be in fasta or fastq format (typically .fa, .fasta, .fa, .fastq).  Genbank formatted files are not currently accepted.'
+        description: 'Reads must be in fasta or fastq format (typically .fa, .fasta, .fq, .fastq).  Genbank formatted files are not currently accepted.'
       },
       svg: {
         label: 'SVG Image',
