@@ -1,4 +1,9 @@
 # Changelog
+## 3.17.3 - July 19, 2022
+* [Update] Rewrite to currently configured base url [PR #360](https://github.com/BV-BRC/bvbrc_website/pull/360)
+* [Bug] Fix a typo [PR #359](https://github.com/BV-BRC/bvbrc_website/pull/359)
+* [Enahncement] Patch up URLs in the genome report. [PR #358](https://github.com/BV-BRC/bvbrc_website/pull/358)
+
 ## 3.17.2 - July 18, 2022
 * [Bug] Bugfix for compare regions [PR #356](https://github.com/BV-BRC/bvbrc_website/pull/356)
 * [Enhancement] Add 'BV-BRC Workshop' link to workspaces menu [Commit #4c63416](https://github.com/BV-BRC/bvbrc_website/commit/4c6341609277a10641a2f76287364a34f52842fa)
