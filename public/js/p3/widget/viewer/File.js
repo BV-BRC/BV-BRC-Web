@@ -130,6 +130,12 @@ define([
                 domStyle.set(this.viewer.containerNode, 'overflow', 'hidden');
                 domConstruct.place(iframe, this.viewer.containerNode);
                 var iframe_contents = this.file.data;
+	        if (this.file.metadata.name == 'GenomeReport.html')
+	        {
+	          iframe_contents = iframe_contents.replaceAll('="https://www.patricbrc.org/view/Feature',
+							       '="https://www.bv-brc.org/view/Feature');
+		}
+
                 var bookmark_regex = /<a\s+(?:[^>]*?\s+)?href=(["'])(#.*?)\1/gi;
                 if (iframe_contents.search(bookmark_regex)) {
                   iframe_contents = iframe_contents.replace(/<a\s+(?:[^>]*?\s+)?href=(["'])(#.*?)\1/gi, '$&  onclick="return false;"');
