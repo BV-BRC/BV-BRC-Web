@@ -12,7 +12,57 @@ define([
   searchToQuery, searchToQueryWithOr, searchToQueryWithQuoteOr, searchToQueryWithQuoteAnd
 ) {
 
+  function extractGenomeIds(query) {
+    var ids = new Set(query.match(/\d+\.\d+/g));
+    ids = [...ids];
+    return ids;
+  }
+  function extractFeatureIds(query) {
+    var ids = new Set(query.match(/fig\|\d+\.\d+\.\w+\.\d+/g));
+    ids = [...ids];
+    return ids;
+  }
   function processQuery(query, searchOption) {
+
+    var featureIds = extractFeatureIds(query);
+    var genomeIds = extractGenomeIds(query);
+
+    if (searchOption != "option_feature_ids" && searchOption != "option_genome_ids")
+    {
+      if (featureIds.length == 1)
+      {
+	Topic.publish('/navigate', { href: '/view/Feature/' + featureIds[0] });
+	return;
+      }
+      else if (featureIds.length > 1)
+      {
+	searchOption = "option_feature_ids";
+      }
+      else if (genomeIds.length == 1)
+      {
+	Topic.publish('/navigate', { href: '/view/Genome/' + genomeIds[0] });
+	return;
+      }
+      else if (genomeIds.length > 1)
+      {
+	searchOption = "option_genome_ids";
+      }
+    }
+    
+    if (searchOption == "option_genome_ids")
+    {
+      var idlist = genomeIds.join(",")
+      q = "eq(*,*)&genome(in(genome_id,(" + idlist + ")))";
+      return { 'query': q, 'effectiveOption' : searchOption };
+    }
+
+    if (searchOption == "option_feature_ids")
+    {
+      var idlist = featureIds.map(function(x) { return x.replace("|", "%7C") }).join(",");
+      q = "(in(patric_id,(" + idlist + ")))";
+      return { 'query': q, 'effectiveOption' : searchOption };
+    }
+    
     // console.log("processQuery query: ", query, "searchOption: ", searchOption);
     // replace some special characters
     query = query.replace(/'/g, '').replace(/:/g, ' ');
@@ -60,9 +110,99 @@ define([
       q = searchToQueryWithQuoteAnd(query);
     }
 
-    return q;
+    return { 'query': q, 'effectiveOption' : searchOption };
   }
 
+  function dispatchQuery() {
+    var query = this.searchInput.get('value').replace(/^\s+|\s+$/g, '');
+    var searchFilter = this.searchFilter.get('value');
+    var searchOption = this.searchOption.get('value');
+
+    if (!query || !query.match(/[a-z0-9]/i)) {
+      return;
+    }
+    
+    var ret = processQuery(query, searchOption);
+    var q = ret.query;
+    searchOption = ret.effectiveOption;
+
+
+    //
+    // If we are explicitly searching for genome ids, force the
+    // search filter.
+    //
+
+    if (searchOption == "option_genome_ids")
+    {
+      searchFilter = "genomes";
+    }
+    else if (searchOption == "option_feature_ids")
+    {
+      searchFilter = "genome_features";
+    }
+
+    if (q == null)
+    {
+      return;
+    }
+
+    switch (searchFilter) {
+    case 'everything':
+      Topic.publish('/navigate', { href: '/search/?' + q });
+      break;
+    case 'sp_genes':
+      Topic.publish('/navigate', { href: '/view/SpecialtyGeneList/?' + q });
+      break;
+    case 'genome_features':
+      Topic.publish('/navigate', { href: '/view/FeatureList/?' + q + '#view_tab=features&defaultSort=-score' });
+      break;
+    case 'genome_sequences':
+      Topic.publish('/navigate', { href: '/view/SequenceList/?' + q });
+      break;
+    case 'strains':
+      Topic.publish('/navigate', { href: '/view/StrainList/?' + q });
+      break;
+    case 'genomes':
+      Topic.publish('/navigate', { href: '/view/GenomeList/?' + q });
+      break;
+    case 'protein_features':
+      Topic.publish('/navigate', { href: '/view/ProteinFeaturesList/?' + q });
+      break;
+    case 'protein_structures':
+      Topic.publish('/navigate', { href: '/view/ProteinStructureList/?' + q });
+      break;
+    case 'pathways':
+      Topic.publish('/navigate', { href: '/view/PathwayList/?' + q });
+      break;
+    case 'subsystems':
+      Topic.publish('/navigate', { href: '/view/SubsystemList/?' + q });
+      break;
+    case 'surveillance':
+      Topic.publish('/navigate', { href: '/view/SurveillanceList/?' + q });
+      break;
+    case 'serology':
+      Topic.publish('/navigate', { href: '/view/SerologyList/?' + q });
+      break;
+    case 'experiments':
+      Topic.publish('/navigate', { href: '/view/ExperimentList/?' + q });
+      break;
+    case 'taxonomy':
+      Topic.publish('/navigate', { href: '/view/TaxonList/?' + q });
+      break;
+    case 'antibiotic':
+      Topic.publish('/navigate', { href: '/view/AntibioticList/?' + q });
+      break;
+    case 'epitope':
+      Topic.publish('/navigate', { href: '/view/EpitopeList/?' + q });
+      break;
+    default:
+      Topic.publish('/navigate', { href: '/search/' + (q ? ('?' + q) : '') });
+      // console.log('Do Search: ', searchFilter, query);
+    }
+
+    // this.searchInput.set("value", '');
+  }
+  
   return declare([WidgetBase, Templated, WidgetsInTemplate, FocusMixin], {
     templateString: template,
     baseClass: 'GlobalSearch',
@@ -75,85 +215,8 @@ define([
 
     onKeypress: function (evt) {
       if (evt.charOrCode == keys.ENTER) {
-        var query = this.searchInput.get('value').replace(/^\s+|\s+$/g, '');
-        var searchFilter = this.searchFilter.get('value');
-        var searchOption = this.searchOption.get('value');
-        if (!query || !query.match(/[a-z0-9]/i)) {
-          return;
-        }
-
-        console.log('Search Filter: ', searchFilter, 'searchOption=', searchOption);
-        var q = processQuery(query, searchOption);
-        console.log('Search query q=: ', q);
-
-        // var clear = false;
-        switch (searchFilter) {
-          case 'everything':
-            Topic.publish('/navigate', { href: '/search/?' + q });
-            // clear = true;
-            break;
-          case 'sp_genes':
-            Topic.publish('/navigate', { href: '/view/SpecialtyGeneList/?' + q });
-            // clear = true;
-            break;
-          case 'genome_features':
-            Topic.publish('/navigate', { href: '/view/FeatureList/?' + q + '#view_tab=features&defaultSort=-score' });
-            // clear = true;
-            break;
-          case 'genome_sequences':
-            Topic.publish('/navigate', { href: '/view/SequenceList/?' + q });
-            // clear = true;
-            break;
-          case 'strains':
-            Topic.publish('/navigate', { href: '/view/StrainList/?' + q });
-            break;
-          case 'genomes':
-            Topic.publish('/navigate', { href: '/view/GenomeList/?' + q + '#view_tab=genomes&defaultSort=-score' });
-            // clear = true;
-            break;
-          case 'protein_features':
-            Topic.publish('/navigate', { href: '/view/ProteinFeaturesList/?' + q });
-            break;
-          case 'protein_structures':
-            Topic.publish('/navigate', { href: '/view/ProteinStructureList/?' + q });
-            break;
-          case 'pathways':
-            Topic.publish('/navigate', { href: '/view/PathwayList/?' + q });
-            break;
-          case 'subsystems':
-            Topic.publish('/navigate', { href: '/view/SubsystemList/?' + q });
-            break;
-          case 'surveillance':
-            Topic.publish('/navigate', { href: '/view/SurveillanceList/?' + q });
-            break;
-          case 'serology':
-            Topic.publish('/navigate', { href: '/view/SerologyList/?' + q });
-            break;
-          case 'experiments':
-            Topic.publish('/navigate', { href: '/view/ExperimentList/?' + q });
-            // clear = true;
-            break;
-          case 'taxonomy':
-            Topic.publish('/navigate', { href: '/view/TaxonList/?' + q });
-            // clear = true;
-            break;
-          case 'antibiotic':
-            Topic.publish('/navigate', { href: '/view/AntibioticList/?' + q });
-            // clear = true;
-            break;
-          case 'epitope':
-            Topic.publish('/navigate', { href: '/view/EpitopeList/?' + q });
-            // clear = true;
-            break;
-          default:
-            console.log('Do Search: ', searchFilter, query);
-        }
-
-        // disabled for now per #978
-        // if(clear){
-        // this.searchInput.set("value", '');
-        // }
-
+	lang.hitch(this, dispatchQuery)();
+	
         on.emit(this.domNode, 'dialogAction', { action: 'close', bubbles: true });
 
         // log GA
@@ -164,70 +227,7 @@ define([
       }
     },
     onClickAdvanced: function (evt) {
-      var query = this.searchInput.get('value').replace(/^\s+|\s+$/g, '');
-      var searchFilter = this.searchFilter.get('value');
-      var searchOption = this.searchOption.get('value');
-
-      if (!query || !query.match(/[a-z0-9]/i)) {
-        return;
-      }
-
-      var q = processQuery(query, searchOption);
-      switch (searchFilter) {
-        case 'everything':
-          Topic.publish('/navigate', { href: '/search/?' + q });
-          break;
-        case 'sp_genes':
-          Topic.publish('/navigate', { href: '/view/SpecialtyGeneList/?' + q });
-          break;
-        case 'genome_features':
-          Topic.publish('/navigate', { href: '/view/FeatureList/?' + q + '#view_tab=features&defaultSort=-score' });
-          break;
-        case 'genome_sequences':
-          Topic.publish('/navigate', { href: '/view/SequenceList/?' + q });
-          break;
-        case 'strains':
-          Topic.publish('/navigate', { href: '/view/StrainList/?' + q });
-          break;
-        case 'genomes':
-          Topic.publish('/navigate', { href: '/view/GenomeList/?' + q });
-          break;
-        case 'protein_features':
-          Topic.publish('/navigate', { href: '/view/ProteinFeaturesList/?' + q });
-          break;
-        case 'protein_structures':
-          Topic.publish('/navigate', { href: '/view/ProteinStructureList/?' + q });
-          break;
-        case 'pathways':
-          Topic.publish('/navigate', { href: '/view/PathwayList/?' + q });
-          break;
-        case 'subsystems':
-          Topic.publish('/navigate', { href: '/view/SubsystemList/?' + q });
-          break;
-        case 'surveillance':
-          Topic.publish('/navigate', { href: '/view/SurveillanceList/?' + q });
-          break;
-        case 'serology':
-          Topic.publish('/navigate', { href: '/view/SerologyList/?' + q });
-          break;
-        case 'experiments':
-          Topic.publish('/navigate', { href: '/view/ExperimentList/?' + q });
-          break;
-        case 'taxonomy':
-          Topic.publish('/navigate', { href: '/view/TaxonList/?' + q });
-          break;
-        case 'antibiotic':
-          Topic.publish('/navigate', { href: '/view/AntibioticList/?' + q });
-          break;
-        case 'epitope':
-          Topic.publish('/navigate', { href: '/view/EpitopeList/?' + q });
-          break;
-        default:
-          Topic.publish('/navigate', { href: '/search/' + (q ? ('?' + q) : '') });
-          // console.log('Do Search: ', searchFilter, query);
-      }
-
-      // this.searchInput.set("value", '');
+      lang.hitch(this, dispatchQuery)();
     },
     onInputChange: function (val) {
 
