@@ -1,4 +1,7 @@
 # Changelog
+## 3.17.4 - July 27, 2022
+* [Update] Update SARS-CoV-2 Tracker - July 2022 [Commit #0d82d11](https://github.com/BV-BRC/bvbrc_website/commit/0d82d1198e5a3b8666e7b3a0a469d7bdd80b220f)
+
 ## 3.17.3 - July 19, 2022
 * [Update] Rewrite to currently configured base url [PR #360](https://github.com/BV-BRC/bvbrc_website/pull/360)
 * [Bug] Fix a typo [PR #359](https://github.com/BV-BRC/bvbrc_website/pull/359)
