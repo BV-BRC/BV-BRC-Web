@@ -118,7 +118,7 @@ define([
       var select_lineage = new Select({
         name: 'selectLoC',
         id: 'selectLoC',
-        options: ['Lineages', 'B.1.617.2', 'BA.1', 'BA.2', 'BA.2.12.1', 'BA.3', 'BA.4', 'BA.5', 'B.1.1.7', 'B.1.351', 'P.1', 'B.1.427/B.1.429', 'B.1.525', 'B.1.526', 'B.1.617.1', 'B.1.617.3', 'B.1.621', 'P.2'].map((el) => { return { 'label': el, 'value': el } }),
+        options: ['Lineages', 'B.1.617.2', 'BA.1', 'BA.2', 'BA.2.12.1', 'BA.2.75', 'BA.3', 'BA.4', 'BA.5', 'B.1.1.7', 'B.1.351', 'P.1', 'B.1.427/B.1.429', 'B.1.525', 'B.1.526', 'B.1.617.1', 'B.1.617.3', 'B.1.621', 'P.2'].map((el) => { return { 'label': el, 'value': el } }),
         style: 'width: 200px; margin: 5px 0'
       });
       this.select_lineage = select_lineage;
@@ -218,7 +218,7 @@ define([
       'BA.2': {
         'Lineage': 'BA.2',
         'WHO name': 'Omicron',
-        'WHO classification': 'VUM',
+        'WHO classification': 'VOC',
         'PANGO lineage': '<a href="https://cov-lineages.org/global_report_BA.2.html" target=_blank>BA.2</a>',
         'NextStrain lineage': '21L (Omicron)',
         'Emergence location': 'Southern Africa',
@@ -233,7 +233,7 @@ define([
       'BA.2.12.1': {
         'Lineage': 'BA.2.12.1',
         'WHO name': 'Omicron',
-        'WHO classification': 'VUM',
+        'WHO classification': 'VOC',
         'PANGO lineage': '<a href="https://cov-lineages.org/global_report_BA.2.html" target=_blank>BA.2</a>',
         'NextStrain lineage': '21C (Omicron)',
         'Emergence location': 'Canada/USA',
@@ -245,10 +245,25 @@ define([
 
         ]
       },
+      'BA.2.75': {
+        'Lineage': 'BA.2.75',
+        'WHO name': 'Omicron',
+        'WHO classification': 'VOC',
+        'PANGO lineage': '<a href="https://cov-lineages.org/global_report_BA.2.75.html" target=_blank>BA.2.75</a>',
+        'NextStrain lineage': '21D (Omicron)',
+        'Emergence location': 'India',
+        'Emergence date': 'June 2022',
+        'Amino acid substitutions vs Wuhan-Hu-1: Spike': 'T19I, L24del, P25del, P26del, A27S, G142D, K147E, W152R, F157L, I210V, V213G, G257S, G339H, S371F, S373P, S375F, T376A, D405N, R408S, K417N, N440K, G446S, N460K, S477N, T478K, E484A, R493Q, Q498R, N501Y, Y505H, D614G, H655Y, N679K, P681H, N764K, D796Y, Q954H, N969K',
+        'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike': 'nsp1: S135R; nsp3: T24I, S403L, G489S, P822S; nsp4: L264F, T327I, L438F, T492I; nsp5: P132H; nsp6: S106del, G107del, F108del; nsp8: N118S; nsp12: P323L, G671S; nsp13: R392C; nsp14: I42V; nsp15: T112I; ORF3a:T223I; E:T9I, T11A; M:Q19E, A63T; ORF6:D61L; N:P13L, E31del, R32del, S33del, R203K, G204R, S413R',
+        'Representative strain link': '<a href="https://www.ncbi.nlm.nih.gov/nuccore/ON990685" target=_blank>SARS-CoV-2/human/USA/IL-CDC-STM-G6D8GUH6S/2022</a>',
+        'Relevant publications': [
+          '<a href="https://github.com/cov-lineages/pango-designation/issues/773" target=_blank>https://github.com/cov-lineages/pango-designation/issues/773</a>',
+        ]
+      },
       'BA.3': {
         'Lineage': 'BA.3',
         'WHO name': 'Omicron',
-        'WHO classification': 'VUM',
+        'WHO classification': 'VOC',
         'PANGO lineage': '<a href="https://cov-lineages.org/global_report_BA.3.html" target=_blank>BA.3</a>',
         'NextStrain lineage': '22K (Omicron)',
         'Emergence location': 'Southern Africa',
@@ -263,7 +278,7 @@ define([
       'BA.4': {
         'Lineage': 'BA.4',
         'WHO name': 'Omicron',
-        'WHO classification': 'VUM',
+        'WHO classification': 'VOC',
         'PANGO lineage': '<a href="https://cov-lineages.org/global_report_BA.4.html" target=_blank>BA.4</a>',
         'NextStrain lineage': '22A (Omicron)',
         'Emergence location': 'Southern Africa',
@@ -278,7 +293,7 @@ define([
       'BA.5': {
         'Lineage': 'BA.5',
         'WHO name': 'Omicron',
-        'WHO classification': 'VUM',
+        'WHO classification': 'VOC',
         'PANGO lineage': '<a href="https://cov-lineages.org/global_report_BA.5.html" target=_blank>BA.5</a>',
         'NextStrain lineage': '22B (Omicron)',
         'Emergence location': 'Southern Africa',
