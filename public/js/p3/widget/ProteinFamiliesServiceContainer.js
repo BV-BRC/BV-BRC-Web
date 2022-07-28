@@ -26,7 +26,7 @@ define([
     // - This container contains the tables and switch between heatmap view and table view
 
     constructor: function (options) {
-      this.topicId = 'plfam';
+      this.topicId = 'pgfam';
 
       Topic.subscribe(this.topicId, lang.hitch(this, function () {
         var key = arguments[0],
@@ -297,13 +297,11 @@ define([
 
       var cbType = this.family_type_selector = new Select({
         name: 'familyType',
-        value: 'plfam', // default value on load
+        value: 'pgfam', // default value on load
         options: [{
           value: 'plfam', label: 'PATRIC genus-specific families (PLfams)'
         }, {
           value: 'pgfam', label: 'PATRIC cross-genus families (PGfams)'
-        }, {
-          value: 'figfam', label: 'FIGFam'
         }]
       });
       cbType.on('change', lang.hitch(this, function (value) {

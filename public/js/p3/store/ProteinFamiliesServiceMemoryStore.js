@@ -11,7 +11,7 @@ define([
 ) {
 
   var pfStateDefault = {
-    familyType: 'plfam', // default
+    familyType: 'pgfam', // default
     heatmapAxis: '',
     genomeIds: [],
     genomeFilterStatus: {},
@@ -251,6 +251,7 @@ define([
       console.log('query = ', query);
       console.log('opts = ', opts);
       // add fields if needed
+      // TODO: unnecessary, can be removed
       if (query === '' || query === undefined) {
         query = { 'familyType': this.pfState.familyType };
       }
@@ -266,6 +267,7 @@ define([
       if (query.familyType === 'plfam') {
         data = this.plfam_data;
       }
+      // TODO: issues with filtering
       data = this.conditionFilter(data);
       var total_length = data.length;
       // if opts.sort, apply remaining filters
@@ -277,6 +279,7 @@ define([
           data = data.sort((a, b) => (a[sort_field] > b[sort_field]) ? 1 : -1);
         }
       }
+      // TODO: this is why the heatmap is showing only 200 genes
       var start = 0;
       var count = 200;
       if (opts && opts.start) {
@@ -477,7 +480,7 @@ define([
         opts.sort = this.pfState.columnSort;
       }
 
-      var data = this.query({ 'familyType': this.pfState.familyType });
+      var data = this.query({ 'familyType': this.pfState.familyType }, { 'selectAll': true });
       // console.log('heatmap data', data);
 
       var familyOrderMap = {};
