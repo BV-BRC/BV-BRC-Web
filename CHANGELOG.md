@@ -1,4 +1,8 @@
 # Changelog
+## 3.17.5 - July 28, 2022
+* [Enhancement] heatmap only displayed 200 genes: now displaying all in memory store [PR #362](https://github.com/BV-BRC/bvbrc_website/pull/362)
+* [Minor] Switch Assembly service trim reads setting default from false to true [Commit #57d9c93](https://github.com/BV-BRC/bvbrc_website/commit/57d9c93d1492fe9f9e7243332f58d26b1d03f6ba)
+
 ## 3.17.4 - July 27, 2022
 * [Update] Update SARS-CoV-2 Tracker - July 2022 [Commit #0d82d11](https://github.com/BV-BRC/bvbrc_website/commit/0d82d1198e5a3b8666e7b3a0a469d7bdd80b220f)
 
