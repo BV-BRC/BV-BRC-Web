@@ -30,7 +30,7 @@ define([
         var key = arguments[0],
           value = arguments[1];
         console.log('key, ', key, ': value, ', value);
-  
+
         switch (key) {
           case 'updatePfState':
             this.pfState = value;

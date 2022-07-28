@@ -169,7 +169,7 @@ define([
       this.browserHeader.addAction('ProteinFamiliesServiceViewer', 'MultiButton fa icon-eye fa -2x', {
         label: 'ProteinFamilies',
         validTypes: ['ComparativeSystems'],
-        tooltip: 'View Pathways Tables'
+        tooltip: 'View ProteinFamilies Tables'
       }, function (selection, container, button) {
         console.log(selection);
         var path;
