@@ -160,43 +160,31 @@
                   value="5000000">
                 </div>
               </div>
-              <div class="appRow">
-                <div class="appRowSegment">
-                  <div data-dojo-attach-point="advanced2" style="display:inline-block">
-                    <label class="largelabel">Advanced</label>
-                    <div class="iconbox" style="margin-left:0px">
-                      <i data-dojo-attach-point="advicon2" class="fa icon-caret-down fa-1"></i>
-                    </div>
-                  </div>
-                </div>
+              <div class="appRow" style="margin:0 0 0 0">
+                <label class="paramlabel">Trim reads before assembly</label><br>
+                <select data-dojo-type="dijit/form/Select" name="trim" style="width:50px" data-dojo-attach-point="trim" required="false">
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </select>
               </div>
-              <div class="appRow" data-dojo-attach-point="advrow2" style="display: none">
-                  <div class="appRow" style="margin:0 0 0 0">
-                    <label class="paramlabel">Trim reads before assembly</label><br>
-                    <select data-dojo-type="dijit/form/Select" name="trim" style="width:50px" data-dojo-attach-point="trim" required="false">
-                      <option value="true">True</option>
-                      <option value="false">False</option>
-                    </select>
-                  </div>
-                  <div class="appRowSegment" style="margin:0 0 0 0">
-                    <label class="paramlabel">Racon Iterations</label><br>
-                    <div class="insertspinner" name="racon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="racon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
-                  </div>
-                  <div class="appRowSegment" style="margin:10px 0 0 0">
-                    <label class="paramlabel">Pilon Iterations</label><br>
-                    <div class="insertspinner" name="pilon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="pilon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
-                  </div>
-                <div class="appRow" style="margin:0 0 0 0">
-                  <div class="appRowSegment" style="margin:0 0 0 0">
-                    <label class="paramlabel">Min. contig length</label><br>
-                    <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_len" data-dojo-props="value:300, smallDelta:10, constraints:{min:100,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
-                  </div>
-                  <div class="appRowSegment" style="margin:10px 0 0 0">
-                    <label class="paramlabel">Min. contig coverage</label><br>
-                    <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_cov" data-dojo-props="value:5, smallDelta:5, constraints:{min:0,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
-                  </div>
-                </div>
+              <div class="appRowSegment" style="margin:0 0 0 0">
+                <label class="paramlabel">Racon Iterations</label><br>
+                <div class="insertspinner" name="racon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="racon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
               </div>
+              <div class="appRowSegment" style="margin:10px 0 0 0">
+                <label class="paramlabel">Pilon Iterations</label><br>
+                <div class="insertspinner" name="pilon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="pilon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
+              </div>
+            <div class="appRow" style="margin:0 0 0 0">
+              <div class="appRowSegment" style="margin:0 0 0 0">
+                <label class="paramlabel">Min. contig length</label><br>
+                <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_len" data-dojo-props="value:300, smallDelta:10, constraints:{min:100,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
+              </div>
+              <div class="appRowSegment" style="margin:10px 0 0 0">
+                <label class="paramlabel">Min. contig coverage</label><br>
+                <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_cov" data-dojo-props="value:5, smallDelta:5, constraints:{min:0,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
+              </div>
+            </div>
             </div>
           </td>
           <td>
