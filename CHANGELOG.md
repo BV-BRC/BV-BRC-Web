@@ -1,4 +1,9 @@
 # Changelog
+## 3.17.6 - August 1, 2022
+* [Bug] Fix Surveillance and Serology downloads [Commit #85bee0b](https://github.com/BV-BRC/bvbrc_website/commit/85bee0b62750b96093490478d7db2ef1d3931869)
+* [Minor] Make 'advanced' dropdown open by default [Commit #995bad1](https://github.com/BV-BRC/bvbrc_website/commit/995bad1dfa0e59d5921e919ebec04e7d9dddadbf)
+* [Minor] Make Trim Reads Before Assembly for CGA True by default [Commit #632d472](https://github.com/BV-BRC/bvbrc_website/commit/632d472c552cffc85f91fa0497047c5fea91ee7e)
+
 ## 3.17.5 - July 28, 2022
 * [Enhancement] heatmap only displayed 200 genes: now displaying all in memory store [PR #362](https://github.com/BV-BRC/bvbrc_website/pull/362)
 * [Minor] Switch Assembly service trim reads setting default from false to true [Commit #57d9c93](https://github.com/BV-BRC/bvbrc_website/commit/57d9c93d1492fe9f9e7243332f58d26b1d03f6ba)
