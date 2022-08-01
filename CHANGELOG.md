@@ -1,4 +1,7 @@
 # Changelog
+## 3.18.0 - August 1, 2022
+* [Release] Production Release
+
 ## 3.17.6 - August 1, 2022
 * [Bug] Fix Surveillance and Serology downloads [Commit #85bee0b](https://github.com/BV-BRC/bvbrc_website/commit/85bee0b62750b96093490478d7db2ef1d3931869)
 * [Minor] Make 'advanced' dropdown open by default [Commit #995bad1](https://github.com/BV-BRC/bvbrc_website/commit/995bad1dfa0e59d5921e919ebec04e7d9dddadbf)
