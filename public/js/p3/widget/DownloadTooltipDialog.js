@@ -320,6 +320,18 @@ define([
         pk: 'epitope_id',
         tableData: true
       },
+      surveillance_data: {
+        label: 'Surveillance',
+        dataType: 'surveillance',
+        pk: 'id',
+        tableData: true
+      },
+      serology_data: {
+        label: 'Serology',
+        dataType: 'serology',
+        pk: 'id',
+        tableData: true
+      },
       pathway_data: {
         pk: 'pathway_id',
         dataType: 'pathway',
