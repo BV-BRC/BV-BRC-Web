@@ -95,8 +95,16 @@ define([
             this.anchorByGenome(value);
             break;
           case 'applyConditionFilter':
+            this.setData(this.query({ 'familyType': this.pfState.familyType }));
+            Topic.publish(this.topicId, 'applyConditionFilterRefresh', this.pfState);
+            var currentData = this.getHeatmapData();
+            Topic.publish(this.topicId, 'updateHeatmapData', currentData);
+            break;
+          case 'applyGenomeSelector':
             this.pfState = value;
             this.changeData({ 'familyType': this.pfState.familyType });
+            var currentData = this.getHeatmapData();
+            Topic.publish(this.topicId, 'updateHeatmapData', currentData);
             break;
           case 'requestHeatmapData':
             this.pfState = value;
@@ -116,17 +124,19 @@ define([
         this._filtered = true;
       }
       var newData = [];
-      var gfs = this.pfState.genomeFilterStatus;
+      // var gfs = this.pfState.genomeFilterStatus;
 
       // var tsStart = window.performance.now();
       var keywordRegex = this.pfState.keyword.trim().toLowerCase().replace(/,/g, '~').replace(/\n/g, '~')
         .split('~')
         .map(function (k) { return k.trim(); });
 
+      // debugger;
       Object.keys(data).forEach(function (family) {
 
         var skip = false;
         family = data[family];
+        /*
         // genomes
         Object.keys(gfs).forEach(function (genomeId) {
           var index = gfs[genomeId].getIndex();
@@ -139,6 +149,7 @@ define([
             skip = true;
           }
         });
+        */
 
         // keyword search
         if (!skip && this.pfState.keyword !== '') {
@@ -200,14 +211,13 @@ define([
       var worker = new window.Worker('/public/worker/ProteinFamiliesServiceWorker.js', { type: 'module' });
       worker.onerror = (err) => console.log(err);
       worker.onmessage = lang.hitch(this, function (e) {
-        // Data should have pgfam and plfam tables
         this.pgfam_data = e.data['pgfam'];
         this.plfam_data = e.data['plfam'];
         def.resolve(true);
         worker.terminate();
       });
-      var payload = { genomeFilter: this.pfState.genomeFilterStatus, data: this.state.data['table'] };
-      // Parse both plfam and pgfam data in worker
+      var family_genomes = { 'plfam': this.state.data.plfam_genomes, 'pgfam': this.state.data.pgfam_genomes };
+      var payload = { genomeFilter: this.pfState.genomeFilterStatus, data: this.state.data['table'], family_genomes: family_genomes };
       worker.postMessage(JSON.stringify({ type: 'process_data', payload: payload }));
       return def;
     },
@@ -221,11 +231,9 @@ define([
       }
     },
 
-    // Applies a genome filter or other filter
     changeData: function (query) {
       var change_genomes = this.checkChangeGenomeFilter();
       if (change_genomes) {
-        // TODO: add loading wheel
         if (window.Worker) {
           Topic.publish(this.topicId, 'showLoadingMask');
           this.loadGenomeDataBackground().then(lang.hitch(this, function (res) {
@@ -235,15 +243,9 @@ define([
             Topic.publish(this.topicId, 'updateHeatmapData', currentData);
             Topic.publish(this.topicId, 'hideLoadingMask');
           }));
+        } else {
+          console.log('window.Worker not enabled');
         }
-        // TODO: no window.Worker?
-        // this.loadGenomeData();
-        // TODO: add query after this
-      }
-      else { // apply other filter
-        this.setData(this.query(query));
-        Topic.publish(this.topicId, 'updatePfState', this.pfState);
-        Topic.publish(this.topicId, 'applyConditionFilterRefresh', this.pfState);
       }
     },
 
@@ -266,6 +268,7 @@ define([
       }
       if (query.familyType === 'plfam') {
         data = this.plfam_data;
+        // debugger;
       }
       // TODO: issues with filtering
       data = this.conditionFilter(data);
@@ -279,7 +282,6 @@ define([
           data = data.sort((a, b) => (a[sort_field] > b[sort_field]) ? 1 : -1);
         }
       }
-      // TODO: this is why the heatmap is showing only 200 genes
       var start = 0;
       var count = 200;
       if (opts && opts.start) {
@@ -327,12 +329,13 @@ define([
       // TODO: change to be more efficient: get list of unique genome ids first?
       this.state.data.genome_ids.forEach(lang.hitch(this, function (genomeId, idx) {
         if (!curr_genomes.includes(genomeId)) {
-          var genome_data = this.state.data.genome_data[idx];
+          // var genome_data = this.state.data.genome_data[idx];
+          var genome_name = this.state.genome_names[idx];
           curr_genomes.push(genomeId);
           var gfs = new HeatmapDataTypes.FilterStatus();
-          gfs.init(idx, genome_data['genome_name']);
+          gfs.init(idx, genome_name);
           this.pfState.genomeFilterStatus[genomeId] = gfs;
-          filterGenomes.push({ 'genome_name': genome_data['genome_name'], 'genome_id': genomeId });
+          filterGenomes.push({ 'genome_name': genome_name, 'genome_id': genomeId });
         }
       }));
 
