@@ -380,6 +380,7 @@ define([
 
               if (property_name.toLowerCase() == 'species' || property_name.toLowerCase() == 'strain') {
                 selected = true;
+                options.showNodeName = false;
               }
               nodeVisualizations[property_name] =  {
                 label: property_name,
