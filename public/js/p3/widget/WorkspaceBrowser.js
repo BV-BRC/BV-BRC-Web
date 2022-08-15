@@ -1153,7 +1153,7 @@ define([
 
         selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
           var gt_file = file_data[0].split('.');
-          if (gt_file[gt_file.length - 1] === 'xml') {
+          if (gt_file[gt_file.length - 1] === 'xml' || gt_file[gt_file.length - 1] === 'phyloxml') {
             path = gt_file.join('.');
             fileType = 'phyloxml';
           }
