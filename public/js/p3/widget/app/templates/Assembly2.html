@@ -1,6 +1,6 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit">
-  <div class="appTemplate">
-    <div class="appTitle" style="margin-top: 45px;">
+  <div class="appTemplate" style="margin-top: 50px;">
+    <div class="appTitle">
       <span class="breadcrumb">Services</span>
       <h3>${applicationLabel}
         <div name="overview" class="infobox iconbox infobutton dialoginfo">
@@ -13,7 +13,7 @@
           <a href="${docsServiceURL}${videoLink}" target="_blank" ><i class="fa icon-play-circle fa-1x" title="click to open the video tutorial"></i></a>
         </div> -->
       </h3>
-      <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.</p>
+      <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>..</p>
     </div>
     <div class="formFieldsContainer">
       <div style="display: none;">
@@ -31,47 +31,10 @@
                   </div>
                 </div>
               </div>
-              <div class="appRow">
-                <div style="width:85%;display:inline-block;">
-                  <label class="paramlabel">Paired read library</label>
-                </div>
-                <div style="width:10%;display:inline-block;">
-                  <i data-dojo-attach-event="click:onAddPair" class="fa icon-arrow-circle-o-right fa-lg"></i>
-                </div>
-              </div>
-              <div class="appRow">
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair" data-dojo-attach-point="read1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 1'"></div>
-              </div>
-              <div class="appRow">
-                <div data-dojo-attach-point="read2block">
-                  <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair" data-dojo-attach-point="read2" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 2'"></div>
-                </div>
-              </div>
-              <div class="appRow">
-                <div style="width:85%;display:inline-block;">
-                  <label class="paramlabel">Single read library</label>
-                </div>
-                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
-              </div>
-              <div class="appRow">
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="single_end_libsWidget" style="width:285px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"></div>
-              </div>
-              <div class="appRow">
-                <div style="width:85%;display:inline-block;">
-                  <label class="paramlabel">SRA run accession</label>  <i data-dojo-attach-point="srr_accession_validation_message"></i>
-                </div>
-                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
-              </div>
-              <div class="appRow">
-                <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-point="srr_accession" style="width: 300px" required="false" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"></div>
-              </div>
-            </div> <!-- Input Files -->
 
-
-            <!-- <div id="pairedBox" class="appBox appShadow">
-              <div class="headerrow">
+              <div class="appRow">
                 <div style="width:85%;display:inline-block;">
-                  <label class="appBoxLabel"> Paired read library</label>
+                  <label class="paramlabel" style="font-weight: bold;"> Paired read library</label>
                   <div name="paired-read-library" class="infobox iconbox infobutton dialoginfo">
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                   </div>
@@ -90,7 +53,7 @@
                   <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair" data-dojo-attach-point="read2" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
                 </div>
               </div>
-              <div class="appRow">
+              <div class="appRow" style="display: none;">
                 <div class="appRowSegment" data-dojo-attach-point="advanced">
                   <label class="largelabel">Advanced</label>
                   <div class="iconbox" style="margin-left:0px">
@@ -124,11 +87,10 @@
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="appBox appShadow">
-              <div class="headerrow">
+
+              <div class="appRow">
                 <div style="width:85%;display:inline-block;">
-                  <label class="appBoxLabel">Single read library</label>
+                  <label class="paramlabel" style="font-weight: bold;">Single read library</label>
                 </div>
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
@@ -136,7 +98,7 @@
                 <label class="paramlabel">Read File</label><br>
                 <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="single_end_libsWidget" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
               </div>
-              <div class="appRow">
+              <div class="appRow" style="display: none;">
                 <div class="appRowSegment" data-dojo-attach-point="advanced3">
                   <label class="largelabel">Advanced</label>
                   <div class="iconbox" style="margin-left:0px">
@@ -156,11 +118,10 @@
                   </select>
                 </div>
               </div>
-            </div>
-            <div class="appBox appShadow">
-              <div class="headerrow">
+
+              <div class="appRow">
                 <div style="width:85%;display:inline-block;">
-                  <label class="appBoxLabel">SRA run accession</label>
+                  <label class="paramlabel" style="font-weight: bold;">SRA run accession</label>
                 </div>
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
@@ -168,7 +129,9 @@
                 <label class="paramlabel">SRR Accession</label><i data-dojo-attach-point="srr_accession_validation_message"></i><br>
                 <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-point="srr_accession" style="width: 300px" required="false" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"></div>
               </div>
-            </div> -->
+            </div>
+
+
             <div class="appBox appShadow">
               <div class="headerrow">
                 <label class="appBoxLabel">Parameters</label>
