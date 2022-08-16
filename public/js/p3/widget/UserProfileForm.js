@@ -101,6 +101,7 @@ define([
         domClass.add(_self.email_wait_domnode,"dijitHidden")
         domClass.remove(_self.resend_email_domnode,"dijitHidden")
       }, function(err){
+        Topic.publish('/Notification', { message: 'Error sending Verification Email.  Please try again later.', type: 'error' });
         console.log("Error sending verification email: ", err)
         domClass.add(_self.email_wait_domnode,"dijitHidden")
         domClass.remove(_self.resend_email_domnode,"dijitHidden")
@@ -110,7 +111,9 @@ define([
 
     getVerificationWarning: function(user){
       var msg = ['<i class="user_profile_warning_icon icon-warning" style="color:orange;"></i>', "This email address has not been verified."]
-      if (user.verification_send_date) {
+      if (user.verification_error){
+        msg.push(` A verification message was attempted on ${new Date(Date.parse(user.verification_send_date)).toLocaleDateString()}, but there was an error in delivery.  Please try again later or contact help if the issue persists.` )
+      } else if (user.verification_send_date) {
         msg.push(` A verification message was sent on ${new Date(Date.parse(user.verification_send_date)).toLocaleDateString()}.  If you are unable to locate the message, please check your SPAM folder or click 'resend' above.`)
       }else{
         msg.push(" Please click 'resend' above to send a verification message to your email.")
