@@ -47,7 +47,7 @@
               </div>
               <div class="appRow">
                 <div style="width:85%;display:inline-block;">
-                  <label class="paramlabel">Paired read library</label>
+                  <label class="paramlabel" style="font-weight: bold;">Paired read library</label>
                 </div>
                 <div style="width:10%;display:inline-block;">
                   <i data-dojo-attach-event="click:onAddPair" class="fa icon-arrow-circle-o-right fa-lg"></i>
@@ -63,7 +63,7 @@
               </div>
               <div class="appRow">
                 <div style="width:85%;display:inline-block;">
-                  <label class="paramlabel">Single read library</label>
+                  <label class="paramlabel" style="font-weight: bold;">Single read library</label>
                 </div>
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
@@ -72,7 +72,7 @@
               </div>
               <div class="appRow">
                 <div style="width:85%;display:inline-block;">
-                  <label class="paramlabel">SRA run accession</label>  <i data-dojo-attach-point="srr_accession_validation_message"></i>
+                  <label class="paramlabel" style="font-weight: bold;">SRA run accession</label>  <i data-dojo-attach-point="srr_accession_validation_message"></i>
                 </div>
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
@@ -126,7 +126,7 @@
           </div>
         </div>
         <div data-dojo-attach-point="assemblyStrategy" class="appRow">
-          <label class="paramlabel">Assembly Parameters</label><br>
+          <label class="paramlabel" style="font-weight: bold;">Assembly Parameters</label><br>
           <label class="paramlabel">Strategy</label><br>
           <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-attach-event="onChange:onRecipeChange">
             <option value="auto">Auto</option>
@@ -147,15 +147,26 @@
             value="5000000">
           </div>
         </div>
+
         <div data-dojo-attach-point="assembly_additional_parameters_block">
-          <div class="appRow" style="margin:0 0 0 0">
+          <div class="appRow">
+            <div class="appRowSegment" style="margin: 0 0 0 0;">
+              <div data-dojo-attach-point="assembly_adv_menu" style="display:inline-block">
+                <label class="largelabel">Advanced</label>
+                <div class="iconbox" style="margin-left:0px">
+                  <i data-dojo-attach-point="assembly_adv_icon" class="fa icon-caret-down fa-1"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="appRow" data-dojo-attach-point="assembly_adv_row" style="display: none">
+            <div class="appRow" style="margin:0 0 0 0">
               <label class="paramlabel">Trim reads before assembly</label><br>
               <select data-dojo-type="dijit/form/Select" name="trim" style="width:50px" data-dojo-attach-point="trim" required="false">
                 <option value="true">True</option>
                 <option value="false">False</option>
               </select>
-          </div>
-          <div class="appRow" style="margin:0 0 0 0">
+            </div>
             <div class="appRowSegment" style="margin:0 0 0 0">
               <label class="paramlabel">Racon Iterations</label><br>
               <div class="insertspinner" name="racon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="racon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
@@ -164,7 +175,6 @@
               <label class="paramlabel">Pilon Iterations</label><br>
               <div class="insertspinner" name="pilon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="pilon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
             </div>
-          </div>
           <div class="appRow" style="margin:0 0 0 0">
             <div class="appRowSegment" style="margin:0 0 0 0">
               <label class="paramlabel">Min. contig length</label><br>
@@ -175,15 +185,15 @@
               <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_cov" data-dojo-props="value:5, smallDelta:5, constraints:{min:0,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
             </div>
           </div>
+          </div>
         </div>
+
         <div class="appRow">
           <div class="appFieldLong">
-            <label class="paramlabel">Annotation Parameters</label><br>
-            <label class="paramlabel">Domain</label><br>
+            <label class="paramlabel" style="font-weight: bold;">Annotation Parameters</label><br>
+            <label class="paramlabel">Annotation Recipe</label><br>
             <select data-dojo-type="dijit/form/Select" name="domain" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-              <option value="Bacteria">Bacteria</option>
-              <option value="Archaea">Archaea</option>
-              <option value="Viruses">Viruses</option>
+              <option value="Bacteria">Bacteria / Archaea</option>
             </select>
           </div>
         </div>
@@ -207,7 +217,7 @@
             <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-event="onChange:updateOutputName" name="my_label" data-dojo-attach-point="myLabelWidget" style="width: 300px" required="true" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide a label',trim:true,intermediateChanges:true,placeHolder:'My identifier123'"></div>
           </div>
         </div>
-        <div class="appRow">
+        <!-- <div class="appRow">
           <div class="appFieldLong">
             <label class="paramlabel">Genetic Code</label><br>
             <select data-dojo-attach-point="genetic_code" data-dojo-type="dijit/form/Select" name="code" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
@@ -216,16 +226,16 @@
               <option value="25">25 (Candidate Division SR1 & Gracilibacteria)</option>
             </select>
           </div>
-        </div>
-        <div class="appRow">
-          <label class="paramlabel">Output Folder</label><br>
-          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" style="width:300px" required="true" data-dojo-attach-event="onChange:onOutputPathChange" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false"></div>
-        </div>
+        </div> -->
         <div class="appRow">
           <div class="appFieldLong" style="width:380px">
             <label class="paramlabel">Output Name</label><br>
             <div data-dojo-attach-point="output_nameWidget" style="width:380px; background-color:#F0F1F3" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" required="true" data-dojo-props="readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'"></div>
           </div>
+        </div>
+        <div class="appRow">
+          <label class="paramlabel">Output Folder</label><br>
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" style="width:300px" required="true" data-dojo-attach-event="onChange:onOutputPathChange" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false"></div>
         </div>
       </div>
     </div>
