@@ -1,12 +1,12 @@
 define([
-  'dojo/_base/declare', 'dojo/parser',
+  'dojo/_base/declare', 'dojo/parser',"dijit/registry",
   'dojo/topic', 'dojo/on', 'dojo/dom', 'dojo/dom-class', 'dojo/dom-attr', 'dojo/dom-style',
   'dijit/registry', 'dojo/request', 'dijit/layout/ContentPane', 'dojo/_base/fx',
   'dojo/_base/Deferred', 'dojo/query', 'dojo/NodeList-dom',
   'dojo/ready', 'dojo/parser', 'rql/query', 'dojo/_base/lang',
   'p3/router', 'dijit/Dialog', 'dojo/dom-construct', 'dojo/window'
 ], function (
-  declare, parser,
+  declare, parser,registry,
   Topic, on, dom, domClass, domAttr, domStyle,
   Registry, xhr, ContentPane, fx,
   Deferred, query, nodeListDom,
@@ -338,7 +338,13 @@ define([
         // console.log(evt);
         var dlg = new Dialog({
           title: 'User Profile',
-          content: "<div class=\"UserProfileForm\" data-dojo-type=\"p3/widget/UserProfileForm\" style=\"width:600px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:10px;margin-top:10px;padding:10px;\" data-dojo-props='callbackURL: \"<%- callbackURL %>\"'></div>"
+          content: "<div class=\"UserProfileForm\" data-dojo-id=\"userProfile\" data-dojo-type=\"p3/widget/UserProfileForm\" style=\"width:600px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:10px;margin-top:10px;padding:10px;\" data-dojo-props='callbackURL: \"<%- callbackURL %>\"'></div>",
+          onHide: function(){
+            console.log("Destroy User Dialog")
+            var up = registry.byId('userProfile')
+            console.log("userProfile: ", up)
+            dlg.destroyRecursive()
+          }
         });
         dlg.show();
       };
@@ -391,6 +397,7 @@ define([
 
       on(document, '.loginLink:click', showAuthDlg);
       on(document, '.userProfile:click', showUserProfile);
+      on(document, '.unverified_email .verification_message:click', showUserProfile)
       on(document, '.sulogin:click', showSuLogin);
       on(document, '.registrationLink:click', showNewUser);
       on(document, '.showRegWidget:click', showNewUser);
