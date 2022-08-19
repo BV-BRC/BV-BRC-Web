@@ -795,7 +795,7 @@ define([
         validTypes: ['Homology'],
         tooltip: 'View alignments'
       }, function (selection) {
-	// console.log("Current Container Widget: ", self.actionPanel.currentContainerWidget, "Slection: ", selection)
+        // console.log("Current Container Widget: ", self.actionPanel.currentContainerWidget, "Slection: ", selection)
         var modPath = self.actionPanel.currentContainerWidget.path.replace(/^\/public/, "");
         Topic.publish('/navigate', { href: '/view/Homology' + modPath });
       }, false);
@@ -1115,8 +1115,9 @@ define([
         validTypes: ['nwk', 'phyloxml'],
         tooltip: 'View Archaeopteryx Tree'
       }, function (selection, container) {
-        var path = selection.map(function (obj) { return obj.path;
-        // console.log('ViewNwkXml obj', obj);
+        var path = selection.map(function (obj) {
+          return obj.path;
+          // console.log('ViewNwkXml obj', obj);
         });
         var fileType = selection.map(function (obj) { return obj.type; });
         var labelSearch = 'true';
@@ -1152,7 +1153,7 @@ define([
 
         selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
           var gt_file = file_data[0].split('.');
-          if (gt_file[gt_file.length - 1] === 'xml') {
+          if (gt_file[gt_file.length - 1] === 'xml' || gt_file[gt_file.length - 1] === 'phyloxml') {
             path = gt_file.join('.');
             fileType = 'phyloxml';
           }
@@ -1235,14 +1236,19 @@ define([
       this.browserHeader.addAction('ViewTracks', 'fa icon-genome-browser fa-2x', {
         label: 'BROWSER',
         multiple: false,
-        validTypes: ['RNASeq', 'TnSeq', 'Variation'],
+        validTypes: ['RNASeq', 'TnSeq', 'Variation', 'FastqUtils'],
         tooltip: 'View tracks in genome browser.'
       }, function (selection) {
         // console.log("View Tracks: ", this);
-        var genomeId = self.actionPanel.currentContainerWidget.getGenomeId();
-        var urlQueryParams = self.actionPanel.currentContainerWidget.getJBrowseURLQueryParams();
+        try {
+          var genomeId = self.actionPanel.currentContainerWidget.getGenomeId();
+          var urlQueryParams = self.actionPanel.currentContainerWidget.getJBrowseURLQueryParams();
+        }
+        catch (err) {
+          alert('The genome browser could not be opened. No genome id or no streamable files were found.');
+          throw (err);
+        }
         Topic.publish('/navigate', { href: '/view/Genome/' + genomeId + '#' + urlQueryParams });
-
       }, false);
 
       this.actionPanel.addAction('ExperimentGeneList', 'fa icon-list-unordered fa-2x', {
@@ -1331,35 +1337,35 @@ define([
 
       this.actionPanel.addAction(
         'GroupExplore', 'fa icon-venn_circles fa-2x', {
-          label: 'VennDiag',
-          ignoreDataType: false,
-          allowMultiTypes: false,
-          min: 2,
-          max: 3,
-          multiple: true,
-          validTypes: ['genome_group', 'feature_group', 'experiment_group'],
-          tooltip: 'Select two or three groups to compare'
-        }, function (selection, containerWidget) {
+        label: 'VennDiag',
+        ignoreDataType: false,
+        allowMultiTypes: false,
+        min: 2,
+        max: 3,
+        multiple: true,
+        validTypes: ['genome_group', 'feature_group', 'experiment_group'],
+        tooltip: 'Select two or three groups to compare'
+      }, function (selection, containerWidget) {
 
-          var dlg = new Dialog({
-            title: 'Group Comparison',
-            style: 'width: 1250px !important; height: 750px !important;',
-            onHide: function () {
-              dlg.destroy();
-            }
-          });
-          var bc = new BorderContainer({});
-          domConstruct.place(bc.domNode, dlg.containerNode);
-          var stg = new GroupExplore({
-            selection: selection,
-            type: containerWidget.containerType,
-            path: containerWidget.get('path'),
-            containerNode: dlg.containerNode
-          });
-          bc.addChild(stg);
-          dlg.startup();
-          dlg.show();
-        },
+        var dlg = new Dialog({
+          title: 'Group Comparison',
+          style: 'width: 1250px !important; height: 750px !important;',
+          onHide: function () {
+            dlg.destroy();
+          }
+        });
+        var bc = new BorderContainer({});
+        domConstruct.place(bc.domNode, dlg.containerNode);
+        var stg = new GroupExplore({
+          selection: selection,
+          type: containerWidget.containerType,
+          path: containerWidget.get('path'),
+          containerNode: dlg.containerNode
+        });
+        bc.addChild(stg);
+        dlg.startup();
+        dlg.show();
+      },
         false
       );
 
@@ -2043,6 +2049,7 @@ define([
                 case 'Variation':
                 case 'RNASeq':
                 case 'TnSeq':
+                case 'FastqUtils':
                   d = 'p3/widget/viewer/Seq';
                   break;
                 case 'ComprehensiveGenomeAnalysis':

@@ -1425,3 +1425,55 @@ body footer.main-footer ul.left {
     border: 1px solid #ccc;
     border-radius: 5px;
 }
+
+
+.warning_icon {
+    display: none;
+}
+
+.unverified_email .warning_icon {
+    display: block;
+}
+
+
+.user_warning_icon {
+    background: 000;
+    color:orange;
+    z-index:9999;
+    margin-top:-15px;
+    margin-left:-10px;
+}
+
+.unverified_email .account-settings-warning {
+    display: inline-block;
+}
+.account-settings-warning {
+    color: orange;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+.user_profile_warning_icon {
+    color:orange;
+    z-index:9999;
+    margin:5px;
+    vertical-align: middle;
+    font-size: 2em;
+}
+
+
+.verification_message {
+    display: none;
+}
+
+.unverified_email .verification_message {
+    display: block;
+    cursor: pointer;
+}
+
+.verification_message_inner {
+    border: 1px solid gray;
+    margin: 15px;
+    padding: 8px;
+    font-size: .9em;
+}

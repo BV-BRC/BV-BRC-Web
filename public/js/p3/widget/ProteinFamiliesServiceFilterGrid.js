@@ -174,7 +174,7 @@ define([
           clusterColumnOrder: []
         });
 
-        // Topic.publish(this.topicId, 'applyConditionFilter', this.pfState);
+        Topic.publish(this.topicId, 'applyGenomeSelector', this.pfState);
       }));
 
       aspect.before(this, 'renderArray', lang.hitch(this, function (results) {

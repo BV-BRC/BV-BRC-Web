@@ -34,6 +34,10 @@ define([
           this.state.data['pgfam'] = pgfam_data;
           this.state.data['genome_ids'] = genome_ids.map(String);
           this.state.genome_ids = genome_ids.map(String); // Used in action bar functions
+          this.state.data['genome_names'] = resData['genome_names'];
+          this.state.genome_names = resData['genome_names'];
+          this.state.data['pgfam_genomes'] = resData['pgfam_genomes'];
+          this.state.data['plfam_genomes'] = resData['plfam_genomes'];
           this.loaded = true;
           this.state = state;
           this.serviceContainer.setLoaded();
