@@ -27,96 +27,39 @@
             <div id="pairedBox" class="appBox appShadow">
               <div class="headerrow">
                 <div style="width:85%;display:inline-block;">
-                  <label class="appBoxLabel">Input File</label>
-                  <div name="read-input-file" class="infobox iconbox infobutton dialoginfo">
+                  <label class="appBoxLabel"> Paired read library</label>
+                  <div name="paired-read-library" class="infobox iconbox infobutton dialoginfo">
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                   </div>
-                </div>
-              </div>
-
-              <div class="appRow">
-                <div style="width:85%;display:inline-block;">
-                  <label class="paramlabel" style="font-weight: bold;"> Paired read library</label>
                 </div>
                 <div style="width:10%;display:inline-block;">
                   <i data-dojo-attach-event="click:onAddPair" class="fa icon-arrow-circle-o-right fa-lg"></i>
                 </div>
               </div>
               <div class="appRow">
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair" data-dojo-attach-point="read1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 1'"></div>
+                <label class="paramlabel">Read File 1</label><br>
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair" data-dojo-attach-point="read1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
               </div>
               <div class="appRow">
                 <div data-dojo-attach-point="read2block">
-                  <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair" data-dojo-attach-point="read2" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 2'"></div>
+                  <label class="paramlabel">Read File 2</label><br>
+                  <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair" data-dojo-attach-point="read2" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
                 </div>
-              </div>
-
-              <div class="appRow">
-                <div style="width:85%;display:inline-block;">
-                  <label class="paramlabel" style="font-weight: bold;"> Single read library</label>
-                </div>
-                <div style="width:10%;display:inline-block;">
-                  <i data-dojo-attach-event="click:onAddSingle" class="fa icon-arrow-circle-o-right fa-lg"></i>
-                </div>
-              </div>
-              <div class="appRow">
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="read" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"></div>
-              </div>
-
-              <div class="appRow">
-                <div style="width:85%;display:inline-block;">
-                  <label class="paramlabel" style="font-weight: bold;">SRA run accession</label> <i data-dojo-attach-point="srr_accession_validation_message"></i>
-                </div>
-                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
-              </div>
-              <div class="appRow">
-                <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-point="srr_accession" style="width: 300px" required="false" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"></div>
-              </div>
-
-            </div>
-
-            <div id="pipelineBox" class="appBox appShadow">
-              <div style="width:85%;display:inline-block;">
-                <label class="appBoxLabel">Parameters</label>
-                <div name="parameters" class="infobox iconbox infobutton dialoginfo">
-                  <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                </div>
-              </div>
-              <div class="appRow">
-                <div class="appField">
-                  <label>Target Genome</label><br>
-                  <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="genome_name" maxHeight="200" style="width:100%" required="true" data-dojo-attach-point="genome_nameWidget"></div>
-                </div>
-              </div>
-              <div class="appRow">
-                <label class="paramlabel">Aligner</label><br>
-                <select data-dojo-type="dijit/form/Select" name="mapper" data-dojo-attach-point="mapper" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'A strategy must be chosen',trim:true,placeHolder:'MySubFolder'">
-                  <option value="BWA-mem">BWA-mem</option>
-                  <option value="BWA-mem-strict">BWA-mem-strict</option>
-                  <option value="Bowtie2">Bowtie2</option>
-                  <option value="LAST">LAST</option>
-                </select>
-              </div>
-              <div class="appRow">
-                <label class="paramlabel">SNP caller</label><br>
-                <select data-dojo-type="dijit/form/Select" name="caller" data-dojo-attach-point="caller" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'SNP calling software to use',trim:true,placeHolder:'MySubFolder'">
-                  <option value="FreeBayes">FreeBayes</option>
-                  <option value="SAMtools">SAMtools</option>
-                </select>
-              </div>
-              <div class="appRow">
-                <label class="paramlabel">Output Folder</label><br>
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" style="width:300px" required="true" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
-              </div>
-              <div class="appRow">
-                <label class="paramlabel">Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
-                <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" data-dojo-attach-event="onChange:checkOutputName" name="output_file" data-dojo-attach-point="output_file" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
               </div>
             </div>
-
-
+            <div class="appBox appShadow">
+              <div class="headerrow">
+                <div style="width:85%;display:inline-block;">
+                  <label class="appBoxLabel">Single read library</label>
+                </div>
+                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">Read File</label><br>
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="read" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
+              </div>
+            </div>
           </td>
-
           <td>
             <div class="appBox appShadow" style="min-height: 224px; height:auto; width:330px">
               <div class="headerrow">
@@ -137,8 +80,68 @@
           </td>
         </tr>
 
+        <tr>
+        <td>
+        <div class="appBox appShadow">
+              <div class="headerrow">
+                <div style="width:85%;display:inline-block;">
+                  <label class="appBoxLabel">SRA run accession</label>
+                </div>
+                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">SRR Accession</label><i data-dojo-attach-point="srr_accession_validation_message"></i><br>
+                <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-point="srr_accession" style="width: 300px" required="false" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"></div>
+              </div>
+            </div>
+        </td>
+        </tr>
 
 
+        <tr>
+          <td>
+            <div id="pipelineBox" class="appBox appShadow">
+              <div style="width:85%;display:inline-block;">
+                <label class="appBoxLabel">Parameters</label>
+                <div name="parameters" class="infobox iconbox infobutton dialoginfo">
+                  <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                </div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">Aligner</label><br>
+                <select data-dojo-type="dijit/form/Select" name="mapper" data-dojo-attach-point="mapper" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'A strategy must be chosen',trim:true,placeHolder:'MySubFolder'">
+                  <option value="BWA-mem">BWA-mem</option>
+                  <option value="BWA-mem-strict">BWA-mem-strict</option>
+                  <option value="Bowtie2">Bowtie2</option>
+                  <option value="LAST">LAST</option>
+                </select>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">SNP caller</label><br>
+                <select data-dojo-type="dijit/form/Select" name="caller" data-dojo-attach-point="caller" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'SNP calling software to use',trim:true,placeHolder:'MySubFolder'">
+                  <option value="FreeBayes">FreeBayes</option>
+                  <option value="SAMtools">SAMtools</option>
+                </select>
+              </div>
+              <div class="appRow">
+                <div class="appField">
+                  <label>Target Genome</label><br>
+                  <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="genome_name" maxHeight="200" style="width:100%" required="true" data-dojo-attach-point="genome_nameWidget"></div>
+                </div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">Output Folder</label><br>
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" style="width:300px" required="true" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+                <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" data-dojo-attach-event="onChange:checkOutputName" name="output_file" data-dojo-attach-point="output_file" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
+              </div>
+            </div>
+          </td>
+          <td>
+          </td>
+        </tr>
       </table>
     </div>
     <div class="appSubmissionArea">
