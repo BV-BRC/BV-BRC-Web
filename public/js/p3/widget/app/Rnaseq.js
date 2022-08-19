@@ -919,7 +919,7 @@ define([
       } else if (values.recipe == 'RNA-Rocket') {
         assembly_values.feature_count = 'cufflinks';
       } else { // host
-        assembly_values.feature_count = 'htseq';
+        assembly_values.feature_count = 'stringtie';
       }
 
       // target_genome
