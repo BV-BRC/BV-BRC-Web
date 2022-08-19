@@ -13,7 +13,26 @@
       <span style="position:relative;top: -17px; border: none; background: #fff;padding: 4px; color: #333;font-weight:600;">Identification</span>
       <table style="border-spacing:0">
         <tbody>
-            <tr><td style="width:15%;text-align:right;vertical-align:top;"><span style="color:red;">*</span> Email:</td><td><input type="text" name="email" style="width:100%" data-dojo-attach-point="emailField" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeholder:'Email Address',promptMessage:'Enter your email address',invalidMessage:'Invalid Email Address',validator:dojox.validate.isEmailAddress,trim:true, intermediateChanges: true" required="true" value="" data-dojo-attach-event="onChange: fieldChanged"></td></tr>
+            <tr>
+              <td style="width:15%;text-align:right;vertical-align:top;">
+                <span style="color:red;">*</span> Email:
+              </td>
+              <td>
+                <input type="text" name="email" style="width:100%" data-dojo-attach-point="emailField" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeholder:'Email Address',promptMessage:'Enter your email address',invalidMessage:'Invalid Email Address',validator:dojox.validate.isEmailAddress,trim:true, intermediateChanges: true" required="true" value="" data-dojo-attach-event="onChange: onEmailChanged">
+              </td>
+              <td style="width:15%;text-align:center;vertical-align:middle;">
+                <a class="dijitHidden" style="vertical-align:top;font-size:1em;" data-dojo-attach-point="resend_email_domnode" data-dojo-attach-event="click:onResendEmail">resend</a>
+                <img class="dijitHidden" style="width:24px;height:24px;vertical-align:bottom;" data-dojo-attach-point="email_wait_domnode" src="/public/patric/images/waiting_icon.jpg" />
+                <!-- <i class="dijitHidden icon-spinner8 fa fa-2x" data-dojo-attach-point="email_wait_domnode"></i> -->
+                <i class="icon-check dijitHidden" data-dojo-attach-point="email_verified_domnode" style="color: green;font-size:2em;" tooltip="Email Verified" ></i>
+
+              </td>
+            </tr>
+            <tr data-dojo-attach-point="verification_message" class="dijitHidden">
+              <td colspan="3">
+                <div data-dojo-attach-point="verification_message_inner" class="verification_message_inner"><p><i class="user_profile_warning_icon icon-warning" style="color:orange;"></i>This email address has not been verified. This may prevent you from resetting your password or reporting errors.  Click "resend" to resend the validation email. Alterneatively, you may update your email address and then click "Update Profile" below, which will automatically send you a new verification email. </p></div>
+              </td>
+            </tr>
             <!-- <tr><td>* Retype Email:</td><td><input type="text" name="repeat_email" style="width:100%" data-dojo-attach-point="repeatEmailField" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeholder:'Repeat Email Address',promptMessage:'Repeat your email address',invalidMessage:'Invalid Email Address',validator:dojox.validate.isEmailAddress,trim:true, intermediateChanges: true" required="true" value="" data-dojo-attach-event="onChange: fieldChanged"></td></tr> -->
             <tr><td style="width:15%;text-align:right;vertical-align:top;"><span style="color:red;">*</span> Username:</td><td data-dojo-attach-point="usernameContainer"><input class="useridField" type="text" style="display:block; width:100%" name="username" data-dojo-attach-point="UNF"
               data-dojo-type="dijit/form/ValidationTextBox" value="" required="true"
@@ -22,12 +41,28 @@
             <tr><td style="width:15%;text-align:right;vertical-align:top;"><span style="color:red;">*</span> First Name:</td><td><div style="width:100%" data-dojo-type="dijit/form/ValidationTextBox" name="first_name" data-dojo-attach-point="fname" value="" data-dojo-props="placeholder:'First Name',promptMessage:'Enter your first name', intermediateChanges: true" data-dojo-attach-event="onChange: fieldChanged" required="true"></div></td></tr>
             <tr><td style="width:15%;text-align:right;vertical-align:top;">Middle Name:</td><td><div data-dojo-type="dijit/form/ValidationTextBox" style="width:100%" name="middle_name" value="" data-dojo-attach-point="mname" data-dojo-props="placeholder:'Middle Name',promptMessage:'Enter your middle name', intermediateChanges: true" data-dojo-attach-event="onChange: fieldChanged" ></div></td></tr>
             <tr><td style="width:15%;text-align:right;vertical-align:top;"><span style="color:red;">*</span> Last Name:</td><td><div data-dojo-type="dijit/form/ValidationTextBox" style="width:100%" name="last_name" value="" data-dojo-attach-point="lname" data-dojo-props="placeholder:'Last Name',promptMessage:'Enter your last name', intermediateChanges: true" data-dojo-attach-event="onChange: fieldChanged" required="true"></div></td></tr>
-            <tr><td style="width:15%;text-align:right;vertical-align:top;">Organization:</td><td><div style="width:100%" data-dojo-type="dijit/form/TextBox" name="affiliation" value=""></div></td></tr>
-            <tr><td style="width:15%;text-align:right;vertical-align:top;">Organisms:</td><td><div name="organisms" data-dojo-type="dijit/form/Textarea" value=""></div></td></tr>
-            <tr><td style="width:15%;text-align:right;vertical-align:top;">Interests:</td><td><div rows="5" name="interests" style="height:75px;max-width:99%" data-dojo-type="dijit/form/SimpleTextarea" value=""></div></td></tr>
+            <tr><td style="width:15%;text-align:right;vertical-align:top;">Organization:</td><td colspan="2"><div style="width:100%" data-dojo-type="dijit/form/TextBox" name="affiliation" value=""></div></td></tr>
+            <tr><td style="width:15%;text-align:right;vertical-align:top;">Organisms:</td><td colspan="2"><div name="organisms" data-dojo-type="dijit/form/Textarea" value=""></div></td></tr>
+            <tr><td style="width:15%;text-align:right;vertical-align:top;">Interests:</td><td colspan="2"><div rows="5" name="interests" style="height:75px;max-width:99%" data-dojo-type="dijit/form/SimpleTextarea" value=""></div></td></tr>
           </tbody>
       </table>
       <p class="HideWithAuth">Click <a href="https://lists.bv-brc.org/mailman/listinfo/all-users" target="_blank">HERE</a> to sign up for the BV-BRC mailing list.</p>
+    </div>
+    <div class="" data-dojo-attach-point="setPasswordForm" style="max-width:580px; display:block; border: 1px solid gray;margin:4px;margin-top: 28px;margin-bottom:28px; padding:4px;padding-top:8px;">
+      <span style="position:relative;top: -17px; border: none; background: #fff;padding: 4px; color: #333;font-weight:600;">Set Password</span>
+      <table>
+        <tbody>
+          <tr><th style="padding:0"><span style="color:red;">*</span>PASSWORD</th></tr>
+          <tr><td style="padding-top:0">
+            <input class="pw1field" type="password" style="display:block" name="password" data-dojo-attach-point="password" data-dojo-type="dijit/form/TextBox" value="" required="true" data-dojo-props="intermediateChanges: true" data-dojo-attach-event="onChange: setPasswordsChanged">
+          </td></tr>
+          <tr><th style="padding:0"><span style="color:red;">*</span>PASSWORD (repeat)</th></tr>
+          <tr><td style="padding-top:0">
+            <input class="pw2field" type="password" style="display:block" name="password_repeat" data-dojo-attach-point="password2" data-dojo-type="dijit/form/TextBox" value="" required="true" data-dojo-props="intermediateChanges: true" data-dojo-attach-event="onChange: setPasswordsChanged">
+          </td></tr>
+        </tbody>
+      </table>
+      <div data-dojo-attach-point="password_error" style="color:red; margin-top:20px;display:none"><p>The passwords must match</p></div>
     </div>
     <!-- <div class="" data-dojo-attach-point="notificationsContainer" style="max-width:580px; display:block; border: 1px solid gray;margin:4px;margin-top: 28px;padding:4px;padding-top:8px;">
       <span style="position:relative;top: -17px; border: none; background: #fff;padding: 4px; color: #333;font-weight:600;">Notifications</span>

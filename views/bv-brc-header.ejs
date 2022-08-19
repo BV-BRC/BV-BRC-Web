@@ -326,10 +326,11 @@
                 <div class="showOnLoad ShowWithAuth dijitHidden topMenuButtonIcon"
                         data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-user fa-2x login-btn'">
                     <span></span>
+                    <div class="warning_icon user_warning_icon icon-warning fa fa-1x"> </div>
                     <div data-dojo-type="p3/widget/TooltipDialog">
                         <div>Signed in as <span id="signedInAs" style="font-weight:bold;"></span></div>
                         <hr>
-                        <div><a class="userProfile">Account Settings</a></div>
+                        <div><a class="userProfile">Account Settings <i class="warning_icon account-settings-warning icon-warning fa fa-1x" style="vertical-align:middle;"> </i></a></div>
                         <div><a class="sulogin">SU Login</a></div>
                         <div><a class="suSwitchBack" onclick="window.App.suSwitchBack()" style="display:none">SU Switch Back</a></div>
                         <div><a class="logoutLink" onclick="window.App.logout()">Logout</a></div>

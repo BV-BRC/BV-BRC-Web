@@ -1,8 +1,8 @@
 define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
-  'dojo/promise/all', 'dojo/store/Memory'
+  'dojo/promise/all', 'dojo/store/Memory','dojo/when'
 ], function (
   Deferred, Topic, xhr,
-  All, MemoryStore
+  All, MemoryStore,When
 ) {
 
   var self = this;
@@ -27,6 +27,9 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
    * updates the job list (see JobsGrid.js)
    */
   function updateJobsList(cb) {
+    if (!localStorage.getItem("tokenstring") || !localStorage.getItem("userid")){
+      return
+    }
     Topic.publish('/Jobs', { status: 'loading' });
 
     var prom = window.App.api.service('AppService.enumerate_tasks', [0, 30000]);
@@ -55,6 +58,9 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
    * sets status locally, publishes status for jobs ticker, and returns True if any changes
    */
   function getStatus() {
+    if (!localStorage.getItem("tokenstring") || !localStorage.getItem("userid")){
+      return
+    }
     var prom = window.App.api.service('AppService.query_task_summary', []);
     return prom.then(function (res) {
       var status = res[0];
@@ -143,7 +149,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 
     // check for status change.  if change, update jobs list
     var prom = getStatus();
-    prom.then(function (statusChange) {
+    return When(prom,function (statusChange) {
       if (statusChange) {
         updateJobsList().then(function () {
           setTimeout(PollJobs, TIME_OUT);

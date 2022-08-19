@@ -148,6 +148,22 @@ define([
         window.postMessage('RemoteReady', '*');
       });
 
+      Router.register("/verify_refresh", function(params,oldPath,newPath,state){
+        console.log("verify refresh")
+
+        // console.log("Upload URL Callback", params.newPath);
+        var newState = populateState(params);
+
+        /* istanbul ignore next */
+        var path = params.params[0] || '/';
+        newState.widgetClass = 'p3/widget/VerifyEmailRefresh';
+        newState.style = 'padding:0';
+        newState.requireAuth = false;
+        newState.pageTitle = 'Thank You';
+        // console.log("Navigate to ", newState);
+        _self.navigate(newState);
+      })
+
       Router.register('/login', function (params, oldPath, newPath, state) {
         // console.log("Workspace URL Callback", params.newPath);
         var newState = populateState(params);
@@ -417,11 +433,18 @@ define([
 
       /* istanbul ignore else */
       if (this.user && this.user.id) {
+        console.log("this.user: ", this.user)
         domAttr.set('YourWorkspaceLink', 'href', '/workspace/' + this.user.id);
         var n = dom.byId('signedInAs');
         /* istanbul ignore else */
         if (n) {
           n.innerHTML = this.user.id.replace('@' + localStorage.getItem('realm'), '');
+        }
+
+        if (!this.user.email_verified){
+          domClass.add(document.body,"unverified_email")
+        }else{
+          domClass.remove(document.body,"unverified_email")
         }
       }
 
@@ -429,12 +452,14 @@ define([
       Topic.subscribe('/userWorkspaces', lang.hitch(this, 'updateMyDataSection'));
 
       // update "My Data" > "Completed Jobs" count on homepage
-      this.api.service('AppService.query_task_summary', []).then(function (status) {
-        var node = dom.byId('MyDataJobs');
-        if (node) {
-          node.innerHTML = status[0].completed + ' Completed Jobs';
-        }
-      });
+      if (this.user && this.user.id){
+        this.api.service('AppService.query_task_summary', []).then(function (status) {
+          var node = dom.byId('MyDataJobs');
+          if (node) {
+            node.innerHTML = status[0].completed + ' Completed Jobs';
+          }
+        });
+      }
 
       this.inherited(arguments);
       this.timeout();
@@ -458,7 +483,7 @@ define([
     },
     checkLogin: function () {
       // console.log(window.App.uploadInProgress);
-      // console.log('checking for login');
+      console.log('checking for login');
       if (localStorage.getItem('tokenstring')) {
         var auth = localStorage.getItem('auth');
         // console.log('Auth: ', auth);
@@ -472,6 +497,9 @@ define([
             validToken = this.checkExpToken(auth.expiry);
             // console.log('this is a valid token: ' + validToken );
             if (validToken && window.App.alreadyLoggedIn) {
+              if (window.location.pathname=="/login" || window.location.pathname=="/register"){
+                window.location.pathname="/"
+              }
               return;
             }
           } else {
@@ -489,8 +517,23 @@ define([
           // var docbody = document.getElementsByClassName('patric')[0];
           // console.log(docbody);
           window.App.user = JSON.parse(localStorage.getItem('userProfile'));
-
           window.App.authorizationToken = localStorage.getItem('tokenstring');
+          addEventListener("storage", function(evt){
+            console.log("p3App Storage Listener: ", evt)
+            if (evt.key==="userProfile"){
+              var rawu = localStorage.getItem("userProfile")
+              var u = JSON.parse(rawu)
+              if (!u) {
+                console.log("Missing User: ", rawu)
+                return
+              }
+              if (u.email_verified){
+                domClass.remove(document.body,"unverified_email")
+              }else{
+                domClass.add(document.body,"unverified_email")
+              }
+            }
+          },false)
           // show the upload and jobs widget
           window.App.uploadJobsWidget('show');
           window.App.checkSU();
@@ -617,10 +660,11 @@ define([
               var userObj = JSON.parse(user);
               userObj.id += '@' + localStorage.getItem('realm');
               user = JSON.stringify(userObj);
-              localStorage.removeItem('userProfile');
+              // Is this removal necessary?
+              // localStorage.removeItem('userProfile');
               localStorage.setItem('userProfile', user);
               console.log('window.location.path: ', window.location.pathname)
-              if (window.location.pathname === '/login') {
+              if (window.location.pathname === '/login' || window.location.pathname=="/register") {
                 window.location = '/'
               } else {
                 window.location.reload();
@@ -669,7 +713,7 @@ define([
       }
     },
     refreshUser: function () {
-      xhr.get(this.userServiceURL + '/user/' + window.localStorage.userid, {
+      return xhr.get(this.userServiceURL + '/user/' + window.localStorage.userid, {
         headers: {
           'Accept': 'application/json',
           'Authorization': window.App.authorizationToken
@@ -680,12 +724,13 @@ define([
             var userObj = JSON.parse(user);
             // console.log(userObj);
             userObj.id += '@' + localStorage.getItem('realm');
-            // console.log(userObj);
+            console.log(userObj);
             user = JSON.stringify(userObj);
             localStorage.removeItem('userProfile');
             localStorage.setItem('userProfile', user);
+            return userObj
             // document.body.className += 'Authenticated';
-            window.location.reload();
+            // window.location.reload();
           },
           /* istanbul ignore next */
           function (err) {

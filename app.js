@@ -122,6 +122,8 @@ app.use('/user', contentViewer);
 app.use('/sulogin', contentViewer);
 app.use('/login', contentViewer);
 app.use('/register', contentViewer);
+app.use('/verify_refresh', contentViewer);
+app.use('/verify_failure', contentViewer);
 app.use('/remote', remotePage);
 app.use('/view', viewers);
 app.use('/search', search);
