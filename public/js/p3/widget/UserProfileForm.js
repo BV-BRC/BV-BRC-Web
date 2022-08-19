@@ -312,6 +312,12 @@ define([
         }
       }, function (err) {
         console.log(err);
+        domClass.remove(_self.regFormErrorsContainer, 'dijitHidden')
+        if (err.response && err.response.status === 409){
+         document.getElementsByClassName('regFormErrors')[0].innerHTML = `An account with that email address already exists. Please use a different address.`;
+        }else{
+          document.getElementsByClassName('regFormErrors')[0].innerHTML = `There was an error: ${err.response.text}`;
+        }
       });
     },
     destroy: function(){
