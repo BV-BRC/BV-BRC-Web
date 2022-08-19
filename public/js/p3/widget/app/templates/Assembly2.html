@@ -25,26 +25,30 @@
             <div id="pairedBox" class="appBox appShadow">
               <div class="headerrow">
                 <div style="width:85%;display:inline-block;">
-                  <label class="appBoxLabel"> Paired read library</label>
-                  <div name="paired-read-library" class="infobox iconbox infobutton dialoginfo">
+                  <label class="appBoxLabel">Input File</label>
+                  <div name="read-input-file" class="infobox iconbox infobutton dialoginfo">
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                   </div>
+                </div>
+              </div>
+
+              <div class="appRow">
+                <div style="width:85%;display:inline-block;">
+                  <label class="paramlabel" style="font-weight: bold;"> Paired read library</label>
                 </div>
                 <div style="width:10%;display:inline-block;">
                   <i data-dojo-attach-event="click:onAddPair" class="fa icon-arrow-circle-o-right fa-lg"></i>
                 </div>
               </div>
               <div class="appRow">
-                <label class="paramlabel">Read File 1</label><br>
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair" data-dojo-attach-point="read1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair" data-dojo-attach-point="read1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 1'"></div>
               </div>
               <div class="appRow">
                 <div data-dojo-attach-point="read2block">
-                  <label class="paramlabel">Read File 2</label><br>
-                  <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair" data-dojo-attach-point="read2" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
+                  <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair" data-dojo-attach-point="read2" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 2'"></div>
                 </div>
               </div>
-              <div class="appRow">
+              <div class="appRow" style="display: none;">
                 <div class="appRowSegment" data-dojo-attach-point="advanced">
                   <label class="largelabel">Advanced</label>
                   <div class="iconbox" style="margin-left:0px">
@@ -78,19 +82,17 @@
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="appBox appShadow">
-              <div class="headerrow">
+
+              <div class="appRow">
                 <div style="width:85%;display:inline-block;">
-                  <label class="appBoxLabel">Single read library</label>
+                  <label class="paramlabel" style="font-weight: bold;">Single read library</label>
                 </div>
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
               <div class="appRow">
-                <label class="paramlabel">Read File</label><br>
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="single_end_libsWidget" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="single_end_libsWidget" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"></div>
               </div>
-              <div class="appRow">
+              <div class="appRow" style="display: none;">
                 <div class="appRowSegment" data-dojo-attach-point="advanced3">
                   <label class="largelabel">Advanced</label>
                   <div class="iconbox" style="margin-left:0px">
@@ -110,19 +112,19 @@
                   </select>
                 </div>
               </div>
-            </div>
-            <div class="appBox appShadow">
-              <div class="headerrow">
+
+              <div class="appRow">
                 <div style="width:85%;display:inline-block;">
-                  <label class="appBoxLabel">SRA run accession</label>
+                  <label class="paramlabel" style="font-weight: bold;">SRA run accession</label> <i data-dojo-attach-point="srr_accession_validation_message"></i>
                 </div>
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
               <div class="appRow">
-                <label class="paramlabel">SRR Accession</label><i data-dojo-attach-point="srr_accession_validation_message"></i><br>
                 <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-point="srr_accession" style="width: 300px" required="false" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"></div>
               </div>
             </div>
+
+
             <div class="appBox appShadow">
               <div class="headerrow">
                 <label class="appBoxLabel">Parameters</label>
@@ -160,31 +162,47 @@
                   value="5000000">
                 </div>
               </div>
-              <div class="appRow" style="margin:0 0 0 0">
-                <label class="paramlabel">Trim reads before assembly</label><br>
-                <select data-dojo-type="dijit/form/Select" name="trim" style="width:50px" data-dojo-attach-point="trim" required="false">
-                  <option value="true">True</option>
-                  <option value="false">False</option>
-                </select>
+
+              <div class="appRow">
+                <div class="appRowSegment" style="margin: 0 0 0 0;">
+                  <div data-dojo-attach-point="advanced2" style="display:inline-block">
+                    <label class="largelabel">Advanced</label>
+                    <div class="iconbox" style="margin-left:0px">
+                      <i data-dojo-attach-point="advicon2" class="fa icon-caret-down fa-1"></i>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="appRowSegment" style="margin:0 0 0 0">
-                <label class="paramlabel">Racon Iterations</label><br>
-                <div class="insertspinner" name="racon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="racon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
+              <div class="appRow" data-dojo-attach-point="advrow2" style="display: none">
+                  <div class="appRow" style="margin:0 0 0 0">
+                    <label class="paramlabel">Trim reads before assembly</label><br>
+                    <select data-dojo-type="dijit/form/Select" name="trim" style="width:50px" data-dojo-attach-point="trim" required="false">
+                      <option value="true">True</option>
+                      <option value="false">False</option>
+                    </select>
+                  </div>
+                  <div class="appRowSegment" style="margin:0 0 0 0">
+                    <label class="paramlabel">Racon Iterations</label><br>
+                    <div class="insertspinner" name="racon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="racon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                  </div>
+                  <div class="appRowSegment" style="margin:10px 0 0 0">
+                    <label class="paramlabel">Pilon Iterations</label><br>
+                    <div class="insertspinner" name="pilon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="pilon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                  </div>
+                <div class="appRow" style="margin:0 0 0 0">
+                  <div class="appRowSegment" style="margin:0 0 0 0">
+                    <label class="paramlabel">Min. contig length</label><br>
+                    <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_len" data-dojo-props="value:300, smallDelta:10, constraints:{min:100,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                  </div>
+                  <div class="appRowSegment" style="margin:10px 0 0 0">
+                    <label class="paramlabel">Min. contig coverage</label><br>
+                    <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_cov" data-dojo-props="value:5, smallDelta:5, constraints:{min:0,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                  </div>
+                </div>
               </div>
-              <div class="appRowSegment" style="margin:10px 0 0 0">
-                <label class="paramlabel">Pilon Iterations</label><br>
-                <div class="insertspinner" name="pilon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="pilon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
-              </div>
-            <div class="appRow" style="margin:0 0 0 0">
-              <div class="appRowSegment" style="margin:0 0 0 0">
-                <label class="paramlabel">Min. contig length</label><br>
-                <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_len" data-dojo-props="value:300, smallDelta:10, constraints:{min:100,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
-              </div>
-              <div class="appRowSegment" style="margin:10px 0 0 0">
-                <label class="paramlabel">Min. contig coverage</label><br>
-                <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_cov" data-dojo-props="value:5, smallDelta:5, constraints:{min:0,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
-              </div>
-            </div>
+
+
+
             </div>
           </td>
           <td>

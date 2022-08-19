@@ -1,17 +1,18 @@
 define([
-  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dojo/dom-construct',
+  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dojo/dom-construct',"dijit/registry",
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/UserProfileForm.html', 'dijit/form/Form', 'dojo/request',
-  'dojo/dom-form', 'dojo/_base/lang', 'dojox/validate/web'
+  'dojo/dom-form', 'dojo/_base/lang', 'dojox/validate/web','dojo/topic'
 ], function (
-  declare, WidgetBase, on, domConstruct,
+  declare, WidgetBase, on, domConstruct,registry,
   domClass, Templated, WidgetsInTemplate,
   Template, FormMixin, xhr,
-  domForm, lang, validate
+  domForm, lang, validate,Topic
 ) {
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
     'baseClass': 'App UserProfileForm',
     templateString: Template,
+
     callbackURL: '',
     userServiceURL: window.App.userServiceURL.replace(/\/+$/, ''),
     fieldChanged: function (evt) {
@@ -27,6 +28,39 @@ define([
         this.udProfButton.set('disabled', false);
       }
     },
+    onEmailChanged: function(evt){
+      console.log('onEmailChainged"')
+      this.fieldChanged(evt);
+      console.log('this.emailField.value: ', this.emailField.value, this.emailField)
+      console.log("this.userprofileStored: ", this.userprofileStored);
+      if ((this.emailField.value === this.userprofileStored.email) && this.userprofileStored.email_verified){
+        domClass.remove(this.email_verified_domnode,"dijitHidden")
+        domClass.add(this.email_wait_domnode,"dijitHidden")
+        domClass.add(this.resend_email_domnode,"dijitHidden")
+      } else if (((this.emailField.value === this.userprofileStored.email) && !this.userprofileStored.email_verified)) {
+        domClass.add(this.email_verified_domnode,"dijitHidden")
+        domClass.add(this.email_wait_domnode,"dijitHidden")
+        domClass.remove(this.resend_email_domnode,"dijitHidden")
+      }else{
+        domClass.add(this.email_verified_domnode,"dijitHidden")
+        domClass.add(this.email_wait_domnode,"dijitHidden")
+        domClass.add(this.resend_email_domnode,"dijitHidden")
+      }
+    },
+    setPasswordsChanged(evt){
+      console.log("Password changed")
+      if (this.password.get('value') !== '' && this.password2.get('value') !== '') {
+        if (this.password.get('value') !== this.password2.get('value')) {
+          this.submitButton.set("disabled", true)
+          this.password_error.style.display = 'block';
+        } else {
+          this.password_error.style.display = 'none';
+          this.fieldChanged({})
+        }
+      }else{
+        this.password_error.style.display = 'none';
+      }
+    },
     pwChanged: function (evt) {
       this.cPWbutton.set('disabled', true);
       // console.log('I changed a pw field');
@@ -39,6 +73,56 @@ define([
         }
       }
     },
+    onResendEmail: function (evt) {
+      // console.log('I clicked the change password button');
+      console.log("onResendEmail")
+      evt.preventDefault();
+      evt.stopPropagation();
+      domClass.add( this.resend_email_domnode,"dijitHidden")
+      domClass.remove(this.email_wait_domnode,"dijitHidden")
+      var _self=this
+      var data = {id: window.localStorage.userid}
+      console.log("onResendEmail Data: ", data)
+      var def = xhr(this.userServiceURL + '/verify/', {
+        data: JSON.stringify(data),
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': null,
+          'Accept': 'application/json',
+          'Authorization': window.App.authorizationToken
+        }
+      });
+
+      def.then(function(){
+        Topic.publish('/Notification', {
+          message: "<span class='default'>Verification Email Sent</span>"
+        });
+        domClass.add(_self.email_wait_domnode,"dijitHidden")
+        domClass.remove(_self.resend_email_domnode,"dijitHidden")
+      }, function(err){
+        Topic.publish('/Notification', { message: 'Error sending Verification Email.  Please try again later.', type: 'error' });
+        console.log("Error sending verification email: ", err)
+        domClass.add(_self.email_wait_domnode,"dijitHidden")
+        domClass.remove(_self.resend_email_domnode,"dijitHidden")
+      })
+
+    },
+
+    getVerificationWarning: function(user){
+      var msg = ['<i class="user_profile_warning_icon icon-warning" style="color:orange;"></i>', "This email address has not been verified."]
+      if (user.verification_error){
+        msg.push(` A verification message was attempted on ${new Date(Date.parse(user.verification_send_date)).toLocaleDateString()}, but there was an error in delivery.  Please try again later or contact help if the issue persists.` )
+      } else if (user.verification_send_date) {
+        msg.push(` A verification message was sent on ${new Date(Date.parse(user.verification_send_date)).toLocaleDateString()}.  If you are unable to locate the message, please check your SPAM folder or click 'resend' above.`)
+      }else{
+        msg.push(" Please click 'resend' above to send a verification message to your email.")
+      }
+
+      msg.push(" Alternatively,  you may provide an different email address and store the settings by clicking 'Update Profile' below.")
+      return `<p>${msg.join('')}</p>`
+    },
+
     onResetClick: function (evt) {
       // console.log('I clicked the change password button');
       evt.preventDefault();
@@ -96,6 +180,28 @@ define([
         });
       }
     },
+    onProfileChange: function(evt){
+
+        console.log("UserProfileForm Storage Listener: ", evt)
+        if (evt.key==="userProfile"){
+          var u = JSON.parse(localStorage.getItem("userProfile"))
+          if (!u) { return; }
+          if (u.email_verified){
+            domClass.remove(this.email_verified_domnode,"dijitHidden")
+            domClass.add(this.email_wait_domnode,"dijitHidden")
+            domClass.add(this.resend_email_domnode,"dijitHidden")
+            domClass.add(this.verification_message,"dijitHidden")
+          }else{
+            domClass.add(this.email_verified_domnode,"dijitHidden")
+            domClass.add(this.email_wait_domnode,"dijitHidden")
+            domClass.remove(this.resend_email_domnode,"dijitHidden")
+            domConstruct.place(this.getVerificationWarning(u),this.verification_message_inner,"only");
+            // this.verification_message_inner.innerHTML = this.getVerificationWarning(u)
+            domClass.remove(this.verification_message,"dijitHidden")
+
+          }
+        }
+    },
     onSubmit: function (evt) {
       evt.preventDefault();
       evt.stopPropagation();
@@ -127,8 +233,20 @@ define([
         }
       });
       def.then(function (data) {
-        // console.log(data);
+        console.log("Registration Data: ", data);
         console.log('Reg Message Dom: ', _self.regMessage)
+        if (data){
+          console.log("Autologin from registration", data)
+          //already logged in by setting password at registration, go through the steps to login locally
+          var dataArr = data.split('|');
+          var keyValueArr = [];
+          var dataobj =  {};
+          for (var i = 0; i < dataArr.length; i++) {
+            keyValueArr = dataArr[i].split('=');
+            dataobj[keyValueArr[0]] = keyValueArr[1];
+          }
+          window.App.login(dataobj,data)
+        }
         domClass.remove(_self.regMessage, 'dijitHidden')
         domClass.add(_self.submitButton.domNode, 'dijitHidden')
         domClass.add(_self.mainForm, 'dijitHidden')
@@ -143,6 +261,7 @@ define([
         // console.log(this.submitButton);
       });
     },
+
     runPatch: function (vals) {
       // build patch
       var patchObj = [];
@@ -195,7 +314,10 @@ define([
         console.log(err);
       });
     },
-
+    destroy: function(){
+      console.log("destroy userprofile form")
+      removeEventListener("storage", this._onProfileChange)
+    },
     startup: function () {
       if (this._started) {
         return;
@@ -229,8 +351,32 @@ define([
         this.setValues(this.userprofileStored);
         this.UNF.set('value', window.localStorage.getItem('userid'))
         this.UNF.set('disabled', true)
+        var destroyWidgets = registry.findWidgets(this.setPasswordForm)
+        destroyWidgets.forEach(function(w){
+          w.destroy()
+        })
+        domConstruct.destroy(this.setPasswordForm)
         this.notificationsContainer.innerHTML = 'Click <a href="https://lists.bv-brc.org/mailman/listinfo/all-users" target="_blank">HERE</a> to manage your BV-BRC mailing list subscription.'
         domClass.add(this.registrationHeading, 'dijitHidden')
+
+        if (this.userprofileStored.email_verified){
+          domClass.remove(this.email_verified_domnode,"dijitHidden")
+          domClass.add(this.email_wait_domnode,"dijitHidden")
+          domClass.add(this.resend_email_domnode,"dijitHidden")
+          domClass.add(this.verification_message,"dijitHidden")
+
+        }else{
+          domClass.add(this.email_verified_domnode,"dijitHidden")
+          domClass.add(this.email_wait_domnode,"dijitHidden")
+          domClass.remove(this.resend_email_domnode,"dijitHidden")
+          // this.verification_message.inner.innerHTML = this.getVerificationWarning(this.userprofileStored)
+          domConstruct.place(this.getVerificationWarning(this.userprofileStored),this.verification_message_inner,"only");
+          domClass.remove(this.verification_message,"dijitHidden")
+        }
+
+        this._onProfileChange = lang.hitch(this,"onProfileChange");
+        addEventListener("storage", this._onProfileChange);
+
         // this.UNF.destroy();
         // domConstruct.create("span",{innerHTML: this.userprofileStored.id.replace('@' + localStorage.getItem("realm"), '')},this.usernameContainer)
         // var uidfield = document.getElementsByClassName('useridField')[0];
@@ -239,6 +385,10 @@ define([
         // usernamehdr.parentNode.removeChild(usernamehdr);
       } else {
         this.auth = false;
+        domClass.add(this.email_verified_domnode,"dijitHidden")
+        domClass.add(this.email_wait_domnode,"dijitHidden")
+        domClass.add(this.resend_email_domnode,"dijitHidden")
+        domClass.add(this.verification_message,"dijitHidden")
         if (window.location.search) {
           var o = {};
           var fields = ['email', 'username', 'first_name', 'last_name', 'middle_name', 'affiliation', 'organization', 'organisms', 'interests'];

@@ -143,39 +143,40 @@ define([
       console.log('this.state = ', this.state);
 
       // Query for genome information then start
-      DataAPI.getGenome(this.state.data.genome_ids).then(lang.hitch(this, function (res) {
-        this.state.data.genome_data = res;
-        this.heatmapContainer = new HeatmapContainer({
-          title: 'Heatmap',
-          type: 'webGLHeatmap',
-          topicId: this.topicId,
-          content: 'Heatmap'
-        });
-        this.mainGridContainer = new MainGridContainer({
-          title: 'Table',
-          content: 'Protein Families Table',
-          state: this.state,
-          topicId: this.topicId
-        });
-        this.tabContainer.addChild(this.mainGridContainer);
-        this.tabContainer.addChild(this.heatmapContainer);
+      // TODO: remove getGenome call, use genome_names in job data
+      // DataAPI.getGenome(this.state.data.genome_ids).then(lang.hitch(this, function (res) {
+      // this.state.data.genome_data = res;
+      this.heatmapContainer = new HeatmapContainer({
+        title: 'Heatmap',
+        type: 'webGLHeatmap',
+        topicId: this.topicId,
+        content: 'Heatmap'
+      });
+      this.mainGridContainer = new MainGridContainer({
+        title: 'Table',
+        content: 'Protein Families Table',
+        state: this.state,
+        topicId: this.topicId
+      });
+      this.tabContainer.addChild(this.mainGridContainer);
+      this.tabContainer.addChild(this.heatmapContainer);
 
-        Topic.publish(this.topicId, 'updatePfState', this.pfState);
+      Topic.publish(this.topicId, 'updatePfState', this.pfState);
 
-        var self = this;
-        this.tabContainer.watch('selectedChildWidget', function (name, oldTab, newTab) {
-          if (newTab.type === 'webGLHeatmap') {
-            self.heatmapContainer.set('visible', true);
+      var self = this;
+      this.tabContainer.watch('selectedChildWidget', function (name, oldTab, newTab) {
+        if (newTab.type === 'webGLHeatmap') {
+          self.heatmapContainer.set('visible', true);
 
-            if (!self._chartStaged) {
-              setTimeout(function () {
-                self.heatmapContainer.update();
-                self._chartStaged = true;
-              });
-            }
+          if (!self._chartStaged) {
+            setTimeout(function () {
+              self.heatmapContainer.update();
+              self._chartStaged = true;
+            });
           }
-        });
-      }));
+        }
+      });
+      // }));
 
     },
 
@@ -331,6 +332,7 @@ define([
       // this.filterGrid = filterGrid;
 
       // genome list grid filter button
+      /*
       var genome_btn_submit = new Button({
         label: 'Filter Genomes',
         onClick: lang.hitch(this, function () {
@@ -338,6 +340,7 @@ define([
         })
       });
       filterPanel.addChild(genome_btn_submit);
+      */
 
       // // other filter items
       var otherFilterPanel = new ContentPane({

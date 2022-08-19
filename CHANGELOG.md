@@ -1,4 +1,7 @@
 # Changelog
+## 3.18.1 - August 2, 2022
+* [Feature]  Updated Protein Families implementation [PR #363](https://github.com/BV-BRC/bvbrc_website/pull/363)
+
 ## 3.18.0 - August 1, 2022
 * [Release] Production Release
 
