@@ -469,7 +469,7 @@ define([
         this.nodeType = 'feature';
         this.containerType = 'feature_data';
         var fetchedIds = when(xhr.post(PathJoin(window.App.dataAPI, 'genome_feature'), {
-        	headers: {
+          headers: {
               accept: 'application/json',
               'X-Requested-With': null,
               Authorization: (window.App.authorizationToken || '')
