@@ -335,6 +335,7 @@ define([
       var filterGenomes = [];
       var curr_genomes = [];
       // TODO: change to be more efficient: get list of unique genome ids first?
+      // debugger;
       this.state.data.genome_ids.forEach(lang.hitch(this, function (genomeId, idx) {
         if (!curr_genomes.includes(genomeId)) {
           // var genome_data = this.state.data.genome_data[idx];
