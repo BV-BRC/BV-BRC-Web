@@ -5,6 +5,9 @@
 * [Bug] Fix for missing labels of private sequences in MSA viewer [PR #373](https://github.com/BV-BRC/bvbrc_website/pull/373)
 * [Bug] Some fixes for pop-up bug in protein families viewer [PR #374](https://github.com/BV-BRC/bvbrc_website/pull/374)
 * [Feature] Turned TSV header on by default for MetaCATS files [PR #375](https://github.com/BV-BRC/bvbrc_website/pull/375)
+* [Update] Adjust labels on Genomic Features table in Overview tab of Genome View [Commit #a004f6c](https://github.com/BV-BRC/bvbrc_website/commit/a004f6ca2c906e8871e051cef3bd6c0ad360ec2a)
+* [Bug] Fix error message coming from twitter onMessage | Auto refresh user profile when page loads [PR #376](https://github.com/BV-BRC/bvbrc_website/pull/376)
+* [Bug] Fix subsystems filter [PR #377](https://github.com/BV-BRC/bvbrc_website/pull/377)
 
 ## 3.18.1 - August 2, 2022
 * [Feature]  Updated Protein Families implementation [PR #363](https://github.com/BV-BRC/bvbrc_website/pull/363)
