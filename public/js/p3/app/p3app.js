@@ -32,6 +32,18 @@ define([
     startup: function () {
       var _self = this;
       this.checkLogin();
+      if (window.App.alreadyLoggedIn){
+        this.refreshUser().then(function(u){
+          if (!u) {
+            return
+          }
+          if (u.email_verified){
+            domClass.remove(document.body,"unverified_email")
+          }else{
+            domClass.add(document.body,"unverified_email")
+          }
+        })
+      }
 
       on(document, 'keydown', function (evt) {
         // only act if ctrl-shift-d
@@ -500,7 +512,7 @@ define([
               if (window.location.pathname=="/login" || window.location.pathname=="/register"){
                 window.location.pathname="/"
               }
-              return;
+              return true;
             }
           } else {
             validToken = false;
