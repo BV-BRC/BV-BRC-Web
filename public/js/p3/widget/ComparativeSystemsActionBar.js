@@ -139,11 +139,22 @@ define([
             result['facets'] = {};
             // Filters are currently formatted for queries
             Object.keys(facets).forEach(function (cat) {
-              // TODO: use a function to replace %##
-              var filter_string = facets[cat].replaceAll('or(', '').replaceAll('eq(', '');
-              filter_string = filter_string.replaceAll(cat + ',', '');
-              filter_string = filter_string.replaceAll(')', '').replaceAll('%22', '').replaceAll('%20', ' ');
-              result['facets'][cat] = filter_string.split(',');
+              var filter_string = facets[cat];
+              if (filter_string.includes('or(')) {
+                filter_string = filter_string.replaceAll('or(').slice(0, -1);
+              }
+              filter_string = filter_string.split(',eq');
+              result['facets'][cat] = [];
+              filter_string.forEach(lang.hitch(this, function (facet_str) {
+                if (facet_str.includes('eq(')) { // first element
+                  facet_str = facet_str.replace('eq(', '');
+                } else {
+                  facet_str = facet_str.substring(1);
+                }
+                facet_str = facet_str.slice(0, -1);
+                facet_str = facet_str.substring(facet_str.indexOf(',') + 1);
+                result['facets'][cat].push(decodeURIComponent(facet_str.replaceAll('%22', '')));
+              }));
             })
           }
           else {
@@ -169,9 +180,14 @@ define([
         console.log(facet);
         tmp_counts[facet.field] = {};
       }));
+      var print_once = true;
       data.forEach(lang.hitch(this, function (obj) {
         facets.forEach(lang.hitch(this, function (facet) {
           var facet_label = obj[facet.field];
+          if (facet_label.includes('Diderm')) {
+            console.log(facet_label);
+            print_once = false;
+          }
           if (!Object.keys(tmp_counts[facet.field]).includes(facet_label)) {
             tmp_counts[facet.field][facet_label] = 0;
           }

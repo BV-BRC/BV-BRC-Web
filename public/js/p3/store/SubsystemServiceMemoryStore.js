@@ -162,18 +162,32 @@ define([
       if (JSON.stringify(this.currentFilter) === '{}') {
         return data;
       }
+      if (!this.currentFilter['fwks'] && !this.currentFilter['facets']) {
+        return data;
+      }
       var query_filter = this.currentFilter;
       var keyword_filter = query_filter['fwks'];
-      var facet_filter = query_filter['facets'];
+      var facet_filter = {};
+      Object.keys(query_filter['facets']).forEach(lang.hitch(this, function (facet) {
+        facet_filter[facet] = [];
+        query_filter['facets'][facet].forEach(lang.hitch(this, function (x) {
+          facet_filter[facet].push(x);
+        }));
+      }));
+      // debugger;
       // Facets looks like this:
       // - {'annotation':['PATRIC'],'pathway_class':['Carbohydrate Metabolism','Lipid Mtabolism'],etc}
       var filtered_data = data;
       if (facet_filter) {
-        Object.keys(facet_filter).forEach(lang.hitch(this, function (cat) {
-          var ff_list = facet_filter[cat];
-          filtered_data = filtered_data.filter(function (el) {
-            return ff_list.includes(el[cat]);
-          });
+        filtered_data = filtered_data.filter(lang.hitch(this, function (el) {
+          var facet_match = false;
+          Object.keys(facet_filter).forEach(lang.hitch(this, function (cat) {
+            var ff_list = facet_filter[cat];
+            if (ff_list.includes(el[cat])) {
+              facet_match = true;
+            }
+          }));
+          return facet_match;
         }));
       }
       if (keyword_filter) {
