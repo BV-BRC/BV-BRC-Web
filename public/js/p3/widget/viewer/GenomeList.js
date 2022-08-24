@@ -1,12 +1,12 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang',
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/topic',
   './TabViewerBase', '../../util/QueryToEnglish', '../../DataAPI',
   '../GenomeListOverview', '../GenomeGridContainer',
   '../AMRPanelGridContainer', '../SequenceGridContainer',
   '../FeatureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFamiliesContainer',
   '../PathwayGridContainer', '../ExperimentsContainer',  '../SubsystemGridContainer'
 ], function (
-  declare, lang,
+  declare, lang,Topic,
   TabViewerBase, QueryToEnglish, DataAPI,
   GenomeListOverview, GenomeGridContainer,
   AMRPanelGridContainer, SequenceGridContainer,
@@ -76,6 +76,46 @@ define([
           window.document.title = pageTitle;
         }
       }
+    },
+    onSetAnchor: function (evt) {
+      console.log("genome list onSetAnchor: ", evt)
+      evt.stopPropagation();
+      evt.preventDefault();
+
+      var parts = [];
+      var q;
+      if (this.query) {
+        q = (this.query.charAt(0) == '?') ? this.query.substr(1) : this.query;
+        if (q != 'keyword(*)') {
+          parts.push(q);
+        }
+      }
+      if (evt.filter && evt.filter != 'false') {
+        parts.push(evt.filter);
+      }
+
+      if (parts.length > 1) {
+        q = '?and(' + parts.join(',') + ')';
+      } else if (parts.length == 1) {
+        q = '?' + parts[0];
+      } else {
+        q = '';
+      }
+
+      var hp;
+      if (this.state.hashParams && this.state.hashParams.view_tab) {
+        hp = { view_tab: this.state.hashParams.view_tab };
+      } else {
+        hp = {};
+      }
+
+      hp.filter = 'false';
+
+      var l = window.location.pathname + q + '#' + Object.keys(hp).map(function (key) {
+        return key + '=' + hp[key];
+      }, this).join('&');
+      console.log(`navigate to ${l}`)
+      Topic.publish('/navigate', { href: l });
     },
     postCreate: function () {
       this.inherited(arguments)

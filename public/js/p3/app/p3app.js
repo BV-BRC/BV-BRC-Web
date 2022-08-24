@@ -619,6 +619,7 @@ define([
       localStorage.setItem('tokenstring', localStorage.getItem('Atokenstring'));
       localStorage.setItem('userProfile', localStorage.getItem('AuserProfile'));
       localStorage.setItem('userid', localStorage.getItem('Auserid'));
+      localStorage.setItem('realm', localStorage.getItem('Arealm'));
       localStorage.removeItem('Aauth');
       localStorage.removeItem('Atokenstring');
       localStorage.removeItem('AuserProfile');

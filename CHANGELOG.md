@@ -1,4 +1,11 @@
 # Changelog
+## 3.19.2 - August 24, 2022
+* [Feature] Allow keyboard ctrl-c or command-c to copy selected items [PR #371](https://github.com/BV-BRC/bvbrc_website/pull/371)
+* [Bug] Fix apply filter on the GenomeList view [PR #372](https://github.com/BV-BRC/bvbrc_website/pull/372)
+* [Bug] Fix for missing labels of private sequences in MSA viewer [PR #373](https://github.com/BV-BRC/bvbrc_website/pull/373)
+* [Bug] Some fixes for pop-up bug in protein families viewer [PR #374](https://github.com/BV-BRC/bvbrc_website/pull/374)
+* [Feature] Turned TSV header on by default for MetaCATS files [PR #375](https://github.com/BV-BRC/bvbrc_website/pull/375)
+
 ## 3.18.1 - August 2, 2022
 * [Feature]  Updated Protein Families implementation [PR #363](https://github.com/BV-BRC/bvbrc_website/pull/363)
 
