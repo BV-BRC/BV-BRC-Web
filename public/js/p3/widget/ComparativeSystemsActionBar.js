@@ -180,14 +180,9 @@ define([
         console.log(facet);
         tmp_counts[facet.field] = {};
       }));
-      var print_once = true;
       data.forEach(lang.hitch(this, function (obj) {
         facets.forEach(lang.hitch(this, function (facet) {
           var facet_label = obj[facet.field];
-          if (facet_label.includes('Diderm')) {
-            console.log(facet_label);
-            print_once = false;
-          }
           if (!Object.keys(tmp_counts[facet.field]).includes(facet_label)) {
             tmp_counts[facet.field][facet_label] = 0;
           }
