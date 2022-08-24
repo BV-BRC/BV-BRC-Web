@@ -58,6 +58,7 @@ define([
         localStorage.setItem('Atokenstring', localStorage.getItem('tokenstring'));
         localStorage.setItem('AuserProfile', localStorage.getItem('userProfile'));
         localStorage.setItem('Auserid', localStorage.getItem('userid'));
+        localStorage.setItem('Arealm', localStorage.getItem('realm'));
         // window.location.href = '/';
         var dataArr = data.split('|');
         var keyValueArr = [];

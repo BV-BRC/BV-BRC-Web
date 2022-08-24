@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dgrid/Grid', 'dojo/store/JsonRest', 'dgrid/extensions/DijitRegistry', 'dgrid/extensions/Pagination',
   'dgrid/Keyboard', 'dgrid/Selection', './formatter', 'dgrid/extensions/ColumnResizer', './ColumnHider',
   'dgrid/extensions/DnD', 'dojo/dnd/Source', 'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', '../util/PathJoin',
-  'dgrid/extensions/ColumnReorder', 'dojo/on', 'dojo/has', 'dojo/has!touch?./util/touch', './Confirmation'
+  'dgrid/extensions/ColumnReorder', 'dojo/on', 'dojo/has', 'dojo/has!touch?./util/touch', './Confirmation','./GridCopyToClipboard'
 ], function (
   declare, Grid, Store, DijitRegistry, Pagination,
   Keyboard, Selection, formatter, ColumnResizer,
   ColumnHider, DnD, DnDSource,
   Deferred, aspect, lang, PathJoin,
-  ColumnReorder, on, has, touchUtil, Confirmation
+  ColumnReorder, on, has, touchUtil, Confirmation,GridCopyToClipboard
 ) {
 
   var ctrlEquiv = has('mac') ? 'metaKey' : 'ctrlKey';
@@ -22,7 +22,7 @@ define([
     return document.getElementById(id);
   }
 
-  return declare([Grid, Pagination, ColumnReorder, ColumnHider, Keyboard, ColumnResizer, DijitRegistry, Selection], {
+  return declare([Grid, Pagination, ColumnReorder, ColumnHider, Keyboard, ColumnResizer, DijitRegistry, Selection,GridCopyToClipboard], {
     constructor: function () {
       this.dndParams.creator = lang.hitch(this, function (item, hint) {
         // console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
@@ -142,6 +142,23 @@ define([
         });
       });
 
+      if (this.copyToClipboard){
+        this.on('keydown', lang.hitch(this, function (evt) {
+          // console.log("onKeyPress", evt)
+          if ((evt.key=="c" || evt.key=="C") && (evt.ctrlKey||evt.metaKey)){
+            this._setCopying=true
+          }
+        }))
+
+        this.on('keyup', lang.hitch(this, function (evt) {
+          console.log("onKeyPress", evt)
+          if (this._setCopying){
+            this.copyToClipboard(true)
+            this._setCopying=false
+          }
+        }))
+      }
+
       if (!this.store && this.dataModel) {
         this.store = this.createStore(this.dataModel, this.primaryKey);
       }
@@ -149,6 +166,8 @@ define([
       this._started = true;
 
     },
+
+
 
     createStore: function (dataModel, pk, token) {
       // console.log("Create Store for ", dataModel, " at ", this.apiServer, " TOKEN: ", token);
@@ -193,7 +212,7 @@ define([
         }).show();
       }
       return this.store.query(query).then(function (results) {
-        console.log('_selectAll results: ', results);
+        // console.log('_selectAll results: ', results);
         _self._unloadedData = {};
 
         return results.map(function (obj) {
