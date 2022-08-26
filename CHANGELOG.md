@@ -1,5 +1,8 @@
 # Changelog
-## 3.19.3 - August 26, 2022
+## 3.19.4 - August 26, 2022
+* [Minor] Workspace icon tweak [Commit #058055c](https://github.com/BV-BRC/bvbrc_website/commit/058055cf45c8d5834b867c8ff0d530117f2a7f92)
+
+## 3.19.3
 * [Minor] Revert Fastq [Commit #6395270](https://github.com/BV-BRC/bvbrc_website/commit/6395270262c085066b560b733a3281c39a31d92a)
 * [Enhancement] Update Workspace icons for comparative results [Commit #4dfd8db](https://github.com/BV-BRC/bvbrc_website/commit/4dfd8db36a547d4611683c448eef7391298a9eb9)
 
