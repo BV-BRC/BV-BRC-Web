@@ -1,4 +1,8 @@
 # Changelog
+## 3.19.3 - August 26, 2022
+* [Minor] Revert Fastq [Commit #6395270](https://github.com/BV-BRC/bvbrc_website/commit/6395270262c085066b560b733a3281c39a31d92a)
+* [Enhancement] Update Workspace icons for comparative results [Commit #4dfd8db](https://github.com/BV-BRC/bvbrc_website/commit/4dfd8db36a547d4611683c448eef7391298a9eb9)
+
 ## 3.19.2 - August 24, 2022
 * [Feature] Allow keyboard ctrl-c or command-c to copy selected items [PR #371](https://github.com/BV-BRC/bvbrc_website/pull/371)
 * [Bug] Fix apply filter on the GenomeList view [PR #372](https://github.com/BV-BRC/bvbrc_website/pull/372)
