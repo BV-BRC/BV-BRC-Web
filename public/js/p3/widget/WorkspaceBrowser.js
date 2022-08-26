@@ -147,7 +147,7 @@ define([
         window.open(PathJoin(self.docsServiceURL, path), '_blank');
       }, true);
 
-      this.browserHeader.addAction('PathwaysServiceViewer', 'MultiButton fa icon-eye fa -2x', {
+      this.browserHeader.addAction('PathwaysServiceViewer', 'MultiButton fa icon-git-pull-request fa-2x', {
         label: 'Pathways',
         validTypes: ['ComparativeSystems'],
         tooltip: 'View Pathways Tables'
@@ -166,10 +166,10 @@ define([
         }
       }, false);
 
-      this.browserHeader.addAction('ProteinFamiliesServiceViewer', 'MultiButton fa icon-eye fa -2x', {
-        label: 'ProteinFamilies',
+      this.browserHeader.addAction('ProteinFamiliesServiceViewer', 'MultiButton fa icon-group fa-2x', {
+        label: 'Families',
         validTypes: ['ComparativeSystems'],
-        tooltip: 'View ProteinFamilies Tables'
+        tooltip: 'View Protein Families Tables'
       }, function (selection, container, button) {
         console.log(selection);
         var path;
@@ -185,7 +185,7 @@ define([
         }
       }, false);
 
-      this.browserHeader.addAction('SubsystemsServiceViewer', 'MultiButton fa icon-eye fa -2x', {
+      this.browserHeader.addAction('SubsystemsServiceViewer', 'MultiButton fa icon-venn_circles fa-2x', {
         label: 'Subsystems',
         validTypes: ['ComparativeSystems'],
         tooltip: 'View Subsystems Tables'

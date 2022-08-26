@@ -21,13 +21,13 @@ define([
       label: ' ',
       field: 'feature_type'
     }, {
-      label: 'PATRIC',
+      label: 'BV-BRC',
       field: 'PATRIC',
       renderCell: function (obj, val, node) {
         node.innerHTML = obj.PATRIC ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,PATRIC))">' + obj.PATRIC + '</a>') : '0';
       }
     }, {
-      label: 'RefSeq',
+      label: 'GenBank / RefSeq',
       field: 'RefSeq',
       renderCell: function (obj, val, node) {
         node.innerHTML = obj.RefSeq ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,RefSeq))">' + obj.RefSeq + '</a>') : '0';
