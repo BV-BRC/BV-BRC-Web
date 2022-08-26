@@ -1,4 +1,7 @@
 # Changelog
+## 3.20.0
+* [Release] Production build
+
 ## 3.19.4 - August 26, 2022
 * [Minor] Workspace icon tweak [Commit #058055c](https://github.com/BV-BRC/bvbrc_website/commit/058055cf45c8d5834b867c8ff0d530117f2a7f92)
 
