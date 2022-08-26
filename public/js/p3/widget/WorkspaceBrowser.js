@@ -167,9 +167,9 @@ define([
       }, false);
 
       this.browserHeader.addAction('ProteinFamiliesServiceViewer', 'MultiButton fa icon-group fa-2x', {
-        label: 'ProteinFamilies',
+        label: 'Families',
         validTypes: ['ComparativeSystems'],
-        tooltip: 'View ProteinFamilies Tables'
+        tooltip: 'View Protein Families Tables'
       }, function (selection, container, button) {
         console.log(selection);
         var path;
