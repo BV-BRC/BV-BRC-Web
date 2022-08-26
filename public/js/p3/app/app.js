@@ -284,10 +284,17 @@ define([
         if (msg && (msg.data === 'RemoteReady' || !msg.data)) {
           return;
         }
-        msg = JSON.parse(msg.data);
-        // console.log('Message From Remote: ', msg);
-        if (msg && msg.topic) {
-          Topic.publish(msg.topic, msg.payload);
+        if (msg && msg.origin === "https://syndication.twitter.com"){
+          return;
+        }
+        try {
+          msg = JSON.parse(msg.data);
+          // console.log('Message From Remote: ', msg);
+          if (msg && msg.topic) {
+           Topic.publish(msg.topic, msg.payload);
+          }
+        } catch (err){
+          console.log("Error handling window message: ", msg,err)
         }
       }, '*');
 
