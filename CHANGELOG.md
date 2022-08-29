@@ -1,4 +1,7 @@
 # Changelog
+## 3.20.1 - August 29, 2022
+* [UI] Update Services Menu with Protein Family Sorter and Comparative Pathway [Commit #c11d7c1](https://github.com/BV-BRC/bvbrc_website/commit/c11d7c1bf73edea6f364b7799a0aca7e665a3066)
+
 ## 3.20.0
 * [Release] Production build
 
