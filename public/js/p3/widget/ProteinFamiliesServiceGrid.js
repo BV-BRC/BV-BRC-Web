@@ -71,6 +71,8 @@ define([
 
       this.on('dgrid-sort', function (evt) {
         _self.store.query('', { sort: evt.sort });
+        _self.pfState.sort = evt.sort;
+        Topic.publish(_self.topicId, 'updatePfState', _self.pfState);
       });
 
       this.on('dgrid-select', function (evt) {

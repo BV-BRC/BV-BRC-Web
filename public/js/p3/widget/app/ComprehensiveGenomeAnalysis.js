@@ -59,6 +59,22 @@ define([
       }
       this.numlibs.startup();
 
+      this.assembly_adv_row.turnedOn = (this.assembly_adv_row.style.display != 'none');
+      on(this.assembly_adv_menu, 'click', lang.hitch(this, function () {
+        this.assembly_adv_row.turnedOn = (this.assembly_adv_row.style.display != 'none');
+        if (!this.assembly_adv_row.turnedOn) {
+          this.assembly_adv_row.turnedOn = true;
+          this.assembly_adv_row.style.display = 'block';
+          this.assembly_adv_icon.className = 'fa icon-caret-left fa-1';
+        }
+        else {
+          this.assembly_adv_row.turnedOn = false;
+          this.assembly_adv_row.style.display = 'none';
+          this.assembly_adv_icon.className = 'fa icon-caret-down fa-1';
+        }
+      }));
+
+
       this.pairToAttachPt.concat(this.singleToAttachPt).forEach(lang.hitch(this, function (attachname) {
         this[attachname].searchBox.validator = lang.hitch(this[attachname].searchBox, function (/* anything */ value, /* __Constraints */ constraints) {
           return (new RegExp('^(?:' + this._computeRegexp(constraints) + ')' + (this.required ? '' : '?') + '$')).test(value) &&

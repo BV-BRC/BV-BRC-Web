@@ -82,6 +82,9 @@ define([
           value = arguments[1];
 
         switch (key) {
+          case 'updatePfState':
+            this.pfState = value;
+            break;
           case 'setFamilyType':
             this.pfState = value;
             this._filtered = null;
@@ -292,7 +295,12 @@ define([
       }
       var query_data = null;
       if (opts && opts.selectAll) {
-        query_data = data.slice(start).concat(data.slice(0, start));
+        if (start > 0) {
+          query_data = data.slice(start).concat(data.slice(0, start - 1));
+        }
+        else {
+          query_data = data;
+        }
       }
       else {
         query_data = data.slice(start, start + count);
@@ -483,7 +491,13 @@ define([
         opts.sort = this.pfState.columnSort;
       }
 
-      var data = this.query({ 'familyType': this.pfState.familyType }, { 'selectAll': true });
+      var data;
+      if (this.pfState.sort) {
+        data = this.query({ 'familyType': this.pfState.familyType }, { 'selectAll': true, 'sort': this.pfState.sort } )
+      }
+      else {
+        data = this.query({ 'familyType': this.pfState.familyType }, { 'selectAll': true });
+      }
       // console.log('heatmap data', data);
 
       var familyOrderMap = {};

@@ -1,4 +1,27 @@
 # Changelog
+## 3.20.1 - August 29, 2022
+* [UI] Update Services Menu with Protein Family Sorter and Comparative Pathway [Commit #c11d7c1](https://github.com/BV-BRC/bvbrc_website/commit/c11d7c1bf73edea6f364b7799a0aca7e665a3066)
+
+## 3.20.0
+* [Release] Production build
+
+## 3.19.4 - August 26, 2022
+* [Minor] Workspace icon tweak [Commit #058055c](https://github.com/BV-BRC/bvbrc_website/commit/058055cf45c8d5834b867c8ff0d530117f2a7f92)
+
+## 3.19.3
+* [Minor] Revert Fastq [Commit #6395270](https://github.com/BV-BRC/bvbrc_website/commit/6395270262c085066b560b733a3281c39a31d92a)
+* [Enhancement] Update Workspace icons for comparative results [Commit #4dfd8db](https://github.com/BV-BRC/bvbrc_website/commit/4dfd8db36a547d4611683c448eef7391298a9eb9)
+
+## 3.19.2 - August 24, 2022
+* [Feature] Allow keyboard ctrl-c or command-c to copy selected items [PR #371](https://github.com/BV-BRC/bvbrc_website/pull/371)
+* [Bug] Fix apply filter on the GenomeList view [PR #372](https://github.com/BV-BRC/bvbrc_website/pull/372)
+* [Bug] Fix for missing labels of private sequences in MSA viewer [PR #373](https://github.com/BV-BRC/bvbrc_website/pull/373)
+* [Bug] Some fixes for pop-up bug in protein families viewer [PR #374](https://github.com/BV-BRC/bvbrc_website/pull/374)
+* [Feature] Turned TSV header on by default for MetaCATS files [PR #375](https://github.com/BV-BRC/bvbrc_website/pull/375)
+* [Update] Adjust labels on Genomic Features table in Overview tab of Genome View [Commit #a004f6c](https://github.com/BV-BRC/bvbrc_website/commit/a004f6ca2c906e8871e051cef3bd6c0ad360ec2a)
+* [Bug] Fix error message coming from twitter onMessage | Auto refresh user profile when page loads [PR #376](https://github.com/BV-BRC/bvbrc_website/pull/376)
+* [Bug] Fix subsystems filter [PR #377](https://github.com/BV-BRC/bvbrc_website/pull/377)
+
 ## 3.18.1 - August 2, 2022
 * [Feature]  Updated Protein Families implementation [PR #363](https://github.com/BV-BRC/bvbrc_website/pull/363)
 
