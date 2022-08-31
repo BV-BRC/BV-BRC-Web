@@ -151,7 +151,7 @@ define([
                 childContent = '<pre style="font-size:.8em; background-color:#ffffff;">' + JSON.stringify(JSON.parse(this.file.data || null), null, 2) + '</pre>';
                 break;
               case 'pdf':
-                childContent = '<iframe src="http://docs.google.com/gview?url=' + this.url + '&embedded=true" style="width:100%; height:100%;" frameborder="0"></iframe>';
+                childContent = '<iframe src="https://docs.google.com/gview?url=' + this.url + '&embedded=true" style="width:100%; height:100%;" frameborder="0"></iframe>';
                 // childContent = '<a href="'+ this.url + '">';
                 break;
               case 'gif':

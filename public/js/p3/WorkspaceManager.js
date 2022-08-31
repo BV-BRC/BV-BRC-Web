@@ -211,6 +211,7 @@ define([
       json: { label: 'json', value: 'json' },
       nwk: { label: 'nwk', value: 'nwk' },
       pdf: { label: 'pdf', value: 'pdf' },
+      phyloxml: { label: 'phyloxml', value: 'phyloxml' },
       png: { label: 'png', value: 'png' },
       ppt: { label: 'ppt', value: 'ppt' },
       pptx: { label: 'pptx', value: 'pptx' },
