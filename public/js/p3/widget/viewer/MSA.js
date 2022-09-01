@@ -561,16 +561,18 @@ define([
         menuFontsize: '12px',
         autoResize: true,
         labelNameLength: 150,
-        alignmentHeight: 14.04 * this.numSequences,
+        alignmentHeight: 14.01 * this.numSequences,
         // alignmentWidth: msa_models.seqs[0].seq.length*15.1,
         residueFont: '12',
-        rowHeight: 14.04
+        rowHeight: 14.01
       };
 
       this.tree = new d3Tree({ selectionTarget: this });
       this.tree.d3Tree('#' + this.id + 'tree-container', { phylogram: this.phylogram, fontSize: 12 });
       this.tree.setTree(this.data.tree);
       // this.tree.setTree(this.data.tree);
+      console.log('alt labels: this.alt_labels', this.alt_labels);
+
       var idMenuDivs = [];
       this.tree.addLabels(this.alt_labels.genome_name, 'Genome Name');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Genome Name">Genome Name</div>');
@@ -616,10 +618,13 @@ define([
 
       console.log('idMenuDivs ', idMenuDivs);
       console.log('idMenu ', idMenu);
+      console.log('before update tree this.tree', this.tree);
+      console.log('alt labels: this.alt_labels', this.alt_labels);
 
       this.tree.startup();
       this.tree.selectLabels('Genome Name');
       this.tree.update();
+      console.log('after update tree this.tree', this.tree);
 
       Object.keys(rearrangeSeqs).forEach(lang.hitch(this, function (fid) {
         rearrangeSeqs[fid].py = this.tree.idToHeight[fid];
