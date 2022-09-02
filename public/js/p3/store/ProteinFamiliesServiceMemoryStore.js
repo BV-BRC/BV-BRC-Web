@@ -396,11 +396,9 @@ define([
       Topic.publish(this.topicId, 'showLoadingMask');
 
       when(this.getSyntenyOrder(genomeId), lang.hitch(this, function (newFamilyOrderSet) {
-
         var highlighted = [],
           leftOver = [];
-        this.query('', {}).forEach(function (d) {
-
+        this.query('', { 'selectAll': true }).forEach(function (d) {
           if (Object.prototype.hasOwnProperty.call(newFamilyOrderSet, d.family_id)) {
             highlighted[newFamilyOrderSet[d.family_id]] = d.family_id;
           } else {
