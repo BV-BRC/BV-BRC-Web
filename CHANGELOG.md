@@ -1,4 +1,7 @@
 # Changelog
+## 3.20.4 - September 2, 2022
+* [Bug] Fixed anchorByGenome in most cases [PR #380](https://github.com/BV-BRC/bvbrc_website/pull/380)
+
 ## 3.20.3 - September 1, 2022
 * [Bug] Fix: enable to display the metadata for private genomes/features on the tree viewer [PR #379](https://github.com/BV-BRC/bvbrc_website/pull/379)
 
