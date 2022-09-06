@@ -1,4 +1,7 @@
 # Changelog
+## 3.20.5 - September 6, 2022
+* [Bug] MSA - labels don't line up with sequences [PR #381](https://github.com/BV-BRC/bvbrc_website/pull/381)
+
 ## 3.20.4 - September 2, 2022
 * [Bug] Fixed anchorByGenome in most cases [PR #380](https://github.com/BV-BRC/bvbrc_website/pull/380)
 
