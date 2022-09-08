@@ -1,4 +1,7 @@
 # Changelog
+## 3.20.6 - September 8, 2022
+* [Enahncement] Activate genome_name as a valid label on Archaeopteryx trees [PR #382](https://github.com/BV-BRC/bvbrc_website/pull/382)
+
 ## 3.20.5 - September 6, 2022
 * [Bug] MSA - labels don't line up with sequences [PR #381](https://github.com/BV-BRC/bvbrc_website/pull/381)
 
