@@ -167,7 +167,9 @@ define([
         if (cur[0].feature_id) {
           request.get(PathJoin(this.apiServer, 'genome_feature', cur[0].feature_id), {
             headers: {
-              accept: 'application/json'
+              accept: 'application/json', 
+              'X-Requested-With': null,
+              Authorization: (window.App.authorizationToken || '')
             },
             handleAs: 'json'
           }).then(lang.hitch(this, function (record) {
@@ -177,7 +179,9 @@ define([
         else {
           request.get(PathJoin(this.apiServer, 'genome', cur[0].genome_id), {
             headers: {
-              accept: 'application/json'
+              accept: 'application/json', 
+              'X-Requested-With': null,
+              Authorization: (window.App.authorizationToken || '')
             },
             handleAs: 'json'
           }).then(lang.hitch(this, function (record) {
@@ -202,7 +206,9 @@ define([
       if (cur.length == 1) {
         request.get(PathJoin(this.apiServer, 'genome', cur[0].genome_id), {
           headers: {
-            accept: 'application/json'
+            accept: 'application/json', 
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
           },
           handleAs: 'json'
         }).then(lang.hitch(this, function (record) {
@@ -232,7 +238,11 @@ define([
 
     onSetTaxonId: function (attr, oldVal, taxonId) {
       request.get(PathJoin(this.apiServer, 'taxonomy', taxonId), {
-        headers: { accept: 'application/newick+json' },
+        headers: {
+          accept: 'application/newick+json', 
+          'X-Requested-With': null,
+          Authorization: (window.App.authorizationToken || '')
+        },
         handleAs: 'json'
       }).then(lang.hitch(this, function (treeDat) {
         // console.log("Set Newick");
@@ -378,7 +388,7 @@ define([
                 property_name = property_line[1];
               }
 
-              if (property_name.toLowerCase() == 'species' || property_name.toLowerCase() == 'strain') {
+              if (property_name.toLowerCase() == 'genome_name' || property_name.toLowerCase() == 'species' || property_name.toLowerCase() == 'strain') {
                 selected = true;
                 options.showNodeName = false;
               }

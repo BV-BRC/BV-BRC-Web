@@ -1,4 +1,25 @@
 # Changelog
+## 3.21.0 - September 9, 2022
+* [Release] Production Release 3.21.0
+
+## 3.20.7
+* [Bug] Fix incorrect virus link [Commit #df59b2](https://github.com/BV-BRC/bvbrc_website/commit/df59b2da8a6339c625dc25ba57e6299c95d9e7b4)
+
+## 3.20.6 - September 8, 2022
+* [Enahncement] Activate genome_name as a valid label on Archaeopteryx trees [PR #382](https://github.com/BV-BRC/bvbrc_website/pull/382)
+
+## 3.20.5 - September 6, 2022
+* [Bug] MSA - labels don't line up with sequences [PR #381](https://github.com/BV-BRC/bvbrc_website/pull/381)
+
+## 3.20.4 - September 2, 2022
+* [Bug] Fixed anchorByGenome in most cases [PR #380](https://github.com/BV-BRC/bvbrc_website/pull/380)
+
+## 3.20.3 - September 1, 2022
+* [Bug] Fix: enable to display the metadata for private genomes/features on the tree viewer [PR #379](https://github.com/BV-BRC/bvbrc_website/pull/379)
+
+## 3.20.2 - August 31, 2022
+* [Bug] Fix for viewing pdfs. Fix for phyloxml being changeable. [PR #378](https://github.com/BV-BRC/bvbrc_website/pull/378)
+
 ## 3.20.1 - August 29, 2022
 * [UI] Update Services Menu with Protein Family Sorter and Comparative Pathway [Commit #c11d7c1](https://github.com/BV-BRC/bvbrc_website/commit/c11d7c1bf73edea6f364b7799a0aca7e665a3066)
 
