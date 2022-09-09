@@ -1,5 +1,8 @@
 # Changelog
-## 3.20.7 - September 9, 2022
+## 3.21.0 - September 9, 2022
+* [Release] Production Release 3.21.0
+
+## 3.20.7
 * [Bug] Fix incorrect virus link [Commit #df59b2](https://github.com/BV-BRC/bvbrc_website/commit/df59b2da8a6339c625dc25ba57e6299c95d9e7b4)
 
 ## 3.20.6 - September 8, 2022
