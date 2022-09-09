@@ -796,7 +796,7 @@ define([
         tooltip: 'View alignments'
       }, function (selection) {
         // console.log("Current Container Widget: ", self.actionPanel.currentContainerWidget, "Slection: ", selection)
-        var modPath = self.actionPanel.currentContainerWidget.path.replace(/^\/public/, '');
+        var modPath = self.actionPanel.currentContainerWidget.path.replace(/^\/public/, "");
         Topic.publish('/navigate', { href: '/view/Homology' + modPath });
       }, false);
 
