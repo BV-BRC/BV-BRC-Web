@@ -795,8 +795,8 @@ define([
         validTypes: ['Homology'],
         tooltip: 'View alignments'
       }, function (selection) {
-	// console.log("Current Container Widget: ", self.actionPanel.currentContainerWidget, "Slection: ", selection)
-        var modPath = self.actionPanel.currentContainerWidget.path.replace(/^\/public/, "");
+        // console.log("Current Container Widget: ", self.actionPanel.currentContainerWidget, "Slection: ", selection)
+        var modPath = self.actionPanel.currentContainerWidget.path.replace(/^\/public/, '');
         Topic.publish('/navigate', { href: '/view/Homology' + modPath });
       }, false);
 
@@ -1167,6 +1167,27 @@ define([
           Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path) + '&fileType=' + fileType });
         } else {
           console.log('Error: could not find chisqTable.tsv output file');
+        }
+      }, false);
+
+      this.browserHeader.addAction('ViewSubspeciesResult', 'fa icon-eye fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['SubspeciesClassification'],
+        tooltip: 'View Result'
+      }, function (selection, container, button) {
+        console.log(selection);
+
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (meta_file_data) {
+          if (meta_file_data[0].includes('result.tsv')) {
+            path = meta_file_data[0];
+          }
+        }));
+        if (path) {
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
+        } else {
+          console.log('Error: could not find result.tsv output file');
         }
       }, false);
 
@@ -1655,6 +1676,7 @@ define([
         'CodonTree': 'PhylogeneticTree',
         'PrimerDesign': 'PrimerDesign',
         'RNASeq': 'Rnaseq',
+        'SubspeciesClassification': 'SubspeciesClassification',
         'TaxonomicClassification': 'TaxonomicClassification',
         'TnSeq': 'Tnseq',
         'Variation': 'Variation'

@@ -752,6 +752,30 @@ define([
       });
     },
 
+    checkForQueryIdentifier: function (columns) {
+      if (columns) {
+        var subspeciesResultColumns = ['Query Identifier', 'Clade Classification', 'Link'];
+
+        var isSubspeciesResult = columns.every(function (item) {
+          // Ignore the first item as it is a checkbox
+          return (item.id !== 0 && item.field === subspeciesResultColumns[item.id - 1]);
+        });
+
+        if (isSubspeciesResult) {
+          this.actionPanel.addAction('ViewNwkTsv', 'fa icon-tree2 fa-2x', {
+            label: 'VIEW',
+            validTypes: ['*'],
+            tooltip: 'View Archaeopteryx Tree'
+          }, function (selection, containerWidget) {
+            var folderPath = containerWidget.filepath.replace(/\/[^/]+$/, '');
+            var query = selection[0]['Query Identifier'];
+
+            Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?wsTreeFile=' + folderPath + '/' + query + '.tre&fileType=nwk' });
+          }, false);
+        }
+      }
+    },
+
     formatFileMetaData: function (showMetaDataRows) {
       var fileMeta = this.file.metadata;
       if (this.file && fileMeta) {
@@ -800,6 +824,9 @@ define([
             this.tsvGC.set('state', { dataType: this.file.metadata.type, dataFile: this.file.metadata.name, data: this.file.data });
             this.createFilterPanel();
             this._filterCreated = true;
+
+            // check for subspecies classification to add tree view button
+            this.checkForQueryIdentifier(this.tsvCsvStore.columns);
 
             // check for feature/genome columns
             this.checkForGenomeIDs(this.tsvCsvStore.data);
