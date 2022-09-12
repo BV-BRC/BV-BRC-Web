@@ -145,6 +145,28 @@
   text-align: center;
 }
 
+#bv-brc-home .top-banner-flex {
+  display: flex;
+  justify-content: center;
+}
+
+#bv-brc-home .top-banner {
+  width: 1220px;
+  margin: 0px 0px 20px 0px;
+  background-color: var(--green-light-bg);
+  border: 2px solid var(--green);
+}
+
+#bv-brc-home .top-banner p {
+  text-align: left;
+  padding: 10px;
+}
+
+#bv-brc-home .top-banner a {
+  font-weight: 400;
+  text-decoration: underline;
+}
+
 #bv-brc-home .bv-brc-info {
   background-color: var(--blue-light-bg);
   border-bottom: 4px solid var(--border-blue);
