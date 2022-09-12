@@ -1,5 +1,6 @@
 # Changelog
-## 3.21.1 - September 12, 2022
+## 3.21.2 - September 12, 2022
+## 3.21.1
 * [Feature] Add secondary tracking code for both Google Universal Analytics (soon to be EOL) and Google Analytics 4 [Commit #7bbb11a](https://github.com/BV-BRC/bvbrc_website/commit/7bbb11a0b286da3bd8a53b6d5a98e4bfd07f36ea)
 
 ## 3.21.0 - September 9, 2022
