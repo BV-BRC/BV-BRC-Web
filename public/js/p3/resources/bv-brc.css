@@ -145,6 +145,28 @@
   text-align: center;
 }
 
+#bv-brc-home .top-banner-flex {
+  display: flex;
+  justify-content: center;
+}
+
+#bv-brc-home .top-banner {
+  width: 1220px;
+  margin: 0px 0px 20px 0px;
+  background-color: var(--green-light-bg);
+  border: 2px solid var(--green);
+}
+
+#bv-brc-home .top-banner p {
+  text-align: left;
+  padding: 10px;
+}
+
+#bv-brc-home .top-banner a {
+  font-weight: 400;
+  text-decoration: underline;
+}
+
 #bv-brc-home .bv-brc-info {
   background-color: var(--blue-light-bg);
   border-bottom: 4px solid var(--border-blue);
@@ -700,7 +722,7 @@
   #bv-brc-home .grid-container {
     display: grid;
     grid-template-columns: 440px 440px 300px;
-    grid-template-rows: 290px 100px 100px 100px 240px;
+    grid-template-rows: 250px 140px 60px 100px 255px;
     grid-gap: 20px;
   }
   /* #bv-brc-home .home-banner {
