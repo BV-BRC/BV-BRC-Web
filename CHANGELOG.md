@@ -1,4 +1,8 @@
 # Changelog
+## 3.21.3 - September 13, 2022
+* [Minor] Remove banner. Revise wording" [Commit #c9abb032](https://github.com/BV-BRC/bvbrc_website/commit/c9ab0322469f920215137654a25c6451d061a119)
+* [Minor] Fix typo in welcome banner [Commit #adab2b4](https://github.com/BV-BRC/bvbrc_website/commit/adab2b4af82e5548803015879079f35c2b839d0f)
+
 ## 3.21.2 - September 12, 2022
 ## 3.21.1
 * [Feature] Add secondary tracking code for both Google Universal Analytics (soon to be EOL) and Google Analytics 4 [Commit #7bbb11a](https://github.com/BV-BRC/bvbrc_website/commit/7bbb11a0b286da3bd8a53b6d5a98e4bfd07f36ea)
