@@ -1,4 +1,7 @@
 # Changelog
+## 3.22.1 - September 14, 2022
+* [Feature] Modifications for viral support for Similar Genome Finder [PR #387](https://github.com/BV-BRC/bvbrc_website/pull/387)
+
 ## 3.22.0 - September 13, 2022
 * [Update] Update sitemap.xml [Commit #20fc3a8](https://github.com/BV-BRC/bvbrc_website/commit/20fc3a84cc868d2461ffb57c0a61835f1a18a631)
 
