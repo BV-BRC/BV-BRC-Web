@@ -94,17 +94,35 @@
                     </div>
 
                     <div class="left">
+                        <label class="paramlabel">Organism type:</label><br/>
+                        <div data-dojo-type="dijit/form/CheckBox"
+                             data-dojo-attach-point="org_bacterial"
+                             data-dojo-attach-event="onChange:onParamChange"
+			                 name="org_bacterial"
+			                checked="checked"
+                             value="bacterial"></div>
+                        <label>Bacterial and archaeal genomes</label>
+                        <br/>
+                        <div data-dojo-type="dijit/form/CheckBox"
+                             data-dojo-attach-point="org_viral"
+			     name="org_viral"
+                                              data-dojo-attach-event="onChange:onParamChange"
+
+                             checked="checked"
+                             value="viral"></div>
+                        <label>Viral genomes</label>
+			<br/>
                         <label class="paramlabel">Scope:</label><br/>
                         <div data-dojo-type="dijit/form/RadioButton"
                              data-dojo-attach-point="scope_ref"
                              name="scope"
+                             checked="checked"
                              value="ref"></div>
                         <label>Reference and representative genomes</label>
                         <br/>
                         <div data-dojo-type="dijit/form/RadioButton"
                              data-dojo-attach-point="scope_all"
                              name="scope"
-                             checked="checked"
                              value="all"></div>
                         <label>All public genomes</label>
 
