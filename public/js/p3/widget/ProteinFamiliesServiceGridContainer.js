@@ -107,7 +107,7 @@ define([
               ext = 'txt';
             }
 
-            var data  = this.grid.store.query('', { sort: this.grid.store.sort });
+            var data  = this.grid.store.query('', { sort: this.grid.store.sort, 'selectAll': true });
 
             var headers = ['Family ID', 'Proteins', 'Genomes', 'Description', 'Min AA Length', 'Max AA Length', 'Mean', 'Std Dev'];
             var content = [];
