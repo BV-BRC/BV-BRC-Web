@@ -2,12 +2,12 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/aspect', 'dojo/on', 'dojo/dom-class', 'dojo/dom-construct',
   './PageGrid', 'dojox/widget/Standby', '../store/PathwayServiceMemoryStore',
-  './GridSelector', 'dojo/when'
+  './GridSelector', 'dojo/when', './formatter'
 ], function (
   declare, lang, Deferred,
   aspect, on, domClass, domConstruct,
   Grid, Standby, Store,
-  selector, when
+  selector, when, formatter
 ) {
 
   // TODO: hook up action bar buttons
@@ -36,7 +36,9 @@ define([
           genome_count : { label: 'Genome Count', field: 'genome_count' },
           ec_count : { label: 'EC Number Count', field: 'ec_count' },
           gene_count : { label: 'Gene Count', field: 'gene_count' },
-          genome_ec : { label: 'Genome EC Count', field: 'genome_ec' }
+          genome_ec : { label: 'Genome EC Count', field: 'genome_ec' },
+          ec_conservation : { label: 'EC Conservation (%)', field: 'ec_conservation', formatter: formatter.twoDecimalNumeric },
+          gene_conservation : { label: 'Gene Conservation (%)', field: 'gene_conservation', formatter: formatter.twoDecimalNumeric }
         },
       },
       'ecNum': {
@@ -74,11 +76,13 @@ define([
           genome_name : { label: 'Genome Name', field: 'genome_name' },
           bvbrc_id : { label: 'BRC ID', field: 'bvbrc_id' },
           product : { label: 'Product', field: 'product' },
-          refseq_locus_tag : { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag' },
+          refseq_locus_tag : { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag' }
+          /*
           genome_count : { label: 'Genome Count', field: 'genome_count' },
           ec_count : { label: 'EC Number Count', field: 'ec_count' },
           gene_count : { label: 'Gene Count', field: 'gene_count' },
           genome_ec : { label: 'Genome EC Count', field: 'genome_ec' }
+          */
         },
       }
     },

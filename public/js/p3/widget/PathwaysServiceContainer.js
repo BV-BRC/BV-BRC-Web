@@ -90,7 +90,6 @@ define([
       var pathway_data = [];
       var header = true;
       var pathway_keys = null;
-      var idx = 0;
       this.state.data['pathway'].split('\n').forEach(function (line) {
         if (header) {
           pathway_keys = line.split('\t');
@@ -103,10 +102,6 @@ define([
             new_data[key] = l[index];
           }));
           pathway_data.push(new_data);
-          idx++;
-          if (idx == 2490) {
-            console.log(line);
-          }
         }
       });
       // TODO: the last entry is undefined, not sure why it's being added: for now just remove
