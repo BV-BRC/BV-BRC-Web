@@ -105,7 +105,7 @@ define([
         function () {
           downloadTT.set('content', dfc);
 
-          var data = this.grid.store.query('', { });
+          var data = this.grid.store.query('', {});
           var headers,
             content = [],
             filename;
