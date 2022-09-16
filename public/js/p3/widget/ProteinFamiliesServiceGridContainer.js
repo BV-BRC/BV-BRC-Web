@@ -34,6 +34,7 @@ define([
   var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
 
   var downloadTT = new TooltipDialog({
+    clicked: false,
     content: dfc,
     onMouseLeave: function () {
       popup.close(downloadTT);
@@ -95,7 +96,8 @@ define([
 
           downloadTT.set('content', dfc);
 
-          on(downloadTT.domNode, 'div:click', lang.hitch(this, function (evt) {
+          var signal = on(downloadTT.domNode, 'div:click', lang.hitch(this, function (evt) {
+
             var rel = evt.target.attributes.rel.value;
             var DELIMITER,
               ext;
@@ -114,11 +116,10 @@ define([
             data.forEach(function (row) {
               content.push([row.family_id, row.feature_count, row.genome_count, '"' + row.description + '"', row.aa_length_min, row.aa_length_max, row.aa_length_mean, row.aa_length_std].join(DELIMITER));
             });
-            var count = 1;
-            console.log('wtf',count);
-            count++;
+
             saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], { type: rel }), 'BVBRC_protein_families.' + ext);
 
+            signal.remove();
             popup.close(downloadTT);
           }));
 
