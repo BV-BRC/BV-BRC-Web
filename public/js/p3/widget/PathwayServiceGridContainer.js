@@ -2,12 +2,12 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
   'dijit/popup', 'dijit/TooltipDialog',
   './PathwayServiceGrid', './AdvancedSearchFields', './GridContainer',
-  '../util/PathJoin', './ComparativeSystemsActionBar'
+  '../util/PathJoin', './ComparativeSystemsActionBar', '../DataAPI'
 ], function (
   declare, lang, on, Topic, domConstruct,
   popup, TooltipDialog,
   PathwayGrid, AdvancedSearchFields, GridContainer,
-  PathJoin, ContainerActionBar
+  PathJoin, ContainerActionBar, DataAPI
 ) {
 
   // Download tooltips
@@ -152,13 +152,13 @@ define([
     ]),
     selectionActions: GridContainer.prototype.selectionActions.concat([
       [
-        'ViewFeatureItem',
-        'MultiButton fa icon-selection-Feature fa-2x',
+        'ViewFeatureItems',
+        'MultiButton fa icon-selection-FeatureList fa-2x',
         {
-          label: 'FEATURE',
-          validTypes: ['genome_feature'],
+          label: 'FEATURES',
+          validTypes: ['*'],
           multiple: false,
-          tooltip: 'Switch to Feature View. Press and Hold for more options.',
+          tooltip: 'Switch to FeatureList View.',
           validContainerTypes: ['pathway_data'],
           pressAndHold: function (selection, button, opts, evt) {
             console.log('PressAndHold');
@@ -173,13 +173,39 @@ define([
             });
           }
         },
-        function (selection, container) {
+        function (selection, container, opts, evt) {
           // console.log(selection, container);
-          if (container.type !== 'gene') {
+          var sel = selection[0];
+          var genome_id_query = 'in(genome_id,(' + this.state.genome_ids.join(',') + '))';
+          if (container.type == 'pathway') {
+            var pathway_id = sel.pathway_id;
+            var pathway_query = 'eq(pathway_id,(' + pathway_id + '))&' + genome_id_query;
+            DataAPI.queryPathways(pathway_query, { 'limit': 5000 }).then(lang.hitch(this, function (res) {
+              Topic.publish('/navigate', {
+                href: '/view/FeatureList/?in(feature_id,(' + res.items.map(function (x) {
+                  return x.feature_id;
+                }).join(',') + '))',
+                target: 'blank'
+              });
+            }));
+          } else if (container.type == 'ec_number') {
+            var ec_number = sel.ec_number;
+            var ec_query = 'eq(ec_number,(' + ec_number + '))&' + genome_id_query;
+            DataAPI.queryPathways(ec_query, { 'limit': 5000 }).then(lang.hitch(this, function (res) {
+              Topic.publish('/navigate', {
+                href: '/view/FeatureList/?in(feature_id,(' + res.items.map(function (x) {
+                  return x.feature_id;
+                }).join(',') + '))',
+                target: 'blank'
+              });
+            }));
+          } else if (container.type === 'gene') {
             return;
           }
-          var sel = selection[0];
-          Topic.publish('/navigate', { href: '/view/Feature/' + sel.feature_id + '#view_tab=overview' });
+          else {
+            return;
+          }
+          // Topic.publish('/navigate', { href: '/view/Feature/' + sel.feature_id + '#view_tab=overview' });
         },
         false
       ],
