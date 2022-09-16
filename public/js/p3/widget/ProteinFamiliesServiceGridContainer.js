@@ -34,7 +34,6 @@ define([
   var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
 
   var downloadTT = new TooltipDialog({
-    clicked: false,
     content: dfc,
     onMouseLeave: function () {
       popup.close(downloadTT);
