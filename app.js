@@ -88,7 +88,7 @@ app.use('/portal/portal/patric/Home', [
 
 app.use('*jbrowse.conf', express.static(path.join(__dirname, 'public/js/jbrowse.conf')));
 
-staticHeaders = {
+const staticHeaders = {
   maxage: '356d',
   setHeaders: function (res, path) {
     var d = new Date();
