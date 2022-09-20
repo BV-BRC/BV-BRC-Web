@@ -140,7 +140,7 @@ define([
 
     // TODO: adjust classes and such
     renderRow: function (obj) {
-      console.log('renderRow');
+
       var div = domConstruct.create('div', { className: 'collapsed' });
       div.appendChild(Grid.prototype.renderRow.apply(this, arguments));
       // var subDiv = domConstruct.create('div', { className: 'detail' }, div);
@@ -211,7 +211,6 @@ define([
     },
     */
 
-    // TODO: dont use this.store.query, get all data: query subsets the data based on the page index
     _selectAll: function () {
       var _self = this;
       var def = new Deferred();

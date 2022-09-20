@@ -281,12 +281,10 @@ define([
       /* istanbul ignore next */
       on(window, 'message', function (msg) {
         // console.log('onMessage: ', msg);
-        if (msg && (msg.data === 'RemoteReady' || !msg.data)) {
+        if (msg && (msg.data === 'RemoteReady' || !msg.data || msg.origin=="https://syndication.twitter.com")) {
           return;
         }
-        if (msg && msg.origin === "https://syndication.twitter.com"){
-          return;
-        }
+
         try {
           msg = JSON.parse(msg.data);
           // console.log('Message From Remote: ', msg);

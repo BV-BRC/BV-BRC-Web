@@ -1,4 +1,14 @@
 # Changelog
+## 3.22.4 - September 20, 2022
+* [Feature] Added tree panel to workspace MSA viewer [PR #391](https://github.com/BV-BRC/bvbrc_website/pull/391)
+
+## 3.22.3
+* [Fix] 3rd part library versioned requests [PR #390](https://github.com/BV-BRC/bvbrc_website/pull/390)
+
+## 3.22.2 - September 19, 2022
+* [PR #389](https://github.com/BV-BRC/bvbrc_website/pull/389)
+* [PR #388](https://github.com/BV-BRC/bvbrc_website/pull/388)
+
 ## 3.22.1 - September 14, 2022
 * [Feature] Modifications for viral support for Similar Genome Finder [PR #387](https://github.com/BV-BRC/bvbrc_website/pull/387)
 
