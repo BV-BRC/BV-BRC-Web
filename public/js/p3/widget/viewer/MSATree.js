@@ -131,7 +131,7 @@ define([
     id: 'reset'
   }];
 
-/*
+  /*
   var visualopts = [{
     name: 'Conserved weight',
     id: 'conserv'
@@ -151,10 +151,10 @@ define([
 */
 
   var visualopts = [
-  {
-    name: 'Overview box',
-    id: 'overviewbox'
-  }];
+    {
+      name: 'Overview box',
+      id: 'overviewbox'
+    }];
 
   var colorMenuDivs = [];
 
@@ -171,7 +171,7 @@ define([
   visualopts.forEach(lang.hitch(this, function (vis) {
     visualMenuDivs.push('<div class="wsActionTooltip"  rel="' + vis.id + '">' + vis.name + '</div>');
   }));
-  
+
   var colorMenu = new TooltipDialog({
     content: colorMenuDivs.join(''),
     onMouseLeave: function () {
@@ -253,9 +253,9 @@ define([
       this.loading = true;
       var fileCheck = this.state.pathname.match(/path=..+?(?=&|$)/);
       var objPath = fileCheck[0].split('=')[1];
-      var objPathNwk = objPath.replace('\.afa', '_fasttree.nwk');
-      
-      console.log('WorkspaceManager objPathNwk', objPathNwk);      
+      var objPathNwk = objPath.replace('.afa', '_fasttree.nwk');
+
+      console.log('WorkspaceManager objPathNwk', objPathNwk);
 
       var typeCheck = this.state.pathname.match(/alignType=..+?(?=&|$)/);
       if (typeCheck && typeCheck[0].split('=')[1].includes('dna')) {
@@ -266,17 +266,17 @@ define([
         this.data = objs[0].data;
         console.log('WorkspaceManager  this.data', this.data);
         var self = this;
-           WorkspaceManager.getObjects([objPathNwk]).then(lang.hitch(self, function (objs) {
-            console.log('WorkspaceManager tree', objs);
-            self.treeData = objs[0].data;
-            console.log('WorkspaceManager  this.data', self.data);
-            console.log('WorkspaceManager  this.treeData', self.treeData);
-            self.createDataMap();
-            console.log('onSetState tree labels: this.alt_labels', self.alt_labels);
-            console.log('onSetState this.dataMap', self.dataMap);
-          }));     
+        WorkspaceManager.getObjects([objPathNwk]).then(lang.hitch(self, function (objs) {
+          console.log('WorkspaceManager tree', objs);
+          self.treeData = objs[0].data;
+          console.log('WorkspaceManager  this.data', self.data);
+          console.log('WorkspaceManager  this.treeData', self.treeData);
+          self.createDataMap();
+          console.log('onSetState tree labels: this.alt_labels', self.alt_labels);
+          console.log('onSetState this.dataMap', self.dataMap);
+        }));
       }));
-      
+
       console.log('onSetState this.dataStats ', this.dataStats);
     },
 
@@ -287,7 +287,7 @@ define([
     onSetData: function (attr, oldVal, data) {
       console.log('data', data);
     },
-    
+
     onSelection: function () {
       console.log('onSelection this.selection', this.selection);
       console.log('onSelection this.idMap', this.idMap);
@@ -322,7 +322,7 @@ define([
         else {
           xhr.get(PathJoin(window.App.dataAPI, 'genome', cur[0].genome_id), {
             headers: {
-              accept: 'application/json', 
+              accept: 'application/json',
               'X-Requested-With': null,
               Authorization: (window.App.authorizationToken || '')
             },
@@ -425,7 +425,7 @@ define([
       }));
       console.log('in setAltLabel this.alt_labels', this.alt_labels);
     },
- 
+
     createDataMap: function () {
       var myFasta = this.data;
       var geneID = null;
@@ -459,15 +459,15 @@ define([
         this.seqLength = seq.length;
       }
 
-      //tree_newick = tree_newick.replace(new RegExp(geneID, 'g'), this.data.map[geneID].patric_id);
+      // tree_newick = tree_newick.replace(new RegExp(geneID, 'g'), this.data.map[geneID].patric_id);
 
       this.dataStats.clustal = clustal.join('\n');
       this.numSequences = count;
       this.dataStats.fasta = fasta.join('\n');
       this.dataStats.tree_newick = tree_newick;
-      
-      //this.dataStats.clustal_txt = clustal_txt.join('\n');
-      //this.dataStats.fasta = fasta;
+
+      // this.dataStats.clustal_txt = clustal_txt.join('\n');
+      // this.dataStats.fasta = fasta;
       console.log('createDataMap() this.dataStats.tree_newick= ', this.dataStats.tree_newick);
       console.log('createDataMap() this.dataStats= ', this.dataStats);
 
@@ -505,11 +505,11 @@ define([
         this.nodeType = 'feature';
         this.containerType = 'feature_data';
         var fetchedIds = when(xhr.post(PathJoin(window.App.dataAPI, 'genome_feature'), {
-            headers: {
-              accept: 'application/json',
-              'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
-            },
+          headers: {
+            accept: 'application/json',
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
+          },
           handleAs: 'json',
           // headers: this.headers,
           data: 'or(in(patric_id,(' +  pIDs.join(',') + ')),in(feature_id,(' + pIDs.join(',') + ')))&select(feature_id,patric_id,genome_id,genome_name,product)&limit(1000)'
@@ -616,11 +616,11 @@ define([
         console.log('createDataMap() q =', q);
 
         var genomes = when(xhr.post(PathJoin(window.App.dataAPI, 'genome'), {
-            headers: {
-              accept: 'application/json',
-              'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
-            },
+          headers: {
+            accept: 'application/json',
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
+          },
           handleAs: 'json',
           data: q
         }), function (res) {
@@ -699,7 +699,7 @@ define([
           console.log('createDataMap() res genome self.dataMap', self.dataMap);
           self.setAltLabel(self.dataMap);
           self.render();
-          //self.setTreeAltLabel(self.dataMap);
+          // self.setTreeAltLabel(self.dataMap);
           console.log('createDataMap() res genome when alt_labels ', self.alt_labels);
           return res;
         });
@@ -711,7 +711,7 @@ define([
         this.render();
         console.log('node names are not genome nor feature ids');
       }
-    
+
       console.log('in createDataMap() this.dataMap', this.dataMap);
       console.log('in createDataMap() this.alt_labels', this.alt_labels);
     },
@@ -727,33 +727,33 @@ define([
       var treeWidth = treeDiv.offsetWidth;
       var msaWidth = cell2.offsetWidth;
       var topset = 0;
+      var msaTopPadding = 0;
 
-      var treeTopPadding = this.conserveHeight + 5 ;
-      var treeBottomPadding = this.numSequences*3 +10 ;
+      var treeTopPadding = this.conserveHeight + 5;
+      var treeBottomPadding = this.numSequences * 3 + 10;
       console.log('render() this.seqLength = ', this.seqLength);
       console.log('render() treeWidth = ', treeWidth);
       console.log('render() msaWidth = ', msaWidth);
-      console.log('render() seqLength = ', this.seqLength);
 
       if (this.msaFontWidth * this.seqLength > msaWidth) {
-      	treeTopPadding = this.conserveHeight + 10;
+        treeTopPadding = this.conserveHeight + 10;
       }
-      
-      if (this.seqLength <=2000 && topset == 0) {
-      	treeTopPadding += 102;
-      	msaTopPadding = 102;
-      	topset = 1;
+
+      if (this.seqLength <= 2000 && topset == 0) {
+        treeTopPadding += 102;
+        msaTopPadding = 102;
+        topset = 1;
       }
-      
-      treeDiv.setAttribute('style', 'padding-top:'+ treeTopPadding + 'px; padding-bottom:'+ treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
+
+      treeDiv.setAttribute('style', 'padding-top:' + treeTopPadding + 'px; padding-bottom:' + treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
       var msaDiv = domConstruct.create('div', { style: { width: '100%' } }, cell2);
       msaDiv.style.display = 'inline-block';
-      
-     // msaDiv.style.width="64%";
+
+      // msaDiv.style.width="64%";
       // msaDiv.style.overflowX="scroll";
       msaDiv.style.overflowY = 'hidden';
       msaDiv.style.verticalAlign = 'bottom';
-      msaDiv.style.paddingBottom = treeBottomPadding +'px';
+      msaDiv.style.paddingBottom = treeBottomPadding + 'px';
 
       // domConstruct.place(menuDiv,this.contentPane.containerNode,"last");
       // domConstruct.place(combineDiv,this.contentPane.containerNode,"last");
@@ -799,7 +799,7 @@ define([
       opts.vis = {
         conserv: true,
         overviewbox: false,
-        seqlogo: (this.seqLength <=2000 ? true: false),
+        seqlogo: (this.seqLength <= 2000),
         sequences: true,
         labelName: false,
         labelId: false
@@ -878,7 +878,7 @@ define([
       console.log('idMenu ', idMenu);
 
       this.tree.startup();
-      //this.tree.selectLabels('Genome Name');
+      // this.tree.selectLabels('Genome Name');
       this.tree.update();
       console.log('after tree.update() this.tree ', this.tree);
 
@@ -934,7 +934,7 @@ define([
         popup.close(idMenu);
       }));
 
-/*
+      /*
       on(visualMenu.domNode, 'click', lang.hitch(this, function (evt) {
         var rel = evt.target.attributes.rel.value;
         switch (rel) {
@@ -958,7 +958,7 @@ define([
         popup.close(visualMenu);
       }));
 */
-     
+
       on(visualMenu.domNode, 'click', lang.hitch(this, function (evt) {
         var rel = evt.target.attributes.rel.value;
         switch (rel) {
@@ -969,7 +969,7 @@ define([
         }
         popup.close(visualMenu);
       }));
-     
+
       on(filterMenu.domNode, 'click', lang.hitch(this, function (evt) {
         var rel = evt.target.attributes.rel.value;
         // var sel = filterMenu.selection;
@@ -992,9 +992,9 @@ define([
                 hidden.push(i);
               }
             }
-      		treeDiv.setAttribute('style', 'padding-top:'+ (treeTopPadding-msaTopPadding) + 'px; padding-bottom:'+ treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
+            treeDiv.setAttribute('style', 'padding-top:' + (treeTopPadding - msaTopPadding) + 'px; padding-bottom:' + treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
             this.tree.update();
-            cell2.setAttribute('style', 'padding-top:'+ msaTopPadding + 'px');
+            cell2.setAttribute('style', 'padding-top:' + msaTopPadding + 'px');
             m.g.columns.set('hidden', hidden);
             m.g.vis.set('seqlogo', false);
             break;
@@ -1008,9 +1008,9 @@ define([
                 hidden.push(i);
               }
             }
-      		treeDiv.setAttribute('style', 'padding-top:'+ (treeTopPadding-msaTopPadding) + 'px; padding-bottom:'+ treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
+            treeDiv.setAttribute('style', 'padding-top:' + (treeTopPadding - msaTopPadding) + 'px; padding-bottom:' + treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
             this.tree.update();
-            cell2.setAttribute('style', 'padding-top:'+ msaTopPadding + 'px');
+            cell2.setAttribute('style', 'padding-top:' + msaTopPadding + 'px');
             m.g.columns.set('hidden', hidden);
             m.g.vis.set('seqlogo', false);
             break;
@@ -1026,9 +1026,9 @@ define([
                 hidden.push(i);
               }
             }
-      		treeDiv.setAttribute('style', 'padding-top:'+ (treeTopPadding-msaTopPadding) + 'px; padding-bottom:'+ treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
+            treeDiv.setAttribute('style', 'padding-top:' + (treeTopPadding - msaTopPadding) + 'px; padding-bottom:' + treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
             this.tree.update();
-            cell2.setAttribute('style', 'padding-top:'+ msaTopPadding + 'px');
+            cell2.setAttribute('style', 'padding-top:' + msaTopPadding + 'px');
             m.g.columns.set('hidden', hidden);
             m.g.vis.set('seqlogo', false);
             break;
@@ -1049,9 +1049,9 @@ define([
                 hidden.push(i);
               }
             }
-      		treeDiv.setAttribute('style', 'padding-top:'+ (treeTopPadding-msaTopPadding) + 'px; padding-bottom:'+ treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
+            treeDiv.setAttribute('style', 'padding-top:' + (treeTopPadding - msaTopPadding) + 'px; padding-bottom:' + treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
             this.tree.update();
-            cell2.setAttribute('style', 'padding-top:'+ msaTopPadding + 'px');
+            cell2.setAttribute('style', 'padding-top:' + msaTopPadding + 'px');
             m.g.columns.set('hidden', hidden);
             m.g.vis.set('seqlogo', false);
             break;
@@ -1072,9 +1072,9 @@ define([
                 hidden.push(i);
               }
             }
-      		treeDiv.setAttribute('style', 'padding-top:'+ (treeTopPadding-msaTopPadding) + 'px; padding-bottom:'+ treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
+            treeDiv.setAttribute('style', 'padding-top:' + (treeTopPadding - msaTopPadding) + 'px; padding-bottom:' + treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
             this.tree.update();
-            cell2.setAttribute('style', 'padding-top:'+ msaTopPadding + 'px');
+            cell2.setAttribute('style', 'padding-top:' + msaTopPadding + 'px');
             m.g.columns.set('hidden', hidden);
             m.g.vis.set('seqlogo', false);
             break;
@@ -1097,9 +1097,9 @@ define([
                 hidden.push(i);
               }
             }
-      		treeDiv.setAttribute('style', 'padding-top:'+ (treeTopPadding-msaTopPadding) + 'px; padding-bottom:'+ treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
+            treeDiv.setAttribute('style', 'padding-top:' + (treeTopPadding - msaTopPadding) + 'px; padding-bottom:' + treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
             this.tree.update();
-            cell2.setAttribute('style', 'padding-top:'+ msaTopPadding + 'px');
+            cell2.setAttribute('style', 'padding-top:' + msaTopPadding + 'px');
             m.g.columns.set('hidden', hidden);
             m.g.vis.set('seqlogo', false);
             break;
@@ -1111,14 +1111,14 @@ define([
                 return el.set('hidden', false);
               }
             });
-      		treeDiv.setAttribute('style', 'padding-top:'+ treeTopPadding + 'px; padding-bottom:'+ treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
+            treeDiv.setAttribute('style', 'padding-top:' + treeTopPadding + 'px; padding-bottom:' + treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
             this.tree.update();
-            if (this.seqLength <=2000) {
-            	cell2.setAttribute('style', 'padding-top:'+ 0 + 'px');
+            if (this.seqLength <= 2000) {
+              cell2.setAttribute('style', 'padding-top:' + 0 + 'px');
             } else {
-	            cell2.setAttribute('style', 'padding-top: 0px');        
+              cell2.setAttribute('style', 'padding-top: 0px');
             }
-            m.g.vis.set('seqlogo', this.seqLength <=2000 ? true: false);
+            m.g.vis.set('seqlogo', this.seqLength <= 2000);
             break;
 
           default:
@@ -1126,7 +1126,7 @@ define([
         }
         popup.close(filterMenu);
       }));
-      
+
       on(snapMenu.domNode, 'click', lang.hitch(this, function (evt) {
         var rel = evt.target.attributes.rel ? evt.target.attributes.rel.value : null;
 
@@ -1177,12 +1177,12 @@ define([
       msaDiv.style.overflowY = 'hidden';
       msaDiv.style.verticalAlign = 'bottom';
       msaDiv.style.paddingBottom = '10px';
-      msaDiv.style.height = (treeHeight+treeTopPadding+treeBottomPadding).toString() + 'px';
-      
+      msaDiv.style.height = (treeHeight + treeTopPadding + treeBottomPadding).toString() + 'px';
+
       console.log('msaDiv.style.height: ', msaDiv.style.height);
       console.log('treeHeight: ', treeHeight);
-     
-      
+
+
       // treeLoaded = true;
     },
 
@@ -1645,7 +1645,7 @@ define([
         true
       ]
     ],
-    
+
     setupActions: function () {
       if (this.containerActionBar) {
         this.containerActions.forEach(function (a) {
@@ -1657,7 +1657,7 @@ define([
       }, this);
 
     },
-    
+
     startup: function () {
 
       if (this._started) {

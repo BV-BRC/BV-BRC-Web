@@ -1186,7 +1186,7 @@ define([
         var afa_file;
         var exist_nwk = 0;
 
-		container.data.autoMeta.output_files.forEach(lang.hitch(this, function (msa_file_data) {
+        container.data.autoMeta.output_files.forEach(lang.hitch(this, function (msa_file_data) {
           var msa_file = msa_file_data[0].split('.');
           if (msa_file[msa_file.length - 1] === 'afa') {
             afa_file = msa_file.join('.');
