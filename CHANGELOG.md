@@ -1,4 +1,28 @@
 # Changelog
+## 3.22.4 - September 20, 2022
+* [Feature] Added tree panel to workspace MSA viewer [PR #391](https://github.com/BV-BRC/bvbrc_website/pull/391)
+
+## 3.22.3
+* [Fix] 3rd part library versioned requests [PR #390](https://github.com/BV-BRC/bvbrc_website/pull/390)
+
+## 3.22.2 - September 19, 2022
+* [PR #389](https://github.com/BV-BRC/bvbrc_website/pull/389)
+* [PR #388](https://github.com/BV-BRC/bvbrc_website/pull/388)
+
+## 3.22.1 - September 14, 2022
+* [Feature] Modifications for viral support for Similar Genome Finder [PR #387](https://github.com/BV-BRC/bvbrc_website/pull/387)
+
+## 3.22.0 - September 13, 2022
+* [Update] Update sitemap.xml [Commit #20fc3a8](https://github.com/BV-BRC/bvbrc_website/commit/20fc3a84cc868d2461ffb57c0a61835f1a18a631)
+
+## 3.21.3
+* [Minor] Remove banner. Revise wording" [Commit #c9abb032](https://github.com/BV-BRC/bvbrc_website/commit/c9ab0322469f920215137654a25c6451d061a119)
+* [Minor] Fix typo in welcome banner [Commit #adab2b4](https://github.com/BV-BRC/bvbrc_website/commit/adab2b4af82e5548803015879079f35c2b839d0f)
+
+## 3.21.2 - September 12, 2022
+## 3.21.1
+* [Feature] Add secondary tracking code for both Google Universal Analytics (soon to be EOL) and Google Analytics 4 [Commit #7bbb11a](https://github.com/BV-BRC/bvbrc_website/commit/7bbb11a0b286da3bd8a53b6d5a98e4bfd07f36ea)
+
 ## 3.21.0 - September 9, 2022
 * [Release] Production Release 3.21.0
 
