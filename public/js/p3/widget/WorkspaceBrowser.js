@@ -1176,13 +1176,32 @@ define([
         multiple: false,
         validTypes: ['aligned_dna_fasta', 'aligned_protein_fasta'],
         tooltip: 'View aligned fasta'
-      }, function (selection) {
+      }, function (selection, container) {
         var path = this.selection[0].path; // .get('selection.path');
         var alignType = 'protein';
         if (this.selection[0].type.includes('dna')) {
           alignType = 'dna';
         }
-        Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + path, target: 'blank' });
+        console.log('container ',container);
+        var afa_file;
+        var exist_nwk = 0;
+
+		container.data.autoMeta.output_files.forEach(lang.hitch(this, function (msa_file_data) {
+          var msa_file = msa_file_data[0].split('.');
+          if (msa_file[msa_file.length - 1] === 'afa') {
+            afa_file = msa_file.join('.');
+          }
+          if (msa_file[msa_file.length - 1] === 'nwk') {
+            exist_nwk = 1;
+          }
+        }));
+        if ((!afa_file) | (!alignType)) {
+          console.log('Error: Alignment file doesnt exist or alignment alphabet could not be determined');
+        } else if (exist_nwk == 1) {
+          Topic.publish('/navigate', { href: '/view/MSATree/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
+        } else {
+          Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
+        }
       }, false);
 
       this.browserHeader.addAction('ViewAFA', 'fa icon-eye fa-2x', {
@@ -1195,14 +1214,20 @@ define([
         console.log('selection=', selection);
         var alignType = selection[0].autoMeta.parameters.alphabet;
         var afa_file;
+        var exist_nwk = 0;
         selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (msa_file_data) {
           var msa_file = msa_file_data[0].split('.');
           if (msa_file[msa_file.length - 1] === 'afa') {
             afa_file = msa_file.join('.');
           }
+          if (msa_file[msa_file.length - 1] === 'nwk') {
+            exist_nwk = 1;
+          }
         }));
         if ((!afa_file) | (!alignType)) {
           console.log('Error: Alignment file doesnt exist or alignment alphabet could not be determined');
+        } else if (exist_nwk == 1) {
+          Topic.publish('/navigate', { href: '/view/MSATree/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
         } else {
           Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
         }
