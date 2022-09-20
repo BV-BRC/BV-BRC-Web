@@ -160,7 +160,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/view/PathwayService' + path });
+          Topic.publish('/navigate', { href: '/view/PathwayService' + path, target: 'blank' });
         } else {
           console.log('Error: could not find pathways data file');
         }
@@ -179,7 +179,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/view/ProteinFamiliesService' + path });
+          Topic.publish('/navigate', { href: '/view/ProteinFamiliesService' + path, target: 'blank' });
         } else {
           console.log('Error: could not find pathways data file');
         }
@@ -198,7 +198,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/view/SubsystemService' + path });
+          Topic.publish('/navigate', { href: '/view/SubsystemService' + path, target: 'blank' });
         } else {
           console.log('Error: could not find pathways data file');
         }

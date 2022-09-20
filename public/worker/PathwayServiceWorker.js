@@ -8,6 +8,8 @@ function parseData_v2(data, primaryKey) {
       var isnum = /^\d+$/.test(obj[field]);
       if (field !== 'pathway_id' && isnum) {
         data_dict[pathwayKey][field] = parseInt(obj[field]);
+      } else if (field === 'ec_conservation' || field === 'gene_conservation') {
+        data_dict[pathwayKey][field] = parseFloat(obj[field]);
       } else {
         data_dict[pathwayKey][field] = obj[field];
       }
