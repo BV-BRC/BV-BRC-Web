@@ -1,4 +1,7 @@
 # Changelog
+## 3.22.3 - September 20, 2022
+* [Fix] 3rd part library versioned requests [PR #390](https://github.com/BV-BRC/bvbrc_website/pull/390)
+
 ## 3.22.2 - September 19, 2022
 * [PR #389](https://github.com/BV-BRC/bvbrc_website/pull/389)
 * [PR #388](https://github.com/BV-BRC/bvbrc_website/pull/388)
