@@ -1,4 +1,7 @@
 # Changelog
+## 3.22.6 - September 21, 2022
+* [Feature] Conservation columns in pathways viewer and some QOL fixes [PR #392](https://github.com/BV-BRC/bvbrc_website/pull/392)
+
 ## 3.22.5 - September 20, 2022
 * [Submodule] MSA update [Commit #6e9309](https://github.com/BV-BRC/bvbrc_website/commit/66e93096af6fe9f96868c4fa671fcf851d3c697e)
 
