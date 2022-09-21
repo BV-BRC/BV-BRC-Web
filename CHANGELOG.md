@@ -1,5 +1,8 @@
 # Changelog
-## 3.22.4 - September 20, 2022
+## 3.22.5 - September 20, 2022
+* [Submodule] MSA update [Commit #6e9309](https://github.com/BV-BRC/bvbrc_website/commit/66e93096af6fe9f96868c4fa671fcf851d3c697e)
+
+## 3.22.4
 * [Feature] Added tree panel to workspace MSA viewer [PR #391](https://github.com/BV-BRC/bvbrc_website/pull/391)
 
 ## 3.22.3
