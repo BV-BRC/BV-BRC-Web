@@ -1,0 +1,4 @@
+52c52
+<   if (! seqs instanceof Array || "at" in seqs) {
+---
+>   if (! seqs instanceof Array || "_byId" in seqs) {
