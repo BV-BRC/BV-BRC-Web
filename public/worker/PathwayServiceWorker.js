@@ -1,3 +1,24 @@
+
+function parseData_v2(data, primaryKey) {
+  var data_dict = {};
+  data.forEach(function (obj) {
+    var pathwayKey = obj[primaryKey];
+    data_dict[pathwayKey] = {};
+    Object.keys(obj).forEach(function (field) {
+      var isnum = /^\d+$/.test(obj[field]);
+      if (field !== 'pathway_id' && isnum) {
+        data_dict[pathwayKey][field] = parseInt(obj[field]);
+      } else if (field === 'ec_conservation' || field === 'gene_conservation') {
+        data_dict[pathwayKey][field] = parseFloat(obj[field]);
+      } else {
+        data_dict[pathwayKey][field] = obj[field];
+      }
+      data_dict[pathwayKey]['_id'] = pathwayKey;
+    });
+  });
+  return Object.values(data_dict);
+}
+
 function parseData(data, genome_list, primaryKey) {
   var data_dict = {};
   var key_list = [];
@@ -51,5 +72,12 @@ onmessage = (msg) => {
       var key = payload.primaryKey;
       var parsed_data = parseData(data, genome_ids, key);
       postMessage({ type: 'parsed_data', data: parsed_data });
+      break;
+    case 'parse_data_v2':
+      var data = payload.data;
+      var key = payload.primaryKey;
+      var parsed_data = parseData_v2(data, key);
+      postMessage({ type: 'parsed_data', data: parsed_data });
+      break;
   }
 }
