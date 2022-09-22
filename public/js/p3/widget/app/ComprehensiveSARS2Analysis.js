@@ -41,7 +41,7 @@ define([
     tutorialLink: 'tutorial/sars_cov_2_assembly_annotation/sars_cov_2_assembly_annotation.html',
     libraryData: null,
     defaultPath: '',
-    startingRows: 6,
+    startingRows: 9,
     libCreated: 0,
     // 'https://www.ebi.ac.uk/ena/data/view/{0}&display=xml',
     srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmax=1&db=sra&field=accn&term={0}&retmode=json',

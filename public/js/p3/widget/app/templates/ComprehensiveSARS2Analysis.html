@@ -108,7 +108,7 @@
             </div>
           </td>
           <td>
-            <div class="appBox appShadow" style="height:213px; width:330px">
+            <div class="appBox appShadow" style="height:275px; width:330px">
               <div class="headerrow">
                 <label class="appBoxLabel">Selected libraries</label>
                 <div name="selected-libraries" class="infobox iconbox infobutton tooltipinfo">
@@ -154,57 +154,32 @@
         <div data-dojo-attach-point="assemblyStrategy" class="appRow">
           <label class="paramlabel">Strategy</label><br>
           <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-attach-event="onChange:onRecipeChange">
-            <option value="auto">Auto</option>
             <option value="onecodex">One Codex</option>
             <option value="cdc-illumina">CDC-Illumina</option>
             <option value="cdc-nanopore">CDC-Nanopore</option>
             <option value="artic-nanopore">ARTIC-Nanopore</option>
+            <option value="auto">Auto</option>
           </select>
         </div>
 
-        <!--
-        <div class="appRow" data-dojo-attach-point="genome_size_block" style="display:none">
-          <label class="paramlabel">Estimated Genome Size</label><br>
-          <div name="genome_size"
-            class="medInput"
-            data-dojo-type="dijit/form/NumberTextBox"
-            data-dojo-attach-point="genome_size"
-            value="5000000">
-          </div>
+        <div data-dojo-attach-point="primersStrategy" class="appRow">
+          <label class="paramlabel">Primers</label><br>
+          <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-attach-event="onChange:onRecipeChange">
+            <option value="artic" version="V1">ARTIC - V1</option>
+            <option value="artic" version="V2">ARTIC - V2</option>
+            <option value="artic" version="V3">ARTIC - V3</option>
+            <option value="artic" version="V4">ARTIC - V4</option>
+            <option value="artic" version="V4.1">ARTIC - V4.1</option>
+            <option value="midnight" version="V1">midnight - V1</option>
+            <option value="qiagen" version="V1">qiagen - V1</option>
+            <option value="swift" version="V1">swift - V1</option>
+            <option value="varskip" version="V1a">varskip - V1a</option>
+            <option value="varskip" version="V2">varskip - V2</option>
+            <option value="varskip-long" version="V1a">varskip-long - V1a</option>
+          </select>
         </div>
-        -->
 
-        <!--
-        <div data-dojo-attach-point="assembly_additional_parameters_block">
-          <div class="appRow" style="margin:0 0 0 0">
-              <label class="paramlabel">Trim reads before assembly</label><br>
-              <select data-dojo-type="dijit/form/Select" name="trim" style="width:50px" data-dojo-attach-point="trim" required="false">
-                <option value="false">False</option>
-                <option value="true">True</option>
-              </select>
-          </div>
-          <div class="appRow" style="margin:0 0 0 0">
-            <div class="appRowSegment" style="margin:0 0 0 0">
-              <label class="paramlabel">Racon Iterations</label><br>
-              <div class="insertspinner" name="racon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="racon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
-            </div>
-            <div class="appRowSegment" style="margin:10px 0 0 0">
-              <label class="paramlabel">Pilon Iterations</label><br>
-              <div class="insertspinner" name="pilon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="pilon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
-            </div>
-          </div>
-          <div class="appRow" style="margin:0 0 0 0">
-            <div class="appRowSegment" style="margin:0 0 0 0">
-              <label class="paramlabel">Min. contig length</label><br>
-              <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_len" data-dojo-props="value:300, smallDelta:10, constraints:{min:100,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
-            </div>
-            <div class="appRowSegment" style="margin:10px 0 0 0">
-              <label class="paramlabel">Min. contig coverage</label><br>
-              <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_cov" data-dojo-props="value:5, smallDelta:5, constraints:{min:0,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
-            </div>
-          </div>
-        </div>
-        -->
+
 
         <!-- hidden, but supplied to service -->
         <div class="appRow" style="display:none">
