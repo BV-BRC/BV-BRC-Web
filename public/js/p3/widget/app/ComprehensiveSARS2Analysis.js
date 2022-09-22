@@ -165,7 +165,7 @@ define([
       values.taxonomy_id = this.tax_idWidget.get('displayedValue');
       if (this.startWithContigs.checked) {  // starting from contigs
         values.input_type = 'contigs'; // set input_type to be 'contigs'
-        var assembly_inputs = ['recipe', 'genome_size', 'trim', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
+        var assembly_inputs = ['recipe', 'primers', 'version', 'genome_size', 'trim', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
         assembly_inputs.forEach(function (key) {
           if (Object.prototype.hasOwnProperty.call(values, key)) {
             delete values[key];
@@ -591,12 +591,14 @@ define([
     },
 
     onRecipeChange: function () {
-      if (this.recipe.value == 'canu') {
+      if (this.recipe.value == 'oneindex') {
         // this.genome_size_block.style.display = 'block';
+        this.primers.set('disabled', false);
         this.checkParameterRequiredFields();
       }
       else {
         // this.genome_size_block.style.display = 'none';
+        this.primers.set('disabled', true);
         this.checkParameterRequiredFields();
       }
     },
