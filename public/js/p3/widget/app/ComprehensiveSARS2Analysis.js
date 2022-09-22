@@ -605,6 +605,7 @@ define([
       if (this.startWithRead.checked == true) {
         this.readTable.style.display = 'block';
         this.assemblyStrategy.style.display = 'block';
+        this.primersStrategy.style.display = 'block';
         // this.assembly_additional_parameters_block.style.display = 'block';
         this.annotationFileBox.style.display = 'none';
         this.numlibs.constraints.min = 1;
@@ -615,6 +616,7 @@ define([
       if (this.startWithContigs.checked == true) {
         this.readTable.style.display = 'none';
         this.assemblyStrategy.style.display = 'none';
+        this.primersStrategy.style.display = 'none';
         // this.genome_size_block.style.display = 'none';
         // this.assembly_additional_parameters_block.style.display = 'none';
         this.annotationFileBox.style.display = 'block';
