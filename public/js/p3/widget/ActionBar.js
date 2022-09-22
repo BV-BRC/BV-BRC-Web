@@ -132,8 +132,8 @@ define([
 
         // if this is a tsv or csv table, hide copy folder, move, rename, delete, edit type buttons
         if ((this.currentContainerType == 'csvFeature' || this.currentContainerType == '') &&
-          (act.options.label == 'DELETE' || act.options.label == 'MOVE' || act.options.label == 'RENAME' || act.options.label == 'EDIT TYPE' || act.options.label == 'DWNLD' ||
-            (act.options.label == 'COPY' && act.options.validContainerTypes != 'csvFeature'))) {
+          (act.options.label == 'DELETE' || act.options.label == 'MOVE' || act.options.label == 'RENAME' ||
+            act.options.label == 'EDIT TYPE' || act.options.label == 'DWNLD' || act.options.label == 'COPY')) {
           return false;
         }
 
