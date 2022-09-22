@@ -1,5 +1,9 @@
 # Changelog
-## 3.22.7 - September 22, 2022
+## 3.22.8 - September 22, 2022
+* [Feature] Enable COPY ROWS for TSV viewer [PR #397](https://github.com/BV-BRC/bvbrc_website/pull/3967)
+* [Bug] Fix default label display on Archaeopteryx trees [PR #396](https://github.com/BV-BRC/bvbrc_website/pull/396)
+
+## 3.22.7
 * [Modification] Checked for empty container type to remove buttons on the TSV action panel. [PR #395](https://github.com/BV-BRC/bvbrc_website/pull/395)
 * [Enhancement] Increased the TSV viewer limit and added an error message. [PR #394](https://github.com/BV-BRC/bvbrc_website/pull/394)
 
