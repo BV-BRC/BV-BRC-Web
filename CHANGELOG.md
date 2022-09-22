@@ -1,6 +1,9 @@
 # Changelog
-## 3.22.8 - September 22, 2022
-* [Feature] Enable COPY ROWS for TSV viewer [PR #397](https://github.com/BV-BRC/bvbrc_website/pull/3967)
+## 3.22.9 - September 22, 2022
+* [Feature] Add primers dropdown for One Codex strategy [PR #398](https://github.com/BV-BRC/bvbrc_website/pull/398)
+
+## 3.22.8
+* [Feature] Enable COPY ROWS for TSV viewer [PR #397](https://github.com/BV-BRC/bvbrc_website/pull/397)
 * [Bug] Fix default label display on Archaeopteryx trees [PR #396](https://github.com/BV-BRC/bvbrc_website/pull/396)
 
 ## 3.22.7
