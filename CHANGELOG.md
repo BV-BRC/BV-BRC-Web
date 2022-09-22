@@ -1,4 +1,8 @@
 # Changelog
+## 3.22.7 - September 22, 2022
+* [Modification] Checked for empty container type to remove buttons on the TSV action panel. [PR #395](https://github.com/BV-BRC/bvbrc_website/pull/395)
+* [Enhancement] Increased the TSV viewer limit and added an error message. [PR #394](https://github.com/BV-BRC/bvbrc_website/pull/394)
+
 ## 3.22.6 - September 21, 2022
 * [Feature] Conservation columns in pathways viewer and some QOL fixes [PR #392](https://github.com/BV-BRC/bvbrc_website/pull/392)
 
