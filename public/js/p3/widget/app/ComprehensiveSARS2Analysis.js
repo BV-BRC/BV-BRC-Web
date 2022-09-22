@@ -591,14 +591,16 @@ define([
     },
 
     onRecipeChange: function () {
-      if (this.recipe.value == 'oneindex') {
-        // this.genome_size_block.style.display = 'block';
+      if (this.recipe.value === 'oneindex') {
         this.primers.set('disabled', false);
         this.checkParameterRequiredFields();
       }
-      else {
-        // this.genome_size_block.style.display = 'none';
+      else if (this.recipe.value === 'cdc-illumina' || this.recipe.value === 'cdc-nanopore' || this.recipe.value === 'artic-nanopore' || this.recipe.value === 'auto') {
         this.primers.set('disabled', true);
+        this.checkParameterRequiredFields();
+      }
+      else {
+        this.primers.set('disabled', false);
         this.checkParameterRequiredFields();
       }
     },
