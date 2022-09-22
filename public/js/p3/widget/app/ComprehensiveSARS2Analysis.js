@@ -165,7 +165,7 @@ define([
       values.taxonomy_id = this.tax_idWidget.get('displayedValue');
       if (this.startWithContigs.checked) {  // starting from contigs
         values.input_type = 'contigs'; // set input_type to be 'contigs'
-        var assembly_inputs = ['recipe', 'primers', 'version', 'genome_size', 'trim', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
+        var assembly_inputs = ['recipe', 'primers', 'genome_size', 'trim', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
         assembly_inputs.forEach(function (key) {
           if (Object.prototype.hasOwnProperty.call(values, key)) {
             delete values[key];
