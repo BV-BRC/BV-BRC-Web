@@ -41,7 +41,7 @@ define([
     tutorialLink: 'tutorial/sars_cov_2_assembly_annotation/sars_cov_2_assembly_annotation.html',
     libraryData: null,
     defaultPath: '',
-    startingRows: 6,
+    startingRows: 9,
     libCreated: 0,
     // 'https://www.ebi.ac.uk/ena/data/view/{0}&display=xml',
     srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmax=1&db=sra&field=accn&term={0}&retmode=json',
@@ -165,7 +165,7 @@ define([
       values.taxonomy_id = this.tax_idWidget.get('displayedValue');
       if (this.startWithContigs.checked) {  // starting from contigs
         values.input_type = 'contigs'; // set input_type to be 'contigs'
-        var assembly_inputs = ['recipe', 'genome_size', 'trim', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
+        var assembly_inputs = ['recipe', 'primers', 'genome_size', 'trim', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
         assembly_inputs.forEach(function (key) {
           if (Object.prototype.hasOwnProperty.call(values, key)) {
             delete values[key];
@@ -591,12 +591,16 @@ define([
     },
 
     onRecipeChange: function () {
-      if (this.recipe.value == 'canu') {
-        // this.genome_size_block.style.display = 'block';
+      if (this.recipe.value === 'oneindex') {
+        this.primers.set('disabled', false);
+        this.checkParameterRequiredFields();
+      }
+      else if (this.recipe.value === 'cdc-illumina' || this.recipe.value === 'cdc-nanopore' || this.recipe.value === 'artic-nanopore' || this.recipe.value === 'auto') {
+        this.primers.set('disabled', true);
         this.checkParameterRequiredFields();
       }
       else {
-        // this.genome_size_block.style.display = 'none';
+        this.primers.set('disabled', false);
         this.checkParameterRequiredFields();
       }
     },
@@ -605,6 +609,7 @@ define([
       if (this.startWithRead.checked == true) {
         this.readTable.style.display = 'block';
         this.assemblyStrategy.style.display = 'block';
+        this.primersStrategy.style.display = 'block';
         // this.assembly_additional_parameters_block.style.display = 'block';
         this.annotationFileBox.style.display = 'none';
         this.numlibs.constraints.min = 1;
@@ -615,6 +620,7 @@ define([
       if (this.startWithContigs.checked == true) {
         this.readTable.style.display = 'none';
         this.assemblyStrategy.style.display = 'none';
+        this.primersStrategy.style.display = 'none';
         // this.genome_size_block.style.display = 'none';
         // this.assembly_additional_parameters_block.style.display = 'none';
         this.annotationFileBox.style.display = 'block';
