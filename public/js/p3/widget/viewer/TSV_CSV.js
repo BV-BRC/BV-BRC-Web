@@ -258,14 +258,14 @@ define([
 
       // add copy button to action panel
       this.actionPanel.addAction('CopySelection', 'fa icon-clipboard2 fa-2x', {
-        label: 'COPY',
+        label: 'COPY ROWS',
         multiple: true,
         validTypes: ['*'],
         ignoreDataType: true,
         tooltip: 'Copy Selection to Clipboard.',
         tooltipDialog: copySelectionTT,
         max: 5000,
-        validContainerTypes: ['csvFeature']
+        validContainerTypes: ['csvFeature', '']
       },
         function (selection, container) {
           _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('selection', selection);
