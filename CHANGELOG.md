@@ -1,4 +1,7 @@
 # Changelog
+## 3.22.10 - September 23, 2022
+* [Feature] Add initial versioning for Artic primer in SARS-CoV-2 service
+
 ## 3.22.9 - September 22, 2022
 * [Feature] Add primers dropdown for One Codex strategy [PR #398](https://github.com/BV-BRC/bvbrc_website/pull/398)
 
