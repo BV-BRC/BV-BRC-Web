@@ -23,7 +23,6 @@ define([
         return;
       }
       this.reload();
-      this._filtered = undefined; // reset flag prevent to read stored _original
     },
 
     constructor: function (options) {
@@ -32,9 +31,13 @@ define([
       this.userDefinedColumnHeaders = options.userDefinedColumnHeaders;
       // for keyword filtering
       Topic.subscribe('applyKeywordFilter', lang.hitch(this, function () {
-        this.filterOptions = arguments[0];
-        this.keywordFilter();
+        this.keywordFilter(arguments[0]);
       }));
+
+      Topic.subscribe('applyResetFilter', lang.hitch(this, function () {
+        this.resetFilter();
+      }));
+
       this.watch('state', lang.hitch(this, 'onSetState'));
     },
 
@@ -70,69 +73,75 @@ define([
       }));
     },
 
-    keywordFilter: function () {
-      if (this._filtered == undefined) { // first time
-        this._filtered = true;
-        this._original = this.query('', {});
+    processDataValue: function (filterOptions, dataValue) {
+      if (filterOptions.type == 'fuzzy') {
+        return String(dataValue).indexOf(filterOptions.keyword) >= 0;
+      } else if (filterOptions.type == 'exact') {
+        return String(dataValue) == String(filterOptions.keyword);
+      } else { // filterOptions.type == 'range'
+        var range = String(filterOptions.keyword).trim();
+        if (!this.isNumeric(dataValue)) {
+          return false;
+        }
+        var numValue = parseFloat(dataValue);
+        if (range.startsWith('>=')) {
+          range = range.replace('>=', '');
+          return numValue >= parseFloat(range.trim());
+        } else if (range.startsWith('>')) {
+          range = range.replace('>', '');
+          return numValue > parseFloat(range.trim());
+        } else if (range.startsWith('<=')) {
+          range = range.replace('<=', '');
+          return numValue <= parseFloat(range.trim());
+        } else if (range.startsWith('<')) {
+          range = range.replace('<', '');
+          return numValue < parseFloat(range.trim());
+        } else if (range.includes('-')) {
+          range = range.split('-');
+          if (range.length != 2) {
+            return false;
+          }
+          var left = parseFloat(range[0].trim());
+          var right = parseFloat(range[1].trim());
+          return numValue >= left && numValue <= right;
+        }
       }
+      return false;
+    },
+
+    keywordFilter: function (filterOptions) {
       var data = this._original;
       var newData = [];
-      if (this.filterOptions.keyword !== '') {
-        var keywordRegex = this.filterOptions.keyword.trim().toLowerCase().replace(/,/g, '~').replace(/\n/g, '~')
-          .split('~')
-          .map(function (k) { return k.trim(); });
+      if (filterOptions.columnSelection == 'All Columns') {
+        data.forEach(function (dataLine) {
+          var keep = false;
+          if (dataLine) {
+            delete dataLine.RowNumber;
+            keep = Object.values(dataLine).some(function (dataValue) {
+              return this.processDataValue(filterOptions, dataValue);
+            });
+          }
+          if (keep) {
+            newData.push(dataLine);
+          }
+        }, this);
       } else {
-        keywordRegex = '';    // on Reset
+        data.forEach(function (dataLine) {
+          var keep = false;
+          if (dataLine[filterOptions.columnSelection]) {
+            keep = this.processDataValue(filterOptions, dataLine[filterOptions.columnSelection]);
+          }
+          if (keep) {
+            newData.push(dataLine);
+          }
+        }, this);
       }
-      if (this.filterOptions.keyword !== '') {
-        var keyword = this.filterOptions.keyword;
-        var columnSelection = this.filterOptions.columnSelection;
-        // all columns
-        if (columnSelection == 'All Columns') {
-          data.forEach(function (dataLine) {
-            var skip = false;
-            if (!skip && keyword !== '') {
-              keywordRegex.some(function (needle) {
-                if (dataLine) {
-                  var dataLineArray = Object.values(dataLine);  // array elems can be searched for partial words
-                  dataLineArray.shift();  // remove row number, first element
-                  skip = !dataLineArray.some(function (dataValue) {
-                    // console.log(needle && (dataValue.toLowerCase().indexOf(needle) >= 0 || dataValue.toLowerCase().indexOf(needle) >= 0));
-                    return needle && (dataValue.toLowerCase().indexOf(needle) >= 0 || dataValue.toLowerCase().indexOf(needle) >= 0);
-                  });
-                } else {
-                  skip = true;  // no data in this row
-                }
-              });
-            }
-            if (!skip) {
-              newData.push(dataLine);
-            }
-          }, this);
-        } else {
-          // keyword search
-          data.forEach(function (dataLine) {
-            var skip = false;
-            if (!skip && keyword !== '') {
-              skip = !keywordRegex.some(function (needle) {
-                if (dataLine[columnSelection]) {
-                  // console.log (dataLine[columnSelection]);
-                  // console.log(needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0));
-                  return needle && (dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0 || dataLine[columnSelection].toLowerCase().indexOf(needle) >= 0);
-                }
-                skip = true;  // no Function
-              });
-            }
-            if (!skip) {
-              newData.push(dataLine);
-            }
+      this.setData(newData);
+      this.set('refresh');
+    },
 
-          }, this);
-        }
-        this.setData(newData);
-      } else {
-        this.setData(this._original);
-      }
+    resetFilter: function () {
+      this.setData(this._original);
       this.set('refresh');
     },
 
@@ -233,6 +242,7 @@ define([
         }
       }
       this.setData(columnData);
+      this._original = columnData;
       this._loaded = true;
       return this._loadingDeferred;
     }
