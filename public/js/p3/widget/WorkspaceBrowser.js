@@ -1180,14 +1180,14 @@ define([
 
         var path;
         selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (meta_file_data) {
-          if (meta_file_data[0].includes('result.tsv')) {
+          if (meta_file_data[0].includes('classification_report.html')) {
             path = meta_file_data[0];
           }
         }));
         if (path) {
           Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
         } else {
-          console.log('Error: could not find result.tsv output file');
+          console.log('Error: could not find classification_report.html output file');
         }
       }, false);
 
