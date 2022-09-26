@@ -1,4 +1,8 @@
 # Changelog
+## 3.22.11 - September 26, 2022
+* [Hot Fix] Add contact us link [PR #399](https://github.com/BV-BRC/bvbrc_website/pull/399)
+* [Bug] Fix ARTIC primer submission validation error. Remove duplicate primer. [Commit #30fd531](https://github.com/BV-BRC/bvbrc_website/commit/30fd53188e520feea76bd194d72db5d8d90c39a7)
+
 ## 3.22.10 - September 23, 2022
 * [Feature] Add initial versioning for Artic primer in SARS-CoV-2 service
 
