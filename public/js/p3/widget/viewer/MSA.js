@@ -131,6 +131,12 @@ define([
     id: 'reset'
   }];
 
+  var visualopts = [
+    {
+      name: 'Overview box',
+      id: 'overviewbox'
+    }];
+
   // var noMenu = ["10_import", "15_ordering", "20_filter", "30_selection","40_vis", "70_extra", "90_help", "95_debug"];
   // noMenu.forEach(function(toRemove){delete defMenu.views[toRemove];});
   // m.addView("menu", defMenu);
@@ -145,6 +151,11 @@ define([
   var filterMenuDivs = [];
   filters.forEach(lang.hitch(this, function (filters) {
     filterMenuDivs.push('<div class="wsActionTooltip"  rel="' + filters.id + '">' + filters.name + '</div>');
+  }));
+
+  var visualMenuDivs = [];
+  visualopts.forEach(lang.hitch(this, function (vis) {
+    visualMenuDivs.push('<div class="wsActionTooltip"  rel="' + vis.id + '">' + vis.name + '</div>');
   }));
 
   var colorMenu = new TooltipDialog({
@@ -175,6 +186,13 @@ define([
     }
   });
 
+  var visualMenu = new TooltipDialog({
+    content: visualMenuDivs.join(''),
+    onMouseLeave: function () {
+      popup.close(visualMenu);
+    }
+  });
+
   var snapMenu = new TooltipDialog({
     content: '',
     onMouseLeave: function () {
@@ -197,6 +215,13 @@ define([
     numSequences: 0,
     featureData: null,
     genomeData: null,
+    seqlogoHeight: 100,
+    conserveHeight: 20,
+    markerHeight: 10,
+    scrollbarHeight: 11.5,
+    seqLength: 0,
+    msaFontWidth: 15,
+    treeFontSize: 12,
 
     selection: null,
     onSetLoading: function (attr, oldVal, loading) {
@@ -346,12 +371,16 @@ define([
       this.dataStats.genomeIDs = {};
       var genomeList = [];
       var default_value = 'N/A';
+      var seq = '';
 
       console.log('this.data ', this.data);
       console.log('this.dataMap ', this.dataMap);
 
       this.data.alignment.split('\n').forEach(function (line) {
         if (line.slice(0, 1) == '>') {
+          if (seq.length > 0) {
+            seq = '';
+          }
           var regex = /^>([^\s]+)\s+\[(.*?)\]/g;
           var headerInfo = regex.exec(line);
           var record = { sequence: [] };
@@ -419,11 +448,16 @@ define([
           clustal[clustal.length - 1] = clustal[clustal.length - 1] + line;
           clustal_txt[clustal_txt.length - 1] = clustal_txt[clustal_txt.length - 1] + line;
           fasta = fasta + line + '\n';
+          seq += line.trim();
         }
         else {
           geneID = null;
         }
       }, this);
+
+      if (seq.length > 0) {
+        this.seqLength = seq.length;
+      }
 
       Object.keys(this.data.map).forEach(lang.hitch(this, function (geneID) {
         if (this.data.map[geneID].aa_length > this.dataStats.maxLength) {
@@ -508,14 +542,37 @@ define([
       var cell1 = domConstruct.create('td', { width: '30%' }, combineRow);
       var cell2 = domConstruct.create('td', { width: '70%' }, combineRow);
       var treeDiv = domConstruct.create('div', { id: this.id + 'tree-container' }, cell1);
-      treeDiv.setAttribute('style', 'padding-top:106px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
+      var treeWidth = treeDiv.offsetWidth;
+      var msaWidth = cell2.offsetWidth;
+      var topset = 0;
+      var msaTopPadding = 0;
+
+      var treeTopPadding = this.conserveHeight + 5;
+      var treeBottomPadding = this.numSequences * 3 + 10;
+      console.log('render() this.seqLength = ', this.seqLength);
+      console.log('render() treeWidth = ', treeWidth);
+      console.log('render() msaWidth = ', msaWidth);
+      console.log('render() this.dataStats.maxLength = ', this.dataStats.maxLength);
+
+      if (this.msaFontWidth * this.seqLength > msaWidth) {
+        treeTopPadding = this.conserveHeight + 10;
+      }
+
+      if (this.seqLength <= 2000 && topset == 0) {
+        treeTopPadding += 102;
+        msaTopPadding = 102;
+        topset = 1;
+      }
+
+      treeDiv.setAttribute('style', 'padding-top:' + treeTopPadding + 'px; padding-bottom:' + treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
       var msaDiv = domConstruct.create('div', { style: { width: '100%' } }, cell2);
       msaDiv.style.display = 'inline-block';
+
       // msaDiv.style.width="64%";
       // msaDiv.style.overflowX="scroll";
       msaDiv.style.overflowY = 'hidden';
       msaDiv.style.verticalAlign = 'bottom';
-      msaDiv.style.paddingBottom = '10px';
+      msaDiv.style.paddingBottom = treeBottomPadding + 'px';
 
       // domConstruct.place(menuDiv,this.contentPane.containerNode,"last");
       // domConstruct.place(combineDiv,this.contentPane.containerNode,"last");
@@ -544,9 +601,9 @@ define([
         opts.colorscheme = { scheme: 'nucleotide' };
       }
       opts.vis = {
-        conserv: false,
+        conserv: true,
         overviewbox: false,
-        seqlogo: true,
+        seqlogo: (this.dataStats.maxLength <= 2000),
         sequences: true,
         labelName: false,
         labelId: false
@@ -676,6 +733,17 @@ define([
         popup.close(idMenu);
       }));
 
+      on(visualMenu.domNode, 'click', lang.hitch(this, function (evt) {
+        var rel = evt.target.attributes.rel.value;
+        switch (rel) {
+          case 'overviewbox':
+            var value = m.g.vis.get('overviewbox');
+            m.g.vis.set('overviewbox', !value);
+            break;
+        }
+        popup.close(visualMenu);
+      }));
+
       on(filterMenu.domNode, 'click', lang.hitch(this, function (evt) {
         var rel = evt.target.attributes.rel.value;
         // var sel = filterMenu.selection;
@@ -698,9 +766,9 @@ define([
                 hidden.push(i);
               }
             }
-            treeDiv.setAttribute('style', 'padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
+            treeDiv.setAttribute('style', 'padding-top:' + (treeTopPadding - msaTopPadding) + 'px; padding-bottom:' + treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
             this.tree.update();
-            cell2.setAttribute('style', 'padding-top:105px;');
+            cell2.setAttribute('style', 'padding-top:' + msaTopPadding + 'px');
             m.g.columns.set('hidden', hidden);
             m.g.vis.set('seqlogo', false);
             break;
@@ -714,9 +782,9 @@ define([
                 hidden.push(i);
               }
             }
-            treeDiv.setAttribute('style', 'padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
+            treeDiv.setAttribute('style', 'padding-top:' + (treeTopPadding - msaTopPadding) + 'px; padding-bottom:' + treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
             this.tree.update();
-            cell2.setAttribute('style', 'padding-top:105px;');
+            cell2.setAttribute('style', 'padding-top:' + msaTopPadding + 'px');
             m.g.columns.set('hidden', hidden);
             m.g.vis.set('seqlogo', false);
             break;
@@ -732,9 +800,9 @@ define([
                 hidden.push(i);
               }
             }
-            treeDiv.setAttribute('style', 'padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
+            treeDiv.setAttribute('style', 'padding-top:' + (treeTopPadding - msaTopPadding) + 'px; padding-bottom:' + treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
             this.tree.update();
-            cell2.setAttribute('style', 'padding-top:105px;');
+            cell2.setAttribute('style', 'padding-top:' + msaTopPadding + 'px');
             m.g.columns.set('hidden', hidden);
             m.g.vis.set('seqlogo', false);
             break;
@@ -755,9 +823,9 @@ define([
                 hidden.push(i);
               }
             }
-            treeDiv.setAttribute('style', 'padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
+            treeDiv.setAttribute('style', 'padding-top:' + (treeTopPadding - msaTopPadding) + 'px; padding-bottom:' + treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
             this.tree.update();
-            cell2.setAttribute('style', 'padding-top:105px;');
+            cell2.setAttribute('style', 'padding-top:' + msaTopPadding + 'px');
             m.g.columns.set('hidden', hidden);
             m.g.vis.set('seqlogo', false);
             break;
@@ -778,9 +846,9 @@ define([
                 hidden.push(i);
               }
             }
-            treeDiv.setAttribute('style', 'padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
+            treeDiv.setAttribute('style', 'padding-top:' + (treeTopPadding - msaTopPadding) + 'px; padding-bottom:' + treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
             this.tree.update();
-            cell2.setAttribute('style', 'padding-top:105px;');
+            cell2.setAttribute('style', 'padding-top:' + msaTopPadding + 'px');
             m.g.columns.set('hidden', hidden);
             m.g.vis.set('seqlogo', false);
             break;
@@ -803,9 +871,9 @@ define([
                 hidden.push(i);
               }
             }
-            treeDiv.setAttribute('style', 'padding-top:0px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
+            treeDiv.setAttribute('style', 'padding-top:' + (treeTopPadding - msaTopPadding) + 'px; padding-bottom:' + treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
             this.tree.update();
-            cell2.setAttribute('style', 'padding-top:105px;');
+            cell2.setAttribute('style', 'padding-top:' + msaTopPadding + 'px');
             m.g.columns.set('hidden', hidden);
             m.g.vis.set('seqlogo', false);
             break;
@@ -817,10 +885,14 @@ define([
                 return el.set('hidden', false);
               }
             });
-            treeDiv.setAttribute('style', 'padding-top:106px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
+            treeDiv.setAttribute('style', 'padding-top:' + treeTopPadding + 'px; padding-bottom:' + treeBottomPadding + 'px; width:100%; vertical-align:top; overflow-x:visible; display:inline-block; border-right:1px solid grey;');
             this.tree.update();
-            cell2.setAttribute('style', 'padding-top:0px;');
-            m.g.vis.set('seqlogo', true);
+            if (this.seqLength <= 2000) {
+              cell2.setAttribute('style', 'padding-top:' + 0 + 'px');
+            } else {
+              cell2.setAttribute('style', 'padding-top: 0px');
+            }
+            m.g.vis.set('seqlogo', this.seqLength <= 2000);
             break;
 
           default:
@@ -878,7 +950,10 @@ define([
       msaDiv.style.overflowY = 'hidden';
       msaDiv.style.verticalAlign = 'bottom';
       msaDiv.style.paddingBottom = '10px';
-      msaDiv.style.height = (treeHeight + 115).toString() + 'px';
+      msaDiv.style.height = (treeHeight + treeTopPadding + treeBottomPadding).toString() + 'px';
+
+      console.log('msaDiv.style.height: ', msaDiv.style.height);
+      console.log('treeHeight: ', treeHeight);
       // treeLoaded = true;
     },
 
@@ -1266,6 +1341,28 @@ define([
           Topic.publish('/navigate', { href: '/view/GenomeList/?in(genome_id,(' + genome_ids.join(',') + '))', target: 'blank' });
         },
         false
+      ],
+      [
+        'VisualOptions',
+        'fa icon-eye fa-2x',
+        {
+          label: 'VISUAL',
+          persistent: true,
+          validTypes: ['*'],
+          validContainerTypes: ['*'],
+          tooltip: 'Visualization options',
+          tooltipDialog: visualMenu,
+          ignoreDataType: true
+        },
+        function (selection) {
+          visualMenu.selection = selection;
+          popup.open({
+            popup: this.selectionActionBar._actions.VisualOptions.options.tooltipDialog,
+            around: this.selectionActionBar._actions.VisualOptions.button,
+            orient: ['below']
+          });
+        },
+        true
       ],
       [
         'Snapshot',
