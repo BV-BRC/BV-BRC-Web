@@ -1,5 +1,8 @@
 # Changelog
-## 3.22.11 - September 26, 2022
+## 3.22.12 - September 26, 2022
+* [Feature] Added conservation plot and show/hide overview box to on-the-fly MSA viewer [PR #400](https://github.com/BV-BRC/bvbrc_website/pull/400)
+
+## 3.22.11
 * [Hot Fix] Add contact us link [PR #399](https://github.com/BV-BRC/bvbrc_website/pull/399)
 * [Bug] Fix ARTIC primer submission validation error. Remove duplicate primer. [Commit #30fd531](https://github.com/BV-BRC/bvbrc_website/commit/30fd53188e520feea76bd194d72db5d8d90c39a7)
 
