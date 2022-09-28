@@ -87,6 +87,8 @@ define([
     },
 
     loadWorkspaceData: function () {
+
+      // load pathway data in background
       var pathway_data = [];
       var header = true;
       var pathway_keys = null;
@@ -120,6 +122,7 @@ define([
       this.loadingMask.hide();
       this.tabContainer.addChild(this.pathwaysGrid);
 
+      // load ec data in background
       var ec_data = [];
       var header = true;
       var ec_keys = null;
@@ -145,6 +148,7 @@ define([
       this.ecGrid.setFilterUpdateTrigger();
       this.tabContainer.addChild(this.ecGrid);
 
+      /*
       var genes_data = [];
       var header = true;
       var gene_keys = null;
@@ -174,6 +178,7 @@ define([
       this.genesGrid = new PathwaysGridContainer({ title: 'Genes', store: gene_store, type: 'gene' });
       this.genesGrid.setFilterUpdateTrigger();
       this.tabContainer.addChild(this.genesGrid);
+      */
     }
   });
 });
