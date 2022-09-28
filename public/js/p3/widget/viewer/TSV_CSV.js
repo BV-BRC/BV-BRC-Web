@@ -176,33 +176,65 @@ define([
       domConstruct.place(ta_keyword.domNode, this.filterPanel.containerNode, 'last');
       domConstruct.place(selector.domNode, this.filterPanel.containerNode, 'last');
 
-      var btn_reset = new Button({
-        label: 'Reset',
-        onClick: lang.hitch(this, function () {
-
-          ta_keyword.set('value', '');
-          selector.set('value', 'All Columns');
-          var filter = {};
-          filter.keyword = '';
-          filter.columnSelection = 'All Columns';
-
-          Topic.publish('applyKeywordFilter', filter);
-        })
-      });
-
-      var btn_submit = new Button({
-        label: 'Filter',
+      var btn_exact_filter = new Button({
+        label: 'Exact Filter',
         onClick: lang.hitch(this, function () {
 
           var filter = {};
 
           filter.keyword = ta_keyword.get('value');
           filter.columnSelection = selector.get('value');
+          filter.type = 'exact';
 
           Topic.publish('applyKeywordFilter', filter);
         })
       });
-      domConstruct.place(btn_submit.domNode, this.filterPanel.containerNode, 'last');
+
+      var btn_fuzzy_filter = new Button({
+        label: 'Fuzzy Filter',
+        onClick: lang.hitch(this, function () {
+
+          var filter = {};
+
+          filter.keyword = ta_keyword.get('value');
+          filter.columnSelection = selector.get('value');
+          filter.type = 'fuzzy';
+
+          Topic.publish('applyKeywordFilter', filter);
+        })
+      });
+
+      var btn_range_filter = new Button({
+        label: 'Range Filter',
+        onClick: lang.hitch(this, function () {
+
+          var filter = {};
+
+          filter.keyword = ta_keyword.get('value');
+          filter.columnSelection = selector.get('value');
+          filter.type = 'range';
+
+          Topic.publish('applyKeywordFilter', filter);
+        })
+      });
+
+      var btn_reset = new Button({
+        label: 'Reset',
+        onClick: lang.hitch(this, function () {
+
+          ta_keyword.set('value', '');
+          selector.set('value', 'All Columns');
+          // var filter = {};
+          // filter.keyword = '';
+          // filter.columnSelection = 'All Columns';
+
+          Topic.publish('applyResetFilter');
+        })
+      });
+
+      domConstruct.place(btn_exact_filter.domNode, this.filterPanel.containerNode, 'last');
+      domConstruct.place(btn_fuzzy_filter.domNode, this.filterPanel.containerNode, 'last');
+      domConstruct.place(btn_range_filter.domNode, this.filterPanel.containerNode, 'last');
       domConstruct.place(btn_reset.domNode, this.filterPanel.containerNode, 'last');
 
       // add button or checkbox for column headers if suffix is not known (user supplied data file)
@@ -267,23 +299,23 @@ define([
         max: 5000,
         validContainerTypes: ['csvFeature', '']
       },
-        function (selection, container) {
-          _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('selection', selection);
-          _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('containerType', this.containerType);
-          if (container && container.tsvGC.grid) {
-            _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('grid', container.tsvGC.grid);
-          }
+      function (selection, container) {
+        _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('selection', selection);
+        _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('containerType', this.containerType);
+        if (container && container.tsvGC.grid) {
+          _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('grid', container.tsvGC.grid);
+        }
 
-          _self.actionPanel._actions.CopySelection.options.tooltipDialog.timeout(3500);
+        _self.actionPanel._actions.CopySelection.options.tooltipDialog.timeout(3500);
 
-          setTimeout(lang.hitch(this, function () {
-            popup.open({
-              popup: _self.actionPanel._actions.CopySelection.options.tooltipDialog,
-              around: _self.actionPanel._actions.CopySelection.button,
-              orient: ['below']
-            });
-          }), 10);
-        });
+        setTimeout(lang.hitch(this, function () {
+          popup.open({
+            popup: _self.actionPanel._actions.CopySelection.options.tooltipDialog,
+            around: _self.actionPanel._actions.CopySelection.button,
+            orient: ['below']
+          });
+        }), 10);
+      });
 
       var numColumns = Object.keys(data[0]).length;
       var checkFeatureIDs = [];
