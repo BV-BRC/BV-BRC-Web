@@ -2,12 +2,12 @@ define([
   'dojo/_base/declare', 'dojo/on', 'dojo/_base/lang', 'dijit/layout/BorderContainer',
   './ActionBar', './ContainerActionBar', 'dijit/layout/StackContainer', 'dijit/layout/TabController',
   'dojox/widget/Standby', './PathwayServiceGridContainer', 'dijit/layout/ContentPane', './GridContainer', 'dijit/TooltipDialog',
-  '../store/PathwayServiceMemoryStore', 'dojo/dom-construct', 'dojo/topic', './GridSelector', '../WorkspaceManager'
+  '../store/PathwayServiceMemoryStore', 'dojo/dom-construct', 'dojo/topic', './GridSelector', '../WorkspaceManager', 'dojo/_base/Deferred'
 ], function (
   declare, on, lang, BorderContainer,
   ActionBar, ContainerActionBar, TabContainer, StackController,
   Standby, PathwaysGridContainer, ContentPane, GridContainer, TooltipDialog,
-  PathwayMemoryStore, domConstruct, topic, selector, WorkspaceManager
+  PathwayMemoryStore, domConstruct, topic, selector, WorkspaceManager, Deferred
 ) {
 
   return declare([BorderContainer], { // TODO import: reference ProteinFamiliesContainer
@@ -89,64 +89,34 @@ define([
     loadWorkspaceData: function () {
 
       // load pathway data in background
-      var pathway_data = [];
-      var header = true;
-      var pathway_keys = null;
-      this.state.data['pathway'].split('\n').forEach(function (line) {
-        if (header) {
-          pathway_keys = line.split('\t');
-          header = false;
-        }
-        else {
-          var new_data = {};
-          var l = line.split('\t');
-          pathway_keys.forEach(lang.hitch(this, function (key, index) {
-            new_data[key] = l[index];
-          }));
-          pathway_data.push(new_data);
-        }
-      });
-      // TODO: the last entry is undefined, not sure why it's being added: for now just remove
-      pathway_data.pop();
-      this.state.data['pathway'] = pathway_data;
-      var pathway_store = new PathwayMemoryStore({
-        data: pathway_data,
-        state: this.state,
-        storeType: 'pathway',
-        primaryKey: 'pathway_id'
-      });
-      this.pathwaysGrid = new PathwaysGridContainer({ title: 'Pathways', store: pathway_store, type: 'pathway' });
-      this.pathwaysGrid.setFilterUpdateTrigger();
-      this.pathwaysGrid.store.setContainer(this.pathwaysGrid);
-      // Hide loading mask
-      this.loadingMask.hide();
-      this.tabContainer.addChild(this.pathwaysGrid);
+      this.loadData(this.state.data['pathway']).then(lang.hitch(this, function (pathway_data) {
+        // TODO: the last entry is undefined, not sure why it's being added: for now just remove
+        pathway_data.pop();
+        this.state.data['pathway'] = pathway_data;
+        var pathway_store = new PathwayMemoryStore({
+          data: pathway_data,
+          state: this.state,
+          storeType: 'pathway',
+          primaryKey: 'pathway_id'
+        });
+        this.pathwaysGrid = new PathwaysGridContainer({ title: 'Pathways', store: pathway_store, type: 'pathway' });
+        this.pathwaysGrid.setFilterUpdateTrigger();
+        this.pathwaysGrid.store.setContainer(this.pathwaysGrid);
+        // Hide loading mask
+        this.loadingMask.hide();
+        this.tabContainer.addChild(this.pathwaysGrid);
+      }));
 
       // load ec data in background
-      var ec_data = [];
-      var header = true;
-      var ec_keys = null;
-      this.state.data['ecnumber'].split('\n').forEach(function (line) {
-        if (header) {
-          ec_keys = line.split('\t');
-          header = false;
-        }
-        else {
-          var new_data = {};
-          var l = line.split('\t');
-          ec_keys.forEach(lang.hitch(this, function (key, index) {
-            new_data[key] = l[index];
-          }));
-          ec_data.push(new_data);
-        }
-      });
-      // TODO: the last entry is undefined, not sure why it's being added: for now just remove
-      ec_data.pop();
-      this.state.data['ecnumber'] = ec_data;
-      var ec_store = new PathwayMemoryStore({ data: ec_data, state: this.state, storeType: 'ecNum', primaryKey: 'ec_number' });
-      this.ecGrid = new PathwaysGridContainer({ title: 'EC Number', store: ec_store, type: 'ec_number' });
-      this.ecGrid.setFilterUpdateTrigger();
-      this.tabContainer.addChild(this.ecGrid);
+      this.loadData(this.state.data['ecnumber']).then(lang.hitch(this, function (ec_data) {
+        // TODO: the last entry is undefined, not sure why it's being added: for now just remove
+        ec_data.pop();
+        this.state.data['ecnumber'] = ec_data;
+        var ec_store = new PathwayMemoryStore({ data: ec_data, state: this.state, storeType: 'ecNum', primaryKey: 'ec_number' });
+        this.ecGrid = new PathwaysGridContainer({ title: 'EC Number', store: ec_store, type: 'ec_number' });
+        this.ecGrid.setFilterUpdateTrigger();
+        this.tabContainer.addChild(this.ecGrid);
+      }));
 
       /*
       var genes_data = [];
@@ -179,6 +149,20 @@ define([
       this.genesGrid.setFilterUpdateTrigger();
       this.tabContainer.addChild(this.genesGrid);
       */
+    },
+
+    loadData: function (data) {
+      var def = new Deferred();
+      var worker = new window.Worker('/public/worker/PathwayServiceWorker.js', { type: 'module' });
+      worker.onerror = (err) => console.log(err);
+      worker.onmessage = lang.hitch(this, function (e) {
+        var pathway_data = e.data.data;
+        def.resolve(pathway_data);
+        worker.terminate();
+      });
+      var payload = { text_data: data };
+      worker.postMessage(JSON.stringify({ type: 'load_data', payload: payload }));
+      return def;
     }
   });
 });
