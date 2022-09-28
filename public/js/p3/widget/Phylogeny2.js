@@ -388,7 +388,7 @@ define([
                 property_name = property_line[1];
               }
 
-              if (property_name.toLowerCase() == 'genome_name' || property_name.toLowerCase() == 'species' || property_name.toLowerCase() == 'strain') {
+              if (property_name.toLowerCase() == 'genome_name') {
                 selected = true;
                 options.showNodeName = false;
               }

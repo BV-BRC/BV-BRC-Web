@@ -384,7 +384,7 @@ define([
         'CopySelection',
         'fa icon-clipboard2 fa-2x',
         {
-          label: 'COPY',
+          label: 'COPY ROWS',
           multiple: true,
           validTypes: ['*'],
           ignoreDataType: true,
@@ -979,7 +979,7 @@ define([
               });
 
               return;
-              // break;
+            // break;
             case 'pathway_data':
               var queryContext = containerWidget.grid.store.state.search;
               switch (containerWidget.type) {
@@ -1010,7 +1010,7 @@ define([
                     });
                   });
                   return;
-                  // break;
+                // break;
                 case 'ec_number':
                   var ec_numbers = selection.map(function (d) {
                     return d.ec_number;
@@ -1039,7 +1039,7 @@ define([
                   });
 
                   return;
-                  // break;
+                // break;
                 case 'gene':
                   ids = selection.map(function (d) {
                     return d.feature_id;
@@ -1047,7 +1047,7 @@ define([
                   break;
                 default:
                   return;
-                  // break;
+                // break;
               }
               break;
             default:
@@ -1174,7 +1174,7 @@ define([
               });
 
               return;
-              // break;
+            // break;
             case 'pathway_data':
 
               var queryContext = containerWidget.grid.store.state.search;
@@ -1207,7 +1207,7 @@ define([
                     });
                   });
                   return;
-                  // break;
+                // break;
                 case 'ec_number':
                   var ec_numbers = selection.map(function (d) {
                     return d.ec_number;
@@ -1233,7 +1233,7 @@ define([
                   });
 
                   return;
-                  // break;
+                // break;
                 case 'gene':
                   ids = selection.map(function (d) {
                     return d.feature_id;
@@ -1241,7 +1241,7 @@ define([
                   break;
                 default:
                   return;
-                  // break;
+                // break;
               }
               break;
             default:

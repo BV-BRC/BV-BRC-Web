@@ -1,4 +1,28 @@
 # Changelog
+## 3.22.12 - September 26, 2022
+* [Feature] Added conservation plot and show/hide overview box to on-the-fly MSA viewer [PR #400](https://github.com/BV-BRC/bvbrc_website/pull/400)
+
+## 3.22.11
+* [Hot Fix] Add contact us link [PR #399](https://github.com/BV-BRC/bvbrc_website/pull/399)
+* [Bug] Fix ARTIC primer submission validation error. Remove duplicate primer. [Commit #30fd531](https://github.com/BV-BRC/bvbrc_website/commit/30fd53188e520feea76bd194d72db5d8d90c39a7)
+
+## 3.22.10 - September 23, 2022
+* [Feature] Add initial versioning for Artic primer in SARS-CoV-2 service
+
+## 3.22.9 - September 22, 2022
+* [Feature] Add primers dropdown for One Codex strategy [PR #398](https://github.com/BV-BRC/bvbrc_website/pull/398)
+
+## 3.22.8
+* [Feature] Enable COPY ROWS for TSV viewer [PR #397](https://github.com/BV-BRC/bvbrc_website/pull/397)
+* [Bug] Fix default label display on Archaeopteryx trees [PR #396](https://github.com/BV-BRC/bvbrc_website/pull/396)
+
+## 3.22.7
+* [Modification] Checked for empty container type to remove buttons on the TSV action panel. [PR #395](https://github.com/BV-BRC/bvbrc_website/pull/395)
+* [Enhancement] Increased the TSV viewer limit and added an error message. [PR #394](https://github.com/BV-BRC/bvbrc_website/pull/394)
+
+## 3.22.6 - September 21, 2022
+* [Feature] Conservation columns in pathways viewer and some QOL fixes [PR #392](https://github.com/BV-BRC/bvbrc_website/pull/392)
+
 ## 3.22.5 - September 20, 2022
 * [Submodule] MSA update [Commit #6e9309](https://github.com/BV-BRC/bvbrc_website/commit/66e93096af6fe9f96868c4fa671fcf851d3c697e)
 

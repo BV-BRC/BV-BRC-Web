@@ -18,7 +18,7 @@
       <div style="display: none;">
         <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="true" data-dojo-attach-point="numlibs" data-dojo-props="constraints:{min:1,max:1000}," />
       </div>
-      <div id="startWithBox" style="width:400px;" class="appBox appShadow">
+      <div id="startWithBox" style="width:375px;" class="appBox appShadow">
         <div class="headerrow">
           <label class="appBoxLabel">Start With:</label>
           <div name="start-with" class="infobox iconbox infobutton dialoginfo">
@@ -108,7 +108,7 @@
             </div>
           </td>
           <td>
-            <div class="appBox appShadow" style="height:213px; width:330px">
+            <div class="appBox appShadow" style="height:275px; width:330px">
               <div class="headerrow">
                 <label class="appBoxLabel">Selected libraries</label>
                 <div name="selected-libraries" class="infobox iconbox infobutton tooltipinfo">
@@ -127,7 +127,7 @@
           </td>
         </tr>
       </table>
-      <div data-dojo-attach-point="annotationFileBox" style="width:400px; display:none" class="appBox appShadow">
+      <div data-dojo-attach-point="annotationFileBox" style="width:375px; display:none" class="appBox appShadow">
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
             <label class="appBoxLabel">Input File</label>
@@ -142,7 +142,7 @@
             </div>
         </div>
       </div>
-      <div id="parameterBox" style="width:400px; " class="appBox appShadow">
+      <div id="parameterBox" style="width:375px; " class="appBox appShadow">
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
             <label class="appBoxLabel">Parameters</label>
@@ -154,57 +154,43 @@
         <div data-dojo-attach-point="assemblyStrategy" class="appRow">
           <label class="paramlabel">Strategy</label><br>
           <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-attach-event="onChange:onRecipeChange">
-            <option value="auto">Auto</option>
             <option value="onecodex">One Codex</option>
             <option value="cdc-illumina">CDC-Illumina</option>
             <option value="cdc-nanopore">CDC-Nanopore</option>
             <option value="artic-nanopore">ARTIC-Nanopore</option>
+            <option value="auto">Auto</option>
           </select>
         </div>
 
-        <!--
-        <div class="appRow" data-dojo-attach-point="genome_size_block" style="display:none">
-          <label class="paramlabel">Estimated Genome Size</label><br>
-          <div name="genome_size"
-            class="medInput"
-            data-dojo-type="dijit/form/NumberTextBox"
-            data-dojo-attach-point="genome_size"
-            value="5000000">
+        <div data-dojo-attach-point="primersStrategy" class="appRow">
+          <!-- primers -->
+          <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:40%">
+            <label class="paramlabel">Primers</label><br>
+            <select data-dojo-type="dijit/form/Select" name="primers" data-dojo-attach-point="primers" style="width:160px" required="true" disabled="false">
+              <option value="ARTIC">ARTIC</option>
+              <option value="midnight">midnight</option>
+              <option value="qiagen">qiagen</option>
+              <option value="swift">swift</option>
+              <option value="varskip">varskip</option>
+              <option value="varskip-long">varskip-long</option>
+            </select>
           </div>
-        </div>
-        -->
 
-        <!--
-        <div data-dojo-attach-point="assembly_additional_parameters_block">
-          <div class="appRow" style="margin:0 0 0 0">
-              <label class="paramlabel">Trim reads before assembly</label><br>
-              <select data-dojo-type="dijit/form/Select" name="trim" style="width:50px" data-dojo-attach-point="trim" required="false">
-                <option value="false">False</option>
-                <option value="true">True</option>
-              </select>
-          </div>
-          <div class="appRow" style="margin:0 0 0 0">
-            <div class="appRowSegment" style="margin:0 0 0 0">
-              <label class="paramlabel">Racon Iterations</label><br>
-              <div class="insertspinner" name="racon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="racon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
-            </div>
-            <div class="appRowSegment" style="margin:10px 0 0 0">
-              <label class="paramlabel">Pilon Iterations</label><br>
-              <div class="insertspinner" name="pilon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="pilon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
-            </div>
-          </div>
-          <div class="appRow" style="margin:0 0 0 0">
-            <div class="appRowSegment" style="margin:0 0 0 0">
-              <label class="paramlabel">Min. contig length</label><br>
-              <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_len" data-dojo-props="value:300, smallDelta:10, constraints:{min:100,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
-            </div>
-            <div class="appRowSegment" style="margin:10px 0 0 0">
-              <label class="paramlabel">Min. contig coverage</label><br>
-              <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_cov" data-dojo-props="value:5, smallDelta:5, constraints:{min:0,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
-            </div>
+          <!-- primer_version -->
+          <div class="appRowSegment" style="text-align:left; width:40%">
+            <label class="paramlabel">Version</label><br>
+            <select data-dojo-type="dijit/form/Select" name="primer_version" data-dojo-attach-point="primer_version" style="width:50px" disabled="false">
+              <option value="V4.1">V4.1</option>
+              <option value="V4">V4</option>
+              <option value="V3">V3</option>
+              <option value="V2">V2</option>
+              <option value="V1">V1</option>
+            </select>
           </div>
         </div>
-        -->
+
+
+
 
         <!-- hidden, but supplied to service -->
         <div class="appRow" style="display:none">
@@ -217,7 +203,7 @@
         </div>
 
         <div class="appRow">
-          <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:70%">
+          <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:60%">
             <label class="paramlabel">Taxonomy Name</label>
             <div name="taxon-information" class="infobox iconbox infobutton tooltipinfo">
               <i class="fa icon-question-circle fa"></i>
@@ -254,7 +240,7 @@
         <div class="appRow">
           <div class="appFieldLong" style="width:380px">
             <label class="paramlabel">Output Name</label><br>
-            <div data-dojo-attach-point="output_nameWidget" style="width:380px; background-color:#F0F1F3" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" required="true" data-dojo-props="readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'"></div>
+            <div data-dojo-attach-point="output_nameWidget" style="width:340px; background-color:#F0F1F3" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" required="true" data-dojo-props="readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'"></div>
           </div>
         </div>
       </div>
