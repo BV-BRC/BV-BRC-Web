@@ -2,20 +2,12 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
   'dijit/popup', 'dijit/TooltipDialog',
   './PathwayServiceGrid', './AdvancedSearchFields', './GridContainer',
-<<<<<<< HEAD
-  '../util/PathJoin', './ComparativeSystemsActionBar', 'FileSaver'
-=======
-  '../util/PathJoin', './ComparativeSystemsActionBar', '../DataAPI'
->>>>>>> 01eedd9313db1a438fcf8ccc5a396ed59fa029e2
+  '../util/PathJoin', './ComparativeSystemsActionBar', 'FileSaver', '../DataAPI'
 ], function (
   declare, lang, on, Topic, domConstruct,
   popup, TooltipDialog,
   PathwayGrid, AdvancedSearchFields, GridContainer,
-<<<<<<< HEAD
-  PathJoin, ContainerActionBar, saveAs
-=======
-  PathJoin, ContainerActionBar, DataAPI
->>>>>>> 01eedd9313db1a438fcf8ccc5a396ed59fa029e2
+  PathJoin, ContainerActionBar, saveAs, DataAPI
 ) {
 
   // Download tooltips

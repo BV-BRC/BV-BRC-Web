@@ -160,7 +160,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/view/PathwayService' + path });
+          Topic.publish('/navigate', { href: '/view/PathwayService' + path, target: 'blank' });
         } else {
           console.log('Error: could not find pathways data file');
         }
@@ -179,7 +179,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/view/ProteinFamiliesService' + path });
+          Topic.publish('/navigate', { href: '/view/ProteinFamiliesService' + path, target: 'blank' });
         } else {
           console.log('Error: could not find pathways data file');
         }
@@ -198,7 +198,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/view/SubsystemService' + path });
+          Topic.publish('/navigate', { href: '/view/SubsystemService' + path, target: 'blank' });
         } else {
           console.log('Error: could not find pathways data file');
         }
@@ -1182,7 +1182,7 @@ define([
         if (this.selection[0].type.includes('dna')) {
           alignType = 'dna';
         }
-        console.log('container ',container);
+        console.log('container ', container);
         var afa_file;
         var exist_nwk = 0;
 
@@ -2138,7 +2138,9 @@ define([
 
             if (this.actionPanel) {
               this.actionPanel.set('currentContainerWidget', newPanel);
-              this.itemDetailPanel.set('containerWidget', newPanel);
+              if (this.itemDetailPanel) {
+                this.itemDetailPanel.set('containerWidget', newPanel);
+              }
             }
 
             if (newPanel.on) {

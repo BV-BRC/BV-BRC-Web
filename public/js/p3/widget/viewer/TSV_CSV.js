@@ -87,8 +87,10 @@ define([
         _self.refresh();
       });
 
-      if (WS.viewableTypes.indexOf(this.file.metadata.type) >= 0 && this.file.metadata.size <= 10000000) {
+      if (WS.viewableTypes.indexOf(this.file.metadata.type) >= 0 && this.file.metadata.size <= 150000000) {
         this.viewable = true;
+      } else {
+        this.viewer.set('content', '<pre style="font-size:.8em; background-color:red;"> The file is unviewable because it is too large. Size: ' + (this.file.metadata.size / 1000000).toFixed(2) + ' MB </pre > ');
       }
 
       if (!this.file.data && this.viewable) {
@@ -174,33 +176,65 @@ define([
       domConstruct.place(ta_keyword.domNode, this.filterPanel.containerNode, 'last');
       domConstruct.place(selector.domNode, this.filterPanel.containerNode, 'last');
 
-      var btn_reset = new Button({
-        label: 'Reset',
-        onClick: lang.hitch(this, function () {
-
-          ta_keyword.set('value', '');
-          selector.set('value', 'All Columns');
-          var filter = {};
-          filter.keyword = '';
-          filter.columnSelection = 'All Columns';
-
-          Topic.publish('applyKeywordFilter', filter);
-        })
-      });
-
-      var btn_submit = new Button({
-        label: 'Filter',
+      var btn_exact_filter = new Button({
+        label: 'Exact Filter',
         onClick: lang.hitch(this, function () {
 
           var filter = {};
 
           filter.keyword = ta_keyword.get('value');
           filter.columnSelection = selector.get('value');
+          filter.type = 'exact';
 
           Topic.publish('applyKeywordFilter', filter);
         })
       });
-      domConstruct.place(btn_submit.domNode, this.filterPanel.containerNode, 'last');
+
+      var btn_fuzzy_filter = new Button({
+        label: 'Fuzzy Filter',
+        onClick: lang.hitch(this, function () {
+
+          var filter = {};
+
+          filter.keyword = ta_keyword.get('value');
+          filter.columnSelection = selector.get('value');
+          filter.type = 'fuzzy';
+
+          Topic.publish('applyKeywordFilter', filter);
+        })
+      });
+
+      var btn_range_filter = new Button({
+        label: 'Range Filter',
+        onClick: lang.hitch(this, function () {
+
+          var filter = {};
+
+          filter.keyword = ta_keyword.get('value');
+          filter.columnSelection = selector.get('value');
+          filter.type = 'range';
+
+          Topic.publish('applyKeywordFilter', filter);
+        })
+      });
+
+      var btn_reset = new Button({
+        label: 'Reset',
+        onClick: lang.hitch(this, function () {
+
+          ta_keyword.set('value', '');
+          selector.set('value', 'All Columns');
+          // var filter = {};
+          // filter.keyword = '';
+          // filter.columnSelection = 'All Columns';
+
+          Topic.publish('applyResetFilter');
+        })
+      });
+
+      domConstruct.place(btn_exact_filter.domNode, this.filterPanel.containerNode, 'last');
+      domConstruct.place(btn_fuzzy_filter.domNode, this.filterPanel.containerNode, 'last');
+      domConstruct.place(btn_range_filter.domNode, this.filterPanel.containerNode, 'last');
       domConstruct.place(btn_reset.domNode, this.filterPanel.containerNode, 'last');
 
       // add button or checkbox for column headers if suffix is not known (user supplied data file)
@@ -256,14 +290,14 @@ define([
 
       // add copy button to action panel
       this.actionPanel.addAction('CopySelection', 'fa icon-clipboard2 fa-2x', {
-        label: 'COPY',
+        label: 'COPY ROWS',
         multiple: true,
         validTypes: ['*'],
         ignoreDataType: true,
         tooltip: 'Copy Selection to Clipboard.',
         tooltipDialog: copySelectionTT,
         max: 5000,
-        validContainerTypes: ['csvFeature']
+        validContainerTypes: ['csvFeature', '']
       },
       function (selection, container) {
         _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('selection', selection);

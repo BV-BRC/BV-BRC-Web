@@ -62,14 +62,14 @@ define([
       worker.onmessage = lang.hitch(this, function (e) {
         // console.log('return message', e);
         // do something with data
-        // TODO: set data, this.setData
         this.setData(e.data.data); // e.data contains { type, data }
         this.currentData = this.data;
         def.resolve(true);
         worker.terminate();
       });
-      var payload = { data: data, genome_ids: genome_ids, primaryKey: this.primaryKey };
-      worker.postMessage(JSON.stringify({ type: 'parse_data', payload: payload }));
+      // var payload = { data: data, genome_ids: genome_ids, primaryKey: this.primaryKey };
+      var payload = { data: data, primaryKey: this.primaryKey };
+      worker.postMessage(JSON.stringify({ type: 'parse_data_v2', payload: payload }));
       return def;
     },
 
