@@ -166,7 +166,7 @@
           <!-- primers -->
           <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:40%">
             <label class="paramlabel">Primers</label><br>
-            <select data-dojo-type="dijit/form/Select" name="primers" data-dojo-attach-point="primers" style="width:160px" required="true" disabled="false">
+            <select data-dojo-type="dijit/form/Select" name="primers" data-dojo-attach-point="primers" style="width:160px" required="true" disabled="false" data-dojo-attach-event="onChange:onPrimersChange">
               <option value="ARTIC">ARTIC</option>
               <option value="midnight">midnight</option>
               <option value="qiagen">qiagen</option>
@@ -176,15 +176,36 @@
             </select>
           </div>
 
-          <!-- primer_version -->
+          <!-- primer_versions -->
           <div class="appRowSegment" style="text-align:left; width:40%">
             <label class="paramlabel">Version</label><br>
-            <select data-dojo-type="dijit/form/Select" name="primer_version" data-dojo-attach-point="primer_version" style="width:50px" disabled="false">
+            <select id="articSelector" data-dojo-type="dijit/form/Select" name="primer_version" data-dojo-attach-point="primer_version" style="width:50px" disabled="false">
               <option value="V4.1">V4.1</option>
               <option value="V4">V4</option>
               <option value="V3">V3</option>
               <option value="V2">V2</option>
               <option value="V1">V1</option>
+            </select>
+
+            <select id="midnightSelector" data-dojo-type="dijit/form/Select" name="primer_version" data-dojo-attach-point="primer_version" style="width:50px; display: none;" disabled="false">
+              <option value="V1">V1</option>
+            </select>
+
+            <select id="qiagenSelector" data-dojo-type="dijit/form/Select" name="primer_version" data-dojo-attach-point="primer_version" style="width:50px; display: none;" disabled="false">
+              <option value="V1">V1</option>
+            </select>
+
+            <select id="swiftSelector" data-dojo-type="dijit/form/Select" name="primer_version" data-dojo-attach-point="primer_version" style="width:50px; display: none;" disabled="false">
+              <option value="V1">V1</option>
+            </select>
+
+            <select id="varskipSelector" data-dojo-type="dijit/form/Select" name="primer_version" data-dojo-attach-point="primer_version" style="width:50px; display: none;" disabled="false">
+              <option value="V2">V2</option>
+              <option value="V1a">V1a</option>
+            </select>
+
+            <select id="varskipLongSelector" data-dojo-type="dijit/form/Select" name="primer_version" data-dojo-attach-point="primer_version" style="width:50px; display: none;" disabled="false">
+              <option value="V1a">V1a</option>
             </select>
           </div>
         </div>
