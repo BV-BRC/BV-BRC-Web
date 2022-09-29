@@ -111,6 +111,7 @@ define([
 
     keywordFilter: function (filterOptions) {
       var data = this._original;
+      var self = this;
       var newData = [];
       if (filterOptions.columnSelection == 'All Columns') {
         data.forEach(function (dataLine) {
@@ -118,7 +119,7 @@ define([
           if (dataLine) {
             delete dataLine.RowNumber;
             keep = Object.values(dataLine).some(function (dataValue) {
-              return this.processDataValue(filterOptions, dataValue);
+              return self.processDataValue(filterOptions, dataValue);
             });
           }
           if (keep) {
@@ -129,7 +130,7 @@ define([
         data.forEach(function (dataLine) {
           var keep = false;
           if (dataLine[filterOptions.columnSelection]) {
-            keep = this.processDataValue(filterOptions, dataLine[filterOptions.columnSelection]);
+            keep = self.processDataValue(filterOptions, dataLine[filterOptions.columnSelection]);
           }
           if (keep) {
             newData.push(dataLine);
