@@ -54,6 +54,7 @@ define([
     newickxml: null,
     fileType: null,
     labels: null,
+    options: null,
     jsonTree: null,
     tree: null,
     apiServer: window.App.dataAPI,
@@ -274,6 +275,9 @@ define([
       if (treeDat.labels) {
         this.set('labels', treeDat.labels);
       }
+      if (treeDat.options) {
+        this.set('options', treeDat.options);
+      }
       this.set('idType', idType);
       this.set('fileType', fileType);
       this.set('newickxml', treeDat.tree);
@@ -343,6 +347,10 @@ define([
       settings.rootOffset = 180;
       settings.allowManualNodeSelection = true;
       settings.orderTree = true;
+
+      if (this.options) {
+        options = lang.mixin(options, this.options);
+      }
 
       var nodeVisualizations = {};
       var specialVisualizations = {};
