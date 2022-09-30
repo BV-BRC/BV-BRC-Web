@@ -27,8 +27,12 @@ define([], function () {
     'gene_counts.tsv': { columnHeaders: true },
     'tpms.tsv': { columnHeaders: true },
 
+    // Subsystems Service
+    '_subsystems.tsv': { columnHeaders: true },
+    '_pathways.tsv': { columnHeaders: true },
+
     // Subspecies Classification Service
-    'result.tsv': { columnHeaders: true }
+    'result.tsv': { columnHeaders: true },
   };
 
 });
