@@ -1295,7 +1295,7 @@ define([
       this.pathContainer.innerHTML = this.generatePathLinks(folder);
       // console.log('postCreate: this.pathContainer.innerHTML', this.pathContainer.innerHTML);
 
-      this.contentPane = new ContentPane({ region: 'center', style: 'top: 50px' });
+      this.contentPane = new ContentPane({ region: 'center', style: 'top: 40px' });
       this.addChild(this.contentPane);
 
       this.selectionActionBar = new ActionBar({
