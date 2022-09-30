@@ -126,7 +126,7 @@ define([
       var sequence = this.sequence.get('value');
       var output_file = this.output_file.get('value');
       var output_path = this.output_path.get('value');
-      var ref_msa_fasta = this.ref_msa_fasta_file.get('value');
+      //var ref_msa_fasta = this.ref_msa_fasta_file.get('value');
 
       // prepare submission values
       var submit_values = {
@@ -136,9 +136,9 @@ define([
         'output_path': output_path,
       };
 
-      if (ref_msa_fasta !== '') {
+      /*if (ref_msa_fasta !== '') {
         submit_values['ref_msa_fasta'] = ref_msa_fasta
-      }
+      }*/
 
       if (_self.input_source == 'fasta_file') {
         submit_values['input_fasta_file'] = _self.query_fasta.get('value')
