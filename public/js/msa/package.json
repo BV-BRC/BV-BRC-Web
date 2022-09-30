@@ -128,5 +128,8 @@
       "sequences",
       "msa.clustal"
     ]
+  },
+  "overrides": {
+    "graceful-fs": "^4.2.10"
   }
 }

@@ -1,0 +1,10 @@
+To build this module:
+
+1. npm install
+2. Apply patch:
+	patch -p 1 node_modules/stat.seqs/lib/index.js < stat.seqs.patch
+3. npm run build
+
+Note: Requires npm >= 8.3.0
+
+Also, if you receive a reference error you may need to place an override in the package.json. See this StackOverflow topic for reference: https://stackoverflow.com/questions/55921442/how-to-fix-referenceerror-primordials-is-not-defined-in-node-js

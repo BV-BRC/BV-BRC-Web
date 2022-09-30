@@ -87,8 +87,10 @@ define([
         _self.refresh();
       });
 
-      if (WS.viewableTypes.indexOf(this.file.metadata.type) >= 0 && this.file.metadata.size <= 10000000) {
+      if (WS.viewableTypes.indexOf(this.file.metadata.type) >= 0 && this.file.metadata.size <= 150000000) {
         this.viewable = true;
+      } else {
+        this.viewer.set('content', '<pre style="font-size:.8em; background-color:red;"> The file is unviewable because it is too large. Size: ' + (this.file.metadata.size / 1000000).toFixed(2) + ' MB </pre > ');
       }
 
       if (!this.file.data && this.viewable) {
@@ -256,32 +258,32 @@ define([
 
       // add copy button to action panel
       this.actionPanel.addAction('CopySelection', 'fa icon-clipboard2 fa-2x', {
-        label: 'COPY',
+        label: 'COPY ROWS',
         multiple: true,
         validTypes: ['*'],
         ignoreDataType: true,
         tooltip: 'Copy Selection to Clipboard.',
         tooltipDialog: copySelectionTT,
         max: 5000,
-        validContainerTypes: ['csvFeature']
+        validContainerTypes: ['csvFeature', '']
       },
-      function (selection, container) {
-        _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('selection', selection);
-        _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('containerType', this.containerType);
-        if (container && container.tsvGC.grid) {
-          _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('grid', container.tsvGC.grid);
-        }
+        function (selection, container) {
+          _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('selection', selection);
+          _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('containerType', this.containerType);
+          if (container && container.tsvGC.grid) {
+            _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('grid', container.tsvGC.grid);
+          }
 
-        _self.actionPanel._actions.CopySelection.options.tooltipDialog.timeout(3500);
+          _self.actionPanel._actions.CopySelection.options.tooltipDialog.timeout(3500);
 
-        setTimeout(lang.hitch(this, function () {
-          popup.open({
-            popup: _self.actionPanel._actions.CopySelection.options.tooltipDialog,
-            around: _self.actionPanel._actions.CopySelection.button,
-            orient: ['below']
-          });
-        }), 10);
-      });
+          setTimeout(lang.hitch(this, function () {
+            popup.open({
+              popup: _self.actionPanel._actions.CopySelection.options.tooltipDialog,
+              around: _self.actionPanel._actions.CopySelection.button,
+              orient: ['below']
+            });
+          }), 10);
+        });
 
       var numColumns = Object.keys(data[0]).length;
       var checkFeatureIDs = [];

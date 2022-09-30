@@ -296,7 +296,7 @@ module.exports = boneView.extend({
   _onmousewheel: function(e) {
     var delta = mouse.wheelDelta(e);
     this.g.zoomer.set('_alignmentScrollLeft', this.g.zoomer.get('_alignmentScrollLeft') + delta[0]);
-    this.g.zoomer.set('_alignmentScrollTop', this.g.zoomer.get('_alignmentScrollTop') + delta[1]);
+    // this.g.zoomer.set('_alignmentScrollTop', this.g.zoomer.get('_alignmentScrollTop') + delta[1]);
     return e.preventDefault();
   },
 

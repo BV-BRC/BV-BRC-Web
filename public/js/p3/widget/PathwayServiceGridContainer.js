@@ -2,12 +2,12 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/dom-construct',
   'dijit/popup', 'dijit/TooltipDialog',
   './PathwayServiceGrid', './AdvancedSearchFields', './GridContainer',
-  '../util/PathJoin', './ComparativeSystemsActionBar'
+  '../util/PathJoin', './ComparativeSystemsActionBar', 'FileSaver', '../DataAPI'
 ], function (
   declare, lang, on, Topic, domConstruct,
   popup, TooltipDialog,
   PathwayGrid, AdvancedSearchFields, GridContainer,
-  PathJoin, ContainerActionBar
+  PathJoin, ContainerActionBar, saveAs, DataAPI
 ) {
 
   // Download tooltips
@@ -18,6 +18,7 @@ define([
       popup.close(downloadTT);
     }
   });
+
   // console.log('PRE facetFields', AdvancedSearchFields['pathway'].filter((ff) => ff.facet));
   return declare([GridContainer], {
     gridCtor: PathwayGrid,
@@ -105,60 +106,86 @@ define([
         function () {
           downloadTT.set('content', dfc);
 
-          var data = this.grid.store.query('', {});
-          var headers,
-            content = [],
-            filename;
+          var signal = on(downloadTT.domNode, 'div:click', lang.hitch(this, function (evt) {
 
+            var rel = evt.target.attributes.rel.value;
+            var DELIMITER,
+              ext;
+            if (rel === 'text/csv') {
+              DELIMITER = ',';
+              ext = 'csv';
+            } else {
+              DELIMITER = '\t';
+              ext = 'txt';
+            }
 
-          switch (this.type) {
-            case 'pathway':
-              headers = ['Pathway ID', 'Pathway Name', 'Pathway Class', 'Annotation', 'Unique Genome Count', 'Unique Gene Count', 'Unique EC Count', 'EC Conservation', 'Gene Conservation'];
-              data.forEach(function (row) {
-                content.push([row.pathway_id, JSON.stringify(row.pathway_name), JSON.stringify(row.pathway_class), row.annotation, row.genome_count, row.gene_count, row.ec_count, row.ec_cons, row.gene_cons]);
-              });
-              filename = 'BVBRC_pathways';
-              break;
-            case 'ec_number':
-              headers = ['Pathway ID', 'Pathway Name', 'Pathway Class', 'Annotation', 'EC Number', 'Description', 'Genome Count', 'Unique Gene Count'];
-              data.forEach(function (row) {
-                content.push([row.pathway_id, JSON.stringify(row.pathway_name), JSON.stringify(row.pathway_class), row.annotation, row.ec_number, JSON.stringify(row.ec_description), row.genome_count, row.gene_count]);
-              });
-              filename = 'BVBRC_pathways_ecnumbers';
-              break;
-            case 'gene':
-              headers = ['Genome Name', 'Accession', 'BRC ID', 'Refseq Locus Tag', 'Alt Locus Tag', 'Gene', 'Product', 'Annotation', 'Pathway Name', 'EC Description'];
-              data.forEach(function (row) {
-                content.push([row.genome_name, row.accession, row.patric_id, row.refseq_locus_tag, row.alt_locus_tag, row.gene, JSON.stringify(row.product), row.annotation, JSON.stringify(row.pathway_name), JSON.stringify(row.ec_description)]);
-              });
-              filename = 'BVBRC_pathways_genes';
-              break;
-            default:
-              break;
-          }
+            var data = this.grid.store.query('', { 'selectAll': true });
+            var headers,
+              content = [],
+              filename;
 
+            switch (this.type) {
+              case 'pathway':
+                headers = ['Pathway ID', 'Pathway Name', 'Pathway Class', 'Annotation', 'Unique Genome Count', 'Unique Gene Count', 'Unique EC Count', 'EC Conservation', 'Gene Conservation'];
+                data.forEach(function (row) {
+                  content.push([row.pathway_id, JSON.stringify(row.pathway_name), JSON.stringify(row.pathway_class), row.annotation, row.genome_count, row.gene_count, row.ec_count, row.ec_cons, row.gene_cons]);
+                });
+                filename = 'BVBRC_pathways';
+                break;
+              case 'ec_number':
+                headers = ['Pathway ID', 'Pathway Name', 'Pathway Class', 'Annotation', 'EC Number', 'Description', 'Genome Count', 'Unique Gene Count'];
+                data.forEach(function (row) {
+                  content.push([row.pathway_id, JSON.stringify(row.pathway_name), JSON.stringify(row.pathway_class), row.annotation, row.ec_number, JSON.stringify(row.ec_description), row.genome_count, row.gene_count]);
+                });
+                filename = 'BVBRC_pathways_ecnumbers';
+                break;
+              case 'gene':
+                headers = ['Genome Name', 'Accession', 'BRC ID', 'Refseq Locus Tag', 'Alt Locus Tag', 'Gene', 'Product', 'Annotation', 'Pathway Name', 'EC Description'];
+                data.forEach(function (row) {
+                  content.push([row.genome_name, row.accession, row.patric_id, row.refseq_locus_tag, row.alt_locus_tag, row.gene, JSON.stringify(row.product), row.annotation, JSON.stringify(row.pathway_name), JSON.stringify(row.ec_description)]);
+                });
+                filename = 'BVBRC_pathways_genes';
+                break;
+              default:
+                break;
+            }
+
+            saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], { type: rel }), 'BVBRC_' + this.type + ext);
+
+            signal.remove();
+            popup.close(downloadTT);
+          }));
+          popup.open({
+            popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
+            around: this.containerActionBar._actions.DownloadTable.button,
+            orient: ['below']
+          });
+          /*
           downloadTT.set('data', content);
           downloadTT.set('headers', headers);
           downloadTT.set('filename', filename);
+
 
           popup.open({
             popup: this.containerActionBar._actions.DownloadTable.options.tooltipDialog,
             around: this.containerActionBar._actions.DownloadTable.button,
             orient: ['below']
           });
+          */
+
         },
         true
       ]
     ]),
     selectionActions: GridContainer.prototype.selectionActions.concat([
       [
-        'ViewFeatureItem',
-        'MultiButton fa icon-selection-Feature fa-2x',
+        'ViewFeatureItems',
+        'MultiButton fa icon-selection-FeatureList fa-2x',
         {
-          label: 'FEATURE',
-          validTypes: ['genome_feature'],
+          label: 'FEATURES',
+          validTypes: ['*'],
           multiple: false,
-          tooltip: 'Switch to Feature View. Press and Hold for more options.',
+          tooltip: 'Switch to FeatureList View.',
           validContainerTypes: ['pathway_data'],
           pressAndHold: function (selection, button, opts, evt) {
             console.log('PressAndHold');
@@ -173,13 +200,39 @@ define([
             });
           }
         },
-        function (selection, container) {
+        function (selection, container, opts, evt) {
           // console.log(selection, container);
-          if (container.type !== 'gene') {
+          var sel = selection[0];
+          var genome_id_query = 'in(genome_id,(' + this.state.genome_ids.join(',') + '))';
+          if (container.type == 'pathway') {
+            var pathway_id = sel.pathway_id;
+            var pathway_query = 'eq(pathway_id,(' + pathway_id + '))&' + genome_id_query;
+            DataAPI.queryPathways(pathway_query, { 'limit': 5000 }).then(lang.hitch(this, function (res) {
+              Topic.publish('/navigate', {
+                href: '/view/FeatureList/?in(feature_id,(' + res.items.map(function (x) {
+                  return x.feature_id;
+                }).join(',') + '))',
+                target: 'blank'
+              });
+            }));
+          } else if (container.type == 'ec_number') {
+            var ec_number = sel.ec_number;
+            var ec_query = 'eq(ec_number,(' + ec_number + '))&' + genome_id_query;
+            DataAPI.queryPathways(ec_query, { 'limit': 5000 }).then(lang.hitch(this, function (res) {
+              Topic.publish('/navigate', {
+                href: '/view/FeatureList/?in(feature_id,(' + res.items.map(function (x) {
+                  return x.feature_id;
+                }).join(',') + '))',
+                target: 'blank'
+              });
+            }));
+          } else if (container.type === 'gene') {
             return;
           }
-          var sel = selection[0];
-          Topic.publish('/navigate', { href: '/view/Feature/' + sel.feature_id + '#view_tab=overview' });
+          else {
+            return;
+          }
+          // Topic.publish('/navigate', { href: '/view/Feature/' + sel.feature_id + '#view_tab=overview' });
         },
         false
       ],

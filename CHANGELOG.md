@@ -1,4 +1,34 @@
 # Changelog
+## 3.22.9 - September 22, 2022
+* [Feature] Add primers dropdown for One Codex strategy [PR #398](https://github.com/BV-BRC/bvbrc_website/pull/398)
+
+## 3.22.8
+* [Feature] Enable COPY ROWS for TSV viewer [PR #397](https://github.com/BV-BRC/bvbrc_website/pull/397)
+* [Bug] Fix default label display on Archaeopteryx trees [PR #396](https://github.com/BV-BRC/bvbrc_website/pull/396)
+
+## 3.22.7
+* [Modification] Checked for empty container type to remove buttons on the TSV action panel. [PR #395](https://github.com/BV-BRC/bvbrc_website/pull/395)
+* [Enhancement] Increased the TSV viewer limit and added an error message. [PR #394](https://github.com/BV-BRC/bvbrc_website/pull/394)
+
+## 3.22.6 - September 21, 2022
+* [Feature] Conservation columns in pathways viewer and some QOL fixes [PR #392](https://github.com/BV-BRC/bvbrc_website/pull/392)
+
+## 3.22.5 - September 20, 2022
+* [Submodule] MSA update [Commit #6e9309](https://github.com/BV-BRC/bvbrc_website/commit/66e93096af6fe9f96868c4fa671fcf851d3c697e)
+
+## 3.22.4
+* [Feature] Added tree panel to workspace MSA viewer [PR #391](https://github.com/BV-BRC/bvbrc_website/pull/391)
+
+## 3.22.3
+* [Fix] 3rd part library versioned requests [PR #390](https://github.com/BV-BRC/bvbrc_website/pull/390)
+
+## 3.22.2 - September 19, 2022
+* [PR #389](https://github.com/BV-BRC/bvbrc_website/pull/389)
+* [PR #388](https://github.com/BV-BRC/bvbrc_website/pull/388)
+
+## 3.22.1 - September 14, 2022
+* [Feature] Modifications for viral support for Similar Genome Finder [PR #387](https://github.com/BV-BRC/bvbrc_website/pull/387)
+
 ## 3.22.0 - September 13, 2022
 * [Update] Update sitemap.xml [Commit #20fc3a8](https://github.com/BV-BRC/bvbrc_website/commit/20fc3a84cc868d2461ffb57c0a61835f1a18a631)
 
