@@ -55,7 +55,7 @@
     "babel-preset-es2015": "^6.3.13",
     "biojs-io-newick": "git://github.com/wilzbach/biojs-io-newick",
     "chai": "^1.9.1",
-    "css-loader": "^0.23.1",
+    "css-loader": "^6.7.1",
     "gulp": "^3.8.7",
     "gulp-chmod": "^1.1.0",
     "gulp-concat": "^2.3.4",
