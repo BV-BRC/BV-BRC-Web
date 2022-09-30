@@ -3,7 +3,7 @@ define([
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
   '../formatter', '../TabContainer', 'dojo/_base/Deferred',
   'dojo/request', 'dojo/_base/lang', 'dojo/when',
-  '../ActionBar', '../ContainerActionBar', 'phyloview/PhyloTree', '../../WorkspaceManager',
+  '../ActionBar', '../FilterContainerActionBar', 'phyloview/PhyloTree', '../../WorkspaceManager',
   'd3/d3', 'phyloview/TreeNavSVG', '../../util/PathJoin', 'dijit/form/Button',
   'dijit/MenuItem', 'dijit/TooltipDialog', 'dijit/popup', '../SelectionToGroup', '../PerspectiveToolTip',
   'dijit/Dialog', '../ItemDetailPanel', 'dojo/query', 'FileSaver'
