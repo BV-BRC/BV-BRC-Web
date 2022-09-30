@@ -3,7 +3,7 @@ define([
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
   '../formatter', '../TabContainer', 'dojo/_base/Deferred',
   'dojo/request', 'dojo/_base/lang', 'dojo/when',
-  '../ActionBar', '../FilterContainerActionBar', 'phyloview/PhyloTree', '../../WorkspaceManager',
+  '../ActionBar', '../ContainerActionBar', 'phyloview/PhyloTree', '../../WorkspaceManager',
   'd3/d3', 'phyloview/TreeNavSVG', '../../util/PathJoin', 'dijit/form/Button',
   'dijit/MenuItem', 'dijit/TooltipDialog', 'dijit/popup', '../SelectionToGroup', '../PerspectiveToolTip',
   'dijit/Dialog', '../ItemDetailPanel', 'dojo/query', 'FileSaver'
@@ -255,7 +255,9 @@ define([
       var objPath = fileCheck[0].split('=')[1];
       var objPathNwk = objPath.replace('.afa', '_fasttree.nwk');
 
+      this.path = objPath;
       console.log('WorkspaceManager objPathNwk', objPathNwk);
+      console.log('state.path', state.path);
 
       var typeCheck = this.state.pathname.match(/alignType=..+?(?=&|$)/);
       if (typeCheck && typeCheck[0].split('=')[1].includes('dna')) {
@@ -716,8 +718,67 @@ define([
       console.log('in createDataMap() this.alt_labels', this.alt_labels);
     },
 
+    generatePathLinks: function (path) {
+      console.log('in generatePathLinks() path', path);
+      var localStorage = window.localStorage;
+
+      // strip out /public/ of parts array
+      var parts = path.replace(/\/+/g, '/').split('/');
+      console.log('in generatePathLinks() parts', parts);
+      console.log('in generatePathLinks() localStorage', localStorage);
+
+      if (parts[1] == 'public') {
+        parts.splice(1, 1);
+      }
+
+      if (parts[0] == '') {
+        parts.shift();
+      }
+
+      var out = ["<span class='wsBreadCrumb'>"];
+      var bp = ['workspace'];
+
+      var isPublic = path.replace(/\/+/g, '/').split('/')[1] == 'public';
+
+      console.log('in generatePathLinks() isPublic', isPublic);
+
+
+      // if viewing all public workspaces, just create header
+      if (path == '/public/') {
+        out.push('<i class="icon-globe"></i> <b class="perspective">Public Workspaces</b>');
+
+        // if viewing a specific public workspace, create bread crumbs with additional url params
+      } else if (isPublic) {
+        out.push('<i class="icon-globe"></i> ' +
+          '<a class="navigationLink perspective" href="/' + bp.join('/') + '/public">Public Workspaces</a>' +
+          ' <i class="icon-caret-right"></i> ');
+        bp.push('public', parts[0]);
+      }
+
+      parts.forEach(function (part, idx) {
+        if (idx == (parts.length - 1)) {
+          out.push('<b class="perspective">' + part.replace('@' + localStorage.getItem('realm'), '') + '</b>');
+          return;
+        }
+
+        // don't create links for top level path of public path
+        if (isPublic && idx == 0) {
+          out.push('<b class="perspective">' + ((idx == 0) ? part.replace('@' + localStorage.getItem('realm'), '') : part) + '</b> / ');
+          return;
+        }
+
+        out.push("<a class='navigationLink' href='");
+        bp.push(idx == 0 ? part : encodeURIComponent(part));  // leave username decoded
+        out.push('/' + bp.join('/'));
+        out.push("'>" + ((idx == 0) ? part.replace('@' + localStorage.getItem('realm'), '') : part) + '</a> / ');
+      });
+      // console.log('in generatePathLinks() out', out);
+      return out.join('');
+    },
+
     render: function () {
       this.contentPane.set('content', '');
+      this.contentPane.set('style', 'top: 40px');
       var menuDiv = domConstruct.create('div', {}, this.contentPane.containerNode);
       var combineDiv = domConstruct.create('table', { style: { width: '100%' } }, this.contentPane.containerNode);// domConstruct.create("div",{"style":{"width":"100%"}},this.contentPane.containerNode);
       var combineRow = domConstruct.create('tr', {}, combineDiv);
@@ -1219,10 +1280,27 @@ define([
       }
 
     },
+
     postCreate: function () {
       this.inherited(arguments);
-      this.contentPane = new ContentPane({ region: 'center' });
+      // this.paneContainer = new BorderContainer({ region: 'center', style: 'height:50px' });
+      // this.addChild(this.paneContainer);
+
+      var fileCheck = this.state.pathname.match(/path=..+?(?=&|$)/);
+      var objPath = fileCheck[0].split('=')[1];
+      var folder = objPath.split('/').slice(0, -1).join('/');
+      // console.log('postCreate: objPath', objPath);
+      console.log('postCreate: this.state.pathname', this.state.pathname);
+      console.log('postCreate: folder', folder);
+      // console.log('postCreate: this', this);
+
+      this.pathContainer = domConstruct.create('div', { 'class': 'wsBreadCrumbContainer' }, this.domNode);
+      this.pathContainer.innerHTML = this.generatePathLinks(folder);
+      // console.log('postCreate: this.pathContainer.innerHTML', this.pathContainer.innerHTML);
+
+      this.contentPane = new ContentPane({ region: 'center', style: 'top: 50px' });
       this.addChild(this.contentPane);
+
       this.selectionActionBar = new ActionBar({
         region: 'right',
         layoutPriority: 4,
@@ -1237,6 +1315,7 @@ define([
         layoutPriority: 1,
         containerWidget: this
       });
+
       this.addChild(this.selectionActionBar);
       this.addChild(this.itemDetailPanel);
       this.itemDetailPanel.startup();
