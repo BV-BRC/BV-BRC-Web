@@ -1283,9 +1283,6 @@ define([
 
     postCreate: function () {
       this.inherited(arguments);
-      // this.paneContainer = new BorderContainer({ region: 'center', style: 'height:50px' });
-      // this.addChild(this.paneContainer);
-
       var fileCheck = this.state.pathname.match(/path=..+?(?=&|$)/);
       var objPath = fileCheck[0].split('=')[1];
       var folder = objPath.split('/').slice(0, -1).join('/');
