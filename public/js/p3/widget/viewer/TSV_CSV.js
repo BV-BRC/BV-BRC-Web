@@ -130,9 +130,10 @@ define([
       var downld = '<div><a href=' + this.url + '><i class="fa icon-download pull-left fa-2x"></i></a></div>';
 
       var ta_keyword = this.ta_keyword = new TextArea({
-        style: 'width:272px; min-height:20px; marginRight: 2.0em'
+        style: 'width:272px; min-height:20px; max-height:24px; marginRight: 2.0em'
       });
-      var label_keyword = domConstruct.create('label', { innerHTML: 'KEYWORDS   ' });
+      //
+      // var label_keyword = domConstruct.create('label', { innerHTML: 'KEYWORDS   ' });
 
       var columnFilter = domConstruct.create('span', {
         style: {
@@ -172,48 +173,36 @@ define([
       selector.set('options', items).reset();
 
       domConstruct.place(downld, this.filterPanel.containerNode, 'last');
-      domConstruct.place(label_keyword, this.filterPanel.containerNode, 'last');
+
+      var filterType = domConstruct.create('span', {
+        style: {
+          'float': 'right'
+        }
+      });
+      var filterSelect = new Select({
+        name: 'filterSelect',
+        style: {
+          width: '150px', marginRight: '2.0em'
+        },
+        options: [
+          { value: 'fuzzy', label: 'Fuzzy Filter', selected: true },
+          { value: 'exact', label: 'Exact Filter' },
+          { value: 'range', label: 'Range Filter' },
+        ]
+      }, filterType);
+
+      domConstruct.place(filterSelect.domNode, this.filterPanel.containerNode, 'last');
       domConstruct.place(ta_keyword.domNode, this.filterPanel.containerNode, 'last');
       domConstruct.place(selector.domNode, this.filterPanel.containerNode, 'last');
 
-      var btn_exact_filter = new Button({
-        label: 'Exact Filter',
+
+      var apply_filter = new Button({
+        label: 'Apply',
         onClick: lang.hitch(this, function () {
-
           var filter = {};
-
           filter.keyword = ta_keyword.get('value');
           filter.columnSelection = selector.get('value');
-          filter.type = 'exact';
-
-          Topic.publish('applyKeywordFilter', filter);
-        })
-      });
-
-      var btn_fuzzy_filter = new Button({
-        label: 'Fuzzy Filter',
-        onClick: lang.hitch(this, function () {
-
-          var filter = {};
-
-          filter.keyword = ta_keyword.get('value');
-          filter.columnSelection = selector.get('value');
-          filter.type = 'fuzzy';
-
-          Topic.publish('applyKeywordFilter', filter);
-        })
-      });
-
-      var btn_range_filter = new Button({
-        label: 'Range Filter',
-        onClick: lang.hitch(this, function () {
-
-          var filter = {};
-
-          filter.keyword = ta_keyword.get('value');
-          filter.columnSelection = selector.get('value');
-          filter.type = 'range';
-
+          filter.type = filterSelect.get('value')
           Topic.publish('applyKeywordFilter', filter);
         })
       });
@@ -224,17 +213,11 @@ define([
 
           ta_keyword.set('value', '');
           selector.set('value', 'All Columns');
-          // var filter = {};
-          // filter.keyword = '';
-          // filter.columnSelection = 'All Columns';
-
           Topic.publish('applyResetFilter');
         })
       });
 
-      domConstruct.place(btn_exact_filter.domNode, this.filterPanel.containerNode, 'last');
-      domConstruct.place(btn_fuzzy_filter.domNode, this.filterPanel.containerNode, 'last');
-      domConstruct.place(btn_range_filter.domNode, this.filterPanel.containerNode, 'last');
+      domConstruct.place(apply_filter.domNode, this.filterPanel.containerNode, 'last');
       domConstruct.place(btn_reset.domNode, this.filterPanel.containerNode, 'last');
 
       // add button or checkbox for column headers if suffix is not known (user supplied data file)
