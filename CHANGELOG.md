@@ -1,5 +1,8 @@
 # Changelog
-## 3.22.13 - September 29, 2022
+## 3.22.14 - September 29, 2022
+* [Bug Fix] Searching All Columns was not using a function. [PR #403](https://github.com/BV-BRC/bvbrc_website/pull/403)
+
+## 3.22.13
 * [Feature] SARS-CoV-2 CGA - Add logic for additinal primers to populate version dropdown with correct options [Commit #5bb6701](https://github.com/chris-c-thomas/bvbrc_website/commit/5bb6701752229515f85491b6f1972dc92bb71c1c)
 * [Feature] Added exact, fuzzy, and range filters to the TSV viewer. [PR #401](https://github.com/BV-BRC/bvbrc_website/pull/401)
 
