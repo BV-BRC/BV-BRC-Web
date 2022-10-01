@@ -1,4 +1,8 @@
 # Changelog
+## 3.23.0 - October 1, 2022
+* [Enhancement] Added the bread-crumbs trail to the MSA and tree viewers [PR #407](https://github.com/BV-BRC/bvbrc_website/pull/407)
+* [Feature] Subspecies Classification Implementation [PR #406](https://github.com/BV-BRC/bvbrc_website/pull/406)
+
 ## 3.22.14 - September 29, 2022
 * [Bug Fix] Searching All Columns was not using a function. [PR #403](https://github.com/BV-BRC/bvbrc_website/pull/403)
 
