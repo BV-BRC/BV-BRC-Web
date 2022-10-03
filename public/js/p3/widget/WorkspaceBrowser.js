@@ -1171,6 +1171,27 @@ define([
         }
       }, false);
 
+      this.browserHeader.addAction('ViewSubspeciesResult', 'fa icon-eye fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['SubspeciesClassification'],
+        tooltip: 'View Result'
+      }, function (selection, container, button) {
+        console.log(selection);
+
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (meta_file_data) {
+          if (meta_file_data[0].includes('classification_report.html')) {
+            path = meta_file_data[0];
+          }
+        }));
+        if (path) {
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
+        } else {
+          console.log('Error: could not find classification_report.html output file');
+        }
+      }, false);
+
       this.actionPanel.addAction('ViewAFA', 'fa icon-alignment fa-2x', {
         label: 'MSA',
         multiple: false,
@@ -1686,6 +1707,7 @@ define([
         'CodonTree': 'PhylogeneticTree',
         'PrimerDesign': 'PrimerDesign',
         'RNASeq': 'Rnaseq',
+        'SubspeciesClassification': 'SubspeciesClassification',
         'TaxonomicClassification': 'TaxonomicClassification',
         'TnSeq': 'Tnseq',
         'Variation': 'Variation'
