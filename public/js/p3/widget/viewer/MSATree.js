@@ -723,7 +723,7 @@ define([
       var localStorage = window.localStorage;
 
       // strip out /public/ of parts array
-      var parts = path.replace(/\/+/g, '/').split('/');
+      var parts = decodeURIComponent(path).replace(/\/+/g, '/').split('/');
       console.log('in generatePathLinks() parts', parts);
       console.log('in generatePathLinks() localStorage', localStorage);
 
@@ -756,9 +756,9 @@ define([
       }
 
       parts.forEach(function (part, idx) {
-        if (idx == (parts.length - 1)) {
-          out.push('<b class="perspective">' + part.replace('@' + localStorage.getItem('realm'), '') + '</b>');
-          return;
+
+        if (idx == (parts.length - 1) && part.slice(0, 1) == '.') {
+          part = part.replace('.', '');
         }
 
         // don't create links for top level path of public path
