@@ -156,8 +156,8 @@ define([
       var worker = new window.Worker('/public/worker/PathwayServiceWorker.js', { type: 'module' });
       worker.onerror = (err) => console.log(err);
       worker.onmessage = lang.hitch(this, function (e) {
-        var pathway_data = e.data.data;
-        def.resolve(pathway_data);
+        var result_data = e.data.data;
+        def.resolve(result_data);
         worker.terminate();
       });
       var payload = { text_data: data };
