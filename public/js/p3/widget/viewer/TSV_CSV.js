@@ -87,8 +87,10 @@ define([
         _self.refresh();
       });
 
-      if (WS.viewableTypes.indexOf(this.file.metadata.type) >= 0 && this.file.metadata.size <= 10000000) {
+      if (WS.viewableTypes.indexOf(this.file.metadata.type) >= 0 && this.file.metadata.size <= 150000000) {
         this.viewable = true;
+      } else {
+        this.viewer.set('content', '<pre style="font-size:.8em; background-color:red;"> The file is unviewable because it is too large. Size: ' + (this.file.metadata.size / 1000000).toFixed(2) + ' MB </pre > ');
       }
 
       if (!this.file.data && this.viewable) {
@@ -128,9 +130,10 @@ define([
       var downld = '<div><a href=' + this.url + '><i class="fa icon-download pull-left fa-2x"></i></a></div>';
 
       var ta_keyword = this.ta_keyword = new TextArea({
-        style: 'width:272px; min-height:20px; marginRight: 2.0em'
+        style: 'width:272px; min-height:20px; max-height:24px; marginRight: 2.0em'
       });
-      var label_keyword = domConstruct.create('label', { innerHTML: 'KEYWORDS   ' });
+      //
+      // var label_keyword = domConstruct.create('label', { innerHTML: 'KEYWORDS   ' });
 
       var columnFilter = domConstruct.create('span', {
         style: {
@@ -170,9 +173,39 @@ define([
       selector.set('options', items).reset();
 
       domConstruct.place(downld, this.filterPanel.containerNode, 'last');
-      domConstruct.place(label_keyword, this.filterPanel.containerNode, 'last');
+
+      var filterType = domConstruct.create('span', {
+        style: {
+          'float': 'right'
+        }
+      });
+      var filterSelect = new Select({
+        name: 'filterSelect',
+        style: {
+          width: '150px', marginRight: '2.0em'
+        },
+        options: [
+          { value: 'fuzzy', label: 'Fuzzy Filter', selected: true },
+          { value: 'exact', label: 'Exact Filter' },
+          { value: 'range', label: 'Range Filter' },
+        ]
+      }, filterType);
+
+      domConstruct.place(filterSelect.domNode, this.filterPanel.containerNode, 'last');
       domConstruct.place(ta_keyword.domNode, this.filterPanel.containerNode, 'last');
       domConstruct.place(selector.domNode, this.filterPanel.containerNode, 'last');
+
+
+      var apply_filter = new Button({
+        label: 'Apply',
+        onClick: lang.hitch(this, function () {
+          var filter = {};
+          filter.keyword = ta_keyword.get('value');
+          filter.columnSelection = selector.get('value');
+          filter.type = filterSelect.get('value')
+          Topic.publish('applyKeywordFilter', filter);
+        })
+      });
 
       var btn_reset = new Button({
         label: 'Reset',
@@ -180,27 +213,11 @@ define([
 
           ta_keyword.set('value', '');
           selector.set('value', 'All Columns');
-          var filter = {};
-          filter.keyword = '';
-          filter.columnSelection = 'All Columns';
-
-          Topic.publish('applyKeywordFilter', filter);
+          Topic.publish('applyResetFilter');
         })
       });
 
-      var btn_submit = new Button({
-        label: 'Filter',
-        onClick: lang.hitch(this, function () {
-
-          var filter = {};
-
-          filter.keyword = ta_keyword.get('value');
-          filter.columnSelection = selector.get('value');
-
-          Topic.publish('applyKeywordFilter', filter);
-        })
-      });
-      domConstruct.place(btn_submit.domNode, this.filterPanel.containerNode, 'last');
+      domConstruct.place(apply_filter.domNode, this.filterPanel.containerNode, 'last');
       domConstruct.place(btn_reset.domNode, this.filterPanel.containerNode, 'last');
 
       // add button or checkbox for column headers if suffix is not known (user supplied data file)
@@ -256,14 +273,14 @@ define([
 
       // add copy button to action panel
       this.actionPanel.addAction('CopySelection', 'fa icon-clipboard2 fa-2x', {
-        label: 'COPY',
+        label: 'COPY ROWS',
         multiple: true,
         validTypes: ['*'],
         ignoreDataType: true,
         tooltip: 'Copy Selection to Clipboard.',
         tooltipDialog: copySelectionTT,
         max: 5000,
-        validContainerTypes: ['csvFeature']
+        validContainerTypes: ['csvFeature', '']
       },
       function (selection, container) {
         _self.actionPanel._actions.CopySelection.options.tooltipDialog.set('selection', selection);

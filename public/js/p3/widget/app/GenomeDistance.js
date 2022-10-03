@@ -89,9 +89,21 @@ define([
 
     validate: function () {
       // console.log("validate", this.genome_id.get('value'), this.fasta.get('value'), !(this.genome_id.get('value') == '' && this.fasta.get('value') == ''));
-      if (!(this.genome_id.get('value') == '' && this.fasta.get('value') == ''))
-      { if (this.submitButton) { this.submitButton.set('disabled', false); } }
-      return !(this.genome_id.get('value') == '' && this.fasta.get('value') == '');
+      var input_genome_valid = this.genome_id.get('value') != '';
+      var input_fasta_valid = this.fasta.get('value') != '';
+      var input_valid = (input_genome_valid && !input_fasta_valid) || (!input_genome_valid && input_fasta_valid);
+      
+      var bac = this.org_bacterial.get('value');
+      var viral = this.org_viral.get('value');
+
+      var params_valid = bac || viral;
+      var valid = params_valid && input_valid;
+      // console.log('val', input_genome_valid, input_fasta_valid, input_valid, params_valid, valid)
+      if (this.submitButton)
+      {
+        this.submitButton.set('disabled', !valid);
+      }
+      return valid;
     },
 
     submit: function () {
@@ -115,14 +127,18 @@ define([
         include_representative = 0;
       }
 
+      var include_bacterial = this.org_bacterial.get('value') ? 1 : 0;
+      var include_viral = this.org_viral.get('value') ? 1 : 0;
+      
+
       var def = new Deferred();
       var resultType = 'genome';
 
       if (selectedGenomeId !== '') {
 
         var q = {
-          method: 'Minhash.compute_genome_distance_for_genome',
-          params: [selectedGenomeId, max_pvalue, max_distance, max_hits, include_reference, include_representative]
+          method: 'Minhash.compute_genome_distance_for_genome2',
+          params: [selectedGenomeId, max_pvalue, max_distance, max_hits, include_reference, include_representative, include_bacterial, include_viral]
         };
         def.resolve(q);
       } else {
@@ -138,8 +154,8 @@ define([
           var isZip = (file.name.endsWith('.bz2') || file.name.endsWith('.zip') || file.name.endsWith('.bzip2'));
           if (file.link_reference && file.size > 0 && this.fasta.type.indexOf(file.type) >= 0 && !isZip) {
             var q = {
-              method: 'Minhash.compute_genome_distance_for_fasta',
-              params: [path, max_pvalue, max_distance, max_hits, include_reference, include_representative]
+              method: 'Minhash.compute_genome_distance_for_fasta2',
+              params: [path, max_pvalue, max_distance, max_hits, include_reference, include_representative, include_bacterial, include_viral]
             };
             def.resolve(q);
           } else {
@@ -220,6 +236,11 @@ define([
       if (this.fasta && this.fasta.get('value') !== '' && this.genome_id.get('value') !== '') {
         this.fasta.reset();
       }
+      this.validate();
+    },
+
+   onParamChange: function () {
+      // console.log("onParamChange", this.org_bacterial.get('value'), this.org_viral.get('value'));
       this.validate();
     },
 

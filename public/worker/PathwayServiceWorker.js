@@ -1,3 +1,45 @@
+
+function load_data(text_data) {
+  var return_data = [];
+  var header = true;
+  var header_keys = null;
+  text_data.split('\n').forEach(function (line) {
+    if (header) {
+      header_keys = line.split('\t');
+      header = false;
+    }
+    else {
+      var new_data = {};
+      var l = line.split('\t');
+      header_keys.forEach(function (key, index) {
+        new_data[key] = l[index];
+      });
+      return_data.push(new_data);
+    }
+  });
+  return return_data;
+}
+
+function parseData_v2(data, primaryKey) {
+  var data_dict = {};
+  data.forEach(function (obj) {
+    var pathwayKey = obj[primaryKey];
+    data_dict[pathwayKey] = {};
+    Object.keys(obj).forEach(function (field) {
+      var isnum = /^\d+$/.test(obj[field]);
+      if (field !== 'pathway_id' && isnum) {
+        data_dict[pathwayKey][field] = parseInt(obj[field]);
+      } else if (field === 'ec_conservation' || field === 'gene_conservation') {
+        data_dict[pathwayKey][field] = parseFloat(obj[field]);
+      } else {
+        data_dict[pathwayKey][field] = obj[field];
+      }
+      data_dict[pathwayKey]['_id'] = pathwayKey;
+    });
+  });
+  return Object.values(data_dict);
+}
+
 function parseData(data, genome_list, primaryKey) {
   var data_dict = {};
   var key_list = [];
@@ -51,5 +93,17 @@ onmessage = (msg) => {
       var key = payload.primaryKey;
       var parsed_data = parseData(data, genome_ids, key);
       postMessage({ type: 'parsed_data', data: parsed_data });
+      break;
+    case 'parse_data_v2':
+      var data = payload.data;
+      var key = payload.primaryKey;
+      var parsed_data = parseData_v2(data, key);
+      postMessage({ type: 'parsed_data', data: parsed_data });
+      break;
+    case 'load_data':
+      var text_data = payload.text_data;
+      var return_data = load_data(text_data);
+      postMessage({ type: 'loaded_data', data: return_data });
+      break;
   }
 }

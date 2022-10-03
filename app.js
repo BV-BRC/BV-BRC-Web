@@ -44,6 +44,7 @@ app.use(function (req, res, next) {
   req.applicationOptions = {
     version: '3.0',
     gaID: config.get('gaID') || false,
+    uaID: config.get('uaID') || false,
     probModelSeedServiceURL: config.get('probModelSeedServiceURL'), // for dashboard
     shockServiceURL: config.get('shockServiceURL'), // for dashboard
     workspaceServiceURL: config.get('workspaceServiceURL'),
@@ -86,16 +87,21 @@ app.use('/portal/portal/patric/Home', [
 ]);
 
 app.use('*jbrowse.conf', express.static(path.join(__dirname, 'public/js/jbrowse.conf')));
+
+const staticHeaders = {
+  maxage: '356d',
+  setHeaders: function (res, path) {
+    var d = new Date();
+    d.setYear(d.getFullYear() + 1);
+    res.setHeader('Expires', d.toGMTString())
+  }
+}
+
 app.use('/js/' + packageJSON.version + '/', [
-  express.static(path.join(__dirname, 'public/js/release/'), {
-    maxage: '356d',
-    setHeaders: function (res, path) {
-      var d = new Date();
-      d.setYear(d.getFullYear() + 1);
-      res.setHeader('Expires', d.toGMTString());
-    }
-  })
+  express.static(path.join(__dirname, 'public/js/release/'), staticHeaders),
+  express.static(path.join(__dirname, 'public/js/'),staticHeaders)
 ]);
+
 app.use('/js/', express.static(path.join(__dirname, 'public/js/')));
 app.use('/patric/images', express.static(path.join(__dirname, 'public/patric/images/'), {
   maxage: '365d',

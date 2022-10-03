@@ -97,6 +97,7 @@ define([
 
         this.tabContainer.addChild(this.subsystemsGrid);
       }));
+      /*
       this.loadGenesData().then(lang.hitch(this, function (res) {
         var genesTopicId = 'genes topicId';
 
@@ -143,6 +144,7 @@ define([
 
         this.tabContainer.addChild(this.genesGrid);
       }));
+      */
 
       // load subystemsOverviewGrid, pass in memory store
       this.subsystemsOverviewGrid = new SubSystemsOverview({

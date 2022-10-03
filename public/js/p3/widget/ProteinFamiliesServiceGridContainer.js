@@ -95,7 +95,8 @@ define([
 
           downloadTT.set('content', dfc);
 
-          on(downloadTT.domNode, 'div:click', lang.hitch(this, function (evt) {
+          var signal = on(downloadTT.domNode, 'div:click', lang.hitch(this, function (evt) {
+
             var rel = evt.target.attributes.rel.value;
             var DELIMITER,
               ext;
@@ -107,7 +108,7 @@ define([
               ext = 'txt';
             }
 
-            var data  = this.grid.store.query('', { sort: this.grid.store.sort });
+            var data  = this.grid.store.query('', { sort: this.grid.store.sort, 'selectAll': true });
 
             var headers = ['Family ID', 'Proteins', 'Genomes', 'Description', 'Min AA Length', 'Max AA Length', 'Mean', 'Std Dev'];
             var content = [];
@@ -117,6 +118,7 @@ define([
 
             saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], { type: rel }), 'BVBRC_protein_families.' + ext);
 
+            signal.remove();
             popup.close(downloadTT);
           }));
 

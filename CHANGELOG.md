@@ -1,4 +1,79 @@
 # Changelog
+## 3.23.2 - October 3, 2022
+* [Bug Fix] [PR #417](https://github.com/BV-BRC/bvbrc_website/pull/417)
+* [Enhancement] [PR #416](https://github.com/BV-BRC/bvbrc_website/pull/416)
+
+## 3.23.1 - October 1, 2022
+* [Modify] Changed filter buttons to a select menu on the TSV viewer. [PR #415](https://github.com/BV-BRC/bvbrc_website/pull/415)
+
+## 3.23.0
+* [Enhancement] Added the bread-crumbs trail to the MSA and tree viewers [PR #407](https://github.com/BV-BRC/bvbrc_website/pull/407)
+* [Feature] Subspecies Classification Implementation [PR #406](https://github.com/BV-BRC/bvbrc_website/pull/406)
+
+## 3.22.14 - September 29, 2022
+* [Bug Fix] Searching All Columns was not using a function. [PR #403](https://github.com/BV-BRC/bvbrc_website/pull/403)
+
+## 3.22.13
+* [Feature] SARS-CoV-2 CGA - Add logic for additinal primers to populate version dropdown with correct options [Commit #5bb6701](https://github.com/chris-c-thomas/bvbrc_website/commit/5bb6701752229515f85491b6f1972dc92bb71c1c)
+* [Feature] Added exact, fuzzy, and range filters to the TSV viewer. [PR #401](https://github.com/BV-BRC/bvbrc_website/pull/401)
+
+## 3.22.12 - September 26, 2022
+* [Feature] Added conservation plot and show/hide overview box to on-the-fly MSA viewer [PR #400](https://github.com/BV-BRC/bvbrc_website/pull/400)
+
+## 3.22.11
+* [Hot Fix] Add contact us link [PR #399](https://github.com/BV-BRC/bvbrc_website/pull/399)
+* [Bug] Fix ARTIC primer submission validation error. Remove duplicate primer. [Commit #30fd531](https://github.com/BV-BRC/bvbrc_website/commit/30fd53188e520feea76bd194d72db5d8d90c39a7)
+
+## 3.22.10 - September 23, 2022
+* [Feature] Add initial versioning for Artic primer in SARS-CoV-2 service
+
+## 3.22.9 - September 22, 2022
+* [Feature] Add primers dropdown for One Codex strategy [PR #398](https://github.com/BV-BRC/bvbrc_website/pull/398)
+
+## 3.22.8
+* [Feature] Enable COPY ROWS for TSV viewer [PR #397](https://github.com/BV-BRC/bvbrc_website/pull/397)
+* [Bug] Fix default label display on Archaeopteryx trees [PR #396](https://github.com/BV-BRC/bvbrc_website/pull/396)
+
+## 3.22.7
+* [Modification] Checked for empty container type to remove buttons on the TSV action panel. [PR #395](https://github.com/BV-BRC/bvbrc_website/pull/395)
+* [Enhancement] Increased the TSV viewer limit and added an error message. [PR #394](https://github.com/BV-BRC/bvbrc_website/pull/394)
+
+## 3.22.6 - September 21, 2022
+* [Feature] Conservation columns in pathways viewer and some QOL fixes [PR #392](https://github.com/BV-BRC/bvbrc_website/pull/392)
+
+## 3.22.5 - September 20, 2022
+* [Submodule] MSA update [Commit #6e9309](https://github.com/BV-BRC/bvbrc_website/commit/66e93096af6fe9f96868c4fa671fcf851d3c697e)
+
+## 3.22.4
+* [Feature] Added tree panel to workspace MSA viewer [PR #391](https://github.com/BV-BRC/bvbrc_website/pull/391)
+
+## 3.22.3
+* [Fix] 3rd part library versioned requests [PR #390](https://github.com/BV-BRC/bvbrc_website/pull/390)
+
+## 3.22.2 - September 19, 2022
+* [PR #389](https://github.com/BV-BRC/bvbrc_website/pull/389)
+* [PR #388](https://github.com/BV-BRC/bvbrc_website/pull/388)
+
+## 3.22.1 - September 14, 2022
+* [Feature] Modifications for viral support for Similar Genome Finder [PR #387](https://github.com/BV-BRC/bvbrc_website/pull/387)
+
+## 3.22.0 - September 13, 2022
+* [Update] Update sitemap.xml [Commit #20fc3a8](https://github.com/BV-BRC/bvbrc_website/commit/20fc3a84cc868d2461ffb57c0a61835f1a18a631)
+
+## 3.21.3
+* [Minor] Remove banner. Revise wording" [Commit #c9abb032](https://github.com/BV-BRC/bvbrc_website/commit/c9ab0322469f920215137654a25c6451d061a119)
+* [Minor] Fix typo in welcome banner [Commit #adab2b4](https://github.com/BV-BRC/bvbrc_website/commit/adab2b4af82e5548803015879079f35c2b839d0f)
+
+## 3.21.2 - September 12, 2022
+## 3.21.1
+* [Feature] Add secondary tracking code for both Google Universal Analytics (soon to be EOL) and Google Analytics 4 [Commit #7bbb11a](https://github.com/BV-BRC/bvbrc_website/commit/7bbb11a0b286da3bd8a53b6d5a98e4bfd07f36ea)
+
+## 3.21.0 - September 9, 2022
+* [Release] Production Release 3.21.0
+
+## 3.20.7
+* [Bug] Fix incorrect virus link [Commit #df59b2](https://github.com/BV-BRC/bvbrc_website/commit/df59b2da8a6339c625dc25ba57e6299c95d9e7b4)
+
 ## 3.20.6 - September 8, 2022
 * [Enahncement] Activate genome_name as a valid label on Archaeopteryx trees [PR #382](https://github.com/BV-BRC/bvbrc_website/pull/382)
 

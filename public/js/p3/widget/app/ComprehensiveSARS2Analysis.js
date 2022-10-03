@@ -41,7 +41,7 @@ define([
     tutorialLink: 'tutorial/sars_cov_2_assembly_annotation/sars_cov_2_assembly_annotation.html',
     libraryData: null,
     defaultPath: '',
-    startingRows: 6,
+    startingRows: 9,
     libCreated: 0,
     // 'https://www.ebi.ac.uk/ena/data/view/{0}&display=xml',
     srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmax=1&db=sra&field=accn&term={0}&retmode=json',
@@ -165,7 +165,7 @@ define([
       values.taxonomy_id = this.tax_idWidget.get('displayedValue');
       if (this.startWithContigs.checked) {  // starting from contigs
         values.input_type = 'contigs'; // set input_type to be 'contigs'
-        var assembly_inputs = ['recipe', 'genome_size', 'trim', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
+        var assembly_inputs = ['recipe', 'primers', 'primer_version', 'genome_size', 'trim', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
         assembly_inputs.forEach(function (key) {
           if (Object.prototype.hasOwnProperty.call(values, key)) {
             delete values[key];
@@ -591,12 +591,88 @@ define([
     },
 
     onRecipeChange: function () {
-      if (this.recipe.value == 'canu') {
-        // this.genome_size_block.style.display = 'block';
+      if (this.recipe.value === 'oneindex') {
+        this.primers.set('disabled', false);
+        this.primer_version.set('disabled', false);
+        this.checkParameterRequiredFields();
+      }
+      else if (this.recipe.value === 'cdc-illumina' || this.recipe.value === 'cdc-nanopore' || this.recipe.value === 'artic-nanopore' || this.recipe.value === 'auto') {
+        this.primers.set('disabled', true);
+        this.primer_version.set('disabled', true);
         this.checkParameterRequiredFields();
       }
       else {
-        // this.genome_size_block.style.display = 'none';
+        this.primers.set('disabled', false);
+        this.checkParameterRequiredFields();
+      }
+    },
+
+    onPrimersChange: function () {
+      let articSelector = document.getElementById('articSelector');
+      let midnightSelector = document.getElementById('midnightSelector');
+      let qiagenSelector = document.getElementById('qiagenSelector');
+      let swiftSelector = document.getElementById('swiftSelector');
+      let varskipSelector = document.getElementById('varskipSelector');
+      let varskipLongSelector = document.getElementById('varskipLongSelector');
+      // let currentSelector;
+
+      if (this.primers.value === 'ARTIC') {
+        articSelector.style.display = 'inline-block';
+        midnightSelector.style.display = 'none';
+        qiagenSelector.style.display = 'none';
+        swiftSelector.style.display = 'none';
+        varskipSelector.style.display = 'none';
+        varskipLongSelector.style.display = 'none';
+        this.checkParameterRequiredFields();
+      }
+
+      if (this.primers.value === 'midnight') {
+        articSelector.style.display = 'none';
+        midnightSelector.style.display = 'inline-block';
+        qiagenSelector.style.display = 'none';
+        swiftSelector.style.display = 'none';
+        varskipSelector.style.display = 'none';
+        varskipLongSelector.style.display = 'none';
+        this.checkParameterRequiredFields();
+      }
+
+      if (this.primers.value === 'qiagen') {
+        articSelector.style.display = 'none';
+        midnightSelector.style.display = 'none';
+        qiagenSelector.style.display = 'inline-block';
+        swiftSelector.style.display = 'none';
+        varskipSelector.style.display = 'none';
+        varskipLongSelector.style.display = 'none';
+        this.checkParameterRequiredFields();
+      }
+
+      if (this.primers.value === 'swift') {
+        articSelector.style.display = 'none';
+        midnightSelector.style.display = 'none';
+        qiagenSelector.style.display = 'none';
+        swiftSelector.style.display = 'inline-block';
+        varskipSelector.style.display = 'none';
+        varskipLongSelector.style.display = 'none';
+        this.checkParameterRequiredFields();
+      }
+
+      if (this.primers.value === 'varskip') {
+        articSelector.style.display = 'none';
+        midnightSelector.style.display = 'none';
+        qiagenSelector.style.display = 'none';
+        swiftSelector.style.display = 'none';
+        varskipSelector.style.display = 'inline-block';
+        varskipLongSelector.style.display = 'none';
+        this.checkParameterRequiredFields();
+      }
+
+      if (this.primers.value === 'varskip-long') {
+        articSelector.style.display = 'none';
+        midnightSelector.style.display = 'none';
+        qiagenSelector.style.display = 'none';
+        swiftSelector.style.display = 'none';
+        varskipSelector.style.display = 'none';
+        varskipLongSelector.style.display = 'inline-block';
         this.checkParameterRequiredFields();
       }
     },
@@ -605,6 +681,7 @@ define([
       if (this.startWithRead.checked == true) {
         this.readTable.style.display = 'block';
         this.assemblyStrategy.style.display = 'block';
+        this.primersStrategy.style.display = 'block';
         // this.assembly_additional_parameters_block.style.display = 'block';
         this.annotationFileBox.style.display = 'none';
         this.numlibs.constraints.min = 1;
@@ -615,6 +692,7 @@ define([
       if (this.startWithContigs.checked == true) {
         this.readTable.style.display = 'none';
         this.assemblyStrategy.style.display = 'none';
+        this.primersStrategy.style.display = 'none';
         // this.genome_size_block.style.display = 'none';
         // this.assembly_additional_parameters_block.style.display = 'none';
         this.annotationFileBox.style.display = 'block';
