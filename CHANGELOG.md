@@ -1,4 +1,8 @@
 # Changelog
+## 3.23.2 - October 3, 2022
+* [Bug Fix] [PR #417](https://github.com/BV-BRC/bvbrc_website/pull/417)
+* [Enhancement] [PR #416](https://github.com/BV-BRC/bvbrc_website/pull/416)
+
 ## 3.23.1 - October 1, 2022
 * [Modify] Changed filter buttons to a select menu on the TSV viewer. [PR #415](https://github.com/BV-BRC/bvbrc_website/pull/415)
 
