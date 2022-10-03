@@ -607,6 +607,76 @@ define([
       }
     },
 
+    onPrimersChange: function () {
+      let articSelector = document.getElementById('articSelector');
+      let midnightSelector = document.getElementById('midnightSelector');
+      let qiagenSelector = document.getElementById('qiagenSelector');
+      let swiftSelector = document.getElementById('swiftSelector');
+      let varskipSelector = document.getElementById('varskipSelector');
+      let varskipLongSelector = document.getElementById('varskipLongSelector');
+      // let currentSelector;
+
+      if (this.primers.value === 'ARTIC') {
+        articSelector.style.display = 'inline-block';
+        midnightSelector.style.display = 'none';
+        qiagenSelector.style.display = 'none';
+        swiftSelector.style.display = 'none';
+        varskipSelector.style.display = 'none';
+        varskipLongSelector.style.display = 'none';
+        this.checkParameterRequiredFields();
+      }
+
+      if (this.primers.value === 'midnight') {
+        articSelector.style.display = 'none';
+        midnightSelector.style.display = 'inline-block';
+        qiagenSelector.style.display = 'none';
+        swiftSelector.style.display = 'none';
+        varskipSelector.style.display = 'none';
+        varskipLongSelector.style.display = 'none';
+        this.checkParameterRequiredFields();
+      }
+
+      if (this.primers.value === 'qiagen') {
+        articSelector.style.display = 'none';
+        midnightSelector.style.display = 'none';
+        qiagenSelector.style.display = 'inline-block';
+        swiftSelector.style.display = 'none';
+        varskipSelector.style.display = 'none';
+        varskipLongSelector.style.display = 'none';
+        this.checkParameterRequiredFields();
+      }
+
+      if (this.primers.value === 'swift') {
+        articSelector.style.display = 'none';
+        midnightSelector.style.display = 'none';
+        qiagenSelector.style.display = 'none';
+        swiftSelector.style.display = 'inline-block';
+        varskipSelector.style.display = 'none';
+        varskipLongSelector.style.display = 'none';
+        this.checkParameterRequiredFields();
+      }
+
+      if (this.primers.value === 'varskip') {
+        articSelector.style.display = 'none';
+        midnightSelector.style.display = 'none';
+        qiagenSelector.style.display = 'none';
+        swiftSelector.style.display = 'none';
+        varskipSelector.style.display = 'inline-block';
+        varskipLongSelector.style.display = 'none';
+        this.checkParameterRequiredFields();
+      }
+
+      if (this.primers.value === 'varskip-long') {
+        articSelector.style.display = 'none';
+        midnightSelector.style.display = 'none';
+        qiagenSelector.style.display = 'none';
+        swiftSelector.style.display = 'none';
+        varskipSelector.style.display = 'none';
+        varskipLongSelector.style.display = 'inline-block';
+        this.checkParameterRequiredFields();
+      }
+    },
+
     onStartWithChange: function () {
       if (this.startWithRead.checked == true) {
         this.readTable.style.display = 'block';
