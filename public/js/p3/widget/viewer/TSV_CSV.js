@@ -185,7 +185,7 @@ define([
           width: '150px', marginRight: '2.0em'
         },
         options: [
-          { value: 'fuzzy', label: 'Fuzzy Filter', selected: true },
+          { value: 'fuzzy', label: 'Substring Filter', selected: true },
           { value: 'exact', label: 'Exact Filter' },
           { value: 'range', label: 'Range Filter' },
         ]
