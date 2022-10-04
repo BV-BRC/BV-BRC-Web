@@ -1,4 +1,18 @@
 # Changelog
+## 3.23.3 - October 3, 2022
+* [Feature] Subspecies Feature [PR #418](https://github.com/BV-BRC/bvbrc_website/pull/418/)
+
+## 3.23.2
+* [Bug Fix] [PR #417](https://github.com/BV-BRC/bvbrc_website/pull/417)
+* [Enhancement] [PR #416](https://github.com/BV-BRC/bvbrc_website/pull/416)
+
+## 3.23.1 - October 1, 2022
+* [Modify] Changed filter buttons to a select menu on the TSV viewer. [PR #415](https://github.com/BV-BRC/bvbrc_website/pull/415)
+
+## 3.23.0
+* [Enhancement] Added the bread-crumbs trail to the MSA and tree viewers [PR #407](https://github.com/BV-BRC/bvbrc_website/pull/407)
+* [Feature] Subspecies Classification Implementation [PR #406](https://github.com/BV-BRC/bvbrc_website/pull/406)
+
 ## 3.22.14 - September 29, 2022
 * [Bug Fix] Searching All Columns was not using a function. [PR #403](https://github.com/BV-BRC/bvbrc_website/pull/403)
 
