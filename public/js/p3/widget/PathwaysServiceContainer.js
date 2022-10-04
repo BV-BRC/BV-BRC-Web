@@ -112,6 +112,7 @@ define([
         // TODO: the last entry is undefined, not sure why it's being added: for now just remove
         ec_data.pop();
         this.state.data['ecnumber'] = ec_data;
+        debugger;
         var ec_store = new PathwayMemoryStore({ data: ec_data, state: this.state, storeType: 'ecNum', primaryKey: 'ec_number' });
         this.ecGrid = new PathwaysGridContainer({ title: 'EC Number', store: ec_store, type: 'ec_number' });
         this.ecGrid.setFilterUpdateTrigger();
