@@ -57,6 +57,13 @@ define([], function () {
       params: {}
     },
 
+    SubspeciesClassification: {
+      title: 'Subspecies Classification',
+      layer: 'p3/layer/panels',
+      ctor: 'p3/widget/app/SubspeciesClassification',
+      params: {}
+    },
+
     GenomeGroupViewer: {
       title: 'Genome Group',
       layer: 'p3/layer/panels',
