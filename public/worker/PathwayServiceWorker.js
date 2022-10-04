@@ -3,6 +3,7 @@ function load_data(text_data) {
   var return_data = [];
   var header = true;
   var header_keys = null;
+  var idx = 0;
   text_data.split('\n').forEach(function (line) {
     if (header) {
       header_keys = line.split('\t');
@@ -14,7 +15,9 @@ function load_data(text_data) {
       header_keys.forEach(function (key, index) {
         new_data[key] = l[index];
       });
+      new_data['ec_index'] = idx + '';
       return_data.push(new_data);
+      idx++;
     }
   });
   return return_data;
