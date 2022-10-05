@@ -616,25 +616,25 @@ define([
     },
 
     onPrimersChange: function () {
-      let primerVersions = ['V4.1', 'V4', 'V3', 'V2', 'V1a', 'V1'];
-      if (this.primers.value == 'midnight') {
+      // let primerVersions = ['V4.1', 'V4', 'V3', 'V2', 'V1a', 'V1'];
+      // if (this.primers.value == 'midnight') {
 
-      }
-      if (this.primers.value == 'qiagen') {
+      // }
+      // if (this.primers.value == 'qiagen') {
 
-      }
-      if (this.primers.value == 'swift') {
+      // }
+      // if (this.primers.value == 'swift') {
 
-      }
-      if (this.primers.value == 'varskip') {
+      // }
+      // if (this.primers.value == 'varskip') {
 
-      }
-      if (this.primers.value == 'varskip-long"') {
+      // }
+      // if (this.primers.value == 'varskip-long"') {
 
-      }
-      if (this.primers.value == 'ARTIC') {
+      // }
+      // if (this.primers.value == 'ARTIC') {
 
-      }
+      // }
     },
 
     onStartWithChange: function () {
