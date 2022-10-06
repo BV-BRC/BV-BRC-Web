@@ -53,7 +53,7 @@ define([
           ec_description : { label: 'Description', field: 'ec_description' },
           ec_number : { label: 'EC Number', field: 'ec_number' },
           genome_count : { label: 'Genome Count', field: 'genome_count' },
-          ec_count : { label: 'EC Number Count', field: 'ec_count' },
+          // ec_count : { label: 'EC Number Count', field: 'ec_count' },
           gene_count : { label: 'Gene Count', field: 'gene_count' },
           genome_ec : { label: 'Genome EC Count', field: 'genome_ec' }
         },
