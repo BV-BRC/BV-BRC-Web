@@ -1,4 +1,7 @@
 # Changelog
+## 3.23.5 - October 6, 2022
+* [Bug Fix] Comparative Systems Tweaks [PR #422](https://github.com/BV-BRC/bvbrc_website/pull/422)
+
 ## 3.23.4 - October 5, 2022
 * [Bug] Disable V1a for ARTIC Primer []()
 * [Bug] Disabled primer versions when a strategy besides One Codex is selected. Simimlar to how primers also grays out. [Commit #3d72553](https://github.com/BV-BRC/bvbrc_website/commit/3d72553e244311735ef88246a1de1f1af7cde034)

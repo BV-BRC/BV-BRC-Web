@@ -87,11 +87,10 @@ define([
     },
 
     loadWorkspaceData: function () {
-
       // load pathway data in background
       this.loadData(this.state.data['pathway']).then(lang.hitch(this, function (pathway_data) {
         // TODO: the last entry is undefined, not sure why it's being added: for now just remove
-        pathway_data.pop();
+        // pathway_data.pop();
         this.state.data['pathway'] = pathway_data;
         var pathway_store = new PathwayMemoryStore({
           data: pathway_data,
@@ -110,9 +109,9 @@ define([
       // load ec data in background
       this.loadData(this.state.data['ecnumber']).then(lang.hitch(this, function (ec_data) {
         // TODO: the last entry is undefined, not sure why it's being added: for now just remove
-        ec_data.pop();
+        // ec_data.pop();
         this.state.data['ecnumber'] = ec_data;
-        var ec_store = new PathwayMemoryStore({ data: ec_data, state: this.state, storeType: 'ecNum', primaryKey: 'ec_number' });
+        var ec_store = new PathwayMemoryStore({ data: ec_data, state: this.state, storeType: 'ecNum', primaryKey: 'ec_index' });
         this.ecGrid = new PathwaysGridContainer({ title: 'EC Number', store: ec_store, type: 'ec_number' });
         this.ecGrid.setFilterUpdateTrigger();
         this.tabContainer.addChild(this.ecGrid);
