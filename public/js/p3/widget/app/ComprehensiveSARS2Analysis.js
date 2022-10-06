@@ -591,90 +591,50 @@ define([
     },
 
     onRecipeChange: function () {
-      if (this.recipe.value === 'oneindex') {
-        this.primers.set('disabled', false);
-        this.primer_version.set('disabled', false);
-        this.checkParameterRequiredFields();
-      }
-      else if (this.recipe.value === 'cdc-illumina' || this.recipe.value === 'cdc-nanopore' || this.recipe.value === 'artic-nanopore' || this.recipe.value === 'auto') {
+      if (this.recipe.value == 'cdc-illumina') {
         this.primers.set('disabled', true);
         this.primer_version.set('disabled', true);
-        this.checkParameterRequiredFields();
+
       }
-      else {
+      if (this.recipe.value == 'cdc-nanopore') {
+        this.primers.set('disabled', true);
+        this.primer_version.set('disabled', true);
+      }
+      if (this.recipe.value == 'artic-nanopore') {
+        this.primers.set('disabled', true);
+        this.primer_version.set('disabled', true);
+      }
+      // Disabling auto for now. Not sure if needed down the line.
+      // if (this.recipe.value == 'auto') {
+      //   this.primers.set('disabled', true);
+      //   this.primer_version.set('disabled', true);
+      // }
+      if (this.recipe.value == 'onecodex') {
         this.primers.set('disabled', false);
-        this.checkParameterRequiredFields();
+        this.primer_version.set('disabled', false);
       }
     },
 
     onPrimersChange: function () {
-      let articSelector = document.getElementById('articSelector');
-      let midnightSelector = document.getElementById('midnightSelector');
-      let qiagenSelector = document.getElementById('qiagenSelector');
-      let swiftSelector = document.getElementById('swiftSelector');
-      let varskipSelector = document.getElementById('varskipSelector');
-      let varskipLongSelector = document.getElementById('varskipLongSelector');
-      // let currentSelector;
+      // let primerVersions = ['V4.1', 'V4', 'V3', 'V2', 'V1a', 'V1'];
+      // if (this.primers.value == 'midnight') {
 
-      if (this.primers.value === 'ARTIC') {
-        articSelector.style.display = 'inline-block';
-        midnightSelector.style.display = 'none';
-        qiagenSelector.style.display = 'none';
-        swiftSelector.style.display = 'none';
-        varskipSelector.style.display = 'none';
-        varskipLongSelector.style.display = 'none';
-        this.checkParameterRequiredFields();
-      }
+      // }
+      // if (this.primers.value == 'qiagen') {
 
-      if (this.primers.value === 'midnight') {
-        articSelector.style.display = 'none';
-        midnightSelector.style.display = 'inline-block';
-        qiagenSelector.style.display = 'none';
-        swiftSelector.style.display = 'none';
-        varskipSelector.style.display = 'none';
-        varskipLongSelector.style.display = 'none';
-        this.checkParameterRequiredFields();
-      }
+      // }
+      // if (this.primers.value == 'swift') {
 
-      if (this.primers.value === 'qiagen') {
-        articSelector.style.display = 'none';
-        midnightSelector.style.display = 'none';
-        qiagenSelector.style.display = 'inline-block';
-        swiftSelector.style.display = 'none';
-        varskipSelector.style.display = 'none';
-        varskipLongSelector.style.display = 'none';
-        this.checkParameterRequiredFields();
-      }
+      // }
+      // if (this.primers.value == 'varskip') {
 
-      if (this.primers.value === 'swift') {
-        articSelector.style.display = 'none';
-        midnightSelector.style.display = 'none';
-        qiagenSelector.style.display = 'none';
-        swiftSelector.style.display = 'inline-block';
-        varskipSelector.style.display = 'none';
-        varskipLongSelector.style.display = 'none';
-        this.checkParameterRequiredFields();
-      }
+      // }
+      // if (this.primers.value == 'varskip-long"') {
 
-      if (this.primers.value === 'varskip') {
-        articSelector.style.display = 'none';
-        midnightSelector.style.display = 'none';
-        qiagenSelector.style.display = 'none';
-        swiftSelector.style.display = 'none';
-        varskipSelector.style.display = 'inline-block';
-        varskipLongSelector.style.display = 'none';
-        this.checkParameterRequiredFields();
-      }
+      // }
+      // if (this.primers.value == 'ARTIC') {
 
-      if (this.primers.value === 'varskip-long') {
-        articSelector.style.display = 'none';
-        midnightSelector.style.display = 'none';
-        qiagenSelector.style.display = 'none';
-        swiftSelector.style.display = 'none';
-        varskipSelector.style.display = 'none';
-        varskipLongSelector.style.display = 'inline-block';
-        this.checkParameterRequiredFields();
-      }
+      // }
     },
 
     onStartWithChange: function () {
