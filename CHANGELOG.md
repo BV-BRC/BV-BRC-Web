@@ -1,4 +1,7 @@
 # Changelog
+## 3.23.6 - October 7, 2022
+* [Enahncement] Subspecies [PR #424](https://github.com/BV-BRC/bvbrc_website/pull/424)
+
 ## 3.23.5 - October 6, 2022
 * [Bug Fix] Comparative Systems Tweaks [PR #422](https://github.com/BV-BRC/bvbrc_website/pull/422)
 
