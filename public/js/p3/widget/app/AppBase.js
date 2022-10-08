@@ -708,7 +708,7 @@ define([
       return newFasta;
     },
 
-    validateFasta: function (fastaText, seqType = 'aa', replace = true) {
+    validateFasta: function (fastaText, seqType = 'aa', replace = true, firstName = 'record_1') {
       /*
       Calculates the validity of a FASTA file.
 
@@ -718,6 +718,7 @@ define([
         A string representing a FASTA data
       seqType: string
         Use 'dna' to indicate that the FASTA file should just be nucleotide sequences.
+      firstName: The fasta id to call the first record.
 
       Returns
       -------
@@ -756,7 +757,7 @@ define([
         reto.message = 'A fasta record is at least two lines and starts with ">".'
         return reto;
       } else if (records != '' && records[0] != '>' && replace) {
-        records = '>record_1\n' + records;
+        records = '>' + firstName + '\n' + records;
         reto.trimFasta = records;
       }
       var arr = records.split('\n');
