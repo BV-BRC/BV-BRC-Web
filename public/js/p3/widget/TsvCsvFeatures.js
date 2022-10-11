@@ -37,6 +37,8 @@ define([], function () {
 
     // Subspecies Classification Service
     'result.tsv': { columnHeaders: true },
+    'input.fasta.err': { columnHeaders: true },
+    'input.fasta.result': { columnHeaders: true },
   };
 
 });

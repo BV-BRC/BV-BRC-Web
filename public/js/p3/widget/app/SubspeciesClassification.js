@@ -23,7 +23,8 @@ define([
     { value: 'MURRAY', label: 'Murray Valley encephalitis virus' },
     { value: 'ZIKA', label: 'Zika virus' },
     { value: 'NOROORF1', label: 'Norovirus ORF1' },
-    { value: 'NOROORF2', label: 'Norovirus ORF2' }
+    { value: 'NOROORF2', label: 'Norovirus ORF2' },
+    { value: 'ROTAA', label: 'Rotavirus A' }
   ];
 
   return declare([AppBase], {
