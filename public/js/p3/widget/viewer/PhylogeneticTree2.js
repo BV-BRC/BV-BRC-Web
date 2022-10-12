@@ -102,7 +102,7 @@ define([
       var labelType = this.state.search.match(/labelType=..+?(?=&|$)/);
       var fileType = this.state.search.match(/fileType=..+?(?=&|$)/);
       var isClassification = this.state.search.match(/isClassification=.+?(?=&|$)/);
-      var initialValue = this.state.search.match(/initialValue=..+?(?=&|$)/);
+      var initialValue = this.state.search.match(/initialValue=.+?(?=&|$)/);
       // console.log('fileType', fileType);
 
       if (idType && !isNaN(idType.index)) {
