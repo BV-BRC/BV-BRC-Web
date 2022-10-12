@@ -1,4 +1,7 @@
 # Changelog
+## 3.23.7 - October 12, 2022
+* [Feature] Finish logic for new SARS-CoV-2 CGA submission GUI options [Commit #21d646d](https://github.com/BV-BRC/bvbrc_website/commit/21d646deb8c7f36524ee6e256c92005f1f800595)
+
 ## 3.23.6 - October 7, 2022
 * [Enahncement] Subspecies [PR #424](https://github.com/BV-BRC/bvbrc_website/pull/424)
 
