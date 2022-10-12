@@ -193,12 +193,12 @@ define([
             treeDat.tree = obj.data.replace(/[^(,)]+_@_/g, ''); // get rid of ridiculously annoying, super dirty embedded labels
             if (isClassification) {
               treeDat.options = {};
-              treeDat.options.externalNodeFontSize = 6;
+              treeDat.options.externalNodeFontSize = 10;
               treeDat.options.branchWidthDefault = 1;
               treeDat.options.found0ColorDefault = '#800000';
 
               if (initialValue) {
-                treeDat.options.searchAinitialValue = initialValue;
+                treeDat.options.searchAinitialValue = '_#';
               }
             }
             _self.prepareTree(treeDat, idType, labelType, labelSearch, fileType);
