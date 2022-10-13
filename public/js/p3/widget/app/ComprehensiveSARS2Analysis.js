@@ -615,26 +615,58 @@ define([
       }
     },
 
-    onPrimersChange: function () {
-      // let primerVersions = ['V4.1', 'V4', 'V3', 'V2', 'V1a', 'V1'];
-      // if (this.primers.value == 'midnight') {
+    onPrimersChange: function (value) {
+      var articOptions = [
+        { label: 'V4.1', value: 'V4.1' },
+        { label: 'V4', value: 'V4' },
+        { label: 'V3', value: 'V3' },
+        { label: 'V2', value: 'V2' },
+        { label: 'V1', value: 'V1' }
+      ];
+      var midnightOptions = [
+        { label: 'V1', value: 'V1' }
+      ];
+      var qiagenOptions = [
+        { label: 'V1', value: 'V1' }
+      ];
+      var swiftOptions = [
+        { label: 'V1', value: 'V1' }
+      ];
+      var varskipOptions = [
+        { label: 'V2', value: 'V2' },
+        { label: 'V1a', value: 'V1a' }
+      ];
+      var varskipLongOptions = [
+        { label: 'V1a', value: 'V1a' }
+      ];
 
-      // }
-      // if (this.primers.value == 'qiagen') {
-
-      // }
-      // if (this.primers.value == 'swift') {
-
-      // }
-      // if (this.primers.value == 'varskip') {
-
-      // }
-      // if (this.primers.value == 'varskip-long"') {
-
-      // }
-      // if (this.primers.value == 'ARTIC') {
-
-      // }
+      if (value === 'midnight') {
+        this.primer_version.set('options', midnightOptions);
+        this.primer_version.set('value', 'V1');
+      }
+      else if (value === 'qiagen') {
+        this.primer_version.set('options', qiagenOptions);
+        this.primer_version.set('value', 'V1');
+      }
+      else if (value === 'swift') {
+        this.primer_version.set('options', swiftOptions);
+        this.primer_version.set('value', 'V1');
+      }
+      else if (value === 'varskip') {
+        this.primer_version.set('options', varskipOptions);
+        this.primer_version.set('value', 'V2');
+      }
+      else if (value === 'varskip-long') {
+        this.primer_version.set('options', varskipLongOptions);
+        this.primer_version.set('value', 'V1a');
+      }
+      else if (value === 'ARTIC') {
+        this.primer_version.set('options', articOptions);
+        this.primer_version.set('value', 'V4.1');
+      }
+      else {
+        console.log('Invalid Selection');
+      }
     },
 
     onStartWithChange: function () {
