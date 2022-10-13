@@ -63,6 +63,9 @@ define([
         return;
       }
 
+      // make breadcrumb
+      var breadCrumbContainer = new ContentPane({ 'content': this.generatePathLinks(this.state.path), 'region': 'top' });
+
       this.tabContainer = new TabContainer({ region: 'center', id: 'tab_container' });
 
       var tabController = new StackController({
@@ -73,6 +76,7 @@ define([
       });
       this.tabController = tabController;
 
+      this.addChild(breadCrumbContainer);
       this.addChild(this.tabContainer);
       this.addChild(this.tabController);
 
@@ -162,6 +166,54 @@ define([
       var payload = { text_data: data };
       worker.postMessage(JSON.stringify({ type: 'load_data', payload: payload }));
       return def;
+    },
+
+    generatePathLinks: function (path) {
+      // strip out /public/ of parts array
+      var parts = path.replace(/\/+/g, '/').split('/');
+      if (parts[1] == 'public') {
+        parts.splice(1, 1);
+      }
+
+      if (parts[0] == '') {
+        parts.shift();
+      }
+
+      var out = ["<span class='wsBreadCrumb'>"];
+      var bp = ['workspace'];
+      var isPublic = path.replace(/\/+/g, '/').split('/')[1] == 'public';
+
+      // if viewing all public workspaces, just create header
+      if (path == '/public/') {
+        out.push('<i class="icon-globe"></i> <b class="perspective">Public Workspaces</b>');
+
+        // if viewing a specific public workspace, create bread crumbs with additional url params
+      } else if (isPublic) {
+        out.push('<i class="icon-globe"></i> ' +
+          '<a class="navigationLink perspective" href="/' + bp.join('/') + '/public">Public Workspaces</a>' +
+          ' <i class="icon-caret-right"></i> ');
+        bp.push('public', parts[0]);
+      }
+      parts.push(''); // job result folder wont link without an added element
+      parts.forEach(function (part, idx) {
+        // part is already encoded
+        if (idx == (parts.length - 1)) {
+          out.push('<b class="perspective">' + part.replace('@' + localStorage.getItem('realm'), '') + '</b>');
+          return;
+        }
+
+        // don't create links for top level path of public path
+        if (isPublic && idx == 0) {
+          out.push('<b class="perspective">' + ((idx == 0) ? part.replace('@' + localStorage.getItem('realm'), '') : part) + '</b> / ');
+          return;
+        }
+
+        out.push("<a class='navigationLink' href='");
+        bp.push(part);
+        out.push('/' + bp.join('/'));
+        out.push("'>" + ((idx == 0) ? part.replace('@' + localStorage.getItem('realm'), '') : decodeURIComponent(part)) + '</a> / ');
+      });
+      return out.join('');
     }
   });
 });

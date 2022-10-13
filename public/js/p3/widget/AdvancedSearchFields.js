@@ -714,7 +714,7 @@ define([], function () {
         field: 'accession', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'annotation', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'annotation', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'alt_locus_tag', type: 'str', facet: false, facet_hidden: true, search: false
@@ -741,11 +741,12 @@ define([], function () {
         field: 'pathway_id', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'pathway_name', type: 'str', facet: true, facet_hidden: true, search: true
+        field: 'pathway_name', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
         field: 'pathway_class', type: 'str', facet: true, facet_hidden: false, search: true
       },
+      {}
     ],
     'subsystem': [
       {

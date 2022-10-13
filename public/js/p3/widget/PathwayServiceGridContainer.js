@@ -54,12 +54,27 @@ define([
         console.log('evt = ', evt);
         // TODO: Start Here: Have filters now set store.query to handle filters
         this.store.query({ filter: this.filterPanel.filter } );
+        this.refreshFilterPanel();
         this.grid.refresh();
       }));
       this.filterPanel.setFilterUpdateTrigger();
     },
 
-    // TODO: dont _self.store.query(''), change to one query from grid container
+    refreshFilterPanel: function () {
+      if (this.filterPanel) {
+        this.filterPanel.getFacets(this.store.query({ filter: this.filterPanel.filter }), this.facetFields).then(lang.hitch(this, function (facet_counts) {
+          Object.keys(facet_counts).forEach(function (cat) {
+            if (this.filterPanel._ffWidgets[cat] && !this.filterPanel._ffWidgets[cat].focused) {
+              this.filterPanel._ffWidgets[cat].set('data', facet_counts[cat]);
+            } else {
+              if (this.filterPanel._ffWidgets[cat].selected.length == 0) {
+                this.filterPanel._ffWidgets[cat].set('data', facet_counts[cat]);
+              }            }
+          }, this);
+        }));
+      }
+    },
+
     createFilterPanel: function () {
       console.log('create pathway filter panel');
       var _self = this;

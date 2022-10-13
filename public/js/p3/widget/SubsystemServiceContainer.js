@@ -248,7 +248,6 @@ define([
         out.push('/' + bp.join('/'));
         out.push("'>" + ((idx == 0) ? part.replace('@' + localStorage.getItem('realm'), '') : decodeURIComponent(part)) + '</a> / ');
       });
-      debugger;
       return out.join('');
     }
   });
