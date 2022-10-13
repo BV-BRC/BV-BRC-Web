@@ -730,7 +730,6 @@ define([
             console.error('Error Retrieving data object from shock :', err, meta.link_reference);
           });
         }
-
         return res;
       });
 

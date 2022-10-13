@@ -28,7 +28,7 @@ define([
         container_type: 'pathway',
         columns: {
           'Selection Checkboxes': selector({ label: '', sortable: false, unhidable: true }),
-          annotation : { label: 'Annotation', field: 'annotation' },
+          // annotation : { label: 'Annotation', field: 'annotation' },
           // idx : { label: 'Index', field: 'idx' },
           pathway_id : { label: 'Pathway ID', field: 'pathway_id' },
           pathway_name : { label: 'Pathway Name', field: 'pathway_name' },
@@ -45,7 +45,7 @@ define([
         container_type: 'ecNum',
         columns: {
           'Selection Checkboxes': selector({ label: '', sortable: false, unhidable: true }),
-          annotation : { label: 'Annotation', field: 'annotation' },
+          // annotation : { label: 'Annotation', field: 'annotation' },
           // idx : { label: 'Index', field: 'idx', },
           pathway_id : { label: 'Pathway ID', field: 'pathway_id' },
           pathway_name : { label: 'Pathway Name', field: 'pathway_name' },

@@ -28,6 +28,7 @@ define([
       if (this._started) {
         return;
       }
+
       this.inherited(arguments);
       this.workspaceBrowser = new WorkspaceBrowser({ title: 'Explorer', path: this.path, region: 'center' });
       this.addChild(this.workspaceBrowser);
