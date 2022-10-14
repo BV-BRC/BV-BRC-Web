@@ -745,8 +745,7 @@ define([], function () {
       },
       {
         field: 'pathway_class', type: 'str', facet: true, facet_hidden: false, search: true
-      },
-      {}
+      }
     ],
     'subsystem': [
       {
