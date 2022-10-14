@@ -180,11 +180,11 @@ define([
       var filtered_data = data;
       if (facet_filter) {
         filtered_data = filtered_data.filter(lang.hitch(this, function (el) {
-          var facet_match = false;
+          var facet_match = true;
           Object.keys(facet_filter).forEach(lang.hitch(this, function (cat) {
             var ff_list = facet_filter[cat];
-            if (ff_list.includes(el[cat])) {
-              facet_match = true;
+            if (!ff_list.includes(el[cat])) {
+              facet_match = false;
             }
           }));
           return facet_match;

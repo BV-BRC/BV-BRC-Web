@@ -69,13 +69,12 @@ define([
     setFilterUpdateTrigger: function () {
       on(this.domNode, 'UpdateFilterCategory', lang.hitch(this, function (evt) {
         console.log('evt = ', evt);
-        // TODO: Start Here: Have filters now set store.query to handle filters
         this.store.updateDataFilter(this.filterPanel.filter);
+        this.populateFilterPanel();
       }));
       this.filterPanel.setFilterUpdateTrigger();
     },
 
-    // TODO: START HERE create filter panel after data is loaded
     createFilterPanel: function () {
       var _self = this;
       this.containerActionBar = this.filterPanel = new ContainerActionBar({
@@ -111,15 +110,12 @@ define([
       if (this.filterPanel) {
         this.filterPanel.getFacets(this.store.data, this.facetFields).then(lang.hitch(this, function (facet_counts) {
           Object.keys(facet_counts).forEach(function (cat) {
-            // console.log("Facet Category: ", cat);
-            if (this.filterPanel._ffWidgets[cat]) {
-              // console.log("this.state: ", this.state);
-              var selected = this.store.state.selected;
-              // console.log(" Set Facet Widget Data", facets[cat], " _selected: ", this._ffWidgets[cat].selected)
-              this.filterPanel._ffWidgets[cat].set('data', facet_counts[cat], selected);
+            if (this.filterPanel._ffWidgets[cat] && !this.filterPanel._ffWidgets[cat].focused) {
+              this.filterPanel._ffWidgets[cat].set('data', facet_counts[cat]);
             } else {
-              // console.log("Missing ffWidget for : ", cat);
-            }
+              if (this.filterPanel._ffWidgets[cat].selected.length == 0) {
+                this.filterPanel._ffWidgets[cat].set('data', facet_counts[cat]);
+              }            }
           }, this);
         }));
       }

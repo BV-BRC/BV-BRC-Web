@@ -1,5 +1,11 @@
 # Changelog
-## 3.23.7 - October 12, 2022
+## 3.33.9 - October 14, 2022
+* [Feature / Bug Fix] added breadcrumbs to all CS viewers and fixed facter filters for pathways/subsystems [PR #428](https://github.com/BV-BRC/bvbrc_website/pull/428)
+
+## 3.23.8 - October 12, 2022
+* [Enhancement] Updates on tre view for classification [PR #426](https://github.com/BV-BRC/bvbrc_website/pull/426)
+
+## 3.23.7
 * [Feature] Finish logic for new SARS-CoV-2 CGA submission GUI options [Commit #21d646d](https://github.com/BV-BRC/bvbrc_website/commit/21d646deb8c7f36524ee6e256c92005f1f800595)
 
 ## 3.23.6 - October 7, 2022
