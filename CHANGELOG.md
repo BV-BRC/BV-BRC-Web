@@ -1,5 +1,8 @@
 # Changelog
-## 3.24.0 - October 14, 2022
+## 3.24.1 - October 14, 2022
+* [Enhancement] Added fields for choosing a reference sequence. [PR #431](https://github.com/BV-BRC/bvbrc_website/pull/431)
+
+## 3.24.0
 * [Release] Production Release 3.24.0
 
 ## 3.23.9
