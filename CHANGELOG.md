@@ -1,5 +1,8 @@
 # Changelog
-## 3.33.9 - October 14, 2022
+## 3.24.0 - October 14, 2022
+* [Release] Production Release 3.24.0
+
+## 3.23.9
 * [Feature / Bug Fix] added breadcrumbs to all CS viewers and fixed facter filters for pathways/subsystems [PR #428](https://github.com/BV-BRC/bvbrc_website/pull/428)
 
 ## 3.23.8 - October 12, 2022
