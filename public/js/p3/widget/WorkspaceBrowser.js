@@ -52,7 +52,6 @@ define([
 
     startup: function () {
       var self = this;
-
       if (this._started) {
         return;
       }
@@ -266,7 +265,6 @@ define([
       }, false);
 
       // /START: ServicesGenomeGroups
-      // TODO: see if ServicesTooltipDialog works here now
       var dstContent = domConstruct.create('div', {});
       var viewGGServices = new TooltipDialog({
         content: dstContent,
@@ -2010,7 +2008,6 @@ define([
     },
 
     _setPathAttr: function (val) {
-
       // extract extra URL parameters
       var components = val.split('#');
       val = components[0];

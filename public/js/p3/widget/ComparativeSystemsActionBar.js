@@ -213,12 +213,8 @@ define([
       setTimeout(function () { def.resolve(out); }, 1); // Moves this to next even loop, removing WILL break
       return def;
     },
-    /*
     postCreate: function () {
-      on(this.domNode, 'UpdateFilterCategory', lang.hitch(this, function (evt) {
-        console.log('UpdateFilterCategory2');
-      }));
+      this.inherited(arguments);
     }
-    */
   });
 });
