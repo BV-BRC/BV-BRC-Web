@@ -2,14 +2,14 @@ define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/topic', 'dojo/on',
   'dojo/dom-class',
   'dojo/text!./templates/MSA.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
-  'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox', 'dijit/form/Textarea',
+  'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox', 'dijit/form/Textarea', 'dijit/form/Select',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog', '../../DataAPI',
   'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when'
 ], function (
   declare, WidgetBase, Topic, on,
   domClass,
   Template, AppBase, domConstruct, registry,
-  Deferred, aspect, lang, domReady, NumberTextBox, Textarea,
+  Deferred, aspect, lang, domReady, NumberTextBox, Textarea, Select,
   query, dom, popup, Tooltip, Dialog, TooltipDialog, DataAPI,
   children, WorkspaceManager, Memory, Standby, when
 ) {
@@ -28,6 +28,9 @@ define([
     defaultPath: '',
     startingRows: 14,
     alphabet: '',
+    ref_id_length: 60,
+    input_seq_rows: 10,
+    input_seq_min_seqs: 2,
     maxGenomes: 500,
     maxGenomeLength: 250000,
     validFasta: false,
@@ -65,12 +68,22 @@ define([
       if (this.unaligned.checked == true) {
         this.unaligned_box.style.display = 'inline-block';
         this.aligned_box.style.display = 'none';
+        this.aligner_table.style.display = 'table';
         this.onChangeType();
       } else if (this.aligned.checked == true) {
+        this.aligner_table.style.display = 'none';
         this.unaligned_box.style.display = 'none';
         this.aligned_box.style.display = 'inline-block';
         this.user_genomes_alignment.set('required', true);
         this.user_genomes_alignment.set('disabled', false);
+        this.reference_none.set('disabled', false);
+        this.reference_first_table.style.display = 'table';
+        this.reference_first.set('disabled', false);
+        this.reference_id_table.style.display = 'none';
+        this.reference_id.set('disabled', true);
+        this.reference_string_table.style.display = 'none';
+        this.reference_string.set('disabled', true);
+        // this.reference_none.set('checked', true);
       }
       this.validate();
     },
@@ -96,28 +109,92 @@ define([
       this.fasta_keyboard_input.set('required', false);
       this.user_genomes_alignment.set('required', false);
       this.select_genomegroup.set('required', false);
+      this.featuregroup_table.style.display = 'none';
+      this.genomegroup_table.style.display = 'none';
+      this.fastafile_table.style.display = 'none';
+      this.fastainput_table.style.display = 'none';
+      this.reference_none.set('disabled', false);
+      this.reference_first_table.style.display = 'table';
+      this.reference_first.set('disabled', false);
+      this.reference_id_table.style.display = 'table';
+      this.reference_id.set('disabled', false);
+      this.reference_string_table.style.display = 'table';
+      this.reference_string.set('disabled', false);
+      this.select_reference_id.set('options', '');
+      this.select_reference_id.set('value', '');
     },
 
     onChangeType: function () {
       this.inputInitialize();
       this.aligner.set('required', true);
       this.aligner.set('disabled', false);
-      // this.select_genomegroup.searchBox.set('value', '');
       this.genomegroup_message.innerHTML = '';
+      if ((this.reference_id.get('checked') &&
+        (this.input_fasta.get('checked') || this.input_sequence.get('checked'))) ||
+        (this.reference_first.get('checked') &&
+          (this.input_group.get('checked') || this.input_genomegroup.get('checked')))) {
+        this.reference_none.set('checked', true);
+      }
       if (this.input_group.checked == true) {
         this.user_genomes_featuregroup.set('required', true);
         this.user_genomes_featuregroup.set('disabled', false);
         this.dna.set('disabled', false);
         this.protein.set('disabled', false);
+        this.featuregroup_table.style.display = 'table';
+        this.reference_first_table.style.display = 'none';
+        this.reference_first.set('disabled', true);
+        document.getElementById('reference_id_label').innerHTML = 'Feature ID';
+        this.handleFeatureGroup();
       } else if (this.input_genomegroup.checked == true) {
         this.select_genomegroup.set('required', true);
         this.select_genomegroup.set('disabled', false);
+        this.genomegroup_table.style.display = 'table';
+        this.reference_first_table.style.display = 'none';
+        this.reference_first.set('disabled', true);
+        document.getElementById('reference_id_label').innerHTML = 'Genome ID';
+        this.handleGenomeGroup();
       } else if (this.input_fasta.checked == true) {
         this.user_genomes_fasta.set('required', true);
         this.user_genomes_fasta.set('disabled', false);
+        this.fastafile_table.style.display = 'table';
+        this.reference_id_table.style.display = 'none';
+        this.reference_id.set('disabled', true);
       } else if (this.input_sequence.checked == true) {
         this.fasta_keyboard_input.set('required', true);
         this.fasta_keyboard_input.set('disabled', false);
+        this.fasta_keyboard_input.set('rows', this.input_seq_rows);
+        this.fastainput_table.style.display = 'table';
+        this.reference_id_table.style.display = 'none';
+        this.reference_id.set('disabled', true);
+        this.checkFasta();
+      }
+      this.validate();
+    },
+
+    referenceInitialize: function () {
+      this.select_reference_id.set('disabled', true);
+      this.fasta_keyboard_reference.set('disabled', true);
+      this.select_reference_id.set('required', false);
+      this.fasta_keyboard_reference.set('required', false);
+      this.fasta_reference_message.innerHTML = '';
+      this.ref_id_table.style.display = 'none';
+      this.ref_seq_table.style.display = 'none';
+    },
+
+    onChangeReference: function () {
+      this.referenceInitialize();
+      if (this.reference_id.checked == true) {
+        this.select_reference_id.set('disabled', false);
+        this.select_reference_id.set('required', true);
+        this.ref_id_table.style.display = 'table';
+      } else if (this.reference_string.checked == true) {
+        this.fasta_keyboard_reference.set('disabled', false);
+        this.fasta_keyboard_reference.set('required', true);
+        this.fasta_keyboard_reference.set('rows', this.input_seq_rows);
+        this.ref_seq_table.style.display = 'table';
+        this.checkRefFasta();
+      }
+      if (this.input_sequence.get('checked')) {
         this.checkFasta();
       }
       this.validate();
@@ -131,13 +208,25 @@ define([
       this.fasta_keyboard_input.set('value', fastaObject.trimFasta);
       // Update the error message.
       this.sequence_message.innerHTML = fastaObject.message;
+      // Set the alphabet if we get a valid protein or dna.
+      if (fastaObject.status == 'valid_protein') {
+        this.alphabet = 'protein';
+      } else if (fastaObject.status == 'valid_dna') {
+        this.alphabet = 'dna';
+      }
       // Set the validity and check that there are at least two sequences.
-      if (fastaObject.valid && fastaObject.numseq >= 2) {
+      var minseqs = this.input_seq_min_seqs;
+      var minseqs_msg = 'two';
+      if (this.reference_string.get('checked')) { // One seq if using a reference seq.
+        minseqs = this.input_seq_min_seqs - 1;
+        minseqs_msg = 'one';
+      }
+      if (fastaObject.valid && fastaObject.numseq >= minseqs) {
         this.validFasta = true;
         return true;
       }
       if (fastaObject.valid) {
-        this.sequence_message.innerHTML = 'At least two sequences are required.';
+        this.sequence_message.innerHTML = 'At least ' + minseqs_msg + ' sequence(s) are required.';
         this.validFasta = false;
         return false;
       }
@@ -145,10 +234,78 @@ define([
       return false
     },
 
+    checkRefFasta: function () {
+      // Check the FASTA data.
+      var fastaText = this.fasta_keyboard_reference.get('value');
+      var fastaObject = this.validateFasta(fastaText, undefined, undefined, 'reference_seq');
+      // Replace the FASTA data with trimmed data.
+      this.fasta_keyboard_reference.set('value', fastaObject.trimFasta);
+      // Update the error message.
+      this.fasta_reference_message.innerHTML = fastaObject.message;
+      // Set the validity and check that there are is only one sequence.
+      if (fastaObject.valid && fastaObject.numseq == 1) {
+        this.validFasta = true;
+        return true;
+      }
+      if (fastaObject.valid) {
+        this.fasta_reference_message.innerHTML = 'Only one sequence is allowed.';
+        this.validFasta = false;
+        return false;
+      }
+      this.validFasta = false;
+      return false
+    },
+
+    initializeRefId: function () {
+      this.select_reference_id.reset();
+      this.select_reference_id.set('options', [{ label: '', value: '', selected: true }]);
+      this.select_reference_id.set('value', '');
+    },
+
+    handleFeatureGroup: function (value = '') {
+      this.initializeRefId();
+      DataAPI.queryGenomeFeatures('in(feature_id,FeatureGroup(' + encodeURIComponent(this.user_genomes_featuregroup.get('value')) + '))', { 'limit': 1000 })
+        .then((result) => {
+          const feature_list = [];
+          result.items.forEach(function (sel) {
+            feature_list.push({ label: sel.patric_id + ' -- ' + sel.product.substring(0, 60), value: sel.patric_id });
+          });
+          this.select_reference_id.set('options', feature_list);
+          if (value) {
+            this.select_reference_id.set('value', value)
+          }
+        });
+      this.validate();
+    },
+
+    handleGenomeGroup: function (value = '') {
+      this.initializeRefId();
+      DataAPI.queryGenomes('in(genome_id,GenomeGroup(' + encodeURIComponent(this.select_genomegroup.get('value')) + '))', { 'limit': 1000 })
+        .then((result) => {
+          const id_list = [];
+          result.items.forEach(function (sel) {
+            id_list.push({ label: sel.genome_id + ' -- ' + sel.genome_name.substring(0, 60), value: sel.genome_id });
+          });
+          this.select_reference_id.set('options', id_list);
+          if (value) {
+            this.select_reference_id.set('value', value)
+          }
+        });
+      this.validate();
+    },
+
     setTooltips: function () {
       new Tooltip({
         connectId: ['genomeGroup_tooltip'],
         label: 'The genome group must have less than ' + this.maxGenomes.toString() + ' genomes.<br> Each genome must: <br>- Be a virus <br>- Be less than ' + this.maxGenomeLength.toString() + ' base pairs in length '
+      });
+      new Tooltip({
+        connectId: ['reference_first_tooltip'],
+        label: 'This option applies to a selected fasta file or a fasta file entered in the text box.'
+      });
+      new Tooltip({
+        connectId: ['reference_id_tooltip'],
+        label: 'This option applies to a selected feature group or a selected genome group.'
       });
     },
 
@@ -266,6 +423,24 @@ define([
       if (!values.alphabet) {
         values.alphabet = 'dna';
       }
+      if (this.input_sequence.get('checked')) {
+        values.alphabet = this.alphabet;
+      }
+      // Adjust the reference type
+      values.ref_type = values.ref_type.replace('reference_', '');
+      values.ref_string = '';
+      if (values.ref_type == 'string') {
+        values.ref_string = values.fasta_keyboard_reference;
+        delete values.fasta_keyboard_reference;
+      } else if (values.ref_type == 'id') {
+        values.ref_string = values.select_reference_id;
+        delete values.select_reference_id;
+        if (values.input_type == 'input_group') {
+          values.ref_type = 'feature_id';
+        } else {
+          values.ref_type = 'genome_id';
+        }
+      }
       // Create array of fasta files if needed.
       if (my_input_type) {
         var rec = {};
@@ -305,22 +480,24 @@ define([
           this.setStatusFormFill(job_data);
           this.setAlphabetFormFill(job_data);
           this.setUnalignedInputFormFill(job_data);
+          this.setReferenceFormFill(job_data);
           AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
           // this.addSequenceFilesFormFill(job_data);
           sessionStorage.removeItem(rerun_key);
           this.form_flag = true;
+
         }
       }
     },
 
     setStatusFormFill: function (job_data) {
       var status = job_data['input_status'];
-      console.log(job_data);
+      // console.log(job_data);
       if (status === 'aligned') {
         this.unaligned.set('checked', false);
         this.aligned.set('checked', true);
         this.onChangeStatus();
-        console.log(job_data['fasta_files']['file']);
+        // console.log(job_data['fasta_files']['file']);
         this.user_genomes_alignment.set('value', job_data['fasta_files'][0]['file']);
       }
     },
@@ -333,6 +510,24 @@ define([
       else {
         this.dna.set('checked', false);
         this.protein.set('checked', true);
+      }
+    },
+
+    setReferenceFormFill: function (job_data) {
+      if (job_data['ref_type'] == 'first') {
+        this.reference_first.set('checked', true);
+      } else if (job_data['ref_type'] == 'genome_id') {
+        this.reference_id.set('checked', true);
+        this.handleGenomeGroup(job_data['ref_string']);
+        // this.select_reference_id.set('value', job_data['ref_string']);
+      } else if (job_data['ref_type'] == 'feature_id') {
+        this.reference_id.set('checked', true);
+        this.handleFeatureGroup(job_data['ref_string']);
+      } else if (job_data['ref_type'] == 'string') {
+        this.reference_string.set('checked', true);
+        this.fasta_keyboard_reference.set('value', job_data['ref_string']);
+      } else {
+        this.reference_none.set('checked', true);
       }
     },
 
