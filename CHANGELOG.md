@@ -1,4 +1,58 @@
 # Changelog
+## 3.24.0 - October 14, 2022
+* [Release] Production Release 3.24.0
+
+## 3.23.9
+* [Feature / Bug Fix] added breadcrumbs to all CS viewers and fixed facter filters for pathways/subsystems [PR #428](https://github.com/BV-BRC/bvbrc_website/pull/428)
+
+## 3.23.8 - October 12, 2022
+* [Enhancement] Updates on tre view for classification [PR #426](https://github.com/BV-BRC/bvbrc_website/pull/426)
+
+## 3.23.7
+* [Feature] Finish logic for new SARS-CoV-2 CGA submission GUI options [Commit #21d646d](https://github.com/BV-BRC/bvbrc_website/commit/21d646deb8c7f36524ee6e256c92005f1f800595)
+
+## 3.23.6 - October 7, 2022
+* [Enahncement] Subspecies [PR #424](https://github.com/BV-BRC/bvbrc_website/pull/424)
+
+## 3.23.5 - October 6, 2022
+* [Bug Fix] Comparative Systems Tweaks [PR #422](https://github.com/BV-BRC/bvbrc_website/pull/422)
+
+## 3.23.4 - October 5, 2022
+* [Bug] Disable V1a for ARTIC Primer []()
+* [Bug] Disabled primer versions when a strategy besides One Codex is selected. Simimlar to how primers also grays out. [Commit #3d72553](https://github.com/BV-BRC/bvbrc_website/commit/3d72553e244311735ef88246a1de1f1af7cde034)
+* [Enahncement] Updated label to aligned fasta file [PR #421](https://github.com/BV-BRC/bvbrc_website/pull/421)
+
+## 3.23.3 - October 3, 2022
+* [Feature] Subspecies Feature [PR #418](https://github.com/BV-BRC/bvbrc_website/pull/418/)
+
+## 3.23.2
+* [Bug Fix] [PR #417](https://github.com/BV-BRC/bvbrc_website/pull/417)
+* [Enhancement] [PR #416](https://github.com/BV-BRC/bvbrc_website/pull/416)
+
+## 3.23.1 - October 1, 2022
+* [Modify] Changed filter buttons to a select menu on the TSV viewer. [PR #415](https://github.com/BV-BRC/bvbrc_website/pull/415)
+
+## 3.23.0
+* [Enhancement] Added the bread-crumbs trail to the MSA and tree viewers [PR #407](https://github.com/BV-BRC/bvbrc_website/pull/407)
+* [Feature] Subspecies Classification Implementation [PR #406](https://github.com/BV-BRC/bvbrc_website/pull/406)
+
+## 3.22.14 - September 29, 2022
+* [Bug Fix] Searching All Columns was not using a function. [PR #403](https://github.com/BV-BRC/bvbrc_website/pull/403)
+
+## 3.22.13
+* [Feature] SARS-CoV-2 CGA - Add logic for additinal primers to populate version dropdown with correct options [Commit #5bb6701](https://github.com/chris-c-thomas/bvbrc_website/commit/5bb6701752229515f85491b6f1972dc92bb71c1c)
+* [Feature] Added exact, fuzzy, and range filters to the TSV viewer. [PR #401](https://github.com/BV-BRC/bvbrc_website/pull/401)
+
+## 3.22.12 - September 26, 2022
+* [Feature] Added conservation plot and show/hide overview box to on-the-fly MSA viewer [PR #400](https://github.com/BV-BRC/bvbrc_website/pull/400)
+
+## 3.22.11
+* [Hot Fix] Add contact us link [PR #399](https://github.com/BV-BRC/bvbrc_website/pull/399)
+* [Bug] Fix ARTIC primer submission validation error. Remove duplicate primer. [Commit #30fd531](https://github.com/BV-BRC/bvbrc_website/commit/30fd53188e520feea76bd194d72db5d8d90c39a7)
+
+## 3.22.10 - September 23, 2022
+* [Feature] Add initial versioning for Artic primer in SARS-CoV-2 service
+
 ## 3.22.9 - September 22, 2022
 * [Feature] Add primers dropdown for One Codex strategy [PR #398](https://github.com/BV-BRC/bvbrc_website/pull/398)
 

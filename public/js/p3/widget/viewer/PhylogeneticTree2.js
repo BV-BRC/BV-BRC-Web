@@ -101,6 +101,8 @@ define([
       var idType = this.state.search.match(/idType=..+?(?=&|$)/);
       var labelType = this.state.search.match(/labelType=..+?(?=&|$)/);
       var fileType = this.state.search.match(/fileType=..+?(?=&|$)/);
+      var isClassification = this.state.search.match(/isClassification=.+?(?=&|$)/);
+      var initialValue = this.state.search.match(/initialValue=.+?(?=&|$)/);
       // console.log('fileType', fileType);
 
       if (idType && !isNaN(idType.index)) {
@@ -116,6 +118,16 @@ define([
         fileType = fileType[0].split('=')[1];
       }
       else { fileType = 'phyloxml'; }
+
+      if (isClassification && !isNaN(isClassification.index)) {
+        isClassification = isClassification[0].split('=')[1];
+        isClassification = (isClassification === 'true') || (isClassification === '1');
+      }
+      else { isClassification = false; }
+
+      if (initialValue && !isNaN(initialValue.index)) {
+        initialValue = initialValue[0].split('=')[1];
+      }
 
       var labelSearch = this.state.search.match(/labelSearch=.*/);
       if (labelSearch && !isNaN(labelSearch.index)) {
@@ -179,6 +191,16 @@ define([
           var treeDat = {};
           if (typeof obj.data == 'string') {
             treeDat.tree = obj.data.replace(/[^(,)]+_@_/g, ''); // get rid of ridiculously annoying, super dirty embedded labels
+            if (isClassification) {
+              treeDat.options = {};
+              treeDat.options.externalNodeFontSize = 10;
+              treeDat.options.branchWidthDefault = 1;
+              treeDat.options.found0ColorDefault = '#800000';
+
+              if (initialValue) {
+                treeDat.options.searchAinitialValue = '_#';
+              }
+            }
             _self.prepareTree(treeDat, idType, labelType, labelSearch, fileType);
           }
         }));

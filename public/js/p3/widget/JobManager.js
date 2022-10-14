@@ -216,6 +216,7 @@ define([
             // 'PhylogeneticTree': 'PhylogeneticTree',
             'PrimerDesign': 'PrimerDesign',
             'RNASeq': 'Rnaseq',
+            'SubSpeciesClassification': 'SubspeciesClassification',
             'TaxonomicClassification': 'TaxonomicClassification',
             'TnSeq': 'Tnseq',
             'Variation': 'Variation'

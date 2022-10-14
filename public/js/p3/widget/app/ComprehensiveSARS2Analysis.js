@@ -165,7 +165,7 @@ define([
       values.taxonomy_id = this.tax_idWidget.get('displayedValue');
       if (this.startWithContigs.checked) {  // starting from contigs
         values.input_type = 'contigs'; // set input_type to be 'contigs'
-        var assembly_inputs = ['recipe', 'primers', 'genome_size', 'trim', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
+        var assembly_inputs = ['recipe', 'primers', 'primer_version', 'genome_size', 'trim', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
         assembly_inputs.forEach(function (key) {
           if (Object.prototype.hasOwnProperty.call(values, key)) {
             delete values[key];
@@ -591,17 +591,81 @@ define([
     },
 
     onRecipeChange: function () {
-      if (this.recipe.value === 'oneindex') {
-        this.primers.set('disabled', false);
-        this.checkParameterRequiredFields();
-      }
-      else if (this.recipe.value === 'cdc-illumina' || this.recipe.value === 'cdc-nanopore' || this.recipe.value === 'artic-nanopore' || this.recipe.value === 'auto') {
+      if (this.recipe.value == 'cdc-illumina') {
         this.primers.set('disabled', true);
-        this.checkParameterRequiredFields();
+        this.primer_version.set('disabled', true);
+
+      }
+      if (this.recipe.value == 'cdc-nanopore') {
+        this.primers.set('disabled', true);
+        this.primer_version.set('disabled', true);
+      }
+      if (this.recipe.value == 'artic-nanopore') {
+        this.primers.set('disabled', true);
+        this.primer_version.set('disabled', true);
+      }
+      // Disabling auto for now. Not sure if needed down the line.
+      // if (this.recipe.value == 'auto') {
+      //   this.primers.set('disabled', true);
+      //   this.primer_version.set('disabled', true);
+      // }
+      if (this.recipe.value == 'onecodex') {
+        this.primers.set('disabled', false);
+        this.primer_version.set('disabled', false);
+      }
+    },
+
+    onPrimersChange: function (value) {
+      var articOptions = [
+        { label: 'V4.1', value: 'V4.1' },
+        { label: 'V4', value: 'V4' },
+        { label: 'V3', value: 'V3' },
+        { label: 'V2', value: 'V2' },
+        { label: 'V1', value: 'V1' }
+      ];
+      var midnightOptions = [
+        { label: 'V1', value: 'V1' }
+      ];
+      var qiagenOptions = [
+        { label: 'V1', value: 'V1' }
+      ];
+      var swiftOptions = [
+        { label: 'V1', value: 'V1' }
+      ];
+      var varskipOptions = [
+        { label: 'V2', value: 'V2' },
+        { label: 'V1a', value: 'V1a' }
+      ];
+      var varskipLongOptions = [
+        { label: 'V1a', value: 'V1a' }
+      ];
+
+      if (value === 'midnight') {
+        this.primer_version.set('options', midnightOptions);
+        this.primer_version.set('value', 'V1');
+      }
+      else if (value === 'qiagen') {
+        this.primer_version.set('options', qiagenOptions);
+        this.primer_version.set('value', 'V1');
+      }
+      else if (value === 'swift') {
+        this.primer_version.set('options', swiftOptions);
+        this.primer_version.set('value', 'V1');
+      }
+      else if (value === 'varskip') {
+        this.primer_version.set('options', varskipOptions);
+        this.primer_version.set('value', 'V2');
+      }
+      else if (value === 'varskip-long') {
+        this.primer_version.set('options', varskipLongOptions);
+        this.primer_version.set('value', 'V1a');
+      }
+      else if (value === 'ARTIC') {
+        this.primer_version.set('options', articOptions);
+        this.primer_version.set('value', 'V4.1');
       }
       else {
-        this.primers.set('disabled', false);
-        this.checkParameterRequiredFields();
+        console.log('Invalid Selection');
       }
     },
 

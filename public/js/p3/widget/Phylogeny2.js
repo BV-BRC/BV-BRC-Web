@@ -54,6 +54,7 @@ define([
     newickxml: null,
     fileType: null,
     labels: null,
+    options: null,
     jsonTree: null,
     tree: null,
     apiServer: window.App.dataAPI,
@@ -72,11 +73,25 @@ define([
         return;
       }
       this.inherited(arguments);
+
+      var fileCheck = this.state.href.match(/wsTreeFile=..+?(?=&|$)/);
+      var objPath = fileCheck[0].split('=')[1];
+      var folder = objPath.split("/").slice(0, -1).join("/");
+      //console.log('postCreate: objPath', objPath);
+      console.log('postCreate: this.state', this.state);
+      //console.log('postCreate: folder', folder);
+
+      this.pathContainer = domConstruct.create('div', { 'class': 'wsBreadCrumbContainer' }, this.domNode);      
+      this.pathContainer.innerHTML = this.generatePathLinks(folder);
       this.containerPane = new ContentPane({ region: 'center' });// domConstruct.create("div", {id: this.id + "_canvas"}, this.domNode);
+      
+      /*
       this.containerActionBar = new ContainerActionBar({
         baseClass: 'WSContainerActionBar',
         region: 'top'
       });
+      */
+      
       this.selectionActionBar = new ActionBar({
         region: 'right',
         layoutPriority: 4,
@@ -91,12 +106,12 @@ define([
         layoutPriority: 1,
         containerWidget: this
       });
-      this.treeDiv = domConstruct.create('div', { class: 'size archaeopteryxClass', id: this.id + 'tree-container' }, this.containerPane.domNode);
+      this.treeDiv = domConstruct.create('div', { class: 'size archaeopteryxClass', id: this.id + 'tree-container'}, this.containerPane.domNode);
       this.treeDiv1 = domConstruct.create('div', { id: 'phylogram1' }, this.treeDiv);
       this.treeDiv2 = domConstruct.create('div', { id: 'controls0' }, this.treeDiv);
       // this.treeDiv3 = domConstruct.create('div', { id: 'controls1' }, this.treeDiv);
 
-      this.addChild(this.containerActionBar);
+      //this.addChild(this.containerActionBar);
       this.addChild(this.selectionActionBar);
       this.addChild(this.containerPane);
       this.addChild(this.itemDetailPanel);
@@ -253,6 +268,63 @@ define([
       }));
     },
 
+    generatePathLinks: function (path) {
+      console.log('in generatePathLinks() path', path);
+      var localStorage = window.localStorage;
+
+      // strip out /public/ of parts array
+      var parts = decodeURIComponent(path).replace(/\/+/g, '/').split('/');
+      console.log('in generatePathLinks() parts', parts);
+      console.log('in generatePathLinks() localStorage', localStorage);
+
+      if (parts[1] == 'public') {
+        parts.splice(1, 1);
+      }
+
+      if (parts[0] == '') {
+        parts.shift();
+      }
+
+      var out = ["<span class='wsBreadCrumb'>"];
+      var bp = ['workspace'];
+
+      var isPublic = path.replace(/\/+/g, '/').split('/')[1] == 'public';
+
+      console.log('in generatePathLinks() isPublic', isPublic);
+
+
+      // if viewing all public workspaces, just create header
+      if (path == '/public/') {
+        out.push('<i class="icon-globe"></i> <b class="perspective">Public Workspaces</b>');
+
+        // if viewing a specific public workspace, create bread crumbs with additional url params
+      } else if (isPublic) {
+        out.push('<i class="icon-globe"></i> ' +
+          '<a class="navigationLink perspective" href="/' + bp.join('/') + '/public">Public Workspaces</a>' +
+          ' <i class="icon-caret-right"></i> ');
+        bp.push('public', parts[0]);
+      }
+
+      parts.forEach(function (part, idx) {
+        if (idx == (parts.length - 1) && part.slice(0, 1) == '.') {
+          part = part.replace('.', '');
+        }
+
+        // don't create links for top level path of public path
+        if (isPublic && idx == 0) {
+          out.push('<b class="perspective">' + ((idx == 0) ? part.replace('@' + localStorage.getItem('realm'), '') : part) + '</b> / ');
+          return;
+        }
+
+        out.push("<a class='navigationLink' href='");
+        bp.push(idx == 0 ? part : encodeURIComponent(part));  // leave username decoded
+        out.push('/' + bp.join('/'));
+        out.push("'>" + ((idx == 0) ? part.replace('@' + localStorage.getItem('realm'), '') : part) + '</a> / ');  
+      });
+      // console.log('in generatePathLinks() out', out);
+      return out.join('');
+    },
+
     getLeafNodes: function (nodes, result = []) {
       for (var i = 0, length = nodes.length; i < length; i++) {
         if (!nodes[i].children || nodes[i].children.length === 0) {
@@ -284,6 +356,9 @@ define([
       if (treeDat.labels) {
         this.set('labels', treeDat.labels);
       }
+      if (treeDat.options) {
+        this.set('options', treeDat.options);
+      }
       this.set('idType', idType);
       this.set('fileType', fileType);
       this.set('newickxml', treeDat.tree);
@@ -293,6 +368,7 @@ define([
       console.log('this', this);
       // console.log('this.newickxml', this.newickxml);
       // console.log('processTree this.fileType', this.fileType);
+      this.containerPane.set('style', 'top: 40px');
 
       var options = {};
       options.backgroundColorDefault = '#ffffff';
@@ -353,6 +429,10 @@ define([
       settings.rootOffset = 180;
       settings.allowManualNodeSelection = true;
       settings.orderTree = true;
+
+      if (this.options) {
+        options = lang.mixin(options, this.options);
+      }
 
       var nodeVisualizations = {};
       var specialVisualizations = {};
