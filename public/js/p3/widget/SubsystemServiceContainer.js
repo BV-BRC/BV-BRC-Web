@@ -4,13 +4,13 @@ define([
   './SubsystemServiceMemoryGridContainer',
   '../store/SubsystemServiceMemoryStore', '../store/SubsystemServiceOverviewMemoryStore', 'dojo/topic',
   './GridSelector', './SubsystemServiceOverview', 'dojox/widget/Standby', 'dojo/dom-construct', './SubSystemsContainer',
-  '../DataAPI', './ContainerActionBar'
+  '../DataAPI'
 ], function (
   declare, Deferred, BorderContainer, lang,
   TabContainer, StackController, ContentPane,
   SubSystemsGridContainer,
   SubSystemMemoryStore, SubsystemsOverviewMemoryStore, Topic,
-  selector, SubSystemsOverview, Standby, domConstruct, oldSubsystemsContainer, DataAPI, ContainerActionBar
+  selector, SubSystemsOverview, Standby, domConstruct, oldSubsystemsContainer, DataAPI
 ) {
   return declare([oldSubsystemsContainer], {
     gutters: false,
