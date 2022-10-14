@@ -67,7 +67,7 @@ define([
             if (this.filterPanel._ffWidgets[cat] && !this.filterPanel._ffWidgets[cat].focused) {
               this.filterPanel._ffWidgets[cat].set('data', facet_counts[cat]);
             } else {
-              if (this.filterPanel._ffWidgets[cat].selected.length == 0) {
+              if (this.filterPanel._ffWidgets[cat] && this.filterPanel._ffWidgets[cat].selected.length == 0) {
                 this.filterPanel._ffWidgets[cat].set('data', facet_counts[cat]);
               }            }
           }, this);
