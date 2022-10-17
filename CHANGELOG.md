@@ -1,4 +1,7 @@
 # Changelog
+## 3.24.3 - October 17, 2022
+* [Enhancement] Add influenza h5 option to virus types. [PR #435](https://github.com/BV-BRC/bvbrc_website/pull/435)
+
 ## 3.24.2 - October 17, 2022
 * [Enhancement] Enabled rerun for the Workspace. [PR #434](https://github.com/BV-BRC/bvbrc_website/pull/434)
 
