@@ -1,12 +1,12 @@
 define([
-  'dojo/_base/declare', 'dojo/on', 'dojo/_base/lang',  'dojo/query',
+  'dojo/_base/declare', 'dojo/on', 'dojo/_base/lang', 'dojo/query',
   'dojo/dom-class', 'dojo/dom-attr', 'dojo/dom-construct', './JobsGrid', './JobContainerActionBar',
-  'dojo/_base/Deferred', '../JobManager', './Confirmation',
+  'dojo/_base/Deferred', '../JobManager', './Confirmation', './RerunUtility',
   'dojo/topic', 'dijit/layout/BorderContainer', './ActionBar', './ItemDetailPanel', '../util/encodePath'
 ], function (
   declare, on, lang, query,
   domClass, domAttr, domConstr, JobsGrid, JobContainerActionBar,
-  Deferred, JobManager, Confirmation,
+  Deferred, JobManager, Confirmation, rerunUtility,
   Topic, BorderContainer, ActionBar, ItemDetailPanel, encodePath
 ) {
   return declare([BorderContainer], {
@@ -108,7 +108,7 @@ define([
             id = sel.id;
 
           var conf = 'Are you sure you want to terminate this ' + sel.app + ' job?<br><br>' +
-                     '<b>Job ID</b>: ' + id + '<br><br>';
+            '<b>Job ID</b>: ' + id + '<br><br>';
 
           var dlg = new Confirmation({
             title: 'Kill Job',
@@ -181,52 +181,7 @@ define([
           validContainerTypes: ['*']
         },
         function (selection) {
-          var job_params = JSON.stringify(selection[0].parameters);
-          // TODO: make sure service_id variable is present for every service
-          var service_id = selection[0].app;
-          var sessionStorage = window.sessionStorage;
-          const random = (length = 8) => {
-            return Math.random().toString(16).substr(2, length);
-          };
-          var rerun_key = random();
-          window.localStorage.removeItem('bvbrc_rerun_job');
-          if (sessionStorage.hasOwnProperty(rerun_key)) {
-            sessionStorage.removeItem(rerun_key);
-          }
-          sessionStorage.setItem(rerun_key, job_params);
-          var service_app_map = {
-            'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
-            'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
-            // 'DifferentialExpression': 'Expression',
-            'FastqUtils': 'FastqUtil',
-            'GeneTree': 'GeneTree',
-            'GenomeAssembly2': 'Assembly2',
-            'GenomeAssembly': 'Assembly2',
-            'GenomeAlignment': 'GenomeAlignment',
-            // TODO: rerun for annotation needs to be updated
-            // 'GenomeAnnotation': 'Annotation',
-            'GenomeComparison': 'SeqComparison',
-            'Homology': 'Homology',
-            'MetaCATS': 'MetaCATS',
-            'MetagenomeBinning': 'MetagenomicBinning',
-            'MetagenomicReadMapping': 'MetagenomicReadMapping',
-            'MSA': 'MSA',
-            'CodonTree': 'PhylogeneticTree',
-            // TODO: need to fix this
-            // 'PhylogeneticTree': 'PhylogeneticTree',
-            'PrimerDesign': 'PrimerDesign',
-            'RNASeq': 'Rnaseq',
-            'SubSpeciesClassification': 'SubspeciesClassification',
-            'TaxonomicClassification': 'TaxonomicClassification',
-            'TnSeq': 'Tnseq',
-            'Variation': 'Variation'
-          };
-          if (service_app_map.hasOwnProperty(service_id)) {
-            Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] + '?rerun_key=' + rerun_key  });
-          }
-          else {
-            console.log('Rerun not enabled for: ', service_id);
-          }
+          rerunUtility.rerun(JSON.stringify(selection[0].parameters), selection[0].app, window, Topic);
         },
         false
       ]
@@ -298,17 +253,15 @@ define([
 
       // show / hide item detail panel event
       var hideBtn = query('[rel="ToggleItemDetail"]', this.actionBar.domNode)[0];
-      on(hideBtn, 'click',  function (e) {
+      on(hideBtn, 'click', function (e) {
         var icon = query('.fa', hideBtn)[0],
           text = query('.ActionButtonText', hideBtn)[0];
 
         domClass.toggle(icon, 'icon-chevron-circle-right');
         domClass.toggle(icon, 'icon-chevron-circle-left');
 
-        if (domClass.contains(icon, 'icon-chevron-circle-left'))
-        { domAttr.set(text, 'textContent', 'SHOW'); }
-        else
-        { domAttr.set(text, 'textContent', 'HIDE'); }
+        if (domClass.contains(icon, 'icon-chevron-circle-left')) { domAttr.set(text, 'textContent', 'SHOW'); }
+        else { domAttr.set(text, 'textContent', 'HIDE'); }
       });
 
       // listen for new job data
