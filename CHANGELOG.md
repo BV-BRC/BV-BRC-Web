@@ -1,4 +1,7 @@
 # Changelog
+## 3.24.2 - October 17, 2022
+* [Enhancement] Enabled rerun for the Workspace. [PR #434](https://github.com/BV-BRC/bvbrc_website/pull/434)
+
 ## 3.24.1 - October 14, 2022
 * [Enhancement] Added fields for choosing a reference sequence. [PR #431](https://github.com/BV-BRC/bvbrc_website/pull/431)
 
