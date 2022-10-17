@@ -6,8 +6,7 @@ define([
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dijit/popup', 'dijit/form/Select', './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
-  'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './viewer/JobResult',
-
+  'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './RerunUtility', './viewer/JobResult',
   'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree'
 ], function (
   declare, BorderContainer, on, query,
@@ -17,7 +16,7 @@ define([
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
   popup, Select, ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
   TextBox, WSObjectSelector, PermissionEditor,
-  All, encodePath, when, request, tsvCsvFeatures, JobResult, NodeList_traverse, Homology, GenomeAlignment, PhylogeneticTree
+  All, encodePath, when, request, tsvCsvFeatures, rerunUtility, JobResult, NodeList_traverse, Homology, GenomeAlignment, PhylogeneticTree
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -794,7 +793,7 @@ define([
         tooltip: 'View alignments'
       }, function (selection) {
         // console.log("Current Container Widget: ", self.actionPanel.currentContainerWidget, "Slection: ", selection)
-        var modPath = self.actionPanel.currentContainerWidget.path.replace(/^\/public/, "");
+        var modPath = self.actionPanel.currentContainerWidget.path.replace(/^\/public/, '');
         Topic.publish('/navigate', { href: '/view/Homology' + modPath });
       }, false);
 
@@ -1196,7 +1195,7 @@ define([
         validTypes: ['aligned_dna_fasta', 'aligned_protein_fasta'],
         tooltip: 'View aligned fasta'
       }, function (selection, container) {
-        var path = this.selection[0].path; // .get('selection.path');
+        // var path = this.selection[0].path; // .get('selection.path');
         var alignType = 'protein';
         if (this.selection[0].type.includes('dna')) {
           alignType = 'dna';
@@ -1381,35 +1380,35 @@ define([
 
       this.actionPanel.addAction(
         'GroupExplore', 'fa icon-venn_circles fa-2x', {
-        label: 'VennDiag',
-        ignoreDataType: false,
-        allowMultiTypes: false,
-        min: 2,
-        max: 3,
-        multiple: true,
-        validTypes: ['genome_group', 'feature_group', 'experiment_group'],
-        tooltip: 'Select two or three groups to compare'
-      }, function (selection, containerWidget) {
+          label: 'VennDiag',
+          ignoreDataType: false,
+          allowMultiTypes: false,
+          min: 2,
+          max: 3,
+          multiple: true,
+          validTypes: ['genome_group', 'feature_group', 'experiment_group'],
+          tooltip: 'Select two or three groups to compare'
+        }, function (selection, containerWidget) {
 
-        var dlg = new Dialog({
-          title: 'Group Comparison',
-          style: 'width: 1250px !important; height: 750px !important;',
-          onHide: function () {
-            dlg.destroy();
-          }
-        });
-        var bc = new BorderContainer({});
-        domConstruct.place(bc.domNode, dlg.containerNode);
-        var stg = new GroupExplore({
-          selection: selection,
-          type: containerWidget.containerType,
-          path: containerWidget.get('path'),
-          containerNode: dlg.containerNode
-        });
-        bc.addChild(stg);
-        dlg.startup();
-        dlg.show();
-      },
+          var dlg = new Dialog({
+            title: 'Group Comparison',
+            style: 'width: 1250px !important; height: 750px !important;',
+            onHide: function () {
+              dlg.destroy();
+            }
+          });
+          var bc = new BorderContainer({});
+          domConstruct.place(bc.domNode, dlg.containerNode);
+          var stg = new GroupExplore({
+            selection: selection,
+            type: containerWidget.containerType,
+            path: containerWidget.get('path'),
+            containerNode: dlg.containerNode
+          });
+          bc.addChild(stg);
+          dlg.startup();
+          dlg.show();
+        },
         false
       );
 
@@ -1684,32 +1683,6 @@ define([
         self.showPermDialog(selection);
       }, false);
 
-      // TODO: in order to make this button appear "inside" the job result:
-      // look into validContainerTypes???
-      // /START: Rerun functionality
-      var service_app_map = {
-        'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
-        'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
-        'DifferentialExpression': 'Expression',
-        'FastqUtils': 'FastqUtil',
-        'GeneTree': 'GeneTree',
-        'GenomeAssembly2': 'Assembly2',
-        'GenomeAlignment': 'GenomeAlignment',
-        'GenomeAnnotation': 'Annotation',
-        'GenomeComparison': 'SeqComparison',
-        'Homology': 'Homology',
-        'MetaCATS': 'MetaCATS',
-        'MetagenomeBinning': 'MetagenomicBinning',
-        'MetagenomicReadMapping': 'MetagenomicReadMapping',
-        'MSA': 'MSA',
-        'CodonTree': 'PhylogeneticTree',
-        'PrimerDesign': 'PrimerDesign',
-        'RNASeq': 'Rnaseq',
-        'SubspeciesClassification': 'SubspeciesClassification',
-        'TaxonomicClassification': 'TaxonomicClassification',
-        'TnSeq': 'Tnseq',
-        'Variation': 'Variation'
-      };
       this.actionPanel.addAction('Rerun', 'fa icon-rotate-left fa-2x', {
         label: 'RERUN',
         allowMultiTypes: true,
@@ -1717,50 +1690,8 @@ define([
         validTypes: ['job_result'],
         tooltip: 'Reset job form with current parameters'
       }, function (selection) {
-        var job_params = JSON.stringify(selection[0].autoMeta.parameters);
-        var service_id = selection[0].autoMeta.app.id;
-        var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-          localStorage.removeItem('bvbrc_rerun_job');
-        }
-        localStorage.setItem('bvbrc_rerun_job', job_params);
-        if (service_app_map.hasOwnProperty(service_id)) {
-          Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] });
-        }
-        else {
-          console.log('Rerun not enabled for: ', service_id);
-        }
+        rerunUtility.rerun(JSON.stringify(selection[0].autoMeta.parameters), selection[0].autoMeta.app.id, window, Topic);
       }, false);
-
-      /*
-      this.browserHeader.addAction('Rerun', 'fa icon-rotate-left fa-2x', {
-        label: 'RERUN',
-        multiple: false,
-        persistent: true,
-        // TODO: list of services that allow "descending" into a job object
-        // TODO: does not last past the
-        validTypes: ['RNASeq', 'TnSeq', 'Variation'],
-        tooltip: 'Reset job form with current parameters'
-      }, function (selection, container, button) {
-        // console.log("View Tracks: ", this);
-        console.log("selection=",selection);
-        var job_params = JSON.stringify(selection[0].autoMeta.parameters);
-        var service_id = selection[0].autoMeta.app.id;
-        var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-          localStorage.removeItem('bvbrc_rerun_job');
-        }
-        localStorage.setItem('bvbrc_rerun_job', job_params);
-        if (service_app_map.hasOwnProperty(service_id)) {
-          Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] });
-        }
-        else {
-          console.log('Rerun not enabled for: ', service_id);
-        }
-      }, false);
-      */
-
-      // /END: Rerun functionality
 
       // listen for opening user permisssion dialog
       Topic.subscribe('/openUserPerms', function (selection) {

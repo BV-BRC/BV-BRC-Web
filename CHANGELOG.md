@@ -1,5 +1,20 @@
 # Changelog
-## 3.24.1 - October 14, 2022
+
+## October 17, 2022
+## 3.25.0
+* [Dependancies] Bump postcss and css-loader in /public/js/msa [PR #411](https://github.com/BV-BRC/bvbrc_website/pull/411)
+* [Dependancies] Bump color-string and css-loader in /public/js/msa [PR #410](https://github.com/BV-BRC/bvbrc_website/pull/410)
+* [Dependancies] Bump node-fetch from 3.2.0 to 3.2.10 [PR #385](https://github.com/BV-BRC/bvbrc_website/pull/385 )
+
+
+## 3.24.3
+* [Enhancement] Add influenza h5 option to virus types. [PR #435](https://github.com/BV-BRC/bvbrc_website/pull/435)
+
+## 3.24.2
+* [Enhancement] Enabled rerun for the Workspace. [PR #434](https://github.com/BV-BRC/bvbrc_website/pull/434)
+
+## October 14, 2022
+## 3.24.1
 * [Enhancement] Added fields for choosing a reference sequence. [PR #431](https://github.com/BV-BRC/bvbrc_website/pull/431)
 
 ## 3.24.0
@@ -8,7 +23,9 @@
 ## 3.23.9
 * [Feature / Bug Fix] added breadcrumbs to all CS viewers and fixed facter filters for pathways/subsystems [PR #428](https://github.com/BV-BRC/bvbrc_website/pull/428)
 
-## 3.23.8 - October 12, 2022
+
+## October 12, 2022
+## 3.23.8
 * [Enhancement] Updates on tre view for classification [PR #426](https://github.com/BV-BRC/bvbrc_website/pull/426)
 
 ## 3.23.7
