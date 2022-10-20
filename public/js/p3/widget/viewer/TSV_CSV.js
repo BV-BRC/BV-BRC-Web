@@ -444,7 +444,6 @@ define([
                 if (columnName in selection[0]) {
                   var sel = (selection[0][columnName]).replace('|', '%7C');
                   var query = '?eq(patric_id,' + sel + ')&select(feature_id)';
-
                   request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
                     handleAs: 'json',
                     headers: {
@@ -472,7 +471,6 @@ define([
               if (columnName in selection[0]) {
                 var sel = (selection[0][columnName]).replace('|', '%7C');
                 var query = '?eq(patric_id,' + sel + ')&select(feature_id)';
-
                 request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
                   handleAs: 'json',
                   headers: {
@@ -483,7 +481,7 @@ define([
 
                   }
                 }).then(function (response) {
-                  Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id });
+                  Topic.publish('/navigate', { href: '/view/Feature/' + response[0].feature_id, target: 'blank' });
                 });
               }
             });
@@ -499,7 +497,7 @@ define([
 
                 var columnName = featureCounts[0].columnName;
                 if (selection.length == 1) {
-                  Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path) });
+                  Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path), target: 'blank' });
                 } else {
                   var q = selection.map(function (sel) {
                     if (sel[columnName]) {
@@ -513,7 +511,7 @@ define([
                     return (elem != '');
                   });
 
-                  q = '?in(patric_id,(' + noEmptyFeatureIDs + '))&select(feature_id)';
+                  q = '?in(patric_id,(' + noEmptyFeatureIDs + '))&select(feature_id)&limit(1000)';
                   request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
                     handleAs: 'json',
                     headers: {
@@ -540,7 +538,7 @@ define([
             }, function (selection) {
               var columnName = featureCounts[0].columnName;
               if (selection.length == 1) {
-                Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path) });
+                Topic.publish('/navigate', { href: '/view/FeatureGroup' + encodePath(selection[0].path), target: 'blank' });
               } else {
                 var q = selection.map(function (sel) {
                   if (sel[columnName]) {
@@ -554,7 +552,7 @@ define([
                   return (elem != '');
                 });
 
-                q = '?in(patric_id,(' + noEmptyFeatureIDs + '))&select(feature_id)';
+                q = '?in(patric_id,(' + noEmptyFeatureIDs + '))&select(feature_id)&limit(1000)';
                 request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
                   handleAs: 'json',
                   headers: {
@@ -567,7 +565,7 @@ define([
                 }).then(function (response) {
                   var featureIDs = response.map(function (response) { return response.feature_id; }).join(',');
                   var featureList = '?in(feature_id,(' + featureIDs + '))';
-                  Topic.publish('/navigate', { href: '/view/FeatureList/' + featureList });
+                  Topic.publish('/navigate', { href: '/view/FeatureList/' + featureList, target: 'blank' });
                 });
               }
             });
@@ -628,7 +626,7 @@ define([
                 var columnName = geneIDCounts[0].columnName;
                 if (selection[0][columnName]) {
                   var sel = (selection[0][columnName]).match(/\d+\.\d+/);
-                  var query = '?eq(genome_id,' + sel + ')&select(genome_id)';
+                  var query = '?eq(genome_id,' + sel + ')&select(genome_id)&limit(1000)';
 
                   request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
                     handleAs: 'json',
@@ -656,7 +654,7 @@ define([
               var columnName = geneIDCounts[0].columnName;
               if (selection[0][columnName]) {
                 var sel = (selection[0][columnName]).match(/\d+\.\d+/);
-                var query = '?eq(genome_id,' + sel + ')&select(genome_id)';
+                var query = '?eq(genome_id,' + sel + ')&select(genome_id)&limit(1000)';
 
                 request.get(PathJoin(window.App.dataAPI, 'genome_feature', query), {
                   handleAs: 'json',
@@ -668,7 +666,7 @@ define([
 
                   }
                 }).then(function (response) {
-                  Topic.publish('/navigate', { href: '/view/Genome/' + response[0].genome_id });
+                  Topic.publish('/navigate', { href: '/view/Genome/' + response[0].genome_id, target: 'blank' });
                 });
               }
             });
@@ -683,7 +681,7 @@ define([
               pressAndHold: function (selection, button, opts, evt) {
                 var columnName = geneIDCounts[0].columnName;
                 if (selection.length == 1) {
-                  Topic.publish('/navigate', { href: '/view/GenomeList' + encodePath(selection[0].path) });
+                  Topic.publish('/navigate', { href: '/view/GenomeList' + encodePath(selection[0].path), target: 'blank' });
                 } else {
                   var q = selection.map(function (sel) {
                     if (sel[columnName]) {
@@ -697,7 +695,7 @@ define([
                     return (elem != '');
                   });
 
-                  q = '?in(genome_id,(' + noEmptyFeatureIDs + '))&select(genome_id)';
+                  q = '?in(genome_id,(' + noEmptyFeatureIDs + '))&select(genome_id)&limit(1000)';
                   request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
                     handleAs: 'json',
                     headers: {
@@ -724,7 +722,7 @@ define([
             }, function (selection) {
               var columnName = geneIDCounts[0].columnName;
               if (selection.length == 1) {
-                Topic.publish('/navigate', { href: '/view/GenomeList' + encodePath(selection[0].path) });
+                Topic.publish('/navigate', { href: '/view/GenomeList' + encodePath(selection[0].path), target: 'blank' });
               } else {
                 var q = selection.map(function (sel) {
                   if (sel[columnName]) {
@@ -739,7 +737,7 @@ define([
                   return (elem != '');
                 });
 
-                q = '?in(genome_id,(' + noEmptyFeatureIDs + '))&select(genome_id)';
+                q = '?in(genome_id,(' + noEmptyFeatureIDs + '))&select(genome_id)&limit(1000)';
                 request.get(PathJoin(window.App.dataAPI, 'genome_feature', q), {
                   handleAs: 'json',
                   headers: {
@@ -752,7 +750,7 @@ define([
                 }).then(function (response) {
                   var featureIDs = response.map(function (response) { return response.genome_id; }).join(',');
                   var featureList = '?in(genome_id,(' + featureIDs + '))';
-                  Topic.publish('/navigate', { href: '/view/GenomeList/' + featureList });
+                  Topic.publish('/navigate', { href: '/view/GenomeList/' + featureList, target: 'blank' });
                 });
               }
             });
