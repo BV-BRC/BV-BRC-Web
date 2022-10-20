@@ -408,6 +408,20 @@ define([
         }
       });
 
+      this.actionPanel.addAction('ViewProteinStructure', 'MultiButton fa icon-selection-Sequence fa-2x', {
+        label: 'VIEW',
+        validTypes: ['pdb'],
+        multiple: false,
+        tooltip: 'Open PDB in Protein Structure Viewer'
+      }, function (selection, button, opts) {
+        var filepath = selection[0].path;
+        if (filepath) {
+          Topic.publish('/navigate', { href: '/view/ProteinStructure' + filepath, target: 'blank' });
+        } else {
+          console.log('err, path does not exist');
+        }
+      });
+
       this.actionPanel.addAction('MultipleSeqAlignmentFeatures', 'fa icon-alignment fa-2x', {
         label: 'MSA',
         validTypes: ['feature_group'],
