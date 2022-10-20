@@ -416,7 +416,7 @@ define([
       }, function (selection, button, opts) {
         var filepath = selection[0].path;
         if (filepath) {
-          Topic.publish('/navigate', { href: '/view/ProteinStructure' + filepath, target: 'blank' });
+          Topic.publish('/navigate', { href: '/view/ProteinStructure#path=' + filepath, target: 'blank' });
         } else {
           console.log('err, path does not exist');
         }
