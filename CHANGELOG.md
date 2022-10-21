@@ -1,5 +1,10 @@
 # Changelog
 
+## October 21, 2022
+## 3.25.1
+* [Enhancement] Increased the features queried. Targeted a blank page. [PR #440](https://github.com/BV-BRC/bvbrc_website/pull/440)
+* [Enhancement] Added pdb filetype selection and viewer button [PR #439](https://github.com/BV-BRC/bvbrc_website/pull/439)
+
 ## October 17, 2022
 ## 3.25.0
 * [Dependancies] Bump postcss and css-loader in /public/js/msa [PR #411](https://github.com/BV-BRC/bvbrc_website/pull/411)
