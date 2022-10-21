@@ -16,7 +16,7 @@ define([
   xmlParser, xhr
 ) {
   return declare([AppBase], {
-    baseClass: 'App Assembly',
+    baseClass: 'App FastQ Utilities',
     templateString: Template,
     applicationName: 'FastqUtils',
     requireAuth: true,
