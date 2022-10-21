@@ -2,6 +2,7 @@ define([
   'dojo/_base/declare',
   'dojo/_base/lang',
   'dojo/dom-construct',
+  'dojo/dom-style',
   'dojo/ready',
   'dojo/sniff',
   '../proteinStructure/ProteinStructureState',
@@ -26,6 +27,7 @@ function (
   declare,
   lang,
   domConstruct,
+  domStyle,
   ready,
   has,
   ProteinStructureState,
@@ -52,6 +54,7 @@ function (
     className: 'ProteinStructureViewer',
     templateString: templateString,
     molstar: null,
+    isWorkspace: false,
     viewState: new ProteinStructureState({}),
     state: {},
     apiServiceUrl: window.App.dataAPI,
@@ -66,100 +69,99 @@ function (
         url: '/public/js/p3/resources/jsmol/display-types.json'
       });
 
+      this.isWorkspace = (this.state.hashParams.path !== undefined);
+
       // Mol* viewer object
       this.molstar = new ProteinStructureDisplay({
         id: this.id + '_structure'
       });
 
-      this.displayControl = new ProteinStructureDisplayControl({
-        id: this.id + '_displayControl',
-        displayTypeStore: this.displayTypeStore,
-        proteinStore: this.proteinStore,
-        region: 'left'
-      });
+      if (!this.isWorkspace) {
+        this.displayControl = new ProteinStructureDisplayControl({
+          id: this.id + '_displayControl',
+          displayTypeStore: this.displayTypeStore,
+          proteinStore: this.proteinStore,
+          region: 'left'
+        });
 
-      this.displayControl.watch('accessionId', lang.hitch(this, function (attr, oldValue, newValue) {
-        if (oldValue != newValue) {
-          // console.log('%s.accessionId changed from %s to %s', this.displayControl.id, oldValue, newValue);
-          // if the accession changes we keep all view state values but highlights
-          this.getAccessionInfo(newValue).then(record => {
-            var newState = new ProteinStructureState({});
-            newState.set('accession', record);
-            this.set('viewState', newState);
-          });
-        }
-      }));
-
-      // console.log('finished ' + this.id + '.postCreate');
-
-      this.ligandHighlight = new LigandHighlights({
-        id: this.id + '_ligands',
-        color: '#00ff00'
-      });
-      this.highlighters.addChild(this.ligandHighlight);
-      this.ligandHighlight.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
-        let highlights = new Map(this.viewState.get('highlights'));
-        highlights.set('ligands', new Map(newValue));
-        this.get('viewState').set('highlights', highlights);
-      }));
-
-      // this.structureHighlighter = new StructureHighlights({});
-      // this.highlighters.addChild(this.structureHighlighter);
-
-      let accessionId = this.state.hashParams.accession || this.viewDefaults.get('accession');
-      accessionId = accessionId.toUpperCase();
-
-      const urls = [
-        `${this.contentServer}/structures/protein_features/${accessionId}.fea`,
-        `${this.contentServer}/structures/epitopes/${accessionId}.epi`
-      ];
-
-      /* Fetch data files together before parsing feature and epitope content
-        @return JSON object
-        @exception Error object
-       */
-      const response = await Promise.all(
-        urls.map(url => xhr.get(url, {
-          headers: {
-            'Accept': 'application/solr+json',
-            'Authorization': window.App.authorizationToken
+        this.displayControl.watch('accessionId', lang.hitch(this, function (attr, oldValue, newValue) {
+          if (oldValue != newValue) {
+            // console.log('%s.accessionId changed from %s to %s', this.displayControl.id, oldValue, newValue);
+            // if the accession changes we keep all view state values but highlights
+            this.getAccessionInfo(newValue).then(record => {
+              var newState = new ProteinStructureState({});
+              newState.set('accession', record);
+              this.set('viewState', newState);
+            });
           }
-        }).then(res => res)
-          .catch(e => e))
-      );
+        }));
 
-      const featureContent = response[0];
-      const epitopeContent = response[1];
-
-      if (!(featureContent instanceof Error)) {
-        this.featureHighlights = new SARS2FeatureHighlights({
-          data: JSON.parse(featureContent).data
+        this.ligandHighlight = new LigandHighlights({
+          id: this.id + '_ligands',
+          color: '#00ff00'
         });
-        this.featureHighlights.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
-          // console.log('old highlights %s new highlights %s',  JSON.stringify(oldValue), JSON.stringify(newValue));
-          // console.log('viewState.highlights is ' + JSON.stringify(this.get('viewState').get('highlights')));
+        this.highlighters.addChild(this.ligandHighlight);
+        this.ligandHighlight.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
           let highlights = new Map(this.viewState.get('highlights'));
-          highlights.set('features', new Map(newValue));
+          highlights.set('ligands', new Map(newValue));
           this.get('viewState').set('highlights', highlights);
         }));
-        this.highlighters.addChild(this.featureHighlights);
-      }
 
-      if (!(epitopeContent instanceof Error)) {
-        this.epitopeHighlight = new EpitopeHighlights({
-          id: this.id + '_epitopes',
-          color: '#ffff00',
-          data: JSON.parse(epitopeContent).data
-        });
-        this.highlighters.addChild(this.epitopeHighlight);
+        let accessionId = this.state.hashParams.accession || this.viewDefaults.get('accession');
+        accessionId = accessionId.toUpperCase();
 
-        this.epitopeHighlight.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
-          // console.log('old highlights %s new highlights %s',  JSON.stringify(oldValue), JSON.stringify(newValue));
-          // console.log('viewState.highlights is ' + JSON.stringify(this.get('viewState').get('highlights')));
-          let highlights = new Map(this.viewState.get('highlights'));
-          highlights.set('epitopes', new Map(newValue));
-          this.get('viewState').set('highlights', highlights);
-        }));
+        const urls = [
+          `${this.contentServer}/structures/protein_features/${accessionId}.fea`,
+          `${this.contentServer}/structures/epitopes/${accessionId}.epi`
+        ];
+
+        /* Fetch data files together before parsing feature and epitope content
+          @return JSON object
+          @exception Error object
+         */
+        const response = await Promise.all(
+            urls.map(url => xhr.get(url, {
+              headers: {
+                'Accept': 'application/solr+json',
+                'Authorization': window.App.authorizationToken
+              }
+            }).then(res => res)
+                .catch(e => e))
+        );
+
+        const featureContent = response[0];
+        const epitopeContent = response[1];
+
+        if (!(featureContent instanceof Error)) {
+          this.featureHighlights = new SARS2FeatureHighlights({
+            data: JSON.parse(featureContent).data
+          });
+          this.featureHighlights.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
+            // console.log('old highlights %s new highlights %s',  JSON.stringify(oldValue), JSON.stringify(newValue));
+            // console.log('viewState.highlights is ' + JSON.stringify(this.get('viewState').get('highlights')));
+            let highlights = new Map(this.viewState.get('highlights'));
+            highlights.set('features', new Map(newValue));
+            this.get('viewState').set('highlights', highlights);
+          }));
+          this.highlighters.addChild(this.featureHighlights);
+        }
+
+        if (!(epitopeContent instanceof Error)) {
+          this.epitopeHighlight = new EpitopeHighlights({
+            id: this.id + '_epitopes',
+            color: '#ffff00',
+            data: JSON.parse(epitopeContent).data
+          });
+          this.highlighters.addChild(this.epitopeHighlight);
+
+          this.epitopeHighlight.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
+            // console.log('old highlights %s new highlights %s',  JSON.stringify(oldValue), JSON.stringify(newValue));
+            // console.log('viewState.highlights is ' + JSON.stringify(this.get('viewState').get('highlights')));
+            let highlights = new Map(this.viewState.get('highlights'));
+            highlights.set('epitopes', new Map(newValue));
+            this.get('viewState').set('highlights', highlights);
+          }));
+        }
       }
 
       this.watch('viewState', lang.hitch(this, function (attr, oldValue, newValue) {
@@ -168,16 +170,21 @@ function (
 
       this.getInitialViewState().then(lang.hitch(this, function (viewData) {
         var viewState = new ProteinStructureState({});
-        // console.log('viewData for initialViewState is ' + JSON.stringify(viewData));
-        viewState.set('displayType', viewData[0]);
-        viewState.set('accession', viewData[1]);
-        viewState.set('zoomLevel', viewData[2]);
-        let highlights = new Map([
-          ['ligands', new Map()],
-          ['epitopes', new Map()],
-          ['features', new Map()]
-        ]);
-        viewState.set('highlights', highlights);
+
+        if (viewData.length > 1) {
+          // console.log('viewData for initialViewState is ' + JSON.stringify(viewData));
+          viewState.set('displayType', viewData[0]);
+          viewState.set('accession', viewData[1]);
+          viewState.set('zoomLevel', viewData[2]);
+          let highlights = new Map([
+            ['ligands', new Map()],
+            ['epitopes', new Map()],
+            ['features', new Map()]
+          ]);
+          viewState.set('highlights', highlights);
+        } else {
+          viewState.set('workspacePath', viewData[0]);
+        }
         // console.log('initial viewstate is ' + JSON.stringify(viewState));
         this.set('viewState', viewState);
       }));
@@ -195,13 +202,18 @@ function (
       if (this.featureHighlights) {
         this.featureHighlights.set('accessionId', viewState.get('accession').pdb_id);
       }
-      this.molstar.set('viewState', viewState);
       this.updateAccessionInfo(viewState.get('accession'));
+      this.molstar.set('viewState', viewState);
     },
     updateAccessionInfo: function (accessionInfo) {
-      // console.log('running ' + this.id + '.updateAccessionInfo with ' + JSON.stringify(accessionInfo) );
-      domConstruct.empty(this.accessionTitle.containerNode);
-      domConstruct.place(DataItemFormatter(accessionInfo, 'structure_data', {}), this.accessionTitle.containerNode, 'first');
+      if (this.isWorkspace) {
+        domConstruct.destroy(this.proteinLeftPanel.containerNode);
+        domStyle.set(this.proteinMolstarView.containerNode, 'width', '100%');
+        domStyle.set(this.proteinMolstarView.containerNode, 'left', '0px');
+      } else {
+        domConstruct.empty(this.accessionTitle.containerNode);
+        domConstruct.place(DataItemFormatter(accessionInfo, 'structure_data', {}), this.accessionTitle.containerNode, 'first');
+      }
     },
     viewDefaults: new Map([
       ['accession', '6VXX'],
@@ -214,16 +226,22 @@ function (
     getInitialViewState: function () {
       const hashParams = (this.state && this.state.hashParams) || {};
       var dataPromises = [];
-      let val = hashParams.displayType || this.viewDefaults.get('displayType');
-      // console.log('get viewState.displayType record for ' + val);
-      dataPromises.push(this.getDisplayTypeInfo(val));
-      val = hashParams.accession || this.viewDefaults.get('accession');
-      // console.log('get viewState.accession record for ' + val);
-      dataPromises.push(this.getAccessionInfo(val));
+      let workspacePath = hashParams.path;
 
-      val = hashParams.zoomLevel || this.viewDefaults.get('zoomLevel') || 100;
-      // console.log('get viewState.zoomLevel for ' + val);
-      dataPromises.push(Promise.resolve(val));
+      if (workspacePath === undefined) {
+        let val = hashParams.displayType || this.viewDefaults.get('displayType');
+        // console.log('get viewState.displayType record for ' + val);
+        dataPromises.push(this.getDisplayTypeInfo(val));
+        val = hashParams.accession || this.viewDefaults.get('accession');
+        // console.log('get viewState.accession record for ' + val);
+        dataPromises.push(this.getAccessionInfo(val));
+
+        val = hashParams.zoomLevel || this.viewDefaults.get('zoomLevel') || 100;
+        // console.log('get viewState.zoomLevel for ' + val);
+        dataPromises.push(Promise.resolve(val));
+      } else {
+        dataPromises.push(decodeURIComponent(workspacePath));
+      }
 
       return Promise.all(dataPromises);
     },
