@@ -53,10 +53,10 @@ define([
 
       console.log('ProteinStructure.constructor id=' + this.id);
 
-      this.watch('viewState', lang.hitch(this, function (attr, oldValue, newValue) {
+      this.watch('viewState', lang.hitch(this, async function (attr, oldValue, newValue) {
         // Initialize molstar for the first time
         if (!this.isMolstarInitialized) {
-          this.molstar.init('app', this.molstarSpecs);
+          await this.molstar.init('app', this.molstarSpecs);
           this.isMolstarInitialized = true;
         }
         newValue.watch('workspacePath', lang.hitch(this, this.loadFromWorkspace));
