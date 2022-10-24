@@ -1,5 +1,19 @@
 # Changelog
 
+## October 24, 2022
+## 3.25.2 - Hot Fix
+* [Bug Fix] Updates to SARS-CoV-2 Variant Tracker (typos) []()
+
+## October 21, 2022
+## 3.25.2
+* [Bug Fix] Changed error message to say Fastq Utilities. [PR #443](https://github.com/BV-BRC/bvbrc_website/pull/443)
+* [Enhancement] Base the alignType on the afa file for the MSA viewer. [PR $442](https://github.com/BV-BRC/bvbrc_website/pull/442)
+* [Enhancmenet] Add workspace pdb file type support in protein viewer [PR #441](https://github.com/BV-BRC/bvbrc_website/pull/441)
+
+## 3.25.1
+* [Enhancement] Increased the features queried. Targeted a blank page. [PR #440](https://github.com/BV-BRC/bvbrc_website/pull/440)
+* [Enhancement] Added pdb filetype selection and viewer button [PR #439](https://github.com/BV-BRC/bvbrc_website/pull/439)
+
 ## October 17, 2022
 ## 3.25.0
 * [Dependancies] Bump postcss and css-loader in /public/js/msa [PR #411](https://github.com/BV-BRC/bvbrc_website/pull/411)
