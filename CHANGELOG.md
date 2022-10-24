@@ -1,7 +1,7 @@
 # Changelog
 
 ## October 24, 2022
-## 3.25.2 - Hot Fix
+## 3.25.3 - Hot Fix
 * [Bug Fix] Updates to SARS-CoV-2 Variant Tracker (typos) []()
 
 ## October 21, 2022
