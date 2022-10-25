@@ -283,7 +283,7 @@ define([
         'NextStrain lineage': '22A (Omicron)',
         'Emergence location': 'Southern Africa',
         'Emergence date': 'January 2022',
-        'Amino acid substitutions vs Wuhan-Hu-1: Spike': 'T19I, L24del, L24del, P25del, P25del, P25del, P26del, P26del, P26del, A27S, H69del, V70del, V213G, G339D, S371F, S373P, S375F, T376A, D405N, R408S, K417N, N440K, R452K, S477N, T478K, E484A, F486V, Q498R, N501Y, Y505H, D614G, H655Y, N679K, P681H, N764K, D796Y, Q954H, N969K',
+        'Amino acid substitutions vs Wuhan-Hu-1: Spike': 'T19I, L24del, L24del, P25del, P25del, P25del, P26del, P26del, P26del, A27S, H69del, V70del, V213G, G339D, S371F, S373P, S375F, T376A, D405N, R408S, K417N, N440K, L452R, S477N, T478K, E484A, F486V, Q498R, N501Y, Y505H, D614G, H655Y, N679K, P681H, N764K, D796Y, Q954H, N969K',
         'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike': 'nsp1:S135R; nsp3:T24I, G489S; nsp4:L264F, L327I, T492I; nsp5: P132H; nsp6:S106del, G107del, F108del; nsp12:P323L; nsp13:R392C; nsp14:I42V; nsp15:T112I; ORF3a:T223I; E:T9I; M:Q19E, A63T; ORF6:D61L; ORF7b: L11F; N:P13L, E31del, R32del, S33del, P151S, R203K, G204R, S413R',
         'Representative strain link': '<a href="https://www.ncbi.nlm.nih.gov/nuccore/ON373214" target=_blank>SARS-CoV-2/human/USA/PA-CDC-LC0583069/2022</a>',
         'Relevant publications': [
@@ -298,7 +298,7 @@ define([
         'NextStrain lineage': '22B (Omicron)',
         'Emergence location': 'Southern Africa',
         'Emergence date': 'January 2022',
-        'Amino acid substitutions vs Wuhan-Hu-1: Spike': 'T19I, L24del, L24del, P25del, P25del, P25del, P26del, P26del, P26del, A27S, H69del, V70del, V213G, G339D, S371F, S373P, S375F, T376A, D405N, R408S, K417N, N440K, R452K, S477N, T478K, E484A, F486V, Q498R, N501Y, Y505H, D614G, H655Y, N679K, P681H, N764K, D796Y, Q954H, N969K',
+        'Amino acid substitutions vs Wuhan-Hu-1: Spike': 'T19I, L24del, L24del, P25del, P25del, P25del, P26del, P26del, P26del, A27S, H69del, V70del, V213G, G339D, S371F, S373P, S375F, T376A, D405N, R408S, K417N, N440K, L452R, S477N, T478K, E484A, F486V, Q498R, N501Y, Y505H, D614G, H655Y, N679K, P681H, N764K, D796Y, Q954H, N969K',
         'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike': 'nsp1:S135R; nsp2:Q376K; nsp3:T24I, G489S; nsp4:L264F, L327I, T492I; nsp5: P132H; nsp6:S106del, G107del, F108del; nsp12:P323L; nsp13:R392C; nsp14:I42V; nsp15:T112I; ORF3a:T223I; E:T9I; M:D3N, Q19E, A63T; N:P13L, E31del, R32del, S33del, R203K, G204R, S413R',
         'Representative strain link': '<a href="https://www.bv-brc.org/view/Genome/2697049.4881887" target=_blank>SARS-CoV-2/human/USA/MI-CDC-ASC210848963/2022</a>',
         'Relevant publications': [
@@ -313,7 +313,7 @@ define([
         'NextStrain lineage': '20I (Alpha, V1)',
         'Emergence location': 'United Kingdom',
         'Emergence date': 'September 2020',
-        'Amino acid substitutions vs Wuhan-Hu-1: Spike': 'H69-**, V70-**, N501Y**, A570D, D614G**, P681H, T716I, S982A, D1118H',
+        'Amino acid substitutions vs Wuhan-Hu-1: Spike': 'H69-*, V70-*, Y144-, N501Y*, A570D, D614G*, P681H, T716I, S982A, D1118H',
         'Amino acid substitutions vs Wuhan-Hu-1: Non-Spike': 'nsp3: T183I, A890D, I1412T; nsp6: S106-, G107-, F108-; RNA-dependent RNA polymerase: P323L; helicase: K460R; ORF8: Q27stop',
         'Representative strain link': '<a href="https://www.bv-brc.org/view/Genome/2697049.300955" target=_blank>SARS-CoV-2/human/USA/CA-CDC-STM-000008272/2021</a>',
         'Relevant publications': [

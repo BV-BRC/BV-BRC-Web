@@ -2,7 +2,7 @@
 
 ## October 25, 2022
 ## 3.25.4
-* [Enahcnement] Uupdate molstar to latest version [PR #444](https://github.com/BV-BRC/bvbrc_website/pull/444)
+* [Enahcnement] Update molstar to latest version [PR #444](https://github.com/BV-BRC/bvbrc_website/pull/444)
 
 ## October 24, 2022
 ## 3.25.3 - Hot Fix
