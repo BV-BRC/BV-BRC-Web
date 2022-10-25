@@ -41,6 +41,10 @@ define( [
      *     pos: position as a string
      *     color: highlight color
      */
-    highlights: new Map()
+    highlights: new Map(),
+    /**
+     * Workspace path to fetch pdb file
+     */
+    workspacePath: null
   });
 });
