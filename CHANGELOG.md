@@ -1,5 +1,9 @@
 # Changelog
 
+## October 26, 2022
+## 3.25.5
+* [Feature] Test for DNA by looking at frequency of ACTGN [PR #447](https://github.com/BV-BRC/bvbrc_website/pull/447)
+
 ## October 25, 2022
 ## 3.25.4
 * [Enahcnement] Update molstar to latest version [PR #444](https://github.com/BV-BRC/bvbrc_website/pull/444)
