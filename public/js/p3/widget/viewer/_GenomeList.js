@@ -238,7 +238,7 @@ define([
         id: this.viewer.id + '_amr'
       });
       this.features = new FeatureGridContainer({
-        title: 'Proteins',
+        title: 'Genomic Features',
         id: this.viewer.id + '_features',
         disabled: false
       });
