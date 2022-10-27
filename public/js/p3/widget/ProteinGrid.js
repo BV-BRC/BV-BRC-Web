@@ -49,20 +49,20 @@ define([
 
       refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: false },
 
-      protein_id: { label: 'Protein ID', field: 'protein_id', hidden: true },
+      protein_id: { label: 'Protein ID', field: 'protein_id', hidden: false },
       gene_id: { label: 'Gene ID', field: 'gene_id', hidden: true },
       uniprotkb_accession: { label: 'UniProtKB Accession', field: 'uniprotkb_accession', hidden: true },
       pdb_accession: { label: 'PDB Accession', field: 'pdb_accession', hidden: true },
 
-      start: { label: 'Start', field: 'start', hidden: false },
-      end: { label: 'End', field: 'end', hidden: false },
-      strand: { label: 'Strand', field: 'strand', hidden: false },
+      start: { label: 'Start', field: 'start', hidden: true },
+      end: { label: 'End', field: 'end', hidden: true },
+      strand: { label: 'Strand', field: 'strand', hidden: true },
       location: { label: 'Location', field: 'location', hidden: true },
       segments: { label: 'Segments', field: 'segments', hidden: true },
       codon_start: { label: 'Codon Start', field: 'Codon Start', hidden: true },
 
-      na_length: { label: 'Length (NA)', field: 'na_length', hidden: false },
-      aa_length: { label: 'Length (AA)', field: 'aa_length', hidden: true },
+      na_length: { label: 'Length (NA)', field: 'na_length', hidden: true },
+      aa_length: { label: 'Length (AA)', field: 'aa_length', hidden: false },
       na_sequence_md5: { label: 'NA Sequence MD5', field: 'na_sequence_md5', hidden: true },
       aa_sequence_md5: { label: 'AA Sequence MD5', field: 'aa_sequence_md5', hidden: true },
 
