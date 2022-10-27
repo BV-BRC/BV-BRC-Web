@@ -1,5 +1,9 @@
 # Changelog
 
+## October 27, 2022
+## 3.25.6
+* [Minor] Remove redundant wording. [Commit #f08427d](https://github.com/BV-BRC/bvbrc_website/commit/f08427d6ee49abcbe19f1059a4ee2c43fcc10f2d)
+
 ## October 26, 2022
 ## 3.25.5
 * [Feature] Test for DNA by looking at frequency of ACTGN [PR #447](https://github.com/BV-BRC/bvbrc_website/pull/447)
