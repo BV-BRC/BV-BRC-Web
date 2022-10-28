@@ -21,7 +21,7 @@ define([
 
   return declare([GridContainer], {
     gridCtor: FeatureGrid,
-    containerType: 'feature_data',
+    containerType: 'protein_data',
     tutorialLink: 'user_guides/organisms_taxon/features.html',
     facetFields: AdvancedSearchFields['proteins'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['proteins'].filter((ff) => ff.search),
