@@ -56,7 +56,7 @@
             <input type="radio" id="${id}_input_sequence" value="input_sequence" data-dojo-attach-point="input_sequence"
               data-dojo-type="dijit/form/RadioButton" name="input_type"
               data-dojo-attach-event="onChange:onChangeType" />
-            <label for="${id}_input_sequence">FASTA Sequence</label>
+            <label for="${id}_input_sequence">Input Sequence</label>
           </div>
           <table data-dojo-attach-point="featuregroup_table" style="width:100%; display:table">
             <tr>
@@ -83,7 +83,7 @@
               <td>
                 <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
                   name="select_genomegroup" required="false" data-dojo-attach-point="select_genomegroup"
-                  data-dojo-attach-event="onChange:handleGenomeGroup"
+                  data-dojo-attach-event="onChange:validate"
                   data-dojo-props="type:['genome_group'], disabled:true,allowUpload:false,multi:false,promptMessage:'Select a viral genome group from your workspace for alignment.',missingMessage:'Genome group is required.', placeHolder:'Viral genome group'">
                 </div>
                 <div class="warning" data-dojo-attach-point="genomegroup_message"></div>
@@ -151,13 +151,25 @@
                 </table>
               </td>
               <td>
-                <table data-dojo-attach-point="reference_id_table" style="width:100%; display:table">
+                <table data-dojo-attach-point="feature_id_table" style="width:100%; display:table">
                   <tr>
                     <td>
-                      <input type="radio" id="${id}_reference_id" value="reference_id"
-                        data-dojo-attach-point="reference_id" data-dojo-type="dijit/form/RadioButton" name="ref_type"
+                      <input type="radio" id="${id}_feature_id" value="feature_id" data-dojo-attach-point="feature_id"
+                        data-dojo-type="dijit/form/RadioButton" name="ref_type"
                         data-dojo-attach-event="onChange:onChangeReference" />
-                      <label id="reference_id_label" for="${id}_reference_id">Feature ID</label>
+                      <label id="feature_id_label" for="${id}_feature_id">Feature ID</label>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+              <td>
+                <table data-dojo-attach-point="genome_id_table" style="width:100%; display:none">
+                  <tr>
+                    <td>
+                      <input type="radio" id="${id}_genome_id" value="genome_id" data-dojo-attach-point="genome_id"
+                        data-dojo-type="dijit/form/RadioButton" name="ref_type"
+                        data-dojo-attach-event="onChange:onChangeReference" data-dojo-props="disabled:true" />
+                      <label id="genome_id_label" for="${id}_genome_id">Genome ID</label>
                     </td>
                   </tr>
                 </table>
@@ -169,7 +181,7 @@
                       <input type="radio" id="${id}_reference_string" value="reference_string"
                         data-dojo-attach-point="reference_string" data-dojo-type="dijit/form/RadioButton"
                         name="ref_type" data-dojo-attach-event="onChange:onChangeReference" />
-                      <label for="${id}_reference_string">FASTA Reference Sequence</label>
+                      <label for="${id}_reference_string">Input Reference Sequence</label>
                     </td>
                   </tr>
                 </table>
@@ -177,16 +189,29 @@
             </tr>
           </table>
         </div>
-        <table data-dojo-attach-point="ref_id_table" style="width:100%; display:none">
+        <table data-dojo-attach-point="ref_feature_id_table" style="width:100%; display:none">
           <tr>
             <td>
-              <div style="width:85%;display:inline-block;" data-dojo-type="dijit/form/Select" name="select_reference_id"
-                required="false" data-dojo-attach-point="select_reference_id" data-dojo-attach-event="onChange:validate"
-                data-dojo-props="disabled:true,multi:false,promptMessage:'Select a reference sequence id.',missingMessage:'Id is required.'">
+              <div style="width:85%;display:inline-block;" data-dojo-type="dijit/form/FilteringSelect"
+                name="select_feature_id" required="false" data-dojo-attach-point="select_feature_id"
+                data-dojo-attach-event="onChange:validate"
+                data-dojo-props="disabled:true,autoComplete:true,searchAttr:'label',promptMessage:'Select a reference feature id.',missingMessage:'Id is required.'">
               </div>
-              <div class="warning" data-dojo-attach-point="reference_id_message"></div>
+              <div class="warning" data-dojo-attach-point="feature_id_message"></div>
+            </td>
           </tr>
-          </td>
+        </table>
+        <table data-dojo-attach-point="ref_genome_id_table" style="width:100%; display:none">
+          <tr>
+            <td>
+              <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/GenomeNameSelector"
+                name="select_genome_id" required="false" data-dojo-attach-point="select_genome_id"
+                data-dojo-attach-event="onChange:validate"
+                data-dojo-props="disabled:true,promptMessage:'Select a reference genome id.',missingMessage:'Id is required.'">
+              </div>
+              <div class="warning" data-dojo-attach-point="genome_id_message"></div>
+            </td>
+          </tr>
         </table>
         <table data-dojo-attach-point="ref_seq_table" style="width:100%; display:none">
           <tr>
