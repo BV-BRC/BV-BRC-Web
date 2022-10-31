@@ -708,6 +708,24 @@ define([
       return newFasta;
     },
 
+    isDNA: function (sequenceText) {
+      var st = sequenceText.toLowerCase();
+      var count = 0;
+      var gaps = 0;
+      for (let i = 0; i < st.length; i++) {
+        if (st[i] == '-') {
+          gaps += 1;
+        }
+        else if (['a', 'c', 't', 'g', 'n'].includes(st[i])) {
+          count += 1;
+        }
+      }
+      if (sequenceText.length > 0) {
+        return (count / (sequenceText.length - gaps)) >= 0.75;
+      }
+      return undefined;
+    },
+
     validateFasta: function (fastaText, seqType = 'aa', replace = true, firstName = 'record_1') {
       /*
       Calculates the validity of a FASTA file.
@@ -781,10 +799,10 @@ define([
         }
         nextseq -= 1;
         nextseq = Math.max(0, nextseq);
-        if (!protein && !(/^[ACTGN\-\n]+$/i.test(arr[i].toUpperCase()))) {
+        if (!protein && !this.isDNA(arr[i])) { // !(/^[ACTGN\-\n]+$/i.test(arr[i].toUpperCase()))
           if (seqType == 'dna') {
             reto.status = 'need_dna'
-            reto.message = 'Some letters are not nucleotide letters on line ' + (i + 1) + '.';
+            reto.message = 'Too few nucleotide letters on line ' + (i + 1) + '.';
             return reto;
           }
           protein = true;

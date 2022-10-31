@@ -1,8 +1,30 @@
 # Changelog
+## October 31, 2022
+## 3.26.1
+* [Minor] Modify link text
+
+## 3.26.0
+* [Release] Production Release 3.26.0
+
+## 3.25.7
+* [Update] Add Legacy IRD / ViPR banner information [Commit #48e5c17](https://github.com/BV-BRC/bvbrc_website/commit/48e5c172efaf3e7d617f1db282ae3d536e9dd60a)
+* [Minor] Update IRD/ViPR link subdomains to legacy [Commit #70243ba](https://github.com/BV-BRC/bvbrc_website/commit/70243bab601df4db752bf3b39d22fd8aa4e368bf)
+
+## October 27, 2022
+## 3.25.6
+* [Minor] Remove redundant wording. [Commit #f08427d](https://github.com/BV-BRC/bvbrc_website/commit/f08427d6ee49abcbe19f1059a4ee2c43fcc10f2d)
+
+## October 26, 2022
+## 3.25.5
+* [Feature] Test for DNA by looking at frequency of ACTGN [PR #447](https://github.com/BV-BRC/bvbrc_website/pull/447)
+
+## October 25, 2022
+## 3.25.4
+* [Enahcnement] Update molstar to latest version [PR #444](https://github.com/BV-BRC/bvbrc_website/pull/444)
 
 ## October 24, 2022
 ## 3.25.3 - Hot Fix
-* [Bug Fix] Updates to SARS-CoV-2 Variant Tracker (typos) []()
+* [Bug Fix] Updates to SARS-CoV-2 Variant Tracker (typos)
 
 ## October 21, 2022
 ## 3.25.2
