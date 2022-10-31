@@ -408,6 +408,20 @@ define([
         }
       });
 
+      this.actionPanel.addAction('ViewProteinStructure', 'MultiButton fa icon-selection-Sequence fa-2x', {
+        label: 'VIEW',
+        validTypes: ['pdb'],
+        multiple: false,
+        tooltip: 'Open PDB in Protein Structure Viewer'
+      }, function (selection, button, opts) {
+        var filepath = selection[0].path;
+        if (filepath) {
+          Topic.publish('/navigate', { href: '/view/ProteinStructure#path=' + filepath, target: 'blank' });
+        } else {
+          console.log('err, path does not exist');
+        }
+      });
+
       this.actionPanel.addAction('MultipleSeqAlignmentFeatures', 'fa icon-alignment fa-2x', {
         label: 'MSA',
         validTypes: ['feature_group'],
@@ -1228,9 +1242,8 @@ define([
         validTypes: ['MSA'],
         tooltip: 'View aligned fasta'
       }, function (selection, container, button) {
-        // console.log(self.actionPanel.currentContainerWidget.path);
-        console.log('selection=', selection);
-        var alignType = selection[0].autoMeta.parameters.alphabet;
+        // console.log('selection= ', selection);
+        // var alignType = selection[0].autoMeta.parameters.alphabet;
         var afa_file;
         var exist_nwk = 0;
         selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (msa_file_data) {
@@ -1242,12 +1255,20 @@ define([
             exist_nwk = 1;
           }
         }));
-        if ((!afa_file) | (!alignType)) {
-          console.log('Error: Alignment file doesnt exist or alignment alphabet could not be determined');
-        } else if (exist_nwk == 1) {
-          Topic.publish('/navigate', { href: '/view/MSATree/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
+        if ((!afa_file)) {
+          console.log('Error: Alignment file doesn\'t exist.');
         } else {
-          Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
+          when(WorkspaceManager.getObject(afa_file, true), function (data) {
+            var alignType = 'protein';
+            if (data.type.includes('dna')) {
+              alignType = 'dna';
+            }
+            if (exist_nwk == 1) {
+              Topic.publish('/navigate', { href: '/view/MSATree/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
+            } else {
+              Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
+            }
+          });
         }
       }, false);
 

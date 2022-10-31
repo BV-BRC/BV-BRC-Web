@@ -9,13 +9,17 @@ define([
   'dijit/_WidgetBase',
   'dojo/_base/kernel',
   './ProteinStructureState',
+  '../../WorkspaceManager',
+  'dojo/_base/Deferred',
   'molstar/mol-bvbrc/index'
 ], function (
   declare,
   lang,
   WidgetBase,
   kernel,
-  ProteinStructureState
+  ProteinStructureState,
+  WS,
+  Deferred
 ) {
   return declare([WidgetBase], {
     id: 'defaultId',
@@ -49,13 +53,13 @@ define([
 
       console.log('ProteinStructure.constructor id=' + this.id);
 
-      this.watch('viewState', lang.hitch(this, function (attr, oldValue, newValue) {
+      this.watch('viewState', lang.hitch(this, async function (attr, oldValue, newValue) {
         // Initialize molstar for the first time
         if (!this.isMolstarInitialized) {
-          this.molstar.init('app', this.molstarSpecs);
+          await this.molstar.init('app', this.molstarSpecs);
           this.isMolstarInitialized = true;
         }
-        // console.log('JMOL updating viewState from ' + JSON.stringify(oldValue) + ' to ' + JSON.stringify(newValue));
+        newValue.watch('workspacePath', lang.hitch(this, this.loadFromWorkspace));
         newValue.watch('accession', lang.hitch(this, this.onAccessionChange));
         newValue.watch('displayType', lang.hitch(this, this.updateDisplay));
         newValue.watch('highlights', lang.hitch(this, function (attr, oldValue, newValue) {
@@ -63,6 +67,8 @@ define([
         }));
         if (oldValue.get('accession', {}).pdb_id != newValue.get('accession', {}).pdb_id) {
           this.updateAccession(newValue.get('accession'));
+        } else if (oldValue.get('workspacePath') != newValue.get('workspacePath')) {
+          this.loadFromWorkspace(newValue.get('workspacePath'));
         }
       }));
     },
@@ -119,6 +125,14 @@ define([
         const urlEbi = 'https://www.ebi.ac.uk/pdbe/static/entry/' + accession.toLowerCase() + '_updated.cif';
         this.molstar.load({ url: urlEbi, displaySpikeSequence: true });
       }
+    },
+    loadFromWorkspace: function (workspacePath) {
+      let _self = this;
+      Deferred.when(WS.getDownloadUrls(workspacePath), function (url) {
+        if (url && url.length > 0 && url[0] !== null) {
+          _self.molstar.load({url: url[0], format: 'pdb', displaySpikeSequence: true});
+        }
+      });
     }
   });
 });
