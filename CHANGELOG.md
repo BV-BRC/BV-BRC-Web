@@ -1,4 +1,8 @@
 # Changelog
+## October 31, 2022
+## 3.25.7
+* [Update] Add Legacy IRD / ViPR banner information [Commit #48e5c17](https://github.com/BV-BRC/bvbrc_website/commit/48e5c172efaf3e7d617f1db282ae3d536e9dd60a)
+* [Minor] Update IRD/ViPR link subdomains to legacy [Commit #70243ba](https://github.com/BV-BRC/bvbrc_website/commit/70243bab601df4db752bf3b39d22fd8aa4e368bf)
 
 ## October 27, 2022
 ## 3.25.6
