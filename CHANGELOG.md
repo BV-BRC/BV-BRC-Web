@@ -1,5 +1,8 @@
 # Changelog
 ## October 31, 2022
+## 3.26.1
+* [Minor] Modify link text
+
 ## 3.26.0
 * [Release] Production Release 3.26.0
 
