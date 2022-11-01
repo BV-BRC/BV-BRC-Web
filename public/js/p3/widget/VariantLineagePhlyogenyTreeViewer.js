@@ -262,7 +262,7 @@ define([
       var nodeVisualizations = this.nodeVisualizations;
       var specialVisualizations = this.specialVisualizations;
 
-      xhr.get(window.App.dataAPI + '/content/phyloxml_trees/SARS2_IT17_29400_09999_cdh_pango_4_MAFFT_05_GTR_fme_pdvxvm.xml')
+      xhr.get(window.App.dataAPI + '/content/phyloxml_trees/SARS2_IT19_29400_09999_cdh_pango_4_MAFFT_05_GTR_fme_pdvxvm.xml')
         .then((data) => {
           var tree;
           try {
