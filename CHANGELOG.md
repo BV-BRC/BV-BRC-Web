@@ -1,5 +1,9 @@
 # Changelog
 ## October 31, 2022
+## 3.26.2
+* [Feature] October 2022 Variants Detailed - Tracked [Commit #7bf2e74](https://github.com/BV-BRC/bvbrc_website/commit/7bf2e740f814bd37c86b83d31a43cdcfb75e3daf)
+* [Feature] October 2022 Variants Overview - Tracked [Commit #2a8de70](https://github.com/BV-BRC/bvbrc_website/commit/2a8de7010b21a9348628084d25ce18d0b3316bba)
+
 ## 3.26.1
 * [Minor] Modify link text
 
