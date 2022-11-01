@@ -1,4 +1,8 @@
 # Changelog
+## November 1, 2022
+* [Enhancement] Update mutations and converg mutations [Commit #28a4656](https://github.com/BV-BRC/bvbrc_website/commit/28a46568e5086775b607af6756ed47680d428419)
+* [Feature] Update SARS-CoV-2 Tree to Iteration 19 [Commit #3d49b65](https://github.com/BV-BRC/bvbrc_website/commit/3d49b6503803d54c84085038df95c6ec9734428f)
+
 ## October 31, 2022
 ## 3.26.3
 * [Bug Fix] bug fix for viewing fasta dna&proteins in GenomeList [PR #455](https://github.com/BV-BRC/bvbrc_website/pull/455)
