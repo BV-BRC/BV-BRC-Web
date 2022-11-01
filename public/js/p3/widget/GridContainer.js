@@ -60,8 +60,6 @@ define([
           idType = 'patric_id';
         } else if (d.alt_locus_tag) {
           idType = 'alt_locus_tag';
-        } else if (d.genome_id) {
-          idType = 'genome_id';
         }
       }
 
