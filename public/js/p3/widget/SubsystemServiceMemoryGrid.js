@@ -8,29 +8,6 @@ define([
 
     idProperty: 'id',
     primaryKey: 'id',
-    columns: {
-      'Selection Checkboxes': selector({ unhidable: true }),
-      superclass: { label: 'Superclass', field: 'superclass' },
-      'class': { label: 'Class', field: 'class' },
-      subclass: { label: 'Subclass', field: 'subclass' },
-      subsystem_name: { label: 'Subsystem Name', field: 'subsystem_name' },
-      role_id: { label: 'Role ID', field: 'role_id', hidden: true },
-      role_name: { label: 'Role Name', field: 'role_name' },
-      genome_count: { label: 'Genome Count', field: 'genome_count' },
-      gene_count: { label: 'Gene Count', field: 'gene_count' },
-      role_count: { label: 'Role Count', field: 'role_count' },
-      active: { label: 'Active', field: 'active'},
-      patric_id: { label: 'BRC ID', field: 'patric_id' },
-      gene: { label: 'Gene', field: 'gene' },
-      refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag', hidden: true },
-      alt_locus_tag: { label: 'Alt Locus Tag', field: 'alt_locus_tag', hidden: true },
-      product: { label: 'Product', field: 'product' },
-      genome_id: { label: 'Genome ID', field: 'genome_id', hidden: true },
-      genome_name: { label: 'Genome Name', field: 'genome_name', hidden: true },
-      taxon_id: { label: 'Taxon ID', field: 'taxon_id', hidden: true },
-      subsystem_id: { label: 'Subsystem ID', field: 'subsystem_id', hidden: true }
-
-    },
 
     startup: function () {
       const _self = this;
