@@ -5,20 +5,11 @@ function parse_subsystems_data(data, facets) {
   facets.forEach(function (ff) {
     facet_data[ff] = {};
   });
-  // TODO: insert genome filter
   data.forEach(function (obj) {
     var id = obj['id'];
-    if (parsed_data.hasOwnProperty(id)) { // duplicate id from multiple genomes
-      var dup_obj = parsed_data[id];
-      dup_obj['gene_count'] += parseInt(obj['gene_count']);
-      dup_obj['role_count'] += parseInt(obj['role_count']);
-      parsed_data[id] = dup_obj;
-    }
-    else {
-      parsed_data[id] = obj;
-      parsed_data[id]['gene_count'] = parseInt(obj['gene_count']);
-      parsed_data[id]['role_count'] = parseInt(obj['role_count']);
-    }
+    parsed_data[id] = obj;
+    parsed_data[id]['gene_count'] = parseInt(obj['gene_count']);
+    parsed_data[id]['role_count'] = parseInt(obj['role_count']);
     facets.forEach(function (ff) {
       var value = obj[ff];
       if (!facet_data[ff].hasOwnProperty(value)) {
@@ -56,7 +47,7 @@ function load_subsystem_data(data) {
   });
   // TODO: the last entry is undefined, not sure why it's being added: for now just remove
   // - Probably move this fix for the same issue in Pathways and ProteinFams to p3_core/lib/bvbrc_api
-  subsystem_data.pop();
+  // subsystem_data.pop();
   return subsystem_data;
 }
 
