@@ -8,8 +8,8 @@ function parse_subsystems_data(data, facets) {
   data.forEach(function (obj) {
     var id = obj['id'];
     parsed_data[id] = obj;
-    parsed_data[id]['gene_count'] = parseInt(obj['gene_count']);
-    parsed_data[id]['role_count'] = parseInt(obj['role_count']);
+    parsed_data[id]['gene_count'] = parseInt(obj['gene_counts']);
+    parsed_data[id]['role_count'] = parseInt(obj['role_counts']);
     facets.forEach(function (ff) {
       var value = obj[ff];
       if (!facet_data[ff].hasOwnProperty(value)) {
@@ -35,13 +35,16 @@ function load_subsystem_data(data) {
     else {
       var new_data = {};
       var l = line.split('\t');
+      var id = '';
       subsystem_keys.forEach(function (key, index) {
-        if (key === 'subsystem_name') {
-          new_data['id'] = l[index];
-        }
+        //if (key === 'subsystem_name') {
+        //  new_data['id'] = l[index];
+        //}
         new_data[key] = l[index];
+        id += l[index];
       });
       new_data['document_type'] = 'subsystems_subsystem'; // used in ItemDetailPanel
+      new_data['id'] = id;
       subsystem_data.push(new_data);
     }
   });

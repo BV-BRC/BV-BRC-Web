@@ -109,6 +109,7 @@ define([
         // TODO: add genome filter
         var facet_fields = this.facetFields;
         var payload = { data: this.state.data['subsystem_table'], facetFields: facet_fields };
+        // debugger;
         worker.postMessage(JSON.stringify({ type: 'parse_subsystems', payload: payload }));
         return def;
       }
