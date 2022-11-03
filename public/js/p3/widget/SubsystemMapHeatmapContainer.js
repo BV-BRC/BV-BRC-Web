@@ -323,34 +323,6 @@ define([
       var gfs = this.pmState.genomeFilterStatus;
 
       var genomeName = gfs[genomeId].getLabel();
-      /*
-      var description = '';
-      var memberCount = 0;
-      var index = 0;
-
-      if (isTransposed) {
-        // rows: families, columns: genomes
-        this.currentData.rows.forEach(function (row, idx) {
-          if (row.rowID === roleId) {
-            description = row.rowLabel;
-            index = idx;
-          }
-        });
-        this.currentData.columns.forEach(function (col) {
-          if (col.colID === genomeId) {
-            memberCount = parseInt(col.distribution.substr(2 * index, 2), 16);
-          }
-        });
-      } else {
-        index = gfs[genomeId].getIndex();
-        this.currentData.columns.forEach(function (col) {
-          if (col.colID === roleId) {
-            description = col.colLabel;
-            memberCount = parseInt(col.distribution.substr(2 * index, 2), 16);
-          }
-        });
-      }
-      */
 
       var text = [];
 
@@ -378,22 +350,8 @@ define([
     _buildPanelCellsSelected: function (isTransposed, roleIds, genomeIds, features) {
 
       var text = [];
-      /*
-      var patricIds = [];
-      var extraFeaturesLength = features.length - this.maxPatricIDsShown;
-
-      if (features.length > this.maxPatricIDsShown) {
-        for (var i = 0; i < this.maxPatricIDsShown; i++) {
-          patricIds.push(features[i]);
-        }
-        patricIds.push(extraFeaturesLength + ' more');
-      } else {
-        patricIds = features;
-      }
-      */
       text.push('<b>Genomes Selected:</b> ' + genomeIds.length);
       text.push('<b>Roles Selected:</b> ' + roleIds.length);
-      // text.push('<b>BRC IDs:</b> ' + patricIds.join(', '));
       text.push('<b>Members:</b> ' + features.length);
 
       return text.join('<br>');
