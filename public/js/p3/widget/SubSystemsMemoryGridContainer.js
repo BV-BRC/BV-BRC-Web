@@ -695,8 +695,7 @@ define([
           var params = Object.keys(url).map(function (p) {
             return p + '=' + url[p];
           }).join('&');
-          console.log('SELECXTIION IS = ', selection[0]);
-          console.log('url = ', url);
+
           Topic.publish('/navigate', { href: '/view/SubSystemMap/?' + params, target: 'blank', genomeIds: this.state.genome_ids });
 
 
