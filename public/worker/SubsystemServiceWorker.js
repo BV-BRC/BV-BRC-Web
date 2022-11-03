@@ -37,9 +37,6 @@ function load_subsystem_data(data) {
       var l = line.split('\t');
       var id = '';
       subsystem_keys.forEach(function (key, index) {
-        //if (key === 'subsystem_name') {
-        //  new_data['id'] = l[index];
-        //}
         new_data[key] = l[index];
         id += l[index];
       });
