@@ -1,5 +1,14 @@
 # Changelog
+## November 7, 2022
+## 3.26.5
+* [Feature] Add Subspecies Classification tutorial and user guide
+* [Enhancement] Updating subsystems data loading to be compatible with backend [PR #463](https://github.com/BV-BRC/bvbrc_website/pull/463)
+* [Bug Fix] Fixing some stuff in subsystems heatmap [PR #462](https://github.com/BV-BRC/bvbrc_website/pull/462)
+* [Enahncement] Removed repeating login message. Lint and style enhanced. [PR #461](https://github.com/BV-BRC/bvbrc_website/pull/461)
+* [Feature] Added genome id and FilteringSelect for feature id. [PR #460](https://github.com/BV-BRC/bvbrc_website/pull/460)
+
 ## November 1, 2022
+## 3.26.4
 * [Enhancement] Update mutations and converg mutations [Commit #28a4656](https://github.com/BV-BRC/bvbrc_website/commit/28a46568e5086775b607af6756ed47680d428419)
 * [Feature] Update SARS-CoV-2 Tree to Iteration 19 [Commit #3d49b65](https://github.com/BV-BRC/bvbrc_website/commit/3d49b6503803d54c84085038df95c6ec9734428f)
 
