@@ -1215,24 +1215,17 @@ define([
           alignType = 'dna';
         }
         console.log('container ', container);
-        var afa_file;
+        var msa_file = selection[0].path;
         var exist_nwk = 0;
-
-        container.data.autoMeta.output_files.forEach(lang.hitch(this, function (msa_file_data) {
-          var msa_file = msa_file_data[0].split('.');
-          if (msa_file[msa_file.length - 1] === 'afa') {
-            afa_file = msa_file.join('.');
-          }
-          if (msa_file[msa_file.length - 1] === 'nwk') {
-            exist_nwk = 1;
-          }
-        }));
-        if ((!afa_file) | (!alignType)) {
+        if (msa_file[msa_file.length - 1] === 'nwk') {
+          exist_nwk = 1;
+        }
+        if ((!alignType)) {
           console.log('Error: Alignment file doesnt exist or alignment alphabet could not be determined');
         } else if (exist_nwk == 1) {
-          Topic.publish('/navigate', { href: '/view/MSATree/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
+          Topic.publish('/navigate', { href: '/view/MSATree/&alignType=' + alignType + '&path=' + msa_file, target: 'blank' });
         } else {
-          Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
+          Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + msa_file, target: 'blank' });
         }
       }, false);
 

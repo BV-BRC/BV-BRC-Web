@@ -99,6 +99,37 @@ define([
         { label: 'Cluster', multiple: false, validTypes: ['*'] },
         'cluster',
         true
+      ],
+      [
+        'SaveSVG',
+        'fa icon-download fa-2x',
+        {
+          label: 'Save',
+          multiple: false,
+          validType: ['*'],
+          tooltip: 'Download heat map'
+        },
+        function () {
+          this.tooltip_anchoring = new TooltipDialog({
+            style: 'width: 200px;',
+            content: this._buildPanelSaveSVG()
+          });
+          this.containerActionBar._actions.SaveSVG.options.tooltipDialog = this.tooltip_anchoring;
+
+          if (this.isPopupOpen) {
+            this.isPopupOpen = false;
+            popup.close();
+          } else {
+            popup.open({
+              parent: this,
+              popup: this.containerActionBar._actions.SaveSVG.options.tooltipDialog,
+              around: this.containerActionBar._actions.SaveSVG.button,
+              orient: ['below']
+            });
+            this.isPopupOpen = true;
+          }
+        },
+        true
       ]
     ],
     constructor: function () {
@@ -180,6 +211,7 @@ define([
       }
     },
     onFirstView: function () {
+
       if (this._firstView) {
         return;
       }
@@ -291,34 +323,6 @@ define([
       var gfs = this.pmState.genomeFilterStatus;
 
       var genomeName = gfs[genomeId].getLabel();
-      /*
-      var description = '';
-      var memberCount = 0;
-      var index = 0;
-
-      if (isTransposed) {
-        // rows: families, columns: genomes
-        this.currentData.rows.forEach(function (row, idx) {
-          if (row.rowID === roleId) {
-            description = row.rowLabel;
-            index = idx;
-          }
-        });
-        this.currentData.columns.forEach(function (col) {
-          if (col.colID === genomeId) {
-            memberCount = parseInt(col.distribution.substr(2 * index, 2), 16);
-          }
-        });
-      } else {
-        index = gfs[genomeId].getIndex();
-        this.currentData.columns.forEach(function (col) {
-          if (col.colID === roleId) {
-            description = col.colLabel;
-            memberCount = parseInt(col.distribution.substr(2 * index, 2), 16);
-          }
-        });
-      }
-      */
 
       var text = [];
 
@@ -346,22 +350,8 @@ define([
     _buildPanelCellsSelected: function (isTransposed, roleIds, genomeIds, features) {
 
       var text = [];
-
-      var patricIds = [];
-      var extraFeaturesLength = features.length - this.maxPatricIDsShown;
-
-      if (features.length > this.maxPatricIDsShown) {
-        for (var i = 0; i < this.maxPatricIDsShown; i++) {
-          patricIds.push(features[i]);
-        }
-        patricIds.push(extraFeaturesLength + ' more');
-      } else {
-        patricIds = features;
-      }
-
       text.push('<b>Genomes Selected:</b> ' + genomeIds.length);
       text.push('<b>Roles Selected:</b> ' + roleIds.length);
-      text.push('<b>BRC IDs:</b> ' + patricIds.join(', '));
       text.push('<b>Members:</b> ' + features.length);
 
       return text.join('<br>');
@@ -773,7 +763,104 @@ define([
       }
 
       return { cols: cols, rows: rows, matrix: matrix };
-    }
+    },
+
+    _buildPanelSaveSVG: function () {
+      var self = this;
+
+      var container = domConstruct.create('div');
+
+      domConstruct.create('a', {
+        innerHTML: '<i class="fa icon-download"></i> Save snapshot (SVG)',
+        onclick: function () {
+          var status = domConstruct.toDom('<div><br>Creating SVG...</div>');
+          domConstruct.place(status, container, 'last');
+          setTimeout(function () {
+            self.chart.downloadSVG({ fileName: 'heatmap.svg' });
+            domConstruct.destroy(status);
+          }, 1000);
+        }
+      }, container);
+
+      domConstruct.place('<br>', container);
+
+      domConstruct.create('a', {
+        innerHTML: '<i class="fa icon-download"></i> Save entire chart (SVG)',
+        onclick: function () {
+          var status = domConstruct.toDom('<div><br>Creating SVG... <br>This may take awhile for large charts</div>');
+          domConstruct.place(status, container, 'last');
+          setTimeout(function () {
+            self.chart.downloadSVG({ fileName: 'heatmap.svg', full: true });
+            domConstruct.destroy(status);
+          }, 1000);
+        }
+      }, container);
+
+      domConstruct.place('<br>', container);
+
+      domConstruct.create('a', {
+        innerHTML: '<i class="fa icon-download"></i> Save chart to TSV',
+        onclick: function () {
+          var status = domConstruct.toDom('<div><br>Creating TSV...<br></div>');
+          domConstruct.place(status, container, 'last');
+          setTimeout(function () {
+            self.downloadChart();
+            domConstruct.destroy(status);
+          }, 1000);
+        }
+      }, container);
+
+      domConstruct.place('<br>', container);
+
+      domConstruct.create('a', {
+        innerHTML: '<i class="fa icon-download"></i> Save chart to JSON',
+        onclick: function () {
+          var status = domConstruct.toDom('<div><br>Creating JSON...<br></div>');
+          domConstruct.place(status, container, 'last');
+          setTimeout(function () {
+            self.downloadJSON();
+            domConstruct.destroy(status);
+          }, 1000);
+        }
+      }, container);
+
+      return container;
+    },
+
+
+    downloadJSON: function () {
+      var _self = this;
+      var ext = 'json';
+      var rel = 'text/plain';
+      var state = _self.chart.getState();
+      var obj = { 'rows': state.rows, 'cols': state.cols, 'matrix': state.matrix };
+      saveAs(new Blob([JSON.stringify(obj)], { type: rel }), 'BVBRC_subsystems_heatmap.' + ext);
+    },
+
+    downloadChart: function () {
+      var _self = this;
+      var DELIMITER = '\t';
+      var ext = 'tsv';
+      var rel = 'text/tsv';
+
+      var state = _self.chart.getState();
+      var header = 'Genomes/Protein Families';
+      state.cols.forEach(function (col, idx) {
+        header += DELIMITER + col.name + ' (' + col.id + ')';
+      });
+
+      var data = [];
+      state.rows.forEach(function (row, idx) {
+        var r = [];
+        r.push(row.name + ' (' + row.id + ')');
+        for (var step = 0; step < state.cols.length; step++) {
+          r.push(state.matrix[idx][step]);
+        }
+        data[idx] = r.join(DELIMITER);
+      });
+
+      saveAs(new Blob([header + '\n' + data.join('\n')], { type: rel }), 'BVBRC_subsystems_heatmap.' + ext);
+    },
 
   });
 });
