@@ -33,6 +33,7 @@ define([
     templateString: Template,
     applicationHelp: '',
     applicationName: 'SubspeciesClassification',
+    applicationLabel: 'Subspecies Classification',
     applicationHelp: 'quick_references/services/subspecies_classification_service.html',
     tutorialLink: 'tutorial/subspecies_classification/subspecies_classification.html',
     validFasta: 0,
