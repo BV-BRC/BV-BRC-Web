@@ -1,4 +1,8 @@
 # Changelog
+## November 9, 2022
+## 3.26.6
+* [Feature] Add flye to recipe list for Assembly Service
+
 ## November 7, 2022
 ## 3.26.5
 * [Feature] Add Subspecies Classification tutorial and user guide
