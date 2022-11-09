@@ -25,7 +25,8 @@ define([
     { value: 'NOROORF1', label: 'Norovirus ORF1' },
     { value: 'NOROORF2', label: 'Norovirus ORF2' },
     { value: 'ROTAA', label: 'Rotavirus A' },
-    { value: 'INFLUENZAH5', label: 'Influenza H5' }
+    { value: 'INFLUENZAH5', label: 'Influenza H5' },
+    { value: 'SWINEH1', label: 'Swine H1' }
   ];
 
   return declare([AppBase], {
