@@ -7,6 +7,7 @@ define([], function () {
     // variation service
     '.annotated.tsv': { columnHeaders: true },
     '.all.tsv': { columnHeaders: true },
+    '.var.tsv': { columnHeaders: true },
 
     // phylogenetic tree service
     '.genesPerGenome.txt': { columnHeaders: true },
