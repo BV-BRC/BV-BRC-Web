@@ -2,7 +2,6 @@
 
 ## System Requirements
 <hr>
-<br>
 
 Node.js is required to run the application. The latest LTS or Current stable build will both work. Make sure `NPM` is also installed alongside `Node.js` (Should be by default).
 
@@ -15,10 +14,7 @@ brew install node
 
 ## First Steps
 <hr>
-<br>
 Clone or Fork & Clone the [BV-BRC-Web](https://github.com/BV-BRC/BV-BRC-Web) repository to your local machine.
-
-<br>
 
 ### Git
 ```
@@ -42,7 +38,6 @@ Make sure you must `npm install` in the BV-BRC-Web directory first though!
 
 ## Running the web application
 <hr>
-<br>
 
 Run from inside the directory:
 ```
