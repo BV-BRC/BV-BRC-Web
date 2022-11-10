@@ -1,7 +1,6 @@
 # The BV-BRC Web Application
 
 ## System Requirements
-<hr>
 
 Node.js is required to run the application. The latest LTS or Current stable build will both work. Make sure `NPM` is also installed alongside `Node.js` (Should be by default).
 
@@ -13,7 +12,6 @@ brew install node
 ```
 
 ## First Steps
-<hr>
 Clone or Fork & Clone the [BV-BRC-Web](https://github.com/BV-BRC/BV-BRC-Web) repository to your local machine.
 
 ### Git
@@ -37,8 +35,6 @@ npm install
 Make sure you must `npm install` in the BV-BRC-Web directory first though!
 
 ## Running the web application
-<hr>
-
 Run from inside the directory:
 ```
 npm start
@@ -53,6 +49,4 @@ Please: `cp p3-web.conf.sample p3-web.conf` and edit as necessary. You may need 
 Note: if any configuration changes are made (i.e., changes to `./p3-web.conf`), then `./bin/p3-web` must be restarted for the effects to take place within the local dev application.
 
 ## Contributing
-<hr>
-
 If you'd like to contribute please follow our [CONTRIBUTING.md]() guide for more information (coming soon).
