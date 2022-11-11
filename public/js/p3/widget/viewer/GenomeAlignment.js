@@ -3,7 +3,7 @@ define([
   'd3.v5/d3.min', './Base', '../../WorkspaceManager',
   '../../DataAPI', 'dojo/promise/all', '../../util/loading', '../DataItemFormatter',
   'dijit/Dialog', 'dojox/widget/Standby', 'dojo/query', 'd3/d3',
-  'dojo/dom-class' 
+  'dojo/dom-class'
 ], function (
   declare, domConstruct, ContentPane,
   d3, ViewerBase, WorkspaceManager,
@@ -21,7 +21,7 @@ define([
 
     var innerhtml = html.parentNode.innerHTML;
     console.log('in saveSVG, innerhtml=', innerhtml);
-    var start = innerhtml.indexOf("<svg");
+    var start = innerhtml.indexOf('<svg');
     innerhtml = innerhtml.substr(start, innerhtml.length);
     console.log('in saveSVG, innerhtml=', innerhtml);
     var imgsrc = 'data:image/svg+xml;base64,' + btoa(innerhtml);
@@ -32,7 +32,7 @@ define([
     a.target = '_self'; // required for Firefox, optional for Chrome
     a.click();
   }
-  
+
   return declare([ViewerBase], {
     apiServiceUrl: window.App.dataAPI,
     onSetState: function (attr, oldVal, state) {
@@ -295,12 +295,12 @@ define([
         value: 'Save SVG',
         style: 'margin: 10px'
       }, div);
-      
+
       save_btn.addEventListener('click', function () {
         console.log('save SVG');
         saveSVG();
       });
-            
+
     }
   });
 
