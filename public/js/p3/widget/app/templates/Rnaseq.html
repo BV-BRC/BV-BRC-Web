@@ -37,9 +37,9 @@
               <div class="appRow">
                 <label class="paramlabel">Strategy</label><br>
                 <select data-dojo-type="dijit/form/Select" data-dojo-attach-event="onChange:onStrategyChange" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-                  <option value="RNA-Rocket">Tuxedo</option>
-                  <option value="HTSeq-DESeq">Htseq-DESeq2</option>
+                  <option value="HTSeq-DESeq">HTSeq-DESeq2</option>
                   <option value="Host">Host HISAT2</option>
+                  <option value="RNA-Rocket">Tuxedo</option>
                 </select>
               </div>
               <div class="appRow">
@@ -47,6 +47,17 @@
                   <label>Target Genome</label><br>
                   <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="genome_name" maxHeight="200" style="width:100%" required="true" data-dojo-attach-point="genome_nameWidget"></div>
                 </div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">Enable Trimming</label><br>
+                <input type="radio" data-dojo-attach-point="trimming_true"
+                name="trimming_button" value="true"  data-dojo-type="dijit/form/RadioButton"
+                data-dojo-attach-event="onchange:changeTrimmingFlag" checked />
+                <label >True</label>
+                <input type="radio" data-dojo-attach-point="trimming_false"
+                name="trimming_button" value="false"  data-dojo-type="dijit/form/RadioButton"
+                data-dojo-attach-event=""/>
+                <label >False</label>
               </div>
               <div class="appRow">
                 <label class="paramlabel">Output Folder</label><br>
@@ -108,13 +119,22 @@
               </div>
               <div class="appRow">
                 <label class="paramlabel">Read File 1</label><br>
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair" data-dojo-attach-point="read1" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file1pair" data-dojo-attach-point="read1" data-dojo-attach-event="change:setPairedId" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
               </div>
               <div class="appRow">
                 <div data-dojo-attach-point="read2block">
                   <label class="paramlabel">Read File 2</label><br>
                   <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_file2pair" data-dojo-attach-point="read2" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
                 </div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">Sample Identifier</label><br>
+                <input  name="paired_sample_id"
+                        style="width:75%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                        data-dojo-attach-point="paired_sample_id"
+                        data-dojo-type="dijit/form/ValidationTextBox"
+                        data-dojo-props="trim:true,placeholder:'Sample ID', intermediateChanges:true"
+                        required="false"/>
               </div>
               <div class="appRow">
                 <label class="paramlabel">Condition</label><br>
@@ -131,7 +151,16 @@
               </div>
               <div class="appRow">
                 <label class="paramlabel">Read File</label><br>
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="read" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="read" data-dojo-attach-event="change:setSingleId" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false"></div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">Sample Identifier</label><br>
+                <input  name="single_sample_id"
+                        style="width:75%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                        data-dojo-attach-point="single_sample_id"
+                        data-dojo-type="dijit/form/ValidationTextBox"
+                        data-dojo-props="trim:true,placeholder:'Sample ID', intermediateChanges:true"
+                        required="false"/>
               </div>
               <div class="appRow">
                 <label class="paramlabel">Condition</label><br>
@@ -147,7 +176,7 @@
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
               <div class="appRow">
-                <label class="paramlabel">SRR Accession</label><br><i data-dojo-attach-point="srr_accession_validation_message"></i><br>
+                <label class="paramlabel">SRR Accession</label><br><i data-dojo-attach-point="srr_accession_validation_message"></i>
                 <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-event="onChange:updateSRR" data-dojo-attach-point="srr_accession" style="width: 300px" required="false" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"></div>
               </div>
               <div class="appRow">

@@ -264,6 +264,13 @@ define([
 
       assembly_values = this.checkBaseParameters(values, assembly_values);
 
+      // get trimming value
+      if (this.trimming_true) {
+        assembly_values['trimming'] = true;
+      } else {
+        assembly_values['trimming'] = false;
+      }
+
       if (!this.form_flag) {
         this.ingestAttachPoints(this.paramToAttachPt, assembly_values);
       }
@@ -628,6 +635,17 @@ define([
       this.updateContrasts();
     },
 
+    changeTrimmingFlag: function () {
+      if (this.trimming_true.checked) {
+        this.trimming_true.set('checked', false);
+        this.trimming_false.set('checked', true);
+      }
+      if (this.trimming_false.checked) {
+        this.trimming_true.set('checked', true);
+        this.trimming_false.set('checked', false);
+      }
+    },
+
     contrastEnabled: function () {
       // the penguin doesn't support specifying contrasts
       return (this.exp_design.checked && this.recipe.value != 'Rockhopper');
@@ -654,6 +672,11 @@ define([
       }
     },
 
+    setSingleId: function () {
+      var read_name = this.read.searchBox.get('displayedValue');
+      this.single_sample_id.set('value', read_name.split('.')[0]);
+    },
+
     onAddSingle: function () {
       console.log('Create New Row', domConstruct);
       var lrec = { type: 'single' };
@@ -668,8 +691,7 @@ define([
         var advPairInfo = [];
         if (lrec.condition) {
           advPairInfo.push('Condition:' + lrec.condition);
-        }
-        this.addLibraryInfo(lrec, { 'read': { 'label': this.read.searchBox.get('displayedValue') } }, tr);
+        }        this.addLibraryInfo(lrec, { 'read': { 'label': this.read.searchBox.get('displayedValue') } }, tr);
         if (advPairInfo.length) {
           var condition_icon = this.getConditionIcon(lrec.condition);
           lrec.design = true;
@@ -694,6 +716,7 @@ define([
           this.destroyLib(lrec, lrec.id, 'id');
         }));
         lrec.handle = handle;
+        lrec.sample_id = this.single_sample_id.get('displayedValue');
         this.createLib(lrec);
         this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
       }
@@ -753,13 +776,13 @@ define([
       if (this.genome_nameWidget.item.host) {
         var newOptions = [
           {
-            label: 'Tuxedo', value: 'RNA-Rocket', selected: false, disabled: true
+            label: 'Host HISAT2', value: 'Host', selected: true, disabled: false
           },
           {
             label: 'HTSeq-DESeq', value: 'HTSeq-DESeq', selected: false, disabled: true
           },
           {
-            label: 'Host HISAT2', value: 'Host', selected: true, disabled: false
+            label: 'Tuxedo', value: 'cufflinks', selected: false, disabled: true
           }];
         this.recipe.set('options', newOptions).reset();
         this.recipe.set('value', 'Host');
@@ -767,22 +790,27 @@ define([
       else {
         var newOptions = [
           {
-            label: 'Tuxedo', value: 'RNA-Rocket', selected: false, disabled: false
+            label: 'HTSeq-DESeq', value: 'HTSeq-DESeq', selected: false, disabled: false
           },
           {
-            label: 'HTSeq-DESeq', value: 'HTSeq-DESeq', selected: false, disabled: false
+            label: 'Tuxedo', value: 'RNA-Rocket', selected: false, disabled: false
           },
           {
             label: 'Host HISAT2', value: 'Host', selected: false, disabled: true
           }];
         this.recipe.set('options', newOptions).reset();
-        if (curRecipe == 'RNA-Rocket') {
-          this.recipe.set('value', 'RNA-Rocket');
+        if (curRecipe == 'cufflinks') {
+          this.recipe.set('value', 'cufflinks');
         }
         else if (curRecipe == 'HTSeq-DESeq') {
           this.recipe.set('value', 'HTSeq-DESeq');
         }
       }
+    },
+
+    setPairedId: function () {
+      var read_name = this.read1.searchBox.get('displayedValue');
+      this.paired_sample_id.set('value', read_name.split('.')[0]);
     },
 
     onAddPair: function () {
@@ -834,6 +862,7 @@ define([
           this.destroyLib(lrec, lrec.id, 'id');
         }));
         lrec.handle = handle;
+        lrec.sample_id = this.paired_sample_id.get('displayedValue');
         this.createLib(lrec);
         this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
       }
@@ -842,8 +871,8 @@ define([
     checkBaseParameters: function (values, assembly_values) {
 
       var pairedList = this.libraryStore.query({ type: 'paired' });
-      var pairedAttrs = ['read1', 'read2'];
-      var singleAttrs = ['read'];
+      var pairedAttrs = ['read1', 'read2', 'sample_id'];
+      var singleAttrs = ['read', 'sample_id'];
       var srrAttrs = ['srr_accession'];
       var condList = this.conditionStore.data;
       var contrastList = this.contrastStore.data;
@@ -904,6 +933,9 @@ define([
         }
         srrAttrs.forEach(function (attr) {
           toAdd[attr] = libRecord[attr];
+          if (attr === 'srr_accession') {
+            toAdd['sample_id'] = libRecord[attr];
+          }
         });
         this.sra_libs.push(toAdd);
       }, this);
@@ -913,6 +945,7 @@ define([
 
       // strategy (recipe)
       assembly_values.recipe = values.recipe;
+      /*
       if (values.recipe == 'HTSeq-DESeq') {
         assembly_values.feature_count = 'htseq';
         assembly_values.recipe = 'RNA-Rocket';
@@ -921,6 +954,7 @@ define([
       } else { // host
         assembly_values.feature_count = 'stringtie';
       }
+      */
 
       // target_genome
       assembly_values.reference_genome_id = values.genome_name;
