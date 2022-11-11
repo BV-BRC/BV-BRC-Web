@@ -17,10 +17,10 @@ define([
     // need to declare namespace, set xmlns:xlink using setAttribute;
     // .attr("xmlns:xlink", "http://www.w3.org/1999/xlink") does not work
     html.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
-    console.log('in saveSVG, html=', html);
+    // console.log('in saveSVG, html=', html);
 
     var innerhtml = html.parentNode.innerHTML;
-    console.log('in saveSVG, innerhtml=', innerhtml);
+    // console.log('in saveSVG, innerhtml=', innerhtml);
     var start = innerhtml.indexOf('<svg');
     innerhtml = innerhtml.substr(start, innerhtml.length);
     console.log('in saveSVG, innerhtml=', innerhtml);
