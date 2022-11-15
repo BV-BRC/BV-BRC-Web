@@ -1,8 +1,8 @@
 define([
   'dojo/_base/declare', 'dojo/_base/Deferred', '../store/SubsystemServiceMemoryStore', './SubSystemsMemoryGrid',
-  'dojo/when', 'dojo/aspect', 'dojo/on', 'dojo/_base/lang', 'dojo/topic'
+  'dojo/when', 'dojo/aspect', 'dojo/on', 'dojo/_base/lang', 'dojo/topic', './GridSelector'
 ], function (
-  declare, Deferred, Store, oldSubsystemsGrid, when, aspect, on, lang, Topic
+  declare, Deferred, Store, oldSubsystemsGrid, when, aspect, on, lang, Topic, selector
 ) {
   return declare([oldSubsystemsGrid], {
 

@@ -23,6 +23,7 @@ define([
       'genome',
       'strain',
       'genome_feature',
+      'protein',
       'sp_gene',
       'protein_feature',
       'epitope',
@@ -39,7 +40,8 @@ define([
       taxonomy: 'Taxa',
       genome: 'Genomes',
       strain: 'Strains',
-      genome_feature: 'Proteins',
+      genome_feature: 'Genomic Features',
+      protein: 'Proteins',
       sp_gene: 'Specialty Genes',
       protein_feature: 'Domains and Motifs',
       epitope: 'Epitopes',
@@ -102,6 +104,13 @@ define([
       },
 
       genome_feature: function (docs, total) {
+        if (total == 1) {
+          return ['/view/Feature/', docs[0].feature_id, '#view_tab=overview'].join('');
+        }
+        return ['/view/FeatureList/?', this.state.search, '#view_tab=features&defaultSort=-score'].join('');
+      },
+
+      protein: function (docs, total) {
         if (total == 1) {
           return ['/view/Feature/', docs[0].feature_id, '#view_tab=overview'].join('');
         }
