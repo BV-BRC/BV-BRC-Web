@@ -1,4 +1,10 @@
 # Changelog
+## November 15, 2022
+## 3.26.7
+* [Enhancement] Added .var.tsv file for column headers for the TSV viewer [PR #465](https://github.com/BV-BRC/BV-BRC-Web/pull/465)
+* [Feature] Add swine h1 option and reorder virus types [PR #466](https://github.com/BV-BRC/BV-BRC-Web/pull/466)
+* [Bug Fix] Fix for MSA viewer issue 948 [PR #467](https://github.com/BV-BRC/BV-BRC-Web/pull/467)
+
 ## November 9, 2022
 ## 3.26.6
 * [Feature] Add flye to recipe list for Assembly Service
