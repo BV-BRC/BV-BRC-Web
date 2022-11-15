@@ -2,13 +2,36 @@ define([
   'dojo/_base/declare', 'dojo/dom-construct', 'dijit/layout/ContentPane',
   'd3.v5/d3.min', './Base', '../../WorkspaceManager',
   '../../DataAPI', 'dojo/promise/all', '../../util/loading', '../DataItemFormatter',
-  'dijit/Dialog', 'dojox/widget/Standby', 'dojo/query'
+  'dijit/Dialog', 'dojox/widget/Standby', 'dojo/query', 'd3/d3',
+  'dojo/dom-class'
 ], function (
   declare, domConstruct, ContentPane,
   d3, ViewerBase, WorkspaceManager,
   DataAPI, all, Loading, DataItemFormatter,
-  Dialog, Standby, query
+  Dialog, Standby, query, d3svg,
+  domClass
 ) {
+
+  function saveSVG() {
+    var html = d3svg.select('.mv-chart svg').attr('version', 1.1).attr('xmlns', 'http://www.w3.org/2000/svg').node();
+    // need to declare namespace, set xmlns:xlink using setAttribute;
+    // .attr("xmlns:xlink", "http://www.w3.org/1999/xlink") does not work
+    html.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+    // console.log('in saveSVG, html=', html);
+
+    var innerhtml = html.parentNode.innerHTML;
+    // console.log('in saveSVG, innerhtml=', innerhtml);
+    var start = innerhtml.indexOf('<svg');
+    innerhtml = innerhtml.substr(start, innerhtml.length);
+    console.log('in saveSVG, innerhtml=', innerhtml);
+    var imgsrc = 'data:image/svg+xml;base64,' + btoa(innerhtml);
+    var a = document.createElement('a'); // required for Firefox, optional for Chrome
+    document.body.appendChild(a); // TODO: why add this before setting attributes of a tag?
+    a.download = 'genomealignment.svg';
+    a.href = imgsrc;
+    a.target = '_self'; // required for Firefox, optional for Chrome
+    a.click();
+  }
 
   return declare([ViewerBase], {
     apiServiceUrl: window.App.dataAPI,
@@ -258,7 +281,6 @@ define([
       }
 
       this.inherited(arguments);
-
       this.viewer = new ContentPane({
         region: 'center',
         style: 'padding:0',
@@ -266,6 +288,19 @@ define([
       });
 
       this.addChild(this.viewer);
+
+      var div = domConstruct.create('div', { id: 'gse' }, this.viewer.containerNode);
+      var save_btn = domConstruct.create('input', {
+        type: 'button',
+        value: 'Save SVG',
+        style: 'margin: 10px'
+      }, div);
+
+      save_btn.addEventListener('click', function () {
+        console.log('save SVG');
+        saveSVG();
+      });
+
     }
   });
 
