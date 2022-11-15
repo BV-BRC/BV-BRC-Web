@@ -495,15 +495,31 @@ define([
       var ids = this.dataStats.seqs.map(function (node) { return node.name.replaceAll(':', '|'); });
 
       var pIDs = [];
+      var nodeIDType = '';
+
       ids.forEach((id) => {
+        // id = id.replace(/\|$/, '');
         pIDs.push(encodeURIComponent(id))
+        if (id.match(/^fig\|\d+\.(.+)\d+$/)) {
+          if (nodeIDType !== 'unknown' && nodeIDType !== 'genome_id') {
+            nodeIDType = 'feature_id';
+          }
+        } else if (id.match(/^\d+.\d+$/)) {
+          if (nodeIDType !== 'unknown' && nodeIDType !== 'feature_id') {
+            nodeIDType = 'genome_id';
+          }
+        } else {
+          nodeIDType = 'unknown';
+        }
       });
+
+      console.log('createDataMap() nodeIDType ', nodeIDType);
       console.log('createDataMap() processTree ids ', ids);
       console.log('createDataMap() processTree pIDs ', pIDs);
       var genomeList = [];
 
       var self = this;
-      if (ids[0].match(/^fig/) || ids[0].match(/CDS/)) {
+      if (nodeIDType == 'feature_id') {
         this.nodeType = 'feature';
         this.containerType = 'feature_data';
         var fetchedIds = when(xhr.post(PathJoin(window.App.dataAPI, 'genome_feature'), {
@@ -596,9 +612,13 @@ define([
         });
         console.log('createDataMap() feature this.featureData ', this.featureData);
         console.log('createDataMap() feature fetchedIds ', fetchedIds);
+        if (this.featureData == null) {
+          this.render();
+          console.log('node names are not found in database');
+        }
         // console.log('feature genomes ', genomes);
       }
-      else if (ids[0].match(/\d+\.\d+/)) {
+      else if (nodeIDType == 'genome_id') {
         this.nodeType = 'genome';
         this.containerType = 'genome_data';
         var genome_ids = [];
@@ -708,6 +728,11 @@ define([
         console.log('createDataMap() genome this.genomeData ', this.genomeData);
         console.log('createDataMap() genome genomes ', genomes);
         console.log('createDataMap() genome genomes this.containerType ', this.containerType);
+        if (this.genomeData == null) {
+          this.render();
+          console.log('node names are not found in database');
+        }
+
       }
       else {
         this.render();
