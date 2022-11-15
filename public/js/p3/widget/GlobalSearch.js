@@ -187,7 +187,7 @@ define([
         case 'genome_features':
           Topic.publish('/navigate', { href: '/view/FeatureList/?' + q + '#view_tab=features&defaultSort=-score' });
           break;
-        case 'protein':
+        case 'proteins':
           Topic.publish('/navigate', { href: '/view/FeatureList/?' + q + '#view_tab=features&defaultSort=-score' });
           break;
         case 'genome_sequences':
