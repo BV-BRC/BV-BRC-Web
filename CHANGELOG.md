@@ -1,5 +1,8 @@
 # Changelog
 ## November 15, 2022
+## 3.36.8
+* [Feature] Proteins and Genomic Features tabs
+
 ## 3.26.7
 * [Enhancement] Added .var.tsv file for column headers for the TSV viewer [PR #465](https://github.com/BV-BRC/BV-BRC-Web/pull/465)
 * [Feature] Add swine h1 option and reorder virus types [PR #466](https://github.com/BV-BRC/BV-BRC-Web/pull/466)
