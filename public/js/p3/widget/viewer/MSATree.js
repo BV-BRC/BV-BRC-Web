@@ -473,7 +473,6 @@ define([
       console.log('createDataMap() this.dataStats.tree_newick= ', this.dataStats.tree_newick);
       console.log('createDataMap() this.dataStats= ', this.dataStats);
 
-
       var msa_models = {
         seqs: msa.io.clustal.parse(this.dataStats.clustal)
       };
@@ -846,21 +845,7 @@ define([
       // domConstruct.place(combineDiv,treeDiv,"last");
       // domConstruct.place(combineDiv,msaDiv,"last");
       // this.contentPane.set('content', "<pre>" + JSON.stringify(this.data,null,3) + "</pre>");
-      var msa_models = {
-        seqs: msa.io.clustal.parse(this.dataStats.clustal)
-      };
 
-      var rearrangeSeqs = {};
-      msa_models.seqs.forEach(lang.hitch(this, function (s) {
-        rearrangeSeqs[s.name] = s;
-      }));
-
-
-      // domConstruct.place(menuDiv,this.contentPane.containerNode,"last");
-      // domConstruct.place(combineDiv,this.contentPane.containerNode,"last");
-      // domConstruct.place(combineDiv,treeDiv,"last");
-      // domConstruct.place(combineDiv,msaDiv,"last");
-      // this.contentPane.set('content', "<pre>" + JSON.stringify(this.data,null,3) + "</pre>");
       var msa_models = {
         seqs: msa.io.clustal.parse(this.dataStats.clustal)
       };
@@ -969,11 +954,13 @@ define([
       console.log('after tree.update() this.tree ', this.tree);
 
       Object.keys(rearrangeSeqs).forEach(lang.hitch(this, function (fid) {
-        rearrangeSeqs[fid].py = this.tree.idToHeight[fid];
+        rearrangeSeqs[fid].py = this.tree.idToHeight[fid.replaceAll(':', '|')];
       }));
       msa_models.seqs.sort(function (a, b) {
         return a.py - b.py;
       });
+
+      console.log('after msa sort msa_models.seqs', msa_models.seqs);
 
       // init msa
       var m = new msa.msa(opts);
