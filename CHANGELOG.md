@@ -1,4 +1,13 @@
 # Changelog
+## November 17, 2022
+## 3.26.10
+* [Enhancement] mauve_viewer npm install
+
+## 3.26.9
+* [Enhancement] update mauve_viewer to include updated changes [Commit #585b791](https://github.com/BV-BRC/BV-BRC-Web/commit/585b791661feba60c4c2aa383b7810a2f92be534)
+* [Bug] Bug fix for MSA viewer: https://github.com/BV-BRC/issues/issues/(954 [PR #470](https://github.com/BV-BRC/BV-BRC-Web/pull/470)
+* [Enhancement] Move the save button from outside to inside of the viewer. [PR #469](https://github.com/BV-BRC/BV-BRC-Web/pull/469)
+
 ## November 15, 2022
 ## 3.36.8
 * [Feature] Proteins and Genomic Features tabs

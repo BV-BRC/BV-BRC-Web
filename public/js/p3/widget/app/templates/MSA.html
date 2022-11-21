@@ -107,8 +107,8 @@
                 <textarea name="fasta_keyboard_input"
                   style="width:96%; height:150px; margin-left:5px; font-family: monospace; font-size:12px; max-height:500px"
                   data-dojo-attach-point="fasta_keyboard_input" data-dojo-type="dijit/form/Textarea" required="false"
-                  data-dojo-props="rows:10, disabled:true, placeholder:'Enter fasta records of sequences to align.', intermediateChanges:false, trim:true"
-                  data-dojo-attach-event="onBlur:checkFasta"></textarea>
+                  data-dojo-props="rows:10, disabled:true, placeholder:'Enter fasta records of sequences to align.', intermediateChanges:true, trim:true"
+                  data-dojo-attach-event="onChange:checkFasta"></textarea>
                 <div class="warning" data-dojo-attach-point="sequence_message"></div>
               </td>
             </tr>
@@ -219,8 +219,8 @@
               <textarea name="fasta_keyboard_reference"
                 style="width:96%; height:150px; margin-left:5px; font-family: monospace; font-size:12px; max-height:500px"
                 data-dojo-attach-point="fasta_keyboard_reference" data-dojo-type="dijit/form/Textarea" required="false"
-                data-dojo-props="rows:10, disabled:true, placeholder:'Enter a fasta record of a reference sequence to align.', intermediateChanges:false, trim:true"
-                data-dojo-attach-event="onBlur:checkRefFasta"></textarea>
+                data-dojo-props="rows:10, disabled:true, placeholder:'Enter a fasta record of a reference sequence to align.', intermediateChanges:true, trim:true"
+                data-dojo-attach-event="onChange:checkRefFasta"></textarea>
               <div class="warning" data-dojo-attach-point="fasta_reference_message"></div>
             </td>
           </tr>
