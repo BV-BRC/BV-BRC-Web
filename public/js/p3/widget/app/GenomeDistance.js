@@ -15,6 +15,12 @@ define([
   return declare([AppBase], {
     baseClass: 'App GenomeDistance',
     templateString: Template,
+    requireAuth: true,
+    applicationLabel: 'Similar Genome Finder',
+    applicationDescription: 'The Similar Genome Finder Service will find similar public genomes in BV-BRC or compute genome distance estimation using Mash/MinHash. It returns a set of genomes matching the specified similarity criteria.',
+    videoLink: '',
+    pageTitle: 'Similar Genome Finder',
+    appBaseURL: '',
     applicationHelp: 'quick_references/services/similar_genome_finder_service.html',
     tutorialLink: 'tutorial/similar_genome_finder/similar_genome_finder.html',
     loadingMask: null,
@@ -24,6 +30,9 @@ define([
 
     startup: function () {
       if (this._started) { return; }
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
+        return;
+      }
       this.inherited(arguments);
 
       // activate genome group selector when user is logged in
@@ -92,15 +101,14 @@ define([
       var input_genome_valid = this.genome_id.get('value') != '';
       var input_fasta_valid = this.fasta.get('value') != '';
       var input_valid = (input_genome_valid && !input_fasta_valid) || (!input_genome_valid && input_fasta_valid);
-      
+
       var bac = this.org_bacterial.get('value');
       var viral = this.org_viral.get('value');
 
       var params_valid = bac || viral;
       var valid = params_valid && input_valid;
       // console.log('val', input_genome_valid, input_fasta_valid, input_valid, params_valid, valid)
-      if (this.submitButton)
-      {
+      if (this.submitButton) {
         this.submitButton.set('disabled', !valid);
       }
       return valid;
@@ -129,7 +137,7 @@ define([
 
       var include_bacterial = this.org_bacterial.get('value') ? 1 : 0;
       var include_viral = this.org_viral.get('value') ? 1 : 0;
-      
+
 
       var def = new Deferred();
       var resultType = 'genome';
@@ -239,7 +247,7 @@ define([
       this.validate();
     },
 
-   onParamChange: function () {
+    onParamChange: function () {
       // console.log("onParamChange", this.org_bacterial.get('value'), this.org_viral.get('value'));
       this.validate();
     },

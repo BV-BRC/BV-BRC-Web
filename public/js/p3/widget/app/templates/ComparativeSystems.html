@@ -1,25 +1,26 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
-  dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
     <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
-            <h3>Comparative Systems
+            <h3>${applicationLabel}
                 <div name="overview" class="infobox iconbox infobutton dialoginfo">
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                 </div>
                 <div class="infobox iconbox tutorialButton tutorialInfo">
-                    <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
+                    <a href="${docsServiceURL}${tutorialLink}" target="_blank"><i class="fa icon-books fa-1x"
+                            title="click to open tutorial"></i></a>
                 </div>
             </h3>
-            <p>The Comparative Systems Service allows users to identify a set of pathways, subsystems and protein families for given genome(s) or genome group(s).
-                For further explanation, please see the Comparative Pathway Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and
+            <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a
+                    href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and
                 <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
             </p>
         </div>
         <div class="formFieldsContainer">
             <div style="display: none;">
                 <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="true"
-                       data-dojo-attach-point="numlibs" data-dojo-props="constraints:{min:1,max:500},"/>
+                    data-dojo-attach-point="numlibs" data-dojo-props="constraints:{min:1,max:500}," />
             </div>
             <table class="assemblyblocks">
                 <tr>
@@ -31,13 +32,13 @@
                                 </div>
                                 <div style="width:10%;display:inline-block;">
                                     <i data-dojo-attach-event="click:onAddGenome"
-                                       class="fa icon-arrow-circle-o-right fa-lg"></i>
+                                        class="fa icon-arrow-circle-o-right fa-lg"></i>
                                 </div>
                             </div>
                             <div class="appRow">
                                 <label class="paramlabel">Genome</label><br>
                                 <div data-dojo-type="p3/widget/GenomeNameSelector" name="genome"
-                                     data-dojo-attach-point="genome" style="width: 300px" required="false"></div>
+                                    data-dojo-attach-point="genome" style="width: 300px" required="false"></div>
                             </div>
                         </div>
                         <div class="appBox appShadow">
@@ -47,7 +48,7 @@
                                 </div>
                                 <div style="width:10%;display:inline-block;">
                                     <i data-dojo-attach-event="click:onAddGenomeGroup"
-                                       class="fa icon-arrow-circle-o-right fa-lg"></i>
+                                        class="fa icon-arrow-circle-o-right fa-lg"></i>
                                 </div>
                             </div>
                             <div class="appRow">
@@ -62,14 +63,22 @@
                             <div class="headerrow">
                                 <label class="appBoxLabel">Parameters</label>
                             </div>
-							<div class="appRow">
-								<label class="paramlabel">Output Folder</label><br>
-								<div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" style="width:300px" required="true" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
-							</div>
-							<div class="appRow">
-								<label class="paramlabel">Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
-								<div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" data-dojo-attach-event="onChange:checkOutputName" name="output_file" data-dojo-attach-point="output_file" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
-							</div>
+                            <div class="appRow">
+                                <label class="paramlabel">Output Folder</label><br>
+                                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
+                                    data-dojo-attach-point="output_path" style="width:300px" required="true"
+                                    data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false"
+                                    data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                            </div>
+                            <div class="appRow">
+                                <label class="paramlabel">Output Name</label><span class="charError"
+                                    style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+                                <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
+                                    data-dojo-attach-event="onChange:checkOutputName" name="output_file"
+                                    data-dojo-attach-point="output_file" style="width:300px" required="true"
+                                    data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
+                                </div>
+                            </div>
 
 
                         </div>
@@ -83,7 +92,7 @@
                             </div>
                             <div class="appRow" style="width:100%; margin-top:10px; text-align: center;">
                                 <table class="librarytable" frame="box" data-dojo-attach-point="libsTable"
-                                       style='margin:0 0 0 10px; width:90%;'>
+                                    style='margin:0 0 0 10px; width:90%;'>
                                     <tbody data-dojo-attach-point="libsTableBody">
 
                                     </tbody>
@@ -95,25 +104,24 @@
             </table>
         </div>
 
-	  <div class="appSubmissionArea">
-		<div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
-		  style="margin-top:10px; text-align:center;">
-		  Running the Comparative Systems Tool.
-		</div>
-		<div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
-		  style="margin-top:10px; text-align:center;">
-		  Error Submitting Job. Check the input.
-		</div>
-		<div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
-		  style="margin-top:10px; text-align:center;">
-		  Comparative Systems should be finished shortly. Check workspace for results.
-		</div>
-		<div style="margin-top: 10px; text-align:center;">
-		  <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
-		  <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
-		</div>
-	  </div>
+        <div class="appSubmissionArea">
+            <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
+                style="margin-top:10px; text-align:center;">
+                Running the Comparative Systems Tool.
+            </div>
+            <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
+                style="margin-top:10px; text-align:center;">
+                Error Submitting Job. Check the input.
+            </div>
+            <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+                style="margin-top:10px; text-align:center;">
+                Comparative Systems should be finished shortly. Check workspace for results.
+            </div>
+            <div style="margin-top: 10px; text-align:center;">
+                <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+                <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
+            </div>
+        </div>
 
     </div>
 </form>
-

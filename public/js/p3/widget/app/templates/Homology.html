@@ -3,7 +3,7 @@
     <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
-            <h3>BLAST
+            <h3>${applicationLabel}
                 <div name="overview" class="infobox iconbox infobutton dialoginfo">
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                 </div>
@@ -12,14 +12,11 @@
                             title="click to open tutorial"></i></a>
                 </div>
             </h3>
-            <p>The BLAST service integrates the BLAST (Basic Local Aligment Search Tool) algorithms to perform
-                searches against public or private genomes or other reference databases using DNA or protein
-                sequence(s).
-                For further explanation, please see BLAST
-                Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and
-                <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
-            </p>
+            <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a
+                    href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and <a
+                    href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.</p>
         </div>
+        <link rel="stylesheet" href="/js/p3/resources/p3.css">
         <div id="Program_box" style="width:97%;" class="appBox appShadow">
             <div class="headerrow">
                 <label class="appBoxLabel">Search program</label>
