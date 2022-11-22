@@ -1,4 +1,10 @@
 # Changelog
+## November 21, 2022
+* [Enhancement] Update help menu links and remove some text styling on home page. [PR #474](https://github.com/BV-BRC/BV-BRC-Web/pull/474)
+* [Enhancement] Changed the loading message when there is no data. [PR #473](https://github.com/BV-BRC/BV-BRC-Web/pull/473)
+* [Enhancement] Trigger fasta seqs input validation with onChange. [PR #472](https://github.com/BV-BRC/BV-BRC-Web/pull/472)
+* [Enhancement] Allow rendering BLAST results without pids or gids. [PR #471](https://github.com/BV-BRC/BV-BRC-Web/pull/471)
+
 ## November 17, 2022
 ## 3.26.10
 * [Enhancement] mauve_viewer npm install
