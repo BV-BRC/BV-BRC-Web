@@ -1,4 +1,9 @@
 # Changelog
+## 3.26.12
+## November 22, 2022
+* [Enhancement] Add note regarding other services now residing here. [Commit #17055a1](https://github.com/BV-BRC/BV-BRC-Web/commit/17055a1246e000613ca62450c87bc0622340a271)
+
+## 3.26.11
 ## November 21, 2022
 * [Enhancement] Update help menu links and remove some text styling on home page. [PR #474](https://github.com/BV-BRC/BV-BRC-Web/pull/474)
 * [Enhancement] Changed the loading message when there is no data. [PR #473](https://github.com/BV-BRC/BV-BRC-Web/pull/473)
