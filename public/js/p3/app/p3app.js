@@ -32,15 +32,15 @@ define([
     startup: function () {
       var _self = this;
       this.checkLogin();
-      if (window.App.alreadyLoggedIn){
-        this.refreshUser().then(function(u){
+      if (window.App.alreadyLoggedIn) {
+        this.refreshUser().then(function (u) {
           if (!u) {
             return
           }
-          if (u.email_verified){
-            domClass.remove(document.body,"unverified_email")
-          }else{
-            domClass.add(document.body,"unverified_email")
+          if (u.email_verified) {
+            domClass.remove(document.body, 'unverified_email')
+          } else {
+            domClass.add(document.body, 'unverified_email')
           }
         })
       }
@@ -160,14 +160,14 @@ define([
         window.postMessage('RemoteReady', '*');
       });
 
-      Router.register("/verify_refresh", function(params,oldPath,newPath,state){
-        console.log("verify refresh")
+      Router.register('/verify_refresh', function (params, oldPath, newPath, state) {
+        console.log('verify refresh')
 
         // console.log("Upload URL Callback", params.newPath);
         var newState = populateState(params);
 
         /* istanbul ignore next */
-        var path = params.params[0] || '/';
+        // var path = params.params[0] || '/'; // JSP: not used.
         newState.widgetClass = 'p3/widget/VerifyEmailRefresh';
         newState.style = 'padding:0';
         newState.requireAuth = false;
@@ -393,7 +393,7 @@ define([
         // for rerun functionality
         var type_parts = type.split('?');
         var type = type_parts[0];
-        var rerun_key = type_parts[1];
+        // var rerun_key = type_parts[1]; // JSP: not used
         var viewerParams;
         /* istanbul ignore if */
         if (parts.length > 0) {
@@ -445,7 +445,7 @@ define([
 
       /* istanbul ignore else */
       if (this.user && this.user.id) {
-        console.log("this.user: ", this.user)
+        console.log('this.user: ', this.user)
         domAttr.set('YourWorkspaceLink', 'href', '/workspace/' + this.user.id);
         var n = dom.byId('signedInAs');
         /* istanbul ignore else */
@@ -453,10 +453,10 @@ define([
           n.innerHTML = this.user.id.replace('@' + localStorage.getItem('realm'), '');
         }
 
-        if (!this.user.email_verified){
-          domClass.add(document.body,"unverified_email")
-        }else{
-          domClass.remove(document.body,"unverified_email")
+        if (!this.user.email_verified) {
+          domClass.add(document.body, 'unverified_email')
+        } else {
+          domClass.remove(document.body, 'unverified_email')
         }
       }
 
@@ -464,7 +464,7 @@ define([
       Topic.subscribe('/userWorkspaces', lang.hitch(this, 'updateMyDataSection'));
 
       // update "My Data" > "Completed Jobs" count on homepage
-      if (this.user && this.user.id){
+      if (this.user && this.user.id) {
         this.api.service('AppService.query_task_summary', []).then(function (status) {
           var node = dom.byId('MyDataJobs');
           if (node) {
@@ -495,7 +495,7 @@ define([
     },
     checkLogin: function () {
       // console.log(window.App.uploadInProgress);
-      console.log('checking for login');
+      // console.log('checking for login');
       if (localStorage.getItem('tokenstring')) {
         var auth = localStorage.getItem('auth');
         // console.log('Auth: ', auth);
@@ -509,8 +509,8 @@ define([
             validToken = this.checkExpToken(auth.expiry);
             // console.log('this is a valid token: ' + validToken );
             if (validToken && window.App.alreadyLoggedIn) {
-              if (window.location.pathname=="/login" || window.location.pathname=="/register"){
-                window.location.pathname="/"
+              if (window.location.pathname == '/login' || window.location.pathname == '/register') {
+                window.location.pathname = '/'
               }
               return true;
             }
@@ -530,22 +530,22 @@ define([
           // console.log(docbody);
           window.App.user = JSON.parse(localStorage.getItem('userProfile'));
           window.App.authorizationToken = localStorage.getItem('tokenstring');
-          addEventListener("storage", function(evt){
-            console.log("p3App Storage Listener: ", evt)
-            if (evt.key==="userProfile"){
-              var rawu = localStorage.getItem("userProfile")
+          addEventListener('storage', function (evt) {
+            console.log('p3App Storage Listener: ', evt)
+            if (evt.key === 'userProfile') {
+              var rawu = localStorage.getItem('userProfile')
               var u = JSON.parse(rawu)
               if (!u) {
-                console.log("Missing User: ", rawu)
+                console.log('Missing User: ', rawu)
                 return
               }
-              if (u.email_verified){
-                domClass.remove(document.body,"unverified_email")
-              }else{
-                domClass.add(document.body,"unverified_email")
+              if (u.email_verified) {
+                domClass.remove(document.body, 'unverified_email')
+              } else {
+                domClass.add(document.body, 'unverified_email')
               }
             }
-          },false)
+          }, false)
           // show the upload and jobs widget
           window.App.uploadJobsWidget('show');
           window.App.checkSU();
@@ -677,7 +677,7 @@ define([
               // localStorage.removeItem('userProfile');
               localStorage.setItem('userProfile', user);
               console.log('window.location.path: ', window.location.pathname)
-              if (window.location.pathname === '/login' || window.location.pathname=="/register") {
+              if (window.location.pathname === '/login' || window.location.pathname == '/register') {
                 window.location = '/'
               } else {
                 window.location.reload();
