@@ -1,6 +1,10 @@
 # Changelog
-## 3.26.12
+
 ## November 22, 2022
+## 3.27.0
+* [Release] Production Release 3.27.0
+
+## 3.26.12
 * [Enhancement] Add note regarding other services now residing here. [Commit #17055a1](https://github.com/BV-BRC/BV-BRC-Web/commit/17055a1246e000613ca62450c87bc0622340a271)
 
 ## 3.26.11
