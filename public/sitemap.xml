@@ -7,12 +7,17 @@
 		<priority>1.0</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/1386</loc>
+		<loc>https://www.bv-brc.org/view/Taxonomy/469</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/64895</loc>
+		<loc>https://www.bv-brc.org/view/Taxonomy/209</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/1386</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -22,17 +27,32 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/469</loc>
+		<loc>https://www.bv-brc.org/view/Taxonomy/286</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/773</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/64895</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/32008</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/780</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/view/Taxonomy/1637</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/209</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -47,17 +67,22 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/773</loc>
+		<loc>https://www.bv-brc.org/view/Taxonomy/1485</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/10239</loc>
+		<loc>https://www.bv-brc.org/view/Taxonomy/194</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/810</loc>
+		<loc>https://www.bv-brc.org/view/Taxonomy/662</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/776</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -67,17 +92,37 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/590</loc>
+		<loc>https://www.bv-brc.org/view/Taxonomy/629</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/286</loc>
+		<loc>https://www.bv-brc.org/view/Taxonomy/1279</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/32008</loc>
+		<loc>https://www.bv-brc.org/view/Host/</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/2157</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/10508</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/10239</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/11308</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -97,62 +142,17 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/194</loc>
+		<loc>https://www.bv-brc.org/view/Taxonomy/590</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/10508</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/1279</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/780</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/11308</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/776</loc>
+		<loc>https://www.bv-brc.org/view/Taxonomy/810</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/view/Taxonomy/620</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/662</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/2157</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/1485</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/629</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Host/</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -167,12 +167,12 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/1980410</loc>
+		<loc>https://www.bv-brc.org/view/Taxonomy/11974</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/11974</loc>
+		<loc>https://www.bv-brc.org/view/Taxonomy/1980410</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -187,32 +187,7 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/11118</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/11244</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/11050</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/10404</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/view/Taxonomy/11266</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/10240</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -222,22 +197,27 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/291484</loc>
+		<loc>https://www.bv-brc.org/view/Taxonomy/11050</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/10292</loc>
+		<loc>https://www.bv-brc.org/view/Taxonomy/11118</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/10880</loc>
+		<loc>https://www.bv-brc.org/view/Taxonomy/10404</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/11320</loc>
+		<loc>https://www.bv-brc.org/view/Taxonomy/10240</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/11244</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -247,62 +227,22 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/10880</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/291484</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/view/Taxonomy/11018</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/GenomeList/</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/2697049</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/12637</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/11620</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/searches/GenomeSearch</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/186536</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/64320</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/searches/TaxaSearch</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/searches/StrainSearch</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/12059</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/Taxonomy/11103</loc>
+		<loc>https://www.bv-brc.org/view/Taxonomy/10292</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -312,7 +252,72 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/searches/GenomeSearch</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/12637</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/11320</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/GenomeList/</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/11103</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/186536</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/searches/TaxaSearch</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/2697049</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/12059</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/searches/StrainSearch</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/64320</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/view/Taxonomy/11620</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/searches/GenomicFeatureSearch</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/searches/DomainAndMotifSearch</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -327,17 +332,12 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/searches/DomainAndMotifSearch</loc>
+		<loc>https://www.bv-brc.org/searches/ProteinStructureSearch</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/searches/PathwaySearch</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/searches/ProteinStructureSearch</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -352,22 +352,12 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/searches/SerologySearch</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/app/Assembly2</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/app/ComprehensiveGenomeAnalysis</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/app/Annotation</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/searches/SerologySearch</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -377,12 +367,17 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/app/Homology</loc>
+		<loc>https://www.bv-brc.org/app/ComprehensiveGenomeAnalysis</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/app/GenomeAlignment</loc>
+		<loc>https://www.bv-brc.org/app/Assembly2</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/app/Homology</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -397,12 +392,12 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/app/PhylogeneticTree</loc>
+		<loc>https://www.bv-brc.org/app/MetaCATS</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/app/MetaCATS</loc>
+		<loc>https://www.bv-brc.org/app/PhylogeneticTree</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -412,22 +407,7 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/app/MSA</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/app/Tnseq</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/app/GeneTree</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/view/VariantLineage/</loc>
+		<loc>https://www.bv-brc.org/app/SubspeciesClassification</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -437,22 +417,27 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/app/SeqComparison</loc>
+		<loc>https://www.bv-brc.org/app/Tnseq</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/app/Expression</loc>
+		<loc>https://www.bv-brc.org/view/VariantLineage/</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/app/TaxonomicClassification</loc>
+		<loc>https://www.bv-brc.org/app/GenomeAlignment</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/app/Rnaseq</loc>
+		<loc>https://www.bv-brc.org/app/MSA</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/app/GeneTree</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -462,12 +447,27 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/app/TaxonomicClassification</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/app/Expression</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/app/MetagenomicBinning</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/app/IDMapper</loc>
+		<loc>https://www.bv-brc.org/app/SeqComparison</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/app/Rnaseq</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -477,7 +477,7 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/workspace/public</loc>
+		<loc>https://www.bv-brc.org/app/IDMapper</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -487,12 +487,7 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/overview.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/workspace/public/ARWattam@patricbrc.org/BV-BRC%20Workshop</loc>
+		<loc>https://www.bv-brc.org/workspace/public</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -502,12 +497,17 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_start/index.html</loc>
+		<loc>https://www.bv-brc.org/workspace/public/ARWattam@patricbrc.org/BV-BRC%20Workshop</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/index.html</loc>
+		<loc>https://www.bv-brc.org/docs/overview.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/quick_start/index.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -517,7 +517,7 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/tutorial/index.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/index.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -527,12 +527,17 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/webinar/index.html</loc>
+		<loc>https://www.bv-brc.org/docs/tutorial/index.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/index.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/webinar/index.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -552,12 +557,17 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs/news/index.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/about</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/news/index.html</loc>
+		<loc>https://www.bv-brc.org/citation</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -572,17 +582,7 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/citation</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/publications</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/privacy-policy</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -592,12 +592,12 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/register</loc>
+		<loc>https://www.bv-brc.org/privacy-policy</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/searches</loc>
+		<loc>https://www.bv-brc.org/register</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -612,12 +612,17 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/tools</loc>
+		<loc>https://www.bv-brc.org/docs/quick_start/data_functionality_overview.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_start/data_functionality_overview.html</loc>
+		<loc>https://www.bv-brc.org/searches</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/tools</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -627,12 +632,12 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/analysis_reports.html</loc>
+		<loc>https://www.bv-brc.org/docs/news/2021/index.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/workshops/index.html</loc>
+		<loc>https://www.bv-brc.org/docs/reports_and_analysis/index.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -642,7 +647,7 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/news/2021/index.html</loc>
+		<loc>https://www.bv-brc.org/docs/workshops/index.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -662,7 +667,7 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/organisms_menu.html</loc>
+		<loc>https://www.bv-brc.org/docs/reports_and_analysis/sars_cov_2_emerging_variants_reports.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -672,17 +677,12 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/searches_menu.html</loc>
+		<loc>https://www.bv-brc.org/docs/reports_and_analysis/sars_cov_2_analysis_reports.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/services_menu.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/workspace_groups_upload.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/organisms_menu.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -692,7 +692,12 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/registration.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/workspace_groups_upload.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/searches_menu.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -702,7 +707,12 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/ftp.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/services_menu.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/registration.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -712,12 +722,22 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/faqs_common_tasks/index.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/ftp.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/docs/index.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/faqs_common_tasks/index.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/common_tasks/gui_tasks.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -732,12 +752,7 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/tutorial/blast/blast.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/tutorial/comprehensive_genome_analysis/comprehensive_genome_analysis.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/cli_common_tasks.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -747,12 +762,12 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/tutorial/metacats/metacats.html</loc>
+		<loc>https://www.bv-brc.org/docs/tutorial/blast/blast.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/tutorial/primer_design/primer_design.html</loc>
+		<loc>https://www.bv-brc.org/docs/tutorial/metacats/metacats.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -762,7 +777,7 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/tutorial/genome_alignment/genome_alignment.html</loc>
+		<loc>https://www.bv-brc.org/docs/tutorial/comprehensive_genome_analysis/comprehensive_genome_analysis.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -777,7 +792,12 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/tutorial/tn-seq/tn-seq.html</loc>
+		<loc>https://www.bv-brc.org/docs/tutorial/genome_alignment/genome_alignment.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/tutorial/primer_design/primer_design.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -787,12 +807,7 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/tutorial/proteome_comparison/proteome_comparison.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/tutorial/genetree/genetree.html</loc>
+		<loc>https://www.bv-brc.org/docs/tutorial/tn-seq/tn-seq.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -802,7 +817,7 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/tutorial/taxonomic_classification/taxonomic_classification.html</loc>
+		<loc>https://www.bv-brc.org/docs/tutorial/proteome_comparison/proteome_comparison.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -812,17 +827,17 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/tutorial/metagenomic_binning/metagenomic_binning.html</loc>
+		<loc>https://www.bv-brc.org/docs/tutorial/genetree/genetree.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/tutorial/taxonomic_classification/taxonomic_classification.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/docs/tutorial/rna_seq/rna_seq.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/tutorial/expression_import/expression_import.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -837,22 +852,17 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/common_tasks/gui_tasks.html</loc>
+		<loc>https://www.bv-brc.org/docs/tutorial/expression_import/expression_import.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/cli_common_tasks.html</loc>
+		<loc>https://www.bv-brc.org/docs/tutorial/metagenomic_binning/metagenomic_binning.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/webinar/bv-brc_intro.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/rasttk_incremental_commands.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/cli_signature_clusters.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -867,17 +877,12 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/rasttk_incremental_commands.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/cli_services.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/cli_clustering.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/cli_signature_clusters.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -887,7 +892,17 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/cli_clustering.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/index.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/webinar/bv-brc_intro.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -897,12 +912,12 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/news/2022/20220907-monkeypox-and-orthopoxvirus-symposium.html</loc>
+		<loc>https://www.bv-brc.org/docs/news/2022/20221007-bv-brc-workshop-at-anl.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/news/2022/20220816-bv-brc-patric-redirect.html</loc>
+		<loc>https://www.bv-brc.org/docs/news/2022/20220907-monkeypox-and-orthopoxvirus-symposium.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -912,12 +927,12 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/news/2022/20220606-bv-brc-patric-workshop.html</loc>
+		<loc>https://www.bv-brc.org/docs/news/2022/20220816-bv-brc-patric-redirect.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/news/2022/20220422-bv-brc-workshop-asm-microbe.html</loc>
+		<loc>https://www.bv-brc.org/docs/news/2022/20220606-bv-brc-patric-workshop.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -927,27 +942,17 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/news/2022/20220215-bv-brc-public-beta.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/news/2020/20201022-mooc-release.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs/news/2022/20220223-bv-brc-intro-webinars.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/news/2020/20200331-patric-jan-mar-2020-release.html</loc>
+		<loc>https://www.bv-brc.org/docs/news/2022/20220422-bv-brc-workshop-asm-microbe.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/news/2021/20211222-bv-brc-beta-release.html</loc>
+		<loc>https://www.bv-brc.org/docs/news/2022/20220215-bv-brc-public-beta.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -957,7 +962,22 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs/news/2021/20210513-brc-impact-survey.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs/news/2020/20200701-new-video-tutorials.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/news/2020/20201022-mooc-release.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/news/2021/20211222-bv-brc-beta-release.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -967,12 +987,37 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/news/2021/20210513-brc-impact-survey.html</loc>
+		<loc>https://www.bv-brc.org/docs/news/2020/20200331-patric-jan-mar-2020-release.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/services/genome_assembly_service.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/genome_metadata.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/serology_data.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/services/blast.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//quick_references/services/sars_cov_2_assembly_annotation_service.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/surveillance_data.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/services/primer_design_service.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -982,12 +1027,42 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/services/metacats.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/services/msa_snp_variation_service.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/services/genetree.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/services/taxonomic_classification_service.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs/quick_references/services/comparative_systems.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/services/blast.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/protein_structures.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/services/metagenomic_binning_service.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/services/genome_assembly_service.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -1007,27 +1082,7 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/services/metacats.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs/quick_references/services/phylogenetic_tree_building_service.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/services/variation_analysis_service.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/services/primer_design_service.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/services/genome_alignment_service.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -1037,37 +1092,12 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/services/msa_snp_variation_service.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/services/variation_analysis_service.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/services/comparative_pathway_service.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/services/genetree.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/services/metagenomic_read_mapping_service.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/services/taxonomic_classification_service.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/app/ComparativePathway</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/services/metagenomic_binning_service.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/services/genome_alignment_service.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -1082,37 +1112,27 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/app/ComparativePathway</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/services/metagenomic_read_mapping_service.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/services/comparative_pathway_service.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs/quick_references/services/id_mapper.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/docs/quick_references/services/fastq_utilities_service.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/genome_metadata.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/serology_data.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/surveillance_data.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/services/sars_cov_2_assembly_annotation_service.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.3</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/protein_structures.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
 	</url>
@@ -1142,11 +1162,6 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/sequences.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/amr_phenotypes.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
@@ -1157,7 +1172,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/protein_families.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/sequences.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1167,7 +1182,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/subsystems_tab.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/protein_families.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1182,7 +1197,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/subsystems_tab.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/interactions.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/organisms_genome/genome_browser.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1192,17 +1217,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/organisms_gene/overview.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs/quick_references/organisms_genome/circular_genome_viewer.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/organisms_genome/genome_browser.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/organisms_gene/overview.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1232,12 +1252,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/services/proteome_comparison_service.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/services/archaeopteryx.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/workspaces/jobs.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1247,12 +1262,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/workspaces/data_upload.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/workspaces/groups.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/workspaces/groups.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/workspaces/data_upload.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1262,7 +1277,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/workspaces/jobs.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/services/archaeopteryx.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1282,7 +1297,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/other/msa_viewer.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/services/proteome_comparison_service.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1307,12 +1322,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/tutorial/alignments/multiple_sequence_alignment.html</loc>
+		<loc>https://www.bv-brc.org/docs/tutorial/searching_and_sorting/protein_family_features.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/tutorial/searching_and_sorting/protein_family_features.html</loc>
+		<loc>https://www.bv-brc.org/docs/tutorial/alignments/multiple_sequence_alignment.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1332,17 +1347,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-file-filter.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-sort.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-genome-data.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-file-filter.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1362,7 +1372,22 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-genome-data.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-feature-upstream.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-generate-close-roles.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-stats.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1372,7 +1397,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-generate-close-roles.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-family-features.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1387,16 +1412,6 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-stats.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-family-features.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-count.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
@@ -1407,12 +1422,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-family-data.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-genome-contigs.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/other/msa_viewer.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1422,22 +1432,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-family-data.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-extract.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-put-genome-group.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-login.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-genome-group.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1447,7 +1447,22 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-signature-families.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-put-genome-group.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-genome-group.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-genome-contigs.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-login.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1457,12 +1472,27 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-feature-group.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-gto-scan.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-list-feature-groups.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-feature-group.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-signature-families.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-gto-fasta.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1477,22 +1507,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-gto-scan.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-rast.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-gto-fasta.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-find-couples.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/submit-patric-genbank.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1502,7 +1522,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-find-in-clusters.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-find-couples.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1517,11 +1537,6 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/submit-patric-genbank.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/common_options.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
@@ -1532,12 +1547,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/P3DataAPI.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/appserv-enumerate-apps.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-find-in-clusters.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1547,22 +1557,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/Sim.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/appserv-rerun-task.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/appserv-kill-task.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/appserv-start-app.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/P3DataAPI.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1572,12 +1567,22 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/appserv-query-task.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/Sim.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-all-contigs.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/appserv-enumerate-apps.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/appserv-kill-task.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/appserv-rerun-task.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1587,17 +1592,32 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/appserv-query-task.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/appserv-start-app.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-all-contigs.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-all-subsystem-roles.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-all-subsystems.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-all-taxonomies.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-all-taxonomies.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-all-subsystems.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1632,12 +1652,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-count-families.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-compare-cols.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-compare-cols.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-count-families.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1652,12 +1672,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-fasta-md5.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-dump-genomes.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-dump-genomes.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-fasta-md5.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1667,17 +1687,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-genome-distance.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-find-surveillance-data.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-function-parse.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-genome-distance.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1687,17 +1702,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-genome-fasta.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-genus-species.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-genome-kmer-hits.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-function-parse.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1707,7 +1712,22 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-genome-fasta.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-genome-kmer-hits.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-feature-protein-regions.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-genus-species.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1752,12 +1772,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-genome-protein-structures.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-genome-refseq-features.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-genome-refseq-features.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-genome-protein-structures.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1772,17 +1792,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-subsystem-features.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-subsystem-roles.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-taxonomy-data.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-subsystem-features.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1792,7 +1807,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-job-status.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-gto-fetch.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-get-taxonomy-data.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1802,7 +1822,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-gto-fetch.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-job-status.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1812,32 +1832,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-kmer-compare.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-less.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-ls.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-logout.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-mkdir.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-merge.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-kmer-compare.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1847,7 +1847,27 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-logout.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-ls.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-mkdir.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-nucleon-runs.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-merge.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1862,7 +1882,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-project-subsystems.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-pick-by-class.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1872,12 +1892,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-pick-by-class.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-project-subsystems.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-rep-prots.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-related-by-clusters.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1887,7 +1907,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-related-by-clusters.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-rep-prots.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1907,17 +1927,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-role-matrix.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-role-features.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-set-to-relation.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-role-matrix.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1947,12 +1967,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-submit-MSA.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-submit-codon-tree.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-submit-MSA.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-submit-fastqutils.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1967,22 +1992,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-submit-fastqutils.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-submit-genome-assembly.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-submit-metagenome-binning.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-submit-rnaseq.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -1997,7 +2012,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-submit-sars2-assembly.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-submit-sars2-analysis.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-submit-rnaseq.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2007,7 +2032,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-submit-sars2-assembly.html</loc>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-submit-taxonomic-classification.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2017,17 +2042,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-tail.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-submit-taxonomic-classification.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-tbl-to-fasta.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-tail.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2072,11 +2092,6 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/tutorial/comparative_pathways/comparative_pathways.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/genome_table.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
@@ -2087,27 +2102,27 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//index.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//news/index.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//analysis_reports.html</loc>
+		<loc>https://www.bv-brc.org/docs//index.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//overview.html</loc>
+		<loc>https://www.bv-brc.org/docs//reports_and_analysis/index.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/docs//quick_start/index.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//overview.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2127,12 +2142,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/searches_menu.html</loc>
+		<loc>https://www.bv-brc.org/docs//quick_references/services_menu.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/services_menu.html</loc>
+		<loc>https://www.bv-brc.org/docs//quick_references/searches_menu.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2142,22 +2157,22 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/services/comprehensive_genome_analysis_service.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//quick_references/services/genome_annotation_service.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/services/blast.html</loc>
+		<loc>https://www.bv-brc.org/docs//quick_references/services/comparative_systems.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/services/comparative_systems.html</loc>
+		<loc>https://www.bv-brc.org/docs//quick_references/services/comprehensive_genome_analysis_service.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//quick_references/services/blast.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2172,22 +2187,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/services/tn_seq_analysis_service.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//quick_references/services/phylogenetic_tree_building_service.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/services/genome_alignment_service.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/workspace_groups_upload.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2197,7 +2197,22 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs//quick_references/services/genome_alignment_service.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs//quick_references/services/variation_analysis_service.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//quick_references/services/tn_seq_analysis_service.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//quick_references/workspace_groups_upload.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2237,11 +2252,6 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//system_documentation/system_architecture.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//workshops/index.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
@@ -2252,7 +2262,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//test_procedures/index.html</loc>
+		<loc>https://www.bv-brc.org/docs//system_documentation/system_architecture.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2262,12 +2272,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/services/protein_family_service.html</loc>
+		<loc>https://www.bv-brc.org/docs//test_procedures/index.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/subsystems.html</loc>
+		<loc>https://www.bv-brc.org/docs/tutorial/comparative_pathways/comparative_pathways.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/services/protein_family_service.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2277,12 +2292,22 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/transcriptomics_gene_list.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/transcriptomics_gene_heatmap.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/transcriptomics_gene_list.html</loc>
+		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/subsystems.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/api/doc/enzyme_class_ref</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2297,12 +2322,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/api/doc/enzyme_class_ref</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/api/doc/epitope_assay</loc>
+		<loc>https://www.bv-brc.org/api/doc/gene_ontology_ref</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2322,12 +2342,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/api/doc/genome</loc>
+		<loc>https://www.bv-brc.org/api/doc/epitope_assay</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/api/doc/gene_ontology_ref</loc>
+		<loc>https://www.bv-brc.org/api/doc/genome</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2337,37 +2357,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/api/doc/feature_sequence</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/api/doc/genome_amr</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/api/doc/genome_feature</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/api/doc/genome_sequence</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/api/doc/id_ref</loc>
+		<loc>https://www.bv-brc.org/api/doc/feature_sequence</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/api/doc/misc_niaid_sgc</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/api/doc/pathway</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2382,17 +2382,37 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/api/doc/ppi</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/api/doc/sp_gene</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/api/doc/pathway</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/api/doc/ppi</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/api/doc/genome_sequence</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/api/doc/genome_feature</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/api/doc/sp_gene_ref</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/api/doc/id_ref</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2422,17 +2442,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/api/doc/taxonomy</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/api/doc/subsystem</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/api/doc/transcriptomics_experiment</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/api/doc/taxonomy</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2447,12 +2467,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/api/doc/protein_feature</loc>
+		<loc>https://www.bv-brc.org/api/doc/protein_structure</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/api/doc/protein_structure</loc>
+		<loc>https://www.bv-brc.org/api/doc/protein_feature</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2467,6 +2487,36 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs//news/2022/20220907-monkeypox-and-orthopoxvirus-symposium.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//news/2022/20220816-bv-brc-patric-redirect.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//news/2022/20220606-bv-brc-patric-workshop.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//news/2022/20220713-bv-brc-workshop-uva.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//news/2021/index.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//news/2022/20221007-bv-brc-workshop-at-anl.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs//news/2022/index.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
@@ -2477,57 +2527,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//news/2021/index.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//quick_start/data_functionality_overview.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//quick_start/quick_start.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//quick_start/ird-vipr_bv-brc_mapping.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//data_protocols/antimicrobial_resistance.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//data_protocols/genome_annotation.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//news/2022/20220816-bv-brc-patric-redirect.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//news/2022/20220907-monkeypox-and-orthopoxvirus-symposium.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//news/2022/20220713-bv-brc-workshop-uva.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//news/2022/20220606-bv-brc-patric-workshop.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//news/2022/20220422-bv-brc-workshop-asm-microbe.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//news/2022/20220228-tick-borne-pathogens.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2542,7 +2547,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//news/2022/20220228-tick-borne-pathogens.html</loc>
+		<loc>https://www.bv-brc.org/docs//news/2021/20210513-brc-impact-survey.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2552,17 +2557,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//news/2021/20210513-brc-impact-survey.html</loc>
+		<loc>https://www.bv-brc.org/docs//news/2020/20201022-mooc-release.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/docs//news/2021/20211222-bv-brc-beta-release.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//news/2020/20201022-mooc-release.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2582,6 +2582,41 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs//quick_start/quick_start.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//reports_and_analysis/sars_cov_2_emerging_variants_reports.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//reports_and_analysis/sars_cov_2_analysis_reports.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//quick_start/data_functionality_overview.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//data_protocols/antimicrobial_resistance.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//data_protocols/genome_annotation.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//quick_start/ird-vipr_bv-brc_mapping.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs//faqs_common_tasks/index.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
@@ -2597,17 +2632,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/taxonomy.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/genomes.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/proteins.html</loc>
+		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/taxonomy.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2617,17 +2647,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/specialty_genes.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/amr_phenotypes.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/protein_families.html</loc>
+		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/proteins.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/specialty_genes.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2647,12 +2677,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/interactions.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/surveillance_data.html</loc>
+		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/protein_families.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2667,12 +2692,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/organisms_genome/overview.html</loc>
+		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/interactions.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/organisms_genome/genome_browser.html</loc>
+		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/surveillance_data.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//quick_references/organisms_genome/overview.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2682,12 +2712,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/organisms_gene/overview.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/organisms_gene/genome_browser.html</loc>
+		<loc>https://www.bv-brc.org/docs//quick_references/organisms_genome/genome_browser.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2697,17 +2722,27 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/organisms_gene/transcriptomics.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//quick_references/organisms_gene/interactions.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs//quick_references/organisms_gene/genome_browser.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//quick_references/organisms_gene/overview.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs//quick_references/organisms_gene/correlated_genes.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//quick_references/organisms_gene/transcriptomics.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2727,7 +2762,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/services/taxonomic_classification_service.html</loc>
+		<loc>https://www.bv-brc.org/docs//quick_references/services/metagenomic_binning_service.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2737,17 +2772,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/services/metagenomic_binning_service.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//quick_references/services/expression_data_import_service.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/services/archaeopteryx.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2757,22 +2782,27 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/services/rna_seq_analysis_service.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//quick_references/services/fastq_utilities_service.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//tutorial/genome_assembly/assembly.html</loc>
+		<loc>https://www.bv-brc.org/docs//quick_references/services/taxonomic_classification_service.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//tutorial/comprehensive_genome_analysis/comprehensive_genome_analysis.html</loc>
+		<loc>https://www.bv-brc.org/docs//quick_references/services/rna_seq_analysis_service.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//quick_references/services/archaeopteryx.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//tutorial/genome_assembly/assembly.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2787,17 +2817,27 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//tutorial/blast/blast.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//tutorial/genome_quality_report/genome_quality_report.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs//tutorial/comparative_systems/comparative_systems.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/cli_getting_started.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//tutorial/comprehensive_genome_analysis/comprehensive_genome_analysis.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//tutorial/blast/blast.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2812,12 +2852,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//tutorial/tn-seq/tn-seq.html</loc>
+		<loc>https://www.bv-brc.org/docs//tutorial/primer_design/primer_design.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/workspaces/data_upload.html</loc>
+		<loc>https://www.bv-brc.org/docs//tutorial/tn-seq/tn-seq.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2832,17 +2872,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs//quick_references/workspaces/data_upload.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs//quick_references/workspaces/private_genomes.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/docs//quick_references/workspaces/jobs.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//tutorial/primer_design/primer_design.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2857,12 +2897,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//tutorial/comparative_systems/comparative_systems.html</loc>
+		<loc>https://www.bv-brc.org/docs//tutorial/sars_cov_2_assembly_annotation/sars_cov_2_assembly_annotation.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//tutorial/sars_cov_2_assembly_annotation/sars_cov_2_assembly_annotation.html</loc>
+		<loc>https://www.bv-brc.org/docs//tutorial/variation_analysis/variation_analysis.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2877,7 +2917,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//tutorial/metagenomic_read_mapping/metagenomic_read_mapping.html</loc>
+		<loc>https://www.bv-brc.org/docs//tutorial/msa_snp_variation/msa_snp_variation.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2887,17 +2927,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//tutorial/variation_analysis/variation_analysis.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//tutorial/msa_snp_variation/msa_snp_variation.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//tutorial/proteome_comparison/proteome_comparison.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//tutorial/expression_import/expression_import.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2912,12 +2947,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//tutorial/id_mapper/id_mapper.html</loc>
+		<loc>https://www.bv-brc.org/docs//tutorial/rna_seq/rna_seq.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//tutorial/rna_seq/rna_seq.html</loc>
+		<loc>https://www.bv-brc.org/docs//tutorial/metagenomic_read_mapping/metagenomic_read_mapping.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//tutorial/id_mapper/id_mapper.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2927,12 +2967,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//tutorial/expression_import/expression_import.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/cli_signature_clusters.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/cli_installation.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2947,17 +2982,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/rasttk_incremental_commands.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/cli_installation.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/rasttk_getting_started.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/cli_signature_clusters.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -2972,17 +2997,27 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/rasttk_incremental_commands.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/rasttk_getting_started.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs//workshops/2022-Aug-21-26_veme.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/genome_metadata.html</loc>
+		<loc>https://www.bv-brc.org/docs//webinar/bv-brc_intro.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//webinar/bv-brc_intro.html</loc>
+		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/genome_metadata.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3002,11 +3037,6 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/services/protein_family_service.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//quick_references/services/comparative_pathway_service.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
@@ -3017,7 +3047,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/transcriptomics_gene_heatmap.html</loc>
+		<loc>https://www.bv-brc.org/docs//quick_references/services/protein_family_service.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3027,12 +3057,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/transcriptomics_gene_heatmap.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/transcriptomics_gene_list.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-genome-data.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-genome-contigs.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3042,7 +3077,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-genome-contigs.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-genome-data.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-family-features.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-all-drugs.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3057,21 +3102,6 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-all-drugs.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-family-data.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-match.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-feature-data.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
@@ -3082,22 +3112,27 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-family-features.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-all-genomes.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-echo.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-match.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-family-data.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-login.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-all-genomes.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3122,12 +3157,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-feature-group.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-list-genome-groups.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-list-genome-groups.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-feature-group.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3157,6 +3192,11 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-find-features.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-function-to-role.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
@@ -3167,32 +3207,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-file-filter.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-find-features.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-feature-upstream.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-generate-close-roles.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-stats.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-sequence-profile.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3202,17 +3217,27 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-file-filter.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-generate-close-roles.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-sequence-profile.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-stats.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-count.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/submit-patric-genbank.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/common_options.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3227,12 +3252,22 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-find-in-clusters.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-identify-clusters.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-identify-clusters.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/common_options.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/Hsp.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-find-in-clusters.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3247,27 +3282,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/Hsp.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/P3Utils.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/appserv-start-app.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/appserv-enumerate-apps.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/appserv-rerun-task.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3277,7 +3292,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/appserv-start-app.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/appserv-enumerate-tasks.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-find-surveillance-data.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3287,12 +3312,27 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/appserv-query-task.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/appserv-rerun-task.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-format-results.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-all-contigs.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/appserv-enumerate-apps.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-all-subsystems.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3307,22 +3347,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-all-subsystems.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/appserv-query-task.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-blast.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-count-families.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-all-taxonomies.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-build-kmer-db.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3337,7 +3372,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-closest-seqs.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-compare-cols.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-blast.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3347,32 +3387,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-compare-cols.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-cp.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-count-families.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-discriminating-kmers.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-dump-genomes.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-find-surveillance-data.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-function-parse.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3382,7 +3397,22 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-discriminating-kmers.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-closest-seqs.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-fasta-md5.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-build-kmer-db.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3392,17 +3422,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-genome-kmer-hits.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-format-results.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-function-parse.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-dump-genomes.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3412,12 +3432,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-feature-protein-regions.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-cp.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-genus-species.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-genome-kmer-hits.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3427,12 +3447,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-feature-subsystems.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-feature-regions.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-feature-protein-structures.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-feature-protein-regions.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3442,7 +3462,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-feature-regions.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-feature-subsystems.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3452,37 +3472,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-feature-protein-structures.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-features-in-regions.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-genome-expression.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-genome-refseq-features.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-genome-sp-genes.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-genome-protein-structures.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-genome-protein-regions.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-genome-subsystems.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-genus-species.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3492,42 +3492,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-taxonomy-data.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-subsystem-roles.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-subsystem-features.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-gto-fetch.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-job-status.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-head.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-kmer-compare.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-join.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3537,12 +3502,62 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-logout.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-genome-sp-genes.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-ls.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-subsystem-roles.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-genome-protein-regions.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-taxonomy-data.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-genome-expression.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-genome-subsystems.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-subsystem-features.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-genome-protein-structures.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-get-genome-refseq-features.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-head.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-join.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-job-status.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3557,17 +3572,27 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-mass-cluster-run.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-kmer-compare.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-pick-by-class.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-logout.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-ls.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-nucleon-runs.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-mass-cluster-run.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3578,6 +3603,11 @@
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-peg-kmer-hits.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-pick-by-class.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3602,6 +3632,11 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-rmdir.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-rep-prots.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
@@ -3612,7 +3647,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-rmdir.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-role-fasta.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3622,7 +3657,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-role-fasta.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-signature-clusters.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3637,17 +3672,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-signature-clusters.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-shuffle.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-CGA.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3657,7 +3682,7 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-BLAST.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-CGA.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3672,12 +3697,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-gene-tree.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-BLAST.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-fastqutils.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-metagenomic-read-mapping.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-rnaseq.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3688,6 +3718,11 @@
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-genome-annotation.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-fastqutils.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3707,27 +3742,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-metagenomic-read-mapping.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-rnaseq.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-sars2-assembly.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-variation-analysis.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-taxonomic-classification.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-gene-tree.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3737,7 +3757,22 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-taxonomic-classification.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-submit-variation-analysis.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-tail.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-tests.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3752,17 +3787,12 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-user-subsystem.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
-		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-tests.html</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.2</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-uni-roles.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/p3-user-subsystem.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
@@ -3782,12 +3812,17 @@
 		<priority>0.2</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/docs//tutorial/protein_family_sorter/protein_family_sorter.html</loc>
+		<loc>https://www.bv-brc.org/docs//cli_tutorial/command_list/submit-patric-genbank.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/docs//tutorial/comparative_pathways/comparative_pathways.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//tutorial/protein_family_sorter/protein_family_sorter.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>

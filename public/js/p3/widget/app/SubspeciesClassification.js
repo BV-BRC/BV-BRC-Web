@@ -12,20 +12,21 @@ define([
 ) {
 
   var VirusTypes = [
-    { value: 'HCV', label: 'HCV' },
-    { value: 'DENGUE', label: 'Dengue' },
-    { value: 'STLOUIS', label: 'St. Louis Encephalitis Virus' },
-    { value: 'WESTNILE', label: 'West Nile Virus' },
-    { value: 'JAPENCEPH', label: 'Japanese Encephalitis Virus' },
-    { value: 'TKBENCEPH', label: 'Tick borne Encephalitis Virus' },
-    { value: 'YELLOWFEVER', label: 'Yellow Fever Virus' },
     { value: 'BOVDIARRHEA1', label: 'Bovine viral diarrheal virus 1' },
+    { value: 'DENGUE', label: 'Dengue' },
+    { value: 'HCV', label: 'HCV' },
+    { value: 'INFLUENZAH5', label: 'Influenza H5' },
+    { value: 'JAPENCEPH', label: 'Japanese Encephalitis Virus' },
     { value: 'MURRAY', label: 'Murray Valley encephalitis virus' },
-    { value: 'ZIKA', label: 'Zika virus' },
     { value: 'NOROORF1', label: 'Norovirus ORF1' },
     { value: 'NOROORF2', label: 'Norovirus ORF2' },
     { value: 'ROTAA', label: 'Rotavirus A' },
-    { value: 'INFLUENZAH5', label: 'Influenza H5' }
+    { value: 'STLOUIS', label: 'St. Louis Encephalitis Virus' },
+    { value: 'SWINEH1', label: 'Swine H1' },
+    { value: 'TKBENCEPH', label: 'Tick borne Encephalitis Virus' },
+    { value: 'WESTNILE', label: 'West Nile Virus' },
+    { value: 'YELLOWFEVER', label: 'Yellow Fever Virus' },
+    { value: 'ZIKA', label: 'Zika virus' }
   ];
 
   return declare([AppBase], {
@@ -33,7 +34,9 @@ define([
     templateString: Template,
     applicationHelp: '',
     applicationName: 'SubspeciesClassification',
-    tutorialLink: '',
+    applicationLabel: 'Subspecies Classification',
+    applicationHelp: 'quick_references/services/subspecies_classification_service.html',
+    tutorialLink: 'tutorial/subspecies_classification/subspecies_classification.html',
     validFasta: 0,
     loadingMask: null,
     result_store: null,

@@ -26,7 +26,7 @@ define([
     onSetState: function (attr, oldVal, state) {
       console.log('on set state');
       if (!this._loaded && this.state) {
-        this.loadData();
+        this.loadData_v2();
         this._loaded = true;
       }
     },
@@ -40,6 +40,45 @@ define([
       else {
         return null;
       }
+    },
+
+    loadData_v2: function () {
+      console.log('load overview data');
+      var data = this.state.data.overview;
+      var parsed_data = [];
+      Object.keys(data).forEach(lang.hitch(this, function (superclass) {
+        if (superclass === 'subsystem_name_counts' || superclass === 'gene_counts') {
+          return;
+        }
+        var superclass_dict = {};
+        superclass_dict['name'] = superclass;
+        superclass_dict['gene_count'] = parseInt(data[superclass]['gene_counts']);
+        superclass_dict['subsystem_count'] = parseInt(data[superclass]['subsystem_name_counts']);
+        superclass_dict['children'] = [];
+        Object.keys(data[superclass]).forEach(lang.hitch(this, function (clss) {
+          if (clss === 'subsystem_name_counts' || clss === 'gene_counts') {
+            return;
+          }
+          var class_dict = {};
+          class_dict['name'] = clss;
+          class_dict['gene_count'] = parseInt(data[superclass][clss]['gene_counts']);
+          class_dict['subsystem_count'] = parseInt(data[superclass][clss]['subsystem_name_counts']);
+          class_dict['children'] = [];
+          Object.keys(data[superclass][clss]).forEach(lang.hitch(this, function (subclass) {
+            if (subclass === 'subsystem_name_counts' || subclass === 'gene_counts') {
+              return;
+            }
+            var subclass_dict = {};
+            subclass_dict['name'] = subclass;
+            subclass_dict['gene_count'] = parseInt(data[superclass][clss][subclass]['gene_counts']);
+            subclass_dict['subsystem_count'] = parseInt(data[superclass][clss][subclass]['subsystem_name_counts']);
+            class_dict['children'].push(subclass_dict);
+          }));
+          superclass_dict['children'].push(class_dict);
+        }));
+        parsed_data.push(superclass_dict);
+      }));
+      this.setData(parsed_data);
     },
 
     loadData: function () {
@@ -114,7 +153,6 @@ define([
           }));
         }));
       }));
-
       this.setData(parsed_data);
     }
   });
