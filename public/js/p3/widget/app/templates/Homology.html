@@ -51,7 +51,7 @@
                             <label for="${id}_blastx">BLASTX (translated nucleotide > protein database)</label>
                         </td>
                         <td>
-                            <input id="${id}_tblastn"type="radio" data-dojo-type="dijit/form/RadioButton"
+                            <input id="${id}_tblastn" type="radio" data-dojo-type="dijit/form/RadioButton"
                                 data-dojo-attach-point="tblastn" name="program" value="tblastn"
                                 data-dojo-attach-event="onChange:onChangeProgram" />
                             <label for="${id}_tblastn">tBLASTn (protein > translated nucleotide database)</label>
@@ -87,8 +87,8 @@
                             <textarea name="sequence"
                                 style="width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px"
                                 data-dojo-attach-point="sequence" data-dojo-type="dijit/form/Textarea" required="false"
-                                data-dojo-props="rows:13, placeholder:'Enter one or more query nucleotide or protein sequences to search. Requires FASTA format.', intermediateChanges:true"
-                                data-dojo-attach-event="onBlur:checkFasta"></textarea>
+                                data-dojo-props="rows:13, placeholder:'Enter one or more query nucleotide or protein sequences to search. Requires FASTA format.', intermediateChanges:true,  trim:true"
+                                data-dojo-attach-event="onChange:checkFasta"></textarea>
                             <div class="warning" data-dojo-attach-point="sequence_message"></div>
                             <!-- </div>> -->
                         </td>
@@ -282,8 +282,10 @@
             Error submitting job
         </div>
         <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
-        style="margin-top:10px; text-align:center;" >
-            Your job has been submitted successfully. Please visit your <a data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job and access the results.
+            style="margin-top:10px; text-align:center;">
+            Your job has been submitted successfully. Please visit your <a
+                data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job and
+            access the results.
         </div>
         <div style="margin-top: 10px; text-align:center;">
             <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel"
