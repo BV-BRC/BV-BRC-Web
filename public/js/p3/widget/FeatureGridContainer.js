@@ -28,8 +28,8 @@ define([
     filter: '',
     dataModel: 'genome_feature',
     primaryKey: 'feature_id',
-    defaultFilter: 'and(eq(annotation,%22PATRIC%22))',
-    tooltip: 'The "Genomic Features" tab shows Genomic Features (e.g., CDS, matu_peptides, tRNA, etc) for genomes associated with the current view.',
+    defaultFilter: 'and(eq(feature_type,CDS),eq(annotation,%22PATRIC%22))',
+    tooltip: 'The "Proteins" tab shows Genomic Features (e.g., CDS, matu_peptides, tRNA, etc) for genomes associated with the current view.',
     getFilterPanel: function (opts) {
 
     },
