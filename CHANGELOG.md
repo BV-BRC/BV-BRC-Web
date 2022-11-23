@@ -1,6 +1,9 @@
 # Changelog
 
 ## November 22, 2022
+## 3.27.1
+* [Bug] Testing solution to subsystems heatmap loading issue. [PR #475](https://github.com/BV-BRC/BV-BRC-Web/pull/475)
+
 ## 3.27.0
 * [Release] Production Release 3.27.0
 
