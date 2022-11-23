@@ -14,7 +14,7 @@ define([
   children, WorkspaceManager, Memory, Standby, when
 ) {
   return declare([AppBase], {
-    baseClass: 'App Assembly',
+    baseClass: 'MSA',
     templateString: Template,
     applicationName: 'MSA',
     requireAuth: true,
