@@ -178,10 +178,6 @@ define([
       }
     },
 
-    setLiveJob: function () {
-      this.live_job.value = this.live_job.checked;
-    },
-
     resubmit: function () {
       domClass.remove(query('.service_form')[0], 'hidden');
       domClass.remove(query('.appSubmissionArea')[0], 'hidden');
