@@ -1,29 +1,28 @@
 <form dojoAttachPoint="containerNode" class="PanelForm"
-      dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
     <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
             <h3>Subspecies Classification
-            <div name="overview" class="infobox iconbox infobutton dialoginfo">
-                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-            </div>
-            <div class="infobox iconbox tutorialButton tutorialInfo">
-                <a href="${docsServiceURL}${tutorialLink}" target="_blank">
-                    <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
-                </a>
-            </div>
+                <div name="overview" class="infobox iconbox infobutton dialoginfo">
+                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                </div>
+                <div class="infobox iconbox tutorialButton tutorialInfo">
+                    <a href="${docsServiceURL}${tutorialLink}" target="_blank">
+                        <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+                    </a>
+                </div>
             </h3>
-            <p>The sub-species classification tool assigns the genotype/subtype of a virus, based on the
-                genotype/subtype assignments maintained by the International Committee on Taxonomy of Viruses (ICTV).
-                This tool infers the genotype/subtype for a query sequence from its position within a reference tree
-                (using the <a href="https://matsen.fhcrc.org/pplacer" target="_blank">pplacer</a> tool with a reference
-                tree and reference alignment, including the query sequence
-                as input, interpretation of the pplacer result is handled by <a
-                        href="https://github.com/cmzmasek/forester/blob/master/forester/java/src/org/forester/application/cladinator.java"
-                        target="_blank">Cladinator</a>).
+            <p>
+                ${applicationDescription} Link to <a href="https://matsen.fhcrc.org/pplacer" target="_blank">pplacer</a>
+                and <a
+                    href="https://github.com/cmzmasek/forester/blob/master/forester/java/src/org/forester/application/cladinator.java"
+                    target="_blank">Cladinator</a>.
             </p>
             <br>
-            <p>For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>..</p>
+            <p>For further explanation, please see the ${applicationLabel} Service <a
+                    href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and <a
+                    href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.</p>
         </div>
         <div class="appBox appShadow" style="margin-top:10px">
             <div class="headerrow">
@@ -33,12 +32,12 @@
                 <br>
                 <div class="appRow">
                     <input id="${id}_input_sequence" type="radio" data-dojo-type="dijit/form/RadioButton"
-                           data-dojo-attach-point="input_sequence" name="input" value="input_sequence"
-                           data-dojo-attach-event="onChange:onInputChange" checked />
+                        data-dojo-attach-point="input_sequence" name="input" value="input_sequence"
+                        data-dojo-attach-event="onChange:onInputChange" checked />
                     <label for="${id}_input_sequence">Enter sequence</label>
                     <input id="${id}_input_fasta" type="radio" data-dojo-type="dijit/form/RadioButton"
-                           data-dojo-attach-point="input_fasta" name="input" value="input_fasta"
-                           data-dojo-attach-event="onChange:onInputChange" />
+                        data-dojo-attach-point="input_fasta" name="input" value="input_fasta"
+                        data-dojo-attach-event="onChange:onInputChange" />
                     <label for="${id}_input_fasta">Select FASTA file</label>
                     <!--<input id="${id}_input_group" type="radio" data-dojo-type="dijit/form/RadioButton"
                            data-dojo-attach-point="input_group" name="input" value="input_group"
@@ -50,10 +49,10 @@
                         <td>
                             <!-- <div class="service_form"> -->
                             <textarea name="sequence"
-                                      style="width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px"
-                                      data-dojo-attach-point="sequence" data-dojo-type="dijit/form/Textarea" required="false"
-                                      data-dojo-props="rows:13, placeholder:'Enter one or more query nucleotide or protein sequences to search. Requires FASTA format.', intermediateChanges:true"
-                                      data-dojo-attach-event="onBlur:checkFasta"></textarea>
+                                style="width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px"
+                                data-dojo-attach-point="sequence" data-dojo-type="dijit/form/Textarea" required="false"
+                                data-dojo-props="rows:13, placeholder:'Enter one or more query nucleotide or protein sequences to search. Requires FASTA format.', intermediateChanges:true"
+                                data-dojo-attach-event="onBlur:checkFasta"></textarea>
                             <div class="warning" data-dojo-attach-point="sequence_message"></div>
                             <!-- </div>> -->
                         </td>
@@ -63,9 +62,9 @@
                     <tr>
                         <td>
                             <div style="width:85%;display:inline-block;"
-                                 data-dojo-type="p3/widget/WorkspaceObjectSelector" name="query_fasta" required="false"
-                                 data-dojo-attach-point="query_fasta" data-dojo-attach-event="onChange:validate"
-                                 data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta', 'genome_protein_fasta', 'genome_dna_fasta', 'contigs'],multi:false,promptMessage:'Select or upload FASTA file to your workspace.',missingMessage:'FASTA file is required.',placeHolder:'FASTA file'">
+                                data-dojo-type="p3/widget/WorkspaceObjectSelector" name="query_fasta" required="false"
+                                data-dojo-attach-point="query_fasta" data-dojo-attach-event="onChange:validate"
+                                data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta', 'genome_protein_fasta', 'genome_dna_fasta', 'contigs'],multi:false,promptMessage:'Select or upload FASTA file to your workspace.',missingMessage:'FASTA file is required.',placeHolder:'FASTA file'">
                             </div>
                         </td>
                     </tr>
@@ -74,10 +73,10 @@
                     <tr>
                         <td>
                             <div style="width:85%;display:inline-block;"
-                                 data-dojo-type="p3/widget/WorkspaceObjectSelector" name="query_genomegroup"
-                                 required="false" data-dojo-attach-point="query_genomegroup"
-                                 data-dojo-attach-event="onChange:validate"
-                                 data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace.',missingMessage:'Genome group is required.',placeHolder:'Genome group'">
+                                data-dojo-type="p3/widget/WorkspaceObjectSelector" name="query_genomegroup"
+                                required="false" data-dojo-attach-point="query_genomegroup"
+                                data-dojo-attach-event="onChange:validate"
+                                data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace.',missingMessage:'Genome group is required.',placeHolder:'Genome group'">
                             </div>
                         </td>
                     </tr>
@@ -105,7 +104,7 @@
                         <label class="appBoxLabel">Species</label>
                     </div>
                     <div data-dojo-type="dijit/form/Select" name="virus_type" data-dojo-props="disabled:false"
-                         maxHeight="200" style="width:100%" required="true" data-dojo-attach-point="virus_type">
+                        maxHeight="200" style="width:100%" required="true" data-dojo-attach-point="virus_type">
                     </div>
                     <div class="warning" data-dojo-attach-point="virus_type_message"></div>
                 </div>
@@ -117,19 +116,19 @@
                             <label class="appBoxLabel">Output Folder</label>
                         </div>
                         <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
-                             data-dojo-attach-point="output_path" style="width:300px" required="true"
-                             data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false,placeHolder:'Output Folder'"
-                             data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                            data-dojo-attach-point="output_path" style="width:300px" required="true"
+                            data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false,placeHolder:'Output Folder'"
+                            data-dojo-attach-event="onChange:onOutputPathChange"></div>
                     </td>
                     <td>
                         <div class="headerrow" style="margin: 16px 0 7px 0">
                             <label class="appBoxLabel">Output Name</label><span class="charError"
-                                                                                style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+                                style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
                         </div>
                         <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
-                             data-dojo-attach-event="onChange:checkOutputName" data-dojo-attach-point="output_file"
-                             style="width:300px" required="true"
-                             data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
+                            data-dojo-attach-event="onChange:checkOutputName" data-dojo-attach-point="output_file"
+                            style="width:300px" required="true"
+                            data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
                         </div>
                     </td>
                 </tr>
@@ -139,27 +138,29 @@
     </div>
     <div class="appSubmissionArea">
         <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
-             style="margin-top:10px; text-align:center;">
+            style="margin-top:10px; text-align:center;">
             Submitting Subspecies Classification job
         </div>
         <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
-             style="margin-top:10px; text-align:center;">
+            style="margin-top:10px; text-align:center;">
             Error submitting job
         </div>
         <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
-             style="margin-top:10px; text-align:center;" >
-            Your job has been submitted successfully. Please visit your <a data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job and access the results.
+            style="margin-top:10px; text-align:center;">
+            Your job has been submitted successfully. Please visit your <a
+                data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job and
+            access the results.
         </div>
         <div style="margin-top: 10px; text-align:center;">
             <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel"
-                 data-dojo-type="dijit/form/Button">Cancel
+                data-dojo-type="dijit/form/Button">Cancel
             </div>
             <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset
             </div>
             <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit
             </div>
             <div id="${id}_live_job_check123" value=true data-dojo-type="dijit/form/CheckBox" checked
-                 data-dojo-attach-point="live_job" data-dojo-attach-event="onChange:setLiveJob"></div>
+                data-dojo-attach-point="live_job" data-dojo-attach-event="onChange:setLiveJob"></div>
             <label for="${id}_live_job_check123">View results</label>
         </div>
     </div>

@@ -1,5 +1,9 @@
 # Changelog
 
+## November 23, 2022
+## 3.27.2
+* [Enhancement] Added the login page to services that missed it. [PR #476](https://github.com/BV-BRC/BV-BRC-Web/pull/476)
+
 ## November 22, 2022
 ## 3.27.1
 * [Bug] Testing solution to subsystems heatmap loading issue. [PR #475](https://github.com/BV-BRC/BV-BRC-Web/pull/475)
