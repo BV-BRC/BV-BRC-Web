@@ -10,16 +10,16 @@ define([
   query, MetaCATSGrid, MetaCATSStore, DataAPI, WorkspaceManager
 ) {
   return declare([AppBase], {
-    baseClass: 'AppBase',
+    baseClass: 'AppBase MetaCATS',
     templateString: Template,
     applicationName: 'MetaCATS',
     requireAuth: true,
-    applicationLabel: 'Metadata-driven Comparative Analysis Tool (meta-CATS)',
-    applicationDescription: 'The meta-CATS tool looks for positions that significantly differ between user-defined groups of sequences. However, biological biases due to covariation, codon biases, and differences in genotype, geography, time of isolation, or others may affect the robustness of the underlying statistical assumptions.',
+    applicationLabel: 'Metadata-driven Comparative Analysis Tool (Meta-CATS)',
+    applicationDescription: 'The Meta-CATS tool looks for positions that significantly differ between user-defined groups of sequences. However, biological biases due to covariation, codon biases, and differences in genotype, geography, time of isolation, or others may affect the robustness of the underlying statistical assumptions.',
     applicationHelp: 'quick_references/services/metacats.html',
     tutorialLink: 'tutorial/metacats/metacats.html',
     videoLink: '',
-    pageTitle: 'MetaCATS',
+    pageTitle: 'MetaCATS Service | BV-BRC',
     appBaseURL: 'MetaCATS',
     startingRows: 10,
     maxGroups: 10,

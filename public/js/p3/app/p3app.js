@@ -186,7 +186,7 @@ define([
         newState.value = path;
         newState.set = 'path';
         newState.requireAuth = false;
-        newState.pageTitle = 'BVBRC Login';
+        newState.pageTitle = 'Login | BV-BRC';
         // console.log("Navigate to ", newState);
         _self.navigate(newState);
       });
@@ -201,7 +201,7 @@ define([
         newState.value = '/register'
         newState.set = 'path';
         newState.requireAuth = false;
-        newState.pageTitle = 'BVBRC Registration';
+        newState.pageTitle = 'Registration | BV-BRC';
         // console.log("Navigate to ", newState);
         _self.navigate(newState);
       });
@@ -216,7 +216,7 @@ define([
         newState.value = path;
         newState.set = 'path';
         newState.requireAuth = true;
-        newState.pageTitle = 'BRC Jobs';
+        newState.pageTitle = 'Jobs Status | BV-BRC';
         // console.log("Navigate to ", newState);
         _self.navigate(newState);
       });
@@ -255,7 +255,7 @@ define([
         newState.value = PathJoin(_self.dataAPI, 'content', path);
         newState.set = 'href';
         newState.requireAuth = false;
-        newState.pageTitle = 'BRC';
+        newState.pageTitle = 'BV-BRC';
         // console.log("Navigate to ", newState);
         _self.navigate(newState);
       });
@@ -311,7 +311,7 @@ define([
         newState.value = /* _self.dataAPI +*/ '/public/help/' + path;
         newState.set = 'href';
         newState.requireAuth = false;
-        newState.pageTitle = 'BRC';
+        newState.pageTitle = 'BV-BRC';
         // console.log("Navigate to ", newState);
         _self.navigate(newState);
       });
@@ -335,7 +335,7 @@ define([
         newState.value = path;
         newState.set = 'path';
         newState.requireAuth = false;
-        newState.pageTitle = 'BRC Workspace';
+        newState.pageTitle = 'Workspaces | BV-BRC';
         _self.navigate(newState);
       });
 
@@ -359,7 +359,7 @@ define([
         newState.value = path;
         newState.set = 'path';
         newState.requireAuth = false;
-        newState.pageTitle = 'System Status';
+        newState.pageTitle = 'System Status | BV-BRC';
 
         _self.navigate(newState);
       });

@@ -15,6 +15,7 @@ define([
   return declare([SearchBase], {
     templateString: template,
     searchAppName: 'Antibiotic Search',
+    pageTitle: 'Antibiotic Search | BV-BRC',
     dataKey: 'genome',
     resultUrlBase: '/view/GenomeList/?',
     resultUrlHash: '#view_tab=genomes',
