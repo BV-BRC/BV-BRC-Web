@@ -54,12 +54,12 @@
                                         </ul>
                                         <h3>BLAST</h3>
                                         <p>
-                                            The BLAST service integrates the BLAST (Basic Local Aligment Search Tool) algorithms to perform searches against public or private genomes or other reference databases using DNA or protein sequence(s).
+                                            The BLAST service uses BLAST (Basic Local Aligment Search Tool) to search against public or private genomes or other databases using DNA or protein sequence(s).
                                         </p>
                                         <ul>
                                             <li><a href="/app/Homology">BLAST</a></li>
                                             <li><a href="/docs/quick_references/services/blast.html">Quick Reference Guide</a></li>
-                                            <!-- <li><a href="/docs/">Tutorial</a></li> -->
+                                            <li><a href="/docs/tutorial/blast/blast.html">Tutorial</a></li>
                                         </ul>
                                         <h3>SARS-CoV-2 Genome Assembly and Annotation</h3>
                                         <p>
@@ -99,12 +99,12 @@
                                         </ul>
                                         <h3>Genome Alignment <span style="font-style: italic;">(B)</span></h3>
                                         <p>
-                                            The Whole Genome Alignment Service aligns genomes using <a href="">progressiveMauve</a>.
+                                            The Whole Genome Alignment Service aligns genomes using <a class="navigationLinkOut" href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0011147">progressiveMauve</a>.
                                         </p>
                                         <ul>
                                             <li><a href="/app/GenomeAlignment">Genome Alignment (Mauve)</a></li>
                                             <li><a href="/docs/quick_references/services/genome_alignment_service.html">Quick Reference Guide</a></li>
-                                            <!-- <li><a href="/docs/">Tutorial</a></li> -->
+                                            <li><a href="/docs/tutorial/genome_alignment/genome_alignment.html">Tutorial</a></li>
                                         </ul>
                                         <h3>Primer Design</h3>
                                         <p>
@@ -131,7 +131,16 @@
                                         <ul>
                                             <li><a href="/app/Tnseq">Tn-Seq Analysis</a></li>
                                             <li><a href="/docs/quick_references/services/tn_seq_analysis_service.html">Quick Reference Guide</a></li>
-                                            <!-- <li><a href="">Tutorial</a></li> -->
+                                            <li><a href="/docs/tutorial/tn-seq/tn-seq.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>Subspecies Classification <span style="font-style: italic;">(V)</span></h3>
+                                        <p>
+                                            The sub-species classification tool assigns the genotype/subtype of a virus, based on the genotype/subtype assignments maintained by the International Committee on Taxonomy of Viruses (ICTV). This tool infers the genotype/subtype for a query sequence from its position within a reference tree. The service uses the pplacer tool with a reference tree and reference alignment and includes the query sequence as input. Interpretation of the pplacer result is handled by Cladinator. Link to <a class="navigationLinkOut" href="https://matsen.fhcrc.org/pplacer">pplacer</a> and <a class="navigationLinkOut" href="https://github.com/cmzmasek/forester/blob/master/forester/java/src/org/forester/application/cladinator.java">Cladinator</a>.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/SubspeciesClassification">Subspecies Classification</a></li>
+                                            <li><a href="/docs/quick_references/services/subspecies_classification_service.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/subspecies_classification/subspecies_classification.html">Tutorial</a></li>
                                         </ul>
                                         <h3>MSA and SNP Alignment</h3>
                                         <p>
@@ -141,6 +150,15 @@
                                             <li><a href="/app/MSA">Multiple Sequence Alignment and SNP/Variation Analysis</a></li>
                                             <li><a href="/docs/quick_references/services/msa_snp_variation_service.html">Quick Reference Guide</a></li>
                                             <li><a href="/docs/tutorial/msa_snp_variation/msa_snp_variation.html">Tutorial</a></li>
+                                        </ul>
+                                        <h3>Proteome Comparison</h3>
+                                        <p>
+                                            The Proteome Comparison Service performs protein sequence-based genome comparison using bidirectional BLASTP. This service allows users to select genomes and compare them to reference genome.
+                                        </p>
+                                        <ul>
+                                            <li><a href="/app/SeqComparison">Proteome Comparison</a></li>
+                                            <li><a href="/docs/quick_references/services/proteome_comparison_service.html">Quick Reference Guide</a></li>
+                                            <li><a href="/docs/tutorial/proteome_comparison/proteome_comparison.html">Tutorial</a></li>
                                         </ul>
                                         <h3>Gene Tree</h3>
                                         <p>
@@ -167,15 +185,15 @@
                                             <li><a href="/docs/quick_references/services/proteome_comparison_service.html">Quick Reference Guide</a></li>
                                             <li><a href="/docs/tutorial/proteome_comparison/proteome_comparison.html">Tutorial</a></li>
                                         </ul> -->
-                                        <h3>Comparative Pathway <span style="font-style: italic;">(B)</span></h3>
+                                        <!-- <h3>Comparative Pathway <span style="font-style: italic;">(B)</span></h3>
                                         <p>
                                             The Comparative Pathway Service allows users to identify a set of pathways based on taxonomy, EC number, pathway ID, pathway name and/or specific annotation type.
                                         </p>
                                         <ul>
                                             <li><a href="/app/ComparativePathway">Comparative Pathway Tool</a></li>
                                             <li><a href="/docs/quick_references/services/comparative_pathway_service.html">Quick Reference Guide</a></li>
-                                            <!-- <li><a href="">Tutorial</a></li> -->
-                                        </ul>
+                                            <li><a href="">Tutorial</a></li>
+                                        </ul> -->
                                         <h3>Metagenomic Read Mapping</h3>
                                         <p>
                                             The Metagenomic Read Mapping Service uses KMA to align reads against antibiotic resistance genes from CARD and virulence factors from VFDB.
@@ -210,7 +228,7 @@
                                         <ul>
                                             <li><a href="/app/Expression">Differential Expression Import</a></li>
                                             <li><a href="/docs/quick_references/services/expression_data_import_service.html">Quick Reference Guide</a></li>
-                                            <!-- <li><a href="/docs">Tutorial</a></li> -->
+                                            <li><a href="/docs/tutorial/expression_import/expression_import.html">Tutorial</a></li>
                                         </ul>
                                         <h3>RNA-Seq Analysis</h3>
                                         <p>
@@ -219,7 +237,7 @@
                                         <ul>
                                             <li><a href="/app/Rnaseq">RNA-Seq Analysis</a></li>
                                             <li><a href="/docs/quick_references/services/rna_seq_analysis_service.html">Quick Reference Guide</a></li>
-                                            <!-- <li><a href="/docs">Tutorial</a></li> -->
+                                            <li><a href="/docs/tutorial/rna_seq/rna_seq.html">Tutorial</a></li>
                                         </ul>
                                         <h3>ID Mapper</h3>
                                         <p>
@@ -228,7 +246,7 @@
                                         <ul>
                                             <li><a href="/app/IDMapper">ID Mapper</a></li>
                                             <li><a href="/docs/quick_references/services/id_mapper.html">Quick Reference Guide</a></li>
-                                            <!-- <li><a href="/docs">Tutorial</a></li> -->
+                                            <li><a href="/docs/tutorial/id_mapper/id_mapper.html">Tutorial</a></li>
                                         </ul>
                                         <h3>Fastq Utilities</h3>
                                         <p>

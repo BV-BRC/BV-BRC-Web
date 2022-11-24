@@ -13,8 +13,8 @@ define([
 ) {
 
   return declare([AppBase], {
-    baseClass: 'App Assembly2',
-    pageTitle: 'Metagenomic Read Mapping Service',
+    baseClass: 'App MetagenomicReadMapping',
+    pageTitle: 'Metagenomic Read Mapping Service | BV-BRC',
     templateString: Template,
     applicationName: 'MetagenomicReadMapping',
     requireAuth: true,
@@ -22,6 +22,7 @@ define([
     applicationDescription: 'The Metagenomic Read Mapping Service uses KMA to align reads against antibiotic resistance genes from CARD and virulence factors from VFDB.',
     applicationHelp: 'quick_references/services/metagenomic_read_mapping_service.html',
     tutorialLink: 'tutorial/metagenomic_read_mapping/metagenomic_read_mapping.html',
+    videoLink: '',
     defaultPath: '',
     startingRows: 6,
     libCreated: 0,

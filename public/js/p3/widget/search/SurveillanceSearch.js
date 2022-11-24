@@ -21,6 +21,7 @@ define([
   return declare([SearchBase], {
     templateString: template,
     searchAppName: 'Surveillance Search',
+    pageTitle: 'Surveillance Search | BV-BRC',
     dataKey: 'surveillance',
     resultUrlBase: '/view/SurveillanceList/?',
     resultUrlHash: '#view_tab=surveillance',

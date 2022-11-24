@@ -11,12 +11,13 @@ define([
 ) {
   return declare([AppBase], {
     apiServiceUrl: window.App.dataAPI,
-    baseClass: 'App Assembly',
+    baseClass: 'App GenomeAlignment',
     templateString: Template,
     applicationName: 'GenomeAlignment',
     applicationHelp: 'quick_references/services/genome_alignment_service.html',
     tutorialLink: 'tutorial/genome_alignment/genome_alignment.html',
-    pageTitle: 'Genome Alignment',
+    videoLink: 'https://youtu.be/uvRzymyh_hM',
+    pageTitle: 'Genome Alignment Service | BV-BRC',
     requireAuth: true,
     applicationLabel: 'Genome Alignment (Mauve)',
     applicationDescription: 'The Whole Genome Alignment Service aligns genomes using progressiveMauve.',

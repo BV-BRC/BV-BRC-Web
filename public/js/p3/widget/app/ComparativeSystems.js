@@ -14,17 +14,17 @@ define([
   WorkspaceObjectSelector
 ) {
   return declare([AppBase], {
-    baseClass: 'App Assembly',
+    baseClass: 'ComparativeSystems',
     templateString: Template,
     requireAuth: true,
     applicationLabel: 'Comparative Systems',
     applicationDescription: 'The Comparative Systems Service allows users to identify a set of pathways, subsystems, and protein families for given genome(s) or genome group(s).',
-    videoLink: '',
+    videoLink: 'https://youtu.be/U0ahNJpebhs',
     appBaseURL: 'ComparativeSystems',
     applicationName: 'ComparativeSystems',
     applicationHelp: 'quick_references/services/comparative_systems.html',
     tutorialLink: 'tutorial/comparative_systems/comparative_systems.html',
-    pageTitle: 'Comparative Systems Tool',
+    pageTitle: 'Comparative Systems Service | BV-BRC',
     libraryData: null,
     defaultPath: '',
     startingRows: 8,
