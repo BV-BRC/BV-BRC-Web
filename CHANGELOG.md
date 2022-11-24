@@ -1,5 +1,11 @@
 # Changelog
 
+## November 24, 2022
+## 3.27.4
+* [Enhancement] Modify page titles to be more uniform across and accurate. [Commit #4dbbf7d](https://github.com/BV-BRC/BV-BRC-Web/commit/4dbbf7d690c03ce9b7d0d2a39d4a2522ab9ac000)
+* [Enhancement] Add page title to search base so each individual search page can display page/window titles in the browser. [Commit #070770f](https://github.com/BV-BRC/BV-BRC-Web/commit/070770fdc6b1c3aad5ad87092f13e5f5765bd689)
+* [Enhancement] Update page titles for remaining services. Modify content where needed. [Commit #49515fc](https://github.com/BV-BRC/BV-BRC-Web/commit/49515fce00f7d5a368f7181e9d8832d0bf9e03e6)
+
 ## November 23, 2022
 ## 3.27.3
 * [Enhancement] Add Instructional Video to services. Update page titles. Modify content where needed. [Commit #b916217](https://github.com/BV-BRC/BV-BRC-Web/commit/b916217dc792dad3b28c31ce1ec18b98ea7a0ea2)
