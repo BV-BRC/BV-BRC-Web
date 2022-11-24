@@ -22,6 +22,7 @@ define([
     templateString: template,
     searchAppName: 'Taxa Search',
     dataKey: 'taxa',
+    pageTitle: 'Taxa Search | BV-BRC',
     resultUrlBase: '/view/TaxonList/?',
     resultUrlHash: '#view_tab',
     postCreate: function () {

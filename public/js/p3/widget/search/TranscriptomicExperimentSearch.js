@@ -15,6 +15,7 @@ define([
   return declare([SearchBase], {
     templateString: template,
     searchAppName: 'Transcriptomic Experiment Search',
+    pageTitle: 'Transcriptomic Experiment Search | BV-BRC',
     dataKey: 'genome',
     resultUrlBase: '/view/GenomeList/?',
     resultUrlHash: '#view_tab=genomes',
