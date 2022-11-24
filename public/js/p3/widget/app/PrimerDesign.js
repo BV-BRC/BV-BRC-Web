@@ -17,7 +17,7 @@ define([
 ) {
   return declare([AppBase], {
     // global variables?
-    baseClass: 'Primer Design',
+    baseClass: 'PrimerDesign',
     templateString: Template,
     applicationName: 'PrimerDesign',
     requireAuth: true,
@@ -25,7 +25,8 @@ define([
     applicationDescription: 'The Primer Design Service utilizes Primer3 to design primers from a given input sequence under a variety of temperature, size, and concentration constraints.',
     applicationHelp: 'quick_references/services/primer_design_service.html',
     tutorialLink: 'tutorial/primer_design/primer_design.html',
-    pageTitle: 'Primer Design',
+    videoLink: 'https://youtu.be/4MlDw9V5H7w',
+    pageTitle: 'Primer Design Service | BV-BRC',
     libraryData: null,
     defaultPath: '',
 
