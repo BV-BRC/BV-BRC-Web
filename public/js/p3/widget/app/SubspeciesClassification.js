@@ -32,9 +32,9 @@ define([
   return declare([AppBase], {
     baseClass: 'SubspeciesClassification',
     requireAuth: true,
-    applicationDescription: 'The sub-species classification tool assigns the genotype/subtype of a virus, based on the genotype/subtype assignments maintained by the International Committee on Taxonomy of Viruses (ICTV). This tool infers the genotype/subtype for a query sequence from its position within a reference tree. The service uses the pplacer tool with a reference tree and reference alignment and includes the query sequence as input. Interpretation of the pplacer result is handled by Cladinator.',
+    applicationDescription: 'The Subspecies Classification tool assigns the genotype/subtype of a virus, based on the genotype/subtype assignments maintained by the International Committee on Taxonomy of Viruses (ICTV). This tool infers the genotype/subtype for a query sequence from its position within a reference tree. The service uses the pplacer tool with a reference tree and reference alignment and includes the query sequence as input. Interpretation of the pplacer result is handled by Cladinator.',
     videoLink: '',
-    pageTitle: 'Subspecies Classification',
+    pageTitle: 'Subspecies Classification Service | BV-BRC',
     appBaseURL: 'Subspecies Classification',
     templateString: Template,
     applicationHelp: '',

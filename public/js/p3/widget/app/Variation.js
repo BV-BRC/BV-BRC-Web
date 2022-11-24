@@ -13,7 +13,7 @@ define([
   dom, popup, Tooltip, Dialog, TooltipDialog, children, WorkspaceManager, Memory, Standby
 ) {
   return declare([AppBase], {
-    baseClass: 'App Assembly',
+    baseClass: 'App Variation',
     templateString: Template,
     applicationName: 'Variation',
     requireAuth: true,
@@ -21,7 +21,8 @@ define([
     applicationDescription: 'The Variation Analysis Service can be used to identify and annotate sequence variations.',
     applicationHelp: 'quick_references/services/variation_analysis_service.html',
     tutorialLink: 'tutorial/variation_analysis/variation_analysis.html',
-    pageTitle: 'Variation Service',
+    videoLink: '',
+    pageTitle: 'Variation Analysis Service | BV-BRC',
     libraryData: null,
     defaultPath: '',
     startingRows: 7,
