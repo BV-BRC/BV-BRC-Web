@@ -16,7 +16,7 @@ define([
 
   return declare([AppBase], {
     baseClass: 'App Assembly',
-    pageTitle: 'Genome Assembly Service',
+    pageTitle: 'Genome Assembly Service | BV-BRC',
     templateString: Template,
     applicationName: 'GenomeAssembly',
     requireAuth: true,
@@ -24,6 +24,7 @@ define([
     applicationDescription: 'The Genome Assembly Service allows single or multiple assemblers to be invoked to compare results. The service attempts to select the best assembly.',
     applicationHelp: 'user_guides/services/genome_assembly_service.html',
     tutorialLink: 'tutorial/genome_assembly/assembly.html',
+    videoLink: '',
     libraryData: null,
     defaultPath: '',
     startingRows: 13,

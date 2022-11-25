@@ -21,6 +21,7 @@ define([
   return declare([SearchBase], {
     templateString: template,
     searchAppName: 'Serology Search',
+    pageTitle: 'Serology Search | BV-BRC',
     dataKey: 'serology',
     resultUrlBase: '/view/SerologyList/?',
     resultUrlHash: '#view_tab=serology',

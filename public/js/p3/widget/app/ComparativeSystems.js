@@ -14,19 +14,23 @@ define([
   WorkspaceObjectSelector
 ) {
   return declare([AppBase], {
-    baseClass: 'App Assembly',
+    baseClass: 'ComparativeSystems',
     templateString: Template,
+    requireAuth: true,
+    applicationLabel: 'Comparative Systems',
+    applicationDescription: 'The Comparative Systems Service allows users to identify a set of pathways, subsystems, and protein families for given genome(s) or genome group(s).',
+    videoLink: 'https://youtu.be/U0ahNJpebhs',
+    appBaseURL: 'ComparativeSystems',
     applicationName: 'ComparativeSystems',
     applicationHelp: 'quick_references/services/comparative_systems.html',
     tutorialLink: 'tutorial/comparative_systems/comparative_systems.html',
-    pageTitle: 'Comparative Systems Tool',
+    pageTitle: 'Comparative Systems Service | BV-BRC',
     libraryData: null,
     defaultPath: '',
     startingRows: 8,
     maxGenomes: 500,
 
     constructor: function () {
-
       this.addedLibs = 0;
       this.addedList = [];
       this.addedGenomes = 0;
@@ -36,9 +40,13 @@ define([
       if (this._started) {
         return;
       }
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
+        return;
+      }
       this.inherited(arguments);
       var _self = this;
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
+
       for (var i = 0; i < this.startingRows; i++) {
         var tr = this.libsTable.insertRow(0);
         domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
@@ -57,11 +65,13 @@ define([
         this.genome_group.placeAt(ggDom, 'only');
       }
     },
+
     increaseLib: function (rec) {
       this.addedList.push(rec);
       this.addedLibs = this.addedList.length;
       this.numlibs.set('value', Number(this.addedLibs));
     },
+
     decreaseLib: function (rec) {
       var idx = this.addedList.indexOf(rec);
       if (idx > -1) {
@@ -73,6 +83,7 @@ define([
       this.addedLibs = this.addedList.length;
       this.numlibs.set('value', Number(this.addedLibs));
     },
+
     formatName: function (name) {
       var maxName = 29;
       if (name.length > maxName) {
@@ -80,6 +91,7 @@ define([
       }
       return name;
     },
+
     onAddGenome: function () {
       var lrec = {};
 
@@ -115,6 +127,7 @@ define([
       }));
       this.increaseLib(lrec);
     },
+
     onAddGenomeGroup: function () {
       var lrec = {};
 

@@ -1,6 +1,24 @@
 # Changelog
 
+## November 24, 2022
+## 3.27.4
+* [Enhancement] Modify page titles to be more uniform across and accurate. [Commit #4dbbf7d](https://github.com/BV-BRC/BV-BRC-Web/commit/4dbbf7d690c03ce9b7d0d2a39d4a2522ab9ac000)
+* [Enhancement] Add page title to search base so each individual search page can display page/window titles in the browser. [Commit #070770f](https://github.com/BV-BRC/BV-BRC-Web/commit/070770fdc6b1c3aad5ad87092f13e5f5765bd689)
+* [Enhancement] Update page titles for remaining services. Modify content where needed. [Commit #49515fc](https://github.com/BV-BRC/BV-BRC-Web/commit/49515fce00f7d5a368f7181e9d8832d0bf9e03e6)
+
+## November 23, 2022
+## 3.27.3
+* [Enhancement] Add Instructional Video to services. Update page titles. Modify content where needed. [Commit #b916217](https://github.com/BV-BRC/BV-BRC-Web/commit/b916217dc792dad3b28c31ce1ec18b98ea7a0ea2)
+* [] Remove view results checkbox and function for live jobs. [Commit #eb40db9](https://github.com/BV-BRC/BV-BRC-Web/commit/eb40db9852ab63440857579337ecc6bb42a62ba1)
+* []  Update Tools & Services page with new services, tutorials, and quick reference guides. Remove old content/services that are no longer relevant. [Commit #228780c](https://github.com/BV-BRC/BV-BRC-Web/commit/228780cefe7e3eff17b84f9b04c4791ef308caec)
+
+## 3.27.2
+* [Enhancement] Added the login page to services that missed it. [PR #476](https://github.com/BV-BRC/BV-BRC-Web/pull/476)
+
 ## November 22, 2022
+## 3.27.1
+* [Bug] Testing solution to subsystems heatmap loading issue. [PR #475](https://github.com/BV-BRC/BV-BRC-Web/pull/475)
+
 ## 3.27.0
 * [Release] Production Release 3.27.0
 

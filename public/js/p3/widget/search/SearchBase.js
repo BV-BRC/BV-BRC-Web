@@ -19,6 +19,10 @@ define([
     postCreate: function () {
       this.inherited(arguments)
 
+      if (this.pageTitle) {
+        window.document.title = this.pageTitle;
+      }
+
       this.buildSearchPanel()
     },
     buildSearchPanel: function () {

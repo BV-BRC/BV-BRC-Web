@@ -13,8 +13,8 @@ define([
 ) {
 
   return declare([AppBase], {
-    baseClass: 'App Assembly2',
-    pageTitle: 'Comprehensive Genome Analysis Service',
+    baseClass: 'ComprehensiveGenomeAnalysis',
+    pageTitle: 'Comprehensive Genome Analysis Service | BV-BRC',
     templateString: Template,
     applicationName: 'ComprehensiveGenomeAnalysis',
     requireAuth: true,
@@ -22,6 +22,7 @@ define([
     applicationDescription: 'The Comprehensive Genome Analysis Service provides a streamlined analysis "meta-service" that accepts raw reads and performs a comprehensive analysis including assembly, annotation, identification of nearest neighbors, a basic comparative analysis that includes a subsystem summary, phylogenetic tree, and the features that distinguish the genome from its nearest neighbors.',
     applicationHelp: 'quick_references/services/comprehensive_genome_analysis_service.html',
     tutorialLink: 'tutorial/comprehensive_genome_analysis/comprehensive_genome_analysis.html',
+    videoLink: 'https://youtu.be/AI23teqjnwM',
     libraryData: null,
     defaultPath: '',
     startingRows: 6,

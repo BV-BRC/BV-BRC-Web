@@ -14,7 +14,7 @@ define([
   children, WorkspaceManager, Memory, Standby, when
 ) {
   return declare([AppBase], {
-    baseClass: 'App Assembly',
+    baseClass: 'App ProteomeComparison',
     templateString: Template,
     applicationName: 'GenomeComparison',
     requireAuth: true,
@@ -22,8 +22,8 @@ define([
     applicationDescription: 'The Proteome Comparison Service performs protein sequence-based genome comparison using bidirectional BLASTP. This service allows users to select genomes and compare them to reference genome.',
     applicationHelp: 'quick_references/services/proteome_comparison_service.html',
     tutorialLink: 'tutorial/proteome_comparison/proteome_comparison.html',
-    videoLink: '',
-    pageTitle: 'Proteome Comparison',
+    videoLink: 'https://youtu.be/UJak-ifQ9FE',
+    pageTitle: 'Proteome Comparison Service | BV-BRC',
     defaultPath: '',
     startingRows: 9,
     maxGenomes: 9,

@@ -25,6 +25,7 @@ define([
   return declare([SearchBase], {
     templateString: template,
     searchAppName: 'Protein Search',
+    pageTitle: 'Protein Search | BV-BRC',
     dataKey: 'genome_feature',
     resultUrlBase: '/view/FeatureList/?',
     resultUrlHash: '#view_tab=features',

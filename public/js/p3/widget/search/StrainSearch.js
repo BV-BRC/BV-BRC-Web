@@ -25,6 +25,7 @@ define([
   return declare([SearchBase], {
     templateString: template,
     searchAppName: 'Strain Search',
+    pageTitle: 'Strain Search | BV-BRC',
     dataKey: 'strain',
     resultUrlBase: '/view/StrainList/?',
     resultUrlHash: '#view_tab=strains',
