@@ -1,4 +1,8 @@
 # Changelog
+## November 26, 2022
+## 3.27.5
+* [Enhancement] Add regex validation for Assembly Service Output Name field. [Commit #cbe47aa](https://github.com/BV-BRC/BV-BRC-Web/commit/cbe47aaf49a26093802e7a7943ca5540c8691dc0)
+* [Enhancement] Increase icon size of show/hide hidden files in workspace. [Commit #48b5bc8](https://github.com/BV-BRC/BV-BRC-Web/commit/48b5bc8960fd59962c018355a0998ddbc34e47ff)
 
 ## November 24, 2022
 ## 3.27.4
