@@ -61,7 +61,7 @@ define([
     phylogram: true,
     containerType: 'feature_data',
     docsServiceURL: window.App.docsServiceURL,
-    tutorialLink: 'user_guides/organisms_taxon/phylogeny.html',
+    tutorialLink: 'quick_references/organisms_taxon/phylogeny.html',
     nodeSelection: null,
     featureData: null,
     genomeData: null,
@@ -81,17 +81,17 @@ define([
       console.log('postCreate: this.state', this.state);
       //console.log('postCreate: folder', folder);
 
-      this.pathContainer = domConstruct.create('div', { 'class': 'wsBreadCrumbContainer' }, this.domNode);      
+      this.pathContainer = domConstruct.create('div', { 'class': 'wsBreadCrumbContainer' }, this.domNode);
       this.pathContainer.innerHTML = this.generatePathLinks(folder);
       this.containerPane = new ContentPane({ region: 'center' });// domConstruct.create("div", {id: this.id + "_canvas"}, this.domNode);
-      
+
       /*
       this.containerActionBar = new ContainerActionBar({
         baseClass: 'WSContainerActionBar',
         region: 'top'
       });
       */
-      
+
       this.selectionActionBar = new ActionBar({
         region: 'right',
         layoutPriority: 4,
@@ -182,7 +182,7 @@ define([
         if (cur[0].feature_id) {
           request.get(PathJoin(this.apiServer, 'genome_feature', cur[0].feature_id), {
             headers: {
-              accept: 'application/json', 
+              accept: 'application/json',
               'X-Requested-With': null,
               Authorization: (window.App.authorizationToken || '')
             },
@@ -194,7 +194,7 @@ define([
         else {
           request.get(PathJoin(this.apiServer, 'genome', cur[0].genome_id), {
             headers: {
-              accept: 'application/json', 
+              accept: 'application/json',
               'X-Requested-With': null,
               Authorization: (window.App.authorizationToken || '')
             },
@@ -221,7 +221,7 @@ define([
       if (cur.length == 1) {
         request.get(PathJoin(this.apiServer, 'genome', cur[0].genome_id), {
           headers: {
-            accept: 'application/json', 
+            accept: 'application/json',
             'X-Requested-With': null,
             Authorization: (window.App.authorizationToken || '')
           },
@@ -254,7 +254,7 @@ define([
     onSetTaxonId: function (attr, oldVal, taxonId) {
       request.get(PathJoin(this.apiServer, 'taxonomy', taxonId), {
         headers: {
-          accept: 'application/newick+json', 
+          accept: 'application/newick+json',
           'X-Requested-With': null,
           Authorization: (window.App.authorizationToken || '')
         },
@@ -319,7 +319,7 @@ define([
         out.push("<a class='navigationLink' href='");
         bp.push(idx == 0 ? part : encodeURIComponent(part));  // leave username decoded
         out.push('/' + bp.join('/'));
-        out.push("'>" + ((idx == 0) ? part.replace('@' + localStorage.getItem('realm'), '') : part) + '</a> / ');  
+        out.push("'>" + ((idx == 0) ? part.replace('@' + localStorage.getItem('realm'), '') : part) + '</a> / ');
       });
       // console.log('in generatePathLinks() out', out);
       return out.join('');

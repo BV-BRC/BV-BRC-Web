@@ -343,7 +343,7 @@ define([
           label: 'GUIDE',
           persistent: true,
           validTypes: ['*'],
-          tooltip: 'Open User Guide in a new Tab'
+          tooltip: 'Open Quick Reference Guide in a new Tab'
         },
         function () {
           window.open(PathJoin(this.docsServiceURL, this.tutorialLink));
@@ -360,7 +360,7 @@ define([
           tooltip: 'Download Selection',
           max: 10000,
           tooltipDialog: downloadSelectionTT,
-          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
+          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
         },
         function (selection, container) {
 
@@ -393,7 +393,7 @@ define([
           tooltip: 'Copy Selection to Clipboard.',
           tooltipDialog: copySelectionTT,
           max: 5000,
-          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'pathway_summary_data', 'subsystem_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'surveillance_data', 'serology_data', 'strain_data', 'epitope_data']
+          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'pathway_summary_data', 'subsystem_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'surveillance_data', 'serology_data', 'strain_data', 'epitope_data']
         },
         function (selection, container) {
           this.selectionActionBar._actions.CopySelection.options.tooltipDialog.set('selection', selection);
@@ -473,7 +473,7 @@ define([
           });
         },
         false
-      ], [
+      ],  [
         'ViewFeatureItem',
         'MultiButton fa icon-selection-Feature fa-2x',
         {
@@ -501,7 +501,7 @@ define([
           });
         },
         false
-      ], [
+      ],  [
         'ViewFeatureItems',
         'MultiButton fa icon-selection-FeatureList fa-2x',
         {
@@ -615,7 +615,7 @@ define([
           multiple: false,
           tooltip: 'Switch to Genome View. Press and Hold for more options.',
           ignoreDataType: true,
-          validContainerTypes: ['sequence_data', 'feature_data', 'spgene_data', 'sequence_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data'],
+          validContainerTypes: ['sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'sequence_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data'],
           pressAndHold: function (selection, button, opts, evt) {
             popup.open({
               popup: new PerspectiveToolTipDialog({ perspectiveUrl: '/view/Genome/' + selection[0].genome_id }),
@@ -771,7 +771,7 @@ define([
           max: 0,
           tooltip: 'Switch to Genome List View. Press and Hold for more options.',
           ignoreDataType: true,
-          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'spgene_data', 'sequence_data'],
+          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'sequence_data'],
           pressAndHold: function (selection, button, opts, evt) {
             const genome_ids = Array.from(selection.reduce((p, v) => { return p.add(v.genome_id) }, new Set()))
             popup.open({
@@ -827,7 +827,7 @@ define([
           max: 5000,
           tooltip: 'View FASTA Data',
           tooltipDialog: viewFASTATT,
-          validContainerTypes: ['feature_data', 'spgene_data', 'transcriptomics_gene_data', 'pathway_data', 'sequence_data']
+          validContainerTypes: ['feature_data', 'protein_data', 'spgene_data', 'transcriptomics_gene_data', 'pathway_data', 'sequence_data']
         },
         function (selection, containerWidget) {
           switch (containerWidget.containerType) {
@@ -922,7 +922,7 @@ define([
           validTypes: ['*'],
           tooltipDialog: viewMSATT,
           tooltip: 'Multiple Sequence Alignment',
-          validContainerTypes: ['feature_data', 'spgene_data', 'proteinfamily_data', 'pathway_data', 'transcriptomics_gene_data']
+          validContainerTypes: ['feature_data', 'protein_data', 'spgene_data', 'proteinfamily_data', 'pathway_data', 'transcriptomics_gene_data']
         },
         function (selection) {
           viewMSATT.selection = selection;
@@ -945,7 +945,7 @@ define([
           validTypes: ['*'],
           tooltip: 'ID Mapping',
           tooltipDialog: idMappingTTDialog,
-          validContainerTypes: ['feature_data', 'spgene_data', 'transcriptomics_gene_data', 'proteinfamily_data', 'pathway_data']
+          validContainerTypes: ['feature_data', 'protein_data', 'spgene_data', 'transcriptomics_gene_data', 'proteinfamily_data', 'pathway_data']
         },
         function (selection, containerWidget) {
 
@@ -1272,7 +1272,7 @@ define([
           requireAuth: true,
           max: 10000,
           tooltip: 'Add selection to a new or existing group',
-          validContainerTypes: ['genome_data', 'feature_data', 'transcriptomics_experiment_data', 'transcriptomics_gene_data', 'spgene_data']
+          validContainerTypes: ['genome_data', 'feature_data', 'protein_data', 'transcriptomics_experiment_data', 'transcriptomics_gene_data', 'spgene_data']
         },
         function (selection, containerWidget) {
           var dlg = new Dialog({ title: 'Add selected items to group' });

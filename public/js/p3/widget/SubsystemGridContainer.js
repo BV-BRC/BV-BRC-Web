@@ -22,7 +22,7 @@ define([
   return declare([GridContainer], {
     gridCtor: SubsystemGrid,
     containerType: 'subsystemTab_data',
-    tutorialLink: '',
+    tutorialLink: 'quick_references/organisms_taxon/subsystems_tab.html',
     facetFields: AdvancedSearchFields['subsystem'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['subsystem'].filter((ff) => ff.search),
     filter: '',

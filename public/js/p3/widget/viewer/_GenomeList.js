@@ -1,7 +1,7 @@
 define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on', 'dojo/_base/lang', 'dojo/request',
   'dijit/layout/ContentPane', 'dojo/topic',
-  '../FeatureGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer',
+  '../FeatureGridContainer', '../ProteinGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer',
   '../PathwayGridContainer',
   '../ExperimentsContainer', '../InteractionContainer', '../GenomeGridContainer',
   '../AMRPanelGridContainer', '../SubsystemGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
@@ -9,7 +9,7 @@ define([
 ], function (
   declare, TabViewerBase, on, lang, xhr,
   ContentPane, Topic,
-  FeatureGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer,
+  FeatureGridContainer, ProteinGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer,
   PathwayGridContainer,
   ExperimentsContainer, InteractionsContainer, GenomeGridContainer,
   AMRPanelGridContainer, SubsystemGridContainer, SurveillanceGridContainer, SerologyGridContainer,
@@ -238,8 +238,13 @@ define([
         id: this.viewer.id + '_amr'
       });
       this.features = new FeatureGridContainer({
-        title: 'Proteins',
+        title: 'Features',
         id: this.viewer.id + '_features',
+        disabled: false
+      });
+      this.proteins = new ProteinGridContainer({
+        title: 'Proteins',
+        id: this.viewer.id + '_proteins',
         disabled: false
       });
       this.structures = new ProteinStructureGridContainer({
@@ -300,6 +305,7 @@ define([
       this.viewer.addChild(this.amr);
       this.viewer.addChild(this.sequences);
       this.viewer.addChild(this.features);
+      this.viewer.addChild(this.proteins);
       this.viewer.addChild(this.structures);
       this.viewer.addChild(this.specialtyGenes);
       this.viewer.addChild(this.proteinFeatures);

@@ -52,7 +52,7 @@ define([
     phylogram: true,
     containerType: 'genome_data',
     docsServiceURL: window.App.docsServiceURL,
-    tutorialLink: 'user_guides/organisms_taxon/phylogeny.html',
+    tutorialLink: 'quick_references/organisms_taxon/phylogeny.html',
     selection: null,
     tooltip: 'The "Phylogeny" tab provides order or genus level phylogenetic tree, constructed using core protein families.',
     startup: function () {
