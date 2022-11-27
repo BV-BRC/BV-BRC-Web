@@ -23,7 +23,7 @@ define([
   return declare([GridContainer], {
     gridCtor: ProteinStructureGrid,
     containerType: 'structure_data',
-    tutorialLink: '',
+    tutorialLink: 'quick_references/organisms_taxon/protein_structures.html',
     facetFields: AdvancedSearchFields['protein_structure'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['protein_structure'].filter((ff) => ff.search),
     filter: '',

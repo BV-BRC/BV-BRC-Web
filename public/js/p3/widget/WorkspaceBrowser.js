@@ -834,7 +834,7 @@ define([
         });
       }, self.path.split('/').length > 3);
 
-      this.browserHeader.addAction('ShowHidden', (window.App.showHiddenFiles ? 'fa icon-eye-slash' : 'fa icon-eye'), {
+      this.browserHeader.addAction('ShowHidden', (window.App.showHiddenFiles ? 'fa icon-eye-slash fa-2x' : 'fa icon-eye fa-2x'), {
         label: window.App.showHiddenFiles ? 'HIDE HIDDEN' : 'SHOW HIDDEN',
         multiple: true,
         validTypes: ['folder'],

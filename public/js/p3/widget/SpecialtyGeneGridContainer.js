@@ -22,7 +22,7 @@ define([
   return declare([GridContainer], {
     gridCtor: SpecialtyGeneGrid,
     containerType: 'spgene_data',
-    tutorialLink: 'user_guides/organisms_taxon/specialty_genes.html',
+    tutorialLink: 'quick_references/organisms_taxon/specialty_genes.html',
     facetFields: ['public', 'property', 'source', 'evidence', 'classification', 'antibiotics_class', 'antibiotics'],
     dataModel: 'sp_gene',
     getFilterPanel: function (opts) {

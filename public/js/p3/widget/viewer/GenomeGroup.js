@@ -2,7 +2,7 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', '../../util/PathJoin', 'dojo/request',
   './TabViewerBase', './_GenomeList', '../AMRPanelGridContainer',
   '../GenomeListOverview', '../StrainGridContainer', '../GroupGenomeGridContainer', '../AMRPanelGridContainer', '../SequenceGridContainer',
-  '../FeatureGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer',
+  '../FeatureGridContainer', '../ProteinGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer',
   '../ProteinFamiliesContainer', '../PathwayGridContainer', '../SubsystemGridContainer', '../ExperimentsContainer', '../InteractionsContainer',
   '../EpitopeGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
 
@@ -10,7 +10,7 @@ define([
   declare, lang, PathJoin, xhr,
   TabViewerBase, GenomeList, AMRPanelGridContainer,
   Overview, StrainGridContainer, GroupGenomeGridContainer, AMRPanelGridContainer, SequenceGridContainer,
-  FeatureGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer,
+  FeatureGridContainer, ProteinGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer,
   ProteinFamiliesContainer, PathwayGridContainer, SubsystemGridContainer, ExperimentsContainer, InteractionsContainer,
   EpitopeGridContainer, SurveillanceGridContainer, SerologyGridContainer
 ) {
@@ -75,9 +75,16 @@ define([
         return;
       }
       switch (active) {
+        case 'strains':
         case 'transcriptomics':
           activeTab.set('state', lang.mixin({}, this.state, { search: `in(genome_ids,GenomeGroup(${encodeURIComponent('/' + this.groupPath)}))` }));
           break;
+
+        // case 'strains':
+        //   activeTab.set('state', lang.mixin({}, this.state, {
+        //     search: 'eq(genome_ids,' + this.state.taxon_id + ')'
+        //   }));
+        //   break;
 
         // eslint-disable-next-line no-case-declarations
         default:
@@ -134,8 +141,14 @@ define([
         state: this.state
       });
       this.features = new FeatureGridContainer({
-        title: 'Proteins',
+        title: 'Features',
         id: this.viewer.id + '_features',
+        disabled: false,
+        state: this.state
+      });
+      this.proteins = new ProteinGridContainer({
+        title: 'Proteins',
+        id: this.viewer.id + '_proteins',
         disabled: false,
         state: this.state
       });
@@ -203,6 +216,7 @@ define([
       this.viewer.addChild(this.amr);
       this.viewer.addChild(this.sequences);
       this.viewer.addChild(this.features);
+      this.viewer.addChild(this.proteins);
       this.viewer.addChild(this.proteinStructures);
       this.viewer.addChild(this.specialtyGenes);
       this.viewer.addChild(this.proteinFeatures);

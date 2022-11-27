@@ -3,7 +3,7 @@ define([
   'dojo/topic', 'dojo/request',
   'dijit/layout/ContentPane',
   './TabViewerBase',
-  '../FeatureListOverview', '../FeatureGridContainer',
+  '../FeatureListOverview', '../ProteinGridContainer',
   '../CompareRegionContainer',
   '../../util/PathJoin', '../../util/QueryToEnglish'
 ], function (
@@ -11,20 +11,20 @@ define([
   Topic, xhr,
   ContentPane,
   TabViewerBase,
-  Overview, FeatureGridContainer,
+  Overview, ProteinGridContainer,
   CompareRegionContainer,
   PathJoin, QueryToEnglish
 ) {
 
   return declare([TabViewerBase], {
-    baseClass: 'FeatureList',
+    baseClass: 'ProteinList',
     disabled: false,
-    containerType: 'feature_data',
+    containerType: 'protein_data',
     query: null,
     totalFeatures: 0,
-    defaultTab: 'features',
+    defaultTab: 'proteins',
     warningContent: 'Your query returned too many results for detailed analysis.',
-    perspectiveLabel: 'Feature List View',
+    perspectiveLabel: 'Protein List View',
     perspectiveIconClass: 'icon-selection-FeatureList',
     _setQueryAttr: function (query) {
 
@@ -90,6 +90,12 @@ define([
         case 'compareRegionViewer':
           activeTab.set('state', this.state); // lang.mixin({},this.state));
           break;
+        case 'proteins':
+          // activeTab.set('state', this.state); // lang.mixin({},this.state));
+          activeTab.set('state', lang.mixin({}, this.state, {
+            search: this.state.search + '&and(or(eq(feature_type,CDS),eq(feature_type,mat_peptide)),eq(annotation,PATRIC))'
+          }));
+          break;
         default:
           var activeQueryState;
           if (this.state && this.state.genome_ids) {
@@ -105,7 +111,7 @@ define([
       }
       // console.log(active, this.state);
       if (activeTab) {
-        var pageTitle = 'Feature List ' + activeTab.title;
+        var pageTitle = 'Protein List ' + activeTab.title + '| BV-BRC';
         // console.log("Feature List: ", pageTitle);
         if (window.document.title !== pageTitle) {
           window.document.title = pageTitle;
@@ -123,18 +129,18 @@ define([
       this.inherited(arguments);
 
       this.watch('query', lang.hitch(this, 'onSetQuery'));
-      this.watch('totalFeatures', lang.hitch(this, 'onSetTotalFeatures'));
+      this.watch('totalFeatures', lang.hitch(this, 'onSetTotalProteins'));
 
       this.overview = new Overview({
         content: 'Overview',
-        title: 'Feature List Overview',
+        title: 'Protein List Overview',
         id: this.viewer.id + '_overview'
       });
 
-      this.features = new FeatureGridContainer({
-        title: 'Features',
+      this.proteins = new ProteinGridContainer({
+        title: 'Proteins',
         id: this.viewer.id + '_features',
-        tooltip: 'Features tab contains a list of all features (e.g., CDS, rRNA, tRNA, etc.) associated with a given Phylum, Class, Order, Family, Genus, Species or Genome.',
+        tooltip: 'Proteins tab contains a list of all proteins (e.g., CDS, rRNA, tRNA, etc.) associated with a given Phylum, Class, Order, Family, Genus, Species or Genome.',
         disabled: false
       });
 
@@ -146,12 +152,12 @@ define([
 
 
       this.viewer.addChild(this.overview);
-      this.viewer.addChild(this.features);
+      this.viewer.addChild(this.proteins);
       this.viewer.addChild(this.compareRegionViewer);
     },
 
-    onSetTotalFeatures: function (attr, oldVal, newVal) {
-      this.totalCountNode.innerHTML = ' ( ' + newVal + ' Features ) ';
+    onSetTotalProteins: function (attr, oldVal, newVal) {
+      this.totalCountNode.innerHTML = ' ( ' + newVal + ' Proteins ) ';
     },
 
     hideWarning: function () {

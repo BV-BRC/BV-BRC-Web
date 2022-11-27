@@ -53,6 +53,16 @@ define([
         return;
       }
       switch (active) {
+        case 'features':
+          var activeQueryState;
+          activeQueryState = lang.mixin({}, this.state, {
+            search: this.state.search,
+            hashParams: lang.mixin({}, this.state.hashParams, {
+              filter: 'false'
+            })
+          });
+          activeTab.set('state', activeQueryState);
+          break;
         default:
           var activeQueryState;
           // if(this.state && this.state.feature_ids){

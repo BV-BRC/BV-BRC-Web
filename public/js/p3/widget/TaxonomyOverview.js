@@ -20,7 +20,7 @@ define([
     state: null,
     searchName: null,
     docsServiceURL: window.App.docsServiceURL,
-    tutorialLink: 'user_guides/organisms_taxon/overview.html',
+    tutorialLink: 'quick_references/organisms_taxon/overview.html',
     tooltip: 'The “Overview” tab provides a summary of available data, metadata, and list of reference genomes for current taxon level.',
 
     _setStateAttr: function (state) {

@@ -22,7 +22,7 @@ define([
 
   return declare([GridContainer], {
     containerType: 'genome_amr_data',
-    tutorialLink: 'user_guides/organisms_taxon/amr_phenotypes.html',
+    tutorialLink: 'quick_references/organisms_taxon/amr_phenotypes.html',
     tooltip: 'The “AMR Phenotype” lists antimicrobial resistant phenotypes for genomes, inferred using computational and laboratory methods.',
     facetFields: AdvancedSearchFields['genome_amr'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['genome_amr'].filter((ff) => ff.search),
