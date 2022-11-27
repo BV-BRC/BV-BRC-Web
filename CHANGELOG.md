@@ -1,5 +1,9 @@
 # Changelog
 ## November 26, 2022
+## 3.27.6
+* [Bug Fix] Fix broken links from info icons on data tabs. [Commit #0e16ea0](https://github.com/BV-BRC/BV-BRC-Web/commit/0e16ea02aa93cd591e0287ff2231ba83e9354af7)
+* [Bug Fix] Fix Strains tab query for Genome Group Viewer. [Commit #fac7d7b](https://github.com/BV-BRC/BV-BRC-Web/commit/fac7d7bdd46868ae09edb2fe957b33545bc8488b)
+
 ## 3.27.5
 * [Enhancement] Add regex validation for Assembly Service Output Name field. [Commit #cbe47aa](https://github.com/BV-BRC/BV-BRC-Web/commit/cbe47aaf49a26093802e7a7943ca5540c8691dc0)
 * [Enhancement] Increase icon size of show/hide hidden files in workspace. [Commit #48b5bc8](https://github.com/BV-BRC/BV-BRC-Web/commit/48b5bc8960fd59962c018355a0998ddbc34e47ff)
