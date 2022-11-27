@@ -23,7 +23,7 @@ define([
       'genome',
       'strain',
       'genome_feature',
-      'protein',
+      // 'protein',
       'sp_gene',
       'protein_feature',
       'epitope',
@@ -40,8 +40,8 @@ define([
       taxonomy: 'Taxa',
       genome: 'Genomes',
       strain: 'Strains',
-      genome_feature: 'Genomic Features',
-      protein: 'Proteins',
+      genome_feature: 'Features',
+      // protein: 'Proteins',
       sp_gene: 'Specialty Genes',
       protein_feature: 'Domains and Motifs',
       epitope: 'Epitopes',
@@ -112,9 +112,9 @@ define([
 
       protein: function (docs, total) {
         if (total == 1) {
-          return ['/view/Feature/', docs[0].feature_id, '#view_tab=overview'].join('');
+          return ['/view/Protein/', docs[0].feature_id, '#view_tab=overview'].join('');
         }
-        return ['/view/FeatureList/?', this.state.search, '#view_tab=features&defaultSort=-score'].join('');
+        return ['/view/ProteinList/?', this.state.search, '#view_tab=proteins&defaultSort=-score'].join('');
       },
 
       genome_sequence: function (docs, total) {
@@ -274,10 +274,41 @@ define([
     },
 
     formatgenome_feature: function (docs, total) {
-      var out = ['<div class="searchResultsContainer featureResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/FeatureList/?', this.state.search, '#view_tab=features&defaultSort=-score', '">Proteins&nbsp;(', total, ')</div> </a>'];
+      var out = ['<div class="searchResultsContainer featureResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/FeatureList/?', this.state.search, '#view_tab=features&defaultSort=-score', '">Features&nbsp;(', total, ')</div> </a>'];
       docs.forEach(function (doc) {
         out.push("<div class='searchResult'>");
         out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Feature/" + doc.feature_id + "'>" + (doc.product || doc.patric_id || doc.refseq_locus_tag || doc.alt_locus_tag) + '</a>');
+        if (doc.gene) {  out.push(' | ' + doc.gene ); }
+        out.push('</div>');
+
+        out.push("<div class='resultInfo'>" + doc.genome_name +  '</div>');
+
+        out.push("<div class='resultInfo'>" + doc.annotation + ' | ' + doc.feature_type);
+
+        if (doc.patric_id) {
+          out.push('&nbsp;|&nbsp;' + doc.patric_id);
+        }
+
+        if (doc.refseq_locus_tag) {
+          out.push('&nbsp;|&nbsp;' + doc.refseq_locus_tag);
+        }
+
+        if (doc.alt_locus_tag) {
+          out.push('&nbsp;|&nbsp;' + doc.alt_locus_tag);
+        }
+
+        out.push('</div>');
+        out.push('</div>');
+      });
+      out.push('</div>');
+      return out.join('');
+    },
+
+    formatprotein: function (docs, total) {
+      var out = ['<div class="searchResultsContainer featureResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/ProteinList/?', this.state.search, '#view_tab=proteins&defaultSort=-score', '">Proteins&nbsp;(', total, ')</div> </a>'];
+      docs.forEach(function (doc) {
+        out.push("<div class='searchResult'>");
+        out.push("<div class='resultHead'><a class=\"navigationLink\" href='/view/Protein/" + doc.feature_id + "'>" + (doc.product || doc.patric_id || doc.refseq_locus_tag || doc.alt_locus_tag) + '</a>');
         if (doc.gene) {  out.push(' | ' + doc.gene ); }
         out.push('</div>');
 
@@ -606,7 +637,7 @@ define([
         }
       });
 
-      // console.log("SEARCH: ", q);
+      // console.log("SEARCH: " + q);
       this.viewer.innerHTML = 'Searching....';
       Request.post(window.App.dataAPI + 'query/', {
         headers: {

@@ -101,7 +101,7 @@ define([
             // clear = true;
             break;
           case 'proteins':
-            Topic.publish('/navigate', { href: '/view/FeatureList/?' + q + '#view_tab=features&defaultSort=-score' });
+            Topic.publish('/navigate', { href: '/view/ProteinList/?' + q + '#view_tab=proteins&defaultSort=-score' });
             // clear = true;
             break;
           case 'genome_sequences':
@@ -188,7 +188,7 @@ define([
           Topic.publish('/navigate', { href: '/view/FeatureList/?' + q + '#view_tab=features&defaultSort=-score' });
           break;
         case 'proteins':
-          Topic.publish('/navigate', { href: '/view/FeatureList/?' + q + '#view_tab=features&defaultSort=-score' });
+          Topic.publish('/navigate', { href: '/view/ProteinList/?' + q + '#view_tab=proteins&defaultSort=-score' });
           break;
         case 'genome_sequences':
           Topic.publish('/navigate', { href: '/view/SequenceList/?' + q });

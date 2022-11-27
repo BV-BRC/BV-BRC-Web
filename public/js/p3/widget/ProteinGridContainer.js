@@ -22,14 +22,14 @@ define([
   return declare([GridContainer], {
     gridCtor: FeatureGrid,
     containerType: 'protein_data',
-    tutorialLink: 'user_guides/organisms_taxon/features.html',
+    tutorialLink: 'quick_references/organisms_taxon/proteins.html',
     facetFields: AdvancedSearchFields['proteins'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['proteins'].filter((ff) => ff.search),
     filter: '',
     dataModel: 'genome_feature',
     primaryKey: 'feature_id',
     defaultFilter: 'and(or(eq(feature_type,CDS),eq(feature_type,mat_peptide)),eq(annotation,PATRIC))',
-    tooltip: 'The "Proteins" tab shows Genomic Features (e.g., CDS, matu_peptides, tRNA, etc) for genomes associated with the current view.',
+    tooltip: 'The "Proteins" tab shows proteins (e.g., CDS, matu_peptides, tRNA, etc) for genomes associated with the current view.',
     getFilterPanel: function (opts) {
 
     },
