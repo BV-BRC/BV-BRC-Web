@@ -33,7 +33,7 @@ define([
     feature: null,
     state: null,
     docsServiceURL: window.App.docsServiceURL,
-    tutorialLink: 'user_guides/organisms_gene/overview.html',
+    tutorialLink: 'quick_references/organisms_gene/overview.html',
 
     _setStateAttr: function (state) {
       this._set('state', state);

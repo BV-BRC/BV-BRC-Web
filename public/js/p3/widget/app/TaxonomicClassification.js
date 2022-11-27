@@ -13,8 +13,8 @@ define([
 ) {
 
   return declare([AppBase], {
-    baseClass: 'App Assembly2',
-    pageTitle: 'Taxonomic Classification Service',
+    baseClass: 'App TaxonomicClassification',
+    pageTitle: 'Taxonomic Classification Service | BV-BRC',
     templateString: Template,
     applicationName: 'TaxonomicClassification',
     requireAuth: true,
@@ -22,6 +22,7 @@ define([
     applicationDescription: 'The Taxonomic Classification Service computes taxonomic classification for read data.',
     applicationHelp: 'quick_references/services/taxonomic_classification_service.html',
     tutorialLink: 'tutorial/taxonomic_classification/taxonomic_classification.html',
+    videoLink: 'https://youtu.be/PsqHeZ8pvt4',
     libraryData: null,
     defaultPath: '',
     startingRows: 6,

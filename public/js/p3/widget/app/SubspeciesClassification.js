@@ -31,6 +31,11 @@ define([
 
   return declare([AppBase], {
     baseClass: 'SubspeciesClassification',
+    requireAuth: true,
+    applicationDescription: 'The Subspecies Classification tool assigns the genotype/subtype of a virus, based on the genotype/subtype assignments maintained by the International Committee on Taxonomy of Viruses (ICTV). This tool infers the genotype/subtype for a query sequence from its position within a reference tree. The service uses the pplacer tool with a reference tree and reference alignment and includes the query sequence as input. Interpretation of the pplacer result is handled by Cladinator.',
+    videoLink: '',
+    pageTitle: 'Subspecies Classification Service | BV-BRC',
+    appBaseURL: 'Subspecies Classification',
     templateString: Template,
     applicationHelp: '',
     applicationName: 'SubspeciesClassification',
@@ -55,6 +60,9 @@ define([
     startup: function () {
 
       if (this._started) { return; }
+      if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
+        return;
+      }
       this.inherited(arguments);
 
       // activate genome group selector when user is logged in
@@ -163,15 +171,11 @@ define([
         resultType = 'custom';
         submit_values['db_source'] = 'fasta_data';
         submit_values['db_fasta_data'] = '>id1\ngtgtcgtttatcagtcttgcaagaaatgtttttgtatatatatcaattgggttatttgta\ngctccaatattttcgttagtatcaattatattcactgaacgcgaagtagtagatttgttt\ngcgtatattttttctgaatatacagttaatactgtaattttaatgttaggtgttgggatt\n' +
-            '>id2\nataacgttgattgttgggatagcaacagcttggtttgtaacttattattcttttcctgga\ncgtaagttttttgagatagcacttttcttgccactttcaataccagggtatatagttgca\ntatgtatatgtaaatatttttgaattttcaggtcctgtacaaagttttttaagggtgata\ntttcattggaataaaggtgattattactttcctagtgtgaaatcattagcatgtggaatt\n'
+          '>id2\nataacgttgattgttgggatagcaacagcttggtttgtaacttattattcttttcctgga\ncgtaagttttttgagatagcacttttcttgccactttcaataccagggtatatagttgca\ntatgtatatgtaaatatttttgaattttcaggtcctgtacaaagttttttaagggtgata\ntttcattggaataaaggtgattattactttcctagtgtgaaatcattagcatgtggaatt\n'
       }
       if (this.validate()) {
         return submit_values;
       }
-    },
-
-    setLiveJob: function () {
-      this.live_job.value = this.live_job.checked;
     },
 
     resubmit: function () {

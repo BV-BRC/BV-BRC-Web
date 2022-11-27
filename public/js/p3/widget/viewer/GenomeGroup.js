@@ -75,9 +75,16 @@ define([
         return;
       }
       switch (active) {
+        case 'strains':
         case 'transcriptomics':
           activeTab.set('state', lang.mixin({}, this.state, { search: `in(genome_ids,GenomeGroup(${encodeURIComponent('/' + this.groupPath)}))` }));
           break;
+
+        // case 'strains':
+        //   activeTab.set('state', lang.mixin({}, this.state, {
+        //     search: 'eq(genome_ids,' + this.state.taxon_id + ')'
+        //   }));
+        //   break;
 
         // eslint-disable-next-line no-case-declarations
         default:

@@ -16,7 +16,7 @@ define([
   xmlParser, xhr
 ) {
   return declare([AppBase], {
-    baseClass: 'App FastQ Utilities',
+    baseClass: 'App Fastq',
     templateString: Template,
     applicationName: 'FastqUtils',
     requireAuth: true,
@@ -24,7 +24,8 @@ define([
     applicationDescription: 'The Fastq Utilites Service provides capability for aligning, measuring base call quality, and trimmiing fastq read files.',
     applicationHelp: 'quick_references/services/fastq_utilities_service.html',
     tutorialLink: 'tutorial/fastq_utilities/fastq_utilities.html',
-    pageTitle: 'Fastq Utilities',
+    videoLink: 'https://youtube.com/playlist?list=PLWfOyhOW_Oas1LLS2wRlWzilruoSxVeJw',
+    pageTitle: 'Fastq Utilities Service | BV-BRC',
     libraryData: null,
     defaultPath: '',
     startingRows: 12,

@@ -22,7 +22,7 @@ define([
   return declare([GridContainer], {
     gridCtor: FeatureGrid,
     containerType: 'feature_data',
-    tutorialLink: 'user_guides/organisms_taxon/features.html',
+    tutorialLink: 'quick_references/organisms_taxon/features.html',
     facetFields: AdvancedSearchFields['genome_feature'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['genome_feature'].filter((ff) => ff.search),
     filter: '',

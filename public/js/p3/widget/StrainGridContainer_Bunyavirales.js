@@ -24,7 +24,7 @@ define([
   return declare([GridContainer], {
     gridCtor: StrainGrid_Bunyavirales,
     containerType: 'strain_data',
-    tutorialLink: '',
+    tutorialLink: 'quick_references/organisms_taxon/strains.html',
     facetFields: AdvancedSearchFields['strain'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['strain'].filter((ff) => ff.search),
     filter: '',

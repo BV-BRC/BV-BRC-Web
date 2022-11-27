@@ -12,7 +12,7 @@ define([
   WorkspaceManager, when
 ) {
   return declare([AppBase], {
-    baseClass: 'App Assembly',
+    baseClass: 'App PhylogeneticTree',
     templateString: Template,
     applicationName: 'CodonTree',
     requireAuth: true,
@@ -20,8 +20,8 @@ define([
     applicationDescription: 'The Phylogenetic Tree Building Service enables construction of custom phylogenetic trees for user-selected genomes.',
     applicationHelp: 'quick_references/services/phylogenetic_tree_building_service.html',
     tutorialLink: 'tutorial/phylogenetic_tree/phylogenetic_tree.html',
-    videoLink: '',
-    pageTitle: 'Phylogenetic Tree Building',
+    videoLink: 'https://youtu.be/ckNPGPwoT5U',
+    pageTitle: 'Phylogenetic Tree Building Service | BV-BRC',
     defaultPath: '',
     startingRows: 9,
 

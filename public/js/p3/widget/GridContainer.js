@@ -343,7 +343,7 @@ define([
           label: 'GUIDE',
           persistent: true,
           validTypes: ['*'],
-          tooltip: 'Open User Guide in a new Tab'
+          tooltip: 'Open Quick Reference Guide in a new Tab'
         },
         function () {
           window.open(PathJoin(this.docsServiceURL, this.tutorialLink));

@@ -1,21 +1,21 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
-      dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
     <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
-            <h3>Similar Genome Finder
+            <h3>${applicationLabel}
                 <div name="overview" class="infobox iconbox infobutton dialoginfo">
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                 </div>
                 <div class="infobox iconbox tutorialButton tutorialInfo">
-                    <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
+                    <a href="${docsServiceURL}${tutorialLink}" target="_blank"><i class="fa icon-books fa-1x"
+                            title="click to open tutorial"></i></a>
+                </div>
+                <div class="infobox iconbox videoButton videoInfo">
+                    <a href="${videoLink}" target="_blank" ><i class="fa icon-play-circle fa-1x" title="click to open the video tutorial"></i></a>
                 </div>
             </h3>
-            <p>The Similar Genome Finder Service will find similar public genomes in PATRIC or compute genome distance estimation
-                using <a href='https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4915045/' target='_blank'>Mash/MinHash</a>.
-                It returns a set of genomes matching the specified similarity criteria.
-                For further explanation, please see the Similar Genome Finder Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and
-                <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+            <p> ${applicationDescription} Link to <a href='https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4915045/' target='_blank'>Mash/MinHash</a>. For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a>, <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a> and <a href="${videoLink}" target="_blank">Instructional Video</a>.
             </p>
         </div>
 
@@ -27,9 +27,8 @@
                 <div class="appRow">
                     <div class="paramlabel">Search by genome name or genome ID</div>
                     <div data-dojo-attach-event="onChange:onSuggestNameChange"
-                         data-dojo-type="p3/widget/GenomeNameSelector"
-                         data-dojo-attach-point="genome_id"
-                         style="width:600px;">
+                        data-dojo-type="p3/widget/GenomeNameSelector" data-dojo-attach-point="genome_id"
+                        style="width:600px;">
                     </div>
                     <div class="warning" data-dojo-attach-point="genome_message"></div>
                 </div>
@@ -57,10 +56,9 @@
                         <label class="appBoxLabel">Parameters</label>
                     </div>
                     <div class="left" style="width:20%">
-                        <label class="paramlabel">Max hits: </label><br/>
-                        <select name="max_target" style="width: 100px"
-                                data-dojo-type="dijit/form/Select"
-                                data-dojo-attach-point="max_hits">
+                        <label class="paramlabel">Max hits: </label><br />
+                        <select name="max_target" style="width: 100px" data-dojo-type="dijit/form/Select"
+                            data-dojo-attach-point="max_hits">
                             <option value="1">1</option>
                             <option value="10">10</option>
                             <option value="50" selected="selected">50</option>
@@ -70,10 +68,8 @@
                     </div>
 
                     <div class="left" style="width:20%">
-                        <label class="paramlabel">P value threshold: </label><br/>
-                        <div data-dojo-type="dijit/form/Select"
-                             data-dojo-attach-point="pvalue"
-                             style="width:60px">
+                        <label class="paramlabel">P value threshold: </label><br />
+                        <div data-dojo-type="dijit/form/Select" data-dojo-attach-point="pvalue" style="width:60px">
                             <option value="0.001">0.001</option>
                             <option value="0.01">0.01</option>
                             <option value="0.1">0.1</option>
@@ -81,10 +77,8 @@
                         </div>
                     </div>
                     <div class="left" style="width:20%">
-                        <label class="paramlabel">Distance: </label><br/>
-                        <div data-dojo-type="dijit/form/Select"
-                             data-dojo-attach-point="distance"
-                             style="width:60px">
+                        <label class="paramlabel">Distance: </label><br />
+                        <div data-dojo-type="dijit/form/Select" data-dojo-attach-point="distance" style="width:60px">
                             <option value="0.01">0.01</option>
                             <option value="0.05">0.05</option>
                             <option value="0.1">0.1</option>
@@ -94,36 +88,23 @@
                     </div>
 
                     <div class="left">
-                        <label class="paramlabel">Organism type:</label><br/>
-                        <div data-dojo-type="dijit/form/CheckBox"
-                             data-dojo-attach-point="org_bacterial"
-                             data-dojo-attach-event="onChange:onParamChange"
-			                 name="org_bacterial"
-			                checked="checked"
-                             value="bacterial"></div>
+                        <label class="paramlabel">Organism type:</label><br />
+                        <div data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="org_bacterial"
+                            data-dojo-attach-event="onChange:onParamChange" name="org_bacterial" checked="checked"
+                            value="bacterial"></div>
                         <label>Bacterial and archaeal genomes</label>
-                        <br/>
-                        <div data-dojo-type="dijit/form/CheckBox"
-                             data-dojo-attach-point="org_viral"
-			     name="org_viral"
-                                              data-dojo-attach-event="onChange:onParamChange"
-
-                             checked="checked"
-                             value="viral"></div>
+                        <br />
+                        <div data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="org_viral" name="org_viral"
+                            data-dojo-attach-event="onChange:onParamChange" checked="checked" value="viral"></div>
                         <label>Viral genomes</label>
-			<br/>
-                        <label class="paramlabel">Scope:</label><br/>
-                        <div data-dojo-type="dijit/form/RadioButton"
-                             data-dojo-attach-point="scope_ref"
-                             name="scope"
-                             checked="checked"
-                             value="ref"></div>
+                        <br />
+                        <label class="paramlabel">Scope:</label><br />
+                        <div data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="scope_ref" name="scope"
+                            checked="checked" value="ref"></div>
                         <label>Reference and representative genomes</label>
-                        <br/>
-                        <div data-dojo-type="dijit/form/RadioButton"
-                             data-dojo-attach-point="scope_all"
-                             name="scope"
-                             value="all"></div>
+                        <br />
+                        <div data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="scope_all" name="scope"
+                            value="all"></div>
                         <label>All public genomes</label>
 
                     </div>
@@ -134,17 +115,14 @@
         </div>
         <div class="appSubmissionArea">
             <div style="margin-top: 10px; text-align:center;">
-                <div data-dojo-type="dijit/form/Button"
-                     data-dojo-attach-point="submitButton"
-                     data-dojo-attach-event="onClick:submit"
-                     data-dojo-props="disabled:false">
+                <div data-dojo-type="dijit/form/Button" data-dojo-attach-point="submitButton"
+                    data-dojo-attach-event="onClick:submit" data-dojo-props="disabled:false">
                     Search
                 </div>
             </div>
         </div>
-        <div class="reSubmitBtn" style="visibility: hidden"
-             data-dojo-type="dijit/form/Button"
-             data-dojo-attach-event="onClick:resubmit">Edit form and resubmit
+        <div class="reSubmitBtn" style="visibility: hidden" data-dojo-type="dijit/form/Button"
+            data-dojo-attach-event="onClick:resubmit">Edit form and resubmit
         </div>
     </div>
 
@@ -153,7 +131,7 @@
         <div class="service_message"></div>
     </div>
     <div style="margin:auto">
-+      <h4 class="searchBy" style="text-align:center"></h4>
-     </div>
+        + <h4 class="searchBy" style="text-align:center"></h4>
+    </div>
     <div class="genomedistance_result"></div>
 </form>

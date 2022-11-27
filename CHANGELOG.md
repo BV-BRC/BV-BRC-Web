@@ -1,4 +1,27 @@
 # Changelog
+## November 26, 2022
+## 3.27.6
+* [Bug Fix] Fix broken links from info icons on data tabs. [Commit #0e16ea0](https://github.com/BV-BRC/BV-BRC-Web/commit/0e16ea02aa93cd591e0287ff2231ba83e9354af7)
+* [Bug Fix] Fix Strains tab query for Genome Group Viewer. [Commit #fac7d7b](https://github.com/BV-BRC/BV-BRC-Web/commit/fac7d7bdd46868ae09edb2fe957b33545bc8488b)
+
+## 3.27.5
+* [Enhancement] Add regex validation for Assembly Service Output Name field. [Commit #cbe47aa](https://github.com/BV-BRC/BV-BRC-Web/commit/cbe47aaf49a26093802e7a7943ca5540c8691dc0)
+* [Enhancement] Increase icon size of show/hide hidden files in workspace. [Commit #48b5bc8](https://github.com/BV-BRC/BV-BRC-Web/commit/48b5bc8960fd59962c018355a0998ddbc34e47ff)
+
+## November 24, 2022
+## 3.27.4
+* [Enhancement] Modify page titles to be more uniform across and accurate. [Commit #4dbbf7d](https://github.com/BV-BRC/BV-BRC-Web/commit/4dbbf7d690c03ce9b7d0d2a39d4a2522ab9ac000)
+* [Enhancement] Add page title to search base so each individual search page can display page/window titles in the browser. [Commit #070770f](https://github.com/BV-BRC/BV-BRC-Web/commit/070770fdc6b1c3aad5ad87092f13e5f5765bd689)
+* [Enhancement] Update page titles for remaining services. Modify content where needed. [Commit #49515fc](https://github.com/BV-BRC/BV-BRC-Web/commit/49515fce00f7d5a368f7181e9d8832d0bf9e03e6)
+
+## November 23, 2022
+## 3.27.3
+* [Enhancement] Add Instructional Video to services. Update page titles. Modify content where needed. [Commit #b916217](https://github.com/BV-BRC/BV-BRC-Web/commit/b916217dc792dad3b28c31ce1ec18b98ea7a0ea2)
+* [] Remove view results checkbox and function for live jobs. [Commit #eb40db9](https://github.com/BV-BRC/BV-BRC-Web/commit/eb40db9852ab63440857579337ecc6bb42a62ba1)
+* []  Update Tools & Services page with new services, tutorials, and quick reference guides. Remove old content/services that are no longer relevant. [Commit #228780c](https://github.com/BV-BRC/BV-BRC-Web/commit/228780cefe7e3eff17b84f9b04c4791ef308caec)
+
+## 3.27.2
+* [Enhancement] Added the login page to services that missed it. [PR #476](https://github.com/BV-BRC/BV-BRC-Web/pull/476)
 
 ## November 22, 2022
 ## 3.27.1

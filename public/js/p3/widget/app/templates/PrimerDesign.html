@@ -3,15 +3,18 @@
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
             <h3>${applicationLabel}
-                <div name="overview" class="infobox iconbox infobuttom dialoginfo">
-                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                <div name="overview" class="infobox iconbox infobutton dialoginfo">
+                  <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                 </div>
                 <div class="infobox iconbox tutorialButton tutorialInfo">
-                    <a href="${docsServiceURL}${tutorialLink}" target="_blank"><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
+                  <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
+                </div>
+                <div class="infobox iconbox videoButton videoInfo">
+                  <a href="${videoLink}" target="_blank" ><i class="fa icon-play-circle fa-1x" title="click to open the video tutorial"></i></a>
                 </div>
             </h3>
-            <p>${applicationDescription}<br> For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a>  and
-                <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+            <p>
+            ${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a>, <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a> and <a href="${videoLink}" target="_blank">Instructional Video</a>.
             </p>
         </div>
         <div class="formFieldsContainer">
@@ -122,7 +125,7 @@
                                         required="false"/>
                             </div>
                             <!-- Primer size settings -->
-                            <table>  
+                            <table>
                                 <tr>
                                     <td><label class="paramlabel">Primer Size (bp)</label>
                                         <div name="primerSize_tooltip" id="primerSize_tooltip" data-dojo-attach-point="primerSize_tooltip" class="infobox iconbox infobutton tooltipinfo">

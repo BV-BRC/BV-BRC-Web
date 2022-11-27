@@ -23,6 +23,7 @@ define([
   return declare([SearchBase], {
     templateString: template,
     searchAppName: 'Subsystem Search',
+    pageTitle: 'Subsystem Search | BV-BRC',
     dataKey: 'subsystem',
     resultUrlBase: '/view/SubsystemList/?',
     resultUrlHash: '#view_tab',

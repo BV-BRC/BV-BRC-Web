@@ -13,8 +13,8 @@ define([
 ) {
 
   return declare([AppBase], {
-    baseClass: 'App Assembly2',
-    pageTitle: 'Metagenomic Binning Service',
+    baseClass: 'App MetagenomicBinning',
+    pageTitle: 'Metagenomic Binning Service | BV-BRC',
     templateString: Template,
     applicationName: 'MetagenomeBinning',
     requireAuth: true,
@@ -22,6 +22,7 @@ define([
     applicationDescription: 'The Metagenomic Binning Service accepts either reads or contigs, and attempts to "bin" the data into a set of genomes. This service can be used to reconstruct bacterial and archael genomes from environmental samples.',
     applicationHelp: 'quick_references/services/metagenomic_binning_service.html',
     tutorialLink: 'tutorial/metagenomic_binning/metagenomic_binning.html',
+    videoLink: 'https://youtu.be/Xt1ptDtG-UQ',
     libraryData: null,
     defaultPath: '',
     startingRows: 6,

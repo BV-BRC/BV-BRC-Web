@@ -21,6 +21,7 @@ define([
   return declare([SearchBase], {
     templateString: template,
     searchAppName: 'Protein Structure Search',
+    pageTitle: 'Protein Structure Search | BV-BRC',
     dataKey: 'protein_structure',
     resultUrlBase: '/view/ProteinStructureList/?',
     resultUrlHash: '#view_tab=structures',
