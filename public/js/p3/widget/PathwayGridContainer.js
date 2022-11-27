@@ -22,7 +22,7 @@ define([
   return declare([GridContainer], {
     gridCtor: PathwayGrid,
     containerType: 'pathwayTab_data',
-    tutorialLink: '',
+    tutorialLink: 'quick_references/organisms_taxon/pathways.html',
     facetFields: AdvancedSearchFields['pathway'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['pathway'].filter((ff) => ff.search),
     filter: '',

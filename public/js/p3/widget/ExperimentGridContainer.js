@@ -22,7 +22,7 @@ define([
   return declare([GridContainer], {
     gridCtor: ExperimentGrid,
     containerType: 'experiment_data',
-    tutorialLink: 'user_guides/organisms_taxon/experiments_comparisons_tables.html',
+    tutorialLink: 'quick_references/organisms_taxon/experiments_comparisons_tables.html',
     facetFields: AdvancedSearchFields['experiment'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['experiment'].filter((ff) => ff.search),
     dataModel: 'experiment',
