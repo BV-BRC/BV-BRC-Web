@@ -436,6 +436,7 @@ define([
         this.contigsFile.reset();
         this.contigsFile.set('required', false);
         this.checkParameterRequiredFields();
+        this.assemblyStategy.style.display = 'block';
         this.auto.set('disabled', false);
         this.megahit.set('disabled', false);
       }
@@ -445,6 +446,7 @@ define([
         this.numlibs.constraints.min = 0;
         this.contigsFile.set('required', true);
         this.checkParameterRequiredFields();
+        this.assemblyStategy.style.display = 'none';
         this.auto.set('checked', true);
         this.auto.set('disabled', true);
         this.megahit.set('disabled', true);
