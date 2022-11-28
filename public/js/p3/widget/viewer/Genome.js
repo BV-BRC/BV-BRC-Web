@@ -4,7 +4,7 @@ define([
   './TabViewerBase', 'dijit/Dialog',
   '../GenomeOverview', '../AMRPanelGridContainer', '../Phylogeny',
   '../GenomeBrowser', '../CircularViewerContainer', '../SequenceGridContainer',
-  '../FeatureGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer', '../ProteinFamiliesContainer',
+  '../FeatureGridContainer', '../ProteinGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer', '../ProteinFamiliesContainer',
   '../PathwaysContainer', '../SubSystemsContainer', '../ExperimentsContainer', '../InteractionContainer',
   '../../util/PathJoin'
 ], function (
@@ -13,7 +13,7 @@ define([
   TabViewerBase, Dialog,
   GenomeOverview, AMRPanelGridContainer, Phylogeny,
   GenomeBrowser, CircularViewerContainer, SequenceGridContainer,
-  FeatureGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer, ProteinFamiliesContainer,
+  FeatureGridContainer, ProteinGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer, ProteinFamiliesContainer,
   PathwaysContainer, SubSystemsContainer, ExperimentsContainer, InteractionsContainer,
   PathJoin
 ) {
@@ -93,6 +93,26 @@ define([
                   search: 'eq(genome_id,' + this.state.genome.genome_id + ')',
                   hashParams: lang.mixin({}, this.state.hashParams, {
                     filter: 'eq(feature_type,%22CDS%22)'
+                  })
+                });
+              }
+            }
+
+            activeTab.set('state', activeQueryState);
+          }
+          break;
+
+        case 'proteins':
+          // check whether genome is a host genome and set default filter condition
+          if (this.state.genome) {
+            if (!this.state.hashParams.filter) {
+
+              if (this.state.genome.taxon_lineage_ids && this.state.genome.taxon_lineage_ids.indexOf('2759') > -1) {
+
+                activeQueryState = lang.mixin({}, this.state, {
+                  search: 'eq(genome_id,' + this.state.genome.genome_id + ')',
+                  hashParams: lang.mixin({}, this.state.hashParams, {
+                    filter: 'and(or(eq(feature_type,CDS),eq(feature_type,mat_peptide)),eq(annotation,PATRIC))'
                   })
                 });
               }
@@ -307,8 +327,14 @@ define([
       });
 
       this.features = new FeatureGridContainer({
-        title: 'Proteins',
+        title: 'Features',
         id: this.viewer.id + '_features'
+      });
+
+      this.proteins = new ProteinGridContainer({
+        title: 'Proteins',
+        id: this.viewer.id + '_proteins',
+        disabled: false
       });
 
       this.structures = new ProteinStructureGridContainer({
@@ -376,6 +402,7 @@ define([
       this.viewer.addChild(this.circular);
       this.viewer.addChild(this.sequences);
       this.viewer.addChild(this.features);
+      this.viewer.addChild(this.proteins);
       this.viewer.addChild(this.structures);
       this.viewer.addChild(this.specialtyGenes);
       this.viewer.addChild(this.proteinFeatures);

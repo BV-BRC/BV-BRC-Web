@@ -22,7 +22,7 @@ define([
   return declare([GridContainer], {
     gridCtor: SurveillanceGrid,
     containerType: 'surveillance_data',
-    tutorialLink: '',
+    tutorialLink: 'quick_references/organisms_taxon/surveillance_data.html',
     facetFields: AdvancedSearchFields['surveillance'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['surveillance'].filter((ff) => ff.search),
     filter: '',

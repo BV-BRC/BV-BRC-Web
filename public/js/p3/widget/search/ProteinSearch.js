@@ -2,7 +2,7 @@ define([
   'dojo/_base/declare',
   'dojo/_base/lang',
   './SearchBase',
-  'dojo/text!./templates/GenomicFeatureSearch.html',
+  'dojo/text!./templates/ProteinSearch.html',
   './TextInputEncoder',
   './FacetStoreBuilder',
   './PathogenGroups',
@@ -24,7 +24,7 @@ define([
 
   return declare([SearchBase], {
     templateString: template,
-    searchAppName: 'Feature Search',
+    searchAppName: 'Protein Search',
     dataKey: 'genome_feature',
     resultUrlBase: '/view/FeatureList/?',
     resultUrlHash: '#view_tab=features',

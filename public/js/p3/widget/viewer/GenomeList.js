@@ -3,14 +3,14 @@ define([
   './TabViewerBase', '../../util/QueryToEnglish', '../../DataAPI',
   '../GenomeListOverview', '../GenomeGridContainer',
   '../AMRPanelGridContainer', '../SequenceGridContainer',
-  '../FeatureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFamiliesContainer',
+  '../FeatureGridContainer', '../ProteinGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFamiliesContainer',
   '../PathwayGridContainer', '../ExperimentsContainer',  '../SubsystemGridContainer'
 ], function (
   declare, lang,Topic,
   TabViewerBase, QueryToEnglish, DataAPI,
   GenomeListOverview, GenomeGridContainer,
   AMRPanelGridContainer, SequenceGridContainer,
-  FeatureGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
+  FeatureGridContainer, ProteinGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
   PathwaysContainer, ExperimentsContainer, SubSystemsContainer
 ) {
 
@@ -146,8 +146,14 @@ define([
       });
 
       this.features = new FeatureGridContainer({
-        title: 'Proteins',
+        title: 'Features',
         id: this.viewer.id + '_features',
+        disabled: false
+      });
+
+      this.proteins = new ProteinGridContainer({
+        title: 'Proteins',
+        id: this.viewer.id + '_proteins',
         disabled: false
       });
       this.specialtyGenes = new SpecialtyGeneGridContainer({
@@ -185,6 +191,7 @@ define([
       this.viewer.addChild(this.sequences);
       this.viewer.addChild(this.amr);
       this.viewer.addChild(this.features);
+      this.viewer.addChild(this.proteins);
       this.viewer.addChild(this.specialtyGenes);
       // this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);

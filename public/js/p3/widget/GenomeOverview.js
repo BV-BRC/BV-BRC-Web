@@ -27,7 +27,7 @@ define([
     bacteriSummaryWidgets: ['apSummaryWidget', 'gfSummaryWidget', 'pfSummaryWidget', 'spgSummaryWidget'],
     virusSummaryWidgets: ['gfSummaryWidget'],
     docsServiceURL: window.App.docsServiceURL,
-    tutorialLink: 'user_guides/organisms_genome/overview.html',
+    tutorialLink: 'quick_references/organisms_genome/overview.html',
 
     _setContextAttr: function (context) {
       if (this.context !== context) {
