@@ -1,4 +1,9 @@
 # Changelog
+## November 30, 2022
+## 3.27.9
+* [Bug Fix] Changed ids for navigation [PR #495](https://github.com/BV-BRC/BV-BRC-Web/pull/485)
+8 [Bug Fix] temporary bug fix for molstar [PR #494](https://github.com/BV-BRC/BV-BRC-Web/pull/484)
+
 ## November 28, 2022
 ## 3.27.8
 * [Bug Fix] Explicitly set perform_bacterial_binning to false for viral-only selection. [Commit #](https://github.com/BV-BRC/BV-BRC-Web/commit/fb84863f8de501f10955c3b2e116ee387388668a)
