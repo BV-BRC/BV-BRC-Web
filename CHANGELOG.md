@@ -1,4 +1,8 @@
 # Changelog
+## December 1, 2022
+## 3.27.10
+* [Bug Fix] update molstar to a stable version [PR #486](https://github.com/BV-BRC/BV-BRC-Web/pull/486)
+
 ## November 30, 2022
 ## 3.27.9
 * [Bug Fix] Changed ids for navigation [PR #495](https://github.com/BV-BRC/BV-BRC-Web/pull/485)
