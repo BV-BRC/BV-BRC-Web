@@ -41,7 +41,7 @@ define([
       if (data.autoMeta.parameters.output_path != data.path)
       {
 	// console.log("Rewrite data path from", data.autoMeta.parameters.output_path, "to", data.path);
-	  
+
 	for (outfile of data.autoMeta.output_files)
 	{
 	  outfile[0] = outfile[0].replace(new RegExp('^' + data.autoMeta.parameters.output_path), data.path);
@@ -132,11 +132,11 @@ define([
       output.push.apply(output, job_output);
       output.push('</tbody></table></div>');
 
-      if (this.data.userMeta) {
-        Object.keys(this.data.userMeta).forEach(function (prop) {
-          output.push('<div>' + prop + ': ' + this.data.userMeta[prop] + '</div>');
-        }, this);
-      }
+      // if (this.data.userMeta) {
+      //   Object.keys(this.data.userMeta).forEach(function (prop) {
+      //     output.push('<div>' + prop + ': ' + this.data.userMeta[prop] + '</div>');
+      //   }, this);
+      // }
 
       output.push('</div>');
       this.viewHeader.set('content', output.join(''));
