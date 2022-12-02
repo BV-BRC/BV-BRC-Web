@@ -1,4 +1,22 @@
 # Changelog
+## December 1, 2022
+## 3.27.10
+* [Bug Fix] update molstar to a stable version [PR #486](https://github.com/BV-BRC/BV-BRC-Web/pull/486)
+
+## November 30, 2022
+## 3.27.9
+* [Bug Fix] Changed ids for navigation [PR #495](https://github.com/BV-BRC/BV-BRC-Web/pull/485)
+8 [Bug Fix] temporary bug fix for molstar [PR #494](https://github.com/BV-BRC/BV-BRC-Web/pull/484)
+
+## November 28, 2022
+## 3.27.8
+* [Bug Fix] Explicitly set perform_bacterial_binning to false for viral-only selection. [Commit #](https://github.com/BV-BRC/BV-BRC-Web/commit/fb84863f8de501f10955c3b2e116ee387388668a)
+* [Enhancement] Hide assembly strategies when assembled contigs is selected. [Commit #](https://github.com/BV-BRC/BV-BRC-Web/commit/353ed1fdefb4db33308f641d81c9ccd165451ab5)
+* [Enhancement] Sort special workspace folders in descending order [Commit #](https://github.com/BV-BRC/BV-BRC-Web/commit/b147c1641249a074053a1715aa55d8062ac6a45b)
+* [Enhancement] Make serovar an available filter for genomes.  [Commit #](https://github.com/BV-BRC/BV-BRC-Web/commit/9a0095f30c4233dc875b35b489887914ea1f1964)
+* [Enhancement] Comment out userMeta in jobs results page.  [Commit #](https://github.com/BV-BRC/BV-BRC-Web/commit/1ae9167ef4e094235f2236ad3890b38ecb8d3445)
+* [Enhancement] Add BV-BRC Workshop workspace to file selector widget  [Commit #](https://github.com/BV-BRC/BV-BRC-Web/commit/722d20e3db92763bc43007ce2010ee3107746005)
+
 ## November 27, 2022
 ## 3.27.7
 * [Feature] Features and Proteins [PR #483](https://github.com/BV-BRC/BV-BRC-Web/pull/483)

@@ -401,7 +401,7 @@ define([
 
       var viewSelector = new Select({
         name: 'togglePublic',
-        style: { width: '100px' },
+        style: { width: '125px' },
         options: [
           {
             label: 'Workspaces',
@@ -410,6 +410,10 @@ define([
           }, {
             label: 'Public Workspaces',
             value: 'public',
+            selected: _self.path.split('/')[1] == 'public'
+          }, {
+            label: 'BV-BRC Workshop',
+            value: 'workshop',
             selected: _self.path.split('/')[1] == 'public'
           }
         ]
@@ -421,6 +425,8 @@ define([
           _self.set('path', home);
         } else if (val == 'public') {
           _self.set('path', '/public/');
+        } else if (val == 'workshop') {
+          _self.set('path', '/public/ARWattam@patricbrc.org/BV-BRC Workshop')
         }
       });
 

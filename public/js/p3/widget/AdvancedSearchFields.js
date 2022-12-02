@@ -110,7 +110,7 @@ define([], function () {
         field: 'strain', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'serovar', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'serovar', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'biovar', type: 'str', facet: false, facet_hidden: true, search: true

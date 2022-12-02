@@ -116,7 +116,7 @@ define([
           var folderName = parts[parts.length - 1];
           if (specialSortFolders.indexOf(folderName) != -1) {
             _self.prevSort = _self._sort;
-            _self.set('sort', [{ attribute: 'creation_time', descending: false }] );
+            _self.set('sort', [{ attribute: 'creation_time', descending: true }] );
           } else {
             _self.set('sort', _self.prevSort || [{ attribute: 'name', descending: false }]);
           }
