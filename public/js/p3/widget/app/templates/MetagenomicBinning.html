@@ -166,6 +166,22 @@
           <label class="paramlabel">Genome Group Name</label><br>
           <div data-dojo-type="dijit/form/ValidationTextBox" name="genome_group" data-dojo-attach-point="genome_group" style="width: 300px" required="false" data-dojo-props="intermediateChanges:false, missingMessage:'You must provide a genome group name',trim:true,placeHolder:'My Genome Group'"></div>
         </div>
+              <div class="appRow">
+                <div class="appRowSegment" style="margin: 0 0 0 0;">
+                  <div data-dojo-attach-point="advanced" style="display:inline-block">
+                    <label class="largelabel">Advanced</label>
+                    <div class="iconbox" style="margin-left:0px">
+                      <i data-dojo-attach-point="advicon" class="fa icon-caret-down fa-1"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="appRow" data-dojo-attach-point="advrow" style="display: none">
+                  <div class="appRow" style="margin:0 0 0 0">
+                                <div id="disable_dangling" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="disable_dangling"></div>
+                                <label for="disable_dangling">Disable search for dangling contigs (decreases memory use)</label>
+                  </div>
+		  </div>
       </div>
     </div>
     <div class="appSubmissionArea">

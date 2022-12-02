@@ -60,6 +60,21 @@ define([
       }
       this.numlibs.startup();
 
+      this.advrow.turnedOn = (this.advrow.style.display != 'none');
+      on(this.advanced, 'click', lang.hitch(this, function () {
+        this.advrow.turnedOn = (this.advrow.style.display != 'none');
+        if (!this.advrow.turnedOn) {
+          this.advrow.turnedOn = true;
+          this.advrow.style.display = 'block';
+          this.advicon.className = 'fa icon-caret-left fa-1';
+        }
+        else {
+          this.advrow.turnedOn = false;
+          this.advrow.style.display = 'none';
+          this.advicon.className = 'fa icon-caret-down fa-1';
+        }
+      }));
+
       this.pairToAttachPt.concat(this.singleToAttachPt).forEach(lang.hitch(this, function (attachname) {
         this[attachname].searchBox.validator = lang.hitch(this[attachname].searchBox, function (/* anything */ value, /* __Constraints */ constraints) {
           return (new RegExp('^(?:' + this._computeRegexp(constraints) + ')' + (this.required ? '' : '?') + '$')).test(value) &&
@@ -107,6 +122,12 @@ define([
         values.perform_bacterial_annotation = true;
         values.perform_viral_annotation = true;
       }
+	
+      if (this.disable_dangling.checked)
+      {
+	  values.danglen = 0;
+      }
+
       delete values['organism'];
 
       return values;
