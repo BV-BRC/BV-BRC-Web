@@ -38,7 +38,8 @@ define([], function () {
         'SubSpeciesClassification': 'SubspeciesClassification',
         'TaxonomicClassification': 'TaxonomicClassification',
         'TnSeq': 'Tnseq',
-        'Variation': 'Variation'
+        'Variation': 'Variation',
+        'SubspeciesClassification': 'SubspeciesClassification'
       };
       if (service_app_map.hasOwnProperty(service_id)) {
         Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] + '?rerun_key=' + rerun_key });
