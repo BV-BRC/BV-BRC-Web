@@ -35,11 +35,10 @@ define([], function () {
         // 'PhylogeneticTree': 'PhylogeneticTree',
         'PrimerDesign': 'PrimerDesign',
         'RNASeq': 'Rnaseq',
-        'SubSpeciesClassification': 'SubspeciesClassification',
+        'SubspeciesClassification': 'SubspeciesClassification',
         'TaxonomicClassification': 'TaxonomicClassification',
         'TnSeq': 'Tnseq',
-        'Variation': 'Variation',
-        'SubspeciesClassification': 'SubspeciesClassification'
+        'Variation': 'Variation'
       };
       if (service_app_map.hasOwnProperty(service_id)) {
         Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] + '?rerun_key=' + rerun_key });
