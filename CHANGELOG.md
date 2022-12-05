@@ -1,4 +1,8 @@
 # Changelog
+## December 5, 2022
+## 3.27.11
+* [Feature] Add advanced binning parameters [PR #489](https://github.com/BV-BRC/BV-BRC-Web/pull/489)
+
 ## December 1, 2022
 ## 3.27.10
 * [Bug Fix] update molstar to a stable version [PR #486](https://github.com/BV-BRC/BV-BRC-Web/pull/486)
