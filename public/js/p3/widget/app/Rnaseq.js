@@ -16,7 +16,7 @@ define([
   xmlParser, xhr
 ) {
   return declare([AppBase], {
-    baseClass: 'App Assembly',
+    baseClass: 'App  RNASeq',
     templateString: Template,
     applicationName: 'RNASeq',
     requireAuth: true,
@@ -24,7 +24,8 @@ define([
     applicationDescription: 'The RNA-Seq Analysis Service provides services for aligning, assembling, and testing differential expression on RNA-Seq data.',
     applicationHelp: 'quick_references/services/rna_seq_analysis_service.html',
     tutorialLink: 'tutorial/rna_seq/rna_seq.html',
-    pageTitle: 'RNA-Seq Analysis',
+    videoLink: 'https://youtu.be/kEhdQJ2o-tI',
+    pageTitle: 'RNA-Seq Analysis Service | BV-BRC',
     libraryData: null,
     defaultPath: '',
     startingRows: 18,

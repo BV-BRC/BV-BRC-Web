@@ -1,4 +1,71 @@
 # Changelog
+## December 5, 2022
+## 3.27.11
+* [Feature] Add advanced binning parameters [PR #489](https://github.com/BV-BRC/BV-BRC-Web/pull/489)
+
+## December 1, 2022
+## 3.27.10
+* [Bug Fix] update molstar to a stable version [PR #486](https://github.com/BV-BRC/BV-BRC-Web/pull/486)
+
+## November 30, 2022
+## 3.27.9
+* [Bug Fix] Changed ids for navigation [PR #495](https://github.com/BV-BRC/BV-BRC-Web/pull/485)
+8 [Bug Fix] temporary bug fix for molstar [PR #494](https://github.com/BV-BRC/BV-BRC-Web/pull/484)
+
+## November 28, 2022
+## 3.27.8
+* [Bug Fix] Explicitly set perform_bacterial_binning to false for viral-only selection. [Commit #](https://github.com/BV-BRC/BV-BRC-Web/commit/fb84863f8de501f10955c3b2e116ee387388668a)
+* [Enhancement] Hide assembly strategies when assembled contigs is selected. [Commit #](https://github.com/BV-BRC/BV-BRC-Web/commit/353ed1fdefb4db33308f641d81c9ccd165451ab5)
+* [Enhancement] Sort special workspace folders in descending order [Commit #](https://github.com/BV-BRC/BV-BRC-Web/commit/b147c1641249a074053a1715aa55d8062ac6a45b)
+* [Enhancement] Make serovar an available filter for genomes.  [Commit #](https://github.com/BV-BRC/BV-BRC-Web/commit/9a0095f30c4233dc875b35b489887914ea1f1964)
+* [Enhancement] Comment out userMeta in jobs results page.  [Commit #](https://github.com/BV-BRC/BV-BRC-Web/commit/1ae9167ef4e094235f2236ad3890b38ecb8d3445)
+* [Enhancement] Add BV-BRC Workshop workspace to file selector widget  [Commit #](https://github.com/BV-BRC/BV-BRC-Web/commit/722d20e3db92763bc43007ce2010ee3107746005)
+
+## November 27, 2022
+## 3.27.7
+* [Feature] Features and Proteins [PR #483](https://github.com/BV-BRC/BV-BRC-Web/pull/483)
+
+## November 26, 2022
+## 3.27.6
+* [Bug Fix] Fix broken links from info icons on data tabs. [Commit #0e16ea0](https://github.com/BV-BRC/BV-BRC-Web/commit/0e16ea02aa93cd591e0287ff2231ba83e9354af7)
+* [Bug Fix] Fix Strains tab query for Genome Group Viewer.  [Commit #fac7d7b](https://github.com/BV-BRC/BV-BRC-Web/commit/fac7d7bdd46868ae09edb2fe957b33545bc8488b)
+
+## 3.27.5
+* [Enhancement] Add regex validation for Assembly Service Output Name field. [Commit #cbe47aa](https://github.com/BV-BRC/BV-BRC-Web/commit/cbe47aaf49a26093802e7a7943ca5540c8691dc0)
+* [Enhancement] Increase icon size of show/hide hidden files in workspace. [Commit #48b5bc8](https://github.com/BV-BRC/BV-BRC-Web/commit/48b5bc8960fd59962c018355a0998ddbc34e47ff)
+
+## November 24, 2022
+## 3.27.4
+* [Enhancement] Modify page titles to be more uniform across and accurate. [Commit #4dbbf7d](https://github.com/BV-BRC/BV-BRC-Web/commit/4dbbf7d690c03ce9b7d0d2a39d4a2522ab9ac000)
+* [Enhancement] Add page title to search base so each individual search page can display page/window titles in the browser. [Commit #070770f](https://github.com/BV-BRC/BV-BRC-Web/commit/070770fdc6b1c3aad5ad87092f13e5f5765bd689)
+* [Enhancement] Update page titles for remaining services. Modify content where needed. [Commit #49515fc](https://github.com/BV-BRC/BV-BRC-Web/commit/49515fce00f7d5a368f7181e9d8832d0bf9e03e6)
+
+## November 23, 2022
+## 3.27.3
+* [Enhancement] Add Instructional Video to services. Update page titles. Modify content where needed. [Commit #b916217](https://github.com/BV-BRC/BV-BRC-Web/commit/b916217dc792dad3b28c31ce1ec18b98ea7a0ea2)
+* [] Remove view results checkbox and function for live jobs. [Commit #eb40db9](https://github.com/BV-BRC/BV-BRC-Web/commit/eb40db9852ab63440857579337ecc6bb42a62ba1)
+* []  Update Tools & Services page with new services, tutorials, and quick reference guides. Remove old content/services that are no longer relevant. [Commit #228780c](https://github.com/BV-BRC/BV-BRC-Web/commit/228780cefe7e3eff17b84f9b04c4791ef308caec)
+
+## 3.27.2
+* [Enhancement] Added the login page to services that missed it. [PR #476](https://github.com/BV-BRC/BV-BRC-Web/pull/476)
+
+## November 22, 2022
+## 3.27.1
+* [Bug] Testing solution to subsystems heatmap loading issue. [PR #475](https://github.com/BV-BRC/BV-BRC-Web/pull/475)
+
+## 3.27.0
+* [Release] Production Release 3.27.0
+
+## 3.26.12
+* [Enhancement] Add note regarding other services now residing here. [Commit #17055a1](https://github.com/BV-BRC/BV-BRC-Web/commit/17055a1246e000613ca62450c87bc0622340a271)
+
+## 3.26.11
+## November 21, 2022
+* [Enhancement] Update help menu links and remove some text styling on home page. [PR #474](https://github.com/BV-BRC/BV-BRC-Web/pull/474)
+* [Enhancement] Changed the loading message when there is no data. [PR #473](https://github.com/BV-BRC/BV-BRC-Web/pull/473)
+* [Enhancement] Trigger fasta seqs input validation with onChange. [PR #472](https://github.com/BV-BRC/BV-BRC-Web/pull/472)
+* [Enhancement] Allow rendering BLAST results without pids or gids. [PR #471](https://github.com/BV-BRC/BV-BRC-Web/pull/471)
+
 ## November 17, 2022
 ## 3.26.10
 * [Enhancement] mauve_viewer npm install

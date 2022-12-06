@@ -13,8 +13,8 @@ define([
 ) {
 
   return declare([AppBase], {
-    baseClass: 'App Assembly2',
-    pageTitle: 'Metagenomic Binning Service',
+    baseClass: 'App MetagenomicBinning',
+    pageTitle: 'Metagenomic Binning Service | BV-BRC',
     templateString: Template,
     applicationName: 'MetagenomeBinning',
     requireAuth: true,
@@ -22,6 +22,7 @@ define([
     applicationDescription: 'The Metagenomic Binning Service accepts either reads or contigs, and attempts to "bin" the data into a set of genomes. This service can be used to reconstruct bacterial and archael genomes from environmental samples.',
     applicationHelp: 'quick_references/services/metagenomic_binning_service.html',
     tutorialLink: 'tutorial/metagenomic_binning/metagenomic_binning.html',
+    videoLink: 'https://youtu.be/Xt1ptDtG-UQ',
     libraryData: null,
     defaultPath: '',
     startingRows: 6,
@@ -58,6 +59,21 @@ define([
         domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
       }
       this.numlibs.startup();
+
+      this.advrow.turnedOn = (this.advrow.style.display != 'none');
+      on(this.advanced, 'click', lang.hitch(this, function () {
+        this.advrow.turnedOn = (this.advrow.style.display != 'none');
+        if (!this.advrow.turnedOn) {
+          this.advrow.turnedOn = true;
+          this.advrow.style.display = 'block';
+          this.advicon.className = 'fa icon-caret-left fa-1';
+        }
+        else {
+          this.advrow.turnedOn = false;
+          this.advrow.style.display = 'none';
+          this.advicon.className = 'fa icon-caret-down fa-1';
+        }
+      }));
 
       this.pairToAttachPt.concat(this.singleToAttachPt).forEach(lang.hitch(this, function (attachname) {
         this[attachname].searchBox.validator = lang.hitch(this[attachname].searchBox, function (/* anything */ value, /* __Constraints */ constraints) {
@@ -98,6 +114,7 @@ define([
         values.perform_bacterial_annotation = true;
       }
       else if (values.organism == 'viral') {
+        values.perform_bacterial_binning = false;
         values.perform_viral_annotation = true;
         values.perform_viral_binning = true;
       }
@@ -105,6 +122,12 @@ define([
         values.perform_bacterial_annotation = true;
         values.perform_viral_annotation = true;
       }
+	
+      if (this.disable_dangling.checked)
+      {
+	  values.danglen = 0;
+      }
+
       delete values['organism'];
 
       return values;
@@ -435,6 +458,7 @@ define([
         this.contigsFile.reset();
         this.contigsFile.set('required', false);
         this.checkParameterRequiredFields();
+        this.assemblyStategy.style.display = 'block';
         this.auto.set('disabled', false);
         this.megahit.set('disabled', false);
       }
@@ -444,6 +468,7 @@ define([
         this.numlibs.constraints.min = 0;
         this.contigsFile.set('required', true);
         this.checkParameterRequiredFields();
+        this.assemblyStategy.style.display = 'none';
         this.auto.set('checked', true);
         this.auto.set('disabled', true);
         this.megahit.set('disabled', true);

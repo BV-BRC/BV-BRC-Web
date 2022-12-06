@@ -343,7 +343,7 @@ define([
           label: 'GUIDE',
           persistent: true,
           validTypes: ['*'],
-          tooltip: 'Open User Guide in a new Tab'
+          tooltip: 'Open Quick Reference Guide in a new Tab'
         },
         function () {
           window.open(PathJoin(this.docsServiceURL, this.tutorialLink));
@@ -474,14 +474,14 @@ define([
         },
         false
       ],  [
-        'ViewProteinItem',
+        'ViewFeatureItem',
         'MultiButton fa icon-selection-Feature fa-2x',
         {
-          label: 'PROTEIN',
+          label: 'FEATURE',
           validTypes: ['*'],
           multiple: false,
           tooltip: 'Switch to Feature View. Press and Hold for more options.',
-          validContainerTypes: ['protein_data', 'transcriptomics_gene_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data'],
+          validContainerTypes: ['feature_data', 'transcriptomics_gene_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data'],
           pressAndHold: function (selection, button, opts, evt) {
             popup.open({
               popup: new PerspectiveToolTipDialog({
@@ -502,16 +502,16 @@ define([
         },
         false
       ],  [
-        'ViewProteinItems',
+        'ViewFeatureItems',
         'MultiButton fa icon-selection-FeatureList fa-2x',
         {
-          label: 'PROTEINS',
+          label: 'FEATURES',
           validTypes: ['*'],
           multiple: true,
           min: 2,
           max: 5000,
-          tooltip: 'Switch to Protein List View. Press and Hold for more options.',
-          validContainerTypes: ['protein_data', 'protein_data', 'transcriptomics_gene_data', 'spgene_data', 'subsystem_data'],
+          tooltip: 'Switch to Feature List View. Press and Hold for more options.',
+          validContainerTypes: ['feature_data', 'transcriptomics_gene_data', 'spgene_data', 'subsystem_data'],
           pressAndHold: function (selection, button, opts, evt) {
             popup.open({
               popup: new PerspectiveToolTipDialog({

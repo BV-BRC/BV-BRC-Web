@@ -22,7 +22,7 @@ define([
   return declare([GridContainer], {
     gridCtor: SerologyGrid,
     containerType: 'serology_data',
-    tutorialLink: '',
+    tutorialLink: 'quick_references/organisms_taxon/serology_data.html',
     facetFields: AdvancedSearchFields['serology'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['serology'].filter((ff) => ff.search),
     filter: '',

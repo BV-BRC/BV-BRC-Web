@@ -13,15 +13,17 @@ define([
   WorkspaceObjectSelector, query, lang,
   Tooltip, popup
 ) {
-  //IDMappingMemoryStore contains the bulk of the query logic. in the store folder.  
+  //IDMappingMemoryStore contains the bulk of the query logic. in the store folder.
   return declare([AppBase], {
     baseClass: 'IDMapper',
     applicationName: 'IDMapper',
     requireAuth: true,
     applicationLabel: 'ID Mapper',
-    applicationDescription: 'The ID Mapper tool maps PATRIC identifiers to those from other prominent external databases such as GenBank, RefSeq, EMBL, UniProt, KEGG, etc. Alternatively, it can map a list of external database identifiers to the corresponding PATRIC features.',
+    applicationDescription: 'The ID Mapper tool maps BV-BRC identifiers to those from other prominent external databases such as GenBank, RefSeq, EMBL, UniProt, KEGG, etc. Alternatively, it can map a list of external database identifiers to the corresponding BV-BRC features.',
     applicationHelp: 'quick_references/services/id_mapper.html',
     tutorialLink: 'tutorial/id_mapper/id_mapper.html',
+    videoLink: '',
+    pageTitle: 'ID Mapper Tool | BV-BRC',
     templateString: Template,
     path: '',
     mapFromIDs: null,

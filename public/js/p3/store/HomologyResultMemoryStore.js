@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/request', 'dojo/Stateful', 'dojo/when',
-  'dojo/store/Memory', 'dojo/store/util/QueryResults', '../WorkspaceManager'
+  'dojo/store/Memory', 'dojo/store/util/QueryResults', '../WorkspaceManager', 'dojo/topic'
 ], function (
   declare, lang, Deferred,
   request, Stateful, when,
-  Memory, QueryResults, WorkspaceManager
+  Memory, QueryResults, WorkspaceManager, topic
 ) {
 
   return declare([Memory, Stateful], {
@@ -100,11 +100,23 @@ define([
 
     defaultLoadData: function (res) {
       var data = this.formatJSONResult(res);
+      if (data.length == 0) {
+        this.emptySetData();
+        return;
+      }
       data = data.map(function (d, idx) {
         d._id = idx;
         return d;
       })
       this.setData(data);
+      topic.publish('homology_data', true);
+      this.set('loaded', true);
+      this._loadingDeferred.resolve(true);
+    },
+
+    emptySetData: function () {
+      this.setData([]);
+      topic.publish('homology_data', false);
       this.set('loaded', true);
       this._loadingDeferred.resolve(true);
     },
@@ -156,9 +168,7 @@ define([
             var res = objs[0];
 
             if ((res.data).length == 0) {
-              this.setData([]);
-              this.set('loaded', true);
-              this._loadingDeferred.resolve(true);
+              this.emptySetData();
               return;
             }
 
@@ -240,17 +250,12 @@ define([
               }));
             }
           }), function (err) {
-            this.setData([]);
-            this.set('loaded', true)
-            this._loadingDeferred.resolve(true)
+            this.emptySetData();
           });
         }), lang.hitch(this, function (err) {
-          this.setData([]);
-          this.set('loaded', true)
-          this._loadingDeferred.resolve(true)
+          this.emptySetData();
         }));
       }))
-      console.log('type: ' + this.type);
       return this._loadingDeferred;
     },
 
@@ -330,7 +335,6 @@ define([
           } else if (this.type === 'no_ids') {
             delete entry.genome_id;
             delete entry.genome_name;
-            console.log(entry);
           } else if (this.type === 'genome_sequence') {
             target_id = target_id.replace('accn|', '');
             if (Object.prototype.hasOwnProperty.call(features, target_id)) {
@@ -375,7 +379,6 @@ define([
           entries.push(entry);
         }, this);
       }, this);
-      console.log(entries);
       return entries;
     }
   });

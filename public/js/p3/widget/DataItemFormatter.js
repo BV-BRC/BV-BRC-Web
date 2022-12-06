@@ -573,6 +573,23 @@ define([
       return div;
     },
 
+    // Copies data from feature_data.
+    protein_data: function (item, options) {
+      options = options || {};
+
+      var metadataFeatureDataID = this.feature_data_meta_table_names();
+      var metadataFeatureDataValue = this.feature_data_meta_spec();
+
+      var label = (item.patric_id) ? item.patric_id : (item.refseq_locus_tag) ? item.refseq_locus_tag : (item.protein_id) ? item.protein_id : item.feature_id;
+
+      var div = domConstruct.create('div');
+      displayHeader(div, label, 'fa icon-genome-features fa-2x', '/view/Feature/' + item.feature_id, options);
+
+      displayDetailBySections(item, metadataFeatureDataID, metadataFeatureDataValue, div, options);
+
+      return div;
+    },
+
     feature_data_meta_table_names: function () {
       return ['Genome', 'Source', 'Identifiers', 'Database Cross References', 'Location', 'Sequences', 'Annotation', 'Families', 'Misc', 'Provenance'];
     },

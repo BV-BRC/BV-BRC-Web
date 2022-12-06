@@ -14,7 +14,7 @@ define([
   children, WorkspaceManager, Memory, Standby
 ) {
   return declare([AppBase], {
-    baseClass: 'App Assembly',
+    baseClass: 'App TnSeq',
     templateString: Template,
     applicationName: 'TnSeq',
     requireAuth: true,
@@ -22,7 +22,8 @@ define([
     applicationDescription: 'The Tn-Seq Analysis Service facilitates determination of essential and conditionally essential regions in bacterial genomes from data generated from transposon insertion sequencing (Tn-Seq) experiments.',
     applicationHelp: 'quick_references/services/tn_seq_analysis_service.html',
     tutorialLink: 'tutorial/tn-seq/tn-seq.html',
-    pageTitle: 'Tn-Seq Analysis',
+    videoLink: '',
+    pageTitle: 'Tn-Seq Analysis Service | BV-BRC',
     libraryData: null,
     defaultPath: '',
     startingRows: 11,

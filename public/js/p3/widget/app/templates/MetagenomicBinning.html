@@ -9,10 +9,12 @@
         <div class="infobox iconbox tutorialButton tutorialInfo">
           <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
         </div>
+        <div class="infobox iconbox videoButton videoInfo">
+          <a href="${videoLink}" target="_blank" ><i class="fa icon-play-circle fa-1x" title="click to open the video tutorial"></i></a>
+        </div>
       </h3>
-      <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}"
-        target="_blank">Quick Reference Guide</a> and
-        <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+      <p>
+        ${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a>, <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a> and <a href="${videoLink}" target="_blank">Instructional Video</a>.
       </p>
     </div>
     <div class="formFieldsContainer">
@@ -126,7 +128,7 @@
           </div>
         </div>
 
-        <div class="appRow">
+        <div class="appRow" data-dojo-attach-point="assemblyStategy">
           <label class="paramlabel">Assembly Strategy</label><br>
           <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="metaspades" id = "metaspades" name="assembler" value="metaspades" disabled />
           <label for="radio1" style="font-size:8pt">MetaSPAdes</label>
@@ -164,6 +166,31 @@
           <label class="paramlabel">Genome Group Name</label><br>
           <div data-dojo-type="dijit/form/ValidationTextBox" name="genome_group" data-dojo-attach-point="genome_group" style="width: 300px" required="false" data-dojo-props="intermediateChanges:false, missingMessage:'You must provide a genome group name',trim:true,placeHolder:'My Genome Group'"></div>
         </div>
+              <div class="appRow">
+                <div class="appRowSegment" style="margin: 0 0 0 0;">
+                  <div data-dojo-attach-point="advanced" style="display:inline-block">
+                    <label class="largelabel">Advanced</label>
+                    <div class="iconbox" style="margin-left:0px">
+                      <i data-dojo-attach-point="advicon" class="fa icon-caret-down fa-1"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="appRow" data-dojo-attach-point="advrow" style="display: none">
+                  <div class="appRow" style="margin:0 0 0 0">
+                                <div id="disable_dangling" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="disable_dangling"></div>
+                                <label for="disable_dangling">Disable search for dangling contigs (decreases memory use)</label>
+                  </div>
+                <div class="appRow" style="margin:0 0 0 0">
+                  <div class="appRowSegment" style="margin:0 0 0 0">
+                    <label class="paramlabel">Min. contig length</label><br>
+                    <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_len" data-dojo-props="value:400, smallDelta:10, constraints:{min:100,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                  </div>
+                  <div class="appRowSegment" style="margin:10px 0 0 0">
+                    <label class="paramlabel">Min. contig coverage</label><br>
+                    <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_cov" data-dojo-props="value:4, smallDelta:1, constraints:{min:0,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                  </div>
+		  </div>
       </div>
     </div>
     <div class="appSubmissionArea">

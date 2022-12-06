@@ -22,7 +22,7 @@ define([
     tooltip: 'The "Circular Viewer" tab provides circular overview of the entire genome and its genomic features',
     apiServiceUrl: window.App.dataAPI,
     docsServiceURL: window.App.docsServiceURL,
-    tutorialLink: 'user_guides/organisms_genome/circular_genome_viewer.html',
+    tutorialLink: 'quick_references/organisms_genome/circular_genome_viewer.html',
 
     addActionBar: function () {
       this.selectionActionBar = new ActionBar({

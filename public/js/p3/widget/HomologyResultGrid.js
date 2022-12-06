@@ -2,12 +2,12 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/aspect', 'dojo/on', 'dojo/dom-class', 'dojo/dom-construct',
   './PageGrid', 'dojox/widget/Standby', '../store/HomologyResultMemoryStore',
-  './GridSelector'
+  './GridSelector', 'dojo/topic'
 ], function (
   declare, lang, Deferred,
   aspect, on, domClass, domConstruct,
   Grid, Standby, Store,
-  selector
+  selector, topic
 ) {
 
   return declare([Grid], {
@@ -18,6 +18,8 @@ define([
     state: null,
     storeType: '',
     columns: {},
+    noDataMessage: 'No results found.',
+    loadingMessage: 'Loading...',
 
     result_types: {
       'genome_feature': {
@@ -146,18 +148,18 @@ define([
       if (!state || state === this.state) {
         return;
       }
-
       this.state = state;
       var parts = this.state.pathname.split('/');
-
       var dataPath = '/' + parts.slice(2).join('/')
-
       if (!this.store) {
         this.set('store', this.createStore(dataPath));
       } else {
         this.store.set('dataPath', dataPath)
       }
       this.refresh();
+      // if (this.store.loaded) {
+      // this.loadingMask.hide();
+      // }
     },
 
     _setStore: function (store) {
@@ -193,15 +195,23 @@ define([
       subDiv.appendChild(this.buildDetailView(obj.detail));
       return div;
     },
+
     startup: function () {
       var self = this;
-      this.loadingMask = new Standby({
-        target: this.id,
-        image: '/public/js/p3/resources/images/spin.svg',
-        color: '#efefef'
+      // this.loadingMask = new Standby({
+      //   target: this.id,
+      //   image: '/public/js/p3/resources/images/spin.svg',
+      //   color: '#efefef'
+      // });
+      // domConstruct.place(this.loadingMask.domNode, this.domNode, 'last');
+      // this.loadingMask.startup();
+      // this.loadingMask.show();
+      this.noDataMessage = 'Loading homology data...';
+      topic.subscribe('homology_data', function (data_exists) {
+        if (!data_exists) {
+          self.noDataMessage = 'No homology results.';
+        }
       });
-      domConstruct.place(this.loadingMask.domNode, this.domNode, 'last');
-      this.loadingMask.startup();
 
       this.on('.dgrid-cell div.dgrid-expando-icon:click', function (evt) {
 

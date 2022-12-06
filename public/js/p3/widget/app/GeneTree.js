@@ -14,16 +14,16 @@ define([
   children, WorkspaceManager, Memory, Standby, when
 ) {
   return declare([AppBase], {
-    baseClass: 'App Assembly',
+    baseClass: 'App GeneTree',
     templateString: Template,
     applicationName: 'GeneTree',
     requireAuth: true,
     applicationLabel: 'Gene Tree',
-    applicationDescription: 'The Gene Tree Service is being tested.',
+    applicationDescription: 'The Gene Tree Service enables construction of custom phylogenetic trees built from user-selected genomes, genes or proteins.',
     applicationHelp: 'quick_references/services/genetree.html',
     tutorialLink: 'tutorial/genetree/genetree.html',
-    videoLink: '',
-    pageTitle: 'Gene Tree',
+    videoLink: 'https://youtu.be/VtXWBRSdXRo',
+    pageTitle: 'Gene Tree Service | BV-BRC',
     defaultPath: '',
     startingRows: 3,
     maxGenomes: 500,

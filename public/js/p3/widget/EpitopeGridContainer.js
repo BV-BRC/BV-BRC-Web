@@ -22,7 +22,7 @@ define([
   return declare([GridContainer], {
     gridCtor: EpitopeGrid,
     containerType: 'epitope_data',
-    tutorialLink: '',
+    tutorialLink: 'quick_references/organisms_taxon/epitopes.html',
     facetFields: AdvancedSearchFields['epitope'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['epitope'].filter((ff) => ff.search),
     filter: '',

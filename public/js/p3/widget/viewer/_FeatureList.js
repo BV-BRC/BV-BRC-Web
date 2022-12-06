@@ -151,7 +151,7 @@ define([
     },
 
     onSetTotalFeatures: function (attr, oldVal, newVal) {
-      this.totalCountNode.innerHTML = ' ( ' + newVal + ' Genomic Features ) ';
+      this.totalCountNode.innerHTML = ' ( ' + newVal + ' Features ) ';
     },
 
     hideWarning: function () {

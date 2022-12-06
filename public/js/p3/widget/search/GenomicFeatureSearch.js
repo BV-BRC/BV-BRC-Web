@@ -24,7 +24,7 @@ define([
 
   return declare([SearchBase], {
     templateString: template,
-    searchAppName: 'Genomic Feature Search',
+    searchAppName: 'Feature Search',
     dataKey: 'genome_feature',
     resultUrlBase: '/view/FeatureList/?',
     resultUrlHash: '#view_tab=features',

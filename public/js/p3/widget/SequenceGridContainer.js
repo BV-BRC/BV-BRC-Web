@@ -22,7 +22,7 @@ define([
   return declare([GridContainer], {
     gridCtor: SequenceGrid,
     containerType: 'sequence_data',
-    tutorialLink: 'user_guides/organisms_taxon/sequences.html',
+    tutorialLink: 'quick_references/organisms_taxon/sequences.html',
     facetFields: AdvancedSearchFields['genome_sequence'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['genome_sequence'].filter((ff) => ff.search),
     dataModel: 'genome_sequence',

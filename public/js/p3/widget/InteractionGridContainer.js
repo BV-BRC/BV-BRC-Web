@@ -49,7 +49,7 @@ define([
   return declare([GridContainer], {
     gridCtor: Grid,
     containerType: 'interaction_data',
-    tutorialLink: 'user_guides/organisms_taxon/interactions.html',
+    tutorialLink: 'quick_references/organisms_taxon/interactions.html',
     facetFields: ['category', 'evidence', 'detection_method', 'interaction_type', 'source_db', 'genome_name_a', 'genome_name_b'],
     dataModel: 'ppi',
     defaultFilter: 'eq(evidence,experimental)',

@@ -1,15 +1,3 @@
-/**
- * ComprehensiveSARS2AnalysisService.js
- *
- * Responsible for control of submission form.
- *
- * Ex params:
- *    SARA Run Accession: ERR4208068
- *    Taxon Id: 2697049
- *    My label: test1
- *    Output Folder: <anything>
- */
-
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/topic',
   'dojo/on', 'dojo/request', 'dojo/dom-class', 'dojo/dom-construct',
@@ -25,8 +13,8 @@ define([
 ) {
 
   return declare([AppBase], {
-    baseClass: 'App',
-    pageTitle: 'SARS-CoV-2 Genome Assembly and Annotation',
+    baseClass: 'App ComprehensiveSARS2Analysis',
+    pageTitle: 'SARS-CoV-2 Genome Assembly and Annotation Service | BV-BRC',
     templateString: Template,
     applicationName: 'ComprehensiveSARS2Analysis',
     requireAuth: true,
@@ -39,6 +27,7 @@ define([
     applicationDescription: 'The SARS-CoV-2 Genome Assembly and Annotation Service provides a streamlined "meta-service" that accepts raw reads and performs genome assembly, annotation, and variation analysis.  ',
     applicationHelp: 'quick_references/services/sars_cov_2_assembly_annotation_service.html',
     tutorialLink: 'tutorial/sars_cov_2_assembly_annotation/sars_cov_2_assembly_annotation.html',
+    videoLink: '',
     libraryData: null,
     defaultPath: '',
     startingRows: 9,
