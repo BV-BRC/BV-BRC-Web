@@ -1,5 +1,9 @@
 # Changelog
 ## December 5, 2022
+## 3.27.12
+* [Update] Changing RNASeq interface to match new backend requirements [PR #490](https://github.com/BV-BRC/BV-BRC-Web/pull/490)
+* [Feature] add rerun ability to subspecies classification service [PR #487](https://github.com/BV-BRC/BV-BRC-Web/pull/487)
+
 ## 3.27.11
 * [Feature] Add advanced binning parameters [PR #489](https://github.com/BV-BRC/BV-BRC-Web/pull/489)
 
