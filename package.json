@@ -55,7 +55,7 @@
     "forever": "^3.0.4",
     "gulp-replace": "^0.6.1",
     "intern": "^4.10.0",
-    "minimatch": "^3.0.2",
+    "minimatch": "^3.0.5",
     "request-promise": "^4.2.2",
     "stylelint": "^8.2.0",
     "stylelint-config-standard": "^17.0.0"
