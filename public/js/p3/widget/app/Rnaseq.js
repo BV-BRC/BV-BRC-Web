@@ -882,7 +882,6 @@ define([
       var condLibs = [];
       var contrastPairs = [];
       console.log('assembly_values = ', assembly_values);
-      debugger;
       var combinedList = pairedList.concat(singleList).concat(srrList);
       if (this.exp_design.checked) {
         condList.forEach(function (condRecord) {
