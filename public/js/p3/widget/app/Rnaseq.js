@@ -946,6 +946,12 @@ define([
 
       // strategy (recipe)
       assembly_values.recipe = values.recipe;
+      if (values.recipe === 'Host') {
+        assembly_values['genome_type'] = 'host';
+      }
+      else {
+        assembly_values['genome_type'] = 'bacteria';
+      }
       /*
       if (values.recipe == 'HTSeq-DESeq') {
         assembly_values.feature_count = 'htseq';
