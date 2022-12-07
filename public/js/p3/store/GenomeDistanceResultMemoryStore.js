@@ -75,6 +75,7 @@ define([
         }
 
         var genomeIds = [];
+        debugger;
         var serviceResult = res.result[0].map(function (d) {
           genomeIds.push(d[0]);
           return {
