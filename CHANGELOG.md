@@ -1,5 +1,8 @@
 # Changelog
 ## December 7, 2022
+## 3.27.14
+* [Bug Fix] Forgot to change job submission form labels from numbers to condition strings [PR #495](https://github.com/BV-BRC/BV-BRC-Web/pull/495)
+
 ## 3.27.13
 * [Bug Fix] use molstar without packaing [PR #494](https://github.com/BV-BRC/BV-BRC-Web/pull/494)
 * [Enhancement] Added contigs to database and query sources.[PR #493](https://github.com/BV-BRC/BV-BRC-Web/pull/493)
