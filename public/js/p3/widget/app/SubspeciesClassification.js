@@ -72,6 +72,7 @@ define([
 
       this.onInputChange(true);
 
+      this.virus_type.addOption(VirusTypes);
       this._started = true;
       this.form_flag = false;
       var _self = this;
@@ -87,7 +88,6 @@ define([
           localStorage.removeItem('bvbrc_rerun_job');
         }
       }
-      this.virus_type.addOption(VirusTypes);
     },
 
     openJobsList: function () {
@@ -237,14 +237,7 @@ define([
         if (sessionStorage.hasOwnProperty(rerun_key)) {
           this.form_flag = true;
           var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-          console.log('job_data=', job_data);
-          var param_dict = { 'output_folder': 'output_path' };
-          var service_specific = { 'input_fasta_data': 'sequence' };
-          param_dict['service_specific'] = service_specific;
           this.setInputSource(job_data);
-          console.log('query_genomegroup=', this.query_genomegroup.value);
-          console.log('query_genomegroup(value)=', this.query_genomegroup.get('value'));
-          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
           sessionStorage.removeItem(rerun_key);
         }
       }
@@ -255,13 +248,13 @@ define([
       if (s === 'fasta_data') {
         this.input_sequence.set('checked', true);
         this.input_fasta.set('checked', false);
-        this.input_group.set('checked', false);
+        //this.input_group.set('checked', false);
         this.sequence.set('value', job_data['input_fasta_data']);
       }
       else if (s === 'fasta_file') {
         this.input_fasta.set('checked', true);
         this.input_sequence.set('checked', false);
-        this.input_group.set('checked', false);
+        //this.input_group.set('checked', false);
         this.query_fasta.set('value', job_data['input_fasta_file']);
       }
       else if (s === 'genome_group') {
@@ -270,6 +263,9 @@ define([
         this.input_fasta.set('checked', false);
         this.query_genomegroup.set('value', job_data['input_genome_group']);
       }
+
+      this.output_path.set('value', job_data['output_path']);
+      this.virus_type.set('value', job_data['virus_type']);
     }
   });
 });
