@@ -893,7 +893,7 @@ define([
           }
         });
         contrastList.forEach(function (contrastRecord) {
-          contrastPairs.push([condLibs.indexOf(contrastRecord.condition1) + 1, condLibs.indexOf(contrastRecord.condition2) + 1]);
+          contrastPairs.push([contrastRecord.condition1, contrastRecord.condition2]);
         });
         assembly_values.contrasts = contrastPairs;
       }
@@ -917,7 +917,7 @@ define([
       singleList.forEach(function (libRecord) {
         var toAdd = {};
         if ('condition' in libRecord && this.exp_design.checked) {
-          toAdd.condition = condLibs.indexOf(libRecord.condition) + 1;
+          toAdd.condition = libRecord.condition;
         }
         singleAttrs.forEach(function (attr) {
           toAdd[attr] = libRecord[attr];
@@ -930,7 +930,7 @@ define([
       srrList.forEach(function (libRecord) {
         var toAdd = {};
         if ('condition' in libRecord && this.exp_design.checked) {
-          toAdd.condition = condLibs.indexOf(libRecord.condition) + 1;
+          toAdd.condition = libRecord.condition;
         }
         srrAttrs.forEach(function (attr) {
           toAdd[attr] = libRecord[attr];
@@ -946,6 +946,12 @@ define([
 
       // strategy (recipe)
       assembly_values.recipe = values.recipe;
+      if (values.recipe === 'Host') {
+        assembly_values['genome_type'] = 'host';
+      }
+      else {
+        assembly_values['genome_type'] = 'bacteria';
+      }
       /*
       if (values.recipe == 'HTSeq-DESeq') {
         assembly_values.feature_count = 'htseq';
