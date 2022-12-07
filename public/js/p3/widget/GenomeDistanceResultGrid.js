@@ -20,6 +20,19 @@ define([
       genome_id: { label: 'Genome ID', field: 'genome_id', hidden: true },
       patric_cds: { label: 'PATRIC CDS', field: 'patric_cds', hidden: true },
       // add extra columns
+      genome_status: { 
+        label: 'Genome Status',
+        field: 'genome_status',
+        hidden: false,
+        group: 'Status',
+        sortable: true
+      },
+      genome_quality: {
+        label: 'Genome Quality',
+        field: 'genome_quality',
+        hidden: false,
+        group: 'Genome Quality'
+      },
       distance: { label: 'Distance', field: 'distance', sortable: false },
       pvalue: { label: 'P value', field: 'pvalue', sortable: false },
       counts: { label: 'K-mer Counts', field: 'counts', sortable: false }
