@@ -1,4 +1,9 @@
 # Changelog
+## December 7, 2022
+## 3.27.13
+* [Bug Fix] use molstar without packaing [PR #494](https://github.com/BV-BRC/BV-BRC-Web/pull/494)
+* [Enhancement] Added contigs to database and query sources.[PR #493](https://github.com/BV-BRC/BV-BRC-Web/pull/493)
+
 ## December 5, 2022
 ## 3.27.12
 * [Update] Changing RNASeq interface to match new backend requirements [PR #490](https://github.com/BV-BRC/BV-BRC-Web/pull/490)
