@@ -1,5 +1,8 @@
 # Changelog
 ## December 7, 2022
+## 3.27.15
+* [Enhancement] adding genome status and quality as displayed in similar genome finder [PR #498](https://github.com/BV-BRC/BV-BRC-Web/pull/498)
+
 ## 3.27.14
 * [Bug Fix] Forgot to change job submission form labels from numbers to condition strings [PR #495](https://github.com/BV-BRC/BV-BRC-Web/pull/495)
 
