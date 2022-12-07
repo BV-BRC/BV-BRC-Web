@@ -35,7 +35,7 @@ define([], function () {
         // 'PhylogeneticTree': 'PhylogeneticTree',
         'PrimerDesign': 'PrimerDesign',
         'RNASeq': 'Rnaseq',
-        'SubSpeciesClassification': 'SubspeciesClassification',
+        'SubspeciesClassification': 'SubspeciesClassification',
         'TaxonomicClassification': 'TaxonomicClassification',
         'TnSeq': 'Tnseq',
         'Variation': 'Variation'
