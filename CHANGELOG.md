@@ -1,4 +1,8 @@
 # Changelog
+## December 8, 2022
+## 3.27.16
+* [Update] Change default binning threshold to match assembly app [PR #499](https://github.com/BV-BRC/BV-BRC-Web/pull/499)
+
 ## December 7, 2022
 ## 3.27.15
 * [Enhancement] adding genome status and quality as displayed in similar genome finder [PR #498](https://github.com/BV-BRC/BV-BRC-Web/pull/498)
