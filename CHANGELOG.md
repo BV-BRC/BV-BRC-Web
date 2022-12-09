@@ -1,5 +1,8 @@
 # Changelog
 ## December 9, 2022
+## 3.28.1
+* [Bug Fix] missed changing condition for paired end reads [PR #502](https://github.com/BV-BRC/BV-BRC-Web/pull/502)
+
 ## 3.28.0
 * [Release] Production Release 3.28.0
 
