@@ -1,4 +1,8 @@
 # Changelog
+## December 9, 2022
+## 3.28.0
+* [Release] Production Release 3.28.0
+
 ## December 8, 2022
 ## 3.27.16
 * [Update] Change default binning threshold to match assembly app [PR #499](https://github.com/BV-BRC/BV-BRC-Web/pull/499)
