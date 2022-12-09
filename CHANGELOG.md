@@ -1,4 +1,19 @@
 # Changelog
+## December 8, 2022
+## 3.27.16
+* [Update] Change default binning threshold to match assembly app [PR #499](https://github.com/BV-BRC/BV-BRC-Web/pull/499)
+
+## December 7, 2022
+## 3.27.15
+* [Enhancement] adding genome status and quality as displayed in similar genome finder [PR #498](https://github.com/BV-BRC/BV-BRC-Web/pull/498)
+
+## 3.27.14
+* [Bug Fix] Forgot to change job submission form labels from numbers to condition strings [PR #495](https://github.com/BV-BRC/BV-BRC-Web/pull/495)
+
+## 3.27.13
+* [Bug Fix] use molstar without packaing [PR #494](https://github.com/BV-BRC/BV-BRC-Web/pull/494)
+* [Enhancement] Added contigs to database and query sources.[PR #493](https://github.com/BV-BRC/BV-BRC-Web/pull/493)
+
 ## December 5, 2022
 ## 3.27.12
 * [Update] Changing RNASeq interface to match new backend requirements [PR #490](https://github.com/BV-BRC/BV-BRC-Web/pull/490)

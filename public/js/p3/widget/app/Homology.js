@@ -609,12 +609,12 @@ define([
         this.program = 'blastn';
         this.sequence_type = NA;
         this.input_type = 'dna';
-        this.query_fasta.set('type', 'feature_dna_fasta');
+        this.query_fasta.set('type', ['feature_dna_fasta', 'contigs']);
       } else if (this.blastx.checked == true) {
         this.program = 'blastx';
         this.sequence_type = AA;
         this.input_type = 'dna';
-        this.query_fasta.set('type', 'feature_dna_fasta');
+        this.query_fasta.set('type', ['feature_dna_fasta', 'contigs']);
       } else if (this.tblastn.checked == true) {
         this.program = 'tblastn';
         this.sequence_type = NA;
@@ -690,7 +690,7 @@ define([
       if (fastaDB && this.search_for.get('value') == 'faa') {
         this.db_fasta_file.set('type', 'feature_protein_fasta');
       } else if (fastaDB) {
-        this.db_fasta_file.set('type', 'feature_dna_fasta');
+        this.db_fasta_file.set('type', ['feature_dna_fasta', 'contigs']);
       }
     },
 
