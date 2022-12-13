@@ -794,7 +794,7 @@ define([
             label: 'HTSeq-DESeq', value: 'HTSeq-DESeq', selected: false, disabled: false
           },
           {
-            label: 'Tuxedo', value: 'RNA-Rocket', selected: false, disabled: false
+            label: 'Tuxedo', value: 'cufflinks', selected: false, disabled: false
           },
           {
             label: 'Host HISAT2', value: 'Host', selected: false, disabled: true
