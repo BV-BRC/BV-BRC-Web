@@ -901,7 +901,7 @@ define([
       pairedList.forEach(function (libRecord) {
         var toAdd = {};
         if ('condition' in libRecord && this.exp_design.checked) {
-          toAdd.condition = condLibs.indexOf(libRecord.condition) + 1;
+          toAdd.condition = libRecord.condition;
         }
         pairedAttrs.forEach(function (attr) {
           toAdd[attr] = libRecord[attr];
