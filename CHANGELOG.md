@@ -1,5 +1,8 @@
 # Changelog
 ## December 14, 2022
+## 3.28.4
+* [Bug Fix] Fix trimming checkbox
+
 ## 3.28.3
 * [Enhancement] Add flye to recipe list for CGA Service
 
