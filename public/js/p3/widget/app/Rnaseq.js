@@ -266,7 +266,7 @@ define([
       assembly_values = this.checkBaseParameters(values, assembly_values);
 
       // get trimming value
-      if (this.trimming_true) {
+      if (this.trimming_true.checked) {
         assembly_values['trimming'] = true;
       } else {
         assembly_values['trimming'] = false;
