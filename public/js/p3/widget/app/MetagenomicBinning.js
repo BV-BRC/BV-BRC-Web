@@ -593,10 +593,22 @@ define([
     },
 
     rerunAdvParamsFill: function (job_data) {
+      // default values from the form widgets
+      // var def_disable_dangling = this.disable_dangling.get('checked'),
+      //   def_min_contig_len = this.min_contig_len.get('value'),
+      //   def_min_contig_cov = this.min_contig_cov.get('value');
+
+      // values from previous job
       var disable_dangling = job_data['danglen'],
         min_contig_len = job_data['min_contig_len'],
         min_contig_cov = job_data['min_contig_cov']
 
+      // open adv params if there are changes
+      // if (disable_dangling !== def_disable_dangling || min_contig_len !== def_min_contig_len || min_contig_cov !== def_min_contig_cov) {
+      //   this.advrow.style.display = 'block';
+      // }
+
+      // fill the form
       if (disable_dangling === 0) {
         this.disable_dangling.set('checked', true);
       }
