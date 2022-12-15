@@ -552,7 +552,6 @@ define([
           // param_dict["widget_map"] = widget_map;
           AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
           var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-          console.log('job_data: ', job_data);
           this.selectOrganismFormFill(job_data);
           this.selectStartWith(job_data);
           this.rerunAdvParamsFill(job_data);
