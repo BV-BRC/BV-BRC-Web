@@ -1,4 +1,8 @@
 # Changelog
+## December 16, 2022
+## 3.28.7
+* [Bug Fix] Rnaseq add contrasts [PR #509](https://github.com/BV-BRC/BV-BRC-Web/pull/509)
+
 ## December 15, 2022
 ## 3.28.6
 * [Enhancement] Include the name of the tree file in the bread crumbs [PR #506](https://github.com/BV-BRC/BV-BRC-Web/pull/506)
