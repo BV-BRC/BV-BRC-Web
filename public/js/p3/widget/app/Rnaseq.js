@@ -914,6 +914,9 @@ define([
       if (condLibs.length) {
         assembly_values.experimental_conditions = condLibs;
       }
+      else {
+        assembly_values.experimental_conditions = [];
+      }
       singleList.forEach(function (libRecord) {
         var toAdd = {};
         if ('condition' in libRecord && this.exp_design.checked) {
