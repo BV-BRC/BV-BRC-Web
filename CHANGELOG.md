@@ -1,4 +1,8 @@
 # Changelog
+## December 15, 2022
+## 3.28.5
+* [Bug Fix] Rnaseq adding no experimental conditions [PR #508](https://github.com/BV-BRC/BV-BRC-Web/pull/508)
+
 ## December 14, 2022
 ## 3.28.4
 * [Bug Fix] Fix trimming checkbox
