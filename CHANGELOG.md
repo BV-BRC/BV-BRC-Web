@@ -1,5 +1,8 @@
 # Changelog
 ## December 15, 2022
+## 3.28.6
+* [Enhancement] Include the name of the tree file in the bread crumbs [PR #506](https://github.com/BV-BRC/BV-BRC-Web/pull/506)
+
 ## 3.28.5
 * [Bug Fix] Rnaseq adding no experimental conditions [PR #508](https://github.com/BV-BRC/BV-BRC-Web/pull/508)
 
