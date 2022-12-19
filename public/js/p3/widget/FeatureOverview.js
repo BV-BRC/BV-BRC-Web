@@ -376,7 +376,7 @@ define([
       for (var i = 0, l = structure.length; i < l; i++) {
         var htr = domConstruct.create('tr', {}, tbody);
 
-        var cellTarget = lang.replace('<a href="https://apps.sbri.org/SSGCIDTargetStatus/Target/{0}" target="_blank">{0}</a>', [structure[i].target_id]);
+        var cellTarget = lang.replace('<a href="https://targetstatus.ssgcid.org/Target/{0}" target="_blank">{0}</a>', [structure[i].target_id]);
         var cellSelection = structure[i].selection_criteria || '&nbsp;';
         // TODO: query for PDB IDs and link to viewer
         var cellStatus = structure[i].target_status || '&nbsp;';
