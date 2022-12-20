@@ -46,7 +46,7 @@ define([
 
       const taxonNameValue = this.taxonNameNode.get('value')
       if (taxonNameValue !== '') {
-        queryArr.push(`eq(taxon_name,${sanitizeInput(taxonNameValue)})`)
+        queryArr.push(`eq(taxon_name,${TextInputEncoder(sanitizeInput(taxonNameValue))})`)
       }
 
       const taxonRankValue = this.taxonRankNode.get('value')
