@@ -42,7 +42,7 @@ define([
       'experiment', 'unspecified', 'contigs', 'reads', 'model', 'txt', 'html',
       'pdf', 'string', 'json', 'csv', 'diffexp_experiment',
       'diffexp_expression', 'diffexp_mapping', 'diffexp_sample',
-      'diffexp_input_data', 'diffexp_input_metadata', 'svg', 'gif', 'png', 'jpg'],
+      'diffexp_input_data', 'diffexp_input_metadata', 'svg', 'gif', 'png', 'jpg', 'nwk', 'phyloxml'],
     design: 'sidebar',
     splitter: false,
     docsServiceURL: window.App.docsServiceURL,
@@ -1131,19 +1131,10 @@ define([
           // console.log('ViewNwkXml obj', obj);
         });
         var fileType = selection.map(function (obj) { return obj.type; });
+
         var labelSearch = 'true';
         var idType = 'genome_id';
         var labelType = 'genome_name';
-        // console.log('container', container);
-        // console.log('self.browserHeader', self.browserHeader);
-        if (container._resultType !== 'CodonTree' && container._resultType !== 'PhylogeneticTree') {
-          idType = 'patric_id';
-          labelType = 'feature_name';
-        }
-        if (encodePath(path[0]).includes('WithGenomeNames.')) {
-          labelSearch = 'false';
-          idType = 'genome_name';
-        }
         Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) + '&fileType=' + fileType });
       }, false);
 
@@ -1157,8 +1148,8 @@ define([
         console.log('browserHeader container ', container);
 
         var labelSearch = 'true';
-        var idType = 'patric_id';
-        var labelType = 'feature_name';
+        var idType = 'genome_id';
+        var labelType = 'genome_name';
         var fileType = 'phyloxml';
         var path;
 
@@ -1986,6 +1977,10 @@ define([
       } else {
         obj = WorkspaceManager.getObject(val, true);
       }
+
+      // console.log('in WorkspaceBrowser this.path', this.path);
+      // console.log('in WorkspaceBrowser obj', obj);
+
       Deferred.when(obj, lang.hitch(this, function (obj) {
         if (this.browserHeader) {
           this.browserHeader.set('selection', [obj]);
@@ -1993,6 +1988,7 @@ define([
         var panelCtor;
         var params = { path: this.path, region: 'center' };
 
+        console.log('in WorkspaceBrowser obj', obj);
         // console.log('in WorkspaceBrowser obj.autoMeta', obj.autoMeta);
         // console.log('in WorkspaceBrowser browserHeader', this.browserHeader);
 
@@ -2065,6 +2061,15 @@ define([
             panelCtor = window.App.getConstructor('p3/widget/viewer/TSV_CSV');
             params.file = { metadata: obj };
             break;
+          case 'nwk':
+          case 'phyloxml':
+            var labelSearch = 'true';
+            var idType = 'genome_id';
+            var labelType = 'genome_name';
+            var filepath = obj.path + obj.name;
+            Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(filepath) + '&fileType=' + obj.type });
+            break;
+
           default:
             var tsvCsvFilename = this.tsvCsvFilename = obj.name;
             var isTsv = false;
