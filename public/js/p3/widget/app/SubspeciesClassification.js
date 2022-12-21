@@ -14,6 +14,7 @@ define([
   var VirusTypes = [
     { value: 'NOROORF1', label: 'Caliciviridae - Norovirus [VP2 gene, genomic RNA]' },
     { value: 'NOROORF2', label: 'Caliciviridae - Norovirus [VP1 gene, genomic RNA]' },
+    { type: 'separator'},
     { value: 'BOVDIARRHEA1', label: 'Flaviviridae - Bovine viral diarrhea virus [5\'UTR region, genomic RNA]' },
     { value: 'DENGUE', label: 'Flaviviridae - Dengue virus [complete genome, genomic RNA' },
     { value: 'HCV', label: 'Flaviviridae - Hepatitis C virus [polyprotein gene, genomic RNA]' },
@@ -24,8 +25,10 @@ define([
     { value: 'WESTNILE', label: 'Flaviviridae - West Nile virus [complete genome, genomic RNA]' },
     { value: 'YELLOWFEVER', label: 'Flaviviridae - Yellow fever virus [polyprotein mRNA, mRNA]' },
     { value: 'ZIKA', label: 'Flaviviridae - Zika virus [complete genome, genomic RNA]' },
+    { type: 'separator'},
     { value: 'INFLUENZAH5', label: 'Orthomyxoviridae - Influenza A H5 [Hemagglutinin gene, genomic RNA]' },
     { value: 'SWINEH1', label: 'Orthomyxoviridae - Swine influenza H1 (global classification) [Hemagglutinin gene, genomic RNA]' },
+    { type: 'separator'},
     { value: 'ROTAA', label: 'Reoviridae - Rotavirus A [complete genome, genomic RNA]' }
   ];
 
