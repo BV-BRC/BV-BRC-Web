@@ -12,21 +12,21 @@ define([
 ) {
 
   var VirusTypes = [
-    { value: 'BOVDIARRHEA1', label: 'Bovine viral diarrhea virus [5\'UTR region, genomic RNA]' },
-    { value: 'DENGUE', label: 'Dengue virus [complete genome, genomic RNA' },
-    { value: 'HCV', label: 'Hepatitis C virus [polyprotein gene, genomic RNA]' },
-    { value: 'INFLUENZAH5', label: 'Influenza A H5 [Hemagglutinin gene, genomic RNA]' },
-    { value: 'JAPENCEPH', label: 'Japanese encephalitis virus [complete genome, genomic RNA]' },
-    { value: 'MURRAY', label: 'Murray Valley encephalitis virus [envelope protein (E), genomic RNA]' },
-    { value: 'NOROORF1', label: 'Norovirus [VP2 gene, genomic RNA]' },
-    { value: 'NOROORF2', label: 'Norovirus [VP1 gene, genomic RNA]' },
-    { value: 'ROTAA', label: 'Rotavirus A [complete genome, genomic RNA]' },
-    { value: 'STLOUIS', label: 'St. Louis encephalitis virus [polyprotein gene, genomic RNA]' },
-    { value: 'SWINEH1', label: 'Swine influenza H1 (global classification) [Hemagglutinin gene, genomic RNA]' },
-    { value: 'TKBENCEPH', label: 'Tick-borne encephalitis virus [polyprotein gene, genomic RNA]' },
-    { value: 'WESTNILE', label: 'West Nile virus [complete genome, genomic RNA]' },
-    { value: 'YELLOWFEVER', label: 'Yellow fever virus [polyprotein mRNA, mRNA]' },
-    { value: 'ZIKA', label: 'Zika virus [complete genome, genomic RNA]' }
+    { value: 'NOROORF1', label: 'Caliciviridae - Norovirus [VP2 gene, genomic RNA]' },
+    { value: 'NOROORF2', label: 'Caliciviridae - Norovirus [VP1 gene, genomic RNA]' },
+    { value: 'BOVDIARRHEA1', label: 'Flaviviridae - Bovine viral diarrhea virus [5\'UTR region, genomic RNA]' },
+    { value: 'DENGUE', label: 'Flaviviridae - Dengue virus [complete genome, genomic RNA' },
+    { value: 'HCV', label: 'Flaviviridae - Hepatitis C virus [polyprotein gene, genomic RNA]' },
+    { value: 'JAPENCEPH', label: 'Flaviviridae - Japanese encephalitis virus [complete genome, genomic RNA]' },
+    { value: 'MURRAY', label: 'Flaviviridae - Murray Valley encephalitis virus [envelope protein (E), genomic RNA]' },
+    { value: 'STLOUIS', label: 'Flaviviridae - St. Louis encephalitis virus [polyprotein gene, genomic RNA]' },
+    { value: 'TKBENCEPH', label: 'Flaviviridae - Tick-borne encephalitis virus [polyprotein gene, genomic RNA]' },
+    { value: 'WESTNILE', label: 'Flaviviridae - West Nile virus [complete genome, genomic RNA]' },
+    { value: 'YELLOWFEVER', label: 'Flaviviridae - Yellow fever virus [polyprotein mRNA, mRNA]' },
+    { value: 'ZIKA', label: 'Flaviviridae - Zika virus [complete genome, genomic RNA]' },
+    { value: 'INFLUENZAH5', label: 'Orthomyxoviridae - Influenza A H5 [Hemagglutinin gene, genomic RNA]' },
+    { value: 'SWINEH1', label: 'Orthomyxoviridae - Swine influenza H1 (global classification) [Hemagglutinin gene, genomic RNA]' },
+    { value: 'ROTAA', label: 'Reoviridae - Rotavirus A [complete genome, genomic RNA]' }
   ];
 
   return declare([AppBase], {
