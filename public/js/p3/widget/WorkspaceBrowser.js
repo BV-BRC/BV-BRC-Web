@@ -1132,7 +1132,7 @@ define([
         });
         var fileType = selection.map(function (obj) { return obj.type; });
 
-        var labelSearch = 'true';
+        var labelSearch = 'false';
         var idType = 'genome_id';
         var labelType = 'genome_name';
         Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) + '&fileType=' + fileType });
@@ -1147,7 +1147,7 @@ define([
         console.log('browserHeader selection ', selection);
         console.log('browserHeader container ', container);
 
-        var labelSearch = 'true';
+        var labelSearch = 'false';
         var idType = 'genome_id';
         var labelType = 'genome_name';
         var fileType = 'phyloxml';
@@ -2063,7 +2063,7 @@ define([
             break;
           case 'nwk':
           case 'phyloxml':
-            var labelSearch = 'true';
+            var labelSearch = 'false';
             var idType = 'genome_id';
             var labelType = 'genome_name';
             var filepath = obj.path + obj.name;

@@ -755,9 +755,11 @@ define([
         'Provenance': [{
           name: 'Date Inserted',
           text: 'date_inserted',
+          type: 'date'
         }, {
           name: 'Date Modified',
           text: 'date_modified',
+          type: 'date'
         }],
       }
       return spec;
@@ -3423,9 +3425,11 @@ define([
         }, {
           name: 'Date Inserted',
           text: 'date_inserted',
+          type: 'date'
         }, {
           name: 'Date Modified',
           text: 'date_modified',
+          type: 'date'
         }],
       };
 
