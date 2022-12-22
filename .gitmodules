@@ -68,4 +68,4 @@
 [submodule "public/js/archaeopteryx/archaeopteryx-js"]
 	path = public/js/archaeopteryx/archaeopteryx-js
 	url = https://github.com/cmzmasek/archaeopteryx-js.git
-
+	branch = master
