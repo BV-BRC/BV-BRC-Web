@@ -1,14 +1,21 @@
 # Changelog
+
 ## January 5, 2023
-## 3.28.6
+## 3.28.9
 * [Update] Include the name of the tree file in the bread crumbs [PR #506](https://github.com/BV-BRC/BV-BRC-Web/pull/506)
 * [Bug Fix] Fixing missing contrasts value in rnaseq job params [PR #509](https://github.com/BV-BRC/BV-BRC-Web/pull/509)
-* [Update] Added recent BV-BRC publications from 2022 [PR #509](https://github.com/BV-BRC/BV-BRC-Web/pull/509)
 * [Bug Fix] Taxon view: Fixed query for proteins tab [PR #515](https://github.com/BV-BRC/BV-BRC-Web/pull/515)
 * [Update] Enhancement for viewing nwk and phyloxml files [PR #514](https://github.com/BV-BRC/BV-BRC-Web/pull/514)
 * [Update] Update on subspecies class service [PR #512](https://github.com/BV-BRC/BV-BRC-Web/pull/512)
 
+## December 16, 2022
+## 3.28.7
+* [Bug Fix] Rnaseq add contrasts [PR #509](https://github.com/BV-BRC/BV-BRC-Web/pull/509)
+
 ## December 15, 2022
+## 3.28.6
+* [Enhancement] Include the name of the tree file in the bread crumbs [PR #506](https://github.com/BV-BRC/BV-BRC-Web/pull/506)
+
 ## 3.28.5
 * [Bug Fix] Rnaseq adding no experimental conditions [PR #508](https://github.com/BV-BRC/BV-BRC-Web/pull/508)
 
