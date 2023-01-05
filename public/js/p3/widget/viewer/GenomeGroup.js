@@ -99,7 +99,7 @@ define([
       }
 
       if (activeTab) {
-        const pageTitle = 'Genome Group ' + activeTab.title;
+        const pageTitle = 'Genome Group ' + activeTab.title + ' | BV-BRC';
         if (window.document.title !== pageTitle) {
           window.document.title = pageTitle;
         }
@@ -170,11 +170,11 @@ define([
         disabled: false,
         state: this.state
       });
-      this.proteinFamilies = new ProteinFamiliesContainer({
-        title: 'Protein Families',
-        id: this.viewer.id + '_proteinFamilies',
-        state: this.state
-      });
+      // this.proteinFamilies = new ProteinFamiliesContainer({
+      //   title: 'Protein Families',
+      //   id: this.viewer.id + '_proteinFamilies',
+      //   state: this.state
+      // });
       this.pathways = new PathwayGridContainer({
         title: 'Pathways',
         id: this.viewer.id + '_pathways',
@@ -220,7 +220,7 @@ define([
       this.viewer.addChild(this.proteinStructures);
       this.viewer.addChild(this.specialtyGenes);
       this.viewer.addChild(this.proteinFeatures);
-      this.viewer.addChild(this.proteinFamilies);
+      // this.viewer.addChild(this.proteinFamilies);
       this.viewer.addChild(this.pathways);
       this.viewer.addChild(this.subsystems);
       this.viewer.addChild(this.experiments);

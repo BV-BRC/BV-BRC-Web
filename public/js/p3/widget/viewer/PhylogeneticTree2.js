@@ -197,6 +197,14 @@ define([
               treeDat.options.branchWidthDefault = 1;
               treeDat.options.found0ColorDefault = '#800000';
 
+              // Shorten names to render a better tre display
+              if (obj.metadata && obj.metadata.name && obj.metadata.name.length > 100) {
+                treeDat.options.shortenNodeNames = true;
+
+                treeDat.setting = {};
+                treeDat.setting.showShortenNodeNamesButton = true;
+              }
+
               if (initialValue) {
                 treeDat.options.searchAinitialValue = '_#';
               }

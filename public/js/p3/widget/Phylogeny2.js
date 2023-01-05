@@ -76,13 +76,13 @@ define([
 
       var fileCheck = this.state.href.match(/wsTreeFile=..+?(?=&|$)/);
       var objPath = fileCheck[0].split('=')[1];
-      var folder = objPath.split("/").slice(0, -1).join("/");
-      //console.log('postCreate: objPath', objPath);
+      // var folder = objPath.split('/').slice(0, -1).join('/');
+      // console.log('postCreate: objPath', objPath);
       console.log('postCreate: this.state', this.state);
-      //console.log('postCreate: folder', folder);
+      // console.log('postCreate: folder', folder);
 
       this.pathContainer = domConstruct.create('div', { 'class': 'wsBreadCrumbContainer' }, this.domNode);
-      this.pathContainer.innerHTML = this.generatePathLinks(folder);
+      this.pathContainer.innerHTML = this.generatePathLinks(objPath);
       this.containerPane = new ContentPane({ region: 'center' });// domConstruct.create("div", {id: this.id + "_canvas"}, this.domNode);
 
       /*
@@ -106,12 +106,12 @@ define([
         layoutPriority: 1,
         containerWidget: this
       });
-      this.treeDiv = domConstruct.create('div', { class: 'size archaeopteryxClass', id: this.id + 'tree-container'}, this.containerPane.domNode);
+      this.treeDiv = domConstruct.create('div', { class: 'size archaeopteryxClass', id: this.id + 'tree-container' }, this.containerPane.domNode);
       this.treeDiv1 = domConstruct.create('div', { id: 'phylogram1' }, this.treeDiv);
       this.treeDiv2 = domConstruct.create('div', { id: 'controls0' }, this.treeDiv);
       // this.treeDiv3 = domConstruct.create('div', { id: 'controls1' }, this.treeDiv);
 
-      //this.addChild(this.containerActionBar);
+      // this.addChild(this.containerActionBar);
       this.addChild(this.selectionActionBar);
       this.addChild(this.containerPane);
       this.addChild(this.itemDetailPanel);
@@ -319,7 +319,11 @@ define([
         out.push("<a class='navigationLink' href='");
         bp.push(idx == 0 ? part : encodeURIComponent(part));  // leave username decoded
         out.push('/' + bp.join('/'));
-        out.push("'>" + ((idx == 0) ? part.replace('@' + localStorage.getItem('realm'), '') : part) + '</a> / ');
+        if (idx == parts.length - 1) {
+          out.push("'>" + ((idx == 0) ? part.replace('@' + localStorage.getItem('realm'), '') : part) + '</a>');
+        } else {
+          out.push("'>" + ((idx == 0) ? part.replace('@' + localStorage.getItem('realm'), '') : part) + '</a> / ');
+        }
       });
       // console.log('in generatePathLinks() out', out);
       return out.join('');

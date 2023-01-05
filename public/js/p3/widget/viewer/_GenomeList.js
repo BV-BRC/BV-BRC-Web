@@ -137,7 +137,7 @@ define([
           var activeQueryState;
 
           // special case for host genomes
-          if (active == 'features' && this.state && this.state.genome_ids && !this.state.hashParams.filter) {
+          if ((active == 'features' || active == 'proteins') && this.state && this.state.genome_ids && !this.state.hashParams.filter) {
             var q = 'in(genome_id,(' + this.state.genome_ids.join(',') + '))&select(taxon_lineage_ids)&limit(' + this.state.genome_ids.length + ')';
             xhr.post(PathJoin(this.apiServiceUrl, 'genome'), {
               headers: {
@@ -320,7 +320,7 @@ define([
       this.totalCountNode.innerHTML = ` ( ${genomeCount} Genomes ) `;
 
       if (genomeCount > 500) {
-        this.getReferenceAndRepresentativeGenomes(genomeCount);
+        // this.getReferenceAndRepresentativeGenomes(genomeCount);
       }
     },
     hideWarning: function () {
