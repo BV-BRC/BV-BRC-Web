@@ -250,11 +250,6 @@ define([
         case 'phylogeny':
           activeTab.set('state', lang.mixin({}, this.state));
           break;
-        case 'proteins':
-          activeTab.set('state', lang.mixin({}, this.state, {
-            search: 'eq(taxon_id,' + encodeURIComponent(this.state.taxon_id) + ')&and(or(eq(feature_type,CDS),eq(feature_type,mat_peptide)),eq(annotation,PATRIC))'
-          }));
-          break;
         case 'structures':
         case 'surveillance':
         case 'serology':

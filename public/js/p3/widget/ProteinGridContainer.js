@@ -29,7 +29,7 @@ define([
     dataModel: 'genome_feature',
     primaryKey: 'feature_id',
     defaultFilter: 'and(or(eq(feature_type,CDS),eq(feature_type,mat_peptide)),eq(annotation,PATRIC))',
-    tooltip: 'The "Proteins" tab shows proteins (e.g., CDS, matu_peptides, tRNA, etc) for genomes associated with the current view.',
+    tooltip: 'The "Proteins" tab shows proteins (e.g., CDS, mat_peptides, tRNA, etc) for genomes associated with the current view.',
     getFilterPanel: function (opts) {
 
     },
