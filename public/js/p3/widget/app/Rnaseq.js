@@ -897,6 +897,9 @@ define([
         });
         assembly_values.contrasts = contrastPairs;
       }
+      else {
+        assembly_values.contrasts = [];
+      }
       // reads or sra TODO bam
       pairedList.forEach(function (libRecord) {
         var toAdd = {};
@@ -913,6 +916,9 @@ define([
       }
       if (condLibs.length) {
         assembly_values.experimental_conditions = condLibs;
+      }
+      else {
+        assembly_values.experimental_conditions = [];
       }
       singleList.forEach(function (libRecord) {
         var toAdd = {};

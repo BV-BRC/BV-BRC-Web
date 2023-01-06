@@ -110,6 +110,11 @@ define([
         queryArr.push(`eq(genome_id,${TextInputEncoder(genomeIDValue)})`)
       }
 
+      const genomeNameValue = this.genomeNameNode.get('value')
+      if (genomeNameValue !== '') {
+        queryArr.push(`eq(genome_name,${TextInputEncoder(sanitizeInput(genomeNameValue))})`)
+      }
+
       const hostGroupValue = this.hostGroupNode.get('value')
       if (hostGroupValue !== '') {
         queryArr.push(`eq(host_group,${sanitizeInput(hostGroupValue)})`)
