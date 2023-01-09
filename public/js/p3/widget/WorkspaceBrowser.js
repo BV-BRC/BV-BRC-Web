@@ -7,7 +7,7 @@ define([
   'dijit/popup', 'dijit/form/Select', './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
   'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './RerunUtility', './viewer/JobResult',
-  'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree', 
+  'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree'
 ], function (
   declare, BorderContainer, on, query,
   domClass, domConstruct, domAttr,
