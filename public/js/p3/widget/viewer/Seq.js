@@ -333,10 +333,6 @@ define([
       if (this.jbrowseUrl) {
         return this.jbrowseUrl;
       }
-      return this.helperQueryParamsRNASeq();
-    },
-
-    helperQueryParamsRNASeq: function () {
       // console.log('[Seq] resultObjects', this._resultObjects);
       this.getStreamableFilesRNASeq();
       // debugger;

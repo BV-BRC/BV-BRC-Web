@@ -648,7 +648,6 @@ define([
     getDownloadUrls: function (paths) {
       paths = paths instanceof Array ? paths : [paths];
       return Deferred.when(this.api('Workspace.get_download_url', [{ objects: paths }]), function (urls) {
-        console.log('urls = ', urls);
         return urls[0];
       });
     },
