@@ -7,7 +7,7 @@ define([
   'dijit/popup', 'dijit/form/Select', './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
   'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './RerunUtility', './viewer/JobResult',
-  'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree'
+  'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree', 
 ], function (
   declare, BorderContainer, on, query,
   domClass, domConstruct, domAttr,
@@ -1308,14 +1308,15 @@ define([
         // console.log("View Tracks: ", this);
         try {
           var genomeId = self.actionPanel.currentContainerWidget.getGenomeId();
-          var urlQueryParams = self.actionPanel.currentContainerWidget.getJBrowseURLQueryParamsRNASeq();
+          self.actionPanel.currentContainerWidget.getJBrowseURLQueryParamsRNASeq().then(lang.hitch(this, function (urlQueryParams) {
+            Topic.publish('/navigate', { href: '/view/Genome/' + genomeId + '#' + urlQueryParams, target: 'blank' });
+          }));
           // var urlQueryParams = self.actionPanel.currentContainerWidget.getJBrowseURLQueryParams();
         }
         catch (err) {
           alert('The genome browser could not be opened. No genome id or no streamable files were found.');
           throw (err);
         }
-        Topic.publish('/navigate', { href: '/view/Genome/' + genomeId + '#' + urlQueryParams });
       }, false);
 
       this.actionPanel.addAction('ExperimentGeneList', 'fa icon-list-unordered fa-2x', {

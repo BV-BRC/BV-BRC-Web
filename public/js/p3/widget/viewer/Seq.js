@@ -1,8 +1,9 @@
 define([
   'dojo/_base/declare', './JobResult', '../../WorkspaceManager',
   'dojo/_base/Deferred', 'dojo/_base/lang', 'dojo/query', 'dojo/dom-attr',
-  'dojo/dom-class', 'dojo/NodeList-traverse'
-], function (declare, JobResult, WS, Deferred, lang, query, domAttr, domClass) {
+  'dojo/dom-class', 'dojo/NodeList-traverse', 'dojox/widget/Standby', 'dojo/dom-construct'
+], function (declare, JobResult, WS, Deferred, lang, query, domAttr, domClass,
+  nodeTraverse, Standby, domConstruct) {
   return declare([JobResult], {
     containerType: 'Seq',
     streamables: null,
@@ -25,24 +26,9 @@ define([
       domClass.toggle(this.buttonWrapper, 'disabled');
       // console.log('[JobResult.Seq] this.buttonWrapper: (disabled) ', this.buttonWrapper);
 
-      if (this.data.autoMeta.app.id === 'RNASeq') {
-        WS.getFolderContents(this._hiddenPath, true, true)
-          .then(function (objs) {
-            _self._resultObjects = objs;
-            _self.setupResultType();
-            _self.refresh();
-            _self.getDownloadUrlsForFilesRNASeq().then(function (objs) {
-              // debugger;
-              _self.getJBrowseURLQueryParamsRNASeq();
-            // _self.getJBrowseURLQueryParams();
-            });
-          });
-      }
-      else {
-        this.getDownloadUrlsForFiles().then(function (objs) {
-          _self.getJBrowseURLQueryParams();
-        });
-      }
+      this.getDownloadUrlsForFiles().then(function (objs) {
+        _self.getJBrowseURLQueryParams();
+      });
     },
     getGenomeId: function () {
       var id = this.data.autoMeta.parameters.reference_genome_id;
@@ -225,10 +211,6 @@ define([
     },
 
     getStreamableFilesRNASeq: function () {
-      if (this.streamables) {
-        return this.streamables;
-      }
-
       var _self = this;
       this.streamables = [];
       this._resultObjects.forEach(function (o) {
@@ -275,6 +257,7 @@ define([
     },
 
     getDownloadUrlsForFilesRNASeq: function () {
+      var def = new Deferred();
       var paths = [];
       var _self = this;
 
@@ -291,19 +274,21 @@ define([
         }
       });
       // console.log('[Seq] paths:', paths);
-      var _self = this;
-      return WS.getDownloadUrls(paths)
+      WS.getDownloadUrls(paths)
         .then(function (urls) {
           // console.log('[Seq] urls:', urls)
           for (var i = 0; i < _self._resultObjects.length; i++)
           {
-            if (_self._resultObjects[i].path === paths[i]) {
-              _self._resultObjects[i].url = urls[i];
+            var idx = paths.indexOf(_self._resultObjects[i].path);
+            if (idx >= 0) {
+              _self._resultObjects[i].url = urls[idx];
             }
-            _self._downloadableObjects[i].url = urls[i];
+            // _self._downloadableObjects[i].url = urls[i];
           }
-          return _self._downloadableObjects;
+          // I don't think I need to resolve it with anything
+          def.resolve(_self._downloadableObjects);
         });
+      return def;
     },
 
     getPartnerFileRNASeq: function (path) {
@@ -329,60 +314,75 @@ define([
     },
 
     getJBrowseURLQueryParamsRNASeq: function () {
+      var def = new Deferred();
+      var _self = this;
+      this.loadingMask = new Standby({
+        target: this.id,
+        image: '/public/js/p3/resources/images/spin.svg',
+        color: '#efefef'
+      });
+      domConstruct.place(this.loadingMask.domNode, this.domNode, 'last');
+      this.loadingMask.startup();
+      this.loadingMask.show();
+      WS.getFolderContents(this._hiddenPath, true, true)
+        .then(function (objs) {
+          _self._resultObjects = objs;
+          _self.getDownloadUrlsForFilesRNASeq().then(function (objs) {
 
-      if (this.jbrowseUrl) {
-        return this.jbrowseUrl;
-      }
-      // console.log('[Seq] resultObjects', this._resultObjects);
-      this.getStreamableFilesRNASeq();
-      // debugger;
-      // console.log("[Seq] streamables: ", this.streamables);
+            // console.log('[Seq] resultObjects', this._resultObjects);
+            _self.getStreamableFilesRNASeq();
+            // console.log("[Seq] streamables: ", this.streamables);
 
-      var tracks = [];
-      var stores = {};
-      var labels = [];
-      this.streamables.forEach(function (t) {
+            var tracks = [];
+            var stores = {};
+            var labels = [];
+            _self.streamables.forEach(function (t) {
 
-        var track;
-        // the first track gets some extra fields
-        track = {
-          // 'scale':'log',
-          // 'variance_band': 'true',
-          displayMode: 'compact',
-          label: t.keyAndLabel,
-          key: t.keyAndLabel,
-          type: t.trackType,
-          store: t.store
-        };
+              var track;
+              // the first track gets some extra fields
+              track = {
+                // 'scale':'log',
+                // 'variance_band': 'true',
+                displayMode: 'compact',
+                label: t.keyAndLabel,
+                key: t.keyAndLabel,
+                type: t.trackType,
+                store: t.store
+              };
 
-        tracks.push(track);
-        labels.push(t.keyAndLabel);
+              tracks.push(track);
+              labels.push(t.keyAndLabel);
 
-        var store = {};
-        store.type = t.storeType;
-        store.urlTemplate = t.path;
-        if (t.baiPath) {
-          store.baiUrlTemplate = t.baiPath;
-        }
-        if (t.tbiPath) {
-          store.tbiUrlTemplate = t.tbiPath;
-        }
-        stores[t.store] = store;
-      }, this);
+              var store = {};
+              store.type = t.storeType;
+              store.urlTemplate = t.path;
+              if (t.baiPath) {
+                store.baiUrlTemplate = t.baiPath;
+              }
+              if (t.tbiPath) {
+                store.tbiUrlTemplate = t.tbiPath;
+              }
+              stores[t.store] = store;
+            }, _self);
 
-      // console.log("[Seq] tracks: ", tracks);
-      // console.log("[Seq] stores: ", stores);
+            // console.log("[Seq] tracks: ", tracks);
+            // console.log("[Seq] stores: ", stores);
 
-      this.jbrowseUrl =
+            _self.jbrowseUrl =
         'view_tab=browser&addTracks=' + encodeURIComponent(JSON.stringify(tracks))
         + '&addStores=' + encodeURIComponent(JSON.stringify(stores))
         + '&tracks=PATRICGenes,RefSeqGenes';
 
-      // console.log("[Seq] url params: ", this.jbrowseUrl);
-      domClass.toggle(this.buttonWrapper, 'disabled');
-      // console.log('[JobResult.Seq] this.buttonWrapper: (enabled) ', this.buttonWrapper);
-
-      return this.jbrowseUrl;
+            // console.log("[Seq] url params: ", this.jbrowseUrl);
+            domClass.toggle(_self.buttonWrapper, 'disabled');
+            // console.log('[JobResult.Seq] this.buttonWrapper: (enabled) ', this.buttonWrapper);
+            if (_self.loadingMask) {
+              _self.loadingMask.hide();
+            }
+            def.resolve(_self.jbrowseUrl);
+          });
+        });
+      return def;
     }
   });
 });
