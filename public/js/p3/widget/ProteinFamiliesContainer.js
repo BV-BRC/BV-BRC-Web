@@ -216,7 +216,7 @@ define([
         }, {
           value: 'pgfam', label: 'PATRIC cross-genus families (PGfams)'
         }, {
-          value: 'figfam', label: 'FIGFam'
+          value: 'figfam', label: 'FIGfam'
         }]
       });
       cbType.on('change', lang.hitch(this, function (value) {

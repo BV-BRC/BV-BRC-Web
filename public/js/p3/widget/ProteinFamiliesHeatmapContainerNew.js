@@ -812,17 +812,32 @@ define([
             rowLabelEllipsisPos: 1
           },
           onHover: function (info) {
+
+            var famType = (self.pfState.familyType);
+            var labels = [];
             var genome = info.yLabel,
-              pgFam = info.xLabel,
-              id = info.colMeta.id,
+              fam = info.xLabel,
+              famID = info.colMeta.id,
               members = info.value;
 
-            return '<div>' +
-              '<div><b>Genome: </b> ' + genome + '</div>' +
-              '<div><b>PGFam: </b> ' + pgFam + '</div>' +
-              '<div><b>PGFam ID: </b> ' + id + '</div><br>' +
-              '<div><b>Members: </b>' + members + '</div>' +
-            '</div>';
+            if (famType === 'plfam') {
+              labels = ['Genome: ', 'PLfam: ', 'PLfam ID: ', 'Members: '];
+            } else if (famType === 'pgfam') {
+              labels = ['Genome: ', 'PGfam: ', 'PGfam ID: ', 'Members: '];
+            } else if (famType === 'figfam') {
+              labels = ['Genome: ', 'FIGfam: ', 'FIGfam ID: ', 'Members: '];
+            } else {
+              labels = ['Genome: ', 'Family: ', 'Family ID: ', 'Members: '];
+            }
+
+            return `
+              <div>
+                <div>${labels[0]}<b> ${genome}</b></div>
+                <div>${labels[1]}<b> ${fam}</b></div>
+                <div>${labels[2]}<b> ${famID}</b></div>
+                <div>${labels[3]}<b> ${members}</b></div>
+              </div>
+            `
           },
           onSelection: function (objs, rowIDs, colIDs) {
             self.hmapCellsSelected(colIDs, rowIDs);

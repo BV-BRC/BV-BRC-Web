@@ -71,14 +71,14 @@ define([
       activeTab.set('state', activeQueryState)
 
       if (activeTab) {
-        var pageTitle = 'Genome List ' + activeTab.title;
+        var pageTitle = 'Genome List ' + activeTab.title + ' | BV-BRC';
         if (window.document.title !== pageTitle) {
           window.document.title = pageTitle;
         }
       }
     },
     onSetAnchor: function (evt) {
-      console.log("genome list onSetAnchor: ", evt)
+      console.log('genome list onSetAnchor: ', evt)
       evt.stopPropagation();
       evt.preventDefault();
 
