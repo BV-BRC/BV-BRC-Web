@@ -1284,7 +1284,7 @@ define([
       this.browserHeader.addAction('ViewTracks', 'fa icon-genome-browser fa-2x', {
         label: 'BROWSER',
         multiple: false,
-        validTypes: ['RNASeq', 'TnSeq', 'Variation', 'FastqUtils'],
+        validTypes: ['TnSeq', 'Variation', 'FastqUtils'],
         tooltip: 'View tracks in genome browser.'
       }, function (selection) {
         // console.log("View Tracks: ", this);
@@ -1297,6 +1297,26 @@ define([
           throw (err);
         }
         Topic.publish('/navigate', { href: '/view/Genome/' + genomeId + '#' + urlQueryParams });
+      }, false);
+
+      this.browserHeader.addAction('ViewTracks', 'fa icon-genome-browser fa-2x', {
+        label: 'BROWSER',
+        multiple: false,
+        validTypes: ['RNASeq'],
+        tooltip: 'View tracks in genome browser.'
+      }, function (selection) {
+        // console.log("View Tracks: ", this);
+        try {
+          var genomeId = self.actionPanel.currentContainerWidget.getGenomeId();
+          self.actionPanel.currentContainerWidget.getJBrowseURLQueryParamsRNASeq().then(lang.hitch(this, function (urlQueryParams) {
+            Topic.publish('/navigate', { href: '/view/Genome/' + genomeId + '#' + urlQueryParams, target: 'blank' });
+          }));
+          // var urlQueryParams = self.actionPanel.currentContainerWidget.getJBrowseURLQueryParams();
+        }
+        catch (err) {
+          alert('The genome browser could not be opened. No genome id or no streamable files were found.');
+          throw (err);
+        }
       }, false);
 
       this.actionPanel.addAction('ExperimentGeneList', 'fa icon-list-unordered fa-2x', {
