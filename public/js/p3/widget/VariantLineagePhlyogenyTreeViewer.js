@@ -278,7 +278,7 @@ define([
       var nodeVisualizations = this.nodeVisualizations;
       var specialVisualizations = this.specialVisualizations;
 
-      xhr.get('https://www.bv-brc.org/api/content/phyloxml_trees/SARS2_IT21_29400_09999_cdh_pango_4_MAFFT_05_GTR_fme_pdvxvm')
+      xhr.get('https://www.bv-brc.org/api/content/phyloxml_trees/SARS2_IT21_29400_09999_cdh_pango_4_MAFFT_05_GTR_fme_pdvxvm.xml')
         .then((data) => {
           var tree;
           try {
