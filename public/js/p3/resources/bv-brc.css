@@ -552,18 +552,8 @@
   flex: 1;
 }
 
-#bv-brc-footer-container .col-3 a {
-  padding: 5px;
-}
+#bv-brc-footer-container .col-2 {
 
-#bv-brc-footer-container .col-3 span {
-  color: #fff;
-  transition: color .1s;
-}
-
-#bv-brc-footer-container .col-3 span:hover,
-#bv-brc-footer-container .col-3 span:focus {
-  color: var(--blue-tint);
 }
 
 #bv-brc-home .announcements {
