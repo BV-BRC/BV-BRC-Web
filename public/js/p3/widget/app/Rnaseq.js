@@ -464,11 +464,19 @@ define([
       return result;
     },
 
-    checkForInvalidChars: function (cond) {
+    replaceInvalidChars: function (value) {
+      var invalid_chars = ['-', ':', '@', '"', "'", ';', '[', ']', '{', '}', '|', '`'];
+      invalid_chars.forEach(lang.hitch(this, function (char) {
+        value = value.replaceAll(char, '_');
+      }));
+      return value;
+    },
+
+    checkForInvalidChars: function (value) {
       var valid = true;
       var invalid_chars = ['-', ':', '@', '"', "'", ';', '[', ']', '{', '}', '|', '`'];
       invalid_chars.forEach(lang.hitch(this, function (char) {
-        if (cond.includes(char)) {
+        if (value.includes(char)) {
           valid = false;
         }
       }));
@@ -695,7 +703,7 @@ define([
 
     setSingleId: function () {
       var read_name = this.read.searchBox.get('displayedValue');
-      this.single_sample_id.set('value', read_name.split('.')[0]);
+      this.single_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
     },
 
     onAddSingle: function () {
@@ -834,7 +842,7 @@ define([
 
     setPairedId: function () {
       var read_name = this.read1.searchBox.get('displayedValue');
-      this.paired_sample_id.set('value', read_name.split('.')[0]);
+      this.paired_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
     },
 
     onAddPair: function () {
