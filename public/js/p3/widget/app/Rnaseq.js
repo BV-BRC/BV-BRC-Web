@@ -473,7 +473,7 @@ define([
         }
       }));
       if (!valid) {
-        var msg = 'Please remove invalid characters from name: - : @';
+        var msg = 'Remove invalid characters from name: - : @ " \' ; [ ] { } | `';
         new Dialog({ title: 'Notice', content: msg }).show();
         return;
       }
