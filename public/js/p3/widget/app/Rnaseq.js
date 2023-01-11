@@ -464,12 +464,32 @@ define([
       return result;
     },
 
+    checkForInvalidChars: function (cond) {
+      var valid = true;
+      var invalid_chars = ['-', ':', '@', '"', "'", ';', '[', ']', '{', '}', '|', '`'];
+      invalid_chars.forEach(lang.hitch(this, function (char) {
+        if (cond.includes(char)) {
+          valid = false;
+        }
+      }));
+      if (!valid) {
+        var msg = 'Please remove invalid characters from name: - : @';
+        new Dialog({ title: 'Notice', content: msg }).show();
+        return;
+      }
+      return valid;
+    },
+
     onAddCondition: function () {
       console.log('Create New Row', domConstruct);
       var lrec = { count: 0, type: 'condition' }; // initialized to the number of libraries assigned
       var toIngest = this.conditionToAttachPt;
       var disable = !this.exp_design.checked;
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
+      // make sure condition doesn't contain invalid characters
+      if (chkPassed) {
+        chkPassed = this.checkForInvalidChars(this.condition.getValue());
+      }
       var conditionSize = this.conditionStore.data.length;
       if (this.addedCond.counter < this.maxConditions) {
         this.updateConditionStore(lrec, false);
@@ -684,6 +704,9 @@ define([
       var toIngest = this.exp_design.checked ? this.singleConditionToAttachPt : this.singleToAttachPt;
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
       if (chkPassed) {
+        chkPassed = this.checkForInvalidChars(this.single_sample_id.getValue());
+      }
+      if (chkPassed) {
         var tr = this.libsTable.insertRow(0);
         lrec.row = tr;
         var td = domConstruct.create('td', { 'class': 'textcol singledata', innerHTML: '' }, tr);
@@ -828,6 +851,9 @@ define([
       // pairToIngest=pairToIngest.concat(this.advPairToAttachPt);
       var chkPassed = this.ingestAttachPoints(pairToIngest, lrec);
       // this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
+      if (chkPassed) {
+        chkPassed = this.checkForInvalidChars(this.paired_sample_id.getValue());
+      }
       if (chkPassed && lrec.read1 != lrec.read2) {
         var tr = this.libsTable.insertRow(0);
         lrec.row = tr;
