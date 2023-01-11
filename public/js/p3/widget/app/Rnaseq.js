@@ -483,7 +483,6 @@ define([
       if (!valid) {
         var msg = 'Remove invalid characters from name: - : @ " \' ; [ ] { } | `';
         new Dialog({ title: 'Notice', content: msg }).show();
-        return false;
       }
       return valid;
     },
