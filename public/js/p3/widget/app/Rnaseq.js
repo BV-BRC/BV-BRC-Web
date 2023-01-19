@@ -464,12 +464,39 @@ define([
       return result;
     },
 
+    replaceInvalidChars: function (value) {
+      var invalid_chars = ['-', ':', '@', '"', "'", ';', '[', ']', '{', '}', '|', '`'];
+      invalid_chars.forEach(lang.hitch(this, function (char) {
+        value = value.replaceAll(char, '_');
+      }));
+      return value;
+    },
+
+    checkForInvalidChars: function (value) {
+      var valid = true;
+      var invalid_chars = ['-', ':', '@', '"', "'", ';', '[', ']', '{', '}', '|', '`'];
+      invalid_chars.forEach(lang.hitch(this, function (char) {
+        if (value.includes(char)) {
+          valid = false;
+        }
+      }));
+      if (!valid) {
+        var msg = 'Remove invalid characters from name: - : @ " \' ; [ ] { } | `';
+        new Dialog({ title: 'Notice', content: msg }).show();
+      }
+      return valid;
+    },
+
     onAddCondition: function () {
       console.log('Create New Row', domConstruct);
       var lrec = { count: 0, type: 'condition' }; // initialized to the number of libraries assigned
       var toIngest = this.conditionToAttachPt;
       var disable = !this.exp_design.checked;
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
+      // make sure condition doesn't contain invalid characters
+      if (chkPassed) {
+        chkPassed = this.checkForInvalidChars(this.condition.getValue());
+      }
       var conditionSize = this.conditionStore.data.length;
       if (this.addedCond.counter < this.maxConditions) {
         this.updateConditionStore(lrec, false);
@@ -675,7 +702,7 @@ define([
 
     setSingleId: function () {
       var read_name = this.read.searchBox.get('displayedValue');
-      this.single_sample_id.set('value', read_name.split('.')[0]);
+      this.single_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
     },
 
     onAddSingle: function () {
@@ -683,6 +710,9 @@ define([
       var lrec = { type: 'single' };
       var toIngest = this.exp_design.checked ? this.singleConditionToAttachPt : this.singleToAttachPt;
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
+      if (chkPassed) {
+        chkPassed = this.checkForInvalidChars(this.single_sample_id.getValue());
+      }
       if (chkPassed) {
         var tr = this.libsTable.insertRow(0);
         lrec.row = tr;
@@ -811,7 +841,7 @@ define([
 
     setPairedId: function () {
       var read_name = this.read1.searchBox.get('displayedValue');
-      this.paired_sample_id.set('value', read_name.split('.')[0]);
+      this.paired_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
     },
 
     onAddPair: function () {
@@ -828,6 +858,9 @@ define([
       // pairToIngest=pairToIngest.concat(this.advPairToAttachPt);
       var chkPassed = this.ingestAttachPoints(pairToIngest, lrec);
       // this.ingestAttachPoints(this.advPairToAttachPt, lrec, false)
+      if (chkPassed) {
+        chkPassed = this.checkForInvalidChars(this.paired_sample_id.getValue());
+      }
       if (chkPassed && lrec.read1 != lrec.read2) {
         var tr = this.libsTable.insertRow(0);
         lrec.row = tr;
