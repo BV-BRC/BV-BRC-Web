@@ -59,14 +59,14 @@ define([
     tree: null,
     apiServer: window.App.dataAPI,
     phylogram: true,
-    containerType: 'feature_data',
+    containerType: 'unknown',
     docsServiceURL: window.App.docsServiceURL,
     tutorialLink: 'quick_references/organisms_taxon/phylogeny.html',
     nodeSelection: null,
     featureData: null,
     genomeData: null,
     selection: null,
-    nodeType: 'feature',
+    nodeType: 'unknown',
     tooltip: 'The "Phylogeny" tab provides order or genus level phylogenetic tree, constructed using core protein families',
     startup: function () {
       if (this._started) {
@@ -146,8 +146,8 @@ define([
       this.nodeSelection.map(lang.hitch(this, function (selected) {
         if (!selected.children) {
           if (this.nodeType == 'feature') {
+            this.containerType = 'feature_data';
             this.featureData.forEach(function (item) {
-              // this.containerType = 'feature_data';
               console.log('onNodeSelection featureData item', item);
               console.log('onNodeSelection selected.name', selected.name);
               if (item.feature_id == selected.name || item.patric_id == selected.name) {
@@ -157,11 +157,15 @@ define([
           }
           else {
             cur.push({ genome_id: selected.name });
-            this.containerType = 'genome_data';
+            if (this.nodeType == 'genome') {
+              this.containerType = 'genome_data';
+            }
           }
         }
 
       }));
+
+      console.log('onNodeSelection this.containerType', this.containerType);
 
       this.selection = cur;
       this.selectionActionBar.set('currentContainerType', this.containerType);
@@ -344,14 +348,6 @@ define([
       console.log('treeDat', treeDat);
       console.log('idType', idType);
       console.log('processTreeData fileType', fileType);
-      if (idType == 'genome_id') {
-        this.nodeType = 'genome';
-        this.containerType = 'genome_data';
-      }
-      else {
-        this.nodeType = 'feature';
-        this.containerType = 'feature_data';
-      }
 
       if (!treeDat.tree) {
         console.log('No newick+json in Request Response');
@@ -369,7 +365,8 @@ define([
     },
 
     processTree: function () {
-      console.log('this', this);
+      // console.log('processTree this', this);
+      // console.log('processTree this.options', this.options);
       // console.log('this.newickxml', this.newickxml);
       // console.log('processTree this.fileType', this.fileType);
       this.containerPane.set('style', 'top: 40px');
@@ -414,6 +411,7 @@ define([
       options.showTaxonomyRank = true;
       options.showTaxonomyScientificName = true;
       options.showTaxonomySynonyms = true;
+      options.labelColor = '#202020';
 
       var settings = {};
       settings.border = '1px solid #909090';
@@ -437,6 +435,8 @@ define([
       if (this.options) {
         options = lang.mixin(options, this.options);
       }
+
+      // console.log('options', options);
 
       var nodeVisualizations = {};
       var specialVisualizations = {};
@@ -510,6 +510,15 @@ define([
         try {
           forester.midpointRoot(mytree);
           // console.log('before launch mytree nodeVisualizations: ', nodeVisualizations);
+          // console.log('processTree this ', this);
+          // console.log('processTree before launch mytree ', mytree);
+          // console.log('this.options ', this.options);
+          // console.log('options ', options);
+          // console.log('settings ', settings);
+          // console.log('nodeVisualizations ', nodeVisualizations);
+          // console.log('nodeLabels ', nodeLabels);
+          // console.log('specialVisualizations ', specialVisualizations);
+
           window.archaeopteryx.launch('#phylogram1', mytree, options, settings, nodeVisualizations, nodeLabels, specialVisualizations);
           console.log('processTree this ', this);
           // get node labels
@@ -529,6 +538,8 @@ define([
           // var query = '';
           if (ids[0].match(/^fig/) || ids[0].match(/CDS/)) {
             this.nodeType = 'feature';
+            this.containerType = 'feature_data';
+
             // query = 'in(patric_id,(' + pIDs.join(',') + '))&select(patric_id, feature_id, genome_id)&limit(25000)';
             // query = 'in(genome_id,(1207076.3,2006848.36,1042404.3,1076934.5,1235789.3))&select(genome_id,genome_name)&limit(250)';
 
@@ -548,15 +559,21 @@ define([
             console.log('this.featureData', this.featureData);
             console.log('fetchedIds', fetchedIds);
           }
-          else if (ids[0].match(/\d+\.\d+/)) {
+          else if (ids[0].match(/^\d+\.\d+/)) {
             this.nodeType = 'genome';
+            this.containerType = 'genome_data';
+
             this.genomeData = nodeList.map(function (node) { return { genome_id: node.name } });
             console.log('this.genomeData', this.genomeData);
             document.addEventListener('selected_nodes_changed_event', this.onNodeSelection.bind(self));
           }
           else {
+            this.nodeType = 'unknown';
+            this.containerType = 'unknown';
             console.log('node names are not genome nor feature ids');
           }
+
+          console.log('processTree this.containerType ', this.containerType);
 
           document.addEventListener('selected_nodes_changed_event', this.onNodeSelection.bind(self));
           console.log('processTree this after add ', this);
