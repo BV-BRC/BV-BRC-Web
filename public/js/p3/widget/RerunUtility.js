@@ -14,31 +14,31 @@ define([], function () {
       }
       sessionStorage.setItem(rerun_key, job_params);
       var service_app_map = {
-        'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
-        'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
+        // 'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
+        // 'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
         // 'DifferentialExpression': 'Expression',
-        'FastqUtils': 'FastqUtil',
-        'GeneTree': 'GeneTree',
+        // 'FastqUtils': 'FastqUtil',
+        // 'GeneTree': 'GeneTree',
         'GenomeAssembly2': 'Assembly2',
         'GenomeAssembly': 'Assembly2',
-        'GenomeAlignment': 'GenomeAlignment',
+        // 'GenomeAlignment': 'GenomeAlignment',
         // TODO: rerun for annotation needs to be updated
-        // 'GenomeAnnotation': 'Annotation',
-        'GenomeComparison': 'SeqComparison',
-        'Homology': 'Homology',
-        'MetaCATS': 'MetaCATS',
-        'MetagenomeBinning': 'MetagenomicBinning',
-        'MetagenomicReadMapping': 'MetagenomicReadMapping',
-        'MSA': 'MSA',
-        'CodonTree': 'PhylogeneticTree',
+        'GenomeAnnotation': 'Annotation',
+        // 'GenomeComparison': 'SeqComparison',
+        // 'Homology': 'Homology',
+        // 'MetaCATS': 'MetaCATS',
+        // 'MetagenomeBinning': 'MetagenomicBinning',
+        // 'MetagenomicReadMapping': 'MetagenomicReadMapping',
+        // 'MSA': 'MSA',
+        // 'CodonTree': 'PhylogeneticTree',
         // TODO: need to fix this
         // 'PhylogeneticTree': 'PhylogeneticTree',
-        'PrimerDesign': 'PrimerDesign',
+        // 'PrimerDesign': 'PrimerDesign',
         'RNASeq': 'Rnaseq',
-        'SubspeciesClassification': 'SubspeciesClassification',
-        'TaxonomicClassification': 'TaxonomicClassification',
-        'TnSeq': 'Tnseq',
-        'Variation': 'Variation'
+        // 'SubspeciesClassification': 'SubspeciesClassification',
+        // 'TaxonomicClassification': 'TaxonomicClassification',
+        // 'TnSeq': 'Tnseq',
+        // 'Variation': 'Variation'
       };
       if (service_app_map.hasOwnProperty(service_id)) {
         Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] + '?rerun_key=' + rerun_key });
