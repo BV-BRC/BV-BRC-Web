@@ -560,44 +560,41 @@ define([
       if (genome_ids.length == 0) {
         return;
       }
-      genome_ids.forEach(function (gid) {
-        var query = 'eq(genome_id,' + gid + ')'
-        DataAPI.queryGenomes(query).then(lang.hitch(this, function (res) {
-          var tax_obj = res.items[0];
-          if (tax_obj) {
-            var genome_name = tax_obj['genome_name'];
-            var lrec = {};
-            lrec.groupType = 'codonGroup';
-            var groupType = 'codonGroup';
-            var newGenomeIds = gid;
-            var tr = this.codonGroupGenomeTable.insertRow(0);
-            lrec.row = tr;
-            var td = domConstruct.create('td', { 'class': 'textcol ' + groupType + 'GenomeData', innerHTML: '' }, tr);
-            td.genomeRecord = lrec;
-            td.innerHTML = "<div class='libraryrow'>" + this.genDisplayName(genome_name, 36) + '</div>';
+      var query = 'in(genome_id,(' + genome_id_list.join(',') + '))';
+      DataAPI.queryGenomes(query).then(lang.hitch(this, function (res) {
+        res.items.forEach(lang.hitch(this, function (tax_obj) {
+          var genome_name = tax_obj['genome_name'];
+          var lrec = {};
+          lrec.groupType = 'codonGroup';
+          var groupType = 'codonGroup';
+          var newGenomeIds = tax_obj['genome_id'];
+          var tr = this.codonGroupGenomeTable.insertRow(0);
+          lrec.row = tr;
+          var td = domConstruct.create('td', { 'class': 'textcol ' + groupType + 'GenomeData', innerHTML: '' }, tr);
+          td.genomeRecord = lrec;
+          td.innerHTML = "<div class='libraryrow'>" + this.genDisplayName(genome_name, 36) + '</div>';
 
-            var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
-            if (this[groupType].addedNum < this.startingRows) {
-              this['codonGroupGenomeTable'].deleteRow(-1);
-            }
-            var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-              // console.log("Delete Row: groupType ="+groupType+" newGenomeIds = " + newGenomeIds);
-              domConstruct.destroy(tr);
-              this.decreaseGenome(groupType, [newGenomeIds]);
-              if (this[groupType].addedNum < this.startingRows) {
-                var ntr = this.codonGroupGenomeTable.insertRow(-1);
-                domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-                domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-                domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-              }
-              handle.remove();
-            }));
-            lrec.handle = handle;
-            this.selectedTR.push(lrec);
-            this.increaseGenome(groupType, [newGenomeIds]);
+          var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+          if (this[groupType].addedNum < this.startingRows) {
+            this['codonGroupGenomeTable'].deleteRow(-1);
           }
+          var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+            // console.log("Delete Row: groupType ="+groupType+" newGenomeIds = " + newGenomeIds);
+            domConstruct.destroy(tr);
+            this.decreaseGenome(groupType, [newGenomeIds]);
+            if (this[groupType].addedNum < this.startingRows) {
+              var ntr = this.codonGroupGenomeTable.insertRow(-1);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            }
+            handle.remove();
+          }));
+          lrec.handle = handle;
+          this.selectedTR.push(lrec);
+          this.increaseGenome(groupType, [newGenomeIds]);
         }));
-      }, this);
+      }));
     }
   });
 });
