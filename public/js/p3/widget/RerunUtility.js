@@ -14,7 +14,7 @@ define([], function () {
       sessionStorage.setItem(rerun_key, job_params);
       var service_app_map = {
         'ComparativeSystems': 'ComparativeSystems',
-        // 'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
+        'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
         // 'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
         // 'DifferentialExpression': 'Expression',
         // 'FastqUtils': 'FastqUtil',
@@ -41,7 +41,7 @@ define([], function () {
         // 'Variation': 'Variation'
       };
       if (service_app_map.hasOwnProperty(service_id)) {
-        Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] + '?rerun_key=' + rerun_key, target: 'blank' });
+        Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] + '?rerun_key=' + rerun_key });
       }
       else {
         console.log('Rerun not enabled for: ', service_id);
