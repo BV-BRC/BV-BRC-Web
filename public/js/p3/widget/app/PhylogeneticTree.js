@@ -3,13 +3,13 @@ define([
   'dojo/text!./templates/PhylogeneticTree.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/lang', 'dojo/domReady!', 'dojo/query', 'dojo/dom', 'dojo/dom-style',
   'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
-  '../../WorkspaceManager', 'dojo/when'
+  '../../WorkspaceManager', 'dojo/when', '../../DataAPI'
 ], function (
   declare, on, Topic, domClass,
   Template, AppBase, domConstruct, registry,
   lang, domReady, query, dom, domStyle,
   popup, TooltipDialog, Dialog,
-  WorkspaceManager, when
+  WorkspaceManager, when, DataAPI
 ) {
   return declare([AppBase], {
     baseClass: 'App PhylogeneticTree',
@@ -73,10 +73,6 @@ define([
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
-        var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-          localStorage.removeItem('bvbrc_rerun_job');
-        }
       }
     },
 
@@ -513,21 +509,27 @@ define([
         rerun_key = rerun_fields[1];
         var sessionStorage = window.sessionStorage;
         if (sessionStorage.hasOwnProperty(rerun_key)) {
-          var param_dict = { 'output_folder': 'output_path' };
-          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-          if (job_data.hasOwnProperty('genome_group')) {
-            // this.codon_genomes_genomegroup.set("value",job_data["genome_group"]);
-            this.addGenomeGroupFormFill(job_data['genome_group']);
-          } else {
-            var genome_ids = job_data['genome_ids'];
-            if (genome_ids === undefined) {
-              genome_ids = [];
+          try {
+            var param_dict = { 'output_folder': 'output_path' };
+            var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+            AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+            if (job_data.hasOwnProperty('genome_group')) {
+              // this.codon_genomes_genomegroup.set("value",job_data["genome_group"]);
+              this.addGenomeGroupFormFill(job_data['genome_group']);
+            } else {
+              var genome_ids = job_data['genome_ids'];
+              if (genome_ids === undefined) {
+                genome_ids = [];
+              }
+              this.addGenomesFormFill(job_data['genome_ids']);
             }
-            this.addGenomesFormFill(job_data['genome_ids']);
+            this.form_flag = true;
+
+          } catch (error) {
+            console.log('Error during intakeRerunForm: ', error);
+          } finally {
+            sessionStorage.removeItem(rerun_key);
           }
-          this.form_flag = true;
-          sessionStorage.removeItem(rerun_key);
         }
       }
     },
@@ -554,17 +556,16 @@ define([
     // Some discrepancies:
     addGenomesFormFill: function (genome_id_list) {
       var genome_ids = genome_id_list;
-      debugger;
+      // debugger;
       if (genome_ids.length == 0) {
         return;
       }
       genome_ids.forEach(function (gid) {
-        var name_promise = this.scientific_nameWidget.store.get(gid);
-        name_promise.then(lang.hitch(this, function (tax_obj) {
+        var query = 'eq(genome_id,' + gid + ')'
+        DataAPI.queryGenomes(query).then(lang.hitch(this, function (res) {
+          var tax_obj = res.items[0];
           if (tax_obj) {
-            this.scientific_nameWidget.set('item', tax_obj);
-            this.scientific_nameWidget.validate();
-            var genome_name = this.scientific_nameWidget.get('displayedValue');
+            var genome_name = tax_obj['genome_name'];
             var lrec = {};
             lrec.groupType = 'codonGroup';
             var groupType = 'codonGroup';

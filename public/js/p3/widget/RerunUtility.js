@@ -30,7 +30,7 @@ define([], function () {
         // 'MetagenomeBinning': 'MetagenomicBinning',
         // 'MetagenomicReadMapping': 'MetagenomicReadMapping',
         // 'MSA': 'MSA',
-        // 'CodonTree': 'PhylogeneticTree',
+        'CodonTree': 'PhylogeneticTree',
         // TODO: need to fix this
         // 'PhylogeneticTree': 'PhylogeneticTree',
         // 'PrimerDesign': 'PrimerDesign',
