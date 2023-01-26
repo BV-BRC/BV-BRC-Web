@@ -8,12 +8,12 @@ define([], function () {
         return Math.random().toString(16).substr(2, length);
       };
       var rerun_key = random();
-      window.localStorage.removeItem('bvbrc_rerun_job');
       if (sessionStorage.hasOwnProperty(rerun_key)) {
         sessionStorage.removeItem(rerun_key);
       }
       sessionStorage.setItem(rerun_key, job_params);
       var service_app_map = {
+        'ComparativeSystems': 'ComparativeSystems',
         // 'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
         // 'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
         // 'DifferentialExpression': 'Expression',

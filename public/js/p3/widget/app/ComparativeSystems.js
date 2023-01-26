@@ -4,14 +4,14 @@ define([
   'dojo/text!./templates/ComparativeSystems.html', './AppBase', 'dojo/dom-construct',
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog', 'dojo/NodeList-traverse', '../../WorkspaceManager',
-  '../WorkspaceObjectSelector'
+  '../WorkspaceObjectSelector', '../../DataAPI'
 ], function (
   declare, WidgetBase, on, Topic,
   domClass,
   Template, AppBase, domConstruct,
   Deferred, aspect, lang, domReady, NumberTextBox,
   query, dom, popup, Tooltip, Dialog, TooltipDialog, children, WorkspaceManager,
-  WorkspaceObjectSelector
+  WorkspaceObjectSelector, DataAPI
 ) {
   return declare([AppBase], {
     baseClass: 'ComparativeSystems',
@@ -63,6 +63,13 @@ define([
         this.genome_group = new WorkspaceObjectSelector();
         this.genome_group.set('type', ['genome_group']);
         this.genome_group.placeAt(ggDom, 'only');
+      }
+
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
       }
     },
 
@@ -215,6 +222,125 @@ define([
 
       console.log(submit_values);
       return submit_values;
+    },
+
+    intakeRerunForm: function () {
+      var service_fields = window.location.search.replace('?', '');
+      var rerun_fields = service_fields.split('=');
+      var rerun_key;
+      if (rerun_fields.length > 1) {
+        try {
+          rerun_key = rerun_fields[1];
+          var sessionStorage = window.sessionStorage;
+          if (sessionStorage.hasOwnProperty(rerun_key)) {
+            var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+            this.onAddGenomeRerun(job_data['genome_ids']);
+            this.onAddGenomeGroupRerun(job_data['genome_groups']);
+          }
+        } catch (error) {
+          console.log('Error during intakeRerunForm: ', error);
+        } finally {
+          sessionStorage.removeItem(rerun_key);
+        }
+      }
+    },
+
+    onAddGenomeRerun: function (genome_id_list) {
+      if (genome_id_list.length == 0) {
+        return;
+      }
+      var lrec = {};
+
+      var query = 'in(genome_id,(' + genome_id_list.join(',') + '))';
+      DataAPI.queryGenomes(query).then(lang.hitch(this, function (res) {
+        res.items.forEach(lang.hitch(this, function (entry) {
+          var label = entry.genome_name;
+          var genome_id = entry.genome_id;
+          lrec.label = label;
+          lrec.genome_ids = [genome_id];
+          lrec.type = 'genome';
+
+          var tr = this.libsTable.insertRow(0);
+          var td = domConstruct.create('td', { 'class': 'textcol singledata', innerHTML: '' }, tr);
+
+          td.libRecord = lrec;
+          td.innerHTML = "<div class='libraryrow'>" + this.formatName(label) + '</div>';
+          domConstruct.create('td', { innerHTML: '' }, tr);
+          var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x'/>" }, tr);
+
+          if (this.addedLibs < this.startingRows) {
+            this.libsTable.deleteRow(-1);
+          }
+          var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+            domConstruct.destroy(tr);
+            this.decreaseLib(lrec);
+            if (this.addedLibs < this.startingRows) {
+              var ntr = this.libsTable.insertRow(-1);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            }
+            handle.remove();
+          }));
+          this.increaseLib(lrec);
+        }));
+      }));
+    },
+
+    onAddGenomeGroupRerun: function (genome_group_list) {
+      if (genome_group_list == 0) {
+        return;
+      }
+
+      genome_group_list.forEach(lang.hitch(this, function (gg) {
+
+        var lrec = {};
+
+        var label = gg.split('/').reverse()[0];
+        var paths = gg;
+        lrec.path = paths;
+        lrec.label = label;
+        lrec.type = 'genome_group';
+
+        WorkspaceManager.getObjects(paths, false).then(lang.hitch(this, function (objs) {
+
+          var genomeIdHash = {};
+          objs.forEach(function (obj) {
+            var data = JSON.parse(obj.data);
+            data.id_list.genome_id.forEach(function (d) {
+              if (!Object.prototype.hasOwnProperty.call(genomeIdHash, d)) {
+                genomeIdHash[d] = true;
+              }
+            });
+          });
+          lrec.genome_ids = Object.keys(genomeIdHash);
+          var count = lrec.genome_ids.length;
+
+          var tr = this.libsTable.insertRow(0);
+          var td = domConstruct.create('td', { 'class': 'textcol singledata', innerHTML: '' }, tr);
+
+          td.libRecord = lrec;
+          td.innerHTML = "<div class='libraryrow'>" + this.formatName(label) + ' (' + count + ' genomes)</div>';
+          domConstruct.create('td', { innerHTML: '' }, tr);
+          var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x'/>" }, tr);
+
+          if (this.addedLibs < this.startingRows) {
+            this.libsTable.deleteRow(-1);
+          }
+          var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+            domConstruct.destroy(tr);
+            this.decreaseLib(lrec);
+            if (this.addedLibs < this.startingRows) {
+              var ntr = this.libsTable.insertRow(-1);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            }
+            handle.remove();
+          }));
+          this.increaseLib(lrec);
+        }));
+      }));
     }
   });
 });
