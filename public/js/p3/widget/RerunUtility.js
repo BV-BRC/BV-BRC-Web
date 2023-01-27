@@ -15,7 +15,7 @@ define([], function () {
       var service_app_map = {
         'ComparativeSystems': 'ComparativeSystems',
         'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
-        // 'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
+        'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
         // 'DifferentialExpression': 'Expression',
         // 'FastqUtils': 'FastqUtil',
         // 'GeneTree': 'GeneTree',
