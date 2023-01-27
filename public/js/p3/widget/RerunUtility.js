@@ -21,7 +21,7 @@ define([], function () {
         // 'GeneTree': 'GeneTree',
         'GenomeAssembly2': 'Assembly2',
         'GenomeAssembly': 'Assembly2',
-        // 'GenomeAlignment': 'GenomeAlignment',
+        'GenomeAlignment': 'GenomeAlignment',
         // TODO: rerun for annotation needs to be updated
         'GenomeAnnotation': 'Annotation',
         // 'GenomeComparison': 'SeqComparison',
