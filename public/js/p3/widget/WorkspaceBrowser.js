@@ -1299,7 +1299,7 @@ define([
         Topic.publish('/navigate', { href: '/view/Genome/' + genomeId + '#' + urlQueryParams });
       }, false);
 
-      this.browserHeader.addAction('ViewTracks', 'fa icon-genome-browser fa-2x', {
+      this.browserHeader.addAction('ViewTracksRNASeq', 'fa icon-genome-browser fa-2x', {
         label: 'BROWSER',
         multiple: false,
         validTypes: ['RNASeq'],
