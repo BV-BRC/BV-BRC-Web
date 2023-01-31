@@ -121,10 +121,6 @@ define([
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
-        var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-          localStorage.removeItem('bvbrc_rerun_job');
-        }
       }
     },
 
@@ -1024,21 +1020,28 @@ define([
       var rerun_fields = service_fields.split('=');
       var rerun_key;
       if (rerun_fields.length > 1) {
-        rerun_key = rerun_fields[1];
-        var sessionStorage = window.sessionStorage;
-        if (sessionStorage.hasOwnProperty(rerun_key)) {
-          var param_dict = { 'output_folder': 'output_path', 'strategy': 'recipe', 'target_genome_id': 'reference_genome_id' };
-          var widget_map = { 'reference_genome_id': 'genome_nameWidget' };
-          param_dict['widget_map'] = widget_map;
-          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-          job_data = this.formatRerunJson(job_data);
-          this.checkConditionsFormFill(job_data);
-          this.checkContrastsFormFill(job_data);
-          // TODO: check conditions/library pairing
-          job_data = this.addConditionInfoFormFill(job_data);
-          AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
-          this.form_flag = true;
+        try {
+          rerun_key = rerun_fields[1];
+          var sessionStorage = window.sessionStorage;
+          if (sessionStorage.hasOwnProperty(rerun_key)) {
+            var param_dict = { 'output_folder': 'output_path', 'strategy': 'recipe', 'target_genome_id': 'reference_genome_id' };
+            var widget_map = { 'reference_genome_id': 'genome_nameWidget' };
+            param_dict['widget_map'] = widget_map;
+            AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+            var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+            job_data = this.formatRerunJson(job_data);
+            this.checkConditionsFormFill(job_data);
+            this.checkContrastsFormFill(job_data);
+            // TODO: check conditions/library pairing
+            job_data = this.addConditionInfoFormFill(job_data);
+            AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+            this.form_flag = true;
+          }
+        }
+        catch (error) {
+          console.log('Error during intakeRerunForm: ', error);
+        }
+        finally {
           sessionStorage.removeItem(rerun_key);
         }
       }
@@ -1082,7 +1085,7 @@ define([
       for (var x = 0; x < job_data.paired_end_libs.length; x++) {
         var curr_reads = job_data.paired_end_libs[x];
         if (curr_reads.hasOwnProperty('condition')) {
-          var curr_cond = conditions[parseInt(curr_reads['condition']) - 1];
+          var curr_cond = curr_reads['condition'];
           job_data.paired_end_libs[x].icon = this.getConditionIcon(curr_cond);
           job_data.paired_end_libs[x].condition = curr_cond;
         }
@@ -1091,7 +1094,7 @@ define([
       for (var x = 0; x < job_data.single_end_libs.length; x++) {
         var curr_read = job_data.single_end_libs[x];
         if (curr_read.hasOwnProperty('condition')) {
-          var curr_cond = conditions[parseInt(curr_read['condition']) - 1];
+          var curr_cond = curr_read['condition'];
           job_data.single_end_libs[x].icon = this.getConditionIcon(curr_cond);
           job_data.single_end_libs[x].condition = curr_cond;
         }
@@ -1100,7 +1103,7 @@ define([
       for (var x = 0; x < job_data.srr_libs.length; x++) {
         var curr_srr = job_data.srr_libs[x];
         if (curr_srr.hasOwnProperty('condition')) {
-          var curr_cond = conditions[parseInt(curr_srr['condition']) - 1];
+          var curr_cond = curr_srr['condition'];
           job_data.srr_libs[x].icon = this.getConditionIcon(curr_cond);
           job_data.srr_libs[x].condition = curr_cond;
         }
@@ -1141,7 +1144,8 @@ define([
             console.log('Delete Row');
             domConstruct.destroy(tr);
             this.destroyLib(lrec, lrec.condition, 'condition');
-            this.destroyContrastRow(query_id = lrec['condition']);
+            var query_id = lrec['condition']
+            this.destroyContrastRow(query_id);
             this.updateConditionStore(lrec, true);
             this.decreaseRows(this.condTable, this.addedCond, this.numCondWidget);
             if (this.addedCond.counter < this.maxConditions) {
@@ -1164,11 +1168,10 @@ define([
       // var disable = !this.exp_design.checked;
       // var contrastSize = this.contrastStore.data.length;
       var conditions = job_data['experimental_conditions'];
-      var offset = 1;
       job_data['contrasts'].forEach(function (contrast) {
         var curr_contrast = contrast;
-        var condition1 = conditions[parseInt(curr_contrast[0]) - offset];
-        var condition2 = conditions[parseInt(curr_contrast[1]) - offset];
+        var condition1 = curr_contrast[0];
+        var condition2 = curr_contrast[1];
         // var condition1 = ''+curr_contrast[0];
         // var condition2 = ''+curr_contrast[1];
         var lrec = { type: 'contrast' };
@@ -1226,7 +1229,7 @@ define([
       var combinedList = job_data.paired_end_libs.concat(job_data.single_end_libs).concat(job_data.sra_libs);
       for (var x = 0; x < combinedList.length; x++) {
         var curr_lib = combinedList[x];
-        counts[conditions[parseInt(curr_lib['condition']) - offset]]++;
+        counts[conditions[curr_lib['condition']]]++;
       }
       return counts;
     }
