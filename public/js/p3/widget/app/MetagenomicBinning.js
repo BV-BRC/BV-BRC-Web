@@ -122,10 +122,10 @@ define([
         values.perform_bacterial_annotation = true;
         values.perform_viral_annotation = true;
       }
-	
+
       if (this.disable_dangling.checked)
       {
-	  values.danglen = 0;
+        values.danglen = 0;
       }
 
       delete values['organism'];
@@ -545,13 +545,16 @@ define([
         rerun_key = rerun_fields[1];
         var sessionStorage = window.sessionStorage;
         if (sessionStorage.hasOwnProperty(rerun_key)) {
-          var param_dict = { 'output_folder': 'output_path', 'contigs': 'NONE' };
+          var param_dict = {
+            'output_folder': 'output_path', 'contigs': 'NONE', 'min_contig_len': 'min_contig_len', 'min_contig_cov': 'min_contig_cov'
+          };
           // var widget_map = {"contigs":"contigsFile"};
           // param_dict["widget_map"] = widget_map;
           AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
           var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
           this.selectOrganismFormFill(job_data);
           this.selectStartWith(job_data);
+          this.rerunAdvParamsFill(job_data);
           if (this.startWithRead.checked) {
             AppBase.prototype.loadLibrary.call(this, this.formatRerunJson(job_data), param_dict);
           }
@@ -586,6 +589,33 @@ define([
       else {
         this.bacteriaAndViruses.set('checked', true);
       }
+    },
+
+    rerunAdvParamsFill: function (job_data) {
+      // default values from the form widgets
+      // var def_disable_dangling = this.disable_dangling.get('checked'),
+      //   def_min_contig_len = this.min_contig_len.get('value'),
+      //   def_min_contig_cov = this.min_contig_cov.get('value');
+
+      // values from previous job
+      var disable_dangling = job_data['danglen'],
+        min_contig_len = job_data['min_contig_len'],
+        min_contig_cov = job_data['min_contig_cov']
+
+      // open adv params if there are changes
+      // if (disable_dangling !== def_disable_dangling || min_contig_len !== def_min_contig_len || min_contig_cov !== def_min_contig_cov) {
+      //   this.advrow.style.display = 'block';
+      // }
+
+      // fill the form
+      if (disable_dangling === 0) {
+        this.disable_dangling.set('checked', true);
+      }
+      else {
+        this.disable_dangling.set('checked', false);
+      }
+      this.min_contig_len.set('value', min_contig_len);
+      this.min_contig_cov.set('value', min_contig_cov);
     },
 
     // Selects the start with button: reads or contigs
