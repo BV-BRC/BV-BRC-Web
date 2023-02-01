@@ -719,7 +719,7 @@ define([
 
     formatData: function (data) {
       if (!data.rows.length) {
-        alert('Error: no rows were provided to the heatmap viewer');
+        alert('Error: no rows were provided to the heatmap viewer\nPlease try refreshing the page');
         return;
       }
 
