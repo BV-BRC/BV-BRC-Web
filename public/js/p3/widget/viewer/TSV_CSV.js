@@ -98,7 +98,6 @@ define([
 
         // get the object to display
         Deferred.when(WS.getObject(this.filepath, !this.preload), function (obj) {
-          debugger;
           _self.set('file', obj);
         });
       }
