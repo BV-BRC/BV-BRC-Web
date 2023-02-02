@@ -453,7 +453,6 @@ define([
               //
               var keep_all_runs = false;
               var path = lang.replace('//EXPERIMENT_PACKAGE/EXPERIMENT[@accession="{0}"]', [accession]);
-              console.log(path);
               var experiment = xml_resp.evaluate(path, xml_resp, null, XPathResult.ANY_TYPE, null);
               var item = experiment.iterateNext();
               if (item) {
