@@ -24,7 +24,8 @@ define([
 
       this.updateLocalState(state);
 
-      var query = 'ne(genome_id,' + state.genome_ids_without_reference + '),eq(taxon_lineage_ids,2),eq(reference_genome,Reference)&select(genome_id,genome_name,reference_genome)&limit(25000)&sort(+kingdom,+phylum,+class,+order,+family,+genus)';
+      // var query = 'ne(genome_id,' + state.genome_ids_without_reference + '),eq(taxon_lineage_ids,2),eq(reference_genome,Reference)&select(genome_id,genome_name,reference_genome)&limit(25000)&sort(+kingdom,+phylum,+class,+order,+family,+genus)';
+      var query = 'eq(taxon_lineage_ids,2),or(eq(reference_genome,Reference),in(genome_id,(' + this.state.genome_ids.join(',') + ')))&select(genome_id,genome_name,reference_genome)&limit(25000)&sort(+kingdom,+phylum,+class,+order,+family,+genus)';
 
       var self = this;
       request.post(PathJoin(self.apiServiceUrl, 'genome'), {
@@ -37,7 +38,8 @@ define([
         },
         data: query
       }).then(function (response) {
-        var reference_genome_ids = response.map(function (genome) {
+
+        var reference_genome_ids = response.filter(x => x.reference_genome).map(function (genome) {
           return genome.genome_id;
         });
 
@@ -55,7 +57,7 @@ define([
 
         for ( var i = self.state.genome_ids.length - 1; i >= 0; i-- ) {
           reference_genome_ids.unshift(self.state.genome_ids[i]);
-          alphabetical_reference_genome_ids.unshift(self.state.genome_ids[i]);
+          // alphabetical_reference_genome_ids.unshift(self.state.genome_ids[i]);
         }
 
         state.genome_ids_with_reference = reference_genome_ids;
