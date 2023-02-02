@@ -41,6 +41,9 @@ define([
         var reference_genome_ids = response.filter(x => x.reference_genome).map(function (genome) {
           return genome.genome_id;
         });
+        var all_genome_ids = response.map(function (genome) {
+          return genome.genome_id;
+        });
 
         state.reference_genome_ids_only = reference_genome_ids;
 
@@ -54,12 +57,8 @@ define([
           return genome.genome_id;
         });
 
-        for ( var i = self.state.genome_ids.length - 1; i >= 0; i-- ) {
-          reference_genome_ids.unshift(self.state.genome_ids[i]);
-        }
-
-        state.genome_ids_with_reference = reference_genome_ids;
-        state.genome_ids = reference_genome_ids;
+        state.genome_ids_with_reference = all_genome_ids;
+        state.genome_ids = all_genome_ids;
 
         state.alphabetical_genome_ids_with_reference = alphabetical_reference_genome_ids;
 
@@ -75,6 +74,8 @@ define([
           // style: 'height: 110px',
           id: 'subsystemheatmapheadercontainer'
         });
+
+        // TODO: Try creating heatmap memory store here, then passing it to container/grid
 
         self.viewer = new SubsystemMapContainer({
           region: 'center',
