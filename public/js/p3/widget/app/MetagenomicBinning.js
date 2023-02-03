@@ -58,7 +58,6 @@ define([
         domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
         domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
       }
-      this.numlibs.startup();
 
       this.advrow.turnedOn = (this.advrow.style.display != 'none');
       on(this.advanced, 'click', lang.hitch(this, function () {
@@ -122,7 +121,7 @@ define([
         values.perform_bacterial_annotation = true;
         values.perform_viral_annotation = true;
       }
-	
+
       if (this.disable_dangling.checked)
       {
 	  values.danglen = 0;
@@ -257,11 +256,11 @@ define([
       }));
     },
 
-    // counter is a widget for requirements checking
-    increaseRows: function (targetTable, counter, counterWidget) {
-      counter.counter += 1;
+    // When the set of items in the list of libraries change, update the
+    // enabled settings on the assembler choice buttons.
+    updateAssemblerChoice: function() {
       if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == 'paired') {
-        this.metaspades.set('disabled', true);
+        this.metaspades.set('disabled', false);
         this.auto.set('checked', true);
       }
       else if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == 'single') {
@@ -276,29 +275,9 @@ define([
         this.metaspades.set('disabled', true);
         this.auto.set('checked', true);
       }
-      if (typeof counterWidget !== 'undefined') {
-        counterWidget.set('value', Number(counter.counter));
-      }
     },
 
-    decreaseRows: function (targetTable, counter, counterWidget) {
-      counter.counter -= 1;
-      if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == 'paired') {
-        this.metaspades.set('disabled', false);
-        this.metaspades.set('checked', true);
-      }
-      else if (this.libraryStore.data.length == 1 && this.libraryStore.data[0]._type == 'srr_accession') {
-        this.metaspades.set('disabled', true);
-        this.auto.set('checked', true);
-      }
-      else {
-        this.metaspades.set('disabled', true);
-        this.megahit.set('checked', true);
-      }
-      if (typeof counterWidget !== 'undefined') {
-        counterWidget.set('value', Number(counter.counter));
-      }
-    },
+
 
     onAddSingle: function () {
       // console.log("Create New Row", domConstruct);
@@ -319,16 +298,17 @@ define([
       var toRemove = this.libraryStore.query(query_obj);
       toRemove.forEach(function (obj) {
         domConstruct.destroy(obj._row);
-        this.decreaseRows(this.libsTable, this.addedLibs, this.numlibs);
-        if (this.addedLibs.counter < this.startingRows) {
-          var ntr = this.libsTable.insertRow(-1);
-          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-        }
         obj._handle.remove();
         this.libraryStore.remove(obj._id);
+
       }, this);
+      while (this.libsTableBody.childElementCount < this.startingRows) {
+        var ntr = this.libsTable.insertRow(-1);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+      }
+      this.checkParameterRequiredFields();
     },
 
     onAddPair: function () {
@@ -409,15 +389,16 @@ define([
         var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
       }
       var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
-      if (this.addedLibs.counter < this.startingRows) {
-        this.libsTable.deleteRow(-1);
-      }
       var handle = on(td2, 'click', lang.hitch(this, function (evt) {
         this.destroyLibRow(lrec._id, '_id');
       }));
       this.libraryStore.put(lrec);
+      // If we have added a row, and our length is still less than our target of
+      // this.startingRows in the widget, delete the last row.
+      if (this.libraryStore.data.length  <= this.startingRows) {
+        this.libsTable.deleteRow(-1);
+      }
       lrec._handle = handle;
-      this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
       this.checkParameterRequiredFields();
     },
 
@@ -438,12 +419,22 @@ define([
     },
 
     checkParameterRequiredFields: function () {
+      var valid = false;
       if ( this.output_path.get('value') && this.output_file.get('displayedValue') ) {
-        this.validate();
+        valid = this.validate();
       }
-      else {
-        if (this.submitButton) { this.submitButton.set('disabled', true); }
+      if (this.submitButton) {
+        this.submitButton.set('disabled', ! valid);
       }
+      this.updateAssemblerChoice();
+    },
+
+    validate: function() {
+      var valid = this.inherited(arguments);
+      if (!valid) {
+        return valid;
+      }
+      return this.libraryStore.data.length > 0;
     },
 
     setContigsFile: function () {
@@ -454,7 +445,6 @@ define([
       if (this.startWithRead.checked == true) {
         this.readTable.style.display = 'block';
         this.annotationFileBox.style.display = 'none';
-        this.numlibs.constraints.min = 1;
         this.contigsFile.reset();
         this.contigsFile.set('required', false);
         this.checkParameterRequiredFields();
@@ -465,7 +455,6 @@ define([
       if (this.startWithContigs.checked == true) {
         this.readTable.style.display = 'none';
         this.annotationFileBox.style.display = 'block';
-        this.numlibs.constraints.min = 0;
         this.contigsFile.set('required', true);
         this.checkParameterRequiredFields();
         this.assemblyStategy.style.display = 'none';
