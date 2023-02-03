@@ -43,10 +43,6 @@ define([
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
-        var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-          localStorage.removeItem('bvbrc_rerun_job');
-        }
       }
     },
 
@@ -76,13 +72,13 @@ define([
     },
 
     onRecipeChange: function (val) {
-      if (this.viral.checked) {
+      if (this.recipe.getValue() == 'viral') {
         this.scientific_nameWidget.set('placeHolder', 'e.g. Bat coronavirus');
       }
-      else if (this.default.checked) {
+      else if (this.recipe.getValue() == 'default') {
         this.scientific_nameWidget.set('placeHolder', 'e.g. Bacillus Cereus');
       }
-      else if (this.phage.checked) {
+      else if (this.recipe.getValue() == 'phage') {
         this.scientific_nameWidget.set('placeHolder', 'e.g. Bacteriophage sp.');
       }
     },
@@ -152,6 +148,7 @@ define([
     },
 
     addRerunFields: function (job_params) {
+      /*
       if (job_params['recipe'] === 'default') {
         this.default.set('checked', true);
       }
@@ -161,6 +158,8 @@ define([
       else { // bacteriophages
         this.phage.set('checked', true);
       }
+      */
+      this.recipe.set('value', job_params['recipe']);
       // must set tax_idWidget before scientific_nameWidget
       this.tax_idWidget.set('value', job_params['taxonomy_id']);
       this.tax_idWidget.set('displayedValue', job_params['taxonomy_id']);
@@ -176,13 +175,18 @@ define([
         rerun_key = rerun_fields[1];
         var sessionStorage = window.sessionStorage;
         if (sessionStorage.hasOwnProperty(rerun_key)) {
-          var param_dict = { 'output_folder': 'output_path', 'strategy': 'recipe' };
-          // var widget_map = {"tax_id":"tax_idWidget"};
-          // param_dict["widget_map"] = widget_map;
-          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-          this.addRerunFields(JSON.parse(sessionStorage.getItem(rerun_key)));
-          sessionStorage.removeItem(rerun_key);
-          this.form_flag = true;
+          try {
+            var param_dict = { 'output_folder': 'output_path', 'strategy': 'recipe' };
+            // var widget_map = {"tax_id":"tax_idWidget"};
+            // param_dict["widget_map"] = widget_map;
+            AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+            this.addRerunFields(JSON.parse(sessionStorage.getItem(rerun_key)));
+            this.form_flag = true;
+          } catch (error) {
+            console.log('Error during intakeRerunForm: ', error);
+          } finally {
+            sessionStorage.removeItem(rerun_key);
+          }
         }
       }
     }
