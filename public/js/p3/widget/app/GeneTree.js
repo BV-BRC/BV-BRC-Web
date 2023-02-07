@@ -341,19 +341,6 @@ define([
       return display_name;
     },
 
-    makeFeatureGroupNameFromPath: function (feature_group) {
-      var name = feature_group;
-      var maxName = 36;
-      var display_name = name;
-      // console.log("this.user_genomes_featuregroup name = " + this.name);
-
-      if (name.length > maxName) {
-        display_name = name.substr(0, (maxName / 2) - 2) + '...' + name.substr((name.length - (maxName / 2)) + 2);
-      }
-
-      return display_name;
-    },
-
     makeGenomeGroupName: function (newGenomeIds) {
       var name = this[this.genomeGroupToAttachPt].searchBox.get('displayedValue');
       var maxName = 36;
@@ -558,7 +545,7 @@ define([
       var tr = this.genomeTable.insertRow(0);
       var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
       td.genomeRecord = lrec;
-      td.innerHTML = "<div class='libraryrow'>" + this.makeFeatureGroupNameFromPath(feature_group.split('/').reverse()[0]) + '</div>';
+      td.innerHTML = "<div class='libraryrow'>" + this.makeFormFillName(feature_group.split('/').reverse()[0]) + '</div>';
       domConstruct.create('td', { innerHTML: '' }, tr);
       var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
       if (this.addedGenomes < this.startingRows) {
