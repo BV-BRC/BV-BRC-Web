@@ -889,40 +889,6 @@ define([
       var sequence_files = job_data['sequences'];
       var path_list = [];
       sequence_files.forEach(function (seq_file) {
-        var lrec = { 'type': seq_file.type, 'filename': seq_file.filename };
-        // /General implementation
-        var newGenomeIds = [seq_file['filename']];
-        var tr = this.genomeTable.insertRow(0);
-        var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
-        td.genomeRecord = lrec;
-        td.innerHTML = "<div class='libraryrow'>" + this.makeFormFillName(newGenomeIds[0].split('/').pop()) + '</div>';
-        domConstruct.create('td', { innerHTML: '' }, tr);
-        var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
-        if (this.addedGenomes < this.startingRows) {
-          this.genomeTable.deleteRow(-1);
-        }
-        var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-          console.log('Delete Row');
-          domConstruct.destroy(tr);
-          this.decreaseGenome(lrec.type, newGenomeIds);
-          if (this.addedGenomes < this.startingRows) {
-            var ntr = this.genomeTable.insertRow(-1);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          }
-          handle.remove();
-        }));
-        this.increaseGenome(lrec.type, newGenomeIds);
-        if (lrec.type == 'feature_group') {
-          this.sequenceSource = 'feature_group';
-        }
-        else if (lrec.type == 'genome_group') {
-          this.sequenceSource = 'genome_group';
-        }
-        else {
-          this.sequenceSource = 'ws';
-        }
         var path = seq_file['filename'];
         path_list.push(path);
       }, this);
