@@ -28,7 +28,7 @@ define([], function () {
         // 'Homology': 'Homology',
         // 'MetaCATS': 'MetaCATS',
         // 'MetagenomeBinning': 'MetagenomicBinning',
-        // 'MetagenomicReadMapping': 'MetagenomicReadMapping',
+        'MetagenomicReadMapping': 'MetagenomicReadMapping',
         // 'MSA': 'MSA',
         'CodonTree': 'PhylogeneticTree',
         // TODO: need to fix this
@@ -41,7 +41,7 @@ define([], function () {
         // 'Variation': 'Variation'
       };
       if (service_app_map.hasOwnProperty(service_id)) {
-        Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] + '?rerun_key=' + rerun_key, target: 'blank' });
+        Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] + '?rerun_key=' + rerun_key });
       }
       else {
         console.log('Rerun not enabled for: ', service_id);
