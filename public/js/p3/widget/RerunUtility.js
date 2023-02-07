@@ -40,7 +40,7 @@ define([], function () {
         // 'Variation': 'Variation'
       };
       if (service_app_map.hasOwnProperty(service_id)) {
-        Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] + '?rerun_key=' + rerun_key });
+        Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] + '?rerun_key=' + rerun_key, target: 'blank' });
       }
       else {
         console.log('Rerun not enabled for: ', service_id);

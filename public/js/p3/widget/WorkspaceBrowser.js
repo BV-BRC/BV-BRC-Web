@@ -1721,6 +1721,7 @@ define([
           'GenomeAlignment',
           'GenomeAnnotation',
           'MetagenomicReadMapping',
+          'PrimerDesign',
           'CodonTree',
           'RNASeq'
         ],
