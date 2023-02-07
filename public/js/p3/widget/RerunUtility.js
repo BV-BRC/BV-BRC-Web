@@ -32,7 +32,6 @@ define([], function () {
         // 'MSA': 'MSA',
         'CodonTree': 'PhylogeneticTree',
         // TODO: need to fix this
-        // 'PhylogeneticTree': 'PhylogeneticTree',
         // 'PrimerDesign': 'PrimerDesign',
         'RNASeq': 'Rnaseq',
         // 'SubspeciesClassification': 'SubspeciesClassification',
