@@ -68,10 +68,6 @@ define([
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
-        var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-          localStorage.removeItem('bvbrc_rerun_job');
-        }
       }
     },
 
@@ -449,17 +445,23 @@ define([
       var rerun_fields = service_fields.split('=');
       var rerun_key;
       if (rerun_fields.length > 1) {
-        rerun_key = rerun_fields[1];
-        var sessionStorage = window.sessionStorage;
-        if (sessionStorage.hasOwnProperty(rerun_key)) {
-          var param_dict = { 'output_folder': 'output_path', 'strategy': 'gene_set_name' };
-          // widget_map
-          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-          job_data = this.formatRerunJson(job_data);
-          AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+        try {
+          rerun_key = rerun_fields[1];
+          var sessionStorage = window.sessionStorage;
+          if (sessionStorage.hasOwnProperty(rerun_key)) {
+            var param_dict = { 'output_folder': 'output_path' };
+            // widget_map
+            AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+            var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+            job_data = this.formatRerunJson(job_data);
+            this.gene_set_name.set('value', job_data['gene_set_name']);
+            AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+            this.form_flag = true;
+          }
+        } catch (error) {
+          console.log('Error during intakeRerunForm: ', error);
+        } finally {
           sessionStorage.removeItem(rerun_key);
-          this.form_flag = true;
         }
       }
     },
