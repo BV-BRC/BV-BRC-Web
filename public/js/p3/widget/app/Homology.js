@@ -178,6 +178,10 @@ define([
         }
       } catch (error) {
         console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
+        }
       }
     },
 
@@ -775,32 +779,26 @@ define([
       var rerun_fields = service_fields.split('=');
       var rerun_key;
       if (rerun_fields.length > 1) {
-        try {
-          rerun_key = rerun_fields[1];
-          var sessionStorage = window.sessionStorage;
-          if (sessionStorage.hasOwnProperty(rerun_key)) {
-            this.form_flag = true;
-            var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-            console.log('job_data=', job_data);
-            // job_data['program'] = 'blastp';
-            var param_dict = { 'output_folder': 'output_path' };
-            var service_specific = { 'input_fasta_data': 'sequence', 'blast_evalue_cutoff': 'evalue', 'blast_max_hits': 'max_hits' };
-            param_dict['service_specific'] = service_specific;
-            this.setProgramButton(job_data);
-            this.setInputSource(job_data);
-            console.log('query_featuregroup=', this.query_featuregroup.value);
-            console.log('query_featuregroup(value)=', this.query_featuregroup.get('value'));
-            AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-            this.database.set('disabled', false);
-            this.search_for.set('disabled', false);
-            this.setDatabaseInfoFormFill(job_data);
-          }
-        } catch (error) {
-          console.log('Error during intakeRerunForm: ', error);
-        } finally {
+        rerun_key = rerun_fields[1];
+        var sessionStorage = window.sessionStorage;
+        if (sessionStorage.hasOwnProperty(rerun_key)) {
+          this.form_flag = true;
+          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+          console.log('job_data=', job_data);
+          // job_data['program'] = 'blastp';
+          var param_dict = { 'output_folder': 'output_path' };
+          var service_specific = { 'input_fasta_data': 'sequence', 'blast_evalue_cutoff': 'evalue', 'blast_max_hits': 'max_hits' };
+          param_dict['service_specific'] = service_specific;
+          this.setProgramButton(job_data);
+          this.setInputSource(job_data);
+          console.log('query_featuregroup=', this.query_featuregroup.value);
+          console.log('query_featuregroup(value)=', this.query_featuregroup.get('value'));
+          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+          this.database.set('disabled', false);
+          this.search_for.set('disabled', false);
+          this.setDatabaseInfoFormFill(job_data);
           sessionStorage.removeItem(rerun_key);
         }
-        
       }
     },
 
