@@ -164,7 +164,6 @@ define([
       this.tax_idWidget.set('value', job_params['taxonomy_id']);
       this.tax_idWidget.set('displayedValue', job_params['taxonomy_id']);
       this.scientific_nameWidget.set('item', job_params['scientific_name']);
-      this.contigs.set('value', job_params['contigs']);
     },
 
     intakeRerunForm: function () {
