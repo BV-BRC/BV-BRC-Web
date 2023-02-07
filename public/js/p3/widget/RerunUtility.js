@@ -17,7 +17,7 @@ define([], function () {
         'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
         'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
         // 'DifferentialExpression': 'Expression',
-        // 'FastqUtils': 'FastqUtil',
+        'FastqUtils': 'FastqUtil',
         'GeneTree': 'GeneTree',
         'GenomeAssembly2': 'Assembly2',
         'GenomeAssembly': 'Assembly2',
