@@ -1712,7 +1712,18 @@ define([
         label: 'RERUN',
         allowMultiTypes: true,
         multiple: true,
-        validTypes: ['job_result'],
+        validTypes: ['ComparativeSystems',
+          'ComprehensiveGenomeAnalysis',
+          'ComprehensiveSARS2Analysis',
+          'FastqUtils',
+          'GeneTree',
+          'GenomeAssembly2',
+          'GenomeAlignment',
+          'GenomeAnnotation',
+          'MetagenomicReadMapping',
+          'CodonTree',
+          'RNASeq'
+        ],
         tooltip: 'Reset job form with current parameters'
       }, function (selection) {
         rerunUtility.rerun(JSON.stringify(selection[0].autoMeta.parameters), selection[0].autoMeta.app.id, window, Topic);
