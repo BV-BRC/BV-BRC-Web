@@ -1715,6 +1715,7 @@ define([
         validTypes: ['ComparativeSystems',
           'ComprehensiveGenomeAnalysis',
           'ComprehensiveSARS2Analysis',
+          'DifferentialExpression',
           'FastqUtils',
           'GeneTree',
           'GenomeAssembly2',
