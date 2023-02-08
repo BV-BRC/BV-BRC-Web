@@ -36,7 +36,7 @@ define([], function () {
         'RNASeq': 'Rnaseq',
         // 'SubspeciesClassification': 'SubspeciesClassification',
         'TaxonomicClassification': 'TaxonomicClassification',
-        'TnSeq': 'Tnseq',
+        'TnSeq': 'Tnseq', // Some of these parameters aren't even sent to the backend
         // 'Variation': 'Variation'
       };
       if (service_app_map.hasOwnProperty(service_id)) {

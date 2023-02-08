@@ -707,7 +707,21 @@ define([
       }
     },
 
-    
+    setParams: function (job_data) {
+      var keys = Object.keys(job_data);
+      if (keys.includes('recipe')) {
+        this.recipe.set('value', job_data['recipe']);
+      }
+      if (keys.includes('protocol')) {
+        this.protocol.set('value', job_data['protocol']);
+      }
+      if (keys.includes('recipe')) {
+        this.recipe.set('value', job_data['recipe']);
+      }
+      if (keys.includes('recipe')) {
+        this.recipe.set('value', job_data['recipe']);
+      }
+    },
 
     // Formate the json input to AppBase.loadLibrary() so it populates the library field correctly
     formatJsonRerun: function (job_data) {
