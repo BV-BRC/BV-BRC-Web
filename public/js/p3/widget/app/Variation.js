@@ -505,11 +505,6 @@ define([
           var sessionStorage = window.sessionStorage;
           if (sessionStorage.hasOwnProperty(rerun_key)) {
             var param_dict = { 'output_folder': 'output_path', 'target_genome_id': 'reference_genome_id' };
-            // var widget_map = { 'reference_genome_id': 'genome_nameWidget' };
-            // param_dict['widget_map'] = widget_map;
-            // var service_specific = { 'mapper': 'mapper', 'caller': 'caller' };
-            // param_dict['service_specific'] = service_specific;
-            // AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
             var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
             job_data = this.formatRerunJson(job_data);
             AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
