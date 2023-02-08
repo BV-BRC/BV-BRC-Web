@@ -14,7 +14,7 @@
 
 /bin/cat ../archaeopteryx/archaeopteryx-dependencies/stackblur.js >> bundle2.js
 
-# /bin/cat ../archaeopteryx/archaeopteryx-dependencies/canvg.js >> bundle2.js
+/bin/cat ../archaeopteryx/archaeopteryx-dependencies/canvg.js >> bundle2.js
 
 # archaeopteryx
 /bin/cat ../archaeopteryx/archaeopteryx-js/forester.js >> bundle2.js
