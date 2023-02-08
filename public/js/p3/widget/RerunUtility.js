@@ -34,7 +34,7 @@ define([], function () {
         // TODO: need to fix this
         'PrimerDesign': 'PrimerDesign',
         'RNASeq': 'Rnaseq',
-        // 'SubspeciesClassification': 'SubspeciesClassification',
+        'SubspeciesClassification': 'SubspeciesClassification',
         'TaxonomicClassification': 'TaxonomicClassification',
         // 'TnSeq': 'Tnseq',
         'Variation': 'Variation'

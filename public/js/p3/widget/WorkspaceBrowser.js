@@ -1724,6 +1724,7 @@ define([
           'PrimerDesign',
           'CodonTree',
           'RNASeq',
+          'SubspeciesClassification',
           'TaxonomicClassification',
           'Variation'
         ],
