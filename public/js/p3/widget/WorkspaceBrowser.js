@@ -1723,7 +1723,8 @@ define([
           'MetagenomicReadMapping',
           'PrimerDesign',
           'CodonTree',
-          'RNASeq'
+          'RNASeq',
+          'TaxonomicClassification'
         ],
         tooltip: 'Reset job form with current parameters'
       }, function (selection) {

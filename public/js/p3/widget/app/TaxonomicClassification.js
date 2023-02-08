@@ -469,7 +469,17 @@ define([
             if (this.startWithRead.checked) {
               AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
             }
-            // TODO: more specific stuff
+            else {
+              this.contigsFile.set('value', job_data['contigs']);
+            }
+            if (Object.keys(job_data).includes('save_unclassified_sequences') && job_data['save_unclassified_sequences'] === 'true') {
+              this.save_unclassified_sequences_no.set('checked', false);
+              this.save_unclassified_sequences_yes.set('checked', true);
+            }
+            if (Object.keys(job_data).includes('save_classified_sequences') && job_data['save_classified_sequences'] === 'true') {
+              this.save_classified_sequences_no.set('checked', false);
+              this.save_classified_sequences_yes.set('checked', true);
+            }
             this.form_flag = true;
           }
         } catch (error) {
