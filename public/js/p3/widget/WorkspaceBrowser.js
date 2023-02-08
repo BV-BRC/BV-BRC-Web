@@ -1724,7 +1724,8 @@ define([
           'PrimerDesign',
           'CodonTree',
           'RNASeq',
-          'TaxonomicClassification'
+          'TaxonomicClassification',
+          'Variation'
         ],
         tooltip: 'Reset job form with current parameters'
       }, function (selection) {
