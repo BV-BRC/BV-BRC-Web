@@ -571,6 +571,11 @@ define([
             job_data = this.formatRerunJson(job_data);
             if (this.startWithRead.checked) {
               AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+            } else {
+              var _self = this;
+              setTimeout(function () {
+                _self.contigsFile.set('value', job_data['contigs'])
+              }, 1);
             }
             this.tax_idWidget.set('value', job_data['taxonomy_id']);
             this.recipe.set('value', job_data['recipe']);
