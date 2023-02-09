@@ -703,6 +703,8 @@ define([
             AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
             if (this.startWithRead.checked == true) {
               AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+            } else {
+              this.contigsFile.set('value', job_data['contigs']);
             }
             this.recipe.set('value', job_data['recipe']);
             this.form_flag = true;

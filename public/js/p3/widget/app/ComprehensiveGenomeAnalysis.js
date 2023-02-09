@@ -556,7 +556,7 @@ define([
         if (sessionStorage.hasOwnProperty(rerun_key)) {
           try {
             var param_dict = {
-              'output_folder': 'output_path', 'contigs': 'contigs'
+              'output_folder': 'output_path'
             };
             // var widget_map = {"scientific_name":"scientific_nameWidget","tax_id":"tax_idWidget"};
             var widget_map = { 'taxonomy_id': 'tax_idWidget', 'contigs': 'contigsFile' };
@@ -575,7 +575,7 @@ define([
               var _self = this;
               setTimeout(function () {
                 _self.contigsFile.set('value', job_data['contigs'])
-              }, 1);
+              }, 1000);
             }
             this.tax_idWidget.set('value', job_data['taxonomy_id']);
             this.recipe.set('value', job_data['recipe']);
