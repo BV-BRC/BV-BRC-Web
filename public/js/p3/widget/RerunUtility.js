@@ -25,7 +25,7 @@ define([], function () {
         // TODO: rerun for annotation needs to be updated
         'GenomeAnnotation': 'Annotation',
         // 'GenomeComparison': 'SeqComparison',
-        // 'Homology': 'Homology',
+        'Homology': 'Homology',
         // 'MetaCATS': 'MetaCATS',
         // 'MetagenomeBinning': 'MetagenomicBinning',
         'MetagenomicReadMapping': 'MetagenomicReadMapping',
