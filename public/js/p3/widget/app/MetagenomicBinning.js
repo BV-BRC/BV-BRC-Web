@@ -87,6 +87,10 @@ define([
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
+        }
       }
     },
 
@@ -527,69 +531,32 @@ define([
       var rerun_fields = service_fields.split('=');
       var rerun_key;
       if (rerun_fields.length > 1) {
-        try {
-          rerun_key = rerun_fields[1];
-          var sessionStorage = window.sessionStorage;
-          if (sessionStorage.hasOwnProperty(rerun_key)) {
-            var param_dict = { 'output_folder': 'output_path', 'contigs': 'NONE' };
-            // var widget_map = {"contigs":"contigsFile"};
-            // param_dict["widget_map"] = widget_map;
-            // AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-            var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-            this.selectOrganismFormFill(job_data);
-            this.selectStartWith(job_data);
-            if (this.startWithRead.checked) {
-              AppBase.prototype.loadLibrary.call(this, this.formatRerunJson(job_data), param_dict);
-            }
-            else {
-              this.setContigsFileFormFill(job_data);
-            }
-            this.setStrategyFormFill(job_data);
-            this.setAdvParams(job_data);
-            // TODO set other parameters
-            this.form_flag = true;
+        rerun_key = rerun_fields[1];
+        var sessionStorage = window.sessionStorage;
+        if (sessionStorage.hasOwnProperty(rerun_key)) {
+          var param_dict = { 'output_folder': 'output_path', 'contigs': 'NONE' };
+          // var widget_map = {"contigs":"contigsFile"};
+          // param_dict["widget_map"] = widget_map;
+          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+          this.selectOrganismFormFill(job_data);
+          this.selectStartWith(job_data);
+          if (this.startWithRead.checked) {
+            AppBase.prototype.loadLibrary.call(this, this.formatRerunJson(job_data), param_dict);
           }
-        } catch (error) {
-          console.log('Error during intakeRerunForm: ', error);
-        } finally {
+          else {
+            this.setContigsFileFormFill(job_data);
+          }
+          // TODO set other parameters
           sessionStorage.removeItem(rerun_key);
+          this.form_flag = true;
         }
-        
-      }
-    },
-
-    setStrategyFormFill: function (job_data) {
-      var assembler = job_data['assembler'];
-      if (assembler === 'metaspades') {
-        this.metaspades.set('checked', true);
-        this.megahit.set('checked', false);
-        this.auto.set('checked', false);
-      } else if (assembler === 'megahit') {
-        this.metaspades.set('checked', false);
-        this.megahit.set('checked', true);
-        this.auto.set('checked', false);
-      } else { // auto
-        this.metaspades.set('checked', false);
-        this.megahit.set('checked', false);
-        this.auto.set('checked', true);
-      }
-    },
-
-    setAdvParams: function (job_data) {
-      if (Object.keys(job_data).includes('min_contig_len')) {
-        this.min_contig_len.set('value', job_data['min_contig_len']);
-      }
-      if (Object.keys(job_data).includes('min_contig_cov')) {
-        this.min_contig_cov.set('value', job_data['min_contig_cov']);
-      }
-      if (Object.keys(job_data).includes('genome_group')) {
-        this.genome_group.set('value', job_data['genome_group']);
       }
     },
 
     setContigsFileFormFill: function (job_data) {
       this.contigsFile.set('value', job_data['contigs']);
-      // this.contigsFile.set('displayedValue', job_data['contigs']);
+      this.contigsFile.set('displayedValue', job_data['contigs']);
       this.checkParameterRequiredFields();
     },
 
