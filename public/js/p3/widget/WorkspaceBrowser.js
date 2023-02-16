@@ -1724,6 +1724,7 @@ define([
           'Homology',
           'MetagenomeBinning',
           'MetagenomicReadMapping',
+          'MSA',
           'PrimerDesign',
           'CodonTree',
           'RNASeq',
