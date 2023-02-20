@@ -1721,6 +1721,7 @@ define([
           'GenomeAssembly2',
           'GenomeAlignment',
           'GenomeAnnotation',
+          'GenomeComparison',
           'Homology',
           'MetagenomeBinning',
           'MetagenomicReadMapping',
