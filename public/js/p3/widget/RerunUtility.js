@@ -23,7 +23,7 @@ define([], function () {
         'GenomeAssembly': 'Assembly2',
         'GenomeAlignment': 'GenomeAlignment',
         'GenomeAnnotation': 'Annotation',
-        // 'GenomeComparison': 'SeqComparison',
+        'GenomeComparison': 'SeqComparison',
         'Homology': 'Homology',
         // 'MetaCATS': 'MetaCATS',
         'MetagenomeBinning': 'MetagenomicBinning',
