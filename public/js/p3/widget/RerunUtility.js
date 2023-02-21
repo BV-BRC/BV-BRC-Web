@@ -34,7 +34,7 @@ define([], function () {
         'RNASeq': 'Rnaseq',
         'SubspeciesClassification': 'SubspeciesClassification',
         'TaxonomicClassification': 'TaxonomicClassification',
-        // 'TnSeq': 'Tnseq',
+        'TnSeq': 'Tnseq',
         'Variation': 'Variation'
       };
       if (service_app_map.hasOwnProperty(service_id)) {

@@ -1731,6 +1731,7 @@ define([
           'RNASeq',
           'SubspeciesClassification',
           'TaxonomicClassification',
+          'TnSeq',
           'Variation'
         ],
         tooltip: 'Reset job form with current parameters'
