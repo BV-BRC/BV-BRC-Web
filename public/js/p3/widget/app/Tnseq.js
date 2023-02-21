@@ -691,12 +691,6 @@ define([
           if (sessionStorage.hasOwnProperty(rerun_key)) {
             var job_data = this.formatJsonRerun(JSON.parse(sessionStorage.getItem(rerun_key)));
             var param_dict = { 'output_folder': 'output_path', 'strategy': 'recipe', 'target_genome_id': 'reference_genome_id' };
-            // var widget_map = { 'reference_genome_id': 'genome_nameWidget' };
-            // param_dict['widget_map'] = widget_map;
-            // No service specific parameters in job output
-            // var service_specific = {"protocol":"protocol","primer":"primer"};
-            // param_dict["service_specific"] = service_specific;
-            // AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
             this.setParams(job_data);
             AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
             this.form_flag = true;
