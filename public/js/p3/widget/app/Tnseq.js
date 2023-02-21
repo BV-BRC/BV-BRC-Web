@@ -128,10 +128,6 @@ define([
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
-        var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-          localStorage.removeItem('bvbrc_rerun_job');
-        }
       }
     },
 
@@ -229,6 +225,8 @@ define([
       else {
         assembly_values.contrasts = [['control']];
       }
+      assembly_values.trimming = this.primer_trimming.get('value');
+      assembly_values.transposon = this.transposon.get('value');
       return assembly_values;
     },
     // gets values from dojo attach points listed in input_ptsi keys.
@@ -666,7 +664,8 @@ define([
       //   assembly_values["single_end_libs"] = singleLibs;
       // }
       assembly_values.read_files = allLibs;
-      // strategy (not protocol)
+      // strategy (recipe)
+      assembly_values.recipe = values.recipe;
       // target genome
       assembly_values.reference_genome_id = values.genome_name;
       this.target_genome_id = assembly_values.reference_genome_id;
@@ -686,21 +685,38 @@ define([
       var rerun_fields = service_fields.split('=');
       var rerun_key;
       if (rerun_fields.length > 1) {
-        rerun_key = rerun_fields[1];
-        var sessionStorage = window.sessionStorage;
-        if (sessionStorage.hasOwnProperty(rerun_key)) {
-          var job_data = this.formatJsonRerun(JSON.parse(sessionStorage.getItem(rerun_key)));
-          var param_dict = { 'output_folder': 'output_path', 'strategy': 'recipe', 'target_genome_id': 'reference_genome_id' };
-          var widget_map = { 'reference_genome_id': 'genome_nameWidget' };
-          param_dict['widget_map'] = widget_map;
-          // No service specific parameters in job output
-          // var service_specific = {"protocol":"protocol","primer":"primer"};
-          // param_dict["service_specific"] = service_specific;
-          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-          AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+        try {
+          rerun_key = rerun_fields[1];
+          var sessionStorage = window.sessionStorage;
+          if (sessionStorage.hasOwnProperty(rerun_key)) {
+            var job_data = this.formatJsonRerun(JSON.parse(sessionStorage.getItem(rerun_key)));
+            var param_dict = { 'output_folder': 'output_path', 'strategy': 'recipe', 'target_genome_id': 'reference_genome_id' };
+            this.setParams(job_data);
+            AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+            this.form_flag = true;
+          }
+        } catch (error) {
+          console.log('Error during intakeRerunForm: ', error);
+        } finally {
           sessionStorage.removeItem(rerun_key);
-          this.form_flag = true;
         }
+
+      }
+    },
+
+    setParams: function (job_data) {
+      var keys = Object.keys(job_data);
+      if (keys.includes('recipe')) {
+        this.recipe.set('value', job_data['recipe']);
+      }
+      if (keys.includes('protocol')) {
+        this.protocol.set('value', job_data['protocol']);
+      }
+      if (keys.includes('primer')) {
+        this.primer.set('value', job_data['primer']);
+      }
+      if (keys.includes('reference_genome_id')) {
+        this.genome_nameWidget.set('value', job_data['reference_genome_id']);
       }
     },
 

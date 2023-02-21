@@ -523,6 +523,7 @@ define([
               }
               this.addGenomesFormFill(job_data['genome_ids']);
             }
+            this.addJobParams(job_data);
             this.form_flag = true;
 
           } catch (error) {
@@ -531,6 +532,18 @@ define([
             sessionStorage.removeItem(rerun_key);
           }
         }
+      }
+    },
+
+    addJobParams: function (job_data) {
+      if (Object.keys(job_data).includes('number_of_genes')) {
+        this.number_of_genes.set('value', job_data['number_of_genes']);
+      }
+      if (Object.keys(job_data).includes('max_genomes_missing')) {
+        this.max_genomes_missing.set('value', job_data['max_genomes_missing']);
+      }
+      if (Object.keys(job_data).includes('max_allowed_dups')) {
+        this.max_allowed_dups.set('value', job_data['max_allowed_dups']);
       }
     },
 

@@ -4,14 +4,14 @@ define([
   'dojo/text!./templates/SeqComparison.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog',
-  'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when'
+  'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when', '../../DataAPI'
 ], function (
   declare, WidgetBase, on,
   domClass,
   Template, AppBase, domConstruct, registry,
   Deferred, aspect, lang, domReady, NumberTextBox,
   query, dom, popup, Tooltip, Dialog, TooltipDialog,
-  children, WorkspaceManager, Memory, Standby, when
+  children, WorkspaceManager, Memory, Standby, when, DataAPI
 ) {
   return declare([AppBase], {
     baseClass: 'App ProteomeComparison',
@@ -75,10 +75,6 @@ define([
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
-        var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-          localStorage.removeItem('bvbrc_rerun_job');
-        }
       }
 
     },
@@ -605,16 +601,21 @@ define([
       var rerun_fields = service_fields.split('=');
       var rerun_key;
       if (rerun_fields.length > 1) {
-        rerun_key = rerun_fields[1];
-        var sessionStorage = window.sessionStorage;
-        if (sessionStorage.hasOwnProperty(rerun_key)) {
-          var param_dict = { 'output_folder': 'output_path' };
-          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-          this.setReferenceGenomeFormFill(job_data);
-          this.addGenomesFormFill(job_data);
+        try {
+          rerun_key = rerun_fields[1];
+          var sessionStorage = window.sessionStorage;
+          if (sessionStorage.hasOwnProperty(rerun_key)) {
+            // var param_dict = { 'output_folder': 'output_path' };
+            // AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+            var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+            this.setReferenceGenomeFormFill(job_data);
+            this.addGenomesFormFill(job_data);
+            this.form_flag = false;
+          }
+        } catch (error) {
+          console.log('Error during intakeRerunForm: ', error);
+        } finally {
           sessionStorage.removeItem(rerun_key);
-          this.form_flag = false;
         }
       }
     },
@@ -645,12 +646,23 @@ define([
 
     addGenomesFormFill: function (job_data) {
       var genome_ids = job_data['genome_ids'];
-      genome_ids.forEach(function (gid) {
-        var name_promise = this.scientific_nameWidget.store.get(gid);
-        name_promise.then(lang.hitch(this, function (tax_obj) {
-          this.scientific_nameWidget.set('item', tax_obj);
-          this.scientific_nameWidget.validate();
-          var genome_name = this.scientific_nameWidget.get('displayedValue');
+      // remove reference genome
+      var genome_reference = true;
+      if (job_data['user_genomes'] && job_data['user_genomes'].length > 0) {
+        genome_reference = false;
+      }
+      if (job_data['user_feature_groups'] && job_data['user_feature_groups'].length > 0) {
+        genome_reference = false;
+      }
+      if (genome_reference) {
+        var genome_idx = parseInt(job_data['reference_genome_index']) - 1;
+        genome_ids.splice(genome_idx, 1);
+      }
+      var query = 'in(genome_id,(' + genome_ids.join(',') + '))';
+      DataAPI.queryGenomes(query).then(lang.hitch(this, function (res) {
+        res.items.forEach(lang.hitch(this, function (genome) {
+          var gid = genome.genome_id;
+          var genome_name = genome.genome_name;
           var lrec = {};
           var tr = this.genomeTable.insertRow(0);
           var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
@@ -675,7 +687,7 @@ define([
           }));
           this.increaseGenome('genome', [gid]);
         }));
-      }, this);
+      }));
     },
 
     genDisplayName: function (name) {
