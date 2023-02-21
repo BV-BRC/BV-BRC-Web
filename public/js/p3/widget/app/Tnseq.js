@@ -225,6 +225,8 @@ define([
       else {
         assembly_values.contrasts = [['control']];
       }
+      assembly_values.trimming = this.primer_trimming.get('value');
+      assembly_values.transposon = this.transposon.get('value');
       return assembly_values;
     },
     // gets values from dojo attach points listed in input_ptsi keys.
@@ -662,7 +664,8 @@ define([
       //   assembly_values["single_end_libs"] = singleLibs;
       // }
       assembly_values.read_files = allLibs;
-      // strategy (not protocol)
+      // strategy (recipe)
+      assembly_values.recipe = values.recipe;
       // target genome
       assembly_values.reference_genome_id = values.genome_name;
       this.target_genome_id = assembly_values.reference_genome_id;
@@ -715,11 +718,11 @@ define([
       if (keys.includes('protocol')) {
         this.protocol.set('value', job_data['protocol']);
       }
-      if (keys.includes('recipe')) {
-        this.recipe.set('value', job_data['recipe']);
+      if (keys.includes('primer')) {
+        this.primer.set('value', job_data['primer']);
       }
-      if (keys.includes('recipe')) {
-        this.recipe.set('value', job_data['recipe']);
+      if (keys.includes('reference_genome_id')) {
+        this.genome_nameWidget.set('value', job_data['reference_genome_id']);
       }
     },
 
