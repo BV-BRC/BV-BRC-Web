@@ -2,7 +2,7 @@ define([], function () {
   return {
 
     rerun: function (job_params, service_id, window, Topic) {
-      // TODO: make sure service_id variable is present for every service
+      // make sure service_id variable is present for every service
       var sessionStorage = window.sessionStorage;
       const random = (length = 8) => {
         return Math.random().toString(16).substr(2, length);
@@ -22,21 +22,19 @@ define([], function () {
         'GenomeAssembly2': 'Assembly2',
         'GenomeAssembly': 'Assembly2',
         'GenomeAlignment': 'GenomeAlignment',
-        // TODO: rerun for annotation needs to be updated
         'GenomeAnnotation': 'Annotation',
-        // 'GenomeComparison': 'SeqComparison',
+        'GenomeComparison': 'SeqComparison',
         'Homology': 'Homology',
         // 'MetaCATS': 'MetaCATS',
         // 'MetagenomeBinning': 'MetagenomicBinning',
         'MetagenomicReadMapping': 'MetagenomicReadMapping',
-        // 'MSA': 'MSA',
+        'MSA': 'MSA',
         'CodonTree': 'PhylogeneticTree',
-        // TODO: need to fix this
         'PrimerDesign': 'PrimerDesign',
         'RNASeq': 'Rnaseq',
         'SubspeciesClassification': 'SubspeciesClassification',
         'TaxonomicClassification': 'TaxonomicClassification',
-        // 'TnSeq': 'Tnseq',
+        'TnSeq': 'Tnseq',
         'Variation': 'Variation'
       };
       if (service_app_map.hasOwnProperty(service_id)) {

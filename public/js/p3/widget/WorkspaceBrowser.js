@@ -1721,13 +1721,17 @@ define([
           'GenomeAssembly2',
           'GenomeAlignment',
           'GenomeAnnotation',
-          'Homology', 'Homology',
+          'GenomeComparison',
+          'Homology',
+          'MetagenomeBinning',
           'MetagenomicReadMapping',
+          'MSA',
           'PrimerDesign',
           'CodonTree',
           'RNASeq',
           'SubspeciesClassification',
           'TaxonomicClassification',
+          'TnSeq',
           'Variation'
         ],
         tooltip: 'Reset job form with current parameters'
