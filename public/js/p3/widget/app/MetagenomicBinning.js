@@ -87,10 +87,6 @@ define([
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
-        var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-          localStorage.removeItem('bvbrc_rerun_job');
-        }
       }
     },
 
