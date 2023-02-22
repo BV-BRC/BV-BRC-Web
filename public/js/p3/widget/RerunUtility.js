@@ -26,7 +26,7 @@ define([], function () {
         'GenomeComparison': 'SeqComparison',
         'Homology': 'Homology',
         // 'MetaCATS': 'MetaCATS',
-        // 'MetagenomeBinning': 'MetagenomicBinning',
+        'MetagenomeBinning': 'MetagenomicBinning',
         'MetagenomicReadMapping': 'MetagenomicReadMapping',
         'MSA': 'MSA',
         'CodonTree': 'PhylogeneticTree',
