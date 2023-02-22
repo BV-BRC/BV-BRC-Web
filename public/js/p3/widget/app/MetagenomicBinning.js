@@ -545,6 +545,7 @@ define([
               this.setContigsFileFormFill(job_data);
             }
             this.setStrategyFormFill(job_data);
+            this.setAdvParams(job_data);
             // TODO set other parameters
             this.form_flag = true;
           }
