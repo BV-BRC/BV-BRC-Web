@@ -1723,6 +1723,7 @@ define([
           'GenomeAnnotation',
           'GenomeComparison',
           'Homology',
+          'MetaCATS',
           'MetagenomeBinning',
           'MetagenomicReadMapping',
           'MSA',

@@ -554,7 +554,6 @@ define([
         } finally {
           sessionStorage.removeItem(rerun_key);
         }
-        
       }
     },
 
