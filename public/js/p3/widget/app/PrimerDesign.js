@@ -76,10 +76,6 @@ define([
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
-        var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-          localStorage.removeItem('bvbrc_rerun_job');
-        }
       }
     },
 
@@ -390,29 +386,41 @@ define([
       var rerun_fields = service_fields.split('=');
       var rerun_key;
       if (rerun_fields.length > 1) {
-        rerun_key = rerun_fields[1];
-        var sessionStorage = window.sessionStorage;
-        if (sessionStorage.hasOwnProperty(rerun_key)) {
-          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-          var param_dict = { 'output_folder': 'output_path' };
-          var service_specific = {
-            'SEQUENCE_EXCLUDED_REGION': 'sequence_excluded_region',
-            'SEQUENCE_TARGET': 'sequence_target',
-            'SEQUENCE_INCLUDED_REGION': 'sequence_included_region',
-            'SEQUENCE_OVERLAP_JUNCTION_LIST': 'sequence_overlap_junction_list'
-          };
-          param_dict['service_specific'] = service_specific;
-          this.setSequenceSourceFormFill(job_data);
-          this.setAdvancedParamsFormFill(job_data);
-          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+        try {
+          rerun_key = rerun_fields[1];
+          var sessionStorage = window.sessionStorage;
+          if (sessionStorage.hasOwnProperty(rerun_key)) {
+            var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+            this.setSequenceSourceFormFill(job_data);
+            this.setAdvancedParamsFormFill(job_data);
+            this.setRegionsFormFill(job_data);
+            this.form_flag = true;
+          }
+        } catch (error) {
+          console.log('Error during intakeRerunForm: ', error);
+        } finally {
           sessionStorage.removeItem(rerun_key);
-          this.form_flag = true;
         }
       }
     },
 
+    setRegionsFormFill: function (job_data) {
+      var region_dict = {
+        'SEQUENCE_EXCLUDED_REGION': 'sequence_excluded_region',
+        'SEQUENCE_TARGET': 'sequence_target',
+        'SEQUENCE_INCLUDED_REGION': 'sequence_included_region',
+        'SEQUENCE_OVERLAP_JUNCTION_LIST': 'sequence_overlap_junction_list'
+      };
+      var _self = this;
+      Object.keys(region_dict).forEach(lang.hitch(this, function (region) {
+        if (Object.keys(job_data).includes(region)) {
+          _self[region_dict[region]].set('value', job_data[region]);
+        }
+      }));
+    },
+
     setAdvancedParamsFormFill: function (job_data) {
-      var params1 = { 'PRIMER_NUM_RETURN': 'primer_num_return', 'PRIMER_PRODUCT_SIZE_RANGE': 'primer_product_size_range' };
+      var params1 = { 'PRIMER_PICK_INTERNAL_OLIGO': 'internal_oligo_checkbox','PRIMER_NUM_RETURN': 'primer_num_return', 'PRIMER_PRODUCT_SIZE_RANGE': 'primer_product_size_range' };
       var min_dict = { 'PRIMER_MIN_SIZE': 'primer_min_size', 'PRIMER_MIN_TM': 'primer_min_tm', 'PRIMER_MIN_GC': 'primer_min_gc' };
       var opt_dict = { 'PRIMER_OPT_SIZE': 'primer_opt_size', 'PRIMER_OPT_GC_PERCENT': 'primer_opt_gc', 'PRIMER_OPT_TM': 'primer_opt_tm' };
       var max_dict = {
