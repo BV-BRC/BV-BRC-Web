@@ -6,7 +6,8 @@ define([
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dijit/popup', 'dijit/form/Select', './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
-  'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './RerunUtility', './viewer/JobResult',
+  'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './viewer/JobResult',
+
   'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree'
 ], function (
   declare, BorderContainer, on, query,
@@ -16,7 +17,7 @@ define([
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
   popup, Select, ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
   TextBox, WSObjectSelector, PermissionEditor,
-  All, encodePath, when, request, tsvCsvFeatures, rerunUtility, JobResult, NodeList_traverse, Homology, GenomeAlignment, PhylogeneticTree
+  All, encodePath, when, request, tsvCsvFeatures, JobResult, NodeList_traverse, Homology, GenomeAlignment, PhylogeneticTree
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -42,15 +43,16 @@ define([
       'experiment', 'unspecified', 'contigs', 'reads', 'model', 'txt', 'html',
       'pdf', 'string', 'json', 'csv', 'diffexp_experiment',
       'diffexp_expression', 'diffexp_mapping', 'diffexp_sample',
-      'diffexp_input_data', 'diffexp_input_metadata', 'svg', 'gif', 'png', 'jpg', 'nwk', 'phyloxml'],
+      'diffexp_input_data', 'diffexp_input_metadata', 'svg', 'gif', 'png', 'jpg'],
     design: 'sidebar',
     splitter: false,
     docsServiceURL: window.App.docsServiceURL,
-    tutorialLink: 'quick_references/workspace_groups_upload.html',
+    tutorialLink: 'user_guides/workspaces/workspace.html',
     tsvCsvFilename: '',
 
     startup: function () {
       var self = this;
+
       if (this._started) {
         return;
       }
@@ -145,63 +147,6 @@ define([
         window.open(PathJoin(self.docsServiceURL, path), '_blank');
       }, true);
 
-      this.browserHeader.addAction('PathwaysServiceViewer', 'MultiButton fa icon-git-pull-request fa-2x', {
-        label: 'Pathways',
-        validTypes: ['ComparativeSystems'],
-        tooltip: 'View Pathways Tables'
-      }, function (selection, container, button) {
-        console.log(selection);
-        var path;
-        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (data_file) {
-          if (data_file[0].includes('_pathways_tables.json')) {
-            path = data_file[0];
-          }
-        }));
-        if (path) {
-          Topic.publish('/navigate', { href: '/view/PathwayService' + path, target: 'blank' });
-        } else {
-          console.log('Error: could not find pathways data file');
-        }
-      }, false);
-
-      this.browserHeader.addAction('ProteinFamiliesServiceViewer', 'MultiButton fa icon-group fa-2x', {
-        label: 'Families',
-        validTypes: ['ComparativeSystems'],
-        tooltip: 'View Protein Families Tables'
-      }, function (selection, container, button) {
-        console.log(selection);
-        var path;
-        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (data_file) {
-          if (data_file[0].includes('_proteinfams_tables.json')) {
-            path = data_file[0];
-          }
-        }));
-        if (path) {
-          Topic.publish('/navigate', { href: '/view/ProteinFamiliesService' + path, target: 'blank' });
-        } else {
-          console.log('Error: could not find pathways data file');
-        }
-      }, false);
-
-      this.browserHeader.addAction('SubsystemsServiceViewer', 'MultiButton fa icon-venn_circles fa-2x', {
-        label: 'Subsystems',
-        validTypes: ['ComparativeSystems'],
-        tooltip: 'View Subsystems Tables'
-      }, function (selection, container, button) {
-        console.log(selection);
-        var path;
-        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (data_file) {
-          if (data_file[0].includes('_subsystems_tables.json')) {
-            path = data_file[0];
-          }
-        }));
-        if (path) {
-          Topic.publish('/navigate', { href: '/view/SubsystemService' + path, target: 'blank' });
-        } else {
-          console.log('Error: could not find pathways data file');
-        }
-      }, false);
-
       this.actionPanel.addAction('ViewGenomeGroup', 'MultiButton fa icon-selection-GenomeList fa-2x', {
         label: 'VIEW',
         validTypes: ['genome_group'],
@@ -264,6 +209,7 @@ define([
       }, false);
 
       // /START: ServicesGenomeGroups
+      // TODO: see if ServicesTooltipDialog works here now
       var dstContent = domConstruct.create('div', {});
       var viewGGServices = new TooltipDialog({
         content: dstContent,
@@ -405,20 +351,6 @@ define([
           q = 'or(' + q.join(',') + ')';
 
           Topic.publish('/navigate', { href: '/view/FeatureList/?' + q });
-        }
-      });
-
-      this.actionPanel.addAction('ViewProteinStructure', 'MultiButton fa icon-selection-Sequence fa-2x', {
-        label: 'VIEW',
-        validTypes: ['pdb'],
-        multiple: false,
-        tooltip: 'Open PDB in Protein Structure Viewer'
-      }, function (selection, button, opts) {
-        var filepath = selection[0].path;
-        if (filepath) {
-          Topic.publish('/navigate', { href: '/view/ProteinStructure#path=' + filepath, target: 'blank' });
-        } else {
-          console.log('err, path does not exist');
         }
       });
 
@@ -807,8 +739,7 @@ define([
         tooltip: 'View alignments'
       }, function (selection) {
         // console.log("Current Container Widget: ", self.actionPanel.currentContainerWidget, "Slection: ", selection)
-        var modPath = self.actionPanel.currentContainerWidget.path.replace(/^\/public/, '');
-        Topic.publish('/navigate', { href: '/view/Homology' + modPath });
+        Topic.publish('/navigate', { href: '/view/Homology' + self.actionPanel.currentContainerWidget.path });
       }, false);
 
 
@@ -834,7 +765,7 @@ define([
         });
       }, self.path.split('/').length > 3);
 
-      this.browserHeader.addAction('ShowHidden', (window.App.showHiddenFiles ? 'fa icon-eye-slash fa-2x' : 'fa icon-eye fa-2x'), {
+      this.browserHeader.addAction('ShowHidden', (window.App.showHiddenFiles ? 'fa icon-eye-slash' : 'fa icon-eye'), {
         label: window.App.showHiddenFiles ? 'HIDE HIDDEN' : 'SHOW HIDDEN',
         multiple: true,
         validTypes: ['folder'],
@@ -867,7 +798,6 @@ define([
         });
       }, self.path.split('/').length < 3);
 
-      /*
       this.browserHeader.addAction('ViewTree', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
@@ -878,7 +808,7 @@ define([
         Topic.publish('/navigate', { href: '/view/PhylogeneticTree/?&labelSearch=true&idType=genome_id&labelType=genome_name&wsTreeFolder=' + encodePath(expPath) });
 
       }, false);
-*/
+
       this.browserHeader.addAction('ViewCGAFullGenomeReport', 'fa icon-eye fa-2x', {
         label: 'REPORT',
         multiple: false,
@@ -1052,7 +982,7 @@ define([
         var path;
         selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
           var filepath = file_data[0].split('/');
-          if (filepath[filepath.length - 1].includes('_table.html')) {
+          if (filepath[filepath.length - 1].includes('primers_table.html')) {
             path = filepath.join('/');
           }
         }));
@@ -1126,71 +1056,48 @@ define([
         validTypes: ['nwk', 'phyloxml'],
         tooltip: 'View Archaeopteryx Tree'
       }, function (selection, container) {
-        var path = selection.map(function (obj) {
-          return obj.path;
-          // console.log('ViewNwkXml obj', obj);
+        var path = selection.map(function (obj) { return obj.path;
+        // console.log('ViewNwkXml obj', obj);
         });
         var fileType = selection.map(function (obj) { return obj.type; });
-
-        var labelSearch = 'false';
+        var labelSearch = 'true';
         var idType = 'genome_id';
         var labelType = 'genome_name';
+        // console.log('container', container);
+        // console.log('self.browserHeader', self.browserHeader);
+        if (container._resultType !== 'CodonTree' && container._resultType !== 'PhylogeneticTree') {
+          idType = 'patric_id';
+          labelType = 'feature_name';
+        }
+        if (encodePath(path[0]).includes('WithGenomeNames.')) {
+          labelSearch = 'false';
+          idType = 'genome_name';
+        }
         Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path[0]) + '&fileType=' + fileType });
       }, false);
 
       this.browserHeader.addAction('ViewNwkXml', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
-        validTypes: ['GeneTree', 'CodonTree'],
+        validTypes: ['GeneTree'],
         tooltip: 'View Archaeopteryx Tree'
       }, function (selection, container, button) {
-        console.log('browserHeader selection ', selection);
-        console.log('browserHeader container ', container);
-
-        var labelSearch = 'false';
-        var idType = 'genome_id';
-        var labelType = 'genome_name';
-        var fileType = 'phyloxml';
+        console.log(selection);
         var path;
-
         selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
           var gt_file = file_data[0].split('.');
-          if (gt_file[gt_file.length - 1] === 'xml' || gt_file[gt_file.length - 1] === 'phyloxml') {
+          if (gt_file[gt_file.length - 1] === 'nwk') {
             path = gt_file.join('.');
-            fileType = 'phyloxml';
-          }
-          else if (gt_file[gt_file.length - 1] === 'nwk') {
-            path = gt_file.join('.');
-            fileType = 'nwk';
           }
         }));
-        console.log('browserHeader path ', path);
-
         if (path) {
+          var labelSearch = 'true';
+          var idType = 'patric_id';
+          var labelType = 'feature_name';
+          var fileType = 'nwk';
           Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(path) + '&fileType=' + fileType });
         } else {
           console.log('Error: could not find chisqTable.tsv output file');
-        }
-      }, false);
-
-      this.browserHeader.addAction('ViewSubspeciesResult', 'fa icon-eye fa-2x', {
-        label: 'VIEW',
-        multiple: false,
-        validTypes: ['SubspeciesClassification'],
-        tooltip: 'View Result'
-      }, function (selection, container, button) {
-        console.log(selection);
-
-        var path;
-        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (meta_file_data) {
-          if (meta_file_data[0].includes('classification_report.html')) {
-            path = meta_file_data[0];
-          }
-        }));
-        if (path) {
-          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
-        } else {
-          console.log('Error: could not find classification_report.html output file');
         }
       }, false);
 
@@ -1199,25 +1106,13 @@ define([
         multiple: false,
         validTypes: ['aligned_dna_fasta', 'aligned_protein_fasta'],
         tooltip: 'View aligned fasta'
-      }, function (selection, container) {
-        // var path = this.selection[0].path; // .get('selection.path');
+      }, function (selection) {
+        var path = this.selection[0].path; // .get('selection.path');
         var alignType = 'protein';
         if (this.selection[0].type.includes('dna')) {
           alignType = 'dna';
         }
-        console.log('container ', container);
-        var msa_file = selection[0].path;
-        var exist_nwk = 0;
-        if (msa_file[msa_file.length - 1] === 'nwk') {
-          exist_nwk = 1;
-        }
-        if ((!alignType)) {
-          console.log('Error: Alignment file doesnt exist or alignment alphabet could not be determined');
-        } else if (exist_nwk == 1) {
-          Topic.publish('/navigate', { href: '/view/MSATree/&alignType=' + alignType + '&path=' + msa_file, target: 'blank' });
-        } else {
-          Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + msa_file, target: 'blank' });
-        }
+        Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + path, target: 'blank' });
       }, false);
 
       this.browserHeader.addAction('ViewAFA', 'fa icon-eye fa-2x', {
@@ -1226,33 +1121,20 @@ define([
         validTypes: ['MSA'],
         tooltip: 'View aligned fasta'
       }, function (selection, container, button) {
-        // console.log('selection= ', selection);
-        // var alignType = selection[0].autoMeta.parameters.alphabet;
+        // console.log(self.actionPanel.currentContainerWidget.path);
+        console.log('selection=', selection);
+        var alignType = selection[0].autoMeta.parameters.alphabet;
         var afa_file;
-        var exist_nwk = 0;
         selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (msa_file_data) {
           var msa_file = msa_file_data[0].split('.');
           if (msa_file[msa_file.length - 1] === 'afa') {
             afa_file = msa_file.join('.');
           }
-          if (msa_file[msa_file.length - 1] === 'nwk') {
-            exist_nwk = 1;
-          }
         }));
-        if ((!afa_file)) {
-          console.log('Error: Alignment file doesn\'t exist.');
+        if ((!afa_file) | (!alignType)) {
+          console.log('Error: Alignment file doesnt exist or alignment alphabet could not be determined');
         } else {
-          when(WorkspaceManager.getObject(afa_file, true), function (data) {
-            var alignType = 'protein';
-            if (data.type.includes('dna')) {
-              alignType = 'dna';
-            }
-            if (exist_nwk == 1) {
-              Topic.publish('/navigate', { href: '/view/MSATree/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
-            } else {
-              Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
-            }
-          });
+          Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
         }
       }, false);
 
@@ -1284,39 +1166,14 @@ define([
       this.browserHeader.addAction('ViewTracks', 'fa icon-genome-browser fa-2x', {
         label: 'BROWSER',
         multiple: false,
-        validTypes: ['TnSeq', 'Variation', 'FastqUtils'],
+        validTypes: ['RNASeq', 'TnSeq', 'Variation'],
         tooltip: 'View tracks in genome browser.'
       }, function (selection) {
         // console.log("View Tracks: ", this);
-        try {
-          var genomeId = self.actionPanel.currentContainerWidget.getGenomeId();
-          var urlQueryParams = self.actionPanel.currentContainerWidget.getJBrowseURLQueryParams();
-        }
-        catch (err) {
-          alert('The genome browser could not be opened. No genome id or no streamable files were found.');
-          throw (err);
-        }
+        var genomeId = self.actionPanel.currentContainerWidget.getGenomeId();
+        var urlQueryParams = self.actionPanel.currentContainerWidget.getJBrowseURLQueryParams();
         Topic.publish('/navigate', { href: '/view/Genome/' + genomeId + '#' + urlQueryParams });
-      }, false);
 
-      this.browserHeader.addAction('ViewTracksRNASeq', 'fa icon-genome-browser fa-2x', {
-        label: 'BROWSER',
-        multiple: false,
-        validTypes: ['RNASeq'],
-        tooltip: 'View tracks in genome browser.'
-      }, function (selection) {
-        // console.log("View Tracks: ", this);
-        try {
-          var genomeId = self.actionPanel.currentContainerWidget.getGenomeId();
-          self.actionPanel.currentContainerWidget.getJBrowseURLQueryParamsRNASeq().then(lang.hitch(this, function (urlQueryParams) {
-            Topic.publish('/navigate', { href: '/view/Genome/' + genomeId + '#' + urlQueryParams, target: 'blank' });
-          }));
-          // var urlQueryParams = self.actionPanel.currentContainerWidget.getJBrowseURLQueryParams();
-        }
-        catch (err) {
-          alert('The genome browser could not be opened. No genome id or no streamable files were found.');
-          throw (err);
-        }
       }, false);
 
       this.actionPanel.addAction('ExperimentGeneList', 'fa icon-list-unordered fa-2x', {
@@ -1708,6 +1565,31 @@ define([
         self.showPermDialog(selection);
       }, false);
 
+      // TODO: in order to make this button appear "inside" the job result:
+      // look into validContainerTypes???
+      // /START: Rerun functionality
+      var service_app_map = {
+        'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
+        'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
+        'DifferentialExpression': 'Expression',
+        'FastqUtils': 'FastqUtil',
+        'GeneTree': 'GeneTree',
+        'GenomeAssembly2': 'Assembly2',
+        'GenomeAlignment': 'GenomeAlignment',
+        'GenomeAnnotation': 'Annotation',
+        'GenomeComparison': 'SeqComparison',
+        'Homology': 'Homology',
+        'MetaCATS': 'MetaCATS',
+        'MetagenomeBinning': 'MetagenomicBinning',
+        'MetagenomicReadMapping': 'MetagenomicReadMapping',
+        'MSA': 'MSA',
+        'CodonTree': 'PhylogeneticTree',
+        'PrimerDesign': 'PrimerDesign',
+        'RNASeq': 'Rnaseq',
+        'TaxonomicClassification': 'TaxonomicClassification',
+        'TnSeq': 'Tnseq',
+        'Variation': 'Variation'
+      };
       this.actionPanel.addAction('Rerun', 'fa icon-rotate-left fa-2x', {
         label: 'RERUN',
         allowMultiTypes: true,
@@ -1715,8 +1597,50 @@ define([
         validTypes: ['job_result'],
         tooltip: 'Reset job form with current parameters'
       }, function (selection) {
-        rerunUtility.rerun(JSON.stringify(selection[0].autoMeta.parameters), selection[0].autoMeta.app.id, window, Topic);
+        var job_params = JSON.stringify(selection[0].autoMeta.parameters);
+        var service_id = selection[0].autoMeta.app.id;
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
+        }
+        localStorage.setItem('bvbrc_rerun_job', job_params);
+        if (service_app_map.hasOwnProperty(service_id)) {
+          Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] });
+        }
+        else {
+          console.log('Rerun not enabled for: ', service_id);
+        }
       }, false);
+
+      /*
+      this.browserHeader.addAction('Rerun', 'fa icon-rotate-left fa-2x', {
+        label: 'RERUN',
+        multiple: false,
+        persistent: true,
+        // TODO: list of services that allow "descending" into a job object
+        // TODO: does not last past the
+        validTypes: ['RNASeq', 'TnSeq', 'Variation'],
+        tooltip: 'Reset job form with current parameters'
+      }, function (selection, container, button) {
+        // console.log("View Tracks: ", this);
+        console.log("selection=",selection);
+        var job_params = JSON.stringify(selection[0].autoMeta.parameters);
+        var service_id = selection[0].autoMeta.app.id;
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
+        }
+        localStorage.setItem('bvbrc_rerun_job', job_params);
+        if (service_app_map.hasOwnProperty(service_id)) {
+          Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] });
+        }
+        else {
+          console.log('Rerun not enabled for: ', service_id);
+        }
+      }, false);
+      */
+
+      // /END: Rerun functionality
 
       // listen for opening user permisssion dialog
       Topic.subscribe('/openUserPerms', function (selection) {
@@ -1964,6 +1888,7 @@ define([
     },
 
     _setPathAttr: function (val) {
+
       // extract extra URL parameters
       var components = val.split('#');
       val = components[0];
@@ -1997,10 +1922,6 @@ define([
       } else {
         obj = WorkspaceManager.getObject(val, true);
       }
-
-      // console.log('in WorkspaceBrowser this.path', this.path);
-      // console.log('in WorkspaceBrowser obj', obj);
-
       Deferred.when(obj, lang.hitch(this, function (obj) {
         if (this.browserHeader) {
           this.browserHeader.set('selection', [obj]);
@@ -2008,7 +1929,6 @@ define([
         var panelCtor;
         var params = { path: this.path, region: 'center' };
 
-        console.log('in WorkspaceBrowser obj', obj);
         // console.log('in WorkspaceBrowser obj.autoMeta', obj.autoMeta);
         // console.log('in WorkspaceBrowser browserHeader', this.browserHeader);
 
@@ -2054,7 +1974,6 @@ define([
                 case 'Variation':
                 case 'RNASeq':
                 case 'TnSeq':
-                case 'FastqUtils':
                   d = 'p3/widget/viewer/Seq';
                   break;
                 case 'ComprehensiveGenomeAnalysis':
@@ -2081,15 +2000,6 @@ define([
             panelCtor = window.App.getConstructor('p3/widget/viewer/TSV_CSV');
             params.file = { metadata: obj };
             break;
-          case 'nwk':
-          case 'phyloxml':
-            var labelSearch = 'false';
-            var idType = 'genome_id';
-            var labelType = 'genome_name';
-            var filepath = obj.path + obj.name;
-            Topic.publish('/navigate', { href: '/view/PhylogeneticTree2/?&labelSearch=' + labelSearch + '&idType=' + idType + '&labelType=' + labelType + '&wsTreeFile=' + encodePath(filepath) + '&fileType=' + obj.type });
-            break;
-
           default:
             var tsvCsvFilename = this.tsvCsvFilename = obj.name;
             var isTsv = false;
@@ -2127,9 +2037,7 @@ define([
 
             if (this.actionPanel) {
               this.actionPanel.set('currentContainerWidget', newPanel);
-              if (this.itemDetailPanel) {
-                this.itemDetailPanel.set('containerWidget', newPanel);
-              }
+              this.itemDetailPanel.set('containerWidget', newPanel);
             }
 
             if (newPanel.on) {
