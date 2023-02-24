@@ -68,10 +68,6 @@ define([
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
-        var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-          localStorage.removeItem('bvbrc_rerun_job');
-        }
       }
     },
 
@@ -459,22 +455,37 @@ define([
       var rerun_fields = service_fields.split('=');
       var rerun_key;
       if (rerun_fields.length > 1) {
-        rerun_key = rerun_fields[1];
-        var sessionStorage = window.sessionStorage;
-        if (sessionStorage.hasOwnProperty(rerun_key)) {
-          var param_dict = { 'output_folder': 'output_path', 'contigs': 'contigs' };
-          var widget_map = { 'contigs': 'contigsFile' };
-          param_dict['widget_map'] = widget_map;
-          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-          this.selectStartWith(job_data);
-          job_data = this.formatRerunJson(job_data);
-          if (this.startWithRead.checked) {
-            AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+        try {
+          rerun_key = rerun_fields[1];
+          var sessionStorage = window.sessionStorage;
+          if (sessionStorage.hasOwnProperty(rerun_key)) {
+            var param_dict = { 'output_folder': 'output_path', 'contigs': 'contigs' };
+            // var widget_map = { 'contigs': 'contigsFile' };
+            // param_dict['widget_map'] = widget_map;
+            // AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+            var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+            this.selectStartWith(job_data);
+            job_data = this.formatRerunJson(job_data);
+            if (this.startWithRead.checked) {
+              AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+            }
+            else {
+              this.contigsFile.set('value', job_data['contigs']);
+            }
+            if (Object.keys(job_data).includes('save_unclassified_sequences') && job_data['save_unclassified_sequences'] === 'true') {
+              this.save_unclassified_sequences_no.set('checked', false);
+              this.save_unclassified_sequences_yes.set('checked', true);
+            }
+            if (Object.keys(job_data).includes('save_classified_sequences') && job_data['save_classified_sequences'] === 'true') {
+              this.save_classified_sequences_no.set('checked', false);
+              this.save_classified_sequences_yes.set('checked', true);
+            }
+            this.form_flag = true;
           }
-          // TODO: more specific stuff
+        } catch (error) {
+          console.log('Error during intakeRerunForm: ', error);
+        } finally {
           sessionStorage.removeItem(rerun_key);
-          this.form_flag = true;
         }
       }
     },

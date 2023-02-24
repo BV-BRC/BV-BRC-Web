@@ -50,7 +50,7 @@ define([
       { name: 'Pneumoviridae', id: 11244 },
       { name: 'Polyomaviridae', id: 151341 },
       { name: 'Poxviridae', id: 10240 },
-      { name: 'Reoviridae', id: 10880 },
+      { name: 'Reovirales', id: 2732541 },
       { name: 'Rhabdoviridae', id: 11270 },
       { name: 'Togaviridae', id: 11018 },
 

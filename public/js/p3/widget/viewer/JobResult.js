@@ -40,12 +40,12 @@ define([
       // console.log("[JobResult] data: ", data);
       if (data.autoMeta.parameters.output_path != data.path)
       {
-	// console.log("Rewrite data path from", data.autoMeta.parameters.output_path, "to", data.path);
+        // console.log("Rewrite data path from", data.autoMeta.parameters.output_path, "to", data.path);
 
-	for (outfile of data.autoMeta.output_files)
-	{
-	  outfile[0] = outfile[0].replace(new RegExp('^' + data.autoMeta.parameters.output_path), data.path);
-	}
+        for (outfile of data.autoMeta.output_files)
+        {
+          outfile[0] = outfile[0].replace(new RegExp('^' + data.autoMeta.parameters.output_path), data.path);
+        }
       }
       this._hiddenPath = data.path + '.' + data.name;
       // console.log("[JobResult] Output Files: ", this.data.autoMeta.output_files);

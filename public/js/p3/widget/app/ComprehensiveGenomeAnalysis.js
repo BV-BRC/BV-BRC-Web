@@ -89,11 +89,6 @@ define([
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
-        // TODO: remove
-        var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-          localStorage.removeItem('bvbrc_rerun_job');
-        }
       }
     },
 
@@ -384,7 +379,7 @@ define([
           this.code_four = true;
         }
       }));
-      this.code_four ? this.genetic_code.set('value', '4') : this.genetic_code.set('value', '11');
+      // this.code_four ? this.genetic_code.set('value', '4') : this.genetic_code.set('value', '11');
     },
 
     onTaxIDChange: function (val) {
@@ -559,25 +554,40 @@ define([
         rerun_key = rerun_fields[1];
         var sessionStorage = window.sessionStorage;
         if (sessionStorage.hasOwnProperty(rerun_key)) {
-          var param_dict = {
-            'output_folder': 'output_path', 'strategy': 'recipe', 'target_genome_id': 'taxonomy_id', 'contigs': 'contigs'
-          };
-          // var widget_map = {"scientific_name":"scientific_nameWidget","tax_id":"tax_idWidget"};
-          var widget_map = { 'taxonomy_id': 'tax_idWidget', 'contigs': 'contigsFile' };
-          param_dict['widget_map'] = widget_map;
-          var service_spec = {
-            'trim': 'trim', 'min_contig_len': 'min_contig_len', 'racon_iter': 'racon_iter', 'pilon_iter': 'pilon_iter', 'min_contig_cov': 'min_contig_cov'
-          }; // job : attach_point
-          param_dict['service_specific'] = service_spec;
-          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-          this.selectStartWith(job_data);
-          job_data = this.formatRerunJson(job_data);
-          if (this.startWithRead.checked) {
-            AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+          try {
+            var param_dict = {
+              'output_folder': 'output_path'
+            };
+            // var widget_map = {"scientific_name":"scientific_nameWidget","tax_id":"tax_idWidget"};
+            var widget_map = { 'taxonomy_id': 'tax_idWidget', 'contigs': 'contigsFile' };
+            param_dict['widget_map'] = widget_map;
+            var service_spec = {
+              'trim': 'trim', 'min_contig_len': 'min_contig_len', 'racon_iter': 'racon_iter', 'pilon_iter': 'pilon_iter', 'min_contig_cov': 'min_contig_cov'
+            }; // job : attach_point
+            param_dict['service_specific'] = service_spec;
+            AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+            var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+            this.selectStartWith(job_data);
+            job_data = this.formatRerunJson(job_data);
+            if (this.startWithRead.checked) {
+              AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+            } else {
+              var _self = this;
+              setTimeout(function () {
+                _self.contigsFile.set('value', job_data['contigs'])
+              }, 1000);
+            }
+            this.tax_idWidget.set('value', job_data['taxonomy_id']);
+            this.recipe.set('value', job_data['recipe']);
+            Object.keys(service_spec).forEach(lang.hitch(this, function (adv_opt) {
+              this[adv_opt].set('value', job_data[adv_opt]);
+            }));
+            this.form_flag = true;
+          } catch (error) {
+            console.log('Error during intakeRerunForm: ', error);
+          } finally {
+            sessionStorage.removeItem(rerun_key);
           }
-          sessionStorage.removeItem(rerun_key);
-          this.form_flag = true;
         }
       }
     },
