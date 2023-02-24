@@ -405,7 +405,6 @@ define([
 
     onAddSRR: function () {
       var accession = this.srr_accession.get('value');
-      var isrun = false;
       if (!accession.match(/^[a-z]{3}[0-9]+$/i)) {
         this.srr_accession_validation_message.innerHTML = ' Your input is not valid.<br>Hint: only one SRR at a time.';
       }
@@ -413,38 +412,82 @@ define([
         // SRR5121082, ERR3827346, SRX981334
         this.srr_accession.set('disabled', true);
         this.srr_accession_validation_message.innerHTML = ' Validating ' + accession + ' ...';
-        var title = '';
+        // January 2023: SRA is erratically returning Content-Type that is not text/xml
+        // which is then causing this code to return plain text instead of parsed XML documents.
+        // As a result, don't try to handleAs: 'xml' and instead explicitly parse in code.
         try {
           xhr.get(lang.replace(this.srrValidationUrl, [accession]),
             {
-              sync: false, handleAs: 'xml', headers: { 'X-Requested-With': null }, timeout: 15000
+              sync: false,
+              headers: { 'X-Requested-With': null },
+              timeout: 15000,
+              handleAs: 'text',
             }).then(
-            lang.hitch(this, function (xml_resp) {
+            lang.hitch(this, function (xml_text) {
+
+              var show_failure = lang.hitch(this, function(msg, user_msg) {
+                console.log('SRR validation failure: ' + msg);
+                this.srr_accession.set('disabled', false);
+                this.srr_accession_validation_message.innerHTML = ' ' + user_msg;
+              });
+
+              var xml_resp;
+              var title = '';
+              var runs = [];
+
               try {
-                title = xml_resp.children[0].children[0].childNodes[3].children[1].childNodes[0].innerHTML;
+                xml_resp = xmlParser.parse(xml_text);
+              } catch (e) {
+                return show_failure('XML parse failed: ' + e, 'Validation failed')
+              }
+              try {
+                title = xml_resp.evaluate('//STUDY/DESCRIPTOR/STUDY_TITLE//text()', xml_resp, null, XPathResult.STRING_TYPE, null);
+                title = title.stringValue;
               }
               catch (e) {
                 console.log(xml_resp);
                 console.error('Could not get title from SRA record.  Error: ' + e);
               }
-              try {
-                xml_resp.children[0].children[0].childNodes.forEach(function (item) {
-                  if (item.nodeName == 'RUN_SET') {
-                    item.childNodes.forEach(function (currentValue) {
-                      if (accession == currentValue.attributes.accession.nodeValue) {
-                        isrun = true;
-                      }
-                    });
-                  }
-                });
+
+              // Determine if the identifier provided is for an experiment
+              //
+              var keep_all_runs = false;
+              var path = lang.replace('//EXPERIMENT_PACKAGE/EXPERIMENT[@accession="{0}"]', [accession]);
+              var experiment = xml_resp.evaluate(path, xml_resp, null, XPathResult.ANY_TYPE, null);
+              var item = experiment.iterateNext();
+              if (item) {
+                keep_all_runs = true;
               }
-              catch (e) {
+              try {
+                var iter = xml_resp.evaluate('//EXPERIMENT_PACKAGE_SET/EXPERIMENT_PACKAGE/RUN_SET/RUN/@accession',
+                                xml_resp, null, XPathResult.ANY_TYPE, null);
+                var item = iter.iterateNext();
+                while (item) {
+                  if (item.textContent.toLowerCase() == accession.toLowerCase()) {
+                    runs.push(item.textContent);
+                    // Canonicalize case to what SRA uses
+                    accession = item.textContent
+                    break;
+                  } else if (keep_all_runs) {
+                    runs.push(item.textContent);
+                  }
+                  item = iter.iterateNext()
+                }
+              } catch (e) {
                 console.log(xml_resp);
                 console.error('Could not get run id from SRA record.  Error: ' + e);
               }
-              if (isrun) {
-                this.onAddSRRHelper(title);
-              } else {
+              if (runs.length > 0) {
+                runs.forEach(lang.hitch(this, function(item) {
+                  try {
+                    this.srr_accession.setValue(item);
+                    this.onAddSRRHelper(title);
+                  } catch (e) {
+                    this.srr_accession.set('disabled', false);
+                    this.srr_accession_validation_message.innerHTML = ' Failed to add ' + accession;
+                  }
+                }));
+              }  else {
                 this.srr_accession.set('disabled', false);
                 this.srr_accession_validation_message.innerHTML = ' The accession is not a run id.';
               }
@@ -465,7 +508,7 @@ define([
                   throw new Error('Unhandled SRA validation error.');
                 }
               })
-          );
+            );
         } catch (e) {
           console.error(e);
           this.srr_accession.set('disabled', false);

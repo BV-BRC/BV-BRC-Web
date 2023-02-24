@@ -1284,7 +1284,7 @@ define([
       this.browserHeader.addAction('ViewTracks', 'fa icon-genome-browser fa-2x', {
         label: 'BROWSER',
         multiple: false,
-        validTypes: ['RNASeq', 'TnSeq', 'Variation', 'FastqUtils'],
+        validTypes: ['TnSeq', 'Variation', 'FastqUtils'],
         tooltip: 'View tracks in genome browser.'
       }, function (selection) {
         // console.log("View Tracks: ", this);
@@ -1297,6 +1297,26 @@ define([
           throw (err);
         }
         Topic.publish('/navigate', { href: '/view/Genome/' + genomeId + '#' + urlQueryParams });
+      }, false);
+
+      this.browserHeader.addAction('ViewTracksRNASeq', 'fa icon-genome-browser fa-2x', {
+        label: 'BROWSER',
+        multiple: false,
+        validTypes: ['RNASeq'],
+        tooltip: 'View tracks in genome browser.'
+      }, function (selection) {
+        // console.log("View Tracks: ", this);
+        try {
+          var genomeId = self.actionPanel.currentContainerWidget.getGenomeId();
+          self.actionPanel.currentContainerWidget.getJBrowseURLQueryParamsRNASeq().then(lang.hitch(this, function (urlQueryParams) {
+            Topic.publish('/navigate', { href: '/view/Genome/' + genomeId + '#' + urlQueryParams, target: 'blank' });
+          }));
+          // var urlQueryParams = self.actionPanel.currentContainerWidget.getJBrowseURLQueryParams();
+        }
+        catch (err) {
+          alert('The genome browser could not be opened. No genome id or no streamable files were found.');
+          throw (err);
+        }
       }, false);
 
       this.actionPanel.addAction('ExperimentGeneList', 'fa icon-list-unordered fa-2x', {
@@ -1692,7 +1712,29 @@ define([
         label: 'RERUN',
         allowMultiTypes: true,
         multiple: true,
-        validTypes: ['job_result'],
+        validTypes: ['ComparativeSystems',
+          'ComprehensiveGenomeAnalysis',
+          'ComprehensiveSARS2Analysis',
+          'DifferentialExpression',
+          'FastqUtils',
+          'GeneTree',
+          'GenomeAssembly2',
+          'GenomeAlignment',
+          'GenomeAnnotation',
+          'GenomeComparison',
+          'Homology',
+          'MetaCATS',
+          'MetagenomeBinning',
+          'MetagenomicReadMapping',
+          'MSA',
+          'PrimerDesign',
+          'CodonTree',
+          'RNASeq',
+          'SubspeciesClassification',
+          'TaxonomicClassification',
+          'TnSeq',
+          'Variation'
+        ],
         tooltip: 'Reset job form with current parameters'
       }, function (selection) {
         rerunUtility.rerun(JSON.stringify(selection[0].autoMeta.parameters), selection[0].autoMeta.app.id, window, Topic);

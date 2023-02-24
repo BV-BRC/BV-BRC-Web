@@ -55,10 +55,6 @@ define([
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
-        var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-          localStorage.removeItem('bvbrc_rerun_job');
-        }
       }
     },
 
@@ -176,7 +172,7 @@ define([
         this.num_auto_groups.style.color = 'black';
       }
       if (exist) {
-        this.num_auto_groups.innerHTML = 'Max groups 10. Current '+ this.autoGroupCount + ' groups.';
+        this.num_auto_groups.innerHTML = 'Max groups 10. Current ' + this.autoGroupCount + ' groups.';
       } else {
         this.num_auto_groups.innerHTML = '';
       }
@@ -297,7 +293,7 @@ define([
       var my_group = this.auto_feature_group.value;
       var metadata_value = this.metadata_group.value;
       this.metadata_group.set('disabled', true);
-      DataAPI.queryGenomeFeatures('in(feature_id,FeatureGroup(' + encodeURIComponent(my_group) + '))',{"limit":1000})
+      DataAPI.queryGenomeFeatures('in(feature_id,FeatureGroup(' + encodeURIComponent(my_group) + '))', { 'limit' : 1000 })
         .then((result) => {
           const genome_map = new Map();
           result.items.forEach(function (sel) {
@@ -310,7 +306,7 @@ define([
           return genome_map;
         }).catch(error => { console.log('Genome feature query failed.'); })
         .then((genome_map) => {
-          DataAPI.queryGenomes(`in(genome_id,(${Array.from(genome_map.keys()).join(',')}))`,{"limit":1000})
+          DataAPI.queryGenomes(`in(genome_id,(${Array.from(genome_map.keys()).join(',')}))`, { 'limit' : 1000 })
             .then((genome_results) => {
               var group_names = new Set();
               var ranges = [];
@@ -487,21 +483,26 @@ define([
       var rerun_fields = service_fields.split('=');
       var rerun_key;
       if (rerun_fields.length > 1) {
-        rerun_key = rerun_fields[1];
-        var sessionStorage = window.sessionStorage;
-        if (sessionStorage.hasOwnProperty(rerun_key)) {
-          var param_dict = { 'output_folder': 'output_path' };
-          var service_specific = { 'p_value': 'p_value' };
-          param_dict['service_specific'] = service_specific;
-          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-          this.setInputFormFill(job_data);
+        try {
+          rerun_key = rerun_fields[1];
+          var sessionStorage = window.sessionStorage;
+          if (sessionStorage.hasOwnProperty(rerun_key)) {
+            var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+            this.setInputFormFill(job_data);
+            this.setParams(job_data);
+            this.form_flag = true;
+          }
+        } catch (error) {
+          console.log('Error during intakeRerunForm: ', error);
+        } finally {
           sessionStorage.removeItem(rerun_key);
-          this.form_flag = true;
-          // const rows = this.grid.store.query(function (object) {
-          //   return true;
-          // });
         }
+      }
+    },
+
+    setParams: function (job_data) {
+      if (Object.keys(job_data).includes('p_value')) {
+        this.p_value.set('value', job_data['p_value']);
       }
     },
 
@@ -588,6 +589,9 @@ define([
     addAutoGroupFormFill: function (job_data) {
       var self = this;
       var auto_groups = job_data['auto_groups'];
+      if (Object.keys(job_data).includes('metadata_group')) {
+        this.metadata_group.set('value', job_data['metadata_group']);
+      }
       auto_groups.forEach(function (group) {
         if (self.grid.store.query({ patric_id: group['id'] }).length == 0) {
           self.grid.store.put({
