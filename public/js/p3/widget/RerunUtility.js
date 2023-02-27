@@ -36,6 +36,7 @@ define([], function () {
         'PrimerDesign': 'PrimerDesign',
         'RNASeq': 'Rnaseq',
         'SubspeciesClassification': 'SubspeciesClassification',
+        'SequenceSubmission': 'SequenceSubmission',
         'TaxonomicClassification': 'TaxonomicClassification',
         'TnSeq': 'Tnseq',
         'Variation': 'Variation'
