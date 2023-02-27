@@ -1299,7 +1299,7 @@ define([
         Topic.publish('/navigate', { href: '/view/Genome/' + genomeId + '#' + urlQueryParams });
       }, false);
 
-      this.browserHeader.addAction('ViewTracks', 'fa icon-genome-browser fa-2x', {
+      this.browserHeader.addAction('ViewTracksRNASeq', 'fa icon-genome-browser fa-2x', {
         label: 'BROWSER',
         multiple: false,
         validTypes: ['RNASeq'],
@@ -1712,7 +1712,29 @@ define([
         label: 'RERUN',
         allowMultiTypes: true,
         multiple: true,
-        validTypes: ['job_result'],
+        validTypes: ['ComparativeSystems',
+          'ComprehensiveGenomeAnalysis',
+          'ComprehensiveSARS2Analysis',
+          'DifferentialExpression',
+          'FastqUtils',
+          'GeneTree',
+          'GenomeAssembly2',
+          'GenomeAlignment',
+          'GenomeAnnotation',
+          'GenomeComparison',
+          'Homology',
+          'MetaCATS',
+          'MetagenomeBinning',
+          'MetagenomicReadMapping',
+          'MSA',
+          'PrimerDesign',
+          'CodonTree',
+          'RNASeq',
+          'SubspeciesClassification',
+          'TaxonomicClassification',
+          'TnSeq',
+          'Variation'
+        ],
         tooltip: 'Reset job form with current parameters'
       }, function (selection) {
         rerunUtility.rerun(JSON.stringify(selection[0].autoMeta.parameters), selection[0].autoMeta.app.id, window, Topic);

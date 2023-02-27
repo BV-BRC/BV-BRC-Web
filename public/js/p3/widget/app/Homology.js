@@ -3,12 +3,12 @@ define([
   'dojo/on', 'dojo/query', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/topic',
   './AppBase',
   'dojo/text!./templates/Homology.html', 'dijit/form/Form',
-  '../../util/PathJoin', '../../WorkspaceManager', '../WorkspaceObjectSelector'
+  '../../util/PathJoin', '../../WorkspaceManager', '../WorkspaceObjectSelector', '../../DataAPI'
 ], function (
   declare, lang, Deferred,
   on, query, domClass, domConstruct, domStyle, Topic,
   AppBase,
-  Template, FormMixin, PathJoin, WorkspaceManager, WorkspaceObjectSelector
+  Template, FormMixin, PathJoin, WorkspaceManager, WorkspaceObjectSelector, DataAPI
 ) {
 
   var NA = 'nucleotide',
@@ -178,10 +178,6 @@ define([
         }
       } catch (error) {
         console.error(error);
-        var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-          localStorage.removeItem('bvbrc_rerun_job');
-        }
       }
     },
 
@@ -779,24 +775,23 @@ define([
       var rerun_fields = service_fields.split('=');
       var rerun_key;
       if (rerun_fields.length > 1) {
-        rerun_key = rerun_fields[1];
-        var sessionStorage = window.sessionStorage;
-        if (sessionStorage.hasOwnProperty(rerun_key)) {
-          this.form_flag = true;
-          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-          console.log('job_data=', job_data);
-          // job_data['program'] = 'blastp';
-          var param_dict = { 'output_folder': 'output_path' };
-          var service_specific = { 'input_fasta_data': 'sequence', 'blast_evalue_cutoff': 'evalue', 'blast_max_hits': 'max_hits' };
-          param_dict['service_specific'] = service_specific;
-          this.setProgramButton(job_data);
-          this.setInputSource(job_data);
-          console.log('query_featuregroup=', this.query_featuregroup.value);
-          console.log('query_featuregroup(value)=', this.query_featuregroup.get('value'));
-          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-          this.database.set('disabled', false);
-          this.search_for.set('disabled', false);
-          this.setDatabaseInfoFormFill(job_data);
+        try {
+          rerun_key = rerun_fields[1];
+          var sessionStorage = window.sessionStorage;
+          if (sessionStorage.hasOwnProperty(rerun_key)) {
+            this.form_flag = true;
+            var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+            console.log('job_data=', job_data);
+            this.setProgramButton(job_data);
+            this.setInputSource(job_data);
+            this.database.set('disabled', false);
+            this.search_for.set('disabled', false);
+            this.setDatabaseInfoFormFill(job_data);
+            this.setAdvancedParameters(job_data);
+          }
+        } catch (error) {
+          console.log('Error during intakeRerunForm: ', error);
+        } finally {
           sessionStorage.removeItem(rerun_key);
         }
       }
@@ -809,6 +804,13 @@ define([
       p === 'blastp' ? this.blastp.set('checked', true) : this.blastp.set('checked', false);
       p === 'blastx' ? this.blastx.set('checked', true) : this.blastx.set('checked', false);
       p === 'tblastn' ? this.tblastn.set('checked', true) : this.tblastn.set('checked', false);
+    },
+
+    setAdvancedParameters: function (job_data) {
+      var adv_params = { 'blast_evalue_cutoff': 'evalue', 'blast_max_hits': 'max_hits' };
+      Object.keys(adv_params).forEach(lang.hitch(this, function (param) {
+        this[adv_params[param]].set('value', job_data[param]);
+      }));
     },
 
     setInputSource: function (job_data) {
@@ -845,11 +847,19 @@ define([
         this[db_attach_points[param]].set('value', job_data[param]);
       }, this);
       // Check database value and populate with genome id
-      // TODO: any more options?
       if (this.database.getValue() === 'selGenome') {
-        job_data['db_genome_list'].forEach(function (g_id) {
-          this.addGenomeFormFill(g_id);
-        }, this);
+        var query = 'in(genome_id,(' + job_data['db_genome_list'].join(',') + '))';
+        DataAPI.queryGenomes(query).then(lang.hitch(this, function (res) {
+          res.items.forEach(lang.hitch(this, function (genome) {
+            this.addGenomeFormFill(genome);
+          }));
+        }), function (rej) {
+          console.log('genomes query failed: ', rej);
+          job_data['db_genome_list'].forEach(lang.hitch(this, function (genome_id) {
+            var genome = { 'genome_id': genome_id, 'genome_name': genome_id };
+            this.addGenomeFormFill(genome);
+          }));
+        });
       }
       if (this.database.getValue() === 'selGroup') {
         this.genome_group.set('value', job_data['db_genome_group']);
@@ -860,15 +870,19 @@ define([
       if (this.database.getValue() === 'selTaxon') {
         this.taxonomy.set('value', job_data['db_taxon_list'][0]);
       }
+      if (this.database.getValue() === 'selFasta') {
+        this.db_fasta_file.set('value', job_data['db_fasta_file']);
+      }
     },
 
     addGenomeFormFill: function (genome) {
+      // TODO: add DataAPI, query genomes for genome name
       var lrec = {};
-      lrec.genome_id = genome;
+      lrec.genome_id = genome.genome_id;
       var tr = this.genomeTable.insertRow(0);
       var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
       td.genomeRecord = lrec;
-      td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeNameFormFill(genome) + '</div>';
+      td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeNameFormFill(genome.genome_name) + '</div>';
       domConstruct.create('td', { innerHTML: '' }, tr);
       var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
       if (this.addedGenomes < this.startingRows) {
