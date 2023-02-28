@@ -730,7 +730,7 @@ define([
             if (locations.size > 750) {
               const d = new Dialog({
                 title: 'Warning',
-                content: 'Surveillance Data Mapping allows a maximum of 1000 locations to display. Your selection contains ' +
+                content: 'Surveillance Data Mapping allows a maximum of 750 locations to display. Your selection contains ' +
                     locations.size + ' locations. Please reduce the number of locations.',
                 onHide: function () {
                   d.destroy();
