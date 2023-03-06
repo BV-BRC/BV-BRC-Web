@@ -172,44 +172,79 @@ define([
       errors.set('invalidSampleId', []);
       errors.set('sampleContainsMoreThan8Sequences', []);
       errors.set('duplicatedSequenceId', []);
+      errors.set('invalidNucleotype', []);
       let sampleSequenceMap = new Map();
-      const reto = this.validateFasta(obj.data);
+      const reto = this.validateFasta(obj.data, 'aa', false);
 
+      const nucleotypeRegex = new RegExp(/^[ACGTURYSWKMBDHVN]+$/);
       if (reto.valid) {
-        const records = reto.trimFasta.split('\n');
-        const headers = records.filter(r => r.startsWith('>'));
-        for (let header of headers) {
-          header = header.substring(1);
-          const ids = header.split('|');
-          const sampleId = ids[0].replace(`${this.sampleIdKey}:`, '').trim();
-          const sequenceId = ids[1].replace(`${this.sequenceIdKey}:`, '').trim();
+        const records = reto.trimFasta.split(/[>>]/);
+        for (let record of records) {
+          if (record.trim() != '') {
+            const values = record.split('\n');
+            // We made sure header exists in validateFasta
+            const header = values.shift();
 
-          // Check if both unique sample id and unique sequence id are provided
-          if (!sampleId || !sequenceId) {
-            errors.set('incorrectHeaders', [...errors.get('incorrectHeaders'), header]);
-          } else {
-            // Validate sample id
-            if (sampleId.length > 50 || sampleId.includes('.') || sampleId.includes('%') || sampleId.includes('\'')
-                || sampleId.includes('"') || sampleId.includes(' ') || sampleId.includes('/')) {
-              errors.set('invalidSampleId', [...errors.get('invalidSampleId'), sampleId]);
-            }
+            let sampleId;
+            let sequenceId;
 
-            // Validate sequence id
-            if (sampleSequenceMap.has(sampleId)) {
-              const sequenceIds = sampleSequenceMap.get(sampleId);
+            const isSampleIdExists = header.includes(this.sampleIdKey);
+            const isSequenceIdExists = header.includes(this.sequenceIdKey);
 
-              // Check if sequence id already exists for sample id
-              if (sequenceIds.includes(sequenceId) && !errors.get('duplicatedSequenceId').includes(sequenceId)) {
-                errors.set('duplicatedSequenceId', [...errors.get('duplicatedSequenceId'), sequenceId]);
-              } else if (sequenceIds.length >= 8 && !errors.get('sampleContainsMoreThan8Sequences').includes(sampleId)) {
-                errors.set('sampleContainsMoreThan8Sequences', [...errors.get('sampleContainsMoreThan8Sequences'), sampleId]);
+            if (isSampleIdExists && isSequenceIdExists) {
+              const ids = header.split('|');
+              sampleId = ids[0].replace(`${this.sampleIdKey}:`, '').trim();
+              sequenceId = ids[1].replace(`${this.sequenceIdKey}:`, '').trim();
+
+              // Check if both unique sample id and unique sequence id are provided
+              if (!sampleId || !sequenceId) {
+                errors.set('incorrectHeaders', [...errors.get('incorrectHeaders'), header]);
+              } else {
+                // Validate sample id
+                if (sampleId.length > 50 || sampleId.includes('.') || sampleId.includes('%') || sampleId.includes('\'')
+                    || sampleId.includes('"') || sampleId.includes(' ') || sampleId.includes('/')) {
+                  errors.set('invalidSampleId', [...errors.get('invalidSampleId'), sampleId]);
+                }
+
+                // Validate sequence id
+                if (sampleSequenceMap.has(sampleId)) {
+                  const sequenceIds = sampleSequenceMap.get(sampleId);
+
+                  // Check if sequence id already exists for sample id
+                  if (sequenceIds.includes(sequenceId) && !errors.get('duplicatedSequenceId').includes(sequenceId)) {
+                    errors.set('duplicatedSequenceId', [...errors.get('duplicatedSequenceId'), sequenceId]);
+                  } else if (sequenceIds.length >= 8 && !errors.get('sampleContainsMoreThan8Sequences').includes(sampleId)) {
+                    errors.set('sampleContainsMoreThan8Sequences', [...errors.get('sampleContainsMoreThan8Sequences'), sampleId]);
+                  }
+
+                  sampleSequenceMap.set(sampleId, [...sequenceIds, sequenceId]);
+                } else {
+                  sampleSequenceMap.set(sampleId, [sequenceId]);
+                }
+              }
+            } else {
+              let headerErrorMessage = [];
+
+              if (!isSampleIdExists) {
+                headerErrorMessage.push(`${this.sampleIdKey} is missing in the header.`);
               }
 
-              sampleSequenceMap.set(sampleId, [...sequenceIds, sequenceId]);
-            } else {
-              sampleSequenceMap.set(sampleId, [sequenceId]);
+              if (!isSequenceIdExists) {
+                headerErrorMessage.push(`${this.sequenceIdKey} is missing in the header.`);
+              }
+
+              errors.set('incorrectHeaders', [...errors.get('incorrectHeaders'), headerErrorMessage.join(' ') + '<br>' + header]);
+            }
+
+            // Validate nucleotype sequence
+            if (!values.join('').match(nucleotypeRegex)) {
+              errors.set('invalidNucleotype', [...errors.get('invalidNucleotype'), 'Invalid nucleotype sequence.' + '<br>' + header]);
             }
           }
+        }
+      } else {
+        if (reto.status == 'invalid_start') {
+          errors.set('incorrectHeaders', [...errors.get('incorrectHeaders'), `Header is missing. ${reto.message}`]);
         }
       }
 
