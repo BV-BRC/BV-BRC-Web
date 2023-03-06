@@ -12,6 +12,7 @@ define([
         constructor: function ({store, data}) {
             this.sampleIdentifier = store.getIdentity(data);
             this.sampleDescription = store.getValue(data, 'Sample Description');
+            this.organism = store.getValue(data, 'Organism');
             this.sequenceType = store.getValue(data, 'Sequence Type');
             this.authors = store.getValue(data, 'Authors');
             this.publicationTitle = store.getValue(data, 'Publication_tile');
@@ -19,9 +20,7 @@ define([
             this.strainName = store.getValue(data, 'Strain Name');
             this.strainHost = store.getValue(data, 'Host');
             this.strainSubtype = store.getValue(data, 'Subtype');
-            this.collectionYear = store.getValue(data, 'Collection Year');
-            this.collectionMonth = store.getValue(data, 'Collection Month');
-            this.collectionDay = store.getValue(data, 'Collection Day');
+            this.collectionDate = store.getValue(data, 'Collection Date');
             this.collectionCountry = store.getValue(data, 'Collection Country');
             this.collectionRegion = store.getValue(data, 'Collection Region');
             this.collectionCity = store.getValue(data, 'Collection City');
@@ -49,6 +48,15 @@ define([
             } else if (this.sampleDescription.length > 4000) {
                 this.validations.push({
                     type: 'error', message: 'Sample Description can not be greater than 4000 characters.'
+                });
+            }
+
+            // Validate organism
+            if (!this.organism) {
+                this.validations.push({type: 'error', message: 'Organism is required.'});
+            } else if (this.organism.length > 100) {
+                this.validations.push({
+                    type: 'error', message: 'Organism can not be greater than 100 characters.'
                 });
             }
 
@@ -98,95 +106,78 @@ define([
                 }
             }
 
-            // Validate Collection Year, Month and Day
-            let year = -1;
-            if (!this.collectionYear) {
-                this.validations.push({type: 'error', message: 'Collection Year is required.'});
-            } else if (/^\d+$/.test(this.collectionYear)) {
-                if (this.collectionYear.length != 4) {
-                    this.validations.push({type: 'error', message: 'Collection Year should be a 4 digit number.'});
-                } else {
-                    year = parseInt(this.collectionYear, 10);
-                    const currentYear = new Date().getFullYear();
-                    if (year < 1900 || year > currentYear) {
-                        this.validations.push({
-                            type: 'error', message: 'Collection Year should be between 1900 and ' + currentYear
-                        });
-                    }
-                }
+            // Validate Collection Date
+            if (!this.collectionDate) {
+                this.validations.push({type: 'error', message: 'Collection Date is required.'});
             } else {
-                this.validations.push({type: 'error', message: 'Collection Year should be a 4 digit number.'});
-            }
+                // Collection date can be unknown (U)
+                if (this.collectionDate != 'U') {
+                    let isDateValid = true;
+                    const dateArr = this.collectionDate.split('-');
 
-            let month = -1;
-            if (this.collectionMonth) {
-                if (/^\d+$/.test(this.collectionMonth)) {
-                    month = parseInt(this.collectionYear, 10);
-                    if (month < 1 || month > 12) {
-                        this.validations.push({type: 'error', message: 'Collection Month should be between 1 to 12.'});
-                    } else {
-                        // Convert it to 3 characters month
-                        this.collectionMonth = this.monthArray[month - 1];
-                    }
-                } else {
-                    if (!this.monthArray.includes(this.collectionMonth)) {
-                        this.validations.push({
-                            type: 'error', message: 'Collection Month should be in Mmm format, ' +
-                                'for example; Jan, Feb, Dec.'
-                        });
-                    } else {
-                        month = this.monthArray.indexOf(this.collectionMonth) + 1;
-                    }
-                }
-            }
-
-            let day = -1;
-            if (this.collectionDay) {
-                if (/^\d+$/.test(this.collectionDay)) {
-                    day = parseInt(this.collectionDay, 10);
-                } else {
-                    this.validations.push({
-                        type: 'error', message: 'Collection Day should be a number between 1 to 31.'
-                    });
-                }
-            }
-
-            // Validate month and day
-            if (month > 0 && day > 0) {
-                if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12) {
-                    if (day > 31) {
-                        this.validations.push({
-                            type: 'error', message: 'Collection Day should be a number between 1 to 31.'
-                        });
-                    }
-                } else if (month == 2) {
-                    if (year > 0) {
-                        if ((year % 4 == 0 && (year % 100 != 0 || year % 400 == 0))) {
-                            if (day > 29) {
-                                this.validations.push({
-                                    type: 'error', message: 'Collection Day should be a number between 1 to 29.'
-                                });
-                            }
+                    if (dateArr.length == 1) {
+                        // YYYY or YY
+                        if (!this.isValidYear(dateArr[0])) {
+                            isDateValid = false;
+                        }
+                    } else if (dateArr.length == 2) {
+                        // Mon-YYYY or Mon-YY
+                        if (!this.monthArray.includes(dateArr[0]) || !this.isValidYear(dateArr[1])) {
+                            isDateValid = false;
+                        }
+                    } else if (dateArr.length == 3) {
+                        // DD-Mon-YYYY or DD-Mon-YY
+                        if (!/^\d+$/.test(dateArr[0]) || !this.monthArray.includes(dateArr[1]) || !this.isValidYear(dateArr[2])) {
+                            isDateValid = false;
                         } else {
-                            if (day > 28) {
-                                this.validations.push({
-                                    type: 'error',
-                                    message: 'Collection Day should be a number between 1 to 28.'
-                                });
+                            const year = parseInt(dateArr[2].padStart(4, 20), 10);
+                            const month = this.monthArray.indexOf(dateArr[1]) + 1;
+                            const day = parseInt(dateArr[0], 10);
+
+                            if (month === 1 || month === 3 || month === 5 || month === 7 || month === 8 || month === 10 || month === 12) {
+                                if (day > 31) {
+                                    this.validations.push({
+                                        type: 'error', message: 'Day in Collection Date should be a number between 1 to 31.'
+                                    });
+                                }
+                            } else if (month === 2) {
+                                if (year > 0) {
+                                    if ((year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0))) {
+                                        if (day > 29) {
+                                            this.validations.push({
+                                                type: 'error', message: 'Day in Collection Date should be a number between 1 to 29.'
+                                            });
+                                        }
+                                    } else {
+                                        if (day > 28) {
+                                            this.validations.push({
+                                                type: 'error',
+                                                message: 'Day in Collection Date should be a number between 1 to 28.'
+                                            });
+                                        }
+                                    }
+                                } else if (day > 28) {
+                                    this.validations.push({
+                                        type: 'error',
+                                        message: 'Day in Collection Date should be a number between 1 to 28.'
+                                    });
+                                }
+                            } else {
+                                if (day > 30) {
+                                    this.validations.push({
+                                        type: 'error',
+                                        message: 'Day in Collection Date should be a number between 1 to 30.'
+                                    });
+                                }
                             }
                         }
-                    } else if (day > 28) {
-                        this.validations.push({
-                            type: 'error',
-                            message: 'Collection Day should be a number between 1 to 28.'
-                        });
+                    } else {
+                        isDateValid = false;
                     }
-                } else {
-                    if (day > 30) {
-                        this.validations.push({
-                            type: 'error',
-                            message: 'Collection Day should be a number between 1 to 30.'
-                        });
+
+                    if (!isDateValid) {
+                        this.validations.push({type: 'error', message: 'Collection Date is not valid. Valid options: ' +
+                                '"DD-Mon-YYYY", "DD-Mon-YY", "Mon-YYYY", "Mon-YY", "YYYY", "YY", "U"'});
                     }
                 }
             }
@@ -473,6 +464,10 @@ define([
                     });
                 }
             }
+        },
+
+        isValidYear: function (year) {
+          return /^\d+$/.test(year) && (year.length == 4 || year.length == 2);
         },
 
         isStrainHostValid: function (host) {
