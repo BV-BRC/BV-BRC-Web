@@ -5,7 +5,7 @@ define([
   'dojo/topic', 'dojo/query', 'dijit/layout/ContentPane', 'dojo/text!./templates/IDMapping.html',
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog', './DownloadTooltipDialog', './PerspectiveToolTip',
   './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin',
-  './FeatureDetailsTooltipDialog', './ServicesTooltipDialog'
+  './FeatureDetailsTooltipDialog', './ServicesTooltipDialog', './RerunUtility'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
@@ -13,7 +13,7 @@ define([
   Topic, query, ContentPane, IDMappingTemplate,
   Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
   CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin,
-  FeatureDetailsTooltipDialog, ServicesTooltipDialog
+  FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -422,7 +422,6 @@ define([
           multiple: true,
           max: 100,
           tooltip: 'Submit selection to a service',
-          // tooltipDialog: ,
           validTypes: ['*'], // TODO: check this
           validContainerTypes: ['*'] // TODO: probably have to change this instead
         },
@@ -438,7 +437,7 @@ define([
           }
           var type;
           if (container.containerType === 'sequence_data' || container.containerType == 'genome_data') {
-            type = 'genome_group';
+            type = 'genome';
             context = 'genome';
           } else if (container.containerType == 'feature_data' || container.containerType == 'transcriptomics_gene_data' || container.containerType == 'spgene_data' || container.containerType == 'strain_data') {
             type = 'feature_group';
@@ -453,11 +452,12 @@ define([
           if (!context) {
             context = '';
           }
-          params.type = type;
+          // params.type = type;
           params.data_context = context;
-          params.multiple = multiple;
-          params.selection = selection;
-          params.container = container;
+          params.genome_list = selection.map(x => x.genome_id);
+          // params.multiple = multiple;
+          // params.selection = selection;
+          // params.container = container;
           popup.open({
             popup: new ServicesTooltipDialog({
               context: 'grid_container',

@@ -5,7 +5,7 @@ define([
   './ActionBar', 'dojo/_base/Deferred', '../WorkspaceManager', 'dojo/_base/lang', '../util/PathJoin',
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dijit/popup', 'dijit/form/Select', './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
-  'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
+  'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor', './ServicesTooltipDialog',
   'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './RerunUtility', './viewer/JobResult',
   'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree'
 ], function (
@@ -15,7 +15,7 @@ define([
   ActionBar, Deferred, WorkspaceManager, lang, PathJoin,
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
   popup, Select, ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
-  TextBox, WSObjectSelector, PermissionEditor,
+  TextBox, WSObjectSelector, PermissionEditor, ServicesTooltipDialog,
   All, encodePath, when, request, tsvCsvFeatures, rerunUtility, JobResult, NodeList_traverse, Homology, GenomeAlignment, PhylogeneticTree
 ) {
 
@@ -263,87 +263,24 @@ define([
         }
       }, false);
 
-      // /START: ServicesGenomeGroups
-      var dstContent = domConstruct.create('div', {});
-      var viewGGServices = new TooltipDialog({
-        content: dstContent,
-        onMouseLeave: function () {
-          popup.close(viewGGServices);
-        }
-      });
-      var table = domConstruct.create('table', {}, dstContent);
-      domConstruct.create('tr', { innerHTML: '<p>Services</p>', style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;' }, table);
-      var options = ['BLAST', 'Genome Alignment', 'Phylogenetic Tree'];
-      options.forEach(function (key) {
-        var curr_tr = domConstruct.create('tr', {}, table);
-        domConstruct.create('div', { 'class': 'wsActionTooltip', innerHTML: key, service: key }, curr_tr);
-      }, this);
-      this.selected_genome_group = null;
-      on(viewGGServices.domNode, 'click', lang.hitch(this, function (evt) {
-        var service = evt.target.getAttribute('service');
-        var serviceContent = null;
-        var params = null;
-        if (service === 'BLAST') {
-          serviceContent = new Homology();
-          params = {
-            'blast_program': 'blastn',
-            'db_precomputed_database': 'selGroup',
-            'db_genome_group': this.selected_genome_group[0].path,
-            'db_source': 'genome_list',
-            'db_type': 'fna'
-          };
-        }
-        else if (service === 'Genome Alignment') {
-          serviceContent = new GenomeAlignment();
-          params = {
-            'genome_group': this.selected_genome_group[0].path
-          };
-        }
-        else if (service === 'Phylogenetic Tree') {
-          serviceContent = new PhylogeneticTree();
-          params = {
-            'genome_group': this.selected_genome_group[0].path
-          };
-        } else {
-          console.log('invalid service: ', service);
-          return;
-        }
-        if (params) {
-          var job_params = JSON.stringify(params);
-          if (window.localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-            window.localStorage.removeItem('bvbrc_rerun_job');
-          }
-          window.localStorage.setItem('bvbrc_rerun_job', job_params);
-        }
-        var d = new Dialog({
-          title: service,
-          content: serviceContent,
-          onHide: function () {
-            serviceContent.destroy();
-            d.destroy();
-          }
-        });
-        d.show();
-
-      }))
-      var sgSelf = this; // do not remove, sets the genome group selection below and makes it accessible in on("click")
       this.actionPanel.addAction('ServicesGenomeGroups', 'MultiButton fa icon-cog fa-2x', {
         label: 'SERVICES',
         validTypes: ['genome_group'],
-        multiple: false, // TODO: check and see if you can select two or more at a time
-        tooltip: 'Select services using this GenomeGroup',
-        tooltipDialog: viewGGServices
-      }, function (selection) {
-        sgSelf.selected_genome_group = selection;
+        multiple: false,
+        tooltip: 'Select services using this GenomeGroup'
+      }, function (selection, container, button) {
+        var data = {};
+        data.data_context = 'genome_group';
+        data.genome_group = selection[0].path;
         popup.open({
-          popup: this._actions.ServicesGenomeGroups.options.tooltipDialog,
-          around: this._actions.ServicesGenomeGroups.button,
+          popup: new ServicesTooltipDialog({
+            context: 'grid_container',
+            data: data
+          }),
+          around: button,
           orient: ['below']
         });
-      }, false);
-      // /END: ServicesGenomeGroups
-
-      // /START:
+      });
 
       this.actionPanel.addAction('ViewFeatureGroup', 'MultiButton fa icon-selection-FeatureList fa-2x', {
         label: 'VIEW',
