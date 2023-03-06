@@ -132,7 +132,7 @@ define([
             val = false;
             this.phoneNumber.focus();
             this.phoneNumber_message.innerHTML = 'Error';
-            this.phoneNumber.set('message', 'John is not allowed.');
+            this.phoneNumber.set('message', 'Phone number is not valid.');
           } else {
             this.phoneNumber_message.innerHTML = '';
           }
