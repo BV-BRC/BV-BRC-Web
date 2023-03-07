@@ -437,6 +437,8 @@ define([
         'metadata': this.metadata.value,
         'output_file': output_file,
         'output_path': output_path,
+        'consortium': this.consortium.value,
+        'affiliation': this.affiliation.value
       };
 
       if (_self.input_source == 'fasta_file') {
