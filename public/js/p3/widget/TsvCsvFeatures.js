@@ -42,7 +42,7 @@ define([], function () {
     'input.fasta.result': { columnHeaders: true },
 
     // Sequence Submission Service
-    'Sequence_Submission_Report.csv': { columnHeaders: true }
+    'Sequence_Validation_Report.csv': { columnHeaders: true }
   };
 
 });
