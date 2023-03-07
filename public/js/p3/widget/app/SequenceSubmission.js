@@ -3,12 +3,12 @@ define([
   'dojo/on', 'dojo/query', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/topic',
   './AppBase', 'dojox/data/CsvStore', '../../store/SequenceSubmissionSample',
   'dojo/text!./templates/SequenceSubmission.html', 'dijit/form/Form',
-  '../../util/PathJoin', '../../WorkspaceManager', 'dijit/registry', 'dijit/Dialog'
+  '../../util/PathJoin', '../../WorkspaceManager', 'dijit/registry', 'dijit/Dialog', 'FileSaver'
 ], function (
   declare, lang, Deferred, Memory,
   on, query, domClass, domConstruct, domStyle, Topic,
   AppBase, CsvStore, SubmissionSample,
-  Template, FormMixin, PathJoin, WorkspaceManager, registry, Dialog
+  Template, FormMixin, PathJoin, WorkspaceManager, registry, Dialog, saveAs
 ) {
 
   return declare([AppBase], {
@@ -167,8 +167,10 @@ define([
 
     validateFastaHeader: function (obj, sampleIdentifiers) {
       let errors = new Map();
+      errors.set('missingHeaders', []);
       errors.set('missingSamples', []);
-      errors.set('incorrectHeaders', []);
+      errors.set('missingSampleIds', []);
+      errors.set('missingSequenceIds', []);
       errors.set('invalidSampleId', []);
       errors.set('sampleContainsMoreThan8Sequences', []);
       errors.set('duplicatedSequenceId', []);
@@ -191,60 +193,52 @@ define([
             const isSampleIdExists = header.includes(this.sampleIdKey);
             const isSequenceIdExists = header.includes(this.sequenceIdKey);
 
+            // Check if both unique sample id and unique sequence id are provided
             if (isSampleIdExists && isSequenceIdExists) {
               const ids = header.split('|');
               sampleId = ids[0].replace(`${this.sampleIdKey}:`, '').trim();
               sequenceId = ids[1].replace(`${this.sequenceIdKey}:`, '').trim();
 
-              // Check if both unique sample id and unique sequence id are provided
-              if (!sampleId || !sequenceId) {
-                errors.set('incorrectHeaders', [...errors.get('incorrectHeaders'), header]);
+              // Validate sample id
+              if (sampleId.length > 50 || sampleId.includes('.') || sampleId.includes('%') || sampleId.includes('\'')
+                  || sampleId.includes('"') || sampleId.includes(' ') || sampleId.includes('/')) {
+                errors.set('invalidSampleId', [...errors.get('invalidSampleId'), sampleId]);
+              }
+
+              // Validate sequence id
+              if (sampleSequenceMap.has(sampleId)) {
+                const sequenceIds = sampleSequenceMap.get(sampleId);
+
+                // Check if sequence id already exists for sample id
+                if (sequenceIds.includes(sequenceId) && !errors.get('duplicatedSequenceId').includes(sequenceId)) {
+                  errors.set('duplicatedSequenceId', [...errors.get('duplicatedSequenceId'), sequenceId]);
+                } else if (sequenceIds.length >= 8 && !errors.get('sampleContainsMoreThan8Sequences').includes(sampleId)) {
+                  errors.set('sampleContainsMoreThan8Sequences', [...errors.get('sampleContainsMoreThan8Sequences'), sampleId]);
+                }
+
+                sampleSequenceMap.set(sampleId, [...sequenceIds, sequenceId]);
               } else {
-                // Validate sample id
-                if (sampleId.length > 50 || sampleId.includes('.') || sampleId.includes('%') || sampleId.includes('\'')
-                    || sampleId.includes('"') || sampleId.includes(' ') || sampleId.includes('/')) {
-                  errors.set('invalidSampleId', [...errors.get('invalidSampleId'), sampleId]);
-                }
-
-                // Validate sequence id
-                if (sampleSequenceMap.has(sampleId)) {
-                  const sequenceIds = sampleSequenceMap.get(sampleId);
-
-                  // Check if sequence id already exists for sample id
-                  if (sequenceIds.includes(sequenceId) && !errors.get('duplicatedSequenceId').includes(sequenceId)) {
-                    errors.set('duplicatedSequenceId', [...errors.get('duplicatedSequenceId'), sequenceId]);
-                  } else if (sequenceIds.length >= 8 && !errors.get('sampleContainsMoreThan8Sequences').includes(sampleId)) {
-                    errors.set('sampleContainsMoreThan8Sequences', [...errors.get('sampleContainsMoreThan8Sequences'), sampleId]);
-                  }
-
-                  sampleSequenceMap.set(sampleId, [...sequenceIds, sequenceId]);
-                } else {
-                  sampleSequenceMap.set(sampleId, [sequenceId]);
-                }
+                sampleSequenceMap.set(sampleId, [sequenceId]);
               }
             } else {
-              let headerErrorMessage = [];
-
               if (!isSampleIdExists) {
-                headerErrorMessage.push(`${this.sampleIdKey} is missing in the header.`);
+                errors.set('missingSampleIds', [...errors.get('missingSampleIds'), header]);
               }
 
               if (!isSequenceIdExists) {
-                headerErrorMessage.push(`${this.sequenceIdKey} is missing in the header.`);
+                errors.set('missingSequenceIds', [...errors.get('missingSequenceIds'), header]);
               }
-
-              errors.set('incorrectHeaders', [...errors.get('incorrectHeaders'), headerErrorMessage.join(' ') + '<br>' + header]);
             }
 
             // Validate nucleotype sequence
             if (!values.join('').match(nucleotypeRegex)) {
-              errors.set('invalidNucleotype', [...errors.get('invalidNucleotype'), 'Invalid nucleotype sequence.' + '<br>' + header]);
+              errors.set('invalidNucleotype', [...errors.get('invalidNucleotype'), header]);
             }
           }
         }
       } else {
         if (reto.status == 'invalid_start') {
-          errors.set('incorrectHeaders', [...errors.get('incorrectHeaders'), `Header is missing. ${reto.message}`]);
+          errors.set('missingHeaders', `Header is missing. ${reto.message}`);
         }
       }
 
@@ -312,10 +306,10 @@ define([
             }
 
             if (errorHTML) {
-              metadataErrorHTML += `<b>Sample Id:</b> ${id}<br><ul>${errorHTML}</ul><br>`;
+              metadataErrorHTML += `Sample Id: ${id}<br><ul>${errorHTML}</ul><br>`;
             }
             if (warningHTML) {
-              metadataWarningHTML += `<b>Sample Id:</b> ${id}<br><ul>${warningHTML}</ul><br>`;
+              metadataWarningHTML += `Sample Id: ${id}<br><ul>${warningHTML}</ul><br>`;
             }
             isValid = false;
           }
@@ -327,11 +321,35 @@ define([
             if (key == 'missingSamples') {
               fastaErrorHTML += 'Sample(s) provided in metadata file are missing in FASTA file.<br>';
             }
-            fastaErrorHTML += "<ul>"
-            for (let error of errors) {
-              fastaErrorHTML += `<li>${error}</li>`;
+            if (key == 'missingSampleIds') {
+              fastaErrorHTML += 'Unique_Sample_Identifier is missing in the header.<br>';
             }
-            fastaErrorHTML += '</ul><br>';
+            if (key == 'missingSequenceIds') {
+              fastaErrorHTML += 'Unique_Sequence_Identifier is missing in the header.<br>';
+            }
+            if (key == 'invalidSampleId') {
+              fastaErrorHTML += 'Sample id(s) are not valid. Sample id cannot be longer than 50 characters or cannot ' +
+                  'include ".", "%", "\'", """, " ", "/".<br>';
+            }
+            if (key == 'sampleContainsMoreThan8Sequences') {
+              fastaErrorHTML += 'Sample cannot contain more than 8 sequences.<br>';
+            }
+            if (key == 'duplicatedSequenceId') {
+              fastaErrorHTML += 'There are more than 1 sequence id for the sample.<br>';
+            }
+            if (key == 'invalidNucleotype') {
+              fastaErrorHTML += 'Invalid nucleotype sequence(s). Sequence can only have "ACGTURYSWKMBDHVN" nucleotide codes.<br>';
+            }
+
+            if (key == 'missingHeaders') {
+              fastaErrorHTML += errors + '<br>';
+            } else {
+              fastaErrorHTML += '<ul>';
+              for (let error of errors) {
+                fastaErrorHTML += `<li>${error}</li>`;
+              }
+              fastaErrorHTML += '</ul><br>';
+            }
             isValid = false;
           }
         }
@@ -364,44 +382,32 @@ define([
             _self.errorMessage.innerHTML = err;
           });
         } else {
-          let errorMessage = '';
-          if (metadataErrorHTML) {
-            metadataErrorDialog = new Dialog({
-              title: 'METADATA ERROR',
-              content: `Please fix the errors below;<br><br>${metadataErrorHTML}`
-            });
-
-            errorMessage += 'There is an error in your metadata file. Click ' +
-                '<a onclick="javascript:metadataErrorDialog.show();">here</a> to see errors.';
-          }
+          let contentText = '';
           if (metadataWarningHTML) {
-            metadataWarningDialog = new Dialog({
-              title: 'METADATA WARNING',
-              content: `Please review the warnings below;<br><br>${metadataWarningHTML}`
-            });
-
-            if (metadataErrorHTML) {
-              errorMessage += '<br><br>';
-            }
-            errorMessage += 'There is a warning in your metadata file. Click <a onclick="javascript:metadataWarningDialog.show();">' +
-                'here</a> to see warnings.';
+            contentText += `<b>Please review metadata warnings below;</b><br>${metadataWarningHTML}`;
+          }
+          if (metadataErrorHTML) {
+            contentText += `<b>Please review metadata errors below;</b><br>${metadataErrorHTML}`;
           }
           if (fastaErrorHTML) {
-            fastaErrorDialog = new Dialog({
-              title: 'FASTA ERROR',
-              content: `Please fix the errors below;<br><br>${fastaErrorHTML}`
-            });
-
-            if (metadataErrorHTML || metadataWarningHTML) {
-              errorMessage += '<br><br>';
-            }
-            errorMessage += 'There is an error in your FASTA file. Click <a onclick="javascript:fastaErrorDialog.show();">here</a> ' +
-                'to see errors.';
+            contentText += `<b>Please review fasta errors below;</b><br>${fastaErrorHTML}`;
           }
+
+          errorDialog = new Dialog({
+            title: 'Validation Error(s)',
+            style: 'min-width: 500px;',
+            content: contentText
+          });
+
+          downloadErrorReport = function () {
+            saveAs(new Blob([contentText], { type: 'text/html;charset=utf-8;' }), 'validation_error_report.html');
+          };
 
           domClass.remove(_self.domNode, 'Working');
           domClass.add(_self.domNode, 'Error');
-          _self.errorMessage.innerHTML = errorMessage;
+          _self.errorMessage.innerHTML = 'There are errors in your submission sequence or metadata file. ' +
+              '<a onclick="javascript:downloadErrorReport();">Download</a> the error report, or click ' +
+              '<a onclick="javascript:errorDialog.show();">here</a> to view the report.';
         }
       } else {
         console.log('Form is incomplete');
