@@ -147,8 +147,8 @@ define([
       return false;
     },
 
-    validateMetadata: function (obj) {
-      let store = new CsvStore({data: obj.data, identifier: 'Sample Identifier'});
+    validateMetadata: function (data) {
+      let store = new CsvStore({data: data, identifier: 'Sample Identifier'});
       store.fetch();
       const rows = store._arrayOfAllItems;
 
@@ -165,7 +165,7 @@ define([
       return validations;
     },
 
-    validateFastaHeader: function (obj, sampleIdentifiers) {
+    validateFastaHeader: function (data, sampleIdentifiers) {
       let errors = new Map();
       errors.set('missingHeaders', []);
       errors.set('missingSamples', []);
@@ -176,7 +176,7 @@ define([
       errors.set('duplicatedSequenceId', []);
       errors.set('invalidNucleotype', []);
       let sampleSequenceMap = new Map();
-      const reto = this.validateFasta(obj.data, 'aa', false);
+      const reto = this.validateFasta(data, 'aa', false);
 
       const nucleotypeRegex = new RegExp(/^[ACGTURYSWKMBDHVN]+$/);
       if (reto.valid) {
@@ -285,10 +285,21 @@ define([
         this.submitButton.set('disabled', true);
 
         let isValid = true;
-        const objs = await WorkspaceManager.getObjects([this.metadata.value, this.query_fasta.value], false);
-        const sampleValidations = this.validateMetadata(objs.find(o => o.metadata.type === 'csv'));
+
+        let fastaData, metadata;
+        if (_self.input_source == 'fasta_file') {
+          const objs = await WorkspaceManager.getObjects([this.metadata.value, this.query_fasta.value], false);
+          metadata = objs.find(o => o.metadata.type === 'csv').data;
+          fastaData = objs.find(o => o.metadata.type.includes('fasta') || o.metadata.type == ('contigs')).data;
+        } else {
+          const obj = await WorkspaceManager.getObject(this.metadata.value, false);
+          metadata = obj.data;
+          fastaData = this.sequence.value;
+        }
+
+        const sampleValidations = this.validateMetadata(metadata);
         const sampleIdentifiers = [...sampleValidations.keys()];
-        const fastaErrors = this.validateFastaHeader(objs.find(o => o.metadata.type.includes('fasta') || o.metadata.type == ('contigs')), sampleIdentifiers);
+        const fastaErrors = this.validateFastaHeader(fastaData, sampleIdentifiers);
 
         // Generate error and warning HTMLs
         let metadataErrorHTML = '';
