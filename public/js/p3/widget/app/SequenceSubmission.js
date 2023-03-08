@@ -14,7 +14,10 @@ define([
   return declare([AppBase], {
     baseClass: 'SequenceSubmission',
     requireAuth: true,
-    applicationDescription: '',
+    applicationDescription: 'The Sequence Submission service allows user to validate and submit the sequences to NCBI GenBank. ' +
+        'User provided metadata and FASTA sequences are validated to against the data submission standards, and sequences are ' +
+        'annotated using VIGOR4 and FLAN annotation tools to identify any sequence errors before submission. The Sequence Submission ' +
+        'service provides the validation report that should be reviewed by user before submitted the sequences to the Genbank.',
     videoLink: '',
     pageTitle: 'Sequence Submission Service | BV-BRC',
     appBaseURL: 'Sequence Submission',
