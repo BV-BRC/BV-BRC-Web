@@ -553,6 +553,9 @@ define([
 
       this.output_path.set('value', job_data['output_path']);
       this.metadata.set('value', job_data['metadata']);
+      this.country.set('value', job_data['country']);
+      this.phoneNumber.set('value', job_data['phoneNumber']);
+      this.consortium.set('value', job_data['consortium']);
     }
   });
 });
