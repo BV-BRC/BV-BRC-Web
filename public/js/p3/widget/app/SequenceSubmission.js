@@ -1,14 +1,13 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred', 'dojo/store/Memory',
-  'dojo/on', 'dojo/query', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/topic',
-  './AppBase', 'dojox/data/CsvStore', '../../store/SequenceSubmissionSample',
-  'dojo/text!./templates/SequenceSubmission.html', 'dijit/form/Form',
-  '../../util/PathJoin', '../../WorkspaceManager', 'dijit/registry', 'dijit/Dialog', 'FileSaver'
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred', 'dojo/store/Memory', 'dojo/on', 'dojo/query',
+  'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/topic', 'dojo/when', 'dojo/request',
+  './AppBase', 'dojox/data/CsvStore', '../../store/SequenceSubmissionSample', 'dojo/text!./templates/SequenceSubmission.html',
+  'dijit/form/Form', '../../util/PathJoin', '../../WorkspaceManager', 'dijit/registry', 'dijit/Dialog', 'FileSaver'
 ], function (
-  declare, lang, Deferred, Memory,
-  on, query, domClass, domConstruct, domStyle, Topic,
-  AppBase, CsvStore, SubmissionSample,
-  Template, FormMixin, PathJoin, WorkspaceManager, registry, Dialog, saveAs
+  declare, lang, Deferred, Memory, on, query,
+  domClass, domConstruct, domStyle, Topic, when, request,
+  AppBase, CsvStore, SubmissionSample, Template,
+  FormMixin, PathJoin, WorkspaceManager, registry, Dialog, saveAs
 ) {
 
   return declare([AppBase], {
@@ -39,6 +38,7 @@ define([
     intPhonePattern: '^\\d(\\d|-){7,20}',
     sampleIdKey: 'Unique_Sample_Identifier',
     sequenceIdKey: 'Unique_Sequence_Identifier',
+    numberOfSequences: 0,
 
     constructor: function () {
       this.genomeToAttachPt = ['genome_id'];
@@ -186,6 +186,7 @@ define([
         const records = reto.trimFasta.split(/[>>]/);
         for (let record of records) {
           if (record.trim() != '') {
+            this.numberOfSequences += 1;
             const values = record.split('\n');
             // We made sure header exists in validateFasta
             const header = values.shift();
@@ -368,8 +369,10 @@ define([
           }
         }
 
+
         if (isValid) {
           var values = this.getValues();
+          values['numberOfSequences'] = _self.numberOfSequences;
 
           _self.workingMessage.innerHTML = 'Submitting Sequence Submission job';
 
@@ -388,6 +391,25 @@ define([
             _self.submitButton.set('disabled', false);
             registry.byClass('p3.widget.WorkspaceFilenameValidationTextBox').forEach(function (obj) {
               obj.reset();
+            });
+
+            //Notify submission team
+            let formData = new FormData();
+            formData.append('subject', 'New Sequence Submission job is submitted');
+            formData.append('ownerId', results[0].owner);
+            formData.append('submissionJobPath',  results[0].output_path + '/' + results[0].output_file);
+            formData.append('numberOfSequences',  _self.numberOfSequences);
+
+            when(request.post('/notifySubmitSequence', {
+              headers: {
+                'Authorization': (window.App.authorizationToken || ''),
+                'enctype': 'multipart/form-data'
+              },
+              data: formData
+            }), function (results) {
+              console.log('Succ notifying team for the submission: ', results);
+            }, function (err) {
+              console.log('Error notifying team for the submission: ', err);
             });
           }, function (err) {
             console.log('Error:', err);
