@@ -1194,6 +1194,89 @@ define([
         }
       }, false);
 
+      this.browserHeader.addAction('SubmitSequenceSubmission', 'fa icon-upload fa-3x', {
+        label: 'Submit Sequence',
+        multiple: false,
+        validTypes: ['SequenceSubmission'],
+        tooltip: 'Submit Sequence'
+      }, function (selection, container, button) {
+        button.classList.add('disabled');
+        button.style['pointer-events'] = 'none';
+
+        const submittedFileName = 'submission.submitted';
+        const submittedFolderPath = `${selection[0].path}.${selection[0].name}`;
+
+        // Check if submission is already submitted
+        when(WorkspaceManager.getObject(submittedFolderPath + '/' + submittedFileName), lang.hitch(this, function (obj) {
+          const d = new Dialog({
+            title: 'Warning',
+            content: 'You have already submitted this submission. Please reach out to BV-BRC team if you need further assistance.',
+            onHide: function () {
+              d.destroy();
+            }
+          });
+          d.show();
+        }), lang.hitch(this, function (err) {
+          query('.ActionButtonText', button).forEach(function (node) {
+            node.innerHTML = 'Processing';
+          });
+
+          let formData = new FormData();
+          formData.append('subject', 'Sequence Submission is Ready');
+          formData.append('ownerId', selection[0].owner_id);
+          formData.append('submissionJobPath', selection[0].path + '/' + selection[0].name);
+          formData.append('numberOfSequences', selection[0].autoMeta.parameters.numberOfSequences);
+
+          when(request.post('/notifySubmitSequence', {
+            headers: {
+              'Authorization': (window.App.authorizationToken || ''),
+              'enctype': 'multipart/form-data'
+            },
+            data: formData
+          }), function (results) {
+            console.log('Succ notifying team for the submission: ', results);
+
+            // Create submitted file to avoid future submissions
+            const obj = {
+              path: submittedFolderPath,
+              name: submittedFileName
+            };
+
+            WorkspaceManager.create(obj, true, true);
+
+            const d = new Dialog({
+              title: 'Successful',
+              content: 'We have successfully notified BV-BRC Team for this submission.',
+              onHide: function () {
+                d.destroy();
+              }
+            });
+            d.show();
+
+            query('.ActionButtonText', button).forEach(function (node) {
+              node.innerHTML = 'Successful';
+            });
+          }, function (err) {
+            console.log('Error notifying team for the submission: ', err);
+
+            const d = new Dialog({
+              title: 'Error',
+              content: 'We encountered an error while submitting your request. Please try again.',
+              onHide: function () {
+                d.destroy();
+              }
+            });
+            d.show();
+
+            button.classList.remove('disabled');
+            button.style['pointer-events'] = '';
+            query('.ActionButtonText', button).forEach(function (node) {
+              node.innerHTML = 'Submit Sequence';
+            });
+          });
+        }));
+      }, false);
+
       this.actionPanel.addAction('ViewAFA', 'fa icon-alignment fa-2x', {
         label: 'MSA',
         multiple: false,

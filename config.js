@@ -24,6 +24,7 @@ const defaults = {
   localStorageCheckInterval: 86400,
   enableDevTools: false,
   reportProblemEmailAddress: 'help@bv-brc.org',
+  sequenceSubmissionNotificationEmailAddress: ['gbsubmit@bvbrc.org'],
   'email': {
     'localSendmail': false,
     'defaultFrom': 'BV-BRC <do-not-reply@bv-brc.org>',

@@ -64,6 +64,13 @@ define([], function () {
       params: {}
     },
 
+    SequenceSubmission: {
+      title: 'Sequence Submission',
+      layer: 'p3/layer/panels',
+      ctor: 'p3/widget/app/SequenceSubmission',
+      params: {}
+    },
+
     GenomeGroupViewer: {
       title: 'Genome Group',
       layer: 'p3/layer/panels',
