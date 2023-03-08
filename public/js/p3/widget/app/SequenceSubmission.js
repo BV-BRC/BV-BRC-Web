@@ -441,7 +441,9 @@ define([
         'output_file': output_file,
         'output_path': output_path,
         'consortium': this.consortium.value,
-        'affiliation': this.affiliation.value
+        'affiliation': this.affiliation.value,
+        'country': this.country.value,
+        'phoneNumber': this.phoneNumber.value
       };
 
       if (_self.input_source == 'fasta_file') {
