@@ -375,6 +375,23 @@ define([
         });
       }, false);
 
+      this.actionPanel.addAction('MultipleSeqAlignmentFeaturesService', 'fa icon-alignment fa-2x', {
+        label: 'MSA_dev',
+        validTypes: ['feature_group'],
+        multiple: false,
+        tooltipDialog: viewMSATT,
+        tooltip: 'Multiple Sequence Alignment'
+      }, function (selection) {
+        var feature_group = selection[0].path;
+        var job_data = {
+          'feature_groups': [feature_group],
+          'alphabet': 'dna',
+          'aligner': 'Muscle',
+          'input_type': 'input_group'
+        };
+        rerunUtility.rerun(JSON.stringify(job_data), 'MSA', window, Topic);
+      }, false);
+
       // TODO: why isn't download appearing for job_results
       this.actionPanel.addAction('DownloadItem', 'fa icon-download fa-2x', {
         label: 'DWNLD',

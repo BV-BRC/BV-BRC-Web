@@ -934,6 +934,57 @@ define([
         },
         false
       ], [
+        'MultipleSeqAlignmentFeaturesService',
+        'fa icon-alignment fa-2x',
+        {
+          label: 'MSA_dev',
+          ignoreDataType: true,
+          min: 2,
+          multiple: true,
+          max: 200,
+          validTypes: ['*'],
+          tooltipDialog: viewMSATT,
+          tooltip: 'Multiple Sequence Alignment',
+          validContainerTypes: ['feature_data', 'protein_data', 'spgene_data', 'proteinfamily_data', 'pathway_data', 'transcriptomics_gene_data']
+        },
+        function (selection) {
+          /*
+          viewMSATT.selection = selection;
+          popup.open({
+            popup: this.selectionActionBar._actions.MultipleSeqAlignmentFeatures.options.tooltipDialog,
+            around: this.selectionActionBar._actions.MultipleSeqAlignmentFeatures.button,
+            orient: ['below']
+          });
+          */
+          // TODO:
+          // - get list of feature ids
+          // - create temporary feature group in location (check for existence of folder) ._temp_groups
+          // - uniform name plus random: tmp_feature_group_#####
+          // - add temporary group to json
+          // - fill out the rest of json
+
+          // TODO: create const function routine for checking if hidden folder exists
+          const checkTEMP = function (tmp_path) {
+            WorkspaceManager.createFolder(tmp_path).then(lang.hitch(this, function (tmp_record) {
+              console.log('creating temporary group folder');
+            }), lang.hitch(this, function (err) {
+              console.log('temporary group folder already created');
+            }));
+          };
+          var feature_list = selection.map(x => x.patric_id);
+          var hidden_group_path = WorkspaceManager.getDefaultFolder() + '/._tmp_groups/';
+          // create random group name?
+          var group_name = 'tmp_feature_group_' + Date.now();
+          console.log('tmp_group = ', group_name);
+          checkTEMP(hidden_group_path);
+          // TODO: check for an error
+          // TODO: stopped here
+          debugger;
+          var def = WorkspaceManager.createGroup(group_name, data.type, group_dir, data.type, selection_list);
+          console.log('def = ', def);
+        },
+        false
+      ], [
         'idmapping',
         'fa icon-exchange fa-2x',
         {
