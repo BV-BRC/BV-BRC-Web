@@ -15,8 +15,8 @@ define([
             this.organism = store.getValue(data, 'Organism');
             this.sequenceType = store.getValue(data, 'Sequence Type');
             this.authors = store.getValue(data, 'Authors');
-            this.publicationTitle = store.getValue(data, 'Publication_tile');
-            this.publicationPMID = store.getValue(data, 'Publication_PMID');
+            this.publicationTitle = store.getValue(data, 'Publication Title');
+            this.publicationPMID = store.getValue(data, 'Publication PMID');
             this.strainName = store.getValue(data, 'Strain Name');
             this.strainHost = store.getValue(data, 'Host');
             this.strainSubtype = store.getValue(data, 'Subtype');
