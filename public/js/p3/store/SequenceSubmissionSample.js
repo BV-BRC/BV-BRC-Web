@@ -288,7 +288,7 @@ define([
                     if (slashCount > 4) {
                         this.validations.push({
                             type: 'error',
-                            message: 'When Host is not human, strain name should contain 4 slashes (' / '). A valid strain ' +
+                            message: 'When Host is not human, strain name should contain 4 slashes ("/"). A valid strain ' +
                                 'name is in {A|B|C}/&lt;Host if not human&gt;/&lt;Location&gt;/&lt;isolate&gt;/{yyyy}(SUBTYPE)'
                         });
                     }
@@ -368,7 +368,7 @@ define([
                         yearCandidate = lastPart.substring(0, paramStart).trim();
                     } else {
                         // We do NOT have the parenthesis, so the first 4 characters should be the year
-                        if (lastPart.length() >= 4) {
+                        if (lastPart.length >= 4) {
                             yearCandidate = lastPart.substring(0, 4);
                         } else {
                             yearCandidate = lastPart;
@@ -382,7 +382,7 @@ define([
                             type: 'error',
                             message: 'Strain Subtype is required.'
                         });
-                    } else if (!subtypeCandidate) {
+                    } else if (typeof subtypeCandidate !== "undefined") {
                         const re = new RegExp('[Hh](1[0-5]|[1-9])[Nn][1-9]|^[Hh](1[0-5]|[1-9])$|^[Nn][1-9]$');
                         const match = re.exec(subtypeCandidate);
                         if (match.length > 0) {
@@ -420,8 +420,8 @@ define([
                         }
                     }
 
-                    // if yearCandidate is not empty, validate it
-                    if (yearCandidate) {
+                    // if yearCandidate is not undefined, validate it
+                    if (typeof subtypeCandidate !== "undefined") {
                         // Try to get the year from the strain name
                         const re = new RegExp('^\\d{4}');
                         const match = re.exec(yearCandidate);
@@ -437,7 +437,7 @@ define([
                     }
 
                     // If user has entered the year, then validate against the year in the strain name
-                    if (this.collectionYear && yearCandidate) {
+                    if (this.collectionYear && typeof subtypeCandidate !== "undefined") {
                         // Now validate the user input year against parsed year
                         if (yearCandidate !== this.collectionYear) {
                             this.validations.push({
