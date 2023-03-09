@@ -799,6 +799,20 @@ define([
       // console.log('in generatePathLinks() out', out);
       return out.join('');
     },
+    
+    shortenLabel: function (label) {
+      var maxLabelLength = 50;
+      var shortLabel = label;
+      
+      for (const key in label) {
+        if (label[key].length > maxLabelLength) {
+          shortLabel[key] = label[key].substring(0, maxLabelLength/2) + '...' +  shortLabel[key].slice( -1*(maxLabelLength/2));
+          console.log('shortenLabel() shortLabel[key] = ', shortLabel[key]);
+        }
+      }
+      console.log('shortenLabel() shortLabel = ', shortLabel);
+      return shortLabel;
+    },   
 
     render: function () {
       this.contentPane.set('content', '');
@@ -901,43 +915,43 @@ define([
       console.log('in render, alt labels: this.alt_labels', this.alt_labels);
       console.log('in render, alt labels: this.alt_labels.genome_name', this.alt_labels.genome_name);
 
-      this.tree.addLabels(this.alt_labels.genome_name, 'Genome Name');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.genome_name), 'Genome Name');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Genome Name">Genome Name</div>');
 
-      this.tree.addLabels(this.alt_labels.gene_id, 'Gene ID');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.gene_id), 'Gene ID');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Gene ID">Gene ID</div>');
 
-      this.tree.addLabels(this.alt_labels.genbank_accessions, 'Accession');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.genbank_accessions), 'Accession');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Accession">Accession</div>');
 
-      this.tree.addLabels(this.alt_labels.species, 'Species');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.species), 'Species');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Species">Species</div>');
 
-      this.tree.addLabels(this.alt_labels.strain, 'Strain');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.strain), 'Strain');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Strain">Strain</div>');
 
-      this.tree.addLabels(this.alt_labels.geographic_group, 'Geographic Group');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.geographic_group), 'Geographic Group');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Geographic Group">Geographic Group</div>');
 
-      this.tree.addLabels(this.alt_labels.isolation_country, 'Isolation Country');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.isolation_country), 'Isolation Country');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Isolation Country">Isolation Country</div>');
 
-      this.tree.addLabels(this.alt_labels.host_group, 'Host Group');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.host_group), 'Host Group');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Host Group">Host Group</div>');
 
-      this.tree.addLabels(this.alt_labels.host_common_name, 'Host Common Name');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.host_common_name), 'Host Common Name');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Host Common Name">Host Common Name</div>');
 
-      this.tree.addLabels(this.alt_labels.collection_year, 'Collection Year');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.collection_year), 'Collection Year');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Collection Year">Collection Year</div>');
 
-      this.tree.addLabels(this.alt_labels.subtype, 'Subtype');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.subtype), 'Subtype');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Subtype">Subtype</div>');
 
-      this.tree.addLabels(this.alt_labels.lineage, 'Lineage');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.lineage), 'Lineage');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Lineage">Lineage</div>');
 
-      this.tree.addLabels(this.alt_labels.clade, 'Clade');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.clade), 'Clade');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Clade">Clade</div>');
 
       console.log('after adding labels this.tree ', this.tree);

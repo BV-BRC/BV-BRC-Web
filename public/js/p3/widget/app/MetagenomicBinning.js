@@ -430,7 +430,11 @@ define([
       if (!valid) {
         return valid;
       }
-      return this.libraryStore.data.length > 0;
+      if (this.startWithRead.checked) {
+        return this.libraryStore.data.length > 0;
+      } else {
+        return this.output_path.get('value') != '';
+      }
     },
 
     setContigsFile: function () {
