@@ -181,7 +181,7 @@ define([
       let sampleSequenceMap = new Map();
       const reto = this.validateFasta(data, 'aa', false);
 
-      const nucleotypeRegex = new RegExp(/^[ACGTURYSWKMBDHVN]+$/);
+      const nucleotypeRegex = new RegExp(/^[ACGTURYSWKMBDHVN]+$/, 'i');
       if (reto.valid) {
         const records = reto.trimFasta.split(/[>>]/);
         for (let record of records) {
