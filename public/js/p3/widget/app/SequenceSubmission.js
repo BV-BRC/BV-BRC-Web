@@ -176,14 +176,15 @@ define([
       errors.set('missingSampleIds', []);
       errors.set('missingSequenceIds', []);
       errors.set('invalidSampleId', []);
+      errors.set('invalidSequenceId', []);
       errors.set('sampleContainsMoreThan8Sequences', []);
       errors.set('duplicatedSequenceId', []);
       errors.set('invalidNucleotype', []);
       let sampleSequenceMap = new Map();
       const reto = this.validateFasta(data, 'aa', false);
 
-      const nucleotypeRegex = new RegExp(/^[ACGTURYSWKMBDHVN]+$/, 'i');
       if (reto.valid) {
+        const nucleotypeRegex = new RegExp(/^[ACGTURYSWKMBDHVN]+$/, 'i');
         const records = reto.trimFasta.split(/[>>]/);
         for (let record of records) {
           if (record.trim() != '') {
@@ -211,19 +212,38 @@ define([
               }
 
               // Validate sequence id
-              if (sampleSequenceMap.has(sampleId)) {
-                const sequenceIds = sampleSequenceMap.get(sampleId);
-
-                // Check if sequence id already exists for sample id
-                if (sequenceIds.includes(sequenceId) && !errors.get('duplicatedSequenceId').includes(sequenceId)) {
-                  errors.set('duplicatedSequenceId', [...errors.get('duplicatedSequenceId'), sequenceId]);
-                } else if (sequenceIds.length >= 8 && !errors.get('sampleContainsMoreThan8Sequences').includes(sampleId)) {
-                  errors.set('sampleContainsMoreThan8Sequences', [...errors.get('sampleContainsMoreThan8Sequences'), sampleId]);
-                }
-
-                sampleSequenceMap.set(sampleId, [...sequenceIds, sequenceId]);
+              const sequenceIdParts = sequenceId.split('-');
+              let isValidSequenceId = true;
+              if (sequenceIdParts.length !== 2) {
+                isValidSequenceId = false;
               } else {
-                sampleSequenceMap.set(sampleId, [sequenceId]);
+                // Validate segment number
+                const segmentRegex = new RegExp(/^[0-8]+$/);
+                const segmentNumber = sequenceIdParts[1];
+
+                if (!segmentNumber.match(segmentRegex)) {
+                  isValidSequenceId = false;
+                }
+              }
+
+              if (isValidSequenceId) {
+                // Validate sequence id uniqueness
+                if (sampleSequenceMap.has(sampleId)) {
+                  const sequenceIds = sampleSequenceMap.get(sampleId);
+
+                  // Check if sequence id already exists for sample id
+                  if (sequenceIds.includes(sequenceId) && !errors.get('duplicatedSequenceId').includes(sequenceId)) {
+                    errors.set('duplicatedSequenceId', [...errors.get('duplicatedSequenceId'), sequenceId]);
+                  } else if (sequenceIds.length >= 8 && !errors.get('sampleContainsMoreThan8Sequences').includes(sampleId)) {
+                    errors.set('sampleContainsMoreThan8Sequences', [...errors.get('sampleContainsMoreThan8Sequences'), sampleId]);
+                  }
+
+                  sampleSequenceMap.set(sampleId, [...sequenceIds, sequenceId]);
+                } else {
+                  sampleSequenceMap.set(sampleId, [sequenceId]);
+                }
+              } else {
+                errors.set('invalidSequenceId', [...errors.get('invalidSequenceId'), sequenceId]);
               }
             } else {
               if (!isSampleIdExists) {
@@ -353,6 +373,9 @@ define([
               if (key == 'invalidSampleId') {
                 fastaErrorHTML += 'Sample id(s) are not valid. Sample id cannot be longer than 50 characters or cannot ' +
                     'include ".", "%", "\'", """, " ", "/".<br>';
+              }
+              if (key == 'invalidSequenceId') {
+                fastaErrorHTML += 'Sequence id(s) are not valid. Valid Format: "yourSampleId-segmentNumber". Valid Segment Numbers: [1-8]<br>';
               }
               if (key == 'sampleContainsMoreThan8Sequences') {
                 fastaErrorHTML += 'Sample cannot contain more than 8 sequences.<br>';
