@@ -112,15 +112,15 @@ define([
           break;
         case 'genome':
           domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'Homology', innerHTML: 'Blast' }, service_div);
-          if (this.context === 'grid_container') {
-            domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'phylogenetic_tree', innerHTML: 'Phylogenetic Tree' }, service_div);
-          }
+          // if (this.context === 'grid_container') {
+          //  domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'phylogenetic_tree', innerHTML: 'Phylogenetic Tree' }, service_div);
+          // }
           // TODO: fix genome distance?
           // domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'genome_distance', innerHTML: 'Similar Genome Finder' }, tData);
           break;
         case 'genome_group':
           domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'Homology', innerHTML: 'Blast' }, service_div);
-          domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'phylogenetic_tree', innerHTML: 'Phylogenetic Tree' }, service_div);
+          // domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'phylogenetic_tree', innerHTML: 'Phylogenetic Tree' }, service_div);
           // TODO: fix genome distance?
           // domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'genome_distance', innerHTML: 'Similar Genome Finder' }, tData);
           break;
@@ -170,7 +170,6 @@ define([
         // feature context
         //  - TODO(later): ask if min number to save as feature group
         //    - goes to different function
-        //  - TODO: ask to save selection
         // TODO: genome context
         if (data.data_context === 'feature') {
           // TODO: min number to save?
