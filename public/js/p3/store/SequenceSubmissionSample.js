@@ -72,7 +72,8 @@ define([
             // Validate publication title
             if (!this.publicationTitle) {
                 this.validations.push({
-                    type: 'error', message: 'Publication Title is required. Please use \'NA\' if unpublished.'
+                    type: 'error', message: 'Publication Title is required. it might be missing from the metadata file. ' +
+                        'Please use \'NA\' if unpublished.'
                 });
             }
 
@@ -244,7 +245,7 @@ define([
                     if (!this.isStrainHostValid(this.strainHost)) {
                         this.validations.push({
                             type: 'error',
-                            message: 'Strain Host species must be spelled out in all lower case letters except when ' +
+                            message: 'Strain Name: Strain Host species must be spelled out in all lower case letters except when ' +
                                 'using a proper noun such as Canadian or Cambodian the first letter can be upper case. ' +
                                 'A space is allowed (e.g., American wigeon).'
                         });
@@ -254,7 +255,7 @@ define([
                     if (slashCount > 3) {
                         this.validations.push({
                             type: 'error',
-                            message: 'When strain host is human, strain name should contain 3 slashes (\'/\'). ' +
+                            message: 'Strain Name: When strain host is human, strain name should contain 3 slashes (\'/\'). ' +
                                 'A valid strain name when the host is human is {A|B|C}/&lt;Location&gt;/&lt;isolate&gt;/{yyyy}(SUBTYPE)'
                         });
                     } else {
@@ -270,9 +271,10 @@ define([
                             } else if (this.isStrainNameLocationValid(parts[1])) {
                                 this.validations.push({
                                     type: 'error',
-                                    message: 'Location (' + parts[1] + ') in strain name must be spelled out in all lower case letters ' +
-                                        'except for the first letter in each word of a location name. A space may be used, ' +
-                                        'but no abbreviation is allowed as required by GenBank (Hong Kong is allowed, HK is not).'
+                                    message: 'Strain Name: Location (' + parts[1] + ') in the strain name must be spelled out ' +
+                                        'in all lower case letters except for the first letter in each word of a location name. A ' +
+                                        'space may be used, but no abbreviation is allowed as required by GenBank ' +
+                                        '(Hong Kong is allowed, HK is not).'
                                 });
                             }
                         } else {
@@ -288,7 +290,7 @@ define([
                     if (slashCount > 4) {
                         this.validations.push({
                             type: 'error',
-                            message: 'When Host is not human, strain name should contain 4 slashes ("/"). A valid strain ' +
+                            message: 'Strain Name: When Host is not human, strain name should contain 4 slashes ("/"). A valid strain ' +
                                 'name is in {A|B|C}/&lt;Host if not human&gt;/&lt;Location&gt;/&lt;isolate&gt;/{yyyy}(SUBTYPE)'
                         });
                     }
@@ -299,18 +301,18 @@ define([
                         if (this.strainHost !== parts[1]) {
                             this.validations.push({
                                 type: 'error',
-                                message: 'Strain Host (' + this.strainHost + ') does NOT match with the host in strain name. ' +
-                                    'Host should appear after the first slash in the strain name. However, when the host ' +
-                                    'is "human", no host should appear in strain name.'
+                                message: 'Strain Name: Strain Host (' + this.strainHost + ') does NOT match with the host in ' +
+                                    'strain name. Host should appear after the first slash in the strain name. However, ' +
+                                    'when the host is "human", no host should appear in strain name.'
                             });
                         } else {
                             // Perform host validation against value after the first slash
                             if (!this.isStrainHostValid(parts[1])) {
                                 this.validations.push({
                                     type: 'error',
-                                    message: 'Host (' + parts[1] + ') must be spelled out in all lower case letters except ' +
-                                        'when using a proper noun such as Canadian or Cambodian the first letter can be upper case. ' +
-                                        'A space is allowed (e.g., American wigeon).'
+                                    message: 'Strain Name: Host (' + parts[1] + ') in the strain name must be spelled out in ' +
+                                        'all lower case letters except when using a proper noun such as Canadian or Cambodian ' +
+                                        'the first letter can be upper case. A space is allowed (e.g., American wigeon).'
                                 });
                                 isHostPassed = false;
                             }
@@ -319,9 +321,9 @@ define([
                             if (!this.isStrainHostValid(this.strainHost)) {
                                 this.validations.push({
                                     type: 'error',
-                                    message: 'Host species must be spelled out in all lower case letters except when using ' +
-                                        'a proper noun such as Canadian or Cambodian the first letter can be upper case. ' +
-                                        'A space is allowed (e.g., American wigeon).'
+                                    message: 'Strain Name: Host species in the strain name must be spelled out in all lower ' +
+                                        'case letters except when using a proper noun such as Canadian or Cambodian the first ' +
+                                        'letter can be upper case. A space is allowed (e.g., American wigeon).'
                                 });
                             }
                         }
@@ -332,9 +334,10 @@ define([
                         if (!this.isStrainNameLocationValid(parts[2])) {
                             this.validations.push({
                                 type: 'error',
-                                message: 'Location (' + parts[2] + ') in strain name must be spelled out in all lower case ' +
-                                    'letters except for the first letter in each word of a location name. A space may be used, ' +
-                                    'but no abbreviation is allowed as required by GenBank (Hong Kong is allowed, HK is not).'
+                                message: 'Strain name: Location (' + parts[2] + ') in the strain name must be spelled ' +
+                                    'out in all lower case letters except for the first letter in each word of a location ' +
+                                    'name. A space may be used, but no abbreviation is allowed as required by GenBank ' +
+                                    '(Hong Kong is allowed, HK is not).'
                             });
                         }
                     }
@@ -346,7 +349,7 @@ define([
                     if ('A' !== parts[0] && 'B' !== parts[0] && 'C' !== parts[0]) {
                         this.validations.push({
                             type: 'error',
-                            message: 'First part of Strain Name is not A, B or C to represent the Influenza Virus Type.'
+                            message: 'Strain Name: First part of Strain Name is not A, B or C to represent the Influenza Virus Type.'
                         });
                     }
 
@@ -380,7 +383,7 @@ define([
                     if (!userSubtype) {
                         this.validations.push({
                             type: 'error',
-                            message: 'Strain Subtype is required.'
+                            message: 'Strain Name: Strain Subtype is required.'
                         });
                     } else if (typeof subtypeCandidate !== "undefined") {
                         const re = new RegExp('[Hh](1[0-5]|[1-9])[Nn][1-9]|^[Hh](1[0-5]|[1-9])$|^[Nn][1-9]$');
@@ -391,7 +394,7 @@ define([
                                 // StrainName and user input subtypes do NOT match
                                 this.validations.push({
                                     type: 'error',
-                                    message: 'Subtype(' + strainNameSubType + ') in the strain name should match with ' +
+                                    message: 'Strain Name: Subtype(' + strainNameSubType + ') in the strain name should match with ' +
                                         'the input strain name (' + userSubtype + ')'
                                 });
                             } else {
@@ -401,7 +404,7 @@ define([
                                 if (!match || match.length === 0) {
                                     this.validations.push({
                                         type: 'warning',
-                                        message: 'Strain Subtype should contain both H and N type, you may still submit ' +
+                                        message: 'Strain Name: Strain Subtype should contain both H and N type, you may still submit ' +
                                             'this sample, but IRD curator may contact you for further information before submit to GenBank.'
                                     });
                                 }
@@ -414,14 +417,14 @@ define([
                         if (!match || match.length === 0) {
                             this.validations.push({
                                 type: 'warning',
-                                message: 'Strain Subtype should contain both H and N type, you may still submit ' +
+                                message: 'Strain Name: Strain Subtype should contain both H and N type, you may still submit ' +
                                     'this sample, but IRD curator may contact you for further information before submit to GenBank.'
                             });
                         }
                     }
 
                     // if yearCandidate is not undefined, validate it
-                    if (typeof subtypeCandidate !== "undefined") {
+                    if (typeof subtypeCandidate !== 'undefined') {
                         // Try to get the year from the strain name
                         const re = new RegExp('^\\d{4}');
                         const match = re.exec(yearCandidate);
@@ -431,7 +434,7 @@ define([
                             yearCandidate = null;
                             this.validations.push({
                                 type: 'error',
-                                message: 'Year must be 4 digits.'
+                                message: 'Strain Name: Year must be 4 digits in the strain name.'
                             });
                         }
                     }
@@ -467,7 +470,7 @@ define([
         },
 
         isValidYear: function (year) {
-          return /^\d+$/.test(year) && (year.length == 4 || year.length == 2);
+            return /^\d+$/.test(year) && (year.length == 4 || year.length == 2);
         },
 
         isStrainHostValid: function (host) {

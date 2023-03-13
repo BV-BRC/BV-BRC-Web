@@ -362,8 +362,9 @@ define([
           let fastaErrorHTML = '';
           for (const [key, errors] of fastaErrors) {
             if (errors.length > 0) {
+              let displayMetadataError = '';
               if (key == 'missingSamples') {
-                fastaErrorHTML += 'Sample(s) provided in metadata file are missing in FASTA file.<br>';
+                displayMetadataError += 'Sample(s) provided in metadata file are missing in FASTA file.<br>';
               }
               if (key == 'missingSampleIds') {
                 fastaErrorHTML += 'Unique_Sample_Identifier is missing or misspelled in the header.<br>';
@@ -390,6 +391,14 @@ define([
 
               if (key == 'missingHeaders') {
                 fastaErrorHTML += errors + '<br>';
+              } else if (key == 'missingSamples') {
+                displayMetadataError += '<ul>';
+                for (let error of errors) {
+                  displayMetadataError += `<li>${error}</li>`;
+                }
+                displayMetadataError += '</ul><br>';
+
+                metadataErrorHTML = displayMetadataError + metadataErrorHTML;
               } else {
                 fastaErrorHTML += '<ul>';
                 for (let error of errors) {
