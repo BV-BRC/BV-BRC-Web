@@ -13,10 +13,11 @@ define([
   return declare([AppBase], {
     baseClass: 'SequenceSubmission',
     requireAuth: true,
-    applicationDescription: 'The Sequence Submission service allows user to validate and submit the sequences to NCBI GenBank. ' +
-        'User provided metadata and FASTA sequences are validated to against the data submission standards, and sequences are ' +
-        'annotated using VIGOR4 and FLAN annotation tools to identify any sequence errors before submission. The Sequence Submission ' +
-        'service provides the validation report that should be reviewed by user before submitted the sequences to the Genbank.',
+    applicationDescription: 'The Sequence Submission service allows user to validate and submit virus sequences to NCBI ' +
+        'Genbank. User-provided metadata and FASTA sequences are validated against the Genbank data submission standards ' +
+        'to identify any sequence errors before submission.  Sequences are also annotated using the VIGOR4 and FLAN annotation ' +
+        'tools for internal use by users. The Sequence Submission service provides a validation report that should be reviewed ' +
+        'by the user before submitting the sequences to the Genbank.',
     videoLink: '',
     metadataTemplatePath: '/mkuscuog@bvbrc/BV-BRC Templates/sequence_submission_metadata_template.csv',
     pageTitle: 'Sequence Submission Service | BV-BRC',
@@ -365,10 +366,10 @@ define([
                 fastaErrorHTML += 'Sample(s) provided in metadata file are missing in FASTA file.<br>';
               }
               if (key == 'missingSampleIds') {
-                fastaErrorHTML += 'Unique_Sample_Identifier is missing in the header.<br>';
+                fastaErrorHTML += 'Unique_Sample_Identifier is missing or misspelled in the header.<br>';
               }
               if (key == 'missingSequenceIds') {
-                fastaErrorHTML += 'Unique_Sequence_Identifier is missing in the header.<br>';
+                fastaErrorHTML += 'Unique_Sequence_Identifier is missing or misspelled in the header.<br>';
               }
               if (key == 'invalidSampleId') {
                 fastaErrorHTML += 'Sample id(s) are not valid. Sample id cannot be longer than 50 characters or cannot ' +

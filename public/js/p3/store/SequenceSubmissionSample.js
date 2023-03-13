@@ -270,7 +270,7 @@ define([
                             } else if (this.isStrainNameLocationValid(parts[1])) {
                                 this.validations.push({
                                     type: 'error',
-                                    message: 'Location (' + parts[1] + ') must be spelled out in all lower case letters ' +
+                                    message: 'Location (' + parts[1] + ') in strain name must be spelled out in all lower case letters ' +
                                         'except for the first letter in each word of a location name. A space may be used, ' +
                                         'but no abbreviation is allowed as required by GenBank (Hong Kong is allowed, HK is not).'
                                 });
@@ -332,9 +332,9 @@ define([
                         if (!this.isStrainNameLocationValid(parts[2])) {
                             this.validations.push({
                                 type: 'error',
-                                message: 'Location (' + parts[2] + ') must be spelled out in all lower case letters except ' +
-                                    'for the first letter in each word of a location name. A space may be used, but no abbreviation ' +
-                                    'is allowed as required by GenBank (Hong Kong is allowed, HK is not).'
+                                message: 'Location (' + parts[2] + ') in strain name must be spelled out in all lower case ' +
+                                    'letters except for the first letter in each word of a location name. A space may be used, ' +
+                                    'but no abbreviation is allowed as required by GenBank (Hong Kong is allowed, HK is not).'
                             });
                         }
                     }
