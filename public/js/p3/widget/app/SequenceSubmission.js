@@ -18,6 +18,7 @@ define([
         'annotated using VIGOR4 and FLAN annotation tools to identify any sequence errors before submission. The Sequence Submission ' +
         'service provides the validation report that should be reviewed by user before submitted the sequences to the Genbank.',
     videoLink: '',
+    metadataTemplatePath: '/mkuscuog@bvbrc/BV-BRC Templates/sequence_submission_metadata_template.csv',
     pageTitle: 'Sequence Submission Service | BV-BRC',
     appBaseURL: 'Sequence Submission',
     templateString: Template,
@@ -181,7 +182,7 @@ define([
       let sampleSequenceMap = new Map();
       const reto = this.validateFasta(data, 'aa', false);
 
-      const nucleotypeRegex = new RegExp(/^[ACGTURYSWKMBDHVN]+$/);
+      const nucleotypeRegex = new RegExp(/^[ACGTURYSWKMBDHVN]+$/, 'i');
       if (reto.valid) {
         const records = reto.trimFasta.split(/[>>]/);
         for (let record of records) {
@@ -556,6 +557,14 @@ define([
       this.country.set('value', job_data['country']);
       this.phoneNumber.set('value', job_data['phoneNumber']);
       this.consortium.set('value', job_data['consortium']);
+    },
+
+    downloadMetadataTemplate: function () {
+      Deferred.when(WorkspaceManager.getDownloadUrls(this.metadataTemplatePath), function (url) {
+        if (url && url.length > 0 && url[0] !== null) {
+          window.open(url);
+        }
+      });
     }
   });
 });
