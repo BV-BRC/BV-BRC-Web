@@ -65,16 +65,21 @@ define([
         newValue.watch('highlights', lang.hitch(this, function (attr, oldValue, newValue) {
           this.updateDisplay();
         }));
-        if (oldValue.get('accession', {}).pdb_id != newValue.get('accession', {}).pdb_id) {
+        const oldAccession = oldValue.get('accession', []);
+        const newAccession = newValue.get('accession', []);
+        const isMultiple = Array.isArray(newAccession);
+        if (isMultiple && (oldAccession.length != newAccession.length)) {
           this.updateAccession(newValue.get('accession'));
-        } else if (oldValue.get('workspacePath') != newValue.get('workspacePath')) {
+        } else if (oldAccession.pdb_id != newAccession.pdb_id) {{
+          this.updateAccession([newValue.get('accession')]);
+        }} else if (oldValue.get('workspacePath') != newValue.get('workspacePath')) {
           this.loadFromWorkspace(newValue.get('workspacePath'));
         }
       }));
     },
     updateAccession: function (accessionInfo) {
       this.highlighters = [];
-      this.loadAccession(accessionInfo.pdb_id);
+      this.loadAccession(accessionInfo.map(a => a.pdb_id));
       this.updateDisplay();
     },
     onAccessionChange: function (attr, oldValue, newValue) {
@@ -120,17 +125,16 @@ define([
       return parseInt(hexColor.replace('#', '0x'), 16);
     },
     // TODO this assumes loading from PDB
-    loadAccession: function (accession) {
-      if (accession) {
-        const urlEbi = 'https://www.ebi.ac.uk/pdbe/static/entry/' + accession.toLowerCase() + '_updated.cif';
-        this.molstar.load({ url: urlEbi, displaySpikeSequence: true });
+    loadAccession: function (accessions) {
+      if (accessions) {
+        this.molstar.load({ urls: accessions, sourceName: 'pdb', displaySpikeSequence: true });
       }
     },
     loadFromWorkspace: function (workspacePath) {
       let _self = this;
       Deferred.when(WS.getDownloadUrls(workspacePath), function (url) {
         if (url && url.length > 0 && url[0] !== null) {
-          _self.molstar.load({url: url[0], format: 'pdb', displaySpikeSequence: true});
+          _self.molstar.load({urls: url, format: 'pdb', sourceName: 'url', displaySpikeSequence: true});
         }
       });
     }

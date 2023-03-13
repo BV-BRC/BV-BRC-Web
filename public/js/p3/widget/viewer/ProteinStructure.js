@@ -107,13 +107,13 @@ function (
           this.get('viewState').set('highlights', highlights);
         }));
 
-        let accessionId = this.state.hashParams.accession || this.viewDefaults.get('accession');
-        accessionId = accessionId.toUpperCase();
+        const accessionId = this.state.hashParams.accession || this.viewDefaults.get('accession');
+        const accessionIds = accessionId.toUpperCase().split(',');
 
-        const urls = [
-          `${this.contentServer}/structures/protein_features/${accessionId}.fea`,
-          `${this.contentServer}/structures/epitopes/${accessionId}.epi`
-        ];
+        const urls = accessionIds.flatMap(id => [
+          `${this.contentServer}/structures/protein_features/${id}.fea`,
+          `${this.contentServer}/structures/epitopes/${id}.epi`
+        ]);
 
         /* Fetch data files together before parsing feature and epitope content
           @return JSON object
@@ -222,7 +222,14 @@ function (
         domStyle.set(this.proteinMolstarView.containerNode, 'left', '0px');
       } else {
         domConstruct.empty(this.accessionTitle.containerNode);
-        domConstruct.place(DataItemFormatter(accessionInfo, 'structure_data', {}), this.accessionTitle.containerNode, 'first');
+        if (Array.isArray(accessionInfo)) {
+          for (let i = 0; i < accessionInfo.length; ++i) {
+            domConstruct.place(DataItemFormatter(accessionInfo[i], 'structure_data', {}), this.accessionTitle.containerNode,
+                i === 0 ? 'first' : '');
+          }
+        } else {
+          domConstruct.place(DataItemFormatter(accessionInfo, 'structure_data', {}), this.accessionTitle.containerNode, 'first');
+        }
       }
     },
     viewDefaults: new Map([
