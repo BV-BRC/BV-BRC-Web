@@ -100,7 +100,7 @@ function (
           id: this.id + '_ligands',
           color: '#00ff00'
         });
-        this.highlighters.addChild(this.ligandHighlight);
+        this.ligands.addChild(this.ligandHighlight);
         this.ligandHighlight.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
           let highlights = new Map(this.viewState.get('highlights'));
           highlights.set('ligands', new Map(newValue));
@@ -132,6 +132,7 @@ function (
         const featureContent = response[0];
         const epitopeContent = response[1];
 
+        let hasHighlighter = false;
         if (!(featureContent instanceof Error)) {
           this.featureHighlights = new SARS2FeatureHighlights({
             data: JSON.parse(featureContent).data
@@ -144,6 +145,7 @@ function (
             this.get('viewState').set('highlights', highlights);
           }));
           this.highlighters.addChild(this.featureHighlights);
+          hasHighlighter = true;
         }
 
         if (!(epitopeContent instanceof Error)) {
@@ -161,6 +163,14 @@ function (
             highlights.set('epitopes', new Map(newValue));
             this.get('viewState').set('highlights', highlights);
           }));
+
+          hasHighlighter = true;
+        }
+
+        // Expand accession info box if no highlighter data
+        if (!hasHighlighter) {
+          this.highlighters.destroyRecursive();
+          domStyle.set(this.accessionTitle.containerNode, 'height', '85%');
         }
       }
 
