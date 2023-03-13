@@ -359,24 +359,8 @@ define([
         }
       });
 
-      this.actionPanel.addAction('MultipleSeqAlignmentFeatures', 'fa icon-alignment fa-2x', {
-        label: 'MSA',
-        validTypes: ['feature_group'],
-        multiple: false,
-        tooltipDialog: viewMSATT,
-        tooltip: 'Multiple Sequence Alignment'
-      }, function (selection) {
-        var q = self.getQuery(selection[0]);
-        viewMSATT.selection = q;
-        popup.open({
-          popup: this._actions.MultipleSeqAlignmentFeatures.options.tooltipDialog,
-          around: this._actions.MultipleSeqAlignmentFeatures.button,
-          orient: ['below']
-        });
-      }, false);
-
       this.actionPanel.addAction('MultipleSeqAlignmentFeaturesService', 'fa icon-alignment fa-2x', {
-        label: 'MSA_dev',
+        label: 'MSA',
         validTypes: ['feature_group'],
         multiple: false,
         tooltipDialog: viewMSATT,

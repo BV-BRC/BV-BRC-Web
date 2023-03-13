@@ -5,7 +5,7 @@ define([
   'dojo/topic', 'dojo/query', 'dijit/layout/ContentPane', 'dojo/text!./templates/IDMapping.html',
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog', './DownloadTooltipDialog', './PerspectiveToolTip',
   './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin',
-  './FeatureDetailsTooltipDialog', './ServicesTooltipDialog', './RerunUtility'
+  './FeatureDetailsTooltipDialog', './ServicesTooltipDialog', './RerunUtility', 'dojox/widget/Standby'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
@@ -13,7 +13,7 @@ define([
   Topic, query, ContentPane, IDMappingTemplate,
   Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
   CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin,
-  FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility
+  FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility, Standby
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -911,7 +911,7 @@ define([
         },
         false
       ], [
-        'MultipleSeqAlignmentFeatures',
+        'MultipleSeqAlignmentFeaturesService',
         'fa icon-alignment fa-2x',
         {
           label: 'MSA',
@@ -925,45 +925,6 @@ define([
           validContainerTypes: ['feature_data', 'protein_data', 'spgene_data', 'proteinfamily_data', 'pathway_data', 'transcriptomics_gene_data']
         },
         function (selection) {
-          viewMSATT.selection = selection;
-          popup.open({
-            popup: this.selectionActionBar._actions.MultipleSeqAlignmentFeatures.options.tooltipDialog,
-            around: this.selectionActionBar._actions.MultipleSeqAlignmentFeatures.button,
-            orient: ['below']
-          });
-        },
-        false
-      ], [
-        'MultipleSeqAlignmentFeaturesService',
-        'fa icon-alignment fa-2x',
-        {
-          label: 'MSA_dev',
-          ignoreDataType: true,
-          min: 2,
-          multiple: true,
-          max: 200,
-          validTypes: ['*'],
-          tooltipDialog: viewMSATT,
-          tooltip: 'Multiple Sequence Alignment',
-          validContainerTypes: ['feature_data', 'protein_data', 'spgene_data', 'proteinfamily_data', 'pathway_data', 'transcriptomics_gene_data']
-        },
-        function (selection) {
-          /*
-          viewMSATT.selection = selection;
-          popup.open({
-            popup: this.selectionActionBar._actions.MultipleSeqAlignmentFeatures.options.tooltipDialog,
-            around: this.selectionActionBar._actions.MultipleSeqAlignmentFeatures.button,
-            orient: ['below']
-          });
-          */
-          // TODO:
-          // - get list of feature ids
-          // - create temporary feature group in location (check for existence of folder) ._temp_groups
-          // - uniform name plus random: tmp_feature_group_#####
-          // - add temporary group to json
-          // - fill out the rest of json
-
-          // TODO: create const function routine for checking if hidden folder exists
           const checkTEMP = function (tmp_path) {
             WorkspaceManager.createFolder(tmp_path).then(lang.hitch(this, function (tmp_record) {
               console.log('creating temporary group folder');
@@ -972,16 +933,36 @@ define([
             }));
           };
           var feature_list = selection.map(x => x.patric_id);
-          var hidden_group_path = WorkspaceManager.getDefaultFolder() + '/._tmp_groups/';
-          // create random group name?
+          var hidden_group_path = WorkspaceManager.getDefaultFolder() + '/home/._tmp_groups/';
           var group_name = 'tmp_feature_group_' + Date.now();
+          var group_path = hidden_group_path + group_name;
           console.log('tmp_group = ', group_name);
           checkTEMP(hidden_group_path);
-          // TODO: check for an error
-          // TODO: stopped here
-          debugger;
-          var def = WorkspaceManager.createGroup(group_name, data.type, group_dir, data.type, selection_list);
-          console.log('def = ', def);
+          try {
+            this.loadingMask = new Standby({
+              target: this.id,
+              image: '/public/js/p3/resources/images/spin.svg',
+              color: '#efefef'
+            });
+            this.addChild(this.loadingMask);
+            this.loadingMask.startup();
+            this.loadingMask.show();
+            WorkspaceManager.createGroup(group_name, 'feature_group', hidden_group_path, 'feature_group', feature_list).then(lang.hitch(this, function (res) {
+              this.loadingMask.hide();
+              var job_data = {
+                'feature_groups': [group_path],
+                'alphabet': 'dna',
+                'aligner': 'Muscle',
+                'input_type': 'input_group'
+              };
+              RerunUtility.rerun(JSON.stringify(job_data), 'MSA', window, Topic);
+            }));
+          } catch (error) {
+            console.log('error creating feature group: ', error);
+            if (this.loadingMask) {
+              this.loadingMask.hide();
+            }
+          }
         },
         false
       ], [
