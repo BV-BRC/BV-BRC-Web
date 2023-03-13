@@ -359,20 +359,21 @@ define([
         }
       });
 
-      this.actionPanel.addAction('MultipleSeqAlignmentFeatures', 'fa icon-alignment fa-2x', {
+      this.actionPanel.addAction('MultipleSeqAlignmentFeaturesService', 'fa icon-alignment fa-2x', {
         label: 'MSA',
         validTypes: ['feature_group'],
         multiple: false,
         tooltipDialog: viewMSATT,
         tooltip: 'Multiple Sequence Alignment'
       }, function (selection) {
-        var q = self.getQuery(selection[0]);
-        viewMSATT.selection = q;
-        popup.open({
-          popup: this._actions.MultipleSeqAlignmentFeatures.options.tooltipDialog,
-          around: this._actions.MultipleSeqAlignmentFeatures.button,
-          orient: ['below']
-        });
+        var feature_group = selection[0].path;
+        var job_data = {
+          'feature_groups': [feature_group],
+          'alphabet': 'dna',
+          'aligner': 'Muscle',
+          'input_type': 'input_group'
+        };
+        rerunUtility.rerun(JSON.stringify(job_data), 'MSA', window, Topic);
       }, false);
 
       // TODO: why isn't download appearing for job_results
