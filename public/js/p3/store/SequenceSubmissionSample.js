@@ -138,7 +138,7 @@ define([
                             if (month === 1 || month === 3 || month === 5 || month === 7 || month === 8 || month === 10 || month === 12) {
                                 if (day > 31) {
                                     this.validations.push({
-                                        type: 'error', message: 'Day in Collection Date should be a number between 1 to 31.'
+                                        type: 'error', message: `Invalid date. Day in Collection Date should be a number between 1 to 31 for ${month}-${year}.`
                                     });
                                 }
                             } else if (month === 2) {
@@ -146,28 +146,28 @@ define([
                                     if ((year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0))) {
                                         if (day > 29) {
                                             this.validations.push({
-                                                type: 'error', message: 'Day in Collection Date should be a number between 1 to 29.'
+                                                type: 'error', message: `Invalid date. Day in Collection Date should be a number between 1 to 29 for ${month}-${year}.`
                                             });
                                         }
                                     } else {
                                         if (day > 28) {
                                             this.validations.push({
                                                 type: 'error',
-                                                message: 'Day in Collection Date should be a number between 1 to 28.'
+                                                message: `Invalid date. Day in Collection Date should be a number between 1 to 28 for ${month}-${year}.`
                                             });
                                         }
                                     }
                                 } else if (day > 28) {
                                     this.validations.push({
                                         type: 'error',
-                                        message: 'Day in Collection Date should be a number between 1 to 28.'
+                                        message: `Invalid date. Day in Collection Date should be a number between 1 to 28 for ${month}-${year}.`
                                     });
                                 }
                             } else {
                                 if (day > 30) {
                                     this.validations.push({
                                         type: 'error',
-                                        message: 'Day in Collection Date should be a number between 1 to 30.'
+                                        message: `Invalid date. Day in Collection Date should be a number between 1 to 30 for ${month}-${year}.`
                                     });
                                 }
                             }
