@@ -19,7 +19,7 @@ define([
         'tools for internal use by users. The Sequence Submission service provides a validation report that should be reviewed ' +
         'by the user before submitting the sequences to the Genbank.',
     videoLink: '',
-    metadataTemplatePath: '/mkuscuog@bvbrc/BV-BRC Templates/sequence_submission_metadata_template.csv',
+    templateFolderURL: 'https://www.bv-brc.org/workspace/mkuscuog@bvbrc/BV-BRC Templates/',
     pageTitle: 'Sequence Submission Service | BV-BRC',
     appBaseURL: 'Sequence Submission',
     templateString: Template,

@@ -20,6 +20,10 @@
             <p>
                 Please remove primer/vector sequence from either 5' or 3' end of influenza virus sequence before submitting.
             </p>
+            <br>
+            <p>
+                Click <a href="${templateFolderURL}" target="_blank">here</a> to download the metadata CSV template, example FASTA file and sequence submission metadata format.
+            </p>
         </div>
         <div class="appBox appShadow" style="margin-top:10px">
             <div class="headerrow">
@@ -106,7 +110,7 @@
                                       style="width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px"
                                       data-dojo-attach-point="sequence" data-dojo-type="dijit/form/Textarea"
                                       required="false"
-                                      data-dojo-props="rows:13, placeholder:'Enter one or more query nucleotide or protein sequences to search. Requires FASTA format. \n\nThe defline of each FASTA sequence should be in the format of \n\n\'>Unique_Sample_Identifier: yourSampleID|Unique_Sequence_Identifier: yourSampleID-segmentNumber.\'', intermediateChanges:true"
+                                      data-dojo-props="rows:13, placeholder:'Enter one or more nucleotide sequences in the following FASTA format for submission. Requires FASTA format. \n\nThe defline of each FASTA sequence should be in the format of \n\n\'>Unique_Sample_Identifier: yourSampleID|Unique_Sequence_Identifier: yourSampleID-segmentNumber\nAGCAAAAGCAGGGTAGATAATCACTCAATGAGTGACATCGAAGCCATGGCGTCTCAAGGCACCAAACGATCATATGAACAAATGGAGACTGGTGGGGAGCGCCAGGATGCCACAGAAATC\'', intermediateChanges:true"
                                       data-dojo-attach-event="onBlur:checkFasta"></textarea>
                             <div class="warning" data-dojo-attach-point="sequence_message"></div>
                         </td>
@@ -126,7 +130,6 @@
             </div>
             <div class="headerrow" style="margin: 16px 0 7px 0">
                 <label class="appBoxLabel">Metadata file</label>
-                <i data-dojo-attach-event="onClick:downloadMetadataTemplate" class="fa icon-download fa-1x" title="Download Template File"></i>
             </div>
             <div class="appRow">
                 <div style="width:85%;display:inline-block;"
