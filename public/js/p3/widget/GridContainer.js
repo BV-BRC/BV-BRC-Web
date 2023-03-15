@@ -454,7 +454,13 @@ define([
           }
           // params.type = type;
           params.data_context = context;
-          params.genome_list = selection.map(x => x.genome_id);
+          if (context === 'genome') {
+            params.genome_list = selection.map(x => x.genome_id);
+          }
+          if (context === 'feature') {
+            params.feature_list = selection.map(x => x.patric_id);
+            params.feature_list = params.feature_list.filter(x => x);
+          }
           // params.multiple = multiple;
           // params.selection = selection;
           // params.container = container;
@@ -933,6 +939,8 @@ define([
             }));
           };
           var feature_list = selection.map(x => x.patric_id);
+          feature_list = feature_list.filter(x => x);
+          // TODO: maybe move this to services tooltip dialog?
           var hidden_group_path = WorkspaceManager.getDefaultFolder() + '/home/._tmp_groups/';
           var group_name = 'tmp_feature_group_' + Date.now();
           var group_path = hidden_group_path + group_name;

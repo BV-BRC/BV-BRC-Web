@@ -45,35 +45,19 @@ define([
       on(this.domNode, Mouse.leave, lang.hitch(this, 'onMouseLeave'));
 
       var _self = this;
-      _self.temp_content = false;
-      var save_group = false;
       on(this.domNode, '.wsActionTooltip:click', function (evt) {
-        if (evt.target.attributes.rel.value === 'save_group') {
-          save_group = (evt.target.attributes.save.value === 'true');
-          _self.data.save_group = save_group;
-          var service = evt.target.attributes.service.value;
-          // _self._saveSelection(save_group,service,_self.data); //data is a dictionary
-
-          // SAVE SELECTION FALSE, return group_path;
-          group_path = _self._saveSelection(false, service, _self.data);
-          var extra = { 'showForm': true };
-          _self._callService(service, group_path, _self.data, extra);
-          popup.hide(_self);
-          //  TODO: separate path for calling service without saving a group
-        }
-        if (evt.target.attributes.rel.value === 'blast_feature_source_query') {
+        if (evt.target.attributes.context.value === 'blast_feature_source_query') {
           var source = evt.target.attributes.source.value;
-          var service = evt.target.attributes.service.value;
-          var group_path = evt.target.attributes.group_path.value; // TODO: I think it's null now
+          var service = 'Homology';
           _self.data.source = source;
-          // var extra = {'blast_feature_source_query':false,'showForm':false};
-          // group_path,service
           if (_self.context === 'feature_overview') {
             // TODO: setup protein/nucleotide selection
+            console.log('not set up yet');
           }
           else if (_self.context === 'grid_container') {
             // _self._callService(service,group_path,data,extra);
-            // _self.checkSaveGroup(service);
+            // TODO: call save temporary group or whatever, then call service with saved group
+            _self.callService(service, )
           }
         }
       });
@@ -104,7 +88,7 @@ define([
       switch (data_context) {
         case 'feature':
           domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'Homology', innerHTML: 'Blast' }, service_div);
-          domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'msa', innerHTML: 'MSA' }, service_div);
+          // domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'msa', innerHTML: 'MSA' }, service_div);
           if (!(this.context === 'grid_container')) {
             domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'primer_design', innerHTML: 'Primer Design' }, service_div);
           }
@@ -146,14 +130,14 @@ define([
         if (data.data_context === 'feature') {
           // TODO: min number to save?
           // this.checkSaveGroup(service);
-          var extra = { querySource: true };
-          this._callService(service, null, data, extra);
+          var fs_div = domConstruct.create('div', {});
+          domConstruct.create('div', { style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;', innerHTML: 'Select Source' }, fs_div);
+          domConstruct.create('div', { 'class': 'wsActionTooltip', 'context': 'blast_feature_source_query', 'source': 'query', innerHTML: 'Query'}, fs_div);
+          domConstruct.create('div', { 'class': 'wsActionTooltip', 'context': 'blast_feature_source_query', 'source': 'source', innerHTML: 'Source'}, fs_div);
+          this.blast_data = data;
+          this._setDivContent(fs_div);
         }
         else if (data.data_context === 'genome') {
-          // TODO: get rid of save group stuff
-          // TODO: min number to save/add services that only take one genome?
-          //  - goes to different function
-          // this.checkSaveGroup(service);
           this._callService(service, null, data, null);
         }
         else if (data.data_context === 'genome_group') {
@@ -173,7 +157,7 @@ define([
         // TODO: genome context
         if (data.data_context === 'feature') {
           // TODO: min number to save?
-          this.checkSaveGroup(service);
+          // this.checkSaveGroup(service);
         }
         else if (data.data_context === 'genome') {
           // TODO: min number to save/add services that only take one genome?
@@ -215,125 +199,6 @@ define([
         this._callService(service, null, data, extra);
         popup.close(this);
       }));
-    },
-
-    // TODO: stuff for _callService for saving group
-    // TODO: will this be used in other contexts
-    _saveSelection: function (save_group, service, data) {
-      var selection_list = [];
-      if (data.type === 'feature_group') {
-        data.selection.forEach(lang.hitch(this, function (sel) {
-          selection_list.push(sel.patric_id);
-        }));
-      }
-      else if (data.type === 'genome_group') {
-        data.selection.forEach(lang.hitch(this, function (sel) {
-          selection_list.push(sel.genome_id);
-        }));
-      }
-      else if (data.type === 'experiment_group') {
-        console.log('experiment group not supported');
-        return;
-      }
-      if (save_group) {
-        var dlg = new Dialog({ title: 'Add selected items to group' });
-        var stg = new SelectionToGroup({
-          selection: data.selection,
-          type: data.type,
-          inputType: data.container.containerType,
-          path: data.container.get('path')
-        });
-        on(dlg.domNode, 'dialogAction', function (evt) {
-          console.log('here_dialog');
-          dlg.hide();
-          setTimeout(function () {
-            dlg.destroy();
-          }, 2000);
-          if (evt.button === 'add') {
-            var group_path = stg.groupPathSelector.value + '/' + stg.groupNameBox.value;
-            console.log('Saving group to:', group_path);
-          }
-        });
-        domConstruct.place(stg.domNode, dlg.containerNode, 'first');
-        stg.startup();
-        dlg.startup();
-        dlg.show();
-      }
-      else {
-        // Make sure TEMP directory has been made
-        // TODO: how do I return false and stop execution if the query doesn't work
-        //  and return true if it does
-        // TODO: Make subdirectory queries one at a time?
-        //  Using the throw error from createFolder as the mechanism for this working
-        // Assumes WorkspaceManager.createFolder throws and error if the folder already exists
-        // TODO: move to a separate function?
-        const checkTEMP = function (tmp_path) {
-          WorkspaceManager.createFolder(tmp_path).then(lang.hitch(this, function (tmp_record) {
-            console.log('tmp_record=', tmp_record);
-            WorkspaceManager.createFolder(tmp_path + 'Feature Groups/').then(lang.hitch(this, function (feature_record) {
-              console.log('feature_record=', feature_record);
-              WorkspaceManager.createFolder(tmp_path + 'Genome Groups/').then(lang.hitch(this, function (genome_record) {
-                console.log('genome_record=', genome_record);
-                WorkspaceManager.createFolder(tmp_path + 'Experiment Groups/').then(lang.hitch(this, function (experiment_record) {
-                  console.log('experiment_record=', experiment_record);
-                  checkTEMP(tmp_path);
-                }),
-                lang.hitch(this, function (experiment_error) {
-                  return false;
-                }));
-              }),
-              lang.hitch(this, function (genome_error) {
-                return false;
-              }));
-            }),
-            lang.hitch(this, function (feature_error) {
-              return false;
-            }));
-          }),
-          lang.hitch(this, function (tmp_error) {
-            console.log('end checkTEMP');
-            return true;
-          })).then(lang.hitch(this, function (res) {
-            console.log('res=', res);
-          }));
-        };
-        var tmp_path = WorkspaceManager.getDefaultFolder() + '/TEMP/';
-        // TODO: how to just wait a moment to see if TEMP exists
-        //  And how to wait until TEMP exists before continuing
-        checkTEMP(tmp_path);
-        // create group in TEMP space
-        var group_dir;
-        if (data.type === 'feature_group') { group_dir = tmp_path + 'Feature Groups/'; }
-        else if (data.type === 'genome_group') { group_dir = tmp_path + 'Genome Groups/'; }
-        else if (data.type === 'experiment_group') { group_dir = tmp_path + 'Experiment Groups/'; }
-        else {
-          console.log('Type not recognized: not creating temporary group file');
-          return;
-        }
-        var group_name = data.type + '_' + Date.now();
-        var group_path = group_dir + group_name;
-
-        // TODO: WorkspaceManager.createGroup is throwing some sort of error, not sure if I need to worry about it
-        var def = WorkspaceManager.createGroup(group_name, data.type, group_dir, data.type, selection_list);
-        console.log('def = ', def);
-
-        return group_path;
-      }
-    },
-
-    checkSaveGroup: function (service) {
-      // var saveContent = '<div style="background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;">Save Selection?</div>';
-      // saveContent = saveContent + '<div class="wsActionTooltip" rel="save_group" save="true">Yes</div><div class="wsActionTooltip" rel="save_group" save="false">No</div>';
-      var saveContent = domConstruct.create('div', {});
-      domConstruct.create('div', { style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;', innerHTML: 'Save Selection?' }, saveContent);
-      domConstruct.create('div', {
-        'class': 'wsActionTooltip', 'rel': 'save_group', 'save': 'true', innerHTML: 'Yes', 'service': service
-      }, saveContent);
-      domConstruct.create('div', {
-        'class': 'wsActionTooltip', 'rel': 'save_group', 'save': 'false', innerHTML: 'No', 'service': service
-      }, saveContent);
-      // this.set('content',saveContent);
-      this._setDivContent(saveContent);
     },
 
     // extra parameters to enhance functionality:
