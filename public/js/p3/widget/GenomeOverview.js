@@ -284,7 +284,7 @@ define([
       }
       var data = {};
       data.genome = this.genome;
-      data.data_context = 'genome';
+      data.data_type = 'genome';
       popup.open({
         popup: new ServicesTooltipDialog({
           context: 'genome_overview',

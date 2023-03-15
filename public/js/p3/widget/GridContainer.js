@@ -429,19 +429,15 @@ define([
           // TODO: containerTypes: amr(?), sequence_data, feature_data, structure_data, spgene_data, proteinFeatures_data, pathway_data, subsystems(?)
           console.log('selection=', selection);
           console.log('container=', container);
-          var context = null;
-          var multiple = false;
+          var data_type = null;
           var params = {};
-          if (selection.length > 1) {
-            multiple = true;
-          }
           var type;
           if (container.containerType === 'sequence_data' || container.containerType == 'genome_data') {
             type = 'genome';
-            context = 'genome';
+            data_type = 'genome';
           } else if (container.containerType == 'feature_data' || container.containerType == 'transcriptomics_gene_data' || container.containerType == 'spgene_data' || container.containerType == 'strain_data') {
             type = 'feature_group';
-            context = 'feature';
+            data_type = 'feature';
           } else if (container.containerType == 'transcriptomics_experiment_data') {
             type = 'experiment_group';
           }
@@ -449,13 +445,22 @@ define([
             console.error('Missing or invalid type for Services');
             return;
           }
-          if (!context) {
-            context = '';
+          if (!data_type) {
+            data_type = '';
           }
           // params.type = type;
-          params.data_context = context;
-          params.genome_list = selection.map(x => x.genome_id);
-          // params.multiple = multiple;
+          params.selection = selection;
+          params.data_type = data_type;
+          params.type = type;
+          /*
+          if (context === 'genome') {
+            params.genome_list = selection.map(x => x.genome_id);
+          }
+          if (context === 'feature') {
+            params.feature_list = selection.map(x => x.patric_id);
+            params.feature_list = params.feature_list.filter(x => x);
+          }
+          */
           // params.selection = selection;
           // params.container = container;
           popup.open({
@@ -933,6 +938,8 @@ define([
             }));
           };
           var feature_list = selection.map(x => x.patric_id);
+          feature_list = feature_list.filter(x => x);
+          // TODO: maybe move this to services tooltip dialog somehow?
           var hidden_group_path = WorkspaceManager.getDefaultFolder() + '/home/._tmp_groups/';
           var group_name = 'tmp_feature_group_' + Date.now();
           var group_path = hidden_group_path + group_name;
