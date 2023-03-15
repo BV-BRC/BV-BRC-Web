@@ -18,15 +18,15 @@ define([
     templateString: Template,
     applicationName: 'GeneTree',
     requireAuth: true,
-    applicationLabel: 'Gene Tree',
-    applicationDescription: 'The Gene Tree Service enables construction of custom phylogenetic trees built from user-selected genomes, genes or proteins.',
+    applicationLabel: 'Gene / Protein Tree',
+    applicationDescription: 'The Gene / Protein Tree Service enables construction of custom phylogenetic trees built from user-selected genes or proteins.',
     applicationHelp: 'quick_references/services/genetree.html',
     tutorialLink: 'tutorial/genetree/genetree.html',
     videoLink: 'https://youtu.be/VtXWBRSdXRo',
     pageTitle: 'Gene Tree Service | BV-BRC',
     defaultPath: '',
     startingRows: 3,
-    maxGenomes: 500,
+    maxGenomes: 5000,
     maxGenomeLength: 250000,
 
     constructor: function () {
@@ -36,7 +36,7 @@ define([
       this.fastaToAttachPt = ['user_genomes_fasta'];
       this.unalignedFastaToAttachPt = ['user_genomes_unaligned_fasta'];
       this.featureGroupToAttachPt = ['user_genomes_featuregroup'];
-      this.genomeGroupToAttachPt = ['user_genomes_genomegroup'];
+      //this.genomeGroupToAttachPt = ['user_genomes_genomegroup'];
       this.userGenomeList = [];
       this.numref = 0;
       this.fastaNamesAndTypes = [];
