@@ -26,7 +26,7 @@ define([
     pageTitle: 'Gene Tree Service | BV-BRC',
     defaultPath: '',
     startingRows: 3,
-    maxGenomes: 500,
+    maxGenomes: 5000,
     maxGenomeLength: 250000,
 
     constructor: function () {

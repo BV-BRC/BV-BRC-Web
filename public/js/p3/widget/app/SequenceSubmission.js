@@ -13,12 +13,13 @@ define([
   return declare([AppBase], {
     baseClass: 'SequenceSubmission',
     requireAuth: true,
-    applicationDescription: 'The Sequence Submission service allows user to validate and submit the sequences to NCBI GenBank. ' +
-        'User provided metadata and FASTA sequences are validated to against the data submission standards, and sequences are ' +
-        'annotated using VIGOR4 and FLAN annotation tools to identify any sequence errors before submission. The Sequence Submission ' +
-        'service provides the validation report that should be reviewed by user before submitted the sequences to the Genbank.',
+    applicationDescription: 'The Sequence Submission service allows user to validate and submit virus sequences to NCBI ' +
+        'Genbank. User-provided metadata and FASTA sequences are validated against the Genbank data submission standards ' +
+        'to identify any sequence errors before submission.  Sequences are also annotated using the VIGOR4 and FLAN annotation ' +
+        'tools for internal use by users. The Sequence Submission service provides a validation report that should be reviewed ' +
+        'by the user before submitting the sequences to the Genbank.',
     videoLink: '',
-    metadataTemplatePath: '/mkuscuog@bvbrc/BV-BRC Templates/sequence_submission_metadata_template.csv',
+    templateFolderURL: 'https://www.bv-brc.org/workspace/mkuscuog@bvbrc/BV-BRC Templates/',
     pageTitle: 'Sequence Submission Service | BV-BRC',
     appBaseURL: 'Sequence Submission',
     templateString: Template,
@@ -176,14 +177,15 @@ define([
       errors.set('missingSampleIds', []);
       errors.set('missingSequenceIds', []);
       errors.set('invalidSampleId', []);
+      errors.set('invalidSequenceId', []);
       errors.set('sampleContainsMoreThan8Sequences', []);
       errors.set('duplicatedSequenceId', []);
       errors.set('invalidNucleotype', []);
       let sampleSequenceMap = new Map();
       const reto = this.validateFasta(data, 'aa', false);
 
-      const nucleotypeRegex = new RegExp(/^[ACGTURYSWKMBDHVN]+$/, 'i');
       if (reto.valid) {
+        const nucleotypeRegex = new RegExp(/^[ACGTURYSWKMBDHVN]+$/, 'i');
         const records = reto.trimFasta.split(/[>>]/);
         for (let record of records) {
           if (record.trim() != '') {
@@ -211,19 +213,38 @@ define([
               }
 
               // Validate sequence id
-              if (sampleSequenceMap.has(sampleId)) {
-                const sequenceIds = sampleSequenceMap.get(sampleId);
-
-                // Check if sequence id already exists for sample id
-                if (sequenceIds.includes(sequenceId) && !errors.get('duplicatedSequenceId').includes(sequenceId)) {
-                  errors.set('duplicatedSequenceId', [...errors.get('duplicatedSequenceId'), sequenceId]);
-                } else if (sequenceIds.length >= 8 && !errors.get('sampleContainsMoreThan8Sequences').includes(sampleId)) {
-                  errors.set('sampleContainsMoreThan8Sequences', [...errors.get('sampleContainsMoreThan8Sequences'), sampleId]);
-                }
-
-                sampleSequenceMap.set(sampleId, [...sequenceIds, sequenceId]);
+              const sequenceIdParts = sequenceId.split('-');
+              let isValidSequenceId = true;
+              if (sequenceIdParts.length !== 2) {
+                isValidSequenceId = false;
               } else {
-                sampleSequenceMap.set(sampleId, [sequenceId]);
+                // Validate segment number
+                const segmentRegex = new RegExp(/^[0-8]+$/);
+                const segmentNumber = sequenceIdParts[1];
+
+                if (!segmentNumber.match(segmentRegex)) {
+                  isValidSequenceId = false;
+                }
+              }
+
+              if (isValidSequenceId) {
+                // Validate sequence id uniqueness
+                if (sampleSequenceMap.has(sampleId)) {
+                  const sequenceIds = sampleSequenceMap.get(sampleId);
+
+                  // Check if sequence id already exists for sample id
+                  if (sequenceIds.includes(sequenceId) && !errors.get('duplicatedSequenceId').includes(sequenceId)) {
+                    errors.set('duplicatedSequenceId', [...errors.get('duplicatedSequenceId'), sequenceId]);
+                  } else if (sequenceIds.length >= 8 && !errors.get('sampleContainsMoreThan8Sequences').includes(sampleId)) {
+                    errors.set('sampleContainsMoreThan8Sequences', [...errors.get('sampleContainsMoreThan8Sequences'), sampleId]);
+                  }
+
+                  sampleSequenceMap.set(sampleId, [...sequenceIds, sequenceId]);
+                } else {
+                  sampleSequenceMap.set(sampleId, [sequenceId]);
+                }
+              } else {
+                errors.set('invalidSequenceId', [...errors.get('invalidSequenceId'), sequenceId]);
               }
             } else {
               if (!isSampleIdExists) {
@@ -304,147 +325,167 @@ define([
 
         const sampleValidations = this.validateMetadata(metadata);
         const sampleIdentifiers = [...sampleValidations.keys()];
-        const fastaErrors = this.validateFastaHeader(fastaData, sampleIdentifiers);
 
-        // Generate error and warning HTMLs
-        let metadataErrorHTML = '';
-        let metadataWarningHTML = '';
-        for (const [id, validations] of sampleValidations) {
-          if (validations.length > 0) {
-            let errorHTML = '';
-            let warningHTML = '';
-            for (let validation of validations) {
-              if (validation.type === 'error') {
-                errorHTML += `<li>${validation.message}</li>`;
-              } else if (validation.type === 'warning') {
-                warningHTML += `<li>${validation.message}</li>`;
-              }
-            }
-
-            if (errorHTML) {
-              metadataErrorHTML += `Sample Id: ${id}<br><ul>${errorHTML}</ul><br>`;
-            }
-            if (warningHTML) {
-              metadataWarningHTML += `Sample Id: ${id}<br><ul>${warningHTML}</ul><br>`;
-            }
-            isValid = false;
-          }
-        }
-
-        let fastaErrorHTML = '';
-        for (const [key, errors] of fastaErrors) {
-          if (errors.length > 0) {
-            if (key == 'missingSamples') {
-              fastaErrorHTML += 'Sample(s) provided in metadata file are missing in FASTA file.<br>';
-            }
-            if (key == 'missingSampleIds') {
-              fastaErrorHTML += 'Unique_Sample_Identifier is missing in the header.<br>';
-            }
-            if (key == 'missingSequenceIds') {
-              fastaErrorHTML += 'Unique_Sequence_Identifier is missing in the header.<br>';
-            }
-            if (key == 'invalidSampleId') {
-              fastaErrorHTML += 'Sample id(s) are not valid. Sample id cannot be longer than 50 characters or cannot ' +
-                  'include ".", "%", "\'", """, " ", "/".<br>';
-            }
-            if (key == 'sampleContainsMoreThan8Sequences') {
-              fastaErrorHTML += 'Sample cannot contain more than 8 sequences.<br>';
-            }
-            if (key == 'duplicatedSequenceId') {
-              fastaErrorHTML += 'There are more than 1 sequence id for the sample.<br>';
-            }
-            if (key == 'invalidNucleotype') {
-              fastaErrorHTML += 'Invalid nucleotype sequence(s). Sequence can only have "ACGTURYSWKMBDHVN" nucleotide codes.<br>';
-            }
-
-            if (key == 'missingHeaders') {
-              fastaErrorHTML += errors + '<br>';
-            } else {
-              fastaErrorHTML += '<ul>';
-              for (let error of errors) {
-                fastaErrorHTML += `<li>${error}</li>`;
-              }
-              fastaErrorHTML += '</ul><br>';
-            }
-            isValid = false;
-          }
-        }
-
-
-        if (isValid) {
-          var values = this.getValues();
-          values['numberOfSequences'] = _self.numberOfSequences;
-
-          _self.workingMessage.innerHTML = 'Submitting Sequence Submission job';
-
-          var start_params = {
-            'base_url': window.App.appBaseURL
-          }
-          _self.doSubmit(values, start_params).then(function (results) {
-            console.log('Job Submission Results: ', results);
-
-            if (window.gtag) {
-              gtag('event', this.applicationName, {event_category: 'Services'});
-            }
-
-            domClass.remove(_self.domNode, 'Working');
-            domClass.add(_self.domNode, 'Submitted');
-            _self.submitButton.set('disabled', false);
-            registry.byClass('p3.widget.WorkspaceFilenameValidationTextBox').forEach(function (obj) {
-              obj.reset();
-            });
-
-            //Notify submission team
-            let formData = new FormData();
-            formData.append('subject', 'New Sequence Submission job is submitted');
-            formData.append('ownerId', results[0].owner);
-            formData.append('submissionJobPath',  results[0].output_path + '/' + results[0].output_file);
-            formData.append('numberOfSequences',  _self.numberOfSequences);
-
-            when(request.post('/notifySubmitSequence', {
-              headers: {
-                'Authorization': (window.App.authorizationToken || ''),
-                'enctype': 'multipart/form-data'
-              },
-              data: formData
-            }), function (results) {
-              console.log('Succ notifying team for the submission: ', results);
-            }, function (err) {
-              console.log('Error notifying team for the submission: ', err);
-            });
-          }, function (err) {
-            console.log('Error:', err);
-            domClass.remove(_self.domNode, 'Working');
-            domClass.add(_self.domNode, 'Error');
-            _self.errorMessage.innerHTML = err;
-          });
-        } else {
-          let contentText = '';
-          if (metadataWarningHTML) {
-            contentText += `<b>Please review metadata warnings below;</b><br>${metadataWarningHTML}`;
-          }
-          if (metadataErrorHTML) {
-            contentText += `<b>Please review metadata errors below;</b><br>${metadataErrorHTML}`;
-          }
-          if (fastaErrorHTML) {
-            contentText += `<b>Please review fasta errors below;</b><br>${fastaErrorHTML}`;
-          }
-
-          errorDialog = new Dialog({
-            title: 'Validation Error(s)',
-            style: 'min-width: 500px;',
-            content: contentText
-          });
-
-          downloadErrorReport = function () {
-            saveAs(new Blob([contentText], { type: 'text/html;charset=utf-8;' }), 'validation_error_report.html');
-          };
-
+        // Make sure metadata file is not empty
+        if (sampleIdentifiers.length === 0) {
           domClass.remove(_self.domNode, 'Working');
           domClass.add(_self.domNode, 'Error');
-          _self.errorMessage.innerHTML = 'There are errors in your submission sequence or metadata file. ' +
-              '<a onclick="javascript:downloadErrorReport();">Download</a> the error report, or click ' +
-              '<a onclick="javascript:errorDialog.show();">here</a> to view the report.';
+          _self.errorMessage.innerHTML = 'Metadata file is empty. Please make sure to select a file with at least one sample.';
+        } else {
+          const fastaErrors = this.validateFastaHeader(fastaData, sampleIdentifiers);
+
+          // Generate error and warning HTMLs
+          let metadataErrorHTML = '';
+          let metadataWarningHTML = '';
+          for (const [id, validations] of sampleValidations) {
+            if (validations.length > 0) {
+              let errorHTML = '';
+              let warningHTML = '';
+              for (let validation of validations) {
+                if (validation.type === 'error') {
+                  errorHTML += `<li>${validation.message}</li>`;
+                } else if (validation.type === 'warning') {
+                  warningHTML += `<li>${validation.message}</li>`;
+                }
+              }
+
+              if (errorHTML) {
+                metadataErrorHTML += `Sample Id: ${id}<br><ul>${errorHTML}</ul><br>`;
+              }
+              if (warningHTML) {
+                metadataWarningHTML += `Sample Id: ${id}<br><ul>${warningHTML}</ul><br>`;
+              }
+              isValid = false;
+            }
+          }
+
+          let fastaErrorHTML = '';
+          for (const [key, errors] of fastaErrors) {
+            if (errors.length > 0) {
+              let displayMetadataError = '';
+              if (key == 'missingSamples') {
+                displayMetadataError += 'Sample(s) provided in metadata file are missing in FASTA file.<br>';
+              }
+              if (key == 'missingSampleIds') {
+                fastaErrorHTML += 'Unique_Sample_Identifier is missing or misspelled in the header.<br>';
+              }
+              if (key == 'missingSequenceIds') {
+                fastaErrorHTML += 'Unique_Sequence_Identifier is missing or misspelled in the header.<br>';
+              }
+              if (key == 'invalidSampleId') {
+                fastaErrorHTML += 'Sample id(s) are not valid. Sample id cannot be longer than 50 characters or cannot ' +
+                    'include ".", "%", "\'", """, " ", "/".<br>';
+              }
+              if (key == 'invalidSequenceId') {
+                fastaErrorHTML += 'Sequence id(s) are not valid. Valid Format: "yourSampleId-segmentNumber". Valid Segment Numbers: [1-8]<br>';
+              }
+              if (key == 'sampleContainsMoreThan8Sequences') {
+                fastaErrorHTML += 'Sample cannot contain more than 8 sequences.<br>';
+              }
+              if (key == 'duplicatedSequenceId') {
+                fastaErrorHTML += 'There are more than 1 sequence id for the sample.<br>';
+              }
+              if (key == 'invalidNucleotype') {
+                fastaErrorHTML += 'Invalid nucleotype sequence(s). Sequence can only have "ACGTURYSWKMBDHVN" nucleotide codes.<br>';
+              }
+
+              if (key == 'missingHeaders') {
+                fastaErrorHTML += errors + '<br>';
+              } else if (key == 'missingSamples') {
+                displayMetadataError += '<ul>';
+                for (let error of errors) {
+                  displayMetadataError += `<li>${error}</li>`;
+                }
+                displayMetadataError += '</ul><br>';
+
+                metadataErrorHTML = displayMetadataError + metadataErrorHTML;
+              } else {
+                fastaErrorHTML += '<ul>';
+                for (let error of errors) {
+                  fastaErrorHTML += `<li>${error}</li>`;
+                }
+                fastaErrorHTML += '</ul><br>';
+              }
+              isValid = false;
+            }
+          }
+
+
+          if (isValid) {
+            var values = this.getValues();
+            values['numberOfSequences'] = _self.numberOfSequences;
+
+            _self.workingMessage.innerHTML = 'Submitting Sequence Submission job';
+
+            var start_params = {
+              'base_url': window.App.appBaseURL
+            }
+            _self.doSubmit(values, start_params).then(function (results) {
+              console.log('Job Submission Results: ', results);
+
+              if (window.gtag) {
+                gtag('event', this.applicationName, {event_category: 'Services'});
+              }
+
+              domClass.remove(_self.domNode, 'Working');
+              domClass.add(_self.domNode, 'Submitted');
+              _self.submitButton.set('disabled', false);
+              registry.byClass('p3.widget.WorkspaceFilenameValidationTextBox').forEach(function (obj) {
+                obj.reset();
+              });
+
+              //Notify submission team
+              let formData = new FormData();
+              formData.append('subject', 'New Sequence Submission job is submitted');
+              formData.append('ownerId', results[0].owner);
+              formData.append('submissionJobPath', results[0].output_path + '/' + results[0].output_file);
+              formData.append('numberOfSequences', _self.numberOfSequences);
+
+              when(request.post('/notifySubmitSequence', {
+                headers: {
+                  'Authorization': (window.App.authorizationToken || ''),
+                  'enctype': 'multipart/form-data'
+                },
+                data: formData
+              }), function (results) {
+                console.log('Succ notifying team for the submission: ', results);
+              }, function (err) {
+                console.log('Error notifying team for the submission: ', err);
+              });
+            }, function (err) {
+              console.log('Error:', err);
+              domClass.remove(_self.domNode, 'Working');
+              domClass.add(_self.domNode, 'Error');
+              _self.errorMessage.innerHTML = err;
+            });
+          } else {
+            let contentText = '';
+            if (metadataWarningHTML) {
+              contentText += `<b>Please review metadata warnings below;</b><br>${metadataWarningHTML}`;
+            }
+            if (metadataErrorHTML) {
+              contentText += `<b>Please review metadata errors below;</b><br>${metadataErrorHTML}`;
+            }
+            if (fastaErrorHTML) {
+              contentText += `<b>Please review fasta errors below;</b><br>${fastaErrorHTML}`;
+            }
+
+            errorDialog = new Dialog({
+              title: 'Validation Error(s)',
+              style: 'min-width: 500px;',
+              content: contentText
+            });
+
+            downloadErrorReport = function () {
+              saveAs(new Blob([contentText], {type: 'text/html;charset=utf-8;'}), 'validation_error_report.html');
+            };
+
+            domClass.remove(_self.domNode, 'Working');
+            domClass.add(_self.domNode, 'Error');
+            _self.errorMessage.innerHTML = 'There are errors in your submission sequence or metadata file. ' +
+                '<a onclick="javascript:downloadErrorReport();">Download</a> the error report, or click ' +
+                '<a onclick="javascript:errorDialog.show();">here</a> to view the report.';
+          }
         }
       } else {
         console.log('Form is incomplete');
@@ -463,6 +504,9 @@ define([
         'metadata': this.metadata.value,
         'output_file': output_file,
         'output_path': output_path,
+        'first_name': this.first_name.value,
+        'last_name': this.last_name.value,
+        'email': this.email.value,
         'consortium': this.consortium.value,
         'affiliation': this.affiliation.value,
         'country': this.country.value,
