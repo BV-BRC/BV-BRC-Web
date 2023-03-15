@@ -440,7 +440,7 @@ define([
           if (container.containerType === 'sequence_data' || container.containerType == 'genome_data') {
             type = 'genome_group';
             context = 'genome';
-          } else if (container.containerType == 'feature_data' || container.containerType == 'transcriptomics_gene_data' || container.containerType == 'spgene_data' || container.containerType == 'strain_data') {
+          } else if (container.containerType == 'feature_data' || container.containerType == 'protein_data' ||container.containerType == 'transcriptomics_gene_data' || container.containerType == 'spgene_data' || container.containerType == 'strain_data') {
             type = 'feature_group';
             context = 'feature';
           } else if (container.containerType == 'transcriptomics_experiment_data') {
