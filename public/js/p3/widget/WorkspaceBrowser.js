@@ -263,6 +263,26 @@ define([
         }
       }, false);
 
+      // TODO: add ServicesFeatureGroup
+      this.actionPanel.addAction('ServicesFeatureGroups', 'MultiButton fa icon-cog fa-2x', {
+        label: 'SERVICES',
+        validTypes: ['feature_group'],
+        multiple: false,
+        tooltip: 'Select services using this FeatureGroup'
+      }, function (selection, container, button) {
+        var data = {};
+        data.data_type = 'feature';
+        data.feature_group = selection[0].path;
+        popup.open({
+          popup: new ServicesTooltipDialog({
+            context: 'workspace',
+            data: data
+          }),
+          around: button,
+          orient: ['below']
+        });
+      });
+
       this.actionPanel.addAction('ServicesGenomeGroups', 'MultiButton fa icon-cog fa-2x', {
         label: 'SERVICES',
         validTypes: ['genome_group'],
@@ -270,11 +290,11 @@ define([
         tooltip: 'Select services using this GenomeGroup'
       }, function (selection, container, button) {
         var data = {};
-        data.data_context = 'genome_group';
+        data.data_type = 'genome';
         data.genome_group = selection[0].path;
         popup.open({
           popup: new ServicesTooltipDialog({
-            context: 'grid_container',
+            context: 'workspace',
             data: data
           }),
           around: button,

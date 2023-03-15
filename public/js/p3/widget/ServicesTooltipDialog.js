@@ -3,13 +3,14 @@ define([
   'dojo/_base/lang', 'dojo/mouse', 'dojo/topic',
   'dijit/popup', 'dijit/TooltipDialog', './SelectionToGroup',
   'dijit/Dialog', '../WorkspaceManager', '../DataAPI', './RerunUtility', './app/AppBase', './app/GenomeAlignment',
-  './app/Homology', './app/MSA', './app/PhylogeneticTree', './app/PrimerDesign'
+  './app/Homology', './app/MSA', './app/PhylogeneticTree', './app/PrimerDesign', 'dojo/_base/Deferred',
+  'dojox/widget/Standby'
 ], function (
   declare, on, domConstruct,
   lang, Mouse, Topic,
   popup, TooltipDialog, SelectionToGroup,
   Dialog, WorkspaceManager, DataAPI, RerunUtility, AppBase, GenomeAlignment,
-  Homology, MSA, PhylogeneticTree, PrimerDesign
+  Homology, MSA, PhylogeneticTree, PrimerDesign, Deferred, Standby
 ) {
 
   return declare([TooltipDialog], {
@@ -45,43 +46,15 @@ define([
       on(this.domNode, Mouse.leave, lang.hitch(this, 'onMouseLeave'));
 
       var _self = this;
-      on(this.domNode, '.wsActionTooltip:click', function (evt) {
-        if (evt.target.attributes.context.value === 'blast_feature_source_query') {
-          var source = evt.target.attributes.source.value;
-          var service = 'Homology';
-          _self.data.source = source;
-          if (_self.context === 'feature_overview') {
-            // TODO: setup protein/nucleotide selection
-            console.log('not set up yet');
-          }
-          else if (_self.context === 'grid_container') {
-            // _self._callService(service,group_path,data,extra);
-            // TODO: call save temporary group or whatever, then call service with saved group
-            _self.callService(service, )
-          }
-        }
-      });
       on(this.domNode, '.serviceActionTooltip:click', function (evt) {
         var service_selection = evt.target.attributes.rel.value;
-        // Based on service and number of selections, call Save Selection
-        if (_self.context === 'grid_container') {
-          _self._contextGridContainer(service_selection, _self.data);
-        }
-        else if (_self.context === 'genome_overview') {
-          _self._contextGenomeOverview(service_selection, _self.data);
-        }
-        else if (_self.context === 'feature_overview') {
-          _self._contextFeatureOverivew(service_selection, _self.data);
-        }
-        // TODO: context === 'taxon_overview'(?)
-        // TODO: go through and add other contexts
+        _self._selectService(service_selection, _self.data);
       });
-      // Data: context (feature or genome), data (dictionary), multiple
 
-      this._getService(this.data.data_context);
+      this._listServices(this.data.data_type);
     },
 
-    _getService(data_context) {
+    _listServices(data_context) {
       // debugger;
       var service_div = domConstruct.create('div', {});
       domConstruct.create('div', { style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;', innerHTML: 'Services' }, service_div);
@@ -89,9 +62,9 @@ define([
         case 'feature':
           domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'Homology', innerHTML: 'Blast' }, service_div);
           // domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'msa', innerHTML: 'MSA' }, service_div);
-          if (!(this.context === 'grid_container')) {
-            domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'primer_design', innerHTML: 'Primer Design' }, service_div);
-          }
+          // if (!(this.context === 'grid_container')) {
+          //   domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'primer_design', innerHTML: 'Primer Design' }, service_div);
+          // }
           // TODO: Maybe ID Mapper
           break;
         case 'genome':
@@ -102,12 +75,14 @@ define([
           // TODO: fix genome distance?
           // domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'genome_distance', innerHTML: 'Similar Genome Finder' }, tData);
           break;
+        /*
         case 'genome_group':
           domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'Homology', innerHTML: 'Blast' }, service_div);
           // domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'phylogenetic_tree', innerHTML: 'Phylogenetic Tree' }, service_div);
           // TODO: fix genome distance?
           // domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'genome_distance', innerHTML: 'Similar Genome Finder' }, tData);
           break;
+        */
         default:
           console.log('invalid context: displaying placeholder');
           domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'genome_alignment', innerHTML: 'Genome Alignment' }, service_div);
@@ -117,67 +92,6 @@ define([
       }
       // this.set('content',service_div);
       this._setDivContent(service_div);
-    },
-
-    // TODO: Add FeatureOverview table elements
-    _contextGridContainer: function (service, data) {
-      if (service === 'Homology') {
-        // feature context
-        //  - TODO(later): ask if min number to save as feature group
-        //    - goes to different function
-        //  - TODO: ask to save selection
-        // TODO: genome context
-        if (data.data_context === 'feature') {
-          // TODO: min number to save?
-          // this.checkSaveGroup(service);
-          var fs_div = domConstruct.create('div', {});
-          domConstruct.create('div', { style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;', innerHTML: 'Select Source' }, fs_div);
-          domConstruct.create('div', { 'class': 'wsActionTooltip', 'context': 'blast_feature_source_query', 'source': 'query', innerHTML: 'Query'}, fs_div);
-          domConstruct.create('div', { 'class': 'wsActionTooltip', 'context': 'blast_feature_source_query', 'source': 'source', innerHTML: 'Source'}, fs_div);
-          this.blast_data = data;
-          this._setDivContent(fs_div);
-        }
-        else if (data.data_context === 'genome') {
-          this._callService(service, null, data, null);
-        }
-        else if (data.data_context === 'genome_group') {
-          this._callService(service, data.genome_group, data, null);
-        }
-      }
-      else if (service === 'comparative_pathway') {
-        console.log('comparative_pathway Not enabled');
-      }
-      else if (service === 'genome_alignment') {
-        console.log('genome_alignment Not enabled');
-      }
-      else if (service === 'msa') {
-        // feature context
-        //  - TODO(later): ask if min number to save as feature group
-        //    - goes to different function
-        // TODO: genome context
-        if (data.data_context === 'feature') {
-          // TODO: min number to save?
-          // this.checkSaveGroup(service);
-        }
-        else if (data.data_context === 'genome') {
-          // TODO: min number to save/add services that only take one genome?
-          //  - goes to different function
-          this.checkSaveGroup(service);
-        }
-      }
-      else if (service === 'phylogenetic_tree') {
-        if (data.data_context === 'genome') {
-          // TODO: min number to save/add services that only take one genome?
-          //  - goes to different function
-          this.checkSaveGroup(service);
-        }
-      }
-      else if (service === 'primer_design') {
-        console.log('primer_design Not enabled');
-      }
-      else {
-        console.log('error: unidentified service name (', service, ')');
-      }
     },
 
     _contextGenomeOverview: function (service, data) {
@@ -201,186 +115,155 @@ define([
       }));
     },
 
-    // extra parameters to enhance functionality:
-    //  - required: showForm (ex: extra.showForm = true)
-    _callService: function (service, group_path, data, extra) {
-      // TODO: Here working on grid_container context, after saving group
-      //  - Questions for each service to auto-fill form?
-      // Services:
-      // -  feature: blast, msa
-      var params;
-      var service_title;
-      var service_content;
-      if (data.data_context === 'feature') {
-        // TODO: add gene_tree??
-        if (service === 'Homology') {
-          if (extra.querySource) {
-            this._setupBlastParams(service, group_path, data.data_context, data, true); // check_source = true
+    _selectService: function (service, data) {
+      var data_type = data.data_type;
+      // Service, data type, submission context
+      if (service === 'Homology') {
+        if (data_type === 'feature') {
+          var fs_div = domConstruct.create('div', {});
+          domConstruct.create('div', { style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;', innerHTML: 'Select Source' }, fs_div);
+          domConstruct.create('div', { 'class': 'wsActionTooltip', 'context': 'blast_feature_source_query', 'source': 'query', innerHTML: 'Query'}, fs_div);
+          domConstruct.create('div', { 'class': 'wsActionTooltip', 'context': 'blast_feature_source_query', 'source': 'source', innerHTML: 'Source'}, fs_div);
+          if (this.context === 'grid_container') {
+            // create group
+            var feature_list = data.selection.map(x => x.patric_id).filter(x => x);
+            on(this.domNode, '.wsActionTooltip:click', lang.hitch(this, function (evt) {
+              if (evt.target.attributes.context.value === 'blast_feature_source_query') {
+                var source = evt.target.attributes.source.value;
+                // TODO: loadingMask isn't showing
+                /*
+                this.loadingMask = new Standby({
+                  target: this.id,
+                  image: '/public/js/p3/resources/images/spin.svg',
+                  color: '#efefef'
+                });
+                this.addChild(this.loadingMask);
+                this.loadingMask.startup();
+                this.loadingMask.show();
+                */
+                this.saveTempGroup('feature', feature_list).then(lang.hitch(this, function (group_path) {
+                  // this.loadingMask.hide();
+                  // create data json
+                  var job_data = {
+                    'blast_program': 'blastn',
+                    'db_type': 'fna'
+                  };
+                  if (source === 'query') {
+                    job_data['input_source'] = 'feature_group';
+                    job_data['input_feature_group'] = group_path;
+                    job_data['db_precomputed_database'] = 'bacteria-archaea';
+                  }
+                  else { // source === 'database
+                    job_data['db_precomputed_database'] = 'selFeatureGroup';
+                    job_data['db_feature_group'] = group_path;
+                  }
+                  RerunUtility.rerun(JSON.stringify(job_data), 'Homology', window, Topic);
+                }), lang.hitch(this, function (err) {
+                  this.loadingMask.hide();
+                  console.log('error during temporary group creationg: exiting');
+                  console.log(err);
+                  return false;
+                }));
+              }
+            }));
           }
-          else {
-            // TODO: can't test grid_context until FeatureGroup selector widget works properly
-            params = this._setupBlastParams(service, group_path, data.data_context, data, false); // check_source = false
-            service_content = new Homology();
-            service_title = 'BLAST';
+          if (this.context === 'workspace') {
+            var feature_group = this.data.feature_group;
+            on(this.domNode, '.wsActionTooltip:click', lang.hitch(this, function (evt) { 
+              if (evt.target.attributes.context.value === 'blast_feature_source_query') {
+                var source = evt.target.attributes.source.value;
+                var job_data = {
+                  'blast_program': 'blastn',
+                  'db_type': 'fna'
+                };
+                if (source === 'query') {
+                  job_data['input_source'] = 'feature_group';
+                  job_data['input_feature_group'] = feature_group;
+                  job_data['db_precomputed_database'] = 'bacteria-archaea';
+                } else {
+                  job_data['db_precomputed_database'] = 'selFeatureGroup';
+                  job_data['db_feature_group'] = feature_group;
+                }
+                RerunUtility.rerun(JSON.stringify(job_data), 'Homology', window, Topic);
+              }
+            }));
           }
+          this._setDivContent(fs_div);
         }
-        else if (service === 'msa') {
-          if (this.context === 'feature_overview') {
-            params = {};
-            params['input_type'] = 'input_sequence';
-            params['fasta_keyboard_input'] = '>' + data.feature.patric_id + '\n' + data.sequence;
-          }
-          else if (this.context === 'grid_container') {
-            params = {};
-            params['input_type'] = 'input_group';
-            params['feature_groups'] = [group_path];
-            // TODO: can put a dna/protein selection routine here but seems excessive
-          }
-          service_content = new MSA();
-          service_title = 'Multiple Sequence Alignment';
-        }
-        else if (service === 'primer_design') {
-          if (this.context === 'feature_overview') {
-            params = {};
-            params['input_type'] = 'sequence_text';
-            params['SEQUENCE_ID'] = data.feature.patric_id;
-            params['sequence_input'] = data.sequence;
-            service_content = new PrimerDesign();
-            service_title = 'Primer Design';
-          }
-        }
-        else {
-          console.log('service not recognized for data_context, and service: ', data.data_context, ', ', service);
-          return;
-        }
-      }
-      else if (data.data_context === 'genome') {
-        if (service === 'Homology') {
+        if (data_type === 'genome') {
+          var job_data;
           if (this.context === 'genome_overview') {
-            params = this._setupBlastParams(service, null, data.data_context, data, false);
+            job_data = {
+              'blast_program': 'blastn',
+              'db_type': 'fna',
+              'db_precomputed_database': 'selGenome',
+              'db_genome_list': [this.data.genome.genome_id]
+            }
           }
-          else if (this.data_context === 'genome_group') {
-            params = this._setupBlastParams(service, group_path, data.data_context, data, false);
+          if (this.context === 'grid_container') {
+            var genome_list = data.selection.map(x => x.genome_id).filter(x => x);
+            job_data = {
+              'blast_program': 'blastn',
+              'db_type': 'fna',
+              'db_precomputed_database': 'selGenome',
+              'db_genome_list': genome_list
+            }
           }
-          else { // genome list grid container
-            params = this._setupBlastParams(service, null, data.data_context, data, false);
+          if (this.context === 'workspace') {
+            job_data = {
+              'blast_program': 'blastn',
+              'db_type': 'fna',
+              'db_precomputed_database': 'selGroup',
+              'db_genome_group': this.data.genome_group
+            };
           }
-          params = JSON.stringify(params);
-          // service_content = new Homology();
-          // service_title = 'BLAST';
-        }
-        else if ((service === 'phylogenetic_tree') && this.context === 'grid_container') {
-          service_content = new PhylogeneticTree();
-          service_title = 'Phylogenetic Tree';
-        }
-        else {
-          console.log('service not recognized for data_context, and service: ', data.data_context, ', ', service);
-          return;
+          RerunUtility.rerun(JSON.stringify(job_data), 'Homology', window, Topic)
         }
       }
-      else if (data.data_context === 'genome_group') {
-        if (service === 'Homology') {
-          params = this._setupBlastParams(service, group_path, data.data_context, data, false);
-        }
-        params = JSON.stringify(params);
+    },
+
+    // save a temporary group to predefined locations
+    saveTempGroup: function (type, id_list) {
+      var def = new Deferred();
+      const checkTEMP = function (tmp_path) {
+        WorkspaceManager.createFolder(tmp_path).then(lang.hitch(this, function (tmp_record) {
+          console.log('creating temporary group folder');
+        }), lang.hitch(this, function (err) {
+          console.log('temporary group folder already created');
+        }));
+      };
+      var hidden_group_path = WorkspaceManager.getDefaultFolder() + '/home/._tmp_groups/';
+      var group_name;
+      var group_type;
+      if (type === 'feature') {
+        group_name = 'tmp_feature_group_' + Date.now();
+        group_type = 'feature_group';
+      }
+      else if (type === 'genome') {
+        group_name = 'tmp_genome_group_' + Date.now();
+        group_type = 'genome_group'
       }
       else {
-        console.log('context not recognized: ', data.data_context);
-        return;
+        console.log('group_type not known: not creating group');
+        return null;
       }
-      RerunUtility.rerun(params, service, window, Topic);
-      /*
-      // skip adding parameters if null, either accidental or on purpose
-      var _self = this;
-      if (extra.showForm) {
-        if (params) {
-          this._setJSONStorage(params);
-        }
-        var d = new Dialog({
-          title: service_title,
-          content: service_content,
-          onHide: function () {
-            if (data.save_group) {
-              _self._saveSelection(true, service, data);
-            }
-            service_content.destroy();
-            d.destroy();
-          }
-        });
-        d.show();
+      var group_path = hidden_group_path + group_name;
+      checkTEMP(hidden_group_path);
+      try {
+        WorkspaceManager.createGroup(group_name, group_type, hidden_group_path, group_type, id_list).then(lang.hitch(this, function (res) {
+          def.resolve(group_path);
+        }), lang.hitch(this, function (err) {
+          def.resolve(null);
+        }));
       }
-      */
+      catch (error) {
+        console.log('error making temporary group: ', error);
+        def.resolve(null);
+      }
+      return def;
     },
 
-    // TODO: add selection to params in the onclick funtion
-    _setupBlastParams: function (service, group_path, context, data, check_source) {
-      if (check_source) {
-        var query_content = domConstruct.create('div', {});
-        domConstruct.create('div', { style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;', innerHTML: 'Select Source' }, query_content);
-        domConstruct.create('div', {
-          class: 'wsActionTooltip', 'rel': 'blast_feature_source_query', 'source': 'query', 'service': service, 'group_path': group_path, innerHTML: 'Query'
-        }, query_content);
-        domConstruct.create('div', {
-          class: 'wsActionTooltip', 'rel': 'blast_feature_source_query', 'source': 'database', 'service': service, 'group_path': group_path, innerHTML: 'Database'
-        }, query_content);
-        // this.set('content',query_content);
-        this._setDivContent(query_content);
-        return;
-      }
-      var params = {};
-      if (context === 'feature') {
-        if (this.context === 'feature_overview') {
-          // TODO: incorporate nucleotide/protein sequence selection
-          params['blast_program'] = 'blastn';
-          params['db_type'] = 'fna';
-          params['input_source'] = 'fasta_data';
-          params['input_fasta_data'] = '>' + data.feature.patric_id + '\n' + data.sequence;
-          params['db_precomputed_database'] = 'bacteria-archaea';
-        }
-        else if (this.context === 'grid_container') {
-          params['blast_program'] = 'blastn';
-          params['db_type'] = 'fna';
-          console.log('db_source=', data.source);
-          if (data.source === 'query') {
-            params['input_source'] = 'feature_group';
-            params['input_feature_group'] = group_path;
-            params['db_precomputed_database'] = 'bacteria-archaea';
-          }
-          else { // source === 'database
-            params['db_precomputed_database'] = 'selFeatureGroup';
-            params['db_feature_group'] = group_path;
-          }
-        }
-        else {
-          console.log('invalid BLAST parameter context: ', this.context);
-          return null;
-        }
-      }
-      // TODO: finish genomeGroup loading and such
-      else if (context === 'genome') {
-        if (this.context === 'genome_overview') {
-          params['blast_program'] = 'blastn';
-          params['db_type'] = 'fna';
-          params['db_precomputed_database'] = 'selGenome';
-          params['db_genome_list'] = [data.genome.genome_id];
-        }
-        if (this.context === 'grid_container') {
-          params['blast_program'] = 'blastn';
-          params['db_type'] = 'fna';
-          params['db_precomputed_database'] = 'selGenome';
-          params['db_genome_list'] = data.genome_list;
-        }
-      }
-      else if (context === 'genome_group') {
-        params['blast_program'] = 'blastn';
-        params['db_type'] = 'fna';
-        params['db_precomputed_database'] = 'selGroup';
-        params['db_genome_group'] = group_path;
-      }
-      return params;
-    },
-
-    // stores the json job and 
+    // stores the json job and
     // TODO: change to store random thing
     _setJSONStorage: function (data) {
       var job_params = JSON.stringify(data);
