@@ -289,6 +289,9 @@ define([], function () {
         field: 'isolation_country', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
+        field: 'state_province', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
         field: 'geographic_group', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
@@ -404,10 +407,10 @@ define([], function () {
         field: 'aa_sequence_md5', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
-        field: 'gene', type: 'str', facet: false, facet_hidden: false, search: true
+        field: 'gene', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'product', type: 'str', facet: false, facet_hidden: false, search: true
+        field: 'product', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'plfam_id', type: 'str', facet: true, facet_hidden: true, search: true
@@ -493,10 +496,10 @@ define([], function () {
         field: 'aa_sequence_md5', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
-        field: 'gene', type: 'str', facet: false, facet_hidden: false, search: true
+        field: 'gene', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'product', type: 'str', facet: false, facet_hidden: false, search: true
+        field: 'product', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'plfam_id', type: 'str', facet: true, facet_hidden: true, search: true
