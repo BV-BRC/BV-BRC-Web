@@ -18,13 +18,13 @@ define([
     templateString: Template,
     applicationName: 'ComprehensiveSARS2Analysis',
     requireAuth: true,
-    applicationLabel: 'SARS-CoV-2 Genome Assembly and Annotation',
+    applicationLabel: 'SARS-CoV-2 Genome Analysis',
 
     isBVBRC: true,  // override patric configuration and tell AppBase to use bvbrcHelpURL and bvbrcTutorialURL
     bvbrcHelpURL: '/docs/user-guides/sars-cov-2',
     bvbrcTutorialURL: '/patric/pdf/sars-cov-2-tutorial.pdf',
 
-    applicationDescription: 'The SARS-CoV-2 Genome Assembly and Annotation Service provides a streamlined "meta-service" that accepts raw reads and performs genome assembly, annotation, and variation analysis.  ',
+    applicationDescription: 'The SARS-CoV-2 Genome Analysis Service provides a streamlined "meta-service" that accepts raw reads and performs genome assembly, annotation, and variation analysis.  ',
     applicationHelp: 'quick_references/services/sars_cov_2_assembly_annotation_service.html',
     tutorialLink: 'tutorial/sars_cov_2_assembly_annotation/sars_cov_2_assembly_annotation.html',
     videoLink: '',
@@ -85,10 +85,6 @@ define([
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
-        var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-          localStorage.removeItem('bvbrc_rerun_job');
-        }
       }
     },
 
@@ -695,20 +691,26 @@ define([
         rerun_key = rerun_fields[1];
         var sessionStorage = window.sessionStorage;
         if (sessionStorage.hasOwnProperty(rerun_key)) {
-          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-          var param_dict = {
-            'output_folder': 'output_path', 'strategy': 'recipe', 'target_genome_id': 'taxonomy_id', 'contigs': 'contigs'
-          };
-          var widget_map = { 'taxonomy_id': 'tax_idWidget', 'contigs': 'contigsFile' };
-          param_dict['widget_map'] = widget_map;
-          job_data = this.formatRerunJson(job_data);
-          this.selectStartWith(job_data);
-          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-          if (this.startWithRead.checked == true) {
-            AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+          try {
+            var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+            var param_dict = {
+              'output_folder': 'output_path', 'strategy': 'recipe', 'target_genome_id': 'taxonomy_id', 'contigs': 'contigs'
+            };
+            var widget_map = { 'taxonomy_id': 'tax_idWidget', 'contigs': 'contigsFile' };
+            param_dict['widget_map'] = widget_map;
+            job_data = this.formatRerunJson(job_data);
+            this.selectStartWith(job_data);
+            AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+            if (this.startWithRead.checked == true) {
+              AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+            }
+            this.recipe.set('value', job_data['recipe']);
+            this.form_flag = true;
+          } catch (error) {
+            console.log('Error during intakeRerunForm: ', error);
+          } finally {
+            sessionStorage.removeItem(rerun_key);
           }
-          sessionStorage.removeItem(rerun_key);
-          this.form_flag = true;
         }
       }
     },
