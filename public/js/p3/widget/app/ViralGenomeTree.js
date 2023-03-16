@@ -40,7 +40,6 @@ define([
       this.userGenomeList = [];
       this.numref = 0;
       this.fastaNamesAndTypes = [];
-      this.treeType = 'viral_genome'
     },
 
     startup: function () {
