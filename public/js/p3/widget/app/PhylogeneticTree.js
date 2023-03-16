@@ -16,14 +16,14 @@ define([
     templateString: Template,
     applicationName: 'CodonTree',
     requireAuth: true,
-    applicationLabel: 'Phylogenetic Tree Building',
-    applicationDescription: 'The Phylogenetic Tree Building Service enables construction of custom phylogenetic trees for user-selected genomes.',
+    applicationLabel: 'Bacterial Genome Tree',
+    applicationDescription: 'The Bacterial Genome Tree Service enables construction of custom phylogenetic trees for user-selected genomes using codon tree method.',
     applicationHelp: 'quick_references/services/phylogenetic_tree_building_service.html',
     tutorialLink: 'tutorial/phylogenetic_tree/phylogenetic_tree.html',
     videoLink: 'https://youtu.be/ckNPGPwoT5U',
     pageTitle: 'Phylogenetic Tree Building Service | BV-BRC',
     defaultPath: '',
-    startingRows: 9,
+    startingRows: 5,
 
     constructor: function () {
       this._selfSet = true;

@@ -1,7 +1,7 @@
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/topic', 'dojo/on',
   'dojo/dom-class',
-  'dojo/text!./templates/GeneTree.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
+  'dojo/text!./templates/ViralGenomeTree.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog', '../../DataAPI',
   'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when'
@@ -14,16 +14,16 @@ define([
   children, WorkspaceManager, Memory, Standby, when
 ) {
   return declare([AppBase], {
-    baseClass: 'App GeneTree',
+    baseClass: 'App ViralGenomeTree',
     templateString: Template,
     applicationName: 'GeneTree',
     requireAuth: true,
-    applicationLabel: 'Gene / Protein Tree',
-    applicationDescription: 'The Gene / Protein Tree Service enables construction of custom phylogenetic trees built from user-selected genes or proteins.',
+    applicationLabel: 'Viral Genome Tree',
+    applicationDescription: 'The Viral Genome Tree Service enables construction of whole genome alignment based phylogenetic trees for user-selected viral genomes.',
     applicationHelp: 'quick_references/services/genetree.html',
     tutorialLink: 'tutorial/genetree/genetree.html',
     videoLink: 'https://youtu.be/VtXWBRSdXRo',
-    pageTitle: 'Gene Tree Service | BV-BRC',
+    pageTitle: 'Viral Genome Tree Service | BV-BRC',
     defaultPath: '',
     startingRows: 3,
     maxGenomes: 5000,
@@ -36,7 +36,7 @@ define([
       this.fastaToAttachPt = ['user_genomes_fasta'];
       this.unalignedFastaToAttachPt = ['user_genomes_unaligned_fasta'];
       this.featureGroupToAttachPt = ['user_genomes_featuregroup'];
-      //this.genomeGroupToAttachPt = ['user_genomes_genomegroup'];
+      this.genomeGroupToAttachPt = ['user_genomes_genomegroup'];
       this.userGenomeList = [];
       this.numref = 0;
       this.fastaNamesAndTypes = [];
@@ -65,6 +65,10 @@ define([
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
+        var localStorage = window.localStorage;
+        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
+          localStorage.removeItem('bvbrc_rerun_job');
+        }
       }
     },
 
@@ -224,9 +228,17 @@ define([
         }
       }
       this.fastaNamesAndTypes = [];
+      // this.fastaNamesAndTypes = new_fastaNamesAndTypes;
+      // this.userGenomeList = [];
+      // var numRows = this.startingRows;
       var total_groups = feature_groups.length + genome_groups.length;
+      // var numRows = total_groups.length >= this.startingRows ? -1 : this.startingRows - total_groups.length;
       this.emptyTable(this.genomeTable, this.startingRows);
+      // this.userGenomeList = [];
+      // this.fastaNamesAndTypes = [];
 
+      // Add featuregroups and genomegroups back to table
+      // TODO: add each individually
       console.log('feature_groups', feature_groups);
       console.log('genome_groups', genome_groups);
 
@@ -235,8 +247,20 @@ define([
       }));
       genome_groups.forEach(lang.hitch(this, function (obj) {
         this.addGenomeGroupToTableAlphabetChanged(obj.filename, obj.genome_ids)
+        //this.addGenomeGroupToTableAlphabetChanged(obj.filename)
       }))
-
+      /*
+      var groups = {};
+      groups['sequences'] = [];
+      keep_fastaNamesAndTypes.forEach(lang.hitch(this, function (obj) {
+        console.log(obj);
+        var new_seq = {};
+        new_seq.type = obj.type;
+        new_seq.filename = obj.filename;
+        groups['sequences'].push(new_seq);
+      }));
+      this.addSequenceFilesFormFill(groups, true);
+      */
       this.substitution_model.options = [];
       if (this.dna.checked) {
         var newOptions = [{
@@ -545,7 +569,7 @@ define([
       var tr = this.genomeTable.insertRow(0);
       var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
       td.genomeRecord = lrec;
-      td.innerHTML = "<div class='libraryrow'>" + this.makeFormFillName(feature_group.split('/').reverse()[0]) + '</div>';
+      td.innerHTML = "<div class='libraryrow'>" + this.makeFeatureGroupName() + '</div>';
       domConstruct.create('td', { innerHTML: '' }, tr);
       var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
       if (this.addedGenomes < this.startingRows) {
@@ -803,42 +827,21 @@ define([
       var rerun_fields = service_fields.split('=');
       var rerun_key;
       if (rerun_fields.length > 1) {
-        try {
-          rerun_key = rerun_fields[1];
-          var sessionStorage = window.sessionStorage;
-          if (sessionStorage.hasOwnProperty(rerun_key)) {
-            this.form_flag = true;
-            var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-            console.log(job_data);
-            var param_dict = { 'output_folder': 'output_path' };
-            var service_specific = { 'gap_threshold': 'gap_threshold', 'trim_threshold': 'trim_threshold', 'substitution_model': 'substitution_model' };
-            param_dict['service_specific'] = service_specific;
-            this.setAlphabetFormFill(job_data);
-            this.setRecipeFormFill(job_data);
-            // AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-            this.addSequenceFilesFormFill(job_data);
-            this.setParameters(job_data);
-          }
-        } catch (error) {
-          console.log('Error during intakeRerunForm: ', error);
-        } finally {
+        rerun_key = rerun_fields[1];
+        var sessionStorage = window.sessionStorage;
+        if (sessionStorage.hasOwnProperty(rerun_key)) {
+          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+          console.log(job_data);
+          var param_dict = { 'output_folder': 'output_path' };
+          var service_specific = { 'gap_threshold': 'gap_threshold', 'trim_threshold': 'trim_threshold', 'substitution_model': 'substitution_model' };
+          param_dict['service_specific'] = service_specific;
+          this.setAlphabetFormFill(job_data);
+          this.setRecipeFormFill(job_data);
+          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+          this.addSequenceFilesFormFill(job_data, false);
           sessionStorage.removeItem(rerun_key);
+          this.form_flag = true;
         }
-      }
-    },
-
-    setParameters: function (job_data) {
-      if (job_data['gap_threshold']) {
-        this.gap_threshold.set('value', job_data['gap_threshold']);
-      }
-      if (job_data['trim_threshold']) {
-        this.trim_threshold.set('value', job_data['trim_threshold']);
-      }
-      if (job_data['substitution_model']) {
-        // model dropdown is reset without setTimeout, avoids but doesn't fix issue
-        setTimeout(lang.hitch(this, function () {
-          this.substitution_model.set('value', job_data['substitution_model']);
-        }), 1);
       }
     },
 
@@ -872,114 +875,51 @@ define([
       }
     },
 
-    addSequenceFilesFormFill: function (job_data) {
+    addSequenceFilesFormFill: function (job_data, skipNameList) {
       var sequence_files = job_data['sequences'];
-      var path_list = [];
       sequence_files.forEach(function (seq_file) {
-        var path = seq_file['filename'];
-        path_list.push(path);
-      }, this);
-      var _self = this;
-      var data_list = [];
-      when(WorkspaceManager.getObjects(path_list, true).then(lang.hitch(this, function (res) {
-        for (var x = 0; x < path_list.length; x++) {
-          var fileType = res[x].type;
-          data_list.push({ 'filename': path_list[x], 'type': fileType });
+        var lrec = { 'type': seq_file.type, 'filename': seq_file.filename };
+        // /General implementation
+        var newGenomeIds = [seq_file['filename']];
+        var tr = this.genomeTable.insertRow(0);
+        var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
+        td.genomeRecord = lrec;
+        td.innerHTML = "<div class='libraryrow'>" + this.makeFormFillName(newGenomeIds[0].split('/').pop()) + '</div>';
+        domConstruct.create('td', { innerHTML: '' }, tr);
+        var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+        if (this.addedGenomes < this.startingRows) {
+          this.genomeTable.deleteRow(-1);
         }
-        _self.formFillPopulateTable(data_list);
-      })));
-    },
-
-    // assumes dna/protein button is selected correctly
-    formFillPopulateTable: function (data_list) {
-      for (var x = 0; x < data_list.length; x++) {
-        var obj = data_list[x];
-        if (obj.type === 'feature_group') {
-          this.addFeatureGroupAlphabetChange(obj.filename);
+        var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+          console.log('Delete Row');
+          domConstruct.destroy(tr);
+          this.decreaseGenome(lrec.type, newGenomeIds);
+          if (this.addedGenomes < this.startingRows) {
+            var ntr = this.genomeTable.insertRow(-1);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          }
+          handle.remove();
+        }));
+        this.increaseGenome(lrec.type, newGenomeIds);
+        if (lrec.type == 'feature_group') {
+          this.sequenceSource = 'feature_group';
         }
-        // TODO: test
-        else if (obj.type === 'genome_group') {
-          this.addGenomeGroupToTableAlphabetChanged(obj.filename, obj.genome_ids);
-        }
-        else if ((obj.type === 'aligned_protein_fasta') || (obj.type === 'aligned_dna_fasta')) {
-          // user_genomes_fasta
-          // aligned_protein_fasta, aligned_dna_fasta
-          this.onAddFastaFormFill(obj.filename);
+        else if (lrec.type == 'genome_group') {
+          this.sequenceSource = 'genome_group';
         }
         else {
-          // user_genomes_unaligned_fasta
-          // feature_dna_fasta, feature_protein_fasta
-          this.onAddUnalignedFastaFormFill(obj.filename);
+          this.sequenceSource = 'ws';
         }
-      }
-    },
-
-    onAddFastaFormFill: function (fasta) {
-      var lrec = { 'user_genomes_fasta': fasta };
-      var newGenomeIds = [lrec['user_genomes_fasta']];
-      var tr = this.genomeTable.insertRow(0);
-      var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
-      td.genomeRecord = lrec;
-      td.innerHTML = "<div class='libraryrow'>" + this.makeFormFillName(fasta.split('/').reverse()[0]) + '</div>';
-      domConstruct.create('td', { innerHTML: '' }, tr);
-      var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
-      if (this.addedGenomes < this.startingRows) {
-        this.genomeTable.deleteRow(-1);
-      }
-      var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-        // console.log("Delete Row");
-        domConstruct.destroy(tr);
-        this.decreaseGenome('fasta', newGenomeIds);
-        if (this.addedGenomes < this.startingRows) {
-          var ntr = this.genomeTable.insertRow(-1);
-          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+        var path = seq_file['filename'];
+        if (!skipNameList) {
+          when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
+            var fileType = res.metadata.type;
+            this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType });
+          }));
         }
-        handle.remove();
-      }));
-      this.increaseGenome('fasta', newGenomeIds);
-      this.sequenceSource = 'ws';
-
-      var path = lrec[this.fastaToAttachPt];
-      when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
-        var fileType = res.metadata.type;
-        this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType });
-      }));
-    },
-
-    onAddUnalignedFastaFormFill: function (unaligned_fasta) {
-      var lrec = { 'user_genomes_unaligned_fasta': unaligned_fasta };
-      var newGenomeIds = [lrec['user_genomes_unaligned_fasta']];
-      var tr = this.genomeTable.insertRow(0);
-      var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
-      td.genomeRecord = lrec;
-      td.innerHTML = "<div class='libraryrow'>" + this.makeFormFillName(unaligned_fasta.split('/').reverse()[0]) + '</div>';
-      domConstruct.create('td', { innerHTML: '' }, tr);
-      var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
-      if (this.addedGenomes < this.startingRows) {
-        this.genomeTable.deleteRow(-1);
-      }
-      var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-        // console.log("Delete Row");
-        domConstruct.destroy(tr);
-        this.decreaseGenome('fasta', newGenomeIds);
-        if (this.addedGenomes < this.startingRows) {
-          var ntr = this.genomeTable.insertRow(-1);
-          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-        }
-        handle.remove();
-      }));
-      this.increaseGenome('fasta', newGenomeIds);
-      this.sequenceSource = 'ws';
-
-      var path = lrec[this.unalignedFastaToAttachPt];
-      when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
-        var fileType = res.metadata.type;
-        this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType });
-      }));
+      }, this);
     },
 
     makeFormFillName: function (name) {
