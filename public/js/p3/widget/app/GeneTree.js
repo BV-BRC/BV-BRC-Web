@@ -779,6 +779,7 @@ define([
       });
 
       seqcomp_values.alphabet = values.alphabet;
+      seqcomp_values.tree_type = values.tree_type;
       seqcomp_values.recipe = values.recipe;
       seqcomp_values.substitution_model = values.substitution_model;
       seqcomp_values.trim_threshold = values.trim_threshold;

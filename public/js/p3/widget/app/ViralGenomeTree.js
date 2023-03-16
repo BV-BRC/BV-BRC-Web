@@ -40,6 +40,7 @@ define([
       this.userGenomeList = [];
       this.numref = 0;
       this.fastaNamesAndTypes = [];
+      this.treeType = 'viral_genome'
     },
 
     startup: function () {
@@ -755,7 +756,8 @@ define([
           var path = lrec[this.genomeGroupToAttachPt];
           when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
             var fileType = res.metadata.type;
-            this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType, 'genome_ids': genome_id_list });
+            //this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType, 'genome_ids': genome_id_list });
+            this.fastaNamesAndTypes.push({ 'filename': path, 'type': fileType });
           }));
         }
       }
@@ -803,6 +805,7 @@ define([
       });
 
       seqcomp_values.alphabet = values.alphabet;
+      seqcomp_values.tree_type = values.tree_type;
       seqcomp_values.recipe = values.recipe;
       seqcomp_values.substitution_model = values.substitution_model;
       seqcomp_values.trim_threshold = values.trim_threshold;
