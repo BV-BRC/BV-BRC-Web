@@ -486,7 +486,7 @@ define([
           validTypes: ['*'],
           multiple: false,
           tooltip: 'Switch to Feature View. Press and Hold for more options.',
-          validContainerTypes: ['feature_data', 'transcriptomics_gene_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data'],
+          validContainerTypes: ['feature_data', 'protein_data', 'transcriptomics_gene_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data'],
           pressAndHold: function (selection, button, opts, evt) {
             popup.open({
               popup: new PerspectiveToolTipDialog({
@@ -516,7 +516,7 @@ define([
           min: 2,
           max: 5000,
           tooltip: 'Switch to Feature List View. Press and Hold for more options.',
-          validContainerTypes: ['feature_data', 'transcriptomics_gene_data', 'spgene_data', 'subsystem_data'],
+          validContainerTypes: ['feature_data', 'protein_data', 'transcriptomics_gene_data', 'spgene_data', 'subsystem_data'],
           pressAndHold: function (selection, button, opts, evt) {
             popup.open({
               popup: new PerspectiveToolTipDialog({
@@ -1323,7 +1323,7 @@ define([
 
           if (containerWidget.containerType == 'genome_data') {
             type = 'genome_group';
-          } else if (containerWidget.containerType == 'feature_data' || containerWidget.containerType == 'transcriptomics_gene_data' || containerWidget.containerType == 'spgene_data') {
+          } else if (containerWidget.containerType == 'feature_data' || containerWidget.containerType == 'protein_data' || containerWidget.containerType == 'transcriptomics_gene_data' || containerWidget.containerType == 'spgene_data') {
             type = 'feature_group';
           } else if (containerWidget.containerType == 'transcriptomics_experiment_data') {
             type = 'experiment_group';
