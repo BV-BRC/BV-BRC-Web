@@ -403,6 +403,9 @@ define([
         name: 'Service',
         text: 'app'
       }, {
+        name: 'Application',
+        text: 'application_name'
+      },{
         name: 'Job ID',
         text: 'id'
       }, {

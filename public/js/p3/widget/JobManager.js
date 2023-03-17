@@ -145,7 +145,8 @@ define([
               '********************** JOB INFO *************************\n\n' +
               'Job ID: ' + sel.id + '\n' +
               'Job Status: ' + sel.status + '\n' +
-              'App Name: ' + sel.app + '\n\n' +
+              'Service Name: ' + sel.app + '\n' +
+              'App Name: ' + sel.application_name + '\n\n' +
               'Stdout: ' + window.App.serviceAPI + '/task_info/' + sel.id + '/stdout\n' +
               'Stderr: ' + window.App.serviceAPI + '/task_info/' + sel.id + '/stderr\n\n' +
               'Submit Time: ' + sel.submit_time + '\n' +
@@ -163,7 +164,7 @@ define([
             type: 'reportProblem',
             params: {
               issueText: content,
-              issueSubject: 'Reporting Issue with ' + sel.app,
+              issueSubject: 'Reporting Issue with ' + sel.application_name,
               jobDescriptRequired: descriptRequired,
               jobStatus: sel.status
             }
