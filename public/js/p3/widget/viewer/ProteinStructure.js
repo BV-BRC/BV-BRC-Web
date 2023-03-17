@@ -60,10 +60,6 @@ function (
     apiServiceUrl: window.App.dataAPI,
     contentServer: `${window.App.dataServiceURL}/content`,
     postCreate: async function () {
-      this.displayTypeStore = new ItemFileReadStore({
-        url: '/public/js/p3/resources/jsmol/display-types.json'
-      });
-
       this.isWorkspace = (this.state.hashParams.path !== undefined);
 
       // Mol* viewer object
@@ -74,7 +70,6 @@ function (
       if (!this.isWorkspace) {
         this.displayControl = new ProteinStructureDisplayControl({
           id: this.id + '_displayControl',
-          displayTypeStore: this.displayTypeStore,
           region: 'left'
         });
 
@@ -176,10 +171,7 @@ function (
         var viewState = new ProteinStructureState({});
 
         if (viewData.length > 1) {
-          // console.log('viewData for initialViewState is ' + JSON.stringify(viewData));
-          viewState.set('displayType', viewData[0]);
-          viewState.set('accession', viewData[1]);
-          viewState.set('zoomLevel', viewData[2]);
+          viewState.set('accession', viewData[0]);
           let highlights = new Map([
             ['ligands', new Map()],
             ['epitopes', new Map()],
@@ -255,12 +247,6 @@ function (
       }
 
       return Promise.all(dataPromises);
-    },
-    /*
-    return a Promise with the information for displayType.
-     */
-    getDisplayTypeInfo: function (displayTypeId) {
-      return dataStoreHelpers.itemByIdToPromise(this.displayTypeStore, displayTypeId);
     },
     /*
     Return a Promise for the protein accession information

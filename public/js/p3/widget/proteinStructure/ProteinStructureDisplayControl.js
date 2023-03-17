@@ -41,7 +41,6 @@ define([
     accessionId: null,
     effect: {},
     templateString: templateString,
-    displayTypeStore: null,
     zoomLevels: new Map( [
       ['Custom', 'custom'],
       ['50%', '50'],
@@ -71,21 +70,6 @@ define([
         let accessionId = evt.rows[0].data;
         this.set('accessionId', accessionId);
       }));
-
-      // domConstruct.place(this.proteinSelect.domNode, this.proteinSelectionContainer);
-
-      this.displayTypeStore.fetch({
-        query: { id: '*' },
-        // eslint-disable-next-line no-unused-vars
-        onComplete: lang.hitch(this, function (items, request) {
-          var displayTypes = [];
-          for (let item of items) {
-            displayTypes.push(dataStoreHelper.storeItemToRecord(this.displayTypeStore, item));
-          }
-          // console.log('%s found %s displayTypes', this.id, displayTypes.length);
-          this.displayTypeSelector.renderArray(displayTypes);
-        })
-      });
 
       this.displayTypeSelector.on('dgrid-select', lang.hitch(this, function (evt) {
         var displayTypeId = null;
