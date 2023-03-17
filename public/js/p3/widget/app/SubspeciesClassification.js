@@ -28,6 +28,7 @@ define([
     { type: 'separator'},
     { value: 'INFLUENZAH5', label: 'Orthomyxoviridae - Influenza A H5 [Hemagglutinin gene, genomic RNA]' },
     { value: 'SWINEH1', label: 'Orthomyxoviridae - Swine influenza H1 (global classification) [Hemagglutinin gene, genomic RNA]' },
+    { value: 'SWINEH1US', label: 'Orthomyxoviridae – Swine influenza H1 (US classification) [Hemagglutinin gene, genomic RNA]' },
     { value: 'SWINEH3', label: 'Orthomyxoviridae - Swine influenza H3 (global classification, beta version) [Hemagglutinin gene, genomic RNA]' },
     { type: 'separator'},
     { value: 'ROTAA', label: 'Reoviridae - Rotavirus A [complete genome, genomic RNA]' }
