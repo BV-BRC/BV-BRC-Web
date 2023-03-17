@@ -3060,6 +3060,10 @@ define([
           text: 'h1_clade_us',
           editable: true
         }, {
+          name: 'H3 Clade',
+          text: 'h3_clade',
+          editable: true
+        }, {
           name: 'H5 Clade',
           text: 'h5_clade',
           editable: true

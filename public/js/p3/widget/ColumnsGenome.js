@@ -168,6 +168,12 @@ define(['./formatter'], function (formatter) {
       hidden: true,
       group: 'Type Info'
     },
+    h3_clade: {
+      label: 'H3 Clade',
+      field: 'h3_clade',
+      hidden: true,
+      group: 'Type Info'
+    },
     h5_clade: {
       label: 'H5 Clade',
       field: 'h5_clade',
