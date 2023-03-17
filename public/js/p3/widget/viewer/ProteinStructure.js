@@ -7,7 +7,6 @@ define([
   'dojo/sniff',
   '../proteinStructure/ProteinStructureState',
   '../proteinStructure/ProteinStructure',
-  '../proteinStructure/ProteinStructureDisplayControl',
   '../proteinStructure/EpitopeHighlights',
   '../proteinStructure/LigandHighlights',
   '../proteinStructure/StructureHighlight',
@@ -20,8 +19,7 @@ define([
   'dojo/text!../templates/proteinStructure/ProteinStructureViewer.html',
   'dojo/request',
   '../DataItemFormatter',
-  '../../util/PathJoin',
-  '../../util/dataStoreHelpers'
+  '../../util/PathJoin'
 ],
 function (
   declare,
@@ -32,7 +30,6 @@ function (
   has,
   ProteinStructureState,
   ProteinStructureDisplay,
-  ProteinStructureDisplayControl,
   EpitopeHighlights,
   LigandHighlights,
   StructureHighlights,
@@ -45,8 +42,7 @@ function (
   templateString,
   xhr,
   DataItemFormatter,
-  PathJoin,
-  dataStoreHelpers
+  PathJoin
 )
 {
   return declare([Base, Templated, WidgetsInTmeplateMixin], {
@@ -68,23 +64,6 @@ function (
       });
 
       if (!this.isWorkspace) {
-        this.displayControl = new ProteinStructureDisplayControl({
-          id: this.id + '_displayControl',
-          region: 'left'
-        });
-
-        this.displayControl.watch('accessionId', lang.hitch(this, function (attr, oldValue, newValue) {
-          if (oldValue != newValue) {
-            // console.log('%s.accessionId changed from %s to %s', this.displayControl.id, oldValue, newValue);
-            // if the accession changes we keep all view state values but highlights
-            this.getAccessionInfo(newValue).then(record => {
-              var newState = new ProteinStructureState({});
-              newState.set('accession', record);
-              this.set('viewState', newState);
-            });
-          }
-        }));
-
         this.ligandHighlight = new LigandHighlights({
           id: this.id + '_ligands',
           color: '#00ff00'
@@ -232,14 +211,10 @@ function (
       let workspacePath = hashParams.path;
 
       if (workspacePath === undefined) {
-        let val = hashParams.displayType || this.viewDefaults.get('displayType');
-        // console.log('get viewState.displayType record for ' + val);
-        dataPromises.push(this.getDisplayTypeInfo(val));
-        val = hashParams.accession || this.viewDefaults.get('accession');
+        let val = hashParams.accession || this.viewDefaults.get('accession');
         // console.log('get viewState.accession record for ' + val);
         dataPromises.push(this.getAccessionInfo(val));
 
-        val = hashParams.zoomLevel || this.viewDefaults.get('zoomLevel') || 100;
         // console.log('get viewState.zoomLevel for ' + val);
         dataPromises.push(Promise.resolve(val));
       } else {
