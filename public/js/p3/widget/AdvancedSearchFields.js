@@ -140,6 +140,9 @@ define([], function () {
         field: 'h1_clade_us', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
+        field: 'h3_clade', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
         field: 'h5_clade', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {

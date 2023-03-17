@@ -36,16 +36,15 @@ define(
           label: 'ID',
           field: 'id'
         },
-        service: {
+        /*service: {
           label: 'Service',
           field: 'app',
           formatter: formatter.serviceLabel
-        },
+        },*/
         app: {
-          label: 'App',
-          field: 'app',
-          formatter: formatter.appLabel,
-          hidden: true
+          label: 'Service',
+          field: 'application_name',
+          formatter: formatter.serviceLabel,
         },
         parameters: {
           label: 'Output Name',

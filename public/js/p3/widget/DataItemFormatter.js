@@ -403,6 +403,9 @@ define([
         name: 'Service',
         text: 'app'
       }, {
+        name: 'Application',
+        text: 'application_name'
+      },{
         name: 'Job ID',
         text: 'id'
       }, {
@@ -3055,6 +3058,10 @@ define([
         }, {
           name: 'H1 Clade US',
           text: 'h1_clade_us',
+          editable: true
+        }, {
+          name: 'H3 Clade',
+          text: 'h3_clade',
           editable: true
         }, {
           name: 'H5 Clade',
