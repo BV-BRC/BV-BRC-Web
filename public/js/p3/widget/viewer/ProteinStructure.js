@@ -60,11 +60,6 @@ function (
     apiServiceUrl: window.App.dataAPI,
     contentServer: `${window.App.dataServiceURL}/content`,
     postCreate: async function () {
-      // console.log('starting ' + this.id + '.postCreate');
-
-      this.proteinStore = new ItemFileReadStore({
-        url: '/public/js/p3/resources/jsmol/SARS-CoV-2.json'
-      });
       this.displayTypeStore = new ItemFileReadStore({
         url: '/public/js/p3/resources/jsmol/display-types.json'
       });
@@ -80,7 +75,6 @@ function (
         this.displayControl = new ProteinStructureDisplayControl({
           id: this.id + '_displayControl',
           displayTypeStore: this.displayTypeStore,
-          proteinStore: this.proteinStore,
           region: 'left'
         });
 

@@ -42,7 +42,6 @@ define([
     effect: {},
     templateString: templateString,
     displayTypeStore: null,
-    proteinStore: null,
     zoomLevels: new Map( [
       ['Custom', 'custom'],
       ['50%', '50'],
