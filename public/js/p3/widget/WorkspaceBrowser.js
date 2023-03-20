@@ -1241,7 +1241,6 @@ define([
         validTypes: ['aligned_dna_fasta', 'aligned_protein_fasta'],
         tooltip: 'View aligned fasta'
       }, function (selection, container) {
-        // var path = this.selection[0].path; // .get('selection.path');
         var alignType = 'protein';
         if (this.selection[0].type.includes('dna')) {
           alignType = 'dna';
