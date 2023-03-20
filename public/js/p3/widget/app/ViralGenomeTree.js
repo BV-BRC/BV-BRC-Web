@@ -259,27 +259,29 @@ define([
       */
       this.substitution_model.options = [];
       if (this.dna.checked) {
-        var newOptions = [{
-          value: 'HKY85', label: 'HKY85', selected: true, disabled: false
-        },
-        {
-          value: 'JC69', label: 'JC69', selected: true, disabled: false
-        },
-        {
-          value: 'K80', label: 'K80', selected: true, disabled: false
-        },
-        {
-          value: 'F81', label: 'F81', selected: true, disabled: false
-        },
-        {
-          value: 'F84', label: 'F84', selected: true, disabled: false
-        },
-        {
-          value: 'TN93', label: 'TN93', selected: true, disabled: false
-        },
-        {
-          value: 'GTR', label: 'GTR', selected: true, disabled: false
-        }];
+        var newOptions = [
+          {
+            value: 'GTR', label: 'GTR', selected: true, disabled: false
+          },
+          {
+            value: 'TN93', label: 'TN93', selected: true, disabled: false
+          },
+          {
+            value: 'HKY85', label: 'HKY85', selected: true, disabled: false
+          },
+          {
+            value: 'F84', label: 'F84', selected: true, disabled: false
+          },
+          {
+            value: 'F81', label: 'F81', selected: true, disabled: false
+          },
+          {
+            value: 'K80', label: 'K80', selected: true, disabled: false
+          },
+          {
+            value: 'JC69', label: 'JC69', selected: true, disabled: false
+          }
+        ];
         this.substitution_model.set('options', newOptions);
         this.user_genomes_fasta.set('type', 'aligned_dna_fasta');
         this.user_genomes_unaligned_fasta.set('type', 'feature_dna_fasta');
