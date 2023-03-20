@@ -45,6 +45,7 @@ define([
       }
     },
     isMolstarInitialized: false,
+    existingPositions: new Map(),
     constructor: function (opts) {
       // console.log('ProteinStructure.constructor');
       opts = opts || {};
@@ -59,9 +60,6 @@ define([
           await this.molstar.init('app', this.molstarSpecs);
           this.isMolstarInitialized = true;
         }
-        newValue.watch('workspacePath', lang.hitch(this, this.loadFromWorkspace));
-        newValue.watch('accession', lang.hitch(this, this.onAccessionChange));
-        newValue.watch('displayType', lang.hitch(this, this.updateDisplay));
         newValue.watch('highlights', lang.hitch(this, function (attr, oldValue, newValue) {
           this.updateDisplay();
         }));
@@ -82,12 +80,6 @@ define([
       this.loadAccession(accessionInfo.map(a => a.pdb_id));
       this.updateDisplay();
     },
-    onAccessionChange: function (attr, oldValue, newValue) {
-      // console.log('JMOL accession changed to ' + JSON.stringify(newValue));
-      if (newValue && newValue.pdb_id &&  (oldValue.pdb_id != newValue.pdb_id)) {
-        this.updateAccession(newValue);
-      }
-    },
     updateDisplay: function () {
       const highlights = this.get('viewState').get('highlights');
       this.handleHighlight('highlights', highlights, highlights);
@@ -105,8 +97,23 @@ define([
             ligandColor = this.colorToMolStarColor(color);
           }
         } else {
-          for (let [pos, color] of highlightPositions) {
-            positions.push({ seq: pos, color: this.colorToMolStarColor(color) });
+          const index = highlightPositions.get('index');
+          const coordinates = highlightPositions.get('coordinates');
+          if (coordinates && typeof index !== 'undefined') {
+            let featurePositions = [];
+            for (let [pos, color] of coordinates) {
+              featurePositions.push({seq: pos, index: index, color: this.colorToMolStarColor(color)});
+            }
+
+            const highlightIndex = highlightName + index;
+            this.existingPositions.set(highlightIndex, featurePositions);
+            for (let key of this.existingPositions.keys()) {
+              if (key.includes(highlightName) && key !== highlightIndex) {
+                featurePositions = featurePositions.concat(this.existingPositions.get(key));
+              }
+            }
+
+            positions = positions.concat(featurePositions);
           }
         }
       }

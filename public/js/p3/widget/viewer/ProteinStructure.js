@@ -7,10 +7,8 @@ define([
   'dojo/sniff',
   '../proteinStructure/ProteinStructureState',
   '../proteinStructure/ProteinStructure',
-  '../proteinStructure/EpitopeHighlights',
   '../proteinStructure/LigandHighlights',
-  '../proteinStructure/StructureHighlight',
-  '../proteinStructure/SARS2FeatureHighlights',
+  '../proteinStructure/Highlights',
   'dojo/data/ItemFileReadStore',
   'dojo/store/DataStore',
   './Base',
@@ -30,10 +28,8 @@ function (
   has,
   ProteinStructureState,
   ProteinStructureDisplay,
-  EpitopeHighlights,
   LigandHighlights,
-  StructureHighlights,
-  SARS2FeatureHighlights,
+  Highlights,
   ItemFileReadStore,
   DataStore,
   Base,
@@ -55,6 +51,8 @@ function (
     state: {},
     apiServiceUrl: window.App.dataAPI,
     contentServer: `${window.App.dataServiceURL}/content`,
+    epitopeHighlights: [],
+    featureHighlights: [],
     postCreate: async function () {
       this.isWorkspace = (this.state.hashParams.path !== undefined);
 
@@ -78,61 +76,80 @@ function (
         const accessionId = this.state.hashParams.accession || this.viewDefaults.get('accession');
         const accessionIds = accessionId.toUpperCase().split(',');
 
-        const urls = accessionIds.flatMap(id => [
-          `${this.contentServer}/structures/protein_features/${id}.fea`,
-          `${this.contentServer}/structures/epitopes/${id}.epi`
-        ]);
-
-        /* Fetch data files together before parsing feature and epitope content
-          @return JSON object
-          @exception Error object
-         */
-        const response = await Promise.all(
-            urls.map(url => xhr.get(url, {
-              headers: {
-                'Accept': 'application/solr+json',
-                'Authorization': window.App.authorizationToken
-              }
-            }).then(res => res)
-                .catch(e => e))
-        );
-
-        const featureContent = response[0];
-        const epitopeContent = response[1];
-
+        let index = 0;
         let hasHighlighter = false;
-        if (!(featureContent instanceof Error)) {
-          this.featureHighlights = new SARS2FeatureHighlights({
-            data: JSON.parse(featureContent).data
-          });
-          this.featureHighlights.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
-            // console.log('old highlights %s new highlights %s',  JSON.stringify(oldValue), JSON.stringify(newValue));
-            // console.log('viewState.highlights is ' + JSON.stringify(this.get('viewState').get('highlights')));
-            let highlights = new Map(this.viewState.get('highlights'));
-            highlights.set('features', new Map(newValue));
-            this.get('viewState').set('highlights', highlights);
-          }));
-          this.highlighters.addChild(this.featureHighlights);
-          hasHighlighter = true;
-        }
+        for (let id of accessionIds) {
+          const urls =[
+            `${this.contentServer}/structures/protein_features/${id}.fea`,
+            `${this.contentServer}/structures/epitopes/${id}.epi`
+          ];
 
-        if (!(epitopeContent instanceof Error)) {
-          this.epitopeHighlight = new EpitopeHighlights({
-            id: this.id + '_epitopes',
-            color: '#ffff00',
-            data: JSON.parse(epitopeContent).data
-          });
-          this.highlighters.addChild(this.epitopeHighlight);
+          /* Fetch data files together before parsing feature and epitope content
+            @return JSON object
+            @exception Error object
+           */
+          const response = await Promise.all(
+              urls.map(url => xhr.get(url, {
+                headers: {
+                  'Accept': 'application/solr+json',
+                  'Authorization': window.App.authorizationToken
+                }
+              }).then(res => res)
+                  .catch(e => e))
+          );
 
-          this.epitopeHighlight.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
-            // console.log('old highlights %s new highlights %s',  JSON.stringify(oldValue), JSON.stringify(newValue));
-            // console.log('viewState.highlights is ' + JSON.stringify(this.get('viewState').get('highlights')));
-            let highlights = new Map(this.viewState.get('highlights'));
-            highlights.set('epitopes', new Map(newValue));
-            this.get('viewState').set('highlights', highlights);
-          }));
+          const featureContent = response[0];
+          const epitopeContent = response[1];
 
-          hasHighlighter = true;
+          if (!(featureContent instanceof Error)) {
+            let featureHighlight = new Highlights({
+              index: index,
+              accessionId: id,
+              type: 'features',
+              title: accessionIds.length > 1 ? 'Features - ' + id : 'Features',
+              color: '#0000ff',
+              data: JSON.parse(featureContent).data,
+              idProperty: 'name',
+              columns: {
+                name: { label: 'Name' }
+              }
+            });
+            featureHighlight.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
+              let highlights = new Map(this.viewState.get('highlights'));
+              highlights.set('features', new Map(newValue));
+              this.get('viewState').set('highlights', highlights);
+            }));
+            this.highlighters.addChild(featureHighlight);
+
+            hasHighlighter = true;
+          }
+
+          if (!(epitopeContent instanceof Error)) {
+            let epitopeHighlight = new Highlights({
+              index: index,
+              accessionId: id,
+              type: 'epitopes',
+              title: accessionIds.length > 1 ? 'Epitopes - ' + id : 'Epitopes',
+              color: '#ffff00',
+              data: JSON.parse(epitopeContent).data,
+              idProperty: 'id',
+              columns: {
+                id: { label: 'IEDB ID', field: 'id' },
+                name: { label: 'SEQ', field: 'name', className: 'proteinStructure-hl-cell' }
+              }
+            });
+
+            epitopeHighlight.watch('positions', lang.hitch(this, function (attr, oldValue, newValue) {
+              let highlights = new Map(this.viewState.get('highlights'));
+              highlights.set('epitopes', new Map(newValue));
+              this.get('viewState').set('highlights', highlights);
+            }));
+            this.highlighters.addChild(epitopeHighlight);
+
+            hasHighlighter = true;
+          }
+
+          index += 1;
         }
 
         // Expand accession info box if no highlighter data
@@ -169,14 +186,6 @@ function (
       this.updateFromViewState(viewState);
     },
     updateFromViewState: function (viewState) {
-      // this.displayControl.set('accessionId', viewState.get('accession').pdb_id);
-      if (this.epitopeHighlight) {
-        this.epitopeHighlight.set('positions', viewState.get('highlights').get('epitopes'));
-        this.epitopeHighlight.set('accessionId', viewState.get('accession').pdb_id);
-      }
-      if (this.featureHighlights) {
-        this.featureHighlights.set('accessionId', viewState.get('accession').pdb_id);
-      }
       this.updateAccessionInfo(viewState.get('accession'));
       this.molstar.set('viewState', viewState);
     },
@@ -203,7 +212,7 @@ function (
       ['zoomLevel', 100]
     ]),
     /**
-    Get the initial view state using hash parameters or defaults as necessary
+     Get the initial view state using hash parameters or defaults as necessary
      */
     getInitialViewState: function () {
       const hashParams = (this.state && this.state.hashParams) || {};
