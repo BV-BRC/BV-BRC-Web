@@ -372,16 +372,6 @@ define([
       return display_name;
     },
 
-    makeGenomeGroupNameRerun: function (name) {
-      var maxName = 36;
-      var display_name = name;
-      if (name.length > maxName) {
-        display_name = name.substr(0, (maxName / 2) - 2) + '...' + name.substr((name.length - (maxName / 2)) + 2);
-      }
-
-      return display_name;
-    },
-
     increaseGenome: function (genomeType, newGenomeIds) {
       if (genomeType == 'genome' || genomeType == 'genome_group') {
         newGenomeIds.forEach(lang.hitch(this, function (id) {
@@ -686,7 +676,7 @@ define([
         var tr = this.genomeTable.insertRow(0);
         var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
         td.genomeRecord = lrec;
-        td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeGroupNameRerun(genome_group.split('/').reverse()[0]) + ' (' + genome_id_list.length + ')' + '</div>';
+        td.innerHTML = "<div class='libraryrow'>" + this.makeFormFillName(genome_group.split('/').reverse()[0]) + ' (' + genome_id_list.length + ')' + '</div>';
         domConstruct.create('td', { innerHTML: '' }, tr);
         var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
         if (this.addedGenomes < this.startingRows) {

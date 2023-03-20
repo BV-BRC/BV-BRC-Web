@@ -44,7 +44,7 @@ define([], function () {
       if (service_id === 'GeneTree') {
         var job_data = JSON.parse(job_params);
         var tree_type = job_data['tree_type'];
-        Topic.publish('/navigate', { href: '/app/' + service_app_map['GeneTree'][tree_type] + '?rerun_key=' + rerun_key });
+        Topic.publish('/navigate', { href: '/app/' + service_app_map['GeneTree'][tree_type] + '?rerun_key=' + rerun_key, target: 'blank' });
       }
       else if (service_app_map.hasOwnProperty(service_id)) {
         Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] + '?rerun_key=' + rerun_key, target: 'blank' });
