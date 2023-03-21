@@ -7,7 +7,6 @@ define([
   './HighlightBase',
   'dgrid/OnDemandGrid',
   'dgrid/Selection',
-  'dgrid/Selector',
   'dgrid/selector',
   'p3/util/colorHelpers'
 ], function (
@@ -19,7 +18,6 @@ define([
   HighlightBase,
   OnDemandGrid,
   Selection,
-  Selector,
   selector,
   colorHelpers
 ) {
@@ -29,7 +27,6 @@ define([
     accessionId: '',
     title: '',
     positions: new Map(),
-    CustomGrid: declare([ OnDemandGrid, Selection, Selector ]),
     highlights: null,
     color: '',
     textColor: colorHelpers.WHITE,
@@ -44,7 +41,7 @@ define([
         this.removeChild(this.highlights);
       }
 
-      this.highlights = new this.CustomGrid({
+      this.highlights = new (declare([OnDemandGrid, Selection]))({
         store: new MemoryStore({idProperty: this.idProperty}),
         columns: {
           checkbox: selector({selectorType: 'checkbox', unhidable: true}),
