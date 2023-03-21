@@ -210,19 +210,19 @@ define([
       var feature_groups = [];
       var genome_groups = [];
       console.log('onAlphabetChanged fastaNamesAndTypes:', this.fastaNamesAndTypes);
-      for (var x = 0; x < this.fastaNamesAndTypes.length; x++) {
-        if (this.fastaNamesAndTypes[x].type == 'feature_group') {
-          feature_groups.push(this.fastaNamesAndTypes[x]);
-          this.decreaseGenome('feature_group', this.fastaNamesAndTypes[x]['filename']);
+      this.fastaNamesAndTypes.forEach(lang.hitch(this, function (obj) {
+        if (obj.type == 'feature_group') {
+          feature_groups.push(obj);
+          this.decreaseGenome('feature_group', obj['filename']);
         }
-        else if (this.fastaNamesAndTypes[x].type == 'genome_group') {
-          genome_groups.push(this.fastaNamesAndTypes[x]);
-          this.decreaseGenome('genome_group', this.fastaNamesAndTypes[x]['genome_ids'])
+        else if (obj.type == 'genome_group') {
+          genome_groups.push(obj);
+          this.decreaseGenome('genome_group', obj['genome_ids'])
         }
         else {
-          this.decreaseGenome(this.fastaNamesAndTypes[x]['type'], this.fastaNamesAndTypes[x]['filename']);
+          this.decreaseGenome(obj['type'], obj['filename']);
         }
-      }
+      }))
       this.fastaNamesAndTypes = [];
       // this.fastaNamesAndTypes = new_fastaNamesAndTypes;
       // this.userGenomeList = [];
@@ -243,7 +243,6 @@ define([
       }));
       genome_groups.forEach(lang.hitch(this, function (obj) {
         this.addGenomeGroupToTableAlphabetChanged(obj.filename, obj.genome_ids)
-        //this.addGenomeGroupToTableAlphabetChanged(obj.filename)
       }))
       /*
       var groups = {};
@@ -671,7 +670,6 @@ define([
         new Dialog({ title: 'Notice', content: msg }).show();
       }
       console.log("genome_id_list = ", genome_id_list);
-
       if (this.addedGenomes < this.maxGenomes
         && genome_id_list.length > 0
         && count <= this.maxGenomes) {
@@ -695,7 +693,6 @@ define([
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
-          // TODO: remove entry from this.fastaNamesAndTypes
         }));
         this.increaseGenome('genome_group', genome_id_list);
         this.sequenceSource = 'genome_group';
@@ -917,8 +914,7 @@ define([
     // assumes dna/protein button is selected correctly
     formFillPopulateTable: function (data_list) {
       // do query for all genome groups to get number of genomes
-      for (var x = 0; x < data_list.length; x++) {
-        var obj = data_list[x];
+      data_list.forEach(lang.hitch(this, function (obj) {
         if (obj.type === 'feature_group') {
           this.addFeatureGroupAlphabetChange(obj.filename);
         }
@@ -940,7 +936,7 @@ define([
           // feature_dna_fasta, feature_protein_fasta
           this.onAddUnalignedFastaFormFill(obj.filename);
         }
-      }
+      }));
     },
 
     onAddFastaFormFill: function (fasta) {
