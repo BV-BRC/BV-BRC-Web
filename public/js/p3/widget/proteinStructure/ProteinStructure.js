@@ -11,6 +11,7 @@ define([
   './ProteinStructureState',
   '../../WorkspaceManager',
   'dojo/_base/Deferred',
+  'dojo/request',
   'molstar/mol-bvbrc/index'
 ], function (
   declare,
@@ -19,7 +20,8 @@ define([
   kernel,
   ProteinStructureState,
   WS,
-  Deferred
+  Deferred,
+  xhr
 ) {
   return declare([WidgetBase], {
     id: 'defaultId',
@@ -46,6 +48,7 @@ define([
     },
     isMolstarInitialized: false,
     existingPositions: new Map(),
+    structureServer: 'https://www.bv-brc.org/structure',
     constructor: function (opts) {
       // console.log('ProteinStructure.constructor');
       opts = opts || {};
@@ -77,7 +80,7 @@ define([
     },
     updateAccession: function (accessionInfo) {
       this.highlighters = [];
-      this.loadAccession(accessionInfo.map(a => a.pdb_id));
+      this.loadAccession(accessionInfo);
       this.updateDisplay();
     },
     updateDisplay: function () {
@@ -131,17 +134,71 @@ define([
     colorToMolStarColor: function (hexColor) {
       return parseInt(hexColor.replace('#', '0x'), 16);
     },
-    // TODO this assumes loading from PDB
-    loadAccession: function (accessions) {
+    loadAccession: async function (accessions) {
       if (accessions) {
-        this.molstar.load({ urls: accessions, sourceName: 'pdb', displaySpikeSequence: true });
+        let selections = [];
+        // accessionInfo.map(a => a.pdb_id)
+        for (let accession of accessions) {
+          // Check if it is a predicted structure and has valid file path
+          if (accession.method.includes('Predicted') && accession.file_path) {
+            // Create api path for the content
+            const path = `${this.structureServer}/${accession.file_path}`;
+            const response = await Promise.all(
+              [xhr.get(path).then(res => res).catch(e => e)]
+            );
+
+            const responseContent = response[0];
+            if (accession.file_path.includes('alphafold')) {
+              // TODO: use alphafold from the server
+              // Check if alphafold file exists, otherwise use alphafold database
+              /*if (!(responseContent instanceof Error)) {
+                selections.push({
+                  value: path,
+                  source: 'url'
+                });
+              } else {
+                selections.push({
+                  value: accession.uniprotkb_accession[0],
+                  source: 'alphafold'
+                });
+              }*/
+              selections.push({
+                value: accession.uniprotkb_accession[0],
+                source: 'alphafold'
+              });
+            } else  {
+              if (!(responseContent instanceof Error)) {
+                selections.push({
+                  value: path,
+                  source: 'url',
+                  format: 'pdb'
+                });
+              } else {
+                selections.push({
+                  value: accession.pdb_id,
+                  source: 'pdb'
+                });
+              }
+            }
+          } else {
+            selections.push({
+              value: accession.pdb_id,
+              source: 'pdb'
+            });
+          }
+        }
+
+        this.molstar.load({ selections, displaySpikeSequence: true });
       }
     },
     loadFromWorkspace: function (workspacePath) {
       let _self = this;
       Deferred.when(WS.getDownloadUrls(workspacePath), function (url) {
         if (url && url.length > 0 && url[0] !== null) {
-          _self.molstar.load({urls: url, format: 'pdb', sourceName: 'url', displaySpikeSequence: true});
+          _self.molstar.load({
+            selections: [{value: url[0], source: 'url', format: 'pdb'}],
+            displaySpikeSequence: true
+          });
         }
       });
     }
