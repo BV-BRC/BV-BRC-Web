@@ -452,17 +452,6 @@ define([
           params.selection = selection;
           params.data_type = data_type;
           params.type = type;
-          /*
-          if (context === 'genome') {
-            params.genome_list = selection.map(x => x.genome_id);
-          }
-          if (context === 'feature') {
-            params.feature_list = selection.map(x => x.patric_id);
-            params.feature_list = params.feature_list.filter(x => x);
-          }
-          */
-          // params.selection = selection;
-          // params.container = container;
           popup.open({
             popup: new ServicesTooltipDialog({
               context: 'grid_container',
