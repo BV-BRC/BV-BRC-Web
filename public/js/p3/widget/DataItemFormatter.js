@@ -1415,9 +1415,14 @@ define([
         text: 'release_date',
         type: 'date'
       }, {
+        name: 'File Path',
+        text: 'file_path',
+        link: 'https://www.bv-brc.org/structure/'
+      }, {
         name: 'Text',
         text: 'text',
-      }];
+      }
+    ];
 
       var div = domConstruct.create('div');
       displayHeader(div, item.pdb_id, 'fa icon-contigs fa-2x', '/view/Genome/' + item.genome_id, options);
