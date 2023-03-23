@@ -118,10 +118,13 @@ define([
           var ntr = this.metadataTableBody.insertRow(-1);
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          // domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         handle.remove();
       }));
+      if (this.metadata_count <= this.startingRows) {
+        this.metadataTableBody.deleteRow(-1);
+      }
     },
 
     startupMetadataTable: function () {
@@ -147,7 +150,7 @@ define([
             var ntr = this.metadataTableBody.insertRow(-1);
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            // domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
         }));
