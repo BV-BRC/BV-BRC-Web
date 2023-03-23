@@ -26,6 +26,7 @@ define([
     pageTitle: 'Viral Genome Tree Service | BV-BRC',
     defaultPath: '',
     startingRows: 3,
+    metadataStartingRows: 5,
     maxGenomes: 5000,
     maxGenomeLength: 250000,
 
@@ -40,6 +41,7 @@ define([
       this.userGenomeList = [];
       this.numref = 0;
       this.fastaNamesAndTypes = [];
+      this.metadataDict = {};
     },
 
     startup: function () {
@@ -55,8 +57,13 @@ define([
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
       _self.output_path.set('value', _self.defaultPath);
 
+      on(this.advanced, 'click', lang.hitch(this, function () {
+        this.toggleAdvanced((this.advancedOptions.style.display == 'none'));
+      }));
+
       this.numref = 0;
       this.emptyTable(this.genomeTable, this.startingRows);
+      this.startupMetadataTable();
       this.numgenomes.startup();
       this.setTooltips();
       this._started = true;
@@ -66,6 +73,80 @@ define([
       } catch (error) {
         console.error(error);
       }
+    },
+
+    toggleAdvanced: function (flag) {
+      if (flag) {
+        this.advancedOptions.style.display = 'block';
+        this.advancedOptionIcon.className = 'fa icon-caret-left fa-1';
+      }
+      else {
+        this.advancedOptions.style.display = 'none';
+        this.advancedOptionIcon.className = 'fa icon-caret-down fa-1';
+      }
+    },
+
+    onAddMetadata: function () {
+      var metadata_value = this.metadata_selector.getValue();
+      var metadata_field = this.metadata_selector.get('displayedValue');
+      if (Object.keys(this.metadataDict).includes(metadata_value)) {
+        return;
+      }
+
+      var tr = this.metadataTableBody.insertRow(0);
+      this.metadata_count++;
+      var td = domConstruct.create('td', { class: 'textcol', innerHTML: '' }, tr);
+      td.innerHTML = "<div class='libraryrow'>" + metadata_field + '</div>';
+      tr.value = metadata_value;
+      this.metadataDict[metadata_value] = metadata_field;
+      var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+      var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+        // console.log("Delete Row: groupType ="+groupType+" newGenomeIds = " + newGenomeIds);
+        domConstruct.destroy(tr);
+        this.metadata_count--;
+        delete this.metadataDict[tr.value];
+        if (this.metadata_count < this.metadataStartingRows) {
+          var ntr = this.metadataTableBody.insertRow(-1);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          // domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+        }
+        handle.remove();
+      }));
+      if (this.metadata_count <= this.metadataStartingRows) {
+        this.metadataTableBody.deleteRow(-1);
+      }
+    },
+
+    startupMetadataTable: function () {
+      var default_metadata_fields = ['Genome ID', 'Genome Name', 'Strain', 'Accession', 'Subtype'].reverse();
+      var default_metadata_values = ['genome_id', 'genome_name', 'strain', 'accession', 'subtype'].reverse();
+      this.metadata_count = 0;
+      var default_index = 0;
+      default_metadata_fields.forEach(lang.hitch(this, function (metfield) {
+        var tr = this.metadataTableBody.insertRow(0);
+        this.metadata_count++;
+        var metadata_value = default_metadata_values[default_index];
+        this.metadataDict[metadata_value] = metfield;
+        tr.value = metadata_value;
+        var td = domConstruct.create('td', { 'met_val': metadata_value, class: 'textcol', innerHTML: '' }, tr);
+        td.innerHTML = "<div class='libraryrow'>" + metfield + '</div>';
+        var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+        var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+          // console.log("Delete Row: groupType ="+groupType+" newGenomeIds = " + newGenomeIds);
+          domConstruct.destroy(tr);
+          this.metadata_count--;
+          delete this.metadataDict[tr.value];
+          if (this.metadata_count < this.metadataStartingRows) {
+            var ntr = this.metadataTableBody.insertRow(-1);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+            // domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+          }
+          handle.remove();
+        }));
+        default_index++;
+      }));
     },
 
     openJobsList: function () {
@@ -797,6 +878,12 @@ define([
           featureGroups.push(item.genomeRecord.user_genomes_featuregroup);
         }
       });
+
+      // get metadata fields
+      seqcomp_values.metadata_fields = [];
+      if (this.metadata_count > 0) {
+        seqcomp_values.metadata_fields = Object.keys(this.metadataDict);
+      }
 
       seqcomp_values.alphabet = values.alphabet;
       seqcomp_values.tree_type = values.tree_type;
