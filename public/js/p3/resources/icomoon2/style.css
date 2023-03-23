@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'icomoon';
-  src:  url('fonts/icomoon.eot?98bc7y');
-  src:  url('fonts/icomoon.eot?98bc7y#iefix') format('embedded-opentype'),
-    url('fonts/icomoon.ttf?98bc7y') format('truetype'),
-    url('fonts/icomoon.woff?98bc7y') format('woff'),
-    url('fonts/icomoon.svg?98bc7y#icomoon') format('svg');
+  src:  url('fonts/icomoon.eot?xnngp9');
+  src:  url('fonts/icomoon.eot?xnngp9#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?xnngp9') format('truetype'),
+    url('fonts/icomoon.woff?xnngp9') format('woff'),
+    url('fonts/icomoon.svg?xnngp9#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -25,12 +25,27 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-selection-Protein:before {
+.icon-square-github:before {
   content: "\f900";
 }
-.icon-selection-ProteinGroup:before {
+.icon-square-reddit:before {
   content: "\f901";
 }
-.icon-selection-ProteinList:before {
+.icon-square-facebook:before {
   content: "\f902";
+}
+.icon-square-twitter:before {
+  content: "\f903";
+}
+.icon-square-youtube:before {
+  content: "\f904";
+}
+.icon-selection-ProteinGroup:before {
+  content: "\f905";
+}
+.icon-selection-Protein:before {
+  content: "\f906";
+}
+.icon-selection-ProteinList:before {
+  content: "\f907";
 }
