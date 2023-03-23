@@ -435,11 +435,11 @@ define([
             if (obj.genome_status == 'Plasmid') {
               all_valid = false;
               if (!Object.keys(errors).includes('plasmid_error')) {
-                errors['kingdom_error'] = 'Invalid genome: plasmid genome found <br>First occurence for genome_id: ' + obj.genome_id;
+                errors['plasmid_error'] = 'Invalid genome: plasmid genome found <br>First occurence for genome_id: ' + obj.genome_id;
               }
             }
-            // TODO: other criteria?
-          } else {
+          }
+          else {
             console.log('genome does not have superkingdom field: ', obj);
           }
         }));
