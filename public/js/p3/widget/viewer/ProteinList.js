@@ -25,7 +25,7 @@ define([
     defaultTab: 'proteins',
     warningContent: 'Your query returned too many results for detailed analysis.',
     perspectiveLabel: 'Protein List View',
-    perspectiveIconClass: 'icon-selection-FeatureList',
+    perspectiveIconClass: 'icon-selection-ProteinList',
     _setQueryAttr: function (query) {
 
       this._set('query', query);
