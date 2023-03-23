@@ -171,7 +171,8 @@ define([
                 selections.push({
                   value: path,
                   source: 'url',
-                  format: 'pdb'
+                  format: 'pdb',
+                  label: `${accession.pdb_id} | ${accession.title}`
                 });
               } else {
                 selections.push({
@@ -195,8 +196,9 @@ define([
       let _self = this;
       Deferred.when(WS.getDownloadUrls(workspacePath), function (url) {
         if (url && url.length > 0 && url[0] !== null) {
+          const fileName = url[0].match(/\/([^\/]+)\/?$/)[1];
           _self.molstar.load({
-            selections: [{value: url[0], source: 'url', format: 'pdb'}],
+            selections: [{value: url[0], source: 'url', format: 'pdb', label: fileName}],
             displaySpikeSequence: true
           });
         }
