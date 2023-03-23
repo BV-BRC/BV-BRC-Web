@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 72 69" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="Square_Base">
+        <path d="M4.5,4.5L4.5,18L0,18L0,0L18,0L18,4.5L4.5,4.5Z" style="fill:rgb(35,31,32);fill-rule:nonzero;"/>
+        <path d="M67.5,4.5L67.5,18L72,18L72,0L54,0L54,4.5L67.5,4.5Z" style="fill:rgb(35,31,32);fill-rule:nonzero;"/>
+        <path d="M67.5,64.5L67.5,51L72,51L72,69L54,69L54,64.5L67.5,64.5Z" style="fill:rgb(35,31,32);fill-rule:nonzero;"/>
+        <path d="M4.5,64.5L4.5,51L0,51L0,69L18,69L18,64.5L4.5,64.5Z" style="fill:rgb(35,31,32);fill-rule:nonzero;"/>
+    </g>
+    <g id="Layer_8">
+        <g transform="matrix(2.98548,0,0,2.98548,-40.7175,-86.4867)">
+            <g transform="matrix(12,0,0,12,21.8428,44.861)">
+                <path d="M0.072,-0.716L0.44,-0.716C0.52,-0.716 0.58,-0.697 0.62,-0.659C0.66,-0.621 0.68,-0.566 0.68,-0.496C0.68,-0.424 0.658,-0.367 0.615,-0.327C0.571,-0.286 0.505,-0.266 0.416,-0.266L0.294,-0.266L0.294,-0L0.072,-0L0.072,-0.716ZM0.294,-0.411L0.349,-0.411C0.391,-0.411 0.421,-0.418 0.438,-0.433C0.456,-0.448 0.464,-0.467 0.464,-0.49C0.464,-0.512 0.457,-0.531 0.442,-0.547C0.427,-0.563 0.399,-0.57 0.357,-0.57L0.294,-0.57L0.294,-0.411Z" style="fill:rgb(35,31,32);fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <rect x="10.61" y="6.81" width="50.77" height="3.55" style="fill:rgb(35,31,32);"/>
+        <rect x="10.65" y="25.44" width="7.78" height="3.55" style="fill:rgb(35,31,32);"/>
+        <rect x="53.57" y="25.44" width="7.78" height="3.55" style="fill:rgb(35,31,32);"/>
+        <rect x="10.65" y="33.94" width="7.78" height="3.55" style="fill:rgb(35,31,32);"/>
+        <rect x="53.57" y="33.94" width="7.78" height="3.55" style="fill:rgb(35,31,32);"/>
+        <rect x="10.65" y="41.67" width="7.78" height="3.55" style="fill:rgb(35,31,32);"/>
+        <rect x="53.57" y="41.67" width="7.78" height="3.55" style="fill:rgb(35,31,32);"/>
+        <rect x="10.65" y="50.18" width="13.33" height="3.55" style="fill:rgb(35,31,32);"/>
+        <rect x="47.75" y="50.18" width="13.6" height="3.55" style="fill:rgb(35,31,32);"/>
+        <rect x="10.61" y="57.7" width="50.77" height="3.55" style="fill:rgb(35,31,32);"/>
+        <rect x="10.65" y="16.13" width="13.33" height="3.55" style="fill:rgb(35,31,32);"/>
+        <rect x="47.75" y="16.13" width="13.6" height="3.55" style="fill:rgb(35,31,32);"/>
+    </g>
+</svg>
