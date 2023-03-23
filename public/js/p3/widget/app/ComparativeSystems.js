@@ -18,7 +18,7 @@ define([
     templateString: Template,
     requireAuth: true,
     applicationLabel: 'Comparative Systems',
-    applicationDescription: 'The Comparative Systems Service allows users to identify a set of pathways, subsystems, and protein families for given genome(s) or genome group(s).',
+    applicationDescription: 'The Comparative Systems Service allows comparison of protein families, pathways, and subsystems for user-selected genomes. ',
     videoLink: 'https://youtu.be/U0ahNJpebhs',
     appBaseURL: 'ComparativeSystems',
     applicationName: 'ComparativeSystems',

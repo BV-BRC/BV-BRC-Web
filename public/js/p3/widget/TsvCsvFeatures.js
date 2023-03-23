@@ -40,6 +40,18 @@ define([], function () {
     'result.tsv': { columnHeaders: true },
     'input.fasta.err': { columnHeaders: true },
     'input.fasta.result': { columnHeaders: true },
+
+    // Sequence Submission Service
+    'Sequence_Validation_Report.csv': {
+      columnHeaders: true,
+      colSpan: {
+        'Unique_Sequence_Identifier': 2,
+        'Segment': 1,
+        'Serotype': 1,
+        'Status': 2,
+        'Messages': 4
+      }
+    }
   };
 
 });

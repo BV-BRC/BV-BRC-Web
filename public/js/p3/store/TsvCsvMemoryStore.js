@@ -172,11 +172,13 @@ define([
       var _self = this.state;
       var keyList = Object.keys(tsvCsvFeatures);
       var hasColumnHeaders = false;
+      var colSpan = '';
       keyList.forEach(function (keyName) {
         if (_self.dataFile.indexOf(keyName) >= 0) {
           // key name is found
           if (tsvCsvFeatures[keyName].columnHeaders) {
             hasColumnHeaders = true;
+            colSpan = tsvCsvFeatures[keyName].colSpan;
           }
         }
       });
@@ -202,7 +204,10 @@ define([
         // make column labels from the first line of dataLines or if column headers are not present
         // then name them as "Column 1", "Column 2", etc.
         if (hasColumnHeaders || this.userDefinedColumnHeaders) {
-          var columnHeaders = { label: tmpColumnHeaders[i], field: tmpColumnHeaders[i] };
+          var columnHeaders = { label: tmpColumnHeaders[i], field: tmpColumnHeaders[i]};
+          if (colSpan && colSpan[tmpColumnHeaders[i]]) {
+            columnHeaders.colSpan = colSpan[tmpColumnHeaders[i]];
+          }
           rowStart = 1;
         } else {
           var columnHeaders = { label: 'Column ' + (i + 1), field: 'Column ' + (i + 1) };

@@ -140,6 +140,9 @@ define([], function () {
         field: 'h1_clade_us', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
+        field: 'h3_clade', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
         field: 'h5_clade', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
@@ -289,6 +292,9 @@ define([], function () {
         field: 'isolation_country', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
+        field: 'state_province', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
         field: 'geographic_group', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
@@ -404,10 +410,10 @@ define([], function () {
         field: 'aa_sequence_md5', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
-        field: 'gene', type: 'str', facet: false, facet_hidden: false, search: true
+        field: 'gene', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'product', type: 'str', facet: false, facet_hidden: false, search: true
+        field: 'product', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'plfam_id', type: 'str', facet: true, facet_hidden: true, search: true
@@ -493,10 +499,10 @@ define([], function () {
         field: 'aa_sequence_md5', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
-        field: 'gene', type: 'str', facet: false, facet_hidden: false, search: true
+        field: 'gene', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'product', type: 'str', facet: false, facet_hidden: false, search: true
+        field: 'product', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'plfam_id', type: 'str', facet: true, facet_hidden: true, search: true
@@ -729,7 +735,7 @@ define([], function () {
         field: 'title', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'organism_name', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'organism_name', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'taxon_id', type: 'str', facet: false, facet_hidden: true, search: true
@@ -753,7 +759,7 @@ define([], function () {
         field: 'uniprotkb_accession', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'gene', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'gene', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'product', type: 'str', facet: false, facet_hidden: true, search: true
@@ -784,6 +790,9 @@ define([], function () {
       },
       {
         field: 'release_date', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'file_path', type: 'str', facet: false, facet_hidden: true, search: true
       },
     ],
     'pathway': [

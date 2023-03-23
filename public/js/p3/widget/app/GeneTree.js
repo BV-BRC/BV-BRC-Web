@@ -18,15 +18,15 @@ define([
     templateString: Template,
     applicationName: 'GeneTree',
     requireAuth: true,
-    applicationLabel: 'Gene Tree',
-    applicationDescription: 'The Gene Tree Service enables construction of custom phylogenetic trees built from user-selected genomes, genes or proteins.',
+    applicationLabel: 'Gene / Protein Tree',
+    applicationDescription: 'The Gene / Protein Tree Service enables construction of custom phylogenetic trees built from user-selected genes or proteins.',
     applicationHelp: 'quick_references/services/genetree.html',
     tutorialLink: 'tutorial/genetree/genetree.html',
     videoLink: 'https://youtu.be/VtXWBRSdXRo',
     pageTitle: 'Gene Tree Service | BV-BRC',
     defaultPath: '',
     startingRows: 3,
-    maxGenomes: 500,
+    maxGenomes: 5000,
     maxGenomeLength: 250000,
 
     constructor: function () {
@@ -36,7 +36,7 @@ define([
       this.fastaToAttachPt = ['user_genomes_fasta'];
       this.unalignedFastaToAttachPt = ['user_genomes_unaligned_fasta'];
       this.featureGroupToAttachPt = ['user_genomes_featuregroup'];
-      this.genomeGroupToAttachPt = ['user_genomes_genomegroup'];
+      //this.genomeGroupToAttachPt = ['user_genomes_genomegroup'];
       this.userGenomeList = [];
       this.numref = 0;
       this.fastaNamesAndTypes = [];
@@ -239,27 +239,29 @@ define([
 
       this.substitution_model.options = [];
       if (this.dna.checked) {
-        var newOptions = [{
-          value: 'HKY85', label: 'HKY85', selected: true, disabled: false
-        },
-        {
-          value: 'JC69', label: 'JC69', selected: true, disabled: false
-        },
-        {
-          value: 'K80', label: 'K80', selected: true, disabled: false
-        },
-        {
-          value: 'F81', label: 'F81', selected: true, disabled: false
-        },
-        {
-          value: 'F84', label: 'F84', selected: true, disabled: false
-        },
-        {
-          value: 'TN93', label: 'TN93', selected: true, disabled: false
-        },
-        {
-          value: 'GTR', label: 'GTR', selected: true, disabled: false
-        }];
+        var newOptions = [
+          {
+            value: 'GTR', label: 'GTR', selected: true, disabled: false
+          },
+          {
+            value: 'TN93', label: 'TN93', selected: true, disabled: false
+          },
+          {
+            value: 'HKY85', label: 'HKY85', selected: true, disabled: false
+          },
+          {
+            value: 'F84', label: 'F84', selected: true, disabled: false
+          },
+          {
+            value: 'F81', label: 'F81', selected: true, disabled: false
+          },
+          {
+            value: 'K80', label: 'K80', selected: true, disabled: false
+          },
+          {
+            value: 'JC69', label: 'JC69', selected: true, disabled: false
+          }
+        ];
         this.substitution_model.set('options', newOptions);
         this.user_genomes_fasta.set('type', 'aligned_dna_fasta');
         this.user_genomes_unaligned_fasta.set('type', 'feature_dna_fasta');
@@ -779,6 +781,7 @@ define([
       });
 
       seqcomp_values.alphabet = values.alphabet;
+      seqcomp_values.tree_type = values.tree_type;
       seqcomp_values.recipe = values.recipe;
       seqcomp_values.substitution_model = values.substitution_model;
       seqcomp_values.trim_threshold = values.trim_threshold;

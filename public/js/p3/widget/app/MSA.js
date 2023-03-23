@@ -31,7 +31,7 @@ define([
     ref_id_length: 60,
     input_seq_rows: 10,
     input_seq_min_seqs: 2,
-    maxGenomes: 500,
+    maxGenomes: 5000,
     maxGenomeLength: 250000,
     fid_value: '',
     validFasta: false,

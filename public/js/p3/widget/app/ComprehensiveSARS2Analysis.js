@@ -18,13 +18,13 @@ define([
     templateString: Template,
     applicationName: 'ComprehensiveSARS2Analysis',
     requireAuth: true,
-    applicationLabel: 'SARS-CoV-2 Genome Assembly and Annotation',
+    applicationLabel: 'SARS-CoV-2 Genome Analysis',
 
     isBVBRC: true,  // override patric configuration and tell AppBase to use bvbrcHelpURL and bvbrcTutorialURL
     bvbrcHelpURL: '/docs/user-guides/sars-cov-2',
     bvbrcTutorialURL: '/patric/pdf/sars-cov-2-tutorial.pdf',
 
-    applicationDescription: 'The SARS-CoV-2 Genome Assembly and Annotation Service provides a streamlined "meta-service" that accepts raw reads and performs genome assembly, annotation, and variation analysis.  ',
+    applicationDescription: 'The SARS-CoV-2 Genome Analysis Service provides a streamlined "meta-service" that accepts raw reads and performs genome assembly, annotation, and variation analysis.  ',
     applicationHelp: 'quick_references/services/sars_cov_2_assembly_annotation_service.html',
     tutorialLink: 'tutorial/sars_cov_2_assembly_annotation/sars_cov_2_assembly_annotation.html',
     videoLink: '',

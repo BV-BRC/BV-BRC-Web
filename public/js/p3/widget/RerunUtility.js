@@ -18,7 +18,10 @@ define([], function () {
         'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
         'DifferentialExpression': 'Expression',
         'FastqUtils': 'FastqUtil',
-        'GeneTree': 'GeneTree',
+        'GeneTree': {
+          'viral_genome': 'ViralGenomeTree',
+          'gene': 'GeneTree'
+        },
         'GenomeAssembly2': 'Assembly2',
         'GenomeAssembly': 'Assembly2',
         'GenomeAlignment': 'GenomeAlignment',
@@ -33,11 +36,17 @@ define([], function () {
         'PrimerDesign': 'PrimerDesign',
         'RNASeq': 'Rnaseq',
         'SubspeciesClassification': 'SubspeciesClassification',
+        'SequenceSubmission': 'SequenceSubmission',
         'TaxonomicClassification': 'TaxonomicClassification',
         'TnSeq': 'Tnseq',
         'Variation': 'Variation'
       };
-      if (service_app_map.hasOwnProperty(service_id)) {
+      if (service_id === 'GeneTree') {
+        var job_data = JSON.parse(job_params);
+        var tree_type = job_data['tree_type'];
+        Topic.publish('/navigate', { href: '/app/' + service_app_map['GeneTree'][tree_type] + '?rerun_key=' + rerun_key, target: 'blank' });
+      }
+      else if (service_app_map.hasOwnProperty(service_id)) {
         Topic.publish('/navigate', { href: '/app/' + service_app_map[service_id] + '?rerun_key=' + rerun_key, target: 'blank' });
       }
       else {

@@ -16,14 +16,14 @@ define([
     templateString: Template,
     applicationName: 'CodonTree',
     requireAuth: true,
-    applicationLabel: 'Phylogenetic Tree Building',
-    applicationDescription: 'The Phylogenetic Tree Building Service enables construction of custom phylogenetic trees for user-selected genomes.',
+    applicationLabel: 'Bacterial Genome Tree',
+    applicationDescription: 'The Bacterial Genome Tree Service enables construction of custom phylogenetic trees for user-selected genomes using codon tree method.',
     applicationHelp: 'quick_references/services/phylogenetic_tree_building_service.html',
     tutorialLink: 'tutorial/phylogenetic_tree/phylogenetic_tree.html',
     videoLink: 'https://youtu.be/ckNPGPwoT5U',
     pageTitle: 'Phylogenetic Tree Building Service | BV-BRC',
     defaultPath: '',
-    startingRows: 9,
+    startingRows: 5,
 
     constructor: function () {
       this._selfSet = true;
@@ -513,9 +513,9 @@ define([
             var param_dict = { 'output_folder': 'output_path' };
             var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
             AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-            if (job_data.hasOwnProperty('genome_group')) {
+            if (job_data.hasOwnProperty('genome_groups')) {
               // this.codon_genomes_genomegroup.set("value",job_data["genome_group"]);
-              this.addGenomeGroupFormFill(job_data['genome_group']);
+              this.addGenomeGroupFormFill(job_data['genome_groups']);
             } else {
               var genome_ids = job_data['genome_ids'];
               if (genome_ids === undefined) {
@@ -547,22 +547,84 @@ define([
       }
     },
 
-    addGenomeGroupFormFill: function (genome_group_path) {
-      WorkspaceManager.getObjects(genome_group_path, false).then(lang.hitch(this, function (objs) {
-        var genomeIdHash = {};
-        objs.forEach(function (obj) {
-          var data = JSON.parse(obj.data);
-          data.id_list.genome_id.forEach(function (d) {
-            if (!Object.prototype.hasOwnProperty.call(genomeIdHash, d)) {
-              genomeIdHash[d] = true;
+    addGenomeGroupFormFill: function (genome_groups) {
+      genome_groups.forEach(lang.hitch(this, function (genome_group_path) {
+        var lrec = {};
+        lrec.groupType = 'codonGroup';
+        // console.log("this[groupType].genomeGroupToAttachPt = " + this[groupType].genomeGroupToAttachPt);
+        // console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
+        var path = genome_group_path;
+        var groupType = 'codonGroup';
+        WorkspaceManager.getObjects(path, false).then(lang.hitch(this, function (res) {
+          var res_data = JSON.parse(res[0].data);
+          var newGenomeIds =  res_data.id_list.genome_id;
+          // display a notice if adding new genome group exceeds maximum allowed number
+          var count = this[groupType].addedNum + newGenomeIds.length;
+          if (count > this[groupType].maxGenomes) {
+            var msg = 'Sorry, you can only add up to ' + this[groupType].maxGenomes + ' genomes';
+            // msg += ' in ' + groupType[0].toUpperCase() + groupType.substring(1).toLowerCase();
+            msg += ' and you are trying to select ' + count + '.';
+            new Dialog({ title: 'Notice', content: msg }).show();
+          }
+          // console.log("newGenomeIds = ", newGenomeIds);
+          if (newGenomeIds.length > 0 && this[groupType].addedNum + newGenomeIds.length <= this[groupType].maxGenomes) {
+            var tr = this[groupType + 'GenomeTable'].insertRow(0);
+            lrec.row = tr;
+            var td = domConstruct.create('td', { 'class': 'textcol ' + groupType + 'GenomeData', innerHTML: '' }, tr);
+            td.genomeRecord = lrec;
+            td.innerHTML = "<div class='libraryrow'>" + this.genDisplayName(path.split('/').reverse()[0], 36) + ' (' + newGenomeIds.length + ')</div>';
+            // added info icon to show all genome ids in the genome group
+            if (newGenomeIds.length) {
+              var tdinfo = domConstruct.create('td', { innerHTML: "<i class='fa icon-info fa-1' />" }, tr);
+              var ihandle = new TooltipDialog({
+                content: 'click to see all genome id.',
+                onMouseLeave: function () {
+                  popup.close(ihandle);
+                }
+              });
+              var ihandle2 = new Dialog({
+                title: 'Genome ID',
+                content: newGenomeIds.join('</br>'),
+                style: 'width: 125px; overflow-y: auto;'
+              });
+              on(tdinfo, 'mouseover', function () {
+                popup.open({
+                  popup: ihandle,
+                  around: tdinfo
+                });
+              });
+              on(tdinfo, 'mouseout', function () {
+                popup.close(ihandle);
+              });
+
+              on(tdinfo, 'click', function () {
+                ihandle2.show();
+              });
             }
-          });
-        });
-        var genome_list = []
-        Object.keys(genomeIdHash).forEach(function (genome_id) {
-          genome_list.push(genome_id);
-        }, this);
-        this.addGenomesFormFill(genome_list);
+            else {
+              var tdinfo = domConstruct.create('td', { innerHTML: '' }, tr);
+            }
+            var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+            if (this[groupType].addedNum < this.startingRows) {
+              this[groupType + 'GenomeTable'].deleteRow(-1);
+            }
+            var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+              // console.log("Delete Row");
+              domConstruct.destroy(tr);
+              this.decreaseGenome(groupType, newGenomeIds);
+              if (this[groupType].addedNum < this.startingRows) {
+                var ntr = this[groupType + 'GenomeTable'].insertRow(-1);
+                domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+                domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+                domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              }
+              handle.remove();
+            }));
+            lrec.handle = handle;
+            this.selectedTR.push(lrec);
+            this.increaseGenome(groupType, newGenomeIds);
+          }
+        }));
       }));
     },
 

@@ -28,6 +28,8 @@ define([
     { type: 'separator'},
     { value: 'INFLUENZAH5', label: 'Orthomyxoviridae - Influenza A H5 [Hemagglutinin gene, genomic RNA]' },
     { value: 'SWINEH1', label: 'Orthomyxoviridae - Swine influenza H1 (global classification) [Hemagglutinin gene, genomic RNA]' },
+    { value: 'SWINEH1US', label: 'Orthomyxoviridae – Swine influenza H1 (US classification) [Hemagglutinin gene, genomic RNA]' },
+    { value: 'SWINEH3', label: 'Orthomyxoviridae - Swine influenza H3 (global classification, beta version) [Hemagglutinin gene, genomic RNA]' },
     { type: 'separator'},
     { value: 'ROTAA', label: 'Reoviridae - Rotavirus A [complete genome, genomic RNA]' }
   ];
@@ -256,7 +258,7 @@ define([
         this.input_fasta.set('checked', true);
         this.input_sequence.set('checked', false);
         this.query_fasta.set('value', job_data['input_fasta_file']);
-      } 
+      }
 
       this.output_path.set('value', job_data['output_path']);
       this.virus_type.set('value', job_data['virus_type']);

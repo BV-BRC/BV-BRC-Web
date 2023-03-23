@@ -285,6 +285,13 @@ define([
         tableData: true,
         otherData: ['dna+fasta', 'protein+fasta']
       },
+      protein_data: {
+        label: 'Proteins',
+        dataType: 'genome_feature',
+        pk: 'feature_id',
+        tableData: true,
+        otherData: ['protein+fasta']
+      },
       structure_data: {
         label: 'Protien Structure',
         dataType: 'protein_structure',

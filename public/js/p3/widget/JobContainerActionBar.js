@@ -95,7 +95,7 @@ define([
         status: null
       };
       on(selector, 'change', function (val) {
-        self.filters.app = val;
+        self.filters.application_name = val;
         Topic.publish('/JobFilter', self.filters);
       });
 
@@ -249,13 +249,13 @@ define([
       // count by apps
       var info = {};
       jobs.forEach(function (job) {
-        info[job.app] = job.app in info ? info[job.app] + 1 : 1;
+        info[job.application_name] = job.application_name in info ? info[job.application_name] + 1 : 1;
       });
 
       // add 'all apps' option
       var apps = [];
       var facet = { label: 'All Services', value: 'all' };
-      if (self.filters.app == 'all') facet.selected = true;
+      if (self.filters.application_name == 'all') facet.selected = true;
       apps.push(facet);
 
       // organize options by app count
@@ -268,7 +268,7 @@ define([
             value: k,
             count: info[k]
           };
-          if (k == self.filters.app) facet.selected = true;
+          if (k == self.filters.application_name) facet.selected = true;
           apps.push(facet);
         }
       }
