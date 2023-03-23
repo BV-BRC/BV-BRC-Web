@@ -690,7 +690,7 @@ define([
         if (res && res.data && res.data.id_list) {
           if (res.data.id_list.genome_id) {
             // viral genome checks
-            this.checkViralGenomes(res.data.id_list.genome_id);
+            this.checkViralGenomes(res.data.id_list.genome_id, false, null);
           }
         }
       }));
@@ -699,7 +699,7 @@ define([
     },
 
     // TODO: there may be a limit to the number of genome_ids that can be passed into the query, check that
-    checkViralGenomes: function (genome_id_list) {
+    checkViralGenomes: function (genome_id_list, rerun, filename) {
       // As far as I have seen Bacteria do not have a superkingdom field, only viruses
       var query = `in(genome_id,(${genome_id_list.toString()}))&select(genome_id,superkingdom,genome_length,contigs)&limit(${genome_id_list.length})`;
       console.log('query = ', query);
@@ -738,8 +738,28 @@ define([
             all_valid = false;
           }
         }));
-        this.addGenomeGroupToTable(all_valid, genome_id_list, errors);
+        if (rerun) {
+          this.addGenomeGroupToTableFormFill(all_valid, genome_id_list, errors, filename);
+          // this.addGenomeGroupToTableAlphabetChanged(filename, genome_ids);
+        } else {
+          this.addGenomeGroupToTable(all_valid, genome_id_list, errors);
+        }
       }));
+    },
+
+    addGenomeGroupToTableFormFill: function (all_valid, genome_id_list, errors, filename) {
+      if (all_valid) {
+        this.addGenomeGroupToTableAlphabetChanged(filename, genome_id_list);
+      } else {
+        var error_msg = 'This looks like an invalid genome group. The following errors were found:';
+        Object.values(errors).forEach(lang.hitch(this, function (err) {
+          error_msg = error_msg + '<br>- ' + err;
+        }));
+        this.genomegroup_message.innerHTML = error_msg;
+        setTimeout(lang.hitch(this, function () {
+          this.genomegroup_message.innerHTML = '';
+        }), 5000);
+      }
     },
 
     addGenomeGroupToTableAlphabetChanged: function (genome_group, genome_id_list) {
@@ -1010,7 +1030,7 @@ define([
           DataAPI.queryGenomes(query, { 'limit': 5000 }).then(lang.hitch(this, function (res) {
             var genome_ids = res.items.map(x => x.genome_id);
             var filename = obj.filename;
-            this.addGenomeGroupToTableAlphabetChanged(filename, genome_ids);
+            this.checkViralGenomes(genome_ids, true, filename);
           }));
         }
         else if ((obj.type === 'aligned_protein_fasta') || (obj.type === 'aligned_dna_fasta')) {
