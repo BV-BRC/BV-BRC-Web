@@ -632,7 +632,8 @@ define([
         {
           label: 'STRUCTURE',
           validTypes: ['*'],
-          multiple: false,
+          multiple: true,
+          max: 10,
           tooltip: 'Switch to Structure View. Press and Hold for more options.',
           ignoreDataType: true,
           validContainerTypes: ['structure_data'],
@@ -646,8 +647,8 @@ define([
           }
         },
         function (selection) {
-          var sel = selection[0];
-          Topic.publish('/navigate', { href: '/view/ProteinStructure#accession=' + sel.pdb_id, target: 'blank' });
+          var sel = selection.map(s => s.pdb_id);
+          Topic.publish('/navigate', { href: '/view/ProteinStructure#accession=' + sel, target: 'blank' });
         },
         false
       ],
