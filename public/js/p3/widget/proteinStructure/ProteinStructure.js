@@ -149,23 +149,20 @@ define([
 
             const responseContent = response[0];
             if (accession.file_path.includes('alphafold')) {
-              // TODO: use alphafold from the server
               // Check if alphafold file exists, otherwise use alphafold database
-              /*if (!(responseContent instanceof Error)) {
+              if (!(responseContent instanceof Error)) {
+                const url = path.endsWith('.gz') ? path.slice(0, -3) : path;
                 selections.push({
-                  value: path,
-                  source: 'url'
+                  value: url,
+                  source: 'url',
+                  label: `${accession.pdb_id} | ${accession.title}`
                 });
               } else {
                 selections.push({
                   value: accession.uniprotkb_accession[0],
                   source: 'alphafold'
                 });
-              }*/
-              selections.push({
-                value: accession.uniprotkb_accession[0],
-                source: 'alphafold'
-              });
+              }
             } else  {
               if (!(responseContent instanceof Error)) {
                 selections.push({
