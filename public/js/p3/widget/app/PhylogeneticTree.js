@@ -317,52 +317,60 @@ define([
       var chkPassed = this.ingestAttachPoints(this[groupType].genomeToAttachPt, lrec);
       // console.log("this.genomeToAttachPt = " + this.genomeToAttachPt);
       // console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
-
-      if (chkPassed && this[groupType].addedNum < this[groupType].maxGenomes) {
-        var newGenomeIds = [lrec[this[groupType].genomeToAttachPt]];
-        var tr = this[groupType + 'GenomeTable'].insertRow(0);
-        lrec.row = tr;
-        var td = domConstruct.create('td', { 'class': 'textcol ' + groupType + 'GenomeData', innerHTML: '' }, tr);
-        td.genomeRecord = lrec;
-        td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeName(groupType) + '</div>';
-        // added info icon to show all genome ids in the genome group
-        var tdinfo = domConstruct.create('td', { innerHTML: "<i class='fa icon-info fa-1' />" }, tr);
-        var ihandle = new TooltipDialog({
-          content: 'genome id: ' + newGenomeIds[0],
-          onMouseLeave: function () {
-            popup.close(ihandle);
+      var query = `eq(genome_id,(${lrec.codon_genome_id}))&select(genome_id,superkingdom,genome_length,contigs)&limit(1)`;
+      DataAPI.queryGenomes(query).then(lang.hitch(this, function (obj) {
+        var genome_data = obj.items[0];
+        if (genome_data.superkingdom && genome_data.superkingdom != 'Bacteria') {
+          var msg = 'This looks like an invalid genome, only Bacterial genomes are allowed';
+          // msg += ' in ' + groupType[0].toUpperCase() + groupType.substring(1).toLowerCase();
+          new Dialog({ title: 'Notice', content: msg }).show();
+        } else {
+          if (chkPassed && this[groupType].addedNum < this[groupType].maxGenomes) {
+            var newGenomeIds = [lrec[this[groupType].genomeToAttachPt]];
+            var tr = this[groupType + 'GenomeTable'].insertRow(0);
+            lrec.row = tr;
+            var td = domConstruct.create('td', { 'class': 'textcol ' + groupType + 'GenomeData', innerHTML: '' }, tr);
+            td.genomeRecord = lrec;
+            td.innerHTML = "<div class='libraryrow'>" + this.makeGenomeName(groupType) + '</div>';
+            // added info icon to show all genome ids in the genome group
+            var tdinfo = domConstruct.create('td', { innerHTML: "<i class='fa icon-info fa-1' />" }, tr);
+            var ihandle = new TooltipDialog({
+              content: 'genome id: ' + newGenomeIds[0],
+              onMouseLeave: function () {
+                popup.close(ihandle);
+              }
+            });
+            on(tdinfo, 'mouseover', function () {
+              popup.open({
+                popup: ihandle,
+                around: tdinfo
+              });
+            });
+            on(tdinfo, 'mouseout', function () {
+              popup.close(ihandle);
+            });
+            var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
+            if (this[groupType].addedNum < this.startingRows) {
+              this[groupType + 'GenomeTable'].deleteRow(-1);
+            }
+            var handle = on(td2, 'click', lang.hitch(this, function (evt) {
+              // console.log("Delete Row: groupType ="+groupType+" newGenomeIds = " + newGenomeIds);
+              domConstruct.destroy(tr);
+              this.decreaseGenome(groupType, newGenomeIds);
+              if (this[groupType].addedNum < this.startingRows) {
+                var ntr = this[groupType + 'GenomeTable'].insertRow(-1);
+                domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+                domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+                domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
+              }
+              handle.remove();
+            }));
+            lrec.handle = handle;
+            this.selectedTR.push(lrec);
+            this.increaseGenome(groupType, newGenomeIds);
           }
-        });
-        on(tdinfo, 'mouseover', function () {
-          popup.open({
-            popup: ihandle,
-            around: tdinfo
-          });
-        });
-        on(tdinfo, 'mouseout', function () {
-          popup.close(ihandle);
-        });
-
-        var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
-        if (this[groupType].addedNum < this.startingRows) {
-          this[groupType + 'GenomeTable'].deleteRow(-1);
         }
-        var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-          // console.log("Delete Row: groupType ="+groupType+" newGenomeIds = " + newGenomeIds);
-          domConstruct.destroy(tr);
-          this.decreaseGenome(groupType, newGenomeIds);
-          if (this[groupType].addedNum < this.startingRows) {
-            var ntr = this[groupType + 'GenomeTable'].insertRow(-1);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          }
-          handle.remove();
-        }));
-        lrec.handle = handle;
-        this.selectedTR.push(lrec);
-        this.increaseGenome(groupType, newGenomeIds);
-      }
+      }));
       // console.log(lrec);
     },
 
