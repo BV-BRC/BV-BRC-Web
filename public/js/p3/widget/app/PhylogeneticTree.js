@@ -419,7 +419,7 @@ define([
     },
 
     checkBacterialGenomes: function (genome_id_list, groupType) {
-      var query = `in(genome_id,(${genome_id_list.toString()}))&select(genome_id,superkingdom,genome_length,contigs)&limit(${genome_id_list.length})`;
+      var query = `in(genome_id,(${genome_id_list.toString()}))&select(genome_id,genome_status,superkingdom,genome_length,contigs)&limit(${genome_id_list.length})`;
       DataAPI.queryGenomes(query).then(lang.hitch(this, function (res) {
         var all_valid = true;
         var errors = {};
@@ -430,6 +430,12 @@ define([
               all_valid = false;
               if (!Object.keys(errors).includes('kingdom_error')) {
                 errors['kingdom_error'] = 'Invalid Superkingdom: only bacterial genomes are permitted <br>First occurence for genome_id: ' + obj.genome_id;
+              }
+            }
+            if (obj.genome_status == 'Plasmid') {
+              all_valid = false;
+              if (!Object.keys(errors).includes('plasmid_error')) {
+                errors['kingdom_error'] = 'Invalid genome: plasmid genome found <br>First occurence for genome_id: ' + obj.genome_id;
               }
             }
             // TODO: other criteria?

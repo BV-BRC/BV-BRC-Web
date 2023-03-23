@@ -252,12 +252,37 @@
         <table>
           <tr>
             <td>
+              <div class="headerrow">
+                <div style="width:85%;display:inline-block;">
+                  <label class="appBoxLabel">Metadata Table</label>
+                </div>
+                <br>
+                <div class="appsublabel">These fields will appear as options in the phyloxml visualization</div>
+              </div>
+            </td>
+            <td>
+              
+            </td> 
+            <td rowspan="2">
+              <div>
+                <label class="paramlabel">Metadata Table:</label>
+              </div>
+              <div class="left half">
+                <table class="librarytable" frame="box" data-dojo-attach-point="metadataTableBody" style='width:330px;'>
+                    <tbody data-dojo-attach-point="metadataTableBody"></tbody>
+                </table>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
               <label class="paramlabel">Metadata Fields:</label>
               <div name="metadata_selector" class="medInput">
                 <select data-dojo-attach-point="metadata_selector"
                   data-dojo-type="dijit/form/Select" name="metadata_selector" required="false">
                   <option value="genome_id">Genome ID</option>
                   <option value="genome_name">Genome Name</option>
+                  <option value="genome_length">Genome Length</option>
                   <option value="strain">Strain</option>
                   <option value="accession">Accession</option>
                   <option value="subtype">Subtype</option>
@@ -273,17 +298,14 @@
               </div>
             </td>
             <td>
+              <div>
+                <label class="paramlabel" style="visibility: hidden;">Add to Table</label>
+              </div>
               <div style="width:17px; display:inline-block;">
                 <i data-dojo-attach-event="click:onAddMetadata" class="fa icon-arrow-circle-o-right fa-lg"></i>
               </div>
             </td>
-            <td>
-              <div class="left half">
-                <table class="librarytable" frame="box" data-dojo-attach-point="metadataTableBody" style='width:330px;'>
-                    <tbody data-dojo-attach-point="metadataTableBody"></tbody>
-                </table>
-              </div>
-            </td>
+            <td></td>
           </tr>
         </table>
       </div>
