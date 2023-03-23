@@ -14,7 +14,7 @@
                 </div>-->
             </h3>
             <p>
-                ${applicationDescription}
+                ${applicationDescription} <b>Note: Current pipeline only supports Influenza A, B, or C virus family.</b>
             </p>
             <br>
             <p>
@@ -37,19 +37,19 @@
             <div data-dojo-attach-point="submitterrow">
                 <div class="appRow">
                     <div class="appRowSegment" style="text-align:left; width:30%">
-                        <label class="paramlabel">First Name</label><br>
+                        <label class="paramlabel">First Name *</label><br>
                         <div data-dojo-type="dijit/form/ValidationTextBox" name="first_name"
                              data-dojo-attach-point="first_name" required="true"
                              data-dojo-props="intermediateChanges:false, missingMessage:'You must provide a first name',trim:true"></div>
                     </div>
                     <div class="appRowSegment" style="text-align:left; width:30%">
-                        <label class="paramlabel">Last Name</label><br>
+                        <label class="paramlabel">Last Name *</label><br>
                         <div data-dojo-type="dijit/form/ValidationTextBox" name="last_name"
                              data-dojo-attach-point="last_name" required="true"
                              data-dojo-props="intermediateChanges:false, missingMessage:'You must provide a last name',trim:true"></div>
                     </div>
                     <div class="appRowSegment" style="text-align:left; width:30%">
-                        <label class="paramlabel">Email</label><br>
+                        <label class="paramlabel">Email *</label><br>
                         <div data-dojo-type="dijit/form/ValidationTextBox" name="email" data-dojo-attach-point="email"
                              required="true"
                              data-dojo-props="intermediateChanges:false, missingMessage:'You must provide an email',trim:true"></div>
@@ -65,13 +65,13 @@
                         <div class="warning" data-dojo-attach-point="phoneNumber_message"></div>
                     </div>
                     <div class="appRowSegment" style="text-align:left; width:30%">
-                        <label class="paramlabel">Institution / Affiliation</label><br>
+                        <label class="paramlabel">Institution / Affiliation *</label><br>
                         <div data-dojo-type="dijit/form/ValidationTextBox" name="affiliation"
                              data-dojo-attach-point="affiliation" required="true"
                              data-dojo-props="intermediateChanges:false, missingMessage:'You must provide an affiliation',trim:true"></div>
                     </div>
                     <div class="appRowSegment" style="text-align:left; width:30%">
-                        <label class="paramlabel">Country</label><br>
+                        <label class="paramlabel">Country *</label><br>
                         <div data-dojo-type="dijit/form/FilteringSelect" name="country"
                              data-dojo-attach-point="country" required="true"
                              data-dojo-props="placeHolder:'e.g. China', missingMessage:'You must provide a country'"></div>
