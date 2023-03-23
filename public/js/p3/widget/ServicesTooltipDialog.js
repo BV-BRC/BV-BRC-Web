@@ -51,38 +51,35 @@ define([
         _self._selectService(service_selection, _self.data);
       });
 
-      this._listServices(this.data.data_type);
+      this._listServices(this.data.data_type, this.data.multiple);
     },
 
-    _listServices(data_context) {
+    _listServices(data_context, multiple) {
       // debugger;
       var service_div = domConstruct.create('div', {});
       domConstruct.create('div', { style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;', innerHTML: 'Services' }, service_div);
       switch (data_context) {
+        // TODO: taxon overview case
         case 'feature':
           domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'Homology', innerHTML: 'Blast' }, service_div);
+          domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'GeneTree', innerHTML: 'Gene Tree' }, service_div);
           // domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'msa', innerHTML: 'MSA' }, service_div);
           // if (!(this.context === 'grid_container')) {
           //   domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'primer_design', innerHTML: 'Primer Design' }, service_div);
           // }
-          // TODO: Maybe ID Mapper
           break;
         case 'genome':
-          domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'Homology', innerHTML: 'Blast' }, service_div);
-          // if (this.context === 'grid_container') {
-          //  domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'phylogenetic_tree', innerHTML: 'Phylogenetic Tree' }, service_div);
-          // }
+          if (!multiple || this.context === 'grid_container') {
+            domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'Homology', innerHTML: 'Blast' }, service_div);
+          }
+          if (this.context !== 'genome_overview') {
+            domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'CodonTree', innerHTML: 'Bacterial Tree' }, service_div);
+            domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'ViralTree', innerHTML: 'Viral Tree' }, service_div);
+          }
           // TODO: fix genome distance?
           // domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'genome_distance', innerHTML: 'Similar Genome Finder' }, tData);
           break;
-        /*
-        case 'genome_group':
-          domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'Homology', innerHTML: 'Blast' }, service_div);
-          // domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'phylogenetic_tree', innerHTML: 'Phylogenetic Tree' }, service_div);
-          // TODO: fix genome distance?
-          // domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'genome_distance', innerHTML: 'Similar Genome Finder' }, tData);
-          break;
-        */
+        // TODO: case taxon overview
         default:
           console.log('invalid context: displaying placeholder');
           domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'genome_alignment', innerHTML: 'Genome Alignment' }, service_div);
@@ -168,7 +165,7 @@ define([
             }));
           }
           if (this.context === 'workspace') {
-            var feature_group = this.data.feature_group;
+            var feature_group = this.data.selection[0].path;
             on(this.domNode, '.wsActionTooltip:click', lang.hitch(this, function (evt) { 
               if (evt.target.attributes.context.value === 'blast_feature_source_query') {
                 var source = evt.target.attributes.source.value;
@@ -214,10 +211,92 @@ define([
               'blast_program': 'blastn',
               'db_type': 'fna',
               'db_precomputed_database': 'selGroup',
-              'db_genome_group': this.data.genome_group
+              'db_genome_group': this.data.selection[0].path
             };
           }
           RerunUtility.rerun(JSON.stringify(job_data), 'Homology', window, Topic)
+        }
+      }
+      if (service === 'CodonTree') {
+        // always genome data type
+        var job_data;
+        if (this.context === 'grid_container') {
+          job_data = {
+            'genome_ids': data.selection.map(x => x.genome_id)
+          };
+        }
+        if (this.context === 'workspace') {
+          // support single and multiple
+          job_data = {
+            'genome_groups': data.selection.map(x => x.path)
+          };
+        }
+        RerunUtility.rerun(JSON.stringify(job_data), 'CodonTree', window, Topic);
+      }
+      if (service === 'ViralTree') {
+        var job_data;
+        // always genome data type
+        // add tree_type to job data
+        if (this.context === 'grid_container') {
+          var genome_list = data.selection.map(x => x.genome_id);
+          this.saveTempGroup('genome', genome_list).then(lang.hitch(this, function (group_path) {
+            // create data json
+            job_data = {
+              'tree_type': 'viral_genome',
+              'sequences': [
+                { 'type': 'genome_group', 'filename': group_path }
+              ]
+            };
+            RerunUtility.rerun(JSON.stringify(job_data), 'GeneTree', window, Topic);
+          }), lang.hitch(this, function (err) {
+            this.loadingMask.hide();
+            console.log('error during temporary group creationg: exiting');
+            console.log(err);
+            return false;
+          }));
+        }
+        // workspace context
+        if (this.context === 'workspace') {
+          job_data = {
+            'tree_type': 'viral_genome',
+            'sequences': []
+          };
+          data.selection.map(x => x.path).forEach(lang.hitch(this, function (path) {
+            job_data['sequences'].push({ 'type': 'genome_group', 'filename': path });
+          }));
+          RerunUtility.rerun(JSON.stringify(job_data), 'GeneTree', window, Topic);
+        }
+      }
+      if (service === 'GeneTree') {
+        var job_data;
+        // always features
+        if (this.context === 'grid_container') {
+          var feature_list = data.selection.map(x => x.patric_id);
+          this.saveTempGroup('feature', feature_list).then(lang.hitch(this, function (group_path) {
+            // create data json
+            job_data = {
+              'tree_type': 'gene',
+              'sequences': [
+                { 'type': 'feature_group', 'filename': group_path }
+              ]
+            };
+            RerunUtility.rerun(JSON.stringify(job_data), 'GeneTree', window, Topic);
+          }), lang.hitch(this, function (err) {
+            this.loadingMask.hide();
+            console.log('error during temporary group creationg: exiting');
+            console.log(err);
+            return false;
+          }));
+        }
+        if (this.context === 'workspace') {
+          job_data = {
+            'tree_type': 'gene',
+            'sequences': []
+          };
+          data.selection.map(x => x.path).forEach(lang.hitch(this, function (path) {
+            job_data['sequences'].push({ 'type': 'feature_group', 'filename': path });
+          }));
+          RerunUtility.rerun(JSON.stringify(job_data), 'GeneTree', window, Topic);
         }
       }
     },

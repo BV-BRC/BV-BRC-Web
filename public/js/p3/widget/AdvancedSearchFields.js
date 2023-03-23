@@ -791,6 +791,9 @@ define([], function () {
       {
         field: 'release_date', type: 'str', facet: false, facet_hidden: true, search: true
       },
+      {
+        field: 'file_path', type: 'str', facet: false, facet_hidden: true, search: true
+      },
     ],
     'pathway': [
       {

@@ -452,17 +452,6 @@ define([
           params.selection = selection;
           params.data_type = data_type;
           params.type = type;
-          /*
-          if (context === 'genome') {
-            params.genome_list = selection.map(x => x.genome_id);
-          }
-          if (context === 'feature') {
-            params.feature_list = selection.map(x => x.patric_id);
-            params.feature_list = params.feature_list.filter(x => x);
-          }
-          */
-          // params.selection = selection;
-          // params.container = container;
           popup.open({
             popup: new ServicesTooltipDialog({
               context: 'grid_container',
@@ -643,7 +632,8 @@ define([
         {
           label: 'STRUCTURE',
           validTypes: ['*'],
-          multiple: false,
+          multiple: true,
+          max: 10,
           tooltip: 'Switch to Structure View. Press and Hold for more options.',
           ignoreDataType: true,
           validContainerTypes: ['structure_data'],
@@ -657,8 +647,8 @@ define([
           }
         },
         function (selection) {
-          var sel = selection[0];
-          Topic.publish('/navigate', { href: '/view/ProteinStructure#accession=' + sel.pdb_id, target: 'blank' });
+          var sel = selection.map(s => s.pdb_id);
+          Topic.publish('/navigate', { href: '/view/ProteinStructure#accession=' + sel, target: 'blank' });
         },
         false
       ],
