@@ -20,6 +20,13 @@
              data-dojo-attach-point="highlighters">
         </div>
 
+        <!-- ligands control go here -->
+        <div data-dojo-type="dijit/layout/ContentPane"
+             data-dojo-props="region: 'bottom'"
+             data-dojo-attach-point="ligands"
+             style="height: 50px">
+        </div>
+
     </div>
 
     <!-- center view port -->
@@ -41,5 +48,10 @@
              data-dojo-attach-point="contentDisplay">
         </div>
     </div>
+    <style>
+        .dgrid-column-checkbox.field-checkbox {
+            width: 20px;
+        }
+    </style>
 
 </div>

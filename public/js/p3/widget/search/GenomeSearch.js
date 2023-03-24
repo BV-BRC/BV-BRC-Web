@@ -47,6 +47,10 @@ define([
         this.isolationCountryNode.store = store
       }))
 
+      storeBuilder('genome', 'state_province').then(lang.hitch(this, (store) => {
+        this.stateProvinceNode.store = store
+      }))
+
       storeBuilder('genome', 'subtype').then(lang.hitch(this, (store) => {
         this.subtypeNode.store = store
       }))
@@ -133,6 +137,11 @@ define([
       const isolationCountryValue = this.isolationCountryNode.get('value')
       if (isolationCountryValue !== '') {
         queryArr.push(`eq(isolation_country,${sanitizeInput(isolationCountryValue)})`)
+      }
+
+      const stateProvinceValue = this.stateProvinceNode.get('value')
+      if (stateProvinceValue !== '') {
+        queryArr.push(`eq(state_province,${sanitizeInput(stateProvinceValue)})`)
       }
 
       const collectionYearFromValue = parseInt(this.collectionYearFromNode.get('value'))

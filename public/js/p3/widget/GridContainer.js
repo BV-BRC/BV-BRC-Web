@@ -5,7 +5,7 @@ define([
   'dojo/topic', 'dojo/query', 'dijit/layout/ContentPane', 'dojo/text!./templates/IDMapping.html',
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog', './DownloadTooltipDialog', './PerspectiveToolTip',
   './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin',
-  './FeatureDetailsTooltipDialog', './ServicesTooltipDialog'
+  './FeatureDetailsTooltipDialog', './ServicesTooltipDialog', './RerunUtility', 'dojox/widget/Standby'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
@@ -13,7 +13,7 @@ define([
   Topic, query, ContentPane, IDMappingTemplate,
   Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
   CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin,
-  FeatureDetailsTooltipDialog, ServicesTooltipDialog
+  FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility, Standby
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -422,7 +422,6 @@ define([
           multiple: true,
           max: 100,
           tooltip: 'Submit selection to a service',
-          // tooltipDialog: ,
           validTypes: ['*'], // TODO: check this
           validContainerTypes: ['*'] // TODO: probably have to change this instead
         },
@@ -430,19 +429,15 @@ define([
           // TODO: containerTypes: amr(?), sequence_data, feature_data, structure_data, spgene_data, proteinFeatures_data, pathway_data, subsystems(?)
           console.log('selection=', selection);
           console.log('container=', container);
-          var context = null;
-          var multiple = false;
+          var data_type = null;
           var params = {};
-          if (selection.length > 1) {
-            multiple = true;
-          }
           var type;
           if (container.containerType === 'sequence_data' || container.containerType == 'genome_data') {
-            type = 'genome_group';
-            context = 'genome';
-          } else if (container.containerType == 'feature_data' || container.containerType == 'transcriptomics_gene_data' || container.containerType == 'spgene_data' || container.containerType == 'strain_data') {
+            type = 'genome';
+            data_type = 'genome';
+          } else if (container.containerType == 'feature_data' || container.containerType == 'protein_data' || container.containerType == 'transcriptomics_gene_data' || container.containerType == 'spgene_data' || container.containerType == 'strain_data') {
             type = 'feature_group';
-            context = 'feature';
+            data_type = 'feature';
           } else if (container.containerType == 'transcriptomics_experiment_data') {
             type = 'experiment_group';
           }
@@ -450,14 +445,13 @@ define([
             console.error('Missing or invalid type for Services');
             return;
           }
-          if (!context) {
-            context = '';
+          if (!data_type) {
+            data_type = '';
           }
-          params.type = type;
-          params.data_context = context;
-          params.multiple = multiple;
+          // params.type = type;
           params.selection = selection;
-          params.container = container;
+          params.data_type = data_type;
+          params.type = type;
           popup.open({
             popup: new ServicesTooltipDialog({
               context: 'grid_container',
@@ -481,7 +475,7 @@ define([
           validTypes: ['*'],
           multiple: false,
           tooltip: 'Switch to Feature View. Press and Hold for more options.',
-          validContainerTypes: ['feature_data', 'transcriptomics_gene_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data'],
+          validContainerTypes: ['feature_data', 'protein_data', 'transcriptomics_gene_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data'],
           pressAndHold: function (selection, button, opts, evt) {
             popup.open({
               popup: new PerspectiveToolTipDialog({
@@ -511,7 +505,7 @@ define([
           min: 2,
           max: 5000,
           tooltip: 'Switch to Feature List View. Press and Hold for more options.',
-          validContainerTypes: ['feature_data', 'transcriptomics_gene_data', 'spgene_data', 'subsystem_data'],
+          validContainerTypes: ['feature_data', 'protein_data', 'transcriptomics_gene_data', 'spgene_data', 'subsystem_data'],
           pressAndHold: function (selection, button, opts, evt) {
             popup.open({
               popup: new PerspectiveToolTipDialog({
@@ -638,7 +632,8 @@ define([
         {
           label: 'STRUCTURE',
           validTypes: ['*'],
-          multiple: false,
+          multiple: true,
+          max: 10,
           tooltip: 'Switch to Structure View. Press and Hold for more options.',
           ignoreDataType: true,
           validContainerTypes: ['structure_data'],
@@ -652,8 +647,8 @@ define([
           }
         },
         function (selection) {
-          var sel = selection[0];
-          Topic.publish('/navigate', { href: '/view/ProteinStructure#accession=' + sel.pdb_id, target: 'blank' });
+          var sel = selection.map(s => s.pdb_id);
+          Topic.publish('/navigate', { href: '/view/ProteinStructure#accession=' + sel, target: 'blank' });
         },
         false
       ],
@@ -911,7 +906,7 @@ define([
         },
         false
       ], [
-        'MultipleSeqAlignmentFeatures',
+        'MultipleSeqAlignmentFeaturesService',
         'fa icon-alignment fa-2x',
         {
           label: 'MSA',
@@ -925,12 +920,46 @@ define([
           validContainerTypes: ['feature_data', 'protein_data', 'spgene_data', 'proteinfamily_data', 'pathway_data', 'transcriptomics_gene_data']
         },
         function (selection) {
-          viewMSATT.selection = selection;
-          popup.open({
-            popup: this.selectionActionBar._actions.MultipleSeqAlignmentFeatures.options.tooltipDialog,
-            around: this.selectionActionBar._actions.MultipleSeqAlignmentFeatures.button,
-            orient: ['below']
-          });
+          const checkTEMP = function (tmp_path) {
+            WorkspaceManager.createFolder(tmp_path).then(lang.hitch(this, function (tmp_record) {
+              console.log('creating temporary group folder');
+            }), lang.hitch(this, function (err) {
+              console.log('temporary group folder already created');
+            }));
+          };
+          var feature_list = selection.map(x => x.patric_id);
+          feature_list = feature_list.filter(x => x);
+          // TODO: maybe move this to services tooltip dialog somehow?
+          var hidden_group_path = WorkspaceManager.getDefaultFolder() + '/home/._tmp_groups/';
+          var group_name = 'tmp_feature_group_' + Date.now();
+          var group_path = hidden_group_path + group_name;
+          console.log('tmp_group = ', group_name);
+          checkTEMP(hidden_group_path);
+          try {
+            this.loadingMask = new Standby({
+              target: this.id,
+              image: '/public/js/p3/resources/images/spin.svg',
+              color: '#efefef'
+            });
+            this.addChild(this.loadingMask);
+            this.loadingMask.startup();
+            this.loadingMask.show();
+            WorkspaceManager.createGroup(group_name, 'feature_group', hidden_group_path, 'feature_group', feature_list).then(lang.hitch(this, function (res) {
+              this.loadingMask.hide();
+              var job_data = {
+                'feature_groups': [group_path],
+                'alphabet': 'dna',
+                'aligner': 'Muscle',
+                'input_type': 'input_group'
+              };
+              RerunUtility.rerun(JSON.stringify(job_data), 'MSA', window, Topic);
+            }));
+          } catch (error) {
+            console.log('error creating feature group: ', error);
+            if (this.loadingMask) {
+              this.loadingMask.hide();
+            }
+          }
         },
         false
       ], [
@@ -1284,7 +1313,7 @@ define([
 
           if (containerWidget.containerType == 'genome_data') {
             type = 'genome_group';
-          } else if (containerWidget.containerType == 'feature_data' || containerWidget.containerType == 'transcriptomics_gene_data' || containerWidget.containerType == 'spgene_data') {
+          } else if (containerWidget.containerType == 'feature_data' || containerWidget.containerType == 'protein_data' || containerWidget.containerType == 'transcriptomics_gene_data' || containerWidget.containerType == 'spgene_data') {
             type = 'feature_group';
           } else if (containerWidget.containerType == 'transcriptomics_experiment_data') {
             type = 'experiment_group';

@@ -114,6 +114,12 @@
         </tr>
       </table>
 
+<table class="assemblyblocks">
+  <tr>
+    <td style="width:50%">
+      <table>
+        <tr>
+          <td>
       <div data-dojo-attach-point="codonTreeTable" style="width:400px" class="appBox appShadow">
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
@@ -136,17 +142,18 @@
           <br>
         </div>
         <div class="appRow">
-          <label class="paramlabel"> selected input genome table</label>
+          <label class="paramlabel"> selected input genomes</label>
           <small class="loading-status-codonGroup pull-right" style="margin-right: 20px; display: none;">loading...</small>
         </div>
-        <div class="appRow" style="width:90%; margin-top:10px; text-align: center;">
-          <table class="librarytable" frame="box" data-dojo-attach-point="codonGroupGenomeTable" style="margin:0 2px 0 2px; width:315px;">
+        <div class="appRow" style="width:90%; margin-top:0px; text-align: center;">
+          <table class="librarytable" frame="box" data-dojo-attach-point="codonGroupGenomeTable" style="margin:0 0 0 10px; width:100%; height:100px;">
             <tbody data-dojo-attach-point="codonGroupGenomeTableBody">
             </tbody>
           </table>
         </div>
-    </div>
-
+      </div>
+    </td>
+    <td>
       <div id="parameterBox" style="width:400px; " class="appBox appShadow">
         <div data-dojo-attach-point="parameters_codon_tree" class="headerrow">
           <div style="width:85%;display:inline-block;">
@@ -163,14 +170,6 @@
               <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
             </div>
           </div>
-        </div>
-        <div class="appRow">
-          <label class="paramlabel">Output Folder</label><br>
-          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" required="true" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
-        </div>
-        <div class="appRow">
-          <label class="paramlabel">Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
-          <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" data-dojo-attach-event="onChange:checkOutputName" name="output_file" data-dojo-attach-point="output_file" style="width:85%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
         </div>
         <div data-dojo-attach-point="codonOtherInputs">
           <div class="appRow">
@@ -206,6 +205,15 @@
               data-dojo-props="constraints:{min:0,max:10}"
               value="0">
             </div>
+            <br><br>
+            <div class="appRow">
+              <label class="paramlabel">Output Folder</label><br>
+              <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" required="true" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
+            </div>
+            <div class="appRow">
+              <label class="paramlabel">Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+              <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" data-dojo-attach-event="onChange:checkOutputName" name="output_file" data-dojo-attach-point="output_file" style="width:85%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
+            </div>
           </div>
         </div>
         <div data-dojo-attach-point="PEPROtherInputs" style="display: none;">
@@ -218,7 +226,14 @@
           </div>
         </div>
       </div>
-  </div>
+    </div>
+  </td>
+</tr>
+</table>
+    </td>
+  </tr>
+</table>
+
   <div class="appSubmissionArea">
     <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
       Submitting Phylogenetic Tree Building Job.
