@@ -865,10 +865,12 @@ define([
       });
 
       // get metadata fields
+      /*
       seqcomp_values.metadata_fields = [];
       if (this.metadata_count > 0) {
         seqcomp_values.metadata_fields = Object.keys(this.metadataDict);
       }
+      */
 
       seqcomp_values.alphabet = values.alphabet;
       seqcomp_values.tree_type = values.tree_type;
