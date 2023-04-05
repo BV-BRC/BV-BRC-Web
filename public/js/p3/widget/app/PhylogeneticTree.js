@@ -595,9 +595,9 @@ define([
       }
 
       // get metadata fields
-      return_values.metadata_fields = [];
+      return_values.genome_metadata_fields = [];
       if (this.metadata_count > 0) {
-        return_values.metadata_fields = Object.keys(this.metadataDict);
+        return_values.genome_metadata_fields = Object.keys(this.metadataDict);
       }
 
       return_values.output_path = values.output_path;

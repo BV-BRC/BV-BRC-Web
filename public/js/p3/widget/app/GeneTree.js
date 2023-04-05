@@ -57,14 +57,16 @@ define([
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
       _self.output_path.set('value', _self.defaultPath);
 
+      /*
       on(this.advanced, 'click', lang.hitch(this, function () {
         this.toggleAdvanced((this.advancedOptions.style.display == 'none'));
       }));
+      */
 
       this.numref = 0;
       this.emptyTable(this.genomeTable, this.startingRows);
       this.numgenomes.startup();
-      this.startupMetadataTable();
+      // this.startupMetadataTable();
       this.setTooltips();
       this._started = true;
       this.form_flag = false;
@@ -86,6 +88,7 @@ define([
       }
     },
 
+    // disabled for now
     onAddMetadata: function () {
       var metadata_value = this.metadata_selector.getValue();
       var metadata_field = this.metadata_selector.get('displayedValue');
