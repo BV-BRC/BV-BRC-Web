@@ -47,6 +47,7 @@ define([
     annotationFile: null,
     queryData: {},
     msaList: [],
+    msaMapping: {},
     defaultMSAOptions: {
       bootstrapMenu: false,
       colorscheme: {scheme: 'taylor'},
@@ -405,7 +406,7 @@ define([
           bestHit = `${bestHit} ( ${referenceType.fullName} )`;
         }
 
-        const queryIndex = index + 1;
+        const queryIndex = queryName.replace('query', '');
         // Create header div for the query
         let queryHeaderDiv = domConstruct.create('div', {'style': 'display: inline-block;width: 100%;'}, this.contentPane.containerNode);
 
@@ -418,6 +419,7 @@ define([
           style: 'float: left;margin-right: 1em;',
           'class': 'queryCheckBox'
         });
+        this.msaMapping[queryIndex] = index;
         queryCheckBox.placeAt(queryHeaderDiv, 'first');
         // Main <div> for each query
         let queryDiv = domConstruct.create('div', {'id': 'querySequence' + queryIndex, 'style': 'margin-bottom: 2em;'}, this.contentPane.containerNode);
@@ -621,7 +623,8 @@ define([
           for (let checkedBox of checkedBoxes) {
             const index = checkedBox.id.replace('queryCheckBox', '');
             if (rel === 'MSAImage') {
-              msa.utils.export.saveAsImg(_self.msaList[index], `BVBRC_MSA_Query_${index}.png`);
+              const msaIndex = _self.msaMapping[index];
+              msa.utils.export.saveAsImg(_self.msaList[msaIndex], `BVBRC_MSA_Query_${index}.png`);
             } else if (rel === 'MSATXT') {
               saveAs(new Blob([_self.queryData['query' + index].alignment]), `BVBRC_MSA_Query_${index}_Alignment.txt`);
             } else if (rel === 'MSAFASTA') {
