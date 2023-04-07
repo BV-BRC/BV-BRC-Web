@@ -735,7 +735,7 @@ define([], function () {
         field: 'title', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'organism_name', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'organism_name', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'taxon_id', type: 'str', facet: false, facet_hidden: true, search: true
@@ -759,7 +759,7 @@ define([], function () {
         field: 'uniprotkb_accession', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'gene', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'gene', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'product', type: 'str', facet: false, facet_hidden: true, search: true

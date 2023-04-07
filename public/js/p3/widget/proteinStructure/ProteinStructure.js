@@ -149,29 +149,27 @@ define([
 
             const responseContent = response[0];
             if (accession.file_path.includes('alphafold')) {
-              // TODO: use alphafold from the server
               // Check if alphafold file exists, otherwise use alphafold database
-              /*if (!(responseContent instanceof Error)) {
+              if (!(responseContent instanceof Error)) {
+                const url = path.endsWith('.gz') ? path.slice(0, -3) : path;
                 selections.push({
-                  value: path,
-                  source: 'url'
+                  value: url,
+                  source: 'url',
+                  label: `${accession.pdb_id} | ${accession.title}`
                 });
               } else {
                 selections.push({
                   value: accession.uniprotkb_accession[0],
                   source: 'alphafold'
                 });
-              }*/
-              selections.push({
-                value: accession.uniprotkb_accession[0],
-                source: 'alphafold'
-              });
+              }
             } else  {
               if (!(responseContent instanceof Error)) {
                 selections.push({
                   value: path,
                   source: 'url',
-                  format: 'pdb'
+                  format: 'pdb',
+                  label: `${accession.pdb_id} | ${accession.title}`
                 });
               } else {
                 selections.push({
@@ -195,8 +193,9 @@ define([
       let _self = this;
       Deferred.when(WS.getDownloadUrls(workspacePath), function (url) {
         if (url && url.length > 0 && url[0] !== null) {
+          const fileName = url[0].match(/\/([^\/]+)\/?$/)[1];
           _self.molstar.load({
-            selections: [{value: url[0], source: 'url', format: 'pdb'}],
+            selections: [{value: url[0], source: 'url', format: 'pdb', label: fileName}],
             displaySpikeSequence: true
           });
         }

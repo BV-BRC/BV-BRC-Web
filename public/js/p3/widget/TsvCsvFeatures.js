@@ -51,6 +51,19 @@ define([], function () {
         'Status': 2,
         'Messages': 4
       }
+    },
+
+    // HA Subtype Numbering Conversion Service
+    'sequence_annotation.tsv': {
+      columnHeaders: true,
+      colSpan: {
+        'QueryId': 1,
+        'Virus Type': 1,
+        'Segment': 1,
+        'Subtype': 1,
+        'Warning Messages': 2,
+        'Sequence Name': 5
+      }
     }
   };
 

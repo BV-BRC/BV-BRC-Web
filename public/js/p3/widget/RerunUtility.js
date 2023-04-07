@@ -37,6 +37,7 @@ define([], function () {
         'RNASeq': 'Rnaseq',
         'SubspeciesClassification': 'SubspeciesClassification',
         'SequenceSubmission': 'SequenceSubmission',
+        'HASubtypeNumberingConversion': 'HASubtypeNumberingConversion',
         'TaxonomicClassification': 'TaxonomicClassification',
         'TnSeq': 'Tnseq',
         'Variation': 'Variation'
