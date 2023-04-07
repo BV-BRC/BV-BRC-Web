@@ -1,0 +1,144 @@
+<form dojoAttachPoint="containerNode" class="PanelForm"
+      dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+    <style>
+        .dojoxCheckedMultiSelectWrapper {
+            width: 100%;
+            height: 200px !important;
+        }
+    </style>
+    <div class="appTemplate">
+        <div class="appTitle">
+            <span class="breadcrumb">Services</span>
+            <h3>HA Subtype Numbering Conversion
+                <!--<div name="overview" class="infobox iconbox infobutton dialoginfo">
+                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                </div>
+                <div class="infobox iconbox tutorialButton tutorialInfo">
+                    <a href="${docsServiceURL}${tutorialLink}" target="_blank">
+                        <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+                    </a>
+                </div>-->
+            </h3>
+            <p>
+                The HA Subtype Numbering Conversion service allows user to renumber HA sequences according to a cross-subtype numbering
+                scheme proposed by Burke and Smith in <a href="http://www.ncbi.nlm.nih.gov/pubmed/25391151" target="_blank">Burke DF, Smith DJ.2014.
+                A recommended numbering scheme for influenza A HA subtypes. PLoS One 9:e112302</a>. Burke and Smith's numbering scheme uses
+                analysis of known HA structures to identify amino acids that are structurally and functionally equivalent across all
+                HA subtypes, using a numbering system based on the mature HA sequence.
+            </p>
+        </div>
+        <div class="appBox appShadow" style="margin-top:10px">
+            <div class="headerrow">
+                <div style="width:85%;display:inline-block;">
+                    <label class="appBoxLabel">Input Sequence</label>
+                </div>
+                <br>
+                <div class="appRow">
+                    <input id="${id}_input_sequence" type="radio" data-dojo-type="dijit/form/RadioButton"
+                           data-dojo-attach-point="input_sequence" name="input" value="input_sequence"
+                           data-dojo-attach-event="onChange:onInputChange" checked/>
+                    <label for="${id}_input_sequence">Enter sequence</label>
+                    <input id="${id}_input_fasta" type="radio" data-dojo-type="dijit/form/RadioButton"
+                           data-dojo-attach-point="input_fasta" name="input" value="input_fasta"
+                           data-dojo-attach-event="onChange:onInputChange"/>
+                    <label for="${id}_input_fasta">Select FASTA file</label>
+                    <input id="${id}_input_feature_group" type="radio" data-dojo-type="dijit/form/RadioButton"
+                           data-dojo-attach-point="input_feature_group" name="input" value="input_group"
+                           data-dojo-attach-event="onChange:onInputChange"/>
+                    <label for="${id}_input_feature_group">Feature group</label>
+                </div>
+                <table data-dojo-attach-point="sequence_table" style="width:100%; display:none">
+                    <tr>
+                        <td>
+                            <textarea name="sequence"
+                                      style="width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px"
+                                      data-dojo-attach-point="sequence" data-dojo-type="dijit/form/Textarea"
+                                      required="false"
+                                      data-dojo-props="rows:13, placeholder:'Enter one or more nucleotide or protein sequences.', intermediateChanges:true"
+                                      data-dojo-attach-event="onBlur:checkFasta"></textarea>
+                            <div class="warning" data-dojo-attach-point="sequence_message"></div>
+                        </td>
+                    </tr>
+                </table>
+                <table data-dojo-attach-point="fasta_table" style="width:100%; display:none">
+                    <tr>
+                        <td>
+                            <div style="width:85%;display:inline-block;"
+                                 data-dojo-type="p3/widget/WorkspaceObjectSelector" name="query_fasta" required="false"
+                                 data-dojo-attach-point="query_fasta" data-dojo-attach-event="onChange:validate"
+                                 data-dojo-props="type:['feature_protein_fasta', 'contigs'],multi:false,promptMessage:'Select or upload FASTA file to your workspace.',missingMessage:'FASTA file is required.',placeHolder:'FASTA file'">
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <table data-dojo-attach-point="feature_group_table" style="width:100%; display:none">
+                    <tr>
+                        <td>
+                            <div style="width:85%;display:inline-block;"
+                                 data-dojo-type="p3/widget/WorkspaceObjectSelector" name="feature_group" required="false"
+                                 data-dojo-attach-point="feature_group"
+                                 data-dojo-props="type:['feature_group'], disabled:false,allowUpload:false,multi:false,promptMessage:'Select a feature group from your workspace for alignment.',missingMessage:'Feature group is required.', placeHolder:'Feature group'">
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="headerrow" style="margin: 16px 0 7px 0">
+                <label class="appBoxLabel">Conversion Sequence Numbering Scheme</label>
+            </div>
+            <div class="appRowSegment" style="text-align:left; width:30%">
+                <select data-dojo-type="dojox/form/CheckedMultiSelect" name="conversionScheme" data-dojo-props="disabled:false"
+                     required="true" data-dojo-attach-point="conversionScheme" multiple style="width: 100%"></select>
+
+            </div>
+            <table>
+                <tr>
+                    <td>
+                        <div class="headerrow" style="margin: 16px 0 7px 0">
+                            <label class="appBoxLabel">Output Folder</label>
+                        </div>
+                        <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
+                             data-dojo-attach-point="output_path" style="width:300px" required="true"
+                             data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false,placeHolder:'Output Folder'"
+                             data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                    </td>
+                    <td>
+                        <div class="headerrow" style="margin: 16px 0 7px 0">
+                            <label class="appBoxLabel">Output Name</label><span class="charError"
+                                                                                style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+                        </div>
+                        <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
+                             data-dojo-attach-event="onChange:checkOutputName" data-dojo-attach-point="output_file"
+                             style="width:300px" required="true"
+                             data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <div class="warning" data-dojo-attach-point="database_message"></div>
+        </div>
+    </div>
+    <div class="appSubmissionArea">
+        <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
+             style="margin-top:10px; text-align:center;">
+            Submitting HA Subtype Numbering Conversion job
+        </div>
+        <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
+             style="margin-top:10px; text-align:center;width: fit-content">
+            Error submitting job
+        </div>
+        <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+             style="margin-top:10px; text-align:center;">
+            Your job has been submitted successfully. Please visit your <a
+                data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job and
+            access the results.
+        </div>
+        <div style="margin-top: 10px; text-align:center;">
+            <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel"
+                 data-dojo-type="dijit/form/Button">Cancel
+            </div>
+            <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+            <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
+        </div>
+    </div>
+</form>

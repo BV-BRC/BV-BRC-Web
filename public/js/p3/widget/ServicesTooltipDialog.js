@@ -63,6 +63,7 @@ define([
         case 'feature':
           domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'Homology', innerHTML: 'Blast' }, service_div);
           domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'GeneTree', innerHTML: 'Gene Tree' }, service_div);
+          domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'HASubtypeNumberingConversion', innerHTML: 'HA Subtype Numbering Conversion' }, service_div);
           // domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'msa', innerHTML: 'MSA' }, service_div);
           // if (!(this.context === 'grid_container')) {
           //   domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'primer_design', innerHTML: 'Primer Design' }, service_div);
@@ -166,7 +167,7 @@ define([
           }
           if (this.context === 'workspace') {
             var feature_group = this.data.selection[0].path;
-            on(this.domNode, '.wsActionTooltip:click', lang.hitch(this, function (evt) { 
+            on(this.domNode, '.wsActionTooltip:click', lang.hitch(this, function (evt) {
               if (evt.target.attributes.context.value === 'blast_feature_source_query') {
                 var source = evt.target.attributes.source.value;
                 var job_data = {
@@ -297,6 +298,16 @@ define([
             job_data['sequences'].push({ 'type': 'feature_group', 'filename': path });
           }));
           RerunUtility.rerun(JSON.stringify(job_data), 'GeneTree', window, Topic);
+        }
+      }
+      if (service === 'HASubtypeNumberingConversion') {
+        var job_data;
+        // always features
+        if (this.context === 'workspace') {
+          job_data = {};
+          job_data['input_source'] = 'feature_group';
+          job_data['input_feature_group'] = data.selection[0].path;
+          RerunUtility.rerun(JSON.stringify(job_data), 'HASubtypeNumberingConversion', window, Topic);
         }
       }
     },

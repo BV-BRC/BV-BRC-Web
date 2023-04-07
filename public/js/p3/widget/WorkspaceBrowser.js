@@ -1162,6 +1162,16 @@ define([
         }
       }, false);
 
+      this.browserHeader.addAction('ViewHASubtypeNumberingReport', 'fa icon-eye fa-2x', {
+        label: 'Report',
+        multiple: false,
+        validTypes: ['HASubtypeNumberingConversion'],
+        tooltip: 'View HA Subtype Numbering Conversion Report'
+      }, function (selection) {
+        const jobPath = selection[0].path + selection[0].name;
+        Topic.publish('/navigate', { href: '/view/HASubtypeNumberingReport/&path=' + jobPath, target: 'blank' });
+      }, false);
+
       this.browserHeader.addAction('SubmitSequenceSubmission', 'fa icon-upload fa-3x', {
         label: 'Submit Sequence',
         multiple: false,
