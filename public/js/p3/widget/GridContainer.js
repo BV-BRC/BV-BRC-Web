@@ -927,7 +927,6 @@ define([
               console.log('temporary group folder already created');
             }));
           };
-          // TODO: maybe move this to services tooltip dialog somehow?
           var hidden_group_path = WorkspaceManager.getDefaultFolder() + '/home/._tmp_groups';
           var group_name = 'tmp_feature_group_' + Date.now();
           var group_path = hidden_group_path + '/' + group_name;
