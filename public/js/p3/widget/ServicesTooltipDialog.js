@@ -124,7 +124,7 @@ define([
           domConstruct.create('div', { 'class': 'wsActionTooltip', 'context': 'blast_feature_source_query', 'source': 'source', innerHTML: 'Source'}, fs_div);
           if (this.context === 'grid_container') {
             // create group
-            var feature_list = data.selection.map(x => x.patric_id).filter(x => x);
+            var feature_list = data.selection.map(x => x.feature_id).filter(x => x);
             on(this.domNode, '.wsActionTooltip:click', lang.hitch(this, function (evt) {
               if (evt.target.attributes.context.value === 'blast_feature_source_query') {
                 var source = evt.target.attributes.source.value;
@@ -272,7 +272,7 @@ define([
         var job_data;
         // always features
         if (this.context === 'grid_container') {
-          var feature_list = data.selection.map(x => x.patric_id);
+          var feature_list = data.selection.map(x => x.feature_id);
           this.saveTempGroup('feature', feature_list).then(lang.hitch(this, function (group_path) {
             // create data json
             job_data = {
@@ -322,25 +322,28 @@ define([
           console.log('temporary group folder already created');
         }));
       };
-      var hidden_group_path = WorkspaceManager.getDefaultFolder() + '/home/._tmp_groups/';
+      var hidden_group_path = WorkspaceManager.getDefaultFolder() + '/home/._tmp_groups';
       var group_name;
       var group_type;
+      var group_id;
       if (type === 'feature') {
         group_name = 'tmp_feature_group_' + Date.now();
         group_type = 'feature_group';
+        group_id = 'feature_id';
       }
       else if (type === 'genome') {
         group_name = 'tmp_genome_group_' + Date.now();
-        group_type = 'genome_group'
+        group_type = 'genome_group';
+        group_id = 'genome_id';
       }
       else {
         console.log('group_type not known: not creating group');
         return null;
       }
-      var group_path = hidden_group_path + group_name;
+      var group_path = hidden_group_path + '/' + group_name;
       checkTEMP(hidden_group_path);
       try {
-        WorkspaceManager.createGroup(group_name, group_type, hidden_group_path, group_type, id_list).then(lang.hitch(this, function (res) {
+        WorkspaceManager.createGroup(group_name, group_type, hidden_group_path, group_id, id_list).then(lang.hitch(this, function (res) {
           def.resolve(group_path);
         }), lang.hitch(this, function (err) {
           def.resolve(null);
