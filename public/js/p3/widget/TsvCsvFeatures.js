@@ -61,6 +61,7 @@ define([], function () {
         'Virus Type': 1,
         'Segment': 1,
         'Subtype': 1,
+        'Score': 1,
         'Warning Messages': 2,
         'Sequence Name': 5
       }
