@@ -1032,6 +1032,9 @@ define([
             job_data = this.formatRerunJson(job_data);
             this.checkConditionsFormFill(job_data);
             this.checkContrastsFormFill(job_data);
+            if (Object.keys(job_data).includes('reference_genome_id')) {
+              this.genome_nameWidget.set('value', job_data['reference_genome_id']);
+            }
             // TODO: check conditions/library pairing
             job_data = this.addConditionInfoFormFill(job_data);
             AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
