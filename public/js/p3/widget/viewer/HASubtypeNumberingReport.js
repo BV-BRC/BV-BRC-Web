@@ -169,7 +169,7 @@ define([
         const jobFolder = pathValue[0].split('=')[1];
 
         // Create breadcrumbs
-        this.pathContainer = domConstruct.create('div', { 'class': 'wsBreadCrumbContainer' }, this.domNode);
+        this.pathContainer = domConstruct.create('div', { 'class': 'wsBreadCrumbContainer' }, this.contentPane.containerNode);
         this.pathContainer.innerHTML = this.generatePathLinks(jobFolder);
 
         WorkspaceManager.getObject(jobFolder, true).then((files) => {
@@ -333,9 +333,6 @@ define([
     },
 
     render: async function () {
-      this.contentPane.set('content', '');
-      this.contentPane.set('style', 'top: 40px;margin-bottom:100px;');
-
       // Title
       let title = domConstruct.create('h2', {}, this.contentPane.containerNode);
       title.innerHTML = 'HA Subtype Numbering Conversion Results';
