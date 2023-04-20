@@ -417,6 +417,11 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/app/HASubtypeNumberingConversion</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/app/Variation</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>

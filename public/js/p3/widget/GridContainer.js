@@ -927,12 +927,9 @@ define([
               console.log('temporary group folder already created');
             }));
           };
-          var feature_list = selection.map(x => x.patric_id);
-          feature_list = feature_list.filter(x => x);
-          // TODO: maybe move this to services tooltip dialog somehow?
-          var hidden_group_path = WorkspaceManager.getDefaultFolder() + '/home/._tmp_groups/';
+          var hidden_group_path = WorkspaceManager.getDefaultFolder() + '/home/._tmp_groups';
           var group_name = 'tmp_feature_group_' + Date.now();
-          var group_path = hidden_group_path + group_name;
+          var group_path = hidden_group_path + '/' + group_name;
           console.log('tmp_group = ', group_name);
           checkTEMP(hidden_group_path);
           try {
@@ -944,7 +941,12 @@ define([
             this.addChild(this.loadingMask);
             this.loadingMask.startup();
             this.loadingMask.show();
-            WorkspaceManager.createGroup(group_name, 'feature_group', hidden_group_path, 'feature_group', feature_list).then(lang.hitch(this, function (res) {
+            var feature_id_list = selection.filter(lang.hitch(this, function (d) {
+              return 'feature_id' in d;
+            })).map(lang.hitch(this, function (o) {
+              return o['feature_id'];
+            }));
+            WorkspaceManager.createGroup(group_name, 'feature_group', hidden_group_path, 'feature_id', feature_id_list).then(lang.hitch(this, function (res) {
               this.loadingMask.hide();
               var job_data = {
                 'feature_groups': [group_path],

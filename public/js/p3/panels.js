@@ -71,6 +71,13 @@ define([], function () {
       params: {}
     },
 
+    HASubtypeNumberingConversion: {
+      title: 'HA Subtype Numbering Conversion',
+      layer: 'p3/layer/panels',
+      ctor: 'p3/widget/app/HASubtypeNumberingConversion',
+      params: {}
+    },
+
     GenomeGroupViewer: {
       title: 'Genome Group',
       layer: 'p3/layer/panels',
