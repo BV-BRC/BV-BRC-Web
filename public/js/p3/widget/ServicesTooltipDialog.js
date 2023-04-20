@@ -63,6 +63,7 @@ define([
         case 'feature':
           domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'Homology', innerHTML: 'Blast' }, service_div);
           domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'GeneTree', innerHTML: 'Gene Tree' }, service_div);
+          domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'HASubtypeNumberingConversion', innerHTML: 'HA Subtype Numbering Conversion' }, service_div);
           // domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'msa', innerHTML: 'MSA' }, service_div);
           // if (!(this.context === 'grid_container')) {
           //   domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'primer_design', innerHTML: 'Primer Design' }, service_div);
@@ -123,7 +124,7 @@ define([
           domConstruct.create('div', { 'class': 'wsActionTooltip', 'context': 'blast_feature_source_query', 'source': 'source', innerHTML: 'Source'}, fs_div);
           if (this.context === 'grid_container') {
             // create group
-            var feature_list = data.selection.map(x => x.patric_id).filter(x => x);
+            var feature_list = data.selection.map(x => x.feature_id).filter(x => x);
             on(this.domNode, '.wsActionTooltip:click', lang.hitch(this, function (evt) {
               if (evt.target.attributes.context.value === 'blast_feature_source_query') {
                 var source = evt.target.attributes.source.value;
@@ -166,7 +167,7 @@ define([
           }
           if (this.context === 'workspace') {
             var feature_group = this.data.selection[0].path;
-            on(this.domNode, '.wsActionTooltip:click', lang.hitch(this, function (evt) { 
+            on(this.domNode, '.wsActionTooltip:click', lang.hitch(this, function (evt) {
               if (evt.target.attributes.context.value === 'blast_feature_source_query') {
                 var source = evt.target.attributes.source.value;
                 var job_data = {
@@ -271,7 +272,7 @@ define([
         var job_data;
         // always features
         if (this.context === 'grid_container') {
-          var feature_list = data.selection.map(x => x.patric_id);
+          var feature_list = data.selection.map(x => x.feature_id);
           this.saveTempGroup('feature', feature_list).then(lang.hitch(this, function (group_path) {
             // create data json
             job_data = {
@@ -299,6 +300,16 @@ define([
           RerunUtility.rerun(JSON.stringify(job_data), 'GeneTree', window, Topic);
         }
       }
+      if (service === 'HASubtypeNumberingConversion') {
+        var job_data;
+        // always features
+        if (this.context === 'workspace') {
+          job_data = {};
+          job_data['input_source'] = 'feature_group';
+          job_data['input_feature_group'] = data.selection[0].path;
+          RerunUtility.rerun(JSON.stringify(job_data), 'HASubtypeNumberingConversion', window, Topic);
+        }
+      }
     },
 
     // save a temporary group to predefined locations
@@ -311,25 +322,28 @@ define([
           console.log('temporary group folder already created');
         }));
       };
-      var hidden_group_path = WorkspaceManager.getDefaultFolder() + '/home/._tmp_groups/';
+      var hidden_group_path = WorkspaceManager.getDefaultFolder() + '/home/._tmp_groups';
       var group_name;
       var group_type;
+      var group_id;
       if (type === 'feature') {
         group_name = 'tmp_feature_group_' + Date.now();
         group_type = 'feature_group';
+        group_id = 'feature_id';
       }
       else if (type === 'genome') {
         group_name = 'tmp_genome_group_' + Date.now();
-        group_type = 'genome_group'
+        group_type = 'genome_group';
+        group_id = 'genome_id';
       }
       else {
         console.log('group_type not known: not creating group');
         return null;
       }
-      var group_path = hidden_group_path + group_name;
+      var group_path = hidden_group_path + '/' + group_name;
       checkTEMP(hidden_group_path);
       try {
-        WorkspaceManager.createGroup(group_name, group_type, hidden_group_path, group_type, id_list).then(lang.hitch(this, function (res) {
+        WorkspaceManager.createGroup(group_name, group_type, hidden_group_path, group_id, id_list).then(lang.hitch(this, function (res) {
           def.resolve(group_path);
         }), lang.hitch(this, function (err) {
           def.resolve(null);

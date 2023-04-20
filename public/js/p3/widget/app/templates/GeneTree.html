@@ -178,8 +178,84 @@
               </tr>
             </table>
           </td>
-
         </tr>
+        <!-- 
+        <tr>
+          <td>
+              <div class="appRow" style="text-align:center">
+                  <div class="appRowSegment" data-dojo-attach-point="advanced">
+                      <label class="largelabel">Metadata options</label>
+                      <div class="iconbox" style="margin-left:0">
+                          <i data-dojo-attach-point="advancedOptionIcon" class="fa icon-caret-down fa-1"></i>
+                      </div>
+                  </div>
+              </div>
+          </td>
+        </tr>
+        -->
+        <!-- Settings row -->
+  <tr>
+    <td>
+      <div id="settingsBox" class="appBox appShadow" style="display:none;" data-dojo-attach-point="advancedOptions">
+        <table>
+          <tr>
+            <td>
+              <div class="headerrow">
+                <div style="width:85%;display:inline-block;">
+                  <label class="appBoxLabel">Metadata Table</label>
+                </div>
+                <br>
+                <div class="appsublabel">These fields will appear as options in the phyloxml visualization</div>
+              </div>
+            </td>
+            <td>
+              
+            </td> 
+            <td rowspan="2">
+              <div>
+                <label class="paramlabel">Metadata Table:</label>
+              </div>
+              <div class="left half">
+                <table class="librarytable" frame="box" data-dojo-attach-point="metadataTableBody" style='width:330px;'>
+                    <tbody data-dojo-attach-point="metadataTableBody"></tbody>
+                </table>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label class="paramlabel">Metadata Fields:</label>
+              <div name="metadata_selector" class="medInput">
+                <select data-dojo-attach-point="metadata_selector"
+                  data-dojo-type="dijit/form/Select" name="metadata_selector" required="false">
+                  <option value="genome_id">Genome ID</option>
+                  <option value="genome_name">Genome Name</option>
+                  <option value="genome_length">Genome Length</option>
+                  <option value="strain">Strain</option>
+                  <option value="accession">Accession</option>
+                  <option value="subtype">Subtype</option>
+                  <option value="lineage">Lineage</option>
+                  <option value="host_group">Host Group</option>
+                  <option value="host_common_name">Host Common Name</option>
+                  <option value="collection_date">Collection Date</option>
+                  <option value="collection_year">Collection Year</option>
+                  <option value="geographic_group">Geographic Group</option>
+                  <option value="isolation_country">Isolation Country</option>
+                  <option value="geographic_location">Geographic Location</option>
+                </select>
+              </div>
+            </td>
+            <td>
+              <div style="width:17px; display:inline-block;">
+                <i data-dojo-attach-event="click:onAddMetadata" class="fa icon-arrow-circle-o-right fa-lg"></i>
+              </div>
+            </td>
+            <td></td>
+          </tr>
+        </table>
+      </div>
+    </td>
+  </tr>
       </table>
     </div>
   </div>
