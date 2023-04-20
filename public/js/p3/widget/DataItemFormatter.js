@@ -539,7 +539,7 @@ define([
         text: 'unique_species'
       }, {
         name: 'Strains',
-        text: 'unique_strain'
+        text: 'strains_count'
       }, {
         name: 'Genomes / Segments',
         text: 'count'
