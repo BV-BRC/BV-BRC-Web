@@ -36,6 +36,7 @@ define([
             }
           },
           query: { label: 'Query ID', field: 'qseqid' },
+          subject: { label: 'Subject ID', field: 'sseqid' },
           genome: { label: 'Genome', field: 'genome_name' },
           genome_id: { label: 'Genome ID', field: 'genome_id', hidden: true },
           patric_id: { label: 'BRC ID', field: 'patric_id' },
@@ -70,6 +71,7 @@ define([
             }
           },
           query: { label: 'Query ID', field: 'qseqid' },
+          subject: { label: 'Subject ID', field: 'sseqid' },
           genome: { label: 'Genome', field: 'genome_name' },
           genome_id: { label: 'Genome ID', field: 'genome_id', hidden: true },
           accession: { label: 'Accession', field: 'accession' },
@@ -125,6 +127,7 @@ define([
             }
           },
           query: { label: 'Query ID', field: 'qseqid' },
+          subject: { label: 'Subject ID', field: 'sseqid' },
           patric_id: { label: 'Subject ID', field: 'sseqid' },
           // na_length: { label: 'Length (NT)', field: 'na_length' },
           // aa_length: { label: 'Length (AA)', field: 'aa_length' },
