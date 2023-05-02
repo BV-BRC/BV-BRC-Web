@@ -42,7 +42,7 @@ define([
         formats: ['.bai']
       },
       bam: {
-        label: 'Sequence Alginment Data',
+        label: 'Sequence Alignment Data',
         formats: ['.bam']
       },
       contigs: {
