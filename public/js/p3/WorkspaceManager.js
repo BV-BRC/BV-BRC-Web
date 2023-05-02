@@ -123,7 +123,7 @@ define([
       },
       phyloxml: {
         label: 'PHYLOXML',
-        formats: ['.xml'],
+        formats: ['.xml', '.phyloxml'],
         description: 'An phyloxml file.'
       },
       png: {
