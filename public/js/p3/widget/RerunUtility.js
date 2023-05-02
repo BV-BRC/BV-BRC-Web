@@ -1,7 +1,7 @@
 define([], function () {
   return {
-
-    rerun: function (job_params, service_id, window, Topic, modal) {
+    // TODO: add modal
+    rerun: function (job_params, service_id, window, Topic) {
       // make sure service_id variable is present for every service
       var sessionStorage = window.sessionStorage;
       const random = (length = 8) => {
