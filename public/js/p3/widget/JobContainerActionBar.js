@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', './ActionBar', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/on',
   'dijit/form/Select', 'dojo/topic', 'dojo/query', '../JobManager',
-  'dojo/dom-class', './formatter', '../util/getTime'
+  'dojo/dom-class', './formatter', '../util/getTime', 'dijit/form/TextBox', 'dijit/form/Button'
 ], function (
   declare, ActionBar, domConstruct, domStyle, on,
   Select, Topic, query, JobManager,
-  domClass, formatter, getTime
+  domClass, formatter, getTime, Textbox, Button
 ) {
   return declare([ActionBar], {
     path: null,
@@ -63,6 +63,8 @@ define([
           'float': 'right'
         }
       }, this.container);
+
+      this.setupKeywordSearch(options);
 
       var statusBtns = this.statusBtns = domConstruct.create('span', {
         'class': 'JobFilters',
@@ -276,6 +278,32 @@ define([
       apps.sort(function (a, b) { return (b.serviceLabel < a.serviceLabel) ? 1 : -1; });
 
       return apps;
+    },
+
+    setupKeywordSearch: function (options) {
+      var textBoxNode = domConstruct.create('div', {}, options);
+      var keywordSearch = Textbox({ style: 'width: 300px;float:left' });
+      keywordSearch.placeAt(textBoxNode);
+      var filterSelect = new Select({
+        name: 'selectBox',
+        options: [
+          { label: 'Output Name', value: 'parameters', selected: true },
+          { label: 'Status', value: 'status' },
+          { label: 'ID', value: 'id' }
+        ],
+        style: 'width: 100px;'
+      });
+      filterSelect.placeAt(textBoxNode, 'topCenter')
+
+      var submitButton = new Button({
+        label: 'Filter',
+        onClick: function () {
+          var keywords = keywordSearch.value;
+          var filter = filterSelect.value;
+          Topic.publish('/KeywordFilter', keywords, filter);
+        }
+      });
+      submitButton.placeAt(textBoxNode, 'topCenter');
     }
 
   });
