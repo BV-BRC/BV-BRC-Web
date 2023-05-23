@@ -268,7 +268,7 @@ define([
                                 });
 
                                 // Perform the location check for the value after the first slash
-                            } else if (this.isStrainNameLocationValid(parts[1])) {
+                            } else if (!this.isStrainNameLocationValid(parts[1])) {
                                 this.validations.push({
                                     type: 'error',
                                     message: 'Strain Name: Location (' + parts[1] + ') in the strain name must be spelled out ' +
