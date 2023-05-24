@@ -182,6 +182,7 @@ define([
       errors.set('duplicatedSequenceId', []);
       errors.set('invalidNucleotype', []);
       let sampleSequenceMap = new Map();
+      this.ignoreMaxFastaTextLimit = true;
       const reto = this.validateFasta(data, 'aa', false);
 
       if (reto.valid) {
