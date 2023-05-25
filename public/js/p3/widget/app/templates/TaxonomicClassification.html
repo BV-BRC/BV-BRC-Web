@@ -21,19 +21,6 @@
       <div style="display: none;">
         <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="true" data-dojo-attach-point="numlibs" data-dojo-props="constraints:{min:1,max:1000}," />
       </div>
-      <div id="startWithBox" style="width:400px;" class="appBox appShadow">
-        <div class="headerrow">
-          <label class="appBoxLabel">Start With:</label>
-          <div name="start-with" class="infobox iconbox infobutton dialoginfo">
-            <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-          </div>
-        </div>
-        <div class="appRow">
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithRead" name="startWith" value="read" checked />
-          <label for="radio1">Read File</label>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithContigs" name="startWith" value="contigs" data-dojo-attach-event="onChange:onStartWithChange" />
-          <label for="radio2">Assembled Contigs</label>
-        </div>
       </div>
       <table data-dojo-attach-point="readTable" style="width:100%">
         <tr>
@@ -109,11 +96,6 @@
             <label class="appBoxLabel">Input File</label>
           </div>
         </div>
-        <div class="appRow">
-            <label class="paramlabel">Contigs</label><br>
-            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" data-dojo-attach-point="contigsFile" data-dojo-attach-event="onChange:setContigsFile" style="width:100%" required="false" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation'">
-            </div>
-        </div>
       </div>
       <div id="parameterBox" style="width:400px; " class="appBox appShadow">
         <div class="headerrow">
@@ -125,34 +107,25 @@
           </div>
         </div>
         <div class="appRow">
-          <label class="paramlabel">Algorithm</label><br>
-          <select data-dojo-type="dijit/form/Select" name="algorithm" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,trim:true">
-            <option value="Kraken2">Kraken2</option>
+          <label class="paramlabel">Analysis Type</label><br>
+          <select data-dojo-type="dijit/form/Select" name="analysis_type" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,trim:true">
+            <option value="pathogen">Species Identification</option>
+            <option value="microbiome">Microbiome Analysis</option>
           </select>
         </div>
         <div class="appRow">
             <label>Database</label><br>
             <select data-dojo-type="dijit/form/Select" name="database" style="width:300px" required="true" data-dojo-props="intermediateChanges:true">
-              <option value="Kraken2">All genomes</option>
-              <!-- <option value="RDP">RDP (SSU rRNA)</option>
-              <option value="SILVA">SILVA (SSU rRNA)</option> -->
+              <option value="standard">Kraken2 Standard Database</option>
+              <option value="bvbrc">BV-BRC Database</option>
             </select>
         </div>
         <div class="appRow">
-          <label class="paramlabel">Save Classified Sequences</label><br>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_classified_sequences" value="false" data-dojo-attach-point="save_classified_sequences_no" checked />
-          <label for="radio1">No</label>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_classified_sequences" value="true" data-dojo-attach-point="save_classified_sequences_yes"/>
-          <label for="radio2">Yes</label>
-        </div>
-        <div class="appRow">
-          <label class="paramlabel">Save Unclassified Sequences</label><br>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_unclassified_sequences" value="false" data-dojo-attach-point="save_unclassified_sequences_no" checked />
-          <label for="radio1">No</label>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_unclassified_sequences" value="true" data-dojo-attach-point="save_unclassified_sequences_yes"/>
-          <label for="radio2">Yes</label>
-        </div>
-
+          <label>Host Genome</label><br>
+          <select data-dojo-type="dijit/form/Select" name="host_genome" style="width:300px" required="true" data-dojo-props="intermediateChanges:true">
+            <option value="homo_sapiens">Homo Sapiens</option>
+          </select>
+      </div>
         <div class="appRow">
           <label>Output Folder</label><br>
           <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
