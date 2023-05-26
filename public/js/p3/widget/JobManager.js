@@ -295,24 +295,25 @@ define([
       });
 
       // listen for filtering
-      Topic.subscribe('/KeywordFilter', function (keyword, f) {
+      Topic.subscribe('/KeywordFilter', function (keyword) {
         // remove any non-specific filter states
         if (keyword.trim() === '') {
           _self.grid.set('query', {});
         }
         var filters = {};
         keyword = keyword.trim();
-        if (f === 'parameters') {
-          // filters[f] = { 'output_file': new RegExp(`.*${keyword}.*`) };
-          var keyfil = new RegExp(`.*${keyword}.*`);
-          filters[f] = {
-            test: function (entry) {
-              return keyfil.test(entry.output_file);
-            }
-          };
-        } else {
+        // filters[f] = { 'output_file': new RegExp(`.*${keyword}.*`) };
+        var keyfil = new RegExp(`.*${keyword}.*`);
+        filters['parameters'] = {
+          test: function (entry) {
+            return keyfil.test(entry.output_file);
+          }
+        };
+        /*
+        else {
           filters[f] = new RegExp(`.*${keyword}.*`);
         }
+        */
         if (this.serviceFilter) {
           // check app
           if (this.serviceFilter.app) {

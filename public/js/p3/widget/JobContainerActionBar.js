@@ -281,29 +281,26 @@ define([
     },
 
     setupKeywordSearch: function (options) {
-      var textBoxNode = domConstruct.create('div', {}, options);
-      var keywordSearch = Textbox({ style: 'width: 300px;float:left' });
-      keywordSearch.placeAt(textBoxNode);
-      var filterSelect = new Select({
-        name: 'selectBox',
-        options: [
-          { label: 'Output Name', value: 'parameters', selected: true },
-          { label: 'Status', value: 'status' },
-          { label: 'ID', value: 'id' }
-        ],
-        style: 'width: 100px;'
-      });
-      filterSelect.placeAt(textBoxNode, 'topCenter')
-
-      var submitButton = new Button({
-        label: 'Filter',
-        onClick: function () {
-          var keywords = keywordSearch.value;
-          var filter = filterSelect.value;
-          Topic.publish('/KeywordFilter', keywords, filter);
+      var textBoxNode = domConstruct.create('span', {
+        style: {
+          'float': 'left',
+          margin: '0 1.0em 0 0'
         }
+      }, options);
+      var keywordSearch = Textbox({
+        style: {
+          width: '200px',
+          margin: '0 1.0em 0 1.0em'
+        },
+        placeHolder: 'Filter by job output name',
+        onChange: function () {
+          var keywords = keywordSearch.value;
+          // var filter = filterSelect.value;
+          Topic.publish('/KeywordFilter', keywords);
+        },
+        intermediateChanges: true
       });
-      submitButton.placeAt(textBoxNode, 'topCenter');
+      keywordSearch.placeAt(textBoxNode);
     }
 
   });
