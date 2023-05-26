@@ -301,19 +301,13 @@ define([
           _self.grid.set('query', {});
         }
         var filters = {};
-        keyword = keyword.trim();
-        // filters[f] = { 'output_file': new RegExp(`.*${keyword}.*`) };
+        // keyword = keyword.trim();
         var keyfil = new RegExp(`.*${keyword}.*`);
         filters['parameters'] = {
           test: function (entry) {
             return keyfil.test(entry.output_file);
           }
         };
-        /*
-        else {
-          filters[f] = new RegExp(`.*${keyword}.*`);
-        }
-        */
         if (this.serviceFilter) {
           // check app
           if (this.serviceFilter.app) {

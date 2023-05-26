@@ -41,7 +41,8 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 
       // perform any callback action before filtering
       if (cb) cb();
-      console.log(jobs);
+
+
       if (self.filters.app || self.filters.status) {
         Topic.publish('/Jobs', { status: 'filtered', jobs: _DataStore.data });
         Topic.publish('/JobFilter', self.filters);
