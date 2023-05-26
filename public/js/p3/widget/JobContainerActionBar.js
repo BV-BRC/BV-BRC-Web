@@ -295,7 +295,6 @@ define([
         placeHolder: 'Filter by job output name',
         onChange: function () {
           var keywords = keywordSearch.value;
-          // var filter = filterSelect.value;
           Topic.publish('/KeywordFilter', keywords);
         },
         intermediateChanges: true

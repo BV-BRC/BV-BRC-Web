@@ -308,8 +308,8 @@ define([
             return keyfil.test(entry.output_file);
           }
         };
+        // filter by job output with other filters applied
         if (this.serviceFilter) {
-          // check app
           if (this.serviceFilter.app) {
             filters['app'] = this.serviceFilter.app;
           }
