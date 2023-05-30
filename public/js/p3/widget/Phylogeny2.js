@@ -81,8 +81,10 @@ define([
       console.log('postCreate: this.state', this.state);
       // console.log('postCreate: folder', folder);
 
-      this.pathContainer = domConstruct.create('div', { 'class': 'wsBreadCrumbContainer' }, this.domNode);
-      this.pathContainer.innerHTML = this.generatePathLinks(objPath);
+      this.pathContainer = new ContentPane({ 'content': this.generatePathLinks(objPath), 'region': 'top' });
+
+      // this.pathContainer = domConstruct.create('div', { 'class': 'wsBreadCrumbContainer' }, this.domNode);
+      // this.pathContainer.innerHTML = this.generatePathLinks(objPath);
       this.containerPane = new ContentPane({ region: 'center' });// domConstruct.create("div", {id: this.id + "_canvas"}, this.domNode);
 
       /*
@@ -112,6 +114,7 @@ define([
       // this.treeDiv3 = domConstruct.create('div', { id: 'controls1' }, this.treeDiv);
 
       // this.addChild(this.containerActionBar);
+      this.addChild(this.pathContainer);
       this.addChild(this.selectionActionBar);
       this.addChild(this.containerPane);
       this.addChild(this.itemDetailPanel);
