@@ -168,6 +168,12 @@ define(['./formatter'], function (formatter) {
       hidden: true,
       group: 'Type Info'
     },
+    h3_clade: {
+      label: 'H3 Clade',
+      field: 'h3_clade',
+      hidden: true,
+      group: 'Type Info'
+    },
     h5_clade: {
       label: 'H5 Clade',
       field: 'h5_clade',
@@ -459,6 +465,12 @@ define(['./formatter'], function (formatter) {
       label: 'Isolation Country',
       field: 'isolation_country',
       hidden: false,
+      group: 'Isolate Info'
+    },
+    state_province: {
+      label: 'State/Province',
+      field: 'state_province',
+      hidden: true,
       group: 'Isolate Info'
     },
     geographic_group: {

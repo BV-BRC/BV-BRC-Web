@@ -5,7 +5,7 @@ define([
   './ActionBar', 'dojo/_base/Deferred', '../WorkspaceManager', 'dojo/_base/lang', '../util/PathJoin',
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dijit/popup', 'dijit/form/Select', './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
-  'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor',
+  'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor', './ServicesTooltipDialog',
   'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './RerunUtility', './viewer/JobResult',
   'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree'
 ], function (
@@ -15,7 +15,7 @@ define([
   ActionBar, Deferred, WorkspaceManager, lang, PathJoin,
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
   popup, Select, ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
-  TextBox, WSObjectSelector, PermissionEditor,
+  TextBox, WSObjectSelector, PermissionEditor, ServicesTooltipDialog,
   All, encodePath, when, request, tsvCsvFeatures, rerunUtility, JobResult, NodeList_traverse, Homology, GenomeAlignment, PhylogeneticTree
 ) {
 
@@ -263,87 +263,54 @@ define([
         }
       }, false);
 
-      // /START: ServicesGenomeGroups
-      var dstContent = domConstruct.create('div', {});
-      var viewGGServices = new TooltipDialog({
-        content: dstContent,
-        onMouseLeave: function () {
-          popup.close(viewGGServices);
+      // TODO: add ServicesFeatureGroup
+      this.actionPanel.addAction('ServicesFeatureGroups', 'MultiButton fa icon-cog fa-2x', {
+        label: 'SERVICES',
+        validTypes: ['feature_group'],
+        multiple: false,
+        tooltip: 'Select services using this FeatureGroup'
+      }, function (selection, container, button) {
+        var data = {};
+        data.data_type = 'feature';
+        var multiple = false;
+        if (selection.length > 1) {
+          multiple = true;
         }
-      });
-      var table = domConstruct.create('table', {}, dstContent);
-      domConstruct.create('tr', { innerHTML: '<p>Services</p>', style: 'background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;' }, table);
-      var options = ['BLAST', 'Genome Alignment', 'Phylogenetic Tree'];
-      options.forEach(function (key) {
-        var curr_tr = domConstruct.create('tr', {}, table);
-        domConstruct.create('div', { 'class': 'wsActionTooltip', innerHTML: key, service: key }, curr_tr);
-      }, this);
-      this.selected_genome_group = null;
-      on(viewGGServices.domNode, 'click', lang.hitch(this, function (evt) {
-        var service = evt.target.getAttribute('service');
-        var serviceContent = null;
-        var params = null;
-        if (service === 'BLAST') {
-          serviceContent = new Homology();
-          params = {
-            'blast_program': 'blastn',
-            'db_precomputed_database': 'selGroup',
-            'db_genome_group': this.selected_genome_group[0].path,
-            'db_source': 'genome_list',
-            'db_type': 'fna'
-          };
-        }
-        else if (service === 'Genome Alignment') {
-          serviceContent = new GenomeAlignment();
-          params = {
-            'genome_group': this.selected_genome_group[0].path
-          };
-        }
-        else if (service === 'Phylogenetic Tree') {
-          serviceContent = new PhylogeneticTree();
-          params = {
-            'genome_group': this.selected_genome_group[0].path
-          };
-        } else {
-          console.log('invalid service: ', service);
-          return;
-        }
-        if (params) {
-          var job_params = JSON.stringify(params);
-          if (window.localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-            window.localStorage.removeItem('bvbrc_rerun_job');
-          }
-          window.localStorage.setItem('bvbrc_rerun_job', job_params);
-        }
-        var d = new Dialog({
-          title: service,
-          content: serviceContent,
-          onHide: function () {
-            serviceContent.destroy();
-            d.destroy();
-          }
+        data.multiple = multiple;
+        data.selection = selection;
+        popup.open({
+          popup: new ServicesTooltipDialog({
+            context: 'workspace',
+            data: data
+          }),
+          around: button,
+          orient: ['below']
         });
-        d.show();
+      });
 
-      }))
-      var sgSelf = this; // do not remove, sets the genome group selection below and makes it accessible in on("click")
       this.actionPanel.addAction('ServicesGenomeGroups', 'MultiButton fa icon-cog fa-2x', {
         label: 'SERVICES',
         validTypes: ['genome_group'],
-        multiple: false, // TODO: check and see if you can select two or more at a time
-        tooltip: 'Select services using this GenomeGroup',
-        tooltipDialog: viewGGServices
-      }, function (selection) {
-        sgSelf.selected_genome_group = selection;
+        multiple: true,
+        tooltip: 'Select services using this GenomeGroup'
+      }, function (selection, container, button) {
+        var data = {};
+        data.data_type = 'genome';
+        var multiple = false;
+        if (selection.length > 1) {
+          multiple = true;
+        }
+        data.multiple = multiple;
+        data.selection = selection;
         popup.open({
-          popup: this._actions.ServicesGenomeGroups.options.tooltipDialog,
-          around: this._actions.ServicesGenomeGroups.button,
+          popup: new ServicesTooltipDialog({
+            context: 'workspace',
+            data: data
+          }),
+          around: button,
           orient: ['below']
         });
-      }, false);
-      // /END: ServicesGenomeGroups
-
-      // /START:
+      });
 
       this.actionPanel.addAction('ViewFeatureGroup', 'MultiButton fa icon-selection-FeatureList fa-2x', {
         label: 'VIEW',
@@ -422,20 +389,21 @@ define([
         }
       });
 
-      this.actionPanel.addAction('MultipleSeqAlignmentFeatures', 'fa icon-alignment fa-2x', {
+      this.actionPanel.addAction('MultipleSeqAlignmentFeaturesService', 'fa icon-alignment fa-2x', {
         label: 'MSA',
         validTypes: ['feature_group'],
         multiple: false,
         tooltipDialog: viewMSATT,
         tooltip: 'Multiple Sequence Alignment'
       }, function (selection) {
-        var q = self.getQuery(selection[0]);
-        viewMSATT.selection = q;
-        popup.open({
-          popup: this._actions.MultipleSeqAlignmentFeatures.options.tooltipDialog,
-          around: this._actions.MultipleSeqAlignmentFeatures.button,
-          orient: ['below']
-        });
+        var feature_group = selection[0].path;
+        var job_data = {
+          'feature_groups': [feature_group],
+          'alphabet': 'dna',
+          'aligner': 'Muscle',
+          'input_type': 'input_group'
+        };
+        rerunUtility.rerun(JSON.stringify(job_data), 'MSA', window, Topic);
       }, false);
 
       // TODO: why isn't download appearing for job_results
@@ -1147,23 +1115,39 @@ define([
         console.log('browserHeader selection ', selection);
         console.log('browserHeader container ', container);
 
+        
         var labelSearch = 'false';
         var idType = 'genome_id';
         var labelType = 'genome_name';
         var fileType = 'phyloxml';
         var path;
+        var app = selection[0].autoMeta.app.id;
+        // var output_name = selection[0].autoMeta.parameters.output_file;
+        // var output_path = selection[0].autoMeta.parameters.output_path;
+        if (app === 'CodonTree') {
+          // path = output_path + '/' + output_name + '_tree.phyloxml';
+          // fileType = 'phyloxml';
+          selection[0].autoMeta.output_files.every(lang.hitch(this, function (file_data) {
+            var gt_file = file_data[0].split('.');
+            if (gt_file[gt_file.length - 1] === 'phyloxml') {
+              path = gt_file.join('.');
+              fileType = 'phyloxml';
+              return false;
+            }
+            return true;
+          }));
+        } else { // GeneTree
+          selection[0].autoMeta.output_files.every(lang.hitch(this, function (file_data) {
+            var gt_file = file_data[0].split('.');
+            if (gt_file[gt_file.length - 1] === 'nwk') {
+              path = gt_file.join('.');
+              fileType = 'nwk';
+              return false;
+            }
+            return true;
+          }));
+        }
 
-        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
-          var gt_file = file_data[0].split('.');
-          if (gt_file[gt_file.length - 1] === 'xml' || gt_file[gt_file.length - 1] === 'phyloxml') {
-            path = gt_file.join('.');
-            fileType = 'phyloxml';
-          }
-          else if (gt_file[gt_file.length - 1] === 'nwk') {
-            path = gt_file.join('.');
-            fileType = 'nwk';
-          }
-        }));
         console.log('browserHeader path ', path);
 
         if (path) {
@@ -1194,13 +1178,105 @@ define([
         }
       }, false);
 
+      this.browserHeader.addAction('ViewHASubtypeNumberingReport', 'fa icon-eye fa-2x', {
+        label: 'Report',
+        multiple: false,
+        validTypes: ['HASubtypeNumberingConversion'],
+        tooltip: 'View HA Subtype Numbering Conversion Report'
+      }, function (selection) {
+        const jobPath = selection[0].path + selection[0].name;
+        Topic.publish('/navigate', { href: '/view/HASubtypeNumberingReport/&path=' + jobPath, target: 'blank' });
+      }, false);
+
+      this.browserHeader.addAction('SubmitSequenceSubmission', 'fa icon-upload fa-3x', {
+        label: 'Submit Sequence',
+        multiple: false,
+        validTypes: ['SequenceSubmission'],
+        tooltip: 'Submit Sequence'
+      }, function (selection, container, button) {
+        button.classList.add('disabled');
+        button.style['pointer-events'] = 'none';
+
+        const submittedFileName = 'submission.submitted';
+        const submittedFolderPath = `${selection[0].path}.${selection[0].name}`;
+
+        // Check if submission is already submitted
+        when(WorkspaceManager.getObject(submittedFolderPath + '/' + submittedFileName), lang.hitch(this, function (obj) {
+          const d = new Dialog({
+            title: 'Warning',
+            content: 'You have already submitted this submission. Please reach out to BV-BRC team if you need further assistance.',
+            onHide: function () {
+              d.destroy();
+            }
+          });
+          d.show();
+        }), lang.hitch(this, function (err) {
+          query('.ActionButtonText', button).forEach(function (node) {
+            node.innerHTML = 'Processing';
+          });
+
+          let formData = new FormData();
+          formData.append('subject', 'Sequence Submission is Ready');
+          formData.append('ownerId', selection[0].owner_id);
+          formData.append('submissionJobPath', selection[0].path + '/' + selection[0].name);
+          formData.append('numberOfSequences', selection[0].autoMeta.parameters.numberOfSequences);
+
+          when(request.post('/notifySubmitSequence', {
+            headers: {
+              'Authorization': (window.App.authorizationToken || ''),
+              'enctype': 'multipart/form-data'
+            },
+            data: formData
+          }), function (results) {
+            console.log('Succ notifying team for the submission: ', results);
+
+            // Create submitted file to avoid future submissions
+            const obj = {
+              path: submittedFolderPath,
+              name: submittedFileName
+            };
+
+            WorkspaceManager.create(obj, true, true);
+
+            const d = new Dialog({
+              title: 'Successful',
+              content: 'We have successfully notified BV-BRC Team for this submission.',
+              onHide: function () {
+                d.destroy();
+              }
+            });
+            d.show();
+
+            query('.ActionButtonText', button).forEach(function (node) {
+              node.innerHTML = 'Successful';
+            });
+          }, function (err) {
+            console.log('Error notifying team for the submission: ', err);
+
+            const d = new Dialog({
+              title: 'Error',
+              content: 'We encountered an error while submitting your request. Please try again.',
+              onHide: function () {
+                d.destroy();
+              }
+            });
+            d.show();
+
+            button.classList.remove('disabled');
+            button.style['pointer-events'] = '';
+            query('.ActionButtonText', button).forEach(function (node) {
+              node.innerHTML = 'Submit Sequence';
+            });
+          });
+        }));
+      }, false);
+
       this.actionPanel.addAction('ViewAFA', 'fa icon-alignment fa-2x', {
         label: 'MSA',
         multiple: false,
         validTypes: ['aligned_dna_fasta', 'aligned_protein_fasta'],
         tooltip: 'View aligned fasta'
       }, function (selection, container) {
-        // var path = this.selection[0].path; // .get('selection.path');
         var alignType = 'protein';
         if (this.selection[0].type.includes('dna')) {
           alignType = 'dna';
@@ -1284,7 +1360,7 @@ define([
       this.browserHeader.addAction('ViewTracks', 'fa icon-genome-browser fa-2x', {
         label: 'BROWSER',
         multiple: false,
-        validTypes: ['RNASeq', 'TnSeq', 'Variation', 'FastqUtils'],
+        validTypes: ['TnSeq', 'Variation', 'FastqUtils'],
         tooltip: 'View tracks in genome browser.'
       }, function (selection) {
         // console.log("View Tracks: ", this);
@@ -1297,6 +1373,26 @@ define([
           throw (err);
         }
         Topic.publish('/navigate', { href: '/view/Genome/' + genomeId + '#' + urlQueryParams });
+      }, false);
+
+      this.browserHeader.addAction('ViewTracksRNASeq', 'fa icon-genome-browser fa-2x', {
+        label: 'BROWSER',
+        multiple: false,
+        validTypes: ['RNASeq'],
+        tooltip: 'View tracks in genome browser.'
+      }, function (selection) {
+        // console.log("View Tracks: ", this);
+        try {
+          var genomeId = self.actionPanel.currentContainerWidget.getGenomeId();
+          self.actionPanel.currentContainerWidget.getJBrowseURLQueryParamsRNASeq().then(lang.hitch(this, function (urlQueryParams) {
+            Topic.publish('/navigate', { href: '/view/Genome/' + genomeId + '#' + urlQueryParams, target: 'blank' });
+          }));
+          // var urlQueryParams = self.actionPanel.currentContainerWidget.getJBrowseURLQueryParams();
+        }
+        catch (err) {
+          alert('The genome browser could not be opened. No genome id or no streamable files were found.');
+          throw (err);
+        }
       }, false);
 
       this.actionPanel.addAction('ExperimentGeneList', 'fa icon-list-unordered fa-2x', {
@@ -1692,7 +1788,29 @@ define([
         label: 'RERUN',
         allowMultiTypes: true,
         multiple: true,
-        validTypes: ['job_result'],
+        validTypes: ['ComparativeSystems',
+          'ComprehensiveGenomeAnalysis',
+          'ComprehensiveSARS2Analysis',
+          'DifferentialExpression',
+          'FastqUtils',
+          'GeneTree',
+          'GenomeAssembly2',
+          'GenomeAlignment',
+          'GenomeAnnotation',
+          'GenomeComparison',
+          'Homology',
+          'MetaCATS',
+          'MetagenomeBinning',
+          'MetagenomicReadMapping',
+          'MSA',
+          'PrimerDesign',
+          'CodonTree',
+          'RNASeq',
+          'SubspeciesClassification',
+          'TaxonomicClassification',
+          'TnSeq',
+          'Variation'
+        ],
         tooltip: 'Reset job form with current parameters'
       }, function (selection) {
         rerunUtility.rerun(JSON.stringify(selection[0].autoMeta.parameters), selection[0].autoMeta.app.id, window, Topic);

@@ -12,6 +12,7 @@ define([
   return declare([BorderContainer], {
     disabled: false,
     path: '/',
+    serviceFilter: null,
 
     listJobs: function () {
       var _self = this;
@@ -145,7 +146,8 @@ define([
               '********************** JOB INFO *************************\n\n' +
               'Job ID: ' + sel.id + '\n' +
               'Job Status: ' + sel.status + '\n' +
-              'App Name: ' + sel.app + '\n\n' +
+              'Service Name: ' + sel.app + '\n' +
+              'App Name: ' + sel.application_name + '\n\n' +
               'Stdout: ' + window.App.serviceAPI + '/task_info/' + sel.id + '/stdout\n' +
               'Stderr: ' + window.App.serviceAPI + '/task_info/' + sel.id + '/stderr\n\n' +
               'Submit Time: ' + sel.submit_time + '\n' +
@@ -163,7 +165,7 @@ define([
             type: 'reportProblem',
             params: {
               issueText: content,
-              issueSubject: 'Reporting Issue with ' + sel.app,
+              issueSubject: 'Reporting Issue with ' + sel.application_name,
               jobDescriptRequired: descriptRequired,
               jobStatus: sel.status
             }
@@ -285,7 +287,33 @@ define([
         } else if (filters.status === 'failed') {
           filters.status = new RegExp('failed|deleted');
         }
+        if (!this.serviceFilter) {
+          this.serviceFilter = {};
+        }
+        this.serviceFilter = filters;
+        _self.grid.set('query', filters);
+      });
 
+      // listen for filtering
+      Topic.subscribe('/KeywordFilter', function (keyword) {
+        // remove any non-specific filter states
+        if (keyword.trim() === '') {
+          _self.grid.set('query', {});
+        }
+        var filters = {};
+        // keyword = keyword.trim();
+        var keyfil = new RegExp(`.*${keyword}.*`);
+        filters['parameters'] = {
+          test: function (entry) {
+            return keyfil.test(entry.output_file);
+          }
+        };
+        // filter by job output with other filters applied
+        if (this.serviceFilter) {
+          if (this.serviceFilter.app) {
+            filters['app'] = this.serviceFilter.app;
+          }
+        }
         _self.grid.set('query', filters);
       });
     },

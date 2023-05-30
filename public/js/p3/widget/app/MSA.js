@@ -31,7 +31,7 @@ define([
     ref_id_length: 60,
     input_seq_rows: 10,
     input_seq_min_seqs: 2,
-    maxGenomes: 500,
+    maxGenomes: 5000,
     maxGenomeLength: 250000,
     fid_value: '',
     validFasta: false,
@@ -56,11 +56,22 @@ define([
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
-        var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-          localStorage.removeItem('bvbrc_rerun_job');
-        }
       }
+
+      this.strategyrow.turnedOn = (this.strategyrow.style.display != 'none');
+      on(this.strategy, 'click', lang.hitch(this, function () {
+        this.strategyrow.turnedOn = (this.strategyrow.style.display != 'none');
+        if (!this.strategyrow.turnedOn) {
+          this.strategyrow.turnedOn = true;
+          this.strategyrow.style.display = 'block';
+          this.strategyicon.className = 'fa icon-caret-left fa-1';
+        }
+        else {
+          this.strategyrow.turnedOn = false;
+          this.strategyrow.style.display = 'none';
+          this.strategyicon.className = 'fa icon-caret-down fa-1';
+        }
+      }));
     },
 
     onChangeStatus: function (start) {
@@ -346,6 +357,18 @@ define([
       this.genomegroup_message.innerHTML = '';
       this.genome_id_message.innerHTML = '';
       this.submitButton.set('disabled', true);
+
+      // Hide strategy options if muscle aligner selected
+      if (this.aligner.get('value') === 'Muscle' || this.aligned.checked == true) {
+        this.strategy.style.display = 'none';
+        this.strategyrow.style.display = 'none';
+      } else if (!(value && value.srcElement && value.srcElement.name && value.srcElement.name === 'strategy_settings')){
+        this.strategy.style.display = 'inline-block';
+        this.strategyrow.turnedOn = false;
+        this.strategyrow.style.display = 'none';
+        this.strategyicon.className = 'fa icon-caret-down fa-1';
+      }
+
       // console.log('def: ' + def);
       if (this.select_genomegroup.get('required') && this.select_genomegroup.searchBox.item && (this.input_genomegroup.checked == true) && (this.unaligned.checked == true)) {
         var ref_id = this.select_genome_id.get('value');
@@ -526,6 +549,9 @@ define([
       if (fastaFiles.length > 0) {
         values.fasta_files = fastaFiles;
       }
+      if (this.aligner.get('value') === 'Mafft') {
+        values.strategy = query("input[type=radio][name=strategy_settings]:checked")[0].value;
+      }
       return values;
     },
 
@@ -543,20 +569,33 @@ define([
       var rerun_fields = service_fields.split('=');
       var rerun_key;
       if (rerun_fields.length > 1) {
-        rerun_key = rerun_fields[1];
-        var sessionStorage = window.sessionStorage;
-        if (sessionStorage.hasOwnProperty(rerun_key)) {
-          var param_dict = { 'output_folder': 'output_path', 'strategy': 'aligner' };
-          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-          this.setStatusFormFill(job_data);
-          this.setAlphabetFormFill(job_data);
-          this.setUnalignedInputFormFill(job_data);
-          this.setReferenceFormFill(job_data);
-          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-          // this.addSequenceFilesFormFill(job_data);
+        try {
+          rerun_key = rerun_fields[1];
+          var sessionStorage = window.sessionStorage;
+          if (sessionStorage.hasOwnProperty(rerun_key)) {
+            var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
+            this.setStatusFormFill(job_data);
+            this.setAlphabetFormFill(job_data);
+            this.setUnalignedInputFormFill(job_data);
+            this.setReferenceFormFill(job_data);
+            // this.addSequenceFilesFormFill(job_data);
+            this.setAlignerFormFill(job_data);
+            this.form_flag = true;
+          }
+        } catch (error) {
+          console.log('Error during intakeRerunForm: ', error);
+        } finally {
           sessionStorage.removeItem(rerun_key);
-          this.form_flag = true;
+        }
+      }
+    },
 
+    // service defaults to Mafft, so switch to muscle if in job data
+    // set value is not working for some reason
+    setAlignerFormFill: function (job_data) {
+      if (Object.keys(job_data).includes('aligner')) {
+        if (job_data['aligner'] === 'Muscle') {
+          this.aligner.set('value', 'Muscle');
         }
       }
     },

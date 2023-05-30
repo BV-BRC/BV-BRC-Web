@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', './ActionBar', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/on',
   'dijit/form/Select', 'dojo/topic', 'dojo/query', '../JobManager',
-  'dojo/dom-class', './formatter', '../util/getTime'
+  'dojo/dom-class', './formatter', '../util/getTime', 'dijit/form/TextBox'
 ], function (
   declare, ActionBar, domConstruct, domStyle, on,
   Select, Topic, query, JobManager,
-  domClass, formatter, getTime
+  domClass, formatter, getTime, Textbox
 ) {
   return declare([ActionBar], {
     path: null,
@@ -64,6 +64,8 @@ define([
         }
       }, this.container);
 
+      this.setupKeywordSearch(options);
+
       var statusBtns = this.statusBtns = domConstruct.create('span', {
         'class': 'JobFilters',
         style: {
@@ -95,7 +97,7 @@ define([
         status: null
       };
       on(selector, 'change', function (val) {
-        self.filters.app = val;
+        self.filters.application_name = val;
         Topic.publish('/JobFilter', self.filters);
       });
 
@@ -249,13 +251,13 @@ define([
       // count by apps
       var info = {};
       jobs.forEach(function (job) {
-        info[job.app] = job.app in info ? info[job.app] + 1 : 1;
+        info[job.application_name] = job.application_name in info ? info[job.application_name] + 1 : 1;
       });
 
       // add 'all apps' option
       var apps = [];
       var facet = { label: 'All Services', value: 'all' };
-      if (self.filters.app == 'all') facet.selected = true;
+      if (self.filters.application_name == 'all') facet.selected = true;
       apps.push(facet);
 
       // organize options by app count
@@ -268,7 +270,7 @@ define([
             value: k,
             count: info[k]
           };
-          if (k == self.filters.app) facet.selected = true;
+          if (k == self.filters.application_name) facet.selected = true;
           apps.push(facet);
         }
       }
@@ -276,6 +278,28 @@ define([
       apps.sort(function (a, b) { return (b.serviceLabel < a.serviceLabel) ? 1 : -1; });
 
       return apps;
+    },
+
+    setupKeywordSearch: function (options) {
+      var textBoxNode = domConstruct.create('span', {
+        style: {
+          'float': 'left',
+          margin: '0 1.0em 0 0'
+        }
+      }, options);
+      var keywordSearch = Textbox({
+        style: {
+          width: '200px',
+          margin: '0 1.0em 0 1.0em'
+        },
+        placeHolder: 'Filter by job output name',
+        onChange: function () {
+          var keywords = keywordSearch.value;
+          Topic.publish('/KeywordFilter', keywords);
+        },
+        intermediateChanges: true
+      });
+      keywordSearch.placeAt(textBoxNode);
     }
 
   });

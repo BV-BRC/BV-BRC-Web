@@ -98,6 +98,7 @@ define([
             this.anchorByGenome(value);
             break;
           case 'applyConditionFilter':
+            // includes feature group filtering
             this.setData(this.query({ 'familyType': this.pfState.familyType }));
             Topic.publish(this.topicId, 'applyConditionFilterRefresh', this.pfState);
             var currentData = this.getHeatmapData();
@@ -121,6 +122,30 @@ define([
 
       this.currentFilter = JSON.parse(JSON.stringify(this.pfState.genomeFilterStatus));
     },
+
+    featureGroupFilter: function (data) {
+      if (!this.pfState.feature_group || this.pfState.feature_group === '') {
+        return data;
+      }
+      // I think this is right?
+      if (!this.pfState.feature_group_data || this.pfState.feature_group_data.length == 0) {
+        return data;
+      }
+      var newData = [];
+      var family_ids;
+      if (this.pfState.familyType === 'pgfam') {
+        family_ids = this.pfState.feature_group_data.map(x => x.pgfam_id);
+      } else { // plfam
+        family_ids = this.pfState.feature_group_data.map(x => x.plfam_id);
+      }
+      data.forEach(lang.hitch(this, function (row) {
+        if (family_ids.includes(row.family_id)) {
+          newData.push(row);
+        }
+      }));
+      return newData;
+    },
+
     conditionFilter: function (data) {
 
       if (this._filtered == undefined) { // first time: I don't think it's really used
@@ -134,7 +159,6 @@ define([
         .split('~')
         .map(function (k) { return k.trim(); });
 
-      // debugger;
       Object.keys(data).forEach(function (family) {
 
         var skip = false;
@@ -188,6 +212,7 @@ define([
           newData.push(family);
         }
       }, this);
+
       return newData;
     },
 
@@ -273,8 +298,8 @@ define([
         data = this.plfam_data;
         // debugger;
       }
-      // TODO: issues with filtering
       data = this.conditionFilter(data);
+      data = this.featureGroupFilter(data);
       var total_length = data.length;
       // if opts.sort, apply remaining filters
       if (opts && opts.sort) {

@@ -355,7 +355,11 @@ define([
         collection_year: {},
         subtype: {},
         lineage: {},
-        clade: {}
+        clade: {},
+        h1_clade_global: {},
+        h1_clade_us: {},
+        h3_clade: {},
+        h5_clade: {}
       };
 
       var self = this;
@@ -374,6 +378,10 @@ define([
         self.alt_labels.subtype[geneID] = default_value;
         self.alt_labels.lineage[geneID] = default_value;
         self.alt_labels.clade[geneID] = default_value;
+        self.alt_labels.h1_clade_global[geneID] = default_value;
+        self.alt_labels.h1_clade_us[geneID] = default_value;
+        self.alt_labels.h3_clade[geneID] = default_value;
+        self.alt_labels.h5_clade[geneID] = default_value;
 
         this.genomeData.forEach(function (genome) {
           // console.log('in setAltLabel genomeData genome', genome);
@@ -421,6 +429,18 @@ define([
             }
             if (genome.clade) {
               self.alt_labels.clade[geneID] = genome.clade;
+            }
+            if (genome.h1_clade_global) {
+              self.alt_labels.h1_clade_global[geneID] = genome.h1_clade_global;
+            }
+            if (genome.h1_clade_us) {
+              self.alt_labels.h1_clade_us[geneID] = genome.h1_clade_us;
+            }
+            if (genome.h3_clade) {
+              self.alt_labels.h3_clade[geneID] = genome.h3_clade;
+            }
+            if (genome.h5_clade) {
+              self.alt_labels.h5_clade[geneID] = genome.h5_clade;
             }
           }
         });
@@ -564,7 +584,7 @@ define([
           });
           console.log('createDataMap() self.featureData', self.featureData);
           console.log('createDataMap() self.featureData genomeList ', genomeList);
-          var q = 'in(genome_id,(' + genomeList.join(',') + '))&select(genome_id,genome_name,genbank_accessions,species,strain,geographic_group,isolation_country,host_group,host_common_name,collection_year,subtype,lineage,clade)&limit(25000)';
+          var q = 'in(genome_id,(' + genomeList.join(',') + '))&select(genome_id,genome_name,genbank_accessions,species,strain,geographic_group,isolation_country,host_group,host_common_name,collection_year,subtype,lineage,clade,h1_clade_global,h1_clade_us,h3_clade,h5_clade)&limit(25000)';
           console.log('createDataMap() before getGenomeData, q =', q );
 
           when(xhr.post(PathJoin(window.App.dataAPI, 'genome'), {
@@ -597,7 +617,11 @@ define([
                 collection_year: genome.collection_year,
                 subtype: genome.subtype,
                 lineage: genome.lineage,
-                clade: genome.clade
+                clade: genome.clade,
+                h1_clade_global: genome.h1_clade_global,
+                h1_clade_us: genome.h1_clade_us,
+                h3_clade: genome.h3_clade,
+                h5_clade: genome.h5_clade
               };
             });
             console.log('createDataMap() feature self.genomeData', self.genomeData);
@@ -633,7 +657,7 @@ define([
             genome_ids.push(myid[1]) });
         }
         console.log('createDataMap() genome_ids=', genome_ids);
-        var q = 'in(genome_id,(' + genome_ids.join(',') + '))&select(genome_id,genome_name,genbank_accessions,species,strain,geographic_group,isolation_country,host_group,host_common_name,collection_year,subtype,lineage,clade)&limit(25000)';
+        var q = 'in(genome_id,(' + genome_ids.join(',') + '))&select(genome_id,genome_name,genbank_accessions,species,strain,geographic_group,isolation_country,host_group,host_common_name,collection_year,subtype,lineage,clade,h1_clade_global,h1_clade_us,h3_clade,h5_clade)&limit(25000)';
         console.log('createDataMap() q =', q);
 
         var genomes = when(xhr.post(PathJoin(window.App.dataAPI, 'genome'), {
@@ -681,7 +705,11 @@ define([
               collection_year: genome.collection_year,
               subtype: genome.subtype,
               lineage: genome.lineage,
-              clade: genome.clade
+              clade: genome.clade,
+              h1_clade_global: genome.h1_clade_global,
+              h1_clade_us: genome.h1_clade_us,
+              h3_clade: genome.h3_clade,
+              h5_clade: genome.h5_clade
             };
             self.dataMap[genome.genome_id] = {
               seq_id: seqIdIndex,
@@ -697,7 +725,11 @@ define([
               collection_year: genome.collection_year,
               subtype: genome.subtype,
               lineage: genome.lineage,
-              clade: genome.clade
+              clade: genome.clade,
+              h1_clade_global: genome.h1_clade_global,
+              h1_clade_us: genome.h1_clade_us,
+              h3_clade: genome.h3_clade,
+              h5_clade: genome.h5_clade
             };
             return {
               seq_id: seqIdIndex,
@@ -713,7 +745,11 @@ define([
               collection_year: genome.collection_year,
               subtype: genome.subtype,
               lineage: genome.lineage,
-              clade: genome.clade
+              clade: genome.clade,
+              h1_clade_global: genome.h1_clade_global,
+              h1_clade_us: genome.h1_clade_us,
+              h3_clade: genome.h3_clade,
+              h5_clade: genome.h5_clade
             };
           });
           console.log('createDataMap() res genome self.genomeData', self.genomeData);
@@ -798,6 +834,20 @@ define([
       });
       // console.log('in generatePathLinks() out', out);
       return out.join('');
+    },
+
+    shortenLabel: function (label) {
+      var maxLabelLength = 50;
+      var shortLabel = label;
+
+      for (const key in label) {
+        if (label[key].length > maxLabelLength) {
+          shortLabel[key] = label[key].substring(0, maxLabelLength / 2) + '...' +  shortLabel[key].slice( -1 * (maxLabelLength / 2));
+          console.log('shortenLabel() shortLabel[key] = ', shortLabel[key]);
+        }
+      }
+      console.log('shortenLabel() shortLabel = ', shortLabel);
+      return shortLabel;
     },
 
     render: function () {
@@ -901,47 +951,58 @@ define([
       console.log('in render, alt labels: this.alt_labels', this.alt_labels);
       console.log('in render, alt labels: this.alt_labels.genome_name', this.alt_labels.genome_name);
 
-      this.tree.addLabels(this.alt_labels.genome_name, 'Genome Name');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.genome_name), 'Genome Name');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Genome Name">Genome Name</div>');
 
-      this.tree.addLabels(this.alt_labels.gene_id, 'Gene ID');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.gene_id), 'Gene ID');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Gene ID">Gene ID</div>');
 
-      this.tree.addLabels(this.alt_labels.genbank_accessions, 'Accession');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.genbank_accessions), 'Accession');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Accession">Accession</div>');
 
-      this.tree.addLabels(this.alt_labels.species, 'Species');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.species), 'Species');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Species">Species</div>');
 
-      this.tree.addLabels(this.alt_labels.strain, 'Strain');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.strain), 'Strain');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Strain">Strain</div>');
 
-      this.tree.addLabels(this.alt_labels.geographic_group, 'Geographic Group');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.geographic_group), 'Geographic Group');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Geographic Group">Geographic Group</div>');
 
-      this.tree.addLabels(this.alt_labels.isolation_country, 'Isolation Country');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.isolation_country), 'Isolation Country');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Isolation Country">Isolation Country</div>');
 
-      this.tree.addLabels(this.alt_labels.host_group, 'Host Group');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.host_group), 'Host Group');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Host Group">Host Group</div>');
 
-      this.tree.addLabels(this.alt_labels.host_common_name, 'Host Common Name');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.host_common_name), 'Host Common Name');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Host Common Name">Host Common Name</div>');
 
-      this.tree.addLabels(this.alt_labels.collection_year, 'Collection Year');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.collection_year), 'Collection Year');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Collection Year">Collection Year</div>');
 
-      this.tree.addLabels(this.alt_labels.subtype, 'Subtype');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.subtype), 'Subtype');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Subtype">Subtype</div>');
 
-      this.tree.addLabels(this.alt_labels.lineage, 'Lineage');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.lineage), 'Lineage');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Lineage">Lineage</div>');
 
-      this.tree.addLabels(this.alt_labels.clade, 'Clade');
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.clade), 'Clade');
       idMenuDivs.push('<div class="wsActionTooltip" rel="Clade">Clade</div>');
 
-      console.log('after adding labels this.tree ', this.tree);
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.h1_clade_global), 'H1 Clade Global');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="H1 Clade Global">H1 Clade Global</div>');
 
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.h1_clade_us), 'H1 Clade US');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="H1 Clade US">H1 Clade US</div>');
+
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.h3_clade), 'H3 Clade');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="H3 Clade">H3 Clade</div>');
+
+      this.tree.addLabels(this.shortenLabel(this.alt_labels.h5_clade), 'H5 Clade');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="H5 Clade">H5 Clade</div>');
+
+      console.log('after adding labels this.tree ', this.tree);
 
       idMenu.set('content', idMenuDivs.join(''));
 
