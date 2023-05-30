@@ -531,6 +531,7 @@ define([
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
+          this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != newGenomeIds);
         }));
         this.increaseGenome('fasta', newGenomeIds);
         this.sequenceSource = 'ws';
@@ -570,6 +571,7 @@ define([
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
+          this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != newGenomeIds)
         }));
         this.increaseGenome('fasta', newGenomeIds);
         this.sequenceSource = 'ws';
@@ -610,7 +612,7 @@ define([
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
-          // TODO: remove entry from this.fastaNamesAndTypes
+          this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != newGenomeIds);
         }));
         this.increaseGenome('feature_group', newGenomeIds);
         this.sequenceSource = 'feature_group';
@@ -880,7 +882,6 @@ define([
       seqcomp_values.gap_threshold = values.gap_threshold;
       seqcomp_values.sequences = this.fastaNamesAndTypes;
       seqcomp_values = this.checkBaseParameters(values, seqcomp_values);
-
       return seqcomp_values;
     },
 
