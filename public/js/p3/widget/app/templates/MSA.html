@@ -249,6 +249,58 @@
         </tr>
       </table>
       <div class="appRow">
+        <div class="appRowSegment" data-dojo-attach-point="strategy" style="margin: 0 0 0 0;">
+          <label class="largelabel">Strategy</label>
+          <div class="iconbox" style="margin-left:0px">
+            <i data-dojo-attach-point="strategyicon" class="fa icon-caret-down fa-1"></i>
+          </div>
+        </div>
+      </div>
+      <div class="appRow" data-dojo-attach-point="strategyrow" style="display: none">
+        <div class="appRowSegment" style="margin:0 0 0 0">
+          <input type="radio" id="${id}_strategy_auto" data-dojo-type="dijit/form/RadioButton"
+                 data-dojo-attach-point="strategy_auto" name="strategy_settings" value="auto"
+                 checked />
+          <label for="${id}_strategy_auto">Auto (FFT-NS-1, FFT-NS-2, FFT-NS-i or L-INS-i; depends on data size)</label>
+        </div>
+        <div class="appRow" style="margin:0 0 0 0">
+          <label class="paramlabel">Progressive methods</label>
+        </div>
+        <div class="appRow" style="margin:0 0 0 0">
+          <input type="radio" id="${id}_strategy_fftns1" data-dojo-type="dijit/form/RadioButton"
+                 data-dojo-attach-point="strategy_fftns1" name="strategy_settings" value="fftns1" />
+          <label for="${id}_strategy_fftns1">FFT-NS-1 (Very fast; recommended for >2,000 sequences; progressive method)</label>
+        </div>
+        <div class="appRow" style="margin:0 0 0 0">
+          <input type="radio" id="${id}_strategy_fftns2" data-dojo-type="dijit/form/RadioButton"
+                 data-dojo-attach-point="strategy_fftns2" name="strategy_settings" value="fftns2" />
+          <label for="${id}_strategy_fftns2">FFT-NS-2 (Fast; progressive method)</label>
+        </div>
+        <div class="appRow" style="margin:0 0 0 0">
+          <label class="paramlabel">Iterative refinement methods</label>
+        </div>
+        <div class="appRow" style="margin:0 0 0 0">
+          <input type="radio" id="${id}_strategy_fftnsi" data-dojo-type="dijit/form/RadioButton"
+                 data-dojo-attach-point="strategy_fftnsi" name="strategy_settings" value="fftnsi" />
+          <label for="${id}_strategy_fftnsi">FFT-NS-i (Slow; iterative refinement method)</label>
+        </div>
+        <div class="appRow" style="margin:0 0 0 0">
+          <input type="radio" id="${id}_strategy_einsi" data-dojo-type="dijit/form/RadioButton"
+                 data-dojo-attach-point="strategy_einsi" name="strategy_settings" value="einsi" />
+          <label for="${id}_strategy_einsi">E-INS-i (Very slow; recommended for <200 sequences with multiple conserved domains and long gaps; 2 iterative cycles only)</label>
+        </div>
+        <div class="appRow" style="margin:0 0 0 0">
+          <input type="radio" id="${id}_strategy_linsi" data-dojo-type="dijit/form/RadioButton"
+                 data-dojo-attach-point="strategy_linsi" name="strategy_settings" value="linsi" />
+          <label for="${id}_strategy_linsi">L-INS-i (Very slow; recommended for <200 sequences with one conserved domain and long gaps; 2 iterative cycles only)</label>
+        </div>
+        <div class="appRow" style="margin:0 0 0 0">
+          <input type="radio" id="${id}_strategy_ginsi" data-dojo-type="dijit/form/RadioButton"
+                 data-dojo-attach-point="strategy_ginsi" name="strategy_settings" value="ginsi" />
+          <label for="${id}_strategy_ginsi">G-INS-i (Very slow; recommended for <200 sequences with global homology; 2 iterative cycles only)</label>
+        </div>
+      </div>
+      <div class="appRow">
         <label class="paramlabel">Output Folder</label><br>
         <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path"
           required="true"

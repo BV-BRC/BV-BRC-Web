@@ -57,6 +57,21 @@ define([
       } catch (error) {
         console.error(error);
       }
+
+      this.strategyrow.turnedOn = (this.strategyrow.style.display != 'none');
+      on(this.strategy, 'click', lang.hitch(this, function () {
+        this.strategyrow.turnedOn = (this.strategyrow.style.display != 'none');
+        if (!this.strategyrow.turnedOn) {
+          this.strategyrow.turnedOn = true;
+          this.strategyrow.style.display = 'block';
+          this.strategyicon.className = 'fa icon-caret-left fa-1';
+        }
+        else {
+          this.strategyrow.turnedOn = false;
+          this.strategyrow.style.display = 'none';
+          this.strategyicon.className = 'fa icon-caret-down fa-1';
+        }
+      }));
     },
 
     onChangeStatus: function (start) {
@@ -342,6 +357,18 @@ define([
       this.genomegroup_message.innerHTML = '';
       this.genome_id_message.innerHTML = '';
       this.submitButton.set('disabled', true);
+
+      // Hide strategy options if muscle aligner selected
+      if (this.aligner.get('value') === 'Muscle' || this.aligned.checked == true) {
+        this.strategy.style.display = 'none';
+        this.strategyrow.style.display = 'none';
+      } else if (!(value && value.srcElement && value.srcElement.name && value.srcElement.name === 'strategy_settings')){
+        this.strategy.style.display = 'inline-block';
+        this.strategyrow.turnedOn = false;
+        this.strategyrow.style.display = 'none';
+        this.strategyicon.className = 'fa icon-caret-down fa-1';
+      }
+
       // console.log('def: ' + def);
       if (this.select_genomegroup.get('required') && this.select_genomegroup.searchBox.item && (this.input_genomegroup.checked == true) && (this.unaligned.checked == true)) {
         var ref_id = this.select_genome_id.get('value');
@@ -521,6 +548,9 @@ define([
       }
       if (fastaFiles.length > 0) {
         values.fasta_files = fastaFiles;
+      }
+      if (this.aligner.get('value') === 'Mafft') {
+        values.strategy = query("input[type=radio][name=strategy_settings]:checked")[0].value;
       }
       return values;
     },
