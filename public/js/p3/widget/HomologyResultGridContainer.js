@@ -73,11 +73,72 @@ define([
       // This is a hack / place holder for a real breadcrumb. Can't find the path parsing and linking function.
       if (state.path && this.containerActionBar) {
         this.containerActionBar.path = state.path;
-        this.containerActionBar.pathContainer.innerHTML = `<span class="wsBreadCrumb"><b class="perspective">${state.path}</b></span>`;
+        //this.containerActionBar.pathContainer.innerHTML = `<span class="wsBreadCrumb"><b class="perspective">${state.path}</b></span>`;
+        this.containerActionBar.pathContainer.innerHTML = this.generatePathLinks(state.path);
       }
       if (this.grid) {
         this.grid.set('state', state);
       }
+    },
+    generatePathLinks: function (path) {
+      console.log('in generatePathLinks() path', path);
+      var localStorage = window.localStorage;
+
+      // strip out /public/ of parts array
+      var parts = decodeURIComponent(path).replace(/\/+/g, '/').split('/');
+      console.log('in generatePathLinks() parts', parts);
+      console.log('in generatePathLinks() localStorage', localStorage);
+
+      if (parts[1] == 'public') {
+        parts.splice(1, 1);
+      }
+
+      if (parts[0] == '') {
+        parts.shift();
+      }
+
+      var out = ["<span class='wsBreadCrumb'>"];
+      var bp = ['workspace'];
+
+      var isPublic = path.replace(/\/+/g, '/').split('/')[1] == 'public';
+
+      console.log('in generatePathLinks() isPublic', isPublic);
+
+
+      // if viewing all public workspaces, just create header
+      if (path == '/public/') {
+        out.push('<i class="icon-globe"></i> <b class="perspective">Public Workspaces</b>');
+
+        // if viewing a specific public workspace, create bread crumbs with additional url params
+      } else if (isPublic) {
+        out.push('<i class="icon-globe"></i> ' +
+          '<a class="navigationLink perspective" href="/' + bp.join('/') + '/public">Public Workspaces</a>' +
+          ' <i class="icon-caret-right"></i> ');
+        bp.push('public', parts[0]);
+      }
+
+      parts.forEach(function (part, idx) {
+        if (idx == (parts.length - 1) && part.slice(0, 1) == '.') {
+          part = part.replace('.', '');
+        }
+
+        // don't create links for top level path of public path
+        if (isPublic && idx == 0) {
+          out.push('<b class="perspective">' + ((idx == 0) ? part.replace('@' + localStorage.getItem('realm'), '') : part) + '</b> / ');
+          return;
+        }
+
+        out.push("<a class='navigationLink' href='");
+        bp.push(idx == 0 ? part : encodeURIComponent(part));  // leave username decoded
+        out.push('/' + bp.join('/'));
+        if (idx == parts.length - 1) {
+          out.push("'>" + ((idx == 0) ? part.replace('@' + localStorage.getItem('realm'), '') : part) + '</a>');
+        } else {
+          out.push("'>" + ((idx == 0) ? part.replace('@' + localStorage.getItem('realm'), '') : part) + '</a> / ');
+        }
+      });
+      // console.log('in generatePathLinks() out', out);
+      return out.join('');
     },
     createFilterPanel: function (opts) {
       this.containerActionBar = this.filterPanel = new ContainerActionBar({
@@ -259,7 +320,7 @@ define([
           validTypes: ['*'],
           multiple: false,
           tooltip: 'Switch to Feature List View. Press and Hold for more options.',
-          validContainerTypes: ['sequence_data'],
+          validContainerTypes: ['feature_data'],
           pressAndHold: function (selection, button, opts, evt) {
             // console.log("PressAndHold");
             // console.log("Selection: ", selection, selection[0])

@@ -13,7 +13,7 @@ define([
     missingMessage: 'Taxonomy Name must be provided.',
     placeHolder: 'e.g. Bacillus cereus',
     searchAttr: 'taxon_name',
-    resultFields: ['taxon_name', 'taxon_id', 'taxon_rank', 'lineage_names'],
+    resultFields: ['taxon_name', 'taxon_id', 'taxon_rank', 'lineage_names', 'division'],
     rankAttrs: ['taxon_rank'],
     subStringAttrs: ['taxon_name'],
     promoteAttrs: ['taxon_name'],
@@ -105,7 +105,7 @@ define([
       return (!this.required || this.get('displayedValue') != "");
     }, */
     labelFunc: function (item, store) {
-      var label = '[' + item.taxon_rank + '] '  + item.taxon_name;
+      var label = '[' + item.taxon_rank + '] '  + item.taxon_name + ' (' + item.division +  ')';
       return label;
     }
 
