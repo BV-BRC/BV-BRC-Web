@@ -1115,23 +1115,39 @@ define([
         console.log('browserHeader selection ', selection);
         console.log('browserHeader container ', container);
 
+        
         var labelSearch = 'false';
         var idType = 'genome_id';
         var labelType = 'genome_name';
         var fileType = 'phyloxml';
         var path;
+        var app = selection[0].autoMeta.app.id;
+        // var output_name = selection[0].autoMeta.parameters.output_file;
+        // var output_path = selection[0].autoMeta.parameters.output_path;
+        if (app === 'CodonTree') {
+          // path = output_path + '/' + output_name + '_tree.phyloxml';
+          // fileType = 'phyloxml';
+          selection[0].autoMeta.output_files.every(lang.hitch(this, function (file_data) {
+            var gt_file = file_data[0].split('.');
+            if (gt_file[gt_file.length - 1] === 'phyloxml') {
+              path = gt_file.join('.');
+              fileType = 'phyloxml';
+              return false;
+            }
+            return true;
+          }));
+        } else { // GeneTree
+          selection[0].autoMeta.output_files.every(lang.hitch(this, function (file_data) {
+            var gt_file = file_data[0].split('.');
+            if (gt_file[gt_file.length - 1] === 'nwk') {
+              path = gt_file.join('.');
+              fileType = 'nwk';
+              return false;
+            }
+            return true;
+          }));
+        }
 
-        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
-          var gt_file = file_data[0].split('.');
-          if (gt_file[gt_file.length - 1] === 'xml' || gt_file[gt_file.length - 1] === 'phyloxml') {
-            path = gt_file.join('.');
-            fileType = 'phyloxml';
-          }
-          else if (gt_file[gt_file.length - 1] === 'nwk') {
-            path = gt_file.join('.');
-            fileType = 'nwk';
-          }
-        }));
         console.log('browserHeader path ', path);
 
         if (path) {
