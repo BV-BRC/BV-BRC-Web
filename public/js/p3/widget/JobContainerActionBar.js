@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', './ActionBar', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/on',
   'dijit/form/Select', 'dojo/topic', 'dojo/query', '../JobManager',
-  'dojo/dom-class', './formatter', '../util/getTime'
+  'dojo/dom-class', './formatter', '../util/getTime', 'dijit/form/TextBox'
 ], function (
   declare, ActionBar, domConstruct, domStyle, on,
   Select, Topic, query, JobManager,
-  domClass, formatter, getTime
+  domClass, formatter, getTime, Textbox
 ) {
   return declare([ActionBar], {
     path: null,
@@ -63,6 +63,8 @@ define([
           'float': 'right'
         }
       }, this.container);
+
+      this.setupKeywordSearch(options);
 
       var statusBtns = this.statusBtns = domConstruct.create('span', {
         'class': 'JobFilters',
@@ -276,6 +278,28 @@ define([
       apps.sort(function (a, b) { return (b.serviceLabel < a.serviceLabel) ? 1 : -1; });
 
       return apps;
+    },
+
+    setupKeywordSearch: function (options) {
+      var textBoxNode = domConstruct.create('span', {
+        style: {
+          'float': 'left',
+          margin: '0 1.0em 0 0'
+        }
+      }, options);
+      var keywordSearch = Textbox({
+        style: {
+          width: '200px',
+          margin: '0 1.0em 0 1.0em'
+        },
+        placeHolder: 'Filter by job output name',
+        onChange: function () {
+          var keywords = keywordSearch.value;
+          Topic.publish('/KeywordFilter', keywords);
+        },
+        intermediateChanges: true
+      });
+      keywordSearch.placeAt(textBoxNode);
     }
 
   });
