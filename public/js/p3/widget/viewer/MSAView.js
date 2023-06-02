@@ -287,7 +287,7 @@ define([
         if (this.nodeType == 'feature') {
           xhr.get(PathJoin(window.App.dataAPI, 'genome_feature', cur[0].feature_id), {
             headers: {
-              accept: 'application/json', 
+              accept: 'application/json',
               'X-Requested-With': null,
               Authorization: (window.App.authorizationToken || '')
             },
@@ -490,11 +490,11 @@ define([
         this.containerType = 'feature_data';
         var fetchedIds = when(xhr.post(PathJoin(window.App.dataAPI, 'genome_feature'), {
           headers: {
-              accept: 'application/json',
-              'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
-            },
-            handleAs: 'json',
+            accept: 'application/json',
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
+          },
+          handleAs: 'json',
           // headers: this.headers,
           data: 'or(in(patric_id,(' +  pIDs.join(',') + ')),in(feature_id,(' + pIDs.join(',') + ')))&select(feature_id,patric_id,genome_id,genome_name,product)&limit(1000)'
         }), function (response) {
@@ -603,11 +603,11 @@ define([
         // console.log('q =', q);
 
         var genomes = when(xhr.post(PathJoin(window.App.dataAPI, 'genome'), {
-            headers: {
-              accept: 'application/json',
-              'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
-            },
+          headers: {
+            accept: 'application/json',
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
+          },
           handleAs: 'json',
           data: q
         }), function (res) {
