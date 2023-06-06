@@ -5,7 +5,7 @@ define([
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby',
-  'dojox/xml/parser', 'dojo/request'
+  'dojox/xml/parser', 'dojo/request', '../../DataAPI'
 ], function (
   declare, WidgetBase, Topic, on,
   domClass,
@@ -13,7 +13,7 @@ define([
   Deferred, aspect, lang, domReady, NumberTextBox,
   query, dom, popup, Tooltip, Dialog, TooltipDialog,
   children, WorkspaceManager, Memory, Standby,
-  xmlParser, xhr
+  xmlParser, xhr, DataAPI
 ) {
   return declare([AppBase], {
     baseClass: 'App Fastq',
@@ -760,19 +760,24 @@ define([
       var rerun_fields = service_fields.split('=');
       var rerun_key;
       if (rerun_fields.length > 1) {
-        rerun_key = rerun_fields[1];
-        var sessionStorage = window.sessionStorage;
-        if (sessionStorage.hasOwnProperty(rerun_key)) {
-          var param_dict = { 'output_folder': 'output_path', 'target_genome_id': 'reference_genome_id' };
-          var widget_map = { 'reference_genome_id': 'genome_nameWidget' };
-          param_dict['widget_map'] = widget_map;
-          var job_data = this.formatRerunJson(JSON.parse(sessionStorage.getItem(rerun_key)));
-          this.checkConditionsFormFill(job_data);
-          AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-          AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
-          // TODO: service specific items
+        try {
+          rerun_key = rerun_fields[1];
+          var sessionStorage = window.sessionStorage;
+          if (sessionStorage.hasOwnProperty(rerun_key)) {
+            var param_dict = { 'output_folder': 'output_path' };
+            var widget_map = { 'reference_genome_id': 'genome_nameWidget' };
+            param_dict['widget_map'] = widget_map;
+            var job_data = this.formatRerunJson(JSON.parse(sessionStorage.getItem(rerun_key)));
+            this.checkConditionsFormFill(job_data);
+            AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+            AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+            this.addJobParams(job_data);
+            this.form_flag = true;
+          }
+        } catch (error) {
+          console.log('Error during intakeRerunForm: ', error);
+        } finally {
           sessionStorage.removeItem(rerun_key);
-          this.form_flag = true;
         }
       }
     },
@@ -791,6 +796,16 @@ define([
         job_data.sra_libs = job_data.srr_libs;
       }
       return job_data;
+    },
+
+    addJobParams: function (job_data) {
+      if (job_data['recipe'].includes('Align')) {
+        var query = 'eq(genome_id,' + job_data['reference_genome_id'] + ')';
+        DataAPI.queryGenomes(query).then(lang.hitch(this, function (res) {
+          var genome = res.items[0];
+          this.genome_nameWidget.set('value', genome.genome_id);
+        }));
+      }
     },
 
     checkConditionsFormFill: function (job_data) {

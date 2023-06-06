@@ -403,6 +403,9 @@ define([
         name: 'Service',
         text: 'app'
       }, {
+        name: 'Application',
+        text: 'application_name'
+      },{
         name: 'Job ID',
         text: 'id'
       }, {
@@ -536,7 +539,7 @@ define([
         text: 'unique_species'
       }, {
         name: 'Strains',
-        text: 'unique_strain'
+        text: 'strains_count'
       }, {
         name: 'Genomes / Segments',
         text: 'count'
@@ -1412,9 +1415,14 @@ define([
         text: 'release_date',
         type: 'date'
       }, {
+        name: 'File Path',
+        text: 'file_path',
+        link: 'https://www.bv-brc.org/structure/'
+      }, {
         name: 'Text',
         text: 'text',
-      }];
+      }
+    ];
 
       var div = domConstruct.create('div');
       displayHeader(div, item.pdb_id, 'fa icon-contigs fa-2x', '/view/Genome/' + item.genome_id, options);
@@ -3057,6 +3065,10 @@ define([
           text: 'h1_clade_us',
           editable: true
         }, {
+          name: 'H3 Clade',
+          text: 'h3_clade',
+          editable: true
+        }, {
           name: 'H5 Clade',
           text: 'h5_clade',
           editable: true
@@ -3314,6 +3326,10 @@ define([
         }, {
           name: 'Isolation Country',
           text: 'isolation_country',
+          editable: true
+        }, {
+          name: 'State/Province',
+          text: 'state_province',
           editable: true
         }, {
           name: 'Geographic Group',

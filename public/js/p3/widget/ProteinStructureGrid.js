@@ -46,6 +46,7 @@ define([
       institution: { label: 'Institution', field: 'institution', hidden: true },
       authors: { label: 'Authors', field: 'authors', hidden: true },
       release_date: { label: 'Release Date', field: 'release_date', hidden: false },
+      file_path: { label: 'File Path', field: 'file_path', hidden: true },
     },
     startup: function () {
       var _self = this;

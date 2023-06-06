@@ -11,6 +11,7 @@ define([
   './ProteinStructureState',
   '../../WorkspaceManager',
   'dojo/_base/Deferred',
+  'dojo/request',
   'molstar/mol-bvbrc/index'
 ], function (
   declare,
@@ -19,7 +20,8 @@ define([
   kernel,
   ProteinStructureState,
   WS,
-  Deferred
+  Deferred,
+  xhr
 ) {
   return declare([WidgetBase], {
     id: 'defaultId',
@@ -45,6 +47,8 @@ define([
       }
     },
     isMolstarInitialized: false,
+    existingPositions: new Map(),
+    structureServer: 'https://www.bv-brc.org/structure',
     constructor: function (opts) {
       // console.log('ProteinStructure.constructor');
       opts = opts || {};
@@ -59,29 +63,25 @@ define([
           await this.molstar.init('app', this.molstarSpecs);
           this.isMolstarInitialized = true;
         }
-        newValue.watch('workspacePath', lang.hitch(this, this.loadFromWorkspace));
-        newValue.watch('accession', lang.hitch(this, this.onAccessionChange));
-        newValue.watch('displayType', lang.hitch(this, this.updateDisplay));
         newValue.watch('highlights', lang.hitch(this, function (attr, oldValue, newValue) {
           this.updateDisplay();
         }));
-        if (oldValue.get('accession', {}).pdb_id != newValue.get('accession', {}).pdb_id) {
+        const oldAccession = oldValue.get('accession', []);
+        const newAccession = newValue.get('accession', []);
+        const isMultiple = Array.isArray(newAccession);
+        if (isMultiple && (oldAccession.length != newAccession.length)) {
           this.updateAccession(newValue.get('accession'));
-        } else if (oldValue.get('workspacePath') != newValue.get('workspacePath')) {
+        } else if (oldAccession.pdb_id != newAccession.pdb_id) {{
+          this.updateAccession([newValue.get('accession')]);
+        }} else if (oldValue.get('workspacePath') != newValue.get('workspacePath')) {
           this.loadFromWorkspace(newValue.get('workspacePath'));
         }
       }));
     },
     updateAccession: function (accessionInfo) {
       this.highlighters = [];
-      this.loadAccession(accessionInfo.pdb_id);
+      this.loadAccession(accessionInfo);
       this.updateDisplay();
-    },
-    onAccessionChange: function (attr, oldValue, newValue) {
-      // console.log('JMOL accession changed to ' + JSON.stringify(newValue));
-      if (newValue && newValue.pdb_id &&  (oldValue.pdb_id != newValue.pdb_id)) {
-        this.updateAccession(newValue);
-      }
     },
     updateDisplay: function () {
       const highlights = this.get('viewState').get('highlights');
@@ -100,8 +100,23 @@ define([
             ligandColor = this.colorToMolStarColor(color);
           }
         } else {
-          for (let [pos, color] of highlightPositions) {
-            positions.push({ seq: pos, color: this.colorToMolStarColor(color) });
+          const index = highlightPositions.get('index');
+          const coordinates = highlightPositions.get('coordinates');
+          if (coordinates && typeof index !== 'undefined') {
+            let featurePositions = [];
+            for (let [pos, color] of coordinates) {
+              featurePositions.push({seq: pos, index: index, color: this.colorToMolStarColor(color)});
+            }
+
+            const highlightIndex = highlightName + index;
+            this.existingPositions.set(highlightIndex, featurePositions);
+            for (let key of this.existingPositions.keys()) {
+              if (key.includes(highlightName) && key !== highlightIndex) {
+                featurePositions = featurePositions.concat(this.existingPositions.get(key));
+              }
+            }
+
+            positions = positions.concat(featurePositions);
           }
         }
       }
@@ -119,18 +134,70 @@ define([
     colorToMolStarColor: function (hexColor) {
       return parseInt(hexColor.replace('#', '0x'), 16);
     },
-    // TODO this assumes loading from PDB
-    loadAccession: function (accession) {
-      if (accession) {
-        const urlEbi = 'https://www.ebi.ac.uk/pdbe/static/entry/' + accession.toLowerCase() + '_updated.cif';
-        this.molstar.load({ url: urlEbi, displaySpikeSequence: true });
+    loadAccession: async function (accessions) {
+      if (accessions) {
+        let selections = [];
+        // accessionInfo.map(a => a.pdb_id)
+        for (let accession of accessions) {
+          // Check if it is a predicted structure and has valid file path
+          if (accession.method.includes('Predicted') && accession.file_path) {
+            // Create api path for the content
+            const path = `${this.structureServer}/${accession.file_path}`;
+            const response = await Promise.all(
+              [xhr.get(path).then(res => res).catch(e => e)]
+            );
+
+            const responseContent = response[0];
+            if (accession.file_path.includes('alphafold')) {
+              // Check if alphafold file exists, otherwise use alphafold database
+              if (!(responseContent instanceof Error)) {
+                const url = path.endsWith('.gz') ? path.slice(0, -3) : path;
+                selections.push({
+                  value: url,
+                  source: 'url',
+                  label: `${accession.pdb_id} | ${accession.title}`
+                });
+              } else {
+                selections.push({
+                  value: accession.uniprotkb_accession[0],
+                  source: 'alphafold'
+                });
+              }
+            } else  {
+              if (!(responseContent instanceof Error)) {
+                selections.push({
+                  value: path,
+                  source: 'url',
+                  format: 'pdb',
+                  label: `${accession.pdb_id} | ${accession.title}`
+                });
+              } else {
+                selections.push({
+                  value: accession.pdb_id,
+                  source: 'pdb'
+                });
+              }
+            }
+          } else {
+            selections.push({
+              value: accession.pdb_id,
+              source: 'pdb'
+            });
+          }
+        }
+
+        this.molstar.load({ selections, displaySpikeSequence: true });
       }
     },
     loadFromWorkspace: function (workspacePath) {
       let _self = this;
       Deferred.when(WS.getDownloadUrls(workspacePath), function (url) {
         if (url && url.length > 0 && url[0] !== null) {
-          _self.molstar.load({url: url[0], format: 'pdb', displaySpikeSequence: true});
+          const fileName = url[0].match(/\/([^\/]+)\/?$/)[1];
+          _self.molstar.load({
+            selections: [{value: url[0], source: 'url', format: 'pdb', label: fileName}],
+            displaySpikeSequence: true
+          });
         }
       });
     }
