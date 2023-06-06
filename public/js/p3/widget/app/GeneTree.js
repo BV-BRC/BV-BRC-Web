@@ -650,7 +650,8 @@ define([
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         handle.remove();
-        // TODO: remove entry from this.fastaNamesAndTypes
+        // remove entry from this.fastaNamesAndTypes
+        this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(obj => obj.filename !== lrec[this.genomeGroupToAttachPt]);
       }));
       this.increaseGenome('feature_group', newGenomeIds);
       this.sequenceSource = 'feature_group';
@@ -761,7 +762,8 @@ define([
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
-          // TODO: remove entry from this.fastaNamesAndTypes
+          // remove entry from this.fastaNamesAndTypes
+          this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(obj => obj.filename !== lrec[this.genomeGroupToAttachPt]);
         }));
         this.increaseGenome('genome_group', genome_id_list);
         this.sequenceSource = 'genome_group';
@@ -811,7 +813,8 @@ define([
               domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
             }
             handle.remove();
-            // TODO: remove entry from this.fastaNamesAndTypes
+            // remove entry from this.fastaNamesAndTypes
+            this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(obj => obj.filename !== lrec[this.genomeGroupToAttachPt]);
           }));
           this.increaseGenome('genome_group', genome_id_list);
           this.sequenceSource = 'genome_group';
@@ -882,6 +885,9 @@ define([
       seqcomp_values.gap_threshold = values.gap_threshold;
       seqcomp_values.sequences = this.fastaNamesAndTypes;
       seqcomp_values = this.checkBaseParameters(values, seqcomp_values);
+
+      this.resetSubmit();
+
       return seqcomp_values;
     },
 
@@ -1085,6 +1091,26 @@ define([
         display_name = name.substr(0, (maxName / 2) - 2) + '...' + name.substr((name.length - (maxName / 2)) + 2);
       }
       return display_name;
+    },
+
+    resetSubmit: function () {
+      this.fastaNamesAndTypes = [];
+      this.fastaNamesAndTypes = [];
+      for (var x = this.genomeTable.rows.length - 1; x >= 0; x--) {
+        this.genomeTable.deleteRow(x);
+      }
+      this.emptyTable(this.genomeTable, this.startingRows);
+      this.numgenomes.startup();
+    },
+
+    reset: function () {
+      this.inherited(arguments);
+      this.fastaNamesAndTypes = [];
+      for (var x = this.genomeTable.rows.length - 1; x >= 0; x--) {
+        this.genomeTable.deleteRow(x);
+      }
+      this.emptyTable(this.genomeTable, this.startingRows);
+      this.numgenomes.startup();
     }
 
   });
