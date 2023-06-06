@@ -1,4 +1,3 @@
-//  make changes to info icons docroot/quick_references/services/taxonomic_classification_service.md
 
 define([
   'dojo/_base/declare', 'dojo/_base/array', 'dojo/topic', 'dijit/_WidgetBase', 'dojo/_base/lang', 'dojo/_base/Deferred',
@@ -35,7 +34,11 @@ define([
       this.addedLibs = { counter: 0 };
       this.pairToAttachPt = ['read1', 'read2'];
       this.singleToAttachPt = ['single_end_libsWidget'];
-      this.libraryStore = new Memory({ data: [], idProperty: '_id' });
+      // this.libraryStore = new Memory({ data: [], idProperty: '_id', });
+      this.libraryStore = new Memory({ data: [], idProperty: '_id', sample_id:[] });
+      // this.srrSampleIDAttachPt = { srr_accession: null, srr_sample_id: ['sample_id'] };
+      this.srrSampleIDAttachPt = ['srr_accession_validation_message'];
+
     },
 
     startup: function () {
@@ -70,10 +73,6 @@ define([
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
-        var localStorage = window.localStorage;
-        if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
-          localStorage.removeItem('bvbrc_rerun_job');
-        }
       }
     },
 
@@ -92,6 +91,29 @@ define([
       });
       values = this.checkBaseParameters(values);
       return values;
+    },
+
+    checkForInvalidChars: function (value) {
+      var valid = true;
+      var invalid_chars = ['-', ':', '@', '"', "'", ';', '[', ']', '{', '}', '|', '`'];
+      invalid_chars.forEach(lang.hitch(this, function (char) {
+        if (value.includes(char)) {
+          valid = false;
+        }
+      }));
+      if (!valid) {
+        var msg = 'Remove invalid characters from name: - : @ " \' ; [ ] { } | `';
+        new Dialog({ title: 'Notice', content: msg }).show();
+      }
+      return valid;
+    },
+
+    replaceInvalidChars: function (value) {
+      var invalid_chars = ['-', ':', '@', '"', "'", ';', '[', ']', '{', '}', '|', '`'];
+      invalid_chars.forEach(lang.hitch(this, function (char) {
+        value = value.replaceAll(char, '_');
+      }));
+      return value;
     },
 
     ingestAttachPoints: function (input_pts, target, req) {
@@ -152,6 +174,7 @@ define([
       }, this);
       return (success);
     },
+
 
     makeLibraryName: function (mode) {
       switch (mode) {
@@ -233,15 +256,29 @@ define([
       }
     },
 
+    setSrrId: function () {
+      var srr_user_input = this.srr_accession.get('displayedValue');
+      this.srr_sample_id.set('value', this.replaceInvalidChars(srr_user_input.split('.')[0]));
+    },
+
+    setSingleId: function () {
+      var read_name = this.single_end_libsWidget.searchBox.get('displayedValue');
+      console.log(read_name)
+      this.single_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
+    },
+
     onAddSingle: function () {
-      // console.log("Create New Row", domConstruct);
       var lrec = { _type: 'single' };
       var chkPassed = this.ingestAttachPoints(this.singleToAttachPt, lrec);
+      if (chkPassed) {
+        chkPassed = this.checkForInvalidChars(this.single_sample_id.getValue());
+      }
       if (chkPassed) {
         var infoLabels = {
           platform: { label: 'Platform', value: 1 },
           read: { label: 'Read File', value: 1 }
         };
+        lrec.sample_id = this.single_sample_id.get('displayedValue');
         this.addLibraryRow(lrec, infoLabels, 'singledata');
       }
     },
@@ -264,11 +301,20 @@ define([
       }, this);
     },
 
+    setPairedId: function () {
+      var read_name = this.read1.searchBox.get('displayedValue');
+      read_name = read_name.replace(/(R1|_R1_|r1|_r1_|r1_|_r1|R1_|_R1)/g, '');
+      this.paired_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
+    },
+
     onAddPair: function () {
       if (this.read1.searchBox.get('value') == this.read2.searchBox.get('value')) {
         var msg = 'READ FILE 1 and READ FILE 2 cannot be the same.';
         new Dialog({ title: 'Notice', content: msg }).show();
         return;
+      }
+      if (chkPassed) {
+        chkPassed = this.checkForInvalidChars(this.paired_sample_id.getValue());
       }
       var lrec = { _type: 'paired' };
       var pairToIngest = this.pairToAttachPt;
@@ -279,6 +325,7 @@ define([
           read1: { label: 'Read1', value: 1 },
           read2: { label: 'Read2', value: 1 }
         };
+        lrec.sample_id = this.paired_sample_id.get('displayedValue');
         this.addLibraryRow(lrec, infoLabels, 'pairdata');
       }
     },
@@ -378,6 +425,7 @@ define([
       var pairedList = this.libraryStore.query({ _type: 'paired' });
       var singleList = this.libraryStore.query({ _type: 'single' });
       var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
+      console.log(srrAccessionList)
 
       this.paired_end_libs = pairedList.map(function (lrec) {
         var rrec = {};
@@ -404,13 +452,20 @@ define([
       if (this.single_end_libs.length) {
         values.single_end_libs = this.single_end_libs;
       }
-
+      
       this.sra_libs = srrAccessionList.map(function (lrec) {
-        return lrec._id;
+        var rrec = {};
+        Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
+          if (!attr.startsWith('_')) {
+            rrec[attr] = lrec[attr];
+          }
+        }));
+        return rrec;
       });
       if (this.sra_libs.length) {
         values.srr_ids = this.sra_libs;
       }
+
       // analysis type
       this.strategy = values.analysis_type;
       // host genome
@@ -419,7 +474,7 @@ define([
       this.output_folder = values.output_path;
       // output_name
       this.output_name = values.output_file;
-
+  
       return values;
     },
 
