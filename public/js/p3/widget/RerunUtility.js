@@ -1,6 +1,6 @@
 define([], function () {
   return {
-
+    // TODO: add modal
     rerun: function (job_params, service_id, window, Topic) {
       // make sure service_id variable is present for every service
       var sessionStorage = window.sessionStorage;
@@ -42,6 +42,9 @@ define([], function () {
         'TnSeq': 'Tnseq',
         'Variation': 'Variation'
       };
+
+      // TODO: addin modal parameter
+
       if (service_id === 'GeneTree') {
         var job_data = JSON.parse(job_params);
         var tree_type = job_data['tree_type'];

@@ -3,13 +3,13 @@ define([
   'dijit/layout/BorderContainer', 'dijit/layout/StackContainer', 'dijit/layout/TabController', 'dijit/layout/ContentPane',
   'dijit/form/RadioButton', 'dijit/form/Textarea', 'dijit/form/TextBox', 'dijit/form/Button', 'dijit/form/Select', 'dojo/_base/Deferred',
   'dojox/widget/Standby', '../store/ProteinFamiliesServiceMemoryStore', './ProteinFamiliesServiceGridContainer', './ProteinFamiliesServiceFilterGrid',
-  './ProteinFamiliesServiceHeatmapContainer', '../WorkspaceManager', '../DataAPI'
+  './ProteinFamiliesServiceHeatmapContainer', '../WorkspaceManager', '../DataAPI', './WorkspaceObjectSelector'
 ], function (
   declare, lang, on, Topic, domConstruct,
   BorderContainer, TabContainer, StackController, ContentPane,
   RadioButton, TextArea, TextBox, Button, Select, Deferred,
   Standby, MainMemoryStore, MainGridContainer, FilterGrid,
-  HeatmapContainer, WorkspaceManager, DataAPI
+  HeatmapContainer, WorkspaceManager, DataAPI, WorkspaceObjectSelector
 ) {
 
   return declare([BorderContainer], {
@@ -321,6 +321,66 @@ define([
 
       filterPanel.addChild(familyTypePanel);
 
+      // feature group selector
+      var featureGroupPanel = new ContentPane({
+        region: 'top'
+      });
+      var fg_label = domConstruct.create('label', { innerHTML: 'Filter by Feature Group' });
+      domConstruct.place(fg_label, featureGroupPanel.containerNode, 'last');
+      var feature_group_selector = this.fg_selector = new WorkspaceObjectSelector({
+        style: 'width: 280px',
+        type: ['feature_group'],
+        allowUpload: false,
+        multi: false
+      });
+      var fg_dom = domConstruct.create('div');
+      feature_group_selector.placeAt(fg_dom);
+      var filter_btn_fg = new Button({
+        label: 'Filter',
+        onClick: lang.hitch(this, function (evt) {
+          Topic.publish(this.topicId, 'showLoadingMask', this.pfState);
+          var feature_group = this.pfState.feature_group = this.fg_selector.get('value');
+          WorkspaceManager.getObject(feature_group).then(lang.hitch(this, function (res) {
+            var obj = JSON.parse(res.data);
+            var feature_ids = obj.id_list.feature_id;
+            console.log(feature_ids);
+            var query = `in(feature_id,(${(feature_ids.map(encodeURIComponent).join(','))}))`;
+            console.log('query = ', query);
+            DataAPI.queryGenomeFeatures(query).then(lang.hitch(this, function (res2) {
+              Topic.publish(this.topicId, 'hideLoadingMask', this.pfState);
+              this.pfState.feature_group_data = res2.items;
+              Topic.publish(this.topicId, 'applyConditionFilter', this.pfState);
+            }), lang.hitch(this, function (err) {
+              this.pfState.feature_group = '';
+              this.pfState.feature_group_data = [];
+              console.log('error getting feature data: ', err);
+              Topic.publish(this.topicId, 'hideLoadingMask', this.pfState);
+            }));
+          }), lang.hitch(this, function (err) {
+            this.pfState.feature_group = '';
+            this.pfState.feature_group_data = [];
+            console.log('error getting feature ids from feature group: ', err);
+            Topic.publish(this.topicId, 'hideLoadingMask', this.pfState);
+          }));
+        })
+      });
+      var filter_dom = domConstruct.create('div');
+      filter_btn_fg.placeAt(filter_dom);
+      var clear_btn_fg = new Button({
+        label: 'Clear',
+        onClick: lang.hitch(this, function (evt) {
+          this.pfState.feature_group = '';
+          this.pfState.feature_group_data = [];
+          this.fg_selector.set('value', '');
+          Topic.publish(this.topicId, 'applyConditionFilter', this.pfState);
+        })
+      });
+      clear_btn_fg.placeAt(filter_dom);
+      domConstruct.place(fg_dom, featureGroupPanel.containerNode, 'last');
+      domConstruct.place(filter_dom, featureGroupPanel.containerNode, 'last');
+
+      filterPanel.addChild(featureGroupPanel);
+
       var filterGridDescriptor = new ContentPane({
         style: 'padding: 0',
         content: '<div class="pfFilterOptions"><div class="present"><b>Present</b> in all families</div><div class="absent"><b>Absent</b> from all families</div><div class="mixed"><b>Either/Mixed</b></div></div>'
@@ -489,7 +549,7 @@ define([
 
           this.pfState = lang.mixin(this.pfState, defaultFilterValue, filter);
           // console.log(this.pfState);
-          Topic.publish(this.topicId, 'applyConditionFilter', this.pfState); // TODO: FILTER PANEL STUFF, conditionFilter() in memory store
+          Topic.publish(this.topicId, 'applyConditionFilter', this.pfState);
         })
       });
       domConstruct.place(btn_submit.domNode, otherFilterPanel.containerNode, 'last');
