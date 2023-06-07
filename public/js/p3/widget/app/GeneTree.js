@@ -1039,6 +1039,7 @@ define([
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         handle.remove();
+        this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != newGenomeIds);
       }));
       this.increaseGenome('fasta', newGenomeIds);
       this.sequenceSource = 'ws';
@@ -1073,6 +1074,7 @@ define([
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         handle.remove();
+        this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != newGenomeIds);
       }));
       this.increaseGenome('fasta', newGenomeIds);
       this.sequenceSource = 'ws';
