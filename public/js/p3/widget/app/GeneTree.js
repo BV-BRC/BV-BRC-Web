@@ -531,7 +531,7 @@ define([
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
-          this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != newGenomeIds);
+          this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != lrec[this.fastaToAttachPt]);
         }));
         this.increaseGenome('fasta', newGenomeIds);
         this.sequenceSource = 'ws';
@@ -571,7 +571,7 @@ define([
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
-          this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != newGenomeIds)
+          this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != lrec[this.unalignedFastaToAttachPt])
         }));
         this.increaseGenome('fasta', newGenomeIds);
         this.sequenceSource = 'ws';
@@ -612,7 +612,7 @@ define([
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
-          this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != newGenomeIds);
+          this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != lrec[this.featureGroupToAttachPt]);
         }));
         this.increaseGenome('feature_group', newGenomeIds);
         this.sequenceSource = 'feature_group';
@@ -651,7 +651,7 @@ define([
         }
         handle.remove();
         // remove entry from this.fastaNamesAndTypes
-        this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(obj => obj.filename !== lrec[this.genomeGroupToAttachPt]);
+        this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(obj => obj.filename !== lrec[this.featureGroupToAttachPt]);
       }));
       this.increaseGenome('feature_group', newGenomeIds);
       this.sequenceSource = 'feature_group';
@@ -1039,7 +1039,7 @@ define([
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         handle.remove();
-        this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != newGenomeIds);
+        this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != lrec[this.fastaToAttachPt]);
       }));
       this.increaseGenome('fasta', newGenomeIds);
       this.sequenceSource = 'ws';
@@ -1074,7 +1074,7 @@ define([
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         handle.remove();
-        this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != newGenomeIds);
+        this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != lrec[this.unalignedFastaToAttachPt]);
       }));
       this.increaseGenome('fasta', newGenomeIds);
       this.sequenceSource = 'ws';
