@@ -30,6 +30,7 @@ define([
     lookaheadError: null,
     lookaheadGif: null,
     maxFastaText: 64000,
+    ignoreMaxFastaTextLimit: false,
     help_doc: null,
     activeUploads: [],
     // srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmax=1&db=sra&field=accn&term={0}&retmode=json',
@@ -830,7 +831,7 @@ define([
         message,
         trimFasta,
       };
-      if (fastaText.length > this.maxFastaText) {
+      if (!this.ignoreMaxFastaTextLimit && fastaText.length > this.maxFastaText) {
         reto.status = 'too_long';
         reto.message = 'The text input is too large. Save the data to a file.';
         return reto;
