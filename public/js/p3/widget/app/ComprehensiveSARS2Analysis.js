@@ -602,6 +602,7 @@ define([
 
     onPrimersChange: function (value) {
       var articOptions = [
+        { label: 'V5.3.2', value: 'V5.3.2' },
         { label: 'V4.1', value: 'V4.1' },
         { label: 'V4', value: 'V4' },
         { label: 'V3', value: 'V3' },
@@ -647,7 +648,7 @@ define([
       }
       else if (value === 'ARTIC') {
         this.primer_version.set('options', articOptions);
-        this.primer_version.set('value', 'V4.1');
+        this.primer_version.set('value', 'V5.3.2');
       }
       else {
         console.log('Invalid Selection');
