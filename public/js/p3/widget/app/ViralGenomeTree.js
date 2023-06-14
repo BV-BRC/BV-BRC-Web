@@ -109,7 +109,6 @@ define([
           var ntr = this.metadataTableBody.insertRow(-1);
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          // domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         handle.remove();
       }));
