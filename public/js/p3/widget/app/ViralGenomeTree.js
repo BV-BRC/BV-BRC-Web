@@ -109,7 +109,6 @@ define([
           var ntr = this.metadataTableBody.insertRow(-1);
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          // domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         handle.remove();
       }));
@@ -119,8 +118,8 @@ define([
     },
 
     startupMetadataTable: function () {
-      var default_metadata_fields = ['Genome ID', 'Genome Name', 'Species', 'Strain', 'Accession', 'Subtype', 'H5 Clade', 'H3 Clade'].reverse();
-      var default_metadata_values = ['genome_id', 'genome_name', 'species', 'strain', 'accession', 'subtype', 'h5_clade', 'h3_clade'].reverse();
+      var default_metadata_fields = ['Genome ID', 'Genome Name', 'Species', 'Strain', 'Accession', 'Subtype'].reverse();
+      var default_metadata_values = ['genome_id', 'genome_name', 'species', 'strain', 'accession', 'subtype'].reverse();
       this.metadata_count = 0;
       var default_index = 0;
       default_metadata_fields.forEach(lang.hitch(this, function (metfield) {
