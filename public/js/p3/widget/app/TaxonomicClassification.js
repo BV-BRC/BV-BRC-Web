@@ -463,7 +463,7 @@ define([
         return rrec;
       });
       if (this.sra_libs.length) {
-        values.srr_ids = this.sra_libs;
+        values.srr_libs = this.sra_libs;
       }
 
       // analysis type
