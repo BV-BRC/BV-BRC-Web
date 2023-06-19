@@ -56,6 +56,14 @@
                       <div style="width:85%;display:inline-block;" data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/GenomeNameSelector" name="comp_genome_id" maxHeight="200" required="false" data-dojo-attach-point="comp_genome_id"></div>
                       <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddGenome" class="fa icon-plus-circle fa-lg"></i></div>
                       <br> -->
+                      <label>Select genome group</label>
+                      <div name="genomeGroup_tooltip" id="genomeGroup_tooltip" data-dojo-attach-point="genomeGroup_tooltip" class="infobox iconbox infobutton tooltipinfo">
+                        <i class="fa icon-question-circle fa"></i>
+                      </div>
+                      <br>
+                      <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_genomegroup" required="false" data-dojo-attach-point="user_genomes_genomegroup" data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace for Comparison',missingMessage:'Genome group is optional.', placeHolder:'Optional'"></div>
+                      <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddGenomeGroup" class="fa icon-plus-circle fa-lg"></i></div>
+                      <br>
                       <label>Aligned fasta</label><br>
                       <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="sequences" required="false" data-dojo-attach-point="user_genomes_fasta" data-dojo-props="type:['aligned_dna_fasta'],multi:false,promptMessage:'Select or Upload aligned genome fasta file to your workspace',missingMessage:'User genome file is optional.', placeHolder:'Optional'"></div>
                       <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddFasta" class="fa icon-plus-circle fa-lg"></i>
@@ -69,14 +77,6 @@
                       <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="sequences" required="false" data-dojo-attach-point="user_genomes_featuregroup" data-dojo-props="type:['feature_group'],multi:false,promptMessage:'Select a feature group from your workspace for Comparison',missingMessage:'Feature group is optional.', placeHolder:'Optional'"></div>
                       <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddFeatureGroup" class="fa icon-plus-circle fa-lg"></i></div>
                       <br> -->
-                      <label>And/or select genome group</label>
-                      <div name="genomeGroup_tooltip" id="genomeGroup_tooltip" data-dojo-attach-point="genomeGroup_tooltip" class="infobox iconbox infobutton tooltipinfo">
-                        <i class="fa icon-question-circle fa"></i>
-                      </div>
-                      <br>
-                      <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_genomegroup" required="false" data-dojo-attach-point="user_genomes_genomegroup" data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace for Comparison',missingMessage:'Genome group is optional.', placeHolder:'Optional'"></div>
-                      <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddGenomeGroup" class="fa icon-plus-circle fa-lg"></i></div>
-                      <br>
                       <div class="warning" data-dojo-attach-point="genomegroup_message"></div>
                     </div>
                     <div class="appRow">
@@ -208,8 +208,8 @@
                     </div>
                   </td>
                   <td>
-                    
-                  </td> 
+
+                  </td>
                   <td rowspan="2">
                     <div>
                       <label class="paramlabel">Metadata Table:</label>
@@ -230,10 +230,16 @@
                         <option value="genome_id">Genome ID</option>
                         <option value="genome_name">Genome Name</option>
                         <option value="genome_length">Genome Length</option>
+                        <option value="genus">Genus</option>
+                        <option value="species">Species</option>
                         <option value="strain">Strain</option>
                         <option value="accession">Accession</option>
                         <option value="subtype">Subtype</option>
                         <option value="lineage">Lineage</option>
+                        <option value="h1_clade_global">H1 Clade Gobal</option>
+                        <option value="h1_clade_us">H1 Clade US</option>
+                        <option value="h3_clade">H3 Clade</option>
+                        <option value="h5_clade">H5 Clade</option>
                         <option value="host_group">Host Group</option>
                         <option value="host_common_name">Host Common Name</option>
                         <option value="collection_date">Collection Date</option>

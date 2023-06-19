@@ -76,6 +76,7 @@ define([
           if (this.context !== 'genome_overview') {
             domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'CodonTree', innerHTML: 'Bacterial Tree' }, service_div);
             domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'ViralTree', innerHTML: 'Viral Tree' }, service_div);
+            domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'ViralMSA', innerHTML: 'Viral MSA' }, service_div);
           }
           // TODO: fix genome distance?
           // domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'genome_distance', innerHTML: 'Similar Genome Finder' }, tData);
@@ -266,6 +267,44 @@ define([
             job_data['sequences'].push({ 'type': 'genome_group', 'filename': path });
           }));
           RerunUtility.rerun(JSON.stringify(job_data), 'GeneTree', window, Topic);
+        }
+      }
+      if (service === 'ViralMSA') {
+        var job_data;
+
+        if (this.context === 'grid_container') {
+          var genome_list = data.selection.map(x => x.genome_id);
+          this.saveTempGroup('genome', genome_list).then(lang.hitch(this, function (group_path) {
+            job_data = {
+              'input_status': 'unaligned',
+              'input_type': 'input_genomegroup',
+              'select_genomegroup': [group_path],
+              'ref_type': 'none',
+              'aligner': 'Mafft',
+              'fasta_keyboard_input': '',
+              'alphabet': 'dna',
+              'ref_string': ''
+            };
+            RerunUtility.rerun(JSON.stringify(job_data), 'MSA', window, Topic);
+          }), lang.hitch(this, function (err) {
+            this.loadingMask.hide();
+            console.log('error during temporary group creationg: exiting');
+            console.log(err);
+            return false;
+          }));
+        }
+        if (this.context === 'workspace') {
+          job_data = {
+            'input_status': 'unaligned',
+            'input_type': 'input_genomegroup',
+            'select_genomegroup': [data.selection[0].path],
+            'ref_type': 'none',
+            'aligner': 'Mafft',
+            'fasta_keyboard_input': '',
+            'alphabet': 'dna',
+            'ref_string': ''
+          };
+          RerunUtility.rerun(JSON.stringify(job_data), 'MSA', window, Topic);
         }
       }
       if (service === 'GeneTree') {

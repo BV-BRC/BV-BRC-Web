@@ -268,7 +268,7 @@ define([
                                 });
 
                                 // Perform the location check for the value after the first slash
-                            } else if (this.isStrainNameLocationValid(parts[1])) {
+                            } else if (!this.isStrainNameLocationValid(parts[1])) {
                                 this.validations.push({
                                     type: 'error',
                                     message: 'Strain Name: Location (' + parts[1] + ') in the strain name must be spelled out ' +
@@ -401,26 +401,26 @@ define([
                                 // validate to see if the final subtype has both H and N type, if not, then set warning
                                 const re = new RegExp('[Hh](1[0-5]|[1-9])[Nn][1-9]');
                                 const match = re.exec(userSubtype);
-                                if (!match || match.length === 0) {
+                                /*if (!match || match.length === 0) {
                                     this.validations.push({
                                         type: 'warning',
                                         message: 'Strain Name: Strain Subtype should contain both H and N type, you may still submit ' +
                                             'this sample, but IRD curator may contact you for further information before submit to GenBank.'
                                     });
-                                }
+                                }*/
                             }
                         }
                     } else {
                         // validate to see if the final subtype has both H and N type, if not, then set warning
                         const re = new RegExp('[Hh](1[0-5]|[1-9])[Nn][1-9]');
                         const match = re.exec(userSubtype);
-                        if (!match || match.length === 0) {
+                        /*if (!match || match.length === 0) {
                             this.validations.push({
                                 type: 'warning',
                                 message: 'Strain Name: Strain Subtype should contain both H and N type, you may still submit ' +
                                     'this sample, but IRD curator may contact you for further information before submit to GenBank.'
                             });
-                        }
+                        }*/
                     }
 
                     // if yearCandidate is not undefined, validate it

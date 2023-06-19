@@ -190,7 +190,7 @@ define([
           var obj = objs[0];
           var treeDat = {};
           if (typeof obj.data == 'string') {
-            treeDat.tree = obj.data.replace(/[^(,)]+_@_/g, ''); // get rid of ridiculously annoying, super dirty embedded labels
+            treeDat.tree = obj.data;
             if (isClassification) {
               treeDat.options = {};
               treeDat.options.externalNodeFontSize = 10;

@@ -287,7 +287,7 @@ define([
         if (this.nodeType == 'feature') {
           xhr.get(PathJoin(window.App.dataAPI, 'genome_feature', cur[0].feature_id), {
             headers: {
-              accept: 'application/json', 
+              accept: 'application/json',
               'X-Requested-With': null,
               Authorization: (window.App.authorizationToken || '')
             },
@@ -330,7 +330,11 @@ define([
         collection_year: {},
         subtype: {},
         lineage: {},
-        clade: {}
+        clade: {},
+        h1_clade_global: {},
+        h1_clade_us: {},
+        h3_clade: {},
+        h5_clade: {}
       };
 
       var self = this;
@@ -349,6 +353,10 @@ define([
         self.alt_labels.subtype[geneID] = default_value;
         self.alt_labels.lineage[geneID] = default_value;
         self.alt_labels.clade[geneID] = default_value;
+        self.alt_labels.h1_clade_global[geneID] = default_value;
+        self.alt_labels.h1_clade_us[geneID] = default_value;
+        self.alt_labels.h3_clade[geneID] = default_value;
+        self.alt_labels.h5_clade[geneID] = default_value;
 
         this.genomeData.forEach(function (genome) {
           // console.log('in setAltLabel genomeData genome', genome);
@@ -396,6 +404,18 @@ define([
             }
             if (genome.clade) {
               self.alt_labels.clade[geneID] = genome.clade;
+            }
+            if (genome.h1_clade_global) {
+              self.alt_labels.h1_clade_global[geneID] = genome.h1_clade_global;
+            }
+            if (genome.h1_clade_us) {
+              self.alt_labels.h1_clade_us[geneID] = genome.h1_clade_us;
+            }
+            if (genome.h3_clade) {
+              self.alt_labels.h3_clade[geneID] = genome.h3_clade;
+            }
+            if (genome.h5_clade) {
+              self.alt_labels.h5_clade[geneID] = genome.h5_clade;
             }
           }
         });
@@ -470,11 +490,11 @@ define([
         this.containerType = 'feature_data';
         var fetchedIds = when(xhr.post(PathJoin(window.App.dataAPI, 'genome_feature'), {
           headers: {
-              accept: 'application/json',
-              'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
-            },
-            handleAs: 'json',
+            accept: 'application/json',
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
+          },
+          handleAs: 'json',
           // headers: this.headers,
           data: 'or(in(patric_id,(' +  pIDs.join(',') + ')),in(feature_id,(' + pIDs.join(',') + ')))&select(feature_id,patric_id,genome_id,genome_name,product)&limit(1000)'
         }), function (response) {
@@ -511,7 +531,7 @@ define([
           });
           console.log('self.featureData', self.featureData);
           console.log('self.featureData genomeList ', genomeList);
-          var q = 'in(genome_id,(' + genomeList.join(',') + '))&select(genome_id,genome_name,genbank_accessions,species,strain,geographic_group,isolation_country,host_group,host_common_name,collection_year,subtype,lineage,clade)&limit(25000)';
+          var q = 'in(genome_id,(' + genomeList.join(',') + '))&select(genome_id,genome_name,genbank_accessions,species,strain,geographic_group,isolation_country,host_group,host_common_name,collection_year,subtype,lineage,clade,h1_clade_global,h1_clade_us,h3_clade,h5_clade)&limit(25000)';
           console.log('before getGenomeData, q =', q );
 
           when(xhr.post(PathJoin(window.App.dataAPI, 'genome'), {
@@ -544,7 +564,11 @@ define([
                 collection_year: genome.collection_year,
                 subtype: genome.subtype,
                 lineage: genome.lineage,
-                clade: genome.clade
+                clade: genome.clade,
+                h1_clade_global: genome.h1_clade_global,
+                h1_clade_us: genome.h1_clade_us,
+                h3_clade: genome.h3_clade,
+                h5_clade: genome.h5_clade
               };
             });
             console.log('feature self.genomeData', self.genomeData);
@@ -575,15 +599,15 @@ define([
             genome_ids.push(myid[1]) });
         }
         // console.log('genome_ids=', genome_ids);
-        var q = 'in(genome_id,(' + genome_ids.join(',') + '))&select(genome_id,genome_name,genbank_accessions,species,strain,geographic_group,isolation_country,host_group,host_common_name,collection_year,subtype,lineage,clade)&limit(25000)';
+        var q = 'in(genome_id,(' + genome_ids.join(',') + '))&select(genome_id,genome_name,genbank_accessions,species,strain,geographic_group,isolation_country,host_group,host_common_name,collection_year,subtype,lineage,clade,h1_clade_global,h1_clade_us,h3_clade,h5_clade)&limit(25000)';
         // console.log('q =', q);
 
         var genomes = when(xhr.post(PathJoin(window.App.dataAPI, 'genome'), {
-            headers: {
-              accept: 'application/json',
-              'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
-            },
+          headers: {
+            accept: 'application/json',
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
+          },
           handleAs: 'json',
           data: q
         }), function (res) {
@@ -623,7 +647,11 @@ define([
               collection_year: genome.collection_year,
               subtype: genome.subtype,
               lineage: genome.lineage,
-              clade: genome.clade
+              clade: genome.clade,
+              h1_clade_global: genome.h1_clade_global,
+              h1_clade_us: genome.h1_clade_us,
+              h3_clade: genome.h3_clade,
+              h5_clade: genome.h5_clade
             };
             self.dataMap[genome.genome_id] = {
               seq_id: seqIdIndex,
@@ -639,7 +667,11 @@ define([
               collection_year: genome.collection_year,
               subtype: genome.subtype,
               lineage: genome.lineage,
-              clade: genome.clade
+              clade: genome.clade,
+              h1_clade_global: genome.h1_clade_global,
+              h1_clade_us: genome.h1_clade_us,
+              h3_clade: genome.h3_clade,
+              h5_clade: genome.h5_clade
             };
             return {
               seq_id: seqIdIndex,
@@ -655,7 +687,11 @@ define([
               collection_year: genome.collection_year,
               subtype: genome.subtype,
               lineage: genome.lineage,
-              clade: genome.clade
+              clade: genome.clade,
+              h1_clade_global: genome.h1_clade_global,
+              h1_clade_us: genome.h1_clade_us,
+              h3_clade: genome.h3_clade,
+              h5_clade: genome.h5_clade
             };
           });
           console.log('genome self.genomeData', self.genomeData);
@@ -763,6 +799,11 @@ define([
       idMenuDivs.push('<div class="wsActionTooltip" rel="subtype">Subtype</div>');
       idMenuDivs.push('<div class="wsActionTooltip" rel="lineage">Lineage</div>');
       idMenuDivs.push('<div class="wsActionTooltip" rel="clade">Clade</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="h1_clade_global">H1 Clade Global</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="h1_clade_us">H1 Clade US</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="h3_clade">H3 Clade</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="h5_clade">H5 Clade</div>');
+
       idMenu.set('content', idMenuDivs.join(''));
       console.log('idMenuDivs ', idMenuDivs);
 

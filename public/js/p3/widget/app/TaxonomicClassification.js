@@ -1,3 +1,4 @@
+
 define([
   'dojo/_base/declare', 'dojo/_base/array', 'dojo/topic', 'dijit/_WidgetBase', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/on', 'dojo/request', 'dojo/dom-class', 'dojo/dom-construct',
@@ -14,7 +15,7 @@ define([
 
   return declare([AppBase], {
     baseClass: 'App TaxonomicClassification',
-    pageTitle: 'Taxonomic Classification Service | BV-BRC',
+    pageTitle: 'Taxonomic Classification Service | BV-BRC ',
     templateString: Template,
     applicationName: 'TaxonomicClassification',
     requireAuth: true,
@@ -33,7 +34,11 @@ define([
       this.addedLibs = { counter: 0 };
       this.pairToAttachPt = ['read1', 'read2'];
       this.singleToAttachPt = ['single_end_libsWidget'];
-      this.libraryStore = new Memory({ data: [], idProperty: '_id' });
+      // this.libraryStore = new Memory({ data: [], idProperty: '_id', });
+      this.libraryStore = new Memory({ data: [], idProperty: '_id', sample_id:[] });
+      // this.srrSampleIDAttachPt = { srr_accession: null, srr_sample_id: ['sample_id'] };
+      this.srrSampleIDAttachPt = ['srr_accession_validation_message'];
+
     },
 
     startup: function () {
@@ -78,15 +83,37 @@ define([
     getValues: function () {
       var values = this.inherited(arguments);
       // inputs that are NOT needed by the backend
-      var not_needed_inputs = ['startWith', 'libdat_file1pair', 'libdat_file2pair', 'libdat_readfile'];
+      var not_needed_inputs = ['libdat_file1pair', 'libdat_file2pair', 'libdat_readfile'];
       not_needed_inputs.forEach(function (key) {
         if (Object.prototype.hasOwnProperty.call(values, key)) {
           delete values[key];
         }
       });
       values = this.checkBaseParameters(values);
-
       return values;
+    },
+
+    checkForInvalidChars: function (value) {
+      var valid = true;
+      var invalid_chars = ['-', ':', '@', '"', "'", ';', '[', ']', '{', '}', '|', '`'];
+      invalid_chars.forEach(lang.hitch(this, function (char) {
+        if (value.includes(char)) {
+          valid = false;
+        }
+      }));
+      if (!valid) {
+        var msg = 'Remove invalid characters from name: - : @ " \' ; [ ] { } | `';
+        new Dialog({ title: 'Notice', content: msg }).show();
+      }
+      return valid;
+    },
+
+    replaceInvalidChars: function (value) {
+      var invalid_chars = ['-', ':', '@', '"', "'", ';', '[', ']', '{', '}', '|', '`'];
+      invalid_chars.forEach(lang.hitch(this, function (char) {
+        value = value.replaceAll(char, '_');
+      }));
+      return value;
     },
 
     ingestAttachPoints: function (input_pts, target, req) {
@@ -147,6 +174,7 @@ define([
       }, this);
       return (success);
     },
+
 
     makeLibraryName: function (mode) {
       switch (mode) {
@@ -228,15 +256,29 @@ define([
       }
     },
 
+    setSrrId: function () {
+      var srr_user_input = this.srr_accession.get('displayedValue');
+      this.srr_sample_id.set('value', this.replaceInvalidChars(srr_user_input.split('.')[0]));
+    },
+
+    setSingleId: function () {
+      var read_name = this.single_end_libsWidget.searchBox.get('displayedValue');
+      console.log(read_name)
+      this.single_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
+    },
+
     onAddSingle: function () {
-      // console.log("Create New Row", domConstruct);
       var lrec = { _type: 'single' };
       var chkPassed = this.ingestAttachPoints(this.singleToAttachPt, lrec);
+      if (chkPassed) {
+        chkPassed = this.checkForInvalidChars(this.single_sample_id.getValue());
+      }
       if (chkPassed) {
         var infoLabels = {
           platform: { label: 'Platform', value: 1 },
           read: { label: 'Read File', value: 1 }
         };
+        lrec.sample_id = this.single_sample_id.get('displayedValue');
         this.addLibraryRow(lrec, infoLabels, 'singledata');
       }
     },
@@ -259,11 +301,20 @@ define([
       }, this);
     },
 
+    setPairedId: function () {
+      var read_name = this.read1.searchBox.get('displayedValue');
+      read_name = read_name.replace(/(R1|_R1_|r1|_r1_|r1_|_r1|R1_|_R1)/g, '');
+      this.paired_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
+    },
+
     onAddPair: function () {
       if (this.read1.searchBox.get('value') == this.read2.searchBox.get('value')) {
         var msg = 'READ FILE 1 and READ FILE 2 cannot be the same.';
         new Dialog({ title: 'Notice', content: msg }).show();
         return;
+      }
+      if (chkPassed) {
+        chkPassed = this.checkForInvalidChars(this.paired_sample_id.getValue());
       }
       var lrec = { _type: 'paired' };
       var pairToIngest = this.pairToAttachPt;
@@ -274,6 +325,7 @@ define([
           read1: { label: 'Read1', value: 1 },
           read2: { label: 'Read2', value: 1 }
         };
+        lrec.sample_id = this.paired_sample_id.get('displayedValue');
         this.addLibraryRow(lrec, infoLabels, 'pairdata');
       }
     },
@@ -349,22 +401,14 @@ define([
       this.checkParameterRequiredFields();
     },
 
-    // below is from annotation
-
-
     checkParameterRequiredFields: function () {
-      if (this.output_path.get('value') && this.output_file.get('displayedValue') ) {
+      if (this.output_path.get('value') && this.outputFileWidget.get('displayedValue') ) {
         this.validate();
       }
       else {
         if (this.submitButton) { this.submitButton.set('disabled', true); }
       }
     },
-
-    setContigsFile: function () {
-      this.checkParameterRequiredFields();
-    },
-
     onOutputPathChange: function (val) {
       this.inherited(arguments);
       this.checkParameterRequiredFields();
@@ -375,77 +419,62 @@ define([
       this.checkParameterRequiredFields();
     },
 
-    onStartWithChange: function () {
-      if (this.startWithRead.checked == true) {
-        this.readTable.style.display = 'block';
-        this.annotationFileBox.style.display = 'none';
-        this.numlibs.constraints.min = 1;
-        this.contigsFile.reset();
-        this.contigsFile.set('required', false);
-        this.checkParameterRequiredFields();
-      }
-      if (this.startWithContigs.checked == true) {
-        this.readTable.style.display = 'none';
-        this.annotationFileBox.style.display = 'block';
-        this.numlibs.constraints.min = 0;
-        this.contigsFile.set('required', true);
-        this.checkParameterRequiredFields();
-      }
-    },
 
     checkBaseParameters: function (values) {
-      // reads and sra or contigs
-      if (this.startWithRead.checked) { // start from read file
-        var pairedList = this.libraryStore.query({ _type: 'paired' });
-        var singleList = this.libraryStore.query({ _type: 'single' });
-        var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
+      // reads and SRA
+      var pairedList = this.libraryStore.query({ _type: 'paired' });
+      var singleList = this.libraryStore.query({ _type: 'single' });
+      var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
+      console.log(srrAccessionList)
 
-        this.paired_end_libs = pairedList.map(function (lrec) {
-          var rrec = {};
-          Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
-            if (!attr.startsWith('_')) {
-              rrec[attr] = lrec[attr];
-            }
-          }));
-          return rrec;
-        });
-        if (this.paired_end_libs.length) {
-          values.paired_end_libs = this.paired_end_libs;
-        }
-
-        this.single_end_libs = singleList.map(function (lrec) {
-          var rrec = {};
-          Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
-            if (!attr.startsWith('_')) {
-              rrec[attr] = lrec[attr];
-            }
-          }));
-          return rrec;
-        });
-        if (this.single_end_libs.length) {
-          values.single_end_libs = this.single_end_libs;
-        }
-
-        this.sra_libs = srrAccessionList.map(function (lrec) {
-          return lrec._id;
-        });
-        if (this.sra_libs.length) {
-          values.srr_ids = this.sra_libs;
-        }
-        delete values.contigs;       // contigs file is not needed
-        values.input_type = 'reads'; // set input_type to be 'reads'
-      } // startWithRead
-      if (this.startWithContigs.checked) {  // starting from contigs
-        values.input_type = 'contigs'; // set input_type to be 'contigs'
-        this.contigs = values.contigs;
+      this.paired_end_libs = pairedList.map(function (lrec) {
+        var rrec = {};
+        Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
+          if (!attr.startsWith('_')) {
+            rrec[attr] = lrec[attr];
+          }
+        }));
+        return rrec;
+      });
+      if (this.paired_end_libs.length) {
+        values.paired_end_libs = this.paired_end_libs;
       }
-      // strategy (algorithm)
-      this.strategy = values.algorithm;
-      // output folder
-      this.output_folder = values.output_path;
-      // output name
-      this.output_name = values.output_file;
 
+      this.single_end_libs = singleList.map(function (lrec) {
+        var rrec = {};
+        Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
+          if (!attr.startsWith('_')) {
+            rrec[attr] = lrec[attr];
+          }
+        }));
+        return rrec;
+      });
+      if (this.single_end_libs.length) {
+        values.single_end_libs = this.single_end_libs;
+      }
+      
+      this.sra_libs = srrAccessionList.map(function (lrec) {
+        var rrec = {};
+        Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
+          if (!attr.startsWith('_')) {
+            rrec[attr] = lrec[attr];
+          }
+        }));
+        return rrec;
+      });
+      if (this.sra_libs.length) {
+        values.srr_libs = this.sra_libs;
+      }
+
+      // analysis type
+      this.strategy = values.analysis_type;
+      // host genome
+      this.strategy = values.host_genome;
+      // output_folder
+      this.output_folder = values.output_path;
+      // output_name
+      this.output_name = values.output_file;
+  
       return values;
     },
 
@@ -459,27 +488,13 @@ define([
           rerun_key = rerun_fields[1];
           var sessionStorage = window.sessionStorage;
           if (sessionStorage.hasOwnProperty(rerun_key)) {
-            var param_dict = { 'output_folder': 'output_path', 'contigs': 'contigs' };
-            // var widget_map = { 'contigs': 'contigsFile' };
-            // param_dict['widget_map'] = widget_map;
-            // AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+            var param_dict = { 'output_folder': 'output_path', 'strategy': 'analysis_type' };
+            // widget_map
+            AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
             var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-            this.selectStartWith(job_data);
             job_data = this.formatRerunJson(job_data);
-            if (this.startWithRead.checked) {
-              AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
-            }
-            else {
-              this.contigsFile.set('value', job_data['contigs']);
-            }
-            if (Object.keys(job_data).includes('save_unclassified_sequences') && job_data['save_unclassified_sequences'] === 'true') {
-              this.save_unclassified_sequences_no.set('checked', false);
-              this.save_unclassified_sequences_yes.set('checked', true);
-            }
-            if (Object.keys(job_data).includes('save_classified_sequences') && job_data['save_classified_sequences'] === 'true') {
-              this.save_classified_sequences_no.set('checked', false);
-              this.save_classified_sequences_yes.set('checked', true);
-            }
+            AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+            this.analysis_type.set('value', job_data['analysis_type']);
             this.form_flag = true;
           }
         } catch (error) {
@@ -487,28 +502,6 @@ define([
         } finally {
           sessionStorage.removeItem(rerun_key);
         }
-      }
-    },
-
-    // Selects the start with button: reads or contigs
-    // Checking it helps the rest of the form filling run smoothly
-    selectStartWith: function (job_data) {
-      if (job_data.input_type == 'contigs') {
-        this.startWithContigs.set('checked', true);
-      }
-      else {
-        this.startWithRead.set('checked', true);
-      }
-    },
-
-    setSequenceOptions: function (job_data) {
-      if (job_data['save_classified_sequences']) {
-        this.save_classified_sequences_no.set('value', false);
-        this.save_classified_sequences_yes.set('value', true);
-      }
-      if (job_data['save_unclassified_sequences']) {
-        this.save_unclassified_sequences_no.set('value', false);
-        this.save_unclassified_sequences_yes.set('value', true);
       }
     },
 
