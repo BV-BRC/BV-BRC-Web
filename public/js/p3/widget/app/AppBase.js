@@ -1,4 +1,4 @@
-define([
+fdefine([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/AppLogin.html', 'dijit/form/Form', 'p3/widget/WorkspaceObjectSelector', 'dojo/topic', 'dojo/_base/lang',
@@ -30,6 +30,7 @@ define([
     lookaheadError: null,
     lookaheadGif: null,
     maxFastaText: 64000,
+    ignoreMaxFastaTextLimit: false,
     help_doc: null,
     activeUploads: [],
     // srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmax=1&db=sra&field=accn&term={0}&retmode=json',
