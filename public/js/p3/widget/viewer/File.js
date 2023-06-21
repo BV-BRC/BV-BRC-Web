@@ -130,18 +130,22 @@ define([
                 domStyle.set(this.viewer.containerNode, 'overflow', 'hidden');
                 domConstruct.place(iframe, this.viewer.containerNode);
                 var iframe_contents = this.file.data;
-	        if (this.file.metadata.name == 'GenomeReport.html')
-	        {
-	          iframe_contents = iframe_contents.replaceAll('="https://www.patricbrc.org/view/Feature',
+                if (this.file.metadata.name == 'GenomeReport.html'){
+                          iframe_contents = iframe_contents.replaceAll('="https://www.patricbrc.org/view/Feature',
 							       '="' + window.App.appBaseURL + '/view/Feature');
-		}
+	             	}
 
-                var bookmark_regex = /<a\s+(?:[^>]*?\s+)?href=(["'])(#.*?)\1/gi;
-                if (iframe_contents.search(bookmark_regex)) {
-                  iframe_contents = iframe_contents.replace(/<a\s+(?:[^>]*?\s+)?href=(["'])(#.*?)\1/gi, '$&  onclick="return false;"');
+                iframe.onload = function(){
+                  var nodes = iframe.contentWindow.document.getElementsByTagName("a")
+                  var i=0
+                  while (i<nodes.length){
+                    var n = nodes.item(i)
+                    n.target="_parent";
+                    i++
+                  }
                 }
-
                 iframe.srcdoc = iframe_contents;
+
                 return;
               case 'json':
               case 'diffexp_experiment':

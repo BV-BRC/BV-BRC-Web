@@ -263,7 +263,6 @@ define([
 
     setSingleId: function () {
       var read_name = this.single_end_libsWidget.searchBox.get('displayedValue');
-      console.log(read_name)
       this.single_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
     },
 
@@ -303,7 +302,6 @@ define([
 
     setPairedId: function () {
       var read_name = this.read1.searchBox.get('displayedValue');
-      read_name = read_name.replace(/(R1|_R1_|r1|_r1_|r1_|_r1|R1_|_R1)/g, '');
       this.paired_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
     },
 
@@ -425,7 +423,6 @@ define([
       var pairedList = this.libraryStore.query({ _type: 'paired' });
       var singleList = this.libraryStore.query({ _type: 'single' });
       var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
-      console.log(srrAccessionList)
 
       this.paired_end_libs = pairedList.map(function (lrec) {
         var rrec = {};
