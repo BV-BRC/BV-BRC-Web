@@ -831,7 +831,7 @@ fdefine([
         message,
         trimFasta,
       };
-      if (fastaText.length > this.maxFastaText) {
+      if (!this.ignoreMaxFastaTextLimit && fastaText.length > this.maxFastaText) {
         reto.status = 'too_long';
         reto.message = 'The text input is too large. Save the data to a file.';
         return reto;
