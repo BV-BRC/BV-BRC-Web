@@ -57,16 +57,14 @@ define([
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
       _self.output_path.set('value', _self.defaultPath);
 
-      /*
       on(this.advanced, 'click', lang.hitch(this, function () {
         this.toggleAdvanced((this.advancedOptions.style.display == 'none'));
       }));
-      */
 
       this.numref = 0;
       this.emptyTable(this.genomeTable, this.startingRows);
       this.numgenomes.startup();
-      // this.startupMetadataTable();
+      this.startupMetadataTable();
       this.setTooltips();
       this._started = true;
       this.form_flag = false;
@@ -531,7 +529,7 @@ define([
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
-          this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != newGenomeIds);
+          this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != lrec[this.fastaToAttachPt]);
         }));
         this.increaseGenome('fasta', newGenomeIds);
         this.sequenceSource = 'ws';
@@ -571,7 +569,7 @@ define([
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
-          this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != newGenomeIds)
+          this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != lrec[this.unalignedFastaToAttachPt])
         }));
         this.increaseGenome('fasta', newGenomeIds);
         this.sequenceSource = 'ws';
@@ -612,7 +610,7 @@ define([
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
           handle.remove();
-          this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != newGenomeIds);
+          this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != lrec[this.featureGroupToAttachPt]);
         }));
         this.increaseGenome('feature_group', newGenomeIds);
         this.sequenceSource = 'feature_group';
@@ -651,7 +649,7 @@ define([
         }
         handle.remove();
         // remove entry from this.fastaNamesAndTypes
-        this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(obj => obj.filename !== lrec[this.genomeGroupToAttachPt]);
+        this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(obj => obj.filename !== lrec[this.featureGroupToAttachPt]);
       }));
       this.increaseGenome('feature_group', newGenomeIds);
       this.sequenceSource = 'feature_group';
@@ -870,12 +868,10 @@ define([
       });
 
       // get metadata fields
-      /*
       seqcomp_values.metadata_fields = [];
       if (this.metadata_count > 0) {
         seqcomp_values.metadata_fields = Object.keys(this.metadataDict);
       }
-      */
 
       seqcomp_values.alphabet = values.alphabet;
       seqcomp_values.tree_type = values.tree_type;
@@ -1039,6 +1035,7 @@ define([
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         handle.remove();
+        this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != lrec[this.fastaToAttachPt]);
       }));
       this.increaseGenome('fasta', newGenomeIds);
       this.sequenceSource = 'ws';
@@ -1073,6 +1070,7 @@ define([
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
         handle.remove();
+        this.fastaNamesAndTypes = this.fastaNamesAndTypes.filter(x => x.filename != lrec[this.unalignedFastaToAttachPt]);
       }));
       this.increaseGenome('fasta', newGenomeIds);
       this.sequenceSource = 'ws';
