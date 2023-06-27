@@ -72,8 +72,12 @@ define([
             // Validate publication title
             if (!this.publicationTitle) {
                 this.validations.push({
-                    type: 'error', message: 'Publication Title is required. it might be missing from the metadata file. ' +
-                        'Please use \'NA\' if unpublished.'
+                    type: 'error', message: 'Publication Title is required. It might be missing from the metadata file. ' +
+                        'Please use \'Unpublished\' if unpublished.'
+                });
+            } else if (this.publicationTitle === 'NA' || this.publicationTitle === '"NA"' || this.publicationTitle === '""NA""') {
+                this.validations.push({
+                    type: 'error', message: 'Publication Title should be \'Unpublished\' instead of \'NA\' if unpublished.'
                 });
             }
 
