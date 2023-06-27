@@ -171,6 +171,9 @@ define([
     },
 
     validateFastaHeader: function (data, sampleIdentifiers) {
+      // Reset number of sequences
+      this.numberOfSequences = 0;
+
       let errors = new Map();
       errors.set('missingHeaders', []);
       errors.set('missingSamples', []);
