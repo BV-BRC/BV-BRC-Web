@@ -78,7 +78,7 @@ define([
   ];
 
   var SearchForDefs = [
-    { value: 'fna', label: 'Contigs (NT)' },
+    { value: 'fna', label: 'Genome sequences (NT)' },
     { value: 'faa', label: 'Proteins (AA)' },
     { value: 'ffn', label: 'Genes (NT)' },
     { value: 'frn', label: 'RNAs (NT)' }

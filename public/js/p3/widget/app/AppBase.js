@@ -30,6 +30,7 @@ define([
     lookaheadError: null,
     lookaheadGif: null,
     maxFastaText: 64000,
+    ignoreMaxFastaTextLimit: false,
     help_doc: null,
     activeUploads: [],
     // srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmax=1&db=sra&field=accn&term={0}&retmode=json',
@@ -369,6 +370,21 @@ define([
       }
     },
 
+    checkForInvalidChars: function (value) {
+      var valid = true;
+      var invalid_chars = ['-', ':', '@', '"', "'", ';', '[', ']', '{', '}', '|', '`'];
+      invalid_chars.forEach(lang.hitch(this, function (char) {
+        if (value.includes(char)) {
+          valid = false;
+        }
+      }));
+      if (!valid) {
+        var msg = 'Remove invalid characters from name: - : @ " \' ; [ ] { } | `';
+        new Dialog({ title: 'Notice', content: msg }).show();
+      }
+      return valid;
+    },
+
     onAddSRRHelper: function (title) {
       this.srr_accession.set('state', '');
       if (!(typeof this.exp_design === 'undefined')) {
@@ -390,10 +406,20 @@ define([
         var lrec = { _type: 'srr_accession', title: title };
       }
       var chkPassed = this.ingestAttachPoints(toIngest, lrec);
+      var maybeSampleID;
+      if (chkPassed && ('srr_sample_id' in this)) {
+        maybeSampleID = this.srr_sample_id.get('displayedValue');
+        chkPassed = this.checkForInvalidChars(maybeSampleID);
+      }
       if (chkPassed) {
         var infoLabels = {
           title: { label: 'Title', value: 1 }
         };
+        if (maybeSampleID){
+          lrec.sample_id = maybeSampleID;
+          console.log(lrec.sample_id)
+        }
+
         this.addLibraryRow(lrec, infoLabels, 'srrdata');
       } else {
         throw new Error('Did not pass add library check. ');
@@ -805,7 +831,7 @@ define([
         message,
         trimFasta,
       };
-      if (fastaText.length > this.maxFastaText) {
+      if (!this.ignoreMaxFastaTextLimit && fastaText.length > this.maxFastaText) {
         reto.status = 'too_long';
         reto.message = 'The text input is too large. Save the data to a file.';
         return reto;

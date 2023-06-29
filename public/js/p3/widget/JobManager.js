@@ -12,6 +12,7 @@ define([
   return declare([BorderContainer], {
     disabled: false,
     path: '/',
+    serviceFilter: null,
 
     listJobs: function () {
       var _self = this;
@@ -286,7 +287,33 @@ define([
         } else if (filters.status === 'failed') {
           filters.status = new RegExp('failed|deleted');
         }
+        if (!this.serviceFilter) {
+          this.serviceFilter = {};
+        }
+        this.serviceFilter = filters;
+        _self.grid.set('query', filters);
+      });
 
+      // listen for filtering
+      Topic.subscribe('/KeywordFilter', function (keyword) {
+        // remove any non-specific filter states
+        if (keyword.trim() === '') {
+          _self.grid.set('query', {});
+        }
+        var filters = {};
+        // keyword = keyword.trim();
+        var keyfil = new RegExp(`.*${keyword}.*`);
+        filters['parameters'] = {
+          test: function (entry) {
+            return keyfil.test(entry.output_file);
+          }
+        };
+        // filter by job output with other filters applied
+        if (this.serviceFilter) {
+          if (this.serviceFilter.app) {
+            filters['app'] = this.serviceFilter.app;
+          }
+        }
         _self.grid.set('query', filters);
       });
     },

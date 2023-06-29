@@ -42,7 +42,7 @@ define([
         formats: ['.bai']
       },
       bam: {
-        label: 'Sequence Alginment Data',
+        label: 'Sequence Alignment Data',
         formats: ['.bam']
       },
       contigs: {
@@ -123,7 +123,7 @@ define([
       },
       phyloxml: {
         label: 'PHYLOXML',
-        formats: ['.xml'],
+        formats: ['.xml', '.phyloxml'],
         description: 'An phyloxml file.'
       },
       png: {

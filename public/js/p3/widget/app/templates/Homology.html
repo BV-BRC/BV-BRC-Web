@@ -26,7 +26,7 @@
         <div id="Program_box" style="width:97%;" class="appBox appShadow">
             <div class="headerrow">
                 <label class="appBoxLabel">Search program</label>
-                <div name="program" class="infobox iconbox infobutton dialoginfo">
+                <div name="search-program" class="infobox iconbox infobutton dialoginfo">
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                 </div>
             </div>
@@ -67,6 +67,9 @@
             <div class="headerrow">
                 <div style="width:85%;display:inline-block;">
                     <label class="appBoxLabel">Query source</label>
+                    <div name="query-source" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                    </div>
                 </div>
                 <br>
                 <div class="appRow">
@@ -127,6 +130,9 @@
                 <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:70%">
                     <div class="headerrow" style="margin-bottom: 7px">
                         <label class="appBoxLabel">Database Source</label>
+                        <div name="database-source" class="infobox iconbox infobutton dialoginfo">
+                            <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                        </div>
                     </div>
                     <select name="database" style="width:96%; margin-left:10px" data-dojo-type="dijit/form/Select"
                         data-dojo-attach-event="onChange:onChangeDatabase" data-dojo-props="disabled:false"
@@ -145,6 +151,9 @@
                 <div class="appRowSegment" style="text-align:left; width:20%">
                     <div class="headerrow" style="margin-bottom: 7px">
                         <label class="appBoxLabel">Database Type</label>
+                        <div name="database-type" class="infobox iconbox infobutton dialoginfo">
+                            <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                        </div>
                     </div>
                     <div data-dojo-type="dijit/form/Select" name="search_for" data-dojo-props="disabled:false"
                         data-dojo-attach-event="onChange:onChangeDBType" maxHeight="200" style="width:100%"
@@ -257,6 +266,7 @@
                         <option value="50">50</option>
                         <option value="100">100</option>
                         <option value="500">500</option>
+                        <option value="5000">5000</option>
                     </select>
                 </div>
                 <div class="left third">
@@ -269,6 +279,9 @@
                         <option value="0.1">0.1</option>
                         <option value="1">1</option>
                         <option value="10">10</option>
+                        <option value="100">100</option>
+                        <option value="1000">1000</option>
+                        <option value="10000">10000</option>
                     </select>
                 </div>
                 <div class="clear"></div>
