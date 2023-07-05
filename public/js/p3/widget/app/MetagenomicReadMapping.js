@@ -19,7 +19,7 @@ define([
     applicationName: 'MetagenomicReadMapping',
     requireAuth: true,
     applicationLabel: 'Metagenomic Read Mapping',
-    applicationDescription: 'The Metagenomic Read Mapping Service uses KMA to align reads against antibiotic resistance genes from CARD and virulence factors from VFDB.',
+    applicationDescription: 'The Metagenomic Read Mapping Service uses KMA to align reads against antibiotic resistance genes from CARD and virulence factors from VFDB or private feature groups or any dna sequence(s) described in a FASTA file.',
     applicationHelp: 'quick_references/services/metagenomic_read_mapping_service.html',
     tutorialLink: 'tutorial/metagenomic_read_mapping/metagenomic_read_mapping.html',
     videoLink: '',
