@@ -27,7 +27,7 @@
           <td>
             <div id="pairedBox" class="appBox appShadow">
               <div class="headerrow">
-                <div style="width:85%;display:inline-block;">
+                <div style="width: 400px;display:inline-block;">
                   <label class="appBoxLabel">Input File</label>
                   <div name="input-file" class="infobox iconbox infobutton dialoginfo">
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
@@ -123,7 +123,7 @@
             </div>
           </td>
           <td>
-            <div class="appBox appShadow" style="height:213px; width:330px">
+            <div class="appBox appShadow" style="min-height: 213px; height:auto; width:400px;", >
               <div class="headerrow">
                 <label class="appBoxLabel">Selected libraries</label>
                 <div name="selected-libraries" class="infobox iconbox infobutton tooltipinfo">
@@ -176,6 +176,15 @@
           <label>Host Genome</label><br>
           <select data-dojo-type="dijit/form/Select" name="host_genome" style="width:300px" required="true" data-dojo-props="intermediateChanges:true">
             <option value="homo_sapiens">Homo sapiens</option>
+            <option value="mus_musculus">Mus musculus</option>
+            <option value="rattus_norvegicus">Rattus norvegicus</option>
+            <option value="caenorhabditis_elegans">Caenorhabditis elegans</option>
+            <option value="drosophila_melanogaster_strain">Drosophila melanogaster strain y</option>
+            <option value="danio_rerio_strain_tuebingen">Danio rerio strain Tuebingen</option>
+            <option value="gallus_gallus">Gallus gallus</option>
+            <option value="macaca_mulatta">Macaca mulatta</option>
+            <option value="mustela_putorius_furo">Mustela putorius furo</option>
+            <option value="sus_scrofa">Sus scrofa</option>
           </select>
       </div>
         <div class="appRow">
