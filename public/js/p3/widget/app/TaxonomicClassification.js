@@ -34,9 +34,7 @@ define([
       this.addedLibs = { counter: 0 };
       this.pairToAttachPt = ['read1', 'read2'];
       this.singleToAttachPt = ['single_end_libsWidget'];
-      // this.libraryStore = new Memory({ data: [], idProperty: '_id', });
       this.libraryStore = new Memory({ data: [], idProperty: '_id', sample_id:[] });
-      // this.srrSampleIDAttachPt = { srr_accession: null, srr_sample_id: ['sample_id'] };
       this.srrSampleIDAttachPt = ['srr_accession_validation_message'];
 
     },
