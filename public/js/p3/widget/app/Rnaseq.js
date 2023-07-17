@@ -124,6 +124,53 @@ define([
       }
     },
 
+    validate: function () {
+      var pairedList = this.libraryStore.query({ type: 'paired' });
+      var singleList = this.libraryStore.query({ type: 'single' });
+      var srrList = this.libraryStore.query({ type: 'srr_accession' });
+      var libraryList = pairedList.concat(singleList);
+      libraryList = libraryList.concat(srrList);
+      var condition_counts = {};
+      // Count number of library samples for each condition, if HTSeq-DESeq2 terminate if not at least 2 for each
+      if (this.exp_design.checked && this.recipe.getValue() === 'HTSeq-DESeq') {
+        console.log('validating conditions');
+        if (libraryList.length == 0) {
+          this.submitButton.set('disabled', true);
+          return false;
+        }
+        libraryList.forEach(lang.hitch(this, function (libRecord) {
+          if ('condition' in libRecord) {
+            var cond = libRecord.condition;
+            if (cond in condition_counts) {
+              condition_counts[cond] += 1;
+            } else {
+              condition_counts[cond] = 1;
+            }
+          } else {
+            console.log('Error: no condition supplied to sample');
+            return false;
+          }
+        }));
+        var disable_button = false;
+        Object.keys(condition_counts).forEach(lang.hitch(this, function (cond) {
+          // also terminate if they add a condition that doesnt get used
+          if (condition_counts[cond] < 2) {
+            this.recipe_message.innerHTML = 'At least 2 replicates per condition are required for the HTSeq-DESeq pipeline.';
+            disable_button = true;
+          } else {
+            this.recipe_message.innerHTML = '';
+          }
+        }));
+        if (disable_button) {
+          this.submitButton.set('disabled', true);
+          return false;
+        }
+      } else {
+        this.recipe_message.innerHTML = '';
+      }
+      return this.inherited(arguments);
+    },
+
     openJobsList: function () {
       Topic.publish('/navigate', { href: '/job/' });
     },
@@ -633,6 +680,7 @@ define([
         }));
         this.increaseRows(this.contrastTable, this.addedContrast, this.numContrastWidget);
       }
+      this.validate();
     },
 
     createLib: function (lrec) {
@@ -741,12 +789,19 @@ define([
         }
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
           this.destroyLib(lrec, lrec.id, 'id');
+          this.validate();
         }));
         lrec.handle = handle;
         lrec.sample_id = this.single_sample_id.get('displayedValue');
         this.createLib(lrec);
         this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
       }
+      this.validate();
+    },
+
+    onAddSRR: function () {
+      this.validate();
+      this.inherited(arguments);
     },
 
     // When a condition is removed, remove the corresponding libraries assigned to them
@@ -796,6 +851,7 @@ define([
 
     onStrategyChange: function () {
       this.onDesignToggle();
+      this.validate();
     },
 
     onSuggestNameChange: function () {
@@ -890,12 +946,14 @@ define([
         }
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
           this.destroyLib(lrec, lrec.id, 'id');
+          this.validate();
         }));
         lrec.handle = handle;
         lrec.sample_id = this.paired_sample_id.get('displayedValue');
         this.createLib(lrec);
         this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
       }
+      this.validate();
     },
 
     checkBaseParameters: function (values, assembly_values) {
