@@ -464,9 +464,9 @@ define([
       // analysis type
       this.strategy = values.analysis_type;
       // host genome
-      this.strategy = values.host_genome;
+      this.host_genome = values.host_genome;
       // confidence interval
-      this.strategy = values.confidence_interval;
+      this.confidence_interval = values.confidence_interval;
       // output_folder
       this.output_folder = values.output_path;
       // output_name
