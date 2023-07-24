@@ -520,4 +520,5 @@ define([
       }
       return job_data;
     }
+  });
 });
