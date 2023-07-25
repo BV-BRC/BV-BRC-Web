@@ -464,7 +464,9 @@ define([
       // analysis type
       this.strategy = values.analysis_type;
       // host genome
-      this.strategy = values.host_genome;
+      this.host_genome = values.host_genome;
+      // confidence interval
+      this.confidence_interval = values.confidence_interval;
       // output_folder
       this.output_folder = values.output_path;
       // output_name
@@ -499,7 +501,16 @@ define([
         }
       }
     },
-
+    setSequenceOptions: function (job_data) {
+      if (job_data['save_classified_sequences']) {
+        this.save_classified_sequences_no.set('value', false);
+        this.save_classified_sequences_yes.set('value', true);
+      }
+      if (job_data['save_unclassified_sequences']) {
+        this.save_unclassified_sequences_no.set('value', false);
+        this.save_unclassified_sequences_yes.set('value', true);
+      }
+    },
     formatRerunJson: function (job_data) {
       if (!job_data.paired_end_libs) {
         job_data.paired_end_libs = [];
