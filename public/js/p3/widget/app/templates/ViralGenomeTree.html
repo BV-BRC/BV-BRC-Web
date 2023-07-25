@@ -65,7 +65,7 @@
                       <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddGenomeGroup" class="fa icon-plus-circle fa-lg"></i></div>
                       <br>
                       <label>Aligned fasta</label><br>
-                      <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="sequences" required="false" data-dojo-attach-point="user_genomes_fasta" data-dojo-props="type:['aligned_dna_fasta'],multi:false,promptMessage:'Select or Upload aligned genome fasta file to your workspace',missingMessage:'User genome file is optional.', placeHolder:'Optional'"></div>
+                      <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="sequences" required="false" data-dojo-attach-point="user_genomes_fasta" data-dojo-props="type:['aligned_dna_fasta','contigs'],multi:false,promptMessage:'Select or Upload aligned genome fasta file to your workspace',missingMessage:'User genome file is optional.', placeHolder:'Optional'"></div>
                       <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddFasta" class="fa icon-plus-circle fa-lg"></i>
                       </div>
                       <br>
@@ -230,6 +230,7 @@
                         <option value="genome_id">Genome ID</option>
                         <option value="genome_name">Genome Name</option>
                         <option value="genome_length">Genome Length</option>
+                        <option value="genome_group">Genome Group</option>
                         <option value="genus">Genus</option>
                         <option value="species">Species</option>
                         <option value="strain">Strain</option>
