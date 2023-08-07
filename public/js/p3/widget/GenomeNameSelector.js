@@ -214,7 +214,7 @@ define([
         this.queryFilter = '&or(' + queryFilterComponents.join(',') + ')';
       }
 
-      console.log("Query Filter set to: " + this.queryFilter);
+      // console.log("Query Filter set to: " + this.queryFilter);
     },
     onChange: function () {
       if (this.item) {
