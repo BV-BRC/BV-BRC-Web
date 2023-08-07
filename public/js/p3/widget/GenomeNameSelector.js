@@ -25,6 +25,9 @@ define([
     includePrivate: true,
     includeOtherPublic: true,
     referenceOnly: true,
+    includeBacterial: true,
+    includeViral: true,
+    includeHost: true,
     ncbiHost: true,
     excludeLength: false,
     lengthLimit: 10000000,
@@ -130,6 +133,21 @@ define([
       this._setQueryFilter();
     },
 
+    _setIncludeBacterialAttr: function (val) {
+      this.includeBacterial = val;
+      this._setQueryFilter();
+    },
+
+    _setIncludeViralAttr: function (val) {
+      this.includeViral = val;
+      this._setQueryFilter();
+    },
+
+    _setIncludeHostAttr: function (val) {
+      this.includeHost = val;
+      this._setQueryFilter();
+    },
+
     _setQueryFilter: function () {
       var queryFilterComponents = [];
 
@@ -163,6 +181,28 @@ define([
         queryFilterComponents.push('eq(public,false)');
       }
 
+      if (this.includeBacterial && this.includeViral && !this.includeHost) {
+        queryFilterComponents.push('or(eq(superkingdom,Bacteria),eq(superkingdom,Viruses))');
+      }
+      else if (this.includeBacterial && !this.includeViral && this.includeHost) {
+        queryFilterComponents.push('or(eq(superkingdom,Bacteria),eq(superkingdom,Eukaryota))');
+      }
+      else if (!this.includeBacterial && this.includeViral && this.includeHost) {
+        queryFilterComponents.push('or(eq(superkingdom,Viruses),eq(superkingdom,Eukaryota))');
+      }
+      else if (this.includeBacterial && !this.includeViral && this.includeHost) {
+        queryFilterComponents.push('or(eq(superkingdom,Bacteria),eq(superkingdom,Eukaryota))');
+      }
+      else if (this.includeBacterial && !this.includeViral && !this.includeHost) {
+        queryFilterComponents.push('eq(superkingdom,Bacteria)');
+      }
+      else if (!this.includeBacterial && this.includeViral && !this.includeHost) {
+        queryFilterComponents.push('eq(superkingdom,Viruses)');
+      }
+      else if (!this.includeBacterial && !this.includeViral && this.includeHost) {
+        queryFilterComponents.push('eq(superkingdom,Eukaryota)');
+      }
+
       // if the user accidentally unchecks everything, we'll provide all genomes
 
       // assemble the query filter
@@ -174,7 +214,7 @@ define([
         this.queryFilter = '&or(' + queryFilterComponents.join(',') + ')';
       }
 
-      // console.log("Query Filter set to: " + this.queryFilter);
+      console.log("Query Filter set to: " + this.queryFilter);
     },
     onChange: function () {
       if (this.item) {
@@ -247,6 +287,36 @@ define([
       }));
       domConstr.place(privateCB.domNode, privateDiv, 'first');
       domConstr.create('span', { innerHTML: 'My Genomes' }, privateDiv);
+
+      // Genome type
+      domConstr.create('div', { innerHTML: 'Genome Type:', style: { 'font-weight': 900 } }, dfc);
+
+      var bactDiv = domConstr.create('div', {});
+      domConstr.place(bactDiv, dfc, 'last');
+      var bactCB = new Checkbox({ checked: true, style: { 'margin-left': '10px' } });
+      bactCB.on('change', lang.hitch(this, function (val) {
+        this.set('includeBacterial', val);
+      }));
+      domConstr.place(bactCB.domNode, bactDiv, 'first');
+      domConstr.create('span', { innerHTML: 'Bacterial Genomes' }, bactDiv);
+
+      var viralDiv = domConstr.create('div', {});
+      domConstr.place(viralDiv, dfc, 'last');
+      var viralCB = new Checkbox({ checked: true, style: { 'margin-left': '10px' } });
+      viralCB.on('change', lang.hitch(this, function (val) {
+        this.set('includeViral', val);
+      }));
+      domConstr.place(viralCB.domNode, viralDiv, 'first');
+      domConstr.create('span', { innerHTML: 'Viral Genomes' }, viralDiv);
+
+      var hostDiv = domConstr.create('div', {});
+      domConstr.place(hostDiv, dfc, 'last');
+      var hostCB = new Checkbox({ checked: true, style: { 'margin-left': '10px' } });
+      hostCB.on('change', lang.hitch(this, function (val) {
+        this.set('includeHost', val);
+      }));
+      domConstr.place(hostCB.domNode, hostDiv, 'first');
+      domConstr.create('span', { innerHTML: 'Host Genomes' }, hostDiv);
 
       var filterTT = new TooltipDialog({
         content: dfc,
