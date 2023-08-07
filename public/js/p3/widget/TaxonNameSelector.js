@@ -21,6 +21,10 @@ define([
     intAttrs: ['taxon_id'],
     rankList: ['species', 'no rank', 'genus', 'subspecies', 'family', 'order', 'class', 'phylum', 'species group', 'suborder', 'varietas', 'species subgroup', 'subclass', 'subgenus', 'forma', 'superphylum', 'superkingdom', 'tribe', 'subfamily', 'subphylum'],
     // query: "?&select(taxon_name)",
+    includeHost: true,
+    includeBacteria: true,
+    includeViruses: true,
+    setBacteriophage: false,
     queryExpr: '${0}',
     pageSize: 25,
     highlightMatch: 'all',
@@ -92,6 +96,19 @@ define([
         }
         if (_self.promoteAttrs && _self.promoteAttrs.length > 0) {
           q += '&qf=' + _self.promoteAttrs.join(' ');
+        }
+
+        if (!_self.includeHost) {
+          q += '&fq=-lineage_ids:2759';
+        }
+        if (!_self.includeBacteria) {
+          q += '&fq=-lineage_ids:2';
+        }
+        if (!_self.includeViruses) {
+          q += '&fq=-lineage_ids:10239';
+        }
+        if (_self.setBacteriophage) {
+          q += '&fq=lineage_ids:38018';
         }
         // var re = new RegExp("\\s+","gi");
         // q=q.replace(re,"+"); //hack appropriate web api handling spaces

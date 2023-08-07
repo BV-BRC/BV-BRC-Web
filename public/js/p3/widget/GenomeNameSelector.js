@@ -181,25 +181,13 @@ define([
         queryFilterComponents.push('eq(public,false)');
       }
 
-      if (this.includeBacterial && this.includeViral && !this.includeHost) {
-        queryFilterComponents.push('or(eq(superkingdom,Bacteria),eq(superkingdom,Viruses))');
-      }
-      else if (this.includeBacterial && !this.includeViral && this.includeHost) {
-        queryFilterComponents.push('or(eq(superkingdom,Bacteria),eq(superkingdom,Eukaryota))');
-      }
-      else if (!this.includeBacterial && this.includeViral && this.includeHost) {
-        queryFilterComponents.push('or(eq(superkingdom,Viruses),eq(superkingdom,Eukaryota))');
-      }
-      else if (this.includeBacterial && !this.includeViral && this.includeHost) {
-        queryFilterComponents.push('or(eq(superkingdom,Bacteria),eq(superkingdom,Eukaryota))');
-      }
-      else if (this.includeBacterial && !this.includeViral && !this.includeHost) {
+      if (this.includeBacterial) {
         queryFilterComponents.push('eq(superkingdom,Bacteria)');
       }
-      else if (!this.includeBacterial && this.includeViral && !this.includeHost) {
+      if (this.includeViral) {
         queryFilterComponents.push('eq(superkingdom,Viruses)');
       }
-      else if (!this.includeBacterial && !this.includeViral && this.includeHost) {
+      if (this.includeHost) {
         queryFilterComponents.push('eq(superkingdom,Eukaryota)');
       }
 
