@@ -75,16 +75,23 @@ define([
       if (this.recipe.getValue() == 'viral') {
         this.scientific_nameWidget.set('placeHolder', 'e.g. Bat coronavirus');
         this.scientific_nameWidget.set('includeBacteria', 'false');
+        this.scientific_nameWidget.set('setBacteriophage', 'false');
       }
       else if (this.recipe.getValue() == 'default') {
         this.scientific_nameWidget.set('placeHolder', 'e.g. Bacillus Cereus');
         this.scientific_nameWidget.set('includeBacteria', 'true');
         this.scientific_nameWidget.set('includeViruses', 'false');
+        this.scientific_nameWidget.set('setBacteriophage', 'false');
       }
       else if (this.recipe.getValue() == 'phage') {
         this.scientific_nameWidget.set('placeHolder', 'e.g. Bacteriophage sp.');
         this.scientific_nameWidget.set('setBacteriophage', 'true');
         this.scientific_nameWidget.set('includeBacteria', 'false');
+      }
+      else if (this.recipe.getValue() == '') {
+        this.scientific_nameWidget.set('setBacteriophage', 'false');
+        this.scientific_nameWidget.set('includeBacteria', 'true');
+        this.scientific_nameWidget.set('includeViruses', 'true');
       }
     },
 
