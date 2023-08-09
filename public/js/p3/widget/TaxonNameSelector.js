@@ -98,18 +98,19 @@ define([
           q += '&qf=' + _self.promoteAttrs.join(' ');
         }
 
-        if (!_self.includeHost) {
+        if (!_self.includeHost && !_self.setBacteriophage) {
           q += '&fq=-lineage_ids:2759';
         }
-        if (!_self.includeBacteria) {
+        if (!_self.includeBacteria && !_self.setBacteriophage) {
           q += '&fq=-lineage_ids:2';
         }
-        if (!_self.includeViruses) {
+        if (!_self.includeViruses && !_self.setBacteriophage) {
           q += '&fq=-lineage_ids:10239';
         }
         if (_self.setBacteriophage) {
-          q += '&fq=lineage_ids:38018';
+          q += '&fq=taxon_name:*phage*';
         }
+
         // var re = new RegExp("\\s+","gi");
         // q=q.replace(re,"+"); //hack appropriate web api handling spaces
         // console.log('Q: ', q);
