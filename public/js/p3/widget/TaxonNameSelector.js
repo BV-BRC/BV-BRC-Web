@@ -21,7 +21,7 @@ define([
     intAttrs: ['taxon_id'],
     rankList: ['species', 'no rank', 'genus', 'subspecies', 'family', 'order', 'class', 'phylum', 'species group', 'suborder', 'varietas', 'species subgroup', 'subclass', 'subgenus', 'forma', 'superphylum', 'superkingdom', 'tribe', 'subfamily', 'subphylum'],
     // query: "?&select(taxon_name)",
-    includeHost: true,
+    includeEukaryotes: true,
     includeBacteria: true,
     includeViruses: true,
     setBacteriophage: false,
