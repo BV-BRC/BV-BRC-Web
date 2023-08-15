@@ -22,6 +22,15 @@ define([
     pfState: null,
     containerActions: [
       [
+        'Switch Label',
+        'fa icon-pencil-square fa-2x',
+        { label: 'Switch Label', multiple: false, validTypes: ['*'] },
+        function () {
+          Topic.publish(this.topicId, 'changeHeatmapLabels');
+        },
+        true
+      ],
+      [
         'Flip Axis',
         'fa icon-rotate-left fa-2x',
         { label: 'Flip Axis', multiple: false, validTypes: ['*'] },

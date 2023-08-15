@@ -40,6 +40,7 @@ define([
     pgfam_key: '',
     plfam_key: '',
     // figfam_key: '',
+    useGenomeGroupNames: false,
     baseQuery: {},
     startup: true,
     apiServer: window.App.dataServiceURL,
@@ -112,6 +113,11 @@ define([
             break;
           case 'requestHeatmapData':
             this.pfState = value;
+            var currentData = this.getHeatmapData();
+            Topic.publish(this.topicId, 'updateHeatmapData', currentData);
+            break;
+          case 'changeHeatmapLabels':
+            this.useGenomeGroupNames = !this.useGenomeGroupNames;
             var currentData = this.getHeatmapData();
             Topic.publish(this.topicId, 'updateHeatmapData', currentData);
             break;
@@ -495,17 +501,33 @@ define([
         });
       }
 
-      this.pfState.genomeIds.forEach(function (genomeId, idx) {
-        var gfs = thisGFS[genomeId];
-        if (gfs.getStatus() != '1') {
-          keeps.push(2 * gfs.getIndex());
-          var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
-          var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
+      // allow for switching between heatmap row names, get genome group names from state
+      // TODO: make button enabled
+      if (this.useGenomeGroupNames && this.state.genome_group_dict) {
+        var _genome_dict = this.state.genome_group_dict;
+        this.pfState.genomeIds.forEach(function (genomeId, idx) {
+          var gfs = thisGFS[genomeId];
+          if (gfs.getStatus() != '1') {
+            keeps.push(2 * gfs.getIndex());
+            var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
+            var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
+            // console.log("row: ", gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor);
+            rows.push(new HeatmapDataTypes.Row(gfs.getIndex(), genomeId, _genome_dict[genomeId], labelColor, rowColor));
+          }
+        });
+      } else {
+        this.pfState.genomeIds.forEach(function (genomeId, idx) {
+          var gfs = thisGFS[genomeId];
+          if (gfs.getStatus() != '1') {
+            keeps.push(2 * gfs.getIndex());
+            var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
+            var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
 
-          // console.log("row: ", gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor);
-          rows.push(new HeatmapDataTypes.Row(gfs.getIndex(), genomeId, gfs.getLabel(), labelColor, rowColor));
-        }
-      });
+            // console.log("row: ", gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor);
+            rows.push(new HeatmapDataTypes.Row(gfs.getIndex(), genomeId, gfs.getLabel(), labelColor, rowColor));
+          }
+        });
+      }
 
       // cols - families
       // console.warn(this);
