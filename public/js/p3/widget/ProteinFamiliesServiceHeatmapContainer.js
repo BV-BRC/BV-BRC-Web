@@ -90,8 +90,7 @@ define([
         return {
           name: r.meta.useGroupName ? r.meta.groupLabel : r.meta.nameLabel,
           id: r.rowID,
-          meta: r.meta,
-          color: 'green'
+          meta: r.meta
         };
       });
       var cols = data.columns.map(function (c) {
