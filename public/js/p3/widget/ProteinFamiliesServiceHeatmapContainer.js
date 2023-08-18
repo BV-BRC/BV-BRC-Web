@@ -88,8 +88,10 @@ define([
 
       var rows = data.rows.map(function (r) {
         return {
-          name: r.rowLabel,
-          id: r.rowID
+          name: r.meta.useGroupName ? r.meta.groupLabel : r.meta.nameLabel,
+          id: r.rowID,
+          meta: r.meta,
+          color: 'green'
         };
       });
       var cols = data.columns.map(function (c) {
