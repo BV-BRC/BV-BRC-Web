@@ -22,6 +22,15 @@ define([
     pfState: null,
     containerActions: [
       [
+        'Switch Label',
+        'fa icon-pencil-square fa-2x',
+        { label: 'Switch Label', multiple: false, validTypes: ['*'] },
+        function () {
+          Topic.publish(this.topicId, 'changeHeatmapLabels');
+        },
+        true
+      ],
+      [
         'Flip Axis',
         'fa icon-rotate-left fa-2x',
         { label: 'Flip Axis', multiple: false, validTypes: ['*'] },
@@ -778,7 +787,6 @@ define([
     hmapUpdate: function () {
       var self = this;
       if (!this.currentData || !this._firstView) return;
-
       var data = this.formatData(this.currentData);
       if (!data) return;
 
@@ -812,30 +820,30 @@ define([
             rowLabelEllipsisPos: 1
           },
           onHover: function (info) {
-
             var famType = (self.pfState.familyType);
             var labels = [];
-            var genome = info.yLabel,
+            var genome = info.rowMeta.nameLabel ? info.rowMeta.nameLabel : info.yLabel,
               fam = info.xLabel,
               famID = info.colMeta.id,
-              members = info.value;
-
+              members = info.value,
+              group = info.rowMeta.groupLabel ? info.rowMeta.groupLabel : 'None';
             if (famType === 'plfam') {
-              labels = ['Genome: ', 'PLfam: ', 'PLfam ID: ', 'Members: '];
+              labels = ['Genome: ', 'Genome Group:', 'PLfam: ', 'PLfam ID: ', 'Members: '];
             } else if (famType === 'pgfam') {
-              labels = ['Genome: ', 'PGfam: ', 'PGfam ID: ', 'Members: '];
+              labels = ['Genome: ', 'Genome Group:', 'PGfam: ', 'PGfam ID: ', 'Members: '];
             } else if (famType === 'figfam') {
               labels = ['Genome: ', 'FIGfam: ', 'FIGfam ID: ', 'Members: '];
             } else {
-              labels = ['Genome: ', 'Family: ', 'Family ID: ', 'Members: '];
+              labels = ['Genome: ', 'Genome Group:', 'Family: ', 'Family ID: ', 'Members: '];
             }
 
             return `
               <div>
                 <div>${labels[0]}<b> ${genome}</b></div>
-                <div>${labels[1]}<b> ${fam}</b></div>
-                <div>${labels[2]}<b> ${famID}</b></div>
-                <div>${labels[3]}<b> ${members}</b></div>
+                <div>${labels[1]}<b> ${group}</b></div>
+                <div>${labels[2]}<b> ${fam}</b></div>
+                <div>${labels[3]}<b> ${famID}</b></div>
+                <div>${labels[4]}<b> ${members}</b></div>
               </div>
             `
           },

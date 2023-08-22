@@ -94,6 +94,8 @@ define([
       }
     },
 
+
+
     openJobsList: function () {
       Topic.publish('/navigate', { href: '/job/' });
     },
