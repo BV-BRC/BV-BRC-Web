@@ -32,6 +32,7 @@ define([
     excludeLength: false,
     lengthLimit: 10000000,
     representativeOnly: false,
+    startQueryFilter: true,
     pageSize: 25,
     highlightMatch: 'all',
     autoComplete: false,
@@ -129,6 +130,7 @@ define([
     },
 
     _setRepresentativeOnlyAttr: function (val) {
+      console.log('here');
       this.representativeOnly = val;
       this._setQueryFilter();
     },
@@ -148,17 +150,14 @@ define([
       this._setQueryFilter();
     },
 
-    _setQueryFilter: function () {
-      debugger;
-      var queryFilterComponents = [];
+    _setStartQueryFilterAttr: function (val) {
+      this._setQueryFilter();
+    },
 
-      // this block should include all 4 combinations of selection of public
-      // and private;
-      // will use logic OR for selections
+    _setQueryFilter: function () {
 
       var public_filter = '';
       if (!this.includeOtherPublic && !this.representativeOnly && !this.referenceOnly && !this.includePrivate) {
-        // TODO: do I need to add this?
         public_filter = 'or(eq(public,true),eq(public,false))';
       } else if (this.includePrivate && (this.includeOtherPublic || this.representativeOnly || this.referenceOnly)) {
         public_filter = 'or(eq(public,true),eq(public,false))';
@@ -170,16 +169,23 @@ define([
 
       var pubTypeFilter = [];
       if (this.representativeOnly) {
-        pubTypeFilter.push('eq(reference_genome,%22Representative%22))');
+        pubTypeFilter.push('eq(reference_genome,%22Representative%22)');
       }
       if (this.referenceOnly) {
         pubTypeFilter.push('eq(reference_genome,%22Reference%22)');
       }
       if (this.includeOtherPublic) {
-        pubTypeFilter.push('and(not(reference_genome,%22Reference%22),not(reference_genome,%22Representative%22))');
+        pubTypeFilter.push('not(exists(reference_genome,false))');
       }
 
-      var pubTypeStr = `and(${public_filter},or(${pubTypeFilter.join(',')}))`;
+      var pubTypeStr = '';
+      if (pubTypeFilter.length == 0) {
+        pubTypeStr = `${public_filter}`;
+      } else if (pubTypeFilter.length == 1) {
+        pubTypeStr = `and(${public_filter},${pubTypeFilter})`;
+      } else {
+        pubTypeStr = `and(${public_filter},or(${pubTypeFilter.join(',')}))`;
+      }
 
       var genomeFilter = [];
       if (this.includeBacterial) {
@@ -192,20 +198,14 @@ define([
         genomeFilter.push('eq(superkingdom,Eukaryota)');
       }
 
-      this.queryFilter = pubTypeStr + `&or(${genomeFilter.join(',')})&in(superkingdom,(Eukaryota,Bacteria,Viruses))`;
-
-      // if the user accidentally unchecks everything, we'll provide all genomes
-
-      // assemble the query filter
-      /*
-      if (queryFilterComponents.length == 0) {
-        this.queryFilter = '';
-      } else if (queryFilterComponents.length == 1) {
-        this.queryFilter = queryFilterComponents.join('');
+      if (genomeFilter.length == 0) {
+        this.queryFilter = pubTypeStr + '&in(superkingdom,(Eukaryota,Bacteria,Viruses))';
+      } else if (genomeFilter.length == 1) {
+        this.queryFilter = pubTypeStr + `&${genomeFilter}&in(superkingdom,(Eukaryota,Bacteria,Viruses))`;
       } else {
-        this.queryFilter = '&or(' + queryFilterComponents.join(',') + ')';
+        this.queryFilter = pubTypeStr + `&or(${genomeFilter.join(',')})&in(superkingdom,(Eukaryota,Bacteria,Viruses))`;
       }
-      */
+      this.queryFilter  = '&' + this.queryFilter;
 
       console.log("Query Filter set to: " + this.queryFilter);
     },
