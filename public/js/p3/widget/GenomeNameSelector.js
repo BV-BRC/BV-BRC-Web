@@ -22,13 +22,17 @@ define([
     queryExpr: '*${0}*',
     queryFilter: '',
     resultFields: ['genome_id', 'genome_name', 'strain', 'public', 'owner', 'reference_genome', 'taxon_id'],
-    includePrivate: true,
-    includeOtherPublic: true,
-    referenceOnly: true,
+    includePrivate: false,
+    includeOtherPublic: false,
+    referenceOnly: false,
+    includeBacterial: false,
+    includeViral: false,
+    includeEukaryotes: false,
     ncbiHost: true,
     excludeLength: false,
     lengthLimit: 10000000,
-    representativeOnly: true,
+    representativeOnly: false,
+    startQueryFilter: true,
     pageSize: 25,
     highlightMatch: 'all',
     autoComplete: false,
@@ -83,7 +87,7 @@ define([
           q += '&lt(genome_length,' + _self.lengthLimit + ')';
           // q += '&gt(genome_length,-' + _self.lengthLimit + ')';
         }
-        // console.log('Q: ', q);
+        console.log('Q: ', q);
         return api_query.apply(_self.store, [q, options]);
       });
 
@@ -130,49 +134,77 @@ define([
       this._setQueryFilter();
     },
 
+    _setIncludeBacterialAttr: function (val) {
+      this.includeBacterial = val;
+      this._setQueryFilter();
+    },
+
+    _setIncludeViralAttr: function (val) {
+      this.includeViral = val;
+      this._setQueryFilter();
+    },
+
+    _setIncludeEukaryotesAttr: function (val) {
+      this.includeEukaryotes = val;
+      this._setQueryFilter();
+    },
+
+    _setStartQueryFilterAttr: function (val) {
+      this._setQueryFilter();
+    },
+
     _setQueryFilter: function () {
-      var queryFilterComponents = [];
 
-      // this block should include all 4 combinations of selection of public
-      // and private;
-      // will use logic OR for selections
-
-      if (this.includeOtherPublic && this.representativeOnly && this.referenceOnly) {
-        queryFilterComponents.push('eq(public,true)');
-      }
-      else if (this.representativeOnly && this.referenceOnly) {
-        queryFilterComponents.push('and(or(eq(reference_genome,%22Reference%22),eq(reference_genome,%22Representative%22)),eq(public,true))');
-      }
-      else if (this.includeOtherPublic && this.referenceOnly) {
-        queryFilterComponents.push('and(not(reference_genome,%22Representative%22),eq(public,true))');
-      }
-      else if (this.includeOtherPublic && this.representativeOnly) {
-        queryFilterComponents.push('and(not(reference_genome,%22Reference%22),eq(public,true))');
-      }
-      else if (this.referenceOnly) {
-        queryFilterComponents.push('and(eq(reference_genome,%22Reference%22),eq(public,true))');
-      }
-      else if (this.representativeOnly) {
-        queryFilterComponents.push('and(eq(reference_genome,%22Representative%22),eq(public,true))');
-      }
-      else if (this.includeOtherPublic) {
-        queryFilterComponents.push('and(not(reference_genome,%22Reference%22),not(reference_genome,%22Representative%22),eq(public,true))');
-      }
-
-      if (this.includePrivate) {
-        queryFilterComponents.push('eq(public,false)');
-      }
-
-      // if the user accidentally unchecks everything, we'll provide all genomes
-
-      // assemble the query filter
-      if (queryFilterComponents.length == 0) {
-        this.queryFilter = '';
-      } else if (queryFilterComponents.length == 1) {
-        this.queryFilter = queryFilterComponents.join('');
+      var public_filter = '';
+      if (!this.includeOtherPublic && !this.representativeOnly && !this.referenceOnly && !this.includePrivate) {
+        public_filter = 'or(eq(public,true),eq(public,false))';
+      } else if (this.includePrivate && (this.includeOtherPublic || this.representativeOnly || this.referenceOnly)) {
+        public_filter = 'or(eq(public,true),eq(public,false))';
+      } else if (this.includePrivate && !this.includeOtherPublic && !this.representativeOnly && !this.referenceOnly) {
+        public_filter = 'eq(public,false)';
       } else {
-        this.queryFilter = '&or(' + queryFilterComponents.join(',') + ')';
+        public_filter = 'eq(public,true)';
       }
+
+      var pubTypeFilter = [];
+      if (this.representativeOnly) {
+        pubTypeFilter.push('eq(reference_genome,%22Representative%22)');
+      }
+      if (this.referenceOnly) {
+        pubTypeFilter.push('eq(reference_genome,%22Reference%22)');
+      }
+      if (this.includeOtherPublic) {
+        pubTypeFilter.push('not(exists(reference_genome,false))');
+      }
+
+      var pubTypeStr = '';
+      if (pubTypeFilter.length == 0) {
+        pubTypeStr = `${public_filter}`;
+      } else if (pubTypeFilter.length == 1) {
+        pubTypeStr = `and(${public_filter},${pubTypeFilter})`;
+      } else {
+        pubTypeStr = `and(${public_filter},or(${pubTypeFilter.join(',')}))`;
+      }
+
+      var genomeFilter = [];
+      if (this.includeBacterial) {
+        genomeFilter.push('eq(superkingdom,Bacteria)');
+      }
+      if (this.includeViral) {
+        genomeFilter.push('eq(superkingdom,Viruses)');
+      }
+      if (this.includeEukaryotes) {
+        genomeFilter.push('eq(superkingdom,Eukaryota)');
+      }
+
+      if (genomeFilter.length == 0) {
+        this.queryFilter = pubTypeStr + '&in(superkingdom,(Eukaryota,Bacteria,Viruses))';
+      } else if (genomeFilter.length == 1) {
+        this.queryFilter = pubTypeStr + `&${genomeFilter}&in(superkingdom,(Eukaryota,Bacteria,Viruses))`;
+      } else {
+        this.queryFilter = pubTypeStr + `&or(${genomeFilter.join(',')})&in(superkingdom,(Eukaryota,Bacteria,Viruses))`;
+      }
+      this.queryFilter  = '&' + this.queryFilter;
 
       // console.log("Query Filter set to: " + this.queryFilter);
     },
@@ -198,36 +230,36 @@ define([
 
       // var dfc = '<div>Filter Genomes</div><div class="wsActionTooltip" rel="Public">Public</div><div class="wsActionTooltip" rel="private">My Genomes</div>'
       var dfc = domConstr.create('div');
-      domConstr.create('div', { innerHTML: 'Include in Search', style: { 'font-weight': 900 } }, dfc);
+      domConstr.create('div', { innerHTML: 'Filter Search', style: { 'font-weight': 900 } }, dfc);
       domConstr.create('div', { innerHTML: 'Public Genomes:', style: { 'font-weight': 900 } }, dfc);
 
       // reference genomes
       var referenceDiv = domConstr.create('div', {});
       domConstr.place(referenceDiv, dfc, 'last');
-      var referenceCB = new Checkbox({ checked: true, style: { 'margin-left': '10px' } });
+      var referenceCB = new Checkbox({ checked: false, style: { 'margin-left': '10px' } });
       referenceCB.on('change', lang.hitch(this, function (val) {
         // console.log("Toggle Reference Genomes to " + val);
         this.set('referenceOnly', val);
       }));
       domConstr.place(referenceCB.domNode, referenceDiv, 'first');
-      domConstr.create('span', { innerHTML: 'Reference Genomes' }, referenceDiv);
+      domConstr.create('span', { innerHTML: 'Reference' }, referenceDiv);
 
       // representative genomes
       var representativeDiv = domConstr.create('div', {});
       domConstr.place(representativeDiv, dfc, 'last');
-      var representativeCB = new Checkbox({ checked: true, style: { 'margin-left': '10px' } });
+      var representativeCB = new Checkbox({ checked: false, style: { 'margin-left': '10px' } });
       representativeCB.on('change', lang.hitch(this, function (val) {
         // console.log("Toggle Representative Genomes to " + val);
         this.set('representativeOnly', val);
       }));
       domConstr.place(representativeCB.domNode, representativeDiv, 'first');
-      domConstr.create('span', { innerHTML: 'Representative Genomes' }, representativeDiv);
+      domConstr.create('span', { innerHTML: 'Representative' }, representativeDiv);
 
       // Other public genomes
       var otherPublicDiv = domConstr.create('div', {});
       domConstr.place(otherPublicDiv, dfc, 'last');
 
-      var otherPublicCB = new Checkbox({ checked: true, style: { 'margin-left': '10px' } });
+      var otherPublicCB = new Checkbox({ checked: false, style: { 'margin-left': '10px' } });
       otherPublicCB.on('change', lang.hitch(this, function (val) {
         // console.log("Toggle Other Public Genomes to " + val);
         this.set('includeOtherPublic', val);
@@ -240,13 +272,43 @@ define([
       var privateDiv = domConstr.create('div', {});
       domConstr.place(privateDiv, dfc, 'last');
 
-      var privateCB = new Checkbox({ checked: true, style: { 'margin-left': '10px' } });
+      var privateCB = new Checkbox({ checked: false, style: { 'margin-left': '10px' } });
       privateCB.on('change', lang.hitch(this, function (val) {
         // console.log("Toggle Private Genomes to " + val);
         this.set('includePrivate', val);
       }));
       domConstr.place(privateCB.domNode, privateDiv, 'first');
       domConstr.create('span', { innerHTML: 'My Genomes' }, privateDiv);
+
+      // Genome type
+      domConstr.create('div', { innerHTML: 'Genome Type:', style: { 'font-weight': 900 } }, dfc);
+
+      var bactDiv = domConstr.create('div', {});
+      domConstr.place(bactDiv, dfc, 'last');
+      var bactCB = new Checkbox({ checked: false, style: { 'margin-left': '10px' } });
+      bactCB.on('change', lang.hitch(this, function (val) {
+        this.set('includeBacterial', val);
+      }));
+      domConstr.place(bactCB.domNode, bactDiv, 'first');
+      domConstr.create('span', { innerHTML: 'Bacteria' }, bactDiv);
+
+      var viralDiv = domConstr.create('div', {});
+      domConstr.place(viralDiv, dfc, 'last');
+      var viralCB = new Checkbox({ checked: false, style: { 'margin-left': '10px' } });
+      viralCB.on('change', lang.hitch(this, function (val) {
+        this.set('includeViral', val);
+      }));
+      domConstr.place(viralCB.domNode, viralDiv, 'first');
+      domConstr.create('span', { innerHTML: 'Viruses' }, viralDiv);
+
+      var hostDiv = domConstr.create('div', {});
+      domConstr.place(hostDiv, dfc, 'last');
+      var hostCB = new Checkbox({ checked: false, style: { 'margin-left': '10px' } });
+      hostCB.on('change', lang.hitch(this, function (val) {
+        this.set('includeEukaryotes', val);
+      }));
+      domConstr.place(hostCB.domNode, hostDiv, 'first');
+      domConstr.create('span', { innerHTML: 'Eukaryotes' }, hostDiv);
 
       var filterTT = new TooltipDialog({
         content: dfc,
