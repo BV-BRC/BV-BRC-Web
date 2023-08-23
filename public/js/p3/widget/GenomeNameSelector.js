@@ -27,7 +27,7 @@ define([
     referenceOnly: false,
     includeBacterial: false,
     includeViral: false,
-    includeHost: false,
+    includeEukaryotes: false,
     ncbiHost: true,
     excludeLength: false,
     lengthLimit: 10000000,
@@ -130,7 +130,6 @@ define([
     },
 
     _setRepresentativeOnlyAttr: function (val) {
-      console.log('here');
       this.representativeOnly = val;
       this._setQueryFilter();
     },
@@ -145,8 +144,8 @@ define([
       this._setQueryFilter();
     },
 
-    _setIncludeHostAttr: function (val) {
-      this.includeHost = val;
+    _setIncludeEukaryotesAttr: function (val) {
+      this.includeEukaryotes = val;
       this._setQueryFilter();
     },
 
@@ -194,7 +193,7 @@ define([
       if (this.includeViral) {
         genomeFilter.push('eq(superkingdom,Viruses)');
       }
-      if (this.includeHost) {
+      if (this.includeEukaryotes) {
         genomeFilter.push('eq(superkingdom,Eukaryota)');
       }
 
@@ -207,7 +206,7 @@ define([
       }
       this.queryFilter  = '&' + this.queryFilter;
 
-      console.log("Query Filter set to: " + this.queryFilter);
+      // console.log("Query Filter set to: " + this.queryFilter);
     },
     onChange: function () {
       if (this.item) {
@@ -306,7 +305,7 @@ define([
       domConstr.place(hostDiv, dfc, 'last');
       var hostCB = new Checkbox({ checked: false, style: { 'margin-left': '10px' } });
       hostCB.on('change', lang.hitch(this, function (val) {
-        this.set('includeHost', val);
+        this.set('includeEukaryotes', val);
       }));
       domConstr.place(hostCB.domNode, hostDiv, 'first');
       domConstr.create('span', { innerHTML: 'Eukaryotes' }, hostDiv);
