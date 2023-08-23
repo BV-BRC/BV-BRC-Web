@@ -513,6 +513,7 @@ define([
         'email': this.email.value,
         'consortium': this.consortium.value,
         'affiliation': this.affiliation.value,
+        'phoneNumber': this.phoneNumber.value,
         'country': this.country.value,
         'street': this.street.value,
         'postal_code': this.postal_code.value,
