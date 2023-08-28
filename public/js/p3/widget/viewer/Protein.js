@@ -21,8 +21,8 @@ define([
     containerType: 'feature_group',
     feature_id: '',
     context: 'bacteria',
-    perspectiveLabel: 'Feature View',
-    perspectiveIconClass: 'icon-selection-Feature',
+    perspectiveLabel: 'Protein View',
+    perspectiveIconClass: 'icon-selection-Protein',
 
     _setFeature_idAttr: function (id) {
 
