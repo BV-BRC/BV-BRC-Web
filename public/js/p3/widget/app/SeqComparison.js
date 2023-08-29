@@ -471,6 +471,15 @@ define([
           domClass.add(this.domNode, 'Working');
           domClass.remove(this.domNode, 'Error');
           domClass.remove(this.domNode, 'Submitted');
+          var start_params = {
+            'base_url': window.App.appBaseURL
+          };
+          if (window.App.containerBuildID) {
+            console.log('window.App = ', window.App);
+            values.container_id = window.App.containerBuildID;
+          }
+
+          console.log('values = ', values);
 
           if (window.App.noJobSubmission) {
             var dlg = new Dialog({
@@ -482,7 +491,9 @@ define([
             return;
           }
           this.submitButton.set('disabled', true);
-          window.App.api.service('AppService.start_app', [this.applicationName, values]).then(function (results) {
+
+          window.App.api.service('AppService.start_app2', [this.applicationName, values, start_params]).then(function (results) {
+          // window.App.api.service('AppService.start_app', [this.applicationName, values]).then(function (results) {
             // console.log("Job Submission Results: ", results);
             domClass.remove(_self.domNode, 'Working');
             domClass.add(_self.domNode, 'Submitted');

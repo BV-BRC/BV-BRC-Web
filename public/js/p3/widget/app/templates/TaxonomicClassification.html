@@ -125,7 +125,7 @@
           <td>
             <div class="appBox appShadow" style="min-height: 213px; height:auto; width:400px;", >
               <div class="headerrow">
-                <label class="appBoxLabel">Selected libraries</label>
+                <label class="appBoxLabel">Selected Libraries</label>
                 <div name="selected-libraries" class="infobox iconbox infobutton tooltipinfo">
                   <i class="fa icon-question-circle fa"></i>
                 </div>
@@ -168,14 +168,14 @@
         <div class="appRow">
             <label>Database</label><br>
             <select data-dojo-type="dijit/form/Select" name="database" style="width:300px" required="true" data-dojo-props="intermediateChanges:true">
+              <option value="bvbrc" selected="selected">BV-BRC Database</option>
               <option value="standard">Kraken2 Standard Database</option>
-              <option value="bvbrc">BV-BRC Database</option>
             </select>
         </div>
         <div class="appRow">
-          <label>Filter Host Genome</label><br>
+          <label>Filter Host Reads</label><br>
           <select data-dojo-type="dijit/form/Select" name="host_genome" style="width:300px" required="true" data-dojo-props="intermediateChanges:true">
-            <option value="no_host">No host organism</option>
+            <option value="no_host" selected="selected">None</option>
             <option value="homo_sapiens">Homo sapiens</option>
             <option value="mus_musculus">Mus musculus</option>
             <option value="rattus_norvegicus">Rattus norvegicus</option>
@@ -188,6 +188,36 @@
             <option value="sus_scrofa">Sus scrofa</option>
           </select>
       </div>
+      <div class="appRow">
+        <label>Confidence Interval</label><br>
+        <select data-dojo-type="dijit/form/Select" name="confidence_interval" style="width:300px" required="true" data-dojo-props="intermediateChanges:true">
+          <option value="0">0</option>
+          <option value="0.1" selected="selected">0.1</option>
+          <option value="0.2">0.2</option>
+          <option value="0.3">0.3</option>
+          <option value="0.4">0.4</option>
+          <option value="0.5">0.5</option>
+          <option value="0.6">0.6</option>
+          <option value="0.7">0.7</option>
+          <option value="0.8">0.8</option>
+          <option value="0.9">0.9</option>
+          <option value="1">1</option>
+      </select>
+    </div>
+      <div class="appRow">
+        <label class="paramlabel">Save Classified Sequences</label><br>
+        <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_classified_sequences" value="false" data-dojo-attach-point="save_classified_sequences_no" checked />
+        <label for="radio1">No</label>
+        <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_classified_sequences" value="true" data-dojo-attach-point="save_classified_sequences_yes"/>
+        <label for="radio2">Yes</label>
+      </div>
+        <div class="appRow">
+          <label class="paramlabel">Save Unclassified Sequences</label><br>
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_unclassified_sequences" value="false" data-dojo-attach-point="save_unclassified_sequences_no" checked />
+          <label for="radio1">No</label>
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_unclassified_sequences" value="true" data-dojo-attach-point="save_unclassified_sequences_yes"/>
+          <label for="radio2">Yes</label>
+      </div>
         <div class="appRow">
           <label>Output Folder</label><br>
           <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
@@ -197,7 +227,6 @@
             data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange">
           </div>
         </div>
-
         <div class="appRow">
           <label>Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
           <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
