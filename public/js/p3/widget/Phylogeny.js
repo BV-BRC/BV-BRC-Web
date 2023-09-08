@@ -49,6 +49,7 @@ define([
     jsonTree: null,
     tree: null,
     apiServer: window.App.dataAPI,
+    phyloxml_date: 'Sept0722',
     phylogram: true,
     containerType: 'genome_data',
     docsServiceURL: window.App.docsServiceURL,
@@ -132,17 +133,91 @@ define([
       // this.supportButton = domConstruct.create("input", {type: "button", value: "show support"}, menuDiv);
       // this.groupButton = domConstruct.create("input", {type: "button", value: "create genome group"}, menuDiv);
       // this.imageButton = domConstruct.create("input", {type: "button", value: "save image"}, menuDiv);
-      this.treeDiv = domConstruct.create('div', { id: this.id + 'tree-container' }, this.containerPane.domNode);
+      // this.treeDiv = domConstruct.create('div', { id: this.id + 'tree-container' }, this.containerPane.domNode);
+      /*
+      this.treeDiv = domConstruct.create('div', { id: this.id + 'tree-container', class: 'size archaeopteryxClass' }, this.containerPane.domNode);
+      domConstruct.create('div', { id: 'phylogram1' }, this.treeDiv);
+      domConstruct.create('div', { id: 'controls0', class: 'ui-widget-content' }, this.treeDiv);
+      domConstruct.create('div', { id: 'controls1', class: 'ui-widget-content' }, this.treeDiv);
+      */
+
       this.watch('state', lang.hitch(this, 'onSetState'));
       this.watch('taxon_id', lang.hitch(this, 'onSetTaxonId'));
       this.watch('newick', lang.hitch(this, 'processTree'));
       this.watch('selection', lang.hitch(this, 'onSelection'));
 
+      this.pre_build_options();
     },
 
     noData: function () {
       domClass.add(this.typeButton.domNode, 'dijitHidden');
       this.treeDiv.innerHTML = 'There is no tree currently available';
+    },
+
+    pre_build_options: function () {
+      const options = {};
+      options.backgroundColorDefault = '#ffffff';
+      options.branchColorDefault = '#909090';
+      options.branchDataFontSize = 12;
+      options.branchWidthDefault = 3;
+      options.collapasedLabelLength = 7;
+      options.defaultFont = ['Arial', 'Helvetica', 'Times'];
+      options.dynahide = true;
+      options.externalNodeFontSize = 12;
+      options.internalNodeFontSize = 12;
+      options.labelColorDefault = '#202020';
+      options.minBranchLengthValueToShow = 0.01;
+      options.minConfidenceValueToShow = 0.5;
+      options.nodeSizeDefault = 2;
+      options.nodeVisualizationsOpacity = 1.0;
+      options.phylogram = true;
+      options.searchIsCaseSensitive = false;
+      options.searchIsPartial = true;
+      options.searchUsesRegex = false;
+      options.showBranchEvents = true;
+      options.showBranchLengthValues = false;
+      options.showConfidenceValues = true;
+      options.showDisributions = true;
+      options.showExternalLabels = true;
+      options.showExternalNodes = true;
+      options.showInternalLabels = true;
+      options.showInternalNodes = true;
+      options.showNodeEvents = true;
+      options.showNodeName = true;
+      options.showSequence = true;
+      options.showSequenceAccession = true;
+      options.showSequenceGeneSymbol = true;
+      options.showSequenceName = true;
+      options.showSequenceSymbol = true;
+      options.showTaxonomy = false;
+      options.showTaxonomyCode = true;
+      options.showTaxonomyCommonName = true;
+      options.showTaxonomyRank = true;
+      options.showTaxonomyScientificName = true;
+      options.showTaxonomySynonyms = true;
+      options.labelColor = '#202020';
+
+      var settings = {};
+      settings.border = '1px solid #909090';
+      settings.controls0Top = 10;
+      settings.controls1Top = 10;
+      settings.enableAccessToDatabases = true;
+      settings.controlsBackgroundColor = '#e0e0e0';
+      settings.controlsFont = ['Arial', 'Helvetica', 'Times'];
+      settings.controlsFontColor = '#505050';
+      settings.controlsFontSize = 8;
+      settings.enableDownloads = true;
+      settings.enableBranchVisualizations = true;
+      settings.enableCollapseByBranchLenghts = false;
+      settings.enableCollapseByFeature = false;
+      settings.enableNodeVisualizations = true;
+      settings.nhExportWriteConfidences = true;
+      settings.rootOffset = 180;
+      settings.allowManualNodeSelection = true;
+      settings.orderTree = true;
+
+      this.settings = settings;
+      this.options = options;
     },
 
     onSelection: function () {
@@ -185,6 +260,35 @@ define([
     },
 
     onSetTaxonId: function (attr, oldVal, taxonId) {
+      // after the Phylogeny tab has been clicked, add this div for the tree
+      // if placed in startup, will throw an error after navigating away from the page without a refresh
+      // for some reason we lose the references for the child nodes of treeDiv
+      if (document.getElementById(this.id + 'tree-container')) {
+        // remove all child nodes and add them again when doing basic navigation without reloading the page
+        var currTree = document.getElementById(this.id + 'tree-container');
+        var child = currTree.lastElementChild;
+        while (child) {
+          currTree.removeChild(child);
+          child = currTree.lastElementChild;
+        }
+      } else {
+        this.treeDiv = domConstruct.create('div', { id: this.id + 'tree-container', class: 'size archaeopteryxClass' }, this.containerPane.domNode);
+      }
+      domConstruct.create('div', { id: 'phylogram1' }, this.treeDiv);
+      domConstruct.create('div', { id: 'controls0', class: 'ui-widget-content' }, this.treeDiv);
+      domConstruct.create('div', { id: 'controls1', class: 'ui-widget-content' }, this.treeDiv);
+
+      // when the json file updates, update the phyloxml_date variable
+      // when the same string is used it returns the cached file
+      // when the string is updated it will query the server for the updated file
+      request.get('https://www.bv-brc.org/api/content/bvbrc_phylogeny_tab/taxon_tree_dict.json?version=' + this.phyloxml_date).then(lang.hitch(this, function (text_data) {
+        var data = JSON.parse(text_data);
+        this.processPhyloxml(taxonId.toString(), data);
+      }), lang.hitch(this, function (err) {
+        this.noData();
+        console.log('Error Retreiving newick for Taxon: ', err);
+      }));
+      /*
       request.get(PathJoin(this.apiServer, 'taxonomy', taxonId), {
         headers: { accept: 'application/newick+json' },
         handleAs: 'json'
@@ -195,6 +299,79 @@ define([
         this.noData();
         console.log('Error Retreiving newick for Taxon: ', err);
       }));
+      */
+    },
+
+    processPhyloxml: function (taxonId, data) {
+      if (!Object.keys(data).includes(taxonId)) {
+        this.noData();
+        console.log('Error Retreiving newick for Taxon: ', taxonId);
+      } else {
+        var phyloxml_file = data[taxonId];
+        phyloxml_file = 'https://www.bv-brc.org/api/content/bvbrc_phylogeny_tab/phyloxml/' + phyloxml_file;
+        request.get(phyloxml_file).then(lang.hitch(this, function (phyloxml) {
+          var tree;
+          var options = {};
+          var settings = this.settings;
+          var nodeVisualizations = {};
+          // var specialVisualizations = this.specialVisualizations;
+          var nodeLabels = {};
+
+          try {
+            tree = window.archaeopteryx.parsePhyloXML(phyloxml);
+          }
+          catch (e) {
+            alert('error while parsing tree: ' + e);
+          }
+          var refs_set = forester.collectPropertyRefs(tree, 'node', true);
+          refs_set.forEach(function (a) {
+            // console.log('refs_set a', a);
+            var property_name = '';
+            var property_line = a.split(':');
+            // console.log('property_line', property_line);
+            var selected = false;
+
+            if (property_line.length == 1) {
+              property_name = property_line[0];
+            }
+            else if (property_line.length > 1) {
+              property_name = property_line[1];
+            }
+
+            if (property_name.toLowerCase() == 'genome_name') {
+              selected = true;
+              options.showNodeName = false;
+            }
+            nodeVisualizations[property_name] =  {
+              label: property_name,
+              description: property_name,
+              field: null,
+              cladeRef: a,
+              regex: false,
+              shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+              colors: 'category50',
+              sizes: null
+            };
+            nodeLabels[property_name] = {
+              label: property_name,
+              description: property_name,
+              propertyRef: 'BVBRC:' + property_name,
+              selected: selected,
+              showButton: true
+            };
+          });
+          // forester.midpointRoot(tree);
+          if (tree) {
+            try {
+              window.archaeopteryx.launch('#phylogram1', tree, options, settings, nodeVisualizations, nodeLabels);
+            }
+            catch (e) {
+              alert('error while launching archaeopteryx: ' + e);
+            }
+          }
+        }));
+        // this.processTreeData(phyloxml_file);
+      }
     },
 
     processTreeData: function (treeDat, idType) {

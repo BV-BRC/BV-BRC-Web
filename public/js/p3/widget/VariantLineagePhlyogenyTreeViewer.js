@@ -276,7 +276,7 @@ define([
       var settings = this.settings;
       var nodeVisualizations = this.nodeVisualizations;
       var specialVisualizations = this.specialVisualizations;
-
+      debugger;
       xhr.get('https://www.bv-brc.org/api/content/phyloxml_trees/SARS2_IT23_29400_09999_cdh_pango_4_MAFFT_05_GTR_fme_pdvxvm.xml')
         .then((data) => {
           var tree;
