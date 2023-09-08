@@ -513,8 +513,12 @@ define([
         'email': this.email.value,
         'consortium': this.consortium.value,
         'affiliation': this.affiliation.value,
+        'phoneNumber': this.phoneNumber.value,
         'country': this.country.value,
-        'phoneNumber': this.phoneNumber.value
+        'street': this.street.value,
+        'postal_code': this.postal_code.value,
+        'city': this.city.value,
+        'state': this.state_info.value
       };
 
       if (_self.input_source == 'fasta_file') {

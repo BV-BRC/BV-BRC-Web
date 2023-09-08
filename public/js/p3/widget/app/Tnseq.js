@@ -211,6 +211,33 @@ define([
       }
     },
 
+    validate: function () {
+      // checks to make sure resampling has at least one of each condition present
+      if (this.recipe.get('value') === 'resampling') {
+        var condDict = { 'control': 0, 'treatment': 0 };
+        var pairedList = this.libraryStore.query({ type: 'paired' });
+        var singleList = this.libraryStore.query({ type: 'single' });
+        var libraryList = pairedList.concat(singleList);
+        var disable_button = false;
+        libraryList.forEach(lang.hitch(this, function (obj) {
+          condDict[obj.condition]++;
+        }));
+        Object.keys(condDict).forEach(lang.hitch(this, function (cond) {
+          if (condDict[cond] == 0) {
+            disable_button = true;
+          }
+        }));
+        if (disable_button) {
+          this.recipe_message.innerHTML = 'At least 2 replicates per condition are required for conditional resampling.';
+          this.submitButton.set('disabled', true);
+          return false;
+        } else {
+          this.recipe_message.innerHTML = '';
+        }
+      }
+      return this.inherited(arguments);
+    },
+
     getValues: function () {
       var assembly_values = {};
       var values = this.inherited(arguments);
@@ -500,10 +527,12 @@ define([
         }
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
           this.destroyLibRow(lrec.id, 'id');
+          this.validate();
         }));
         lrec.handle = handle;
         this.libraryStore.put(lrec);
         this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
+        this.validate();
       }
     },
 
@@ -576,10 +605,12 @@ define([
         }
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
           this.destroyLibRow(lrec.id, 'id');
+          this.validate();
         }));
         lrec.handle = handle;
         this.libraryStore.put(lrec);
         this.increaseRows(this.libsTable, this.addedLibs, this.numlibs);
+        this.validate();
       }
     },
 
