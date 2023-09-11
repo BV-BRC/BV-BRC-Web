@@ -1,11 +1,12 @@
 define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
-  './PageGrid', './formatter', '../store/SubsystemJsonRest', './GridSelector'
+  './PageGrid', './formatter', '../store/SubsystemJsonRest', './GridSelector',
+  '../WorkspaceManager', 'dojo/_base/lang'
 ], function (
   declare, BorderContainer, on,
   domClass, ContentPane, domConstruct,
-  Grid, formatter, Store, selector
+  Grid, formatter, Store, selector, WorkspaceManager, lang
 ) {
 
   var store = new Store({});
@@ -42,6 +43,7 @@ define([
     },
     startup: function () {
       var _self = this;
+
       this.on('.dgrid-content .dgrid-row:dblclick', function (evt) {
         var row = _self.row(evt);
 

@@ -2,12 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang',
   './_FeatureList', './TabViewerBase',
   '../FeatureListOverview', '../GroupFeatureGridContainer',
-  '../CompareRegionContainer'
+  '../CompareRegionContainer', '../SubsystemGridContainer',
+  '../../WorkspaceManager'
 ], function (
   declare, lang,
   FeatureList, TabViewerBase,
   Overview, GroupFeatureGridContainer,
-  CompareRegionContainer
+  CompareRegionContainer, SubsystemGridContainer, WorkspaceManager
 ) {
 
   return declare([FeatureList], {
@@ -119,6 +120,20 @@ define([
         style: 'overflow-y:auto',
         id: this.viewer.id + '_compareRegionViewer'
       });
+
+      this.subsystems = new SubsystemGridContainer({
+        title: 'Subsystems',
+        id: this.viewer.id + '_subsystems',
+        tooltip: 'in progress'
+      });
+      this.viewer.addChild(this.subsystems);
+
+      var fg = this.state.pathname.replace('/FeatureGroup', '');
+      WorkspaceManager.getObject(fg).then(lang.hitch(this, function (res) {
+        res = JSON.parse(res.data);
+        var new_query = 'in(feature_id,(' + res.id_list.feature_id.join(',') + '))';
+        this.subsystems.set('query', new_query);
+      }));
 
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.features);
