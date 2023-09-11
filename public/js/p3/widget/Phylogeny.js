@@ -86,30 +86,7 @@ define([
       this.itemDetailPanel.startup();
 
       var menuDiv = domConstruct.create('div', { style: 'display: inline-block' }, this.containerActionBar.pathContainer);
-      // this.treeHeader = domConstruct.create('div', { style: 'margin-left: 20px; display: inline-block' }, this.containerActionBar.pathContainer);
-      /*
-      var typeMenuDom = domConstruct.create('div', {}, menuDiv);
-      var typeMenu = new DropDownMenu({ style: 'display: none;' });
-      typeMenu.addChild(new MenuItem({
-        label: 'phylogram',
-        onClick: lang.hitch(this, function () {
-          this.setTreeType('phylogram');
-        })
-      }));
-      typeMenu.addChild(new MenuItem({
-        label: 'cladogram',
-        onClick: lang.hitch(this, function () {
-          this.setTreeType('cladogram');
-        })
-      }));
-      typeMenu.startup();
-      this.typeButton = new DropDownButton({
-        name: 'typeButton',
-        label: this.phylogram ? 'phylogram' : 'cladogram',
-        dropDown: typeMenu
-      }, typeMenuDom);
-      this.typeButton.startup();
-      */
+
       this.setupActions();
       on(idMenu.domNode, 'click', lang.hitch(this, function (evt) {
         var rel = evt.target.attributes.rel.value;
@@ -131,21 +108,10 @@ define([
         }
         popup.close(snapMenu);
       }));
-      // this.typeButton = domConstruct.create("input",{type:"button",value:"phylogram"},menuDiv);
-      // this.supportButton = domConstruct.create("input", {type: "button", value: "show support"}, menuDiv);
-      // this.groupButton = domConstruct.create("input", {type: "button", value: "create genome group"}, menuDiv);
-      // this.imageButton = domConstruct.create("input", {type: "button", value: "save image"}, menuDiv);
-      // this.treeDiv = domConstruct.create('div', { id: this.id + 'tree-container' }, this.containerPane.domNode);
-      /*
-      this.treeDiv = domConstruct.create('div', { id: this.id + 'tree-container', class: 'size archaeopteryxClass' }, this.containerPane.domNode);
-      domConstruct.create('div', { id: 'phylogram1' }, this.treeDiv);
-      domConstruct.create('div', { id: 'controls0', class: 'ui-widget-content' }, this.treeDiv);
-      domConstruct.create('div', { id: 'controls1', class: 'ui-widget-content' }, this.treeDiv);
-      */
 
       this.watch('state', lang.hitch(this, 'onSetState'));
       this.watch('taxon_id', lang.hitch(this, 'onSetTaxonId'));
-      this.watch('newick', lang.hitch(this, 'processTree'));
+      // this.watch('newick', lang.hitch(this, 'processTree'));
       this.watch('selection', lang.hitch(this, 'onSelection'));
 
       this.pre_build_options();
@@ -289,18 +255,6 @@ define([
         this.noData();
         console.log('Error Retreiving newick for Taxon: ', err);
       }));
-      /*
-      request.get(PathJoin(this.apiServer, 'taxonomy', taxonId), {
-        headers: { accept: 'application/newick+json' },
-        handleAs: 'json'
-      }).then(lang.hitch(this, function (treeDat) {
-        // console.log("Set Newick");
-        this.processTreeData(treeDat);
-      }), lang.hitch(this, function (err) {
-        this.noData();
-        console.log('Error Retreiving newick for Taxon: ', err);
-      }));
-      */
     },
 
     processPhyloxml: function (taxonId, data) {
@@ -371,80 +325,7 @@ define([
             }
           }
         }));
-        // this.processTreeData(phyloxml_file);
       }
-    },
-
-    processTreeData: function (treeDat, idType) {
-      if (!treeDat.tree) {
-        console.log('No newick+json in Request Response');
-        return;
-      }
-      if (treeDat.labels) {
-        this.set('labels', treeDat.labels);
-      }
-      if (treeDat.info) {
-        var headerParts = [];
-        if (treeDat.info.taxon_name && treeDat.info.taxon_name != 'unknown') {
-          headerParts.push(treeDat.info.taxon_name);
-        }
-        if (treeDat.info.taxon_rank && treeDat.info.taxon_rank != 'unknown') {
-          headerParts.push(treeDat.info.taxon_rank + ' level tree');
-        }
-        if (treeDat.info.count) {
-          headerParts.push('(' + String(treeDat.info.count) + ' genomes)');
-        }
-        this.treeHeader.innerHTML = headerParts.join(' ');
-      }
-      this.set('idType', idType);
-      this.set('newick', treeDat.tree);
-    },
-
-    processTree: function () {
-      if (!this.newick) {
-        console.log('No Newick File To Render');
-        return;
-      }
-      domClass.remove(this.typeButton.domNode, 'dijitHidden');
-      if (!this.tree) {
-
-        this.tree = new TreeNavSVG({
-          selectionTarget: this
-        });
-        this.tree.d3Tree('#' + this.id + 'tree-container', {
-          colorGenus: true,
-          phylogram: this.phylogram,
-          fontSize: 10
-        });
-      }
-
-      var idMenuDivs = [];
-      if (this.labels) {
-        this.tree.setTree(this.newick, this.labels, 'Organism Names', this.idType);
-        idMenuDivs.push('<div class="wsActionTooltip" rel="Organism Names">Organism Names</div>');
-        idMenuDivs.push('<div class="wsActionTooltip" rel="Default ID">Genome ID</div>');
-      }
-      else {
-        this.tree.setTree(this.newick, null, null, this.idType);
-        idMenuDivs.push('<div class="wsActionTooltip" rel="Default ID">Genome ID</div>');
-      }
-      idMenu.set('content', idMenuDivs.join(''));
-      this.tree.startup();
-    },
-
-    setTreeType: function (treeType) {
-      if (this.phylogram && treeType == 'cladogram') {
-        this.togglePhylo();
-      }
-      else if ((!this.phylogram) && treeType == 'phylogram') {
-        this.togglePhylo();
-      }
-    },
-
-    togglePhylo: function () {
-      this.phylogram = !this.phylogram;
-      this.tree.setPhylogram(this.phylogram);
-      this.typeButton.set('label', this.phylogram ? 'phylogram' : 'cladogram');
     },
 
     updateTree: function () {
