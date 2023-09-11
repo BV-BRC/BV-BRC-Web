@@ -62,7 +62,7 @@ define([
         region: 'top',
         splitter: false,
         content: '',
-        style: 'height: 42px; margin:0px;padding:0px; overflow: hidden; vertical-align:middle;',
+        style: 'height: 20px; margin:0px;padding:0px; overflow: hidden; vertical-align:middle;',
         className: 'TextTabButtons'
       });
       this.selectionActionBar = new ActionBar({
@@ -86,7 +86,8 @@ define([
       this.itemDetailPanel.startup();
 
       var menuDiv = domConstruct.create('div', { style: 'display: inline-block' }, this.containerActionBar.pathContainer);
-      this.treeHeader = domConstruct.create('div', { style: 'margin-left: 20px; display: inline-block' }, this.containerActionBar.pathContainer);
+      // this.treeHeader = domConstruct.create('div', { style: 'margin-left: 20px; display: inline-block' }, this.containerActionBar.pathContainer);
+      /*
       var typeMenuDom = domConstruct.create('div', {}, menuDiv);
       var typeMenu = new DropDownMenu({ style: 'display: none;' });
       typeMenu.addChild(new MenuItem({
@@ -108,6 +109,7 @@ define([
         dropDown: typeMenu
       }, typeMenuDom);
       this.typeButton.startup();
+      */
       this.setupActions();
       on(idMenu.domNode, 'click', lang.hitch(this, function (evt) {
         var rel = evt.target.attributes.rel.value;
@@ -150,7 +152,7 @@ define([
     },
 
     noData: function () {
-      domClass.add(this.typeButton.domNode, 'dijitHidden');
+      // domClass.add(this.typeButton.domNode, 'dijitHidden');
       this.treeDiv.innerHTML = 'There is no tree currently available';
     },
 
@@ -195,7 +197,6 @@ define([
       options.showTaxonomyRank = true;
       options.showTaxonomyScientificName = true;
       options.showTaxonomySynonyms = true;
-      options.labelColor = '#202020';
 
       var settings = {};
       settings.border = '1px solid #909090';
