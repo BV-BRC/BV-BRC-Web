@@ -678,7 +678,6 @@ define([
         throw new Error('Invalid Path(s) to retrieve');
       }
       path = decodeURIComponent(path);
-
       return Deferred.when(this.api('Workspace.get', [{
         objects: [path],
         metadata_only: metadataOnly
