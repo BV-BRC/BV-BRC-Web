@@ -30,8 +30,8 @@ define([
 
       var _self = this;
       // console.log('spGeneList setQuery - this.query: ', this.query);
-      // var url = PathJoin(this.apiServiceUrl, 'subsystem', '?' + (this.query) + '&limit(10000)'); // &facet((field,genome_id),(limit,35000))");
-      var url = PathJoin('https://bv-brc.org/api/', 'subsystem', '?' + (this.query) + '&limit(10000)'); // &facet((field,genome_id),(limit,35000))");
+
+      var url = PathJoin(this.apiServiceUrl, 'subsystem', '?' + (this.query) + '&limit(10000)'); // &facet((field,genome_id),(limit,35000))");
 
       // console.log("url: ", url);
       xhr.get(url, {

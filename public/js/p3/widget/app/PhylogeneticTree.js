@@ -413,7 +413,6 @@ define([
       }
       var loadingQueryString = '.loading-status-' + groupType;
       domStyle.set( query(loadingQueryString)[0], 'display', 'block');
-      debugger;
       when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
         domStyle.set( query(loadingQueryString)[0], 'display', 'none');
         if (typeof res.data == 'string') {
