@@ -406,6 +406,46 @@ define([
         rerunUtility.rerun(JSON.stringify(job_data), 'MSA', window, Topic);
       }, false);
 
+      this.actionPanel.addAction('FeatureGroupSubsystems', 'fa icon-selection-Sequence fa-2x', {
+        label: 'Subsystems',
+        validTypes: ['feature_group'],
+        multiple: true,
+        tooltip: 'Subsystems in Feature Group'
+      }, function (selection) {
+        console.log(selection);
+        var fgs = selection.map(x => x.path);
+        WorkspaceManager.getObjects(fgs).then(lang.hitch(this, function (res) {
+          var res_data = res.map(x => JSON.parse(x.data));
+          var feature_list = [];
+          res_data.forEach(lang.hitch(this, function (obj) {
+            feature_list = feature_list.concat(obj.id_list.feature_id);
+          }));
+          feature_list = [... new Set(feature_list)];
+          var new_query = '?in(feature_id,(' + feature_list.join(',') + '))';
+          Topic.publish('/navigate', { href: '/view/SubsystemList/' + new_query, target: 'blank' });
+        }));
+      }, false);
+
+      this.actionPanel.addAction('FeatureGroupPathways', 'fa icon-git-pull-request fa-2x', {
+        label: 'Pathways',
+        validTypes: ['feature_group'],
+        multiple: true,
+        tooltip: 'Pathways in Feature Group'
+      }, function (selection) {
+        console.log(selection);
+        var fgs = selection.map(x => x.path);
+        WorkspaceManager.getObjects(fgs).then(lang.hitch(this, function (res) {
+          var res_data = res.map(x => JSON.parse(x.data));
+          var feature_list = [];
+          res_data.forEach(lang.hitch(this, function (obj) {
+            feature_list = feature_list.concat(obj.id_list.feature_id);
+          }));
+          feature_list = [... new Set(feature_list)];
+          var new_query = '?in(feature_id,(' + feature_list.join(',') + '))';
+          Topic.publish('/navigate', { href: '/view/PathwayList/' + new_query, target: 'blank' });
+        }));
+      }, false);
+
       // TODO: why isn't download appearing for job_results
       this.actionPanel.addAction('DownloadItem', 'fa icon-download fa-2x', {
         label: 'DWNLD',
