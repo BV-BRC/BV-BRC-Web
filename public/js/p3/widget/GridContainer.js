@@ -528,7 +528,39 @@ define([
           });
         },
         false
-      ], [
+      ],  [
+        'ViewSubsystemsFeatureList',
+        'MultiButton fa icon-selection-Sequence fa-2x',
+        {
+          label: 'SUBSYSTEMS',
+          validTypes: ['*'],
+          multiple: true,
+          min: 1,
+          max: 5000,
+          tooltip: 'View Subsystems in Feature List.',
+        }, function (selection) {
+          var feature_list = selection.map(x => x.feature_id);
+          var new_query = '?in(feature_id,(' + feature_list.join(',') + '))';
+          Topic.publish('/navigate', { href: '/view/SubsystemList/' + new_query, target: 'blank' });
+        },
+        false
+      ],  [
+        'ViewPathwaysFeatureList',
+        'MultiButton fa icon-git-pull-request fa-2x',
+        {
+          label: 'PATHWAYS',
+          validTypes: ['*'],
+          multiple: true,
+          min: 1,
+          max: 5000,
+          tooltip: 'View Pathways in Feature List.',
+        }, function (selection) {
+          var feature_list = selection.map(x => x.feature_id);
+          var new_query = '?in(feature_id,(' + feature_list.join(',') + '))';
+          Topic.publish('/navigate', { href: '/view/PathwayList/' + new_query, target: 'blank' });
+        },
+        false
+      ],  [
         'ViewSpgeneItem',
         'MultiButton fa icon-selection-Feature fa-2x',
         {
