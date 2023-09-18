@@ -406,7 +406,7 @@ define([
         rerunUtility.rerun(JSON.stringify(job_data), 'MSA', window, Topic);
       }, false);
 
-      this.actionPanel.addAction('FeatureGroupSubsystems', 'fa icon-selection-Sequence fa-2x', {
+      this.actionPanel.addAction('FeatureGroupSubsystems', 'fa icon-selection-SequenceList fa-2x', {
         label: 'Subsystems',
         validTypes: ['feature_group'],
         multiple: true,

@@ -530,7 +530,7 @@ define([
         false
       ],  [
         'ViewSubsystemsFeatureList',
-        'MultiButton fa icon-selection-Sequence fa-2x',
+        'MultiButton fa icon-selection-SequenceList fa-2x',
         {
           label: 'SUBSYSTEMS',
           validTypes: ['*'],
