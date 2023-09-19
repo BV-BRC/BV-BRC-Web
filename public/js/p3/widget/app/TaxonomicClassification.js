@@ -1,4 +1,3 @@
-
 define([
   'dojo/_base/declare', 'dojo/_base/array', 'dojo/topic', 'dijit/_WidgetBase', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/on', 'dojo/request', 'dojo/dom-class', 'dojo/dom-construct',
@@ -113,6 +112,47 @@ define([
       }));
       return value;
     },
+
+    // start testing
+    changeDatabaseBySequenceType: function () {
+      var wgs_dbs = [
+          { value: "bvbrc", label: "BV-BRC Database", selected: false},
+          { value: "standard", label: "Kraken2 Standard Database", selected: false}
+        ]
+      var  wgs_pipelines = [
+          {value:"pathogen", label:"Species Identification", selected: false},
+          {value:"microbiome", label:"Microbiome Analysis", selected: false}
+        ]
+      var sixteen_s_dbs = [
+          { value: "Greengenes", label: "Greengenes", selected: false},
+          { value: "SILVA", label: "SILVA", selected: false},
+        ]
+      var sixteen_s_pipelines = [
+          {value:"16S", label:"Default", selected: false}
+      ]
+      if (this.wgs.checked == true) {
+        this.sequence_type = 'wgs';
+        this.sixteenS.set('value', false);
+        console.log("wgs selected update?");
+        this.database.set('options', wgs_dbs);
+        this.analysis_type.set('options', wgs_pipelines);
+        this.host_genome.set('disabled', false);
+        this.analysis_type.set('disabled', false); 
+      }
+      else if (this.sixteenS.checked == true) {
+        this.sequence_type = 'sixteenS';
+        this.database.set('options', sixteen_s_dbs);
+        this.analysis_type.set('options', sixteen_s_pipelines)
+        // this.analysis_type.set('options', sixteen_s_pipelines).set('disabled', true);
+        this.wgs.set('value', false);
+        this.host_genome.set('disabled', true); 
+      }
+      else {
+        console.log('Invalid Selection');
+        this.host_genome.set('disabled', true);
+      }
+    },
+    // end testing 
 
     ingestAttachPoints: function (input_pts, target, req) {
       req = typeof req !== 'undefined' ? req : true;

@@ -125,7 +125,7 @@
           <td>
             <div class="appBox appShadow" style="min-height: 213px; height:auto; width:400px;", >
               <div class="headerrow">
-                <label class="appBoxLabel">Selected libraries</label>
+                <label class="appBoxLabel">Selected Libraries</label>
                 <div name="selected-libraries" class="infobox iconbox infobutton tooltipinfo">
                   <i class="fa icon-question-circle fa"></i>
                 </div>
@@ -157,25 +157,37 @@
               <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
             </div>
           </div>
-        </div>
+          <div class="appRow">
+            <label>Sequencing Type</label><br>
+              <input type="radio" data-dojo-type="dijit/form/RadioButton" name="sequence_type" value="wgs" data-dojo-attach-point="wgs" data-dojo-attach-event="onClick:changeDatabaseBySequenceType"/>
+              <label for="radio1">Whole Genome Sequencing (WGS)</label>
+              <input type="radio" data-dojo-type="dijit/form/RadioButton" name="sequence_type" value="sixteenS" data-dojo-attach-point="sixteenS" data-dojo-attach-event="onClick:changeDatabaseBySequenceType" />
+              <label for="radio2">16S</label>
+          </div>
+          <div class="appRow">
+            <label class="paramlabel">Analysis Type</label><br>
+            <select data-dojo-type="dijit/form/Select" name="analysis_type" data-dojo-attach-point="analysis_type" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'You must select an analysis type',displayedValue:'READ FILE'" data-dojo-attach-event="onChange:changeDatabaseBySequenceType">
+              <option disabled="disabled" selected="selected" value="">Select an analysis type...</option>
+              <option value="pathogen">Species Identification</option>
+              <option value="microbiome">Microbiome Analysis</option>
+              <option value="16S">default</option>
+            </select>
+          <!-- analysis type radio butto nshould be sequencing type -->
+          <!-- then analysis type drop down should return and if we want we can add a check  -->
         <div class="appRow">
-          <label class="paramlabel">Analysis Type</label><br>
-          <select data-dojo-type="dijit/form/Select" name="analysis_type" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,trim:true">
-            <option value="pathogen">Species Identification</option>
-            <option value="microbiome">Microbiome Analysis</option>
-          </select>
-        </div>
-        <div class="appRow">
-            <label>Database</label><br>
-            <select data-dojo-type="dijit/form/Select" name="database" style="width:300px" required="true" data-dojo-props="intermediateChanges:true">
+            <label class="paramlabel">Database</label><br>
+            <select data-dojo-type="dijit/form/Select" name="database" style="width:300px" required="true" data-dojo-attach-point="database" data-dojo-props="intermediateChanges:false, missingMessage:'You must select a datbase'">
+              <option disabled="disabled" selected="selected" value="">Select a database...</option>
+              <option value="bvbrc">BV-BRC Database</option>
               <option value="standard">Kraken2 Standard Database</option>
-              <option value="bvbrc" selected="selected">BV-BRC Database</option>
+              <option value="Greengenes">Greengenes (16s)</option>
+              <option value="SILVA">SILVA (16s)</option>
             </select>
         </div>
         <div class="appRow">
-          <label>Filter Host Genome</label><br>
-          <select data-dojo-type="dijit/form/Select" name="host_genome" style="width:300px" required="true" data-dojo-props="intermediateChanges:true">
-            <option value="no_host">No host organism</option>
+          <label>Filter Host Reads</label><br>
+          <select data-dojo-type="dijit/form/Select" name="host_genome"  data-dojo-attach-point="host_genome" style="width:300px" required="true" data-dojo-props="intermediateChanges:false">
+            <option value="no_host" selected="selected">None</option>
             <option value="homo_sapiens">Homo sapiens</option>
             <option value="mus_musculus">Mus musculus</option>
             <option value="rattus_norvegicus">Rattus norvegicus</option>
