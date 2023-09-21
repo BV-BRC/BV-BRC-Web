@@ -113,27 +113,25 @@ define([
       return value;
     },
 
-    // start testing
     changeDatabaseBySequenceType: function () {
       var wgs_dbs = [
-          { value: "bvbrc", label: "BV-BRC Database", selected: false},
+          { value: "bvbrc", label: "BV-BRC Database", selected: true},
           { value: "standard", label: "Kraken2 Standard Database", selected: false}
         ]
       var  wgs_pipelines = [
           {value:"pathogen", label:"Species Identification", selected: false},
-          {value:"microbiome", label:"Microbiome Analysis", selected: false}
+          {value:"microbiome", label:"Microbiome Analysis", selected: true}
         ]
       var sixteen_s_dbs = [
           { value: "Greengenes", label: "Greengenes", selected: false},
-          { value: "SILVA", label: "SILVA", selected: false},
+          { value: "SILVA", label: "SILVA", selected: true},
         ]
       var sixteen_s_pipelines = [
-          {value:"16S", label:"Default", selected: false}
+          {value:"16S", label:"Default", selected: true}
       ]
       if (this.wgs.checked == true) {
         this.sequence_type = 'wgs';
         this.sixteenS.set('value', false);
-        console.log("wgs selected update?");
         this.database.set('options', wgs_dbs);
         this.analysis_type.set('options', wgs_pipelines);
         this.host_genome.set('disabled', false);
@@ -143,6 +141,7 @@ define([
         this.sequence_type = 'sixteenS';
         this.database.set('options', sixteen_s_dbs);
         this.analysis_type.set('options', sixteen_s_pipelines)
+        // disabling is disabling before changing the pipeline option - pipelines change from WGS to 16S on click of drop down
         // this.analysis_type.set('options', sixteen_s_pipelines).set('disabled', true);
         this.wgs.set('value', false);
         this.host_genome.set('disabled', true); 
@@ -152,7 +151,6 @@ define([
         this.host_genome.set('disabled', true);
       }
     },
-    // end testing 
 
     ingestAttachPoints: function (input_pts, target, req) {
       req = typeof req !== 'undefined' ? req : true;
