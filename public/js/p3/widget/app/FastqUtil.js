@@ -582,7 +582,9 @@ define([
         if (lrec.condition) {
           advPairInfo.push('Condition:' + lrec.condition);
         }
-        this.addLibraryInfo(lrec, { 'read': { 'label': this.read.searchBox.get('displayedValue') } }, tr);
+        var platform = this.platform_select.get("value");
+        lrec.platform = platform;
+        this.addLibraryInfo(lrec, { 'read': { 'label': this.read.searchBox.get('displayedValue') }, "platform": {'label': platform} }, tr);
         if (advPairInfo.length) {
           var condition_icon = this.getConditionIcon(lrec.condition);
           lrec.design = true;
@@ -697,7 +699,7 @@ define([
       // reads,sra
       var pairedList = this.libraryStore.query({ type: 'paired' });
       var pairedAttrs = ['read1', 'read2'];
-      var singleAttrs = ['read'];
+      var singleAttrs = ['read', 'platform'];
       var srrAttrs = ['srr_accession'];
       var singleList = this.libraryStore.query({ type: 'single' });
       var srrList = this.libraryStore.query({ type: 'srr_accession' });

@@ -132,6 +132,16 @@
                     class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
               <div class="appRow">
+                <label class="paramlabel">Platform</label><br>
+                <select data-dojo-type="dijit/form/Select" name="platform_select"
+                  data-dojo-attach-point="platform_select" style="width:264px" required="true"
+                  data-dojo-props="intermediateChanges:true,trim:true,placeHolder:'Select Platform'">
+                  <option value="illumina">Illumina</option>
+                  <option value="pacbio">Pacbio</option>
+                  <option value="nanopore">Nanopore</option>
+                </select>
+              </div>
+              <div class="appRow">
                 <label class="paramlabel">Read File</label><br>
                 <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile"
                   data-dojo-attach-point="read" style="width:300px" required="false"

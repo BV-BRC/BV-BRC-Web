@@ -45,6 +45,7 @@ define([
       this.codonGroup.genomeToAttachPt = ['codon_genome_id'];
       this.codonGroup.genomeGroupToAttachPt = ['codon_genomes_genomegroup'];
       this.codonGroup.maxGenomes = 200;
+      this.codonGroup.minGenomes = 4;
       this.selectedTR = []; // list of selected TR for ingroup and outgroup, used in onReset()
       this.metadataDict = {};
     },
@@ -92,6 +93,14 @@ define([
         this.advancedOptions.style.display = 'none';
         this.advancedOptionIcon.className = 'fa icon-caret-down fa-1';
       }
+    },
+
+    validate: function () {
+      // check the minimum number of genomes (4) is satisfied
+      if (this.codonGroup.addedList.length < this.codonGroup.minGenomes) {
+        return false;
+      }
+      return this.inherited(arguments);
     },
 
     onAddMetadata: function () {
@@ -601,7 +610,8 @@ define([
         });
         return_values.genome_ids = codonGenomesFiltered;
         return_values.number_of_genes = values.number_of_genes;
-        return_values.max_genomes_missing = values.max_genomes_missing;
+        // in the few cases the number of max genomes is 14 or less, adjust the max genome deletions to avoid errors
+        return_values.max_genomes_missing = (values.max_genomes_missing < (codonGenomesFiltered.length - 4)) ? values.max_genomes_missing : (codonGenomesFiltered.length - 4);
         return_values.max_allowed_dups = values.max_allowed_dups;
 
       }
