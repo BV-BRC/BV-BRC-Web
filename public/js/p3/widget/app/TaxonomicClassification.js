@@ -1,4 +1,3 @@
-
 define([
   'dojo/_base/declare', 'dojo/_base/array', 'dojo/topic', 'dijit/_WidgetBase', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/on', 'dojo/request', 'dojo/dom-class', 'dojo/dom-construct',
@@ -112,6 +111,45 @@ define([
         value = value.replaceAll(char, '_');
       }));
       return value;
+    },
+
+    changeDatabaseBySequenceType: function () {
+      var wgs_dbs = [
+          { value: "bvbrc", label: "BV-BRC Database", selected: true},
+          { value: "standard", label: "Kraken2 Standard Database", selected: false}
+        ]
+      var  wgs_pipelines = [
+          {value:"pathogen", label:"Species Identification", selected: false},
+          {value:"microbiome", label:"Microbiome Analysis", selected: true}
+        ]
+      var sixteen_s_dbs = [
+          { value: "Greengenes", label: "Greengenes", selected: false},
+          { value: "SILVA", label: "SILVA", selected: true},
+        ]
+      var sixteen_s_pipelines = [
+          {value:"16S", label:"Default", selected: true}
+      ]
+      if (this.wgs.checked == true) {
+        this.sequence_type = 'wgs';
+        this.sixteenS.set('value', false);
+        this.database.set('options', wgs_dbs);
+        this.analysis_type.set('options', wgs_pipelines);
+        this.host_genome.set('disabled', false);
+        this.analysis_type.set('disabled', false); 
+      }
+      else if (this.sixteenS.checked == true) {
+        this.sequence_type = 'sixteenS';
+        this.database.set('options', sixteen_s_dbs);
+        this.analysis_type.set('options', sixteen_s_pipelines)
+        // disabling is disabling before changing the pipeline option - pipelines change from WGS to 16S on click of drop down
+        // this.analysis_type.set('options', sixteen_s_pipelines).set('disabled', true);
+        this.wgs.set('value', false);
+        this.host_genome.set('disabled', true); 
+      }
+      else {
+        console.log('Invalid Selection');
+        this.host_genome.set('disabled', true);
+      }
     },
 
     ingestAttachPoints: function (input_pts, target, req) {
