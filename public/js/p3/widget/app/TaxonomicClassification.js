@@ -71,6 +71,7 @@ define([
       } catch (error) {
         console.error(error);
       }
+      this.changeDatabaseBySequenceType()
     },
 
     openJobsList: function () {
@@ -114,43 +115,47 @@ define([
     },
 
     changeDatabaseBySequenceType: function () {
-      var wgs_dbs = [
-          { value: "bvbrc", label: "BV-BRC Database", selected: true},
-          { value: "standard", label: "Kraken2 Standard Database", selected: false}
-        ]
-      var  wgs_pipelines = [
-          {value:"pathogen", label:"Species Identification", selected: false},
-          {value:"microbiome", label:"Microbiome Analysis", selected: true}
-        ]
-      var sixteen_s_dbs = [
-          { value: "Greengenes", label: "Greengenes", selected: false},
-          { value: "SILVA", label: "SILVA", selected: true},
-        ]
-      var sixteen_s_pipelines = [
-          {value:"16S", label:"Default", selected: true}
+      var all_analyses = [
+        { value: "16S", label: "Default"},
+        {value: "microbiome", label: "Microbiome Analysis"},
+        {value: "pathogen", label: "Species Identification"}
+      ];
+      var all_dbs =[
+        {value: "SILVA", label: "SILVA"},
+        {value: "Greengenes", label: "Greengenes"},
+        {value: "bvbrc", label: "BV-BRC Database"},
+        {value: "standard", label: "Kraken2 Standard Database"}
       ]
+      var blank =[
+        {value: " ", label: " "},
+      ]
+      this.analysis_type.set('options', blank);
+      this.analysis_type.set('options', all_analyses)
+      this.database.set('options', blank);
+      this.database.set('options', all_dbs);
+      this.analysis_type.set('disabled', false);
+      this.sequence_type = 'wgs';
       if (this.wgs.checked == true) {
-        this.sequence_type = 'wgs';
-        this.sixteenS.set('value', false);
-        this.database.set('options', wgs_dbs);
-        this.analysis_type.set('options', wgs_pipelines);
-        this.host_genome.set('disabled', false);
-        this.analysis_type.set('disabled', false); 
+          this.sequence_type = 'wgs';
+          this.database.removeOption({value: "SILVA", label: "SILVA"});
+          this.database.removeOption({value: "Greengenes", label: "Greengenes"});
+          this.analysis_type.removeOption({ value: "16S", label: "Default"});
+          this.host_genome.set('disabled', false);
+      } else if (this.sixteenS.checked == true) {
+          this.sequence_type = 'sixteenS';
+          this.database.removeOption({value: "bvbrc", label: "BV-BRC Database"});
+          this.database.removeOption({value: "standard", label: "Kraken2 Standard Database"});
+          this.analysis_type.removeOption({value: "microbiome", label: "Microbiome Analysis"});
+          this.analysis_type.removeOption({value: "pathogen", label: "Species Identification"});
+          this.analysis_type.set('disabled', true);
+          this.host_genome.set('disabled', true);     
+      } else {
+          console.log('Invalid Selection');
+          this.analysis_type.set('disabled', true);
+          this.database.set('disabled', true);
+          this.host_genome.set('disabled', true);
       }
-      else if (this.sixteenS.checked == true) {
-        this.sequence_type = 'sixteenS';
-        this.database.set('options', sixteen_s_dbs);
-        this.analysis_type.set('options', sixteen_s_pipelines)
-        // disabling is disabling before changing the pipeline option - pipelines change from WGS to 16S on click of drop down
-        // this.analysis_type.set('options', sixteen_s_pipelines).set('disabled', true);
-        this.wgs.set('value', false);
-        this.host_genome.set('disabled', true); 
-      }
-      else {
-        console.log('Invalid Selection');
-        this.host_genome.set('disabled', true);
-      }
-    },
+  },
 
     ingestAttachPoints: function (input_pts, target, req) {
       req = typeof req !== 'undefined' ? req : true;
