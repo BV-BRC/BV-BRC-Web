@@ -172,14 +172,14 @@
                      name="sequence_type" 
                      value="wgs" 
                      data-dojo-attach-point="wgs" 
-                     data-dojo-attach-event="onClick:changeDatabaseBySequenceType"
-                     data-dojo-props="missingMessage:'You must select a sequencetype'"/>
+                     data-dojo-attach-event="Change: changeDatabaseBySequenceType"
+                     data-dojo-props="missingMessage:'You must select a sequence type'" checked />
               <label for="radio1">Whole Genome Sequencing (WGS)</label>
               <input type="radio" 
                      data-dojo-type="dijit/form/RadioButton" 
                      name="sequence_type" value="sixteenS" 
                      data-dojo-attach-point="sixteenS" 
-                     data-dojo-attach-event="onClick:changeDatabaseBySequenceType" />
+                     data-dojo-attach-event="Change: changeDatabaseBySequenceType" />
               <label for="radio2">16S</label>
           </div>
           <div class="appRow">
@@ -189,12 +189,10 @@
                     data-dojo-attach-point="analysis_type" 
                     style="width:300px" 
                     required="true" 
-                    data-dojo-props="intermediateChanges:true,missingMessage:'You must select a Sequencing type before analysis type',displayedValue:'READ FILE'" 
-                    data-dojo-attach-event="onChange:changeDatabaseBySequenceType">
-              <option disabled="disabled" selected="selected" value="">Select an analysis type...</option>
-              <option disabled="disabled" value="pathogen">Species Identification</option>
-              <option disabled="disabled" value="microbiome">Microbiome Analysis</option>
-              <option disabled="disabled" value="16S">Default</option>
+                    data-dojo-props="intermediateChanges:true,missingMessage:'You must select a Sequencing type before analysis type',displayedValue:'Analysis type'" />
+              <option value="microbiome">Microbiome Analysis</option>
+              <option value="pathogen">Species Identification</option>
+              <option value="16S">Default</option>
             </select>
         <div class="appRow">
             <label class="paramlabel">Database</label><br>
@@ -202,13 +200,13 @@
                     name="database" 
                     style="width:300px" 
                     required="true" 
-                    data-dojo-attach-point="database" 
+                    data-dojo-attach-point="database"
+                    data-dojo-attach-event="onChange: checkParameterRequiredFields"
                     data-dojo-props="intermediateChanges:true, missingMessage:'You must select a datbase'">
-              <option disabled="disabled" selected="selected" value="">Select a database...</option>
-              <option disabled="disabled" value="bvbrc">BV-BRC Database</option>
-              <option disabled="disabled" value="standard">Kraken2 Standard Database</option>
-              <option disabled="disabled" value="Greengenes">Greengenes</option>
-              <option disabled="disabled" value="SILVA">SILVA</option>
+              <option value="bvbrc">BV-BRC Database</option>
+              <option value="standard">Kraken2 Standard Database</option>
+              <option value="SILVA">SILVA</option>
+              <option value="Greengenes">Greengenes</option>
             </select>
         </div>
         <div class="appRow">
