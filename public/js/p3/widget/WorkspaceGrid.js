@@ -62,7 +62,7 @@ define([
         label: 'Service',
         field: 'service',
         className: 'wsItemJobType',
-        hidden: true,
+        hidden: false,
         get: function (item) {
           if (item.type === 'job_result') {
             return item.autoMeta.app.id;
@@ -256,6 +256,7 @@ define([
       return q;
     },
     createStore: function (dataModel) {
+
       // console.log("Create Store for ", dataModel, " at ", this.apiServer);
       var store = new Store({
         target: (this.apiServer ? (this.apiServer) : '') + '/' + dataModel + '/',
@@ -267,6 +268,7 @@ define([
           Authorization: (window.App.authorizationToken || '')
         }
       });
+
       // console.log("store: ", store);
       return store;
     }

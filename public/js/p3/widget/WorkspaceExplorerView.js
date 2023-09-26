@@ -29,13 +29,6 @@ define([
       sort: [{ attribute: 'name', descending: false }]
     },
 
-    /*
-    _setSort: function () {
-
-      debugger;
-    },
-    */
-
     listWorkspaceContents: function (ws) {
       var _self = this;
       if (ws[ws.length - 1] == '/') {
@@ -69,6 +62,7 @@ define([
 
       // join permissions with objects
       return all([prom1, prom2]).then(function (results) {
+
         var objs = results[0];
 
         // join 'shared with me' data if needed
@@ -77,7 +71,6 @@ define([
         var paths = objs.map(function (obj) { return obj.path; });
         var prom2 = WorkspaceManager.listPermissions(paths);
         return Deferred.when(prom2, function (permHash) {
-
           // empty folder notice
           if (!objs.length) {
             _self.addEmptyFolderDiv(isPublic);
