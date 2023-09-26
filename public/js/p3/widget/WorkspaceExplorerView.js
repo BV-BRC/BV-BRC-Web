@@ -29,6 +29,13 @@ define([
       sort: [{ attribute: 'name', descending: false }]
     },
 
+    /*
+    _setSort: function () {
+
+      debugger;
+    },
+    */
+
     listWorkspaceContents: function (ws) {
       var _self = this;
       if (ws[ws.length - 1] == '/') {
@@ -123,6 +130,7 @@ define([
 
           // sorting
           var sort = _self.get('sort');
+
           if (!sort || sort.length == 0) {
             sort = _self.queryOptions.sort;
           }

@@ -58,6 +58,19 @@ define([
         className: 'wsItemType',
         hidden: true
       },
+      job_type: {
+        label: 'Service',
+        field: 'service',
+        className: 'wsItemJobType',
+        hidden: true,
+        get: function (item) {
+          if (item.type === 'job_result') {
+            return item.autoMeta.app.id;
+          } else {
+            return '';
+          }
+        }
+      },
       owner_id: {
         label: 'Owner',
         field: 'owner_id',
@@ -182,6 +195,7 @@ define([
       });
 
       this.on('.dgrid-content .dgrid-cell.wsObjIcon:click', function (evt) {
+
         var row = _self.row(evt);
         evt.preventDefault();
         evt.stopPropagation();
