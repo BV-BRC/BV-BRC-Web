@@ -190,7 +190,6 @@ define([
       });
 
       this.on('.dgrid-content .dgrid-cell.wsObjIcon:click', function (evt) {
-
         var row = _self.row(evt);
         evt.preventDefault();
         evt.stopPropagation();
@@ -251,7 +250,6 @@ define([
       return q;
     },
     createStore: function (dataModel) {
-
       // console.log("Create Store for ", dataModel, " at ", this.apiServer);
       var store = new Store({
         target: (this.apiServer ? (this.apiServer) : '') + '/' + dataModel + '/',
@@ -263,7 +261,6 @@ define([
           Authorization: (window.App.authorizationToken || '')
         }
       });
-
       // console.log("store: ", store);
       return store;
     }

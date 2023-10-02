@@ -62,7 +62,6 @@ define([
 
       // join permissions with objects
       return all([prom1, prom2]).then(function (results) {
-
         var objs = results[0];
 
         // join 'shared with me' data if needed
@@ -71,6 +70,7 @@ define([
         var paths = objs.map(function (obj) { return obj.path; });
         var prom2 = WorkspaceManager.listPermissions(paths);
         return Deferred.when(prom2, function (permHash) {
+
           // empty folder notice
           if (!objs.length) {
             _self.addEmptyFolderDiv(isPublic);
@@ -123,7 +123,6 @@ define([
 
           // sorting
           var sort = _self.get('sort');
-
           if (!sort || sort.length == 0) {
             sort = _self.queryOptions.sort;
           }

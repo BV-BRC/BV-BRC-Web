@@ -615,7 +615,6 @@ define([
           items.sort(function (a, b) {
             return b.timestamp - a.timestamp;
           });
-
           this.store = new Memory({ data: items, idProperty: 'path' });
           if (this.isSortAlpha) {
             // sort alphabetically
