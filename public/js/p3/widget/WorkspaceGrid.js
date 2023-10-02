@@ -60,7 +60,7 @@ define([
       },
       job_type: {
         label: 'Service',
-        field: 'service',
+        field: 'autoMeta',
         className: 'wsItemJobType',
         hidden: false,
         get: function (item) {
@@ -94,11 +94,6 @@ define([
       userMeta: {
         label: "User Metadata",
         field: "userMeta",
-        hidden: true
-      },
-      autoMeta: {
-        label: "Metadata",
-        field: "autoMeta",
         hidden: true
       }
       */
