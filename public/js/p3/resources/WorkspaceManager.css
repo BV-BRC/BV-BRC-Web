@@ -195,6 +195,7 @@ th.dgrid-cell.wsItemName,
 th.dgrid-cell.wsItemSize,
 th.dgrid-cell.wsItemType,
 th.dgrid-cell.wsItemCreationTime,
+th.dgrid-cell.wsItemJobType,
 th.dgrid-cell.wsItemOwnerId,
 th.dgrid-cell.wsItemMembers {
 	border-right: 1px solid #C0C0C0;
@@ -203,11 +204,13 @@ th.dgrid-cell.wsItemMembers {
 .dgrid-cell.wsItemName,
 .dgrid-cell.wsItemSize,
 .dgrid-cell.wsItemCreationTime,
+.dgrid-cell.wsItemJobType,
 .dgrid-cell.wsItemOwnerId {
 	padding-left:10px;
 }
 
 .wsItemOwnerId,
+.wsItemJobType,
 .wsItemMembers {
 	width: 90px;
 }
