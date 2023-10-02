@@ -62,7 +62,7 @@ define([
         label: 'Service',
         field: 'autoMeta',
         className: 'wsItemJobType',
-        hidden: false,
+        hidden: true,
         get: function (item) {
           if (item.type === 'job_result') {
             return item.autoMeta.app.id;
