@@ -2135,6 +2135,7 @@ define([
         console.log('in WorkspaceBrowser obj', obj);
         // console.log('in WorkspaceBrowser obj.autoMeta', obj.autoMeta);
         // console.log('in WorkspaceBrowser browserHeader', this.browserHeader);
+
         switch (obj.type) {
           case 'folder':
             panelCtor = WorkspaceExplorerView;
