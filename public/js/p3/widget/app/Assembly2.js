@@ -149,7 +149,10 @@ define([
         assembly_values.pilon_iter = values.pilon_iter;
       }
       if (Object.prototype.hasOwnProperty.call(values, 'trim') && values.trim) {
-        assembly_values.trim = (values.trim === 'true');
+        assembly_values.trim = (values.trim[0] === 'on');
+      }
+      if (Object.prototype.hasOwnProperty.call(values, 'normalize') && values.normalize) {
+        assembly_values.normalize = (values.normalize[0] === 'on');
       }
       if (Object.prototype.hasOwnProperty.call(values, 'min_contig_len') && values.min_contig_len) {
         assembly_values.min_contig_len = values.min_contig_len;
