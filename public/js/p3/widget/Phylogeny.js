@@ -115,8 +115,6 @@ define([
       this.watch('selection', lang.hitch(this, 'onSelection'));
 
       this.pre_build_options();
-
-      this.selectionActionBar.set('currentContainerType', this.containerType);
     },
 
     noData: function () {
