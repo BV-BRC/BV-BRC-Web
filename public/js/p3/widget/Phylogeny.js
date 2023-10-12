@@ -190,7 +190,7 @@ define([
     },
 
     onSelection: function () {
-      debugger;
+
       var cur = this.selection.map(lang.hitch(this, function (selected) {
         return { genome_id: selected.id };
       }));
