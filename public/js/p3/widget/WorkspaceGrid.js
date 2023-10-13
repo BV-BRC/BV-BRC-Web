@@ -58,6 +58,22 @@ define([
         className: 'wsItemType',
         hidden: true
       },
+      job_type: {
+        label: 'Service',
+        field: 'autoMeta',
+        className: 'wsItemJobType',
+        hidden: true,
+        get: function (item) {
+          if (!item.autoMeta || !item.autoMeta.app || !item.autoMeta.app.id) {
+            return '';
+          }
+          if (item.type === 'job_result') {
+            return item.autoMeta.app.id;
+          } else {
+            return '';
+          }
+        }
+      },
       owner_id: {
         label: 'Owner',
         field: 'owner_id',
@@ -81,11 +97,6 @@ define([
       userMeta: {
         label: "User Metadata",
         field: "userMeta",
-        hidden: true
-      },
-      autoMeta: {
-        label: "Metadata",
-        field: "autoMeta",
         hidden: true
       }
       */
