@@ -306,6 +306,8 @@ define([
       var assembly_values = {};
       var values = this.inherited(arguments);
 
+      // Make sure experimental conditions has all conditions from samples
+      // Have seen errors where not all conditions from samples are present for some reason (cannot replicate)
       assembly_values = this.checkBaseParameters(values, assembly_values);
 
       // get trimming value
@@ -988,10 +990,14 @@ define([
         assembly_values.contrasts = [];
       }
       // reads or sra TODO bam
+      var check_conds = [];
       pairedList.forEach(function (libRecord) {
         var toAdd = {};
         if ('condition' in libRecord && this.exp_design.checked) {
           toAdd.condition = libRecord.condition;
+          if (!check_conds.includes(libRecord.condition)) {
+            check_conds.push(libRecord.condition);
+          }
         }
         pairedAttrs.forEach(function (attr) {
           toAdd[attr] = libRecord[attr];
@@ -1001,16 +1007,13 @@ define([
       if (this.paired_end_libs.length) {
         assembly_values.paired_end_libs = this.paired_end_libs;
       }
-      if (condLibs.length) {
-        assembly_values.experimental_conditions = condLibs;
-      }
-      else {
-        assembly_values.experimental_conditions = [];
-      }
       singleList.forEach(function (libRecord) {
         var toAdd = {};
         if ('condition' in libRecord && this.exp_design.checked) {
           toAdd.condition = libRecord.condition;
+          if (!check_conds.includes(libRecord.condition)) {
+            check_conds.push(libRecord.condition);
+          }
         }
         singleAttrs.forEach(function (attr) {
           toAdd[attr] = libRecord[attr];
@@ -1024,6 +1027,9 @@ define([
         var toAdd = {};
         if ('condition' in libRecord && this.exp_design.checked) {
           toAdd.condition = libRecord.condition;
+          if (!check_conds.includes(libRecord.condition)) {
+            check_conds.push(libRecord.condition);
+          }
         }
         srrAttrs.forEach(function (attr) {
           toAdd[attr] = libRecord[attr];
@@ -1035,6 +1041,19 @@ define([
       }, this);
       if (this.sra_libs.length) {
         assembly_values.srr_libs = this.sra_libs;
+      }
+
+      if (condLibs.length) {
+        assembly_values.experimental_conditions = condLibs;
+      }
+      else {
+        assembly_values.experimental_conditions = [];
+      }
+      if (check_conds.length != condLibs.length) {
+        console.log('Error: conditions list is not correct, replacing');
+        console.log('conditions_list = ', condLibs);
+        console.log('should be = ', check_conds);
+        assembly_values.experimental_conditions = check_conds;
       }
 
       // strategy (recipe)

@@ -62,7 +62,7 @@ define([
         region: 'top',
         splitter: false,
         content: '',
-        style: 'height: 20px; margin:0px;padding:0px; overflow: hidden; vertical-align:middle;',
+        style: 'height: 30px;display: flex;align-items:center; margin:0px;padding:0px; overflow: hidden; vertical-align:middle;',
         className: 'TextTabButtons'
       });
       this.selectionActionBar = new ActionBar({
@@ -329,6 +329,8 @@ define([
           currTree.removeChild(child);
           child = currTree.lastElementChild;
         }
+        domConstruct.destroy('iconBanner');
+        domConstruct.destroy('taxonBanner');
       } else {
         this.treeDiv = domConstruct.create('div', { id: this.id + 'tree-container', class: 'size archaeopteryxClass' }, this.containerPane.domNode);
       }
@@ -356,7 +358,32 @@ define([
         var phyloxml_file = data[taxonId];
         phyloxml_file = 'https://www.bv-brc.org/api/content/bvbrc_phylogeny_tab/phyloxml/' + phyloxml_file;
         request.get(phyloxml_file).then(lang.hitch(this, function (phyloxml) {
+          /*
+          <div name="overview" class="infobox iconbox infobutton dialoginfo">
+          <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+        </div>
+          */
+          var iconDiv = domConstruct.create('div', {
+            id: 'iconBanner',
+            name: 'overview',
+            class: 'infobox iconbox infobutton dialoginfo',
+            innerHTML: '<i class="fa icon-info-circle fa" title="click to open info dialog"></i>'
+          });
+          var file_parts = phyloxml_file.split('/').reverse()[0].split('_');
+          var taxon_level = file_parts[2];
+          var taxon_name = file_parts[0];
+          var phylo_title = 'GTDB Reference Phylogeny for ' + taxon_level + ': ' + taxon_name;
+          var taxonDiv = domConstruct.create('div', {
+            id: 'taxonBanner',
+            style: 'padding-top: 20px;padding-left: 5px',
+            innerHTML: '<h5>' + phylo_title + '</h5>'
+          });
+          // this.containerActionBar.set('value', '<p>'+phyloxml_file+'</p>');
+          // this.containerActionBar.set('innerHTML', cabDiv);
+          domConstruct.place(iconDiv, this.containerActionBar.domNode, 'last');
+          domConstruct.place(taxonDiv, this.containerActionBar.domNode, 'last');
           var mytree;
+
           var options = {};
           var settings = this.settings;
           var nodeVisualizations = {};
