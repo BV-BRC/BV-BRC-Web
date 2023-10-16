@@ -164,40 +164,45 @@
             <div name="parameters" class="infobox iconbox infobutton dialoginfo">
               <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
             </div>
-            <!-- start new feature message -->
-                <html>
-                <head>
-                    <style>
-                        @keyframes blink {
-                            0% { opacity: 0; }
-                            50% { opacity: 1; }
-                            100% { opacity: 0; }
-                        }
-            
-                        .blink-text {
-                            animation: blink 1s 3; /* Set animation to run 3 times */
-                            color: red; /* Set the text color to red */
-                        }
-                    </style>
-                    <script>
-                        window.addEventListener('DOMContentLoaded', (event) => {
-                            const blinkText = document.querySelector('.blink-text');
-                            
-                            // Remove the animation after 3 iterations
-                            blinkText.addEventListener('animationiteration', () => {
-                                blinkText.style.animation = 'none';
-                            });
-                        });
-                    </script>
-                </head>
-                <body>
-                    <p class="blink-text">New: 16S Analysis is now available!</p>
-                </body>
-                </html>
-                <!-- end new feature message -->
+              <!-- start new feature message -->
+              <html>
+              <head>
+                  <style>
+                      @keyframes blink {
+                          0% { opacity: 0; }
+                          50% { opacity: 1; }
+                          100% { opacity: 0; }
+                      }
+          
+                      .blink-text {
+                          animation: blink 1s 3; /* Set animation to run 3 times */
+                          color: red; /* Set the text color to red */
+                      }
+                  </style>
+                  <script>
+                      window.addEventListener('DOMContentLoaded', (event) => {
+                          const blinkText = document.querySelector('.blink-text');
+                          
+                          // Remove the animation after 3 iterations
+                          blinkText.addEventListener('animationiteration', () => {
+                              blinkText.style.animation = 'none';
+                          });
+                      });
+                  </script>
+              </head>
+              <body>
+                  <p class="blink-text">New: 16S Analysis is now available!</p>
+              </body>
+              </html>
+              <!-- end new feature message -->
           </div>
           <div class="appRow">
-            <label>Sequencing Type</label><br>
+            <label>Sequencing Type</label>
+            <!-- start of new i icon -->
+              <div name="sequencing-type" class="infobox iconbox infobutton dialoginfo">
+                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+              </div><br>
+                <!-- end new i icon -->
               <input type="radio" 
                      data-dojo-type="dijit/form/RadioButton" 
                      name="sequence_type" 
@@ -215,7 +220,12 @@
               <label for="radio2">16S RIBOSOMAL RNA</label>
           </div>
           <div class="appRow">
-            <label class="paramlabel">Analysis Type</label><br>
+            <label class="paramlabel">Analysis Type</label>
+            <!-- start of new i icon -->
+            <div name="analysis-type" class="infobox iconbox infobutton dialoginfo">
+              <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+            </div><br>
+              <!-- end new i icon -->
             <select data-dojo-type="dijit/form/Select" 
                     name="analysis_type" 
                     data-dojo-attach-point="analysis_type" 
@@ -227,7 +237,12 @@
               <option value="16S">Default</option>
             </select>
         <div class="appRow">
-            <label class="paramlabel">Database</label><br>
+            <label class="paramlabel">Database</label>
+              <!-- start of new i icon -->
+              <div name="database" class="infobox iconbox infobutton dialoginfo">
+                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+              </div><br>
+                <!-- end new i icon -->
             <select data-dojo-type="dijit/form/Select" 
                     name="database" 
                     style="width:300px" 
@@ -242,7 +257,12 @@
             </select>
         </div>
         <div class="appRow">
-          <label>Filter Host Reads</label><br>
+          <label>Filter Host Reads</label>
+          <!-- start of new i icon -->
+          <div name="filter-host-reads" class="infobox iconbox infobutton dialoginfo">
+            <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+          </div><br>
+            <!-- end new i icon -->
           <select data-dojo-type="dijit/form/Select" 
                   name="host_genome" 
                   data-dojo-attach-point="host_genome" 
@@ -263,7 +283,12 @@
           </select>
       </div>
       <div class="appRow">
-        <label>Confidence Interval</label><br>
+        <label>Confidence Interval</label>
+        <!-- start of new i icon -->
+        <div name="confidence-interval" class="infobox iconbox infobutton dialoginfo">
+          <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+        </div><br>
+          <!-- end new i icon -->
         <select data-dojo-type="dijit/form/Select" 
                 name="confidence_interval" 
                 style="width:300px" 
