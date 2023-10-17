@@ -26,7 +26,7 @@ define([
     videoLink: 'https://youtu.be/PsqHeZ8pvt4',
     libraryData: null,
     defaultPath: '',
-    startingRows: 6,
+    startingRows: 14,
     libCreated: 0,
     required: true,
 
