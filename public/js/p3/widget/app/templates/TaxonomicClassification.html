@@ -1,4 +1,6 @@
-<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit">
+<form dojoAttachPoint="containerNode" 
+      class="PanelForm App ${baseClass}" 
+      dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit">
   <div class="appTemplate">
     <div class="appTitle">
       <span class="breadcrumb">Services</span>
@@ -19,7 +21,10 @@
     </div>
     <div class="formFieldsContainer">
       <div style="display: none;">
-        <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="true" data-dojo-attach-point="numlibs" data-dojo-props="constraints:{min:1,max:1000}," />
+        <input data-dojo-type="dijit/form/NumberTextBox" 
+               value="0" required="true" 
+               data-dojo-attach-point="numlibs" 
+               data-dojo-props="constraints:{min:1,max:1000}," />
       </div>
       </div>
       <table data-dojo-attach-point="readTable" style="width:100%">
@@ -123,7 +128,7 @@
             </div>
           </td>
           <td>
-            <div class="appBox appShadow" style="min-height: 213px; height:auto; width:400px;", >
+            <div class="appBox appShadow" style="min-height: 400px; height:auto; width:400px;", >
               <div class="headerrow">
                 <label class="appBoxLabel">Selected Libraries</label>
                 <div name="selected-libraries" class="infobox iconbox infobutton tooltipinfo">
@@ -133,7 +138,10 @@
                 <div class="appsublabel">Place read files here using the arrow buttons.</div>
               </div>
               <div class="appRow" style="width:100%; margin-top:10px; text-align: center;">
-                <table class="librarytable" frame="box" data-dojo-attach-point="libsTable" style="margin:0 0 0 10px; width:90%;">
+                <table class="librarytable" 
+                       frame="box" 
+                       data-dojo-attach-point="libsTable" 
+                       style="margin:0 0 0 10px; width:90%;">
                   <tbody data-dojo-attach-point="libsTableBody">
                   </tbody>
                 </table>
@@ -156,25 +164,111 @@
             <div name="parameters" class="infobox iconbox infobutton dialoginfo">
               <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
             </div>
+              <!-- start new feature message -->
+              <html>
+              <head>
+                  <style>
+                      @keyframes blink {
+                          0% { opacity: 0; }
+                          50% { opacity: 1; }
+                          100% { opacity: 0; }
+                      }
+          
+                      .blink-text {
+                          animation: blink 1s 3; /* Set animation to run 3 times */
+                          color: red; /* Set the text color to red */
+                      }
+                  </style>
+                  <script>
+                      window.addEventListener('DOMContentLoaded', (event) => {
+                          const blinkText = document.querySelector('.blink-text');
+                          
+                          // Remove the animation after 3 iterations
+                          blinkText.addEventListener('animationiteration', () => {
+                              blinkText.style.animation = 'none';
+                          });
+                      });
+                  </script>
+              </head>
+              <body>
+                  <p class="blink-text">New: 16S Analysis is now available!</p>
+              </body>
+              </html>
+              <!-- end new feature message -->
           </div>
-        </div>
+          <div class="appRow">
+            <label>Sequencing Type</label>
+            <!-- start of new i icon -->
+              <div name="sequencing-type" class="infobox iconbox infobutton dialoginfo">
+                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+              </div><br>
+                <!-- end new i icon -->
+              <input type="radio" 
+                     data-dojo-type="dijit/form/RadioButton" 
+                     name="sequence_type" 
+                     value="wgs" 
+                     data-dojo-attach-point="wgs" 
+                     data-dojo-attach-event="Change: changeDatabaseBySequenceType"
+                     data-dojo-props="missingMessage:'You must select a sequence type'" checked />
+              <label for="radio1">Whole Genome Sequencing (WGS)</label>
+            </div>
+              <input type="radio" 
+                     data-dojo-type="dijit/form/RadioButton" 
+                     name="sequence_type" value="sixteenS" 
+                     data-dojo-attach-point="sixteenS" 
+                     data-dojo-attach-event="Change: changeDatabaseBySequenceType" />
+              <label for="radio2">16S Ribosomal RNA </label>
+          </div>
+          <div class="appRow">
+            <label class="paramlabel">Analysis Type</label>
+            <!-- start of new i icon -->
+            <div name="analysis-type" class="infobox iconbox infobutton dialoginfo">
+              <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+            </div><br>
+              <!-- end new i icon -->
+            <select data-dojo-type="dijit/form/Select" 
+                    name="analysis_type" 
+                    data-dojo-attach-point="analysis_type" 
+                    style="width:300px" 
+                    required="true" 
+                    data-dojo-props="intermediateChanges:true,missingMessage:'You must select a Sequencing type before analysis type',displayedValue:'Analysis type'" />
+              <option value="microbiome">Microbiome Analysis</option>
+              <option value="pathogen">Species Identification</option>
+              <option value="16S">Default</option>
+            </select>
         <div class="appRow">
-          <label class="paramlabel">Analysis Type</label><br>
-          <select data-dojo-type="dijit/form/Select" name="analysis_type" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,trim:true">
-            <option value="pathogen">Species Identification</option>
-            <option value="microbiome">Microbiome Analysis</option>
-          </select>
-        </div>
-        <div class="appRow">
-            <label>Database</label><br>
-            <select data-dojo-type="dijit/form/Select" name="database" style="width:300px" required="true" data-dojo-props="intermediateChanges:true">
-              <option value="bvbrc" selected="selected">BV-BRC Database</option>
+            <label class="paramlabel">Database</label>
+              <!-- start of new i icon -->
+              <div name="database" class="infobox iconbox infobutton dialoginfo">
+                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+              </div><br>
+                <!-- end new i icon -->
+            <select data-dojo-type="dijit/form/Select" 
+                    name="database" 
+                    style="width:300px" 
+                    required="true" 
+                    data-dojo-attach-point="database"
+                    data-dojo-attach-event="onChange: checkParameterRequiredFields"
+                    data-dojo-props="intermediateChanges:true, missingMessage:'You must select a datbase'">
+              <option value="bvbrc">BV-BRC Database</option>
               <option value="standard">Kraken2 Standard Database</option>
+              <option value="SILVA">SILVA</option>
+              <option value="Greengenes">Greengenes</option>
             </select>
         </div>
         <div class="appRow">
-          <label>Filter Host Reads</label><br>
-          <select data-dojo-type="dijit/form/Select" name="host_genome" style="width:300px" required="true" data-dojo-props="intermediateChanges:true">
+          <label>Filter Host Reads</label>
+          <!-- start of new i icon -->
+          <div name="filter-host-reads" class="infobox iconbox infobutton dialoginfo">
+            <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+          </div><br>
+            <!-- end new i icon -->
+          <select data-dojo-type="dijit/form/Select" 
+                  name="host_genome" 
+                  data-dojo-attach-point="host_genome" 
+                  style="width:300px" 
+                  required="true" 
+                  data-dojo-props="intermediateChanges:false">
             <option value="no_host" selected="selected">None</option>
             <option value="homo_sapiens">Homo sapiens</option>
             <option value="mus_musculus">Mus musculus</option>
@@ -189,8 +283,17 @@
           </select>
       </div>
       <div class="appRow">
-        <label>Confidence Interval</label><br>
-        <select data-dojo-type="dijit/form/Select" name="confidence_interval" style="width:300px" required="true" data-dojo-props="intermediateChanges:true">
+        <label>Confidence Interval</label>
+        <!-- start of new i icon -->
+        <div name="confidence-interval" class="infobox iconbox infobutton dialoginfo">
+          <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+        </div><br>
+          <!-- end new i icon -->
+        <select data-dojo-type="dijit/form/Select" 
+                name="confidence_interval" 
+                style="width:300px" 
+                required="true" 
+                data-dojo-props="intermediateChanges:true">
           <option value="0">0</option>
           <option value="0.1" selected="selected">0.1</option>
           <option value="0.2">0.2</option>
@@ -206,14 +309,25 @@
     </div>
       <div class="appRow">
         <label class="paramlabel">Save Classified Sequences</label><br>
-        <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_classified_sequences" value="false" data-dojo-attach-point="save_classified_sequences_no" checked />
+        <input type="radio" 
+               data-dojo-type="dijit/form/RadioButton" 
+               name="save_classified_sequences" value="false" 
+               data-dojo-attach-point="save_classified_sequences_no" checked />
         <label for="radio1">No</label>
-        <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_classified_sequences" value="true" data-dojo-attach-point="save_classified_sequences_yes"/>
+        <input type="radio" 
+               data-dojo-type="dijit/form/RadioButton" 
+               name="save_classified_sequences" 
+               value="true" 
+               data-dojo-attach-point="save_classified_sequences_yes"/>
         <label for="radio2">Yes</label>
       </div>
         <div class="appRow">
           <label class="paramlabel">Save Unclassified Sequences</label><br>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_unclassified_sequences" value="false" data-dojo-attach-point="save_unclassified_sequences_no" checked />
+          <input type="radio" 
+                 data-dojo-type="dijit/form/RadioButton" 
+                 name="save_unclassified_sequences" 
+                 value="false" 
+                 data-dojo-attach-point="save_unclassified_sequences_no" checked />
           <label for="radio1">No</label>
           <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_unclassified_sequences" value="true" data-dojo-attach-point="save_unclassified_sequences_yes"/>
           <label for="radio2">Yes</label>
