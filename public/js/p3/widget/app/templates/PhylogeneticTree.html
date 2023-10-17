@@ -277,9 +277,9 @@
           <tr>
             <td>
               <label class="paramlabel">Metadata Fields:</label>
-              <div name="metadata_selector" class="medInput">
+              <div name="metadata_selector" class="medInput" >
                 <select data-dojo-attach-point="metadata_selector"
-                  data-dojo-type="dijit/form/Select" name="metadata_selector" required="false">
+                  data-dojo-type="dijit/form/Select" name="metadata_selector" required="false" data-dojo-attach-event="onChange:checkMoreOptions">
                   <option value="genome_id">Genome ID</option>
                   <option value="genome_name">Genome Name</option>
                   <option value="genome_length">Genome Length</option>
@@ -295,6 +295,7 @@
                   <option value="geographic_group">Geographic Group</option>
                   <option value="isolation_country">Isolation Country</option>
                   <option value="geographic_location">Geographic Location</option>
+                  <option value="more_options">... More Options ...</option>
                 </select>
               </div>
             </td>
