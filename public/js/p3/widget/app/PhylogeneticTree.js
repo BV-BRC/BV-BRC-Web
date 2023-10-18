@@ -137,6 +137,7 @@ define([
     },
 
     startupMetadataTable: function () {
+      this.checkMoreOptions('initialize_options'); // initializes the list of options
       var default_metadata_fields = ['Genome ID', 'Genome Name', 'Strain', 'Accession', 'Subtype'].reverse();
       var default_metadata_values = ['genome_id', 'genome_name', 'strain', 'accession', 'subtype'].reverse();
       this.metadata_count = 0;
@@ -180,7 +181,7 @@ define([
         this.advMetadata.push(newOpt);
       }));
       this.advMetadata.push({
-        label: '... Less Options ...',
+        label: '... Fewer Options ...',
         value: 'less_options',
         selected: false
       });
@@ -691,8 +692,9 @@ define([
     checkMoreOptions: function (sel) {
       if (sel === 'more_options') {
         this.metadata_selector.set('options', this.advMetadata).reset();
+        this.metadata_selector.toggleDropDown();
       }
-      if (sel === 'less_options') {
+      if (sel === 'less_options' || sel === 'initialize_options') {
         var newOpts = [
           {
             label: 'Genome ID', value: 'genome_id', selected: false
@@ -741,6 +743,9 @@ define([
           }
         ];
         this.metadata_selector.set('options', newOpts).reset();
+        if (sel === 'less_options') {
+          this.metadata_selector.toggleDropDown();
+        }
       }
     },
 
