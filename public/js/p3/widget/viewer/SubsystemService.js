@@ -23,7 +23,6 @@ define([
       state.file = parts.reverse()[0];
       state.data = {};
       if (!this.loaded) {
-        console.log(state.path + '/' + state.file);
         WorkspaceManager.getObject(state.path + '/' + state.file, false).then(lang.hitch(this, function (response) {
           var resData = JSON.parse(response.data);
           var genome_ids = resData['genome_ids'];
