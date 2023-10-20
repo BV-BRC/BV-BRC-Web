@@ -739,8 +739,9 @@ define([
       } else {
         this.pfState.heatmapAxis = '';
       }
-
+      console.log('beforeRefreshHeatmap');
       Topic.publish(this.topicId, 'refreshHeatmap');
+
       this.chart.flipScaling();
     },
 
@@ -788,6 +789,7 @@ define([
       var self = this;
       if (!this.currentData || !this._firstView) return;
       var data = this.formatData(this.currentData);
+
       if (!data) return;
 
       if (!this.chart) {
