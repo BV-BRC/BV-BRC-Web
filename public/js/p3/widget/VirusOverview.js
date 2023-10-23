@@ -2,14 +2,14 @@ define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dijit/_WidgetsInTemplateMixin',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dojo/text!./templates/VirusOverview.html',
   'dojo/request', 'dojo/_base/lang', 'dojo/when', 'dojo/dom-construct',
-  'p3/widget/VirusMetaSummary',
+  'p3/widget/VirusMetaSummary', '../util/generateLinkedInFeed',
   '../util/PathJoin', './DataItemFormatter', './ExternalItemFormatter'
 
 ], function (
   declare, WidgetBase, on, _WidgetsInTemplateMixin,
   domClass, Templated, Template,
   xhr, lang, when, domConstruct,
-  VirusMetaSummary,
+  VirusMetaSummary, generateLinkedInFeed,
   PathJoin, DataItemFormatter, ExternalItemFormatter
 ) {
 
@@ -62,6 +62,8 @@ define([
         return;
       }
       this.inherited(arguments);
+
+      generateLinkedInFeed('VIRUS');
     }
   });
 });
