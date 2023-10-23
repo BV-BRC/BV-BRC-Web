@@ -3,13 +3,13 @@ define([
   'dojo/text!./templates/PhylogeneticTree.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/lang', 'dojo/domReady!', 'dojo/query', 'dojo/dom', 'dojo/dom-style',
   'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
-  '../../WorkspaceManager', 'dojo/when', '../../DataAPI'
+  '../../WorkspaceManager', 'dojo/when', '../../DataAPI', '../AdvancedSearchFields'
 ], function (
   declare, on, Topic, domClass,
   Template, AppBase, domConstruct, registry,
   lang, domReady, query, dom, domStyle,
   popup, TooltipDialog, Dialog,
-  WorkspaceManager, when, DataAPI
+  WorkspaceManager, when, DataAPI, AdvancedSearchFields
 ) {
   return declare([AppBase], {
     baseClass: 'App PhylogeneticTree',
@@ -72,6 +72,7 @@ define([
       this.emptyTable(this.codonGroupGenomeTable, this.startingRows);
       // this.emptyTable(this.metadataTableBody, this.startingRows);
       this.startupMetadataTable();
+      this.startupAdvMetadata();
       this.inGroupNumGenomes.startup();
       this.outGroupNumGenomes.startup();
       this.codonGroupNumGenomes.startup();
@@ -136,6 +137,7 @@ define([
     },
 
     startupMetadataTable: function () {
+      this.checkMoreOptions('initialize_options'); // initializes the list of options
       var default_metadata_fields = ['Genome ID', 'Genome Name', 'Strain', 'Accession', 'Subtype'].reverse();
       var default_metadata_values = ['genome_id', 'genome_name', 'strain', 'accession', 'subtype'].reverse();
       this.metadata_count = 0;
@@ -164,6 +166,25 @@ define([
         }));
         default_index++;
       }));
+    },
+
+    startupAdvMetadata: function () {
+      this.advMetadata = [];
+      AdvancedSearchFields['genome'].forEach(lang.hitch(this, function (obj) {
+        var disable_field = obj['field'].includes('---');
+        var newOpt = {
+          label: obj['field'],
+          value: obj['field'],
+          selected: false,
+          disabled: disable_field
+        }
+        this.advMetadata.push(newOpt);
+      }));
+      this.advMetadata.push({
+        label: '... Fewer Options ...',
+        value: 'less_options',
+        selected: false
+      });
     },
 
     openJobsList: function () {
@@ -665,6 +686,66 @@ define([
         this.outGroupNumGenomes.constraints.min = 1;
         this.codonGroupNumGenomes.constraints.min = 0;
         this.checkParameterRequiredFields();
+      }
+    },
+
+    checkMoreOptions: function (sel) {
+      if (sel === 'more_options') {
+        this.metadata_selector.set('options', this.advMetadata).reset();
+        this.metadata_selector.toggleDropDown();
+      }
+      if (sel === 'less_options' || sel === 'initialize_options') {
+        var newOpts = [
+          {
+            label: 'Genome ID', value: 'genome_id', selected: false
+          },
+          {
+            label: 'Genome Name', value: 'genome_name', selected: false
+          },
+          {
+            label: 'Genome Group', value: 'genome_group', selected: false
+          },
+          {
+            label: 'Strain', value: 'strain', selected: false
+          },
+          {
+            label: 'Accession', value: 'accession', selected: false
+          },
+          {
+            label: 'Subtype', value: 'subtype', selected: false
+          },
+          {
+            label: 'Lineage', value: 'lineage', selected: false
+          },
+          {
+            label: 'Host Group', value: 'host_group', selected: false
+          },
+          {
+            label: 'Host Common Name', value: 'host_common_name', selected: false
+          },
+          {
+            label: 'Collection Date', value: 'collection_date', selected: false
+          },
+          {
+            label: 'Collection Year', value: 'collection_year', selected: false
+          },
+          {
+            label: 'Geographic Group', value: 'geographic_group', selected: false
+          },
+          {
+            label: 'Isolation Country', value: 'isolation_country', selected: false
+          },
+          {
+            label: 'Geographic Location', value: 'geographic_location', selected: false
+          },
+          {
+            label: '... More Options ...', value: 'more_options', selected: false
+          }
+        ];
+        this.metadata_selector.set('options', newOpts).reset();
+        if (sel === 'less_options') {
+          this.metadata_selector.toggleDropDown();
+        }
       }
     },
 

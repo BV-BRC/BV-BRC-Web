@@ -306,6 +306,29 @@ define([
     }
   }
 
+  // TODO: add functionality to check the type and open a feature or genome list view respectively
+  // will then enable all the other functionality from the list perspective
+  function viewList() {
+    if (regionGroupName && ids.length > 0) {
+      if (myType == 'experiment_group') {
+        return;
+      }
+      var idType = 'genome_id';
+      var query = '';
+      if (myType == 'genome_group') {
+        query = `/view/GenomeList/?in(genome_id,(${ids}))`;
+      }
+      else if (myType == 'feature_group') {
+        query = `/view/FeatureList/?in(feature_id,(${ids}))`;
+      }
+      else {
+        console.log('error: shouldnt reach here');
+        return;
+      }
+      Topic.publish('/navigate', { href: query, target: 'blank' })
+    }
+  }
+
   function populateGroupTable() {
     groups = groupCompare.getGroups();
 
@@ -615,6 +638,15 @@ define([
       }, div);
       create_btn.addEventListener('click', function () {
         createGroup();
+      });
+
+      var list_btn = domConstruct.create('input', {
+        type: 'button',
+        value: 'View selected as a list',
+        style: 'margin: 10px'
+      }, div);
+      list_btn.addEventListener('click', function () {
+        viewList();
       });
 
       domConstruct.create('div', { id: 'gse-members' }, div);
