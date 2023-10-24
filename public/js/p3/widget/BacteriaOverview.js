@@ -1,13 +1,13 @@
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dijit/_WidgetsInTemplateMixin',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dojo/text!./templates/BacteriaOverview.html',
-  'dojo/request', 'dojo/_base/lang', 'dojo/when', 'dojo/dom-construct',
+  'dojo/request', 'dojo/_base/lang', 'dojo/when', 'dojo/dom-construct', '../util/generateLinkedInFeed',
   '../util/PathJoin', 'p3/widget/BacteriaMetaSummary', './DataItemFormatter', './ExternalItemFormatter'
 
 ], function (
   declare, WidgetBase, on, _WidgetsInTemplateMixin,
   domClass, Templated, Template,
-  xhr, lang, when, domConstruct,
+  xhr, lang, when, domConstruct, generateLinkedInFeed,
   PathJoin, BacteriaMetaSummary, DataItemFormatter, ExternalItemFormatter
 ) {
 
@@ -60,6 +60,8 @@ define([
         return;
       }
       this.inherited(arguments);
+
+      generateLinkedInFeed('BACTERIA');
     }
   });
 });
