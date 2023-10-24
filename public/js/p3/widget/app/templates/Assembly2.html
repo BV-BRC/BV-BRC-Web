@@ -175,13 +175,14 @@
                 </div>
               </div>
               <div class="appRow" data-dojo-attach-point="advrow2" style="display: none">
-                  <div class="appRow" style="margin:0 0 0 0">
-                    <label class="paramlabel">Trim reads before assembly</label><br>
-                    <select data-dojo-type="dijit/form/Select" name="trim" style="width:50px" data-dojo-attach-point="trim" required="false">
-                      <option value="true">True</option>
-                      <option value="false">False</option>
-                    </select>
+                  <div class="appRowSegment" style="margin:0 0 0 0">
+                    <label class="paramlabel">Trim reads before assembly</label>
+                    <div id="trim" name="trim" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="trim" checked></div>
                   </div>
+                  <div class="appRowSegment" style="margin:0 0 0 0">
+                    <label class="paramlabel">Normalize Reads</label>
+                    <div id="normalize" name="normalize" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="normalize" checked></div>
+                  </div><br>
                   <div class="appRowSegment" style="margin:0 0 0 0">
                     <label class="paramlabel">Racon Iterations</label><br>
                     <div class="insertspinner" name="racon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="racon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
