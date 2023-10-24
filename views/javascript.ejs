@@ -8,6 +8,26 @@ dojoConfig = {
     ]
   }
 </script>
+<script type="text/javascript"> // Twitter Widget
+  window.twttr = (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0],
+      t = window.twttr || {};
+    if (d.getElementById(id)) return t;
+    js = d.createElement(s);
+    js.id = id;
+    js.src = "https://platform.twitter.com/widgets.js";
+    fjs.parentNode.insertBefore(js, fjs);
+
+    t._e = [];
+    t.ready = function(f) {
+      t._e.push(f);
+    };
+
+    return t;
+  }(document, "script", "twitter-wjs"));
+  // twitter load function
+  // twttr.widgets.load();
+</script>
 
 <!-- Scripts -->
 <%
@@ -31,35 +51,6 @@ const load_scripts = [
   <% }) %>
 <% } %>
 
-<script type="text/javascript"> // LinkedIn Feed
-  let $linkedInFeedElm = $("#linkedin-feed");
-
-  // Fetch the data only if feed element exists in the page
-  if ($linkedInFeedElm.length) {
-    $.get('public/linkedin.txt', function (data) {
-      const lines = data.split("\n");
-      let index = 0;
-      for (let line of lines) {
-        try {
-          const $iframe = $(line);
-          if ($iframe.length > 0) {
-            $iframe.width("100%");
-
-            $linkedInFeedElm.append(
-              $("<div/>", {"id": "linkedin-" + index++}).append(
-                $("<div/>", {"class": "linkedin-html-embed"}).append(
-                  $iframe
-                )
-              )
-            );
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    }, 'text');
-  }
-</script>
 
 <script> // News & Announcements Carousel
   $.getJSON("https://www.bv-brc.org/docs/_static/carousel.json", function (feed) {
