@@ -122,6 +122,7 @@ define([
         }
         matrix.push(row);
       }
+
       return { cols: cols, rows: rows, matrix: matrix };
     }
 
