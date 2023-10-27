@@ -1,8 +1,8 @@
 [BACTERIA]
-<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:share:7121975753738522624" height="590" width="504" frameborder="0" allowfullscreen="" title="Embedded post"></iframe>
-<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:share:7121974538044653568" height="703" width="504" frameborder="0" allowfullscreen="" title="Embedded post"></iframe>
-<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:share:7120398660479184896" height="653" width="504" frameborder="0" allowfullscreen="" title="Embedded post"></iframe>
+<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:share:7121975753738522624" height="670" width="504" frameborder="0" allowfullscreen="" title="Embedded post"></iframe>
+<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:share:7121974538044653568" height="783" width="504" frameborder="0" allowfullscreen="" title="Embedded post"></iframe>
+<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:share:7120398660479184896" height="783" width="504" frameborder="0" allowfullscreen="" title="Embedded post"></iframe>
 [VIRUS]
-<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7121169839410348032" height="628" width="504" frameborder="0" allowfullscreen="" title="Embedded post"></iframe>
-<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:share:7122249895368937472" height="607" width="504" frameborder="0" allowfullscreen="" title="Embedded post"></iframe>
-<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7118712125539192832" height="516" width="504" frameborder="0" allowfullscreen="" title="Embedded post"></iframe>
+<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7121169839410348032" height="708" width="504" frameborder="0" allowfullscreen="" title="Embedded post"></iframe>
+<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:share:7122249895368937472" height="687" width="504" frameborder="0" allowfullscreen="" title="Embedded post"></iframe>
+<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7118712125539192832" height="596" width="504" frameborder="0" allowfullscreen="" title="Embedded post"></iframe>
