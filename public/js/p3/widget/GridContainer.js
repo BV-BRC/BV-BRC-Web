@@ -820,7 +820,7 @@ define([
           min: 1,
           max: 5000,
           tooltip: 'View Subsystems in Feature List.',
-          validContainerTypes: ['feature_data', 'pathway_summary_data', 'protein_data', 'structure_data', 'spgene_data', 'proteinFeatures_data']
+          validContainerTypes: ['feature_data', 'pathway_summary_data', 'protein_data', 'spgene_data']
         }, function (selection) {
           var feature_list = selection.map(x => x.feature_id);
           var new_query = '?in(feature_id,(' + feature_list.join(',') + '))';
@@ -837,7 +837,7 @@ define([
           min: 1,
           max: 5000,
           tooltip: 'View Pathways in Feature List.',
-          validContainerTypes: ['feature_data', 'pathway_summary_data', 'protein_data', 'structure_data', 'spgene_data', 'proteinFeatures_data']
+          validContainerTypes: ['feature_data', 'pathway_summary_data', 'protein_data', 'spgene_data']
         }, function (selection) {
           var feature_list = selection.map(x => x.feature_id);
           var new_query = '?in(feature_id,(' + feature_list.join(',') + '))';
