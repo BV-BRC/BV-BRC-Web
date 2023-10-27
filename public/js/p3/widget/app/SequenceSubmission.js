@@ -600,7 +600,6 @@ define([
     },
 
     setInputSource: function (job_data) {
-      console.log("JOB_DATA:", job_data);
       var s = job_data['input_source'];
       if (s === 'fasta_data') {
         this.input_sequence.set('checked', true);
