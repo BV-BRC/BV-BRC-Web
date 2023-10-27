@@ -600,6 +600,7 @@ define([
     },
 
     setInputSource: function (job_data) {
+      console.log("JOB_DATA:", job_data);
       var s = job_data['input_source'];
       if (s === 'fasta_data') {
         this.input_sequence.set('checked', true);
@@ -614,6 +615,10 @@ define([
 
       this.output_path.set('value', job_data['output_path']);
       this.metadata.set('value', job_data['metadata']);
+      this.street.set('value', job_data['street']);
+      this.postal_code.set('value', job_data['postal_code']);
+      this.city.set('value', job_data['city']);
+      this.state_info.set('value', job_data['state']);
       this.country.set('value', job_data['country']);
       this.phoneNumber.set('value', job_data['phoneNumber']);
       this.consortium.set('value', job_data['consortium']);
