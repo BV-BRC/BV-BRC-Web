@@ -171,6 +171,9 @@ define([
             this.hmapUpdate();
             Topic.publish(this.topicId, 'hideLoadingMask');
             break;
+          case 'flipAxis':
+            this.flipAxis();
+            break;
           default:
             break;
         }
@@ -740,8 +743,10 @@ define([
         this.pfState.heatmapAxis = '';
       }
 
-      Topic.publish(this.topicId, 'refreshHeatmap');
-      this.chart.flipScaling();
+      this.chart.flipAxis();
+      // Topic.publish(this.topicId, 'refreshHeatmap');
+
+      // this.chart.flipScaling();
     },
 
     cluster: function (param) {
@@ -788,6 +793,7 @@ define([
       var self = this;
       if (!this.currentData || !this._firstView) return;
       var data = this.formatData(this.currentData);
+
       if (!data) return;
 
       if (!this.chart) {
