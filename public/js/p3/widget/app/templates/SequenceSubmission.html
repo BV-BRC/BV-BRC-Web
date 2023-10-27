@@ -82,7 +82,7 @@
                 </div>
                 <div class="appRow">
                     <div class="appRowSegment" style="text-align:left; width:60%">
-                        <label class="paramlabel">Street</label><br>
+                        <label class="paramlabel">Street *</label><br>
                         <div data-dojo-type="dijit/form/ValidationTextBox" name="street"
                              data-dojo-attach-point="street" style="width:99%"
                              data-dojo-props="intermediateChanges:false, trim:true"></div>
@@ -90,29 +90,30 @@
                     <div class="appRowSegment" style="text-align:left; width:0%">
                     </div>
                     <div class="appRowSegment" style="text-align:left; width:30%">
-                        <label class="paramlabel">Postal Code</label><br>
+                        <label class="paramlabel">Postal Code *</label><br>
                         <div data-dojo-type="dijit/form/ValidationTextBox" name="postal_code"
-                             data-dojo-attach-point="postal_code"
+                             data-dojo-attach-point="postal_code" required="true"
                              data-dojo-props="intermediateChanges:false, trim:true"></div>
                     </div>
                 </div>
                 <div class="appRow">
                     <div class="appRowSegment" style="text-align:left; width:30%">
-                        <label class="paramlabel">City</label><br>
+                        <label class="paramlabel">City *</label><br>
                         <div data-dojo-type="dijit/form/ValidationTextBox" name="city"
-                             data-dojo-attach-point="city"
+                             data-dojo-attach-point="city" required="true"
                              data-dojo-props="intermediateChanges:false, trim:true"></div>
                     </div>
                     <div class="appRowSegment" style="text-align:left; width:30%">
                         <label class="paramlabel">State</label><br>
                         <div data-dojo-type="dijit/form/ValidationTextBox" name="state_info"
                              data-dojo-attach-point="state_info"
-                             data-dojo-props="intermediateChanges:false, trim:true"></div>
+                             data-dojo-props="intermediateChanges:false, trim:true, missingMessage:'You must provide a state if country is USA'"></div>
                     </div>
                     <div class="appRowSegment" style="text-align:left; width:30%">
                         <label class="paramlabel">Country *</label><br>
                         <div data-dojo-type="dijit/form/FilteringSelect" name="country"
                              data-dojo-attach-point="country" required="true"
+                             data-dojo-attach-event="onChange:onCountryChange"
                              data-dojo-props="placeHolder:'e.g. China', missingMessage:'You must provide a country'"></div>
                     </div>
                 </div>

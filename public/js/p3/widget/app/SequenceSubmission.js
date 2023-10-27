@@ -550,6 +550,14 @@ define([
       return this.inherited(arguments);
     },
 
+    onCountryChange: function (evt) {
+      if (evt === 'USA') {
+        this.state_info.set('required', true);
+      } else {
+        this.state_info.set('required', false);
+      }
+    },
+
     onInputChange: function (evt) {
       this.sequence.set('required', false);
       this.query_fasta.set('required', false);
