@@ -365,20 +365,38 @@ define([
       }
       var filterGenomes = [];
       var curr_genomes = [];
+      var genome_data_keys = ['genome_status', 'isolation_country', 'host_group', 'collection_year', 'genome_groups'];
       // TODO: change to be more efficient: get list of unique genome ids first?
       this.state.data.genome_ids.forEach(lang.hitch(this, function (genomeId, idx) {
         if (!curr_genomes.includes(genomeId)) {
           // var genome_data = this.state.data.genome_data[idx];
           var genome_name = this.state.genome_names[idx];
           var genome_group = 'None';
-          if (this.state.genome_group_dict) {
-            genome_group = this.state.genome_group_dict[genomeId];
+          var genome_data = {};
+          if (this.state.genome_data) {
+            genome_data_keys.forEach(lang.hitch(this, function (k) {
+              if (k === 'genome_groups') {
+                genome_data['genome_group'] = this.state.genome_data[k][idx];
+              }
+              else {
+                genome_data[k] = this.state.genome_data[k][idx];
+              }
+            }));
           }
+          else {
+            genome_data_keys.forEach(function (k) {
+              genome_data[k] = 'None';
+            });
+          }
+          genome_data = lang.mixin(genome_data, {
+            'genome_name': genome_name,
+            'genome_id': genomeId
+          });
           curr_genomes.push(genomeId);
           var gfs = new HeatmapDataTypes.FilterStatus();
           gfs.init(idx, genome_name, genome_group);
           this.pfState.genomeFilterStatus[genomeId] = gfs;
-          filterGenomes.push({ 'genome_name': genome_name, 'genome_id': genomeId, 'genome_group': genome_group });
+          filterGenomes.push(genome_data);
         }
       }));
 
