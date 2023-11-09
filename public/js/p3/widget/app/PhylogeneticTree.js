@@ -313,9 +313,7 @@ define([
       newGenomeIds.forEach(lang.hitch(this, function (id) {
         this[groupType].addedList.push(id);
       }));
-      // groupType is always codonGroup
-      // this[groupType].addedNum = this[groupType].addedList.length;
-      this.codonGroup.addedNum = this.codonGroup.addedNum + newGenomeIds.length;
+      this[groupType].addedNum = this[groupType].addedNum + newGenomeIds.length;
       this[groupType + 'NumGenomes'].set('value', Number(this[groupType].addedNum));
     },
 
@@ -340,9 +338,7 @@ define([
           this[groupType].addedList.splice(idx, 1);
         }
       }));
-      // groupType is always codonGroup
-      // this[groupType].addedNum = this[groupType].addedList.length;
-      this.codonGroup.addedNum = this.addedNum - newGenomeIds.length;
+      this[groupType].addedNum = this[groupType].addedNum - newGenomeIds.length;
       this[groupType + 'NumGenomes'].set('value', Number(this[groupType].addedNum));
     },
 
