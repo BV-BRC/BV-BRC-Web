@@ -649,8 +649,6 @@ define([
         return_values.genome_ids = codonGenomesFiltered;
         return_values.genome_groups = this.genome_groups;
 
-        // add list of genome groups
-
         return_values.number_of_genes = values.number_of_genes;
         // in the few cases the number of max genomes is 14 or less, adjust the max genome deletions to avoid errors
         return_values.max_genomes_missing = (values.max_genomes_missing < (this.codonGroup.addedNum - 4)) ? values.max_genomes_missing : (codonGenomesFiltered.length - 4);
