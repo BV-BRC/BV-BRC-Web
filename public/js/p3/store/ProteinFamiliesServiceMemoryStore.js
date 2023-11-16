@@ -40,7 +40,7 @@ define([
     pgfam_key: '',
     plfam_key: '',
     // figfam_key: '',
-    useGenomeGroupNames: false,
+    useLabelName: 'genome_name',
     baseQuery: {},
     startup: true,
     apiServer: window.App.dataServiceURL,
@@ -117,7 +117,7 @@ define([
             Topic.publish(this.topicId, 'updateHeatmapData', currentData);
             break;
           case 'changeHeatmapLabels':
-            this.useGenomeGroupNames = !this.useGenomeGroupNames;
+            this.useLabelName = value;
             var currentData = this.getHeatmapData();
             Topic.publish(this.topicId, 'updateHeatmapData', currentData);
             break;
@@ -365,22 +365,16 @@ define([
       }
       var filterGenomes = [];
       var curr_genomes = [];
-      var genome_data_keys = ['genome_status', 'isolation_country', 'host_group', 'collection_year', 'genome_groups'];
+      var genome_data_keys = ['genome_status', 'geographic_group', 'isolation_country', 'host_group', 'collection_year', 'genome_groups'];
       // TODO: change to be more efficient: get list of unique genome ids first?
       this.state.data.genome_ids.forEach(lang.hitch(this, function (genomeId, idx) {
         if (!curr_genomes.includes(genomeId)) {
           // var genome_data = this.state.data.genome_data[idx];
           var genome_name = this.state.genome_names[idx];
-          var genome_group = 'None';
           var genome_data = {};
           if (this.state.genome_data) {
             genome_data_keys.forEach(lang.hitch(this, function (k) {
-              if (k === 'genome_groups') {
-                genome_data['genome_group'] = this.state.genome_data[k][idx];
-              }
-              else {
-                genome_data[k] = this.state.genome_data[k][idx];
-              }
+              genome_data[k] = String(this.state.genome_data[k][idx]);
             }));
           }
           else {
@@ -394,7 +388,7 @@ define([
           });
           curr_genomes.push(genomeId);
           var gfs = new HeatmapDataTypes.FilterStatus();
-          gfs.init(idx, genome_name, genome_group);
+          gfs.init(idx, genome_name, genome_data);
           this.pfState.genomeFilterStatus[genomeId] = gfs;
           filterGenomes.push(genome_data);
         }
@@ -529,8 +523,8 @@ define([
           keeps.push(2 * gfs.getIndex());
           var labelColor = ((idx % 2) == 0) ? 0x000066 : null;
           var rowColor = ((idx % 2) == 0) ? 0xF4F4F4 : 0xd6e4f4;
-          var altLabel = gfs.altLabel ? gfs.altLabel : 'None';
-          var meta = { groupLabel: altLabel, nameLabel: gfs.getLabel(), useGroupName: _self.useGenomeGroupNames };
+          var altLabels = gfs.altLabels ? gfs.altLabels : {};
+          var meta = { altLabels: altLabels, nameLabel: gfs.getLabel(), useLabelName: _self.useLabelName };
           // console.log("row: ", gfs.getIndex(), genomeId, gfs.getGenomeName(), labelColor, rowColor);
           rows.push(new HeatmapDataTypes.Row(gfs.getIndex(), genomeId, gfs.getLabel(), labelColor, rowColor, meta));
         }

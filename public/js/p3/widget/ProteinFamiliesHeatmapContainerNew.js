@@ -25,8 +25,32 @@ define([
         'Switch Label',
         'fa icon-pencil-square fa-2x',
         { label: 'Switch Label', multiple: false, validTypes: ['*'] },
-        function () {
-          Topic.publish(this.topicId, 'changeHeatmapLabels');
+        function (selection, container, button) {
+          var labelContent = domConstruct.create('div');
+          domConstruct.create('div', { class: 'wsActionTooltip', rel: 'genome_name', innerHTML: 'Genome Name' }, labelContent);
+          domConstruct.create('div', { class: 'wsActionTooltip', rel: 'genome_groups', innerHTML: 'Genome Group' }, labelContent);
+          domConstruct.create('div', { class: 'wsActionTooltip', rel: 'genome_status', innerHTML: 'Genome Status' }, labelContent);
+          domConstruct.create('div', { class: 'wsActionTooltip', rel: 'geographic_group', innerHTML: 'Geographic Group' }, labelContent);
+          domConstruct.create('div', { class: 'wsActionTooltip', rel: 'isolation_country', innerHTML: 'Isolation Country' }, labelContent);
+          domConstruct.create('div', { class: 'wsActionTooltip', rel: 'host_group', innerHTML: 'Host Group' }, labelContent);
+          domConstruct.create('div', { class: 'wsActionTooltip', rel: 'collection_year', innerHTML: 'Collection Year' }, labelContent);
+          var viewLabelTooltip = new TooltipDialog({
+            content: labelContent,
+            onMouseLeave: function () {
+              popup.close(viewLabelTooltip);
+            }
+          });
+
+          on(viewLabelTooltip.domNode, 'click', lang.hitch(this, function (evt) {
+            var rel = evt.target.attributes.rel.value;
+            Topic.publish(this.topicId, 'changeHeatmapLabels', rel);
+            popup.close(viewLabelTooltip);
+          }));
+          popup.open({
+            popup: viewLabelTooltip,
+            around: button,
+            orient: ['below']
+          });
         },
         true
       ],
@@ -832,7 +856,7 @@ define([
               fam = info.xLabel,
               famID = info.colMeta.id,
               members = info.value,
-              group = info.rowMeta.groupLabel ? info.rowMeta.groupLabel : 'None';
+              group = info.rowMeta.altLabels ? info.rowMeta.altLabels.genome_groups : 'None';
             if (famType === 'plfam') {
               labels = ['Genome: ', 'Genome Group:', 'PLfam: ', 'PLfam ID: ', 'Members: '];
             } else if (famType === 'pgfam') {

@@ -254,11 +254,11 @@ define([], function () {
 
   this.FilterStatus = (function () {
     return function () {
-      this.init = function (idx, lbl, altLbl) {
+      this.init = function (idx, lbl, altLbls) {
         this.index = idx;
         this.status = 2; // 0: present, 1: absent, 2: don't care
         this.label = lbl;
-        this.altLabel = altLbl;
+        this.altLabels = altLbls;
       };
       this.setIndex = function (idx) {
         this.index = idx;
