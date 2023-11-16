@@ -28,7 +28,7 @@ define([
         function (selection, container, button) {
           var labelContent = domConstruct.create('div');
           domConstruct.create('div', { class: 'wsActionTooltip', rel: 'genome_name', innerHTML: 'Genome Name' }, labelContent);
-          domConstruct.create('div', { class: 'wsActionTooltip', rel: 'genome_groups', innerHTML: 'Genome Group' }, labelContent);
+          domConstruct.create('div', { class: 'wsActionTooltip', rel: 'genome_group', innerHTML: 'Genome Group' }, labelContent);
           domConstruct.create('div', { class: 'wsActionTooltip', rel: 'genome_status', innerHTML: 'Genome Status' }, labelContent);
           domConstruct.create('div', { class: 'wsActionTooltip', rel: 'geographic_group', innerHTML: 'Geographic Group' }, labelContent);
           domConstruct.create('div', { class: 'wsActionTooltip', rel: 'isolation_country', innerHTML: 'Isolation Country' }, labelContent);
@@ -856,7 +856,7 @@ define([
               fam = info.xLabel,
               famID = info.colMeta.id,
               members = info.value,
-              group = info.rowMeta.altLabels ? info.rowMeta.altLabels.genome_groups : 'None';
+              group = info.rowMeta.altLabels ? info.rowMeta.altLabels.genome_group : 'None';
             if (famType === 'plfam') {
               labels = ['Genome: ', 'Genome Group:', 'PLfam: ', 'PLfam ID: ', 'Members: '];
             } else if (famType === 'pgfam') {

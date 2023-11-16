@@ -365,7 +365,7 @@ define([
       }
       var filterGenomes = [];
       var curr_genomes = [];
-      var genome_data_keys = ['genome_status', 'geographic_group', 'isolation_country', 'host_group', 'collection_year', 'genome_groups'];
+      var genome_data_keys = ['genome_status', 'geographic_group', 'isolation_country', 'host_group', 'collection_year', 'genome_group'];
       // TODO: change to be more efficient: get list of unique genome ids first?
       this.state.data.genome_ids.forEach(lang.hitch(this, function (genomeId, idx) {
         if (!curr_genomes.includes(genomeId)) {
