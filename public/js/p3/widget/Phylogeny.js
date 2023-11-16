@@ -49,7 +49,7 @@ define([
     jsonTree: null,
     tree: null,
     apiServer: window.App.dataAPI,
-    phyloxml_date: 'Sept0722',
+    phyloxml_date: '111023', // month, day, year
     phylogram: true,
     containerType: 'genome_data',
     docsServiceURL: window.App.docsServiceURL,
@@ -356,7 +356,7 @@ define([
         console.log('Error Retreiving newick for Taxon: ', taxonId);
       } else {
         var phyloxml_file = data[taxonId];
-        phyloxml_file = 'https://www.bv-brc.org/api/content/bvbrc_phylogeny_tab/phyloxml/' + phyloxml_file;
+        phyloxml_file = 'https://www.bv-brc.org/api/content/bvbrc_phylogeny_tab/phyloxml/' + phyloxml_file + '?version=' + this.phyloxml_date;
         request.get(phyloxml_file).then(lang.hitch(this, function (phyloxml) {
           /*
           <div name="overview" class="infobox iconbox infobutton dialoginfo">
