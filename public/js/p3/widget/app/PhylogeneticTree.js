@@ -722,9 +722,6 @@ define([
             label: 'Genome Name', value: 'genome_name', selected: false
           },
           {
-            label: 'Genome Group', value: 'genome_group', selected: false
-          },
-          {
             label: 'Strain', value: 'strain', selected: false
           },
           {
