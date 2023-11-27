@@ -343,7 +343,7 @@ define([
           WorkspaceManager.getObject(feature_group).then(lang.hitch(this, function (res) {
             var obj = JSON.parse(res.data);
             var feature_ids = obj.id_list.feature_id;
-            console.log('feature_ids length = ' + feature_ids.length)
+            // console.log('feature_ids length = ' + feature_ids.length)
             var query = `in(feature_id,(${(feature_ids.map(encodeURIComponent).join(','))}))&limit(${feature_ids.length})`;
             DataAPI.queryGenomeFeatures(query).then(lang.hitch(this, function (res2) {
               Topic.publish(this.topicId, 'hideLoadingMask', this.pfState);
