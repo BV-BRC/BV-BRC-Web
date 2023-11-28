@@ -34,7 +34,8 @@ const defaults = {
   },
   proxy: {
     'brcdownloads': 'http://brcdownloads.patricbrc.org'
-  }
+  },
+  linkedinConfigFile: path.join(__dirname, 'linkedin.txt')
 };
 
 const config_filename = 'p3-web.conf';

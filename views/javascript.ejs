@@ -31,37 +31,37 @@ const load_scripts = [
   <% }) %>
 <% } %>
 
-<script type="text/javascript"> // LinkedIn Feed
+<script type="text/javascript">
+  // LinkedIn Feed
   let $linkedInFeedElm = $("#linkedin-feed");
 
   // Fetch the data only if feed element exists in the page
   if ($linkedInFeedElm.length) {
-    $.get('public/linkedin.txt', function (data) {
-      const lines = data.split("\n");
-      let index = 0;
-      for (let line of lines) {
-        try {
-          const $iframe = $(line);
-          if ($iframe.length > 0) {
-            $iframe.width("100%");
-
-            $linkedInFeedElm.append(
-              $("<div/>", {"id": "linkedin-" + index++}).append(
-                $("<div/>", {"class": "linkedin-html-embed"}).append(
-                  $iframe
-                )
-              )
+    $.getJSON({
+      url: '/linkedin/posts/?count=8',
+      success: function (data) {
+        for (let post of data.elements) {
+          if (post.id && post.id.includes('share')) {
+            $("#linkedin-slides").append(
+              `<li class="slide" style="height: 100%;">
+                  <iframe src="https://www.linkedin.com/embed/feed/update/${post.id}" style="height: 100%;width: 100%;"/>
+              </li>`
+            );
+            $("#linkedin-dot-navigation").append(
+              `<div class="dot"></div>`
             );
           }
-        } catch (e) {
-          console.error(e);
         }
-      }
-    }, 'text');
-  }
-</script>
 
-<script> // News & Announcements Carousel
+        initializeSlide($('#linkedin-slides .slide'), $("#linkedin-dot-navigation .dot"));
+      },
+      error: function( data ) {
+        console.log(data);
+      }
+    });
+  }
+
+  // News & Announcements Carousel
   $.getJSON("https://www.bv-brc.org/docs/_static/carousel.json", function (feed) {
       for (var i = 0; i < feed.length; i++) {
           var link = feed[i].link;
@@ -70,7 +70,7 @@ const load_scripts = [
           var word_limit = (feed[i].img == "") ? 60 : 20
           var descSnippit = desc.split(" ", word_limit).join(" ");
           var img = feed[i].img;
-          $("#slides").append(
+          $("#announcements-slides").append(
               `<li class="slide">
                   <a href="${link}" class="feed-link">
                       <h4 class="feed-title">${title}</h4>
@@ -79,25 +79,29 @@ const load_scripts = [
                   <img src="${img}" class="feed-img">
               </li>`
           );
-          $("#slides .slide").first().addClass("showing");
-          $("#dot-navigation .dot").first().addClass("selected");
-          $("#dot-navigation").append(
+          $("#announcements-dot-navigation").append(
               `<div class="dot"></div>`
           );
       }
-      var slides = $('#slides .slide');
-      var dots = $("#dot-navigation .dot");
-      var index = 0;
-      slides.eq(0).addClass("current-slide");
-      dots.eq(0).addClass("current-dot");
-      dots.click(function () {
-          dots.eq(index).removeClass("current-dot");
-          slides.eq(index).removeClass("current-slide");
-          $(this).addClass("current-dot");
-          index = $(this).index();
-          slides.eq(index).addClass("current-slide");
-      });
+
+      initializeSlide($('#announcements-slides .slide'), $("#announcements-dot-navigation .dot"));
   });
+
+  function initializeSlide($slides, $dots) {
+    $slides.first().addClass("showing");
+    $dots.first().addClass("selected");
+
+    var index = 0;
+    $slides.eq(0).addClass("current-slide");
+    $dots.eq(0).addClass("current-dot");
+    $dots.click(function () {
+      $dots.eq(index).removeClass("current-dot");
+      $slides.eq(index).removeClass("current-slide");
+      $(this).addClass("current-dot");
+      index = $(this).index();
+      $slides.eq(index).addClass("current-slide");
+    });
+  }
 </script>
 
 <!-- // use bundle.js
