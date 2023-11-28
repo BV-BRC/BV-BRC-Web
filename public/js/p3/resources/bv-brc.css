@@ -485,12 +485,9 @@
 }
 
 #bv-brc-home .linkedin-feed {
+  background: var(--white-bg);
   border-bottom: 4px solid var(--green);
-  padding: 0;
-}
-
-#bv-brc-home .linkedin-feed > div {
-  margin-bottom: 10px;
+  padding: 15px 10px;
 }
 
 #bv-brc-footer {
@@ -569,14 +566,14 @@
   margin-top: 5px;
 }
 
-#bv-brc-home .announcements #slides {
+#bv-brc-home .slides {
   position: relative;
   padding: 0px;
   margin: 0px;
   list-style-type: none;
 }
 
-#bv-brc-home .announcements #slides .slide {
+#bv-brc-home .slides .slide {
   position: absolute;
   left: 0px;
   top: 0px;
@@ -584,12 +581,12 @@
   visibility: hidden;
   z-index: 1;
   -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   -webkit-transition: opacity 1s;
   transition: opacity 1s;
 }
 
-#bv-brc-home .announcements #slides .slide .feed-title {
+#bv-brc-home .slides .slide .feed-title {
   font-family: "Roboto", Arial, Helvetica, sans-serif;
   font-size: 11pt;
   font-weight: 400;
@@ -599,38 +596,38 @@
   margin: 0px;
 }
 
-#bv-brc-home .announcements #slides .slide .feed-description {
+#bv-brc-home .slides .slide .feed-description {
   font-family: "Roboto Slab", Arial, Helvetica, sans-serif;
   font-size: 10pt !important;
   padding: 5px 0px;
 }
 
-#bv-brc-home .announcements #slides .slide .feed-description a {
+#bv-brc-home .slides .slide .feed-description a {
   text-decoration: underline;
 }
 
-#bv-brc-home .announcements #slides .slide .feed-img {
+#bv-brc-home .slides .slide .feed-img {
   width: 100%;
   max-height: 170px!important;
 }
 
-#bv-brc-home .announcements #slides .current-slide {
+#bv-brc-home .slides .current-slide {
   opacity: 1;
   visibility: visible;
 }
 
-#bv-brc-home .announcements #dot-navigation {
+#bv-brc-home .dot-navigation {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   position: relative;
   margin-top: 330px;
   -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
 }
 
-#bv-brc-home .announcements #dot-navigation .dot {
+#bv-brc-home .dot-navigation .dot {
   height: 20px;
   width: 20px;
   background: var(--main-bg);
@@ -641,7 +638,7 @@
   cursor: pointer;
 }
 
-#bv-brc-home .announcements #dot-navigation .current-dot {
+#bv-brc-home .dot-navigation .current-dot {
   background: var(--blue);
   border: 2px solid var(--green);
 }
