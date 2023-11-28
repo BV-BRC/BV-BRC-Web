@@ -24,8 +24,8 @@ define([
     _setStateAttr: function (state) {
       this._set('state', state);
 
-      if (state.taxon_id) {
-        this.set('taxonomy', state.taxon_id);
+      if (state.taxonomy) {
+        this.set('taxonomy', state.taxonomy);
       }
 
       // widgets called by taxon_id
@@ -39,8 +39,8 @@ define([
       }, this);
     },
 
-    _setTaxonomyAttr: function (taxon_id) {
-      xhr.get(PathJoin(this.apiServiceUrl, 'data/summary_by_taxon', taxon_id), {
+    _setTaxonomyAttr: function (taxon) {
+      xhr.get(PathJoin(this.apiServiceUrl, 'data/summary_by_taxon', taxon.taxon_id), {
         headers: {
           accept: 'application/json'
         },
@@ -48,11 +48,34 @@ define([
       }).then(lang.hitch(this, function (taxonomy) {
         this.createSummary(taxonomy);
       }));
+      this.createExternalLinks(taxon);
+      this.createPubmedLinks(taxon);
     },
 
     createSummary: function (data) {
       domConstruct.empty(this.taxonomySummaryNode);
       domConstruct.place(DataItemFormatter(data, 'virus_data', {}), this.taxonomySummaryNode, 'first');
+    },
+
+    createExternalLinks: function (taxon) {
+      domConstruct.empty(this.externalLinkNode);
+
+      // BEI Resources
+      var linkBEI = 'https://www.beiresources.org/Catalog.aspx?f_instockflag=In+Stock%23~%23Temporarily+Out+of+Stock&q=' + taxon.taxon_name;
+      var string = domConstruct.create('a', {
+        href: linkBEI,
+        innerHTML: 'BEI Resources',
+        target: '_blank'
+      }, this.externalLinkNode);
+      domConstruct.place('<br>', string, 'after');
+    },
+
+    createPubmedLinks: function (taxon) {
+      if (this.searchName != taxon.taxon_name) {
+        this.searchName = taxon.taxon_name;
+        domConstruct.empty(this.pubmedSummaryNode);
+        domConstruct.place(ExternalItemFormatter(taxon, 'pubmed_data', {}), this.pubmedSummaryNode, 'first');
+      }
     },
 
     startup: function () {
