@@ -3,13 +3,13 @@ define([
   'dojo/text!./templates/PhylogeneticTree.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/lang', 'dojo/domReady!', 'dojo/query', 'dojo/dom', 'dojo/dom-style',
   'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
-  '../../WorkspaceManager', 'dojo/when', '../../DataAPI'
+  '../../WorkspaceManager', 'dojo/when', '../../DataAPI', '../AdvancedSearchFields'
 ], function (
   declare, on, Topic, domClass,
   Template, AppBase, domConstruct, registry,
   lang, domReady, query, dom, domStyle,
   popup, TooltipDialog, Dialog,
-  WorkspaceManager, when, DataAPI
+  WorkspaceManager, when, DataAPI, AdvancedSearchFields
 ) {
   return declare([AppBase], {
     baseClass: 'App PhylogeneticTree',
@@ -45,7 +45,10 @@ define([
       this.codonGroup.genomeToAttachPt = ['codon_genome_id'];
       this.codonGroup.genomeGroupToAttachPt = ['codon_genomes_genomegroup'];
       this.codonGroup.maxGenomes = 200;
-      this.codonGroup.minGenomes = 4;
+      this.codonGroup.minGenomes = 0;
+      this.minGenomes = 4;
+      this.genome_groups = [];
+      this.num_group_genomes = 0;
       this.selectedTR = []; // list of selected TR for ingroup and outgroup, used in onReset()
       this.metadataDict = {};
     },
@@ -72,6 +75,7 @@ define([
       this.emptyTable(this.codonGroupGenomeTable, this.startingRows);
       // this.emptyTable(this.metadataTableBody, this.startingRows);
       this.startupMetadataTable();
+      this.startupAdvMetadata();
       this.inGroupNumGenomes.startup();
       this.outGroupNumGenomes.startup();
       this.codonGroupNumGenomes.startup();
@@ -97,7 +101,7 @@ define([
 
     validate: function () {
       // check the minimum number of genomes (4) is satisfied
-      if (this.codonGroup.addedList.length < this.codonGroup.minGenomes) {
+      if (this.codonGroup.addedNum < this.minGenomes) {
         return false;
       }
       return this.inherited(arguments);
@@ -136,6 +140,7 @@ define([
     },
 
     startupMetadataTable: function () {
+      this.checkMoreOptions('initialize_options'); // initializes the list of options
       var default_metadata_fields = ['Genome ID', 'Genome Name', 'Strain', 'Accession', 'Subtype'].reverse();
       var default_metadata_values = ['genome_id', 'genome_name', 'strain', 'accession', 'subtype'].reverse();
       this.metadata_count = 0;
@@ -164,6 +169,25 @@ define([
         }));
         default_index++;
       }));
+    },
+
+    startupAdvMetadata: function () {
+      this.advMetadata = [];
+      AdvancedSearchFields['genome'].forEach(lang.hitch(this, function (obj) {
+        var disable_field = obj['field'].includes('---');
+        var newOpt = {
+          label: obj['field'],
+          value: obj['field'],
+          selected: false,
+          disabled: disable_field
+        }
+        this.advMetadata.push(newOpt);
+      }));
+      this.advMetadata.push({
+        label: '... Fewer Options ...',
+        value: 'less_options',
+        selected: false
+      });
     },
 
     openJobsList: function () {
@@ -289,8 +313,22 @@ define([
       newGenomeIds.forEach(lang.hitch(this, function (id) {
         this[groupType].addedList.push(id);
       }));
-      this[groupType].addedNum = this[groupType].addedList.length;
+      this[groupType].addedNum = this[groupType].addedNum + newGenomeIds.length;
       this[groupType + 'NumGenomes'].set('value', Number(this[groupType].addedNum));
+    },
+
+    increaseGenomeGroup: function (genome_group, numGenomes) {
+      if (!this.genome_groups.includes(genome_group)) {
+        this.genome_groups.push(genome_group);
+        this.codonGroup.addedNum = this.codonGroup.addedNum + numGenomes;
+        this['codonGroupNumGenomes'].set('value', Number(this.codonGroup.addedNum));
+      }
+    },
+
+    decreaseGenomeGroup: function (genome_group, numGenomes) {
+      this.genome_groups = this.genome_groups.filter(x => x != genome_group);
+      this.codonGroup.addedNum = this.codonGroup.addedNum - numGenomes;
+      this['codonGroupNumGenomes'].set('value', Number(this.codonGroup.addedNum));
     },
 
     decreaseGenome: function (groupType, newGenomeIds) {
@@ -300,7 +338,7 @@ define([
           this[groupType].addedList.splice(idx, 1);
         }
       }));
-      this[groupType].addedNum = this[groupType].addedList.length;
+      this[groupType].addedNum = this[groupType].addedNum - newGenomeIds.length;
       this[groupType + 'NumGenomes'].set('value', Number(this[groupType].addedNum));
     },
 
@@ -421,7 +459,7 @@ define([
         if (res && res.data && res.data.id_list) {
           if (res.data.id_list.genome_id) {
             var newGenomeIds =  res.data.id_list.genome_id;
-            this.checkBacterialGenomes(newGenomeIds, groupType, false, null);
+            this.checkBacterialGenomes(newGenomeIds, groupType, false, path);
           }
         }
       }));
@@ -457,12 +495,12 @@ define([
         if (rerun) {
           this.addGenomeGroupToTableFormFill(all_valid, genome_id_list, errors, group_path, groupType);
         } else {
-          this.addGenomeGroupToTable(all_valid, genome_id_list, errors, groupType);
+          this.addGenomeGroupToTable(all_valid, genome_id_list, errors, group_path, groupType);
         }
       }));
     },
 
-    addGenomeGroupToTable: function (all_valid, genome_id_list, errors, groupType) {
+    addGenomeGroupToTable: function (all_valid, genome_id_list, errors, group_path, groupType) {
       var lrec = {};
       lrec.groupType = groupType;
       var chkPassed = this.ingestAttachPoints(this[groupType].genomeGroupToAttachPt, lrec);
@@ -521,7 +559,7 @@ define([
           var handle = on(td2, 'click', lang.hitch(this, function (evt) {
             // console.log("Delete Row");
             domConstruct.destroy(tr);
-            this.decreaseGenome(groupType, genome_id_list);
+            this.decreaseGenomeGroup(group_path, genome_id_list.length);
             if (this[groupType].addedNum < this.startingRows) {
               var ntr = this[groupType + 'GenomeTable'].insertRow(-1);
               domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
@@ -532,7 +570,7 @@ define([
           }));
           lrec.handle = handle;
           this.selectedTR.push(lrec);
-          this.increaseGenome(groupType, genome_id_list);
+          this.increaseGenomeGroup(group_path, genome_id_list.length);
         }
       }
       else {
@@ -609,9 +647,11 @@ define([
           }
         });
         return_values.genome_ids = codonGenomesFiltered;
+        return_values.genome_groups = this.genome_groups;
+
         return_values.number_of_genes = values.number_of_genes;
         // in the few cases the number of max genomes is 14 or less, adjust the max genome deletions to avoid errors
-        return_values.max_genomes_missing = (values.max_genomes_missing < (codonGenomesFiltered.length - 4)) ? values.max_genomes_missing : (codonGenomesFiltered.length - 4);
+        return_values.max_genomes_missing = (values.max_genomes_missing < (this.codonGroup.addedNum - 4)) ? values.max_genomes_missing : (codonGenomesFiltered.length - 4);
         return_values.max_allowed_dups = values.max_allowed_dups;
 
       }
@@ -665,6 +705,63 @@ define([
         this.outGroupNumGenomes.constraints.min = 1;
         this.codonGroupNumGenomes.constraints.min = 0;
         this.checkParameterRequiredFields();
+      }
+    },
+
+    checkMoreOptions: function (sel) {
+      if (sel === 'more_options') {
+        this.metadata_selector.set('options', this.advMetadata).reset();
+        this.metadata_selector.toggleDropDown();
+      }
+      if (sel === 'less_options' || sel === 'initialize_options') {
+        var newOpts = [
+          {
+            label: 'Genome ID', value: 'genome_id', selected: false
+          },
+          {
+            label: 'Genome Name', value: 'genome_name', selected: false
+          },
+          {
+            label: 'Strain', value: 'strain', selected: false
+          },
+          {
+            label: 'Accession', value: 'accession', selected: false
+          },
+          {
+            label: 'Subtype', value: 'subtype', selected: false
+          },
+          {
+            label: 'Lineage', value: 'lineage', selected: false
+          },
+          {
+            label: 'Host Group', value: 'host_group', selected: false
+          },
+          {
+            label: 'Host Common Name', value: 'host_common_name', selected: false
+          },
+          {
+            label: 'Collection Date', value: 'collection_date', selected: false
+          },
+          {
+            label: 'Collection Year', value: 'collection_year', selected: false
+          },
+          {
+            label: 'Geographic Group', value: 'geographic_group', selected: false
+          },
+          {
+            label: 'Isolation Country', value: 'isolation_country', selected: false
+          },
+          {
+            label: 'Geographic Location', value: 'geographic_location', selected: false
+          },
+          {
+            label: '... More Options ...', value: 'more_options', selected: false
+          }
+        ];
+        this.metadata_selector.set('options', newOpts).reset();
+        if (sel === 'less_options') {
+          this.metadata_selector.toggleDropDown();
+        }
       }
     },
 

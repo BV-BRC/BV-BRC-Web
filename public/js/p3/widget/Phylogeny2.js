@@ -583,7 +583,7 @@ define([
           // document.addEventListener('submit_selected_nodes_event', this.onNodeSelection(this));
         }
         catch (e) {
-          alert('error while launching archaeopteryx: ' + e);
+          alert('Error while launching archaeopteryx... Please reload the page using your browser reload button.');
         }
       }
     },

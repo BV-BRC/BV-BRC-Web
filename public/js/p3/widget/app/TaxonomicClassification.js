@@ -1,4 +1,3 @@
-
 define([
   'dojo/_base/declare', 'dojo/_base/array', 'dojo/topic', 'dijit/_WidgetBase', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/on', 'dojo/request', 'dojo/dom-class', 'dojo/dom-construct',
@@ -72,6 +71,7 @@ define([
       } catch (error) {
         console.error(error);
       }
+      this.changeDatabaseBySequenceType()
     },
 
     openJobsList: function () {
@@ -113,6 +113,49 @@ define([
       }));
       return value;
     },
+
+    changeDatabaseBySequenceType: function () {
+      var all_analyses = [
+        { value: "16S", label: "Default"},
+        {value: "microbiome", label: "Microbiome Analysis"},
+        {value: "pathogen", label: "Species Identification"}
+      ];
+      var all_dbs =[
+        {value: "SILVA", label: "SILVA"},
+        {value: "Greengenes", label: "Greengenes"},
+        {value: "bvbrc", label: "BV-BRC Database"},
+        {value: "standard", label: "Kraken2 Standard Database"}
+      ]
+      var blank =[
+        {value: " ", label: " "},
+      ]
+      this.analysis_type.set('options', blank);
+      this.analysis_type.set('options', all_analyses)
+      this.database.set('options', blank);
+      this.database.set('options', all_dbs);
+      this.analysis_type.set('disabled', false);
+      this.sequence_type = 'wgs';
+      if (this.wgs.checked == true) {
+          this.sequence_type = 'wgs';
+          this.database.removeOption({value: "SILVA", label: "SILVA"});
+          this.database.removeOption({value: "Greengenes", label: "Greengenes"});
+          this.analysis_type.removeOption({ value: "16S", label: "Default"});
+          this.host_genome.set('disabled', false);
+      } else if (this.sixteenS.checked == true) {
+          this.sequence_type = 'sixteenS';
+          this.database.removeOption({value: "bvbrc", label: "BV-BRC Database"});
+          this.database.removeOption({value: "standard", label: "Kraken2 Standard Database"});
+          this.analysis_type.removeOption({value: "microbiome", label: "Microbiome Analysis"});
+          this.analysis_type.removeOption({value: "pathogen", label: "Species Identification"});
+          this.analysis_type.set('disabled', true);
+          this.host_genome.set('disabled', true);     
+      } else {
+          console.log('Invalid Selection');
+          this.analysis_type.set('disabled', true);
+          this.database.set('disabled', true);
+          this.host_genome.set('disabled', true);
+      }
+  },
 
     ingestAttachPoints: function (input_pts, target, req) {
       req = typeof req !== 'undefined' ? req : true;
