@@ -59,7 +59,7 @@
             <div id="conditionbox" class="appBox appShadow" style="min-height: 220px; height:auto; width:330px">
               <div class="headerrow">
                 <label class="appBoxLabel">Pipeline</label>
-                <div name="groups-conditions" class="infobox iconbox infobutton tooltipinfo">
+                <div name="pipeline" class="infobox iconbox infobutton tooltipinfo">
                   <i class="fa icon-question-circle fa"></i>
                 </div>
                 <br>
@@ -127,9 +127,55 @@
               <div class="headerrow">
                 <div style="width:85%;display:inline-block;">
                   <label class="appBoxLabel">Single read library</label>
+                  <div name="single-read-library" class="infobox iconbox infobutton dialoginfo">
+                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                </div>
+              </div>
+                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle"
+                    class="fa icon-arrow-circle-o-right fa-lg"></i></div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">Read File</label><br>
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile"
+                  data-dojo-attach-point="read" style="width:300px" required="false"
+                  data-dojo-props="type:['reads'],multi:false"></div>
+              </div>
+            </div>
+            <div class="appBox appShadow">
+              <div class="headerrow">
+                <div style="width:85%;display:inline-block;">
+                  <label class="appBoxLabel">SRA run accession</label>
+                  <div name="sra-run-accession" class="infobox iconbox infobutton dialoginfo">
+                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                </div>
+              </div>
+              <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR"
+                    class="fa icon-arrow-circle-o-right fa-lg"></i></div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">SRR Accession</label><i
+                  data-dojo-attach-point="srr_accession_validation_message"></i><br>
+                <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-event="onChange:updateSRR"
+                  data-dojo-attach-point="srr_accession" style="width: 300px" required="false"
+                  data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'">
+            <!-- </div>
+            <div class="appBox appShadow">
+              <div class="headerrow">
+                <div style="width:85%;display:inline-block;">
+                  <label class="appBoxLabel">Single read library</label>
                 </div>
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle"
                     class="fa icon-arrow-circle-o-right fa-lg"></i></div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel">Platform</label><br>
+                <select data-dojo-type="dijit/form/Select" name="platform_select"
+                  data-dojo-attach-point="platform_select" style="width:264px" required="true"
+                  data-dojo-props="intermediateChanges:true,trim:true,placeHolder:'Select Platform'">
+                  <option value="illumina">Illumina</option>
+                  <option value="pacbio">Pacbio</option>
+                  <option value="nanopore">Nanopore</option>
+                </select>
               </div>
               <div class="appRow">
                 <label class="paramlabel">Read File</label><br>
@@ -151,7 +197,7 @@
                   data-dojo-attach-point="srr_accession_validation_message"></i><br>
                 <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-event="onChange:updateSRR"
                   data-dojo-attach-point="srr_accession" style="width: 300px" required="false"
-                  data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'">
+                  data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"> -->
                 </div>
               </div>
             </div>
