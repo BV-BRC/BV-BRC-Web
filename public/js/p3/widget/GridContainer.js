@@ -529,38 +529,6 @@ define([
         },
         false
       ],  [
-        'ViewSubsystemsFeatureList',
-        'MultiButton fa icon-selection-SequenceList fa-2x',
-        {
-          label: 'SUBSYSTEMS',
-          validTypes: ['*'],
-          multiple: true,
-          min: 1,
-          max: 5000,
-          tooltip: 'View Subsystems in Feature List.',
-        }, function (selection) {
-          var feature_list = selection.map(x => x.feature_id);
-          var new_query = '?in(feature_id,(' + feature_list.join(',') + '))';
-          Topic.publish('/navigate', { href: '/view/SubsystemList/' + new_query, target: 'blank' });
-        },
-        false
-      ],  [
-        'ViewPathwaysFeatureList',
-        'MultiButton fa icon-git-pull-request fa-2x',
-        {
-          label: 'PATHWAYS',
-          validTypes: ['*'],
-          multiple: true,
-          min: 1,
-          max: 5000,
-          tooltip: 'View Pathways in Feature List.',
-        }, function (selection) {
-          var feature_list = selection.map(x => x.feature_id);
-          var new_query = '?in(feature_id,(' + feature_list.join(',') + '))';
-          Topic.publish('/navigate', { href: '/view/PathwayList/' + new_query, target: 'blank' });
-        },
-        false
-      ],  [
         'ViewSpgeneItem',
         'MultiButton fa icon-selection-Feature fa-2x',
         {
@@ -842,8 +810,41 @@ define([
           Topic.publish('/navigate', { href: '/view/FeatureList/?and(eq(annotation,PATRIC),eq(sequence_id,' + sel.sequence_id + '),eq(feature_type,CDS))' });
         },
         false
-      ],
-      [
+      ], [
+        'ViewSubsystemsFeatureList',
+        'MultiButton fa icon-selection-SequenceList fa-2x',
+        {
+          label: 'SUBSYSTEMS',
+          validTypes: ['*'],
+          multiple: true,
+          min: 1,
+          max: 5000,
+          tooltip: 'View Subsystems in Feature List.',
+          validContainerTypes: ['feature_data', 'pathway_summary_data', 'protein_data', 'spgene_data']
+        }, function (selection) {
+          var feature_list = selection.map(x => x.feature_id);
+          var new_query = '?in(feature_id,(' + feature_list.join(',') + '))';
+          Topic.publish('/navigate', { href: '/view/SubsystemList/' + new_query, target: 'blank' });
+        },
+        false
+      ],  [
+        'ViewPathwaysFeatureList',
+        'MultiButton fa icon-git-pull-request fa-2x',
+        {
+          label: 'PATHWAYS',
+          validTypes: ['*'],
+          multiple: true,
+          min: 1,
+          max: 5000,
+          tooltip: 'View Pathways in Feature List.',
+          validContainerTypes: ['feature_data', 'pathway_summary_data', 'protein_data', 'spgene_data']
+        }, function (selection) {
+          var feature_list = selection.map(x => x.feature_id);
+          var new_query = '?in(feature_id,(' + feature_list.join(',') + '))';
+          Topic.publish('/navigate', { href: '/view/PathwayList/' + new_query, target: 'blank' });
+        },
+        false
+      ], [
         'ViewFASTA',
         'fa icon-fasta fa-2x',
         {

@@ -88,7 +88,7 @@ define([
 
       var rows = data.rows.map(function (r) {
         return {
-          name: r.meta.useGroupName ? r.meta.groupLabel : r.meta.nameLabel,
+          name: r.meta.useLabelName === 'genome_name' ? r.meta.nameLabel : r.meta.altLabels[r.meta.useLabelName],
           id: r.rowID,
           meta: r.meta
         };

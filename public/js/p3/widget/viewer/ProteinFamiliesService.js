@@ -38,6 +38,7 @@ define([
           this.state.genome_names = resData['genome_names'];
           this.state.data['pgfam_genomes'] = resData['pgfam_genomes'];
           this.state.data['plfam_genomes'] = resData['plfam_genomes'];
+          this.state.genome_data = resData['genome_data'];
           if (resData.genome_groups) {
             this.state.genome_group_dict = Object.fromEntries(this.state.genome_ids.map((key, index) => [key, resData.genome_groups[index]]));
           }
