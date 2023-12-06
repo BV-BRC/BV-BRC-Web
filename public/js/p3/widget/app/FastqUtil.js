@@ -28,7 +28,7 @@ define([
     pageTitle: 'Fastq Utilities Service | BV-BRC',
     libraryData: null,
     defaultPath: '',
-    startingRows: 12,
+    startingRows: 14,
     initConditions: 5,
     maxConditions: 5,
     hostGenomes: {
