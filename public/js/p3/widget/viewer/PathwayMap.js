@@ -55,7 +55,7 @@ define([
 
     getGenomeIdsByTaxonId: function (taxon_id) {
 
-      var query = '?eq(taxon_lineage_ids,' + taxon_id + ')&select(genome_id)&limit(25000)&&sort(+kingdom,+phylum,+class,+order,+family,+genus)';
+      var query = '?eq(taxon_lineage_ids,' + taxon_id + ')&select(genome_id)&limit(25000)&sort(+kingdom,+phylum,+class,+order,+family,+genus)';
       return when(request.get(PathJoin(this.apiServiceUrl, 'genome', query), {
         headers: {
           Accept: 'application/json',
