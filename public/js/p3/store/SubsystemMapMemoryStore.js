@@ -287,6 +287,7 @@ define([
         this.state.alphabetical_genome_ids_without_reference = sorted_gene_ids;
       }
 
+      /*
       if (this.state.display_alphabetically && this.state.display_reference_genomes) {
         pmState.genome_ids = this.state.alphabetical_genome_ids_with_reference;
       }
@@ -297,6 +298,13 @@ define([
         pmState.genome_ids = this.state.genome_ids_with_reference;
       }
       else if (!this.state.display_alphabetically && !this.state.display_reference_genomes) {
+        pmState.genome_ids = this.state.genome_ids_without_reference;
+      }
+      */
+
+      if (this.state.display_alphabetically) {
+        pmState.genome_ids = this.state.alphabetical_genome_ids_without_reference;
+      } else {
         pmState.genome_ids = this.state.genome_ids_without_reference;
       }
 
