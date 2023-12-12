@@ -4,13 +4,13 @@ define([
   './SubsystemServiceMemoryGridContainer',
   '../store/SubsystemServiceMemoryStore', '../store/SubsystemServiceOverviewMemoryStore', 'dojo/topic',
   './GridSelector', './SubsystemServiceOverview', 'dojox/widget/Standby', 'dojo/dom-construct', './SubSystemsContainer',
-  '../DataAPI'
+  '../DataAPI', './formatter'
 ], function (
   declare, Deferred, BorderContainer, lang,
   TabContainer, StackController, ContentPane,
   SubSystemsGridContainer,
   SubSystemMemoryStore, SubsystemsOverviewMemoryStore, Topic,
-  selector, SubSystemsOverview, Standby, domConstruct, oldSubsystemsContainer, DataAPI
+  selector, SubSystemsOverview, Standby, domConstruct, oldSubsystemsContainer, DataAPI, formatter
 ) {
   return declare([oldSubsystemsContainer], {
     gutters: false,
@@ -91,6 +91,8 @@ define([
             subsystem_name: { label: 'Subsystem Name', field: 'subsystem_name' },
             gene_count: { label: 'Gene Count', field: 'gene_count' },
             role_count: { label: 'Role Count', field: 'role_count' },
+            gene_conservation: { label: 'Gene Conservation', field: 'gene_conservation', formatter: formatter.twoDecimalNumeric },
+            role_conservation: { label: 'Role Conservation(%)', field: 'role_conservation', formatter: formatter.twoDecimalNumeric },
             active: { label: 'Variant', field: 'active', hidden: true },
             subsystem_id: { label: 'Subsystem ID', field: 'subsystem_id', hidden: true }
           },
@@ -187,6 +189,7 @@ define([
       return def;
     },
 
+    // Not used
     loadGenesData: function () {
       var def = new Deferred();
       var worker = new window.Worker('/public/worker/SubsystemServiceWorker.js', { type: 'module' });
