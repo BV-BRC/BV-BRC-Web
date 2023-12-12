@@ -946,7 +946,6 @@ define([
           ignoreDataType: true,
           min: 2,
           multiple: true,
-          max: 200,
           validTypes: ['*'],
           tooltipDialog: viewMSATT,
           tooltip: 'Multiple Sequence Alignment',
