@@ -40,9 +40,9 @@ define([
 
         switch (key) {
           case 'requestHeatmapData':
-            // console.log("requestHeatmapData with ", value.genomeIds);
             self.currentData = self.getHeatmapData(value);
             Topic.publish('PathwayMap', 'updateHeatmapData', self.currentData);
+            // console.log("requestHeatmapData with ", value.genomeIds);
             break;
           default:
             break;
@@ -269,6 +269,29 @@ define([
     },
 
     getHeatmapData: function (pmState) {
+
+      // Sort
+      if (this.state.display_alphabetically) {
+        var sortable_genes = [];
+        for (var key in pmState.genomeFilterStatus) {
+          if (Object.prototype.hasOwnProperty.call(pmState.genomeFilterStatus, key)) {
+            sortable_genes.push({ gene_id: key, genome_name: pmState.genomeFilterStatus[key].label });
+          }
+        }
+        sortable_genes.sort(function (a, b) {
+          var textA = a.genome_name.toUpperCase();
+          var textB = b.genome_name.toUpperCase();
+          return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+        });
+
+        var sorted_gene_ids = [];
+        sortable_genes.forEach(function (gene) {
+          sorted_gene_ids.push(gene.gene_id);
+        });
+        pmState.genomeIds = sorted_gene_ids;
+      } else {
+        pmState.genomeIds = this.state.genome_ids;
+      }
 
       var rows = [];
       var cols = [];

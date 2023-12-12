@@ -50,6 +50,7 @@ define([
         title: 'Heatmap',
         type: 'webGLHeatmap',
         topicId: this.topicId,
+        state: this.state,
         content: 'Heatmap'
       });
 

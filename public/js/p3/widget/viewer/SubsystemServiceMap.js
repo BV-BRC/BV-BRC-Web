@@ -24,7 +24,9 @@ define([
 
       this.updateLocalState(state);
 
-      var query = 'eq(taxon_lineage_ids,2),or(eq(reference_genome,Reference),in(genome_id,(' + this.state.genome_ids.join(',') + ')))&select(genome_id,genome_name,reference_genome)&limit(25000)&sort(+kingdom,+phylum,+class,+order,+family,+genus)';
+      // var query = 'eq(taxon_lineage_ids,2),or(eq(reference_genome,Reference),in(genome_id,(' + this.state.genome_ids.join(',') + ')))&select(genome_id,genome_name,reference_genome)&limit(25000)&sort(+kingdom,+phylum,+class,+order,+family,+genus)';
+      var query = 'eq(taxon_lineage_ids,2),in(genome_id,(' + this.state.genome_ids.join(',') + '))&select(genome_id,genome_name,reference_genome)&limit(25000)&sort(+kingdom,+phylum,+class,+order,+family,+genus)';
+
 
       var self = this;
       request.post(PathJoin(self.apiServiceUrl, 'genome'), {
