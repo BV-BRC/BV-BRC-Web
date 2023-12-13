@@ -38,7 +38,7 @@ define([
           gene_count : { label: 'Gene Count', field: 'gene_count' },
           genome_ec : { label: 'Genome EC Count', field: 'genome_ec' },
           ec_conservation : { label: 'EC Conservation (%)', field: 'ec_conservation', formatter: formatter.twoDecimalNumeric },
-          gene_conservation : { label: 'Gene Conservation (%)', field: 'gene_conservation', formatter: formatter.twoDecimalNumeric }
+          gene_conservation : { label: 'Gene Conservation', field: 'gene_conservation', formatter: formatter.twoDecimalNumeric }
         },
       },
       'ecNum': {

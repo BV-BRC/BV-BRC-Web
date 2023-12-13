@@ -45,21 +45,6 @@ define([
         true
       ],
       [
-        'Reference Genomes',
-        'fa icon-eye fa-2x',
-        { label: 'Reference Genomes', multiple: false, validTypes: ['*'] },
-        function () {
-          if (this.state.display_reference_genomes) {
-            this.state.display_reference_genomes = false;
-          } else {
-            this.state.display_reference_genomes = true;
-          }
-
-          Topic.publish('SubSystemMap', 'refreshHeatmap');
-        },
-        true
-      ],
-      [
         'Sorting',
         'fa icon-newspaper fa-2x',
         {
