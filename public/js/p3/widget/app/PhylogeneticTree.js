@@ -141,8 +141,8 @@ define([
 
     startupMetadataTable: function () {
       this.checkMoreOptions('initialize_options'); // initializes the list of options
-      var default_metadata_fields = ['Genome ID', 'Genome Name', 'Strain', 'Accession', 'Subtype'].reverse();
-      var default_metadata_values = ['genome_id', 'genome_name', 'strain', 'accession', 'subtype'].reverse();
+      var default_metadata_fields = ['Genome ID', 'Genome Name', 'Strain', 'Isolation Country', 'Host Common Name', 'Collection Year'].reverse();
+      var default_metadata_values = ['genome_id', 'genome_name', 'strain', 'isolation_country', 'host_common_name', 'collection_year'].reverse();
       this.metadata_count = 0;
       var default_index = 0;
       default_metadata_fields.forEach(lang.hitch(this, function (metfield) {
