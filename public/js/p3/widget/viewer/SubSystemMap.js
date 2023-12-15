@@ -27,8 +27,8 @@ define([
       }
 
       this.updateLocalState(state);
-      debugger;
-      var query = 'ne(genome_id,' + state.genome_ids_without_reference + '),eq(taxon_lineage_ids,2),eq(reference_genome,Reference)&select(genome_id,genome_name,reference_genome)&limit(25000)&sort(+superkingdom,+phylum,+class,+order,+family,+genus)';
+
+      var query = 'ne(genome_id,' + state.genome_ids_without_reference + '),eq(taxon_lineage_ids,2),eq(reference_genome,Reference)&select(genome_id,genome_name,reference_genome)&limit(25000)&sort(+kingdom,+phylum,+class,+order,+family,+genus)';
 
       var self = this;
       request.post(PathJoin(self.apiServiceUrl, 'genome'), {
@@ -98,7 +98,6 @@ define([
 
     // Todo(nc): this parsing should really be part of a routing system (in next version of UI)
     updateLocalState: function (state) {
-
       var decodedSelectionData = JSON.stringify(state.search);
       var params = JSON.parse(decodedSelectionData);
       var decodedParams = decodeURIComponent(params);
@@ -166,7 +165,7 @@ define([
 
       var query = 'q=genome_id:(' + genome_ids.join(' OR ') + ') AND subsystem_id:"' + encodeURIComponent(subsystem_id) + '"&rows=1&facet=true&facet.field=genome_id&facet.mincount=1&json.nl=map';
       var self = this;
-      console.log(query);
+
       return when(request.post(window.App.dataAPI + 'subsystem/', {
         handleAs: 'json',
         headers: {

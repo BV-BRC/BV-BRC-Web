@@ -33,6 +33,8 @@ define([
 
       var self = this;
 
+      this.state.display_alphabetically = true;
+
       Topic.subscribe('SubSystemMap', function () {
         // console.log("SubsystemMapMemStore received:", arguments);
         var key = arguments[0],
