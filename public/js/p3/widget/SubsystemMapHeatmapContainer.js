@@ -166,6 +166,10 @@ define([
       });
       anchor.on('change', lang.hitch(this, function (sorting) {
 
+        this.hasBeenClustered = false;
+        this.pmState.clusterColumnOrder = [];
+        this.pmState.clusterRowOrder = [];
+
         if (sorting === 'alphabetical') {
           this.state.display_alphabetically = true;
           Topic.publish('SubSystemMap', 'heatmapOrdering');

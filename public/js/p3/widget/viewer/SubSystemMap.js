@@ -27,7 +27,7 @@ define([
       }
 
       this.updateLocalState(state);
-
+      debugger;
       var query = 'ne(genome_id,' + state.genome_ids_without_reference + '),eq(taxon_lineage_ids,2),eq(reference_genome,Reference)&select(genome_id,genome_name,reference_genome)&limit(25000)&sort(+superkingdom,+phylum,+class,+order,+family,+genus)';
 
       var self = this;

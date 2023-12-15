@@ -264,7 +264,7 @@ define([
       //   pmState.genome_ids = this.state.genome_ids_without_reference;
       // }
 
-      if (!this.state.alphabetical_genome_ids_without_reference) {
+      if (this.state.display_alphabetically) {
 
         var sortable_genes = [];
         for (var key in pmState.genomeFilterStatus) {
@@ -284,7 +284,9 @@ define([
           sorted_gene_ids.push(gene.gene_id);
         });
 
-        this.state.alphabetical_genome_ids_without_reference = sorted_gene_ids;
+        pmState.genome_ids = sorted_gene_ids;
+      } else {
+        pmState.genome_ids = this.state.genome_ids;
       }
 
       /*
@@ -301,12 +303,6 @@ define([
         pmState.genome_ids = this.state.genome_ids_without_reference;
       }
       */
-
-      if (this.state.display_alphabetically) {
-        pmState.genome_ids = this.state.alphabetical_genome_ids_without_reference;
-      } else {
-        pmState.genome_ids = this.state.genome_ids_without_reference;
-      }
 
       var rows = [];
       var cols = [];
