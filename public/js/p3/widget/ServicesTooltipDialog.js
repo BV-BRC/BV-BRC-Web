@@ -342,7 +342,21 @@ define([
       if (service === 'HASubtypeNumberingConversion') {
         var job_data;
         // always features
-        if (this.context === 'workspace') {
+        if (this.context === 'grid_container') {
+          var feature_list = data.selection.map(x => x.feature_id);
+          this.saveTempGroup('feature', feature_list).then(lang.hitch(this, function (group_path) {
+            // create data json
+            job_data = {};
+            job_data['input_source'] = 'feature_group';
+            job_data['input_feature_group'] = group_path;
+            RerunUtility.rerun(JSON.stringify(job_data), 'HASubtypeNumberingConversion', window, Topic);
+          }), lang.hitch(this, function (err) {
+            this.loadingMask.hide();
+            console.log('error during temporary group creationg: exiting');
+            console.log(err);
+            return false;
+          }));
+        } else if (this.context === 'workspace') {
           job_data = {};
           job_data['input_source'] = 'feature_group';
           job_data['input_feature_group'] = data.selection[0].path;
