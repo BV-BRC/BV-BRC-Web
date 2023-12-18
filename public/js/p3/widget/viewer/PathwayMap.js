@@ -36,7 +36,12 @@ define([
         this.viewer.set('visible', true);
       }
       else if (Object.prototype.hasOwnProperty.call(state, 'genome_ids')) {
-        this.viewer.set('visible', true);
+        var self = this;
+        when(this.sortGenomeIdsByTaxon(this.state.genome_ids), function (genome_ids) {
+          self.state.genome_ids = genome_ids;
+          self.viewer.set('visible', true);
+        });
+
       }
       else if (Object.prototype.hasOwnProperty.call(state, 'taxon_id')) {
         var self = this;
@@ -51,6 +56,22 @@ define([
 
       // update page title
       window.document.title = 'Pathway Map';
+    },
+
+    sortGenomeIdsByTaxon: function (genome_ids) {
+
+      var query = `?in(genome_id,(${genome_ids}))&select(genome_id)&sort(+superkingdom,+phylum,+class,+order,+family,+genus,+genome_name)`;
+      return when(request.get(PathJoin(this.apiServiceUrl, 'genome', query), {
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/rqlquery+x-www-form-urlencoded'
+        },
+        handleAs: 'json'
+      }), function (response) {
+        return response.map(function (d) {
+          return d.genome_id;
+        });
+      });
     },
 
     getGenomeIdsByTaxonId: function (taxon_id) {

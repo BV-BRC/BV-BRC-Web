@@ -31,6 +31,8 @@ define([
         this.apiServer = options.apiServer;
       }
 
+      this.state.display_alphabetically = true;
+
       var self = this;
 
       Topic.subscribe('PathwayMap', function () {

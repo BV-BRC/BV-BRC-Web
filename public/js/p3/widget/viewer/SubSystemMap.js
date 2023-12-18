@@ -126,7 +126,7 @@ define([
         role_count = role_count[1];
       }
 
-      var gene_count_regex = /gene_count=(.*?)&/;
+      var gene_count_regex = /&gene_count=(.*?)$/;
       var gene_count = gene_count_regex.exec(decodedParams);
       if (gene_count) {
         gene_count = gene_count[1];
