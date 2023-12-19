@@ -656,12 +656,12 @@ define([
         },
         function (selection) {
 
-          var display_reference_genomes = 'true';
+          // var display_reference_genomes = 'true';
 
           var url = {};
           if (Object.prototype.hasOwnProperty.call(this.state, 'taxon_id')) {
             url.taxon_id = this.state.taxon_id;
-            display_reference_genomes = 'false';
+            // display_reference_genomes = 'false';
           }
 
           // used to query data
@@ -690,7 +690,7 @@ define([
           // mapData.push(mapSelection)
 
           // url['subsystemselectionuniqueidentifier'] = JSON.stringify(mapData);
-          url.display_reference_genomes = display_reference_genomes;
+          // url.display_reference_genomes = display_reference_genomes;
 
           var params = Object.keys(url).map(function (p) {
             return p + '=' + url[p];
