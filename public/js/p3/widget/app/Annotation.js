@@ -14,7 +14,7 @@ define([
     applicationName: 'GenomeAnnotation',
     requireAuth: true,
     applicationLabel: 'Genome Annotation',
-    applicationDescription: 'The Genome Annotation Service provides annotation of genomic featuers using the RAST tool kit (RASTtk) for bacteria and VIGOR4 for viruses.  The service accepts a FASTA formatted contig file and an annotation recipe based on taxonomy to provide an annotated genome.',
+    applicationDescription: 'The Genome Annotation Service provides annotation of genomic features using the RAST tool kit (RASTtk) for bacteria and VIGOR4 for viruses.  The service accepts a FASTA formatted contig file and an annotation recipe based on taxonomy to provide an annotated genome.',
     applicationHelp: 'quick_references/services/genome_annotation_service.html',
     tutorialLink: 'tutorial/genome_annotation/genome_annotation.html',
     videoLink: '',

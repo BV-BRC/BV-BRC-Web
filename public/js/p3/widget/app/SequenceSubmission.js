@@ -550,6 +550,14 @@ define([
       return this.inherited(arguments);
     },
 
+    onCountryChange: function (evt) {
+      if (evt === 'USA') {
+        this.state_info.set('required', true);
+      } else {
+        this.state_info.set('required', false);
+      }
+    },
+
     onInputChange: function (evt) {
       this.sequence.set('required', false);
       this.query_fasta.set('required', false);
@@ -606,6 +614,10 @@ define([
 
       this.output_path.set('value', job_data['output_path']);
       this.metadata.set('value', job_data['metadata']);
+      this.street.set('value', job_data['street']);
+      this.postal_code.set('value', job_data['postal_code']);
+      this.city.set('value', job_data['city']);
+      this.state_info.set('value', job_data['state']);
       this.country.set('value', job_data['country']);
       this.phoneNumber.set('value', job_data['phoneNumber']);
       this.consortium.set('value', job_data['consortium']);

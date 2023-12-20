@@ -126,7 +126,7 @@ define([
         role_count = role_count[1];
       }
 
-      var gene_count_regex = /gene_count=(.*?)&/;
+      var gene_count_regex = /&gene_count=(.*?)$/;
       var gene_count = gene_count_regex.exec(decodedParams);
       if (gene_count) {
         gene_count = gene_count[1];
@@ -138,6 +138,7 @@ define([
         genome_name = genome_name[1];
       }
 
+      /*
       var display_reference_genomes_regex = /display_reference_genomes=(.*)/;
       var display_reference_genomes = display_reference_genomes_regex.exec(decodedParams)[1];
 
@@ -146,6 +147,7 @@ define([
       } else {
         display_reference_genomes = true;
       }
+      */
 
       state.genome_ids = genome_ids.split(',');
       state.genome_ids_without_reference = genome_ids.split(',');
@@ -155,7 +157,7 @@ define([
       state.role_count = role_count;
       state.gene_count = gene_count;
       state.genome_name = genome_name;
-      state.display_reference_genomes = display_reference_genomes;
+      // state.display_reference_genomes = display_reference_genomes;
       state.display_alphabetically = false;
     },
 

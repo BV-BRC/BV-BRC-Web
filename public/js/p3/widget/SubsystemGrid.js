@@ -35,7 +35,7 @@ define([
       role_name: { label: 'Role Name', field: 'role_name', hidden: false },
 
       subsystem_id: { label: 'Subsystem ID', field: 'subsystem_id', hidden: true },
-      subsystem_id: { label: 'Subsystem Name', field: 'subsystem_name', hidden: false },
+      subsystem_name: { label: 'Subsystem Name', field: 'subsystem_name', hidden: false },
       superclass: { label: 'Superclass', field: 'superclass', hidden: false },
       class: { label: 'Class', field: 'class', hidden: false },
       subclass: { label: 'Subclass', field: 'subclass', hidden: false },

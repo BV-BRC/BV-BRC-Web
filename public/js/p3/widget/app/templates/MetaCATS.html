@@ -42,7 +42,7 @@
                       <label>P-value</label><br>
                       <div style="width:85%;display:inline-block;" data-dojo-type="dijit/form/NumberTextBox"
                         name="p_value" required="true" data-dojo-attach-point="p_value" value="0.05"
-                        data-dojo-props="regExp:'^0?\.[0-9]+$',invalidMessage:'Enter a p-value between 0 and 1.',intermediateChanges:true,missingMessage:'Provide p-value',trim:true,placeHolder:'p-value'">
+                        data-dojo-props="constraints: {pattern: '0.######'},regExp:'^0?\.[0-9]+$',invalidMessage:'Enter a p-value between 0 and 1.',intermediateChanges:true,missingMessage:'Provide p-value',trim:true,placeHolder:'p-value'">
                       </div>
                     </div>
                   </div>

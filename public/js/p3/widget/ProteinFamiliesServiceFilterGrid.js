@@ -51,12 +51,12 @@ define([
       absent: selector({ label: '', field: 'absent', selectorType: 'radio' }, filterSelector),
       mixed: selector({ label: '', field: 'mixed', selectorType: 'radio' }, filterSelectorChecked),
       genome_name: { label: 'Genome Name', field: 'genome_name' },
-      genome_group: { label: 'Genome Group', field: 'genome_group' }
-      // genome_status: { label: 'Genome Status', field: 'genome_status' },
-      // isolation_country: { label: 'Isolation Country', field: 'isolation_country' },
-      // host_name: { label: 'Host', field: 'host_name' },
+      genome_group: { label: 'Genome Group', field: 'genome_group' },
+      genome_status: { label: 'Genome Status', field: 'genome_status' },
+      isolation_country: { label: 'Isolation Country', field: 'isolation_country' },
+      host_name: { label: 'Host', field: 'host_group' },
       // disease: { label: 'Disease', field: 'disease' },
-      // collection_date: { label: 'Collection Date', field: 'collection_date' },
+      collection_date: { label: 'Collection Year', field: 'collection_year' },
       // completion_date: { label: 'Completion Date', field: 'completion_date', formatter: formatter.dateOnly }
     },
     constructor: function (options) {

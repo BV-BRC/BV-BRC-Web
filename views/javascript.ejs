@@ -8,26 +8,6 @@ dojoConfig = {
     ]
   }
 </script>
-<script type="text/javascript"> // Twitter Widget
-  window.twttr = (function(d, s, id) {
-    var js, fjs = d.getElementsByTagName(s)[0],
-      t = window.twttr || {};
-    if (d.getElementById(id)) return t;
-    js = d.createElement(s);
-    js.id = id;
-    js.src = "https://platform.twitter.com/widgets.js";
-    fjs.parentNode.insertBefore(js, fjs);
-
-    t._e = [];
-    t.ready = function(f) {
-      t._e.push(f);
-    };
-
-    return t;
-  }(document, "script", "twitter-wjs"));
-  // twitter load function
-  // twttr.widgets.load();
-</script>
 
 <!-- Scripts -->
 <%
@@ -51,8 +31,37 @@ const load_scripts = [
   <% }) %>
 <% } %>
 
+<script type="text/javascript">
+  // LinkedIn Feed
+  let $linkedInFeedElm = $("#linkedin-feed");
 
-<script> // News & Announcements Carousel
+  // Fetch the data only if feed element exists in the page
+  if ($linkedInFeedElm.length) {
+    $.getJSON({
+      url: '/linkedin/posts/?count=8',
+      success: function (data) {
+        for (let post of data.elements) {
+          if (post.id && post.id.includes('share')) {
+            $("#linkedin-slides").append(
+              `<li class="slide" style="height: 100%;">
+                  <iframe src="https://www.linkedin.com/embed/feed/update/${post.id}" style="height: 100%;width: 100%;"/>
+              </li>`
+            );
+            $("#linkedin-dot-navigation").append(
+              `<div class="dot"></div>`
+            );
+          }
+        }
+
+        initializeSlide($('#linkedin-slides .slide'), $("#linkedin-dot-navigation .dot"));
+      },
+      error: function( data ) {
+        console.log(data);
+      }
+    });
+  }
+
+  // News & Announcements Carousel
   $.getJSON("https://www.bv-brc.org/docs/_static/carousel.json", function (feed) {
       for (var i = 0; i < feed.length; i++) {
           var link = feed[i].link;
@@ -61,7 +70,7 @@ const load_scripts = [
           var word_limit = (feed[i].img == "") ? 60 : 20
           var descSnippit = desc.split(" ", word_limit).join(" ");
           var img = feed[i].img;
-          $("#slides").append(
+          $("#announcements-slides").append(
               `<li class="slide">
                   <a href="${link}" class="feed-link">
                       <h4 class="feed-title">${title}</h4>
@@ -70,25 +79,29 @@ const load_scripts = [
                   <img src="${img}" class="feed-img">
               </li>`
           );
-          $("#slides .slide").first().addClass("showing");
-          $("#dot-navigation .dot").first().addClass("selected");
-          $("#dot-navigation").append(
+          $("#announcements-dot-navigation").append(
               `<div class="dot"></div>`
           );
       }
-      var slides = $('#slides .slide');
-      var dots = $("#dot-navigation .dot");
-      var index = 0;
-      slides.eq(0).addClass("current-slide");
-      dots.eq(0).addClass("current-dot");
-      dots.click(function () {
-          dots.eq(index).removeClass("current-dot");
-          slides.eq(index).removeClass("current-slide");
-          $(this).addClass("current-dot");
-          index = $(this).index();
-          slides.eq(index).addClass("current-slide");
-      });
+
+      initializeSlide($('#announcements-slides .slide'), $("#announcements-dot-navigation .dot"));
   });
+
+  function initializeSlide($slides, $dots) {
+    $slides.first().addClass("showing");
+    $dots.first().addClass("selected");
+
+    var index = 0;
+    $slides.eq(0).addClass("current-slide");
+    $dots.eq(0).addClass("current-dot");
+    $dots.click(function () {
+      $dots.eq(index).removeClass("current-dot");
+      $slides.eq(index).removeClass("current-slide");
+      $(this).addClass("current-dot");
+      index = $(this).index();
+      $slides.eq(index).addClass("current-slide");
+    });
+  }
 </script>
 
 <!-- // use bundle.js

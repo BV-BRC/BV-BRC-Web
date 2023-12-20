@@ -30,7 +30,7 @@
       <table class="assemblyblocks" style="width:100%">
         <tr>
           <td>
-            <div id="pipelineBox" class="appBox appShadow" style="min-height: 170px; height:auto">
+            <div id="pipelineBox" class="appBox appShadow" style="min-height: 280px; height:auto;">
               <div style="width:85%;display:inline-block;">
                 <label class="appBoxLabel">Parameters</label>
                 <div name="parameters" class="infobox iconbox infobutton dialoginfo">
@@ -59,7 +59,7 @@
             <div id="conditionbox" class="appBox appShadow" style="min-height: 220px; height:auto; width:330px">
               <div class="headerrow">
                 <label class="appBoxLabel">Pipeline</label>
-                <div name="groups-conditions" class="infobox iconbox infobutton tooltipinfo">
+                <div name="pipeline" class="infobox iconbox infobutton tooltipinfo">
                   <i class="fa icon-question-circle fa"></i>
                 </div>
                 <br>
@@ -127,7 +127,10 @@
               <div class="headerrow">
                 <div style="width:85%;display:inline-block;">
                   <label class="appBoxLabel">Single read library</label>
+                  <div name="single-read-library" class="infobox iconbox infobutton dialoginfo">
+                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                 </div>
+              </div>
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle"
                     class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
@@ -152,8 +155,11 @@
               <div class="headerrow">
                 <div style="width:85%;display:inline-block;">
                   <label class="appBoxLabel">SRA run accession</label>
+                  <div name="sra-run-accession" class="infobox iconbox infobutton dialoginfo">
+                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                 </div>
-                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR"
+              </div>
+              <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR"
                     class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
               <div class="appRow">
@@ -176,7 +182,7 @@
                 <br>
                 <div class="appsublabel">Place read files here using the arrow buttons.</div>
               </div>
-              <div class="appRow" style="width:100%; margin-top:10px; text-align: center;">
+              <div class="appRow" style="width:100%; margin-top:10px; margin-bottom:18px; text-align: center;">
                 <table class="librarytable" frame="box" data-dojo-attach-point="libsTable"
                   style="margin:0 0 0 10px; width:90%;">
                   <tbody data-dojo-attach-point="libsTableBody">
