@@ -51,7 +51,7 @@ define([
         _self._selectService(service_selection, _self.data);
       });
 
-      this._listServices(this.data.data_type, this.data.multiple);
+      this._listServices(this.data.data_type, this.data.selection && this.data.selection.length > 1);
     },
 
     _listServices(data_context, multiple) {
@@ -64,7 +64,9 @@ define([
           domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'Homology', innerHTML: 'Blast' }, service_div);
           domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'GeneTree', innerHTML: 'Gene Tree' }, service_div);
           domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'HASubtypeNumberingConversion', innerHTML: 'HA Subtype Numbering Conversion' }, service_div);
-          // domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'msa', innerHTML: 'MSA' }, service_div);
+          if (multiple) {
+            domConstruct.create('div', {'class': 'serviceActionTooltip', 'rel': 'MSA', innerHTML: 'MSA'}, service_div);
+          }
           // if (!(this.context === 'grid_container')) {
           //   domConstruct.create('div', { 'class': 'serviceActionTooltip', 'rel': 'primer_design', innerHTML: 'Primer Design' }, service_div);
           // }
@@ -352,7 +354,7 @@ define([
             RerunUtility.rerun(JSON.stringify(job_data), 'HASubtypeNumberingConversion', window, Topic);
           }), lang.hitch(this, function (err) {
             this.loadingMask.hide();
-            console.log('error during temporary group creationg: exiting');
+            console.log('error during temporary group creating: exiting');
             console.log(err);
             return false;
           }));
@@ -361,6 +363,27 @@ define([
           job_data['input_source'] = 'feature_group';
           job_data['input_feature_group'] = data.selection[0].path;
           RerunUtility.rerun(JSON.stringify(job_data), 'HASubtypeNumberingConversion', window, Topic);
+        }
+      }
+      if (service === 'MSA') {
+        var job_data;
+        // always features
+        if (this.context === 'grid_container') {
+          var feature_list = data.selection.map(x => x.feature_id);
+          this.saveTempGroup('feature', feature_list).then(lang.hitch(this, function (group_path) {
+            // create data json
+            job_data = {};
+            job_data['input_type'] = 'input_group';
+            job_data['feature_groups'] = [group_path];
+            job_data['alphabet'] = 'dna';
+            job_data['aligner'] = 'Muscle';
+            RerunUtility.rerun(JSON.stringify(job_data), 'MSA', window, Topic);
+          }), lang.hitch(this, function (err) {
+            this.loadingMask.hide();
+            console.log('error during temporary group creating: exiting');
+            console.log(err);
+            return false;
+          }));
         }
       }
     },
