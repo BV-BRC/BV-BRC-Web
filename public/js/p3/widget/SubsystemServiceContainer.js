@@ -93,7 +93,7 @@ define([
             role_count: { label: 'Role Count', field: 'role_count' },
             gene_conservation: { label: 'Gene Conservation', field: 'gene_conservation', formatter: formatter.twoDecimalNumeric },
             role_conservation: { label: 'Role Conservation(%)', field: 'role_conservation', formatter: formatter.twoDecimalNumeric },
-            active: { label: 'Variant', field: 'active', hidden: true },
+            active: { label: 'Variant', field: 'prop_active', hidden: true, formatter: formatter.twoDecimalNumeric },
             subsystem_id: { label: 'Subsystem ID', field: 'subsystem_id', hidden: true }
           },
           enableFilterPanel: true,
