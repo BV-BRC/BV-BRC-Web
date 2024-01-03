@@ -946,10 +946,11 @@ define([
           ignoreDataType: true,
           min: 2,
           multiple: true,
+          max: 500,
           validTypes: ['*'],
           tooltipDialog: viewMSATT,
           tooltip: 'Multiple Sequence Alignment',
-          validContainerTypes: ['protein_data', 'spgene_data', 'proteinfamily_data', 'pathway_data', 'transcriptomics_gene_data']
+          validContainerTypes: ['feature_data', 'protein_data', 'spgene_data', 'proteinfamily_data', 'pathway_data', 'transcriptomics_gene_data']
         },
         function (selection) {
           const checkTEMP = function (tmp_path) {
