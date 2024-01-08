@@ -6,7 +6,8 @@ define([
   'dijit/MenuItem', 'dijit/TooltipDialog', 'dijit/popup', './SelectionToGroup',
   'dijit/Dialog', './ItemDetailPanel', 'dojo/query', 'FileSaver',
   './ActionBar', './ContainerActionBar', 'dijit/layout/BorderContainer', './PerspectiveToolTip',
-  'dijit/layout/ContentPane', 'dojo/dom-class', 'dojo/on', 'dojo/topic'
+  'dijit/layout/ContentPane', 'dojo/dom-class', 'dojo/on', 'dojo/topic',
+  'dojo/text!./templates/Phylogeny2.html', 'dijit/_TemplatedMixin'
 ], function (
   declare, PhyloTree, TreeNavSVG, when,
   WidgetBase, request, domConstruct,
@@ -15,7 +16,8 @@ define([
   Button, MenuItem, TooltipDialog, popup,
   SelectionToGroup, Dialog, ItemDetailPanel, query, saveAs,
   ActionBar, ContainerActionBar, BorderContainer, PerspectiveToolTipDialog,
-  ContentPane, domClass, on, Topic
+  ContentPane, domClass, on, Topic,
+  Template, Templated
 ) {
 
   var infoMenu = new TooltipDialog({
@@ -39,8 +41,9 @@ define([
     }
   });
 
-  return declare([BorderContainer], {
+  return declare([BorderContainer, Templated], {
     baseClass: 'Phylogeny',
+    templateString: Template,
     type: 'rectangular',
     state: null,
     taxon_id: null,
@@ -335,8 +338,8 @@ define([
         this.treeDiv = domConstruct.create('div', { id: this.id + 'tree-container', class: 'size archaeopteryxClass' }, this.containerPane.domNode);
       }
       domConstruct.create('div', { id: 'phylogram1' }, this.treeDiv);
-      domConstruct.create('div', { id: 'controls0', class: 'ui-widget-content' }, this.treeDiv);
-      domConstruct.create('div', { id: 'controls1', class: 'ui-widget-content' }, this.treeDiv);
+      domConstruct.create('div', { id: 'controls0' }, this.treeDiv);
+      domConstruct.create('div', { id: 'controls1' }, this.treeDiv);
 
       // when the json file updates, update the phyloxml_date variable
       // when the same string is used it returns the cached file
