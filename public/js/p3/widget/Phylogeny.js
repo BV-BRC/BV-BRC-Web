@@ -146,14 +146,14 @@ define([
       options.searchUsesRegex = false;
       options.showBranchEvents = true;
       options.showBranchLengthValues = false;
-      options.showConfidenceValues = true;
+      options.showConfidenceValues = false;
       options.showDisributions = true;
       options.showExternalLabels = true;
-      options.showExternalNodes = true;
-      options.showInternalLabels = true;
-      options.showInternalNodes = true;
+      options.showExternalNodes = false;
+      options.showInternalLabels = false;
+      options.showInternalNodes = false;
       options.showNodeEvents = true;
-      options.showNodeName = true;
+      options.showNodeName = false;
       options.showSequence = true;
       options.showSequenceAccession = true;
       options.showSequenceGeneSymbol = true;
@@ -384,7 +384,7 @@ define([
           domConstruct.place(taxonDiv, this.containerActionBar.domNode, 'last');
           var mytree;
 
-          var options = {};
+          var options = this.options;
           var settings = this.settings;
           var nodeVisualizations = {};
           // var specialVisualizations = this.specialVisualizations;
@@ -392,6 +392,13 @@ define([
 
           try {
             mytree = window.archaeopteryx.parsePhyloXML(phyloxml);
+            var nodeListSize = this.getLeafNodes([mytree]).length;
+            if (nodeListSize > 65 && nodeListSize <= 75) {
+              options.externalNodeFontSize = 10;
+            } else if (nodeListSize > 75) {
+              options.externalNodeFontSize = 8;
+            }
+
           }
           catch (e) {
             alert('error while parsing tree: ' + e);
@@ -433,12 +440,13 @@ define([
               showButton: true
             };
           });
-          // forester.midpointRoot(tree);
+          // forester.midpointRoot(mytree);
           if (mytree) {
             try {
               window.archaeopteryx.launch('#phylogram1', mytree, options, settings, nodeVisualizations, nodeLabels);
 
               var nodeList = this.getLeafNodes([mytree]);
+              // console.log('mytree nodeList', nodeList);
               var ids = nodeList.map(function (node) { return node.name; });
               var pIDs = [];
               ids.forEach((id) => {
