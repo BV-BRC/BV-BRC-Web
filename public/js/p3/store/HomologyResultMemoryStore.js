@@ -203,7 +203,7 @@ define([
                 this.defaultLoadData(res);
               } else {
                 query.q = (resultIds.length > 0) ? 'sequence_id:(' + resultIds.join(' OR ') + ')' : {};
-                // query.fl = 'genome_id,genome_name,taxon_id,sequence_id,accession,sequence_type,description';
+                query.fl = 'genome_id,genome_name,taxon_id,sequence_id,accession,sequence_type,description';
               }
             } else if (this.type == 'genome_feature') {
               // doQuery = true;
