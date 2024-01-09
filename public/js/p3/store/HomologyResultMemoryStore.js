@@ -183,16 +183,17 @@ define([
             }
 
             var query = { rows: 25000 };
+
             // var doQuery = false;
             if (this.type == 'genome_sequence') {
               // doQuery = true;
               resultIds = resultIds.map(function (d) {
-                if (d.includes('accn|')){
+                if (d.includes('accn|')) {
                   return d.replace('accn|', '');
-                }else if (d.includes('.con.')){
+                } else if (d.includes('.con.')) {
                   return d;
-                }else{
-                return d.replace(/^\d+.\d+./, '');
+                } else {
+                  return d.replace(/^\d+.\d+./, '');
                 }
               }).filter(function (d) {
                 return d !== '';
@@ -201,8 +202,8 @@ define([
                 this.type = 'no_ids';
                 this.defaultLoadData(res);
               } else {
-                query.q = (resultIds.length > 0) ? 'accession:(' + resultIds.join(' OR ') + ')' : {};
-                query.fl = 'genome_id,genome_name,taxon_id,sequence_id,accession,sequence_type,description';
+                query.q = (resultIds.length > 0) ? 'sequence_id:(' + resultIds.join(' OR ') + ')' : {};
+                // query.fl = 'genome_id,genome_name,taxon_id,sequence_id,accession,sequence_type,description';
               }
             } else if (this.type == 'genome_feature') {
               // doQuery = true;
@@ -230,6 +231,7 @@ define([
               console.log('Unrecognized type.');
               this.defaultLoadData(res);
             }
+
             if (this.type != 'no_ids') {
               return request.post(window.App.dataAPI + this.type + '/', {
                 handleAs: 'json',
@@ -241,11 +243,10 @@ define([
                 },
                 data: query
               }).then(lang.hitch(this, function (keys) {
-
                 var keyMap = {};
                 keys.forEach(function (f) {
                   if (this.type == 'genome_sequence') {
-                    keyMap[f.accession] = f;
+                    keyMap[f.sequence_id] = f;
                   } else {
                     if (f.annotation == 'RefSeq') {
                       keyMap[f.refseq_locus_tag] = f;
@@ -301,7 +302,6 @@ define([
         hits = search.hits;
         hits.forEach(function (hit) {
           // metadata doesn't exist right now from the DB
-
           query_id = search.query_id;
           query_length = search.query_len;
           target_id = hit.description[0].id;
@@ -347,11 +347,11 @@ define([
             delete entry.genome_name;
           } else if (this.type === 'genome_sequence') {
             target_id = target_id.replace('accn|', '');
-            if (target_id.includes('accn|')){
+            if (target_id.includes('accn|')) {
               target_id = target_id.replace('accn|', '');
-            }else if (target_id.includes('.con.')){
+            } else if (target_id.includes('.con.')) {
               target_id = target_id;
-            }else{
+            } else {
               target_id = target_id.replace(/^\d+.\d+./, '');
             }
             if (Object.prototype.hasOwnProperty.call(metadata, target_id)) {
