@@ -52,7 +52,7 @@ define([
     jsonTree: null,
     tree: null,
     apiServer: window.App.dataAPI,
-    phyloxml_date: '111023', // month, day, year
+    phyloxml_date: '012324', // month, day, year
     phylogram: true,
     containerType: 'genome_data',
     docsServiceURL: window.App.docsServiceURL,
