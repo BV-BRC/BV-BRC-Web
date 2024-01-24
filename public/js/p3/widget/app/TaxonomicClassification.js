@@ -66,12 +66,13 @@ define([
       }));
       this._started = true;
       this.form_flag = false;
+      this.changeDatabaseBySequenceType();
       try {
         this.intakeRerunForm();
       } catch (error) {
         console.error(error);
       }
-      this.changeDatabaseBySequenceType()
+
     },
 
     openJobsList: function () {
@@ -116,18 +117,18 @@ define([
 
     changeDatabaseBySequenceType: function () {
       var all_analyses = [
-        { value: "16S", label: "Default"},
-        {value: "microbiome", label: "Microbiome Analysis"},
-        {value: "pathogen", label: "Species Identification"}
+        { value: '16S', label: 'Default'},
+        {value: 'microbiome', label: 'Microbiome Analysis'},
+        {value: 'pathogen', label: 'Species Identification'}
       ];
       var all_dbs =[
-        {value: "SILVA", label: "SILVA"},
-        {value: "Greengenes", label: "Greengenes"},
-        {value: "bvbrc", label: "BV-BRC Database"},
-        {value: "standard", label: "Kraken2 Standard Database"}
+        {value: 'SILVA', label: 'SILVA'},
+        {value: 'Greengenes', label: 'Greengenes'},
+        {value: 'bvbrc', label: 'BV-BRC Database'},
+        {value: 'standard', label: 'Kraken2 Standard Database'}
       ]
       var blank =[
-        {value: " ", label: " "},
+        {value: ' ', label: ' '},
       ]
       this.analysis_type.set('options', blank);
       this.analysis_type.set('options', all_analyses)
@@ -137,16 +138,16 @@ define([
       this.sequence_type = 'wgs';
       if (this.wgs.checked == true) {
           this.sequence_type = 'wgs';
-          this.database.removeOption({value: "SILVA", label: "SILVA"});
-          this.database.removeOption({value: "Greengenes", label: "Greengenes"});
-          this.analysis_type.removeOption({ value: "16S", label: "Default"});
+          this.database.removeOption({value: 'SILVA', label: 'SILVA'});
+          this.database.removeOption({value: 'Greengenes', label: 'Greengenes'});
+          this.analysis_type.removeOption({ value: '16S', label: 'Default'});
           this.host_genome.set('disabled', false);
       } else if (this.sixteenS.checked == true) {
           this.sequence_type = 'sixteenS';
-          this.database.removeOption({value: "bvbrc", label: "BV-BRC Database"});
-          this.database.removeOption({value: "standard", label: "Kraken2 Standard Database"});
-          this.analysis_type.removeOption({value: "microbiome", label: "Microbiome Analysis"});
-          this.analysis_type.removeOption({value: "pathogen", label: "Species Identification"});
+          this.database.removeOption({value: 'bvbrc', label: 'BV-BRC Database'});
+          this.database.removeOption({value: 'standard', label: 'Kraken2 Standard Database'});
+          this.analysis_type.removeOption({value: 'microbiome', label: 'Microbiome Analysis'});
+          this.analysis_type.removeOption({value: 'pathogen', label: 'Species Identification'});
           this.analysis_type.set('disabled', true);
           this.host_genome.set('disabled', true);     
       } else {
@@ -441,7 +442,7 @@ define([
     },
 
     checkParameterRequiredFields: function () {
-      if (this.output_path.get('value') && this.outputFileWidget.get('displayedValue') ) {
+      if (this.output_path.get('value')) {
         this.validate();
       }
       else {
@@ -457,8 +458,6 @@ define([
       this.inherited(arguments);
       this.checkParameterRequiredFields();
     },
-
-
     checkBaseParameters: function (values) {
       // reads and SRA
       var pairedList = this.libraryStore.query({ _type: 'paired' });
@@ -514,7 +513,7 @@ define([
       this.output_folder = values.output_path;
       // output_name
       this.output_name = values.output_file;
-  
+
       return values;
     },
 
@@ -534,7 +533,8 @@ define([
             var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
             job_data = this.formatRerunJson(job_data);
             AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
-            this.analysis_type.set('value', job_data['analysis_type']);
+            this.setAnalysisType(job_data);
+            // this.output_path.set('value', job_data['output_path']);
             this.form_flag = true;
           }
         } catch (error) {
@@ -543,6 +543,22 @@ define([
           sessionStorage.removeItem(rerun_key);
         }
       }
+    },
+    setAnalysisType: function (job_data) {
+      console.log('job_data = ', job_data);
+      if ((job_data['sequence_type'] === 'sixteenS')) {
+        this.wgs.set('checked', false);
+        this.sixteenS.set('checked', true);
+      } else {
+        this.analysis_type.set('value', job_data['analysis_type']);
+        this.host_genome.set('value', job_data['host_genome']);
+      }
+      // Moves this to next even loop
+      // if 16s is selected, need dropdown to reset before setting value
+      setTimeout(lang.hitch(this, function () {
+        this.database.set('value', job_data['database']);
+      }), 1);
+      this.confidence_interval.set('value', job_data['confidence_interval']);
     },
     setSequenceOptions: function (job_data) {
       if (job_data['save_classified_sequences']) {
