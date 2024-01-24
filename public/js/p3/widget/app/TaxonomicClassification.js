@@ -534,7 +534,7 @@ define([
             job_data = this.formatRerunJson(job_data);
             AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
             this.setAnalysisType(job_data);
-            // this.output_path.set('value', job_data['output_path']);
+            this.output_path.set('value', job_data['output_path']);
             this.form_flag = true;
           }
         } catch (error) {
