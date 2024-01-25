@@ -8,6 +8,12 @@ define([], function () {
       requireAuth: false,
       params: {}
     },
+    CEIRRDataSubmission: {
+      title: 'CEIRR Data Submission',
+      layer: 'p3/layer/panels',
+      ctor: 'p3/widget/app/CEIRRDataSubmission',
+      params: {}
+    },
     CreateWorkspace: {
       title: 'Create Workspace',
       layer: 'p3/layer/panels',

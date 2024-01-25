@@ -65,6 +65,27 @@ define([], function () {
         'Warning Messages': 2,
         'Sequence Name': 5
       }
+    },
+
+    // CEIRR Data Submission Service
+    'BVBRC_Accession_ID.csv': {
+      columnHeaders: true,
+      colSpan: {
+        'Row': 1,
+        'Sample_Identifier': 2,
+        'BVBRC_Accession_ID': 5
+      }
+    },
+    'sample_valid.csv': {columnHeaders: true},
+    'sample_processed.csv': {columnHeaders: true},
+    'validation_report.csv': {
+      columnHeaders: true,
+      colSpan: {
+        'Row': 1,
+        'Field': 2,
+        'Value': 3,
+        'Message': 10
+      }
     }
   };
 
