@@ -628,7 +628,7 @@ define([
         };
         this.addLibraryRowFormFill(lrec, infoLabels, 'singledata');
       }));
-      // load SRA names: can be in eithers srr_ids (list of ids) or sra_libs (list of key-item entries)
+      // load SRA names: can be in eithers srr_ids (list of ids) or sra_libs/srr_libs (list of key-item entries)
       // TODO: change this to one list
       if (local_job.srr_ids) {
         local_job.srr_ids.forEach(lang.hitch(this, function (srr_id) {
@@ -644,6 +644,16 @@ define([
       }
       if (local_job.sra_libs) {
         local_job.sra_libs.forEach(lang.hitch(this, function (sra_lib) {
+          var lrec = { _type: 'srr_accession', type: 'srr_accession', title: sra_lib['srr_accession'] };
+          this.setupLibraryData(lrec, sra_lib, 'srr_accession');
+          var infoLabels = {
+            title: { label: 'Title', value: 1 }
+          };
+          this.addLibraryRowFormFill(lrec, infoLabels, 'srrdata');
+        }));
+      }
+      if (local_job.srr_libs) {
+        local_job.srr_libs.forEach(lang.hitch(this, function (sra_lib) {
           var lrec = { _type: 'srr_accession', type: 'srr_accession', title: sra_lib['srr_accession'] };
           this.setupLibraryData(lrec, sra_lib, 'srr_accession');
           var infoLabels = {
@@ -915,11 +925,11 @@ define([
           }
           return 'S(' + fn + ')';
         case 'srr_accession':
-          if (job_data.hasOwnProperty('title')) {
-            var name = job_data['title'];
-          }
-          else if (job_data.hasOwnProperty('srr_accession')) {
+          if (job_data.hasOwnProperty('srr_accession')) {
             var name = job_data['srr_accession'];
+          }
+          else if (job_data.hasOwnProperty('title')) {
+            var name = job_data['title'];
           }
           else {
             var name = job_data;
