@@ -73,7 +73,9 @@ define([], function () {
       colSpan: {
         'Row': 1,
         'Sample_Identifier': 2,
-        'BVBRC_Accession_ID': 5
+        'Influenza_Test_Type': 3,
+        'BVBRC_Accession_ID': 4,
+        'Virus_Identifier': 4
       }
     },
     'sample_valid.csv': {columnHeaders: true},
