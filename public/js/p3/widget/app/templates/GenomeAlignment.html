@@ -236,16 +236,16 @@
                 <td><label>hmm-p-go-homologous:</label></td>
                 <td>
                   <div name="hmmPGoHomologous" class="medInput" data-dojo-type="dijit/form/NumberTextBox"
-                    data-dojo-attach-point="hmmPGoHomologous" data-dojo-props="placeholder: 0.0001" required="false">
+                    data-dojo-attach-point="hmmPGoHomologous" data-dojo-props="placeholder: 0.0001, intermediateChanges:true,constraints: {pattern: '#####0.###############'}" required="false">
                   </div>
                 </td>
               </tr>
 
               <tr>
-                <td><label>hmm-p-go-homologous:</label></td>
+                <td><label>hmm-p-go-unrelated:</label></td>
                 <td>
                   <div name="hmmPGoUnrelated" class="medInput" data-dojo-type="dijit/form/NumberTextBox"
-                    data-dojo-attach-point="hmmPGoUnrelated" data-dojo-props="placeholder: 0.000001" required="false">
+                    data-dojo-attach-point="hmmPGoUnrelated" data-dojo-props="placeholder: 0.000001, intermediateChanges:true,constraints: {pattern: '#####0.###############'}" required="false">
                   </div>
                 </td>
               </tr>
