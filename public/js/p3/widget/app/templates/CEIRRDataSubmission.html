@@ -1,0 +1,75 @@
+<form dojoAttachPoint="containerNode" class="PanelForm"
+      dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+    <div class="appTemplate">
+        <div class="appTitle">
+            <span class="breadcrumb">Services</span>
+            <h3>CEIRR Data Submission</h3>
+        </div>
+        <div class="appBox appShadow">
+            <div class="headerrow" style="margin: 16px 0 7px 0">
+                <label class="appBoxLabel">CEIRR data file</label>
+            </div>
+            <div id="dataRow" class="appRow">
+                <!--<div style="width:85%;display:inline-block;">
+                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="ceirr_data" required="true"
+                         data-dojo-attach-point="ceirr_data" data-dojo-attach-event="onChange:validate"
+                         data-dojo-props="type:['csv'],multi:false,promptMessage:'Select or upload CSV file to your workspace.',missingMessage:'CEIRR data file is required.',placeHolder:'Surveillance data file'">
+                    </div>
+                    <div>
+                        <i data-dojo-attach-event="click:onAddDataRow" class="fa icon-plus fa-lg"></i>
+                    </div>
+                </div>-->
+            </div>
+            <table>
+                <tr>
+                    <td>
+                        <div class="headerrow" style="margin: 16px 0 7px 0">
+                            <label class="appBoxLabel">Output Folder</label>
+                        </div>
+                        <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
+                             data-dojo-attach-point="output_path" style="width:300px" required="true"
+                             data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false,placeHolder:'Output Folder'"
+                             data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                    </td>
+                    <td>
+                        <div class="headerrow" style="margin: 16px 0 7px 0">
+                            <label class="appBoxLabel">Output Name</label><span class="charError"
+                                                                                style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+                        </div>
+                        <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
+                             data-dojo-attach-event="onChange:checkOutputName" data-dojo-attach-point="output_file"
+                             style="width:300px" required="true"
+                             data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <div class="warning" data-dojo-attach-point="database_message"></div>
+        </div>
+    </div>
+    <div class="appSubmissionArea">
+        <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
+             style="margin-top:10px; text-align:center;">
+            Validating metadata and FASTA files
+        </div>
+        <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
+             style="margin-top:10px; text-align:center;width: fit-content">
+            Error submitting job
+        </div>
+        <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+             style="margin-top:10px; text-align:center;">
+            Your job has been submitted successfully. Please visit your <a
+                data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job and
+            access the results.
+        </div>
+        <div style="margin-top: 10px; text-align:center;">
+            <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel"
+                 data-dojo-type="dijit/form/Button">Cancel
+            </div>
+            <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset
+            </div>
+            <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit
+            </div>
+        </div>
+    </div>
+</form>

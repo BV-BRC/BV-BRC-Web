@@ -89,7 +89,7 @@ define([
         },
         handleAs: 'json',
         'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-        data: this.query + '&limit(5000)'
+        data: this.query
       }).then(lang.hitch(this, function (surveillanceList) {
         /*
           {

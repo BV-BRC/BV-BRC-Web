@@ -76,10 +76,10 @@ define([
         if (condition.type === 'str' && condition.value !== '') {
           const encodedConditionValue = TextInputEncoder(condition.value)
           q = `${condition.op === 'NOT' ? 'ne' : 'eq'}(${condition.column},${encodedConditionValue})`
-        } else if (condition.type === 'numeric') {
+        } else if (condition.type === 'numeric' || condition.type === 'decimal') {
           // numeric
-          const lowerBound = parseInt(condition.from)
-          const upperBound = parseInt(condition.to)
+          const lowerBound = condition.type === 'numeric' ? parseInt(condition.from) : parseFloat(condition.from);
+          const upperBound = condition.type === 'numeric' ? parseInt(condition.to) : parseFloat(condition.to);
 
           if (!isNaN(lowerBound) && !isNaN(upperBound)) {
             q = `between(${condition.column},${lowerBound},${upperBound})`;
