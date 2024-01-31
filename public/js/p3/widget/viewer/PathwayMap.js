@@ -59,12 +59,12 @@ define([
     },
 
     sortGenomeIdsByTaxon: function (genome_ids) {
-
-      var query = `?in(genome_id,(${genome_ids}))&select(genome_id)&sort(+superkingdom,+phylum,+class,+order,+family,+genus,+genome_name)`;
+      var query = `?in(genome_id,(${genome_ids}))&select(genome_id)&limit(25000)&sort(+superkingdom,+phylum,+class,+order,+family,+genus,+genome_name)`;
       return when(request.get(PathJoin(this.apiServiceUrl, 'genome', query), {
         headers: {
           Accept: 'application/json',
-          'Content-Type': 'application/rqlquery+x-www-form-urlencoded'
+          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+          Authorization: window.App.authorizationToken
         },
         handleAs: 'json'
       }), function (response) {
@@ -80,7 +80,8 @@ define([
       return when(request.get(PathJoin(this.apiServiceUrl, 'genome', query), {
         headers: {
           Accept: 'application/json',
-          'Content-Type': 'application/rqlquery+x-www-form-urlencoded'
+          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+          Authorization: window.App.authorizationToken
         },
         handleAs: 'json'
       }), function (response) {
@@ -96,7 +97,8 @@ define([
       return when(request.get(PathJoin(this.apiServiceUrl, 'pathway_ref', query), {
         headers: {
           Accept: 'application/json',
-          'Content-Type': 'application/rqlquery+x-www-form-urlencoded'
+          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+          Authorization: window.App.authorizationToken
         },
         handleAs: 'json'
       }), function (response) {
