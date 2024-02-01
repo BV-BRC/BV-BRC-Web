@@ -25,7 +25,7 @@ define([
     defaultPath: '',
     demo: false,
     allowMultiple: true,
-    surveillanceDataLength: 0,
+    ceirrDataLength: 0,
 
     constructor: function () {
     },
@@ -83,7 +83,7 @@ define([
     },
 
     onAddDataRow: function () {
-      const index = this.surveillanceDataLength++;
+      const index = this.ceirrDataLength++;
       let dataRowDom = query('div[id="dataRow"]')[0];
 
       let mainDiv = domConstruct.create('div', {'id': 'mainDiv' + index}, 'dataRow');
@@ -120,7 +120,7 @@ define([
     onRemoveDataRow: function (element) {
       const index = element.srcElement.id.replace('removeIcon', '');
       domConstruct.destroy('mainDiv' + index);
-      this.surveillanceDataLength--;
+      this.ceirrDataLength--;
 
       this.validate();
     },
@@ -184,7 +184,7 @@ define([
         });
       } else {
         // prepare submission values
-        for (let i = 0; i < this.value.surveillance_data.length; ++i) {
+        for (let i = 0; i < this.value.ceirr_data.length; ++i) {
           submit_values.push({
             'ceirr_data': this.value.ceirr_data[i],
             'output_file': output_file + '_' + (i + 1),
@@ -239,7 +239,7 @@ define([
 
     setInputSource: function (job_data) {
       this.output_path.set('value', job_data['output_path']);
-      this.ceirr_data.set('value', job_data['ceirr_data']);
+      this.value.ceirr_data.set('path', job_data['ceirr_data']);
     },
   });
 });
