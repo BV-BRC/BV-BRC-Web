@@ -39,20 +39,14 @@ define([
       }
       this.inherited(arguments);
 
-      // activate genome group selector when user is logged in
-      if (window.App.user) {
-        this.defaultPath = WorkspaceManager.getDefaultFolder() || this.activeWorkspacePath;
-
-        this.onAddDataRow();
-      }
-
       this.onInputChange(true);
 
       this._started = true;
       this.form_flag = false;
       var _self = this;
+      var rerun_data;
       try {
-        this.intakeRerunForm();
+        rerun_data = this.intakeRerunForm();
         if (this.form_flag) {
           _self.output_file.focus();
         }
@@ -62,6 +56,13 @@ define([
         if (localStorage.hasOwnProperty('bvbrc_rerun_job')) {
           localStorage.removeItem('bvbrc_rerun_job');
         }
+      }
+
+      // activate genome group selector when user is logged in
+      if (window.App.user) {
+        this.defaultPath = WorkspaceManager.getDefaultFolder() || this.activeWorkspacePath;
+
+        this.onAddDataRow(rerun_data);
       }
     },
 
@@ -82,7 +83,7 @@ define([
       return false;
     },
 
-    onAddDataRow: function () {
+    onAddDataRow: function (rerun_data) {
       const index = this.ceirrDataLength++;
       let dataRowDom = query('div[id="dataRow"]')[0];
 
@@ -97,6 +98,10 @@ define([
       sd.missingMessage = 'CEIRR data file is required.';
       sd.placeHolder = 'CEIRR data file';
       sd.on('change', lang.hitch(this, 'validate'));
+      if (rerun_data) {
+        this.output_path.set('value', rerun_data['output_path']);
+        sd.set('value', rerun_data['ceirr_data']);
+      }
       sd.placeAt(mainDiv);
 
       let iconDiv = domConstruct.create('div', {'style': 'width:10%;display:inline-block;'}, mainDiv);
@@ -225,21 +230,17 @@ define([
       var service_fields = window.location.search.replace('?', '');
       var rerun_fields = service_fields.split('=');
       var rerun_key;
+      var job_data;
       if (rerun_fields.length > 1) {
         rerun_key = rerun_fields[1];
         var sessionStorage = window.sessionStorage;
         if (sessionStorage.hasOwnProperty(rerun_key)) {
           this.form_flag = true;
-          var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-          this.setInputSource(job_data);
+          job_data = JSON.parse(sessionStorage.getItem(rerun_key));
           sessionStorage.removeItem(rerun_key);
         }
       }
-    },
-
-    setInputSource: function (job_data) {
-      this.output_path.set('value', job_data['output_path']);
-      this.value.ceirr_data.set('path', job_data['ceirr_data']);
+      return job_data;
     },
   });
 });
