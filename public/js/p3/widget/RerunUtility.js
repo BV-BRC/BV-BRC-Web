@@ -13,6 +13,7 @@ define([], function () {
       }
       sessionStorage.setItem(rerun_key, job_params);
       var service_app_map = {
+        'CEIRRDataSubmission': 'CEIRRDataSubmission',
         'ComparativeSystems': 'ComparativeSystems',
         'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
         'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
