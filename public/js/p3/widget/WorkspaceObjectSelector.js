@@ -404,6 +404,11 @@ define([
         style: { width: '125px' },
         options: [
           {
+            label: 'Home',
+            value: 'home',
+            selected: _self.path.split('/')[1] != 'public'
+          },
+          {
             label: 'Workspaces',
             value: 'mine',
             selected: _self.path.split('/')[1] != 'public'
@@ -420,7 +425,11 @@ define([
       });
 
       viewSelector.on('change', function (val) {
-        if (val == 'mine') {
+        if (val == 'home') {
+          var home = '/' + window.App.user.id + '/' + 'home';
+          _self.set('path', home);
+        }
+        else if (val == 'mine') {
           var home = '/' + window.App.user.id;
           _self.set('path', home);
         } else if (val == 'public') {

@@ -356,6 +356,7 @@ define([
       var def = this.inherited(arguments);
       this.genomegroup_message.innerHTML = '';
       this.genome_id_message.innerHTML = '';
+      this.fastafile_message.innerHTML = '';
       this.submitButton.set('disabled', true);
 
       // Hide strategy options if muscle aligner selected
@@ -385,6 +386,23 @@ define([
       if (this.input_sequence.get('checked') && (!this.fasta_keyboard_input.get('value') || !this.validFasta)) {
         // this.submitButton.set('disabled', true);
         return false;
+      } else if (this.input_fasta.checked == true) {
+        const fastaFilePath = this.user_genomes_fasta.value;
+        if (fastaFilePath) {
+          when(WorkspaceManager.getObject(fastaFilePath), lang.hitch(this, function (res) {
+            const type = res.metadata.type;
+            const seqType = type.includes('protein') ? 'protein' : 'dna';
+            const reto = this.validateFasta(res.data, seqType, false);
+
+            if (!reto.valid) {
+              this.fastafile_message.innerHTML = reto.message;
+              this.submitButton.set('disabled', true);
+            } else if (reto.numseq < this.input_seq_min_seqs) {
+              this.fastafile_message.innerHTML = 'At least ' +  this.input_seq_min_seqs + ' sequence(s) are required.';
+              this.submitButton.set('disabled', true);
+            }
+          }));
+        }
       }
       if (def) {
         this.submitButton.set('disabled', false);

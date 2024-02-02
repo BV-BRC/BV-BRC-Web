@@ -686,18 +686,65 @@ define([
           label: 'MAP',
           validTypes: ['*'],
           multiple: true,
-          max: 5000,
           tooltip: 'Switch to Surveillance Data Map View.',
           ignoreDataType: true,
           validContainerTypes: ['surveillance_data']
         },
-        function (selection) {
+        function (selection, container, button) {
+          // Disable the button
+          button.classList.add('disabled');
+          button.style['pointer-events'] = 'none';
+          query('.ActionButtonText', button).forEach(function (node) {
+            node.innerHTML = 'Processing';
+          });
+
           const idList = Array.from(selection.reduce((p, v) => {
-            return p.add(v.id)
+            return p.add(v.id);
           }, new Set()));
-          Topic.publish('/navigate', {
-            href: '/view/SurveillanceDataMap/?in(id,(' + idList.join(',') + '))',
-            target: 'blank'
+
+          // Retrieve selections if they have latitude and longitude values by checking lat value > -91
+          when(request.post(PathJoin(this.apiServer, 'surveillance'), {
+            handleAs: 'json',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+              'X-Requested-With': null,
+              Authorization: (window.App.authorizationToken || '')
+            },
+            data : 'in(id,(' + idList.join(',') + '))&gt(collection_latitude,-91)&select(id,collection_latitude,collection_longitude)&limit(' + idList.length + ')'
+            }), function (response) {
+            let validIds = [];
+
+            // Retrieve ids and unique coordinates
+            const locations = response.reduce((p, v) => {
+              validIds.push(v.id);
+              return p.add(v.collection_latitude + ':' + v.collection_longitude);
+            }, new Set());
+
+            // Warn user if selected unique locations are more than 750
+            if (locations.size > 750) {
+              const d = new Dialog({
+                title: 'Warning',
+                content: 'Surveillance Data Mapping allows a maximum of 750 locations to display. Your selection contains ' +
+                    locations.size + ' locations. Please reduce the number of locations.',
+                onHide: function () {
+                  d.destroy();
+                }
+              });
+              d.show();
+            } else {
+              Topic.publish('/navigate', {
+                href: '/view/SurveillanceDataMap/?in(id,(' + validIds.join(',') + '))&limit(' + validIds.length + ')',
+                target: 'blank'
+              });
+            }
+
+            // Enable the button
+            button.classList.remove('disabled');
+            button.style['pointer-events'] = '';
+            query('.ActionButtonText', button).forEach(function (node) {
+              node.innerHTML = 'MAP';
+            });
           });
         },
         false
@@ -946,7 +993,7 @@ define([
           ignoreDataType: true,
           min: 2,
           multiple: true,
-          max: 200,
+          max: 5000,
           validTypes: ['*'],
           tooltipDialog: viewMSATT,
           tooltip: 'Multiple Sequence Alignment',

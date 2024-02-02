@@ -6,7 +6,8 @@ define([
   'dijit/MenuItem', 'dijit/TooltipDialog', 'dijit/popup', './SelectionToGroup',
   'dijit/Dialog', './ItemDetailPanel', 'dojo/query', 'FileSaver',
   './ActionBar', './ContainerActionBar', 'dijit/layout/BorderContainer', './PerspectiveToolTip',
-  'dijit/layout/ContentPane', 'dojo/dom-class', 'dojo/on', 'dojo/topic'
+  'dijit/layout/ContentPane', 'dojo/dom-class', 'dojo/on', 'dojo/topic',
+  'dojo/text!./templates/Phylogeny2.html', 'dijit/_TemplatedMixin'
 ], function (
   declare, PhyloTree, TreeNavSVG, when,
   WidgetBase, request, domConstruct,
@@ -15,7 +16,8 @@ define([
   Button, MenuItem, TooltipDialog, popup,
   SelectionToGroup, Dialog, ItemDetailPanel, query, saveAs,
   ActionBar, ContainerActionBar, BorderContainer, PerspectiveToolTipDialog,
-  ContentPane, domClass, on, Topic
+  ContentPane, domClass, on, Topic,
+  Template, Templated
 ) {
 
   var infoMenu = new TooltipDialog({
@@ -39,8 +41,9 @@ define([
     }
   });
 
-  return declare([BorderContainer], {
+  return declare([BorderContainer, Templated], {
     baseClass: 'Phylogeny',
+    templateString: Template,
     type: 'rectangular',
     state: null,
     taxon_id: null,
@@ -49,7 +52,7 @@ define([
     jsonTree: null,
     tree: null,
     apiServer: window.App.dataAPI,
-    phyloxml_date: '111023', // month, day, year
+    phyloxml_date: '012324', // month, day, year
     phylogram: true,
     containerType: 'genome_data',
     docsServiceURL: window.App.docsServiceURL,
@@ -146,14 +149,14 @@ define([
       options.searchUsesRegex = false;
       options.showBranchEvents = true;
       options.showBranchLengthValues = false;
-      options.showConfidenceValues = true;
+      options.showConfidenceValues = false;
       options.showDisributions = true;
       options.showExternalLabels = true;
-      options.showExternalNodes = true;
-      options.showInternalLabels = true;
-      options.showInternalNodes = true;
+      options.showExternalNodes = false;
+      options.showInternalLabels = false;
+      options.showInternalNodes = false;
       options.showNodeEvents = true;
-      options.showNodeName = true;
+      options.showNodeName = false;
       options.showSequence = true;
       options.showSequenceAccession = true;
       options.showSequenceGeneSymbol = true;
@@ -335,8 +338,8 @@ define([
         this.treeDiv = domConstruct.create('div', { id: this.id + 'tree-container', class: 'size archaeopteryxClass' }, this.containerPane.domNode);
       }
       domConstruct.create('div', { id: 'phylogram1' }, this.treeDiv);
-      domConstruct.create('div', { id: 'controls0', class: 'ui-widget-content' }, this.treeDiv);
-      domConstruct.create('div', { id: 'controls1', class: 'ui-widget-content' }, this.treeDiv);
+      domConstruct.create('div', { id: 'controls0' }, this.treeDiv);
+      domConstruct.create('div', { id: 'controls1' }, this.treeDiv);
 
       // when the json file updates, update the phyloxml_date variable
       // when the same string is used it returns the cached file
@@ -384,7 +387,7 @@ define([
           domConstruct.place(taxonDiv, this.containerActionBar.domNode, 'last');
           var mytree;
 
-          var options = {};
+          var options = this.options;
           var settings = this.settings;
           var nodeVisualizations = {};
           // var specialVisualizations = this.specialVisualizations;
@@ -392,6 +395,13 @@ define([
 
           try {
             mytree = window.archaeopteryx.parsePhyloXML(phyloxml);
+            var nodeListSize = this.getLeafNodes([mytree]).length;
+            if (nodeListSize > 65 && nodeListSize <= 75) {
+              options.externalNodeFontSize = 10;
+            } else if (nodeListSize > 75) {
+              options.externalNodeFontSize = 8;
+            }
+
           }
           catch (e) {
             alert('error while parsing tree: ' + e);
@@ -433,12 +443,13 @@ define([
               showButton: true
             };
           });
-          // forester.midpointRoot(tree);
+          // forester.midpointRoot(mytree);
           if (mytree) {
             try {
               window.archaeopteryx.launch('#phylogram1', mytree, options, settings, nodeVisualizations, nodeLabels);
 
               var nodeList = this.getLeafNodes([mytree]);
+              // console.log('mytree nodeList', nodeList);
               var ids = nodeList.map(function (node) { return node.name; });
               var pIDs = [];
               ids.forEach((id) => {

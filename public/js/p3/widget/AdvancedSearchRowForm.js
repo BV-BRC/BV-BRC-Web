@@ -92,6 +92,15 @@ define([
       } else {
         domClass.add(this.addIconNode, 'dijitHidden')
       }
+
+      const value = this.fieldSelector.get("value");
+      // Make sure to display range
+      if (value) {
+        const col_type = this.columnTypes[value];
+        if (col_type !== 'str') {
+          this.switchToRange();
+        }
+      }
     },
     switchToStrSearch: function () {
       // reset value, switch toggle

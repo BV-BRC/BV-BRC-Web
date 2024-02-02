@@ -924,6 +924,12 @@ define([], function () {
         field: 'embargo_end_date', type: 'numeric', facet: false, facet_hidden: true, search: true
       },
       {
+        field: 'collection_latitude', type: 'decimal', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'collection_longitude', type: 'decimal', facet: false, facet_hidden: true, search: true
+      },
+      {
         field: 'collector_name', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
