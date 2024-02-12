@@ -64,7 +64,7 @@ define([
                 self.onFeatureClick(fid);
               }
             });
-            query('h4', container)[0].innerHTML = '<h4 class="title">Genome Alignment <sup>(beta)</sup></h4>';
+            query('h4', container)[0].innerHTML = '<h4 class="title">Genome Alignment</h4>';
           }, function (error) {
             loading.error('Could not fetch genome data.', error);
           });
