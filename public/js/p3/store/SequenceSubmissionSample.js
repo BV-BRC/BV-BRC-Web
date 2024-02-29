@@ -88,14 +88,6 @@ define([
                 });
             }
 
-            // Validate Strain Name
-            if (!this.strainName) {
-                this.validations.push({type: 'error', message: 'Strain Name is required.'});
-            } else if (this.sequenceType === 'Wild-type virus') {
-                // TODO: We are validating strain name for wild-types only. Implement others if required
-                this.validateStrainName();
-            }
-
             // Validate Strain Host
             if (!this.strainHost) {
                 this.validations.push({type: 'error', message: 'Strain Host is required.'});
@@ -112,6 +104,8 @@ define([
             }
 
             // Validate Collection Date
+            // Store collection year to validate strain name
+            let collectionYear;
             if (!this.collectionDate) {
                 this.validations.push({type: 'error', message: 'Collection Date is required.'});
             } else {
@@ -124,54 +118,58 @@ define([
                         // YYYY or YY
                         if (!this.isValidYear(dateArr[0])) {
                             isDateValid = false;
+                        } else {
+                            collectionYear = parseInt(dateArr[0].padStart(4, 20), 10);
                         }
                     } else if (dateArr.length == 2) {
                         // Mon-YYYY or Mon-YY
                         if (!this.monthArray.includes(dateArr[0]) || !this.isValidYear(dateArr[1])) {
                             isDateValid = false;
+                        } else {
+                            collectionYear = parseInt(dateArr[1].padStart(4, 20), 10);
                         }
                     } else if (dateArr.length == 3) {
                         // DD-Mon-YYYY or DD-Mon-YY
                         if (!/^\d+$/.test(dateArr[0]) || !this.monthArray.includes(dateArr[1]) || !this.isValidYear(dateArr[2])) {
                             isDateValid = false;
                         } else {
-                            const year = parseInt(dateArr[2].padStart(4, 20), 10);
+                            collectionYear = parseInt(dateArr[2].padStart(4, 20), 10);
                             const month = this.monthArray.indexOf(dateArr[1]) + 1;
                             const day = parseInt(dateArr[0], 10);
 
                             if (month === 1 || month === 3 || month === 5 || month === 7 || month === 8 || month === 10 || month === 12) {
                                 if (day > 31) {
                                     this.validations.push({
-                                        type: 'error', message: `Invalid date. Day in Collection Date should be a number between 1 to 31 for ${month}-${year}.`
+                                        type: 'error', message: `Invalid date. Day in Collection Date should be a number between 1 to 31 for ${month}-${collectionYear}.`
                                     });
                                 }
                             } else if (month === 2) {
-                                if (year > 0) {
-                                    if ((year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0))) {
+                                if (collectionYear > 0) {
+                                    if ((collectionYear % 4 === 0 && (collectionYear % 100 !== 0 || collectionYear % 400 === 0))) {
                                         if (day > 29) {
                                             this.validations.push({
-                                                type: 'error', message: `Invalid date. Day in Collection Date should be a number between 1 to 29 for ${month}-${year}.`
+                                                type: 'error', message: `Invalid date. Day in Collection Date should be a number between 1 to 29 for ${month}-${collectionYear}.`
                                             });
                                         }
                                     } else {
                                         if (day > 28) {
                                             this.validations.push({
                                                 type: 'error',
-                                                message: `Invalid date. Day in Collection Date should be a number between 1 to 28 for ${month}-${year}.`
+                                                message: `Invalid date. Day in Collection Date should be a number between 1 to 28 for ${month}-${collectionYear}.`
                                             });
                                         }
                                     }
                                 } else if (day > 28) {
                                     this.validations.push({
                                         type: 'error',
-                                        message: `Invalid date. Day in Collection Date should be a number between 1 to 28 for ${month}-${year}.`
+                                        message: `Invalid date. Day in Collection Date should be a number between 1 to 28 for ${month}-${collectionYear}.`
                                     });
                                 }
                             } else {
                                 if (day > 30) {
                                     this.validations.push({
                                         type: 'error',
-                                        message: `Invalid date. Day in Collection Date should be a number between 1 to 30 for ${month}-${year}.`
+                                        message: `Invalid date. Day in Collection Date should be a number between 1 to 30 for ${month}-${collectionYear}.`
                                     });
                                 }
                             }
@@ -185,6 +183,14 @@ define([
                                 '"DD-Mon-YYYY", "DD-Mon-YY", "Mon-YYYY", "Mon-YY", "YYYY", "YY", "U"'});
                     }
                 }
+            }
+
+            // Validate Strain Name
+            if (!this.strainName) {
+                this.validations.push({type: 'error', message: 'Strain Name is required.'});
+            } else if (this.sequenceType === 'Wild-type virus') {
+                // TODO: We are validating strain name for wild-types only. Implement others if required
+                this.validateStrainName(collectionYear);
             }
 
             // Validate Lab Host
@@ -238,7 +244,7 @@ define([
             }
         },
 
-        validateStrainName: function () {
+        validateStrainName: function (collectionYear) {
             if (this.strainName && this.strainHost) {
                 const parts = this.strainName.split('/');
                 const slashCount = parts.length - 1;
@@ -444,12 +450,12 @@ define([
                     }
 
                     // If user has entered the year, then validate against the year in the strain name
-                    if (this.collectionYear && typeof subtypeCandidate !== "undefined") {
+                    if (yearCandidate && collectionYear && typeof subtypeCandidate !== 'undefined') {
                         // Now validate the user input year against parsed year
-                        if (yearCandidate !== this.collectionYear) {
+                        if (parseInt(yearCandidate.padStart(4, '20'), 10) !== collectionYear) {
                             this.validations.push({
                                 type: 'error',
-                                message: 'Collection year (' + this.collectionYear + ') does NOT match with the parsed year ' +
+                                message: 'Collection year (' + collectionYear + ') does NOT match with the parsed year ' +
                                     '(' + yearCandidate + ') from the strain name.'
                             });
                         }
