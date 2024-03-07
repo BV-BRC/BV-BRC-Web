@@ -32,6 +32,9 @@
             <div class="headerrow">
                 <div style="width:85%;display:inline-block;">
                     <label class="appBoxLabel">Input Sequence</label>
+                        <div name="input-sequence" class="infobox iconbox infobutton dialoginfo">
+                            <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                        </div>
                 </div>
                 <br>
                 <div class="appRow">
@@ -86,6 +89,9 @@
             </div>
             <div class="headerrow" style="margin: 16px 0 7px 0">
                 <label class="appBoxLabel">Conversion Sequence Numbering Scheme</label>
+                    <div name="conversion-sequence-numbering-scheme" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                    </div>
             </div>
             <div class="appRowSegment" style="text-align:left; width:30%">
                 <select data-dojo-type="dojox/form/CheckedMultiSelect" name="conversionScheme" data-dojo-props="disabled:false"
@@ -97,6 +103,9 @@
                     <td>
                         <div class="headerrow" style="margin: 16px 0 7px 0">
                             <label class="appBoxLabel">Output Folder</label>
+                                <div name="output-folder" class="infobox iconbox infobutton dialoginfo">
+                                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                                </div>
                         </div>
                         <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
                              data-dojo-attach-point="output_path" style="width:300px" required="true"
@@ -105,8 +114,11 @@
                     </td>
                     <td>
                         <div class="headerrow" style="margin: 16px 0 7px 0">
-                            <label class="appBoxLabel">Output Name</label><span class="charError"
-                                                                                style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+                            <label class="appBoxLabel">Output Name</label>
+                                <div name="output-name" class="infobox iconbox infobutton dialoginfo">
+                                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                                </div>                            
+                            <span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
                         </div>
                         <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
                              data-dojo-attach-event="onChange:checkOutputName" data-dojo-attach-point="output_file"
