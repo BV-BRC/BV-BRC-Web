@@ -127,7 +127,11 @@ define([
         queryArr = queryArr.concat(advancedQueryArr)
       }
 
-      return queryArr.join('&')
+      if (queryArr.length === 0) {
+        return 'eq(id,*)'
+      } else {
+        return queryArr.join('&')
+      }
     }
   })
 })
