@@ -71,42 +71,42 @@ define([
 
       const pathogenTestTypeValue = this.pathogenTestTypeNode.get('value')
       if (pathogenTestTypeValue !== '') {
-        queryArr.push(`eq(pathogen_test_type,${sanitizeInput(pathogenTestTypeValue)})`)
+        queryArr.push(`eq(pathogen_test_type,"${TextInputEncoder(sanitizeInput(pathogenTestTypeValue))}")`)
       }
 
       const pathogenTestResultValue = this.pathogenTestResultNode.get('value')
       if (pathogenTestResultValue !== '') {
-        queryArr.push(`eq(pathogen_test_result,${sanitizeInput(pathogenTestResultValue)})`)
+        queryArr.push(`eq(pathogen_test_result,"${TextInputEncoder(sanitizeInput(pathogenTestResultValue))}")`)
       }
 
       const subtypeValue = this.subtypeNode.get('value')
       if (subtypeValue !== '') {
-        queryArr.push(`eq(subtype,${sanitizeInput(subtypeValue)})`)
+        queryArr.push(`eq(subtype,"${TextInputEncoder(sanitizeInput(subtypeValue))}")`)
       }
 
       const hostGroupValue = this.hostGroupNode.get('value')
       if (hostGroupValue !== '') {
-        queryArr.push(`eq(host_group,${sanitizeInput(hostGroupValue)})`)
+        queryArr.push(`eq(host_group,"${TextInputEncoder(sanitizeInput(hostGroupValue))}")`)
       }
 
       const hostCommonNameValue = this.hostCommonNameNode.get('value')
       if (hostCommonNameValue !== '') {
-        queryArr.push(`eq(host_common_name,${sanitizeInput(hostCommonNameValue)})`)
+        queryArr.push(`eq(host_common_name,"${TextInputEncoder(sanitizeInput(hostCommonNameValue))}")`)
       }
 
       const hostSpeciesValue = this.hostSpeciesNode.get('value')
       if (hostSpeciesValue !== '') {
-        queryArr.push(`eq(host_species,${sanitizeInput(hostSpeciesValue)})`)
+        queryArr.push(`eq(host_species,"${TextInputEncoder(sanitizeInput(hostSpeciesValue))}")`)
       }
 
       const geographicGroupValue = this.geographicGroupNode.get('value')
       if (geographicGroupValue !== '') {
-        queryArr.push(`eq(geographic_group,${sanitizeInput(geographicGroupValue)})`)
+        queryArr.push(`eq(geographic_group,"${TextInputEncoder(sanitizeInput(geographicGroupValue))}")`)
       }
 
       const collectionCountryValue = this.collectionCountryNode.get('value')
       if (collectionCountryValue !== '') {
-        queryArr.push(`eq(collection_country,${sanitizeInput(collectionCountryValue)})`)
+        queryArr.push(`eq(collection_country,"${TextInputEncoder(sanitizeInput(collectionCountryValue))}")`)
       }
 
       const collectionYearFromValue = parseInt(this.collectionYearFromNode.get('value'))
