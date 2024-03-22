@@ -1,16 +1,17 @@
 define([
-  'dojo/_base/declare', 'dojo/on', 'dojo/topic',
-  'dojo/text!./templates/SARS2Wastewater.html', './AppBase', 'dojo/dom-construct', 'dojo/_base/lang',
-  'dojo/store/Memory', 'dojo/domReady!',
-  'dojo/query', '../SARS2WastewaterGrid', '../../store/SARS2WastewaterStore', '../../DataAPI', '../../WorkspaceManager'
-
-  // 'dojo/query', '../MetaCATSGrid', '../../store/MetaCATSStore', '../../DataAPI', '../../WorkspaceManager'
+  'dojo/_base/declare', 'dojo/_base/array', 'dojo/topic', 'dijit/_WidgetBase', 'dojo/_base/lang', 'dojo/_base/Deferred',
+  'dojo/on', 'dojo/request', 'dojo/dom-class', 'dojo/dom-construct',
+  'dojo/text!./templates/SARS2Wastewater.html', 'dojo/NodeList-traverse', 'dojo/store/Memory',
+  'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
+  './AppBase', '../../WorkspaceManager'
 ], function (
-  declare, on, Topic,
-  Template, AppBase, domConstruct, lang,
-  Memory, domready,
-  query, MetaCATSGrid, MetaCATSStore, DataAPI, WorkspaceManager
+  declare, array, Topic, WidgetBase, lang, Deferred,
+  on, xhr, domClass, domConstruct,
+  Template, children, Memory,
+  popup, TooltipDialog, Dialog,
+  AppBase, WorkspaceManager
 ) {
+
   return declare([AppBase], {
     baseClass: 'App SARS2Wastewater Analysis',
     pageTitle: 'SARS-CoV-2 Wastewater | BV-BRC',
@@ -24,35 +25,24 @@ define([
     videoLink: '',
     appBaseURL: 'SARS2WasteWater',
     libraryData: null,
-    libCreated: 0,
     defaultPath: '',
     startingRows: 14,
-    g_startingRows: 10,
-    maxGroups: 10,
-    minGroups: 2,
-    autoGroupCount: 0,
-    yearRangeStore: '',
-    srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmax=1&db=sra&field=accn&term={0}&retmode=json',
-    srrValidationUrl2: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmax=10&db=sra&id={0}', // the data we need is in xml string no matter what. might as well get it properly nested
-    // below are from annotation
+    libCreated: 0,
+     // 'https://www.ebi.ac.uk/ena/data/view/{0}&display=xml',
+     srrValidationUrl: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmax=1&db=sra&field=accn&term={0}&retmode=json',
+     srrValidationUrl2: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?retmax=10&db=sra&id={0}', // the data we need is in xml string no matter what. might as well get it properly nested
     required: true,
-    genera_four: ['Acholeplasma', 'Entomoplasma', 'Hepatoplasma', 'Hodgkinia', 'Mesoplasma', 'Mycoplasma', 'Spiroplasma', 'Ureaplasma'],
-    code_four: false,
 
     constructor: function () {
       this.addedLibs = { counter: 0 };
       this.pairToAttachPt = ['read1', 'read2'];
       this.singleToAttachPt = ['single_end_libsWidget'];
       this.libraryStore = new Memory({ data: [], idProperty: '_id', sample_id:[] });
-      this.srrSampleIDAttachPt = ['srr_accession_validation_message'];
-      this._selfSet = true;
-      this.addedGroups = 0;
-      this.featureGroupToAttachPt = ['user_genomes_featuregroup'];
-      this.userGenomeList = [];
+      this.sample_level_date = "";
+
     },
 
     startup: function () {
-      var _self = this;
       if (this._started) {
         return;
       }
@@ -60,20 +50,24 @@ define([
         return;
       }
       this.inherited(arguments);
+      var _self = this;
+      _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
+      _self.output_path.set('value', _self.defaultPath);
       for (var i = 0; i < this.startingRows; i++) {
         var tr = this.libsTable.insertRow(0);// domConstr.create("tr",{},this.libsTableBody);
         domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
         domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
         domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
       }
-      // this.numlibs.startup();
+      this.numlibs.startup();
 
-      _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
-      _self.output_path.set('value', _self.defaultPath);
-      this.emptyTable(this.groupsTable, this.g_startingRows);
-      this.numgenomes.startup();
-      // this.onInputTypeChange();
-      this.auto_grouping_table.style.display = 'table'
+      this.pairToAttachPt.concat(this.singleToAttachPt).forEach(lang.hitch(this, function (attachname) {
+        this[attachname].searchBox.validator = lang.hitch(this[attachname].searchBox, function (/* anything */ value, /* __Constraints */ constraints) {
+          return (new RegExp('^(?:' + this._computeRegexp(constraints) + ')' + (this.required ? '' : '?') + '$')).test(value) &&
+            (!this._isEmpty(value)) &&
+            (this._isEmpty(value) || this.parse(value, constraints) !== undefined); // Boolean
+        });
+      }));
       this._started = true;
       this.form_flag = false;
       try {
@@ -81,79 +75,110 @@ define([
       } catch (error) {
         console.error(error);
       }
+
     },
 
     openJobsList: function () {
       Topic.publish('/navigate', { href: '/job/' });
     },
 
-    onInputTypeChange: function () {
-      // if (this.input_groups.checked == true) {
-      //   this.feature_groups_table.style.display = 'table';
-      //   this.alignment_files_table.style.display = 'none';
-      //   this.auto_grouping_table.style.display = 'none';
-      // }
-      // else if (this.input_files.checked == true) {
-      //   this.feature_groups_table.style.display = 'none';
-      //   this.alignment_files_table.style.display = 'table';
-      //   this.auto_grouping_table.style.display = 'none';
-      // }
-      // else if (this.input_auto.checked == true) {
-// this is the one we want
-        if (this.input_auto.checked == true) {
-        this.feature_groups_table.style.display = 'none';
-        this.alignment_files_table.style.display = 'none';
-        this.auto_grouping_table.style.display = 'table';
+    getValues: function () {
+      var values = this.inherited(arguments);
+      // inputs that are NOT needed by the backend
+      var not_needed_inputs = ['libdat_file1pair', 'libdat_file2pair', 'libdat_readfile'];
+      not_needed_inputs.forEach(function (key) {
+        if (Object.prototype.hasOwnProperty.call(values, key)) {
+          delete values[key];
+        }
+      });
+      values = this.checkBaseParameters(values);
+      return values;
+    },
+
+    checkForInvalidChars: function (value) {
+      var valid = true;
+      var invalid_chars = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '+', '=',':', '@', '"', "'", ';', '[', ']', '{', '}', '|', '`'];
+      invalid_chars.forEach(lang.hitch(this, function (char) {
+        if (value.includes(char)) {
+          valid = false;
+        }
+      }));
+      if (!valid) {
+        var msg = 'Remove invalid characters from name: - : @ " \' ; [ ] { } | `';
+        new Dialog({ title: 'Notice', content: msg }).show();
       }
+      return valid;
+    },
+
+    replaceInvalidChars: function (value) {
+      var invalid_chars = ['-', ':', '@', '"', "'", ';', '[', ']', '{', '}', '|', '`'];
+      invalid_chars.forEach(lang.hitch(this, function (char) {
+        value = value.replaceAll(char, '_');
+      }));
+      return value;
     },
 
     ingestAttachPoints: function (input_pts, target, req) {
       req = typeof req !== 'undefined' ? req : true;
       var success = 1;
+      var duplicate = false;
+      if (target._type) {
+        target._id = this.makeLibraryID(target._type);
+        duplicate = target._id in this.libraryStore.index;
+      }
       input_pts.forEach(function (attachname) {
         var cur_value = null;
-        if (attachname == 'user_genomes_featuregroup') {
+        var incomplete = 0;
+        var browser_select = 0;
+        var alias = attachname;
+        if (attachname == 'read1' || attachname == 'read2' || attachname == 'single_end_libsWidget') {
+
+        // if (attachname == 'read1' || attachname == 'read2' || attachname == 'single_end_libsWidget') {
           cur_value = this[attachname].searchBox.value;
-          var compGenomeList = query('.genomedata');
-          var genomeIds = [];
-          compGenomeList.forEach(function (item) {
-            genomeIds.push(item.genomeRecord.user_genomes_featuregroup);
-          });
-          if (genomeIds.length > 0 && genomeIds.indexOf(cur_value) > -1)  // no same genome ids are allowed
-          {
-            success = 0;
-          }
-        } else {
-          cur_value = this[attachname].value;
+          browser_select = 1;
         }
-        if (typeof (cur_value) == 'string') {
-          target[attachname] = cur_value.trim();
+        else if (attachname == 'output_path') {
+          cur_value = this[attachname].searchBox.value;
+          browser_select = 1;
         }
         else {
-          target[attachname] = cur_value;
+          cur_value = this[attachname].value;
         }
-        this[attachname]._set('state', '');
-        if (target[attachname] != '') {
-          target[attachname] = target[attachname] || undefined;
+
+        // Assign cur_value to target
+        if (attachname == 'single_end_libsWidget') {
+          alias = 'read';
         }
-        else if (target[attachname] == 'true') {
-          target[attachname] = true;
+        if (typeof (cur_value) === 'string') {
+          target[alias] = cur_value.trim();
         }
-        else if (target[attachname] == 'false') {
-          target[attachname] = false;
+        else {
+          target[alias] = cur_value;
+        }
+        if (req && (duplicate || !target[alias] || incomplete)) {
+          if (browser_select) {
+            this[attachname].searchBox.validate(); // this should be whats done but it doesn't actually call the new validator
+            this[attachname].searchBox._set('state', 'Error');
+            this[attachname].focus = true;
+          }
+          success = 0;
+        }
+        else {
+          this[attachname]._set('state', '');
+        }
+        if (target[alias] != '') {
+          target[alias] = target[alias] || undefined;
+        }
+        else if (target[alias] == 'true') {
+          target[alias] = true;
+        }
+        else if (target[alias] == 'false') {
+          target[alias] = false;
         }
       }, this);
       return (success);
     },
 
-    emptyTable: function (target, rowLimit) {
-      for (var i = 0; i < rowLimit; i++) {
-        var tr = target.insertRow(0);
-        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-        domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, tr);
-      }
-    },
 
     makeLibraryName: function (mode) {
       switch (mode) {
@@ -205,57 +230,42 @@ define([
           return false;
       }
     },
-    validate: function () {
-      var ans = this.inherited(arguments);
-      // if (ans) {
-      //   var p_value = parseFloat(this['p_value'].value);
-      //   if (!(p_value && (p_value <= 1 && p_value > 0))) {
-      //     ans = false;
-      //   }
-      // }
-      // if (ans) {
-      //   if (this.input_groups.checked == true) {
-      //     ans = this.numgenomes >= this.minGroups && this.numgenomes <= this.maxGroups;
-      //   } else if (this.input_files.checked == true) {
-      //     if (!(this['alignment_file'].value && this['group_file'].value)) {
-      //       ans = false;
-      //     }
-      //   } else if (this.input_auto.checked == true) {
-      //     ans = this.autoGroupCount >= this.minGroups && this.autoGroupCount <= this.maxGroups;
-      //   }
-      // }
-      if (!ans) {
-        this.submitButton.set('disabled', true);
-      }
-      return ans;
+
+    onReset: function (evt) {
+      domClass.remove(this.domNode, 'Working');
+      domClass.remove(this.domNode, 'Error');
+      domClass.remove(this.domNode, 'Submitted');
+      var toDestroy = [];
+      this.libraryStore.data.forEach(lang.hitch(this, function (lrec) {
+        toDestroy.push(lrec._id);
+      }));
+      // because its removing rows cells from array needs separate loop
+      toDestroy.forEach(lang.hitch(this, function (id) {
+        this.destroyLibRow(id, '_id');
+      }));
     },
-    // managing samples and sample ids
+
+    // counter is a widget for requirements checking
+    increaseRows: function (targetTable, counter, counterWidget) {
+      counter.counter += 1;
+      if (typeof counterWidget !== 'undefined') {
+        counterWidget.set('value', Number(counter.counter));
+      }
+    },
+
+    decreaseRows: function (targetTable, counter, counterWidget) {
+      counter.counter -= 1;
+      if (typeof counterWidget !== 'undefined') {
+        counterWidget.set('value', Number(counter.counter));
+      }
+    },
+
     setSrrId: function () {
       var srr_user_input = this.srr_accession.get('displayedValue');
-      this.srr_sample_id.set('value', this.replaceInvalidChars(srr_user_input.split('.')[0]));
+      this.input_sample_id.set('value', this.replaceInvalidChars(srr_user_input.split('.')[0]));
     },
 
-    onAddSingle: function () {
-      var lrec = { _type: 'single' };
-      var chkPassed = this.ingestAttachPoints(this.singleToAttachPt, lrec);
-      if (chkPassed) {
-        chkPassed = this.checkForInvalidChars(this.single_sample_id.getValue());
-      }
-      if (chkPassed) {
-        var infoLabels = {
-          platform: { label: 'Platform', value: 1 },
-          read: { label: 'Read File', value: 1 }
-        };
-        lrec.sample_id = this.single_sample_id.get('displayedValue');
-        this.addLibraryRow(lrec, infoLabels, 'singledata');
-      }
-    },
-
-    setSingleId: function () {
-      var read_name = this.single_end_libsWidget.searchBox.get('displayedValue');
-      this.single_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
-    },
-
+    // from SARS CGA
     onAddSRR: function () {
       var accession = this.srr_accession.get('value');
       if ( !accession.match(/^[a-z0-9]+$/i)) {
@@ -279,20 +289,49 @@ define([
                       var xresp = xmlParser.parse(xml_resp).documentElement;
                       title = '';
                       title = xresp.children[0].childNodes[3].children[1].childNodes[0].innerHTML;
+                      console.log(title)
                     }
                     catch (e) {
                       console.error('could not get title from SRA record');
                     }
-                    var lrec = { _type: 'srr_accession', title: title };
+                    var lrec = { _type: 'srr_accession'};
+
                     var chkPassed = this.ingestAttachPoints(['srr_accession'], lrec);
                     if (chkPassed) {
                       var infoLabels = {
-                        title: { label: 'Title', value: 1 }
+                        title: { label: 'Title', value: 1 },
+                        platform: { label: 'Platform', value: 1 },
+                        sample_id: {label: 'Sample ID' , value: 1 },
+                        primers: {label: 'Sample Primers', value: 1},
+                        primer_version: {label: 'Primer Version', value: 1},
+                        sample_level_date: {label: 'Date', value: 1}
                       };
+                      lrec.title = title
+                      // check if user changed the sample id
+                      if (typeof this.input_sample_id._lastInputEventValue === 'undefined') {
+                        // user did not change the sample id - use default
+                        lrec.sample_id = this.input_sample_id.getValue()
+                      } else {
+                        // user changes sample id - update to user input
+                        lrec.sample_id = this.input_sample_id._lastInputEventValue
+                      }
+                      // clear the sample id for nex input
+                      // this.input_sample_id.reset()
+                      lrec.primers = this.primers.value
+                      lrec.primer_version = this.primer_version.value
+                      if (this.sample_level_date) {
+                      // if the string is not empty add to library
+                      // sample level date is optional
+                        lrec.sample_level_date = this.sample_level_date.value
+                        this.sample_level_date.reset()
+                    } 
                       this.addLibraryRow(lrec, infoLabels, 'srrdata');
                     }
                     this.srr_accession_validation_message.innerHTML = '';
                     this.srr_accession.set('disabled', false);
+                    // // clear the SRR box
+                    this.srr_accession.reset()
+                    // console.log()
                   }));
               }
               else {
@@ -307,6 +346,88 @@ define([
           }));
       }
     },
+
+    customFunction: function() {
+      console.log('This is a custom function');
+    },
+
+    onAddInputs: function () {
+      var accession =  this.srr_accession.get('displayedValue');
+      var single_read = this.single_end_libsWidget.searchBox.get('displayedValue');
+      // using read 1 to use the error handling in onAddPaired function
+      var paired_r1 = this.read1.searchBox.get('displayedValue');
+      // step 1 if one of the fields are  not empty - hey add something
+      if (!accession && !single_read && !paired_r1) {
+        this.submit_selected_libs_validation_message.innerHTML = ' <br> All three fields are empty.<br>Hint: Fill in one input field.';
+        // give an error for the user
+      } 
+      // step 2 if more than one field has something in it - tell the user to go hey only one at a time 
+      else if ((accession && paired_r1) || (accession && single_read) || (paired_r1 && single_read)) {
+        this.submit_selected_libs_validation_message.innerHTML = ' <br> You can only submit one sample at a time.<br>';
+      }
+      // step 3 which ever field has something in call the function
+      // setting sample ID to ensure correct sample Id is given even if the fields change
+      else if (accession) {
+        this.setSrrId();
+        this.onAddSRR();
+      }
+      else if (single_read) {
+        this.setSingleId();
+        this.onAddSingle();
+      }
+      else if (paired_r1) {
+        this.setPairedId();
+        this.onAddPair();
+      }
+      else {
+        console.log('invalid input')
+      }
+    },
+
+    setSingleId: function () {
+      var read_name = this.single_end_libsWidget.searchBox.get('displayedValue');
+      this.input_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
+    },
+
+    onAddSingle: function () {
+      var lrec = { _type: 'single' };
+      var chkPassed = this.ingestAttachPoints(this.singleToAttachPt, lrec);
+      if (chkPassed) {
+        chkPassed = this.checkForInvalidChars(this.input_sample_id.getValue());
+      }
+      if (chkPassed) {
+        var infoLabels = {
+          platform: { label: 'Platform', value: 1 },
+          read: { label: 'Read File', value: 1 },
+          sample_id: {label: 'Sample ID' , value: 1 },
+          primers: {label: 'Sample Primers', value: 1},
+          primer_version: {label: 'Primer Version', value: 1},
+          sample_level_date: {label: 'Date', value: 1}
+        };
+        // check if user changed the sample id
+        if (typeof this.input_sample_id._lastInputEventValue === 'undefined') {
+          // user did not change the sample id - use default
+          lrec.sample_id = this.input_sample_id.getValue()
+        } else {
+          // user changes sample id - update to user input
+          lrec.sample_id = this.input_sample_id._lastInputEventValue
+        }
+        // clear the sample id for next input
+        this.input_sample_id.reset()
+        lrec.primers = this.primers.value
+        lrec.primer_version = this.primer_version.value
+        if (this.sample_level_date) {
+          // if the string is not empty add to library
+          // sample level date is optional
+          lrec.sample_level_date = this.sample_level_date.value
+          // reset date textbox
+          this.sample_level_date.reset()
+      } 
+        this.addLibraryRow(lrec, infoLabels, 'singledata');
+        // empty single lib search box after adding to thel ibrary row
+        this.single_end_libsWidget.searchBox.reset()
+    }
+  },
 
     destroyLibRow: function (query_id, id_type) {
       var query_obj = {};
@@ -328,7 +449,7 @@ define([
 
     setPairedId: function () {
       var read_name = this.read1.searchBox.get('displayedValue');
-      this.paired_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
+      this.input_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
     },
 
     onAddPair: function () {
@@ -338,7 +459,7 @@ define([
         return;
       }
       if (chkPassed) {
-        chkPassed = this.checkForInvalidChars(this.paired_sample_id.getValue());
+        chkPassed = this.checkForInvalidChars(this.input_sample_id.getValue());
       }
       var lrec = { _type: 'paired' };
       var pairToIngest = this.pairToAttachPt;
@@ -347,10 +468,90 @@ define([
         var infoLabels = {
           platform: { label: 'Platform', value: 1 },
           read1: { label: 'Read1', value: 1 },
-          read2: { label: 'Read2', value: 1 }
+          read2: { label: 'Read2', value: 1 },
+          sample_id: {label: 'Sample ID' , value: 1 },
+          primers: {label: 'Sample Primers', value: 1},
+          primer_version: {label: 'Primer Version', value: 1},
+          sample_level_date: {label: 'Date', value: 1}
         };
-        lrec.sample_id = this.paired_sample_id.get('displayedValue');
+        // check if user changed the sample id
+        if (typeof this.input_sample_id._lastInputEventValue === 'undefined') {
+          // user did not change the sample id - use default
+          lrec.sample_id = this.input_sample_id.getValue()
+        } else {
+          // user changes sample id - update to user input
+          lrec.sample_id = this.input_sample_id._lastInputEventValue
+        }
+        // clear the sample id for nex input
+        this.input_sample_id.reset()
+        lrec.primers = this.primers.value
+        lrec.primer_version = this.primer_version.value
+        if (this.sample_level_date) {
+          // If the string is not empty add to library
+          // sample level date is optional
+          lrec.sample_level_date = this.sample_level_date.value
+          // clear sample level date box 
+          this.sample_level_date.reset()
+      } 
         this.addLibraryRow(lrec, infoLabels, 'pairdata');
+        // // reset the singe end libs box 
+        this.read1.searchBox.reset()
+        this.read2.searchBox.reset()
+      }
+    },
+
+    onPrimersChange: function (value) {
+      var articOptions = [
+        { label: 'V5.3.2', value: 'V5.3.2' },
+        { label: 'V4.1', value: 'V4.1' },
+        { label: 'V4', value: 'V4' },
+        { label: 'V3', value: 'V3' },
+        { label: 'V2', value: 'V2' },
+        { label: 'V1', value: 'V1' }
+      ];
+      var midnightOptions = [
+        { label: 'V1', value: 'V1' }
+      ];
+      var qiagenOptions = [
+        { label: 'V1', value: 'V1' }
+      ];
+      var swiftOptions = [
+        { label: 'V1', value: 'V1' }
+      ];
+      var varskipOptions = [
+        { label: 'V2', value: 'V2' },
+        { label: 'V1a', value: 'V1a' }
+      ];
+      var varskipLongOptions = [
+        { label: 'V1a', value: 'V1a' }
+      ];
+
+      if (value === 'midnight') {
+        this.primer_version.set('options', midnightOptions);
+        this.primer_version.set('value', 'V1');
+      }
+      else if (value === 'qiagen') {
+        this.primer_version.set('options', qiagenOptions);
+        this.primer_version.set('value', 'V1');
+      }
+      else if (value === 'swift') {
+        this.primer_version.set('options', swiftOptions);
+        this.primer_version.set('value', 'V1');
+      }
+      else if (value === 'varskip') {
+        this.primer_version.set('options', varskipOptions);
+        this.primer_version.set('value', 'V2');
+      }
+      else if (value === 'varskip-long') {
+        this.primer_version.set('options', varskipLongOptions);
+        this.primer_version.set('value', 'V1a');
+      }
+      else if (value === 'ARTIC') {
+        this.primer_version.set('options', articOptions);
+        this.primer_version.set('value', 'V5.3.2');
+      }
+      else {
+        console.log('Invalid Selection');
       }
     },
 
@@ -425,344 +626,12 @@ define([
       this.checkParameterRequiredFields();
     },
 
-    getNumberGroups: function () {
-      const groups = new Set();
-      const rows = this.grid.store.query(function (object) {
-        return true;
-      });
-      var exist = false;
-      for (var i = 0; i < rows.length; i++) {
-        const row = rows[i];
-        groups.add(row.group);
-        exist = true;
-      }
-      this.autoGroupCount = groups.size;
-      var ans = this.autoGroupCount >= this.minGroups && this.autoGroupCount <= this.maxGroups;
-      if (!ans) {
-        this.num_auto_groups.style.color = 'red';
-      } else {
-        this.num_auto_groups.style.color = 'black';
-      }
-      if (exist) {
-        this.num_auto_groups.innerHTML = 'Max groups 10. Current ' + this.autoGroupCount + ' groups.';
-      } else {
-        this.num_auto_groups.innerHTML = '';
-      }
-      this.validate();
-      return groups.size;
-    },
-
-    makeFeatureGroupName: function () {
-      var name = this.user_genomes_featuregroup.searchBox.get('displayedValue');
-      var maxName = 36;
-      var display_name = name;
-      if (name.length > maxName) {
-        display_name = name.substr(0, (maxName / 2) - 2) + '...' + name.substr((name.length - (maxName / 2)) + 2);
-      }
-      return display_name;
-    },
-
-    getValues: function () {
-      var values = this.inherited(arguments);
-      values.p_value = parseFloat(this['p_value'].value);
-      delete values.user_genomes_featuregroup;
-      delete values.auto_feature_group;
-      delete values.metadata_group;
-      delete values.name_list;
-      values.alphabet = 'na';
-      if (this.input_groups.checked == true) {
-        values.input_type = 'groups';
-        delete values.year_ranges;
-        delete values.alignment_file;
-        delete values.group_file;
-        delete values.metadata_group;
-        delete values.auto_alphabet;
-        if (values.group_alphabet == 'protein') {
-          values.alphabet = 'aa';
-        }
-        delete values.group_alphabet;
-        var compGenomeList = query('.genomedata');
-        var userGroups = [];
-        compGenomeList.forEach(function (item) {
-          if (item.genomeRecord.user_genomes_featuregroup) {
-            userGroups.push(item.genomeRecord.user_genomes_featuregroup);
-          }
-        });
-        values.groups = userGroups;
-      } else if (this.input_files.checked == true) {
-        values.input_type = 'files';
-        delete values.year_ranges;
-        delete values.group_alphabet;
-        delete values.auto_alphabet;
-        delete values.metadata_group;
-        var alignment_type = null;
-        if (this['alignment_file'].searchBox.onChange.target.item) {
-          alignment_type = this['alignment_file'].searchBox.onChange.target.item.type;
-        }
-        if (alignment_type.includes('protein')) {
-          values.alphabet = 'aa';
-        }
-        delete values.group_alphabet;
-      } else if (this.input_auto.checked == true) {
-        values.input_type = 'auto';
-        values.metadata_group = this['metadata_group'].value;
-        delete values.alignment_file;
-        delete values.group_file;
-        delete values.group_alphabet;
-        if (values.auto_alphabet == 'protein') {
-          values.alphabet = 'aa';
-        }
-        delete values.auto_alphabet;
-        const rows = this.grid.store.query(function (object) {
-          return true;
-        });
-        const auto_groups = [];
-        rows.forEach(function (row) {
-          auto_groups.push({
-            id: row.patric_id,
-            metadata: row.metadata,
-            grp: row.group,
-            g_id: row.genome_id
-          });
-        });
-        values.auto_groups = auto_groups;
-      } else {
-        console.log('Incorrect input.');
-      }
-      return values;
-    },
-
-    // controlYear: function () {
-    //   this.validate();
-    //   if (this.metadata_group.value == 'collection_year') {
-    //     query('.year_range_div').style('visibility', 'visible');
-    //     this.year_ranges.set('value', this.yearRangeStore);
-    //     this.yearRangeStore = '';
-    //   } else {
-    //     query('.year_range_div').style('visibility', 'hidden');
-    //     if (this.yearRangeStore == '') {
-    //       this.yearRangeStore = this.year_ranges.value;
-    //     }
-    //     this.year_ranges.set('value', '');
-    //   }
-    // },
-
-    // getRanges: function () {
-    //   var year_ranges = this.year_ranges.value.replace(/\s+/g, '');
-    //   var ans = []
-    //   if (year_ranges) {
-    //     year_ranges.split(',').forEach(function (item) {
-    //       ans.push(item.split('-').map(function (thing) {
-    //         return parseInt(thing);
-    //       }));
-    //     });
-    //   }
-    //   return ans;
-    // },
-    // onAddAutoGroup: function () {
-    //   query('.auto_feature_button').style('visibility', 'hidden');
-    //   var self = this;
-    //   var my_group = this.auto_feature_group.value;
-    //   var metadata_value = this.metadata_group.value;
-    //   this.metadata_group.set('disabled', true);
-    //   DataAPI.queryGenomeFeatures('in(feature_id,FeatureGroup(' + encodeURIComponent(my_group) + '))', { 'limit' : 1000 })
-    //     .then((result) => {
-    //       const genome_map = new Map();
-    //       result.items.forEach(function (sel) {
-    //         if (genome_map.has(sel.genome_id)) {
-    //           genome_map.get(sel.genome_id).push(sel.patric_id);
-    //         } else {
-    //           genome_map.set(sel.genome_id, [sel.patric_id]);
-    //         }
-    //       });
-    //       return genome_map;
-    //     }).catch(error => { console.log('Genome feature query failed.'); })
-    //     .then((genome_map) => {
-    //       DataAPI.queryGenomes(`in(genome_id,(${Array.from(genome_map.keys()).join(',')}))`, { 'limit' : 1000 })
-    //         .then((genome_results) => {
-    //           var group_names = new Set();
-    //           var ranges = [];
-    //           var year_groups = [];
-    //           if (metadata_value == 'collection_year') {
-    //             ranges = self.getRanges();
-    //             if (ranges.length > 0) {
-    //               year_groups.push('<=' + ranges[0][0]);
-    //               for (var i = 1; i < ranges.length - 1; i++) {
-    //                 year_groups.push(ranges[i][0] + '-' + ranges[i][1]);
-    //               }
-    //               year_groups.push('>=' + ranges[ranges.length - 1][0]);
-    //               year_groups.forEach(function (grp) {
-    //                 group_names.add(grp);
-    //               });
-    //             }
-    //           }
-    //           genome_results.items.forEach(function (genome) {
-    //             const m_value = genome[metadata_value] === undefined ? '' : genome[metadata_value];
-    //             var g_value = m_value;
-    //             // Parse the year ranges.
-    //             if (metadata_value != 'collection_year' || ranges.length == 0) {
-    //               group_names.add(m_value.toString());
-    //             } else if (metadata_value == 'collection_year') {
-    //               if (m_value) {
-    //                 if (m_value <= ranges[0]) {
-    //                   g_value = year_groups[0];
-    //                 } else if (m_value >= ranges[ranges.length - 1]) {
-    //                   g_value = year_groups[ranges.length - 1];
-    //                 } else {
-    //                   for (var i = 1; i < ranges.length - 1; i++) {
-    //                     if (m_value >= ranges[i][0] && m_value <= ranges[i][1]) {
-    //                       g_value = year_groups[i];
-    //                       break;
-    //                     }
-    //                   }
-    //                   if (m_value == g_value) {
-    //                     group_names.add(m_value.toString());
-    //                   }
-    //                 }
-    //               } else {
-    //                 group_names.add(m_value.toString());
-    //               }
-    //             }
-    //             var feature_ids = genome_map.get(genome.genome_id);
-    //             feature_ids.forEach(function (feature_id) {
-    //               if (self.grid.store.query({ patric_id: feature_id }).length == 0) {
-    //                 self.grid.store.put({
-    //                   patric_id: feature_id,
-    //                   metadata: m_value.toString(),
-    //                   group: g_value.toString(),
-    //                   genome_id: genome.genome_id
-    //                 });
-    //               }
-    //             });
-    //           });
-    //           Array.from(group_names).forEach(function (name) {
-    //             self.name_store.put({ id: name.toString() });
-    //           });
-    //           self.grid.refresh();
-    //           self.getNumberGroups();
-    //           if (self.grid.store.data.length == 0) {
-    //             this.metadata_group.set('disabled', false);
-    //           }
-    //         }).catch(error => {
-    //           if (self.grid.store.data.length == 0) {
-    //             this.metadata_group.set('disabled', false);
-    //           }
-    //           console.log('Genome query failed.');
-    //         })
-    //     })
-    //     .finally(() => {
-    //       query('.auto_feature_button').style('visibility', 'visible');
-    //     });
-    // },
-
-    deleteAutoRows: function () {
-      for (var id in this.grid.selection) {
-        if (id) {
-          this.grid.store.remove(id);
-        }
-      }
-      this.grid.refresh();
-      this.getNumberGroups();
-      if (this.grid.store.data.length == 0) {
-        this.metadata_group.set('disabled', false);
-        this.name_store.data = [];
-      }
-    },
-
-    updateGroup: function () {
-      if (this.grid.store.data.length == 0) {
-        return;
-      }
-      const new_group = this.name_list.value;
-      for (var id in this.grid.selection) {
-        if (id) {
-          const q = this.grid.store.query({ patric_id: id });
-          q[0].group = new_group;
-          this.grid.store.put(q[0]);
-        }
-      }
-      this.grid.refresh();
-      this.name_store.put({ id: new_group });
-      this.getNumberGroups();
-    },
-
-    onRecipeChange: function () {
-      if (this.recipe.value == 'cdc-illumina') {
-        this.primers.set('disabled', true);
-        this.primer_version.set('disabled', true);
-
-      }
-      if (this.recipe.value == 'cdc-nanopore') {
-        this.primers.set('disabled', true);
-        this.primer_version.set('disabled', true);
-      }
-      if (this.recipe.value == 'artic-nanopore') {
-        this.primers.set('disabled', true);
-        this.primer_version.set('disabled', true);
-      }
-      // Disabling auto for now. Not sure if needed down the line.
-      // if (this.recipe.value == 'auto') {
-      //   this.primers.set('disabled', true);
-      //   this.primer_version.set('disabled', true);
-      // }
-      if (this.recipe.value == 'onecodex') {
-        this.primers.set('disabled', false);
-        this.primer_version.set('disabled', false);
-      }
-    },
-
-    onPrimersChange: function (value) {
-      var articOptions = [
-        { label: 'V5.3.2', value: 'V5.3.2' },
-        { label: 'V4.1', value: 'V4.1' },
-        { label: 'V4', value: 'V4' },
-        { label: 'V3', value: 'V3' },
-        { label: 'V2', value: 'V2' },
-        { label: 'V1', value: 'V1' }
-      ];
-      var midnightOptions = [
-        { label: 'V1', value: 'V1' }
-      ];
-      var qiagenOptions = [
-        { label: 'V1', value: 'V1' }
-      ];
-      var swiftOptions = [
-        { label: 'V1', value: 'V1' }
-      ];
-      var varskipOptions = [
-        { label: 'V2', value: 'V2' },
-        { label: 'V1a', value: 'V1a' }
-      ];
-      var varskipLongOptions = [
-        { label: 'V1a', value: 'V1a' }
-      ];
-
-      if (value === 'midnight') {
-        this.primer_version.set('options', midnightOptions);
-        this.primer_version.set('value', 'V1');
-      }
-      else if (value === 'qiagen') {
-        this.primer_version.set('options', qiagenOptions);
-        this.primer_version.set('value', 'V1');
-      }
-      else if (value === 'swift') {
-        this.primer_version.set('options', swiftOptions);
-        this.primer_version.set('value', 'V1');
-      }
-      else if (value === 'varskip') {
-        this.primer_version.set('options', varskipOptions);
-        this.primer_version.set('value', 'V2');
-      }
-      else if (value === 'varskip-long') {
-        this.primer_version.set('options', varskipLongOptions);
-        this.primer_version.set('value', 'V1a');
-      }
-      else if (value === 'ARTIC') {
-        this.primer_version.set('options', articOptions);
-        this.primer_version.set('value', 'V5.3.2');
+    checkParameterRequiredFields: function () {
+      if (this.output_path.get('value')) {
+        this.validate();
       }
       else {
-        console.log('Invalid Selection');
+        if (this.submitButton) { this.submitButton.set('disabled', true); }
       }
     },
 
@@ -821,87 +690,59 @@ define([
       this.checkParameterRequiredFields();
     },
 
-    checkParameterRequiredFields: function () {
-      if (this.scientific_nameWidget.get('item') && this.myLabelWidget.get('value')
-         && this.output_path.get('value') && this.output_nameWidget.get('displayedValue') ) {
-        this.validate();
-      }
-      else {
-        if (this.submitButton) { this.submitButton.set('disabled', true); }
-      }
-    },
-
-    replaceInvalidChars: function (value) {
-      var invalid_chars = ['-', ':', '@', '"', "'", ';', '[', ']', '{', '}', '|', '`'];
-      invalid_chars.forEach(lang.hitch(this, function (char) {
-        value = value.replaceAll(char, '_');
-      }));
-      return value;
-    },
-
-    onAddFeatureGroup: function () {
-      var lrec = {};
-      var chkPassed = this.ingestAttachPoints(this.featureGroupToAttachPt, lrec);
-      console.log('test')
-      if (chkPassed && this.addedGroups < this.maxGroups) {
-        var newGenomeIds = [lrec[this.featureGroupToAttachPt]];
-        if (!newGenomeIds[0]) {
-          return;
-        }
-        var tr = this.groupsTable.insertRow(0);
-        var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
-        td.genomeRecord = lrec;
-        td.innerHTML = "<div class='libraryrow'>" + this.makeFeatureGroupName() + '</div>';
-        domConstruct.create('td', { innerHTML: '' }, tr);
-        var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
-        if (this.addedGroups < this.g_startingRows) {
-          this.groupsTable.deleteRow(-1);
-        }
-        var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-          domConstruct.destroy(tr);
-          this.decreaseGenome();
-          if (this.addedGroups < this.g_startingRows) {
-            var ntr = this.groupsTable.insertRow(-1);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          }
-          handle.remove();
-        }));
-        this.increaseGenome();
-      }
-    },
-
-    increaseGenome: function (genomeType, newGenomeIds) {
-      this.addedGroups = this.addedGroups + 1;
-      this.numgenomes.set('value', Number(this.addedGroups));
-      this.validate();
-    },
-
-    decreaseGenome: function () {
-      this.addedGroups = this.addedGroups - 1;
-      this.numgenomes.set('value', Number(this.addedGroups));
-      this.validate();
-    },
-
-    clearStore: function () {
-      this.grid.store.data = [];
-      this.grid.refresh();
-      this.name_store.data = [];
-      this.metadata_group.set('disabled', false);
-      this.getNumberGroups();
-    },
-
-    onReset: function (evt) {
+    checkOutputName: function (val) {
       this.inherited(arguments);
-      for (var i = 0; i < this.addedGroups; i++) {
-        this.groupsTable.deleteRow(0);
-      }
-      this.clearStore();
-      this.emptyTable(this.groupsTable, this.addedGroups);
-      this.addedGroups = 0;
-      this.numgenomes.set('value', Number(this.addedGroups));
+      this.checkParameterRequiredFields();
     },
+
+    checkBaseParameters: function (values) {
+      // reads and SRA
+      var pairedList = this.libraryStore.query({ _type: 'paired' });
+      var singleList = this.libraryStore.query({ _type: 'single' });
+      var srrAccessionList = this.libraryStore.query({ _type: 'srr_accession' });
+
+      this.paired_end_libs = pairedList.map(function (lrec) {
+        var rrec = {};
+        Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
+          if (!attr.startsWith('_')) {
+            rrec[attr] = lrec[attr];
+          }
+        }));
+        return rrec;
+      });
+      if (this.paired_end_libs.length) {
+        values.paired_end_libs = this.paired_end_libs;
+      }
+
+      this.single_end_libs = singleList.map(function (lrec) {
+        var rrec = {};
+        Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
+          if (!attr.startsWith('_')) {
+            rrec[attr] = lrec[attr];
+          }
+        }));
+        return rrec;
+      });
+      if (this.single_end_libs.length) {
+        values.single_end_libs = this.single_end_libs;
+      }
+      
+      this.sra_libs = srrAccessionList.map(function (lrec) {
+        var rrec = {};
+        Object.keys(lrec).forEach(lang.hitch(this, function (attr) {
+          if (!attr.startsWith('_')) {
+            rrec[attr] = lrec[attr];
+          }
+        }));
+        return rrec;
+      });
+      if (this.sra_libs.length) {
+        values.srr_libs = this.sra_libs;
+      }
+
+      return values;
+    },
+    // TO DO ReRun Form
 
     intakeRerunForm: function () {
       // assuming only one key
@@ -913,9 +754,14 @@ define([
           rerun_key = rerun_fields[1];
           var sessionStorage = window.sessionStorage;
           if (sessionStorage.hasOwnProperty(rerun_key)) {
+            var param_dict = { 'output_folder': 'output_path', 'strategy': 'analysis_type' };
+            // widget_map
+            AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
             var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-            this.setInputFormFill(job_data);
-            this.setParams(job_data);
+            job_data = this.formatRerunJson(job_data);
+            AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+            this.setAnalysisType(job_data);
+            this.output_path.set('value', job_data['output_path']);
             this.form_flag = true;
           }
         } catch (error) {
@@ -926,123 +772,14 @@ define([
       }
     },
 
-    setParams: function (job_data) {
-      if (Object.keys(job_data).includes('p_value')) {
-        this.p_value.set('value', job_data['p_value']);
-      }
-    },
-
-    setInputFormFill: function (job_data) {
-      if (job_data['input_type'] == 'files') {
-        this.input_auto.set('checked', false);
-        this.input_groups.set('checked', false);
-        this.input_files.set('checked', true);
-        // add files
-        this.alignment_file.set('value', job_data['alignment_file']);
-        this.group_file.set('value', job_data['group_file']);
-      } else if (job_data['input_type'] == 'groups') {
-        this.input_auto.set('checked', false);
-        this.input_files.set('checked', false);
-        this.input_groups.set('checked', true);
-        this.addFeatureGroupFormFill(job_data);
-        this.setAlphabetFormFill(job_data, 'group');
-      } else { // auto
-        this.input_files.set('checked', false);
-        this.input_groups.set('checked', false);
-        this.input_auto.set('checked', true);
-        this.setAlphabetFormFill(job_data, 'auto');
-        this.addAutoGroupFormFill(job_data);
-      }
-    },
-
-    addFeatureGroupFormFill: function (job_data) {
-      job_data['groups'].forEach(function (group) {
-        var lrec = {};
-        lrec['user_genomes_featuregroup'] = group;
-        var tr = this.groupsTable.insertRow(0);
-        var td = domConstruct.create('td', { 'class': 'textcol genomedata', innerHTML: '' }, tr);
-        td.genomeRecord = lrec;
-        td.innerHTML = "<div class='libraryrow'>" + this.genDisplayName(group) + '</div>';
-        domConstruct.create('td', { innerHTML: '' }, tr);
-        var td2 = domConstruct.create('td', { innerHTML: "<i class='fa icon-x fa-1x' />" }, tr);
-        if (this.addedGroups < this.g_startingRows) {
-          this.groupsTable.deleteRow(-1);
-        }
-        var handle = on(td2, 'click', lang.hitch(this, function (evt) {
-          domConstruct.destroy(tr);
-          this.decreaseGenome();
-          if (this.addedGroups < this.g_startingRows) {
-            var ntr = this.groupsTable.insertRow(-1);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-            domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
-          }
-          handle.remove();
-        }));
-        this.increaseGenome();
-      }, this);
-    },
-
-    genDisplayName: function (name) {
-      var display_name = name;
-      var maxName = 72;
-      if (name.length > maxName) {
-        display_name = name.substr(0, (maxName / 2) - 2) + '...' + name.substr((name.length - (maxName / 2)) + 2);
-      }
-      return display_name;
-    },
-
-    setAlphabetFormFill: function (job_data, input_type) {
-      if (job_data['alphabet'] == 'na') { // DNA
-        if (input_type == 'group') {
-          this.protein.set('checked', false);
-          this.dna.set('checked', true);
-        } else {
-          this.auto_protein.set('checked', false);
-          this.auto_dna.set('checked', true);
-        }
-      } else { // protein
-        if (input_type == 'group') {
-          this.dna.set('checked', false);
-          this.protein.set('checked', true);
-        } else {
-          this.auto_dna.set('checked', false);
-          this.auto_protein.set('checked', true);
-        }
-      }
-    },
-
-    addAutoGroupFormFill: function (job_data) {
-      var self = this;
-      var auto_groups = job_data['auto_groups'];
-      if (Object.keys(job_data).includes('metadata_group')) {
-        this.metadata_group.set('value', job_data['metadata_group']);
-      }
-      auto_groups.forEach(function (group) {
-        if (self.grid.store.query({ patric_id: group['id'] }).length == 0) {
-          self.grid.store.put({
-            patric_id: group['id'],
-            metadata: group['metadata'],
-            group: group['grp'],
-            genome_id: group['g_id']
-          });
-        }
-      }, self);
-      self.grid.refresh();
-      self.getNumberGroups();
-    },
-
-    getGenomeIDs: function (job_data) {
-      var genome_ids = [];
-      var auto_groups = job_data['auto_groups'];
-      auto_groups.forEach(function (g) {
-        var feature_id = group['id'];
-        var genome_id = '.'.join(feature_id.split('|')[1].split('.').slice(0, 2));
-        if (!genome_ids.has(genome_id)) {
-          genome_ids.push(genome_id);
-        }
-      }, this);
-      return genome_ids;
-    }
+    // formatRerunJson: function (job_data) {
+    //   if (!job_data.paired_end_libs) {
+    //     job_data.paired_end_libs = [];
+    //   }
+    //   if (!job_data.single_end_libs) {
+    //     job_data.single_end_libs = [];
+    //   }
+    //   return job_data;
+    // }
   });
-});                                         
+});
