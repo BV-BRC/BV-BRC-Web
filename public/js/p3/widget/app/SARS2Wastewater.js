@@ -23,7 +23,7 @@ define([
     applicationHelp: 'quick_references/services/sars_cov_2_wastewater_analysis_service.html',
     tutorialLink: 'tutorial/sars_cov_2_assembly_annotation/sars_cov_2_wastewater.html',
     videoLink: '',
-    appBaseURL: 'SARS2WasteWater',
+    appBaseURL: 'SARS2Wastewater',
     libraryData: null,
     defaultPath: '',
     startingRows: 14,
