@@ -124,6 +124,7 @@ define([
       post_visit_medications: { label: 'Post Visit Medication', field: 'post_visit_medication', hidden: true },
 
       // Treatment
+      treatment_type: { label: 'Treatment Type', field: 'treatment_type', hidden: true },
       treatment: { label: 'Treatment', field: 'treatment', hidden: true },
       initiation_of_treatment: { label: 'Initiation of Treatment', field: 'initiation_of_treatment', hidden: true },
       duration_of_treatment: { label: 'Duration of Treatment', field: 'duration_of_treatment', hidden: true },
