@@ -32,6 +32,10 @@ define([
         this.pathogenTestTypeNode.store = store
       }))
 
+      storeBuilder('surveillance', 'pathogen_type').then(lang.hitch(this, (store) => {
+        this.pathogenTypeNode.store = store;
+      }));
+
       storeBuilder('surveillance', 'pathogen_test_result').then(lang.hitch(this, (store) => {
         this.pathogenTestResultNode.store = store
       }))
@@ -72,6 +76,11 @@ define([
       const pathogenTestTypeValue = this.pathogenTestTypeNode.get('value')
       if (pathogenTestTypeValue !== '') {
         queryArr.push(`eq(pathogen_test_type,"${TextInputEncoder(sanitizeInput(pathogenTestTypeValue))}")`)
+      }
+
+      const pathogenTypeValue = this.pathogenTypeNode.get('value');
+      if (pathogenTypeValue !== '') {
+        queryArr.push(`eq(pathogen_type,"${TextInputEncoder(sanitizeInput(pathogenTypeValue))}")`);
       }
 
       const pathogenTestResultValue = this.pathogenTestResultNode.get('value')
