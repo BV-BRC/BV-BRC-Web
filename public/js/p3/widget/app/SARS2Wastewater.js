@@ -352,7 +352,6 @@ define([
     },
 
     onAddInputs: function () {
-      console.log('click')
       var accession =  this.srr_accession.get('displayedValue');
       var single_read = this.single_end_libsWidget.searchBox.get('displayedValue');
       // using read 1 to use the error handling in onAddPaired function
