@@ -352,6 +352,7 @@ define([
     },
 
     onAddInputs: function () {
+      console.log('click')
       var accession =  this.srr_accession.get('displayedValue');
       var single_read = this.single_end_libsWidget.searchBox.get('displayedValue');
       // using read 1 to use the error handling in onAddPaired function
@@ -633,56 +634,6 @@ define([
       else {
         if (this.submitButton) { this.submitButton.set('disabled', true); }
       }
-    },
-
-    onTaxIDChange: function (val) {
-      this._autoNameSet = true;
-      var tax_id = this.tax_idWidget.get('item').taxon_id;
-      // var tax_obj=this.tax_idWidget.get("item");
-      if (tax_id) {
-        var name_promise = this.scientific_nameWidget.store.get(tax_id);
-        name_promise.then(lang.hitch(this, function (tax_obj) {
-          if (tax_obj) {
-            this.scientific_nameWidget.set('item', tax_obj);
-            this.scientific_nameWidget.validate();
-            // this.changeCode(this.tax_idWidget.get('item'));
-          }
-        }));
-      }
-      this._autoTaxSet = false;
-    },
-
-    updateOutputName: function () {
-      var charError = document.getElementsByClassName('charError')[0];
-      charError.innerHTML = '&nbsp;';
-      var current_output_name = [];
-      var sci_item = this.scientific_nameWidget.get('item');
-      var label_value = this.myLabelWidget.get('value');
-      if (label_value.indexOf('/') !== -1 || label_value.indexOf('\\') !== -1) {
-        return charError.innerHTML = 'slashes are not allowed';
-      }
-      if (sci_item && sci_item.lineage_names.length > 0) {
-        current_output_name.push(sci_item.lineage_names.slice(-1)[0].replace(/\(|\)|\||\/|:/g, ''));
-      }
-      if (label_value.length > 0) {
-        current_output_name.push(label_value);
-      }
-      if (current_output_name.length > 0) {
-        this.output_nameWidget.set('value', current_output_name.join(' '));
-      }
-      this.checkParameterRequiredFields();
-    },
-
-    onSuggestNameChange: function (val) {
-      this._autoTaxSet = true;
-      var tax_id = this.scientific_nameWidget.get('value');
-      if (tax_id) {
-        this.tax_idWidget.set('displayedValue', tax_id);
-        this.tax_idWidget.set('value', tax_id);
-        // this.changeCode(this.scientific_nameWidget.get('item'));
-        this.updateOutputName();
-      }
-      this._autoNameSet = false;
     },
 
     onOutputPathChange: function (val) {
