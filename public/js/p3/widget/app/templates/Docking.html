@@ -1,0 +1,114 @@
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+  <div class="appTemplate">
+    <div class="appTitle">
+      <span class="breadcrumb">Services</span>
+      <h3>${applicationLabel}
+        <div name="overview" class="infobox iconbox infobutton dialoginfo">
+          <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+        </div>
+        <div class="infobox iconbox tutorialButton tutorialInfo">
+          <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
+        </div>
+      </h3>
+      <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.</p>
+      </p>
+    </div>
+    <div style="width:85%; margin:auto" class="formFieldsContainer">
+      <div id="annotationBox" style="width:97%;" class="appBox appShadow">
+        <div class="headerrow">
+          <div style="width:85%;display:inline-block;">
+            <label class="appBoxLabel">Parameters</label>
+            <div name="parameters" class="infobox iconbox infobutton dialoginfo">
+              <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+            </div>
+          </div>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <label>PDB Id</label><br>
+            <div data-dojo-type="p3/widget/StructureIdSelector" data-dojo-attach-point="pdb_list" name="pdb_id" style="width:50%"
+              data-dojo-attach-event="onChange:onPdbIdChange"
+              required="true" data-dojo-props=""></div>
+
+            <input id="{id}_pdb_preview" data-dojo-type="dijit/form/Button" data-dojo-attach-point="pdb_preview" name="pdb_preview"
+              disabled
+              label="Preview PDB" data-dojo-attach-event="onClick:onPdbPreview">
+
+            </div>
+        </div>
+
+        <div class="headerrow">
+          <div style="width:85%;display:inline-block;">
+            <label class="appBoxLabel">Ligand library selection</label>
+            <div name="ligand-source" class="infobox iconbox infobutton dialoginfo">
+              <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+            </div>
+          </div>
+          <br>
+          <div class="appRow">
+
+            <input id="${id}_smiles_text" type="radio" data-dojo-type="dijit/form/RadioButton"
+              data-dojo-attach-point="input_sequence" name="input" value="smiles_list"
+              data-dojo-attach-event="onChange:onInputChange" checked />
+            <label for="${id}_smiles_text">Enter smiles strings</label>
+            <input id="${id}_ws_file" type="radio" data-dojo-type="dijit/form/RadioButton"
+              data-dojo-attach-point="ws_file" name="input" value="ws_file"
+              data-dojo-attach-event="onChange:onInputChange" />
+            <label for="${id}_ws_file">Select file of smiles strings</label>
+          </div>
+          <div data-dojo-attach-point="block_smiles_text" style="height:100px; ">
+            <textarea id="${id}_smiles_textarea" data-dojo-attach-point="smiles_text" name="smiles_text"
+              style="resize: none; height: 100%;width:96%; margin-left:10px; font-family: monospace; font-size:12px;"
+              data-dojo-attach-point="sequence" data-dojo-type="dijit/form/SimpleTextarea"
+              data-dojo-props="rows:13, placeholder:'Enter one or more SMILES strings, one per line.', intermediateChanges:true,  trim:true"></textarea>
+          </div>
+          <div data-dojo-attach-point="block_smiles_ws" style="height:100px;">
+
+            <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="smiles_ws_file"
+              data-dojo-attach-point="smiles_ws_file"
+              data-dojo-props="type:['txt','unspecified'],multi:false,promptMessage:'Select or upload file of SMILES strings to your workspace.',missingMessage:'SMILES strings file is required.',placeHolder:'SMILES data file'">
+            </div>
+          </div>
+
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <label>Output Folder</label><br>
+            <div data-dojo-attach-point="output_path" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true"
+              data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'"
+            data-dojo-attach-event="onChange:onOutputPathChange"></div>
+          </div>
+        </div>
+
+        <div class="appRow">
+          <div class="appFieldLong" style="width:380px">
+            <label>Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+            <div data-dojo-attach-point="output_file" data-dojo-attach-event="onChange:checkOutputName"
+              style="width:380px; background-color:#F0F1F3" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
+              name="output_file" required="true"
+              data-dojo-props="intermediateChanges:true, promptMessage:'The output name for your Docking Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output name'">
+            </div>
+            </div>
+        </div>
+      </div>
+    </div>
+    <div class="appSubmissionArea">
+      <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
+        Submitting Annotation Job
+      </div>
+      <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
+        Error Submitting Job
+      </div>
+      <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+      style="margin-top:10px; text-align:center;" >
+        Your job has been submitted successfully. Please visit your <a data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job and access the results.
+      </div>
+      <div style="margin-top: 10px; text-align:center;">
+        <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel
+        </div>
+        <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+        <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Annotate</div>
+      </div>
+    </div>
+  </div>
+</form>
