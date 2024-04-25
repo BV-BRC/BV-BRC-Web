@@ -723,8 +723,6 @@ define([
                 return
               }
               refseqConfig.forEach(function (seq) {
-                console.log(seq.name);
-                console.log(seq.accn);
                 if (seq.seqChunkSize > 20000) {
                   seq.seqChunkSize = 20000;
                 }
