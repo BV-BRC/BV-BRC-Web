@@ -75,7 +75,7 @@
           <div class="appFieldLong">
             <label>Output Folder</label><br>
             <div data-dojo-attach-point="output_path" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" style="width:100%" required="true"
-              data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Annotation Results',missingMessage:'Output Folder must be selected.'"
+              data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Docking Results',missingMessage:'Output Folder must be selected.'"
             data-dojo-attach-event="onChange:onOutputPathChange"></div>
           </div>
         </div>
@@ -94,7 +94,7 @@
     </div>
     <div class="appSubmissionArea">
       <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage" style="margin-top:10px; text-align:center;">
-        Submitting Annotation Job
+        Submitting Docking Job
       </div>
       <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage" style="margin-top:10px; text-align:center;">
         Error Submitting Job
@@ -107,7 +107,7 @@
         <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel" data-dojo-type="dijit/form/Button">Cancel
         </div>
         <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
-        <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Annotate</div>
+        <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
       </div>
     </div>
   </div>

@@ -918,7 +918,32 @@ define([
           console.log('Error: could not find FullGenomeReport.html');
         }
       });
-
+      this.browserHeader.addAction(
+        "ViewDockingReport",
+        "fa icon-eye fa-2x",
+        {
+          label: "REPORT",
+          multiple: false,
+          validTypes: ["Docking"],
+          tooltip: "View Docking Report",
+        },
+        function (selection) {
+          var path;
+          selection[0].autoMeta.output_files.forEach(
+            lang.hitch(this, function (file_data) {
+              var filepath = file_data[0].split("/");
+              if (filepath[filepath.length - 1] === "DockingReport.html") {
+                path = filepath.join("/");
+              }
+            })
+          );
+          if (path) {
+            Topic.publish("/navigate", { href: "/workspace" + path });
+          } else {
+            console.log("Error: could not find DockingReport.html");
+          }
+        }
+      );
       // TODO: Paired_Filter report??
       this.browserHeader.addAction('ViewFastqUtilsOutput', 'fa icon-eye fa-2x', {
         label: 'VIEW',
@@ -1154,7 +1179,7 @@ define([
       }, function (selection, container, button) {
         console.log('browserHeader selection ', selection);
         console.log('browserHeader container ', container);
- 
+
         var labelSearch = 'false';
         var idType = 'genome_id';
         var labelType = 'genome_name';
@@ -1173,7 +1198,7 @@ define([
           }
           return true;
         }));
-        
+
         console.log('browserHeader path ', path);
 
         if (path) {
