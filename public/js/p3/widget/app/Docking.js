@@ -45,7 +45,7 @@ define([
         console.error(error);
       }
     },
-    postCreate: function() {
+    postCreate: function () {
       this.onInputChange()
     },
 
@@ -83,27 +83,61 @@ define([
         dojo.style(this.block_smiles_text, 'display', 'none');
         dojo.style(this.block_smiles_ws, 'display', 'block');
       }
-      this.checkParameterRequiredFields();
+
     },
 
     openJobsList: function () {
       Topic.publish('/navigate', { href: '/job/' });
     },
 
+    /*
+    {
+    "pdb_id": "1A47",
+    "pdb_preview": "",
+    "input": "smiles_list",
+    "smiles_text": "asdfasdf",
+    "smiles_ws_file": "",
+    "output_path": "/olson@patricbrc.org/home/test/test1/test2",
+    "output_file": "abc"
+} */
     getValues: function () {
       var values = this.inherited(arguments);
-      values = this.checkBaseParameters(values);
-      return values;
-    },
 
-    checkBaseParameters: function (values) {
-      this.contigs = values.contigs;
-      // this.output_name = this.output_nameWidget.get('displayedValue');
-      // values.scientific_name = this.output_name;
-      // this.target_genome_id = this.tax_idWidget.get('displayedValue');
-      // values.taxonomy_id = this.target_genome_id;
+      var submit_values = {
+        input_pdb: [values.pdb_id],
+        ligand_library_type: values.input,
+        output_path: values.output_path,
+        output_file: values.output_file,
+      }
+      if (values.input === 'smiles_list')
+      {
+        /* Parse out either smiles strings, one per line, or
+         * id / smiles-string pairs.
+         */
 
-      return values;
+        var lines = values.smiles_text.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);
+        var row = 0;
+        var elts = lines.map((l) => {
+          row++;
+          var cols = l.split(/\s+/);
+          if (cols.length > 2)
+          {
+            return cols.slice(0, 2);
+          }
+          else if (cols.length === 1) {
+            return ['id-' + row, cols[0]];
+          }
+        });
+
+        submit_values.ligand_smiles_list = elts;
+      }
+      else if (values.input === 'ws_file')
+      {
+        submit_values.ligand_ws_file = values.smiles_ws_file;
+      }
+      console.log(values + ' ' + submit_values);
+
+      return submit_values;
     },
 
     addRerunFields: function (job_params) {

@@ -47,26 +47,26 @@
           <br>
           <div class="appRow">
 
-            <input id="${id}_smiles_list" type="radio" data-dojo-type="dijit/form/RadioButton"
+            <input id="${id}_smiles_text" type="radio" data-dojo-type="dijit/form/RadioButton"
               data-dojo-attach-point="input_sequence" name="input" value="smiles_list"
               data-dojo-attach-event="onChange:onInputChange" checked />
-            <label for="${id}_smiles_list">Enter smiles strings</label>
+            <label for="${id}_smiles_text">Enter smiles strings</label>
             <input id="${id}_ws_file" type="radio" data-dojo-type="dijit/form/RadioButton"
               data-dojo-attach-point="ws_file" name="input" value="ws_file"
               data-dojo-attach-event="onChange:onInputChange" />
             <label for="${id}_ws_file">Select file of smiles strings</label>
           </div>
-          <div data-dojo-attach-point="block_smiles_text">
+          <div data-dojo-attach-point="block_smiles_text" style="height:100px; ">
             <textarea id="${id}_smiles_textarea" data-dojo-attach-point="smiles_text" name="smiles_text"
-              style="width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px"
-              data-dojo-attach-point="sequence" data-dojo-type="dijit/form/Textarea" required="false"
+              style="resize: none; height: 100%;width:96%; margin-left:10px; font-family: monospace; font-size:12px;"
+              data-dojo-attach-point="sequence" data-dojo-type="dijit/form/SimpleTextarea"
               data-dojo-props="rows:13, placeholder:'Enter one or more SMILES strings, one per line.', intermediateChanges:true,  trim:true"></textarea>
           </div>
-          <div data-dojo-attach-point="block_smiles_ws">
+          <div data-dojo-attach-point="block_smiles_ws" style="height:100px;">
 
             <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="smiles_ws_file"
-              required="false" data-dojo-attach-point="smiles_ws_file" data-dojo-attach-event="onChange:validate"
-              data-dojo-props="type:['txt'],multi:false,promptMessage:'Select or upload file of SMILES strings to your workspace.',missingMessage:'SMILES strings file is required.',placeHolder:'SMILES data file'">
+              data-dojo-attach-point="smiles_ws_file"
+              data-dojo-props="type:['txt','unspecified'],multi:false,promptMessage:'Select or upload file of SMILES strings to your workspace.',missingMessage:'SMILES strings file is required.',placeHolder:'SMILES data file'">
             </div>
           </div>
 
