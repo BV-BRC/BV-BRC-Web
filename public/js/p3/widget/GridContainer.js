@@ -721,8 +721,16 @@ define([
               return p.add(v.collection_latitude + ':' + v.collection_longitude);
             }, new Set());
 
-            // Warn user if selected unique locations are more than 750
-            if (locations.size > 750) {
+            if (locations.size === 0) { // Warn user if selected samples don't have any lat&long values
+              const d = new Dialog({
+                title: 'Warning',
+                content: 'Your selection does not contain any latitude and longitude values that will be displayed on the map.',
+                onHide: function () {
+                  d.destroy();
+                }
+              });
+              d.show();
+            } else if (locations.size > 750) { // Warn user if selected unique locations are more than 750
               const d = new Dialog({
                 title: 'Warning',
                 content: 'Surveillance Data Mapping allows a maximum of 750 locations to display. Your selection contains ' +

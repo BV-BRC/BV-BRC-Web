@@ -1820,6 +1820,9 @@ define([
         }],
 
         'Treatment': [{
+          name: 'Treatment Type',
+          text: 'treatment_type'
+        }, {
           name: 'Treatment',
           text: 'treatment'
         }, {

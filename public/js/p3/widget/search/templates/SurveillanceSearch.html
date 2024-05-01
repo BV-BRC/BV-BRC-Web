@@ -19,11 +19,19 @@
       </div>
       <div class="appBox appShadow">
         <div class="headerrow">
+          <label class="appBoxLabel">Pathogen Type</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. Influenza A virus'" required="false" data-dojo-attach-point="pathogenTypeNode" name="pathogen_type" style="width: 500px"></div>
+          </div>
+        </div>
+        <div class="headerrow">
           <label class="appBoxLabel">Pathogen Test Type</label>
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. Influenza A virus'" required="false" data-dojo-attach-point="pathogenTestTypeNode" name="pathogen_test_type" style="width: 500px"></div>
+            <div data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="placeHolder:'e.g. RRT-PCR'" required="false" data-dojo-attach-point="pathogenTestTypeNode" name="pathogen_test_type" style="width: 500px"></div>
           </div>
         </div>
         <div class="headerrow">
