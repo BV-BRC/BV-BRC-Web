@@ -107,15 +107,11 @@ define([
       var filter = {
         id: 'paired_filter', condition: 'paired_filter', label: 'Paired_Filter', icon: this.getConditionIcon()
       };
-      var scrub = {
-        id: 'scrub_human', condition: 'scrub_human', label: 'Scrub_Human', icon: this.getConditionIcon()
-      };
       // temporary until contrasts table added
       this.updateConditionStore(trim, false);
       this.updateConditionStore(filter, false);
       this.updateConditionStore(fastqc, false);
       this.updateConditionStore(align, false);
-      this.updateConditionStore(scrub, false);
       this.action_select.labelFunc = this.showConditionLabels;
       // this.block_condition.show();
       // this.read1.set('value',"/" +  window.App.user.id +"/home/");
