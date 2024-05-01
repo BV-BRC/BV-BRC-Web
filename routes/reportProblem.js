@@ -3,7 +3,7 @@ var email = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
 var when = require('promised-io/promise').when;
 var defer = require('promised-io/promise').defer;
-var request = require('request');
+const axios = require("axios");
 var formidable = require('express-formidable');
 var fs = require('fs');
 
@@ -107,24 +107,14 @@ function buildMessage(formBody) {
 
 function getUserDetails(token, id) {
   var url = config.get('accountURL') + '/user/' + id;
-  var def = new defer();
 
-  request({
-    url: url,
+  promise = axios.get(url, {
     headers: {
       authorization: token || '',
       accept: 'text/json'
     },
-    json: true
-  }, function (err, response, body) {
-    if (err) {
-      console.log('Unable to retrieve User details', err);
-      return def.reject(err);
-    }
-    def.resolve(body);
   });
-
-  return def.promise;
+  return promise;
 }
 module.exports = [
   // bodyParser.urlencoded({extended: true}),
