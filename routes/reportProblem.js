@@ -19,7 +19,7 @@ function mail(message, subject, from, files, options) {
   var destMail = config.get('reportProblemEmailAddress');
 
   if (mailconf.localSendmail) {
-    transport = email.createTransport();
+    // transport = email.createTransport();
     // email.sendmail=true;
   } else {
     // email.sendmail=false;
@@ -126,8 +126,13 @@ module.exports = [
   function (req, res, next) {
 
     if (req.headers && req.headers.authorization) {
-      when(getUserDetails(req.headers.authorization, req.fields.userId), function (user) {
-        req.from = user.email;
+      when(getUserDetails(req.headers.authorization, req.fields.userId), function (repl) {
+	user = repl.data;
+	if (user.first_name && user.last_name) {
+	    req.from = '"' + user.first_name + ' ' + user.last_name + '" ' + user.email;
+	} else {
+	  req.from = user.email;
+	}
         req.fields.email = user.email;
         next();
       }, function (err) {
@@ -146,7 +151,6 @@ module.exports = [
     var body = req.fields;
     var message = buildMessage(body);
     var subject = buildSubject(body);
-    console.log(message);
     // console.log("Report From: ", req.from || "");
     // console.log("Report Subject: ", subject);
 
