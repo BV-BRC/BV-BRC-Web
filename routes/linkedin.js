@@ -8,6 +8,11 @@ const fs = require('fs');
 async function retrieveLinkedInInfo() {
   const configFile = config.get('linkedinConfigFile');
 
+  if (!fs.existsSync(configFile))
+  {
+    return;
+  }
+
   const configData = fs.readFileSync(configFile, {
     encoding: 'utf8',
     flag: 'r'
@@ -65,7 +70,10 @@ async function retrieveLinkedInInfo() {
 router.get('/posts', async function (req, res) {
   try {
     const linkedinConfig = await retrieveLinkedInInfo();
-
+    if (!linkedinConfig)
+    {
+      return;
+    }
     axios.get('https://api.linkedin.com/rest/posts', {
       'headers': {
         Authorization: `Bearer ${linkedinConfig.accessToken}`,
