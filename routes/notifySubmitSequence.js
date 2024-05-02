@@ -17,7 +17,7 @@ function mail(subject, message) {
   var destMail = config.get('sequenceSubmissionNotificationEmailAddress');
 
   if (mailconf.localSendmail) {
-    transport = email.createTransport();
+    //transport = email.createTransport();
   } else {
     email.SMTP = {
       host: mailconf.host || 'localhost',
