@@ -1,6 +1,6 @@
 {
   "name": "p3-web",
-  "version": "3.36.10h",
+  "version": "3.36.10j",
   "private": true,
   "scripts": {
     "start": "node ./bin/p3-web",
@@ -33,6 +33,7 @@
     "flag-icon-css": "^2.8.0",
     "formidable": "^3.5.1",
     "http-proxy": "^1.18.1",
+    "httpntlm": "^1.8.13",
     "jbrowse": "github:GMOD/jbrowse#759433708fe59e2c0a09e781cf93dc7ec4670461",
     "jquery": "^3.7.1",
     "morgan": "^1.10.0",
@@ -45,13 +46,13 @@
     "pug": "^3.0.2",
     "rql": "^0.3.3",
     "serve-favicon": "^2.5.0",
+    "underscore": "^1.13.6",
     "webcola": "^3.4.0"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.29.1",
-    "forever": "^4.0.3",
     "gulp-replace": "^1.1.4",
     "minimatch": "^9.0.4",
     "request-promise": "^0.0.1",
