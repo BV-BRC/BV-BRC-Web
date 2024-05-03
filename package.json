@@ -41,7 +41,6 @@
     "phyloxml": "^1.0.0",
     "promised-io": "^0.3.5",
     "pug": "^2.0.0-rc.3",
-    "request": "^2.87.0",
     "rql": "^0.3.3",
     "serve-favicon": "^2.5.0",
     "webcola": "^3.3.6"
