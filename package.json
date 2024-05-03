@@ -1,6 +1,6 @@
 {
   "name": "p3-web",
-  "version": "3.36.10j",
+  "version": "3.36.11",
   "private": true,
   "scripts": {
     "start": "node ./bin/p3-web",
@@ -15,7 +15,6 @@
     "axios": "^1.6.8",
     "body-parser": "^1.20.2",
     "bvbrc_js_client": "github:bv-brc/bvbrc_js_client",
-    "clipboard-js": "^0.3.5",
     "cookie-parser": "~1.4.6",
     "cytoscape": "^3.2.4",
     "cytoscape-cola": "^1.6.0",
@@ -30,8 +29,8 @@
     "express": "^4.19.2",
     "express-formidable": "^1.2.0",
     "feedparser": "^2.2.10",
-    "flag-icon-css": "^2.8.0",
-    "formidable": "^3.5.1",
+    "flag-icons": "^7.2.1",
+    "formidable": "^2.1.2",
     "http-proxy": "^1.18.1",
     "httpntlm": "^1.8.13",
     "jbrowse": "github:GMOD/jbrowse#759433708fe59e2c0a09e781cf93dc7ec4670461",
@@ -55,7 +54,6 @@
     "eslint-plugin-import": "^2.29.1",
     "gulp-replace": "^1.1.4",
     "minimatch": "^9.0.4",
-    "request-promise": "^0.0.1",
     "stylelint": "^16.5.0",
     "stylelint-config-standard": "^36.0.0"
   }
