@@ -1,6 +1,6 @@
 {
   "name": "p3-web",
-  "version": "3.36.10g",
+  "version": "3.36.10h",
   "private": true,
   "scripts": {
     "start": "node ./bin/p3-web",
@@ -53,7 +53,6 @@
     "eslint-plugin-import": "^2.29.1",
     "forever": "^4.0.3",
     "gulp-replace": "^1.1.4",
-    "intern": "^4.10.1",
     "minimatch": "^9.0.4",
     "request-promise": "^0.0.1",
     "stylelint": "^16.5.0",
