@@ -184,21 +184,18 @@
 
                     <div data-dojo-type="p3/widget/TooltipDialog">
                         <div>
-                            <div style="vertical-align: top;width: 180px;margin-right:5px;display:inline-block">
+                            <div style="vertical-align: top;width:250px;margin-right:5px;display:inline-block">
                                 <div class="menuHeader">Genomics</div>
                                 <div class="menuItems">
-                                    <a class="navigationLink" href="/app/Assembly2">Genome Assembly <span style="font-style: italic;">(B)</span></a>
+                                    <a class="navigationLink" href="/app/Assembly2">Genome Assembly</span></a>
                                     <div><a class="navigationLink" href="/app/Annotation">Genome Annotation</a></div>
                                     <div><a class="navigationLink" href="/app/ComprehensiveGenomeAnalysis">Comprehensive Genome Analysis <span style="font-style: italic;">(B)</span></a></div>
-                                    <div><a class="navigationLink" href="/app/ComprehensiveSARS2Analysis">SARS-CoV-2 Genome Analysis <span style="font-style: italic;">(V)</span></a></div>
                                     <div><a class="navigationLink" href="/app/Homology">BLAST</a></div>
                                     <div><a class="navigationLink" href="/app/PrimerDesign">Primer Design</a></div>
                                     <div><a class="navigationLink" href="/app/GenomeDistance">Similar Genome Finder</div>
-                                    <div><a class="navigationLink" href="/app/GenomeAlignment">Genome Alignment <span style="font-style: italic;">(B)</span></a></div>
-                                    <div><a class="navigationLink" href="/app/Variation">Variation Analysis <span style="font-style: italic;">(B)</span></a></div>
-                                    <div><a class="navigationLink" href="/app/Tnseq">Tn-Seq Analysis <span style="font-style: italic;">(B)</span></a></div>
-                                    <div><a class="navigationLink" href="/app/SubspeciesClassification">Subspecies Classification <span style="font-style: italic;">(V)</span></a></div>
-                                    <div><a class="navigationLink" href="/app/SequenceSubmission">Sequence Submission <span style="font-style: italic;">(V)</span></a></div>
+                                    <div><a class="navigationLink" href="/app/GenomeAlignment">Genome Alignment</span></a></div>
+                                    <div><a class="navigationLink" href="/app/Variation">Variation Analysis</a></div>
+                                    <div><a class="navigationLink" href="/app/Tnseq">Tn-Seq Analysis</a></div>
                                 </div>
                                 <div class="menuHeader">Phylogenomics</div>
                                 <div class="menuItems">
@@ -206,39 +203,43 @@
                                     <div><a class="navigationLink" href="/app/ViralGenomeTree">Viral Genome Tree</a></div>
                                     <div><a class="navigationLink" href="/app/GeneTree">Gene/Protein Tree</a></div>
                                 </div>
-                                <br>
-                                <div>
-                                    <a class="navigationLink" href="/view/VariantLineage/#view_tab=overview" style="font-weight: bold;">SARS-CoV-2 Variant Tracker</span></a>
-                                </div>
-                            </div>
-
-                            <div style="vertical-align:top;width:200px;display:inline-block">
                                 <div class="menuHeader">Protein Tools</div>
                                 <div class="menuItems">
                                     <div><a class="navigationLink" href="/app/MSA">MSA and SNP Analysis</a></div>
                                     <div><a class="navigationLink" href="/app/MetaCATS">Meta-CATS</a></div>
-                                    <div><a class="navigationLink" href="/app/SeqComparison">Proteome Comparison <span style="font-style: italic;">(B)</span></a></div>
+                                    <div><a class="navigationLink" href="/app/SeqComparison">Proteome Comparison</a></div>
                                     <div><a class="navigationLink" href="/app/ComparativeSystems">Protein Family Sorter</a></div>
-                                    <div><a class="navigationLink" href="/app/ComparativeSystems">Comparative Pathway</div>
                                     <div><a class="navigationLink" href="/app/ComparativeSystems">Comparative Systems</a></div>
-                                    <div><a class="navigationLink" href="/app/HASubtypeNumberingConversion">HA Subtype Numbering Conversion <span style="font-style: italic;">(V)</span></a></div>
                                 </div>
+                            </div>
+
+                            <div style="vertical-align:top;width:250px;display:inline-block">
                                 <div class="menuHeader">Metagenomics</div>
                                 <div class="menuItems">
-                                    <div><a class="navigationLink" href="/app/MetagenomicReadMapping">Metagenomic Read Mapping</a></div>
                                     <div><a class="navigationLink" href="/app/TaxonomicClassification">Taxonomic Classification</a></div>
                                     <div><a class="navigationLink" href="/app/MetagenomicBinning">Metagenomic Binning</a></div>
+                                    <div><a class="navigationLink" href="/app/MetagenomicReadMapping">Metagenomic Read Mapping</a></div>
                                 </div>
                               <div class="menuHeader">Transcriptomics</div>
                               <div class="menuItems">
-                                  <div><a class="navigationLink" href="/app/Expression">Expression Import</a></div>
                                   <div><a class="navigationLink" href="/app/Rnaseq">RNA-Seq Analysis</a></div>
+                                  <div><a class="navigationLink" href="/app/Expression">Expression Import</a></div>
                               </div>
                               <p></p>
                               <div class="menuHeader">Utilities</div>
                               <div class="menuItems">
-                                  <div><a class="navigationLink" href="/app/IDMapper">ID Mapper</a></div>
-                                  <div><a class="navigationLink" href="/app/FastqUtil">Fastq Utilities</a></div>
+                                <div><a class="navigationLink" href="/app/FastqUtil">Fastq Utilities</a></div>
+                                <div><a class="navigationLink" href="/app/IDMapper">ID Mapper</a></div>
+                              </div>
+                              <p></p>
+                              <div class="menuHeader">Viral Tools</div>
+                              <div class="menuItems">
+                                <div><a class="navigationLink" href="/view/VariantLineage/#view_tab=overview">SARS-CoV-2 Variant Tracker</a></div>
+                                <div><a class="navigationLink" href="/app/ComprehensiveSARS2Analysis">SARS-CoV-2 Genome Analysis</a></div>
+                                <div><a class="navigationLink" href="/app/SARS2Wastewater">SARS-CoV-2 Wastewater Analysis</a></div>
+                                <div><a class="navigationLink" href="/app/SequenceSubmission">Influenza Sequence Submission</a></div>
+                                <div><a class="navigationLink" href="/app/HASubtypeNumberingConversion">Influenza HA Subtype Conversion</a></div>
+                                <div><a class="navigationLink" href="/app/SubspeciesClassification">Subspecies Classification</a></div>
                               </div>
                             </div>
                         </div>

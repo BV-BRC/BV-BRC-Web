@@ -92,7 +92,7 @@ define(['dojo/_base/declare', 'dojo/has', 'dojo/on', 'dgrid/util/misc', 'put-sel
         });
 
         console.log("Copy to clipboard: ", out.join("\n"))
-        clipboard.copy(out.join('\n'));
+        navigator.clipboard.writeText(out.join("\n"));
       },
 
     });

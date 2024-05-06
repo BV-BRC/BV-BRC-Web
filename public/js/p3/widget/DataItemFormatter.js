@@ -204,9 +204,8 @@ define([
         // get text
         var pane = query(self.domNode).parents('.dijitTitlePane')[0];
         var content = query('pre', pane)[0].innerText;
-
         // copy contents
-        clipboard.copy(content);
+        navigator.clipboard.writeText(content);
 
         self.set('label', 'copied');
         setTimeout(function () {

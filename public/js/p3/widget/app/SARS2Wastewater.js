@@ -21,7 +21,7 @@ define([
     applicationLabel: 'SARS-CoV-2 Wastewater Analysis',
     applicationDescription: 'The SARS-CoV-2 Wastewater Analysis assembles raw reads with the Sars One Codex pipeline and preforms vairant analysis with Freyja',
     applicationHelp: 'quick_references/services/sars_cov_2_wastewater_analysis_service.html',
-    tutorialLink: 'tutorial/sars_cov_2_assembly_annotation/sars_cov_2_wastewater.html',
+    tutorialLink: 'tutorial/sars_cov_2_wastewater/sars_cov_2_wastewater.html',
     videoLink: '',
     appBaseURL: 'SARS2Wastewater',
     libraryData: null,
