@@ -3,7 +3,7 @@ var email = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
 var when = require('promised-io/promise').when;
 var defer = require('promised-io/promise').defer;
-var request = require('request');
+const axios = require("axios");
 var formidable = require('express-formidable');
 var fs = require('fs');
 
@@ -19,7 +19,7 @@ function mail(message, subject, from, files, options) {
   var destMail = config.get('reportProblemEmailAddress');
 
   if (mailconf.localSendmail) {
-    transport = email.createTransport();
+    // transport = email.createTransport();
     // email.sendmail=true;
   } else {
     // email.sendmail=false;
@@ -107,24 +107,14 @@ function buildMessage(formBody) {
 
 function getUserDetails(token, id) {
   var url = config.get('accountURL') + '/user/' + id;
-  var def = new defer();
 
-  request({
-    url: url,
+  promise = axios.get(url, {
     headers: {
       authorization: token || '',
       accept: 'text/json'
     },
-    json: true
-  }, function (err, response, body) {
-    if (err) {
-      console.log('Unable to retrieve User details', err);
-      return def.reject(err);
-    }
-    def.resolve(body);
   });
-
-  return def.promise;
+  return promise;
 }
 module.exports = [
   // bodyParser.urlencoded({extended: true}),
@@ -136,8 +126,13 @@ module.exports = [
   function (req, res, next) {
 
     if (req.headers && req.headers.authorization) {
-      when(getUserDetails(req.headers.authorization, req.fields.userId), function (user) {
-        req.from = user.email;
+      when(getUserDetails(req.headers.authorization, req.fields.userId), function (repl) {
+	user = repl.data;
+	if (user.first_name && user.last_name) {
+	    req.from = '"' + user.first_name + ' ' + user.last_name + '" ' + user.email;
+	} else {
+	  req.from = user.email;
+	}
         req.fields.email = user.email;
         next();
       }, function (err) {
@@ -156,7 +151,6 @@ module.exports = [
     var body = req.fields;
     var message = buildMessage(body);
     var subject = buildSubject(body);
-    console.log(message);
     // console.log("Report From: ", req.from || "");
     // console.log("Report Subject: ", subject);
 

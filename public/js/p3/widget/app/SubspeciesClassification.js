@@ -12,9 +12,15 @@ define([
 ) {
 
   var VirusTypes = [
+    { value: 'MASTADENOA', label: 'Adenoviridae - Human mastadenovirus A [complete genome, genomic RNA]' },
+    { value: 'MASTADENOB', label: 'Adenoviridae - Human mastadenovirus B [complete genome, genomic RNA]' },
+    { value: 'MASTADENOC', label: 'Adenoviridae - Human mastadenovirus C [complete genome, genomic RNA]' },
+    { value: 'MASTADENOE', label: 'Adenoviridae - Human mastadenovirus E [complete genome, genomic RNA]' },
+    { value: 'MASTADENOF', label: 'Adenoviridae - Human mastadenovirus F [complete genome, genomic RNA]' },
+    { type: 'separator' },
     { value: 'NOROORF1', label: 'Caliciviridae - Norovirus [VP2 gene, genomic RNA]' },
     { value: 'NOROORF2', label: 'Caliciviridae - Norovirus [VP1 gene, genomic RNA]' },
-    { type: 'separator'},
+    { type: 'separator' },
     { value: 'BOVDIARRHEA1', label: 'Flaviviridae - Bovine viral diarrhea virus [5\'UTR region, genomic RNA]' },
     { value: 'DENGUE', label: 'Flaviviridae - Dengue virus [complete genome, genomic RNA' },
     { value: 'HCV', label: 'Flaviviridae - Hepatitis C virus [polyprotein gene, genomic RNA]' },
@@ -25,12 +31,15 @@ define([
     { value: 'WESTNILE', label: 'Flaviviridae - West Nile virus [complete genome, genomic RNA]' },
     { value: 'YELLOWFEVER', label: 'Flaviviridae - Yellow fever virus [polyprotein mRNA, mRNA]' },
     { value: 'ZIKA', label: 'Flaviviridae - Zika virus [complete genome, genomic RNA]' },
-    { type: 'separator'},
+    { type: 'separator' },
     { value: 'INFLUENZAH5', label: 'Orthomyxoviridae - Influenza A H5 [Hemagglutinin gene, genomic RNA]' },
     { value: 'SWINEH1', label: 'Orthomyxoviridae - Swine influenza H1 (global classification) [Hemagglutinin gene, genomic RNA]' },
     { value: 'SWINEH1US', label: 'Orthomyxoviridae – Swine influenza H1 (US classification) [Hemagglutinin gene, genomic RNA]' },
     { value: 'SWINEH3', label: 'Orthomyxoviridae - Swine influenza H3 (global classification, beta version) [Hemagglutinin gene, genomic RNA]' },
-    { type: 'separator'},
+    { type: 'separator' },
+    { value: 'MEASLES', label: 'Paramyxoviridae - Measles morbillivirus [complete genome, genomic RNA]' },
+    { value: 'MUMPS', label: 'Paramyxoviridae - Mumps orthorubulavirus [complete genome, genomic RNA]' },
+    { type: 'separator' },
     { value: 'ROTAA', label: 'Reoviridae - Rotavirus A [complete genome, genomic RNA]' }
   ];
 
