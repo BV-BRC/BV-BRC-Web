@@ -1152,6 +1152,9 @@ define([], function () {
         field: 'post_visit_medications', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
+        field: 'treatment_type', type: 'str', facet: true, facet_hidden: true, search: true
+      },
+      {
         field: 'treatment', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
