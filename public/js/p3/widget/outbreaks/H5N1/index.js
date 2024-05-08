@@ -1,11 +1,13 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', '../../viewer/TabViewerBase', '../OutbreaksOverview', '../OutbreaksTab',
   'dojo/text!./OverviewDetails.html', 'dojo/text!./Resources.html', 'dojo/text!./News.html', 'dojo/text!./Contents.html',
-  'dojo/text!./Data.html', '../OutbreaksTabContainer', './genomes/GenomesGridContainer', '../OutbreaksPhylogenyTreeViewer'
+  'dojo/text!./Data.html', 'dojo/text!./CommandLineTool.html', '../OutbreaksTabContainer', './genomes/GenomesGridContainer',
+  '../OutbreaksPhylogenyTreeViewer'
 ], function (
   declare, lang, TabViewerBase, OutbreaksOverview, OutbreaksTab,
   OverviewDetailsTemplate, ResourcesTemplate, NewsTemplate, ContentsTemplate,
-  DataTemplate, OutbreaksTabContainer, GenomesGridContainer, OutbreaksPhylogenyTreeViewer
+  DataTemplate, CommandLineToolTemplate, OutbreaksTabContainer, GenomesGridContainer,
+  OutbreaksPhylogenyTreeViewer
 ) {
   return declare([TabViewerBase], {
     perspectiveLabel: '',
@@ -93,6 +95,12 @@ define([
         title: 'Data',
         id: this.viewer.id + '_data',
         templateString: DataTemplate
+      });
+
+      this.clt = new OutbreaksTab({
+        title: 'Command Line Tool',
+        id: this.viewer.id + '_clt',
+        templateString: CommandLineToolTemplate
       });
 
       // Initialize Phylogenetic Tree Viewer
@@ -279,6 +287,7 @@ define([
 
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.data);
+      this.viewer.addChild(this.clt);
       this.viewer.addChild(this.phylogenetics);
       this.viewer.addChild(this.resources);
     }
