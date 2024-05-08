@@ -95,6 +95,159 @@ define([
         templateString: DataTemplate
       });
 
+      // Initialize Phylogenetic Tree Viewer
+      const decorator = 'vipr:';
+      const nodeVisualizations = {};
+
+      nodeVisualizations['Host'] = {
+        label: 'Host',
+        description: 'the host of the virus',
+        field: null,
+        cladeRef: decorator + 'Host',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category50',
+        sizes: null
+      };
+
+      nodeVisualizations['Host Range'] = {
+        label: 'Host_Range',
+        description: 'the host range of the virus',
+        field: null,
+        cladeRef: decorator + 'Host_Range',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category20',
+        sizes: null
+      };
+
+      nodeVisualizations['Region'] = {
+        label: 'Region',
+        description: 'the region of the virus',
+        field: null,
+        cladeRef: decorator + 'Region',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category20c',
+        sizes: null
+      };
+
+      nodeVisualizations['Country'] = {
+        label: 'Country/State',
+        description: 'the country of the virus',
+        field: null,
+        cladeRef: decorator + 'Country',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category20c',
+        sizes: null
+      };
+
+      nodeVisualizations['Year'] = {
+        label: 'Year',
+        description: 'the year of the virus',
+        field: null,
+        cladeRef: decorator + 'Year',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category20',
+        colorsAlt: ['#FF0000', '#000000', '#00FF00'],
+        sizes: [20, 60]
+      };
+
+      nodeVisualizations['Subtype'] = {
+        label: 'Subtype',
+        description: 'the sub type of the virus',
+        field: null,
+        cladeRef: decorator + 'Subtype',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category20',
+        colorsAlt: ['#FF0000', '#000000', '#00FF00'],
+        sizes: [20, 60]
+      };
+
+      const nodeLabels = {};
+
+      nodeLabels['Host'] = {
+        label: 'Host',
+        description: 'to use the host as part of node names',
+        propertyRef: 'vipr:Host',
+        selected: false,
+        showButton: true
+      };
+
+      nodeLabels['Host_Range'] = {
+        label: 'Host Range',
+        description: 'to use the host range as part of node names',
+        propertyRef: 'vipr:Host_Range',
+        selected: false,
+        showButton: true
+      };
+
+      nodeLabels['Region'] = {
+        label: 'Region',
+        description: 'to use the region as part of node names',
+        propertyRef: 'vipr:Region',
+        selected: false,
+        showButton: true
+      };
+
+      nodeLabels['Country'] = {
+        label: 'Country',
+        description: 'to use the country/state as part of node names',
+        propertyRef: 'vipr:Country',
+        selected: false,
+        showButton: true
+      };
+
+      nodeLabels['Year'] = {
+        label: 'Year',
+        description: 'to use the year as part of node names',
+        propertyRef: 'vipr:Year',
+        selected: false,
+        showButton: true
+      };
+
+      nodeLabels['Subtype'] = {
+        label: 'Subtype',
+        description: 'to use the subtype as part of node names',
+        propertyRef: 'vipr:Subtype',
+        selected: false,
+        showButton: true
+      };
+
+      let options = {};
+      options.minBranchLengthValueToShow = 0.001;
+      options.initialNodeFillColorVisualization = 'Host_Range';
+      options.phylogram = true;
+      options.showConfidenceValues = false;
+      options.showExternalLabels = true;
+      options.showNodeName = true;
+      options.showNodeVisualizations = true;
+      options.showSequence = false;
+      options.showSequenceAccession = true;
+      options.showVisualizationsLegend = true;
+      options.visualizationsLegendOrientation = 'vertical';
+      options.visualizationsLegendXpos = 160;
+      options.visualizationsLegendYpos = 30;
+      options.initialCollapseDepth = 4;
+      options.initialCollapseFeature = 'ird:Region';
+
+      let settings = {};
+      settings.border = '1px solid #909090';
+      settings.showSequenceButton = false;
+      settings.controls0Top = 10;
+      settings.controls1Top = 10;
+      settings.enableDownloads = true;
+      settings.enableDynamicSizing = true;
+      settings.enableMsaResidueVisualizations = true;
+      settings.enableCollapseByFeature = true;
+      settings.enableNodeVisualizations = true;
+      settings.enableBranchVisualizations = true;
+      settings.nhExportWriteConfidences = true;
+      settings.readSimpleCharacteristics = true; // To be deprecated
+
       let phylogeneticsTabContainer = [];
       for (const [id, segment] of Object.entries(this.segments)) {
         const phylogenySegmentId = 'phylogeny' + id;
@@ -102,7 +255,11 @@ define([
           title: `Segment ${id} (${segment})`,
           id: this.viewer.id + '_' + phylogenySegmentId,
           phyloxmlTreeURL: '/public/js/p3/resources/images/outbreaks/h5n1/h5n1_segment_' + id + '.xml',
-          updateState: true
+          updateState: true,
+          settings: settings,
+          options: options,
+          nodeVisualizations: nodeVisualizations,
+          specialVisualizations: nodeLabels
         });
 
         phylogeneticsTabContainer.push(this[phylogenySegmentId]);
