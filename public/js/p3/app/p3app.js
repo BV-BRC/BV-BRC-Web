@@ -350,6 +350,18 @@ define([
         _self.navigate(newState);
       });
 
+      Router.register('/outbreaks(/.*)', function (params, path) {
+        var newState = getState(params, path);
+        var parts = newState.pathname.split('/');
+        parts.shift();
+        var type = parts.shift();
+
+        newState.widgetClass = 'p3/widget/outbreaks/' + type + '/index';
+        newState.requireAuth = false;
+
+        _self.navigate(newState);
+      });
+
       Router.register('/status', function (params, path) {
         var newState = populateState(params);
 
