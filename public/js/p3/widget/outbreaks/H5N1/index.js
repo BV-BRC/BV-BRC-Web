@@ -227,7 +227,7 @@ define([
 
       let options = {};
       options.minBranchLengthValueToShow = 0.001;
-      options.initialNodeFillColorVisualization = 'Host_Range';
+      options.initialNodeFillColorVisualization = 'Host';
       options.phylogram = true;
       options.showConfidenceValues = false;
       options.showExternalLabels = true;
