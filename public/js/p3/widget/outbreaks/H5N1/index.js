@@ -286,10 +286,10 @@ define([
       });
 
       this.viewer.addChild(this.overview);
-      this.viewer.addChild(this.data);
-      this.viewer.addChild(this.clt);
       this.viewer.addChild(this.phylogenetics);
+      this.viewer.addChild(this.data);
       this.viewer.addChild(this.resources);
+      this.viewer.addChild(this.clt);
     }
   });
 });
