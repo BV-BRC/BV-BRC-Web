@@ -648,6 +648,19 @@
   padding-bottom: 20px;
 }
 
+.bv-brc-code-block {
+  font-size: 85%;
+  line-height: 1.45;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
+.bv-brc-code {
+  padding: 0;
+  white-space: inherit;
+}
+
 /* Tablet */
 @media (max-width: 991px) {
   #bv-brc-home #bv-brc-home-container {

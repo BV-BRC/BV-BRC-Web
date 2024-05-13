@@ -1,12 +1,211 @@
 <div>
-    <br>
-    <div class="column-sub"></div>
+    <div style="width: 78%">
+        &nbsp;
+        <blockquote style="padding: 5px; float:right">
+            Last updated on 05/13/2024
+        </blockquote>
+    </div>
+    <br/>
+    <div class="column-sub" style="width:15%" data-dojo-attach-point="leftPanelHTML">
+        <div class="section">
+            <h3 class="close2x section-title" style="margin-top: 0;"><span class="wrap">Contents</span></h3>
+            <div class="pubmed">
+                <ul>
+                    <li><a href="#search-genome-section">Search Genome</a></li>
+                    <li><a href="#download-annotation-section">Download Annotation</a>
+                        <ul style="margin-top: 5px;border-top: #aec9d2 1px solid;padding: 5px 0 0 7px;">
+                            <li><a href="#download-genometype-section">Download the GenomeType</a></li>
+                            <li style="border-bottom: none; margin: 0; padding-bottom: 0;"><a
+                                    href="#convert-genometype-section">Convert the GenomeType to one of following
+                                format</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#download-genome-data-section">Download genome data in FASTA format</a></li>
+                    <li><a href="#submit-genome-annotation-section">Submitting a genome annotation job</a>
+                        <ul style="margin-top: 5px;border-top: #aec9d2 1px solid;padding: 5px 0 0 7px;">
+                            <li><a href="#submit-job-section">Submit annotation job</a></li>
+                            <li><a href="#view-job-folder-section">View Listing of job’s output folder</a></li>
+                            <li style="border-bottom: none; margin: 0; padding-bottom: 0;"><a
+                                    href="#download-output-section">Download output of your job
+                                format</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
 
-    <div class="column-prime" style="width:80%">
-        <div class="section close2x" id="data-section">
+    <div class="column-prime" style="width:63%">
+        <div class="section far2x">
             <p style="margin-bottom: 5px;">
-                Below are the command line tool to search and download bulk data from BV-BRC;
+                Below are some of useful command line tool reference and examples to search and download bulk data from
+                BV-BRC. Complete command line interface (CLI) guide is available at <a
+                    href="https://www.bv-brc.org/docs/cli_tutorial/" target="_blank">Command Line Interface</a>. CLI
+                installation guide is available at <a
+                    href="https://www.bv-brc.org/docs/cli_tutorial/cli_installation.html#installing-the-bv-brc-command-line-interface"
+                    target="_blank">Installing the BV-BRC Command Line Interface</a>.
             </p>
+        </div>
+        <div class="section far2x" id="search-genome-section">
+            <h3 class="close2x section-title"><span class="wrap">Search Genome</span></h3>
+            <p style="margin-bottom: 5px;">
+                User can search genomes using <code style="font-size: 100%"><b>p3-all-genomes</b></code> command.
+                Complete help and guide are at <a
+                    href="https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-all-genomes.html"
+                    target="_blank">p3-all-genomes</a>.
+            </p>
+            <p style="margin-bottom: 5px;">
+                Example of p3-all-genomes command.
+            </p>
+            <p style="margin-bottom: 5px;">
+                Following command is to download segment 4 of h_type 5 for any genomes loaded after
+                2024-04-01T00:00:00.000Z. Please make sure you format the date correctly.
+            </p>
+            <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-all-genomes --eq segment,4 --eq h_type,5 --gt date_inserted,"2024-04-01T00:00:00.000Z"
+genome.genome_id
+11320.548370
+11320.548378
+11320.548382
+11320.548394
+11320.548401</code></pre>
+        </div>
+        <div class="section far2x" id="download-annotation-section">
+            <h3 class="close2x section-title"><span class="wrap">Download Annotation</span></h3>
+            <p style="margin-bottom: 5px;">
+                User can download annotation in two steps.
+            </p>
+            <ol style="margin-bottom: 5px;">
+                <li>Download the GenomeType</li>
+                <li>Convert the GenomeType to one of following format.</li>
+            </ol>
+            <pre class="bv-brc-code-block"><code class="bv-brc-code">GenomeType conversion format options
+genbank         Genbank format
+genbank_merged  Genbank format as single merged locus.
+feature_data    Tabular form of feature data
+protein_fasta   Protein translations in fasta format
+contig_fasta    Contig DNA in fasta format
+feature_dna     Feature DNA sequences in fasta format
+gff             GFF format
+embl            EMBL format
+</code></pre>
+            <blockquote style="margin-bottom: 5px;">
+                <b>More details of commands available at <a
+                        href="https://www.bv-brc.org/docs/cli_tutorial/command_list/p3-gto.html"
+                        target="_blank">p3-gto</a> and <a
+                        href="https://www.bv-brc.org/docs/cli_tutorial/rasttk_incremental_commands.html"
+                        target="_blank">RASTtk, The Incremental Commands</a>.</b>
+            </blockquote>
+            <section id="download-genometype-section">
+                <h3 style="margin-top: 12px;margin-bottom: 7px;"><span style="font-size: 15px;line-height: 20px;">1. Download the GenomeType</span>
+                </h3>
+                <p style="margin-bottom: 5px;">
+                    First, download the GenomeType using the Genome ID.
+                </p>
+                <pre class="bv-brc-code-block"><code class="bv-brc-code">p3-gto [Genome ID]</code></pre>
+                <p style="margin-bottom: 5px;">
+                    Example:
+                </p>
+                <pre class="bv-brc-code-block"><code class="bv-brc-code">p3-gto 11320.560905</code></pre>
+            </section>
+            <section id="convert-genometype-section">
+                <h3 style="margin-top: 12px;margin-bottom: 7px;"><span style="font-size: 15px;line-height: 20px;">2. Convert GenomeType to Desired Format</span>
+                </h3>
+                <p style="margin-bottom: 5px;">
+                    Once you have the GenomeType file, you can convert it to your desired format.
+                </p>
+                <pre class="bv-brc-code-block"><code class="bv-brc-code">rast-export-genome [Format] < [GenomeType File] > [Output File]</code></pre>
+                <ul>
+                    <li>Replace <b>[Format]</b> with one of the conversion options (e.g. gff, genbank, protein_fasta,
+                        etc.).
+                    </li>
+                    <li>Replace <b>[GenomeType File]</b> with the filename of the downloaded GenomeType file.</li>
+                    <li>Replace <b>[Output File]</b> with the desired name for the converted file.</li>
+                </ul>
+                <p style="margin-bottom: 5px;">
+                    Example:
+                </p>
+                <pre class="bv-brc-code-block"><code class="bv-brc-code">rast-export-genome gff < 11320.560905.gto > 11320.560905.gto.gff</code></pre>
+            </section>
+        </div>
+        <div class="section far2x" id="download-genome-data-section">
+            <h3 class="close2x section-title"><span class="wrap">Download genome data in FASTA format</span></h3>
+            <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-genome-fasta -h
+p3-genome-fasta.pl [-h] [long options...] genomeid
+--protein  feature protein fasta
+--feature  feature dna fasta
+--contig   contig dna fasta
+-h --help  display usage information
+</code></pre>
+            <p style="margin-bottom: 5px;">
+                Example of downloading genome using genome id:
+            </p>
+            <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-genome-fasta --contig 11320.435309
+>11320.435309.con.0001 segment
+atgagtcttctaaccgaggtcgaaacgtacgttctttctatcattccgtcaggccccctc
+aaagccgagatcgcacagagactggaaagtgtctttgcaggaaagaacacagatcttgag
+…
+</code></pre>
+            <p style="margin-bottom: 5px;">
+                Example of searching and downloading data using pipe command:
+            </p>
+            <pre class="bv-brc-code-block"><code class="bv-brc-code">p3-all-genomes  --eq segment,4 --eq h_type,5 --gt date_inserted,"2024-05-01T00:00:00.000Z" \
+ | sed -n '2,$p' | xargs -n 1 p3-genome-fasta --contig</code></pre>
+            <p style="margin-bottom: 5px;">
+                Search genome list and then download data based on genome list:
+            </p>
+            <pre class="bv-brc-code-block"><code class="bv-brc-code"><b>#Search the genome list</b>
+$ p3-all-genomes  --eq segment,4 --eq h_type,5 --gt date_inserted,"2024-05-01T00:00:00.000Z" \
+ > genome_list.txt
+
+<b>#Download fasta file for genome list. You can remove the genomes for genome-list as needed</b>
+$ for i in $(cat genome_list.txt); do
+    if [ $i != "genome.genome_id" ]; then
+       p3-genome-fasta --contig $i
+    fi
+ done >> genome.fasta
+
+<b>View the genome fasta file</b>
+$ more genome.fasta
+>388108.3.con.0001
+agcaaaagcaggagttcaaaatgaatccaaatcagaagataataaccatcggatcaatct
+gtatggtaattggaatagttagcttaatgttacaaattgggaacatgatctcaatatggg
+tcagtcattcaattcagacagggaatcaacgccaagctgaaccaatcagcaatactaaat
+ttcttactgagaaagctgtggcttcagtaacattagcgggcaattcatctctttgcccca
+...act</code></pre>
+        </div>
+        <div class="section close2x" id="submit-genome-annotation-section">
+            <h3 class="close2x section-title"><span class="wrap">Submitting a genome annotation job</span></h3>
+            <section id="submit-job-section">
+                <h3 style="margin-top: 12px;margin-bottom: 7px;"><span style="font-size: 15px;line-height: 20px;">1. Submit annotation job</span>
+                </h3>
+                <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-submit-genome-annotation --contigs-file influenza_11320.435309.fasta \
+--taxonomy-id 11320 --scientific-name "Influenza A virus" \
+/isingh@patricbrc.org/home t3
+Uploading influenza_11320.435309.fasta to /isingh@patricbrc.org/home/influenza_11320.435309.fasta (1.0 Kbytes)...
+done
+Submitted annotation with id 10940738
+</code></pre>
+            </section>
+            <section id="view-job-folder-section">
+                <h3 style="margin-top: 12px;margin-bottom: 7px;"><span style="font-size: 15px;line-height: 20px;">2. View Listing of job’s output folder</span>
+                </h3>
+                <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-ls -l /isingh@patricbrc.org/home/.t3/
+Srw-- isingh@patricbrc.org  13009 Jun 20 21:14 GenomeReport.html
+Srw-- isingh@patricbrc.org  27758 Jun 20 21:14 genome_quality_details.txt
+</code></pre>
+            </section>
+            <section id="download-output-section">
+                <h3 style="margin-top: 12px;margin-bottom: 7px;"><span style="font-size: 15px;line-height: 20px;">3. Download output of your job</span>
+                </h3>
+                <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-cp -r ws:/isingh@patricbrc.org/home/.t3 .
+mkdir ./.t3
+Copy ws:/isingh@patricbrc.org/home/.t3/genome_quality_details.txt to ./.t3/genome_quality_details.txt
+Copy ws:/isingh@patricbrc.org/home/.t3/GenomeReport.html to ./.t3/GenomeReport.html
+Copy ws:/isingh@patricbrc.org/home/.t3/t3.genome to ./.t3/t3.genome
+Copy ws:/isingh@patricbrc.org/home/.t3/t3.contigs.fasta to ./.t3/t3.contigs.fasta
+Copy ws:/isingh@patricbrc.org/home/.t3/t3.feature_dna.fasta to ./.t3/t3.feature_dna.fasta
+</code></pre>
+            </section>
         </div>
     </div>
 </div>
