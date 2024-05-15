@@ -61,7 +61,7 @@
                 Following command is to download segment 4 of h_type 5 for any genomes loaded after
                 2024-04-01T00:00:00.000Z. Please make sure you format the date correctly.
             </p>
-            <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-all-genomes --eq segment,4 --eq h_type,5 --gt date_inserted,"2024-04-01T00:00:00.000Z"
+            <pre class="bv-brc-code-block" tabindex="0"><code class="bv-brc-code">$ p3-all-genomes --eq segment,4 --eq h_type,5 --gt date_inserted,"2024-04-01T00:00:00.000Z"
 genome.genome_id
 11320.548370
 11320.548378
@@ -72,7 +72,7 @@ genome.genome_id
                 Following commands will get the genome id of all genomes from 2024 from USA with subtype H5N1 in FASTA
                 format.
             </p>
-            <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-all-genomes \
+            <pre class="bv-brc-code-block" tabindex="0"><code class="bv-brc-code">$ p3-all-genomes \
   --eq="genome_name,Influenza A virus" \
   --eq=isolation_country,USA \
   --eq=host_common_name,* \
@@ -97,7 +97,7 @@ genome.genome_id
                 <li>Download the GenomeType</li>
                 <li>Convert the GenomeType to one of following format.</li>
             </ol>
-            <pre class="bv-brc-code-block"><code class="bv-brc-code">GenomeType conversion format options
+            <pre class="bv-brc-code-block" tabindex="0"><code class="bv-brc-code">GenomeType conversion format options
 genbank         Genbank format
 genbank_merged  Genbank format as single merged locus.
 feature_data    Tabular form of feature data
@@ -120,11 +120,11 @@ embl            EMBL format
                 <p style="margin-bottom: 5px;">
                     First, download the GenomeType using the Genome ID.
                 </p>
-                <pre class="bv-brc-code-block"><code class="bv-brc-code">p3-gto [Genome ID]</code></pre>
+                <pre class="bv-brc-code-block" tabindex="0"><code class="bv-brc-code">p3-gto [Genome ID]</code></pre>
                 <p style="margin-bottom: 5px;">
                     Example:
                 </p>
-                <pre class="bv-brc-code-block"><code class="bv-brc-code">p3-gto 11320.560905</code></pre>
+                <pre class="bv-brc-code-block" tabindex="0"><code class="bv-brc-code">p3-gto 11320.560905</code></pre>
             </section>
             <section id="convert-genometype-section">
                 <h3 style="margin-top: 12px;margin-bottom: 7px;"><span style="font-size: 15px;line-height: 20px;">2. Convert GenomeType to Desired Format</span>
@@ -132,7 +132,7 @@ embl            EMBL format
                 <p style="margin-bottom: 5px;">
                     Once you have the GenomeType file, you can convert it to your desired format.
                 </p>
-                <pre class="bv-brc-code-block"><code class="bv-brc-code">rast-export-genome [Format] < [GenomeType File] > [Output File]</code></pre>
+                <pre class="bv-brc-code-block" tabindex="0"><code class="bv-brc-code">rast-export-genome [Format] < [GenomeType File] > [Output File]</code></pre>
                 <ul>
                     <li>Replace <b>[Format]</b> with one of the conversion options (e.g. gff, genbank, protein_fasta,
                         etc.).
@@ -143,12 +143,12 @@ embl            EMBL format
                 <p style="margin-bottom: 5px;">
                     Example:
                 </p>
-                <pre class="bv-brc-code-block"><code class="bv-brc-code">rast-export-genome gff < 11320.560905.gto > 11320.560905.gto.gff</code></pre>
+                <pre class="bv-brc-code-block" tabindex="0"><code class="bv-brc-code">rast-export-genome gff < 11320.560905.gto > 11320.560905.gto.gff</code></pre>
             </section>
         </div>
         <div class="section far2x" id="download-genome-data-section">
             <h3 class="close2x section-title"><span class="wrap">Download genome data in FASTA format</span></h3>
-            <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-genome-fasta -h
+            <pre class="bv-brc-code-block" tabindex="0"><code class="bv-brc-code">$ p3-genome-fasta -h
 p3-genome-fasta.pl [-h] [long options...] genomeid
 --protein  feature protein fasta
 --feature  feature dna fasta
@@ -158,7 +158,7 @@ p3-genome-fasta.pl [-h] [long options...] genomeid
             <p style="margin-bottom: 5px;">
                 Example of downloading genome using genome id:
             </p>
-            <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-genome-fasta --contig 11320.435309
+            <pre class="bv-brc-code-block" tabindex="0"><code class="bv-brc-code">$ p3-genome-fasta --contig 11320.435309
 >11320.435309.con.0001 segment
 atgagtcttctaaccgaggtcgaaacgtacgttctttctatcattccgtcaggccccctc
 aaagccgagatcgcacagagactggaaagtgtctttgcaggaaagaacacagatcttgag
@@ -167,12 +167,12 @@ aaagccgagatcgcacagagactggaaagtgtctttgcaggaaagaacacagatcttgag
             <p style="margin-bottom: 5px;">
                 Example of searching and downloading data using pipe command:
             </p>
-            <pre class="bv-brc-code-block"><code class="bv-brc-code">p3-all-genomes  --eq segment,4 --eq h_type,5 --gt date_inserted,"2024-05-01T00:00:00.000Z" \
+            <pre class="bv-brc-code-block" tabindex="0"><code class="bv-brc-code">p3-all-genomes  --eq segment,4 --eq h_type,5 --gt date_inserted,"2024-05-01T00:00:00.000Z" \
  | sed -n '2,$p' | xargs -n 1 p3-genome-fasta --contig</code></pre>
             <p style="margin-bottom: 5px;">
                 Search genome list and then download data based on genome list:
             </p>
-            <pre class="bv-brc-code-block"><code class="bv-brc-code"><b>#Search the genome list</b>
+            <pre class="bv-brc-code-block" tabindex="0"><code class="bv-brc-code"><b>#Search the genome list</b>
 $ p3-all-genomes  --eq segment,4 --eq h_type,5 --gt date_inserted,"2024-05-01T00:00:00.000Z" \
  > genome_list.txt
 
@@ -194,7 +194,7 @@ ttcttactgagaaagctgtggcttcagtaacattagcgggcaattcatctctttgcccca
             <p style="margin-bottom: 5px;">
                 Search and download genomes from 2024 from USA with subtype H5N1 in custom FASTA header format.
             </p>
-            <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-all-genomes \
+            <pre class="bv-brc-code-block" tabindex="0"><code class="bv-brc-code">$ p3-all-genomes \
     --eq="genome_name,Influenza A virus" \
     --eq=isolation_country,USA \
     --eq=host_common_name,* \
@@ -216,7 +216,7 @@ cgatttgcagaccaagaactgggtgatgccccattccttgaccggcttcgccgagagcag
             <p style="margin-bottom: 5px;">
                 Search and download NA gene sequences in FASTA format.
             </p>
-            <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-all-genomes \
+            <pre class="bv-brc-code-block" tabindex="0"><code class="bv-brc-code">$ p3-all-genomes \
     --eq="genome_name,Influenza A virus" \
     --eq=isolation_country,USA \
     --eq=host_common_name,* \
@@ -246,7 +246,7 @@ TGATGAGTTGTCCCGTGGGTGAGGCTCCTTCCCCGTACAATTCAAGATTTGAGTCTGTTGCTTGGTCGGCAAGTGCTTGT
             <p style="margin-bottom: 5px;">
                 Search and download NA protein from all genomes from 2024 from USA with subtype H5N1 in FASTA format.
             </p>
-            <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-all-genomes \
+            <pre class="bv-brc-code-block" tabindex="0"><code class="bv-brc-code">$ p3-all-genomes \
     --eq="genome_name,Influenza A virus" \
     --eq=isolation_country,USA \
     --eq=host_common_name,* \
@@ -279,7 +279,7 @@ NGVWIGRTKSTSSRSGFEMIWDPNGWTETDSSFSVKQDIVEITDWSGYSGSFVQHPELTGLDCMRPCFWVELIRGRPKEN
             <section id="submit-job-section">
                 <h3 style="margin-top: 12px;margin-bottom: 7px;"><span style="font-size: 15px;line-height: 20px;">1. Submit annotation job</span>
                 </h3>
-                <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-submit-genome-annotation --contigs-file influenza_11320.435309.fasta \
+                <pre class="bv-brc-code-block" tabindex="0"><code class="bv-brc-code">$ p3-submit-genome-annotation --contigs-file influenza_11320.435309.fasta \
 --taxonomy-id 11320 --scientific-name "Influenza A virus" \
 /isingh@patricbrc.org/home t3
 Uploading influenza_11320.435309.fasta to /isingh@patricbrc.org/home/influenza_11320.435309.fasta (1.0 Kbytes)...
@@ -290,7 +290,7 @@ Submitted annotation with id 10940738
             <section id="view-job-folder-section">
                 <h3 style="margin-top: 12px;margin-bottom: 7px;"><span style="font-size: 15px;line-height: 20px;">2. View Listing of job’s output folder</span>
                 </h3>
-                <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-ls -l /isingh@patricbrc.org/home/.t3/
+                <pre class="bv-brc-code-block" tabindex="0"><code class="bv-brc-code">$ p3-ls -l /isingh@patricbrc.org/home/.t3/
 Srw-- isingh@patricbrc.org  13009 Jun 20 21:14 GenomeReport.html
 Srw-- isingh@patricbrc.org  27758 Jun 20 21:14 genome_quality_details.txt
 </code></pre>
@@ -298,7 +298,7 @@ Srw-- isingh@patricbrc.org  27758 Jun 20 21:14 genome_quality_details.txt
             <section id="download-output-section">
                 <h3 style="margin-top: 12px;margin-bottom: 7px;"><span style="font-size: 15px;line-height: 20px;">3. Download output of your job</span>
                 </h3>
-                <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-cp -r ws:/isingh@patricbrc.org/home/.t3 .
+                <pre class="bv-brc-code-block" tabindex="0"><code class="bv-brc-code">$ p3-cp -r ws:/isingh@patricbrc.org/home/.t3 .
 mkdir ./.t3
 Copy ws:/isingh@patricbrc.org/home/.t3/genome_quality_details.txt to ./.t3/genome_quality_details.txt
 Copy ws:/isingh@patricbrc.org/home/.t3/GenomeReport.html to ./.t3/GenomeReport.html
