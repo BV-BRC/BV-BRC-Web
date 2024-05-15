@@ -68,6 +68,25 @@ genome.genome_id
 11320.548382
 11320.548394
 11320.548401</code></pre>
+            <p style="margin-bottom: 5px;">
+                Following commands will get the genome id of all genomes from 2024 from USA with subtype H5N1 in FASTA
+                format.
+            </p>
+            <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-all-genomes \
+  --eq="genome_name,Influenza A virus" \
+  --eq=isolation_country,USA \
+  --eq=host_common_name,* \
+  --eq=collection_year,2024 \
+  --eq=subtype,H5N1 \
+  | head -n 10 > Influenza_A_virus.txt
+
+<b>#Example output</b>
+$ more Influenza_A_virus.txt
+genome.genome_id
+11320.545895
+11320.545891
+11320.545932
+</code></pre>
         </div>
         <div class="section far2x" id="download-annotation-section">
             <h3 class="close2x section-title"><span class="wrap">Download Annotation</span></h3>
@@ -164,7 +183,7 @@ $ for i in $(cat genome_list.txt); do
     fi
  done >> genome.fasta
 
-<b>View the genome fasta file</b>
+<b>#View the genome fasta file</b>
 $ more genome.fasta
 >388108.3.con.0001
 agcaaaagcaggagttcaaaatgaatccaaatcagaagataataaccatcggatcaatct
@@ -172,6 +191,88 @@ gtatggtaattggaatagttagcttaatgttacaaattgggaacatgatctcaatatggg
 tcagtcattcaattcagacagggaatcaacgccaagctgaaccaatcagcaatactaaat
 ttcttactgagaaagctgtggcttcagtaacattagcgggcaattcatctctttgcccca
 ...act</code></pre>
+            <p style="margin-bottom: 5px;">
+                Search and download genomes from 2024 from USA with subtype H5N1 in custom FASTA header format.
+            </p>
+            <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-all-genomes \
+    --eq="genome_name,Influenza A virus" \
+    --eq=isolation_country,USA \
+    --eq=host_common_name,* \
+    --eq=collection_year,2024 \
+    --eq=subtype,H5N1 \
+  | p3-get-genome-contigs \
+    --attr=genome_id,accession,description,sequence \
+  | p3-tbl-to-fasta \
+    --comment=4 3 5 \
+  > Influenza_A_virus.ffn
+
+<b>#Example output</b>
+$ more Influenza_A_virus.ffn
+>PP576945 Influenza A virus (A/hooded merganser/South Carolina/W24-028/2024(H5N1)) segment 8 nuclear export protein (NEP)
+and nonstructural protein 1 (NS1) genes, complete cds.
+atggattccaacactgtgtcaagctttcaggtagactgctttctttggcatgtccgcaaa
+cgatttgcagaccaagaactgggtgatgccccattccttgaccggcttcgccgagagcag
+</code></pre>
+            <p style="margin-bottom: 5px;">
+                Search and download NA gene sequences in FASTA format.
+            </p>
+            <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-all-genomes \
+    --eq="genome_name,Influenza A virus" \
+    --eq=isolation_country,USA \
+    --eq=host_common_name,* \
+    --eq=collection_year,2024 \
+    --eq=subtype,H5N1 \
+    --eq=segment,6 \
+  | p3-get-genome-features \
+    --eq=annotation,PATRIC \
+    --in=feature_type,CDS,mat_peptide \
+    --eq gene,NA \
+    --selective \
+    --attr=patric_id \
+  | p3-get-feature-sequence \
+    --dna \
+    --col=2 \
+  > Influenza_A_virus.fna
+
+<b>#Example output</b>
+$ more Influenza_A_virus.fna
+>fig|11320.570985.CDS.1 neuraminidase
+ATGAATCCAAATCAAAAGATAACAACCATTGGATCAATCTGTATGGTAATTGGGATAGTCAGCTTGATGCTGCAAATTGGGAACATAATCTCAATATGGGTTAGCCATTCAATCCAAA
+CAGGGAATCAATACCAGCCTGAACCATGCAATCAAAGCATCATTACCTATGAGAACAACACCTGGGTAAATCAGACGTATGTCAACATCAGCAATACCAATTTTCTTGCTGAGCAGGC
+TGTTACTTCGGTAACATTAGCGGGCAATTCATCTCTTTGCCCTATTAGTGGGTGGGCAATATACAGTAAGGACAACGGTATAAGAATTGGGTCTAAGGGGGATGTGTTTGTTATAAGA
+GAACCATTCATCTCATGCTCCCACTTGGAATGCAGAACCTTTTTCCTGACCCAGGGAGCTCTGCTGAATGACAAACATTCTAATGGGACAGTTAAAGATAGAAGCCCTTATAGAACTT
+TGATGAGTTGTCCCGTGGGTGAGGCTCCTTCCCCGTACAATTCAAGATTTGAGTCTGTTGCTTGGTCGGCAAGTGCTTGTCATGATGGCATCA
+</code></pre>
+            <p style="margin-bottom: 5px;">
+                Search and download NA protein from all genomes from 2024 from USA with subtype H5N1 in FASTA format.
+            </p>
+            <pre class="bv-brc-code-block"><code class="bv-brc-code">$ p3-all-genomes \
+    --eq="genome_name,Influenza A virus" \
+    --eq=isolation_country,USA \
+    --eq=host_common_name,* \
+    --eq=collection_year,2024 \
+    --eq=subtype,H5N1 \
+    --eq=segment,6 \
+  | p3-get-genome-features \
+    --eq=annotation,PATRIC \
+    --in=feature_type,CDS,mat_peptide \
+    --eq gene,NA \
+    --selective \
+    --attr=patric_id \
+  | p3-get-feature-sequence \
+    --protein \
+    --col=2 \
+  > Influenza_A_virus.faa
+
+<b>#Example output</b>
+$ more Influenza_A_virus.faa
+>fig|11320.571776.CDS.1 neuraminidase
+MNPNQKITTIGSICMVIGIVSLMLQIGNIISIWVSHSIQTGNQYQPEPCNQSIITYENNTWVNQTYINISSTNFLAEQAVTSVTLAGNSSLCPISGWAIYSKDNGIRIGSKGDVFVIR
+EPFISCSHLECRTFFLTQGALLNDKHSNGTVKDRSPYRTLMSCPVGEAPSPYNSRFESVAWSASACHDGISWLTIGISGPDNGAVAVLKYNGIITDTIKSWRNNILRTQESECACVNG
+SCFTVMTDGPSNGQASYKIFKIEKGKVVKSVEMNAPNYHYEECSCYPDAGDIMCVCRDNWHGSNRPWVSFNQNLEYQIGYICSGIFGDNPRPNDGTGSCSPMPSNGAYGVKGFSFKYG
+NGVWIGRTKSTSSRSGFEMIWDPNGWTETDSSFSVKQDIVEITDWSGYSGSFVQHPELTGLDCMRPCFWVELIRGRPKENTIWTSGSSISFCGVNSDTVGWSWPDGAELPFTIDK
+
+</code></pre>
         </div>
         <div class="section close2x" id="submit-genome-annotation-section">
             <h3 class="close2x section-title"><span class="wrap">Submitting a genome annotation job</span></h3>
