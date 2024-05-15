@@ -933,6 +933,31 @@
   font-weight: 300;
 }
 
+pre.bv-brc-code-block {
+  position: relative;
+  overflow: auto;
+}
+
+pre.bv-brc-code-block button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: var(--gray-bg);
+  border: ridge 1px var(--border-gray);
+  border-radius: 5px;
+  text-shadow: #c4c4c4 0 0 2px;
+}
+
+pre.bv-brc-code-block button:hover {
+  cursor: pointer;
+  background-color: #bcbabb;
+}
+
+pre.bv-brc-code-block button:active {
+  cursor: pointer;
+  background-color: #979697;
+}
+
 @media screen and (max-width: 768px){
   .column-mid,
   .column-left,
