@@ -946,6 +946,9 @@ pre.bv-brc-code-block button {
   border: ridge 1px var(--border-gray);
   border-radius: 5px;
   text-shadow: #c4c4c4 0 0 2px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 pre.bv-brc-code-block button:hover {

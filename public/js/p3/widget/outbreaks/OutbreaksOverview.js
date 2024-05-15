@@ -60,7 +60,7 @@ define([
 
           codeBlocks.forEach(codeBlock => {
             let button = domConstruct.create('button', {
-              innerHTML: '<i class="icon-copy"></i>'
+              innerHTML: '<i class="icon-copy" style="padding: 2px 0 2px 0;"></i>'
             }, codeBlock);
 
             button.addEventListener('click', async () => {
