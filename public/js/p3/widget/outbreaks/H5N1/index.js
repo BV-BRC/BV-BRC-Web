@@ -266,7 +266,7 @@ define([
         this[phylogenySegmentId] = new OutbreaksPhylogenyTreeViewer({
           title: `Segment ${id} (${segment})`,
           id: this.viewer.id + '_' + phylogenySegmentId,
-          phyloxmlTreeURL: '/public/js/p3/resources/images/outbreaks/h5n1/h5n1_segment_' + id + '.xml',
+          phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/H5N1/h5n1_segment_' + id + '.xml',
           updateState: true,
           settings: settings,
           options: options,
