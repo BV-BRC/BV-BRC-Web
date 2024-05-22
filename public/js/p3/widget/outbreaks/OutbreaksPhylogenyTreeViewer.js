@@ -91,7 +91,7 @@ define([
       const nodeVisualizations = this.nodeVisualizations || {};
       const specialVisualizations = this.specialVisualizations || {};
 
-      xhr.get(this.phyloxmlTreeURL)
+      xhr.get(this.phyloxmlTreeURL, {headers: {'Cache-Control': 'max-age=1800'}}) // Set cache to 1 hour
         .then((data) => {
           let tree;
           try {
