@@ -218,7 +218,15 @@ define([
           }
         }
 
-
+        // Show additional columns if requested by user
+        if (state.hashParams.defaultColumns && this.grid) {
+          const columns = state.hashParams.defaultColumns.split(',');
+          for (let column of columns) {
+            if (column in this.grid._columns) {
+              this.grid._showColumn(column);
+            }
+          }
+        }
       } else {
         state.hashParams = {};
         if (!oldState && this.defaultFilter) {
