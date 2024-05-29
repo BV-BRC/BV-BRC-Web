@@ -218,7 +218,24 @@ define([
           }
         }
 
+        // Show/hide columns if requested by user
+        if (state.hashParams.defaultColumns && this.grid) {
+          const columns = state.hashParams.defaultColumns.split(',');
+          for (let column of columns) {
+            column = column.trim();
+            if (!column) continue; // Skip empty columns
 
+            const isHide = column.charAt(0) === '-';
+            const name = column.charAt(0) === '-' || column.charAt(0) === '+' ? column.substring(1) : column;
+            if (name in this.grid._columns) {
+              if (isHide) {
+                this.grid._hideColumn(name);
+              } else {
+                this.grid._showColumn(name);
+              }
+            }
+          }
+        }
       } else {
         state.hashParams = {};
         if (!oldState && this.defaultFilter) {
