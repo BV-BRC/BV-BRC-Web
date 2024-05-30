@@ -225,14 +225,10 @@ define([
             column = column.trim();
             if (!column) continue; // Skip empty columns
 
-            const isHide = column.charAt(0) === '-';
+            const isHidden = column.charAt(0) === '-';
             const name = column.charAt(0) === '-' || column.charAt(0) === '+' ? column.substring(1) : column;
             if (name in this.grid._columns) {
-              if (isHide) {
-                this.grid._hideColumn(name);
-              } else {
-                this.grid._showColumn(name);
-              }
+              this.grid.toggleColumnHiddenState(name, isHidden);
             }
           }
         }
