@@ -360,13 +360,37 @@ define([
           const doc = domParser.parse(data);
           const items = Array.from(doc.getElementsByTagName('item'));
 
+          // Filter out before 2023 and sort items by pubDate
+          const filteredItems = items
+            .reduce((acc, item) => {
+              const pubDateText = this.getNode(item, 'pubDate');
+              const pubDate = new Date(pubDateText);
+
+              // Only include items with pubDate in 2023 or later
+              if (pubDate.getFullYear() >= 2023) {
+                const link = this.getNode(item, 'link');
+                const title = this.getNode(item, 'title');
+
+                acc.push({link, title, pubDate});
+              }
+              return acc;
+            }, [])
+            .sort((a, b) => b.pubDate - a.pubDate);
+
+          // Determine the number of items to process
+          const numItems = Math.min(this.googleNewsCount, filteredItems.length);
           const newsList = domConstruct.create('ul');
-          for (let i = 0; i < this.googleNewsCount; ++i) {
-            const li = domConstruct.create('li', {}, newsList)
+          const options = {weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC'};
+          for (let i = 0; i < numItems; ++i) {
+            const li = domConstruct.create('li', {}, newsList);
+            const pubDate = filteredItems[i].pubDate.toLocaleDateString('en-US', options);
+            domConstruct.create('div', {
+              innerHTML: pubDate
+            }, li);
             domConstruct.create('a', {
-              href: this.getNode(items[i], 'link'),
+              href: filteredItems[i].link,
               target: '_blank',
-              innerHTML: this.getNode(items[i], 'title')
+              innerHTML: filteredItems[i].title
             }, li);
           }
           domConstruct.place(newsList, 'newsList');
