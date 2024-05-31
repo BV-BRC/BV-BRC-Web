@@ -2,23 +2,60 @@
     <br>
     <div class="column-sub"></div>
 
-    <div class="column-prime" style="width:60%">
-        <div class="section close2x" id="data-section">
-            <p style="margin-bottom: 5px;">
+    <div class="column-prime" style="width:50%">
+        <div class="section close2x" id="data-section" style="padding-left: 10px;">
+            <h4 style="margin-bottom: 15px;font-weight: bold;">
                 H5N1 outbreak genomes from 2024 are available at <a
                     href="/view/Taxonomy/11320#view_tab=genomes&filter=and(eq(subtype,%22H5N1%22),eq(collection_year,%222024%22),eq(geographic_group,%22North%20America%22))"
                     target="_blank">BV-BRC <i class="icon-external-link"></i></a>.
+            </h4>
+            <h4 style="margin-bottom: 5px;font-weight: bold;">
+                H5N1 outbreak FASTA, MSA and phylogenetic tree files from 2024 are available at <a
+                    href="ftp://ftp.bvbrc.org/outbreaks/Influenza_A_virus_H5N1_2024"
+                    target="_blank">BV-BRC FTP Site <i class="icon-external-link"></i></a>.
+            </h4>
+            <p style="margin-bottom: 5px;">
+                An FTP (File Transfer Protocol) site allows users to download files over the internet. To access the
+                data, users must connect to the BV-BRC FTP site and download the relevant files to their local systems.
+                Tutorials for setting up FTP are available <a
+                    href="https://www.bv-brc.org/docs/quick_references/ftp.html" target="_blank">here</a>. A mapping
+                text file is provided to help users understand which sequences are included, corresponding to the FASTA
+                files, MSA, and tree files.
             </p>
             <p style="margin-bottom: 5px;">
+                For sequences prior to 2024, H5N1 DNA sequences for segments were downloaded from BV-BRC only from
+                isolates for which all 8 segments were present in the database. This was followed by quality control
+                (QC) and representative sequence selection:
+            </p>
+            <ul style="margin-bottom: 5px;">
+                <li>For Segment 4, a minimum length cutoff of 1600nt was used, allowing no more than 0.1% undetermined
+                    residues (“N”).
+                </li>
+                <li>Representative sequence selection was performed by clustering using cd-hit with a cutoff of 0.98%.
+                </li>
+                <li>Other segments were retained only for those isolates for which Segment 4 passed the QC and
+                    clustering step.
+                </li>
+                <li>Sequences prior to 2003 were excluded from the analysis to prevent the resulting trees from being
+                    overly long.
+                </li>
+            </ul>
+            <p style="margin-bottom: 15px;">
+                For 2024
+                sequences, all H5N1 sequences from BV-BRC were used without additional quality control or clustering.
+                While all sequences undergo quality control, users are encouraged to review alignments manually before
+                submitting them to programs specific to ancestral alignment to ensure data accuracy and reliability.
+            </p>
+            <h4 style="margin-bottom: 15px;font-weight: bold;">
                 H5N1 outbreak raw reads available at <a
                     href="https://www.ncbi.nlm.nih.gov/sra?linkname=bioproject_sra_all&from_uid=1102327"
                     target="_blank">NCBI’s SRA <i class="icon-external-link"></i></a>.
-            </p>
-            <p style="margin-bottom: 5px;">
+            </h4>
+            <h4 style="margin-bottom: 15px;font-weight: bold;">
                 H5N1 outbreak data at <a
                     href="https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/virus?SeqType_s=Nucleotide&VirusLineage_ss=Influenza%20A%20virus,%20taxid:11320&CollectionDate_dr=2024-01-01T00:00:00.00Z%20TO%202024-05-08T23:59:59.00Z&Serotype_s=H5N1"
                     target="_blank">NCBI Virus Data <i class="icon-external-link"></i></a>.
-            </p>
+            </h4>
         </div>
     </div>
 </div>
