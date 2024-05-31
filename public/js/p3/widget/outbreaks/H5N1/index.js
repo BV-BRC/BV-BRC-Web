@@ -16,7 +16,7 @@ define([
     perspectiveIconClass: '',
     title: 'H5N1 2024 Outbreak',
     segments: {1: 'PB2', 2: 'PB1', 3: 'PA', 4: 'HA', 5: 'NP', 6: 'NA', 7: 'M1, M2', 8: 'NS1, NEP'},
-    googleNewsCount: 10,
+    googleNewsCount: 100,
     googleNewsRSS: 'https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US%3Aen&oc=11&q=%22h5n1%22%20AND%20(site:https://www.cidrap.umn.edu/avian-influenza-bird-flu%20OR%20site%3Afda.gov%20OR%20site%3Awww.who.in%20OR%20site%3Anews.un.org%20OR%20site%3Acdc.gov%20OR%20site%3Aceirr-network.org%20OR%20site%3Awww.nature.com%2Farticles%2F)%20AND%20when%3A1y&hl=en-US&gl=US&ceid=US%3Aen',
 
     onSetState: function (attr, oldVal, state) {
@@ -360,13 +360,37 @@ define([
           const doc = domParser.parse(data);
           const items = Array.from(doc.getElementsByTagName('item'));
 
+          // Filter out before 2023 and sort items by pubDate
+          const filteredItems = items
+            .reduce((acc, item) => {
+              const pubDateText = this.getNode(item, 'pubDate');
+              const pubDate = new Date(pubDateText);
+
+              // Only include items with pubDate in 2023 or later
+              if (pubDate.getFullYear() >= 2023) {
+                const link = this.getNode(item, 'link');
+                const title = this.getNode(item, 'title');
+
+                acc.push({link, title, pubDate});
+              }
+              return acc;
+            }, [])
+            .sort((a, b) => b.pubDate - a.pubDate);
+
+          // Determine the number of items to process
+          const numItems = Math.min(this.googleNewsCount, filteredItems.length);
           const newsList = domConstruct.create('ul');
-          for (let i = 0; i < this.googleNewsCount; ++i) {
-            const li = domConstruct.create('li', {}, newsList)
+          const options = {weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC'};
+          for (let i = 0; i < numItems; ++i) {
+            const li = domConstruct.create('li', {}, newsList);
+            const pubDate = filteredItems[i].pubDate.toLocaleDateString('en-US', options);
+            domConstruct.create('div', {
+              innerHTML: pubDate
+            }, li);
             domConstruct.create('a', {
-              href: this.getNode(items[i], 'link'),
+              href: filteredItems[i].link,
               target: '_blank',
-              innerHTML: this.getNode(items[i], 'title')
+              innerHTML: filteredItems[i].title
             }, li);
           }
           domConstruct.place(newsList, 'newsList');
