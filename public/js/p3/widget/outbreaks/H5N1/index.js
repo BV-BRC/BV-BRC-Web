@@ -16,7 +16,7 @@ define([
     perspectiveIconClass: '',
     title: 'H5N1 2024 Outbreak',
     segments: {1: 'PB2', 2: 'PB1', 3: 'PA', 4: 'HA', 5: 'NP', 6: 'NA', 7: 'M1, M2', 8: 'NS1, NEP'},
-    googleNewsCount: 10,
+    googleNewsCount: 100,
     googleNewsRSS: 'https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US%3Aen&oc=11&q=%22h5n1%22%20AND%20(site:https://www.cidrap.umn.edu/avian-influenza-bird-flu%20OR%20site%3Afda.gov%20OR%20site%3Awww.who.in%20OR%20site%3Anews.un.org%20OR%20site%3Acdc.gov%20OR%20site%3Aceirr-network.org%20OR%20site%3Awww.nature.com%2Farticles%2F)%20AND%20when%3A1y&hl=en-US&gl=US&ceid=US%3Aen',
 
     onSetState: function (attr, oldVal, state) {
