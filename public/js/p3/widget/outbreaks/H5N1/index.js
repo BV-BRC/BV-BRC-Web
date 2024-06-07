@@ -282,7 +282,7 @@ define([
       };
 
       const nodeLabelsSegment4 = {...nodeLabels};
-      nodeLabelsSegment4['H5_clade'] = {
+        nodeLabelsSegment4['H5_clade'] = {
         label: 'H5 clade',
         description: 'to use the H5 clade as part of node names',
         propertyRef: 'vipr:H5_clade',
@@ -292,6 +292,7 @@ define([
 
       let options = {};
       options.minBranchLengthValueToShow = 0.001;
+      options.minConfidenceValueToShow = 50;
       options.initialNodeFillColorVisualization = 'Host Group (Domestic vs Wild)';
       options.phylogram = true;
       options.showConfidenceValues = false;
@@ -300,12 +301,15 @@ define([
       options.showNodeVisualizations = true;
       options.showVisualizationsLegend = true;
       options.visualizationsLegendOrientation = 'vertical';
-      options.visualizationsLegendXpos = 160;
+      options.visualizationsLegendXpos = 220;
       options.visualizationsLegendYpos = 30;
 
       let settings = {};
       settings.border = '1px solid #909090';
       settings.showSequenceButton = false;
+      settings.controls0Left = 20;
+      settings.controls1Width = 120;
+      settings.rootOffset = 220;
       settings.controls0Top = 10;
       settings.controls1Top = 10;
       settings.enableDownloads = true;
@@ -315,8 +319,12 @@ define([
       settings.enableNodeVisualizations = true;
       settings.enableBranchVisualizations = false;
       settings.nhExportWriteConfidences = true;
-      settings.enableSubtreeDeletion = false;
+      settings.enableSubtreeDeletion = true;
       settings.showShortenNodeNamesButton = false;
+      settings.showExternalLabelsButton = false;
+      settings.showInternalLabelsButton = false;
+      settings.showExternalNodesButton = false;
+      settings.showInternalNodesButton = false;
 
       let phylogeneticsTabContainer = [];
       for (const [id, segment] of Object.entries(this.segments)) {
