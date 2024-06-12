@@ -42,7 +42,7 @@
     "nodemailer-smtp-transport": "^2.7.4",
     "phyloxml": "^1.0.0",
     "promised-io": "^0.3.6",
-    "pug": "^3.0.2",
+    "pug": "^3.0.3",
     "rql": "^0.3.3",
     "serve-favicon": "^2.5.0",
     "underscore": "^1.13.6",
