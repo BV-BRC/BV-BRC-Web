@@ -4,11 +4,29 @@
 
     <div class="column-prime" style="width:50%">
         <div class="section close2x" id="data-section" style="padding-left: 10px;">
-            <h4 style="margin-bottom: 15px;font-weight: bold;">
-                H5N1 outbreak genomes from 2024 are available at <a
-                    href="/view/Taxonomy/11320#view_tab=genomes&filter=and(eq(subtype,%22H5N1%22),eq(collection_year,%222024%22),eq(geographic_group,%22North%20America%22))"
-                    target="_blank">BV-BRC <i class="icon-external-link"></i></a>.
+            <h4 style="margin-bottom: 5px;font-weight: bold;">
+                <a href='/view/Taxonomy/11320#view_tab=genomes&filter=and(eq(subtype,"H5N1"),eq(collection_year,"2024"),eq(geographic_group,"North%20America"))&defaultColumns=-cds,h5_clade,segment,sra_accession,collection_date&defaultSort=genome_name,segment'>H5N1
+                    Outbreak Genomes</a>
             </h4>
+            <p style="margin-bottom: 15px;">
+                All H5N1 genomes from 2024 in North America
+            </p>
+            <h4 style="margin-bottom: 5px;font-weight: bold;">
+                <a href="/view/Taxonomy/11320#view_tab=genomes&filter=and(eq(subtype,%22H5N1%22),eq(collection_year,%222024%22),eq(geographic_group,%22North%20America%22),eq(genbank_accessions,*))&defaultColumns=-cds,h5_clade,segment,sra_accession,collection_date&defaultSort=genome_name,segment">H5N1
+                    Outbreak genomes from GenBank</a>
+            </h4>
+            <p style="margin-bottom: 15px;">
+                H5N1 genomes from 2024 in North America that have GenBank accession numbers.
+            </p>
+            <h4 style="margin-bottom: 5px;font-weight: bold;">
+                <a href="/view/Taxonomy/11320#view_tab=genomes&filter=and(eq(subtype,%22H5N1%22),eq(collection_year,%222024%22),eq(geographic_group,%22North%20America%22),ne(genbank_accessions,*))&defaultColumns=-cds,h5_clade,segment,sra_accession,collection_date,-genbank_accessions&defaultSort=genome_name,segment">H5N1
+                    Outbreak genomes assembled from SRA</a>
+            </h4>
+            <p style="margin-bottom: 15px;">
+                H5N1 genomes from 2024 in North America assembled from the NCBI Short Read Archive (SRA) database. The
+                BV-BRC assembled and annotated these genomes from SRA records that are not yet linked to a GenBank
+                record.
+            </p>
             <h4 style="margin-bottom: 5px;font-weight: bold;">
                 H5N1 outbreak FASTA, MSA and phylogenetic tree files from 2024 are available at <a
                     href="ftp://ftp.bvbrc.org/outbreaks/Influenza_A_virus_H5N1_2024"
