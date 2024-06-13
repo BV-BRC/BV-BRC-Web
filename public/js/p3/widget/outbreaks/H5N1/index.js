@@ -1,15 +1,15 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/request/xhr', 'dojox/xml/DomParser', 'dojo/dom-construct',
-  '../../viewer/TabViewerBase', '../OutbreaksOverview', '../OutbreaksTab',
+  '../../../util/PathJoin', '../../viewer/TabViewerBase', '../OutbreaksOverview', '../OutbreaksTab',
   'dojo/text!./OverviewDetails.html', 'dojo/text!./Resources.html', 'dojo/text!./News.html', 'dojo/text!./Contents.html',
   'dojo/text!./Data.html', 'dojo/text!./CommandLineTool.html', '../OutbreaksTabContainer', './genomes/GenomesGridContainer',
-  '../OutbreaksPhylogenyTreeViewer'
+  '../OutbreaksPhylogenyTreeViewer', '../OutbreaksGeoMap'
 ], function (
   declare, lang, xhr, domParser, domConstruct,
-  TabViewerBase, OutbreaksOverview, OutbreaksTab,
+  PathJoin, TabViewerBase, OutbreaksOverview, OutbreaksTab,
   OverviewDetailsTemplate, ResourcesTemplate, NewsTemplate, ContentsTemplate,
   DataTemplate, CommandLineToolTemplate, OutbreaksTabContainer, GenomesGridContainer,
-  OutbreaksPhylogenyTreeViewer
+  OutbreaksPhylogenyTreeViewer, OutbreaksGeoMap
 ) {
   return declare([TabViewerBase], {
     perspectiveLabel: '',
@@ -282,7 +282,7 @@ define([
       };
 
       const nodeLabelsSegment4 = {...nodeLabels};
-        nodeLabelsSegment4['H5_clade'] = {
+      nodeLabelsSegment4['H5_clade'] = {
         label: 'H5 clade',
         description: 'to use the H5 clade as part of node names',
         propertyRef: 'vipr:H5_clade',
@@ -355,11 +355,69 @@ define([
         templateString: ResourcesTemplate
       });
 
+      this.map = new OutbreaksGeoMap({
+        title: 'Outbreak Map',
+        id: this.viewer.id + '_map',
+        state: this.state
+      });
+
       this.viewer.addChild(this.overview);
+      this.viewer.addChild(this.map);
       this.viewer.addChild(this.phylogenetics);
       this.viewer.addChild(this.data);
       this.viewer.addChild(this.resources);
       this.viewer.addChild(this.clt);
+
+      // Fetch geomap data
+      xhr.get(PathJoin(this.apiServiceUrl, 'genome') + '/?eq(taxon_id,11320)&eq(subtype,"H5N1")&eq(collection_year,"2024")&select(genome_name,isolation_country,state_province,host_common_name)&limit(100000)', {
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+          'X-Requested-With': null,
+          Authorization: (window.App.authorizationToken || '')
+        },
+        handleAs: 'json'
+      }).then(lang.hitch(this, async function (genomes) {
+        let distinctLocations = {};
+        genomes.forEach(genome => {
+          // Make sure to cover all the possible cases/bugs
+          // Isolation Country: Kazakhstan, State:
+          // Isolation Country: USA, State: Texas
+          // Isolation Country: USA, State: USA
+          // Isolation Country: USA, State:
+          let location = '';
+          if (genome.state_province) {
+            location = genome.state_province.charAt(0).toUpperCase() + genome.state_province.slice(1);
+          }
+          if (genome.isolation_country && genome.isolation_country !== location) {
+            location = location ? `${location}, ${genome.isolation_country}` : genome.isolation_country;
+          }
+
+          if (location) {
+            if (!distinctLocations[location]) {
+              distinctLocations[location] = {
+                genomeNames: [],
+                hostCommonNames: {}
+              };
+            }
+
+            // Check genome name to avoid duplicate metadata
+            if (genome.genome_name && !distinctLocations[location].genomeNames.includes(genome.genome_name)) {
+              distinctLocations[location].genomeNames.push(genome.genome_name);
+
+              if (genome.host_common_name) {
+                if (distinctLocations[location].hostCommonNames[genome.host_common_name]) {
+                  distinctLocations[location].hostCommonNames[genome.host_common_name]++
+                } else {
+                  distinctLocations[location].hostCommonNames[genome.host_common_name] = 1;
+                }
+              }
+            }
+          }
+        });
+
+        this.map.set('data', distinctLocations);
+      })).catch(err => console.log('error', err));
 
       xhr.get('/google/news/?url=' + encodeURIComponent(this.googleNewsRSS) + '&count=' + this.googleNewsCount,
         {handleAs: 'xml'})

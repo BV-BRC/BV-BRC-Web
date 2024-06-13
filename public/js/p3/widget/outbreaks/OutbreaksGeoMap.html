@@ -1,0 +1,46 @@
+<div>
+    <div class="column-sub"></div>
+
+    <div class="column-prime" style="width: 75%">
+        <div class="section far2x" id="geomap-section">
+            <div style="margin: 10px 0 0 5px;">
+                <div style="display: flex; align-items: center;">
+                    <div style="display: flex; align-items: center; margin-right: 20px;">
+                        <input type="radio" data-dojo-type="dijit/form/RadioButton"
+                               id="us_map" name="mapType" value="us_map"
+                               style="margin-right: 5px;"
+                               data-dojo-attach-point="us_map"
+                               data-dojo-attach-event="onChange:onMapTypeChange" checked/>
+                        <label for="us_map">US Map</label>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <input type="radio" data-dojo-type="dijit/form/RadioButton"
+                               id="global_map" name="mapType" value="global_map" style="margin-right: 5px;"
+                               data-dojo-attach-point="global_map"
+                               data-dojo-attach-event="onChange:onMapTypeChange"/>
+                        <label for="global_map">Global Map</label>
+                    </div>
+                </div>
+            </div>
+            <div style="margin: 10px 0 25px 5px;">
+                <div id="outbreaksGeoMapCanvas" style="width: 100%; height: 600px;">
+                    Loading Outbreak Map...
+                </div>
+            </div>
+            <div style="margin-left: 5px;">
+                <div style="display: flex; align-items: center;">
+                    <div style="display: flex; align-items: center; margin-right: 20px;">
+                        <div style="width: 10px; height: 10px; background-color: #035999; margin-right: 5px;"></div>
+                        <span>Cases in humans and other hosts (# of human cases - # of other hosts' cases)</span>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <div style="width: 10px; height: 10px; background-color: #028c81; margin-right: 5px;"></div>
+                        <span>Cases in non-human hosts</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="column-opt"></div>
+</div>
