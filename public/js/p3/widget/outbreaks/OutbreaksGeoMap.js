@@ -31,7 +31,7 @@ define([
     cattleAndHumanMarkerColor: '#035999',
     defaultMapOptions: {
       backgroundColor: '#E7F1FA',
-      mapTypeId: google.maps.MapTypeId.TERRAIN,
+      //mapTypeId: google.maps.MapTypeId.TERRAIN,
       scaleControl: true
     },
     coordinatesUSA: {
@@ -71,18 +71,18 @@ define([
     },
 
     // Create a marker icon with a size fit to the count and selected color
-    createMarkerIcon: function (label, color = this.defaultMarkerColor) {
+    createMarkerIcon: function (label, isCountryLevel, color = this.defaultMarkerColor) {
       const length = label.length;
-      const scale = length === 1 ? 1 : 1.5 + (length - 2) * 0.15;
+      const scale = length === 1 ? 1 : 1.5 + (length - 2) * 0.2;
 
       return {
-        path: 'M 0,0 C -2,-10 -10,-10 -10,-20 A 10,10 0 1,1 10,-20 C 10,-10 2,-10 0,0 z',
+        path: isCountryLevel ? 'M 0,0 L 11,-15 L 0,-30 L -11,-15 Z' : 'M 0,0 C -2,-10 -10,-10 -10,-20 A 10,10 0 1,1 10,-20 C 10,-10 2,-10 0,0 Z',
         fillColor: color,
         fillOpacity: 1,
-        strokeColor: '#000',
-        strokeWeight: 1,
+        strokeColor: '#fff',
+        strokeWeight: 0.5,
         scale: scale,
-        labelOrigin: new google.maps.Point(0, -18)
+        labelOrigin: isCountryLevel ? new google.maps.Point(0, -15) : new google.maps.Point(0, -18)
       };
     },
 
@@ -132,14 +132,14 @@ define([
         markerColor = this.cattleMarkerColor;
         markerLabel = count.toString();
       }
-      const icon = this.createMarkerIcon(markerLabel, markerColor);
-      const anchorPoint = count < 10 ? -7 : count < 100 ? -3 : count < 10000 ? -6 : -7;
+      const icon = this.createMarkerIcon(markerLabel, item.isCountryLevel, markerColor);
+      const anchorPoint = count === 1 ? 1 : 1.5 + (count - 2) * 0.2;
       const infoContent = this.createInfoWindowContent(item);
 
       const marker = new google.maps.Marker({
         position: latLng,
         labelAnchor: new google.maps.Point(anchorPoint, 33),
-        label: markerLabel,
+        label: {text: markerLabel, color: '#fff'},
         icon: icon,
         map: this.map
       });
@@ -190,6 +190,7 @@ define([
             const item = {
               latitude: latitude,
               longitude: longtitude,
+              isCountryLevel: !location.includes(','),
               metadata: {...info, location}
             };
             items.push(item);
@@ -233,6 +234,17 @@ define([
 
           let options = this.defaultMapOptions;
           options.center = this.usaBounds.getCenter();
+          options.streetViewControl = false;
+          options.disableDefaultUI = true
+
+          // Add styles to hide highways
+          options.styles = [
+            {
+              featureType: 'road.highway',
+              elementType: 'geometry',
+              stylers: [{ visibility: 'off' }]
+            }
+          ];
 
           this.map = new google.maps.Map(document.getElementById(this.canvasId), options);
           this.map.fitBounds(this.usaBounds);
