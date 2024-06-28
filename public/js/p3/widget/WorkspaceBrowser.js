@@ -125,6 +125,8 @@ define([
           path = 'user_guides/services/phylogenetic_tree_building_service.html#output-results';
         } else if (type == 'RNASeq') {
           path = 'user_guides/services/rna_seq_analysis_service.html#output-results';
+        } else if (type == 'SARS2Wastewater') {
+          path = 'user_guides/services/SARS2Wastewater.html#output-results';
         } else if (type == 'TnSeq') {
           path = 'user_guides/services/tn_seq_analysis_service.html#output-results';
         } else if (type == 'Variation') {
@@ -1446,6 +1448,26 @@ define([
         }
       }, false);
 
+      this.browserHeader.addAction('ViewTracksSARS2Wastewater', 'fa icon-genome-browser fa-2x', {
+        label: 'BROWSER',
+        multiple: false,
+        validTypes: ['SARS2Wastewater'],
+        tooltip: 'View tracks in genome browser.'
+      }, function (selection) {
+        try {
+          // setting genome ID
+          var genomeId = "2697049.107626"
+          self.actionPanel.currentContainerWidget.getJBrowseURLQueryParamsRNASeq().then(lang.hitch(this, function (urlQueryParams) {
+            Topic.publish('/navigate', { href: '/view/Genome/' + genomeId + '#' + urlQueryParams, target: 'blank' });
+          }));
+          // var urlQueryParams = self.actionPanel.currentContainerWidget.getJBrowseURLQueryParams();
+        }
+        catch (err) {
+          alert('The genome browser could not be opened. No genome id or no streamable files were found.');
+          throw (err);
+        }
+      }, false);
+
       this.actionPanel.addAction('ExperimentGeneList', 'fa icon-list-unordered fa-2x', {
         label: 'GENES',
         multiple: true,
@@ -1857,6 +1879,7 @@ define([
           'PrimerDesign',
           'CodonTree',
           'RNASeq',
+          'SARS2Wastewater',
           'SubspeciesClassification',
           'TaxonomicClassification',
           'TnSeq',
@@ -2202,6 +2225,7 @@ define([
                   break;
                 case 'Variation':
                 case 'RNASeq':
+                case 'SARS2Wastewater':
                 case 'TnSeq':
                 case 'FastqUtils':
                   d = 'p3/widget/viewer/Seq';

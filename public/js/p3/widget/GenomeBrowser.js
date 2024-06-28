@@ -722,10 +722,16 @@ define([
                 deferred.reject('missing sequences or contigs')
                 return
               }
-
               refseqConfig.forEach(function (seq) {
                 if (seq.seqChunkSize > 20000) {
                   seq.seqChunkSize = 20000;
+                }
+                // to display Sars-CoV-2 on the genome browser using the NCBI identifer NC_045512 track
+                // But use the sequence name MN908947.3 by genbank as is used in the reference files stored with the primer files and subsequent BAM files
+                // updating NC_045512 to MN908947.3 NB April 2024
+                if (seq.accn === "NC_045512") {
+                  seq.accn = "MN908947.3";
+                  seq.name = "MN908947.3";
                 }
               });
 
