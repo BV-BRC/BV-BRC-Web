@@ -437,11 +437,6 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://www.bv-brc.org/view/VariantLineage/</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
 		<loc>https://www.bv-brc.org/app/GenomeAlignment</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>

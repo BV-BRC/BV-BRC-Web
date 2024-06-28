@@ -218,7 +218,20 @@ define([
           }
         }
 
+        // Show/hide columns if requested by user
+        if (state.hashParams.defaultColumns && this.grid) {
+          const columns = state.hashParams.defaultColumns.split(',');
+          for (let column of columns) {
+            column = column.trim();
+            if (!column) continue; // Skip empty columns
 
+            const isHidden = column.charAt(0) === '-';
+            const name = column.charAt(0) === '-' || column.charAt(0) === '+' ? column.substring(1) : column;
+            if (name in this.grid._columns) {
+              this.grid.toggleColumnHiddenState(name, isHidden);
+            }
+          }
+        }
       } else {
         state.hashParams = {};
         if (!oldState && this.defaultFilter) {
@@ -721,8 +734,16 @@ define([
               return p.add(v.collection_latitude + ':' + v.collection_longitude);
             }, new Set());
 
-            // Warn user if selected unique locations are more than 750
-            if (locations.size > 750) {
+            if (locations.size === 0) { // Warn user if selected samples don't have any lat&long values
+              const d = new Dialog({
+                title: 'Warning',
+                content: 'Your selection does not contain any latitude and longitude values that will be displayed on the map.',
+                onHide: function () {
+                  d.destroy();
+                }
+              });
+              d.show();
+            } else if (locations.size > 750) { // Warn user if selected unique locations are more than 750
               const d = new Dialog({
                 title: 'Warning',
                 content: 'Surveillance Data Mapping allows a maximum of 750 locations to display. Your selection contains ' +

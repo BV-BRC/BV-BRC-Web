@@ -130,8 +130,7 @@ define([
       // convert to tsv
       var copy_text = this._totsv(selection, includeHeader, selectedOnly);
 
-      // put it on the clipboard (https://www.npmjs.com/package/clipboard-js)
-      clipboard.copy(copy_text);
+      navigator.clipboard.writeText(copy_text);
 
       // close the popup; this gives a bit of a visual indicator it worked
       var _self = this;
