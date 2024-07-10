@@ -36,10 +36,6 @@ npm install
 Make sure you must `npm install` in the BV-BRC-Web directory first though!
 
 ## Running the web application
-Run from inside the directory:
-```
-npm start
-```
 
 Your local dev environment will run on ```http://localhost:3000/``` and you can access it here.
 
@@ -48,6 +44,9 @@ There is a file called `p3-web.conf` that is used for initial setup and config. 
 Please: `cp p3-web.conf.sample p3-web.conf` and edit as necessary. You may need to get the correct info from a team member so feel reach to reach out.
 
 Note: if any configuration changes are made (i.e., changes to `./p3-web.conf`), then `./bin/p3-web` must be restarted for the effects to take place within the local dev application.
-
+Run from inside the directory:
+```
+npm start
+```
 ## Contributing
 If you'd like to contribute please follow our [CONTRIBUTING.md]() guide for more information (coming soon).
