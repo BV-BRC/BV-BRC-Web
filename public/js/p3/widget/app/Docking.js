@@ -120,7 +120,7 @@ define([
         var elts = lines.map((l) => {
           row++;
           var cols = l.split(/\s+/);
-          if (cols.length > 2)
+          if (cols.length >= 2)
           {
             return cols.slice(0, 2);
           }
