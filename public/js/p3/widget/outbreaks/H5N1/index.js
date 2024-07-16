@@ -1,23 +1,23 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/request/xhr', 'dojox/xml/DomParser', 'dojo/dom-construct',
-  '../../viewer/TabViewerBase', '../OutbreaksOverview', '../OutbreaksTab',
+  '../../../util/PathJoin', '../../viewer/TabViewerBase', '../OutbreaksOverview', '../OutbreaksTab',
   'dojo/text!./OverviewDetails.html', 'dojo/text!./Resources.html', 'dojo/text!./News.html', 'dojo/text!./Contents.html',
   'dojo/text!./Data.html', 'dojo/text!./CommandLineTool.html', '../OutbreaksTabContainer', './genomes/GenomesGridContainer',
-  '../OutbreaksPhylogenyTreeViewer'
+  '../OutbreaksPhylogenyTreeViewer', '../OutbreaksGeoMap'
 ], function (
-  declare, lang, xhr,domParser, domConstruct,
-  TabViewerBase, OutbreaksOverview, OutbreaksTab,
+  declare, lang, xhr, domParser, domConstruct,
+  PathJoin, TabViewerBase, OutbreaksOverview, OutbreaksTab,
   OverviewDetailsTemplate, ResourcesTemplate, NewsTemplate, ContentsTemplate,
   DataTemplate, CommandLineToolTemplate, OutbreaksTabContainer, GenomesGridContainer,
-  OutbreaksPhylogenyTreeViewer
+  OutbreaksPhylogenyTreeViewer, OutbreaksGeoMap
 ) {
   return declare([TabViewerBase], {
     perspectiveLabel: '',
     perspectiveIconClass: '',
     title: 'H5N1 2024 Outbreak',
     segments: {1: 'PB2', 2: 'PB1', 3: 'PA', 4: 'HA', 5: 'NP', 6: 'NA', 7: 'M1, M2', 8: 'NS1, NEP'},
-    googleNewsCount: 10,
-    googleNewsRSS: 'https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US%3Aen&oc=11&q=h5n1%20site%3Acidrap.umn.edu%20OR%20site%3Afda.gov%20OR%20site%3Awww.who.in%20OR%20site%3Anews.un.org%20OR%20site%3Acdc.gov%20OR%20site%3Aceirr-network.org%20OR%20site%3Awww.nature.com%2Farticles%2F%20when%3A1y&hl=en-US&gl=US&ceid=US%3Aen',
+    googleNewsCount: 100,
+    googleNewsRSS: 'https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US%3Aen&oc=11&q=%22h5n1%22%20AND%20(site:https://www.cidrap.umn.edu/avian-influenza-bird-flu%20OR%20site%3Afda.gov%20OR%20site%3Awww.who.in%20OR%20site%3Anews.un.org%20OR%20site%3Acdc.gov%20OR%20site%3Aceirr-network.org%20OR%20site%3Awww.nature.com%2Farticles%2F)%20AND%20when%3A1y&hl=en-US&gl=US&ceid=US%3Aen',
 
     onSetState: function (attr, oldVal, state) {
       if (!state) {
@@ -122,11 +122,22 @@ define([
         sizes: null
       };
 
-      nodeVisualizations['Host Range'] = {
-        label: 'Host_Range',
+      nodeVisualizations['Host_Group'] = {
+        label: 'Host Group',
+        description: 'the host group of the virus',
+        field: null,
+        cladeRef: decorator + 'Host_Group',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category20',
+        sizes: null
+      };
+
+      nodeVisualizations['Host_Group_Domestic_vs_Wild'] = {
+        label: 'Host Group (Domestic vs Wild)',
         description: 'the host range of the virus',
         field: null,
-        cladeRef: decorator + 'Host_Range',
+        cladeRef: decorator + 'Host_Group_Domestic_vs_Wild',
         regex: false,
         shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
         colors: 'category20',
@@ -135,7 +146,7 @@ define([
 
       nodeVisualizations['Region'] = {
         label: 'Region',
-        description: 'the region of the virus',
+        description: 'the geographic region of the virus',
         field: null,
         cladeRef: decorator + 'Region',
         regex: false,
@@ -145,13 +156,24 @@ define([
       };
 
       nodeVisualizations['Country'] = {
-        label: 'Country/State',
+        label: 'Country',
         description: 'the country of the virus',
         field: null,
         cladeRef: decorator + 'Country',
         regex: false,
         shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category20c',
+        colors: 'category50',
+        sizes: null
+      };
+
+      nodeVisualizations['State'] = {
+        label: 'State',
+        description: 'the state',
+        field: null,
+        cladeRef: decorator + 'State',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category50',
         sizes: null
       };
 
@@ -162,7 +184,7 @@ define([
         cladeRef: decorator + 'Year',
         regex: false,
         shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category20',
+        colors: 'category50c',
         colorsAlt: ['#FF0000', '#000000', '#00FF00'],
         sizes: [20, 60]
       };
@@ -174,7 +196,7 @@ define([
         cladeRef: decorator + 'Subtype',
         regex: false,
         shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category20',
+        colors: 'category50',
         colorsAlt: ['#FF0000', '#000000', '#00FF00'],
         sizes: [20, 60]
       };
@@ -189,10 +211,18 @@ define([
         showButton: true
       };
 
-      nodeLabels['Host_Range'] = {
-        label: 'Host Range',
+      nodeLabels['Host_Group'] = {
+        label: 'Host Group',
         description: 'to use the host range as part of node names',
-        propertyRef: 'vipr:Host_Range',
+        propertyRef: 'vipr:Host_Group',
+        selected: false,
+        showButton: true
+      };
+
+      nodeLabels['Host_Group_Domestic_vs_Wild'] = {
+        label: 'Host Group (Dom vs Wild)',
+        description: 'to use the host group (domestic vs wild) as part of node names',
+        propertyRef: 'vipr:Host_Group_Domestic_vs_Wild',
         selected: false,
         showButton: true
       };
@@ -207,8 +237,16 @@ define([
 
       nodeLabels['Country'] = {
         label: 'Country',
-        description: 'to use the country/state as part of node names',
+        description: 'to use the country as part of node names',
         propertyRef: 'vipr:Country',
+        selected: false,
+        showButton: true
+      };
+
+      nodeLabels['State'] = {
+        label: 'State',
+        description: 'to use the state as part of node names',
+        propertyRef: 'vipr:State',
         selected: false,
         showButton: true
       };
@@ -229,36 +267,64 @@ define([
         showButton: true
       };
 
+      // Add special node for Segment 4
+      const nodeVisualizationsSegment4 = {...nodeVisualizations};
+      nodeVisualizationsSegment4['H5_clade'] = {
+        label: 'H5 Clade',
+        description: 'the H5 clade',
+        field: null,
+        cladeRef: decorator + 'H5_clade',
+        regex: false,
+        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
+        colors: 'category50',
+        colorsAlt: ['#FF0000', '#000000', '#00FF00'],
+        sizes: [20, 60]
+      };
+
+      const nodeLabelsSegment4 = {...nodeLabels};
+      nodeLabelsSegment4['H5_clade'] = {
+        label: 'H5 clade',
+        description: 'to use the H5 clade as part of node names',
+        propertyRef: 'vipr:H5_clade',
+        selected: true,
+        showButton: true
+      };
+
       let options = {};
       options.minBranchLengthValueToShow = 0.001;
-      options.initialNodeFillColorVisualization = 'Host';
+      options.minConfidenceValueToShow = 50;
+      options.initialNodeFillColorVisualization = 'Host Group (Domestic vs Wild)';
       options.phylogram = true;
       options.showConfidenceValues = false;
       options.showExternalLabels = true;
       options.showNodeName = true;
       options.showNodeVisualizations = true;
-      options.showSequence = false;
-      options.showSequenceAccession = true;
       options.showVisualizationsLegend = true;
       options.visualizationsLegendOrientation = 'vertical';
-      options.visualizationsLegendXpos = 160;
+      options.visualizationsLegendXpos = 220;
       options.visualizationsLegendYpos = 30;
-      options.initialCollapseDepth = 4;
-      options.initialCollapseFeature = 'ird:Region';
 
       let settings = {};
       settings.border = '1px solid #909090';
       settings.showSequenceButton = false;
+      settings.controls0Left = 20;
+      settings.controls1Width = 120;
+      settings.rootOffset = 220;
       settings.controls0Top = 10;
       settings.controls1Top = 10;
       settings.enableDownloads = true;
       settings.enableDynamicSizing = true;
-      settings.enableMsaResidueVisualizations = true;
+      settings.enableMsaResidueVisualizations = false;
       settings.enableCollapseByFeature = true;
       settings.enableNodeVisualizations = true;
-      settings.enableBranchVisualizations = true;
+      settings.enableBranchVisualizations = false;
       settings.nhExportWriteConfidences = true;
-      settings.readSimpleCharacteristics = true; // To be deprecated
+      settings.enableSubtreeDeletion = true;
+      settings.showShortenNodeNamesButton = false;
+      settings.showExternalLabelsButton = false;
+      settings.showInternalLabelsButton = false;
+      settings.showExternalNodesButton = false;
+      settings.showInternalNodesButton = false;
 
       let phylogeneticsTabContainer = [];
       for (const [id, segment] of Object.entries(this.segments)) {
@@ -266,12 +332,12 @@ define([
         this[phylogenySegmentId] = new OutbreaksPhylogenyTreeViewer({
           title: `Segment ${id} (${segment})`,
           id: this.viewer.id + '_' + phylogenySegmentId,
-          phyloxmlTreeURL: '/public/js/p3/resources/images/outbreaks/h5n1/h5n1_segment_' + id + '.xml',
+          phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/H5N1/h5n1_segment_' + id + '.xml',
           updateState: true,
           settings: settings,
           options: options,
-          nodeVisualizations: nodeVisualizations,
-          specialVisualizations: nodeLabels
+          nodeVisualizations: id === '4' ? nodeVisualizationsSegment4 : nodeVisualizations,
+          specialVisualizations: id === '4' ? nodeLabelsSegment4 : nodeLabels
         });
 
         phylogeneticsTabContainer.push(this[phylogenySegmentId]);
@@ -289,11 +355,69 @@ define([
         templateString: ResourcesTemplate
       });
 
+      this.map = new OutbreaksGeoMap({
+        title: 'Outbreak Map',
+        id: this.viewer.id + '_map',
+        state: this.state
+      });
+
       this.viewer.addChild(this.overview);
+      this.viewer.addChild(this.map);
       this.viewer.addChild(this.phylogenetics);
       this.viewer.addChild(this.data);
       this.viewer.addChild(this.resources);
       this.viewer.addChild(this.clt);
+
+      // Fetch geomap data
+      xhr.get(PathJoin(this.apiServiceUrl, 'genome') + '/?eq(taxon_id,11320)&eq(subtype,"H5N1")&eq(collection_year,"2024")&select(genome_name,isolation_country,state_province,host_common_name)&limit(100000)', {
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+          'X-Requested-With': null,
+          Authorization: (window.App.authorizationToken || '')
+        },
+        handleAs: 'json'
+      }).then(lang.hitch(this, async function (genomes) {
+        let distinctLocations = {};
+        genomes.forEach(genome => {
+          // Make sure to cover all the possible cases/bugs
+          // Isolation Country: Kazakhstan, State:
+          // Isolation Country: USA, State: Texas
+          // Isolation Country: USA, State: USA
+          // Isolation Country: USA, State:
+          let location = '';
+          if (genome.state_province) {
+            location = genome.state_province.charAt(0).toUpperCase() + genome.state_province.slice(1);
+          }
+          if (genome.isolation_country && genome.isolation_country !== location) {
+            location = location ? `${location}, ${genome.isolation_country}` : genome.isolation_country;
+          }
+
+          if (location) {
+            if (!distinctLocations[location]) {
+              distinctLocations[location] = {
+                genomeNames: [],
+                hostCommonNames: {}
+              };
+            }
+
+            // Check genome name to avoid duplicate metadata
+            if (genome.genome_name && !distinctLocations[location].genomeNames.includes(genome.genome_name)) {
+              distinctLocations[location].genomeNames.push(genome.genome_name);
+
+              if (genome.host_common_name) {
+                if (distinctLocations[location].hostCommonNames[genome.host_common_name]) {
+                  distinctLocations[location].hostCommonNames[genome.host_common_name]++
+                } else {
+                  distinctLocations[location].hostCommonNames[genome.host_common_name] = 1;
+                }
+              }
+            }
+          }
+        });
+
+        this.map.set('data', distinctLocations);
+      })).catch(err => console.log('error', err));
 
       xhr.get('/google/news/?url=' + encodeURIComponent(this.googleNewsRSS) + '&count=' + this.googleNewsCount,
         {handleAs: 'xml'})
@@ -302,13 +426,37 @@ define([
           const doc = domParser.parse(data);
           const items = Array.from(doc.getElementsByTagName('item'));
 
+          // Filter out before 2023 and sort items by pubDate
+          const filteredItems = items
+            .reduce((acc, item) => {
+              const pubDateText = this.getNode(item, 'pubDate');
+              const pubDate = new Date(pubDateText);
+
+              // Only include items with pubDate in 2023 or later
+              if (pubDate.getFullYear() >= 2023) {
+                const link = this.getNode(item, 'link');
+                const title = this.getNode(item, 'title');
+
+                acc.push({link, title, pubDate});
+              }
+              return acc;
+            }, [])
+            .sort((a, b) => b.pubDate - a.pubDate);
+
+          // Determine the number of items to process
+          const numItems = Math.min(this.googleNewsCount, filteredItems.length);
           const newsList = domConstruct.create('ul');
-          for (let i = 0; i < this.googleNewsCount; ++i) {
-            const li = domConstruct.create('li', {}, newsList)
+          const options = {weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC'};
+          for (let i = 0; i < numItems; ++i) {
+            const li = domConstruct.create('li', {}, newsList);
+            const pubDate = filteredItems[i].pubDate.toLocaleDateString('en-US', options);
+            domConstruct.create('div', {
+              innerHTML: pubDate
+            }, li);
             domConstruct.create('a', {
-              href: this.getNode(items[i], 'link'),
+              href: filteredItems[i].link,
               target: '_blank',
-              innerHTML: this.getNode(items[i], 'title')
+              innerHTML: filteredItems[i].title
             }, li);
           }
           domConstruct.place(newsList, 'newsList');
