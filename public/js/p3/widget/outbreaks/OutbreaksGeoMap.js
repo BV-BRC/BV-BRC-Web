@@ -127,7 +127,7 @@ define([
       if (item.metadata.hostCommonNames.hasOwnProperty('Human')) {
         markerColor = this.cattleAndHumanMarkerColor;
         const humanCount = item.metadata.hostCommonNames['Human'];
-        markerLabel = humanCount + ' - ' + (count - humanCount);
+        markerLabel = humanCount + ' / ' + (count - humanCount);
       } else {
         markerColor = this.cattleMarkerColor;
         markerLabel = count.toString();
