@@ -91,6 +91,15 @@ define([
           this.viewer.removeChild(this.serology);
         }
 
+        // SFVT
+        if (this.taxonomy.lineage_names.includes('Influenza A virus')) {
+          if (!this.sfvt) {
+            this.viewer.addChild(this.sfvt);
+          }
+        } else {
+          this.viewer.removeChild(this.sfvt);
+        }
+
         // strains
         // if (this.taxonomy.lineage_names.includes('Orthomyxoviridae') || this.taxonomy.lineage_names.includes('Bunyavirales')) {
         //   this.viewer.addChild(this.strains, 3);
@@ -249,6 +258,11 @@ define([
           break;
         case 'phylogeny':
           activeTab.set('state', lang.mixin({}, this.state));
+          break;
+        case 'sfvt':
+          activeTab.set('state', lang.mixin({}, this.state, {
+            search: 'eq(taxon_id,' + this.state.taxon_id + ')'
+          }));
           break;
         case 'structures':
         case 'surveillance':

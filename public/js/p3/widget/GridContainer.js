@@ -588,6 +588,24 @@ define([
         },
         false
       ], [
+        'ViewSFVT',
+        'MultiButton fa icon-alignment fa-2x',
+        {
+          label: 'VARIANT TYPES',
+          validTypes: ['*'],
+          multiple: false,
+          validContainerTypes: ['sequence_feature_data'],
+          tooltip: 'View Sequence Feature Variant Types'
+        },
+        function (selection) {
+          var sel = selection[0];
+          Topic.publish('/navigate', {
+            href: '/view/SFVT/' + encodeURIComponent(sel.sf_id),
+            target: 'blank'
+          });
+        },
+        false
+      ], [
         'ViewGenomeItemFromGenome',
         'MultiButton fa icon-selection-Genome fa-2x',
         {
