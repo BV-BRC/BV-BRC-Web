@@ -77,13 +77,13 @@
         </div>
           <div data-dojo-attach-point="block_smiles_text" style="height:100px; ">
             <textarea id="${id}_smiles_textarea" data-dojo-attach-point="smiles_text" name="smiles_text"
-              style="resize: none; height:100%;width:96%; margin-left:10px; font-family: monospace; font-size:12px;"
+              style="resize: none; height:90%;width:96%; margin-left:10px; font-family: monospace; font-size:12px;"
               data-dojo-attach-point="sequence" data-dojo-type="dijit/form/SimpleTextarea"
               data-dojo-props="rows:13, placeholder:'Enter one or more SMILES strings, one per line.', intermediateChanges:true,  trim:true"></textarea>
           </div>
           <div data-dojo-attach-point="block_smiles_ws" style="height:100px;">
 
-            <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
+            <div style="width:85%;display:inline-block; margin:auto;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
               name="smiles_ws_file" data-dojo-attach-point="smiles_ws_file"
               data-dojo-props="type:['txt','unspecified'],multi:false,promptMessage:'Select or upload file of SMILES strings to your workspace.',missingMessage:'SMILES strings file is required.',placeHolder:'SMILES data file'">
             </div>
