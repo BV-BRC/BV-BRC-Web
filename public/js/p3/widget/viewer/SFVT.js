@@ -2,12 +2,14 @@ define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on', 'dgrid/OnDemandGrid', 'dojo/dom-construct', '../ActionBar',
   'dijit/popup', 'FileSaver', 'dijit/TooltipDialog', 'dojo/query', 'dojo/store/Memory', 'dijit/form/Button',
   '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang', 'dojo/topic', 'dijit/Dialog', 'dijit/ConfirmDialog',
-  '../PageGrid', 'dojo/dom-style', 'dgrid/Grid', 'dgrid/extensions/Pagination', 'dgrid/extensions/ColumnResizer'
+  '../PageGrid', 'dojo/dom-style', 'dgrid/Grid', 'dgrid/extensions/Pagination', 'dgrid/extensions/ColumnResizer',
+  '../ItemDetailPanel'
 ], function (
   declare, TabViewerBase, on, OnDemandGrid, domConstruct, ActionBar,
   popup, saveAs, TooltipDialog, dojoQuery, Memory, Button,
   PathJoin, xhr, lang, Topic, Dialog, ConfirmDialog,
-  PageGrid, domStyle, Grid, Pagination, ColumnResizer
+  PageGrid, domStyle, Grid, Pagination, ColumnResizer,
+  ItemDetailPanel
 ) {
 
   const dfc = '<div style="background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;">Download Table As...</div>' +
@@ -96,7 +98,7 @@ define([
   return declare([TabViewerBase], {
     baseClass: 'SFVT',
     disabled: false,
-    containerType: 'sequence_feature_vt',
+    containerType: 'sequence_feature_data',
     sf_id: null,
     grid: null,
     findDialog: null,
@@ -115,6 +117,16 @@ define([
       this.onSetState('state', '', this.state);
 
       let self = this;
+
+      this.itemDetailPanel = new ItemDetailPanel({
+        region: 'right',
+        style: 'width:300px',
+        splitter: true,
+        layoutPriority: 1,
+        containerWidget: this
+      });
+      this.addChild(this.itemDetailPanel);
+      this.itemDetailPanel.startup();
 
       this.actionPanel = new ActionBar({
         splitter: false,
@@ -203,7 +215,7 @@ define([
         style: 'display: none; position: absolute; background: rgba( 26, 26, 26, 0.7 ); width: 100%; height: 100%; z-index: 5;'
       }, this.viewer.containerNode);
       let loadingIconDiv = domConstruct.create('div', {
-        style: 'top: 35%;left: 45%;position: fixed;height: 100%;width: 100%;z-index: 1001;background: url("//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dijit/themes/claro/images/loadingAnimation.gif") 10px 23px no-repeat transparent;'
+        style: 'top: 35%;left: 35%;position: fixed;height: 100%;width: 100%;z-index: 1001;background: url("//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dijit/themes/claro/images/loadingAnimation.gif") 10px 23px no-repeat transparent;'
       }, this.overlayNode);
       domConstruct.create('div', {
         style: 'padding: 25px 40px; color: white;',
@@ -234,7 +246,7 @@ define([
         });
 
         // Retrieve SF coordinates
-        const sfQuery = '?eq(sf_id,"' + this.sf_id + '")&select(segments)&limit(1)'; // TODO: ASK ROSHNI segments OR source_sf_location?
+        const sfQuery = '?eq(sf_id,"' + this.sf_id + '")&limit(1)';
         xhr.get(PathJoin(this.apiServiceUrl, 'sequence_feature', sfQuery), {
           headers: {
             accept: 'application/json',
@@ -243,12 +255,12 @@ define([
           },
           handleAs: 'json'
         }).then(lang.hitch(this, function (sf) {
+          this.itemDetailPanel.set('selection', sf);
+
           const segments = sf[0].segments;
           const coordinates = segments[0].split(',');
 
           let node = domConstruct.create('div', {style: 'height: 75%; margin: 20px;'}, this.viewer.containerNode);
-          //let gridDiv = domConstruct.create('div', {style: 'width: 100%; overflow-x: auto;'}, node);
-          let gridDiv = domConstruct.create('div', {}, node);
 
           // Create table header
           let columns = [{
