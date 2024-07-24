@@ -357,7 +357,7 @@ define([
                 });
 
                 findDialogContent += `<th class="dgrid-cell dgrid-cell-padding" style="width: 40px;">${start}</th>`;
-                findDialogTableInput += `<td class="dgrid-cell dgrid-cell-padding"><input class="filterSelection" id="field-${start}" value="{{field-${start++}-data}}" style="width: 15px;"/></td>`;
+                findDialogTableInput += `<td class="dgrid-cell dgrid-cell-padding"><input class="filterSelection" id="field-${start}" value="{{field-${start++}-data}}" style="width: 25px; text-align: center;"/></td>`;
               }
             } else {
               columns.push({
@@ -369,8 +369,8 @@ define([
                 width: 40
               });
 
-              findDialogContent += `<th class="dgrid-cell dgrid-cell-padding">${startEnd[0]}</th>`;
-              findDialogTableInput += `<td class="dgrid-cell dgrid-cell-padding"><input class="filterSelection" id="field-${startEnd[0]}" value="{{field-${startEnd[0]}-data}}"/></td>`;
+              findDialogContent += `<th class="dgrid-cell dgrid-cell-padding" style="width: 40px;">${startEnd[0]}</th>`;
+              findDialogTableInput += `<td class="dgrid-cell dgrid-cell-padding"><input class="filterSelection" id="field-${startEnd[0]}" value="{{field-${startEnd[0]}-data}}" style="width: 25px; text-align: center;"/></td>`;
             }
           });
           columns.push({
