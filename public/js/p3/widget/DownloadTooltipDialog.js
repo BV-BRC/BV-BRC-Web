@@ -278,6 +278,12 @@ define([
         tableData: true,
         otherData: ['dna+fasta']
       },
+      sequence_feature_data: {
+        label: 'Sequence Features',
+        dataType: 'sequence_feature',
+        pk: 'id',
+        tableData: true
+      },
       feature_data: {
         label: 'Features',
         dataType: 'genome_feature',
