@@ -1593,9 +1593,8 @@ define([
             };
 
             const baseURL = baseURLs[obj.source];
-            const link = baseURL ? `${baseURL}${obj.source_id}` : obj.source_id;
 
-            return baseURL ? `<a href="${link}" target="_blank">${obj.source_id}</a>` : link;
+            return baseURL ? `<a href="${baseURL}${obj.source_id}" target="_blank">${obj.source_id}</a>` : obj.source_id;
           }
         }, {
           name: 'Evidence Code',
