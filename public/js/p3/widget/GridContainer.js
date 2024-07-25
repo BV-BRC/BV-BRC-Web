@@ -600,8 +600,7 @@ define([
         function (selection) {
           var sel = selection[0];
           Topic.publish('/navigate', {
-            href: '/view/SFVT/' + encodeURIComponent(sel.sf_id),
-            target: 'blank'
+            href: '/view/SFVT/' + encodeURIComponent(sel.sf_id)
           });
         },
         false
