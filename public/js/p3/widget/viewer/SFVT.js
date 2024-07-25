@@ -408,29 +408,35 @@ define([
 
             let vtValue = '';
             for (let i = 0; i < sequence.length; i++) {
+              let contentValue = '';
               const coordinateField = columns[i + 2].field;
 
               if (index == 0) {
                 vtValue = sequence[i];
+                contentValue = sequence[i];
                 this.referenceCoordinates[coordinateField] = vtValue;
                 findDialogContent = findDialogContent.replace(`{{field-${coordinateField}-data}}`, vtValue);
               } else if (variantType.sfvt_id === 'VT-unknown') {
                 vtValue = '?';
+                contentValue = '?';
               } else {
                 if (sequence[i] === refSequence[i]) {
                   vtValue = '<i class="fa icon-circle" style="font-size: 4px; pointer-events: none;"></i>';
+                  contentValue = '.';
                 } else {
                   vtValue = sequence[i] === '-' ? '<p style="font-weight: bold; color: red;">-</p>' : sequence[i];
+                  contentValue = sequence[i];
                 }
 
                 // Insert to the previous base
                 if (insertionStart - 1 === i) {
                   vtValue += insertion;
+                  contentValue += insertion;
                 }
               }
 
               seqData[coordinateField] = vtValue;
-              contentData.push(vtValue);
+              contentData.push(contentValue);
             }
 
             contentData.push(variantType.sfvt_variations);
