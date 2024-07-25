@@ -1584,7 +1584,19 @@ define([
           text: 'source'
         },  {
           name: 'Publication ID',
-          text: 'source_id'
+          text: 'source_id',
+          link: function (obj) {
+            const baseURLs = {
+              'UniProt': 'https://www.uniprot.org/uniprotkb?query=',
+              'PMID': 'https://pubmed.ncbi.nlm.nih.gov/',
+              'IEDB': 'https://www.iedb.org/epitope/'
+            };
+
+            const baseURL = baseURLs[obj.source];
+            const link = baseURL ? `${baseURL}${obj.source_id}` : obj.source_id;
+
+            return baseURL ? `<a href="${link}" target="_blank">${obj.source_id}</a>` : link;
+          }
         }, {
           name: 'Evidence Code',
           text: 'evidence_code'
