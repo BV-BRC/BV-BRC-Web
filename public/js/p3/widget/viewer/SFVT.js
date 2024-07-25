@@ -67,6 +67,7 @@ define([
     } else {
       const data = downloadTT.get('data');
       const headers = downloadTT.get('headers');
+      const sfId = downloadTT.get('sfId');
 
       let delimiter, ext;
       if (rel === 'text/csv') {
@@ -81,7 +82,7 @@ define([
         return d.join(delimiter);
       });
 
-      saveAs(new Blob([headers.join(delimiter) + '\n' + content.join('\n')], {type: rel}), 'sfvt.' + ext);
+      saveAs(new Blob([headers.join(delimiter) + '\n' + content.join('\n')], {type: rel}), `sfvt_${sfId.replace(/ /g,'_')}.${ext}`);
     }
 
     popup.close(downloadTT);
@@ -527,6 +528,7 @@ define([
           });
 
           // Set info for download
+          downloadTT.set('sfId', this.sf_id);
           downloadTT.set('data', content);
           downloadTT.set('headers', columns.map(c => c.label));
           downloadTT.set('patricIds', patricIds);
