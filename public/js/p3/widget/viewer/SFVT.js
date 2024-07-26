@@ -82,7 +82,7 @@ define([
         return d.join(delimiter);
       });
 
-      saveAs(new Blob([headers.join(delimiter) + '\n' + content.join('\n')], {type: rel}), `sfvt_${sfId.replace(/ /g,'_')}.${ext}`);
+      saveAs(new Blob([headers.join(delimiter) + '\n' + content.join('\n')], {type: rel}), `sfvt_${sfId.replace(/ /g, '_')}.${ext}`);
     }
 
     popup.close(downloadTT);
@@ -203,6 +203,14 @@ define([
           console.log('No view-tab supplied in State Object');
         }
       }
+    },
+
+    // Helper function to convert filter patterns with wildcards to regex
+    wildcardToRegex: function (pattern) {
+      // Escape special characters, then replace '*' with '.*' to create the regex pattern
+      const escapedPattern = pattern.replace(/[-\/\\^$+?.()|[\]{}]/g, '\\$&');
+      const regexPattern = escapedPattern.replace(/\*/g, '.*');
+      return new RegExp(`^${regexPattern}$`);
     },
 
     postCreate: function () {
@@ -511,10 +519,18 @@ define([
                   const elementValue = element[column]
                     .replace('<i class="fa icon-circle" style="font-size: 4px; pointer-events: none;"></i>', '.')
                     .replace('<p style="font-weight: bold; color: red;">-</p>', '-');
+
+                  // Handle special case where filterValue has wildcards inside square brackets
+                  if (filterValue.startsWith('.[') && filterValue.endsWith(']')) {
+                    const pattern = self.wildcardToRegex(filterValue);
+                    if (!pattern.test(elementValue)) {
+                      return false;
+                    }
+                  }
                   // '?' is a wild card so yes for all VTs
                   // AA should match with filter value
                   // Search for . if filter value matches with ref seq AA
-                  if (filterValue !== '?' && elementValue !== filterValue &&
+                  else if (filterValue !== '?' && elementValue !== filterValue &&
                     !(self.referenceCoordinates[column] === filterValue && elementValue === '.')) {
                     return false;
                   }
