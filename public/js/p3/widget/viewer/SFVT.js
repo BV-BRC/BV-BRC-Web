@@ -506,10 +506,9 @@ define([
                 if (element.vt !== 'VT-1') {
                   for (const column in filter) {
                     const filterValue = filter[column].trim().toUpperCase();
-                    const elementValue =
-                      element[column] === '<i class="fa icon-circle" style="font-size: 4px; pointer-events: none;"></i>' ? '.' :
-                        element[column] === '<p style="font-weight: bold; color: red;">-</p>' ? '-' :
-                          element[column];
+                    const elementValue = element[column]
+                      .replace('<i class="fa icon-circle" style="font-size: 4px; pointer-events: none;"></i>', '.')
+                      .replace('<p style="font-weight: bold; color: red;">-</p>', '-');
                     // '?' is a wild card so yes for all VTs
                     // AA should match with filter value
                     // Search for . if filter value matches with ref seq AA
