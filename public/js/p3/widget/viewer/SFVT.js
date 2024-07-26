@@ -520,6 +520,11 @@ define([
                     .replace('<i class="fa icon-circle" style="font-size: 4px; pointer-events: none;"></i>', '.')
                     .replace('<p style="font-weight: bold; color: red;">-</p>', '-');
 
+                  // Pass all elements if filterValue is '*'
+                  if (filterValue === '*') {
+                    continue;
+                  }
+
                   // Handle special case where filterValue has wildcards inside square brackets
                   if (filterValue.startsWith('.[') && filterValue.endsWith(']')) {
                     const pattern = self.wildcardToRegex(filterValue);
