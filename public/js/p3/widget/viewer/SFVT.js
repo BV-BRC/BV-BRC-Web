@@ -501,25 +501,25 @@ define([
 
             if (Object.keys(filter).length > 0) {
               self.grid.setQuery(function (element) {
-                let isFiltered = true;
                 // Always display VT-1/reference VT
-                if (element.vt !== 'VT-1') {
-                  for (const column in filter) {
-                    const filterValue = filter[column].trim().toUpperCase();
-                    const elementValue = element[column]
-                      .replace('<i class="fa icon-circle" style="font-size: 4px; pointer-events: none;"></i>', '.')
-                      .replace('<p style="font-weight: bold; color: red;">-</p>', '-');
-                    // '?' is a wild card so yes for all VTs
-                    // AA should match with filter value
-                    // Search for . if filter value matches with ref seq AA
-                    if (filterValue !== '?' && elementValue !== filterValue &&
-                      !(self.referenceCoordinates[column] === filterValue && elementValue === '.')) {
-                      isFiltered = false;
-                      break;
-                    }
+                if (element.vt === 'VT-1') {
+                  return true;
+                }
+
+                for (const column in filter) {
+                  const filterValue = filter[column].trim().toUpperCase();
+                  const elementValue = element[column]
+                    .replace('<i class="fa icon-circle" style="font-size: 4px; pointer-events: none;"></i>', '.')
+                    .replace('<p style="font-weight: bold; color: red;">-</p>', '-');
+                  // '?' is a wild card so yes for all VTs
+                  // AA should match with filter value
+                  // Search for . if filter value matches with ref seq AA
+                  if (filterValue !== '?' && elementValue !== filterValue &&
+                    !(self.referenceCoordinates[column] === filterValue && elementValue === '.')) {
+                    return false;
                   }
                 }
-                return isFiltered;
+                return true;
               });
             } else {
               self.grid.setQuery({});
