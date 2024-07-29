@@ -67,6 +67,7 @@ define([
     } else {
       const data = downloadTT.get('data');
       const headers = downloadTT.get('headers');
+      const sfId = downloadTT.get('sfId');
 
       let delimiter, ext;
       if (rel === 'text/csv') {
@@ -81,7 +82,7 @@ define([
         return d.join(delimiter);
       });
 
-      saveAs(new Blob([headers.join(delimiter) + '\n' + content.join('\n')], {type: rel}), 'sfvt.' + ext);
+      saveAs(new Blob([headers.join(delimiter) + '\n' + content.join('\n')], {type: rel}), `sfvt_${sfId.replace(/ /g, '_')}.${ext}`);
     }
 
     popup.close(downloadTT);
@@ -202,6 +203,14 @@ define([
           console.log('No view-tab supplied in State Object');
         }
       }
+    },
+
+    // Helper function to convert filter patterns with wildcards to regex
+    wildcardToRegex: function (pattern) {
+      // Escape special characters, then replace '*' with '.*' to create the regex pattern
+      const escapedPattern = pattern.replace(/[-\/\\^$+?.()|[\]{}]/g, '\\$&');
+      const regexPattern = escapedPattern.replace(/\*/g, '.*');
+      return new RegExp(`^${regexPattern}$`);
     },
 
     postCreate: function () {
@@ -357,7 +366,7 @@ define([
                 });
 
                 findDialogContent += `<th class="dgrid-cell dgrid-cell-padding" style="width: 40px;">${start}</th>`;
-                findDialogTableInput += `<td class="dgrid-cell dgrid-cell-padding"><input class="filterSelection" id="field-${start}" value="{{field-${start++}-data}}" style="width: 15px;"/></td>`;
+                findDialogTableInput += `<td class="dgrid-cell dgrid-cell-padding"><input class="filterSelection" id="field-${start}" value="{{field-${start++}-data}}" style="width: 25px; text-align: center;"/></td>`;
               }
             } else {
               columns.push({
@@ -369,8 +378,8 @@ define([
                 width: 40
               });
 
-              findDialogContent += `<th class="dgrid-cell dgrid-cell-padding">${startEnd[0]}</th>`;
-              findDialogTableInput += `<td class="dgrid-cell dgrid-cell-padding"><input class="filterSelection" id="field-${startEnd[0]}" value="{{field-${startEnd[0]}-data}}"/></td>`;
+              findDialogContent += `<th class="dgrid-cell dgrid-cell-padding" style="width: 40px;">${startEnd[0]}</th>`;
+              findDialogTableInput += `<td class="dgrid-cell dgrid-cell-padding"><input class="filterSelection" id="field-${startEnd[0]}" value="{{field-${startEnd[0]}-data}}" style="width: 25px; text-align: center;"/></td>`;
             }
           });
           columns.push({
@@ -408,29 +417,35 @@ define([
 
             let vtValue = '';
             for (let i = 0; i < sequence.length; i++) {
+              let contentValue = '';
               const coordinateField = columns[i + 2].field;
 
               if (index == 0) {
                 vtValue = sequence[i];
+                contentValue = sequence[i];
                 this.referenceCoordinates[coordinateField] = vtValue;
                 findDialogContent = findDialogContent.replace(`{{field-${coordinateField}-data}}`, vtValue);
               } else if (variantType.sfvt_id === 'VT-unknown') {
                 vtValue = '?';
+                contentValue = '?';
               } else {
                 if (sequence[i] === refSequence[i]) {
                   vtValue = '<i class="fa icon-circle" style="font-size: 4px; pointer-events: none;"></i>';
+                  contentValue = '.';
                 } else {
                   vtValue = sequence[i] === '-' ? '<p style="font-weight: bold; color: red;">-</p>' : sequence[i];
+                  contentValue = sequence[i];
                 }
 
                 // Insert to the previous base
                 if (insertionStart - 1 === i) {
                   vtValue += insertion;
+                  contentValue += insertion;
                 }
               }
 
               seqData[coordinateField] = vtValue;
-              contentData.push(vtValue);
+              contentData.push(contentValue);
             }
 
             contentData.push(variantType.sfvt_variations);
@@ -494,26 +509,38 @@ define([
 
             if (Object.keys(filter).length > 0) {
               self.grid.setQuery(function (element) {
-                let isFiltered = true;
                 // Always display VT-1/reference VT
-                if (element.vt !== 'VT-1') {
-                  for (const column in filter) {
-                    const filterValue = filter[column].trim().toUpperCase();
-                    const elementValue =
-                      element[column] === '<i class="fa icon-circle" style="font-size: 4px; pointer-events: none;"></i>' ? '.' :
-                        element[column] === '<p style="font-weight: bold; color: red;">-</p>' ? '-' :
-                          element[column];
-                    // '?' is a wild card so yes for all VTs
-                    // AA should match with filter value
-                    // Search for . if filter value matches with ref seq AA
-                    if (filterValue !== '?' && elementValue !== filterValue &&
-                      !(self.referenceCoordinates[column] === filterValue && elementValue === '.')) {
-                      isFiltered = false;
-                      break;
+                if (element.vt === 'VT-1') {
+                  return true;
+                }
+
+                for (const column in filter) {
+                  const filterValue = filter[column].trim().toUpperCase();
+                  const elementValue = element[column]
+                    .replace('<i class="fa icon-circle" style="font-size: 4px; pointer-events: none;"></i>', '.')
+                    .replace('<p style="font-weight: bold; color: red;">-</p>', '-');
+
+                  // Pass all elements if filterValue is '*'
+                  if (filterValue === '*') {
+                    continue;
+                  }
+
+                  // Handle special case where filterValue has wildcards inside square brackets
+                  if (filterValue.startsWith('.[') && filterValue.endsWith(']')) {
+                    const pattern = self.wildcardToRegex(filterValue);
+                    if (!pattern.test(elementValue)) {
+                      return false;
                     }
                   }
+                  // '?' is a wild card so yes for all VTs
+                  // AA should match with filter value
+                  // Search for . if filter value matches with ref seq AA
+                  else if (filterValue !== '?' && elementValue !== filterValue &&
+                    !(self.referenceCoordinates[column] === filterValue && elementValue === '.')) {
+                    return false;
+                  }
                 }
-                return isFiltered;
+                return true;
               });
             } else {
               self.grid.setQuery({});
@@ -521,6 +548,7 @@ define([
           });
 
           // Set info for download
+          downloadTT.set('sfId', this.sf_id);
           downloadTT.set('data', content);
           downloadTT.set('headers', columns.map(c => c.label));
           downloadTT.set('patricIds', patricIds);
