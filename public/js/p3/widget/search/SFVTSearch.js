@@ -81,27 +81,37 @@ define([
       //Update virus type multi select values with selected pathogen
       const condition = 'taxon_id:' + taxonId;
       storeBuilder('sequence_feature', 'subtype', condition).then(lang.hitch(this, (store) => {
+        let hItems = [];
+        let nItems = [];
+
+        // Separate items based on their prefix
         for (let item of store.data) {
           if (item.name.startsWith('H')) {
-            this.subtypeHNode.addOption(
-              {
-                value: item.name,
-                label: item.name.substring(1)
-              });
+            hItems.push({
+              value: item.name,
+              label: item.name.substring(1)
+            });
           } else if (item.name.startsWith('N')) {
-            this.subtypeNNode.addOption(
-              {
-                value: item.name,
-                label: item.name.substring(1)
-              });
+            nItems.push({
+              value: item.name,
+              label: item.name.substring(1)
+            });
           } else {
-            this.subtypeNode.addOption(
-              {
-                value: item.name,
-                label: item.name
-              });
+            // Add other items to subtypeNode
+            this.subtypeNode.addOption({
+              value: item.name,
+              label: item.name
+            });
           }
         }
+
+        // Sort 'H' and 'N' items numerically by their suffix
+        hItems.sort((a, b) => parseInt(a.label) - parseInt(b.label));
+        nItems.sort((a, b) => parseInt(a.label) - parseInt(b.label));
+
+        // Add sorted 'H' and 'N' items to nodes
+        this.subtypeHNode.addOption(hItems);
+        this.subtypeNNode.addOption(nItems);
       }));
 
       storeBuilder('sequence_feature', 'gene', condition).then(lang.hitch(this, (store) => {
