@@ -106,12 +106,12 @@ define([
         return q
       }).filter(cond => cond !== '' && cond !== undefined)
     },
-    onSubmit: function (evt) {
+    onSubmit: async function (evt) {
       evt.preventDefault();
       evt.stopPropagation();
 
       const query = this.buildQuery();
-      const filter = this.buildFilter();
+      const filter = await this.buildFilter();
 
       let url = this.resultUrlBase + query + this.resultUrlHash;
       if (filter) {

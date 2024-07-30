@@ -1,9 +1,9 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/store/Memory', 'dojo/text!./templates/SFVTSearch.html', 'dojo/query',
-  './TextInputEncoder', './SearchBase', './FacetStoreBuilder', './PathogenGroups'
+  './TextInputEncoder', './SearchBase', './FacetStoreBuilder', './PathogenGroups', '../../util/PathJoin', 'dojo/request/xhr'
 ], function (
   declare, lang, Memory, template, query,
-  TextInputEncoder, SearchBase, storeBuilder, pathogenGroupStore
+  TextInputEncoder, SearchBase, storeBuilder, pathogenGroupStore, PathJoin, xhr
 ) {
 
   const influenzaSegmentMapping = {
@@ -142,7 +142,7 @@ define([
       query('#pathogenInfoDiv').style('display', 'none');
     },
 
-    buildFilter: function () {
+    buildFilter: async function () {
       let filterArr = [];
 
       // Update taxon id to redirect correct taxonomy page
@@ -204,6 +204,23 @@ define([
         // lt
         filterArr.push(`lt(aa_coordinates,${aaCoordinatesEndValue})`);
       }*/
+
+      // Fetch sf_id's if sfvt sequence is provided
+      const sfvtSequenceValue = this.sfvtSequenceNode.get('value');
+      if (sfvtSequenceValue !== '') {
+        const query = '?in(sfvt_sequence,(' + sfvtSequenceValue + '))&select(sf_id)&limit(25000)';
+        const sfvtList = await xhr.get(PathJoin(window.App.dataAPI, 'sequence_feature_vt', query), {
+          headers: {
+            accept: 'application/json',
+            'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
+          },
+          handleAs: 'json'
+        });
+        const uniqueSFIds = new Set(sfvtList.map(sfvt => sfvt.sf_id));
+        filterArr.push(`or(${Array.from(uniqueSFIds).map(id => `eq(sf_id,"${sanitizeInput(id)}")`)})`);
+      }
 
       if (filterArr.length === 1) {
         return filterArr;
