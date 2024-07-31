@@ -283,60 +283,9 @@ define([
               let anchor = domConstruct.create("a");
               anchor.innerHTML = value;
               anchor.onclick = function () {
-                const strainDialogId = 'strain-dialog-' + object.vt;
-                if (self[strainDialogId]) {
-                  self[strainDialogId].show();
-                } else {
-                  domStyle.set(self.overlayNode, 'display', 'block');
-
-                  xhr.post(PathJoin('https://www.bv-brc.org/api/', 'genome_feature'), {
-                    headers: {
-                      accept: 'application/json',
-                      'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
-                    },
-                    handleAs: 'json',
-                    data: `in(patric_id,(${ids.map(s => encodeURIComponent(s)).join(',')}))&sort(+patric_id)&limit(${ids.length})`
-                  }).then(lang.hitch(this, function (genomeFeatures) {
-                    let store = new Memory({data: genomeFeatures});
-                    let gridDiv = domConstruct.create('div');
-                    let grid = new PageGrid({
-                      store: store,
-                      columns: {
-                        genome_name: {
-                          label: 'Genome Name',
-                          renderCell: function (object, value, node) {
-                            let anchor = domConstruct.create("a");
-                            anchor.innerHTML = value;
-                            anchor.onclick = function () {
-                              Topic.publish('/navigate', {
-                                href: `/view/Genome/${object.genome_id}`,
-                                target: 'blank'
-                              });
-                            };
-                            return anchor;
-                          }
-                        },
-                        accession: 'Accession',
-                        feature_type: 'Feature Type',
-                        protein_id: 'Protein ID',
-                        patric_id: 'BRC ID',
-                        refseq_locus_tag: 'RefSeq Locus Tag'
-                      },
-                    }, gridDiv);
-                    grid.startup();
-
-                    // Set find dialog content
-                    self[strainDialogId] = new Dialog({
-                      title: 'Genome List for ' + object.vt,
-                      content: gridDiv,
-                      style: 'min-width: 50%;'
-                    });
-                    self[strainDialogId].show();
-
-                    domStyle.set(self.overlayNode, 'display', 'none');
-                  }));
-                }
+                Topic.publish('/navigate', {
+                  href: '/view/FeatureList/?in(patric_id,(' + ids.map(id => encodeURIComponent(id)) + '))'
+                });
               };
               return anchor;
             }
