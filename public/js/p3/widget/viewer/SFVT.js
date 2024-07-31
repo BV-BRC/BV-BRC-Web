@@ -273,7 +273,7 @@ define([
 
           // Create table header
           let columns = [{
-            label: 'Genome Count',
+            label: 'Protein Count',
             field: 'st',
             width: '100',
             resizable: false,
