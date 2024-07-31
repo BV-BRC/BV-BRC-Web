@@ -1557,8 +1557,11 @@ define([
     sf_meta_spec: function () {
       var spec = {
         'Sequence Feature Definition': [{
-          name: 'Protein Name',
+          name: 'Gene',
           text: 'gene'
+        },{
+          name: 'Protein Name',
+          text: 'product'
         },{
           name: 'SF Name',
           text: 'sf_name'

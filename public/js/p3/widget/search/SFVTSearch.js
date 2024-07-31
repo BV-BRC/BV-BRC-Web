@@ -1,9 +1,11 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/store/Memory', 'dojo/text!./templates/SFVTSearch.html', 'dojo/query',
-  './TextInputEncoder', './SearchBase', './FacetStoreBuilder', './PathogenGroups'
+  './TextInputEncoder', './SearchBase', './FacetStoreBuilder', './PathogenGroups', '../../util/PathJoin', 'dojo/request/xhr',
+  'dijit/Dialog', 'dojo/on'
 ], function (
   declare, lang, Memory, template, query,
-  TextInputEncoder, SearchBase, storeBuilder, pathogenGroupStore
+  TextInputEncoder, SearchBase, storeBuilder, pathogenGroupStore, PathJoin, xhr,
+  Dialog, on
 ) {
 
   const influenzaSegmentMapping = {
@@ -34,6 +36,36 @@ define([
     defaultTaxonId: '11320',
     proteinOptions: ['12637'],
     segmentOptions: ['11320'],
+
+    startup: function () {
+      let sfvtSeqSearchButton = query('#sfvt-seq-search')[0];
+      sfvtSeqSearchButton.info_dialog = new Dialog({
+        content: '<section id="sfvt-seq-section" style="overflow-y: auto; max-height: 400px;">\n' +
+          '<h2>SFVT Sequence</h2>\n' +
+          '<p>Use this advanced search function to find Sequence Features (SFs) that match specific Sequence Feature Variant Type (SFVT) patterns.</p>\n' +
+          '<br>\n' +
+          '\n' +
+          '<p><strong>Exact Match:</strong> Use "RER" to find sequences that are exactly "RER".</p>\n' +
+          '<p><strong>Starts With:</strong> Use "RE*" to find sequences that start with "RE" and are followed by any characters (e.g., "REX", "REXY", "REXYZ").</p>\n' +
+          '<p><strong>Ends With:</strong> Use "*RE" to find sequences that end with "RE" and are preceded by any characters.</p>\n' +
+          '<p><strong>Includes:</strong> Enter "*RE*" to find sequences that contain "RE" anywhere within them.</p>\n' +
+          '</section>',
+        'class': 'helpModal',
+        draggable: true,
+        style: 'max-width: 400px;'
+      });
+      sfvtSeqSearchButton.open = false;
+      on(sfvtSeqSearchButton, 'click', function () {
+        if (!sfvtSeqSearchButton.open) {
+          sfvtSeqSearchButton.open = true;
+          sfvtSeqSearchButton.info_dialog.show();
+        }
+        else {
+          sfvtSeqSearchButton.open = false;
+          sfvtSeqSearchButton.info_dialog.hide();
+        }
+      });
+    },
 
     postCreate: function () {
       this.inherited(arguments);
@@ -81,27 +113,37 @@ define([
       //Update virus type multi select values with selected pathogen
       const condition = 'taxon_id:' + taxonId;
       storeBuilder('sequence_feature', 'subtype', condition).then(lang.hitch(this, (store) => {
+        let hItems = [];
+        let nItems = [];
+
+        // Separate items based on their prefix
         for (let item of store.data) {
           if (item.name.startsWith('H')) {
-            this.subtypeHNode.addOption(
-              {
-                value: item.name,
-                label: item.name.substring(1)
-              });
+            hItems.push({
+              value: item.name,
+              label: item.name.substring(1)
+            });
           } else if (item.name.startsWith('N')) {
-            this.subtypeNNode.addOption(
-              {
-                value: item.name,
-                label: item.name.substring(1)
-              });
+            nItems.push({
+              value: item.name,
+              label: item.name.substring(1)
+            });
           } else {
-            this.subtypeNode.addOption(
-              {
-                value: item.name,
-                label: item.name
-              });
+            // Add other items to subtypeNode
+            this.subtypeNode.addOption({
+              value: item.name,
+              label: item.name
+            });
           }
         }
+
+        // Sort 'H' and 'N' items numerically by their suffix
+        hItems.sort((a, b) => parseInt(a.label) - parseInt(b.label));
+        nItems.sort((a, b) => parseInt(a.label) - parseInt(b.label));
+
+        // Add sorted 'H' and 'N' items to nodes
+        this.subtypeHNode.addOption(hItems);
+        this.subtypeNNode.addOption(nItems);
       }));
 
       storeBuilder('sequence_feature', 'gene', condition).then(lang.hitch(this, (store) => {
@@ -132,7 +174,7 @@ define([
       query('#pathogenInfoDiv').style('display', 'none');
     },
 
-    buildFilter: function () {
+    buildFilter: async function () {
       let filterArr = [];
 
       // Update taxon id to redirect correct taxonomy page
@@ -194,6 +236,23 @@ define([
         // lt
         filterArr.push(`lt(aa_coordinates,${aaCoordinatesEndValue})`);
       }*/
+
+      // Fetch sf_id's if sfvt sequence is provided
+      const sfvtSequenceValue = this.sfvtSequenceNode.get('value');
+      if (sfvtSequenceValue !== '') {
+        const query = '?in(sfvt_sequence,(' + sfvtSequenceValue + '))&select(sf_id)&limit(25000)';
+        const sfvtList = await xhr.get(PathJoin(window.App.dataAPI, 'sequence_feature_vt', query), {
+          headers: {
+            accept: 'application/json',
+            'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
+          },
+          handleAs: 'json'
+        });
+        const uniqueSFIds = new Set(sfvtList.map(sfvt => sfvt.sf_id));
+        filterArr.push(`or(${Array.from(uniqueSFIds).map(id => `eq(sf_id,"${sanitizeInput(id)}")`)})`);
+      }
 
       if (filterArr.length === 1) {
         return filterArr;

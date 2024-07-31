@@ -63,7 +63,7 @@
                             data-dojo-attach-point="subtypeNode"
                             multiple style="height: 100%; display: table-cell;"></select>
                     <div class="appFieldLong" style="display: flex;">
-                        <div id="hTypeSelection" style="flex: 1; box-sizing: border-box; margin-right: 10px;">
+                        <div id="hTypeSelection" style="box-sizing: border-box;margin-right: 50px;min-width: 120px;">
                             <label class="appBoxLabel" style="font-size: 12px;">H type</label>
                             <!--<div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. H1, H3, H7, N1, N2'" data-dojo-attach-point="subtypeNode" name="subtype" style="width: 500px"></div>-->
                             <select data-dojo-type="dojox/form/CheckedMultiSelect" name="subtype_h"
@@ -80,27 +80,43 @@
                         </div>
                     </div>
                 </div>
-                <div class="headerrow segmentOptions">
-                    <label class="appBoxLabel">Segment / Protein</label>
-                </div>
-                <div class="headerrow proteinOptions">
-                    <label class="appBoxLabel">Proteins</label>
-                </div>
-                <div class="appRow">
-                    <div class="appFieldLong">
-                        <select data-dojo-type="dojox/form/CheckedMultiSelect" name="genes"
-                                data-dojo-props="disabled:false"
-                                data-dojo-attach-point="geneNode" multiple style="height: 100%"></select>
+                <div class="appFieldLong" style="display: flex;">
+                    <div style="box-sizing: border-box;margin-right: 50px;min-width: 120px;">
+                        <div class="headerrow segmentOptions">
+                            <label class="appBoxLabel">Segment / Protein</label>
+                        </div>
+                        <div class="appRow">
+                            <div class="appFieldLong">
+                                <select data-dojo-type="dojox/form/CheckedMultiSelect" name="genes"
+                                        data-dojo-props="disabled:false"
+                                        data-dojo-attach-point="geneNode" multiple style="height: 100%"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="flex: 1; box-sizing: border-box;">
+                        <div class="headerrow">
+                            <label class="appBoxLabel">Sequence Feature Type</label>
+                        </div>
+                        <div class="appRow">
+                            <div class="appFieldLong">
+                                <select data-dojo-type="dojox/form/CheckedMultiSelect" name="sequence_feature_type"
+                                        data-dojo-props="disabled:false"
+                                        data-dojo-attach-point="sequenceFeatureTypeNode" multiple
+                                        style="height: 100%"></select>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="headerrow">
-                    <label class="appBoxLabel">Sequence Feature Type</label>
+                    <label class="appBoxLabel">Sequence Feature Variant Type Sequence</label>
+                    <div id="sfvt-seq-search" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="Click to open info dialog"></i>
+                    </div>
                 </div>
                 <div class="appRow">
                     <div class="appFieldLong">
-                        <select data-dojo-type="dojox/form/CheckedMultiSelect" name="sequence_feature_type"
-                                data-dojo-props="disabled:false"
-                                data-dojo-attach-point="sequenceFeatureTypeNode" multiple style="height: 100%"></select>
+                        <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'eg. *RER*'"
+                             data-dojo-attach-point="sfvtSequenceNode" name="sfvtSequence" style="width: 500px"></div>
                     </div>
                 </div>
                 <!--<div class="headerrow">
