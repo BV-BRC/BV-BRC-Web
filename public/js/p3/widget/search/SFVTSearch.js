@@ -1,9 +1,11 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/store/Memory', 'dojo/text!./templates/SFVTSearch.html', 'dojo/query',
-  './TextInputEncoder', './SearchBase', './FacetStoreBuilder', './PathogenGroups', '../../util/PathJoin', 'dojo/request/xhr'
+  './TextInputEncoder', './SearchBase', './FacetStoreBuilder', './PathogenGroups', '../../util/PathJoin', 'dojo/request/xhr',
+  'dijit/Dialog', 'dojo/on'
 ], function (
   declare, lang, Memory, template, query,
-  TextInputEncoder, SearchBase, storeBuilder, pathogenGroupStore, PathJoin, xhr
+  TextInputEncoder, SearchBase, storeBuilder, pathogenGroupStore, PathJoin, xhr,
+  Dialog, on
 ) {
 
   const influenzaSegmentMapping = {
@@ -34,6 +36,36 @@ define([
     defaultTaxonId: '11320',
     proteinOptions: ['12637'],
     segmentOptions: ['11320'],
+
+    startup: function () {
+      let sfvtSeqSearchButton = query('#sfvt-seq-search')[0];
+      sfvtSeqSearchButton.info_dialog = new Dialog({
+        content: '<section id="sfvt-seq-section" style="overflow-y: auto; max-height: 400px;">\n' +
+          '<h2>SFVT Sequence</h2>\n' +
+          '<p>Use this advanced search function to find Sequence Features (SFs) that match specific Sequence Feature Variant Type (SFVT) patterns.</p>\n' +
+          '<br>\n' +
+          '\n' +
+          '<p><strong>Exact Match:</strong> Use "RER" to find sequences that are exactly "RER".</p>\n' +
+          '<p><strong>Starts With:</strong> Use "RE*" to find sequences that start with "RE" and are followed by any characters (e.g., "REX", "REXY", "REXYZ").</p>\n' +
+          '<p><strong>Ends With:</strong> Use "*RE" to find sequences that end with "RE" and are preceded by any characters.</p>\n' +
+          '<p><strong>Includes:</strong> Enter "*RE*" to find sequences that contain "RE" anywhere within them.</p>\n' +
+          '</section>',
+        'class': 'helpModal',
+        draggable: true,
+        style: 'max-width: 400px;'
+      });
+      sfvtSeqSearchButton.open = false;
+      on(sfvtSeqSearchButton, 'click', function () {
+        if (!sfvtSeqSearchButton.open) {
+          sfvtSeqSearchButton.open = true;
+          sfvtSeqSearchButton.info_dialog.show();
+        }
+        else {
+          sfvtSeqSearchButton.open = false;
+          sfvtSeqSearchButton.info_dialog.hide();
+        }
+      });
+    },
 
     postCreate: function () {
       this.inherited(arguments);
