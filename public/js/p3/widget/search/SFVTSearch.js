@@ -45,18 +45,23 @@ define([
       let sfvtSeqSearchButton = query('#sfvt-seq-search')[0];
       sfvtSeqSearchButton.info_dialog = new Dialog({
         content: '<section id="sfvt-seq-section" style="overflow-y: auto; max-height: 400px;">\n' +
-          '<h2>SFVT Sequence</h2>\n' +
-          '<p>Use this advanced search function to find Sequence Features (SFs) that match specific Sequence Feature Variant Type (SFVT) patterns.</p>\n' +
-          '<br>\n' +
+          '  <h2>SFVT Sequence</h2>\n' +
+          '  <p>Use this advanced search function to find Sequence Features (SFs) that match specific Sequence Feature Variant Type (SFVT) patterns.</p>\n' +
+          '  <br>\n' +
           '\n' +
-          '<p><strong>Exact Match:</strong> Use "RER" to find sequences that are exactly "RER".</p>\n' +
-          '<p><strong>Starts With:</strong> Use "RE*" to find sequences that start with "RE" and are followed by any characters (e.g., "REX", "REXY", "REXYZ").</p>\n' +
-          '<p><strong>Ends With:</strong> Use "*RE" to find sequences that end with "RE" and are preceded by any characters.</p>\n' +
-          '<p><strong>Includes:</strong> Enter "*RE*" to find sequences that contain "RE" anywhere within them.</p>\n' +
+          '  <p><strong>Examples:</strong></p>\n' +
+          '  <ul style="list-style-type: none;">\n' +
+          '    <li style="padding-left: 1em;"><strong>Exact Match:</strong> Use "RER" to find sequences that are exactly "RER".</li>\n' +
+          '    <li style="padding-left: 1em;"><strong>Starts With:</strong> Use "RE*" to find sequences that start with "RE" and are followed by any characters (e.g., "REX", "REXY", "REXYZ").</li>\n' +
+          '    <li style="padding-left: 1em;"><strong>Ends With:</strong> Use "*RE" to find sequences that end with "RE" and are preceded by any characters.</li>\n' +
+          '    <li style="padding-left: 1em;"><strong>Includes:</strong> Use "*RE*" to find sequences that contain "RE" anywhere within them.</li>\n' +
+          '    <li style="padding-left: 1em;"><strong>Insertion:</strong> Use "RER[*" to find sequences that start with "RER" followed by an insertion.</li>\n' +
+          '    <li style="padding-left: 1em;"><strong>Deletion:</strong> Use "*K--Q*" to find sequences that include "K--Q" anywhere within them, indicating a deletion.</li>\n' +
+          '  </ul>\n' +
           '</section>',
         'class': 'helpModal',
         draggable: true,
-        style: 'max-width: 400px;'
+        style: 'max-width: 50%;'
       });
       sfvtSeqSearchButton.open = false;
       on(sfvtSeqSearchButton, 'click', function () {
