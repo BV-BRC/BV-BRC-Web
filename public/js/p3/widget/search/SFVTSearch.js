@@ -26,6 +26,10 @@ define([
     return str.replace(/\(|\)|\.|\*|\||\[|\]/g, '');
   }
 
+  function escapeSpecialCharacters(str) {
+    return str.replace(/([[])/g, '\\$1');
+  }
+
   return declare([SearchBase], {
     templateString: template,
     searchAppName: 'Sequence Feature Variant Type (SFVT) Search',
@@ -240,7 +244,7 @@ define([
       // Fetch sf_id's if sfvt sequence is provided
       const sfvtSequenceValue = this.sfvtSequenceNode.get('value');
       if (sfvtSequenceValue !== '') {
-        const query = '?in(sfvt_sequence,(' + sfvtSequenceValue + '))&select(sf_id)&limit(25000)';
+        const query = '?in(sfvt_sequence,(' + encodeURIComponent(escapeSpecialCharacters(sfvtSequenceValue)) + '))&select(sf_id)&limit(25000)';
         const sfvtList = await xhr.get(PathJoin(window.App.dataAPI, 'sequence_feature_vt', query), {
           headers: {
             accept: 'application/json',
