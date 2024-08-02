@@ -70,6 +70,11 @@ define([
 
     },
 
+    onDropdownChange: function (evt) {
+      console.log("this is a drop down change")
+      console.log(this.smiles_dropdown.value)
+    },
+
     onInputChange: function (evt) {
 
       console.log('onInputChange: ' + this.input_sequence.checked + ' ' + this.ws_file.checked);
@@ -77,11 +82,19 @@ define([
       {
         dojo.style(this.block_smiles_text, 'display', 'block');
         dojo.style(this.block_smiles_ws, 'display', 'none');
+        dojo.style(this.block_smiles_dropdown, 'display', 'none');
       }
       else if (this.ws_file.checked)
       {
         dojo.style(this.block_smiles_text, 'display', 'none');
         dojo.style(this.block_smiles_ws, 'display', 'block');
+        dojo.style(this.block_smiles_dropdown, 'display', 'none');
+      }
+      else if (this.ligand_named_library.checked)
+        {
+        dojo.style(this.block_smiles_text, 'display', 'none');
+        dojo.style(this.block_smiles_ws, 'display', 'none');
+        dojo.style(this.block_smiles_dropdown, 'display', 'block');
       }
 
     },
@@ -134,6 +147,10 @@ define([
       else if (values.input === 'ws_file')
       {
         submit_values.ligand_ws_file = values.smiles_ws_file;
+      }
+      else if (values.input === 'named_library')
+      {
+        submit_values.ligand_named_library = values.smiles_dropdown
       }
       console.log(values + ' ' + submit_values);
 
