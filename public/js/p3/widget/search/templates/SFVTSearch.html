@@ -1,0 +1,152 @@
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onsubmit:onSubmit">
+    <style>
+        .dojoxCheckedMultiSelectWrapper {
+            width: 100%;
+            height: 100% !important;
+        }
+    </style>
+    <div class="appTemplate">
+        <div class="appTitle">
+            <span class="breadcrumb">Advanced Search</span>
+            <h3>${searchAppName}</h3>
+            <!-- tutorial, doc link -->
+            <p>Search for Sequence Feature Variant Type data for select viral families using generic keywords, subtype,
+                segment, or sequence feature type. For further explanation, please see the <a
+                        href="https://www.bv-brc.org/docs/quick_references/searches_menu.html" target="_blank">Advanced
+                    Search Quick Reference Guide</a>.</p>
+        </div>
+        <div style="width:550px;margin:auto" class="formFieldsContainer">
+            <div class="appBox appShadow">
+                <div class="headerrow">
+                    <label class="appBoxLabel">Keyword</label>
+                </div>
+                <div class="appRow">
+                    <div class="appFieldLong">
+                        <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'Search term'"
+                             data-dojo-attach-point="keywordNode" name="keyword" style="width: 500px"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="appRow" id="pathogenInfoDiv">
+                Please select a pathogen group first to see other options.
+            </div>
+            <div class="appBox appShadow">
+                <div class="headerrow">
+                    <label class="appBoxLabel">Pathogen Group</label>
+                </div>
+                <div class="appRow">
+                    <div class="appFieldLong">
+                        <div data-dojo-type="dijit/form/FilteringSelect"
+                             data-dojo-props="placeHolder:'e.g. Influenza A virus'" required="false"
+                             data-dojo-attach-point="pathogenGroupNode"
+                             data-dojo-attach-event="onChange:onPathogenChange" name="pathogen_group"
+                             style="width: 500px"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="appBox appShadow sfvtOptions" style="display: none;">
+                <!--<div class="headerrow">
+                    <label class="appBoxLabel">Virus Type</label>
+                </div>
+                <div class="appRow">
+                    <div class="appFieldLong">
+                        <select data-dojo-type="dojox/form/CheckedMultiSelect" name="virus_type" data-dojo-props="disabled:false"
+                                data-dojo-attach-point="virusTypeNode" multiple style="height: 100%"></select>
+                    </div>
+                </div>-->
+                <div class="headerrow segmentOptions">
+                    <label class="appBoxLabel">Subtype</label>
+                </div>
+                <div class="appRow segmentOptions">
+                    <select data-dojo-type="dojox/form/CheckedMultiSelect" name="subtype"
+                            data-dojo-props="disabled:false"
+                            data-dojo-attach-point="subtypeNode"
+                            multiple style="height: 100%; display: table-cell;"></select>
+                    <div class="appFieldLong" style="display: flex;">
+                        <div id="hTypeSelection" style="box-sizing: border-box;margin-right: 50px;min-width: 120px;">
+                            <label class="appBoxLabel" style="font-size: 12px;">H type</label>
+                            <!--<div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. H1, H3, H7, N1, N2'" data-dojo-attach-point="subtypeNode" name="subtype" style="width: 500px"></div>-->
+                            <select data-dojo-type="dojox/form/CheckedMultiSelect" name="subtype_h"
+                                    data-dojo-props="disabled:false"
+                                    data-dojo-attach-point="subtypeHNode"
+                                    multiple style="height: 100%; display: table-cell;"></select>
+                        </div>
+                        <div id="nTypeSelection" style="flex: 1; box-sizing: border-box;">
+                            <label class="appBoxLabel" style="font-size: 12px;">N type</label>
+                            <select data-dojo-type="dojox/form/CheckedMultiSelect" name="subtype_n"
+                                    data-dojo-props="disabled:false"
+                                    data-dojo-attach-point="subtypeNNode"
+                                    multiple style="height: 100%; display: table-cell;"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="appFieldLong" style="display: flex;">
+                    <div style="box-sizing: border-box;margin-right: 50px;min-width: 120px;">
+                        <div class="headerrow segmentOptions">
+                            <label class="appBoxLabel">Segment / Protein</label>
+                        </div>
+                        <div class="appRow">
+                            <div class="appFieldLong">
+                                <select data-dojo-type="dojox/form/CheckedMultiSelect" name="genes"
+                                        data-dojo-props="disabled:false"
+                                        data-dojo-attach-point="geneNode" multiple style="height: 100%"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="flex: 1; box-sizing: border-box;">
+                        <div class="headerrow">
+                            <label class="appBoxLabel">Sequence Feature Type</label>
+                        </div>
+                        <div class="appRow">
+                            <div class="appFieldLong">
+                                <select data-dojo-type="dojox/form/CheckedMultiSelect" name="sequence_feature_type"
+                                        data-dojo-props="disabled:false"
+                                        data-dojo-attach-point="sequenceFeatureTypeNode" multiple
+                                        style="height: 100%"></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="headerrow">
+                    <label class="appBoxLabel">Sequence Feature Variant Type Sequence</label>
+                    <div id="sfvt-seq-search" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="Click to open info dialog"></i>
+                    </div>
+                </div>
+                <div class="appRow">
+                    <div class="appFieldLong">
+                        <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'eg. *RER*'"
+                             data-dojo-attach-point="sfvtSequenceNode" name="sfvtSequence" style="width: 500px"></div>
+                    </div>
+                </div>
+                <!--<div class="headerrow">
+                    <label class="appBoxLabel">Amino Acid Coordinates</label>
+                </div>
+                <div class="appRow">
+                    <div class="appFieldLong">
+                        <label>Start</label>
+                        <div data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="aaCoordinatesStartNode"
+                             name="aa_coordinates_start" style="width:80px"></div>
+                        <label>End</label>
+                        <div data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="aaCoordinatesEndNode"
+                             name="collection_year_to" style="width:80px"></div>
+                    </div>
+                </div>-->
+                <!--<div class="headerrow">
+                  <label class="appBoxLabel">Additional</label>
+                </div>-->
+                <div class="appRow" style="display: none;">
+                    <div dojoAttachPoint="AdvancedSearchPanel"></div>
+                </div>
+            </div>
+        </div>
+        <div class="appSubmissionArea sfvtOptions" style="display: none;">
+            <div style="margin-top: 10px; text-align:center;">
+                <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+                <div data-dojo-attach-point="submitButton"
+                     type="submit" data-dojo-type="dijit/form/Button">Search
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

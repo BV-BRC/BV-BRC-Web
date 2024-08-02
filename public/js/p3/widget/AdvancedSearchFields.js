@@ -845,6 +845,44 @@ define([], function () {
         field: 'pathway_class', type: 'str', facet: true, facet_hidden: false, search: true
       }
     ],
+    'sequence_feature': [
+      {
+        field: 'evidence_code', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'gene', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'sf_name', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'sf_id', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'length', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'variant_types', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'sf_category', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'source', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'source_sf_location', type: 'str', facet: false, facet_hidden: true, search: true
+      },
+      {
+        field: 'source_strain', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'subtype', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
+        field: 'segment', type: 'str', facet: true, facet_hidden: false, search: true
+      }
+    ],
     'subsystem': [
       {
         field: 'genome_id', type: 'str', facet: false, facet_hidden: true, search: true

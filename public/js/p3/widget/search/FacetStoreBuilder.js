@@ -6,11 +6,15 @@ define([
   Memory,
 ) {
 
-  return function (dataModel, facetField) {
+  return function (dataModel, facetField, condition) {
 
     return new Promise((resolve, reject) => {
+      let url = `${window.App.dataServiceURL}/data/distinct/${dataModel}/${facetField}`;
+      if (condition) {
+        url += '?q=' + condition;
+      }
       xhr('GET', {
-        url: `${window.App.dataServiceURL}/data/distinct/${dataModel}/${facetField}`,
+        url: url,
         handleAs: 'json',
         headers: {
           'Accept': 'application/json',

@@ -25755,8 +25755,8 @@ function BlurStack()
  *
  */
 
-// v 2.0.2a1
-// 2023-04-12
+// v 2.1.0.a2
+// 2024-06-05
 //
 // forester.js is a general suite for dealing with phylogenetic trees.
 // 
@@ -26083,8 +26083,7 @@ function BlurStack()
             //do noting
         } else if (!node.parent.parent.parent) {
             if ((node.parent.children.length === 2) && (branchLength >= 0)) {
-                let d = node.parent.children[0].branch_length
-                    + node.parent.children[1].branch_length;
+                let d = node.parent.children[0].branch_length + node.parent.children[1].branch_length;
                 let other;
                 if (node.parent.children[0] === node) {
                     other = node.parent.children[1];
@@ -26185,12 +26184,10 @@ function BlurStack()
             if (c.children.length === 2) {
                 let node2 = c.children[1 - forester.getChildNodeIndex(c, b)];
                 node2.parent = b;
-                if ((!c.branch_length)
-                    && (!node2.branch_length)) {
+                if ((!c.branch_length) && (!node2.branch_length)) {
                     node2.branch_length = undefined;
                 } else {
-                    node2.branch_length = (c.branch_length >= 0.0 ? c.branch_length : 0.0)
-                        + (node2.branch_length >= 0.0 ? node2.branch_length : 0.0);
+                    node2.branch_length = (c.branch_length >= 0.0 ? c.branch_length : 0.0) + (node2.branch_length >= 0.0 ? node2.branch_length : 0.0);
                 }
                 let cbd = forester.getBranchData(c);
                 if (cbd) {
@@ -26302,8 +26299,7 @@ function BlurStack()
             throw ("cannot remove the child node for a external node");
         }
         if ((i >= parentNode.children.length) || (i < 0)) {
-            throw ("attempt to get child node " + i + " of a node with "
-                + parentNode.children.length + " child nodes.");
+            throw ("attempt to get child node " + i + " of a node with " + parentNode.children.length + " child nodes.");
         }
         parentNode.children[i].parent = undefined;
         parentNode.children.splice(i, 1);
@@ -26679,9 +26675,7 @@ function BlurStack()
             if (n.properties && n.properties.length > 0) {
                 let l = n.properties.length;
                 for (let p = 0; p < l; ++p) {
-                    if (n.properties[p].ref === BRANCH_EVENT_REF
-                        && n.properties[p].datatype === BRANCH_EVENT_DATATYPE
-                        && n.properties[p].applies_to === BRANCH_EVENT_APPLIES_TO) {
+                    if (n.properties[p].ref === BRANCH_EVENT_REF && n.properties[p].datatype === BRANCH_EVENT_DATATYPE && n.properties[p].applies_to === BRANCH_EVENT_APPLIES_TO) {
                         properties.branchEvents = true;
                     }
                 }
@@ -26722,12 +26716,7 @@ function BlurStack()
     };
 
 
-    forester.searchData = function (query,
-                                    phy,
-                                    caseSensitive,
-                                    partial,
-                                    regex,
-                                    searchProperties) {
+    forester.searchData = function (query, phy, caseSensitive, partial, regex, searchProperties) {
         let nodes = new Set();
         if (!phy || !query || query.length < 1) {
             return nodes;
@@ -26785,92 +26774,32 @@ function BlurStack()
                             }
                         }
                         let lmatch = false;
-                        if (((ndf === null) || (ndf === "NN"))
-                            && matchme(node.name, mq, caseSensitive, partial, regex)) {
+                        if (((ndf === null) || (ndf === "NN")) && matchme(node.name, mq, caseSensitive, partial, regex)) {
                             lmatch = true;
-                        } else if (((ndf === null) || (ndf === "TC")) && node.taxonomies
-                            && node.taxonomies.length > 0
-                            && matchme(node.taxonomies[0].code,
-                                mq,
-                                caseSensitive,
-                                partial,
-                                regex)) {
+                        } else if (((ndf === null) || (ndf === "TC")) && node.taxonomies && node.taxonomies.length > 0 && matchme(node.taxonomies[0].code, mq, caseSensitive, partial, regex)) {
                             lmatch = true;
-                        } else if (((ndf === null) || (ndf === "TS")) && node.taxonomies
-                            && node.taxonomies.length > 0
-                            && matchme(node.taxonomies[0].scientific_name,
-                                mq,
-                                caseSensitive,
-                                partial,
-                                regex)) {
+                        } else if (((ndf === null) || (ndf === "TS")) && node.taxonomies && node.taxonomies.length > 0 && matchme(node.taxonomies[0].scientific_name, mq, caseSensitive, partial, regex)) {
                             lmatch = true;
-                        } else if (((ndf === null) || (ndf === "TN")) && node.taxonomies
-                            && node.taxonomies.length > 0
-                            && matchme(node.taxonomies[0].common_name,
-                                mq,
-                                caseSensitive,
-                                partial,
-                                regex)) {
+                        } else if (((ndf === null) || (ndf === "TN")) && node.taxonomies && node.taxonomies.length > 0 && matchme(node.taxonomies[0].common_name, mq, caseSensitive, partial, regex)) {
                             lmatch = true;
-                        } else if (((ndf === null) || (ndf === "SY")) && node.taxonomies
-                            && node.taxonomies.length > 0
-                            && matchme(node.taxonomies[0].synonym,
-                                mq,
-                                caseSensitive,
-                                partial,
-                                regex)) {
+                        } else if (((ndf === null) || (ndf === "SY")) && node.taxonomies && node.taxonomies.length > 0 && matchme(node.taxonomies[0].synonym, mq, caseSensitive, partial, regex)) {
                             lmatch = true;
-                        } else if (((ndf === null) || (ndf === "TI")) && node.taxonomies
-                            && node.taxonomies.length > 0 && node.taxonomies[0].id
-                            && matchme(node.taxonomies[0].id.value,
-                                mq,
-                                caseSensitive,
-                                partial,
-                                regex)) {
+                        } else if (((ndf === null) || (ndf === "TI")) && node.taxonomies && node.taxonomies.length > 0 && node.taxonomies[0].id && matchme(node.taxonomies[0].id.value, mq, caseSensitive, partial, regex)) {
                             lmatch = true;
-                        } else if (((ndf === null) || (ndf === "SN")) && node.sequences
-                            && node.sequences.length > 0
-                            && matchme(node.sequences[0].name,
-                                mq,
-                                caseSensitive,
-                                partial,
-                                regex)) {
+                        } else if (((ndf === null) || (ndf === "SN")) && node.sequences && node.sequences.length > 0 && matchme(node.sequences[0].name, mq, caseSensitive, partial, regex)) {
                             lmatch = true;
-                        } else if (((ndf === null) || (ndf === "GN")) && node.sequences
-                            && node.sequences.length > 0
-                            && matchme(node.sequences[0].gene_name,
-                                mq,
-                                caseSensitive,
-                                partial,
-                                regex)) {
+                        } else if (((ndf === null) || (ndf === "GN")) && node.sequences && node.sequences.length > 0 && matchme(node.sequences[0].gene_name, mq, caseSensitive, partial, regex)) {
                             lmatch = true;
-                        } else if (((ndf === null) || (ndf === "SS")) && node.sequences
-                            && node.sequences.length > 0
-                            && matchme(node.sequences[0].symbol,
-                                mq,
-                                caseSensitive,
-                                partial,
-                                regex)) {
+                        } else if (((ndf === null) || (ndf === "SS")) && node.sequences && node.sequences.length > 0 && matchme(node.sequences[0].symbol, mq, caseSensitive, partial, regex)) {
                             lmatch = true;
-                        } else if (((ndf === null) || (ndf === "SA")) && node.sequences
-                            && node.sequences.length > 0 && node.sequences[0].accession
-                            && matchme(node.sequences[0].accession.value,
-                                mq,
-                                caseSensitive,
-                                partial,
-                                regex)) {
+                        } else if (((ndf === null) || (ndf === "SA")) && node.sequences && node.sequences.length > 0 && node.sequences[0].accession && matchme(node.sequences[0].accession.value, mq, caseSensitive, partial, regex)) {
                             lmatch = true;
-                        } else if (((ndf === null) && (searchProperties === true)) && node.properties
-                            && node.properties.length > 0) {
+                        } else if (((ndf === null) && (searchProperties === true)) && node.properties && node.properties.length > 0) {
 
                             let propertiesLength = node.properties.length;
                             for (let i = 0; i < propertiesLength; ++i) {
                                 let p = node.properties[i];
-                                if (p.value && matchme(p.value,
-                                    mq,
-                                    caseSensitive,
-                                    partial,
-                                    regex)) {
+                                if (p.value && matchme(p.value, mq, caseSensitive, partial, regex)) {
                                     lmatch = true;
                                     break;
                                 }
@@ -26896,11 +26825,7 @@ function BlurStack()
             }
         }
 
-        function matchme(s,
-                         query,
-                         caseSensitive,
-                         partial,
-                         regex) {
+        function matchme(s, query, caseSensitive, partial, regex) {
             if (!s || !query) {
                 return false;
             }
@@ -26944,19 +26869,7 @@ function BlurStack()
 
         function makeNDF(query) {
             let str = query.substring(0, 2);
-            if (str === "NN"
-                || str === "TC"
-                || str === "TN"
-                || str === "TS"
-                || str === "TI"
-                || str === "SY"
-                || str === "SN"
-                || str === "GN"
-                || str === "SS"
-                || str === "SA"
-                || str === "AN"
-                || str === "XR"
-                || str === "MS") {
+            if (str === "NN" || str === "TC" || str === "TN" || str === "TS" || str === "TI" || str === "SY" || str === "SN" || str === "GN" || str === "SS" || str === "SA" || str === "AN" || str === "XR" || str === "MS") {
                 return str;
             } else {
                 return null;
@@ -27099,10 +27012,7 @@ function BlurStack()
 
 
     forester.isHasNodeData = function (node) {
-        return ((node.name && node.name.length > 0) ||
-            (node.taxonomies && node.taxonomies.length > 0) ||
-            (node.sequences && node.sequences.length > 0) ||
-            (node.properties && node.properties.length > 0));
+        return ((node.name && node.name.length > 0) || (node.taxonomies && node.taxonomies.length > 0) || (node.sequences && node.sequences.length > 0) || (node.properties && node.properties.length > 0));
     };
 
 
@@ -27728,17 +27638,12 @@ function BlurStack()
     // --------------------------------------------------------------
     // For exporting
     // --------------------------------------------------------------
-    if (typeof module !== 'undefined' && module.exports && !global.xmldocAssumeBrowser)
-        module.exports.forester = forester;
-    else if (typeof window !== "undefined")
-        window.forester = forester;
-    else
-        this.forester = forester;
+    if (typeof module !== 'undefined' && module.exports && !global.xmldocAssumeBrowser) module.exports.forester = forester; else if (typeof window !== "undefined") window.forester = forester; else this.forester = forester;
 })();
     /**
- *  Copyright (C) 2023 Christian M. Zmasek
- *  Copyright (C) 2023 Yun Zhang
- *  Copyright (C) 2023 J. Craig Venter Institute
+ *  Copyright (C) 2024 Christian M. Zmasek
+ *  Copyright (C) 2024 Yun Zhang
+ *  Copyright (C) 2024 J. Craig Venter Institute
  *  All rights reserved
  *
  *  This library is free software; you can redistribute it and/or
@@ -27758,8 +27663,8 @@ function BlurStack()
  *
  */
 
-// v 2.0.2a1
-// 2023-04-12
+// v 2.1.1.a1
+// 2024-06-25
 //
 // Archaeopteryx.js is a software tool for the visualization and
 // analysis of highly annotated phylogenetic trees.
@@ -27810,7 +27715,7 @@ if (!phyloXml) {
 
     "use strict";
 
-    const VERSION = '2.0.2a1';
+    const VERSION = '2.1.1.a1';
     const WEBSITE = 'https://sites.google.com/view/archaeopteryxjs';
     const NAME = 'Archaeopteryx.js';
 
@@ -27859,7 +27764,7 @@ if (!phyloXml) {
     const NODE_SIZE_DEFAULT_DEFAULT = 3;
     const NODE_VISUALIZATIONS_OPACITY_DEFAULT = 1;
     const VISUALIZATIONS_LEGEND_ORIENTATION_DEFAULT = VERTICAL;
-    const VISUALIZATIONS_LEGEND_XPOS_DEFAULT = 160;
+    const VISUALIZATIONS_LEGEND_XPOS_DEFAULT = 220;
     const VISUALIZATIONS_LEGEND_YPOS_DEFAULT = 30;
 
     // ---------------------------
@@ -27867,9 +27772,9 @@ if (!phyloXml) {
     // ---------------------------
     const COLLAPSE_LABEL_WIDTH_DEFAULT = '20px';
     const CONTROLS_0_LEFT_DEFAULT = 20;
-    const CONTROLS_0_TOP_DEFAULT = 20;
-    const CONTROLS_1_TOP_DEFAULT = 20;
-    const CONTROLS_1_WIDTH_DEFAULT = 160;
+    const CONTROLS_0_TOP_DEFAULT = 10;
+    const CONTROLS_1_TOP_DEFAULT = 10;
+    const CONTROLS_1_WIDTH_DEFAULT = 120;
     const CONTROLS_BACKGROUND_COLOR_DEFAULT = '#c0c0c0';
     const CONTROLS_FONT_COLOR_DEFAULT = '#505050';
     const CONTROLS_FONT_DEFAULTS = ['Arial', 'Helvetica', 'Times'];
@@ -27877,8 +27782,7 @@ if (!phyloXml) {
     const DISPLY_HEIGHT_DEFAULT = 600;
     const DISPLAY_WIDTH_DEFAULT = 800;
     const MOLSEQ_FONT_DEFAULTS = ['Courier', 'Courier New', 'Arial', 'Helvetica', 'Times'];
-
-    const ROOTOFFSET_DEFAULT = 180;
+    const ROOTOFFSET_DEFAULT = 220;
     const SEARCH_FIELD_WIDTH_DEFAULT = '38px';
     const TEXT_INPUT_FIELD_DEFAULT_HEIGHT = '10px';
 
@@ -27913,10 +27817,9 @@ if (!phyloXml) {
     const FONT_SIZE_MAX = 26;
     const FONT_SIZE_MIN = 2;
     const KEY_FOR_COLLAPSED_FEATURES_SPECIAL_LABEL = 'collapsed_spec_label';
-    const LABEL_SIZE_CALC_ADDITION = 40;
+    const LABEL_SIZE_CALC_ADDITION = 80;
     const LABEL_SIZE_CALC_FACTOR = 0.5;
     const LEGEND_LABEL_COLOR = 'legendLabelColor';
-    const LEGEND_NODE_BORDER_COLOR = 'legendNodeBorderColor';
     const LEGEND_NODE_FILL_COLOR = 'legendNodeFillColor';
     const LEGEND_NODE_SHAPE = 'legendNodeShape';
     const LEGEND_NODE_SIZE = 'legendNodeSize';
@@ -28001,7 +27904,6 @@ if (!phyloXml) {
     const MSA_RESIDUE_VIS_CURR_RES_POS_SLIDER_1 = 'seq_pos_slider_1';
     const MSA_RESIDUE_VIS_DECR_CURR_RES_POS_BTN = 'seq_pos_decr_pos';
     const MSA_RESIDUE_VIS_INCR_CURR_RES_POS_BTN = 'seq_pos_incr_pos';
-    const NODE_BORDER_COLOR_SELECT_MENU = 'nbcolors_menu';
     const NODE_DATA = 'node_data_dialog';
     const NODE_EVENTS_CB = 'nevts_cb';
     const NODE_FILL_COLOR_SELECT_MENU = 'nfcolors_menu';
@@ -28016,6 +27918,7 @@ if (!phyloXml) {
     const PHYLOGRAM_CLADOGRAM_CONTROLGROUP = 'phy_cla_g';
     const PROG_NAME = 'progname';
     const PROGNAMELINK = 'prognamelink';
+    const TREE_DESC = 'tree_desc';
     const RESET_SEARCH_A_BTN = 'reset_s_a';
     const RESET_SEARCH_B_BTN = 'reset_s_b';
     const RETURN_TO_SUPERTREE_BUTTON = 'ret_b';
@@ -28037,6 +27940,7 @@ if (!phyloXml) {
     const ZOOM_OUT_X = 'zoomout_x';
     const ZOOM_OUT_Y = 'zoomin_y';
     const ZOOM_TO_FIT = 'zoomtofit';
+    const ZOOM_TO_EXPAND_Y = 'zoomtoexpandy';
 
     const LABEL_COLOR_SELECT_MENU_2 = 'lcs_2_menu';
     const NODE_FILL_COLOR_SELECT_MENU_2 = 'nfcolors_2_menu';
@@ -28098,154 +28002,80 @@ if (!phyloXml) {
     // ---------------------------
 
 
-    const col_category50 = [
-        // 1 Red
-        '#FF1744',
-        // 2 Purple
-        '#D500F9',
-        // 3 Deep Purple
-        '#651FFF',
-        // 4 Indigo
-        '#3D5AFE',
-        // 5 Blue
-        '#2979FF',
-        // 6 Cyan
-        '#00E5FF',
-        // 7 Teal
-        '#1DE9B6',
-        // 8 Green
-        '#00E676',
-        // 9 Light Green
-        '#76FF03',
-        // 10 Lime
-        '#C6FF00',
-        // 11 Yellow
-        '#FFEA00',
-        // 12 Amber
-        '#FFC400',
-        // 13 Orange
-        '#FF9100',
-        // 13 Deep Orange
-        '#FF3D00',
-        // 15 Brown
-        '#6D4C41',
-        // 16 Grey
-        '#757575',
-        //
+    const col_category50 = [// 1 Red
+        '#FF1744', // 2 Purple
+        '#D500F9', // 3 Deep Purple
+        '#651FFF', // 4 Indigo
+        '#3D5AFE', // 5 Blue
+        '#2979FF', // 6 Cyan
+        '#00E5FF', // 7 Teal
+        '#1DE9B6', // 8 Green
+        '#00E676', // 9 Light Green
+        '#76FF03', // 10 Lime
+        '#C6FF00', // 11 Yellow
+        '#FFEA00', // 12 Amber
+        '#FFC400', // 13 Orange
+        '#FF9100', // 13 Deep Orange
+        '#FF3D00', // 15 Brown
+        '#6D4C41', // 16 Grey
+        '#757575', //
         // 17 Red
-        '#B71C1C',
-        // 18 Pink
-        '#880E4F',
-        // 19 Purple
-        '#4A148C',
-        // 20 Deep Purple
-        '#311B92',
-        // 21 Indigo
-        '#1A237E',
-        // 22 Blue
-        '#0D47A1',
-        // 23 Cyan
-        '#006064',
-        // 24 Teal
-        '#004D40',
-        // 25 Green
-        '#1B5E20',
-        // 26 Light Green
-        '#33691E',
-        // 27 Lime
-        '#827717',
-        // 28 Yellow
-        '#F57F17',
-        // 29 Amber
-        '#FF6F00',
-        // 30 Orange
-        '#E65100',
-        // 31 Deep Orange
-        '#BF360C',
-        // 32 Brown
-        '#4E342E',
-        // 33 Grey
-        '#424242',
-        //
+        '#B71C1C', // 18 Pink
+        '#880E4F', // 19 Purple
+        '#4A148C', // 20 Deep Purple
+        '#311B92', // 21 Indigo
+        '#1A237E', // 22 Blue
+        '#0D47A1', // 23 Cyan
+        '#006064', // 24 Teal
+        '#004D40', // 25 Green
+        '#1B5E20', // 26 Light Green
+        '#33691E', // 27 Lime
+        '#827717', // 28 Yellow
+        '#F57F17', // 29 Amber
+        '#FF6F00', // 30 Orange
+        '#E65100', // 31 Deep Orange
+        '#BF360C', // 32 Brown
+        '#4E342E', // 33 Grey
+        '#424242', //
         // 34 Red
-        '#EF9A9A',
-        // 35 Pink
-        '#F48FB1',
-        // 36 Purple
-        '#CE93D8',
-        // 37 Deep Purple
-        '#B39DDB',
-        // 38 Indigo
-        '#9FA8DA',
-        // 39 Blue
-        '#90CAF9',
-        // 40 Cyan
-        '#80DEEA',
-        // 41 Teal
-        '#80CBC4',
-        // 42 Green
-        '#A5D6A7',
-        // 43 Light Green
-        '#C5E1A5',
-        // 44 Lime
-        '#E6EE9C',
-        // 45 Amber
-        '#FFE082',
-        // 46 Orange
-        '#FFCC80',
-        // 47 Deep Orange
-        '#FFAB91',
-        // 48 Brown
-        '#BCAAA4',
-        // 49 Grey
-        '#E0E0E0',
-        // 50 Grey
-        '#505050'
-    ];
+        '#EF9A9A', // 35 Pink
+        '#F48FB1', // 36 Purple
+        '#CE93D8', // 37 Deep Purple
+        '#B39DDB', // 38 Indigo
+        '#9FA8DA', // 39 Blue
+        '#90CAF9', // 40 Cyan
+        '#80DEEA', // 41 Teal
+        '#80CBC4', // 42 Green
+        '#A5D6A7', // 43 Light Green
+        '#C5E1A5', // 44 Lime
+        '#E6EE9C', // 45 Amber
+        '#FFE082', // 46 Orange
+        '#FFCC80', // 47 Deep Orange
+        '#FFAB91', // 48 Brown
+        '#BCAAA4', // 49 Grey
+        '#E0E0E0', // 50 Grey
+        '#505050'];
 
 
-    const col_category50b = [
-        "#1CE6FF", "#FF34FF", "#FF4A46", "#008941", "#006FA6", "#A30059", "#7A4900", "#0000A6", "#63FFAC", "#B79762",
-        "#004D43", "#8FB0FF", "#997D87", "#5A0007", "#809693", "#1B4400", "#4FC601", "#3B5DFF", "#4A3B53", "#FF2F80",
-        "#61615A", "#BA0900", "#6B7900", "#00C2A0", "#FFAA92", "#FF90C9", "#D16100", "#000035", "#7B4F4B", "#A1C299",
-        "#300018", "#0AA6D8", "#013349", "#00846F", "#372101", "#FFB500", "#C2FFED", "#A079BF", "#CC0744", "#C0B9B2",
-        "#C2FF99", "#001E09", "#00489C", "#6F0062", "#0CBD66", "#EEC3FF", "#456D75", "#B77B68", "#7A87A1", "#788D66"
-    ];
+    const col_category50b = ["#1CE6FF", "#FF34FF", "#FF4A46", "#008941", "#006FA6", "#A30059", "#7A4900", "#0000A6", "#63FFAC", "#B79762", "#004D43", "#8FB0FF", "#997D87", "#5A0007", "#809693", "#1B4400", "#4FC601", "#3B5DFF", "#4A3B53", "#FF2F80", "#61615A", "#BA0900", "#6B7900", "#00C2A0", "#FFAA92", "#FF90C9", "#D16100", "#000035", "#7B4F4B", "#A1C299", "#300018", "#0AA6D8", "#013349", "#00846F", "#372101", "#FFB500", "#C2FFED", "#A079BF", "#CC0744", "#C0B9B2", "#C2FF99", "#001E09", "#00489C", "#6F0062", "#0CBD66", "#EEC3FF", "#456D75", "#B77B68", "#7A87A1", "#788D66"];
 
-    const col_category50c = [
-        // Red
-        '#FF5252', '#FF1744', '#D50000',
-        // Pink
-        '#FF4081', '#F50057', '#C51162',
-        // Purple
-        '#E040FB', '#D500F9', '#AA00FF',
-        // Deep Purple
-        '#7C4DFF', '#651FFF', '#6200EA',
-        // Indigo
-        '#536DFE', '#3D5AFE', '#304FFE',
-        // Blue
-        '#448AFF', '#2979FF', '#2962FF',
-        // Cyan
-        '#18FFFF', '#00E5FF', '#00B8D4',
-        // Teal
-        '#64FFDA', '#1DE9B6', '#00BFA5',
-        // Green
-        '#69F0AE', '#00E676', '#00C853',
-        // Light Green
-        '#B2FF59', '#76FF03', '#64DD17',
-        // Lime
-        '#EEFF41', '#C6FF00', '#AEEA00',
-        // Yellow
-        '#FFFF00', '#FFEA00', '#FFD600',
-        // Amber
-        '#FFD740', '#FFC400', '#FFAB00',
-        // Orange
-        '#FFAB40', '#FF9100', '#FF6D00',
-        // Deep Orange
-        '#FF6E40', '#FF3D00', '#DD2C00',
-        // Brown
-        '#5D4037', '#4E342E', '#3E2723',
-        // Grey
+    const col_category50c = [// Red
+        '#FF5252', '#FF1744', '#D50000', // Pink
+        '#FF4081', '#F50057', '#C51162', // Purple
+        '#E040FB', '#D500F9', '#AA00FF', // Deep Purple
+        '#7C4DFF', '#651FFF', '#6200EA', // Indigo
+        '#536DFE', '#3D5AFE', '#304FFE', // Blue
+        '#448AFF', '#2979FF', '#2962FF', // Cyan
+        '#18FFFF', '#00E5FF', '#00B8D4', // Teal
+        '#64FFDA', '#1DE9B6', '#00BFA5', // Green
+        '#69F0AE', '#00E676', '#00C853', // Light Green
+        '#B2FF59', '#76FF03', '#64DD17', // Lime
+        '#EEFF41', '#C6FF00', '#AEEA00', // Yellow
+        '#FFFF00', '#FFEA00', '#FFD600', // Amber
+        '#FFD740', '#FFC400', '#FFAB00', // Orange
+        '#FFAB40', '#FF9100', '#FF6D00', // Deep Orange
+        '#FF6E40', '#FF3D00', '#DD2C00', // Brown
+        '#5D4037', '#4E342E', '#3E2723', // Grey
         '#9E9E9E', '#616161'];
 
     const category50 = function () {
@@ -28271,7 +28101,6 @@ if (!phyloXml) {
     let _colorPickerData = null;
     let _colorsForColorPicker = null;
     let _currentLabelColorVisualization = null;
-    let _currentNodeBorderColorVisualization = null;
     let _currentNodeFillColorVisualization = null;
     let _currentNodeShapeVisualization = null;
     let _currentNodeSizeVisualization = null;
@@ -28298,6 +28127,7 @@ if (!phyloXml) {
     let _specialVisualizations = null;
     let _offsetTop = 0;
     let _options = null;
+    let _options_orig = null;
     let _rank_collapse_level = -1;
     let _root = null;
     let _root_const = null;
@@ -28406,9 +28236,7 @@ if (!phyloXml) {
     }
 
     function isCanDoMsaResidueVisualizations() {
-        return ((_settings.enableNodeVisualizations === true)
-            && (_settings.enableMsaResidueVisualizations === true) && (_basicTreeProperties.alignedMolSeqs === true)
-            && (_basicTreeProperties.maxMolSeqLength && (_basicTreeProperties.maxMolSeqLength > 1)));
+        return ((_settings.enableNodeVisualizations === true) && (_settings.enableMsaResidueVisualizations === true) && (_basicTreeProperties.alignedMolSeqs === true) && (_basicTreeProperties.maxMolSeqLength && (_basicTreeProperties.maxMolSeqLength > 1)));
     }
 
     function isAddVisualization2() {
@@ -28430,44 +28258,158 @@ if (!phyloXml) {
     function mouseover() {
         _node_mouseover_div.transition()
             .duration(300)
-            .style('opacity', 1);
+            .style('opacity', 0.95)
+            .style('text-align', 'left')
+            .style('position', 'absolute')
+            .style('font', '12px sans-serif')
+            .style('pointer-events', 'none')
+            .style('background', '#dddddd')
+            .style('border', 'solid 1px #aaa')
+            .style('border-radius', '4px')
     }
 
     function mousemove(d) {
-        let txt = '';
+
+        let mo_text = '';
         if (d.name) {
-            txt = d.name;
+            mo_text += 'Name: ' + d.name + '<br>';
         }
-        if (d.properties) {
-            const l = d.properties.length;
-            //let mut = '';
-            let first = true;
-            for (let p = 0; p < l; ++p) {
-                //TODO do something like this for all properties:
-                //
-                // if (d.properties[p].ref === 'vipr:Mutation'
-                //     && d.properties[p].datatype === 'xsd:string'
-                //     && d.properties[p].applies_to === 'node') {
-                //     if (first) {
-                //         mut = d.properties[p].value;
-                //         first = false;
-                //     } else {
-                //         mut = mut + ' ' + d.properties[p].value
-                //     }
-                // }
+        if (d.branch_length) {
+            mo_text += 'Distance to Parent: ' + d.branch_length + '<br>';
+        }
+        mo_text += 'Depth: ' + forester.calcDepth(d) + '<br>';
+        let i = 0;
+        if (d.confidences) {
+            for (i = 0; i < d.confidences.length; ++i) {
+                let c = d.confidences[i];
+                if (c.type) {
+                    mo_text += 'Confidence [' + c.type + ']: ' + c.value + '<br>';
+                } else {
+                    mo_text += 'Confidence: ' + c.value + '<br>';
+                }
+                if (c.stddev) {
+                    mo_text += '- stdev: ' + c.stddev + '<br>';
+                }
             }
-            // if (mut.length > 0) {
-            //     txt = txt + ' {' + mut + '}'
-            // }
+        }
+        if (d.taxonomies) {
+            for (i = 0; i < d.taxonomies.length; ++i) {
+                mo_text += 'Taxonomy<br>';
+                let t = d.taxonomies[i];
+                if (t.id) {
+                    if (t.id.provider) {
+                        mo_text += '- Id [' + t.id.provider + ']: ' + t.id.value + '<br>';
+                    } else {
+                        mo_text += '- Id: ' + t.id.value + '<br>';
+                    }
+                }
+                if (t.code) {
+                    mo_text += '- Code: ' + t.code + '<br>';
+                }
+                if (t.scientific_name) {
+                    mo_text += '- Scientific name: ' + t.scientific_name + '<br>';
+                }
+                if (t.common_name) {
+                    mo_text += '- Common name: ' + t.common_name + '<br>';
+                }
+                if (t.rank) {
+                    mo_text += '- Rank: ' + t.rank + '<br>';
+                }
+            }
+        }
+        if (d.sequences) {
+            for (i = 0; i < d.sequences.length; ++i) {
+                mo_text += 'Sequence<br>';
+                let s = d.sequences[i];
+                if (s.accession) {
+                    if (s.accession.source) {
+                        mo_text += '- Accession [' + s.accession.source + ']: ' + s.accession.value + '<br>';
+                    } else {
+                        mo_text += '- Accession: ' + s.accession.value + '<br>';
+                    }
+                    if (s.accession.comment) {
+                        mo_text += '-- comment: ' + s.accession.comment + '<br>';
+                    }
+                }
+                if (s.symbol) {
+                    mo_text += '- Symbol: ' + s.symbol + '<br>';
+                }
+                if (s.name) {
+                    mo_text += '- Name: ' + s.name + '<br>';
+                }
+                if (s.gene_name) {
+                    mo_text += '- Gene name: ' + s.gene_name + '<br>';
+                }
+                if (s.location) {
+                    mo_text += '- Location: ' + s.location + '<br>';
+                }
+                if (s.type) {
+                    mo_text += '- Type: ' + s.type + '<br>';
+                }
+            }
+        }
+        if (d.distributions) {
+            let distributions = d.distributions;
+            for (i = 0; i < distributions.length; ++i) {
+                mo_text += 'Distribution: ';
+                if (distributions[i].desc) {
+                    mo_text += distributions[i].desc + '<br>';
+                }
+            }
+        }
+        if (d.date) {
+            mo_text += 'Date: ';
+            let date = d.date;
+            if (date.desc) {
+                mo_text += date.desc + '<br>';
+            }
+        }
+        if (d.events) {
+            mo_text += 'Events<br>';
+            let ev = d.events;
+            if (ev.type && ev.type.length > 0) {
+                mo_text += '- Type: ' + ev.type + '<br>';
+            }
+            if (ev.duplications && ev.duplications > 0) {
+                mo_text += '- Duplications: ' + ev.duplications + '<br>';
+            }
+            if (ev.speciations && ev.speciations > 0) {
+                mo_text += '- Speciations: ' + ev.speciations + '<br>';
+            }
+            if (ev.losses && ev.losses > 0) {
+                mo_text += '- Losses: ' + ev.losses + '<br>';
+            }
+        }
+        if (d.properties && d.properties.length > 0) {
+            let propertiesLength = d.properties.length;
+            for (i = 0; i < propertiesLength; ++i) {
+                let property = d.properties[i];
+                if (property.ref && property.value) {
+                    let prop_ref = property.ref
+                    if (prop_ref.indexOf(':') > 0) {
+                        prop_ref = prop_ref.substring(prop_ref.indexOf(':') + 1)
+                    }
+                    if (property.unit) {
+                        mo_text += prop_ref + ': ' + property.value + property.unit + '<br>';
+                    } else {
+                        mo_text += prop_ref + ': ' + property.value + '<br>';
+                    }
+                }
+            }
+        }
+        if (d.children || d._children) {
+            mo_text += 'Sum of Subtree Tips: ' + forester.calcSumOfAllExternalDescendants(d) + '<br>';
         }
 
         _node_mouseover_div
-            .text(txt)
+            .html(mo_text)
             .style('left', (d3.event.pageX) + 'px')
             .style('top', (d3.event.pageY) + 'px');
     }
 
     function mouseout() {
+        _node_mouseover_div
+            .html('')
         _node_mouseover_div.transition()
             .duration(300)
             .style('opacity', 1e-6);
@@ -28475,15 +28417,8 @@ if (!phyloXml) {
 
     // ----------------------------
 
-    function createVisualization(label,
-                                 description,
-                                 field,
-                                 cladePropertyRef,
-                                 isRegex,
-                                 mapping,
-                                 mappingFn, // mappingFn is a scale
-                                 scaleType,
-                                 altMappingFn) {
+    function createVisualization(label, description, field, cladePropertyRef, isRegex, mapping, mappingFn, // mappingFn is a scale
+                                 scaleType, altMappingFn) {
         if (arguments.length < 8) {
             throw('expected at least 8 arguments, got ' + arguments.length);
         }
@@ -28522,8 +28457,7 @@ if (!phyloXml) {
                         scaleType = LINEAR_SCALE;
                     } else {
                         let s = cladePropertyRef ? cladePropertyRef : field;
-                        console.log(WARNING + ': Ordinal scale mapping for ' + label + ' (' + s + '): domain > range: ' +
-                            mappingFn.domain().length + ' > ' + mappingFn.range().length);
+                        console.log(WARNING + ': Ordinal scale mapping for ' + label + ' (' + s + '): domain > range: ' + mappingFn.domain().length + ' > ' + mappingFn.range().length);
                     }
                 }
             }
@@ -28544,9 +28478,7 @@ if (!phyloXml) {
                     if (nodeVisualization.label) {
 
                         let scaleType = '';
-                        if (nodeVisualization.shapes &&
-                            Array.isArray(nodeVisualization.shapes) &&
-                            (nodeVisualization.shapes.length > 0)) {
+                        if (nodeVisualization.shapes && Array.isArray(nodeVisualization.shapes) && (nodeVisualization.shapes.length > 0)) {
 
                             let shapeScale = null;
                             if (nodeVisualization.label === MSA_RESIDUE) {
@@ -28554,14 +28486,12 @@ if (!phyloXml) {
                                     .range(nodeVisualization.shapes)
                                     .domain(_basicTreeProperties.molSeqResiduesPerPosition[0]);
                                 scaleType = ORDINAL_SCALE;
-                            } else if (nodeVisualization.cladeRef && nodeProperties[nodeVisualization.cladeRef] &&
-                                forester.setToArray(nodeProperties[nodeVisualization.cladeRef]).length > 0) {
+                            } else if (nodeVisualization.cladeRef && nodeProperties[nodeVisualization.cladeRef] && forester.setToArray(nodeProperties[nodeVisualization.cladeRef]).length > 0) {
                                 shapeScale = d3.scale.ordinal()
                                     .range(nodeVisualization.shapes)
                                     .domain(forester.setToSortedArray(nodeProperties[nodeVisualization.cladeRef]));
                                 scaleType = ORDINAL_SCALE;
-                            } else if (nodeVisualization.field && nodeProperties[nodeVisualization.field] &&
-                                forester.setToArray(nodeProperties[nodeVisualization.field]).length > 0) {
+                            } else if (nodeVisualization.field && nodeProperties[nodeVisualization.field] && forester.setToArray(nodeProperties[nodeVisualization.field]).length > 0) {
                                 shapeScale = d3.scale.ordinal()
                                     .range(nodeVisualization.shapes)
                                     .domain(forester.setToSortedArray(nodeProperties[nodeVisualization.field]));
@@ -28569,22 +28499,13 @@ if (!phyloXml) {
                             }
 
                             if (shapeScale) {
-                                addNodeShapeVisualization(nodeVisualization.label,
-                                    nodeVisualization.description,
-                                    nodeVisualization.field ? nodeVisualization.field : null,
-                                    nodeVisualization.cladeRef ? nodeVisualization.cladeRef : null,
-                                    nodeVisualization.regex,
-                                    null,
-                                    shapeScale,
-                                    scaleType
-                                );
+                                addNodeShapeVisualization(nodeVisualization.label, nodeVisualization.description, nodeVisualization.field ? nodeVisualization.field : null, nodeVisualization.cladeRef ? nodeVisualization.cladeRef : null, nodeVisualization.regex, null, shapeScale, scaleType);
                             }
                         }
 
                         if (nodeVisualization.colors) {
                             // TODO: Not dealing with nodeVisualization.field, yet.
-                            if ((nodeVisualization.cladeRef && nodeProperties[nodeVisualization.cladeRef] && forester.setToArray(nodeProperties[nodeVisualization.cladeRef]).length > 0)
-                                || (nodeVisualization.label === MSA_RESIDUE)) {
+                            if ((nodeVisualization.cladeRef && nodeProperties[nodeVisualization.cladeRef] && forester.setToArray(nodeProperties[nodeVisualization.cladeRef]).length > 0) || (nodeVisualization.label === MSA_RESIDUE)) {
                                 let colorScale = null;
                                 let altColorScale = null;
 
@@ -28659,35 +28580,9 @@ if (!phyloXml) {
                                 }
 
                                 if (colorScale) {
-                                    addLabelColorVisualization(nodeVisualization.label,
-                                        nodeVisualization.description,
-                                        null,
-                                        nodeVisualization.cladeRef,
-                                        nodeVisualization.regex,
-                                        null,
-                                        colorScale,
-                                        scaleType,
-                                        altColorScale);
+                                    addLabelColorVisualization(nodeVisualization.label, nodeVisualization.description, null, nodeVisualization.cladeRef, nodeVisualization.regex, null, colorScale, scaleType, altColorScale);
 
-                                    addNodeFillColorVisualization(nodeVisualization.label,
-                                        nodeVisualization.description,
-                                        null,
-                                        nodeVisualization.cladeRef,
-                                        nodeVisualization.regex,
-                                        null,
-                                        colorScale,
-                                        scaleType,
-                                        altColorScale);
-
-                                    addNodeBorderColorVisualization(nodeVisualization.label,
-                                        nodeVisualization.description,
-                                        null,
-                                        nodeVisualization.cladeRef,
-                                        nodeVisualization.regex,
-                                        null,
-                                        colorScale,
-                                        scaleType,
-                                        altColorScale);
+                                    addNodeFillColorVisualization(nodeVisualization.label, nodeVisualization.description, null, nodeVisualization.cladeRef, nodeVisualization.regex, null, colorScale, scaleType, altColorScale);
                                 }
                             }
                         }
@@ -28708,14 +28603,7 @@ if (!phyloXml) {
                                     throw 'Number of sizes has to be either 2 or 3';
                                 }
                                 if (sizeScale) {
-                                    addNodeSizeVisualization(nodeVisualization.label,
-                                        nodeVisualization.description,
-                                        null,
-                                        nodeVisualization.cladeRef,
-                                        nodeVisualization.regex,
-                                        null,
-                                        sizeScale,
-                                        scaleType);
+                                    addNodeSizeVisualization(nodeVisualization.label, nodeVisualization.description, null, nodeVisualization.cladeRef, nodeVisualization.regex, null, sizeScale, scaleType);
                                 }
                             }
                         }
@@ -28726,14 +28614,7 @@ if (!phyloXml) {
     }
 
 
-    function addNodeSizeVisualization(label,
-                                      description,
-                                      field,
-                                      cladePropertyRef,
-                                      isRegex,
-                                      mapping,
-                                      mappingFn,
-                                      scaleType) {
+    function addNodeSizeVisualization(label, description, field, cladePropertyRef, isRegex, mapping, mappingFn, scaleType) {
         if (arguments.length !== 8) {
             throw('expected 8 arguments, got ' + arguments.length);
         }
@@ -28743,31 +28624,16 @@ if (!phyloXml) {
         if (!_visualizations.nodeSize) {
             _visualizations.nodeSize = {};
         }
-        //  if (_visualizations.nodeSize[label]) { // removed because causes error on BVBRC
-        //      throw('node size visualization for "' + label + '" already exists');
-        //  }
-        let vis = createVisualization(label,
-            description,
-            field,
-            cladePropertyRef,
-            isRegex,
-            mapping,
-            mappingFn,
-            scaleType);
+        if (_visualizations.nodeSize[label]) {
+            console.log(MESSAGE + 'node size visualization for "' + label + '" already exists');
+        }
+        let vis = createVisualization(label, description, field, cladePropertyRef, isRegex, mapping, mappingFn, scaleType);
         if (vis) {
             _visualizations.nodeSize[vis.label] = vis;
         }
     }
 
-    function addNodeFillColorVisualization(label,
-                                           description,
-                                           field,
-                                           cladePropertyRef,
-                                           isRegex,
-                                           mapping,
-                                           mappingFn,
-                                           scaleType,
-                                           altMappingFn) {
+    function addNodeFillColorVisualization(label, description, field, cladePropertyRef, isRegex, mapping, mappingFn, scaleType, altMappingFn) {
         if (arguments.length < 8) {
             throw('expected at least 8 arguments, got ' + arguments.length);
         }
@@ -28777,67 +28643,16 @@ if (!phyloXml) {
         if (!_visualizations.nodeFillColor) {
             _visualizations.nodeFillColor = {};
         }
-        //   if (_visualizations.nodeFillColor[label]) { // removed because causes error on BVBRC
-        //      throw('node fill color visualization for "' + label + '" already exists');
-        //   }
-        let vis = createVisualization(label,
-            description,
-            field,
-            cladePropertyRef,
-            isRegex,
-            mapping,
-            mappingFn,
-            scaleType,
-            altMappingFn);
+        if (_visualizations.nodeFillColor[label]) {
+            console.log(MESSAGE + 'node fill color visualization for "' + label + '" already exists');
+        }
+        let vis = createVisualization(label, description, field, cladePropertyRef, isRegex, mapping, mappingFn, scaleType, altMappingFn);
         if (vis) {
             _visualizations.nodeFillColor[vis.label] = vis;
         }
     }
 
-
-    function addNodeBorderColorVisualization(label,
-                                             description,
-                                             field,
-                                             cladePropertyRef,
-                                             isRegex,
-                                             mapping,
-                                             mappingFn,
-                                             scaleType,
-                                             altMappingFn) {
-        if (arguments.length < 8) {
-            throw('expected at least 8 arguments, got ' + arguments.length);
-        }
-        if (!_visualizations) {
-            _visualizations = {};
-        }
-        if (!_visualizations.nodeBorderColor) {
-            _visualizations.nodeBorderColor = {};
-        }
-        //if (_visualizations.nodeBorderColor[label]) { // removed because causes error on BVBRC
-        //     throw('node border color visualization for "' + label + '" already exists');
-        // }
-        let vis = createVisualization(label,
-            description,
-            field,
-            cladePropertyRef,
-            isRegex,
-            mapping,
-            mappingFn,
-            scaleType,
-            altMappingFn);
-        if (vis) {
-            _visualizations.nodeBorderColor[vis.label] = vis;
-        }
-    }
-
-    function addNodeShapeVisualization(label,
-                                       description,
-                                       field,
-                                       cladePropertyRef,
-                                       isRegex,
-                                       mapping,
-                                       mappingFn,
-                                       scaleType) {
+    function addNodeShapeVisualization(label, description, field, cladePropertyRef, isRegex, mapping, mappingFn, scaleType) {
         if (arguments.length !== 8) {
             throw('expected 8 arguments, got ' + arguments.length);
         }
@@ -28847,31 +28662,16 @@ if (!phyloXml) {
         if (!_visualizations.nodeShape) {
             _visualizations.nodeShape = {};
         }
-        // if (_visualizations.nodeShape[label]) { // removed because causes error on BVBRC
-        //     throw('node shape visualization for "' + label + '" already exists');
-        //  }
-        let vis = createVisualization(label,
-            description,
-            field,
-            cladePropertyRef,
-            isRegex,
-            mapping,
-            mappingFn,
-            scaleType);
+        if (_visualizations.nodeShape[label]) {
+            console.log(MESSAGE + 'node shape visualization for "' + label + '" already exists');
+        }
+        let vis = createVisualization(label, description, field, cladePropertyRef, isRegex, mapping, mappingFn, scaleType);
         if (vis) {
             _visualizations.nodeShape[vis.label] = vis;
         }
     }
 
-    function addLabelColorVisualization(label,
-                                        description,
-                                        field,
-                                        cladePropertyRef,
-                                        isRegex,
-                                        mapping,
-                                        mappingFn,
-                                        scaleType,
-                                        altMappingFn) {
+    function addLabelColorVisualization(label, description, field, cladePropertyRef, isRegex, mapping, mappingFn, scaleType, altMappingFn) {
         if (arguments.length < 8) {
             throw('expected at least 8 arguments, got ' + arguments.length);
         }
@@ -28881,18 +28681,10 @@ if (!phyloXml) {
         if (!_visualizations.labelColor) {
             _visualizations.labelColor = {};
         }
-        // if (_visualizations.labelColor[label]) { // removed because causes error on BVBRC
-        //     throw('label color visualization for "' + label + '" already exists');
-        // }
-        let vis = createVisualization(label,
-            description,
-            field,
-            cladePropertyRef,
-            isRegex,
-            mapping,
-            mappingFn,
-            scaleType,
-            altMappingFn);
+        if (_visualizations.labelColor[label]) {
+            console.log(MESSAGE + 'label color visualization for "' + label + '" already exists');
+        }
+        let vis = createVisualization(label, description, field, cladePropertyRef, isRegex, mapping, mappingFn, scaleType, altMappingFn);
         if (vis) {
             _visualizations.labelColor[vis.label] = vis;
         }
@@ -29013,8 +28805,7 @@ if (!phyloXml) {
                 if (isLinearRange) {
                     if (i === 0) {
                         return d + ' (min)';
-                    } else if (((linearRangeLength === 2 && i === 1) ||
-                        (linearRangeLength === 3 && i === 2))) {
+                    } else if (((linearRangeLength === 2 && i === 1) || (linearRangeLength === 3 && i === 2))) {
                         return d + ' (max)';
                     } else if (linearRangeLength === 3 && i === 1) {
                         return preciseRound(d, _options.decimalsForLinearRangeMeanValue) + ' (mean)';
@@ -29247,8 +29038,7 @@ if (!phyloXml) {
                 if (isLinearRange) {
                     if (i === 0) {
                         return d + ' (min)';
-                    } else if (((linearRangeLength === 2 && i === 1) ||
-                        (linearRangeLength === 3 && i === 2))) {
+                    } else if (((linearRangeLength === 2 && i === 1) || (linearRangeLength === 3 && i === 2))) {
                         return d + ' (max)';
                     } else if (linearRangeLength === 3 && i === 1) {
                         return preciseRound(d, _options.decimalsForLinearRangeMeanValue) + ' (mean)';
@@ -29325,11 +29115,7 @@ if (!phyloXml) {
             desc = _currentLabelColorVisualization;
 
             scaleType = _visualizations.labelColor[_currentLabelColorVisualization].scaleType;
-            counter = makeColorLegend(LEGEND_LABEL_COLOR,
-                xPos, yPos,
-                _legendColorScales[LEGEND_LABEL_COLOR],
-                scaleType,
-                label, desc);
+            counter = makeColorLegend(LEGEND_LABEL_COLOR, xPos, yPos, _legendColorScales[LEGEND_LABEL_COLOR], scaleType, label, desc);
             xPos += xPosIncr;
             yPos += ((counter * yPosIncr) + yPosIncrConst);
         } else {
@@ -29342,32 +29128,11 @@ if (!phyloXml) {
             desc = _currentNodeFillColorVisualization;
             scaleType = _visualizations.nodeFillColor[_currentNodeFillColorVisualization].scaleType;
 
-            counter = makeColorLegend(LEGEND_NODE_FILL_COLOR,
-                xPos, yPos,
-                _legendColorScales[LEGEND_NODE_FILL_COLOR],
-                scaleType,
-                label, desc);
+            counter = makeColorLegend(LEGEND_NODE_FILL_COLOR, xPos, yPos, _legendColorScales[LEGEND_NODE_FILL_COLOR], scaleType, label, desc);
             xPos += xPosIncr;
             yPos += ((counter * yPosIncr) + yPosIncrConst);
         } else {
             removeColorLegend(LEGEND_NODE_FILL_COLOR);
-        }
-
-        if (_showLegends && _options.showNodeVisualizations && _legendColorScales[LEGEND_NODE_BORDER_COLOR] && _visualizations.nodeBorderColor[_currentNodeBorderColorVisualization]) {
-            removeColorLegend(LEGEND_NODE_BORDER_COLOR);
-            label = 'Node Border';
-            desc = _currentNodeBorderColorVisualization;
-            scaleType = _visualizations.nodeBorderColor[_currentNodeBorderColorVisualization].scaleType;
-
-            counter = makeColorLegend(LEGEND_NODE_BORDER_COLOR,
-                xPos, yPos,
-                _legendColorScales[LEGEND_NODE_BORDER_COLOR],
-                scaleType,
-                label, desc);
-            xPos += xPosIncr;
-            yPos += ((counter * yPosIncr) + yPosIncrConst);
-        } else {
-            removeColorLegend(LEGEND_NODE_BORDER_COLOR);
         }
 
         if (_showLegends && _options.showNodeVisualizations && _legendShapeScales[LEGEND_NODE_SHAPE]) {
@@ -29456,48 +29221,27 @@ if (!phyloXml) {
     }
 
     function prepareColorsForColorPicker() {
-        const DEFAULT_COLORS_FOR_COLORPICKER = [
-            // Red
-            '#FFEBEE', '#FFCDD2', '#EF9A9A', '#E57373', '#EF5350', '#F44336', '#E53935', '#D32F2F', '#C62828', '#B71C1C', '#FF8A80', '#FF5252', '#FF1744', '#D50000',
-            // Pink
-            '#FCE4EC', '#F8BBD0', '#F48FB1', '#F06292', '#EC407A', '#E91E63', '#D81B60', '#C2185B', '#AD1457', '#880E4F', '#FF80AB', '#FF4081', '#F50057', '#C51162',
-            // Purple
-            '#F3E5F5', '#E1BEE7', '#CE93D8', '#BA68C8', '#AB47BC', '#9C27B0', '#8E24AA', '#7B1FA2', '#6A1B9A', '#4A148C', '#EA80FC', '#E040FB', '#D500F9', '#AA00FF',
-            // Deep Purple
-            '#EDE7F6', '#D1C4E9', '#B39DDB', '#9575CD', '#7E57C2', '#673AB7', '#5E35B1', '#512DA8', '#4527A0', '#311B92', '#B388FF', '#7C4DFF', '#651FFF', '#6200EA',
-            // Indigo
-            '#E8EAF6', '#C5CAE9', '#9FA8DA', '#7986CB', '#5C6BC0', '#3F51B5', '#3949AB', '#303F9F', '#283593', '#1A237E', '#8C9EFF', '#536DFE', '#3D5AFE', '#304FFE',
-            // Blue
-            '#E3F2FD', '#BBDEFB', '#90CAF9', '#64B5F6', '#42A5F5', '#2196F3', '#1E88E5', '#1976D2', '#1565C0', '#0D47A1', '#82B1FF', '#448AFF', '#2979FF', '#2962FF',
-            // Light Blue
-            '#E1F5FE', '#B3E5FC', '#81D4FA', '#4FC3F7', '#29B6F6', '#03A9F4', '#039BE5', '#0288D1', '#0277BD', '#01579B', '#80D8FF', '#40C4FF', '#00B0FF', '#0091EA',
-            // Cyan
-            '#E0F7FA', '#B2EBF2', '#80DEEA', '#4DD0E1', '#26C6DA', '#00BCD4', '#00ACC1', '#0097A7', '#00838F', '#006064', '#84FFFF', '#18FFFF', '#00E5FF', '#00B8D4',
-            // Teal
-            '#E0F2F1', '#B2DFDB', '#80CBC4', '#4DB6AC', '#26A69A', '#009688', '#00897B', '#00796B', '#00695C', '#004D40', '#A7FFEB', '#64FFDA', '#1DE9B6', '#00BFA5',
-            // Green
-            '#E8F5E9', '#C8E6C9', '#A5D6A7', '#81C784', '#66BB6A', '#4CAF50', '#43A047', '#388E3C', '#2E7D32', '#1B5E20', '#B9F6CA', '#69F0AE', '#00E676', '#00C853',
-            // Light Green
-            '#F1F8E9', '#DCEDC8', '#C5E1A5', '#AED581', '#9CCC65', '#8BC34A', '#7CB342', '#689F38', '#558B2F', '#33691E', '#CCFF90', '#B2FF59', '#76FF03', '#64DD17',
-            // Lime
-            '#F9FBE7', '#F0F4C3', '#E6EE9C', '#DCE775', '#D4E157', '#CDDC39', '#C0CA33', '#AFB42B', '#9E9D24', '#827717', '#F4FF81', '#EEFF41', '#C6FF00', '#AEEA00',
-            // Yellow
-            '#FFFDE7', '#FFF9C4', '#FFF59D', '#FFF176', '#FFEE58', '#FFEB3B', '#FDD835', '#FBC02D', '#F9A825', '#F57F17', '#FFFF8D', '#FFFF00', '#FFEA00', '#FFD600',
-            // Amber
-            '#FFF8E1', '#FFECB3', '#FFE082', '#FFD54F', '#FFCA28', '#FFC107', '#FFB300', '#FFA000', '#FF8F00', '#FF6F00', '#FFE57F', '#FFD740', '#FFC400', '#FFAB00',
-            // Orange
-            '#FFF3E0', '#FFE0B2', '#FFCC80', '#FFB74D', '#FFA726', '#FF9800', '#FB8C00', '#F57C00', '#EF6C00', '#E65100', '#FFD180', '#FFAB40', '#FF9100', '#FF6D00',
-            // Deep Orange
-            '#FBE9E7', '#FFCCBC', '#FFAB91', '#FF8A65', '#FF7043', '#FF5722', '#F4511E', '#E64A19', '#D84315', '#BF360C', '#FF9E80', '#FF6E40', '#FF3D00', '#DD2C00',
-            // Brown
-            '#EFEBE9', '#D7CCC8', '#BCAAA4', '#A1887F', '#8D6E63', '#795548', '#6D4C41', '#5D4037', '#4E342E', '#3E2723',
-            // Grey
-            '#FAFAFA', '#F5F5F5', '#EEEEEE', '#E0E0E0', '#BDBDBD', '#9E9E9E', '#757575', '#616161', '#424242', '#212121',
-            // Blue Grey
-            '#ECEFF1', '#CFD8DC', '#B0BEC5', '#90A4AE', '#78909C', '#607D8B', '#546E7A', '#455A64', '#37474F', '#263238',
-            // Basic
-            '#FFFFFF', '#999999', '#000000', '#FF0000', '#00FF00', '#0000FF', '#FF00FF', '#FFFF00', '#00FFFF', _options.backgroundColorDefault
-        ];
+        const DEFAULT_COLORS_FOR_COLORPICKER = [// Red
+            '#FFEBEE', '#FFCDD2', '#EF9A9A', '#E57373', '#EF5350', '#F44336', '#E53935', '#D32F2F', '#C62828', '#B71C1C', '#FF8A80', '#FF5252', '#FF1744', '#D50000', // Pink
+            '#FCE4EC', '#F8BBD0', '#F48FB1', '#F06292', '#EC407A', '#E91E63', '#D81B60', '#C2185B', '#AD1457', '#880E4F', '#FF80AB', '#FF4081', '#F50057', '#C51162', // Purple
+            '#F3E5F5', '#E1BEE7', '#CE93D8', '#BA68C8', '#AB47BC', '#9C27B0', '#8E24AA', '#7B1FA2', '#6A1B9A', '#4A148C', '#EA80FC', '#E040FB', '#D500F9', '#AA00FF', // Deep Purple
+            '#EDE7F6', '#D1C4E9', '#B39DDB', '#9575CD', '#7E57C2', '#673AB7', '#5E35B1', '#512DA8', '#4527A0', '#311B92', '#B388FF', '#7C4DFF', '#651FFF', '#6200EA', // Indigo
+            '#E8EAF6', '#C5CAE9', '#9FA8DA', '#7986CB', '#5C6BC0', '#3F51B5', '#3949AB', '#303F9F', '#283593', '#1A237E', '#8C9EFF', '#536DFE', '#3D5AFE', '#304FFE', // Blue
+            '#E3F2FD', '#BBDEFB', '#90CAF9', '#64B5F6', '#42A5F5', '#2196F3', '#1E88E5', '#1976D2', '#1565C0', '#0D47A1', '#82B1FF', '#448AFF', '#2979FF', '#2962FF', // Light Blue
+            '#E1F5FE', '#B3E5FC', '#81D4FA', '#4FC3F7', '#29B6F6', '#03A9F4', '#039BE5', '#0288D1', '#0277BD', '#01579B', '#80D8FF', '#40C4FF', '#00B0FF', '#0091EA', // Cyan
+            '#E0F7FA', '#B2EBF2', '#80DEEA', '#4DD0E1', '#26C6DA', '#00BCD4', '#00ACC1', '#0097A7', '#00838F', '#006064', '#84FFFF', '#18FFFF', '#00E5FF', '#00B8D4', // Teal
+            '#E0F2F1', '#B2DFDB', '#80CBC4', '#4DB6AC', '#26A69A', '#009688', '#00897B', '#00796B', '#00695C', '#004D40', '#A7FFEB', '#64FFDA', '#1DE9B6', '#00BFA5', // Green
+            '#E8F5E9', '#C8E6C9', '#A5D6A7', '#81C784', '#66BB6A', '#4CAF50', '#43A047', '#388E3C', '#2E7D32', '#1B5E20', '#B9F6CA', '#69F0AE', '#00E676', '#00C853', // Light Green
+            '#F1F8E9', '#DCEDC8', '#C5E1A5', '#AED581', '#9CCC65', '#8BC34A', '#7CB342', '#689F38', '#558B2F', '#33691E', '#CCFF90', '#B2FF59', '#76FF03', '#64DD17', // Lime
+            '#F9FBE7', '#F0F4C3', '#E6EE9C', '#DCE775', '#D4E157', '#CDDC39', '#C0CA33', '#AFB42B', '#9E9D24', '#827717', '#F4FF81', '#EEFF41', '#C6FF00', '#AEEA00', // Yellow
+            '#FFFDE7', '#FFF9C4', '#FFF59D', '#FFF176', '#FFEE58', '#FFEB3B', '#FDD835', '#FBC02D', '#F9A825', '#F57F17', '#FFFF8D', '#FFFF00', '#FFEA00', '#FFD600', // Amber
+            '#FFF8E1', '#FFECB3', '#FFE082', '#FFD54F', '#FFCA28', '#FFC107', '#FFB300', '#FFA000', '#FF8F00', '#FF6F00', '#FFE57F', '#FFD740', '#FFC400', '#FFAB00', // Orange
+            '#FFF3E0', '#FFE0B2', '#FFCC80', '#FFB74D', '#FFA726', '#FF9800', '#FB8C00', '#F57C00', '#EF6C00', '#E65100', '#FFD180', '#FFAB40', '#FF9100', '#FF6D00', // Deep Orange
+            '#FBE9E7', '#FFCCBC', '#FFAB91', '#FF8A65', '#FF7043', '#FF5722', '#F4511E', '#E64A19', '#D84315', '#BF360C', '#FF9E80', '#FF6E40', '#FF3D00', '#DD2C00', // Brown
+            '#EFEBE9', '#D7CCC8', '#BCAAA4', '#A1887F', '#8D6E63', '#795548', '#6D4C41', '#5D4037', '#4E342E', '#3E2723', // Grey
+            '#FAFAFA', '#F5F5F5', '#EEEEEE', '#E0E0E0', '#BDBDBD', '#9E9E9E', '#757575', '#616161', '#424242', '#212121', // Blue Grey
+            '#ECEFF1', '#CFD8DC', '#B0BEC5', '#90A4AE', '#78909C', '#607D8B', '#546E7A', '#455A64', '#37474F', '#263238', // Basic
+            '#FFFFFF', '#999999', '#000000', '#FF0000', '#00FF00', '#0000FF', '#FF00FF', '#FFFF00', '#00FFFF', _options.backgroundColorDefault];
         _colorsForColorPicker = [];
 
         const dcpl = DEFAULT_COLORS_FOR_COLORPICKER.length;
@@ -29621,25 +29365,21 @@ if (!phyloXml) {
             .attr('width', rectSize)
             .attr('height', rectSize)
             .style('fill', colorPickerColors)
-            .style('stroke',
-                function (d, i) {
-                    if (i === clickedOrigColorIndex) {
-                        return COLOR_PICKER_CLICKED_ORIG_COLOR_BORDER_COLOR;
-                    } else if (i === 263) {
-                        return COLOR_PICKER_BACKGROUND_BORDER_COLOR;
-                    }
-                    return WHITE;
+            .style('stroke', function (d, i) {
+                if (i === clickedOrigColorIndex) {
+                    return COLOR_PICKER_CLICKED_ORIG_COLOR_BORDER_COLOR;
+                } else if (i === 263) {
+                    return COLOR_PICKER_BACKGROUND_BORDER_COLOR;
                 }
-            );
+                return WHITE;
+            });
 
         colorPickerUpdate.select('text.' + COLOR_PICKER_LABEL)
             .attr('x', xCorrectionForLabel)
             .attr('y', yFactorForDesc * rectSize)
             .text(function (d, i) {
                 if (i === 0) {
-                    return 'Choose ' + _colorPickerData.legendLabel.toLowerCase() +
-                        ' for ' + _colorPickerData.legendDescription.toLowerCase() + ' "' +
-                        _colorPickerData.clickedName + '":';
+                    return 'Choose ' + _colorPickerData.legendLabel.toLowerCase() + ' for ' + _colorPickerData.legendDescription.toLowerCase() + ' "' + _colorPickerData.clickedName + '":';
                 }
             });
 
@@ -29650,11 +29390,9 @@ if (!phyloXml) {
             // Convert any CSS color to a hex representation
             let rgba, hex;
             rgba = colorToRGBA(color);
-            hex = [0, 1, 2].map(
-                function (idx) {
-                    return byteToHex(rgba[idx]);
-                }
-            ).join('');
+            hex = [0, 1, 2].map(function (idx) {
+                return byteToHex(rgba[idx]);
+            }).join('');
             return '#' + hex;
 
             function colorToRGBA(color) {
@@ -29761,11 +29499,7 @@ if (!phyloXml) {
             _dynahide_counter = 0;
             _dynahide_factor = Math.round(_options.externalNodeFontSize / ((0.8 * _displayHeight) / uncollsed_nodes));
             forester.preOrderTraversal(_root, function (n) {
-                if (!n.children && _dynahide_factor >= 2 && (++_dynahide_counter % _dynahide_factor !== 0)) {
-                    n.hide = true;
-                } else {
-                    n.hide = false;
-                }
+                n.hide = !n.children && _dynahide_factor >= 2 && (++_dynahide_counter % _dynahide_factor !== 0);
             });
         }
 
@@ -29899,8 +29633,7 @@ if (!phyloXml) {
 
         node.select('circle.nodeCircle')
             .attr('r', function (d) {
-                if (((_options.showNodeVisualizations && !_options.showNodeEvents) &&
-                    (makeNodeFillColor(d) === _options.backgroundColorDefault))) {
+                if (((_options.showNodeVisualizations && !_options.showNodeEvents) && (makeNodeFillColor(d) === _options.backgroundColorDefault))) {
                     return 0;
                 }
                 return makeNodeSize(d);
@@ -29948,7 +29681,6 @@ if (!phyloXml) {
             .style('fill', _options.showNodeVisualizations ? makeVisNodeFillColor : null)
             .style('opacity', _options.nodeVisualizationsOpacity)
             .attr('d', _options.showNodeVisualizations ? makeNodeVisShape : null);
-
 
         node.each(function (d) {
             if (d._children) {
@@ -30039,12 +29771,10 @@ if (!phyloXml) {
             .attr('stroke', makeBranchColor)
             .attr('d', function () {
                 let o = {
-                    x: source.x0,
-                    y: source.y0
+                    x: source.x0, y: source.y0
                 };
                 return elbow({
-                    source: o,
-                    target: o
+                    source: o, target: o
                 });
             });
 
@@ -30056,26 +29786,20 @@ if (!phyloXml) {
         link.exit()
             .attr('d', function () {
                 let o = {
-                    x: source.x,
-                    y: source.y
+                    x: source.x, y: source.y
                 };
                 return elbow({
-                    source: o,
-                    target: o
+                    source: o, target: o
                 });
             })
             .remove();
 
 
-        if (_options.phylogram && _options.alignPhylogram && _options.showExternalLabels
-            && (_options.showNodeName || _options.showTaxonomy || _options.showSequence
-            )) {
+        if (_options.phylogram && _options.alignPhylogram && _options.showExternalLabels && (_options.showNodeName || _options.showTaxonomy || _options.showSequence)) {
             let linkExtension = _svgGroup.append("g")
                 .selectAll('path')
                 .data(links.filter(function (d) {
-                    return (!d.target.children
-                        && !(_options.dynahide && d.target.hide)
-                    );
+                    return (!d.target.children && !(_options.dynahide && d.target.hide));
                 }));
 
             linkExtension.enter().insert('path', 'g')
@@ -30098,20 +29822,11 @@ if (!phyloXml) {
 
     let makeNodeSize = function (node) {
 
-        if ((_options.showNodeEvents && node.events && node.children
-                && (node.events.duplications
-                    || node.events.speciations))
-            || isNodeFound(node)
-            || isNodeSelected(node)) {
+        if ((_options.showNodeEvents && node.events && node.children && (node.events.duplications || node.events.speciations)) || isNodeFound(node) || isNodeSelected(node)) {
             return _options.nodeSizeDefault;
         }
 
-        return (
-            (_options.nodeSizeDefault > 0 && node.parent && !(_options.showNodeVisualizations && node.hasVis))
-            && ((node.children && _options.showInternalNodes)
-                || ((!node._children && !node.children) && _options.showExternalNodes)
-            )
-            || (_options.phylogram && node.parent && !node.parent.parent && (!node.branch_length || node.branch_length <= 0))
+        return ((_options.nodeSizeDefault > 0 && node.parent && !(_options.showNodeVisualizations && node.hasVis)) && ((node.children && _options.showInternalNodes) || ((!node._children && !node.children) && _options.showExternalNodes)) || (_options.phylogram && node.parent && !node.parent.parent && (!node.branch_length || node.branch_length <= 0))
 
         ) ? makeVisNodeSize(node, 0.05) : 0;
     };
@@ -30127,11 +29842,7 @@ if (!phyloXml) {
 
         const n = link.target;
         if (_options.showBranchVisualizations && n != null) {
-            if (
-                (_currentLabelColorVisualization === MSA_RESIDUE
-                    || _currentNodeBorderColorVisualization === MSA_RESIDUE
-                    || _currentNodeFillColorVisualization === MSA_RESIDUE
-                ) && isCanDoMsaResidueVisualizations()) {
+            if ((_currentLabelColorVisualization === MSA_RESIDUE || _currentNodeFillColorVisualization === MSA_RESIDUE) && isCanDoMsaResidueVisualizations()) {
 
                 let exts = forester.getAllExternalNodes(n);
                 let residue = null;
@@ -30160,36 +29871,19 @@ if (!phyloXml) {
             } else if ((isAddVisualization2() || isAddVisualization3() || isAddVisualization4()) && (_specialVisualizations != null) && (n.properties != null)) {
                 const l = n.properties.length;
                 for (let p = 0; p < l; ++p) {
-                    if (n.properties[p].ref === _visualizations4_applies_to_ref
-                        && n.properties[p].datatype === _visualizations4_property_datatype
-                        && n.properties[p].applies_to === _visualizations4_property_applies_to) {
-                        if (_currentNodeFillColorVisualization === n.properties[p].value
-                            || _currentLabelColorVisualization === n.properties[p].value
-                            || _currentNodeBorderColorVisualization === n.properties[p].value
-                        ) {
+                    if (n.properties[p].ref === _visualizations4_applies_to_ref && n.properties[p].datatype === _visualizations4_property_datatype && n.properties[p].applies_to === _visualizations4_property_applies_to) {
+                        if (_currentNodeFillColorVisualization === n.properties[p].value || _currentLabelColorVisualization === n.properties[p].value) {
                             return _visualizations4_color;
                         }
-                    } else if (n.properties[p].ref === _visualizations3_applies_to_ref
-                        && n.properties[p].datatype === _visualizations3_property_datatype
-                        && n.properties[p].applies_to === _visualizations3_property_applies_to) {
-                        if (_currentNodeFillColorVisualization === n.properties[p].value
-                            || _currentLabelColorVisualization === n.properties[p].value
-                            || _currentNodeBorderColorVisualization === n.properties[p].value
-                        ) {
+                    } else if (n.properties[p].ref === _visualizations3_applies_to_ref && n.properties[p].datatype === _visualizations3_property_datatype && n.properties[p].applies_to === _visualizations3_property_applies_to) {
+                        if (_currentNodeFillColorVisualization === n.properties[p].value || _currentLabelColorVisualization === n.properties[p].value) {
                             return _visualizations3_color;
                         }
-                    } else if (n.properties[p].ref === _visualizations2_applies_to_ref
-                        && n.properties[p].datatype === _visualizations2_property_datatype
-                        && n.properties[p].applies_to === _visualizations2_property_applies_to) {
-                        if (_currentNodeFillColorVisualization === n.properties[p].value
-                            || _currentLabelColorVisualization === n.properties[p].value
-                            || _currentNodeBorderColorVisualization === n.properties[p].value
-                        ) {
+                    } else if (n.properties[p].ref === _visualizations2_applies_to_ref && n.properties[p].datatype === _visualizations2_property_datatype && n.properties[p].applies_to === _visualizations2_property_applies_to) {
+                        if (_currentNodeFillColorVisualization === n.properties[p].value || _currentLabelColorVisualization === n.properties[p].value) {
                             return _visualizations2_color;
                         }
-                    } else if (n.properties[p].ref === 'vipr:PANGO_Lineage'
-                        && n.properties[p].datatype === 'xsd:string'
-                        && n.properties[p].applies_to === 'node') {
+                    } else if (n.properties[p].ref === 'vipr:PANGO_Lineage' && n.properties[p].datatype === 'xsd:string' && n.properties[p].applies_to === 'node') {
                         let vis = null;
                         if (_visualizations.nodeFillColor[_currentNodeFillColorVisualization]) {
                             vis = _visualizations.nodeFillColor[_currentNodeFillColorVisualization];
@@ -30202,9 +29896,7 @@ if (!phyloXml) {
                                 return color;
                             }
                         }
-                    } else if (n.properties[p].ref === 'vipr:PANGO_Lineage_L0'
-                        && n.properties[p].datatype === 'xsd:string'
-                        && n.properties[p].applies_to === 'node') {
+                    } else if (n.properties[p].ref === 'vipr:PANGO_Lineage_L0' && n.properties[p].datatype === 'xsd:string' && n.properties[p].applies_to === 'node') {
                         let vis = null;
                         if (_visualizations.nodeFillColor[_currentNodeFillColorVisualization]) {
                             vis = _visualizations.nodeFillColor[_currentNodeFillColorVisualization];
@@ -30217,9 +29909,7 @@ if (!phyloXml) {
                                 return color;
                             }
                         }
-                    } else if (n.properties[p].ref === 'vipr:PANGO_Lineage_L1'
-                        && n.properties[p].datatype === 'xsd:string'
-                        && n.properties[p].applies_to === 'node') {
+                    } else if (n.properties[p].ref === 'vipr:PANGO_Lineage_L1' && n.properties[p].datatype === 'xsd:string' && n.properties[p].applies_to === 'node') {
                         let vis = null;
                         if (_visualizations.nodeFillColor[_currentNodeFillColorVisualization]) {
                             vis = _visualizations.nodeFillColor[_currentNodeFillColorVisualization];
@@ -30259,8 +29949,7 @@ if (!phyloXml) {
         if (foundColor) {
             return foundColor;
         }
-        if (_options.showNodeEvents && phynode.events && phynode.children
-            && (phynode.events.speciations || phynode.events.duplications)) {
+        if (_options.showNodeEvents && phynode.events && phynode.children && (phynode.events.speciations || phynode.events.duplications)) {
             let evColor = makeNodeEventsDependentColor(phynode.events);
             if (evColor !== null) {
                 return evColor;
@@ -30341,10 +30030,7 @@ if (!phyloXml) {
     };
 
     let makeNodeVisShape = function (node) {
-        if (_currentNodeShapeVisualization && _visualizations && !node._children && _visualizations.nodeShape
-            && _visualizations.nodeShape[_currentNodeShapeVisualization] && !isNodeFound(node) && !isNodeSelected(node)
-            && !(_options.showNodeEvents && (node.events && (node.events.duplications
-                || node.events.speciations)))) {
+        if (_currentNodeShapeVisualization && _visualizations && !node._children && _visualizations.nodeShape && _visualizations.nodeShape[_currentNodeShapeVisualization] && !isNodeFound(node) && !isNodeSelected(node) && !(_options.showNodeEvents && (node.events && (node.events.duplications || node.events.speciations)))) {
             let vis = _visualizations.nodeShape[_currentNodeShapeVisualization];
             if (_currentNodeShapeVisualization === MSA_RESIDUE) {
 
@@ -30428,8 +30114,7 @@ if (!phyloXml) {
 
     let makeVisNodeFillColor = function (node) {
 
-        if (_options.showNodeVisualizations && !node._children && _currentNodeFillColorVisualization
-            && _visualizations && _visualizations.nodeFillColor) {
+        if (_options.showNodeVisualizations && !node._children && _currentNodeFillColorVisualization && _visualizations && _visualizations.nodeFillColor) {
 
             if (_currentNodeFillColorVisualization === MSA_RESIDUE) {
                 return makeMsaResidueVisualizationColor(node, _visualizations.nodeFillColor[MSA_RESIDUE]);
@@ -30442,21 +30127,15 @@ if (!phyloXml) {
             } else if (node.properties != null) {
                 const l = node.properties.length;
                 for (let p = 0; p < l; ++p) {
-                    if (node.properties[p].ref === _visualizations4_applies_to_ref
-                        && node.properties[p].datatype === _visualizations4_property_datatype
-                        && node.properties[p].applies_to === _visualizations4_property_applies_to) {
+                    if (node.properties[p].ref === _visualizations4_applies_to_ref && node.properties[p].datatype === _visualizations4_property_datatype && node.properties[p].applies_to === _visualizations4_property_applies_to) {
                         if (_currentNodeFillColorVisualization === node.properties[p].value) {
                             return _visualizations4_color;
                         }
-                    } else if (node.properties[p].ref === _visualizations3_applies_to_ref
-                        && node.properties[p].datatype === _visualizations3_property_datatype
-                        && node.properties[p].applies_to === _visualizations3_property_applies_to) {
+                    } else if (node.properties[p].ref === _visualizations3_applies_to_ref && node.properties[p].datatype === _visualizations3_property_datatype && node.properties[p].applies_to === _visualizations3_property_applies_to) {
                         if (_currentNodeFillColorVisualization === node.properties[p].value) {
                             return _visualizations3_color;
                         }
-                    } else if (node.properties[p].ref === _visualizations2_applies_to_ref
-                        && node.properties[p].datatype === _visualizations2_property_datatype
-                        && node.properties[p].applies_to === _visualizations2_property_applies_to) {
+                    } else if (node.properties[p].ref === _visualizations2_applies_to_ref && node.properties[p].datatype === _visualizations2_property_datatype && node.properties[p].applies_to === _visualizations2_property_applies_to) {
                         if (_currentNodeFillColorVisualization === node.properties[p].value) {
                             return _visualizations2_color;
                         }
@@ -30578,8 +30257,7 @@ if (!phyloXml) {
             return makeMsaResidueVisualizationColor(node, _visualizations.labelColor[MSA_RESIDUE]);
         }
         if (!node._children && _currentLabelColorVisualization) {
-            if (_visualizations && _visualizations.labelColor
-                && _visualizations.labelColor[_currentLabelColorVisualization]) {
+            if (_visualizations && _visualizations.labelColor && _visualizations.labelColor[_currentLabelColorVisualization]) {
                 let vis = _visualizations.labelColor[_currentLabelColorVisualization];
                 let color = makeVisColor(node, vis);
 
@@ -30589,21 +30267,15 @@ if (!phyloXml) {
             } else if (node.properties != null) {
                 const l = node.properties.length;
                 for (let p = 0; p < l; ++p) {
-                    if (node.properties[p].ref === _visualizations4_applies_to_ref
-                        && node.properties[p].datatype === _visualizations4_property_datatype
-                        && node.properties[p].applies_to === _visualizations4_property_applies_to) {
+                    if (node.properties[p].ref === _visualizations4_applies_to_ref && node.properties[p].datatype === _visualizations4_property_datatype && node.properties[p].applies_to === _visualizations4_property_applies_to) {
                         if (_currentLabelColorVisualization === node.properties[p].value) {
                             return _visualizations4_color;
                         }
-                    } else if (node.properties[p].ref === _visualizations3_applies_to_ref
-                        && node.properties[p].datatype === _visualizations3_property_datatype
-                        && node.properties[p].applies_to === _visualizations3_property_applies_to) {
+                    } else if (node.properties[p].ref === _visualizations3_applies_to_ref && node.properties[p].datatype === _visualizations3_property_datatype && node.properties[p].applies_to === _visualizations3_property_applies_to) {
                         if (_currentLabelColorVisualization === node.properties[p].value) {
                             return _visualizations3_color;
                         }
-                    } else if (node.properties[p].ref === _visualizations2_applies_to_ref
-                        && node.properties[p].datatype === _visualizations2_property_datatype
-                        && node.properties[p].applies_to === _visualizations2_property_applies_to) {
+                    } else if (node.properties[p].ref === _visualizations2_applies_to_ref && node.properties[p].datatype === _visualizations2_property_datatype && node.properties[p].applies_to === _visualizations2_property_applies_to) {
                         if (_currentLabelColorVisualization === node.properties[p].value) {
                             return _visualizations2_color;
                         }
@@ -30617,8 +30289,7 @@ if (!phyloXml) {
     let makeVisLabelColorForSubtree = function (node) {
         let color = null;
         let success = true;
-        if (_currentLabelColorVisualization && _visualizations && _visualizations.labelColor
-            && _visualizations.labelColor[_currentLabelColorVisualization]) {
+        if (_currentLabelColorVisualization && _visualizations && _visualizations.labelColor && _visualizations.labelColor[_currentLabelColorVisualization]) {
             let vis = _visualizations.labelColor[_currentLabelColorVisualization];
             forester.preOrderTraversalAll(node, function (n) {
                 if (forester.isHasNodeData(n)) {
@@ -30642,8 +30313,7 @@ if (!phyloXml) {
 
     let makeVisNodeSize = function (node, correctionFactor) {
         if (_options.showNodeVisualizations && _currentNodeSizeVisualization) {
-            if (_visualizations && !node._children && _visualizations.nodeSize
-                && _visualizations.nodeSize[_currentNodeSizeVisualization]) {
+            if (_visualizations && !node._children && _visualizations.nodeSize && _visualizations.nodeSize[_currentNodeSizeVisualization]) {
                 let vis = _visualizations.nodeSize[_currentNodeSizeVisualization];
                 let size;
                 if (vis.field) {
@@ -30861,16 +30531,14 @@ if (!phyloXml) {
         }
 
 
-        if (_nodeLabels && phynode.properties && phynode.properties != null) {
+        if (_nodeLabels && phynode.properties) {
             const props_length = phynode.properties.length;
             if (props_length > 0) {
                 for (const [key, value] of Object.entries(_nodeLabels)) {
                     if (value.selected === true && value.propertyRef) {
                         let prop_text = '';
                         for (let pm = 0; pm < props_length; ++pm) {
-                            if (phynode.properties[pm].ref === value.propertyRef
-                                && phynode.properties[pm].datatype === 'xsd:string'
-                                && phynode.properties[pm].applies_to === 'node') {
+                            if (phynode.properties[pm].ref === value.propertyRef && phynode.properties[pm].datatype === 'xsd:string' && phynode.properties[pm].applies_to === 'node') {
                                 if (prop_text.length > 0) {
                                     prop_text += ', '
                                 }
@@ -30949,9 +30617,7 @@ if (!phyloXml) {
             let last_label = makeNodeLabel(last);
 
             if (first_label && last_label) {
-                text = first_label.substring(0, _options.collapsedLabelLength)
-                    + " ... " + last_label.substring(0, _options.collapsedLabelLength)
-                    + " [" + descs.length + "]";
+                text = first_label.substring(0, _options.collapsedLabelLength) + " ... " + last_label.substring(0, _options.collapsedLabelLength) + " [" + descs.length + "]";
                 if (_foundSum > 0 && _totalSearchedWithData) {
                     text += (' [' + _foundSum + '/' + _totalSearchedWithData + ']');
                 }
@@ -30970,9 +30636,7 @@ if (!phyloXml) {
 
     let makeBranchLengthLabel = function (phynode) {
         if (phynode.branch_length) {
-            if (_options.phylogram
-                && _options.minBranchLengthValueToShow
-                && phynode.branch_length < _options.minBranchLengthValueToShow) {
+            if (_options.phylogram && _options.minBranchLengthValueToShow && phynode.branch_length < _options.minBranchLengthValueToShow) {
                 return;
             }
             return +phynode.branch_length.toFixed(BRANCH_LENGTH_DIGITS_DEFAULT);
@@ -31019,9 +30683,7 @@ if (!phyloXml) {
             let l = phynode.properties.length;
             let str = null;
             for (let p = 0; p < l; ++p) {
-                if (phynode.properties[p].ref === BRANCH_EVENT_REF
-                    && phynode.properties[p].datatype === BRANCH_EVENT_DATATYPE
-                    && phynode.properties[p].applies_to === BRANCH_EVENT_APPLIES_TO) {
+                if (phynode.properties[p].ref === BRANCH_EVENT_REF && phynode.properties[p].datatype === BRANCH_EVENT_DATATYPE && phynode.properties[p].applies_to === BRANCH_EVENT_APPLIES_TO) {
                     if (str === null) {
                         str = phynode.properties[p].value;
                     } else {
@@ -31036,8 +30698,7 @@ if (!phyloXml) {
     };
 
     let elbow = function (d) {
-        return 'M' + d.source.y + ',' + d.source.x
-            + 'V' + d.target.x + 'H' + d.target.y;
+        return 'M' + d.source.y + ',' + d.source.x + 'V' + d.target.x + 'H' + d.target.y;
     };
 
     let connection = function (n) {
@@ -31049,8 +30710,7 @@ if (!phyloXml) {
             let y = n.x;
             let x = (n.y - _yScale(n.distToRoot) + _w);
             if ((x - x1) > 5) {
-                return 'M' + x1 + ',' + y
-                    + 'L' + x + ',' + y;
+                return 'M' + x1 + ',' + y + 'L' + x + ',' + y;
             }
         }
     };
@@ -31398,36 +31058,39 @@ if (!phyloXml) {
             _settings.showSequenceButton = true;
         }
         if (_settings.showDynahideButton === undefined) {
-            if (_basicTreeProperties.externalNodesCount > 20) {
-                _settings.showDynahideButton = true;
-            } else {
-                _settings.showDynahideButton = false;
-            }
+            _settings.showDynahideButton = _basicTreeProperties.externalNodesCount > 20;
         }
         if (_settings.showShortenNodeNamesButton === undefined) {
-            if (_basicTreeProperties.longestNodeName > SHORTEN_NAME_MAX_LENGTH) {
-                _settings.showShortenNodeNamesButton = true;
-            } else {
-                _settings.showShortenNodeNamesButton = false;
-            }
+            _settings.showShortenNodeNamesButton = _basicTreeProperties.longestNodeName > SHORTEN_NAME_MAX_LENGTH;
+        }
+        if (_settings.showExternalLabelsButton === undefined) {
+            _settings.showExternalLabelsButton = true;
+        }
+        if (_settings.showInternalLabelsButton === undefined) {
+            _settings.showInternalLabelsButton = true;
+        }
+        if (_settings.showExternalNodesButton === undefined) {
+            _settings.showExternalNodesButton = true;
+        }
+        if (_settings.showInternalNodesButton === undefined) {
+            _settings.showInternalNodesButton = true;
+        }
+        if (_settings.showShortenNodeNamesButton === undefined) {
+            _settings.showShortenNodeNamesButton = _basicTreeProperties.longestNodeName > SHORTEN_NAME_MAX_LENGTH;
+        }
+        if (_settings.showShortenNodeNamesButton === undefined) {
+            _settings.showShortenNodeNamesButton = _basicTreeProperties.longestNodeName > SHORTEN_NAME_MAX_LENGTH;
         }
         if (_settings.nhExportReplaceIllegalChars === undefined) {
             _settings.nhExportReplaceIllegalChars = true;
         }
-
         if (_settings.enableSubtreeDeletion === undefined) {
             _settings.enableSubtreeDeletion = true;
         }
         if (_settings.enableAccessToDatabases === undefined) {
             _settings.enableAccessToDatabases = true;
         }
-        if (_settings.enableMsaResidueVisualizations === true
-            && _basicTreeProperties.alignedMolSeqs === true
-            && _basicTreeProperties.maxMolSeqLength > 1) {
-            _settings.enableMsaResidueVisualizations = true;
-        } else {
-            _settings.enableMsaResidueVisualizations === false;
-        }
+        _settings.enableMsaResidueVisualizations = _settings.enableMsaResidueVisualizations === true && _basicTreeProperties.alignedMolSeqs === true && _basicTreeProperties.maxMolSeqLength > 1;
         if (_settings.zoomToFitUponWindowResize === undefined) {
             _settings.zoomToFitUponWindowResize = true;
         }
@@ -31496,11 +31159,7 @@ if (!phyloXml) {
 
     function mouseDown() {
         if (d3.event.which === 1 && (d3.event.altKey || d3.event.shiftKey)) {
-            if ((_showLegends && (_settings.enableNodeVisualizations || _settings.enableBranchVisualizations) && (_legendColorScales[LEGEND_LABEL_COLOR] ||
-                (_options.showNodeVisualizations && (_legendColorScales[LEGEND_NODE_FILL_COLOR] ||
-                    _legendColorScales[LEGEND_NODE_BORDER_COLOR] ||
-                    _legendShapeScales[LEGEND_NODE_SHAPE] ||
-                    _legendSizeScales[LEGEND_NODE_SIZE]))))) {
+            if ((_showLegends && (_settings.enableNodeVisualizations || _settings.enableBranchVisualizations) && (_legendColorScales[LEGEND_LABEL_COLOR] || (_options.showNodeVisualizations && (_legendColorScales[LEGEND_NODE_FILL_COLOR] || _legendShapeScales[LEGEND_NODE_SHAPE] || _legendSizeScales[LEGEND_NODE_SIZE]))))) {
                 moveLegendWithMouse(d3.event);
             }
         }
@@ -31520,75 +31179,6 @@ if (!phyloXml) {
                 }
             }
         }
-    }
-
-
-    function groupYears(phy, sourceRef, targetRef, yearsToIgnore, yearsPerGroup) {
-
-        let minYear = 10000000;
-        let maxYear = -10000000;
-        forester.preOrderTraversalAll(phy, function (n) {
-            if (n.properties && n.properties.length > 0) {
-                let propertiesLength = n.properties.length;
-                for (let i = 0; i < propertiesLength; ++i) {
-                    let property = n.properties[i];
-                    if (property.ref && property.value && property.datatype && property.applies_to && property.applies_to === 'node') {
-                        if (property.ref === sourceRef) {
-                            let year = property.value;
-                            if (yearsToIgnore.indexOf(year) < 0) {
-                                if (year > maxYear) {
-                                    maxYear = year;
-                                }
-                                if (year < minYear) {
-                                    minYear = year;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        let MAX_COLORS = 20;
-
-        let d;
-        if ((maxYear - minYear) < (yearsPerGroup * MAX_COLORS)) {
-            d = yearsPerGroup;
-        } else {
-            d = parseInt((maxYear - minYear) / MAX_COLORS);
-        }
-
-        console.log(MESSAGE + ' year group range:' + d);
-
-        forester.preOrderTraversalAll(phy, function (n) {
-
-            if (n.properties && n.properties.length > 0) {
-                let propertiesLength = n.properties.length;
-                for (let i = 0; i < propertiesLength; ++i) {
-                    let property = n.properties[i];
-                    if (property.ref && property.value && property.datatype && property.applies_to && property.applies_to === 'node') {
-                        if (property.ref === sourceRef) {
-                            const year = property.value;
-                            if (yearsToIgnore.indexOf(year) < 0) {
-                                let x = parseInt((year - minYear) / d);
-                                minYear = parseInt(minYear);
-                                let newProp = {};
-                                newProp.ref = targetRef;
-                                let lb = minYear + (x * d);
-                                let hb = minYear + ((x + 1) * d) - 1;
-                                newProp.value = lb + "-" + hb;
-                                if ((year < lb) || (year > hb)) {
-                                    alert(ERROR + year + ' not in ' + newProp.value);
-                                }
-                                newProp.datatype = property.datatype;
-                                newProp.applies_to = property.applies_to;
-                                n.properties.push(newProp);
-                            }
-                        }
-                    }
-                }
-            }
-        });
     }
 
 
@@ -31625,14 +31215,71 @@ if (!phyloXml) {
         });
     }
 
+    function initialize() {
+        initializeGui();
 
-    archaeopteryx.launch = function (id,
-                                     phylo,
-                                     options,
-                                     settings,
-                                     nodeVisualizations,
-                                     nodeLabels,
-                                     specialVisualizations) {
+        _svgGroup = _baseSvg.append('g');
+
+        if (_settings.orderTree) {
+            orderSubtree(_root, true);
+        }
+        if (_options.searchAinitialValue) {
+            search0();
+        }
+        if (_options.searchBinitialValue) {
+            search1();
+        }
+
+        if (_options.initialNodeFillColorVisualization || _options.initialLabelColorVisualization) {
+            initializeInitialVisualization();
+        }
+
+        if (_options.initialCollapseFeature) {
+            let feature = _options.initialCollapseFeature;
+            let refs = forester.collectPropertyRefs(_root, 'node', false);
+            let found = false;
+            if (refs) {
+                refs.forEach(function (v) {
+                    if (v === feature) {
+                        found = true;
+                    }
+                });
+            }
+            if (found) {
+                console.log(MESSAGE + 'Setting initial value for collapse by feature to: ' + feature);
+                collapseSpecificSubtrees(_root, feature, KEY_FOR_COLLAPSED_FEATURES_SPECIAL_LABEL);
+                let s = $('#' + COLLAPSE_BY_FEATURE_SELECT);
+                if (s) {
+                    s.val(feature);
+                }
+            } else {
+                console.log(WARNING + ' initial value for collapse by feature [' + feature + '] not present');
+            }
+        } else if (_options.initialCollapseDepth > 0) {
+            _depth_collapse_level = _options.initialCollapseDepth;
+            let max_depth = forester.calcMaxDepth(_root);
+            if (_depth_collapse_level >= max_depth) {
+                console.log(WARNING + ' initial value for collapse depth [' + _depth_collapse_level + '] is larger than or equal to maximum depth [' + max_depth + ']');
+                _depth_collapse_level = max_depth - 1;
+            }
+            console.log(MESSAGE + 'Setting initial value for collapse depth to: ' + _depth_collapse_level);
+            forester.collapseToDepth(_root, _depth_collapse_level);
+            updateDepthCollapseDepthDisplay();
+        }
+
+        update(null, 0);
+
+        zoomToFit();
+
+        updateNodeVisualizationsAndLegends(_root);
+        resetDepthCollapseDepthValue();
+        resetRankCollapseRankValue();
+        resetBranchLengthCollapseValue();
+        search0();
+        search1();
+    }
+
+    archaeopteryx.launch = function (id, phylo, options, settings, nodeVisualizations, nodeLabels, specialVisualizations) {
 
 
         if (phylo === undefined || phylo === null) {
@@ -31650,41 +31297,13 @@ if (!phyloXml) {
         _id = id;
         _zoomListener = d3.behavior.zoom().scaleExtent([0.1, 10]).on('zoom', zoom);
         _basicTreeProperties = forester.collectBasicTreeProperties(_treeData);
-
-        if (settings.groupSpecies) {
-            if (settings.groupSpecies.source && settings.groupSpecies.target) {
-                console.log(MESSAGE + ' Grouping species from \"' + settings.groupSpecies.source
-                    + '\" to \"' + settings.groupSpecies.target);
-                forester.shortenProperties(_treeData, 'node', true, settings.groupSpecies.source, settings.groupSpecies.target);
-            }
-        }
-
-        if (settings.groupYears) {
-            if (settings.groupYears.source && settings.groupYears.target && settings.groupYears.ignore && settings.groupYears.groupsize) {
-                console.log(MESSAGE + ' Grouping years from \"' + settings.groupYears.source
-                    + '\" to \"' + settings.groupYears.target + '\", ignoring ' + settings.groupYears.ignore +
-                    ', range ' + settings.groupYears.groupsize);
-                groupYears(_treeData, settings.groupYears.source,
-                    settings.groupYears.target,
-                    settings.groupYears.ignore,
-                    settings.groupYears.groupsize);
-            }
-        }
+        _options_orig = structuredClone(_options);
 
         if (settings.filterValues) {
             settings.filterValues.forEach(function (e) {
-                if (e
-                    && e.source
-                    && e.target
-                    && e.pass
-                    && e.pass.length > 0) {
-                    console.log(MESSAGE + ' Filtering values from \"' + e.source
-                        + '\" to \"' + e.target +
-                        ', allowed values ' + e.pass);
-                    filterValues(_treeData,
-                        e.source,
-                        e.target,
-                        e.pass);
+                if (e && e.source && e.target && e.pass && e.pass.length > 0) {
+                    console.log(MESSAGE + ' Filtering values from \"' + e.source + '\" to \"' + e.target + ', allowed values ' + e.pass);
+                    filterValues(_treeData, e.source, e.target, e.pass);
                 }
             });
         }
@@ -31701,27 +31320,13 @@ if (!phyloXml) {
             _specialVisualizations = specialVisualizations;
         }
 
-        if (settings.readSimpleCharacteristics) {
-            forester.moveSimpleCharacteristicsToProperties(_treeData);
-        }
-
 
         initializeOptions(options);
         initializeSettings(settings);
 
-        if (settings.specialProcessing && settings.specialProcessing.includes('ird_split_avian_host')) {
-            let avianFound = forester.splitProperty(_treeData, 'Avian', 'ird:Host', 'ird:HostGroup');
-            if (!avianFound) {
-                delete _nodeVisualizations.HostGroup;
-                console.log(MESSAGE + 'Deactivated Host Group visualization for Avian issue in IRD')
-            } else {
-                console.log(MESSAGE + 'Activated Host Group visualization for Avian issue in IRD')
-            }
-        }
 
         if (settings.enableNodeVisualizations) {
-            if (settings.enableMsaResidueVisualizations && (_basicTreeProperties.alignedMolSeqs === true)
-                && (_basicTreeProperties.maxMolSeqLength && _basicTreeProperties.maxMolSeqLength > 1)) {
+            if (settings.enableMsaResidueVisualizations && (_basicTreeProperties.alignedMolSeqs === true) && (_basicTreeProperties.maxMolSeqLength && _basicTreeProperties.maxMolSeqLength > 1)) {
                 if (_nodeVisualizations == null) {
                     _nodeVisualizations = {};
                 }
@@ -31745,9 +31350,7 @@ if (!phyloXml) {
                     let arr = re.exec(value);
                     let propertyName = arr[1]; // The substring after the ':'
 
-                    if ((!_nodeVisualizations.hasOwnProperty(propertyName))
-                        &&
-                        (!_settings.propertiesToIgnoreForNodeVisualization || (_settings.propertiesToIgnoreForNodeVisualization.indexOf(propertyName) < 0))) {
+                    if ((!_nodeVisualizations.hasOwnProperty(propertyName)) && (!_settings.propertiesToIgnoreForNodeVisualization || (_settings.propertiesToIgnoreForNodeVisualization.indexOf(propertyName) < 0))) {
 
                         _nodeVisualizations[propertyName] = {
                             label: propertyName,
@@ -31802,9 +31405,7 @@ if (!phyloXml) {
 
                     _baseSvg.attr('width', width);
                     _baseSvg.attr('height', height);
-                    if ((_settings.zoomToFitUponWindowResize === true)
-                        && (_zoomed_x_or_y === false)
-                        && (Math.abs(_zoomListener.scale() - 1.0) < 0.001)) {
+                    if ((_settings.zoomToFitUponWindowResize === true) && (_zoomed_x_or_y === false) && (Math.abs(_zoomListener.scale() - 1.0) < 0.001)) {
                         zoomToFit();
                     }
                     if (_settings.enableNodeVisualizations || _settings.enableBranchVisualizations) {
@@ -31830,70 +31431,7 @@ if (!phyloXml) {
 
         _root.x0 = _displayHeight / 2;
         _root.y0 = 0;
-
-        initializeGui();
-
-        _svgGroup = _baseSvg.append('g');
-
-
-        if (_settings.orderTree) {
-            orderSubtree(_root, true);
-        }
-        if (_options.searchAinitialValue) {
-            search0();
-        }
-        if (_options.searchBinitialValue) {
-            search1();
-        }
-
-        if (_options.initialNodeFillColorVisualization || _options.initialLabelColorVisualization) {
-            initializeInitialVisualization();
-        }
-
-        if (_options.initialCollapseFeature) {
-            let feature = _options.initialCollapseFeature;
-            let refs = forester.collectPropertyRefs(_root, 'node', false);
-            let found = false;
-            if (refs) {
-                refs.forEach(function (v) {
-                    if (v === feature) {
-                        found = true;
-                    }
-                });
-            }
-            if (found) {
-                console.log(MESSAGE + 'Setting initial value for collapse by feature to: ' + feature);
-                collapseSpecificSubtrees(_root, feature, KEY_FOR_COLLAPSED_FEATURES_SPECIAL_LABEL);
-                let s = $('#' + COLLAPSE_BY_FEATURE_SELECT);
-                if (s) {
-                    s.val(feature);
-                }
-            } else {
-                console.log(WARNING + ' initial value for collapse by feature [' + feature + '] not present');
-            }
-        } else if (_options.initialCollapseDepth > 0) {
-            _depth_collapse_level = _options.initialCollapseDepth;
-            let max_depth = forester.calcMaxDepth(_root);
-            if (_depth_collapse_level >= max_depth) {
-                console.log(WARNING + ' initial value for collapse depth [' + _depth_collapse_level + '] is larger than or equal to maximum depth [' + max_depth + ']');
-                _depth_collapse_level = max_depth - 1;
-            }
-            console.log(MESSAGE + 'Setting initial value for collapse depth to: ' + _depth_collapse_level);
-            forester.collapseToDepth(_root, _depth_collapse_level);
-            updateDepthCollapseDepthDisplay();
-        }
-
-        update(null, 0);
-
-        zoomToFit();
-
-
-        updateNodeVisualizationsAndLegends(_root);
-        resetDepthCollapseDepthValue();
-        resetRankCollapseRankValue();
-        resetBranchLengthCollapseValue();
-        search0();
-        search1();
+        initialize();
 
         //////////////////////////////////////////////////////////////////////
 
@@ -31941,7 +31479,7 @@ if (!phyloXml) {
             }
 
             function displayNodeData(n) {
-                let title = n.name ? 'Node Data: ' + n.name : 'Node Data';
+                let title = 'Node Data';
                 let text = '';
                 if (n.name) {
                     text += 'Name: ' + n.name + '<br>';
@@ -32066,7 +31604,7 @@ if (!phyloXml) {
                     }
                 }
                 if (n.children || n._children) {
-                    text += 'Number of External Nodes: ' + forester.calcSumOfAllExternalDescendants(n) + '<br>';
+                    text += 'Sum of Subtree Tips: ' + forester.calcSumOfAllExternalDescendants(n) + '<br>';
                 }
 
                 $('#' + NODE_DATA).dialog("destroy");
@@ -32084,19 +31622,28 @@ if (!phyloXml) {
                     'font-style': 'normal',
                     'font-weight': 'normal',
                     'text-decoration': 'none',
-                    'width': 400,
-                    'height': 400,
-                    'overflow': 'auto'
+                    'width': 260,
+                    'height': 300,
+                    'overflow': 'auto',
+                    'opacity': 0.95,
+                    'z-index': 10,
+                    'background-color': '#F0F8FF',
+                    'border-style': 'groove',
+                    'border-color': '#AAAAAA'
+
                 });
 
                 $('.ui-dialog-titlebar').css({
-                    'text-align': 'left',
-                    'color': _settings.controlsFontColor,
+                    'text-align': 'center',
+                    'color': '#FFFFFF',
                     'font-size': fs,
                     'font-family': _settings.controlsFont,
                     'font-style': 'normal',
                     'font-weight': 'bold',
-                    'text-decoration': 'none'
+                    'text-decoration': 'none',
+                    'opacity': 0.95,
+                    'z-index': 10,
+                    'background-color': '#AAAAAA'
                 });
 
                 dialog.dialog('option', 'modal', true);
@@ -32141,8 +31688,7 @@ if (!phyloXml) {
                                 if (value.selected === true && value.propertyRef) {
                                     let prev_propertyRef = null;
                                     for (let pm = 0; pm < props_length; ++pm) {
-                                        if (sorted_properties[pm].ref === value.propertyRef
-                                            && sorted_properties[pm].applies_to === 'node') {
+                                        if (sorted_properties[pm].ref === value.propertyRef && sorted_properties[pm].applies_to === 'node') {
                                             if (value.propertyRef === prev_propertyRef) {
                                                 properties_text = addSepSame(properties_text);
                                             } else {
@@ -32237,9 +31783,11 @@ if (!phyloXml) {
                 $("<div id='" + NODE_DATA + "'>" + text_all + "</div>").dialog();
                 let dialog = $('#' + NODE_DATA);
 
-                let fs = (_settings.controlsFontSize + 2).toString() + 'px';
+                let fs = (_settings.controlsFontSize + 1).toString() + 'px';
 
                 $('.ui-dialog').css({
+                    'position': 'absolute',
+                    'top': '120px',
                     'text-align': 'left',
                     'color': _settings.controlsFontColor,
                     'font-size': fs,
@@ -32247,19 +31795,27 @@ if (!phyloXml) {
                     'font-style': 'normal',
                     'font-weight': 'normal',
                     'text-decoration': 'none',
-                    'width': 740,
-                    'height': 400,
-                    'overflow': 'auto'
+                    'width': 400,
+                    'height': 260,
+                    'overflow': 'auto',
+                    'opacity': 0.95,
+                    'z-index': 10,
+                    'background-color': '#F0F8FF',
+                    'border-style': 'groove',
+                    'border-color': '#AAAAAA'
                 });
 
                 $('.ui-dialog-titlebar').css({
-                    'text-align': 'left',
+                    'text-align': 'center',
                     'color': _settings.controlsFontColor,
                     'font-size': fs,
                     'font-family': _settings.controlsFont,
                     'font-style': 'normal',
                     'font-weight': 'bold',
-                    'text-decoration': 'none'
+                    'text-decoration': 'none',
+                    'opacity': 0.95,
+                    'z-index': 10,
+                    'background-color': '#AAAAAA'
                 });
 
                 dialog.dialog('option', 'modal', true);
@@ -32440,8 +31996,7 @@ if (!phyloXml) {
                                 if (value.selected === true && value.propertyRef) {
                                     let prev_property_ref = null;
                                     for (let pm = 0; pm < props_length; ++pm) {
-                                        if (sorted_properties[pm].ref === value.propertyRef
-                                            && sorted_properties[pm].applies_to === 'node') {
+                                        if (sorted_properties[pm].ref === value.propertyRef && sorted_properties[pm].applies_to === 'node') {
                                             if (sorted_properties[pm].ref === prev_property_ref) {
                                                 properties_text = addSepSame(properties_text);
                                             } else {
@@ -32551,7 +32106,31 @@ if (!phyloXml) {
 
             function accessDatabase(node) {
                 let url = null;
-                if (node.sequences) {
+                if (node.properties && node.properties.length > 0) {
+                    let propertiesLength = node.properties.length;
+                    for (let i = 0; i < propertiesLength; ++i) {
+                        let p = node.properties[i];
+                        if (p.value && p.ref.toLowerCase().indexOf("accession") >= 0) {
+                            let value = p.value;
+                            if (RE_GENBANK_PROT.test(value)) {
+                                url = 'https://www.ncbi.nlm.nih.gov/protein/' + value;
+                            } else if (RE_GENBANK_NUC.test(value)) {
+                                url = 'https://www.ncbi.nlm.nih.gov/nuccore/' + value;
+                            } else if (RE_REFSEQ.test(value)) {
+                                url = 'https://www.ncbi.nlm.nih.gov/nuccore/' + value;
+                            } else if (RE_UNIPROTKB.test(value)) {
+                                url = 'https://www.uniprot.org/uniprot/' + value;
+                            } else if (RE_SWISSPROT_TREMBL.test(value)) {
+                                url = 'https://www.uniprot.org/uniprot/' + value;
+                            } else if (RE_SWISSPROT_TREMBL_PFAM.test(value)) {
+                                url = 'https://www.uniprot.org/uniprot/' + RE_SWISSPROT_TREMBL_PFAM.exec(value)[1];
+                            }
+                            if (url) {
+                                break;
+                            }
+                        }
+                    }
+                } else if (node.sequences) {
                     for (let i = 0; i < node.sequences.length; ++i) {
                         let s = node.sequences[i];
                         if (s.accession && s.accession.value && s.accession.source) {
@@ -32563,7 +32142,6 @@ if (!phyloXml) {
                                     url = 'https://www.ncbi.nlm.nih.gov/protein/' + value;
                                 } else if (RE_GENBANK_NUC.test(value)) {
                                     url = 'https://www.ncbi.nlm.nih.gov/nuccore/' + value;
-                                    //url = 'https://www.viprbrc.org/brc/viprStrainDetails.spg?ncbiAccession=' + value; //TODO
                                 }
                             } else if (source === ACC_REFSEQ) {
                                 url = 'https://www.ncbi.nlm.nih.gov/nuccore/' + value;
@@ -32588,8 +32166,7 @@ if (!phyloXml) {
                             }
                         }
                     }
-                }
-                if (node.name) {
+                } else if (node.name) {
                     if (RE_SWISSPROT_TREMBL.test(node.name)) {
                         url = 'https://www.uniprot.org/uniprot/' + node.name;
                     } else if (RE_SWISSPROT_TREMBL_PFAM.test(node.name)) {
@@ -32613,7 +32190,7 @@ if (!phyloXml) {
                 let text_all = forester.getMolecularSequencesAsFasta(node, '<br>');
 
                 let ext_nodes = forester.getAllExternalNodes(node);
-                let title = 'Sequences in Fasta-format for ' + ext_nodes.length + ' Nodes';
+                let title = 'Sequences in for ' + ext_nodes.length + ' Nodes';
 
 
                 $('#' + NODE_DATA).dialog("destroy");
@@ -32621,9 +32198,11 @@ if (!phyloXml) {
                 $("<div id='" + NODE_DATA + "'>" + text_all + "</div>").dialog();
                 let dialog = $('#' + NODE_DATA);
 
-                let fs = (_settings.controlsFontSize + 2).toString() + 'px';
+                let fs = (_settings.controlsFontSize - 1).toString() + 'px';
 
                 $('.ui-dialog').css({
+                    'position': 'absolute',
+                    'top': '120px',
                     'text-align': 'left',
                     'color': _settings.controlsFontColor,
                     'font-size': fs,
@@ -32631,19 +32210,27 @@ if (!phyloXml) {
                     'font-style': 'normal',
                     'font-weight': 'normal',
                     'text-decoration': 'none',
-                    'width': 700,
-                    'height': 400,
-                    'overflow': 'auto'
+                    'width': 400,
+                    'height': 260,
+                    'overflow': 'auto',
+                    'opacity': 0.95,
+                    'z-index': 10,
+                    'background-color': '#F0F8FF',
+                    'border-style': 'groove',
+                    'border-color': '#AAAAAA'
                 });
 
                 $('.ui-dialog-titlebar').css({
-                    'text-align': 'left',
+                    'text-align': 'center',
                     'color': _settings.controlsFontColor,
                     'font-size': fs,
                     'font-family': _settings.controlsFont,
                     'font-style': 'normal',
                     'font-weight': 'bold',
-                    'text-decoration': 'none'
+                    'text-decoration': 'none',
+                    'opacity': 0.95,
+                    'z-index': 10,
+                    'background-color': '#AAAAAA'
                 });
 
                 dialog.dialog('option', 'modal', true);
@@ -32737,7 +32324,7 @@ if (!phyloXml) {
             }
 
             let rectWidth = 130;
-            let rectHeight = 230;
+            let rectHeight = 260;
 
             removeTooltips();
 
@@ -32933,8 +32520,7 @@ if (!phyloXml) {
                 .style('font-weight', 'bold')
                 .style('text-decoration', 'none')
                 .text(function (d) {
-                    if (!_in_subtree && d.parent && d.parent.parent
-                        && ((_treeData.rerootable === undefined) || (_treeData.rerootable === true))) {
+                    if (!_in_subtree && d.parent && d.parent.parent && ((_treeData.rerootable === undefined) || (_treeData.rerootable === true))) {
                         textSum += textInc;
                         return 'Reroot';
                     }
@@ -33111,40 +32697,49 @@ if (!phyloXml) {
                     .style('font-weight', 'bold')
                     .style('text-decoration', 'none')
                     .text(function (d) {
-                            let show = false;
-                            let value = null;
-                            if (d.sequences) {
-                                for (let i = 0; i < d.sequences.length; ++i) {
-                                    let s = d.sequences[i];
-                                    if (s.accession && s.accession.value && s.accession.source) {
-                                        let source = s.accession.source.toUpperCase();
-                                        if (source === ACC_GENBANK || source === ACC_NCBI || source === ACC_REFSEQ || source === ACC_UNIPROT
-                                            || source === ACC_UNIPROTKB
-                                            || source === ACC_SWISSPROT
-                                            || source === ACC_TREMBL
-                                            || source === 'UNKNOWN' || source === '?') {
-                                            show = true;
-                                            value = s.accession.value;
-                                            break;
-                                        }
+                        let show = false;
+                        let value = null;
+
+                        if (d.properties && d.properties.length > 0) {
+                            let propertiesLength = d.properties.length;
+                            for (let i = 0; i < propertiesLength; ++i) {
+                                let p = d.properties[i];
+                                if (p.value && p.ref.toLowerCase().indexOf("accession") >= 0) {
+                                    if (RE_SWISSPROT_TREMBL_PFAM.test(p.value) || RE_GENBANK_PROT.test(p.value) || RE_GENBANK_NUC.test(p.value) || RE_REFSEQ.test(p.value) || RE_UNIPROTKB.test(p.value) || RE_SWISSPROT_TREMBL.test(p.value)) {
+                                        show = true;
+                                        value = p.value;
+                                        break;
                                     }
                                 }
                             }
-                            if (d.name) {
-                                if (RE_SWISSPROT_TREMBL.test(d.name)) {
-                                    show = true;
-                                    value = d.name;
-                                } else if (RE_SWISSPROT_TREMBL_PFAM.test(d.name)) {
-                                    show = true;
-                                    value = RE_SWISSPROT_TREMBL_PFAM.exec(d.name)[1];
+                        }
+                        if (d.sequences) {
+                            for (let i = 0; i < d.sequences.length; ++i) {
+                                let s = d.sequences[i];
+                                if (s.accession && s.accession.value && s.accession.source) {
+                                    let source = s.accession.source.toUpperCase();
+                                    if (source === ACC_GENBANK || source === ACC_NCBI || source === ACC_REFSEQ || source === ACC_UNIPROT || source === ACC_UNIPROTKB || source === ACC_SWISSPROT || source === ACC_TREMBL || source === 'UNKNOWN' || source === '?') {
+                                        show = true;
+                                        value = s.accession.value;
+                                        break;
+                                    }
                                 }
                             }
-                            if (show) {
-                                textSum += textInc;
-                                return 'Access DB [' + value + ']';
+                        }
+                        if (d.name) {
+                            if (RE_SWISSPROT_TREMBL.test(d.name)) {
+                                show = true;
+                                value = d.name;
+                            } else if (RE_SWISSPROT_TREMBL_PFAM.test(d.name)) {
+                                show = true;
+                                value = RE_SWISSPROT_TREMBL_PFAM.exec(d.name)[1];
                             }
                         }
-                    )
+                        if (show) {
+                            textSum += textInc;
+                            return 'Access DB [' + value + ']';
+                        }
+                    })
                     .on('click', function (d) {
                         accessDatabase(d);
                     });
@@ -33235,11 +32830,7 @@ if (!phyloXml) {
         }
         initializeNodeVisualizations(nodeProperties);
 
-        if ((_showLegends && (_settings.enableNodeVisualizations || _settings.enableBranchVisualizations) && (_legendColorScales[LEGEND_LABEL_COLOR] ||
-            (_options.showNodeVisualizations && (_legendColorScales[LEGEND_NODE_FILL_COLOR] ||
-                _legendColorScales[LEGEND_NODE_BORDER_COLOR] ||
-                _legendShapeScales[LEGEND_NODE_SHAPE] ||
-                _legendSizeScales[LEGEND_NODE_SIZE]))))) {
+        if ((_showLegends && (_settings.enableNodeVisualizations || _settings.enableBranchVisualizations) && (_legendColorScales[LEGEND_LABEL_COLOR] || (_options.showNodeVisualizations && (_legendColorScales[LEGEND_NODE_FILL_COLOR] || _legendShapeScales[LEGEND_NODE_SHAPE] || _legendSizeScales[LEGEND_NODE_SIZE]))))) {
             if (_legendColorScales[LEGEND_LABEL_COLOR]) {
                 removeLegend(LEGEND_LABEL_COLOR);
                 addLegend(LEGEND_LABEL_COLOR, _visualizations.labelColor[_currentLabelColorVisualization]);
@@ -33247,11 +32838,6 @@ if (!phyloXml) {
             if (_legendColorScales[LEGEND_NODE_FILL_COLOR]) {
                 removeLegend(LEGEND_NODE_FILL_COLOR);
                 addLegend(LEGEND_NODE_FILL_COLOR, _visualizations.nodeFillColor[_currentNodeFillColorVisualization]);
-            }
-
-            if (_legendColorScales[LEGEND_NODE_BORDER_COLOR]) {
-                removeLegend(LEGEND_NODE_BORDER_COLOR);
-                addLegend(LEGEND_NODE_BORDER_COLOR, _visualizations.nodeBorderColor[_currentNodeBorderColorVisualization]);
             }
             if (_legendShapeScales[LEGEND_NODE_SHAPE]) {
                 removeShapeLegend(LEGEND_NODE_SHAPE);
@@ -33318,11 +32904,28 @@ if (!phyloXml) {
         if (_root) {
             calcMaxExtLabel();
             intitializeDisplaySize();
-            //initializeSettings(_settings); //TODO why is/was this called here?
+            initializeSettings(_settings);
             removeColorPicker();
             _zoomListener.scale(1);
             update(_root, 0);
             centerNode(_root, _settings.rootOffset, TOP_AND_BOTTOM_BORDER_HEIGHT);
+        }
+    }
+
+    function zoomToExpandY() {
+        if (_root) {
+            calcMaxExtLabel();
+            intitializeDisplaySize();
+            _zoomListener.scale(1);
+            update(_root, 0);
+            _zoomed_x_or_y = true;
+            const uncollsed_nodes = forester.calcSumOfExternalDescendants(_root);
+            _displayHeight = _options.externalNodeFontSize * (uncollsed_nodes * 1.3);
+            const min = 40;
+            if (_displayHeight < min) {
+                _displayHeight = min;
+            }
+            update(null, 0);
         }
     }
 
@@ -33414,8 +33017,7 @@ if (!phyloXml) {
     }
 
     function midpointRootButtonPressed() {
-        if (!_in_subtree && _root
-            && ((_treeData.rerootable === undefined) || (_treeData.rerootable === true))) {
+        if (!_in_subtree && _root && ((_treeData.rerootable === undefined) || (_treeData.rerootable === true))) {
             unCollapseAll(_root);
             forester.midpointRoot(_root);
             resetDepthCollapseDepthValue();
@@ -33427,6 +33029,39 @@ if (!phyloXml) {
     }
 
     function escPressed() {
+        if (_in_subtree) {
+            _root = _root_const;
+            _in_subtree = false;
+        }
+
+        unCollapseAll(_root);
+
+        _basicTreeProperties = forester.collectBasicTreeProperties(_root);
+
+        resetDepthCollapseDepthValue();
+        resetRankCollapseRankValue();
+        resetBranchLengthCollapseValue();
+        resetCollapseByFeature();
+
+        initializeSettings(_settings);
+
+        setSelectMenuValue(LABEL_COLOR_SELECT_MENU, DEFAULT);
+        setSelectMenuValue(NODE_FILL_COLOR_SELECT_MENU, DEFAULT);
+        setSelectMenuValue(NODE_SHAPE_SELECT_MENU, DEFAULT);
+        setSelectMenuValue(NODE_SIZE_SELECT_MENU, DEFAULT);
+
+        _currentNodeFillColorVisualization = null;
+        _currentLabelColorVisualization = null;
+        _currentNodeShapeVisualization = null;
+        _currentNodeSizeVisualization = null;
+
+        removeLegend(LEGEND_LABEL_COLOR);
+        removeLegend(LEGEND_NODE_FILL_COLOR);
+        removeLegendForShapes(LEGEND_NODE_SHAPE);
+        removeLegendForSizes(LEGEND_NODE_SIZE);
+
+        removeColorPicker();
+
         let width = 0;
         if (_settings.enableDynamicSizing) {
             let container = document.getElementById(_id.replace('#', ''));
@@ -33444,21 +33079,18 @@ if (!phyloXml) {
             let c0 = $('#' + _settings.controls0);
             if (c0) {
                 c0.css({
-                    'left': _settings.controls0Left,
-                    'top': _settings.controls0Top + _offsetTop
+                    'left': _settings.controls0Left, 'top': _settings.controls0Top + _offsetTop
                 });
             }
             let c1 = $('#' + _settings.controls1);
             if (c1) {
                 if (_settings.enableDynamicSizing) {
                     c1.css({
-                        'left': width - _settings.controls1Width,
-                        'top': _settings.controls1Top + _offsetTop
+                        'left': width - _settings.controls1Width, 'top': _settings.controls1Top + _offsetTop
                     });
                 } else {
                     c1.css({
-                        'left': _settings.controls1Left,
-                        'top': _settings.controls1Top + _offsetTop
+                        'left': _settings.controls1Left, 'top': _settings.controls1Top + _offsetTop
                     });
                 }
             }
@@ -33466,12 +33098,22 @@ if (!phyloXml) {
         }
         if (_options.searchAinitialValue) {
             $('#' + SEARCH_FIELD_0).val(_options.searchAinitialValue);
-            search0();
+        } else {
+            $('#' + SEARCH_FIELD_0).val('');
         }
         if (_options.searchBinitialValue) {
             $('#' + SEARCH_FIELD_1).val(_options.searchBinitialValue);
-            search1();
+
+        } else {
+            $('#' + SEARCH_FIELD_1).val('');
         }
+
+        initializeInitialVisualization();
+        update(null, 0);
+        updateNodeVisualizationsAndLegends(_root);
+        search0();
+        search1();
+
     }
 
     function search0() {
@@ -33520,12 +33162,7 @@ if (!phyloXml) {
 
 
     function search(query) {
-        return forester.searchData(query,
-            _root,
-            _options.searchIsCaseSensitive,
-            _options.searchIsPartial,
-            _options.searchUsesRegex,
-            _options.searchProperties);
+        return forester.searchData(query, _root, _options.searchIsCaseSensitive, _options.searchIsPartial, _options.searchUsesRegex, _options.searchProperties);
     }
 
 
@@ -33673,7 +33310,6 @@ if (!phyloXml) {
     }
 
     function submitSelectedPressed() {
-        console.log('submitSelectedPressed called')
         const event = new Event('submit_selected_nodes_event');
         document.dispatchEvent(event);
     }
@@ -33694,8 +33330,7 @@ if (!phyloXml) {
 
     function changeNodeSize(e, slider) {
         _options.nodeSizeDefault = getSliderValue(slider);
-        if (!_options.showInternalNodes && !_options.showExternalNodes && !_options.showNodeVisualizations
-            && !_options.showNodeEvents) {
+        if (!_options.showInternalNodes && !_options.showExternalNodes && !_options.showNodeVisualizations && !_options.showNodeEvents) {
             _options.showInternalNodes = true;
             _options.showExternalNodes = true;
             setCheckboxValue(INTERNAL_NODES_CB, true);
@@ -33853,7 +33488,6 @@ if (!phyloXml) {
     }
 
     function legendColorRectClicked(targetScale, legendLabel, legendDescription, clickedName, clickedIndex) {
-
         addColorPicker(targetScale, legendLabel, legendDescription, clickedName, clickedIndex);
         update();
     }
@@ -33875,7 +33509,6 @@ if (!phyloXml) {
     }
 
     function setSelectMenuValue(id, valueToSelect) {
-        console.log("setSelectMenuValue");
         const element = document.getElementById(id);
         if (element != null) {
             element.value = valueToSelect;
@@ -34006,19 +33639,38 @@ if (!phyloXml) {
 
             c0.append(makeProgramDesc());
 
+            if ((_treeData.name && _treeData.name.length > 0) || (_treeData.description && _treeData.description.length > 0)) {
+                c0.append(makeTreeDesc());
+            }
+
             c0.append(makePhylogramControl());
 
             c0.append(makeDisplayControl());
 
             c0.append(makeZoomControl());
 
+            let treedesc = $('.' + TREE_DESC);
+            if (treedesc) {
+                treedesc.css({
+                    'text-align': 'left',
+                    'padding-top': '1px',
+                    'padding-bottom': '1px',
+                    'font-size': _settings.controlsFontSize + 2,
+                    'font-family': _settings.controlsFont,
+                    'font-style': 'normal',
+                    'font-weight': 'normal',
+                    'text-decoration': 'none'
+                });
+            }
+
+
             let pn = $('.' + PROG_NAME);
             if (pn) {
                 pn.css({
                     'text-align': 'center',
-                    'padding-top': '3px',
+                    'padding-top': '5px',
                     'padding-bottom': '5px',
-                    'font-size': _settings.controlsFontSize,
+                    'font-size': _settings.controlsFontSize + 4,
                     'font-family': _settings.controlsFont,
                     'font-style': 'italic',
                     'font-weight': 'bold',
@@ -34029,7 +33681,7 @@ if (!phyloXml) {
             if (pnl) {
                 pnl.css({
                     'color': COLOR_FOR_ACTIVE_ELEMENTS,
-                    'font-size': _settings.controlsFontSize,
+                    'font-size': _settings.controlsFontSize + 4,
                     'font-family': _settings.controlsFont,
                     'font-style': 'italic',
                     'font-weight': 'bold',
@@ -34038,29 +33690,29 @@ if (!phyloXml) {
                 });
                 $('.' + PROGNAMELINK + ':hover').css({
                     'color': COLOR_FOR_ACTIVE_ELEMENTS,
-                    'font-size': _settings.controlsFontSize,
+                    'font-size': _settings.controlsFontSize + 4,
                     'font-family': _settings.controlsFont,
                     'font-style': 'italic',
                     'font-weight': 'bold',
-                    'text-decoration': 'none',
+                    'text-decoration': 'underline',
                     'border': 'none'
                 });
                 $('.' + PROGNAMELINK + ':link').css({
                     'color': COLOR_FOR_ACTIVE_ELEMENTS,
-                    'font-size': _settings.controlsFontSize,
+                    'font-size': _settings.controlsFontSize + 4,
                     'font-family': _settings.controlsFont,
                     'font-style': 'italic',
                     'font-weight': 'bold',
-                    'text-decoration': 'none',
+                    'text-decoration': 'normal',
                     'border': 'none'
                 });
                 $('.' + PROGNAMELINK + ':visited').css({
                     'color': COLOR_FOR_ACTIVE_ELEMENTS,
-                    'font-size': _settings.controlsFontSize,
+                    'font-size': _settings.controlsFontSize + 4,
                     'font-family': _settings.controlsFont,
                     'font-style': 'italic',
                     'font-weight': 'bold',
-                    'text-decoration': 'none',
+                    'text-decoration': 'normal',
                     'border': 'none'
                 });
             }
@@ -34188,16 +33840,17 @@ if (!phyloXml) {
                 'text-decoration': 'none'
             });
 
+
         $('#' + ZOOM_IN_Y + ', #' + ZOOM_OUT_Y)
             .css({
-                'width': '78px'
+                'width': '104px'
             });
 
-        $('#' + ZOOM_IN_Y + ', #' + ZOOM_OUT_Y + ', #' + ZOOM_TO_FIT + ', #' + ZOOM_IN_X + ', #' + ZOOM_OUT_X)
+        $('#' + ZOOM_IN_Y + ', #' + ZOOM_OUT_Y + ', #' + ZOOM_TO_FIT +
+            ', #' + ZOOM_IN_X + ', #' + ZOOM_OUT_X + ', #' + ZOOM_TO_EXPAND_Y)
             .css({
                 'height': '16px'
             });
-
 
         $('#' + DECR_DEPTH_COLLAPSE_LEVEL + ', #' + INCR_DEPTH_COLLAPSE_LEVEL + ', #' + DECR_BL_COLLAPSE_LEVEL + ', #' + INCR_BL_COLLAPSE_LEVEL)
             .css({
@@ -34219,21 +33872,16 @@ if (!phyloXml) {
                 'width': '36px'
             });
 
-        $('#' + LEGENDS_MOVE_UP_BTN + ', #' + LEGENDS_MOVE_DOWN_BTN + ', #' +
-            LEGENDS_RESET_BTN + ', #' + LEGENDS_MOVE_LEFT_BTN + ', #' + LEGENDS_MOVE_RIGHT_BTN +
-            ', #' + LEGENDS_SHOW_BTN + ', #' + LEGENDS_HORIZ_VERT_BTN
-        )
+        $('#' + LEGENDS_MOVE_UP_BTN + ', #' + LEGENDS_MOVE_DOWN_BTN + ', #' + LEGENDS_RESET_BTN + ', #' + LEGENDS_MOVE_LEFT_BTN + ', #' + LEGENDS_MOVE_RIGHT_BTN + ', #' + LEGENDS_SHOW_BTN + ', #' + LEGENDS_HORIZ_VERT_BTN)
             .css({
                 'height': '16px'
             });
-
 
         const downloadButton = $('#' + DOWNLOAD_BUTTON);
 
         if (downloadButton) {
             downloadButton.css({
-                'width': '60px',
-                'margin-bottom': '3px'
+                'width': '60px', 'margin-bottom': '3px'
             });
         }
 
@@ -34241,8 +33889,7 @@ if (!phyloXml) {
 
         if (submitSelectedButton) {
             submitSelectedButton.css({
-                'width': '80px',
-                'margin-bottom': '3px'
+                'width': '80px', 'margin-bottom': '3px'
             });
         }
 
@@ -34251,8 +33898,9 @@ if (!phyloXml) {
         });
 
         $(':checkbox').checkboxradio({
-            icon: false
+            icon: false,
         });
+
 
         $('#' + SEARCH_FIELD_0).keyup(search0);
 
@@ -34311,9 +33959,7 @@ if (!phyloXml) {
         }
 
         $('#' + LABEL_COLOR_SELECT_MENU).on('change', function () {
-            console.log("LABEL_COLOR_SELECT_MENU" + "changed");
             let v = this.value;
-            console.log("v=" + v);
             if (isAddVisualization2()) {
                 setSelectMenuValue(LABEL_COLOR_SELECT_MENU_2, DEFAULT);
             }
@@ -34410,8 +34056,7 @@ if (!phyloXml) {
                 setSelectMenuValue(NODE_FILL_COLOR_SELECT_MENU_4, DEFAULT);
             }
             if (v && v !== DEFAULT) {
-                if (!_options.showExternalNodes && !_options.showInternalNodes
-                    && (_currentNodeShapeVisualization == null)) {
+                if (!_options.showExternalNodes && !_options.showInternalNodes && (_currentNodeShapeVisualization == null)) {
                     _options.showExternalNodes = true;
                     setCheckboxValue(EXTERNAL_NODES_CB, true);
                 }
@@ -34532,8 +34177,7 @@ if (!phyloXml) {
             if (v && v !== DEFAULT) {
                 _currentNodeSizeVisualization = v;
                 addLegendForSizes(LEGEND_NODE_SIZE, _visualizations.nodeSize[_currentNodeSizeVisualization]);
-                if (!_options.showExternalNodes && !_options.showInternalNodes
-                    && (_currentNodeShapeVisualization == null)) {
+                if (!_options.showExternalNodes && !_options.showInternalNodes && (_currentNodeShapeVisualization == null)) {
                     _options.showExternalNodes = true;
                     setCheckboxValue(EXTERNAL_NODES_CB, true);
                 }
@@ -34681,6 +34325,8 @@ if (!phyloXml) {
 
         $('#' + ZOOM_TO_FIT).mousedown(zoomToFit);
 
+        $('#' + ZOOM_TO_EXPAND_Y).mousedown(zoomToExpandY);
+
         $('#' + RETURN_TO_SUPERTREE_BUTTON).mousedown(returnToSupertreeButtonPressed);
 
         $('#' + RETURN_TO_SUPERTREE_BUTTON_BY_ONE).mousedown(returnToSupertreeButtonByOnePressed);
@@ -34754,15 +34400,13 @@ if (!phyloXml) {
         $('#' + COLLAPSE_BY_FEATURE_SELECT)
             .select()
             .css({
-                'font': 'inherit',
-                'color': 'inherit'
+                'font': 'inherit', 'color': 'inherit'
             });
 
         $('#' + EXPORT_FORMAT_SELECT)
             .select()
             .css({
-                'font': 'inherit',
-                'color': 'inherit'
+                'font': 'inherit', 'color': 'inherit'
             });
 
         $('#' + COLLAPSE_BY_FEATURE_SELECT).on('change', function () {
@@ -34784,72 +34428,62 @@ if (!phyloXml) {
         $('#' + LABEL_COLOR_SELECT_MENU)
             .select()
             .css({
-                'font': 'inherit',
-                'color': 'inherit'
+                'font': 'inherit', 'color': 'inherit'
             });
 
         $('#' + NODE_FILL_COLOR_SELECT_MENU)
             .select()
             .css({
-                'font': 'inherit',
-                'color': 'inherit'
+                'font': 'inherit', 'color': 'inherit'
             });
 
         $('#' + NODE_SHAPE_SELECT_MENU)
             .select()
             .css({
-                'font': 'inherit',
-                'color': 'inherit'
+                'font': 'inherit', 'color': 'inherit'
             });
 
         $('#' + NODE_SIZE_SELECT_MENU)
             .select()
             .css({
-                'font': 'inherit',
-                'color': 'inherit'
+                'font': 'inherit', 'color': 'inherit'
             });
 
 
         $('#' + LABEL_COLOR_SELECT_MENU_2)
             .select()
             .css({
-                'font': 'inherit',
-                'color': 'inherit'
+                'font': 'inherit', 'color': 'inherit'
             });
 
         $('#' + NODE_FILL_COLOR_SELECT_MENU_2)
             .select()
             .css({
-                'font': 'inherit',
-                'color': 'inherit'
+                'font': 'inherit', 'color': 'inherit'
             });
 
         $('#' + LABEL_COLOR_SELECT_MENU_3)
             .select()
             .css({
-                'font': 'inherit',
-                'color': 'inherit'
+                'font': 'inherit', 'color': 'inherit'
             });
 
         $('#' + NODE_FILL_COLOR_SELECT_MENU_3)
             .select()
             .css({
-                'font': 'inherit',
-                'color': 'inherit'
+                'font': 'inherit', 'color': 'inherit'
             });
 
         $('#' + LABEL_COLOR_SELECT_MENU_4)
             .select()
             .css({
-                'font': 'inherit',
-                'color': 'inherit'
+                'font': 'inherit', 'color': 'inherit'
             });
 
         $('#' + NODE_FILL_COLOR_SELECT_MENU_4)
             .select()
             .css({
-                'font': 'inherit',
-                'color': 'inherit'
+                'font': 'inherit', 'color': 'inherit'
             });
 
 
@@ -34878,10 +34512,7 @@ if (!phyloXml) {
             let keycode = e.keyCode;
             if ((((keycode >= VK_0) && (keycode <= VK_9)) || ((keycode >= VK_0_NUMPAD)) && (keycode <= VK_9_NUMPAD)) || (keycode === VK_BACKSPACE) || (keycode === VK_DELETE)) {
                 let i = 0;
-                if ((((keycode >= VK_0) && (keycode <= VK_9))
-                        || ((keycode >= VK_0_NUMPAD) && (keycode <= VK_9_NUMPAD)))
-                    && _basicTreeProperties.maxMolSeqLength
-                    && (_msa_residue_vis_curr_res_pos >= (_basicTreeProperties.maxMolSeqLength - 1))) {
+                if ((((keycode >= VK_0) && (keycode <= VK_9)) || ((keycode >= VK_0_NUMPAD) && (keycode <= VK_9_NUMPAD))) && _basicTreeProperties.maxMolSeqLength && (_msa_residue_vis_curr_res_pos >= (_basicTreeProperties.maxMolSeqLength - 1))) {
                     if (((keycode >= VK_0) && (keycode <= VK_9))) {
                         i = keycode - 48;
                     } else {
@@ -34934,8 +34565,7 @@ if (!phyloXml) {
                     uncollapseAllButtonPressed();
                 } else if (e.keyCode === VK_M) {
                     midpointRootButtonPressed();
-                } else if (e.keyCode === VK_C || e.keyCode === VK_DELETE
-                    || e.keyCode === VK_BACKSPACE || e.keyCode === VK_HOME) {
+                } else if (e.keyCode === VK_C || e.keyCode === VK_DELETE || e.keyCode === VK_BACKSPACE) {
                     zoomToFit();
                 } else if (e.keyCode === VK_P) {
                     cycleDisplay();
@@ -34950,9 +34580,7 @@ if (!phyloXml) {
                         incrMsaResidueVisCurrResPos();
                     }
                 }
-            } else if (e.keyCode === VK_HOME) {
-                zoomToFit();
-            } else if (e.keyCode === VK_ESC) {
+            } else if (e.keyCode === VK_ESC || e.keyCode === VK_HOME) {
                 escPressed();
             }
         });
@@ -35034,6 +34662,26 @@ if (!phyloXml) {
             return h;
         }
 
+        function makeTreeDesc() {
+            let h = "";
+            h = h.concat('<fieldset>');
+            h = h.concat('<div class=' + TREE_DESC + '>');
+            let f = false;
+            if (_treeData.name && _treeData.name.length > 0) {
+                h = h.concat(_treeData.name);
+                f = true;
+            }
+            if (_treeData.description && _treeData.description.length > 0) {
+                if (f) {
+                    h = h.concat('<br>');
+                }
+                h = h.concat('Desc: ' + _treeData.description);
+            }
+            h = h.concat('</div>');
+            h = h.concat('</fieldset>');
+            return h;
+        }
+
         function makePhylogramControl() {
             let radioGroup = 'phylogram_control_radio';
             let h = "";
@@ -35053,17 +34701,30 @@ if (!phyloXml) {
 
         function makeDisplayControl() {
             let h = "";
+            let counter = 0;
 
             h = h.concat('<fieldset><legend>Display Data</legend>');
-            h = h.concat('<div class="' + DISPLAY_DATA_CONTROLGROUP + '">');
+            h = h.concat('<div>');
+
             if (_settings.showNodeNameButton && _basicTreeProperties.nodeNames) {
-                h = h.concat(makeCheckboxButton('Node Name', NODE_NAME_CB, 'to show/hide node names (node names usually are the untyped labels found in New Hampshire/Newick formatted trees)'));
+                h = h.concat(makeCheckboxButtonTableData('Node Name', NODE_NAME_CB, 'to show/hide node names (node names usually are the untyped labels found in New Hampshire/Newick formatted trees)'));
+                counter += 1;
             }
+
             if (_settings.showTaxonomyButton && _basicTreeProperties.taxonomies) {
-                h = h.concat(makeCheckboxButton('Taxonomy', TAXONOMY_CB, 'to show/hide node taxonomic information'));
+                h = h.concat(makeCheckboxButtonTableData('Taxonomy', TAXONOMY_CB, 'to show/hide node taxonomic information'));
+                counter += 1;
+                if (counter % 2 === 0) {
+                    h = h.concat('</br>');
+                }
             }
+
             if (_settings.showSequenceButton && _basicTreeProperties.sequences) {
-                h = h.concat(makeCheckboxButton('Sequence', SEQUENCE_CB, 'to show/hide node sequence information'));
+                h = h.concat(makeCheckboxButtonTableData('Sequence', SEQUENCE_CB, 'to show/hide node sequence information'));
+                counter += 1;
+                if (counter % 2 === 0) {
+                    h = h.concat('</br>');
+                }
             }
 
             if (_nodeLabels) {
@@ -35071,50 +34732,92 @@ if (!phyloXml) {
                     if (value.label && value.propertyRef && value.description) {
                         const cb_id = makeIdForCustomCheckboxButton(key);
                         if (value.showButton === true) {
-                            h = h.concat(makeCheckboxButton(value.label, cb_id, value.description));
+                            h = h.concat(makeCheckboxButtonTableData(value.label, cb_id, value.description));
+                            counter += 1;
+                            if (counter % 2 === 0) {
+                                h = h.concat('</br>');
+                            }
                         }
                         value.cb_id = cb_id;
                     }
                 }
             }
 
+            if (counter % 2 === 1) {
+                h = h.concat('</br>');
+            }
 
-            if (_basicTreeProperties.confidences) {
-                h = h.concat(makeCheckboxButton('Confidence', CONFIDENCE_VALUES_CB, 'to show/hide confidence values'));
+            if (_basicTreeProperties.confidences || _basicTreeProperties.branchLengths) {
+                if (_basicTreeProperties.confidences) {
+                    h = h.concat(makeCheckboxButtonTableData('Confidence', CONFIDENCE_VALUES_CB, 'to show/hide confidence values'));
+                }
+                if (_basicTreeProperties.branchLengths) {
+                    h = h.concat(makeCheckboxButtonTableData('Branch Length', BRANCH_LENGTH_VALUES_CB, 'to show/hide branch length values'));
+                }
+                h = h.concat('</br>');
             }
-            if (_basicTreeProperties.branchLengths) {
-                h = h.concat(makeCheckboxButton('Branch Length', BRANCH_LENGTH_VALUES_CB, 'to show/hide branch length values'));
-            }
-            if (_basicTreeProperties.nodeEvents) {
-                h = h.concat(makeCheckboxButton('Node Events', NODE_EVENTS_CB, 'to show speciations and duplications as colored nodes (e.g. speciations green, duplications red)'));
-            }
-            if (_basicTreeProperties.branchEvents) {
-                h = h.concat(makeCheckboxButton('Branch Events', BRANCH_EVENTS_CB, 'to show/hide branch events (e.g. mutations)'));
-            }
-            h = h.concat(makeCheckboxButton('External Labels', EXTERNAL_LABEL_CB, 'to show/hide external node labels'));
-            if (_basicTreeProperties.internalNodeData) {
-                h = h.concat(makeCheckboxButton('Internal Labels', INTERNAL_LABEL_CB, 'to show/hide internal node labels'));
-            }
-            h = h.concat(makeCheckboxButton('External Nodes', EXTERNAL_NODES_CB, 'to show external nodes as shapes (usually circles)'));
-            h = h.concat(makeCheckboxButton('Internal Nodes', INTERNAL_NODES_CB, 'to show internal nodes as shapes (usually circles)'));
 
+            if (_basicTreeProperties.nodeEvents || _basicTreeProperties.branchEvents) {
+                if (_basicTreeProperties.nodeEvents) {
+                    h = h.concat(makeCheckboxButtonTableData('Node Events', NODE_EVENTS_CB, 'to show speciations and duplications as colored nodes (e.g. speciations green, duplications red)'));
+                }
+                if (_basicTreeProperties.branchEvents) {
+                    h = h.concat(makeCheckboxButtonTableData('Branch Events', BRANCH_EVENTS_CB, 'to show/hide branch events (e.g. mutations)'));
+                }
+                h = h.concat('</br>');
+            }
+
+            if (_settings.showExternalLabelsButton || _settings.showInternalLabelsButton) {
+                if (_settings.showExternalLabelsButton) {
+                    h = h.concat(makeCheckboxButtonTableData('External Labels', EXTERNAL_LABEL_CB, 'to show/hide external node labels'));
+                }
+                if (_basicTreeProperties.internalNodeData && _settings.showInternalLabelsButton) {
+                    h = h.concat(makeCheckboxButtonTableData('Internal Labels', INTERNAL_LABEL_CB, 'to show/hide internal node labels'));
+                }
+                h = h.concat('</br>');
+            }
+
+            if (_settings.showExternalNodesButton || _settings.showInternalNodesButton) {
+                if (_settings.showExternalNodesButton) {
+                    h = h.concat(makeCheckboxButtonTableData('External Nodes', EXTERNAL_NODES_CB, 'to show external nodes as shapes (usually circles)'));
+                }
+                if (_settings.showInternalNodesButton) {
+                    h = h.concat(makeCheckboxButtonTableData('Internal Nodes', INTERNAL_NODES_CB, 'to show internal nodes as shapes (usually circles)'));
+                }
+                h = h.concat('</br>');
+            }
+
+            counter = 0;
             if (_settings.showBranchColorsButton) {
-                h = h.concat(makeCheckboxButton('Branch Colors', BRANCH_COLORS_CB, 'to use/ignore branch colors (if present in tree file)'));
+                h = h.concat(makeCheckboxButtonTableData('Branch Colors', BRANCH_COLORS_CB, 'to use/ignore branch colors (if present in tree file)'));
+                counter += 1;
             }
+
             if (_settings.enableNodeVisualizations) {
-                h = h.concat(makeCheckboxButton('Node Vis', NODE_VIS_CB, 'to show/hide node visualizations (colors, shapes, sizes), set with the Visualizations sub-menu'));
+                h = h.concat(makeCheckboxButtonTableData('Node Vis', NODE_VIS_CB, 'to show/hide node visualizations (colors, shapes, sizes), set with the Visualizations sub-menu'));
+                counter += 1;
+                if (counter % 2 === 0) {
+                    h = h.concat('</br>');
+                }
             }
             if (_settings.enableBranchVisualizations) {
-                h = h.concat(makeCheckboxButton('Branch Vis', BRANCH_VIS_CB, 'to show/hide branch visualizations, set with the Visualizations sub-menu'));
+                h = h.concat(makeCheckboxButtonTableData('Branch Vis', BRANCH_VIS_CB, 'to show/hide branch visualizations, set with the Visualizations sub-menu'));
+                counter += 1;
+                if (counter % 2 === 0) {
+                    h = h.concat('</br>');
+                }
             }
             if (_settings.showDynahideButton) {
-                h = h.concat(makeCheckboxButton('Dyna Hide', DYNAHIDE_CB, 'to hide external labels depending on expected visibility'));
+                h = h.concat(makeCheckboxButtonTableData('Dyna Hide', DYNAHIDE_CB, 'to hide external labels depending on expected visibility'));
+                counter += 1;
+                if (counter % 2 === 0) {
+                    h = h.concat('</br>');
+                }
             }
             if (_settings.showShortenNodeNamesButton) {
-                h = h.concat(makeCheckboxButton('Short Names', SHORTEN_NODE_NAME_CB, 'to shorten long node names'));
+                h = h.concat(makeCheckboxButtonTableData('Short Names', SHORTEN_NODE_NAME_CB, 'to shorten long node names'));
             }
-            h = h.concat('</div>');
-            h = h.concat('</fieldset>');
+            h = h.concat('</div></fieldset>');
             return h;
         }
 
@@ -35125,7 +34828,8 @@ if (!phyloXml) {
             h = h.concat(makeButton('Y+', ZOOM_IN_Y, 'zoom in vertically (Alt+Up or Shift+mousewheel)'));
             h = h.concat('<br>');
             h = h.concat(makeButton('X-', ZOOM_OUT_X, 'zoom out horizontally (Alt+Left or Shift+Alt+mousewheel)'));
-            h = h.concat(makeButton('F', ZOOM_TO_FIT, 'fit and center tree display (Alt+C, Home, or Esc to re-position controls as well)'));
+            h = h.concat(makeButton('F', ZOOM_TO_FIT, 'fit and center tree display (Alt+C), use Home or Esc for almost complete reset'));
+            h = h.concat(makeButton('E', ZOOM_TO_EXPAND_Y, 'fit and center tree, expand vertically'));
             h = h.concat(makeButton('X+', ZOOM_IN_X, 'zoom in horizontally (Alt+Right or Shift+Alt+mousewheel)'));
             h = h.concat('<br>');
             h = h.concat(makeButton('Y-', ZOOM_OUT_Y, 'zoom out vertically (Alt+Down or Shift+mousewheel)'));
@@ -35184,8 +34888,7 @@ if (!phyloXml) {
             if (_basicTreeProperties.internalNodeData) {
                 h = h.concat(makeSlider('Internal label size:', INTERNAL_FONT_SIZE_SLIDER));
             }
-            if (_basicTreeProperties.branchLengths || _basicTreeProperties.confidences
-                || _basicTreeProperties.branchEvents) {
+            if (_basicTreeProperties.branchLengths || _basicTreeProperties.confidences || _basicTreeProperties.branchEvents) {
                 h = h.concat(makeSlider('Branch label size:', BRANCH_DATA_FONT_SIZE_SLIDER));
             }
             h = h.concat(makeSlider('Node size:', NODE_SIZE_SLIDER));
@@ -35210,7 +34913,6 @@ if (!phyloXml) {
                 h = h.concat(makeButton('+', INCR_BL_COLLAPSE_LEVEL, 'to increase the maximal subtree branch length threshold (wraps around)'));
                 h = h.concat('</fieldset>');
             }
-
 
             if (_settings.enableCollapseByFeature) {
                 h = h.concat('<fieldset>');
@@ -35244,9 +34946,7 @@ if (!phyloXml) {
         // --------------------------------------------------------------
         function makeSearchBoxes() {
 
-            let tooltip = "enter text to search for (use ',' for logical OR and '+' for logical AND," +
-                " use expressions in form of XX:term for typed search -- e.g. NN:node name, TC:taxonomy code," +
-                " TS:taxonomy scientific name, SN:sequence name, GN:gene name, SS:sequence symbol, MS:molecular sequence, ...)";
+            let tooltip = "enter text to search for (use ',' for logical OR and '+' for logical AND," + " use expressions in form of XX:term for typed search -- e.g. NN:node name, TC:taxonomy code," + " TS:taxonomy scientific name, SN:sequence name, GN:gene name, SS:sequence symbol, MS:molecular sequence, ...)";
             let h = "";
             h = h.concat('<fieldset>');
             h = h.concat('<legend>Search</legend>');
@@ -35258,23 +34958,6 @@ if (!phyloXml) {
             h = h.concat('<br>');
             h = h.concat(makeSearchControlsCompact());
             h = h.concat('</fieldset>');
-            return h;
-        }
-
-        function makeSearchControls() {
-            let h = "";
-            h = h.concat('<div class="' + SEARCH_OPTIONS_GROUP + '">');
-            h = h.concat(makeCheckboxButton('Cas', SEARCH_OPTIONS_CASE_SENSITIVE_CB, 'to search in a case-sensitive manner'));
-            h = h.concat(makeCheckboxButton('Wrd', SEARCH_OPTIONS_COMPLETE_TERMS_ONLY_CB, ' to match complete terms (separated by spaces) only (does not apply to regular expression search)'));
-            h = h.concat('</div>');
-            h = h.concat('<br>');
-            h = h.concat('<div class="' + SEARCH_OPTIONS_GROUP + '">');
-            h = h.concat(makeCheckboxButton('Reg', SEARCH_OPTIONS_REGEX_CB, 'to search with regular expressions'));
-            if (_settings.showSearchPropertiesButton === true) {
-                h = h.concat(makeCheckboxButton('Prp', SEARCH_OPTIONS_PROPERTIES_CB, 'to search (hidden) properties'));
-            }
-            h = h.concat(makeCheckboxButton('Neg', SEARCH_OPTIONS_NEGATE_RES_CB, 'to invert (negate) the search results'));
-            h = h.concat('</div>');
             return h;
         }
 
@@ -35392,7 +35075,15 @@ if (!phyloXml) {
         }
 
         function makeCheckboxButton(label, id, tooltip) {
-            return '<label for="' + id + '" title="' + tooltip + '">' + label + '</label><input type="checkbox" name="' + id + '" id="' + id + '">';
+            return '<label for="' + id + '" title="' + tooltip + '">' + label + '</label><input  type="checkbox" name="' + id + '" id="' + id + '">';
+        }
+
+        function makeCheckboxButtonTableData(label, id, tooltip) {
+            const n = 15;
+            if (label.length > n) {
+                label = label.substring(0, n);
+            }
+            return '<label style="width:68px;text-align: left" for="' + id + '" title="' + tooltip + '">' + label + '</label><input  type="checkbox" name="' + id + '" id="' + id + '">';
         }
 
         function makeRadioButton(label, id, radioGroup, tooltip) {
@@ -35412,10 +35103,6 @@ if (!phyloXml) {
 
         function makeTextInput(id, tooltip) {
             return '<input title="' + tooltip + '" type="text" name="' + id + '" id="' + id + '">';
-        }
-
-        function makeTextInputWithLabel(label, sep, id, tooltip) {
-            return label + sep + '<input title="' + tooltip + '" type="text" name="' + id + '" id="' + id + '">';
         }
 
     } // function createGui()
@@ -35461,105 +35148,94 @@ if (!phyloXml) {
         _currentNodeSizeVisualization = DEFAULT;
         _currentNodeFillColorVisualization = DEFAULT;
         _currentNodeSizeVisualization = DEFAULT;
-        _currentNodeBorderColorVisualization = DEFAULT;
 
         $('select#' + NODE_FILL_COLOR_SELECT_MENU).append($('<option>')
             .val(DEFAULT)
-            .html('default')
-        );
+            .html('default'));
 
         $('select#' + NODE_SHAPE_SELECT_MENU).append($('<option>')
             .val(DEFAULT)
-            .html('default')
-        );
+            .html('default'));
         $('select#' + NODE_SIZE_SELECT_MENU).append($('<option>')
             .val(DEFAULT)
-            .html('default')
-        );
+            .html('default'));
         $('select#' + LABEL_COLOR_SELECT_MENU).append($('<option>')
             .val(DEFAULT)
-            .html('default')
-        );
+            .html('default'));
 
         $('select#' + NODE_FILL_COLOR_SELECT_MENU_2).append($('<option>')
             .val(DEFAULT)
-            .html('default')
-        );
+            .html('default'));
         $('select#' + LABEL_COLOR_SELECT_MENU_2).append($('<option>')
             .val(DEFAULT)
-            .html('default')
-        );
+            .html('default'));
 
         $('select#' + NODE_FILL_COLOR_SELECT_MENU_3).append($('<option>')
             .val(DEFAULT)
-            .html('default')
-        );
+            .html('default'));
 
         $('select#' + LABEL_COLOR_SELECT_MENU_3).append($('<option>')
             .val(DEFAULT)
-            .html('default')
-        );
+            .html('default'));
 
         $('select#' + NODE_FILL_COLOR_SELECT_MENU_4).append($('<option>')
             .val(DEFAULT)
-            .html('default')
-        );
+            .html('default'));
 
         $('select#' + LABEL_COLOR_SELECT_MENU_4).append($('<option>')
             .val(DEFAULT)
-            .html('default')
-        );
-
-        //
+            .html('default'));
 
         if (_visualizations) {
             if (_visualizations.labelColor) {
                 for (let key in _visualizations.labelColor) {
                     if (_visualizations.labelColor.hasOwnProperty(key)) {
+                        let key_html = key;
+                        if (key_html.length > 15) {
+                            key_html = key_html.substring(0, 15);
+                        }
                         $('select#' + LABEL_COLOR_SELECT_MENU).append($('<option>')
                             .val(key)
-                            .html(key)
-                        );
+                            .html(key_html));
                     }
                 }
             }
             if (_visualizations.nodeShape) {
                 for (let key in _visualizations.nodeShape) {
                     if (_visualizations.nodeShape.hasOwnProperty(key)) {
+                        let key_html = key;
+                        if (key_html.length > 15) {
+                            key_html = key_html.substring(0, 15);
+                        }
                         $('select#' + NODE_SHAPE_SELECT_MENU).append($('<option>')
                             .val(key)
-                            .html(key)
-                        );
+                            .html(key_html));
                     }
                 }
             }
             if (_visualizations.nodeFillColor) {
                 for (let key in _visualizations.nodeFillColor) {
                     if (_visualizations.nodeFillColor.hasOwnProperty(key)) {
+                        let key_html = key;
+                        if (key_html.length > 15) {
+                            key_html = key_html.substring(0, 15);
+                        }
                         $('select#' + NODE_FILL_COLOR_SELECT_MENU).append($('<option>')
                             .val(key)
-                            .html(key)
-                        );
-                    }
-                }
-            }
-            if (_visualizations.nodeBorderColor) {
-                for (let key in _visualizations.nodeBorderColor) {
-                    if (_visualizations.nodeBorderColor.hasOwnProperty(key)) {
-                        $('select#' + NODE_BORDER_COLOR_SELECT_MENU).append($('<option>')
-                            .val(key)
-                            .html(key)
-                        );
+                            .html(key_html));
                     }
                 }
             }
             if (_visualizations.nodeSize) {
                 for (let key in _visualizations.nodeSize) {
                     if (_visualizations.nodeSize.hasOwnProperty(key)) {
+                        let key_html = key;
+                        if (key_html.length > 15) {
+                            key_html = key_html.substring(0, 15);
+                        }
                         $('select#' + NODE_SIZE_SELECT_MENU).append($('<option>')
                             .val(key)
-                            .html(key)
-                        );
+                            .html(key_html));
                     }
                 }
             }
@@ -35575,12 +35251,10 @@ if (!phyloXml) {
                         const key = properties[i];
                         $('select#' + LABEL_COLOR_SELECT_MENU_2).append($('<option>')
                             .val(key)
-                            .html(key)
-                        );
+                            .html(key));
                         $('select#' + NODE_FILL_COLOR_SELECT_MENU_2).append($('<option>')
                             .val(key)
-                            .html(key)
-                        );
+                            .html(key));
                     }
                 }
             }
@@ -35595,12 +35269,10 @@ if (!phyloXml) {
                         const key = properties[i];
                         $('select#' + LABEL_COLOR_SELECT_MENU_3).append($('<option>')
                             .val(key)
-                            .html(key)
-                        );
+                            .html(key));
                         $('select#' + NODE_FILL_COLOR_SELECT_MENU_3).append($('<option>')
                             .val(key)
-                            .html(key)
-                        );
+                            .html(key));
                     }
                 }
             }
@@ -35615,12 +35287,10 @@ if (!phyloXml) {
                         const key = properties[i];
                         $('select#' + LABEL_COLOR_SELECT_MENU_4).append($('<option>')
                             .val(key)
-                            .html(key)
-                        );
+                            .html(key));
                         $('select#' + NODE_FILL_COLOR_SELECT_MENU_4).append($('<option>')
                             .val(key)
-                            .html(key)
-                        );
+                            .html(key));
                     }
                 }
             }
@@ -35663,18 +35333,14 @@ if (!phyloXml) {
 
 
     function initializeInitialVisualization() {
-        if (_options.initialNodeFillColorVisualization
-            && _options.initialNodeFillColorVisualization !== DEFAULT
-            && _visualizations.nodeFillColor[_options.initialNodeFillColorVisualization] != null) {
+        if (_options.initialNodeFillColorVisualization && _options.initialNodeFillColorVisualization !== DEFAULT && _visualizations.nodeFillColor[_options.initialNodeFillColorVisualization] != null) {
             _currentNodeFillColorVisualization = _options.initialNodeFillColorVisualization;
             setSelectMenuValue(NODE_FILL_COLOR_SELECT_MENU, _currentNodeFillColorVisualization);
             addLegend(LEGEND_NODE_FILL_COLOR, _visualizations.nodeFillColor[_currentNodeFillColorVisualization]);
             _options.showExternalNodes = true;
             setCheckboxValue(EXTERNAL_NODES_CB, true);
         }
-        if (_options.initialLabelColorVisualization
-            && _options.initialLabelColorVisualization !== DEFAULT
-            && _visualizations.labelColor[_options.initialLabelColorVisualization] != null) {
+        if (_options.initialLabelColorVisualization && _options.initialLabelColorVisualization !== DEFAULT && _visualizations.labelColor[_options.initialLabelColorVisualization] != null) {
             _currentLabelColorVisualization = _options.initialLabelColorVisualization;
             setSelectMenuValue(LABEL_COLOR_SELECT_MENU, _currentLabelColorVisualization);
             addLegend(LEGEND_LABEL_COLOR, _visualizations.labelColor[_currentLabelColorVisualization]);
@@ -35800,8 +35466,7 @@ if (!phyloXml) {
         _depth_collapse_level = -1;
         resetCollapseByFeature();
         if ((_root && _treeData) && (_external_nodes > 2)) {
-            if (_branch_length_collapse_level >= _branch_length_collapse_data.max
-                || _branch_length_collapse_level < 0) {
+            if (_branch_length_collapse_level >= _branch_length_collapse_data.max || _branch_length_collapse_level < 0) {
                 _branch_length_collapse_level = _branch_length_collapse_data.min;
             }
             _branch_length_collapse_level += _branch_length_collapse_data.step;
@@ -35838,11 +35503,7 @@ if (!phyloXml) {
 
     function showMsaResidueVisualizationAsLabelColorIfNotAlreadyShown() {
 
-        if ((_currentLabelColorVisualization == null || _currentLabelColorVisualization === DEFAULT)
-            && (_currentNodeFillColorVisualization !== MSA_RESIDUE)
-            && (_currentNodeBorderColorVisualization !== MSA_RESIDUE)
-            && (_currentNodeShapeVisualization !== MSA_RESIDUE)
-            && isCanDoMsaResidueVisualizations()) {
+        if ((_currentLabelColorVisualization == null || _currentLabelColorVisualization === DEFAULT) && (_currentNodeFillColorVisualization !== MSA_RESIDUE) && (_currentNodeShapeVisualization !== MSA_RESIDUE) && isCanDoMsaResidueVisualizations()) {
 
             _currentLabelColorVisualization = MSA_RESIDUE;
             $('#' + LABEL_COLOR_SELECT_MENU).val(MSA_RESIDUE);
@@ -35851,11 +35512,7 @@ if (!phyloXml) {
                 _options.showBranchVisualizations = true;
                 setCheckboxValue(BRANCH_VIS_CB, _options.showBranchVisualizations);
             }
-        } else if ((_currentLabelColorVisualization !== MSA_RESIDUE)
-            && (_currentNodeFillColorVisualization == null || _currentNodeFillColorVisualization === DEFAULT)
-            && (_currentNodeBorderColorVisualization !== MSA_RESIDUE)
-            && (_currentNodeShapeVisualization !== MSA_RESIDUE)
-            && isCanDoMsaResidueVisualizations()) {
+        } else if ((_currentLabelColorVisualization !== MSA_RESIDUE) && (_currentNodeFillColorVisualization == null || _currentNodeFillColorVisualization === DEFAULT) && (_currentNodeShapeVisualization !== MSA_RESIDUE) && isCanDoMsaResidueVisualizations()) {
             _currentNodeFillColorVisualization = MSA_RESIDUE;
             $('#' + NODE_FILL_COLOR_SELECT_MENU).val(MSA_RESIDUE);
             addLegend(LEGEND_NODE_FILL_COLOR, _visualizations.nodeFillColor[_currentNodeFillColorVisualization]);
@@ -35863,23 +35520,7 @@ if (!phyloXml) {
                 _options.showBranchVisualizations = true;
                 setCheckboxValue(BRANCH_VIS_CB, _options.showBranchVisualizations);
             }
-        } else if ((_currentLabelColorVisualization !== MSA_RESIDUE)
-            && (_currentNodeFillColorVisualization !== MSA_RESIDUE)
-            && (_currentNodeBorderColorVisualization == null || _currentNodeBorderColorVisualization === DEFAULT)
-            && (_currentNodeShapeVisualization !== MSA_RESIDUE)
-            && isCanDoMsaResidueVisualizations()) {
-            _currentNodeBorderColorVisualization = MSA_RESIDUE;
-            $('#' + NODE_BORDER_COLOR_SELECT_MENU).val(MSA_RESIDUE);
-            addLegend(LEGEND_NODE_BORDER_COLOR, _visualizations.nodeBorderColor[_currentNodeBorderColorVisualization]);
-            if (_settings.enableBranchVisualizations) {
-                _options.showBranchVisualizations = true;
-                setCheckboxValue(BRANCH_VIS_CB, _options.showBranchVisualizations);
-            }
-        } else if ((_currentLabelColorVisualization !== MSA_RESIDUE)
-            && (_currentNodeFillColorVisualization !== MSA_RESIDUE)
-            && (_currentNodeBorderColorVisualization !== MSA_RESIDUE)
-            && (_currentNodeShapeVisualization == null || _currentNodeShapeVisualization === DEFAULT)
-            && isCanDoMsaResidueVisualizations()) {
+        } else if ((_currentLabelColorVisualization !== MSA_RESIDUE) && (_currentNodeFillColorVisualization !== MSA_RESIDUE) && (_currentNodeShapeVisualization == null || _currentNodeShapeVisualization === DEFAULT) && isCanDoMsaResidueVisualizations()) {
             _currentNodeShapeVisualization = MSA_RESIDUE;
             $('#' + NODE_SHAPE_SELECT_MENU).val(MSA_RESIDUE);
             addLegend(LEGEND_NODE_SHAPE, _visualizations.nodeShape[_currentNodeShapeVisualization]);
@@ -35979,7 +35620,7 @@ if (!phyloXml) {
     }
 
     function updateButtonEnabledState() {
-        if (_in_subtree) { //~~
+        if (_in_subtree) {
             enableButton($('#' + RETURN_TO_SUPERTREE_BUTTON_BY_ONE));
             enableButton($('#' + RETURN_TO_SUPERTREE_BUTTON));
         } else {
@@ -36058,11 +35699,7 @@ if (!phyloXml) {
                 b.css('color', '');
             }
         }
-        if (_showLegends && (_legendColorScales[LEGEND_LABEL_COLOR] ||
-            (_options.showNodeVisualizations && (_legendColorScales[LEGEND_NODE_FILL_COLOR] ||
-                _legendColorScales[LEGEND_NODE_BORDER_COLOR] ||
-                _legendShapeScales[LEGEND_NODE_SHAPE] ||
-                _legendSizeScales[LEGEND_NODE_SIZE])))) {
+        if (_showLegends && (_legendColorScales[LEGEND_LABEL_COLOR] || (_options.showNodeVisualizations && (_legendColorScales[LEGEND_NODE_FILL_COLOR] || _legendShapeScales[LEGEND_NODE_SHAPE] || _legendSizeScales[LEGEND_NODE_SIZE])))) {
             enableButton($('#' + LEGENDS_HORIZ_VERT_BTN));
             enableButton($('#' + LEGENDS_MOVE_UP_BTN));
             enableButton($('#' + LEGENDS_MOVE_DOWN_BTN));
@@ -36215,7 +35852,6 @@ if (!phyloXml) {
 
     function downloadAsFastaAll() {
         let fasta_text = forester.getMolecularSequencesAsFasta(_root, '\n');
-        console.log(fasta_text);
         saveAs(new Blob([fasta_text], {type: "application/txt"}), _options.nameForFastaDownload);
     }
 
@@ -36255,10 +35891,7 @@ if (!phyloXml) {
      * @param newHamphshireConfidenceValuesAsInternalNames
      * @returns {*}
      */
-    archaeopteryx.parseTree = function (location,
-                                        data,
-                                        newHamphshireConfidenceValuesInBrackets,
-                                        newHamphshireConfidenceValuesAsInternalNames) {
+    archaeopteryx.parseTree = function (location, data, newHamphshireConfidenceValuesInBrackets, newHamphshireConfidenceValuesAsInternalNames) {
         if (newHamphshireConfidenceValuesInBrackets === undefined) {
             newHamphshireConfidenceValuesInBrackets = true;
         }
@@ -36269,9 +35902,7 @@ if (!phyloXml) {
         if (location.substr(-3, 3).toLowerCase() === 'xml') {
             tree = archaeopteryx.parsePhyloXML(data);
         } else {
-            tree = archaeopteryx.parseNewHampshire(data,
-                newHamphshireConfidenceValuesInBrackets,
-                newHamphshireConfidenceValuesAsInternalNames);
+            tree = archaeopteryx.parseNewHampshire(data, newHamphshireConfidenceValuesInBrackets, newHamphshireConfidenceValuesAsInternalNames);
         }
         return tree;
     };
@@ -36288,20 +35919,10 @@ if (!phyloXml) {
      * @param newHamphshireConfidenceValuesAsInternalNames
      * @param nodeVisualizations
      */
-    archaeopteryx.launchArchaeopteryx = function (label,
-                                                  location,
-                                                  data,
-                                                  options,
-                                                  settings,
-                                                  newHamphshireConfidenceValuesInBrackets,
-                                                  newHamphshireConfidenceValuesAsInternalNames,
-                                                  nodeVisualizations) {
+    archaeopteryx.launchArchaeopteryx = function (label, location, data, options, settings, newHamphshireConfidenceValuesInBrackets, newHamphshireConfidenceValuesAsInternalNames, nodeVisualizations) {
         let tree = null;
         try {
-            tree = archaeopteryx.parseTree(location,
-                data,
-                newHamphshireConfidenceValuesInBrackets,
-                newHamphshireConfidenceValuesAsInternalNames);
+            tree = archaeopteryx.parseTree(location, data, newHamphshireConfidenceValuesInBrackets, newHamphshireConfidenceValuesAsInternalNames);
         } catch (e) {
             alert(ERROR + 'error while parsing tree: ' + e);
         }
@@ -36318,11 +35939,5 @@ if (!phyloXml) {
 // --------------------------------------------------------------
 // For exporting
 // --------------------------------------------------------------
-    if (typeof module !== 'undefined' && module.exports && !global.xmldocAssumeBrowser)
-        module.exports.archaeopteryx = archaeopteryx;
-    else if (typeof window !== "undefined")
-        window.archaeopteryx = archaeopteryx;
-    else
-        this.archaeopteryx = archaeopteryx;
-})
-();
+    if (typeof module !== 'undefined' && module.exports && !global.xmldocAssumeBrowser) module.exports.archaeopteryx = archaeopteryx; else if (typeof window !== "undefined") window.archaeopteryx = archaeopteryx; else this.archaeopteryx = archaeopteryx;
+})();
