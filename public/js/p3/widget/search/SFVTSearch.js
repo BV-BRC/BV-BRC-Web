@@ -26,6 +26,10 @@ define([
     return str.replace(/\(|\)|\.|\*|\||\[|\]/g, '');
   }
 
+  function escapeSpecialCharacters(str) {
+    return str.replace(/([[\]])/g, '\\$1');
+  }
+
   return declare([SearchBase], {
     templateString: template,
     searchAppName: 'Sequence Feature Variant Type (SFVT) Search',
@@ -36,31 +40,37 @@ define([
     defaultTaxonId: '11320',
     proteinOptions: ['12637'],
     segmentOptions: ['11320'],
+    sfvtSequenceErrorMessage: 'There are too many Sequence Feature hits. Please refine Sequence Feature Variant Type Sequence pattern to narrow down the results.',
+    sfvtMaxLimit: 300,
 
     startup: function () {
       let sfvtSeqSearchButton = query('#sfvt-seq-search')[0];
       sfvtSeqSearchButton.info_dialog = new Dialog({
         content: '<section id="sfvt-seq-section" style="overflow-y: auto; max-height: 400px;">\n' +
-          '<h2>SFVT Sequence</h2>\n' +
-          '<p>Use this advanced search function to find Sequence Features (SFs) that match specific Sequence Feature Variant Type (SFVT) patterns.</p>\n' +
-          '<br>\n' +
+          '  <h2>SFVT Sequence</h2>\n' +
+          '  <p>Use this advanced search function to find Sequence Features (SFs) that match specific Sequence Feature Variant Type (SFVT) patterns.</p>\n' +
+          '  <br>\n' +
           '\n' +
-          '<p><strong>Exact Match:</strong> Use "RER" to find sequences that are exactly "RER".</p>\n' +
-          '<p><strong>Starts With:</strong> Use "RE*" to find sequences that start with "RE" and are followed by any characters (e.g., "REX", "REXY", "REXYZ").</p>\n' +
-          '<p><strong>Ends With:</strong> Use "*RE" to find sequences that end with "RE" and are preceded by any characters.</p>\n' +
-          '<p><strong>Includes:</strong> Enter "*RE*" to find sequences that contain "RE" anywhere within them.</p>\n' +
+          '  <p><strong>Examples:</strong></p>\n' +
+          '  <ul style="list-style-type: none;">\n' +
+          '    <li style="padding-left: 1em;"><strong>Exact Match:</strong> Use "RER" to find sequences that are exactly "RER".</li>\n' +
+          '    <li style="padding-left: 1em;"><strong>Starts With:</strong> Use "RER*" to find sequences that start with "RER" and are followed by any characters (e.g., "REX", "REXY", "REXYZ").</li>\n' +
+          '    <li style="padding-left: 1em;"><strong>Ends With:</strong> Use "*RE" to find sequences that end with "RE" and are preceded by any characters.</li>\n' +
+          '    <li style="padding-left: 1em;"><strong>Includes:</strong> Use "*RERE*" to find sequences that contain "RERE" anywhere within them.</li>\n' +
+          '    <li style="padding-left: 1em;"><strong>Insertion:</strong> Use "RER[*" or "RER[EGG]* to find sequences that start with "RER" followed by an insertion.</li>\n' +
+          '    <li style="padding-left: 1em;"><strong>Deletion:</strong> Use "*K--Q*" to find sequences that include "K--Q" anywhere within them, indicating a deletion.</li>\n' +
+          '  </ul>\n' +
           '</section>',
         'class': 'helpModal',
         draggable: true,
-        style: 'max-width: 400px;'
+        style: 'max-width: 50%;'
       });
       sfvtSeqSearchButton.open = false;
       on(sfvtSeqSearchButton, 'click', function () {
         if (!sfvtSeqSearchButton.open) {
           sfvtSeqSearchButton.open = true;
           sfvtSeqSearchButton.info_dialog.show();
-        }
-        else {
+        } else {
           sfvtSeqSearchButton.open = false;
           sfvtSeqSearchButton.info_dialog.hide();
         }
@@ -97,6 +107,7 @@ define([
 
     onPathogenChange: function () {
       const taxonId = this.pathogenGroupNode.value;
+      this.sfvtSequenceMessage.innerHTML = '';
 
       //Clear multi select values
       /*this.virusTypeNode.set('options', []);
@@ -175,7 +186,10 @@ define([
     },
 
     buildFilter: async function () {
+      this.sfvtSequenceMessage.innerHTML = '';
+
       let filterArr = [];
+      let sfQueryArr = [];
 
       // Update taxon id to redirect correct taxonomy page
       const pathogenGroupValue = this.pathogenGroupNode.get('value');
@@ -194,22 +208,28 @@ define([
         .concat(this.subtypeNode.get('value'));
       if (subtypeValue.length === 1) {
         filterArr.push(`eq(subtype,"${sanitizeInput(subtypeValue[0])}")`);
+        sfQueryArr.push(`eq(subtype,${sanitizeInput(subtypeValue[0])})`);
       } else if (subtypeValue.length > 1) {
         filterArr.push(`or(${subtypeValue.map(v => `eq(subtype,"${sanitizeInput(v)}")`)})`);
+        sfQueryArr.push(`in(subtype,(${subtypeValue.join(',')}))`);
       }
 
       const geneValue = this.geneNode.get('value');
       if (geneValue.length === 1) {
         filterArr.push(`eq(gene,"${sanitizeInput(geneValue[0])}")`);
+        sfQueryArr.push(`eq(gene,${sanitizeInput(geneValue[0])})`);
       } else if (geneValue.length > 1) {
         filterArr.push(`or(${geneValue.map(v => `eq(gene,"${sanitizeInput(v)}")`)})`);
+        sfQueryArr.push(`in(gene,(${geneValue.join(',')}))`);
       }
 
       const sequenceFeatureTypeValue = this.sequenceFeatureTypeNode.get('value');
       if (sequenceFeatureTypeValue.length === 1) {
         filterArr.push(`eq(sf_category,"${sanitizeInput(sequenceFeatureTypeValue[0])}")`);
+        sfQueryArr.push(`eq(sf_category,${sanitizeInput(sequenceFeatureTypeValue[0])})`);
       } else if (sequenceFeatureTypeValue.length > 1) {
         filterArr.push(`or(${sequenceFeatureTypeValue.map(v => `eq(sf_category,"${sanitizeInput(v)}")`)})`);
+        sfQueryArr.push(`in(sf_category,(${sequenceFeatureTypeValue.join(',')}))`);
       }
 
       /*const startValue = parseInt(this.aaCoordinatesStartNode.get('value'));
@@ -240,18 +260,53 @@ define([
       // Fetch sf_id's if sfvt sequence is provided
       const sfvtSequenceValue = this.sfvtSequenceNode.get('value');
       if (sfvtSequenceValue !== '') {
-        const query = '?in(sfvt_sequence,(' + sfvtSequenceValue + '))&select(sf_id)&limit(25000)';
-        const sfvtList = await xhr.get(PathJoin(window.App.dataAPI, 'sequence_feature_vt', query), {
+        const sfvtQuery = '?in(sfvt_sequence,(' + encodeURIComponent(escapeSpecialCharacters(sfvtSequenceValue)) + '))&select(sf_id)&limit(2500000)';
+        const sfvtResponse = await xhr.post(PathJoin(window.App.dataAPI, 'sequence_feature_vt', sfvtQuery), {
           headers: {
             accept: 'application/json',
-            'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+            'Content-Type': 'application/solrquery+x-www-form-urlencoded',
             'X-Requested-With': null,
             Authorization: (window.App.authorizationToken || '')
           },
-          handleAs: 'json'
+          handleAs: 'json',
+          data: {
+            q: 'sfvt_sequence:' + escapeSpecialCharacters(sfvtSequenceValue),
+            fl: 'sf_id',
+            group: 'true',
+            'group.field': 'sf_id',
+            rows: '1000000'
+          }
         });
-        const uniqueSFIds = new Set(sfvtList.map(sfvt => sfvt.sf_id));
-        filterArr.push(`or(${Array.from(uniqueSFIds).map(id => `eq(sf_id,"${sanitizeInput(id)}")`)})`);
+        const groups = sfvtResponse.sf_id.groups;
+        let sfIds = groups.map(g => g.groupValue);
+
+        if (sfIds.length > 400) {
+          this.sfvtSequenceMessage.innerHTML = this.sfvtSequenceErrorMessage;
+          throw Error('There are more than 100 sequence feature hits');
+        }
+
+        // Filter SF IDs if there are other selections
+        if (sfIds.length > 0 && filterArr.length !== 0) {
+          const sfQuery = 'in(sf_id,(' + sfIds.map(id => encodeURIComponent(`"${id}"`)) + '))&select(sf_id)&limit(' + sfIds.length + ')&' + sfQueryArr.join('&');
+          const sfList = await xhr.post(PathJoin(window.App.dataAPI, 'sequence_feature'), {
+            headers: {
+              accept: 'application/json',
+              'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+              'X-Requested-With': null,
+              Authorization: (window.App.authorizationToken || '')
+            },
+            handleAs: 'json',
+            'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+            data: sfQuery
+          });
+          sfIds = sfList.map(sf => sf.sf_id);
+        }
+
+        if (sfIds.length > 300) {
+          this.sfvtSequenceMessage.innerHTML =  this.sfvtSequenceErrorMessage;
+          throw Error('There are more than 100 sequence feature hits');
+        }
+        filterArr.push(`or(${sfIds.map(id => `eq(sf_id,"${sanitizeInput(id)}")`)})`);
       }
 
       if (filterArr.length === 1) {

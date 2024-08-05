@@ -142,6 +142,8 @@ define([
       // Other
       additional_metadata: { label: 'Additional Metadata', field: 'additional_metadata', hidden: true },
       comments: { label: 'Comments', field: 'comments', hidden: true },
+      date_inserted: { label: 'Date Inserted', field: 'date_inserted', hidden: true },
+      date_updated: { label: 'Date Updated', field: 'date_updated', hidden: true },
 
     },
     startup: function () {
