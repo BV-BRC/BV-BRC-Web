@@ -112,8 +112,6 @@ define([
       //Clear multi select values
       /*this.virusTypeNode.set('options', []);
       this.virusTypeNode.reset();*/
-      this.subtypeNode.set('options', []);
-      this.subtypeNode.reset();
       this.subtypeHNode.set('options', []);
       this.subtypeHNode.reset();
       this.subtypeNNode.set('options', []);
@@ -138,12 +136,6 @@ define([
             nItems.push({
               value: item.name,
               label: item.name.substring(1)
-            });
-          } else {
-            // Add other items to subtypeNode
-            this.subtypeNode.addOption({
-              value: item.name,
-              label: item.name
             });
           }
         }
@@ -204,8 +196,7 @@ define([
 
       /*const virusTypeValue = this.virusTypeNode.get('value');*/
       const subtypeValue = this.subtypeHNode.get('value')
-        .concat(this.subtypeNNode.get('value'))
-        .concat(this.subtypeNode.get('value'));
+        .concat(this.subtypeNNode.get('value'));
       if (subtypeValue.length === 1) {
         filterArr.push(`eq(subtype,"${sanitizeInput(subtypeValue[0])}")`);
         sfQueryArr.push(`eq(subtype,${sanitizeInput(subtypeValue[0])})`);
