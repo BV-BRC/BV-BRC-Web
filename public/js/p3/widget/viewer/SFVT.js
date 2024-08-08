@@ -464,9 +464,11 @@ define([
                 }
 
                 for (const column in filter) {
-                  const filterValue = filter[column].trim().toUpperCase();
+                  const referenceValue = self.referenceCoordinates[column];
+
+                  const filterValue = filter[column].trim().toUpperCase().replace('.', referenceValue);
                   const elementValue = element[column]
-                    .replace('<i class="fa icon-circle" style="font-size: 4px; pointer-events: none;"></i>', '.')
+                    .replace('<i class="fa icon-circle" style="font-size: 4px; pointer-events: none;"></i>', referenceValue)
                     .replace('<p style="font-weight: bold; color: red;">-</p>', '-');
 
                   // Pass all elements if filterValue is '*'
@@ -475,7 +477,7 @@ define([
                   }
 
                   // Handle special case where filterValue has wildcards inside square brackets
-                  if (filterValue.startsWith('.[') && filterValue.endsWith(']')) {
+                  if (filterValue.includes('[') && filterValue.includes(']')) {
                     const pattern = self.wildcardToRegex(filterValue);
                     if (!pattern.test(elementValue)) {
                       return false;
@@ -484,8 +486,7 @@ define([
                   // '?' is a wild card so yes for all VTs
                   // AA should match with filter value
                   // Search for . if filter value matches with ref seq AA
-                  else if (filterValue !== '?' && elementValue !== filterValue &&
-                    !(self.referenceCoordinates[column] === filterValue && elementValue === '.')) {
+                  else if (filterValue !== '?' && elementValue !== filterValue) {
                     return false;
                   }
                 }
