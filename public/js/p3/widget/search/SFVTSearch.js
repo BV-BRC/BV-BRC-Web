@@ -210,7 +210,7 @@ define([
       let subtypeValue = subtypeHValue.concat(subtypeNValue);
 
       // Update subtype options if any gene selected
-      if (geneValue.length > 0 ){
+      if (geneValue.length > 0) {
         const containsHA = geneValue.includes('HA');
         const containsNA = geneValue.includes('NA');
 
@@ -320,7 +320,7 @@ define([
         }
 
         if (sfIds.length > 300) {
-          this.sfvtSequenceMessage.innerHTML =  this.sfvtSequenceErrorMessage;
+          this.sfvtSequenceMessage.innerHTML = this.sfvtSequenceErrorMessage;
           throw Error('There are more than 100 sequence feature hits');
         }
         filterArr.push(`or(${sfIds.map(id => `eq(sf_id,"${sanitizeInput(id)}")`)})`);
@@ -344,6 +344,17 @@ define([
       // Show or hide the H and N type selections based on the selected values
       query('#hTypeSelection').style('display', hasHA ? 'block' : 'none');
       query('#nTypeSelection').style('display', hasNA ? 'block' : 'none');
+    },
+
+    // Implement custom reset function for CheckedMultiSelect
+    onReset: function (evt) {
+      this.keywordNode.reset();
+      this.sfvtSequenceNode.reset();
+
+      for (let el of [this.sequenceFeatureTypeNode, this.subtypeHNode, this.subtypeNNode, this.geneNode]) {
+        el.set('value', []);
+        el._updateSelection();
+      }
     }
   });
 });

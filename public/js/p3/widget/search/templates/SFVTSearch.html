@@ -140,7 +140,8 @@
         </div>
         <div class="appSubmissionArea sfvtOptions" style="display: none;">
             <div style="margin-top: 10px; text-align:center;">
-                <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+                <div data-dojo-type="dijit/form/Button"
+                     data-dojo-attach-event="onClick: onReset">Reset</div>
                 <div data-dojo-attach-point="submitButton"
                      type="submit" data-dojo-type="dijit/form/Button">Search
                 </div>
