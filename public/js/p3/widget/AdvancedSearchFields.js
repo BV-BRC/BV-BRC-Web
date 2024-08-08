@@ -874,7 +874,7 @@ define([], function () {
         field: 'source_sf_location', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'source_strain', type: 'str', facet: true, facet_hidden: false, search: true
+        field: 'source_strain', type: 'str', facet: false, facet_hidden: false, search: false
       },
       {
         field: 'subtype', type: 'str', facet: true, facet_hidden: false, search: true
