@@ -22,7 +22,7 @@ define([
   return declare([GridContainer], {
     gridCtor: SFVTGrid,
     containerType: 'sequence_feature_data',
-    tutorialLink: 'quick_references/organisms_taxon/features.html',
+    tutorialLink: 'quick_references/organisms_taxon/sfvt.html',
     facetFields: AdvancedSearchFields['sequence_feature'].filter((ff) => ff.facet),
     advancedSearchFields: AdvancedSearchFields['sequence_feature'].filter((ff) => ff.search),
     filter: '',
