@@ -30,7 +30,7 @@ define([
       sf_name: {label: 'Sequence Feature (SF) Name', field: 'sf_name', hidden: false},
       sf_id: {label: 'Sequence Feature (SF) Identifier ', field: 'sf_id', hidden: false},
       gene: {label: 'Gene', field: 'gene', hidden: false},
-      length: {label: 'Sequence Feature (SF) Length', field: 'length', hidden: false},
+      length: {label: 'SF Length', field: 'length', hidden: false},
       variant_types: {label: 'Variant Types', field: 'variant_types', hidden: false},
       sf_category: {label: 'SF Category', field: 'sf_category', hidden: false},
       segments: {label: 'Reference Positions', field: 'segments', hidden: false},
