@@ -513,7 +513,7 @@ define([
           createRow(tbody, '"<font color="red">-</font>":', 'Indicates a deletion (gap) relative to the VT-1 sequence');
           createRow(tbody, '".":', 'Indicates the same amino acid as the VT-1 sequence');
           createRow(tbody, '"[ ]":', 'Indicates an insertion relative to the VT-1 sequence');
-          createRow(tbody, '"X":', 'Indicates an ambiguous residue');
+          createRow(tbody, '"X":', 'Indicates any amino acid');
         }));
       }));
     }
