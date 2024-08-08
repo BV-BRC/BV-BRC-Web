@@ -63,6 +63,7 @@
                             <div class="appFieldLong">
                                 <select data-dojo-type="dojox/form/CheckedMultiSelect" name="genes"
                                         data-dojo-props="disabled:false"
+                                        data-dojo-attach-event="onChange: onSegmentChange"
                                         data-dojo-attach-point="geneNode" multiple style="height: 100%"></select>
                             </div>
                         </div>
@@ -81,13 +82,13 @@
                         </div>
                     </div>
                 </div>
-                <div class="headerrow segmentOptions">
+                <div class="headerrow subtypeOptions" style="display: none;">
                     <label class="appBoxLabel">Subtype</label>
                 </div>
-                <div class="appRow segmentOptions">
+                <div class="appRow subtypeOptions" style="display: none;">
                     <div class="appFieldLong" style="display: flex;">
                         <div id="hTypeSelection" style="box-sizing: border-box;margin-right: 50px;min-width: 120px;">
-                            <label class="appBoxLabel" style="font-size: 12px;">H type</label>
+                            <label class="appBoxLabel" style="font-size: 12px;">H type (applies to HA)</label>
                             <!--<div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. H1, H3, H7, N1, N2'" data-dojo-attach-point="subtypeNode" name="subtype" style="width: 500px"></div>-->
                             <select data-dojo-type="dojox/form/CheckedMultiSelect" name="subtype_h"
                                     data-dojo-props="disabled:false"
@@ -95,7 +96,7 @@
                                     multiple style="height: 100%; display: table-cell;"></select>
                         </div>
                         <div id="nTypeSelection" style="flex: 1; box-sizing: border-box;">
-                            <label class="appBoxLabel" style="font-size: 12px;">N type</label>
+                            <label class="appBoxLabel" style="font-size: 12px;">N type (applies to NA)</label>
                             <select data-dojo-type="dojox/form/CheckedMultiSelect" name="subtype_n"
                                     data-dojo-props="disabled:false"
                                     data-dojo-attach-point="subtypeNNode"
