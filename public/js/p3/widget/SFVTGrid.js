@@ -34,6 +34,7 @@ define([
       variant_types: {label: 'Variant Types', field: 'variant_types', hidden: false},
       sf_category: {label: 'SF Category', field: 'sf_category', hidden: false},
       segments: {label: 'Reference Positions', field: 'segments', hidden: false},
+      source_strain: {label: 'Source Strain', field: 'source_strain', hidden: false},
 
       segment: {label: 'Segment', field: 'segment', hidden: true},
       subtype: {label: 'Subtype', field: 'subtype', hidden: true},
