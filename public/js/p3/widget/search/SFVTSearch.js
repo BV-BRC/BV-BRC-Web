@@ -58,7 +58,7 @@ define([
           '    <li style="padding-left: 1em;"><strong>Ends With:</strong> Use "*RE" to find sequences that end with "RE" and are preceded by any characters.</li>\n' +
           '    <li style="padding-left: 1em;"><strong>Includes:</strong> Use "*RERE*" to find sequences that contain "RERE" anywhere within them.</li>\n' +
           '    <li style="padding-left: 1em;"><strong>Insertion:</strong> Use "RER[*" or "RER[EGG]* to find sequences that start with "RER" followed by an insertion.</li>\n' +
-          '    <li style="padding-left: 1em;"><strong>Deletion:</strong> Use "*K--Q*" to find sequences that include "K--Q" anywhere within them, indicating a deletion.</li>\n' +
+          '    <li style="padding-left: 1em;"><strong>Deletion:</strong> Use "*K-----N*" to find sequences that include "K-----N" anywhere within them, indicating a deletion.</li>\n' +
           '  </ul>\n' +
           '</section>',
         'class': 'helpModal',
