@@ -67,6 +67,8 @@ define([
       // customize query
       return this._buildAdvancedQuery().join('&')
     },
+    buildFilter: function () {
+    },
     _buildAdvancedQuery: function () {
       return Object.keys(this._Searches).map((idx) => {
         const col = this._Searches[idx]
@@ -104,12 +106,18 @@ define([
         return q
       }).filter(cond => cond !== '' && cond !== undefined)
     },
-    onSubmit: function (evt) {
+    onSubmit: async function (evt) {
       evt.preventDefault();
       evt.stopPropagation();
 
-      const query = this.buildQuery()
-      Topic.publish('/navigate', { href: this.resultUrlBase + query + this.resultUrlHash });
+      const query = this.buildQuery();
+      const filter = await this.buildFilter();
+
+      let url = this.resultUrlBase + query + this.resultUrlHash;
+      if (filter) {
+        url += '&filter=' + filter;
+      }
+      Topic.publish('/navigate', { href: url });
     }
   })
 })
