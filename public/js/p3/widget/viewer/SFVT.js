@@ -301,7 +301,7 @@ define([
               }
               anchor.onclick = function () {
                 Topic.publish('/navigate', {
-                  href: '/view/FeatureList/?' + featureParams
+                  href: '/view/FeatureList/?filter=""&' + featureParams
                 });
               };
               return anchor;
