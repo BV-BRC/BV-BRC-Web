@@ -54,32 +54,6 @@
                                 data-dojo-attach-point="virusTypeNode" multiple style="height: 100%"></select>
                     </div>
                 </div>-->
-                <div class="headerrow segmentOptions">
-                    <label class="appBoxLabel">Subtype</label>
-                </div>
-                <div class="appRow segmentOptions">
-                    <select data-dojo-type="dojox/form/CheckedMultiSelect" name="subtype"
-                            data-dojo-props="disabled:false"
-                            data-dojo-attach-point="subtypeNode"
-                            multiple style="height: 100%; display: table-cell;"></select>
-                    <div class="appFieldLong" style="display: flex;">
-                        <div id="hTypeSelection" style="box-sizing: border-box;margin-right: 50px;min-width: 120px;">
-                            <label class="appBoxLabel" style="font-size: 12px;">H type</label>
-                            <!--<div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. H1, H3, H7, N1, N2'" data-dojo-attach-point="subtypeNode" name="subtype" style="width: 500px"></div>-->
-                            <select data-dojo-type="dojox/form/CheckedMultiSelect" name="subtype_h"
-                                    data-dojo-props="disabled:false"
-                                    data-dojo-attach-point="subtypeHNode"
-                                    multiple style="height: 100%; display: table-cell;"></select>
-                        </div>
-                        <div id="nTypeSelection" style="flex: 1; box-sizing: border-box;">
-                            <label class="appBoxLabel" style="font-size: 12px;">N type</label>
-                            <select data-dojo-type="dojox/form/CheckedMultiSelect" name="subtype_n"
-                                    data-dojo-props="disabled:false"
-                                    data-dojo-attach-point="subtypeNNode"
-                                    multiple style="height: 100%; display: table-cell;"></select>
-                        </div>
-                    </div>
-                </div>
                 <div class="appFieldLong" style="display: flex;">
                     <div style="box-sizing: border-box;margin-right: 50px;min-width: 120px;">
                         <div class="headerrow segmentOptions">
@@ -89,6 +63,7 @@
                             <div class="appFieldLong">
                                 <select data-dojo-type="dojox/form/CheckedMultiSelect" name="genes"
                                         data-dojo-props="disabled:false"
+                                        data-dojo-attach-event="onChange: onSegmentChange"
                                         data-dojo-attach-point="geneNode" multiple style="height: 100%"></select>
                             </div>
                         </div>
@@ -107,6 +82,28 @@
                         </div>
                     </div>
                 </div>
+                <div class="headerrow subtypeOptions" style="display: none;">
+                    <label class="appBoxLabel">Subtype</label>
+                </div>
+                <div class="appRow subtypeOptions" style="display: none;">
+                    <div class="appFieldLong" style="display: flex;">
+                        <div id="hTypeSelection" style="box-sizing: border-box;margin-right: 50px;min-width: 120px;">
+                            <label class="appBoxLabel" style="font-size: 12px;">H type (applies to HA)</label>
+                            <!--<div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. H1, H3, H7, N1, N2'" data-dojo-attach-point="subtypeNode" name="subtype" style="width: 500px"></div>-->
+                            <select data-dojo-type="dojox/form/CheckedMultiSelect" name="subtype_h"
+                                    data-dojo-props="disabled:false"
+                                    data-dojo-attach-point="subtypeHNode"
+                                    multiple style="height: 100%; display: table-cell;"></select>
+                        </div>
+                        <div id="nTypeSelection" style="flex: 1; box-sizing: border-box;">
+                            <label class="appBoxLabel" style="font-size: 12px;">N type (applies to NA)</label>
+                            <select data-dojo-type="dojox/form/CheckedMultiSelect" name="subtype_n"
+                                    data-dojo-props="disabled:false"
+                                    data-dojo-attach-point="subtypeNNode"
+                                    multiple style="height: 100%; display: table-cell;"></select>
+                        </div>
+                    </div>
+                </div>
                 <div class="headerrow">
                     <label class="appBoxLabel">Sequence Feature Variant Type Sequence</label>
                     <div id="sfvt-seq-search" class="infobox iconbox infobutton dialoginfo">
@@ -115,7 +112,7 @@
                 </div>
                 <div class="appRow">
                     <div class="appFieldLong">
-                        <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'eg. *RER*'"
+                        <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'eg. *RERE*'"
                              data-dojo-attach-point="sfvtSequenceNode" name="sfvtSequence" style="width: 500px"></div>
                         <div class="warning" data-dojo-attach-point="sfvtSequenceMessage" style="font-size: 0.9em"></div>
                     </div>
@@ -143,7 +140,8 @@
         </div>
         <div class="appSubmissionArea sfvtOptions" style="display: none;">
             <div style="margin-top: 10px; text-align:center;">
-                <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+                <div data-dojo-type="dijit/form/Button"
+                     data-dojo-attach-event="onClick: onReset">Reset</div>
                 <div data-dojo-attach-point="submitButton"
                      type="submit" data-dojo-type="dijit/form/Button">Search
                 </div>

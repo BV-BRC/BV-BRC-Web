@@ -131,12 +131,28 @@ define([
         id: this.viewer.id + '_overview'
       });
 
-      this.features = new FeatureGridContainer({
+      let featureGridOptions = {
         title: 'Features',
         id: this.viewer.id + '_features',
         tooltip: 'Features tab contains a list of all features (e.g., CDS, rRNA, tRNA, etc.) associated with a given Phylum, Class, Order, Family, Genus, Species or Genome.',
         disabled: false
-      });
+      };
+
+      // Set filter value by url
+      if (this.state && this.state.search) {
+        const params = new URLSearchParams(this.state.search);
+        let filter = params.get('filter');
+        if (filter) {
+          // Remove additional quotes
+          featureGridOptions.defaultFilter = filter.replace(/^"|"$/g, '');
+
+          // Remove filter value from search
+          this.state.search = this.state.search.replace(/filter="[^"]*"&/, '');
+          this.state.search = this.state.search.replace(/filter=%22[^"]*%22&/, '');
+        }
+      }
+
+      this.features = new FeatureGridContainer(featureGridOptions);
 
       this.compareRegionViewer = new CompareRegionContainer({
         title: 'Compare Region Viewer',

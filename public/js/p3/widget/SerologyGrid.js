@@ -48,6 +48,8 @@ define([
       serotype: { label: 'Serotype', field: 'serotype', hidden: false },
 
       comments: { label: 'Comments', field: 'comments', hidden: true },
+      date_inserted: { label: 'Date Inserted', field: 'date_inserted', hidden: true },
+      date_updated: { label: 'Date Updated', field: 'date_updated', hidden: true },
     },
     startup: function () {
       var _self = this;

@@ -1027,6 +1027,11 @@
 		<priority>0.3</priority>
 	</url>
 	<url>
+		<loc>https://www.bv-brc.org/docs/quick_references/organisms_taxon/sfvt.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.3</priority>
+	</url>
+	<url>
 		<loc>https://www.bv-brc.org/docs/quick_references/services/primer_design_service.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.3</priority>
@@ -2708,6 +2713,11 @@
 	</url>
 	<url>
 		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/surveillance_data.html</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.2</priority>
+	</url>
+	<url>
+		<loc>https://www.bv-brc.org/docs//quick_references/organisms_taxon/sfvt.html</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.2</priority>
 	</url>

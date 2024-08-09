@@ -32,7 +32,7 @@ define([
 
   return declare([SearchBase], {
     templateString: template,
-    searchAppName: 'Sequence Feature Variant Type (SFVT) Search',
+    searchAppName: 'Sequence Feature Variant Type (SFVT) Search - BETA',
     pageTitle: 'Sequence Feature Variant Type Search | BV-BRC',
     dataKey: 'genome_feature',
     resultUrlBase: '/view/Taxonomy/{taxon_id}?',
@@ -58,7 +58,7 @@ define([
           '    <li style="padding-left: 1em;"><strong>Ends With:</strong> Use "*RE" to find sequences that end with "RE" and are preceded by any characters.</li>\n' +
           '    <li style="padding-left: 1em;"><strong>Includes:</strong> Use "*RERE*" to find sequences that contain "RERE" anywhere within them.</li>\n' +
           '    <li style="padding-left: 1em;"><strong>Insertion:</strong> Use "RER[*" or "RER[EGG]* to find sequences that start with "RER" followed by an insertion.</li>\n' +
-          '    <li style="padding-left: 1em;"><strong>Deletion:</strong> Use "*K--Q*" to find sequences that include "K--Q" anywhere within them, indicating a deletion.</li>\n' +
+          '    <li style="padding-left: 1em;"><strong>Deletion:</strong> Use "*K-----N*" to find sequences that include "K-----N" anywhere within them, indicating a deletion.</li>\n' +
           '  </ul>\n' +
           '</section>',
         'class': 'helpModal',
@@ -112,8 +112,6 @@ define([
       //Clear multi select values
       /*this.virusTypeNode.set('options', []);
       this.virusTypeNode.reset();*/
-      this.subtypeNode.set('options', []);
-      this.subtypeNode.reset();
       this.subtypeHNode.set('options', []);
       this.subtypeHNode.reset();
       this.subtypeNNode.set('options', []);
@@ -138,12 +136,6 @@ define([
             nItems.push({
               value: item.name,
               label: item.name.substring(1)
-            });
-          } else {
-            // Add other items to subtypeNode
-            this.subtypeNode.addOption({
-              value: item.name,
-              label: item.name
             });
           }
         }
@@ -203,16 +195,6 @@ define([
       }
 
       /*const virusTypeValue = this.virusTypeNode.get('value');*/
-      const subtypeValue = this.subtypeHNode.get('value')
-        .concat(this.subtypeNNode.get('value'))
-        .concat(this.subtypeNode.get('value'));
-      if (subtypeValue.length === 1) {
-        filterArr.push(`eq(subtype,"${sanitizeInput(subtypeValue[0])}")`);
-        sfQueryArr.push(`eq(subtype,${sanitizeInput(subtypeValue[0])})`);
-      } else if (subtypeValue.length > 1) {
-        filterArr.push(`or(${subtypeValue.map(v => `eq(subtype,"${sanitizeInput(v)}")`)})`);
-        sfQueryArr.push(`in(subtype,(${subtypeValue.join(',')}))`);
-      }
 
       const geneValue = this.geneNode.get('value');
       if (geneValue.length === 1) {
@@ -221,6 +203,42 @@ define([
       } else if (geneValue.length > 1) {
         filterArr.push(`or(${geneValue.map(v => `eq(gene,"${sanitizeInput(v)}")`)})`);
         sfQueryArr.push(`in(gene,(${geneValue.join(',')}))`);
+      }
+
+      const subtypeHValue = this.subtypeHNode.get('value');
+      const subtypeNValue = this.subtypeNNode.get('value');
+      let subtypeValue = subtypeHValue.concat(subtypeNValue);
+
+      // Update subtype options if any gene selected
+      if (geneValue.length > 0) {
+        const containsHA = geneValue.includes('HA');
+        const containsNA = geneValue.includes('NA');
+        const containsOtherProteins = geneValue.some(v => v !== 'HA' && v !== 'NA');
+
+        // Add "ALL" to subtypeValue if geneValue contains HA and/or NA and another protein
+        if (((containsHA || containsNA) && subtypeValue.length > 0) && containsOtherProteins) {
+          subtypeValue.push('ALL');
+        }
+
+        // Add all H types if HA, NA and only N type selected
+        // Add all N types if HA, NA and only H type selected
+        if (containsHA && containsNA) {
+          if (subtypeNValue.length > 0 && subtypeHValue.length === 0) {
+            const allHTypes = this.subtypeHNode.get('options').map(h => h.value);
+            subtypeValue = subtypeValue.concat(allHTypes);
+          } else if (subtypeHValue.length > 0 && subtypeNValue.length === 0) {
+            const allNTypes = this.subtypeNNode.get('options').map(n => n.value);
+            subtypeValue = subtypeValue.concat(allNTypes);
+          }
+        }
+      }
+
+      if (subtypeValue.length === 1) {
+        filterArr.push(`eq(subtype,"${sanitizeInput(subtypeValue[0])}")`);
+        sfQueryArr.push(`eq(subtype,${sanitizeInput(subtypeValue[0])})`);
+      } else if (subtypeValue.length > 1) {
+        filterArr.push(`or(${subtypeValue.map(v => `eq(subtype,"${sanitizeInput(v)}")`)})`);
+        sfQueryArr.push(`in(subtype,(${subtypeValue.join(',')}))`);
       }
 
       const sequenceFeatureTypeValue = this.sequenceFeatureTypeNode.get('value');
@@ -303,7 +321,7 @@ define([
         }
 
         if (sfIds.length > 300) {
-          this.sfvtSequenceMessage.innerHTML =  this.sfvtSequenceErrorMessage;
+          this.sfvtSequenceMessage.innerHTML = this.sfvtSequenceErrorMessage;
           throw Error('There are more than 100 sequence feature hits');
         }
         filterArr.push(`or(${sfIds.map(id => `eq(sf_id,"${sanitizeInput(id)}")`)})`);
@@ -315,6 +333,29 @@ define([
         return `and(${filterArr.join(',')})`;
       }
       return '';
+    },
+
+    onSegmentChange: function (evt) {
+      const hasHA = evt.includes('HA');
+      const hasNA = evt.includes('NA');
+
+      // Show or hide the subtype options
+      query('.subtypeOptions').style('display', (hasHA || hasNA) ? 'block' : 'none');
+
+      // Show or hide the H and N type selections based on the selected values
+      query('#hTypeSelection').style('display', hasHA ? 'block' : 'none');
+      query('#nTypeSelection').style('display', hasNA ? 'block' : 'none');
+    },
+
+    // Implement custom reset function for CheckedMultiSelect
+    onReset: function (evt) {
+      this.keywordNode.reset();
+      this.sfvtSequenceNode.reset();
+
+      for (let el of [this.sequenceFeatureTypeNode, this.subtypeHNode, this.subtypeNNode, this.geneNode]) {
+        el.set('value', []);
+        el._updateSelection();
+      }
     }
   });
 });

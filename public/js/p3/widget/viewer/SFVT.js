@@ -282,9 +282,26 @@ define([
 
               let anchor = domConstruct.create("a");
               anchor.innerHTML = value;
+              let patricIds = [];
+              let proteinIds = [];
+              for (let id of ids) {
+                if (id.startsWith('fig|')) {
+                  patricIds.push(encodeURIComponent(id));
+                } else {
+                  proteinIds.push(encodeURIComponent(id));
+                }
+              }
+              let featureParams = '';
+              if (patricIds.length > 0 && proteinIds.length > 0) {
+                featureParams = 'or(in(patric_id,(' + patricIds.join(',') + ')),in(protein_id,(' + proteinIds.join(',') + ')))';
+              } else if (patricIds.length > 0) {
+                featureParams = 'in(patric_id,(' + patricIds.join(',') + '))';
+              } else if (proteinIds.length > 0) {
+                featureParams = 'in(protein_id,(' + proteinIds.join(',') + '))';
+              }
               anchor.onclick = function () {
                 Topic.publish('/navigate', {
-                  href: '/view/FeatureList/?in(patric_id,(' + ids.map(id => encodeURIComponent(id)) + '))'
+                  href: '/view/FeatureList/?filter=""&' + featureParams
                 });
               };
               return anchor;
@@ -464,9 +481,11 @@ define([
                 }
 
                 for (const column in filter) {
-                  const filterValue = filter[column].trim().toUpperCase();
+                  const referenceValue = self.referenceCoordinates[column];
+
+                  const filterValue = filter[column].trim().toUpperCase().replace('.', referenceValue);
                   const elementValue = element[column]
-                    .replace('<i class="fa icon-circle" style="font-size: 4px; pointer-events: none;"></i>', '.')
+                    .replace('<i class="fa icon-circle" style="font-size: 4px; pointer-events: none;"></i>', referenceValue)
                     .replace('<p style="font-weight: bold; color: red;">-</p>', '-');
 
                   // Pass all elements if filterValue is '*'
@@ -475,7 +494,7 @@ define([
                   }
 
                   // Handle special case where filterValue has wildcards inside square brackets
-                  if (filterValue.startsWith('.[') && filterValue.endsWith(']')) {
+                  if (filterValue.includes('[') && filterValue.includes(']')) {
                     const pattern = self.wildcardToRegex(filterValue);
                     if (!pattern.test(elementValue)) {
                       return false;
@@ -484,8 +503,7 @@ define([
                   // '?' is a wild card so yes for all VTs
                   // AA should match with filter value
                   // Search for . if filter value matches with ref seq AA
-                  else if (filterValue !== '?' && elementValue !== filterValue &&
-                    !(self.referenceCoordinates[column] === filterValue && elementValue === '.')) {
+                  else if (filterValue !== '?' && elementValue !== filterValue) {
                     return false;
                   }
                 }
@@ -512,6 +530,7 @@ define([
           createRow(tbody, '"<font color="red">-</font>":', 'Indicates a deletion (gap) relative to the VT-1 sequence');
           createRow(tbody, '".":', 'Indicates the same amino acid as the VT-1 sequence');
           createRow(tbody, '"[ ]":', 'Indicates an insertion relative to the VT-1 sequence');
+          createRow(tbody, '"X":', 'Indicates any amino acid');
         }));
       }));
     }
