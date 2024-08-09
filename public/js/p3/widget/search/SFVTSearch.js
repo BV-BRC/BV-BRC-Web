@@ -213,9 +213,10 @@ define([
       if (geneValue.length > 0) {
         const containsHA = geneValue.includes('HA');
         const containsNA = geneValue.includes('NA');
+        const containsOtherProteins = geneValue.some(v => v !== 'HA' && v !== 'NA');
 
         // Add "ALL" to subtypeValue if geneValue contains HA and/or NA and another protein
-        if ((containsHA || containsNA) && geneValue.some(v => v !== 'HA' && v !== 'NA')) {
+        if (((containsHA || containsNA) && subtypeValue.length > 0) && containsOtherProteins) {
           subtypeValue.push('ALL');
         }
 
