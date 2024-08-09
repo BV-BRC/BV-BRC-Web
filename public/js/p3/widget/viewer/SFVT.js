@@ -282,9 +282,26 @@ define([
 
               let anchor = domConstruct.create("a");
               anchor.innerHTML = value;
+              let patricIds = [];
+              let proteinIds = [];
+              for (let id of ids) {
+                if (id.startsWith('fig|')) {
+                  patricIds.push(encodeURIComponent(id));
+                } else {
+                  proteinIds.push(encodeURIComponent(id));
+                }
+              }
+              let featureParams = '';
+              if (patricIds.length > 0 && proteinIds.length > 0) {
+                featureParams = 'or(in(patric_id,(' + patricIds.join(',') + ')),in(protein_id,(' + proteinIds.join(',') + ')))';
+              } else if (patricIds.length > 0) {
+                featureParams = 'in(patric_id,(' + patricIds.join(',') + '))';
+              } else if (proteinIds.length > 0) {
+                featureParams = 'in(protein_id,(' + proteinIds.join(',') + '))';
+              }
               anchor.onclick = function () {
                 Topic.publish('/navigate', {
-                  href: '/view/FeatureList/?in(patric_id,(' + ids.map(id => encodeURIComponent(id)) + '))'
+                  href: '/view/FeatureList/?' + featureParams
                 });
               };
               return anchor;
