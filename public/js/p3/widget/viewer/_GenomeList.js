@@ -4,7 +4,7 @@ define([
   '../FeatureGridContainer', '../ProteinGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer',
   '../PathwayGridContainer',
   '../ExperimentsContainer', '../InteractionContainer', '../GenomeGridContainer',
-  '../AMRPanelGridContainer', '../SubsystemGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
+  '../AMRPanelGridContainer', '../SubsystemGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer', '../SFVTGridContainer',
   '../SequenceGridContainer', '../StrainGridContainer', '../StrainGridContainer_Orthomyxoviridae', '../StrainGridContainer_Bunyavirales', '../EpitopeGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog'
 ], function (
   declare, TabViewerBase, on, lang, xhr,
@@ -12,7 +12,7 @@ define([
   FeatureGridContainer, ProteinGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer,
   PathwayGridContainer,
   ExperimentsContainer, InteractionsContainer, GenomeGridContainer,
-  AMRPanelGridContainer, SubsystemGridContainer, SurveillanceGridContainer, SerologyGridContainer,
+  AMRPanelGridContainer, SubsystemGridContainer, SurveillanceGridContainer, SerologyGridContainer, SFVTGridContainer,
   SequenceGridContainer, StrainGridContainer, StrainGridContainer_Orthomyxoviridae, StrainGridContainer_Bunyavirales, EpitopeGridContainer, PathJoin, QueryToEnglish, Dialog
 ) {
   return declare([TabViewerBase], {
@@ -300,6 +300,12 @@ define([
         state: this.state
       });
 
+      this.sfvt = new SFVTGridContainer({
+        title: 'Sequence Feature Variant Types',
+        id: this.viewer.id + '_sfvt',
+        state: this.state
+      });
+
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.genomes);
       this.viewer.addChild(this.amr);
@@ -314,6 +320,7 @@ define([
       this.viewer.addChild(this.subsystems);
       this.viewer.addChild(this.experiments);
       this.viewer.addChild(this.interactions);
+      this.viewer.addChild(this.sfvt);
     },
     onSetTotalGenomes: function (attr, oldVal, newVal) {
       const genomeCount = newVal
