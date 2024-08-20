@@ -158,6 +158,50 @@ define([
     },
 
     addRerunFields: function (job_params) {
+      console.log(job_params);
+
+      var ligand_library_type = job_params['ligand_library_type']; 
+      if (ligand_library_type === "ws_file"){
+        this.ws_file.checked
+        this.ws_file.set('value', ligand_library_type);
+        this.smiles_ws_file.set('value', job_params['ligand_ws_file']);
+
+        } 
+      else if (ligand_library_type === "smiles_list"){
+        console.log('line 171')
+        this.input_sequence.checked;
+        this.input_sequence.set('value', ligand_library_type);
+        console.log(job_params['ligand_smiles_list']);
+        let user_input = job_params['ligand_smiles_list'];
+        let combined_string = '';
+        console.log(user_input);
+        user_input.forEach(subArray => {
+          console.log(subArray);
+          combined_string += subArray[0] + ' ' + subArray[1] + '\n'
+          // subArray.forEach(item => {
+          //   console.log(item)
+          //   // item_joined = item.join();
+          //   // item_joined = item + ' ' + item
+          //   combined_string += item + '\n'; // Append each item followed by a newline character
+          //   // combined_string += item
+          // });
+          // // combined_string += item_joined + '\n'
+        });
+        
+        console.log(combined_string);
+        this.smiles_text.set('value', combined_string);
+      } 
+      else if (ligand_library_type === "named_library"){
+        this.ligand_named_library.checked;
+        this.ligand_named_library.set('value', ligand_library_type);
+        this.smiles_dropdown.set('value', job_params['ligand_named_library'])
+        this.ligand_named_library.set('value', job_params['ligand_named_library']);
+      } 
+      else{
+        console.log("Improper ligand library type passed.")
+      }
+      this.pdb_list.set('value', job_params["input_pdb"]);
+      this.output_path.set('value', job_params['output_path']);
     },
 
     intakeRerunForm: function () {
@@ -171,9 +215,8 @@ define([
         if (sessionStorage.hasOwnProperty(rerun_key)) {
           try {
             var param_dict = { 'output_folder': 'output_path', 'strategy': 'recipe' };
-            // var widget_map = {"tax_id":"tax_idWidget"};
-            // param_dict["widget_map"] = widget_map;
             AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
+            // This grabs the job parameters according to the rerun key (from the brower memory)
             this.addRerunFields(JSON.parse(sessionStorage.getItem(rerun_key)));
             this.form_flag = true;
           } catch (error) {
