@@ -178,14 +178,6 @@ define([
         user_input.forEach(subArray => {
           console.log(subArray);
           combined_string += subArray[0] + ' ' + subArray[1] + '\n'
-          // subArray.forEach(item => {
-          //   console.log(item)
-          //   // item_joined = item.join();
-          //   // item_joined = item + ' ' + item
-          //   combined_string += item + '\n'; // Append each item followed by a newline character
-          //   // combined_string += item
-          // });
-          // // combined_string += item_joined + '\n'
         });
         
         console.log(combined_string);
