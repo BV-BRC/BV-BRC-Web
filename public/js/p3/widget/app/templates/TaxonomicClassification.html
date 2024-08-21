@@ -164,37 +164,6 @@
             <div name="parameters" class="infobox iconbox infobutton dialoginfo">
               <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
             </div>
-              <!-- start new feature message -->
-              <html>
-              <head>
-                  <style>
-                      @keyframes blink {
-                          0% { opacity: 0; }
-                          50% { opacity: 1; }
-                          100% { opacity: 0; }
-                      }
-          
-                      .blink-text {
-                          animation: blink 1s 3; /* Set animation to run 3 times */
-                          color: red; /* Set the text color to red */
-                      }
-                  </style>
-                  <script>
-                      window.addEventListener('DOMContentLoaded', (event) => {
-                          const blinkText = document.querySelector('.blink-text');
-                          
-                          // Remove the animation after 3 iterations
-                          blinkText.addEventListener('animationiteration', () => {
-                              blinkText.style.animation = 'none';
-                          });
-                      });
-                  </script>
-              </head>
-              <body>
-                  <p class="blink-text">New: 16S Analysis is now available!</p>
-              </body>
-              </html>
-              <!-- end new feature message -->
           </div>
           <div class="appRow">
             <label>Sequencing Type</label>
