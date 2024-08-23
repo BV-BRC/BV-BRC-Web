@@ -34,7 +34,7 @@
               style="width:50%" data-dojo-attach-event="onChange:onPdbIdChange" required="true" data-dojo-props="">
             </div>
 
-            <input id="{id}_pdb_preview" data-dojo-type="dijit/form/Button" data-dojo-attach-point="pdb_preview"
+            <input id="${id}_pdb_preview" data-dojo-type="dijit/form/Button" data-dojo-attach-point="pdb_preview"
               name="pdb_preview" disabled label="Preview PDB" data-dojo-attach-event="onClick:onPdbPreview">
 
           </div>
@@ -50,7 +50,6 @@
           </div>
           <br>
           <div class="appRow">
-
             <input id="${id}_smiles_text" type="radio" data-dojo-type="dijit/form/RadioButton"
               data-dojo-attach-point="input_sequence" name="input" value="smiles_list"
               data-dojo-attach-event="onChange:onInputChange" checked />
@@ -59,13 +58,13 @@
               data-dojo-attach-point="ws_file" name="input" value="ws_file"
               data-dojo-attach-event="onChange:onInputChange" />
             <label for="${id}_ws_file">Select file of smiles strings</label>
-            <input id="ligand_named_library" type="radio" data-dojo-type="dijit/form/RadioButton"
+            <input id="${id}_ligand_named_library" type="radio" data-dojo-type="dijit/form/RadioButton"
             data-dojo-attach-point="ligand_named_library" name="input" value="named_library"
             data-dojo-attach-event="onChange:onInputChange" />
           <label for="${id}_ligand_named_library">Predefined Ligand Libraries</label>
           </div>
           <div data-dojo-attach-point="block_smiles_dropdown" style="height:100px;width:400px">
-            <select data-dojo-type="dijit/form/Select" 
+            <select data-dojo-type="dijit/form/Select"
             name="smiles_dropdown"
             value="smiles_dropdown_value"
             data-dojo-attach-point="smiles_dropdown"
@@ -87,34 +86,6 @@
               name="smiles_ws_file" data-dojo-attach-point="smiles_ws_file"
               data-dojo-props="type:['txt','unspecified'],multi:false,promptMessage:'Select or upload file of SMILES strings to your workspace.',missingMessage:'SMILES strings file is required.',placeHolder:'SMILES data file'">
             </div>
-          <!-- </div>
-
-        </div>
-      </div>
-    </div> -->
-    <!-- <div style="width:85%; margin:auto" class="formFieldsContainer">
-      <div id="annotationBox" style="width:97%;" class="appBox appShadow">
-        <div class="headerrow">
-          <div style="width:85%;display:inline-block;">
-            <label class="appBoxLabel">Predefined Ligand Library Selection</label>
-            <div name="pdb-selection" class="infobox iconbox infobutton dialoginfo">
-              <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-            </div><br>
-              <input type="radio" 
-                      data-dojo-type="dijit/form/RadioButton" 
-                      name="input" 
-                      value="fda" 
-                      data-dojo-attach-point="fda" 
-                      data-dojo-attach-event="onChange:onInputChange"/>
-                <label for="radio1">FDA Approved Ligand Library</label>
-                <input type="radio" 
-                data-dojo-type="dijit/form/RadioButton" 
-                name="input" value="known-ligands" 
-                data-dojo-attach-point="known-ligands" 
-                data-dojo-attach-event="onChange:onInputChange" />
-             <label for="radio2">Known Ligand Library</label> -->
-              <!-- </div>
-            </div> -->
           </div>
         </div>
       </div>
