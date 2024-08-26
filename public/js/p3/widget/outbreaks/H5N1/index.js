@@ -359,7 +359,10 @@ define([
         title: 'Outbreak Map',
         id: this.viewer.id + '_map',
         state: this.state,
-        createInfoWindowContent: this.googleMapsInfoWindowContent
+        cattleMarkerColor: '#028c81',
+        cattleAndHumanMarkerColor: '#035999',
+        createInfoWindowContent: this.googleMapsInfoWindowContent,
+        createMarker: this.createGoogleMapsMarker
       });
 
       this.viewer.addChild(this.overview);
@@ -499,6 +502,43 @@ define([
       }));
 
       return content.domNode.innerHTML;
+    },
+
+    createGoogleMapsMarker: function (item) {
+      const latitude = item.latitude.toFixed(5);
+      const longitude = item.longitude.toFixed(5);
+      const count = item.metadata.genomeNames.length;
+
+      let markerColor, markerLabel;
+      if (item.metadata.hostCommonNames.hasOwnProperty('Human')) {
+        markerColor = this.cattleAndHumanMarkerColor;
+        const humanCount = item.metadata.hostCommonNames['Human'];
+        markerLabel = humanCount + ' / ' + (count - humanCount);
+      } else {
+        markerColor = this.cattleMarkerColor;
+        markerLabel = count.toString();
+      }
+      const length = markerLabel.length;
+      const scale = length === 1 ? 1 : 1.5 + (length - 2) * 0.2;
+
+      const icon = {
+        path: item.isCountryLevel ? 'M 0,0 L 11,-15 L 0,-30 L -11,-15 Z' : 'M 0,0 C -2,-10 -10,-10 -10,-20 A 10,10 0 1,1 10,-20 C 10,-10 2,-10 0,0 Z',
+        fillColor: markerColor,
+        fillOpacity: 1,
+        strokeColor: '#fff',
+        strokeWeight: 0.5,
+        scale: scale,
+        labelOrigin: item.isCountryLevel ? new google.maps.Point(0, -15) : new google.maps.Point(0, -18)
+      };
+      const anchorPoint = count === 1 ? 1 : 1.5 + (count - 2) * 0.2;
+
+      return new google.maps.Marker({
+        position: new google.maps.LatLng(latitude, longitude),
+        labelAnchor: new google.maps.Point(anchorPoint, 33),
+        label: {text: markerLabel, color: '#fff'},
+        icon: icon,
+        map: this.map
+      });
     }
   });
 });

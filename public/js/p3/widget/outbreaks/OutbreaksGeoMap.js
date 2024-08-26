@@ -25,8 +25,6 @@ define([
     initialCenter: null, // Store the center location for future reset
     initialZoomLevel: -1, // Default to -1 to make sure it has been set later
     defaultMarkerColor: '#FE7569',
-    cattleMarkerColor: '#028c81',
-    cattleAndHumanMarkerColor: '#035999',
     defaultMapOptions: {
       backgroundColor: '#E7F1FA',
       //mapTypeId: google.maps.MapTypeId.TERRAIN,
@@ -41,6 +39,7 @@ define([
     usaBounds: null,
     initialBounds: null,
     createInfoWindowContent: null,
+    createMarker: null,
 
     _setStateAttr: function (state) {
       this._set('state', state);
@@ -69,47 +68,8 @@ define([
       }
     },
 
-    // Create a marker icon with a size fit to the count and selected color
-    createMarkerIcon: function (label, isCountryLevel, color = this.defaultMarkerColor) {
-      const length = label.length;
-      const scale = length === 1 ? 1 : 1.5 + (length - 2) * 0.2;
-
-      return {
-        path: isCountryLevel ? 'M 0,0 L 11,-15 L 0,-30 L -11,-15 Z' : 'M 0,0 C -2,-10 -10,-10 -10,-20 A 10,10 0 1,1 10,-20 C 10,-10 2,-10 0,0 Z',
-        fillColor: color,
-        fillOpacity: 1,
-        strokeColor: '#fff',
-        strokeWeight: 0.5,
-        scale: scale,
-        labelOrigin: isCountryLevel ? new google.maps.Point(0, -15) : new google.maps.Point(0, -18)
-      };
-    },
-
     addMarkerToMap: function (item) {
-      const latitude = item.latitude.toFixed(5);
-      const longitude = item.longitude.toFixed(5);
-      const count = item.metadata.genomeNames.length;
-
-      const latLng = new google.maps.LatLng(latitude, longitude);
-      let markerColor, markerLabel;
-      if (item.metadata.hostCommonNames.hasOwnProperty('Human')) {
-        markerColor = this.cattleAndHumanMarkerColor;
-        const humanCount = item.metadata.hostCommonNames['Human'];
-        markerLabel = humanCount + ' / ' + (count - humanCount);
-      } else {
-        markerColor = this.cattleMarkerColor;
-        markerLabel = count.toString();
-      }
-      const icon = this.createMarkerIcon(markerLabel, item.isCountryLevel, markerColor);
-      const anchorPoint = count === 1 ? 1 : 1.5 + (count - 2) * 0.2;
-
-      const marker = new google.maps.Marker({
-        position: latLng,
-        labelAnchor: new google.maps.Point(anchorPoint, 33),
-        label: {text: markerLabel, color: '#fff'},
-        icon: icon,
-        map: this.map
-      });
+      const marker = this.createMarker(item);
       this.markers.push(marker);
 
       if (this.createInfoWindowContent) {
