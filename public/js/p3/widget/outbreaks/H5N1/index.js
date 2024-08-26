@@ -3,13 +3,13 @@ define([
   '../../../util/PathJoin', '../../viewer/TabViewerBase', '../OutbreaksOverview', '../OutbreaksTab',
   'dojo/text!./OverviewDetails.html', 'dojo/text!./Resources.html', 'dojo/text!./News.html', 'dojo/text!./Contents.html',
   'dojo/text!./Data.html', 'dojo/text!./CommandLineTool.html', '../OutbreaksTabContainer', './genomes/GenomesGridContainer',
-  '../OutbreaksPhylogenyTreeViewer', '../OutbreaksGeoMap'
+  '../OutbreaksPhylogenyTreeViewer', '../OutbreaksGeoMap', '../OutbreaksGeoMapInfo'
 ], function (
   declare, lang, xhr, domParser, domConstruct,
   PathJoin, TabViewerBase, OutbreaksOverview, OutbreaksTab,
   OverviewDetailsTemplate, ResourcesTemplate, NewsTemplate, ContentsTemplate,
   DataTemplate, CommandLineToolTemplate, OutbreaksTabContainer, GenomesGridContainer,
-  OutbreaksPhylogenyTreeViewer, OutbreaksGeoMap
+  OutbreaksPhylogenyTreeViewer, OutbreaksGeoMap, OutbreaksGeoMapInfo
 ) {
   return declare([TabViewerBase], {
     perspectiveLabel: '',
@@ -358,7 +358,8 @@ define([
       this.map = new OutbreaksGeoMap({
         title: 'Outbreak Map',
         id: this.viewer.id + '_map',
-        state: this.state
+        state: this.state,
+        createInfoWindowContent: this.googleMapsInfoWindowContent
       });
 
       this.viewer.addChild(this.overview);
@@ -467,6 +468,37 @@ define([
 
     getNode: function (node, tag) {
       return node.getElementsByTagName(tag)[0].childNodes[0].nodeValue;
+    },
+
+    googleMapsInfoWindowContent: function (item) {
+      let contentValues = {map: this.map, index: this.index++};
+
+      //Sort host common names TODO: move this to index to make this func generic
+      let hostCommonNames = item.metadata.hostCommonNames;
+      const sortedKeys = Object.keys(hostCommonNames).sort();
+      const sortedHostCommonNames = {};
+      sortedKeys.forEach(key => {
+        sortedHostCommonNames[key] = hostCommonNames[key];
+      });
+      item.metadata.hostCommonNames = sortedHostCommonNames;
+      // ,eq(state_province,"{{ metadata.stateProvince }}"
+      const location = item.metadata.location;
+      const stateCountry = location.split(',');
+      let locationFilter = ''
+      if (stateCountry.length === 1) {
+        locationFilter = `,eq(isolation_country,"${stateCountry[0].trim()}")`;
+      } else {
+        locationFilter = `,eq(state_province,"${stateCountry[0].trim()}"),eq(isolation_country,"${stateCountry[1].trim()}")`;
+      }
+
+      let content = new OutbreaksGeoMapInfo(Object.assign({}, contentValues, {
+        metadata: item.metadata,
+        locationFilter: locationFilter,
+        longitude: item.longitude,
+        latitude: item.latitude
+      }));
+
+      return content.domNode.innerHTML;
     }
   });
 });

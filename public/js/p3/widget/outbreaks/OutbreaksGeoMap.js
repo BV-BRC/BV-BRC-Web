@@ -1,14 +1,12 @@
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dijit/_OnDijitClickMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/dom', 'dojo/dom-class', 'dijit/_TemplatedMixin', 'dojox/dtl/_Templated', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/mouse',
-  './OutbreaksGeoMapInfo', 'dojo/text!./OutbreaksGeoMap.html',
-  'dijit/ColorPalette', '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang',
+  'dojo/text!./OutbreaksGeoMap.html', 'dijit/ColorPalette', '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang',
   'https://maps.googleapis.com/maps/api/js?key=AIzaSyAo6Eq83tcpiWufvVpw_uuqdoRfWbFXfQ8&sensor=false&libraries=drawing'
 ], function (
   declare, WidgetBase, on, OnDijitClickMixin, _WidgetsInTemplateMixin,
   dom, domClass, Templated, DtlTemplated, domConstruct, domStyle, mouse,
-  OutbreaksGeoMapInfo, Template,
-  ColorPalette, PathJoin, xhr, lang
+  Template, ColorPalette, PathJoin, xhr, lang
 ) {
 
   return declare([WidgetBase, Templated], {
@@ -42,6 +40,7 @@ define([
     },
     usaBounds: null,
     initialBounds: null,
+    createInfoWindowContent: null,
 
     _setStateAttr: function (state) {
       this._set('state', state);
@@ -86,37 +85,6 @@ define([
       };
     },
 
-    createInfoWindowContent: function (item) {
-      let contentValues = {map: this.map, index: this.index++};
-
-      //Sort host common names TODO: move this to index to make this func generic
-      let hostCommonNames = item.metadata.hostCommonNames;
-      const sortedKeys = Object.keys(hostCommonNames).sort();
-      const sortedHostCommonNames = {};
-      sortedKeys.forEach(key => {
-        sortedHostCommonNames[key] = hostCommonNames[key];
-      });
-      item.metadata.hostCommonNames = sortedHostCommonNames;
-      // ,eq(state_province,"{{ metadata.stateProvince }}"
-      const location = item.metadata.location;
-      const stateCountry = location.split(',');
-      let locationFilter = ''
-      if (stateCountry.length === 1) {
-        locationFilter = `,eq(isolation_country,"${stateCountry[0].trim()}")`;
-      } else {
-        locationFilter = `,eq(state_province,"${stateCountry[0].trim()}"),eq(isolation_country,"${stateCountry[1].trim()}")`;
-      }
-
-      let content = new OutbreaksGeoMapInfo(Object.assign({}, contentValues, {
-        metadata: item.metadata,
-        locationFilter: locationFilter,
-        longitude: item.longitude,
-        latitude: item.latitude
-      }));
-
-      return content.domNode.innerHTML;
-    },
-
     addMarkerToMap: function (item) {
       const latitude = item.latitude.toFixed(5);
       const longitude = item.longitude.toFixed(5);
@@ -134,7 +102,6 @@ define([
       }
       const icon = this.createMarkerIcon(markerLabel, item.isCountryLevel, markerColor);
       const anchorPoint = count === 1 ? 1 : 1.5 + (count - 2) * 0.2;
-      const infoContent = this.createInfoWindowContent(item);
 
       const marker = new google.maps.Marker({
         position: latLng,
@@ -145,18 +112,21 @@ define([
       });
       this.markers.push(marker);
 
-      const infoWindow = new google.maps.InfoWindow({
-        content: infoContent
-      });
-      this.infoWindows.push(infoWindow);
-
-      marker.addListener('click', () => {
-        infoWindow.open({
-          anchor: marker,
-          map: this.map,
-          shouldFocus: false
+      if (this.createInfoWindowContent) {
+        const infoContent = this.createInfoWindowContent(item);
+        const infoWindow = new google.maps.InfoWindow({
+          content: infoContent
         });
-      });
+        this.infoWindows.push(infoWindow);
+
+        marker.addListener('click', () => {
+          infoWindow.open({
+            anchor: marker,
+            map: this.map,
+            shouldFocus: false
+          });
+        });
+      }
     },
 
     startup: function () {
