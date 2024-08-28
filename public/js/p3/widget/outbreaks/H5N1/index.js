@@ -382,6 +382,29 @@ define([
         },
         handleAs: 'json'
       }).then(lang.hitch(this, async function (genomes) {
+        const addMetadata = (location, genome) => {
+          // Initialize the location in distinctLocations if not already present
+          if (!distinctLocations[location]) {
+            distinctLocations[location] = {
+              genomeNames: [],
+              hostCommonNames: {}
+            };
+          }
+
+          // Add genome name if not already present to avoid duplicate metadata
+          if (genome.genome_name && !distinctLocations[location].genomeNames.includes(genome.genome_name)) {
+            distinctLocations[location].genomeNames.push(genome.genome_name);
+
+            if (genome.host_common_name) {
+              if (distinctLocations[location].hostCommonNames[genome.host_common_name]) {
+                distinctLocations[location].hostCommonNames[genome.host_common_name]++
+              } else {
+                distinctLocations[location].hostCommonNames[genome.host_common_name] = 1;
+              }
+            }
+          }
+        };
+
         let distinctLocations = {};
         genomes.forEach(genome => {
           // Make sure to cover all the possible cases/bugs
@@ -389,34 +412,34 @@ define([
           // Isolation Country: USA, State: Texas
           // Isolation Country: USA, State: USA
           // Isolation Country: USA, State:
-          let location = '';
+          let stateLocation = '';
+          let countryLocation = '';
+
+          // Handle state_province, ensuring it is properly capitalized
           if (genome.state_province) {
-            location = genome.state_province.charAt(0).toUpperCase() + genome.state_province.slice(1);
-          }
-          if (genome.isolation_country && genome.isolation_country !== location) {
-            location = location ? `${location}, ${genome.isolation_country}` : genome.isolation_country;
-          }
-
-          if (location) {
-            if (!distinctLocations[location]) {
-              distinctLocations[location] = {
-                genomeNames: [],
-                hostCommonNames: {}
-              };
+            const state = genome.state_province.trim();
+            if (state.length > 2) {
+              stateLocation = state.charAt(0).toUpperCase() + state.slice(1).toLowerCase();
+            } else {
+              stateLocation = state;
             }
+          }
 
-            // Check genome name to avoid duplicate metadata
-            if (genome.genome_name && !distinctLocations[location].genomeNames.includes(genome.genome_name)) {
-              distinctLocations[location].genomeNames.push(genome.genome_name);
+          if (genome.isolation_country && genome.isolation_country !== genome.state_province) {
+            countryLocation = genome.isolation_country.trim();
+          }
 
-              if (genome.host_common_name) {
-                if (distinctLocations[location].hostCommonNames[genome.host_common_name]) {
-                  distinctLocations[location].hostCommonNames[genome.host_common_name]++
-                } else {
-                  distinctLocations[location].hostCommonNames[genome.host_common_name] = 1;
-                }
-              }
-            }
+          // Combine state and country if both are present
+          let fullLocation = stateLocation && countryLocation ? `${stateLocation}, ${countryLocation}` : countryLocation;
+
+          // Add metadata for full location (e.g., "NY, US")
+          if (fullLocation) {
+            addMetadata(fullLocation, genome);
+          }
+
+          // Add metadata for country-only location (e.g., "US")
+          if (countryLocation) {
+            addMetadata(countryLocation, genome);
           }
         });
 
