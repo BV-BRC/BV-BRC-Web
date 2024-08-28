@@ -113,13 +113,22 @@ define([
 
         for (const [location, info] of Object.entries(this.data)) {
           try {
-            let geocodeAddress = await this.geocodeAddress(geocoder, location);
-            const latitude = geocodeAddress.lat();
-            const longtitude = geocodeAddress.lng();
+            let latitude, longitude;
+
+            if (location.toLowerCase() === 'usa') {
+              // Set the latitude and longitude for USA specifically
+              latitude = 39.8283;
+              longitude = -101.3;
+            } else {
+              // Geocode other locations
+              let geocodeAddress = await this.geocodeAddress(geocoder, location);
+              latitude = geocodeAddress.lat();
+              longitude = geocodeAddress.lng();
+            }
 
             const item = {
               latitude: latitude,
-              longitude: longtitude,
+              longitude: longitude,
               isCountryLevel: !location.includes(','),
               metadata: {...info, location}
             };
