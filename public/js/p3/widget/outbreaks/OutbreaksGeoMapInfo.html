@@ -33,7 +33,7 @@
     <br/>-->
     <p>
         Click
-        <a href='/view/Taxonomy/11320#view_tab=genomes&filter=and(eq(subtype,"H5N1"),eq(collection_year,"2024"){{ locationFilter }})'
+        <a href='/view/Taxonomy/11320#view_tab=genomes&filter=and(or(eq(genome_status,"Complete"),eq(genome_status,"Partial")),eq(subtype,"H5N1"),eq(collection_year,"2024"){{ locationFilter }})'
            target="_blank">here</a>
         to view details about the records at {{ metadata.location }}.
     </p>
@@ -52,7 +52,7 @@
         {% for name, count in metadata.hostCommonNames %}
         <tr>
             <td>
-                <a href='/view/Taxonomy/11320#view_tab=genomes&filter=and(eq(subtype,"H5N1"),eq(collection_year,"2024"){{ locationFilter }},eq(host_common_name,"{{ name }}"))'
+                <a href='/view/Taxonomy/11320#view_tab=genomes&filter=and(or(eq(genome_status,"Complete"),eq(genome_status,"Partial")),eq(subtype,"H5N1"),eq(collection_year,"2024"){{ locationFilter }},eq(host_common_name,"{{ name }}"))'
                    target="_blank">{{ name }}</a></td>
             <td>{{ count }}</td>
         </tr>
