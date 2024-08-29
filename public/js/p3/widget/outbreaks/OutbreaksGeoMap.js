@@ -143,12 +143,12 @@ define([
               maximumLatitude = latitude;
             }
 
-            if (!minimumLongitude || longtitude < minimumLongitude) {
-              minimumLongitude = longtitude;
+            if (!minimumLongitude || longitude < minimumLongitude) {
+              minimumLongitude = longitude;
             }
 
-            if (!maximumLongitude || longtitude > maximumLongitude) {
-              maximumLongitude = longtitude;
+            if (!maximumLongitude || longitude > maximumLongitude) {
+              maximumLongitude = longitude;
             }
 
           } catch (error) {
