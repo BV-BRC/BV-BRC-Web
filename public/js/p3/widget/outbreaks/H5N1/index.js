@@ -58,6 +58,10 @@ define([
           this.phylogeny1.set('state', lang.mixin({}, this.state));
           break;
 
+        case 'clusteredPhylogenetics':
+          this.clusteredPhylogeny1.set('state', lang.mixin({}, this.state));
+          break;
+
         default:
           if (activeQueryState) {
             activeTab.set('state', activeQueryState);
@@ -326,7 +330,7 @@ define([
       settings.showExternalNodesButton = false;
       settings.showInternalNodesButton = false;
 
-      let phylogeneticsTabContainer = [];
+      let phyloTabContainer = [];
       for (const [id, segment] of Object.entries(this.segments)) {
         const phylogenySegmentId = 'phylogeny' + id;
         this[phylogenySegmentId] = new OutbreaksPhylogenyTreeViewer({
@@ -340,13 +344,49 @@ define([
           specialVisualizations: id === '4' ? nodeLabelsSegment4 : nodeLabels
         });
 
-        phylogeneticsTabContainer.push(this[phylogenySegmentId]);
+        phyloTabContainer.push(this[phylogenySegmentId]);
       }
 
       this.phylogenetics = new OutbreaksTabContainer({
         title: 'Phylogenetics',
         id: this.viewer.id + '_phylogenetics',
-        tabContainers: phylogeneticsTabContainer
+        tabContainers: phyloTabContainer
+      });
+
+      let clusteredphyloTabContainer = [];
+      for (const [id, segment] of Object.entries(this.segments)) {
+        const clusteredPhyloSegmentId = 'clusteredPhylogeny' + id;
+        this[clusteredPhyloSegmentId] = new OutbreaksPhylogenyTreeViewer({
+          title: `Segment ${id} (${segment})`,
+          id: this.viewer.id + '_' + clusteredPhyloSegmentId,
+          phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/H5N1/h5n1_segment_' + id + '_clustered.xml',
+          updateState: true,
+          settings: settings,
+          options: options,
+          nodeVisualizations: id === '4' ? nodeVisualizationsSegment4 : nodeVisualizations,
+          specialVisualizations: id === '4' ? nodeLabelsSegment4 : nodeLabels
+        });
+
+        clusteredphyloTabContainer.push(this[clusteredPhyloSegmentId]);
+      }
+      // Add concatenated for clustered pyhlogenetics
+      const clusteredPhyloConcatenatedId = 'clusteredPhyloConcatenated';
+      this[clusteredPhyloConcatenatedId] = new OutbreaksPhylogenyTreeViewer({
+        title: 'Concatenated Sequences',
+        id: this.viewer.id + '_' + clusteredPhyloConcatenatedId,
+        phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/H5N1/h5n1_all_concatenated_clustered.xml',
+        updateState: true,
+        settings: settings,
+        options: options,
+        nodeVisualizations: nodeVisualizations,
+        specialVisualizations: nodeLabels
+      });
+      clusteredphyloTabContainer.push(this[clusteredPhyloConcatenatedId]);
+
+      this.clusteredPhylogenetics = new OutbreaksTabContainer({
+        title: 'Clustered Phylogenetics',
+        id: this.viewer.id + '_clusteredPhylogenetics',
+        tabContainers: clusteredphyloTabContainer
       });
 
       this.resources = new OutbreaksTab({
@@ -368,6 +408,7 @@ define([
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.map);
       this.viewer.addChild(this.phylogenetics);
+      this.viewer.addChild(this.clusteredPhylogenetics);
       this.viewer.addChild(this.data);
       this.viewer.addChild(this.resources);
       this.viewer.addChild(this.clt);
