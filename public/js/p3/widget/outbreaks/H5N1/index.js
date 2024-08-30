@@ -3,13 +3,13 @@ define([
   '../../../util/PathJoin', '../../viewer/TabViewerBase', '../OutbreaksOverview', '../OutbreaksTab',
   'dojo/text!./OverviewDetails.html', 'dojo/text!./Resources.html', 'dojo/text!./News.html', 'dojo/text!./Contents.html',
   'dojo/text!./Data.html', 'dojo/text!./CommandLineTool.html', '../OutbreaksTabContainer', './genomes/GenomesGridContainer',
-  '../OutbreaksPhylogenyTreeViewer', '../OutbreaksGeoMap', '../OutbreaksGeoMapInfo'
+  'dojo/text!./Clustering.html', '../OutbreaksPhylogenyTreeViewer', '../OutbreaksGeoMap', '../OutbreaksGeoMapInfo'
 ], function (
   declare, lang, xhr, domParser, domConstruct,
   PathJoin, TabViewerBase, OutbreaksOverview, OutbreaksTab,
   OverviewDetailsTemplate, ResourcesTemplate, NewsTemplate, ContentsTemplate,
   DataTemplate, CommandLineToolTemplate, OutbreaksTabContainer, GenomesGridContainer,
-  OutbreaksPhylogenyTreeViewer, OutbreaksGeoMap, OutbreaksGeoMapInfo
+  ClusteringTemplate, OutbreaksPhylogenyTreeViewer, OutbreaksGeoMap, OutbreaksGeoMapInfo
 ) {
   return declare([TabViewerBase], {
     perspectiveLabel: '',
@@ -382,6 +382,12 @@ define([
         specialVisualizations: nodeLabels
       });
       clusteredphyloTabContainer.push(this[clusteredPhyloConcatenatedId]);
+      this.clusteringInfo = new OutbreaksTab({
+        title: 'Clustering Info',
+        id: this.viewer.id + '_clustering',
+        templateString: ClusteringTemplate
+      });
+      clusteredphyloTabContainer.push(this.clusteringInfo);
 
       this.clusteredPhylogenetics = new OutbreaksTabContainer({
         title: 'Clustered Phylogenetics',
