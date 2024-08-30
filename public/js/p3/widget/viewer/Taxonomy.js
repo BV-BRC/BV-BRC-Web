@@ -84,8 +84,12 @@ define([
       // customization for viruses only when the context is changed
       if (this.context === 'bacteria') {
         if (this.taxonomy.lineage_names.includes('Influenza A virus') || this.taxonomy.lineage_names.includes('Rhinovirus A')) {
-          this.viewer.addChild(this.surveillance);
-          this.viewer.addChild(this.serology);
+          if (!this.surveillance) {
+            this.viewer.addChild(this.surveillance);
+          }
+          if (!this.serology) {
+            this.viewer.addChild(this.serology);
+          }
         } else {
           this.viewer.removeChild(this.surveillance);
           this.viewer.removeChild(this.serology);
