@@ -3,13 +3,13 @@ define([
   '../../../util/PathJoin', '../../viewer/TabViewerBase', '../OutbreaksOverview', '../OutbreaksTab',
   'dojo/text!./OverviewDetails.html', 'dojo/text!./Resources.html', 'dojo/text!./News.html', 'dojo/text!./Contents.html',
   'dojo/text!./Data.html', 'dojo/text!./CommandLineTool.html', '../OutbreaksTabContainer', './genomes/GenomesGridContainer',
-  '../OutbreaksPhylogenyTreeViewer', '../OutbreaksGeoMap'
+  'dojo/text!./Clustering.html', '../OutbreaksPhylogenyTreeViewer', '../OutbreaksGeoMap', '../OutbreaksGeoMapInfo'
 ], function (
   declare, lang, xhr, domParser, domConstruct,
   PathJoin, TabViewerBase, OutbreaksOverview, OutbreaksTab,
   OverviewDetailsTemplate, ResourcesTemplate, NewsTemplate, ContentsTemplate,
   DataTemplate, CommandLineToolTemplate, OutbreaksTabContainer, GenomesGridContainer,
-  OutbreaksPhylogenyTreeViewer, OutbreaksGeoMap
+  ClusteringTemplate, OutbreaksPhylogenyTreeViewer, OutbreaksGeoMap, OutbreaksGeoMapInfo
 ) {
   return declare([TabViewerBase], {
     perspectiveLabel: '',
@@ -56,6 +56,10 @@ define([
 
         case 'phylogenetics':
           this.phylogeny1.set('state', lang.mixin({}, this.state));
+          break;
+
+        case 'clusteredPhylogenetics':
+          this.clusteredPhylogeny1.set('state', lang.mixin({}, this.state));
           break;
 
         default:
@@ -326,7 +330,7 @@ define([
       settings.showExternalNodesButton = false;
       settings.showInternalNodesButton = false;
 
-      let phylogeneticsTabContainer = [];
+      let phyloTabContainer = [];
       for (const [id, segment] of Object.entries(this.segments)) {
         const phylogenySegmentId = 'phylogeny' + id;
         this[phylogenySegmentId] = new OutbreaksPhylogenyTreeViewer({
@@ -340,13 +344,55 @@ define([
           specialVisualizations: id === '4' ? nodeLabelsSegment4 : nodeLabels
         });
 
-        phylogeneticsTabContainer.push(this[phylogenySegmentId]);
+        phyloTabContainer.push(this[phylogenySegmentId]);
       }
 
       this.phylogenetics = new OutbreaksTabContainer({
         title: 'Phylogenetics',
         id: this.viewer.id + '_phylogenetics',
-        tabContainers: phylogeneticsTabContainer
+        tabContainers: phyloTabContainer
+      });
+
+      let clusteredphyloTabContainer = [];
+      for (const [id, segment] of Object.entries(this.segments)) {
+        const clusteredPhyloSegmentId = 'clusteredPhylogeny' + id;
+        this[clusteredPhyloSegmentId] = new OutbreaksPhylogenyTreeViewer({
+          title: `Segment ${id} (${segment})`,
+          id: this.viewer.id + '_' + clusteredPhyloSegmentId,
+          phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/H5N1/h5n1_segment_' + id + '_clustered.xml',
+          updateState: true,
+          settings: settings,
+          options: options,
+          nodeVisualizations: id === '4' ? nodeVisualizationsSegment4 : nodeVisualizations,
+          specialVisualizations: id === '4' ? nodeLabelsSegment4 : nodeLabels
+        });
+
+        clusteredphyloTabContainer.push(this[clusteredPhyloSegmentId]);
+      }
+      // Add concatenated for clustered pyhlogenetics
+      const clusteredPhyloConcatenatedId = 'clusteredPhyloConcatenated';
+      this[clusteredPhyloConcatenatedId] = new OutbreaksPhylogenyTreeViewer({
+        title: 'Concatenated Sequences',
+        id: this.viewer.id + '_' + clusteredPhyloConcatenatedId,
+        phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/H5N1/h5n1_all_concatenated_clustered.xml',
+        updateState: true,
+        settings: settings,
+        options: options,
+        nodeVisualizations: nodeVisualizations,
+        specialVisualizations: nodeLabels
+      });
+      clusteredphyloTabContainer.push(this[clusteredPhyloConcatenatedId]);
+      this.clusteringInfo = new OutbreaksTab({
+        title: 'Clustering Info',
+        id: this.viewer.id + '_clustering',
+        templateString: ClusteringTemplate
+      });
+      clusteredphyloTabContainer.push(this.clusteringInfo);
+
+      this.clusteredPhylogenetics = new OutbreaksTabContainer({
+        title: 'Clustered Phylogenetics',
+        id: this.viewer.id + '_clusteredPhylogenetics',
+        tabContainers: clusteredphyloTabContainer
       });
 
       this.resources = new OutbreaksTab({
@@ -358,18 +404,23 @@ define([
       this.map = new OutbreaksGeoMap({
         title: 'Outbreak Map',
         id: this.viewer.id + '_map',
-        state: this.state
+        state: this.state,
+        cattleMarkerColor: '#028c81',
+        cattleAndHumanMarkerColor: '#035999',
+        createInfoWindowContent: this.googleMapsInfoWindowContent,
+        createMarker: this.createGoogleMapsMarker
       });
 
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.map);
       this.viewer.addChild(this.phylogenetics);
+      this.viewer.addChild(this.clusteredPhylogenetics);
       this.viewer.addChild(this.data);
       this.viewer.addChild(this.resources);
       this.viewer.addChild(this.clt);
 
       // Fetch geomap data
-      xhr.get(PathJoin(this.apiServiceUrl, 'genome') + '/?eq(taxon_id,11320)&eq(subtype,"H5N1")&eq(collection_year,"2024")&select(genome_name,isolation_country,state_province,host_common_name)&limit(100000)', {
+      xhr.get(PathJoin(this.apiServiceUrl, 'genome') + '/?eq(taxon_id,11320)&eq(subtype,"H5N1")&eq(collection_year,"2024")&in(genome_status,("Complete","Partial"))&select(genome_name,isolation_country,state_province,host_common_name)&limit(100000)', {
         headers: {
           accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
@@ -378,6 +429,29 @@ define([
         },
         handleAs: 'json'
       }).then(lang.hitch(this, async function (genomes) {
+        const addMetadata = (location, genome) => {
+          // Initialize the location in distinctLocations if not already present
+          if (!distinctLocations[location]) {
+            distinctLocations[location] = {
+              genomeNames: [],
+              hostCommonNames: {}
+            };
+          }
+
+          // Add genome name if not already present to avoid duplicate metadata
+          if (genome.genome_name && !distinctLocations[location].genomeNames.includes(genome.genome_name)) {
+            distinctLocations[location].genomeNames.push(genome.genome_name);
+
+            if (genome.host_common_name) {
+              if (distinctLocations[location].hostCommonNames[genome.host_common_name]) {
+                distinctLocations[location].hostCommonNames[genome.host_common_name]++
+              } else {
+                distinctLocations[location].hostCommonNames[genome.host_common_name] = 1;
+              }
+            }
+          }
+        };
+
         let distinctLocations = {};
         genomes.forEach(genome => {
           // Make sure to cover all the possible cases/bugs
@@ -385,34 +459,34 @@ define([
           // Isolation Country: USA, State: Texas
           // Isolation Country: USA, State: USA
           // Isolation Country: USA, State:
-          let location = '';
+          let stateLocation = '';
+          let countryLocation = '';
+
+          // Handle state_province, ensuring it is properly capitalized
           if (genome.state_province) {
-            location = genome.state_province.charAt(0).toUpperCase() + genome.state_province.slice(1);
-          }
-          if (genome.isolation_country && genome.isolation_country !== location) {
-            location = location ? `${location}, ${genome.isolation_country}` : genome.isolation_country;
-          }
-
-          if (location) {
-            if (!distinctLocations[location]) {
-              distinctLocations[location] = {
-                genomeNames: [],
-                hostCommonNames: {}
-              };
+            const state = genome.state_province.trim();
+            if (state.length > 2) {
+              stateLocation = state.charAt(0).toUpperCase() + state.slice(1).toLowerCase();
+            } else {
+              stateLocation = state;
             }
+          }
 
-            // Check genome name to avoid duplicate metadata
-            if (genome.genome_name && !distinctLocations[location].genomeNames.includes(genome.genome_name)) {
-              distinctLocations[location].genomeNames.push(genome.genome_name);
+          if (genome.isolation_country && genome.isolation_country !== genome.state_province) {
+            countryLocation = genome.isolation_country.trim();
+          }
 
-              if (genome.host_common_name) {
-                if (distinctLocations[location].hostCommonNames[genome.host_common_name]) {
-                  distinctLocations[location].hostCommonNames[genome.host_common_name]++
-                } else {
-                  distinctLocations[location].hostCommonNames[genome.host_common_name] = 1;
-                }
-              }
-            }
+          // Combine state and country if both are present
+          let fullLocation = stateLocation && countryLocation ? `${stateLocation}, ${countryLocation}` : countryLocation;
+
+          // Add metadata for full location (e.g., "NY, US")
+          if (fullLocation) {
+            addMetadata(fullLocation, genome);
+          }
+
+          // Add metadata for country-only location (e.g., "US")
+          if (countryLocation) {
+            addMetadata(countryLocation, genome);
           }
         });
 
@@ -467,6 +541,74 @@ define([
 
     getNode: function (node, tag) {
       return node.getElementsByTagName(tag)[0].childNodes[0].nodeValue;
+    },
+
+    googleMapsInfoWindowContent: function (item) {
+      let contentValues = {map: this.map, index: this.index++};
+
+      //Sort host common names TODO: move this to index to make this func generic
+      let hostCommonNames = item.metadata.hostCommonNames;
+      const sortedKeys = Object.keys(hostCommonNames).sort();
+      const sortedHostCommonNames = {};
+      sortedKeys.forEach(key => {
+        sortedHostCommonNames[key] = hostCommonNames[key];
+      });
+      item.metadata.hostCommonNames = sortedHostCommonNames;
+      // ,eq(state_province,"{{ metadata.stateProvince }}"
+      const location = item.metadata.location;
+      const stateCountry = location.split(',');
+      let locationFilter = ''
+      if (stateCountry.length === 1) {
+        locationFilter = `,eq(isolation_country,"${stateCountry[0].trim()}")`;
+      } else {
+        locationFilter = `,eq(state_province,"${stateCountry[0].trim()}"),eq(isolation_country,"${stateCountry[1].trim()}")`;
+      }
+
+      let content = new OutbreaksGeoMapInfo(Object.assign({}, contentValues, {
+        metadata: item.metadata,
+        locationFilter: locationFilter,
+        longitude: item.longitude,
+        latitude: item.latitude
+      }));
+
+      return content.domNode.innerHTML;
+    },
+
+    createGoogleMapsMarker: function (item) {
+      const latitude = item.latitude.toFixed(5);
+      const longitude = item.longitude.toFixed(5);
+      const count = item.metadata.genomeNames.length;
+
+      let markerColor, markerLabel;
+      if (item.metadata.hostCommonNames.hasOwnProperty('Human')) {
+        markerColor = this.cattleAndHumanMarkerColor;
+        const humanCount = item.metadata.hostCommonNames['Human'];
+        markerLabel = humanCount + ' / ' + (count - humanCount);
+      } else {
+        markerColor = this.cattleMarkerColor;
+        markerLabel = count.toString();
+      }
+      const length = markerLabel.length;
+      const scale = length === 1 ? 1 : 1.5 + (length - 2) * 0.2;
+
+      const icon = {
+        path: item.isCountryLevel ? 'M 0,0 L 11,-15 L 0,-30 L -11,-15 Z' : 'M 0,0 C -2,-10 -10,-10 -10,-20 A 10,10 0 1,1 10,-20 C 10,-10 2,-10 0,0 Z',
+        fillColor: markerColor,
+        fillOpacity: 1,
+        strokeColor: '#fff',
+        strokeWeight: 0.5,
+        scale: scale,
+        labelOrigin: item.isCountryLevel ? new google.maps.Point(0, -15) : new google.maps.Point(0, -18)
+      };
+      const anchorPoint = count === 1 ? 1 : 1.5 + (count - 2) * 0.2;
+
+      return new google.maps.Marker({
+        position: new google.maps.LatLng(latitude, longitude),
+        labelAnchor: new google.maps.Point(anchorPoint, 33),
+        label: {text: markerLabel, color: '#fff'},
+        icon: icon,
+        map: this.map
+      });
     }
   });
 });
