@@ -3,12 +3,14 @@ define([
   '../../../util/PathJoin', '../../viewer/TabViewerBase', '../OutbreaksOverview', '../OutbreaksTab',
   'dojo/text!./OverviewDetails.html', 'dojo/text!./Resources.html', 'dojo/text!./News.html', 'dojo/text!./Contents.html',
   'dojo/text!./Data.html', 'dojo/text!./CommandLineTool.html', '../OutbreaksTabContainer', './genomes/GenomesGridContainer',
+  'dojo/text!./OutbreaksGeoMapInfo.html',
   'dojo/text!./Clustering.html', '../OutbreaksPhylogenyTreeViewer', '../OutbreaksGeoMap', '../OutbreaksGeoMapInfo'
 ], function (
   declare, lang, xhr, domParser, domConstruct,
   PathJoin, TabViewerBase, OutbreaksOverview, OutbreaksTab,
   OverviewDetailsTemplate, ResourcesTemplate, NewsTemplate, ContentsTemplate,
   DataTemplate, CommandLineToolTemplate, OutbreaksTabContainer, GenomesGridContainer,
+  OutbreaksGeoMapInfoTemplate,
   ClusteringTemplate, OutbreaksPhylogenyTreeViewer, OutbreaksGeoMap, OutbreaksGeoMapInfo
 ) {
   return declare([TabViewerBase], {
@@ -565,6 +567,7 @@ define([
       }
 
       let content = new OutbreaksGeoMapInfo(Object.assign({}, contentValues, {
+        templateString: OutbreaksGeoMapInfoTemplate,
         metadata: item.metadata,
         locationFilter: locationFilter,
         longitude: item.longitude,

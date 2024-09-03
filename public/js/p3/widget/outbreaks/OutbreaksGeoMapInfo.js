@@ -1,13 +1,13 @@
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dijit/_OnDijitClickMixin', 'dijit/_WidgetsInTemplateMixin', 'dojo/_base/lang',
-  'dijit/_TemplatedMixin', 'dojox/dtl/_Templated', 'dojo/text!./OutbreaksGeoMapInfo.html'
+  'dijit/_TemplatedMixin', 'dojox/dtl/_Templated'
 ], function (
   declare, WidgetBase, on, OnDijitClickMixin, _WidgetsInTemplateMixin, lang,
-  Templated, DtlTemplated, Template
+  Templated, DtlTemplated
 ) {
 
   return declare([WidgetBase, OnDijitClickMixin, Templated, DtlTemplated, _WidgetsInTemplateMixin], {
-    templateString: Template,
+    templateString: null,
     index: 0,
     // location item object for template
     item: {},
