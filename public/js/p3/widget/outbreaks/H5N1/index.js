@@ -4,14 +4,16 @@ define([
   'dojo/text!./OverviewDetails.html', 'dojo/text!./Resources.html', 'dojo/text!./News.html', 'dojo/text!./Contents.html',
   'dojo/text!./Data.html', 'dojo/text!./CommandLineTool.html', '../OutbreaksTabContainer', './genomes/GenomesGridContainer',
   'dojo/text!./OutbreaksGeoMapInfo.html',
-  'dojo/text!./Clustering.html', '../OutbreaksPhylogenyTreeViewer', '../OutbreaksGeoMap', '../OutbreaksGeoMapInfo'
+  'dojo/text!./Clustering.html', '../OutbreaksPhylogenyTreeViewer', '../OutbreaksGeoMap', '../OutbreaksGeoMapInfo',
+  'dojo/text!./GeoMapHeader.html', 'dojo/text!./GeoMapFooter.html'
 ], function (
   declare, lang, xhr, domParser, domConstruct,
   PathJoin, TabViewerBase, OutbreaksOverview, OutbreaksTab,
   OverviewDetailsTemplate, ResourcesTemplate, NewsTemplate, ContentsTemplate,
   DataTemplate, CommandLineToolTemplate, OutbreaksTabContainer, GenomesGridContainer,
   OutbreaksGeoMapInfoTemplate,
-  ClusteringTemplate, OutbreaksPhylogenyTreeViewer, OutbreaksGeoMap, OutbreaksGeoMapInfo
+  ClusteringTemplate, OutbreaksPhylogenyTreeViewer, OutbreaksGeoMap, OutbreaksGeoMapInfo,
+  GeoMapHeaderTemplate, GeoMapFooterTemplate
 ) {
   return declare([TabViewerBase], {
     perspectiveLabel: '',
@@ -410,7 +412,9 @@ define([
         cattleMarkerColor: '#028c81',
         cattleAndHumanMarkerColor: '#035999',
         createInfoWindowContent: this.googleMapsInfoWindowContent,
-        createMarker: this.createGoogleMapsMarker
+        createMarker: this.createGoogleMapsMarker,
+        headerInfo: GeoMapHeaderTemplate,
+        footerInfo: GeoMapFooterTemplate
       });
 
       this.viewer.addChild(this.overview);
