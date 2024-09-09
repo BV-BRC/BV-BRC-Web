@@ -10,10 +10,10 @@
             <p style="margin-bottom: 5px;">
                 For sequences prior to 2024 we downloaded H5N1 DNA sequences for segments from BV-BRC only from isolates
                 for which all 8 segments were present in the database. This was followed by QC and representative
-                sequence selection: For Segment 4 we used minimal length cutoff of 1600nt and allowed no more than 0.1%
-                undetermined residues (“N”). Representative sequence selection was accomplished by clustering using
-                cd-hit with a cutoff of 0.98%. Other segments were then only retained for those from isolates for which
-                segment 4 passed the QC and clustering step.
+                sequence selection: For Segment 4 we used a minimal length cutoff of 1600nt and allowed no more than
+                0.1% undetermined residues (“N”). Representative sequence selection was accomplished by clustering using
+                cd-hit with a cutoff of 98% identity. Other segments were then only retained for those from isolates for
+                which segment 4 passed the QC and clustering step.
             </p>
             <p style="margin-bottom: 5px;">
                 In order to prevent the resulting trees from being overly long, we did not include sequences prior to
@@ -21,13 +21,13 @@
             </p>
             <p style="margin-bottom: 5px;">
                 For 2024 sequences we used all H5N1 sequences from BV-BRC. From these sequences, only sequences from
-                stains which contained all eight segments were retained.
+                strains which contained all eight segments were retained.
             </p>
             <p style="margin-bottom: 5px;">
                 2024 and older segments sequences were then concatenated per isolate and in order und clustered using
-                cd-hit with a cutoff of 0.99. Individual segment sequences from the same isolates as the clustering
-                result when then used for phylogenetic inference. Human hosted isolates were re-introduced if removed by
-                clustering.
+                cd-hit with a cutoff of 99% identity. Individual segment sequences from the same isolates as the
+                clustering result when then used for phylogenetic inference. Human hosted isolates were re-introduced if
+                removed by clustering.
             </p>
             <p style="margin-bottom: 5px;">
                 Multiple sequence alignment was performed using MAFFT v7.520 with most accurate options (--maxiterate
@@ -42,8 +42,7 @@
                    target="_blank">VIPR xc</a>)
                 was used for the cleaning up of meta data (example, “duck”, “mallard duck”, and “Anas platyrhynchos”
                 transformed to “Duck”) and to decorate the inferred trees with meta-data, resulting in richly annotated
-                phyloXML-formatted (Han and Zmasek, 2009) trees. BV-BRC sub-species service was used to determine the H5
-                clade.
+                phyloXML-formatted (Han and Zmasek, 2009) trees.
             </p>
         </div>
     </div>
