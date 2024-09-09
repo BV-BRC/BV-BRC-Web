@@ -185,7 +185,8 @@ define([
           let options = this.defaultMapOptions;
           options.center = this.usaBounds.getCenter();
           options.streetViewControl = false;
-          options.disableDefaultUI = true
+          options.disableDefaultUI = true;
+          options.zoomControl = true;
 
           // Add styles to hide highways
           options.styles = [
