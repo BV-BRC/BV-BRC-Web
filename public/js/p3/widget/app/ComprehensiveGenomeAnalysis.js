@@ -108,6 +108,18 @@ define([
       // moved common fields to standard function
       values = this.checkBaseParameters(values);
 
+      // trim and normalize values
+      if (this.trim.value == 'on') {
+        values.trim = true;
+      } else {
+        values.trim = false;
+      }
+      if (this.normalize.value = 'on') {
+        values.normalize = true;
+      } else {
+        values.normalize = false;
+      }
+
       return values;
     },
 
@@ -533,7 +545,7 @@ define([
       values.taxonomy_id = this.target_genome_id;
       if (this.startWithContigs.checked) {  // starting from contigs
         values.input_type = 'contigs'; // set input_type to be 'contigs'
-        var assembly_inputs = ['recipe', 'genome_size', 'trim', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
+        var assembly_inputs = ['recipe', 'genome_size', 'trim', 'normalize', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
         assembly_inputs.forEach(function (key) {
           if (Object.prototype.hasOwnProperty.call(values, key)) {
             delete values[key];
