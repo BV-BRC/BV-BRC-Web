@@ -40,6 +40,8 @@ define([
     initialBounds: null,
     createInfoWindowContent: null,
     createMarker: null,
+    headerInfo: null,
+    footerInfo: null,
 
     _setStateAttr: function (state) {
       this._set('state', state);
@@ -100,6 +102,15 @@ define([
       let maxLatLong = new google.maps.LatLng(this.coordinatesUSA.maximumLatitude, this.coordinatesUSA.maximumLongitude);
 
       this.usaBounds = new google.maps.LatLngBounds(minLatLong, maxLatLong);
+    },
+
+    postCreate: function () {
+      if (this.headerInfo) {
+        this.headerInfoNode.innerHTML = this.headerInfo;
+      }
+      if (this.footerInfo) {
+        this.footerInfoNode.innerHTML = this.footerInfo;
+      }
     },
 
     onSetData: async function () {
@@ -174,7 +185,8 @@ define([
           let options = this.defaultMapOptions;
           options.center = this.usaBounds.getCenter();
           options.streetViewControl = false;
-          options.disableDefaultUI = true
+          options.disableDefaultUI = true;
+          options.zoomControl = true;
 
           // Add styles to hide highways
           options.styles = [

@@ -2,26 +2,24 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/request/xhr', 'dojox/xml/DomParser', 'dojo/dom-construct',
   '../../../util/PathJoin', '../../viewer/TabViewerBase', '../OutbreaksOverview', '../OutbreaksTab',
   'dojo/text!./OverviewDetails.html', 'dojo/text!./Resources.html', 'dojo/text!./News.html', 'dojo/text!./Contents.html',
-  'dojo/text!./Data.html', 'dojo/text!./CommandLineTool.html', '../OutbreaksTabContainer', './genomes/GenomesGridContainer',
-  'dojo/text!./OutbreaksGeoMapInfo.html',
-  'dojo/text!./Clustering.html', '../OutbreaksPhylogenyTreeViewer', '../OutbreaksGeoMap', '../OutbreaksGeoMapInfo',
+  'dojo/text!./Data.html', 'dojo/text!./CommandLineTool.html', '../OutbreaksTabContainer', '../OutbreaksPhylogenyTreeViewer',
+  '../OutbreaksGeoMap', '../OutbreaksGeoMapInfo', 'dojo/text!./OutbreaksGeoMapInfo.html',
   'dojo/text!./GeoMapHeader.html', 'dojo/text!./GeoMapFooter.html'
 ], function (
   declare, lang, xhr, domParser, domConstruct,
   PathJoin, TabViewerBase, OutbreaksOverview, OutbreaksTab,
   OverviewDetailsTemplate, ResourcesTemplate, NewsTemplate, ContentsTemplate,
-  DataTemplate, CommandLineToolTemplate, OutbreaksTabContainer, GenomesGridContainer,
-  OutbreaksGeoMapInfoTemplate,
-  ClusteringTemplate, OutbreaksPhylogenyTreeViewer, OutbreaksGeoMap, OutbreaksGeoMapInfo,
+  DataTemplate, CommandLineToolTemplate, OutbreaksTabContainer, OutbreaksPhylogenyTreeViewer,
+  OutbreaksGeoMap, OutbreaksGeoMapInfo, OutbreaksGeoMapInfoTemplate,
   GeoMapHeaderTemplate, GeoMapFooterTemplate
 ) {
   return declare([TabViewerBase], {
     perspectiveLabel: '',
     perspectiveIconClass: '',
-    title: 'H5N1 2024 Outbreak',
+    title: 'Mpox 2024 Outbreak',
     segments: {1: 'PB2', 2: 'PB1', 3: 'PA', 4: 'HA', 5: 'NP', 6: 'NA', 7: 'M1, M2', 8: 'NS1, NEP'},
     googleNewsCount: 100,
-    googleNewsRSS: 'https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US%3Aen&oc=11&q=%22h5n1%22%20AND%20(site:https://www.cidrap.umn.edu/avian-influenza-bird-flu%20OR%20site%3Afda.gov%20OR%20site%3Awww.who.in%20OR%20site%3Anews.un.org%20OR%20site%3Acdc.gov%20OR%20site%3Aceirr-network.org%20OR%20site%3Awww.nature.com%2Farticles%2F)%20AND%20when%3A1y&hl=en-US&gl=US&ceid=US%3Aen',
+    googleNewsRSS: 'https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US%3Aen&oc=11&q=(MPOX%20OR%20monkeypox%20OR%20MPXV)%20site:www.cdc.gov%20OR%20site:news.un.org%20OR%20site:www.who.int%20OR%20site:news.un.org/en',
 
     onSetState: function (attr, oldVal, state) {
       if (!state) {
@@ -53,17 +51,8 @@ define([
       activeQueryState = lang.mixin({}, this.state);
 
       switch (active) {
-        case 'genomes':
-          this.state.search = 'keyword(*)';
-          this.genomesGridContainer.set('state', lang.mixin({}, this.state));
-          break;
-
         case 'phylogenetics':
-          this.phylogeny1.set('state', lang.mixin({}, this.state));
-          break;
-
-        case 'clusteredPhylogenetics':
-          this.clusteredPhylogeny1.set('state', lang.mixin({}, this.state));
+          this.phylogenyMonkeypox.set('state', lang.mixin({}, this.state));
           break;
 
         default:
@@ -94,14 +83,8 @@ define([
         detailsHTML: OverviewDetailsTemplate,
         rightPanelContent: [NewsTemplate],
         leftPanelContent: [ContentsTemplate],
-        pubmedTerm: 'h5n1'
+        pubmedTerm: 'monkeypox'
       });
-
-      /*this.genomesGridContainer = new GenomesGridContainer({
-        title: 'Table',
-        content: 'Genomes Table',
-        visible: true
-      });*/
 
       this.data = new OutbreaksTab({
         title: 'Data',
@@ -130,55 +113,11 @@ define([
         sizes: null
       };
 
-      nodeVisualizations['Host_Group'] = {
-        label: 'Host Group',
-        description: 'the host group of the virus',
-        field: null,
-        cladeRef: decorator + 'Host_Group',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category20',
-        sizes: null
-      };
-
-      nodeVisualizations['Host_Group_Domestic_vs_Wild'] = {
-        label: 'Host Group (Domestic vs Wild)',
-        description: 'the host range of the virus',
-        field: null,
-        cladeRef: decorator + 'Host_Group_Domestic_vs_Wild',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category20',
-        sizes: null
-      };
-
-      nodeVisualizations['Region'] = {
-        label: 'Region',
-        description: 'the geographic region of the virus',
-        field: null,
-        cladeRef: decorator + 'Region',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category20c',
-        sizes: null
-      };
-
       nodeVisualizations['Country'] = {
         label: 'Country',
         description: 'the country of the virus',
         field: null,
         cladeRef: decorator + 'Country',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        sizes: null
-      };
-
-      nodeVisualizations['State'] = {
-        label: 'State',
-        description: 'the state',
-        field: null,
-        cladeRef: decorator + 'State',
         regex: false,
         shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
         colors: 'category50',
@@ -194,14 +133,14 @@ define([
         shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
         colors: 'category50c',
         colorsAlt: ['#FF0000', '#000000', '#00FF00'],
-        sizes: [20, 60]
+        sizes: null
       };
 
-      nodeVisualizations['Subtype'] = {
-        label: 'Subtype',
-        description: 'the sub type of the virus',
+      nodeVisualizations['Clade'] = {
+        label: 'Clade',
+        description: 'the clade of the monkey pox virus',
         field: null,
-        cladeRef: decorator + 'Subtype',
+        cladeRef: decorator + 'Clade',
         regex: false,
         shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
         colors: 'category50',
@@ -219,42 +158,10 @@ define([
         showButton: true
       };
 
-      nodeLabels['Host_Group'] = {
-        label: 'Host Group',
-        description: 'to use the host range as part of node names',
-        propertyRef: 'vipr:Host_Group',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Host_Group_Domestic_vs_Wild'] = {
-        label: 'Host Group (Dom vs Wild)',
-        description: 'to use the host group (domestic vs wild) as part of node names',
-        propertyRef: 'vipr:Host_Group_Domestic_vs_Wild',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Region'] = {
-        label: 'Region',
-        description: 'to use the region as part of node names',
-        propertyRef: 'vipr:Region',
-        selected: false,
-        showButton: true
-      };
-
       nodeLabels['Country'] = {
         label: 'Country',
         description: 'to use the country as part of node names',
         propertyRef: 'vipr:Country',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['State'] = {
-        label: 'State',
-        description: 'to use the state as part of node names',
-        propertyRef: 'vipr:State',
         selected: false,
         showButton: true
       };
@@ -267,41 +174,18 @@ define([
         showButton: true
       };
 
-      nodeLabels['Subtype'] = {
-        label: 'Subtype',
-        description: 'to use the subtype as part of node names',
-        propertyRef: 'vipr:Subtype',
+      nodeLabels['Clade'] = {
+        label: 'Clade',
+        description: 'to use the clade as part of node names',
+        propertyRef: 'vipr:Clade',
         selected: false,
-        showButton: true
-      };
-
-      // Add special node for Segment 4
-      const nodeVisualizationsSegment4 = {...nodeVisualizations};
-      nodeVisualizationsSegment4['H5_clade'] = {
-        label: 'H5 Clade',
-        description: 'the H5 clade',
-        field: null,
-        cladeRef: decorator + 'H5_clade',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        colorsAlt: ['#FF0000', '#000000', '#00FF00'],
-        sizes: [20, 60]
-      };
-
-      const nodeLabelsSegment4 = {...nodeLabels};
-      nodeLabelsSegment4['H5_clade'] = {
-        label: 'H5 clade',
-        description: 'to use the H5 clade as part of node names',
-        propertyRef: 'vipr:H5_clade',
-        selected: true,
         showButton: true
       };
 
       let options = {};
       options.minBranchLengthValueToShow = 0.001;
       options.minConfidenceValueToShow = 50;
-      options.initialNodeFillColorVisualization = 'Host Group (Domestic vs Wild)';
+      options.initialNodeFillColorVisualization = 'Clade';
       options.phylogram = true;
       options.showConfidenceValues = false;
       options.showExternalLabels = true;
@@ -314,7 +198,6 @@ define([
 
       let settings = {};
       settings.border = '1px solid #909090';
-      settings.showSequenceButton = false;
       settings.controls0Left = 20;
       settings.controls1Width = 120;
       settings.rootOffset = 220;
@@ -328,75 +211,29 @@ define([
       settings.enableBranchVisualizations = false;
       settings.nhExportWriteConfidences = true;
       settings.enableSubtreeDeletion = true;
+      settings.showSequenceButton = false;
       settings.showShortenNodeNamesButton = false;
       settings.showExternalLabelsButton = false;
       settings.showInternalLabelsButton = false;
       settings.showExternalNodesButton = false;
       settings.showInternalNodesButton = false;
 
-      let phyloTabContainer = [];
-      for (const [id, segment] of Object.entries(this.segments)) {
-        const phylogenySegmentId = 'phylogeny' + id;
-        this[phylogenySegmentId] = new OutbreaksPhylogenyTreeViewer({
-          title: `Segment ${id} (${segment})`,
-          id: this.viewer.id + '_' + phylogenySegmentId,
-          phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/H5N1/h5n1_segment_' + id + '.xml',
-          updateState: true,
-          settings: settings,
-          options: options,
-          nodeVisualizations: id === '4' ? nodeVisualizationsSegment4 : nodeVisualizations,
-          specialVisualizations: id === '4' ? nodeLabelsSegment4 : nodeLabels
-        });
-
-        phyloTabContainer.push(this[phylogenySegmentId]);
-      }
-
-      this.phylogenetics = new OutbreaksTabContainer({
-        title: 'Phylogenetics',
-        id: this.viewer.id + '_phylogenetics',
-        tabContainers: phyloTabContainer
-      });
-
-      let clusteredphyloTabContainer = [];
-      for (const [id, segment] of Object.entries(this.segments)) {
-        const clusteredPhyloSegmentId = 'clusteredPhylogeny' + id;
-        this[clusteredPhyloSegmentId] = new OutbreaksPhylogenyTreeViewer({
-          title: `Segment ${id} (${segment})`,
-          id: this.viewer.id + '_' + clusteredPhyloSegmentId,
-          phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/H5N1/h5n1_segment_' + id + '_clustered.xml',
-          updateState: true,
-          settings: settings,
-          options: options,
-          nodeVisualizations: id === '4' ? nodeVisualizationsSegment4 : nodeVisualizations,
-          specialVisualizations: id === '4' ? nodeLabelsSegment4 : nodeLabels
-        });
-
-        clusteredphyloTabContainer.push(this[clusteredPhyloSegmentId]);
-      }
-      // Add concatenated for clustered pyhlogenetics
-      const clusteredPhyloConcatenatedId = 'clusteredPhyloConcatenated';
-      this[clusteredPhyloConcatenatedId] = new OutbreaksPhylogenyTreeViewer({
-        title: 'Concatenated Sequences',
-        id: this.viewer.id + '_' + clusteredPhyloConcatenatedId,
-        phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/H5N1/h5n1_all_concatenated_clustered.xml',
+      const phylogenyId = 'phylogenyMonkeypox';
+      this[phylogenyId] = new OutbreaksPhylogenyTreeViewer({
+        title: `Monkeypox`,
+        id: this.viewer.id + '_' + phylogenyId,
+        phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/mpox/monkeypox.xml',
         updateState: true,
         settings: settings,
         options: options,
         nodeVisualizations: nodeVisualizations,
         specialVisualizations: nodeLabels
       });
-      clusteredphyloTabContainer.push(this[clusteredPhyloConcatenatedId]);
-      this.clusteringInfo = new OutbreaksTab({
-        title: 'Clustering Info',
-        id: this.viewer.id + '_clustering',
-        templateString: ClusteringTemplate
-      });
-      clusteredphyloTabContainer.push(this.clusteringInfo);
 
-      this.clusteredPhylogenetics = new OutbreaksTabContainer({
-        title: 'Clustered Phylogenetics',
-        id: this.viewer.id + '_clusteredPhylogenetics',
-        tabContainers: clusteredphyloTabContainer
+      this.phylogenetics = new OutbreaksTabContainer({
+        title: 'Phylogenetics',
+        id: this.viewer.id + '_phylogenetics',
+        tabContainers: [this[phylogenyId]]
       });
 
       this.resources = new OutbreaksTab({
@@ -409,8 +246,7 @@ define([
         title: 'Outbreak Map',
         id: this.viewer.id + '_map',
         state: this.state,
-        cattleMarkerColor: '#028c81',
-        cattleAndHumanMarkerColor: '#035999',
+        humanMarkerColor: '#035999',
         createInfoWindowContent: this.googleMapsInfoWindowContent,
         createMarker: this.createGoogleMapsMarker,
         headerInfo: GeoMapHeaderTemplate,
@@ -420,13 +256,12 @@ define([
       this.viewer.addChild(this.overview);
       this.viewer.addChild(this.map);
       this.viewer.addChild(this.phylogenetics);
-      this.viewer.addChild(this.clusteredPhylogenetics);
       this.viewer.addChild(this.data);
       this.viewer.addChild(this.resources);
       this.viewer.addChild(this.clt);
 
       // Fetch geomap data
-      xhr.get(PathJoin(this.apiServiceUrl, 'genome') + '/?eq(taxon_id,11320)&eq(subtype,"H5N1")&eq(collection_year,"2024")&in(genome_status,("Complete","Partial"))&select(genome_name,isolation_country,state_province,host_common_name)&limit(100000)', {
+      xhr.get(PathJoin(this.apiServiceUrl, 'genome') + '/?eq(taxon_id,10244)&eq(collection_year,"2024")&in(genome_status,("Complete","Partial"))&select(genome_name,isolation_country,state_province,host_common_name)&limit(100000)', {
         headers: {
           accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
@@ -552,7 +387,7 @@ define([
     googleMapsInfoWindowContent: function (item) {
       let contentValues = {map: this.map, index: this.index++};
 
-      //Sort host common names TODO: move this to index to make this func generic
+      //Sort host common names
       let hostCommonNames = item.metadata.hostCommonNames;
       const sortedKeys = Object.keys(hostCommonNames).sort();
       const sortedHostCommonNames = {};
@@ -588,12 +423,8 @@ define([
 
       let markerColor, markerLabel;
       if (item.metadata.hostCommonNames.hasOwnProperty('Human')) {
-        markerColor = this.cattleAndHumanMarkerColor;
-        const humanCount = item.metadata.hostCommonNames['Human'];
-        markerLabel = humanCount + ' / ' + (count - humanCount);
-      } else {
-        markerColor = this.cattleMarkerColor;
-        markerLabel = count.toString();
+        markerColor = this.humanMarkerColor;
+        markerLabel = item.metadata.hostCommonNames['Human'] + '';
       }
       const length = markerLabel.length;
       const scale = length === 1 ? 1 : 1.5 + (length - 2) * 0.2;
