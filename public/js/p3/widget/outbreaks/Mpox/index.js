@@ -195,6 +195,7 @@ define([
       options.visualizationsLegendOrientation = 'vertical';
       options.visualizationsLegendXpos = 220;
       options.visualizationsLegendYpos = 30;
+      options.showInternalLabels = true;
 
       let settings = {};
       settings.border = '1px solid #909090';
@@ -214,7 +215,7 @@ define([
       settings.showSequenceButton = false;
       settings.showShortenNodeNamesButton = false;
       settings.showExternalLabelsButton = false;
-      settings.showInternalLabelsButton = false;
+      settings.showInternalLabelsButton = true;
       settings.showExternalNodesButton = false;
       settings.showInternalNodesButton = false;
 
