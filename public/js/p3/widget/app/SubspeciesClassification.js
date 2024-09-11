@@ -40,7 +40,7 @@ define([
     { value: 'MEASLES', label: 'Paramyxoviridae - Measles morbillivirus [complete genome, genomic RNA]' },
     { value: 'MUMPS', label: 'Paramyxoviridae - Mumps orthorubulavirus [complete genome, genomic RNA]' },
     { type: 'separator' },
-    { value: 'MPOX', label: 'Poxviridae - Monkeypox virus (complete genome, genomic DNA)' },
+    { value: 'MPOX', label: 'Poxviridae - Monkeypox virus [complete genome, genomic DNA]' },
     { type: 'separator' },
     { value: 'ROTAA', label: 'Reoviridae - Rotavirus A [complete genome, genomic RNA]' }
   ];
