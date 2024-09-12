@@ -251,7 +251,8 @@ define([
         createInfoWindowContent: this.googleMapsInfoWindowContent,
         createMarker: this.createGoogleMapsMarker,
         headerInfo: GeoMapHeaderTemplate,
-        footerInfo: GeoMapFooterTemplate
+        footerInfo: GeoMapFooterTemplate,
+        focusOnUS: false
       });
 
       this.viewer.addChild(this.overview);
