@@ -427,7 +427,7 @@ define([
         } else {
           let td = domConstruct.create('td', {}, tr);
           domConstruct.create('a', {
-            href: `/view/Taxonomy/10244#view_tab=genomes&filter=and(or(eq(genome_status,'Complete'),eq(genome_status,'Partial')),eq(collection_year,'2024')${locationFilter},eq(clade,${clade}))&defaultColumns=-cds,clade,collection_date&defaultSort=genome_name,clade`,
+            href: `/view/Taxonomy/10244#view_tab=genomes&filter=and(or(eq(genome_status,"Complete"),eq(genome_status,"Partial")),eq(collection_year,"2024")${locationFilter},eq(clade,"${encodeURIComponent(clade)}"))&defaultColumns=-cds,clade,collection_date&defaultSort=genome_name,clade`,
             target: '_blank',
             innerHTML: clade
           }, td);
