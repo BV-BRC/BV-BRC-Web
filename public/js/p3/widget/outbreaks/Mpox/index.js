@@ -447,18 +447,11 @@ define([
 
       // Find all keys that start with 'I.' and 'II.'
       let cladeIKeys = Object.keys(clades).filter(c => c.startsWith('I.'));
-      if (item.metadata.location === 'New york, USA') {
-        cladeIKeys = ["1"];
-      }
       const cladeIIKeys = Object.keys(clades).filter(c => c.startsWith('II.'));
 
       // Calculate the total number of values for each clade
       let cladeICount = cladeIKeys.reduce((count, key) => count + clades[key], 0);
-      if (item.metadata.location === 'New york, USA') {
-        cladeICount = 5;
-      }
       const cladeIICount = cladeIIKeys.reduce((count, key) => count + clades[key], 0);
-      const unclassifiedCount = clades['Unclassified'] || 0;
 
       let markerColor, markerLabel;
       if (cladeIKeys.length > 0 && cladeIIKeys.length > 0) {
