@@ -247,7 +247,9 @@ define([
         title: 'Outbreak Map',
         id: this.viewer.id + '_map',
         state: this.state,
-        humanMarkerColor: '#035999',
+        cladeIDetected: '#028c81',
+        cladeIIDetected: '#035999',
+        bothCladesDetected: '#0590b1',
         createInfoWindowContent: this.googleMapsInfoWindowContent,
         createMarker: this.createGoogleMapsMarker,
         headerInfo: GeoMapHeaderTemplate,
@@ -263,7 +265,7 @@ define([
       this.viewer.addChild(this.clt);
 
       // Fetch geomap data
-      xhr.get(PathJoin(this.apiServiceUrl, 'genome') + '/?eq(taxon_id,10244)&eq(collection_year,"2024")&in(genome_status,("Complete","Partial"))&select(genome_name,isolation_country,state_province,host_common_name)&limit(100000)', {
+      xhr.get(PathJoin(this.apiServiceUrl, 'genome') + '/?eq(taxon_id,10244)&eq(collection_year,"2024")&in(genome_status,("Complete","Partial"))&select(genome_name,clade,isolation_country,state_province)&limit(100000)', {
         headers: {
           accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
@@ -277,7 +279,7 @@ define([
           if (!distinctLocations[location]) {
             distinctLocations[location] = {
               genomeNames: [],
-              hostCommonNames: {}
+              clades: {}
             };
           }
 
@@ -285,12 +287,14 @@ define([
           if (genome.genome_name && !distinctLocations[location].genomeNames.includes(genome.genome_name)) {
             distinctLocations[location].genomeNames.push(genome.genome_name);
 
-            if (genome.host_common_name) {
-              if (distinctLocations[location].hostCommonNames[genome.host_common_name]) {
-                distinctLocations[location].hostCommonNames[genome.host_common_name]++
-              } else {
-                distinctLocations[location].hostCommonNames[genome.host_common_name] = 1;
-              }
+            if (!genome.clade) {
+              genome.clade = 'Unclassified';
+            }
+
+            if (distinctLocations[location].clades[genome.clade]) {
+              distinctLocations[location].clades[genome.clade]++;
+            } else {
+              distinctLocations[location].clades[genome.clade] = 1;
             }
           }
         };
@@ -390,13 +394,13 @@ define([
       let contentValues = {map: this.map, index: this.index++};
 
       //Sort host common names
-      let hostCommonNames = item.metadata.hostCommonNames;
-      const sortedKeys = Object.keys(hostCommonNames).sort();
-      const sortedHostCommonNames = {};
+      let clades = item.metadata.clades;
+      const sortedKeys = Object.keys(clades).sort();
+      const sortedClades = {};
       sortedKeys.forEach(key => {
-        sortedHostCommonNames[key] = hostCommonNames[key];
+        sortedClades[key] = clades[key];
       });
-      item.metadata.hostCommonNames = sortedHostCommonNames;
+      item.metadata.clades = sortedClades;
       // ,eq(state_province,"{{ metadata.stateProvince }}"
       const location = item.metadata.location;
       const stateCountry = location.split(',');
@@ -409,11 +413,28 @@ define([
 
       let content = new OutbreaksGeoMapInfo(Object.assign({}, contentValues, {
         templateString: OutbreaksGeoMapInfoTemplate,
-        metadata: item.metadata,
+        location: item.metadata.location,
         locationFilter: locationFilter,
         longitude: item.longitude,
         latitude: item.latitude
       }));
+
+      for (const [clade, count] of Object.entries(item.metadata.clades)) {
+        let tr = domConstruct.create('tr', {}, content.cladeDetailsPoint);
+
+        if (clade === 'Unclassified') {
+          domConstruct.create('td', { innerHTML: clade }, tr);
+        } else {
+          let td = domConstruct.create('td', {}, tr);
+          domConstruct.create('a', {
+            href: `/view/Taxonomy/10244#view_tab=genomes&filter=and(or(eq(genome_status,'Complete'),eq(genome_status,'Partial')),eq(collection_year,'2024')${locationFilter},eq(clade,${clade}))&defaultColumns=-cds,clade,collection_date&defaultSort=genome_name,clade`,
+            target: '_blank',
+            innerHTML: clade
+          }, td);
+        }
+
+        domConstruct.create('td', { innerHTML: count }, tr);
+      }
 
       return content.domNode.innerHTML;
     },
@@ -422,12 +443,35 @@ define([
       const latitude = item.latitude.toFixed(5);
       const longitude = item.longitude.toFixed(5);
       const count = item.metadata.genomeNames.length;
+      const clades = item.metadata.clades;
+
+      // Find all keys that start with 'I.' and 'II.'
+      let cladeIKeys = Object.keys(clades).filter(c => c.startsWith('I.'));
+      if (item.metadata.location === 'New york, USA') {
+        cladeIKeys = ["1"];
+      }
+      const cladeIIKeys = Object.keys(clades).filter(c => c.startsWith('II.'));
+
+      // Calculate the total number of values for each clade
+      let cladeICount = cladeIKeys.reduce((count, key) => count + clades[key], 0);
+      if (item.metadata.location === 'New york, USA') {
+        cladeICount = 5;
+      }
+      const cladeIICount = cladeIIKeys.reduce((count, key) => count + clades[key], 0);
+      const unclassifiedCount = clades['Unclassified'] || 0;
 
       let markerColor, markerLabel;
-      if (item.metadata.hostCommonNames.hasOwnProperty('Human')) {
-        markerColor = this.humanMarkerColor;
-        markerLabel = item.metadata.hostCommonNames['Human'] + '';
+      if (cladeIKeys.length > 0 && cladeIIKeys.length > 0) {
+        markerColor = this.bothCladesDetected;
+        markerLabel = cladeICount + ' / ' + cladeIICount;
+      } else if (cladeIKeys.length > 0) {
+        markerColor = this.cladeIDetected;
+        markerLabel = count.toString();
+      } else if (cladeIIKeys.length > 0) {
+        markerColor = this.cladeIIDetected;
+        markerLabel = count.toString();
       }
+
       const length = markerLabel.length;
       const scale = length === 1 ? 1 : 1.5 + (length - 2) * 0.2;
 
