@@ -1,8 +1,22 @@
 <div>
     <p>
         Click
-        <a href='/view/Taxonomy/10244#view_tab=genomes&filter=and(or(eq(genome_status,"Complete"),eq(genome_status,"Partial")),eq(collection_year,"2024"){{ locationFilter }})'
+        <a href='/view/Taxonomy/10244#view_tab=genomes&filter=and(or(eq(genome_status,"Complete"),eq(genome_status,"Partial")),eq(collection_year,"2024"){{ locationFilter }})&defaultColumns=-cds,clade,collection_date&defaultSort=genome_name,clade'
            target="_blank">here</a>
-        to view details about the Human records at {{ metadata.location }}.
+        to view details about the records at {{ location }}.
     </p>
+    <br/>
+    <p>The following were found at this location:</p>
+    <table>
+        <thead>
+        <th style="width: 25%">
+            Clade
+        </th>
+        <th style="width: 25%">
+            Count
+        </th>
+        </thead>
+        <tbody data-dojo-attach-point="cladeDetailsPoint">
+        </tbody>
+    </table>
 </div>
