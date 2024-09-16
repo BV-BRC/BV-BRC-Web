@@ -293,13 +293,6 @@ define([
       return (success);
     },
 
-    /*
-    <option value="genome_id">Genome ID</option>
-                        <option value="h1_clade_global">H1 Clade Gobal</option>
-                        <option value="h1_clade_us">H1 Clade US</option>
-                        <option value="h3_clade">H3 Clade</option>
-                        <option value="h5_clade">H5 Clade</option>
-    */
     checkMoreOptions: function (sel) {
       if (sel === 'more_options') {
         this.metadata_selector.set('options', this.advMetadata).reset();
