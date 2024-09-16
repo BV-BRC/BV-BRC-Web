@@ -37,9 +37,12 @@ define([
       minimumLongitude: -120.7401386
     },
     usaBounds: null,
+    focusOnUS: true,
     initialBounds: null,
     createInfoWindowContent: null,
     createMarker: null,
+    headerInfo: null,
+    footerInfo: null,
 
     _setStateAttr: function (state) {
       this._set('state', state);
@@ -100,6 +103,15 @@ define([
       let maxLatLong = new google.maps.LatLng(this.coordinatesUSA.maximumLatitude, this.coordinatesUSA.maximumLongitude);
 
       this.usaBounds = new google.maps.LatLngBounds(minLatLong, maxLatLong);
+    },
+
+    postCreate: function () {
+      if (this.headerInfo) {
+        this.headerInfoNode.innerHTML = this.headerInfo;
+      }
+      if (this.footerInfo) {
+        this.footerInfoNode.innerHTML = this.footerInfo;
+      }
     },
 
     onSetData: async function () {
@@ -172,9 +184,14 @@ define([
           this.initialBounds = bounds;
 
           let options = this.defaultMapOptions;
-          options.center = this.usaBounds.getCenter();
+          if (this.focusOnUS) {
+            options.center = this.usaBounds.getCenter();
+          } else {
+            options.center = bounds.getCenter();
+          }
           options.streetViewControl = false;
-          options.disableDefaultUI = true
+          options.disableDefaultUI = true;
+          options.zoomControl = true;
 
           // Add styles to hide highways
           options.styles = [
@@ -186,13 +203,18 @@ define([
           ];
 
           this.map = new google.maps.Map(document.getElementById(this.canvasId), options);
-          this.map.fitBounds(this.usaBounds);
+          if (this.focusOnUS) {
+            this.map.fitBounds(this.usaBounds);
+          } else {
+            this.map.fitBounds(bounds);
+          }
 
-          /*google.maps.event.addListenerOnce(this.map, 'bounds_changed', lang.hitch(this, function () {
-            const initialZoomLevel = this.map.getZoom();
-            this.initialZoomLevel = initialZoomLevel;
-            this.map.setZoom(initialZoomLevel);
-          }));*/
+          google.maps.event.addListenerOnce(this.map, 'bounds_changed', lang.hitch(this, function () {
+            if (!this.focusOnUS) {
+              let map = dom.byId('global_map');
+              map.checked = true;
+            }
+          }));
 
           // Add marker and info windows for each location
           for (let item of mapData.items) {
