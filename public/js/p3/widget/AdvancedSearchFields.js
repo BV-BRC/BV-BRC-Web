@@ -152,7 +152,7 @@ define([], function () {
         field: 'lineage', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'clade', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'clade', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'subclade', type: 'str', facet: false, facet_hidden: true, search: true
