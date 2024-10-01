@@ -3,6 +3,7 @@
         .dojoxCheckedMultiSelectWrapper {
             width: 100%;
             height: 100% !important;
+            max-height: 250px;
         }
     </style>
     <div class="appTemplate">
@@ -59,12 +60,15 @@
                         <div class="headerrow segmentOptions">
                             <label class="appBoxLabel">Segment / Protein</label>
                         </div>
+                        <div class="headerrow proteinOptions">
+                            <label class="appBoxLabel">Gene / Protein</label>
+                        </div>
                         <div class="appRow">
                             <div class="appFieldLong">
                                 <select data-dojo-type="dojox/form/CheckedMultiSelect" name="genes"
                                         data-dojo-props="disabled:false"
                                         data-dojo-attach-event="onChange: onSegmentChange"
-                                        data-dojo-attach-point="geneNode" multiple style="height: 100%"></select>
+                                        data-dojo-attach-point="geneNode" multiple style="height: 100%;"></select>
                             </div>
                         </div>
                     </div>
@@ -77,6 +81,17 @@
                                 <select data-dojo-type="dojox/form/CheckedMultiSelect" name="sequence_feature_type"
                                         data-dojo-props="disabled:false"
                                         data-dojo-attach-point="sequenceFeatureTypeNode" multiple
+                                        style="height: 100%"></select>
+                            </div>
+                        </div>
+                        <div class="headerrow monkeypox">
+                            <label class="appBoxLabel">Clade</label>
+                        </div>
+                        <div class="appRow monkeypox">
+                            <div class="appFieldLong">
+                                <select data-dojo-type="dojox/form/CheckedMultiSelect" name="additional_metadata"
+                                        data-dojo-props="disabled:false"
+                                        data-dojo-attach-point="additionalMetadataNode" multiple
                                         style="height: 100%"></select>
                             </div>
                         </div>

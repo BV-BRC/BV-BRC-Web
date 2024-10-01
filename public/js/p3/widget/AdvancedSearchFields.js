@@ -881,7 +881,10 @@ define([], function () {
       },
       {
         field: 'segment', type: 'str', facet: true, facet_hidden: false, search: true
-      }
+      },
+      {
+        field: 'additional_metadata', type: 'str', facet: true, facet_hidden: false, search: true
+      },
     ],
     'subsystem': [
       {

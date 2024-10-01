@@ -22,6 +22,10 @@ define([
     'NS2': '8'
   };
 
+  const otherPathogenGroups = {
+    '10244': 'Monkeypox virus'
+  };
+
   function sanitizeInput(str) {
     return str.replace(/\(|\)|\.|\*|\||\[|\]/g, '');
   }
@@ -80,12 +84,23 @@ define([
     postCreate: function () {
       this.inherited(arguments);
 
+      this.additionalMetadataNode.addOption([
+        {
+          value: 'Clade I',
+          label: 'Clade I'
+        }, {
+          value: 'Clade II',
+          label: 'Clade II'
+        }
+      ]);
       storeBuilder('sequence_feature', 'taxon_id').then(lang.hitch(this, (store) => {
         // Display correct names based on taxon id
         for (let item of store.data) {
           const taxon = pathogenGroupStore.data.find(pathogen => pathogen.id == item.id);
           if (taxon) {
             item.name = taxon.name;
+          } else if (otherPathogenGroups[item.id]) {
+            item.name = otherPathogenGroups[item.id];
           }
         }
         this.pathogenGroupNode.store = store;
@@ -118,6 +133,10 @@ define([
       this.subtypeNNode.reset();
       this.geneNode.set('options', []);
       this.geneNode.reset();
+      this.additionalMetadataNode.set('value', []);
+      this.additionalMetadataNode._updateSelection();
+      //this.additionalMetadataNode.set('options', []);
+      //this.additionalMetadataNode.reset();
 
       //Update virus type multi select values with selected pathogen
       const condition = 'taxon_id:' + taxonId;
@@ -150,7 +169,7 @@ define([
       }));
 
       storeBuilder('sequence_feature', 'gene', condition).then(lang.hitch(this, (store) => {
-        let geneOptions = []
+        let geneOptions = [];
         for (let item of store.data) {
           const segmentNo = influenzaSegmentMapping[item.name];
           geneOptions.push(
@@ -173,8 +192,34 @@ define([
         query('.proteinOptions').style('display', 'block');
       }
 
+      // Specific monkeypox option
+      if (taxonId === '10244') {
+        /*storeBuilder('sequence_feature', 'additional_metadata', condition).then(lang.hitch(this, (store) => {
+          let metadataOptions = [];
+          for (let item of store.data) {
+            metadataOptions.push({
+              value: item.name,
+              label: item.name
+            });
+          }
+
+          this.additionalMetadataNode.addOption(metadataOptions);
+        }));*/
+
+        query('.monkeypox').style('display', 'block');
+      } else {
+        query('.monkeypox').style('display', 'none');
+      }
+
       query('.sfvtOptions').style('display', 'block');
       query('#pathogenInfoDiv').style('display', 'none');
+    },
+
+    buildDefaultColumns: function () {
+      const taxonId = this.pathogenGroupNode.value;
+
+      // Reorganize table columns for Monkeypox virus
+      return taxonId === '10244' ? '-source_strain,additional_metadata' : '';
     },
 
     buildFilter: async function () {
@@ -248,6 +293,15 @@ define([
       } else if (sequenceFeatureTypeValue.length > 1) {
         filterArr.push(`or(${sequenceFeatureTypeValue.map(v => `eq(sf_category,"${sanitizeInput(v)}")`)})`);
         sfQueryArr.push(`in(sf_category,(${sequenceFeatureTypeValue.join(',')}))`);
+      }
+
+      const additionalMetadataValue = this.additionalMetadataNode.get('value');
+      if (additionalMetadataValue.length === 1) {
+        filterArr.push(`eq(additional_metadata,"${TextInputEncoder(sanitizeInput(additionalMetadataValue[0]))}")`);
+        sfQueryArr.push(`eq(additional_metadata,${TextInputEncoder(sanitizeInput(additionalMetadataValue[0]))})`);
+      } else if (additionalMetadataValue.length > 1) {
+        filterArr.push(`or(${additionalMetadataValue.map(v => `eq(additional_metadata,"${TextInputEncoder(sanitizeInput(v))}")`)})`);
+        sfQueryArr.push(`in(additional_metadata,(${additionalMetadataValue.join(',')}))`);
       }
 
       /*const startValue = parseInt(this.aaCoordinatesStartNode.get('value'));

@@ -69,6 +69,8 @@ define([
     },
     buildFilter: function () {
     },
+    buildDefaultColumns: function () {
+    },
     _buildAdvancedQuery: function () {
       return Object.keys(this._Searches).map((idx) => {
         const col = this._Searches[idx]
@@ -112,10 +114,14 @@ define([
 
       const query = this.buildQuery();
       const filter = await this.buildFilter();
+      const defaultColumns = this.buildDefaultColumns();
 
       let url = this.resultUrlBase + query + this.resultUrlHash;
       if (filter) {
         url += '&filter=' + filter;
+      }
+      if (defaultColumns) {
+        url += '&defaultColumns=' + defaultColumns;
       }
       Topic.publish('/navigate', { href: url });
     }
