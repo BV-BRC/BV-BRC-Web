@@ -98,6 +98,37 @@ define([
           if (condition.op === 'NOT') {
             q = `not(${q})`
           }
+        } else if (condition.type === 'date') {
+          const encode = (date) => {
+            if (!date) {
+              return '';
+            }
+
+            const parsedDate = new Date(date);
+            const utcDate = new Date(Date.UTC(
+              parsedDate.getUTCFullYear(),
+              parsedDate.getUTCMonth(),
+              parsedDate.getUTCDate(),
+            ));
+            return encodeURIComponent(utcDate.toISOString());
+          };
+          const lowerBound = encode(condition.from);
+          const upperBound = encode(condition.to);
+
+          if (lowerBound && upperBound) {
+            q = `between(${condition.column},${lowerBound},${upperBound})`;
+          } else if (lowerBound && !upperBound) {
+            q = `gt(${condition.column},${lowerBound})`;
+          } else if (!lowerBound && upperBound) {
+            q = `lt(${condition.column},${upperBound})`;
+          } else {
+            // both bounds are invalid, skip
+            return;
+          }
+
+          if (condition.op === 'NOT') {
+            q = `not(${q})`;
+          }
         } else {
           return
         }
