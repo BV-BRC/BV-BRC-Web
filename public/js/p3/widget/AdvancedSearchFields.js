@@ -174,7 +174,7 @@ define([], function () {
         field: '----- DB Cross Ref -----', type: 'str', facet: false, face_hidden: true, search: true
       },
       {
-        field: 'completion_date', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'completion_date', type: 'date', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'publication', type: 'str', facet: false, facet_hidden: true, search: true
@@ -280,7 +280,7 @@ define([], function () {
         field: 'isolation_comments', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'collection_date', type: 'numeric', facet: false, facet_hidden: true, search: true
+        field: 'collection_date', type: 'date', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'collection_year', type: 'numeric', facet: true, facet_hidden: false, search: true
@@ -342,10 +342,10 @@ define([], function () {
         field: 'comments', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'date_inserted', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'date_inserted', type: 'date', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'date_modified', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'date_modified', type: 'date', facet: false, facet_hidden: true, search: true
       },
     ],
     'genome_feature': [
@@ -434,7 +434,7 @@ define([], function () {
         field: 'notes', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
-        field: 'date_inserted', type: 'str', facet: false, facet_hidden: false, search: true
+        field: 'date_inserted', type: 'date', facet: false, facet_hidden: false, search: true
       },
       {
         field: 'public', type: 'str', facet: true, facet_hidden: false, search: true
@@ -523,7 +523,7 @@ define([], function () {
         field: 'notes', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
-        field: 'date_inserted', type: 'str', facet: false, facet_hidden: false, search: true
+        field: 'date_inserted', type: 'date', facet: false, facet_hidden: false, search: true
       },
       {
         field: 'public', type: 'str', facet: true, facet_hidden: false, search: true
@@ -579,10 +579,10 @@ define([], function () {
         field: 'length', type: 'int', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'release_date', type: 'int', facet: false, facet_hidden: true, search: true
+        field: 'release_date', type: 'date', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'date_inserted', type: 'int', facet: false, facet_hidden: true, search: true
+        field: 'date_inserted', type: 'date', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'public', type: 'str', facet: true, facet_hidden: true, search: true
@@ -721,7 +721,7 @@ define([], function () {
         field: 'comments', type: 'str', facet: false, facet_hidden: false, search: true
       },
       {
-        field: 'date_inserted', type: 'numeric', facet: false, facet_hidden: false, search: true
+        field: 'date_inserted', type: 'date', facet: false, facet_hidden: false, search: true
       },
       {
         field: 'public', type: 'str', facet: false, facet_hidden: true, search: true
@@ -789,7 +789,7 @@ define([], function () {
         field: 'authors', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'release_date', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'release_date', type: 'date', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'file_path', type: 'str', facet: false, facet_hidden: true, search: true
@@ -953,13 +953,13 @@ define([], function () {
         field: 'sample_receipt_date', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'last_update_date', type: 'numeric', facet: false, facet_hidden: true, search: true
+        field: 'last_update_date', type: 'date', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'longitudinal_study', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'embargo_end_date', type: 'numeric', facet: false, facet_hidden: true, search: true
+        field: 'embargo_end_date', type: 'date', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'collection_latitude', type: 'decimal', facet: false, facet_hidden: true, search: true
@@ -977,7 +977,7 @@ define([], function () {
         field: 'contact_email_address', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
-        field: 'collection_date', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'collection_date', type: 'date', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'collection_year', type: 'str', facet: true, facet_hidden: false, search: true
@@ -1276,7 +1276,7 @@ define([], function () {
         field: 'collection_city', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'collection_date', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'collection_date', type: 'date', facet: false, facet_hidden: true, search: true
       },
       {
         field: 'collection_year', type: 'str', facet: true, facet_hidden: false, search: true
