@@ -4,14 +4,14 @@ define([
   'dojo/text!./templates/ViralGenomeTree.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog', '../../DataAPI',
-  'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when'
+  'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when', '../AdvancedSearchFields'
 ], function (
   declare, WidgetBase, Topic, on,
   domClass,
   Template, AppBase, domConstruct, registry,
   Deferred, aspect, lang, domReady, NumberTextBox,
   query, dom, popup, Tooltip, Dialog, TooltipDialog, DataAPI,
-  children, WorkspaceManager, Memory, Standby, when
+  children, WorkspaceManager, Memory, Standby, when, AdvancedSearchFields
 ) {
   return declare([AppBase], {
     baseClass: 'App ViralGenomeTree',
@@ -64,6 +64,7 @@ define([
       this.numref = 0;
       this.emptyTable(this.genomeTable, this.startingRows);
       this.startupMetadataTable();
+      this.startupAdvMetadata();
       this.numgenomes.startup();
       this.setTooltips();
       this._started = true;
@@ -118,6 +119,7 @@ define([
     },
 
     startupMetadataTable: function () {
+      this.checkMoreOptions('initialize_options'); // initializes the list of options
       var default_metadata_fields = ['Genome ID', 'Genome Name', 'Species', 'Strain', 'Accession', 'Subtype'].reverse();
       var default_metadata_values = ['genome_id', 'genome_name', 'species', 'strain', 'accession', 'subtype'].reverse();
       this.metadata_count = 0;
@@ -146,6 +148,25 @@ define([
         }));
         default_index++;
       }));
+    },
+
+    startupAdvMetadata: function () {
+      this.advMetadata = [];
+      AdvancedSearchFields['genome'].forEach(lang.hitch(this, function (obj) {
+        var disable_field = obj['field'].includes('---');
+        var newOpt = {
+          label: obj['field'],
+          value: obj['field'],
+          selected: false,
+          disabled: disable_field
+        }
+        this.advMetadata.push(newOpt);
+      }));
+      this.advMetadata.push({
+        label: '... Fewer Options ...',
+        value: 'less_options',
+        selected: false
+      });
     },
 
     openJobsList: function () {
@@ -270,6 +291,84 @@ define([
         }
       }, this);
       return (success);
+    },
+
+    checkMoreOptions: function (sel) {
+      if (sel === 'more_options') {
+        this.metadata_selector.set('options', this.advMetadata).reset();
+        this.metadata_selector.toggleDropDown();
+      }
+      if (sel === 'less_options' || sel === 'initialize_options') {
+        var newOpts = [
+          {
+            label: 'Genome Name', value: 'genome_name', selected: false
+          },
+          {
+            label: 'Genome Length', value: 'genome_length', selected: false
+          },
+          {
+            label: 'Genome Group', value: 'genome_group', selected: false
+          },
+          {
+            label: 'Genus', value: 'genus', selected: false
+          },
+          {
+            label: 'Species', value: 'species', selected: false
+          },
+          {
+            label: 'Strain', value: 'strain', selected: false
+          },
+          {
+            label: 'Accession', value: 'accession', selected: false
+          },
+          {
+            label: 'Subtype', value: 'subtype', selected: false
+          },
+          {
+            label: 'Lineage', value: 'lineage', selected: false
+          },
+          {
+            label: 'H1 Clade Global', value: 'h1_clade_global', selected: false
+          },
+          {
+            label: 'H1 Clade US', value: 'h1_clade_us', selected: false
+          },
+          {
+            label: 'H3 Clade', value: 'h3_clade', selected: false
+          },
+          {
+            label: 'H5 Clade', value: 'h5_clade', selected: false
+          },
+          {
+            label: 'Host Group', value: 'host_group', selected: false
+          },
+          {
+            label: 'Host Common Name', value: 'host_common_name', selected: false
+          },
+          {
+            label: 'Collection Date', value: 'collection_date', selected: false
+          },
+          {
+            label: 'Collection Year', value: 'collection_year', selected: false
+          },
+          {
+            label: 'Geographic Group', value: 'geographic_group', selected: false
+          },
+          {
+            label: 'Isolation Country', value: 'isolation_country', selected: false
+          },
+          {
+            label: 'Geographic Location', value: 'geographic_location', selected: false
+          },
+          {
+            label: '... More Options ...', value: 'more_options', selected: false
+          }
+        ];
+        this.metadata_selector.set('options', newOpts).reset();
+        if (sel === 'less_options') {
+          this.metadata_selector.toggleDropDown();
+        }
+      }
     },
 
     onSuggestNameChange: function () {
