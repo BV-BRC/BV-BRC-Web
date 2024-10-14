@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/store/Memory', 'dojo/text!./templates/SFVTSearch.html', 'dojo/query',
   './TextInputEncoder', './SearchBase', './FacetStoreBuilder', './PathogenGroups', '../../util/PathJoin', 'dojo/request/xhr',
-  'dijit/Dialog', 'dojo/on'
+  'dijit/Dialog', 'dojo/on', 'dojo/when', 'dojo/dom-construct'
 ], function (
   declare, lang, Memory, template, query,
   TextInputEncoder, SearchBase, storeBuilder, pathogenGroupStore, PathJoin, xhr,
-  Dialog, on
+  Dialog, on, when, domConstruct
 ) {
 
   const influenzaSegmentMapping = {
@@ -46,6 +46,7 @@ define([
     segmentOptions: ['11320'],
     sfvtSequenceErrorMessage: 'There are too many Sequence Feature hits. Please refine Sequence Feature Variant Type Sequence pattern to narrow down the results.',
     sfvtMaxLimit: 300,
+    mpoxGeneProductMapping: {},
 
     startup: function () {
       let sfvtSeqSearchButton = query('#sfvt-seq-search')[0];
@@ -118,6 +119,27 @@ define([
             });
         }
       }));
+
+      // Retrieve product values for gene
+      let self = this;
+      when(xhr.post(PathJoin(window.App.dataAPI, '/sequence_feature/'), {
+        handleAs: 'json',
+        headers: {
+          Accept: 'application/solr+json',
+          'Content-Type': 'application/solrquery+x-www-form-urlencoded',
+          'X-Requested-With': null,
+          Authorization: (window.App.authorizationToken || '')
+        },
+        data: 'q=taxon_id:10244&fl=gene,product&group=true&group.field=gene'
+      }), function (response) {
+        if (response && response.grouped && response.grouped.gene) {
+          response.grouped.gene.groups.forEach(group => {
+            const gene = group.groupValue;
+            const product = group.doclist.docs[0].product;
+            self.mpoxGeneProductMapping[gene] = product;
+          });
+        }
+      });
     },
 
     onPathogenChange: function () {
@@ -171,12 +193,21 @@ define([
       storeBuilder('sequence_feature', 'gene', condition).then(lang.hitch(this, (store) => {
         let geneOptions = [];
         for (let item of store.data) {
-          const segmentNo = influenzaSegmentMapping[item.name];
-          geneOptions.push(
-            {
-              value: item.name,
-              label: segmentNo ? `${segmentNo} / ${item.name}` : item.name
-            });
+          if (taxonId === this.defaultTaxonId) { // Influenza
+            const segmentNo = influenzaSegmentMapping[item.name];
+            geneOptions.push(
+              {
+                value: item.name,
+                label: segmentNo ? `${segmentNo} / ${item.name}` : item.name
+              });
+          } else {
+            const product = this.mpoxGeneProductMapping[item.name];
+            geneOptions.push(
+              {
+                value: item.name,
+                label: product ? `${item.name} - ${product}` : item.name
+              });
+          }
         }
 
         geneOptions.sort((a, b) => a.label.localeCompare(b.label));
@@ -184,10 +215,21 @@ define([
         this.geneNode.addOption(geneOptions);
       }));
 
+      const customFilters = query('.customFilter');
       if (this.segmentOptions.includes(taxonId)) {
+        const options = query('#options1')[0];
+        customFilters.forEach(function (container) {
+          domConstruct.place(container, options, 'last');
+        });
+
         query('.proteinOptions').style('display', 'none');
         query('.segmentOptions').style('display', 'block');
       } else {
+        const options = query('#options2')[0];
+        customFilters.forEach(function (container) {
+          domConstruct.place(container, options, 'last');
+        });
+
         query('.segmentOptions').style('display', 'none');
         query('.proteinOptions').style('display', 'block');
       }
