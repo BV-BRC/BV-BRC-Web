@@ -69,6 +69,8 @@ define([
     },
     buildFilter: function () {
     },
+    buildDefaultColumns: function () {
+    },
     _buildAdvancedQuery: function () {
       return Object.keys(this._Searches).map((idx) => {
         const col = this._Searches[idx]
@@ -96,6 +98,37 @@ define([
           if (condition.op === 'NOT') {
             q = `not(${q})`
           }
+        } else if (condition.type === 'date') {
+          const encode = (date) => {
+            if (!date) {
+              return '';
+            }
+
+            const parsedDate = new Date(date);
+            const utcDate = new Date(Date.UTC(
+              parsedDate.getUTCFullYear(),
+              parsedDate.getUTCMonth(),
+              parsedDate.getUTCDate(),
+            ));
+            return encodeURIComponent(utcDate.toISOString());
+          };
+          const lowerBound = encode(condition.from);
+          const upperBound = encode(condition.to);
+
+          if (lowerBound && upperBound) {
+            q = `between(${condition.column},${lowerBound},${upperBound})`;
+          } else if (lowerBound && !upperBound) {
+            q = `gt(${condition.column},${lowerBound})`;
+          } else if (!lowerBound && upperBound) {
+            q = `lt(${condition.column},${upperBound})`;
+          } else {
+            // both bounds are invalid, skip
+            return;
+          }
+
+          if (condition.op === 'NOT') {
+            q = `not(${q})`;
+          }
         } else {
           return
         }
@@ -112,10 +145,14 @@ define([
 
       const query = this.buildQuery();
       const filter = await this.buildFilter();
+      const defaultColumns = this.buildDefaultColumns();
 
       let url = this.resultUrlBase + query + this.resultUrlHash;
       if (filter) {
         url += '&filter=' + filter;
+      }
+      if (defaultColumns) {
+        url += '&defaultColumns=' + defaultColumns;
       }
       Topic.publish('/navigate', { href: url });
     }

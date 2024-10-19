@@ -35,10 +35,12 @@ define([
       sf_category: {label: 'SF Category', field: 'sf_category', hidden: false},
       segments: {label: 'Reference Positions', field: 'segments', hidden: false},
       source_strain: {label: 'Source Strain', field: 'source_strain', hidden: false},
+      product: {label: 'Product', field: 'product', hidden: false},
 
+      additional_metadata: {label: 'Additional Metadata', field: 'additional_metadata', hidden: true},
       segment: {label: 'Segment', field: 'segment', hidden: true},
       subtype: {label: 'Subtype', field: 'subtype', hidden: true},
-      comments: {label: 'Comments', field: 'comments', hidden: true},
+      comments: {label: 'Comments', field: 'comments', hidden: true}
       //feature_type: {label: 'Evidence', field: 'feature_type', hidden: false}
     },
     startup: function () {

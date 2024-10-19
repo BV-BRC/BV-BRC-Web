@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/store/Memory', 'dojo/text!./templates/SFVTSearch.html', 'dojo/query',
   './TextInputEncoder', './SearchBase', './FacetStoreBuilder', './PathogenGroups', '../../util/PathJoin', 'dojo/request/xhr',
-  'dijit/Dialog', 'dojo/on'
+  'dijit/Dialog', 'dojo/on', 'dojo/when', 'dojo/dom-construct'
 ], function (
   declare, lang, Memory, template, query,
   TextInputEncoder, SearchBase, storeBuilder, pathogenGroupStore, PathJoin, xhr,
-  Dialog, on
+  Dialog, on, when, domConstruct
 ) {
 
   const influenzaSegmentMapping = {
@@ -20,6 +20,10 @@ define([
     'M2': '7',
     'NS1': '8',
     'NS2': '8'
+  };
+
+  const otherPathogenGroups = {
+    '10244': 'Monkeypox virus'
   };
 
   function sanitizeInput(str) {
@@ -42,6 +46,7 @@ define([
     segmentOptions: ['11320'],
     sfvtSequenceErrorMessage: 'There are too many Sequence Feature hits. Please refine Sequence Feature Variant Type Sequence pattern to narrow down the results.',
     sfvtMaxLimit: 300,
+    mpoxGeneProductMapping: {},
 
     startup: function () {
       let sfvtSeqSearchButton = query('#sfvt-seq-search')[0];
@@ -80,12 +85,23 @@ define([
     postCreate: function () {
       this.inherited(arguments);
 
+      this.additionalMetadataNode.addOption([
+        {
+          value: 'Clade I',
+          label: 'Clade I'
+        }, {
+          value: 'Clade II',
+          label: 'Clade II'
+        }
+      ]);
       storeBuilder('sequence_feature', 'taxon_id').then(lang.hitch(this, (store) => {
         // Display correct names based on taxon id
         for (let item of store.data) {
           const taxon = pathogenGroupStore.data.find(pathogen => pathogen.id == item.id);
           if (taxon) {
             item.name = taxon.name;
+          } else if (otherPathogenGroups[item.id]) {
+            item.name = otherPathogenGroups[item.id];
           }
         }
         this.pathogenGroupNode.store = store;
@@ -103,6 +119,27 @@ define([
             });
         }
       }));
+
+      // Retrieve product values for gene
+      let self = this;
+      when(xhr.post(PathJoin(window.App.dataAPI, '/sequence_feature/'), {
+        handleAs: 'json',
+        headers: {
+          Accept: 'application/solr+json',
+          'Content-Type': 'application/solrquery+x-www-form-urlencoded',
+          'X-Requested-With': null,
+          Authorization: (window.App.authorizationToken || '')
+        },
+        data: 'q=taxon_id:10244&fl=gene,product&group=true&group.field=gene'
+      }), function (response) {
+        if (response && response.grouped && response.grouped.gene) {
+          response.grouped.gene.groups.forEach(group => {
+            const gene = group.groupValue;
+            const product = group.doclist.docs[0].product;
+            self.mpoxGeneProductMapping[gene] = product;
+          });
+        }
+      });
     },
 
     onPathogenChange: function () {
@@ -118,6 +155,10 @@ define([
       this.subtypeNNode.reset();
       this.geneNode.set('options', []);
       this.geneNode.reset();
+      this.additionalMetadataNode.set('value', []);
+      this.additionalMetadataNode._updateSelection();
+      //this.additionalMetadataNode.set('options', []);
+      //this.additionalMetadataNode.reset();
 
       //Update virus type multi select values with selected pathogen
       const condition = 'taxon_id:' + taxonId;
@@ -150,14 +191,23 @@ define([
       }));
 
       storeBuilder('sequence_feature', 'gene', condition).then(lang.hitch(this, (store) => {
-        let geneOptions = []
+        let geneOptions = [];
         for (let item of store.data) {
-          const segmentNo = influenzaSegmentMapping[item.name];
-          geneOptions.push(
-            {
-              value: item.name,
-              label: segmentNo ? `${segmentNo} / ${item.name}` : item.name
-            });
+          if (taxonId === this.defaultTaxonId) { // Influenza
+            const segmentNo = influenzaSegmentMapping[item.name];
+            geneOptions.push(
+              {
+                value: item.name,
+                label: segmentNo ? `${segmentNo} / ${item.name}` : item.name
+              });
+          } else {
+            const product = this.mpoxGeneProductMapping[item.name];
+            geneOptions.push(
+              {
+                value: item.name,
+                label: product ? `${item.name} - ${product}` : item.name
+              });
+          }
         }
 
         geneOptions.sort((a, b) => a.label.localeCompare(b.label));
@@ -165,16 +215,53 @@ define([
         this.geneNode.addOption(geneOptions);
       }));
 
+      const customFilters = query('.customFilter');
       if (this.segmentOptions.includes(taxonId)) {
+        const options = query('#options1')[0];
+        customFilters.forEach(function (container) {
+          domConstruct.place(container, options, 'last');
+        });
+
         query('.proteinOptions').style('display', 'none');
         query('.segmentOptions').style('display', 'block');
       } else {
+        const options = query('#options2')[0];
+        customFilters.forEach(function (container) {
+          domConstruct.place(container, options, 'last');
+        });
+
         query('.segmentOptions').style('display', 'none');
         query('.proteinOptions').style('display', 'block');
       }
 
+      // Specific monkeypox option
+      if (taxonId === '10244') {
+        /*storeBuilder('sequence_feature', 'additional_metadata', condition).then(lang.hitch(this, (store) => {
+          let metadataOptions = [];
+          for (let item of store.data) {
+            metadataOptions.push({
+              value: item.name,
+              label: item.name
+            });
+          }
+
+          this.additionalMetadataNode.addOption(metadataOptions);
+        }));*/
+
+        query('.monkeypox').style('display', 'block');
+      } else {
+        query('.monkeypox').style('display', 'none');
+      }
+
       query('.sfvtOptions').style('display', 'block');
       query('#pathogenInfoDiv').style('display', 'none');
+    },
+
+    buildDefaultColumns: function () {
+      const taxonId = this.pathogenGroupNode.value;
+
+      // Reorganize table columns for Monkeypox virus
+      return taxonId === '10244' ? '-source_strain,additional_metadata' : '';
     },
 
     buildFilter: async function () {
@@ -248,6 +335,15 @@ define([
       } else if (sequenceFeatureTypeValue.length > 1) {
         filterArr.push(`or(${sequenceFeatureTypeValue.map(v => `eq(sf_category,"${sanitizeInput(v)}")`)})`);
         sfQueryArr.push(`in(sf_category,(${sequenceFeatureTypeValue.join(',')}))`);
+      }
+
+      const additionalMetadataValue = this.additionalMetadataNode.get('value');
+      if (additionalMetadataValue.length === 1) {
+        filterArr.push(`eq(additional_metadata,"${TextInputEncoder(sanitizeInput(additionalMetadataValue[0]))}")`);
+        sfQueryArr.push(`eq(additional_metadata,${TextInputEncoder(sanitizeInput(additionalMetadataValue[0]))})`);
+      } else if (additionalMetadataValue.length > 1) {
+        filterArr.push(`or(${additionalMetadataValue.map(v => `eq(additional_metadata,"${TextInputEncoder(sanitizeInput(v))}")`)})`);
+        sfQueryArr.push(`in(additional_metadata,(${additionalMetadataValue.join(',')}))`);
       }
 
       /*const startValue = parseInt(this.aaCoordinatesStartNode.get('value'));

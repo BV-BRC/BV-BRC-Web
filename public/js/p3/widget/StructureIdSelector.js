@@ -16,7 +16,7 @@ define([
     apiServiceUrl: window.App.dataServiceURL,
     promptMessage: 'Structure ID.',
     missingMessage: 'Specify protein structure ID.',
-    placeHolder: 'e.g. 1AH5',
+    placeHolder: 'e.g. 1XFC',
     searchAttr: 'pdb_id',
     queryExpr: '${0}*',
     queryFilter: '',
