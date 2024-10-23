@@ -31,75 +31,110 @@ const load_scripts = [
 <% } %>
 
 <script type="text/javascript">
-  // LinkedIn Feed
-  let $linkedInFeedElm = $("#linkedin-feed");
+  $(window).on('load', function () {
+    // LinkedIn Feed
+    let $linkedInFeedElm = $("#linkedin-feed");
 
-  // Fetch the data only if feed element exists in the page
-  if ($linkedInFeedElm.length) {
-    $.getJSON({
-      url: '/linkedin/posts/?count=8',
-      success: function (data) {
-        for (let post of data.elements) {
-          if (post.id && post.id.includes('share')) {
-            $("#linkedin-slides").append(
-              `<li class="slide" style="height: 100%;">
-                  <iframe src="https://www.linkedin.com/embed/feed/update/${post.id}" style="height: 100%;width: 100%;"/>
-              </li>`
-            );
-            $("#linkedin-dot-navigation").append(
-              `<div class="dot"></div>`
-            );
+    // Fetch the data only if feed element exists in the page
+    if ($linkedInFeedElm.length) {
+      $.getJSON({
+        url: '/linkedin/posts/?count=8',
+        success: function (data) {
+          for (let post of data.elements) {
+            if (post.id && post.id.includes('share')) {
+              $("#linkedin-slides").append(
+                      `<li class="slide" style="height: 100%;">
+                         <div class="iframe-container" style="position: relative; width: 100%; height: 100%;">
+                           <div class="iframe-placeholder"
+                                style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1; transition: opacity 0.3s ease;">
+                             <p>Loading the news...</p>
+                           </div>
+                           <iframe data-src="https://www.linkedin.com/embed/feed/update/${post.id}"
+                                   style="height: 100%; width: 100%; opacity: 0; border: none; transition: opacity 0.3s ease;"
+                                   loading="lazy"></iframe>
+                         </div>
+                       </li>`
+              );
+              $("#linkedin-dot-navigation").append(
+                      `<div class="dot" role="button" aria-selected="false"></div>`
+              );
+            }
           }
+
+          initializeSlide($('#linkedin-slides .slide'), $("#linkedin-dot-navigation .dot"));
+        },
+        error: function (data) {
+          console.log(data);
         }
+      });
+    }
 
-        initializeSlide($('#linkedin-slides .slide'), $("#linkedin-dot-navigation .dot"));
-      },
-      error: function( data ) {
-        console.log(data);
-      }
-    });
-  }
-
-  // News & Announcements Carousel
-  $.getJSON("https://www.bv-brc.org/docs/_static/carousel.json", function (feed) {
+    // News & Announcements Carousel
+    $.getJSON("https://www.bv-brc.org/docs/_static/carousel.json", function (feed) {
       for (var i = 0; i < feed.length; i++) {
-          var link = feed[i].link;
-          var title = feed[i].title;
-          var desc = feed[i].desc;
-          var word_limit = (feed[i].img == "") ? 60 : 20
-          var descSnippit = desc.split(" ", word_limit).join(" ");
-          var img = feed[i].img;
-          $("#announcements-slides").append(
-              `<li class="slide">
+        var link = feed[i].link;
+        var title = feed[i].title;
+        var desc = feed[i].desc;
+        var word_limit = (feed[i].img == "") ? 60 : 20
+        var descSnippit = desc.split(" ", word_limit).join(" ");
+        var img = feed[i].img;
+        $("#announcements-slides").append(
+          `<li class="slide">
                   <a href="${link}" class="feed-link">
                       <h4 class="feed-title">${title}</h4>
                   </a>
                   <p class="feed-description">${descSnippit} ... <a href="${link}">read more</a></p>
-                  <img src="${img}" class="feed-img">
+                  <img src="${img}" class="feed-img"  loading="lazy">
               </li>`
-          );
-          $("#announcements-dot-navigation").append(
-              `<div class="dot"></div>`
-          );
+        );
+        $("#announcements-dot-navigation").append(
+          `<div class="dot" role="button" aria-selected="false"></div>`
+        );
       }
 
       initializeSlide($('#announcements-slides .slide'), $("#announcements-dot-navigation .dot"));
+    });
   });
 
   function initializeSlide($slides, $dots) {
-    $slides.first().addClass("showing");
-    $dots.first().addClass("selected");
+    $slides.first().addClass("showing current-slide");
+    $dots.first().addClass("selected current-dot").attr('aria-selected', 'true');
 
-    var index = 0;
-    $slides.eq(0).addClass("current-slide");
-    $dots.eq(0).addClass("current-dot");
+    let index = 0;
+    loadSlide($slides.eq(index));
+
     $dots.click(function () {
-      $dots.eq(index).removeClass("current-dot");
+      $dots.eq(index).removeClass("current-dot").attr('aria-selected', 'false');
       $slides.eq(index).removeClass("current-slide");
-      $(this).addClass("current-dot");
+
+      $(this).addClass("current-dot").attr('aria-selected', 'true');
       index = $(this).index();
+
       $slides.eq(index).addClass("current-slide");
+
+      loadSlide($slides.eq(index));
     });
+  }
+
+  function loadSlide(slide) {
+    const $iframeContainer = slide.find('.iframe-container');
+    const $iframe = $iframeContainer.find('iframe');
+    const $placeholder = $iframeContainer.find('.iframe-placeholder');
+
+    // Only load the iframe if it's not already loaded
+    if ($iframe.length && !$iframe.attr('src')) {
+      const dataSrc = $iframe.attr('data-src');
+
+      // Bind the load event before setting the src
+      $iframe.on('load', function () {
+        $placeholder.fadeOut(300, function () {
+          $iframe.css('opacity', 1);
+        });
+      });
+
+      $iframe.attr('src', dataSrc);
+      $iframe.css('opacity', 0); // Start hidden
+    }
   }
 </script>
 
