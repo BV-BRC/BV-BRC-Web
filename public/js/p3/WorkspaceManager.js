@@ -116,6 +116,11 @@ define([
         formats: ['.nwk'],
         description: 'Phylogenetic tree file.'
       },
+      pdb: {
+        label: 'PDB',
+        formats: ['.pdb'],
+        description: 'A pdb file describing a molecular structure.'
+      },
       pdf: {
         label: 'PDF',
         formats: ['.pdf'],
