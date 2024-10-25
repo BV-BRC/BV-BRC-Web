@@ -12,6 +12,7 @@ define([
       apiServiceUrl: window.App.dataAPI,
 
       postCreate: function () {
+        console.log('window.App ', window.App);
         // Call the inherited methods from the Base class
         this.inherited(arguments);
 
