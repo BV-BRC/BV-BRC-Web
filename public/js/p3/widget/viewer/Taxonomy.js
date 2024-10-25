@@ -97,7 +97,8 @@ define([
 
         // SFVT
         if (this.taxonomy.lineage_names.includes('Influenza A virus') ||
-          this.taxonomy.lineage_names.includes('Monkeypox virus')) {
+          this.taxonomy.lineage_names.includes('Monkeypox virus') ||
+          this.taxonomy.lineage_names.includes('Dengue virus')) {
           if (!this.sfvt) {
             this.viewer.addChild(this.sfvt);
           }
