@@ -35,11 +35,12 @@ define([
           containerType: 'copilot',  // Specify container type if needed
           facetFields: [],
           dataModel: 'llm',
-          style: 'height: 100%; width: 100%;'
+          style: 'height: 100%; width: 100%;',
+          region: 'center'
         }, containerNode);
 
         // Start the GridContainer to render the content
-        this.gridContainer.startup();
+       // this.gridContainer.startup();
       },
 
       _getGridConstructor: function () {
