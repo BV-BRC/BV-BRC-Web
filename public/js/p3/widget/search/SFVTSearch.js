@@ -1,10 +1,10 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/store/Memory', 'dojo/text!./templates/SFVTSearch.html', 'dojo/query',
-  './TextInputEncoder', './SearchBase', './FacetStoreBuilder', './PathogenGroups', '../../util/PathJoin', 'dojo/request/xhr',
+  './TextInputEncoder', './SearchBase', './FacetStoreBuilder', '../../store/SFVTViruses', '../../util/PathJoin', 'dojo/request/xhr',
   'dijit/Dialog', 'dojo/on', 'dojo/when', 'dojo/dom-construct'
 ], function (
   declare, lang, Memory, template, query,
-  TextInputEncoder, SearchBase, storeBuilder, pathogenGroupStore, PathJoin, xhr,
+  TextInputEncoder, SearchBase, storeBuilder, SFVTViruses, PathJoin, xhr,
   Dialog, on, when, domConstruct
 ) {
 
@@ -20,10 +20,6 @@ define([
     'M2': '7',
     'NS1': '8',
     'NS2': '8'
-  };
-
-  const otherPathogenGroups = {
-    '10244': 'Monkeypox virus'
   };
 
   function sanitizeInput(str) {
@@ -96,15 +92,23 @@ define([
       ]);
       storeBuilder('sequence_feature', 'taxon_id').then(lang.hitch(this, (store) => {
         // Display correct names based on taxon id
-        for (let item of store.data) {
-          const taxon = pathogenGroupStore.data.find(pathogen => pathogen.id == item.id);
-          if (taxon) {
-            item.name = taxon.name;
-          } else if (otherPathogenGroups[item.id]) {
-            item.name = otherPathogenGroups[item.id];
+        store.data.forEach(item => {
+          const virus = SFVTViruses.get(item.id);
+          if (virus) {
+            item.name = virus.name;
+          } else {
+            store.remove(item.id);
           }
-        }
+        });
+
         store.data.sort((a, b) => a.name.localeCompare(b.name));
+
+        // Update the index to reflect the new order of the data
+        store.index = {}; // Reset the index
+        store.data.forEach((item, index) => {
+          store.index[item.id] = index; // Map each id to its new index
+        });
+
         this.pathogenGroupNode.store = store;
         if (this.defaultTaxonId) {
           this.pathogenGroupNode.set('value', this.defaultTaxonId);

@@ -1,10 +1,10 @@
 define([
   'dojo/_base/declare', 'dojo/_base/Deferred', 'dojo/request', 'dojo/_base/lang', 'dojo/topic',
-  './_GenomeList', '../Phylogeny', '../../util/PathJoin',
+  './_GenomeList', '../Phylogeny', '../../util/PathJoin', '../../store/SFVTViruses',
   '../TaxonomyTreeGridContainer', '../TaxonomyOverview', '../../util/QueryToEnglish'
 ], function (
   declare, Deferred, xhr, lang, Topic,
-  GenomeList, Phylogeny, PathJoin,
+  GenomeList, Phylogeny, PathJoin, SFVTViruses,
   TaxonomyTreeGrid, TaxonomyOverview, QueryToEnglish
 ) {
   return declare([GenomeList], {
@@ -96,9 +96,7 @@ define([
         }
 
         // SFVT
-        if (this.taxonomy.lineage_names.includes('Influenza A virus') ||
-          this.taxonomy.lineage_names.includes('Monkeypox virus') ||
-          this.taxonomy.lineage_names.includes('Dengue virus')) {
+        if (this.taxonomy.lineage_ids.some(id => SFVTViruses.get(id))) {
           if (!this.sfvt) {
             this.viewer.addChild(this.sfvt);
           }
