@@ -85,15 +85,28 @@
                             </div>
                         </div>
                     </div>
-                    <div id="cladeType" class="monkeypox customFilter" style="flex: 1; box-sizing: border-box;">
+                    <div id="cladeType" class="customFilter" style="flex: 1; box-sizing: border-box;">
                         <div class="headerrow ">
                             <label class="appBoxLabel">Clade</label>
                         </div>
-                        <div class="appRow monkeypox">
+                        <div class="appRow">
                             <div class="appFieldLong">
                                 <select data-dojo-type="dojox/form/CheckedMultiSelect" name="additional_metadata"
                                         data-dojo-props="disabled:false"
                                         data-dojo-attach-point="additionalMetadataNode" multiple
+                                        style="height: 100%"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="subtype" class="customFilter" style="flex: 1; box-sizing: border-box;">
+                        <div class="headerrow">
+                            <label class="appBoxLabel">Subtype</label>
+                        </div>
+                        <div class="appRow">
+                            <div class="appFieldLong">
+                                <select data-dojo-type="dojox/form/CheckedMultiSelect" name="subtype"
+                                        data-dojo-props="disabled:false"
+                                        data-dojo-attach-point="subtypeNode" multiple
                                         style="height: 100%"></select>
                             </div>
                         </div>
