@@ -55,7 +55,6 @@ define([
     },
 
     onPdbIdChange: function (evt) {
-      console.log('pdb id change');
       this.pdb_preview.set('disabled', !this.pdb_list.get('displayedValue'));
     },
 
@@ -72,7 +71,6 @@ define([
     },
 
     onDropdownChange: function (evt) {
-      console.log("this is a drop down change")
       console.log(this.smiles_dropdown.value)
     },
 
@@ -88,7 +86,6 @@ define([
 
     onInputChange: function (evt) {
       // protein radio buttons
-      console.log( "one " + this.protein_databank_selection.checked + "two " + "three " + this.user_pdb_file.checked);
       if (this.protein_databank_selection.checked) {
         // set display logic
         dojo.style(this.block_pdb_list, "display", "block");
@@ -146,14 +143,12 @@ define([
       }
       if (values.protein_input === "input_pdb")
       {
-        // submit_values.protein_input = this.protein_databank_selection.value
         submit_values.protein_input_type = values.protein_input
         submit_values.input_pdb = [values.pdb_id]
       }
       // repeat for pdb files
       else if (values.protein_input === "user_pdb_file")
       {
-        // submit_values.protein_input = this.protein_databank_selection.value
         submit_values.protein_input_type = values.protein_input
         submit_values.user_pdb_file = Array.isArray(values.user_pdb) 
           ? values.user_pdb 
