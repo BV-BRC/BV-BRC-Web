@@ -52,9 +52,9 @@
         name="pdb_preview" disabled label="Preview PDB" data-dojo-attach-event="onClick:onPdbPreview">
       </div>
       <!-- PDB File Upload Block -->
-       <div data-dojo-attach-point="block_pdb_upload" style="display: block;">
-        <!-- <label>Select Protein Databank File</label><br> -->
-        <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_pdb" style="width:65%;"
+       <!-- <div data-dojo-attach-point="block_pdb_upload" style="display: block;"> -->
+
+        <!-- <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_pdb" style="width:65%;"
              data-dojo-attach-event="onChange:onPbdFileUpload"
              data-dojo-attach-point="user_pdb" value="user_pdb"
              data-dojo-props="type:['txt','unspecified', 'pdb'],multi:false,promptMessage:'Select a PDB file for the protein of interest',missingMessage:'Protein input is required',placeHolder:'PDB data file'"
@@ -63,8 +63,24 @@
              <input id="${id}_user_pdb_preview" data-dojo-type="dijit/form/Button" data-dojo-attach-point="user_pdb_preview"
              name="user_pdb_preview" disabled label="Preview Structure" data-dojo-attach-event="onClick:onPdbPreviewFileUpload">
             </div>
-      </div>
+      </div> -->
+<!-- PDB File Upload Block -->
+      <div data-dojo-attach-point="block_pdb_upload" style="display: block;">
+        <div style="display: flex; align-items: center;">
+          <!-- WorkspaceObjectSelector -->
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_pdb" style="width:65%;"
+              data-dojo-attach-event="onChange:onPbdFileUpload"
+              data-dojo-attach-point="user_pdb" value="user_pdb"
+              data-dojo-props="type:['txt','unspecified', 'pdb'],multi:false,promptMessage:'Select a PDB file for the protein of interest',missingMessage:'Protein input is required',placeHolder:'PDB data file'">
+          </div>
 
+          <!-- Preview Button Next to the Selector -->
+          <input id="${id}_user_pdb_preview" data-dojo-type="dijit/form/Button" data-dojo-attach-point="user_pdb_preview"
+                name="user_pdb_preview" disabled label="Preview Structure" data-dojo-attach-event="onClick:onPdbPreviewFileUpload"
+                style="margin-left: 10px;">
+        </div>
+      </div>
+    </div>
       <div id="annotationBox" style="width:97%;" class="appBox appShadow">
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
