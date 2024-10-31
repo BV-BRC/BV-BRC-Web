@@ -17,29 +17,70 @@
           href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.</p>
       </p>
     </div>
-    <div style="width:85%; margin:auto" class="formFieldsContainer">
-      <div id="annotationBox" style="width:97%;" class="appBox appShadow">
-        <div class="headerrow">
-          <div style="width:85%;display:inline-block;">
-            <label class="appBoxLabel">PDB Selection</label>
-            <div name="pdb-selection" class="infobox iconbox infobutton dialoginfo">
-              <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+      <div style="width:85%; margin:auto" class="formFieldsContainer">
+        <div id="annotationBox" style="width:97%;" class="appBox appShadow">
+          <div class="headerrow">
+            <div style="width:85%;display:inline-block;">
+              <label class="appBoxLabel">Protein Selection</label>
+              <div name="pdb-selection" class="infobox iconbox infobutton dialoginfo">
+                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="appRow">
-          <div class="appFieldLong">
-            <label>PDB Id</label><br>
-            <div data-dojo-type="p3/widget/StructureIdSelector" data-dojo-attach-point="pdb_list" name="pdb_id"
-              style="width:65%" data-dojo-attach-event="onChange:onPdbIdChange" required="true" data-dojo-props="">
+          <br>
+      <div class="appRow">
+        <!-- Radio Buttons -->
+        <input id="${id}_protein_databank_selection" type="radio" data-dojo-type="dijit/form/RadioButton"
+               data-dojo-attach-point="protein_databank_selection" name="protein_input" value="input_pdb"
+               data-dojo-attach-event="onChange:onProteinInputChange" checked />
+               <!-- data-dojo-attach-event="onChange:onInputChange" checked /> -->
+        <!-- <label for="${id}_protein_databank_selection">Protein Databank Archive</label> -->
+        <label for="${id}_protein_databank_selection">Precomputed Structures</label>      
+        <input id="${id}_user_pdb_file" type="radio" data-dojo-type="dijit/form/RadioButton"
+               data-dojo-attach-point="user_pdb_file" name="protein_input" value="user_pdb_file"
+               data-dojo-attach-event="onChange:onInputChange">
+        <label for="${id}_user_pdb_file">Upload a PDB File</label>
+      </div>
+
+      <!--  Protein Databank Selection Block  -->
+      <div data-dojo-attach-point="block_pdb_list" style="display: block;">
+        <div data-dojo-type="p3/widget/StructureIdSelector" data-dojo-attach-point="pdb_list" name="pdb_id"
+        style="width:50%" data-dojo-attach-event="onChange:onPdbIdChange" required="false" data-dojo-props="">
+      </div>
+
+      <input id="${id}_pdb_preview" data-dojo-type="dijit/form/Button" data-dojo-attach-point="pdb_preview"
+        name="pdb_preview" disabled label="Preview PDB" data-dojo-attach-event="onClick:onPdbPreview">
+      </div>
+      <!-- PDB File Upload Block -->
+       <!-- <div data-dojo-attach-point="block_pdb_upload" style="display: block;"> -->
+
+        <!-- <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_pdb" style="width:65%;"
+             data-dojo-attach-event="onChange:onPbdFileUpload"
+             data-dojo-attach-point="user_pdb" value="user_pdb"
+             data-dojo-props="type:['txt','unspecified', 'pdb'],multi:false,promptMessage:'Select a PDB file for the protein of interest',missingMessage:'Protein input is required',placeHolder:'PDB data file'"
+             style="display:inline-block">
             </div>
-
-            <input id="${id}_pdb_preview" data-dojo-type="dijit/form/Button" data-dojo-attach-point="pdb_preview"
-              name="pdb_preview" disabled label="Preview PDB" data-dojo-attach-event="onClick:onPdbPreview">
-
+             <input id="${id}_user_pdb_preview" data-dojo-type="dijit/form/Button" data-dojo-attach-point="user_pdb_preview"
+             name="user_pdb_preview" disabled label="Preview Structure" data-dojo-attach-event="onClick:onPdbPreviewFileUpload">
+            </div>
+      </div> -->
+<!-- PDB File Upload Block -->
+      <div data-dojo-attach-point="block_pdb_upload" style="display: block;">
+        <div style="display: flex; align-items: center;">
+          <!-- WorkspaceObjectSelector -->
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_pdb" style="width:65%;"
+              data-dojo-attach-event="onChange:onPbdFileUpload"
+              data-dojo-attach-point="user_pdb" value="user_pdb"
+              data-dojo-props="type:['txt','unspecified', 'pdb'],multi:false,promptMessage:'Select a PDB file for the protein of interest',missingMessage:'Protein input is required',placeHolder:'PDB data file'">
           </div>
+
+          <!-- Preview Button Next to the Selector -->
+          <input id="${id}_user_pdb_preview" data-dojo-type="dijit/form/Button" data-dojo-attach-point="user_pdb_preview"
+                name="user_pdb_preview" disabled label="Preview Structure" data-dojo-attach-event="onClick:onPdbPreviewFileUpload"
+                style="margin-left: 10px;">
         </div>
       </div>
+    </div>
       <div id="annotationBox" style="width:97%;" class="appBox appShadow">
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
@@ -109,7 +150,8 @@
             <div data-dojo-attach-point="output_path" data-dojo-type="p3/widget/WorkspaceObjectSelector"
               name="output_path" style="width:75%" required="true"
               data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Docking Results',missingMessage:'Output Folder must be selected.'"
-              data-dojo-attach-event="onChange:onOutputPathChange"></div>
+              data-dojo-attach-event="onChange:onOutputPathChange">
+            </div>
           </div>
         </div>
 
