@@ -90,6 +90,17 @@ define([
           label: 'Clade II'
         }
       ]);
+
+      // Initialize selected taxon id
+      const selectedPathogenGroup = this.state.pathogen_group;
+      let selectedTaxonId;
+      if (selectedPathogenGroup) {
+        const pathogen = SFVTViruses.data.find(entry => entry.name.toLowerCase() === selectedPathogenGroup.toLowerCase());
+        selectedTaxonId = pathogen ? pathogen.id : this.defaultTaxonId;
+      } else {
+        selectedTaxonId = this.defaultTaxonId;
+      }
+
       storeBuilder('sequence_feature', 'taxon_id').then(lang.hitch(this, (store) => {
         // Display correct names based on taxon id
         store.data.forEach(item => {
@@ -110,8 +121,8 @@ define([
         });
 
         this.pathogenGroupNode.store = store;
-        if (this.defaultTaxonId) {
-          this.pathogenGroupNode.set('value', this.defaultTaxonId);
+        if (selectedTaxonId) {
+          this.pathogenGroupNode.set('value', selectedTaxonId);
         }
       }));
 
@@ -127,24 +138,55 @@ define([
 
       // Retrieve product values for gene
       let self = this;
-      when(xhr.post(PathJoin(window.App.dataAPI, '/sequence_feature/'), {
-        handleAs: 'json',
-        headers: {
-          Accept: 'application/solr+json',
-          'Content-Type': 'application/solrquery+x-www-form-urlencoded',
-          'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
-        },
-        data: `q=taxon_id:${self.proteinOptions.join(' OR ')}&fl=gene,product&group=true&group.field=gene`
-      }), function (response) {
-        if (response && response.grouped && response.grouped.gene) {
-          response.grouped.gene.groups.forEach(group => {
-            const gene = group.groupValue;
-            const product = group.doclist.docs[0].product;
-            self.mpoxGeneProductMapping[gene] = product;
-          });
+      const sfURL = PathJoin(window.App.dataAPI, '/sequence_feature/');
+      const data = `q=taxon_id:${self.proteinOptions.join(' OR ')}&fl=gene,product&group=true&group.field=gene`;
+      if (selectedTaxonId === this.defaultTaxonId) {
+        when(xhr.post(sfURL, {
+          handleAs: 'json',
+          headers: {
+            Accept: 'application/solr+json',
+            'Content-Type': 'application/solrquery+x-www-form-urlencoded',
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
+          },
+          data: data
+        }), function (response) {
+          if (response && response.grouped && response.grouped.gene) {
+            response.grouped.gene.groups.forEach(group => {
+              const gene = group.groupValue;
+              const product = group.doclist.docs[0].product;
+              self.mpoxGeneProductMapping[gene] = product;
+            });
+          }
+        });
+      } else {
+        // Make a sync call to retrieve protein data
+        let xhr = new XMLHttpRequest();
+        xhr.open('POST', sfURL, false);
+        xhr.setRequestHeader('Accept', 'application/solr+json');
+        xhr.setRequestHeader('Content-Type', 'application/solrquery+x-www-form-urlencoded');
+        xhr.setRequestHeader('X-Requested-With', 'null');
+        if (window.App.authorizationToken) {
+          xhr.setRequestHeader('Authorization', window.App.authorizationToken);
         }
-      });
+        xhr.send(data);
+
+        // Check if the request was successful
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const response = JSON.parse(xhr.responseText);
+
+          // Check if the response is valid and has the desired data
+          if (response && response.grouped && response.grouped.gene) {
+            response.grouped.gene.groups.forEach(function (group) {
+              const gene = group.groupValue;
+              const product = group.doclist.docs[0].product;
+              self.mpoxGeneProductMapping[gene] = product;
+            });
+          }
+        } else {
+          console.error('Request failed with status:', xhr.status, xhr.statusText);
+        }
+      }
     },
 
     onPathogenChange: function () {
