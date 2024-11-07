@@ -1,10 +1,10 @@
 define([
-    'dojo/_base/declare', 'dojo/dom-construct', 'dojo/on', 'dijit/layout/ContentPane', 'dijit/form/Textarea', 'dijit/form/Button', 'dojo/topic'
+    'dojo/_base/declare', 'dojo/dom-construct', 'dojo/on', 'dijit/layout/ContentPane', 'dijit/form/Textarea', 'dijit/form/Button', 'dojo/topic', 'dojo/_base/lang'
   ], function (
-    declare, domConstruct, on, ContentPane, Textarea, Button, topic
+    declare, domConstruct, on, ContentPane, Textarea, Button, topic, lang
   ) {
     return declare([ContentPane], {
-      copilotQuery: null,
+      copilotApi: null,
 
       constructor: function(args) {
         declare.safeMixin(this, args);
@@ -34,17 +34,19 @@ define([
           label: 'Submit',
           style: 'height: 30px; align-self: center;', // Added align-self: center to vertically center the button
           onClick: function() {
-            if (this.copilotQuery) {
+            if (this.copilotApi) {
               var inputText = this.textArea.get('value');
-              this.copilotQuery.submitQuery(inputText).then(function(response) {
+              var _self = this;
+              this.copilotApi.submitQuery(inputText).then(function(response) {
                 // Publish the query data to the 'query' topic
-                topic.publish('CopilotQuery', {
+                topic.publish('CopilotApi', {
                   input: inputText,
                   response: response
                 });
+                _self.textArea.set('value', '');
               });
             } else {
-              console.error('CopilotQuery widget not initialized');
+              console.error('CopilotApi widget not initialized');
             }
           }.bind(this)
         });
@@ -67,6 +69,15 @@ define([
             this.textArea.style.overflowY = 'hidden'; // Hide scroll bar until max height is reached
           }
         }.bind(this));
+
+        // Handle Enter key press
+        on(this.textArea, 'keypress', lang.hitch(this, function(evt) {
+          // Check if Enter was pressed without Shift key
+          if (evt.keyCode === 13 && !evt.shiftKey) {
+            evt.preventDefault(); // Prevent default Enter behavior
+            this.submitButton.onClick(); // Trigger the submit button's click handler
+          }
+        }));
       }
     });
   });

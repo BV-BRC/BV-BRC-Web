@@ -379,11 +379,17 @@
             dropdownButton.setAttribute('data-dojo-type', 'dijit/form/DropDownButton');
 
             var span = document.createElement('span');
-            span.textContent = 'COPILOT';
+            span.textContent = 'PATRIC';
             dropdownButton.appendChild(span);
 
             var tooltipDialog = document.createElement('div');
             tooltipDialog.setAttribute('data-dojo-type', 'p3/widget/TooltipDialog');
+
+            var menuHeader = document.createElement('div');
+            menuHeader.className = 'menuHeader';
+            menuHeader.textContent = 'AI Assistant';
+            menuHeader.style.width = '100px';
+            tooltipDialog.appendChild(menuHeader);
 
             var link = document.createElement('a');
             link.className = 'TopMenuLink';
