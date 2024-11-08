@@ -19,9 +19,10 @@ define([
 ) {
     return declare([_WidgetBase, _TemplatedMixin], {
         templateString: '<div class="chat-session-card" data-dojo-attach-point="containerNode">' +
-                         '<div class="session-id" data-dojo-attach-point="sessionIdNode"></div>' +
-                         '<div class="session-date" data-dojo-attach-point="dateNode"></div>' +
-                       '</div>',
+            '<div class="session-title" data-dojo-attach-point="titleNode"></div>' +
+            '<div class="session-id" data-dojo-attach-point="sessionIdNode"></div>' +
+            '<div class="session-date" data-dojo-attach-point="dateNode"></div>' +
+        '</div>',
 
         baseClass: 'chat-session-card',
         session: null,
@@ -47,12 +48,23 @@ define([
                     this.dateNode.style.cssText = 'font-size: 0.9em;';
                 }
 
+                // Set title
+                if (this.session.title) {
+                    this.titleNode.innerHTML = this.session.title;
+                    this.titleNode.style.cssText = 'font-weight: bold; margin-bottom: 5px;';
+                }
+
                 // Add click handler
                 on(this.containerNode, 'click', lang.hitch(this, function() {
                     // topic.publish('ChatSession:Selected', this.session);
                     if (this.copilotApi) {
-                        this.copilotApi.getSessionMessages(this.session.session_id).then(function(messages) {
-                            console.log('Session messages:', messages);
+                        var _self = this;
+                        this.copilotApi.getSessionMessages(_self.session.session_id).then(function(messages) {
+                            console.log('Session messages:', messages.messages);
+                            topic.publish('ChatSession:Selected', {
+                                sessionId: _self.session.session_id,
+                                messages: messages.messages[0].messages
+                            });
                         });
                     } else {
                         console.error('CopilotApi not initialized');
@@ -66,6 +78,11 @@ define([
                 on(this.containerNode, 'mouseout', function() {
                     this.style.backgroundColor = '#f0f0f0';
                 });
+
+                // generate a title from the first message
+                if (this.session.messages && this.session.messages.length > 0) {
+                    this.titleNode.innerHTML = this.session.messages[0].content.substring(0, 20);
+                }
             }
         }
     });

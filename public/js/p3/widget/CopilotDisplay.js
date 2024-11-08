@@ -6,6 +6,7 @@ define([
   return declare([ContentPane], {
 
     copilotApi: null,
+    messages: [],
 
     constructor: function(args) {
       declare.safeMixin(this, args);
@@ -21,27 +22,28 @@ define([
       }, this.containerNode);
 
       // Subscribe to the 'query' topic
-      topic.subscribe('CopilotApi', lang.hitch(this, 'onQueryResult'));
+      topic.subscribe('RefreshSessionDisplay', lang.hitch(this, 'showMessages'));
       topic.subscribe('CopilotApiError', lang.hitch(this, 'onQueryError'));
+      topic.subscribe('ChatSession:Selected', lang.hitch(this, 'onSessionSelected'));
     },
 
-    onQueryResult: function() {
-      console.log('onQueryResult');
-      if (this.copilotApi) {
-        var result = this.copilotApi.getStoredResult();
-        // if (result && result.choices && result.choices.length > 0) {
-        if (result && result.response) {
-          var content = result.response.content;
-          domConstruct.empty(this.resultContainer);
-          domConstruct.create('pre', {
-            innerHTML: content,
-            style: 'white-space: pre-wrap; word-wrap: break-word;'
-          }, this.resultContainer);
-        } else {
-          console.error('Invalid result structure');
-        }
-      } else {
-        console.error('CopilotApi not initialized');
+    showMessages: function(messages) {
+      if (messages.length) {
+        domConstruct.empty(this.resultContainer);
+        console.log('show messages', messages);
+        // Create a message element for each message
+        messages.forEach(lang.hitch(this, function(message) {
+            var messageDiv = domConstruct.create('div', {
+                class: 'message ' + message.role,
+                style: 'margin-bottom: 10px; padding: 10px; border-radius: 5px; ' +
+                        (message.role === 'user' ? 'background-color: #e6f3ff;' : 'background-color: #f5f5f5;')
+            }, this.resultContainer);
+
+            domConstruct.create('div', {
+                innerHTML: message.content,
+                style: 'white-space: pre-wrap; word-wrap: break-word;'
+            }, messageDiv);
+        }));
       }
     },
 
@@ -52,6 +54,28 @@ define([
         innerHTML: 'An error occurred while processing your request. Please try again later.',
         style: 'color: red; padding: 10px;'
       }, this.resultContainer);
+    },
+
+    onSessionSelected: function(data) {
+      console.log('onSessionSelected CopilotDisplay', data);
+      const sessionId = data.sessionId;
+      const messages = data.messages;
+
+      domConstruct.empty(this.resultContainer);
+
+      // Create a message element for each message
+      messages.forEach(lang.hitch(this, function(message) {
+            var messageDiv = domConstruct.create('div', {
+                class: 'message ' + message.role,
+                style: 'margin-bottom: 10px; padding: 10px; border-radius: 5px; ' +
+                        (message.role === 'user' ? 'background-color: #e6f3ff;' : 'background-color: #f5f5f5;')
+            }, this.resultContainer);
+
+            domConstruct.create('div', {
+                innerHTML: message.content,
+                style: 'white-space: pre-wrap; word-wrap: break-word;'
+            }, messageDiv);
+        }));
     }
   });
 });

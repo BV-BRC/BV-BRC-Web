@@ -5,6 +5,7 @@ define([
   ) {
     return declare([ContentPane], {
       copilotApi: null,
+      new_chat: true,
 
       constructor: function(args) {
         declare.safeMixin(this, args);
@@ -37,14 +38,26 @@ define([
             if (this.copilotApi) {
               var inputText = this.textArea.get('value');
               var _self = this;
-              this.copilotApi.submitQuery(inputText).then(function(response) {
+
+              this.copilotApi.submitQuery(inputText, this.sessionId).then(lang.hitch(this, function(response) {
                 // Publish the query data to the 'query' topic
-                topic.publish('CopilotApi', {
-                  input: inputText,
-                  response: response
-                });
+                this.chatStore.addMessages([
+                  {
+                    role: 'user',
+                    content: inputText
+                  },
+                  {
+                    role: 'assistant',
+                    content: response.response.content
+                  }
+                ]);
                 _self.textArea.set('value', '');
-              });
+                this.displayWidget.showMessages(this.chatStore.query());
+                if (_self.new_chat) {
+                  _self.new_chat = false;
+                  topic.publish('reloadUserSessions');
+                }
+              }));
             } else {
               console.error('CopilotApi widget not initialized');
             }

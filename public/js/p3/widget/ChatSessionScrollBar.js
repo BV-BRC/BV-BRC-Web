@@ -10,7 +10,7 @@ define([
   declare, ContentPane, domConstruct, on, lang, topic, ChatSessionScrollCard
 ) {
   return declare([ContentPane], {
-    sessions: [], // Array to hold chat session data
+    sessions_list: [], // Array to hold chat session data
 
     constructor: function(args) {
       this.inherited(arguments);
@@ -25,10 +25,9 @@ define([
         style: 'width: 100%; height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px;'
       }, this.containerNode);
 
+      this.getSessions();
 
-      topic.subscribe('CopilotApiSessions', lang.hitch(this, function(sessions) {
-        this.setSessions(JSON.parse(sessions.sessions));
-      }));
+      topic.subscribe('reloadUserSessions', lang.hitch(this, 'getSessions'));
     },
 
     renderSessions: function() {
@@ -36,7 +35,7 @@ define([
         domConstruct.empty(this.scrollContainer);
 
         // Create session cards
-        this.sessions.sessions.forEach(function(session) {
+        this.sessions_list.forEach(function(session) {
           var sessionCard = new ChatSessionScrollCard({
             session: session,
             copilotApi: this.copilotApi
@@ -46,13 +45,19 @@ define([
     },
 
     addSession: function(session) {
-      this.sessions.push(session);
+      this.sessions_list.push(session);
       this.renderSessions();
     },
 
     setSessions: function(sessions) {
-      this.sessions = sessions;
+      this.sessions_list = sessions;
       this.renderSessions();
+    },
+
+    getSessions: function() {
+      this.copilotApi.getUserSessions().then(lang.hitch(this, function(sessions) {
+        this.setSessions(sessions);
+      }));
     }
   });
 });
