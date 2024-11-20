@@ -36,6 +36,7 @@
     "httpntlm": "^1.8.13",
     "jbrowse": "github:GMOD/jbrowse#759433708fe59e2c0a09e781cf93dc7ec4670461",
     "jquery": "^3.7.1",
+    "markdown-it": "^14.1.0",
     "morgan": "^1.10.0",
     "MultiBigWig": "github:BV-BRC/multibigwig#master",
     "nconf": "^0.12.1",

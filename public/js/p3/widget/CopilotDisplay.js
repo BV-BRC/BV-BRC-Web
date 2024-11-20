@@ -1,12 +1,15 @@
+define.amd.jQuery = true;
 /**
  * @module p3/widget/CopilotDisplay
  * @description A ContentPane-based widget that displays chat messages in a scrollable container.
  * Handles rendering of user and assistant messages, error states, and empty states.
  */
+// https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js
 define([
-  'dojo/_base/declare', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/on', 'dojo/topic', 'dojo/_base/lang'
+  'dojo/_base/declare', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/on', 'dojo/topic', 'dojo/_base/lang',
+  'markdown-it/dist/markdown-it.min'
 ], function (
-  declare, ContentPane, domConstruct, on, topic, lang
+  declare, ContentPane, domConstruct, on, topic, lang, markdownit
 ) {
   /**
    * @class CopilotDisplay
@@ -51,6 +54,9 @@ define([
       // Show empty state initially
       this.showEmptyState();
 
+      // Configure markdown-it options
+      this.md = markdownit();
+
       // Subscribe to the 'query' topic
       topic.subscribe('RefreshSessionDisplay', lang.hitch(this, 'showMessages'));
       topic.subscribe('CopilotApiError', lang.hitch(this, 'onQueryError'));
@@ -78,7 +84,51 @@ define([
       if (messages.length) {
         domConstruct.empty(this.resultContainer);
         console.log('show messages', messages);
-        // Create a message element for each message
+
+        // Add responsive container styles if not already present
+        if (!document.getElementById('markdown-styles')) {
+          var style = domConstruct.create('style', {
+            id: 'markdown-styles',
+            innerHTML: `
+              .message {
+                max-width: 100%;
+                overflow-wrap: break-word;
+              }
+              .message * {
+                max-width: 100%;
+              }
+              .message img {
+                height: auto;
+              }
+              .message pre {
+                background-color: #f8f8f8;
+                padding: 10px;
+                border-radius: 4px;
+                overflow-x: auto;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+              }
+              .message code {
+                background-color: #f8f8f8;
+                padding: 2px 4px;
+                border-radius: 3px;
+                word-wrap: break-word;
+              }
+              .message table {
+                width: 100%;
+                display: block;
+                overflow-x: auto;
+              }
+              .message p {
+                margin: 0 0 10px 0;
+              }
+              .message p:last-child {
+                margin-bottom: 0;
+              }
+            `
+          }, document.head);
+        }
+
         messages.forEach(lang.hitch(this, function(message) {
             var messageDiv = domConstruct.create('div', {
                 class: 'message ' + message.role,
@@ -88,13 +138,14 @@ define([
                          'background-color: #f5f5f5; margin-right: auto;')
             }, this.resultContainer);
 
+            // Create content div with markdown
             domConstruct.create('div', {
-                innerHTML: message.content,
-                style: 'white-space: pre-wrap; word-wrap: break-word;'
+                innerHTML: this.md.render(message.content),
+                class: 'markdown-content',
+                style: 'width: 100%;'
             }, messageDiv);
         }));
 
-        // Scroll to bottom after messages are rendered
         this.scrollToBottom();
       } else {
         this.showEmptyState();

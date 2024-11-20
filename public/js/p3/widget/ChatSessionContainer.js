@@ -120,7 +120,7 @@ define([
                     this.changeSessionId(sessionId);
                     this.inputWidget.startNewChat();
                     this.displayWidget.startNewChat();
-                    this.titleWidget.reset(sessionId);
+                    this.titleWidget.startNewChat(sessionId);
                 }));
             }));
             topic.subscribe('ChatSession:Selected', lang.hitch(this, function(data) {
