@@ -1,3 +1,9 @@
+/**
+ * @module p3/widget/ChatSessionScrollCard
+ * @description A widget that displays a single chat session as a clickable card.
+ * Renders session details like ID, creation date and title in a styled container.
+ * Handles click interactions to load and display the selected chat session.
+ */
 define([
     'dojo/_base/declare',
     'dijit/_WidgetBase',
@@ -17,46 +23,64 @@ define([
     lang,
     CopilotApi
 ) {
+    /**
+     * @class ChatSessionScrollCard
+     * @extends {dijit/_WidgetBase}
+     * @extends {dijit/_TemplatedMixin}
+     */
     return declare([_WidgetBase, _TemplatedMixin], {
+        /**
+         * @property {string} templateString - HTML template for the card layout
+         * Defines attachment points for title, session ID and date elements
+         */
+        // '<div class="session-id" data-dojo-attach-point="sessionIdNode"></div>' +
         templateString: '<div class="chat-session-card" data-dojo-attach-point="containerNode">' +
             '<div class="session-title" data-dojo-attach-point="titleNode"></div>' +
-            '<div class="session-id" data-dojo-attach-point="sessionIdNode"></div>' +
             '<div class="session-date" data-dojo-attach-point="dateNode"></div>' +
         '</div>',
 
+        /** @property {string} baseClass - CSS class name for the root node */
         baseClass: 'chat-session-card',
+
+        /** @property {Object} session - Chat session data object */
         session: null,
+
+        /** @property {Object} copilotApi - Reference to the CopilotAPI instance */
         copilotApi: null,
 
+        /**
+         * @method postCreate
+         * @description Initializes the card after creation
+         * Applies styles, populates session data and sets up event handlers
+         */
         postCreate: function() {
             this.inherited(arguments);
 
-            // Apply base styles
+            // Apply base styles to container
             this.containerNode.style.cssText =
-                'width: 180px; height: 180px; background-color: #f0f0f0; ' +
-                'border: 1px solid #ccc; border-radius: 5px; cursor: pointer; ' +
+                'width: 100%; height: 180px; background-color: #f0f0f0; ' +
+                'border: 1px solid #ccc; border-radius: 0px; cursor: pointer; ' +
                 'padding: 10px; transition: background-color 0.2s;';
 
             if (this.session) {
-                // Set session ID
-                this.sessionIdNode.innerHTML = 'Session ID: ' + this.session.session_id;
-                this.sessionIdNode.style.cssText = 'font-weight: bold; margin-bottom: 5px;';
+                // Display session ID
+                // this.sessionIdNode.innerHTML = 'Session ID: ' + this.session.session_id;
+                // this.sessionIdNode.style.cssText = 'font-weight: bold; margin-bottom: 5px;';
 
-                // Set date
+                // Format and display creation date
                 if (this.session.created_at) {
                     this.dateNode.innerHTML = 'Created: ' + new Date(this.session.created_at).toLocaleString();
                     this.dateNode.style.cssText = 'font-size: 0.9em;';
                 }
 
-                // Set title
+                // Display session title if available
                 if (this.session.title) {
                     this.titleNode.innerHTML = this.session.title;
                     this.titleNode.style.cssText = 'font-weight: bold; margin-bottom: 5px;';
                 }
 
-                // Add click handler
+                // Set up click handler to load session messages
                 on(this.containerNode, 'click', lang.hitch(this, function() {
-                    // topic.publish('ChatSession:Selected', this.session);
                     if (this.copilotApi) {
                         var _self = this;
                         this.copilotApi.getSessionMessages(_self.session.session_id).then(function(messages) {
@@ -65,13 +89,14 @@ define([
                                 sessionId: _self.session.session_id,
                                 messages: messages.messages[0].messages
                             });
+                            topic.publish('ChatSessionTitleUpdated', _self.session.title);
                         });
                     } else {
                         console.error('CopilotApi not initialized');
                     }
                 }));
 
-                // Add hover effects
+                // Add hover effect styles
                 on(this.containerNode, 'mouseover', function() {
                     this.style.backgroundColor = '#e0e0e0';
                 });
@@ -79,10 +104,12 @@ define([
                     this.style.backgroundColor = '#f0f0f0';
                 });
 
-                // generate a title from the first message
+                // Generate title from first message if no title exists
+                /*
                 if (this.session.messages && this.session.messages.length > 0) {
                     this.titleNode.innerHTML = this.session.messages[0].content.substring(0, 20);
                 }
+                */
             }
         }
     });

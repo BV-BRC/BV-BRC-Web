@@ -1,33 +1,68 @@
+/**
+ * @module p3/widget/CopilotGridContainer
+ * @description A BorderContainer-based widget that creates the main layout for the Copilot chat interface.
+ * It consists of a left sidebar containing chat session options and history, and a main content area
+ * for the active chat session.
+ */
 define([
     'dojo/_base/declare', 'dijit/layout/BorderContainer', './CopilotDisplay',
-    './CopilotInput', './CopilotApi', 'dojo/topic', 'dijit/layout/ContentPane', './ChatSessionScrollBar', './ChatSessionContainer'
+    './CopilotInput', './CopilotApi', 'dojo/topic', 'dijit/layout/ContentPane', './ChatSessionScrollBar', './ChatSessionContainer', './ChatSessionOptionsBar'
   ], function (
-    declare, BorderContainer, CopilotDisplay, CopilotInput, CopilotApi, topic, ContentPane, ChatSessionScrollBar, ChatSessionContainer
+    declare, BorderContainer, CopilotDisplay, CopilotInput, CopilotApi, topic, ContentPane, ChatSessionScrollBar, ChatSessionContainer, ChatSessionOptionsBar
   ) {
 
     return declare([BorderContainer], {
+      /** @property {string} containerType - Identifies this as a copilot container */
       containerType: 'copilot',
+
+      /** @property {boolean} gutters - Disables gutters between panes */
       gutters: false,
+
+      /** @property {string} style - Sets container to fill available space */
       style: 'height: 100%; width: 100%;',
 
+      /**
+       * @method postCreate
+       * @description Sets up the container layout after the widget is created.
+       * Creates a two-pane layout with:
+       * 1. Left sidebar (300px wide) containing:
+       *    - Options bar at top (50px height)
+       *    - Scrollable chat session history
+       * 2. Main content area containing the active chat session
+       */
       postCreate: function () {
         this.inherited(arguments);
 
-        // Add CopilotApi widget
+        // Initialize the CopilotApi with current user's ID
         this.copilotApi = new CopilotApi({
           user_id: window.App.user.l_id
         });
 
-        // Left Section (Chat Session Scroll Bar)
-        var leftPane = new ChatSessionScrollBar({
+        // Create left sidebar container
+        var leftContainer = new BorderContainer({
           region: 'left',
-          splitter: true,
-          style: 'width: 200px; padding: 10px; border: 2px solid purple;',
+          splitter: true, // Allows resizing
+          style: 'width: 240px;'
+        });
+
+        // Add options bar to top of sidebar
+        var leftTopPane = new ChatSessionOptionsBar({
+          region: 'top',
+          style: 'height: 30px; '
+        });
+        leftContainer.addChild(leftTopPane);
+
+        // Add scrollable chat history to sidebar
+        var chatSessionPane = new ChatSessionScrollBar({
+          region: 'center',
+          style: 'padding: 0px; border: 1px solid grey;',
           copilotApi: this.copilotApi
         });
-        this.addChild(leftPane);
+        leftContainer.addChild(chatSessionPane);
 
-        // Create right side container
+        this.addChild(leftContainer);
+
+        // Create main chat container
         var rightContainer = new ChatSessionContainer({
           region: 'center',
           gutters: false,

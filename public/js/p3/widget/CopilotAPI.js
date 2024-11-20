@@ -1,3 +1,8 @@
+/**
+ * @module p3/widget/CopilotAPI
+ * @description A widget that handles API communication between the frontend and the PATRIC Copilot backend service.
+ * Provides methods for managing chat sessions, submitting queries, and retrieving messages.
+ */
 define([
     'dojo/_base/declare',
     'dijit/_WidgetBase',
@@ -6,29 +11,47 @@ define([
     'dojo/topic'
 ], function(declare, _WidgetBase, request, lang, topic) {
 
+    /**
+     * @class CopilotAPI
+     * @extends {dijit/_WidgetBase}
+     */
     return declare([_WidgetBase], {
-        // apiUrl: 'http://195.88.24.64:80/v1',
-        apiUrlBase: 'https://p3cp.theseed.org/api',
-        // apiKey: 'cmsc-35360',
-        // model: 'meta-llama/Meta-Llama-3.1-70B-Instruct',
+        /** @property {string} apiUrlBase - Base URL for the Copilot API endpoints */
+        apiUrlBase: 'https://p3cp.theseed.org/copilot-api',
+
+        /** @property {Object} storedResult - Stores the last API response */
         storedResult: null,
 
+        /**
+         * @constructor
+         * @param {Object} opts - Configuration options
+         * @description Initializes the widget and mixes in provided options
+         */
         constructor: function(opts) {
             this.inherited(arguments);
             lang.mixin(this, opts);
         },
 
+        /**
+         * @method postCreate
+         * @description Lifecycle method called after widget creation
+         */
         postCreate: function() {
             this.inherited(arguments);
             console.log('CopilotAPI postCreate');
         },
 
+        /**
+         * @method getUserSessions
+         * @returns {Promise<Array>} Promise resolving to array of user's chat sessions
+         * @description Fetches all chat sessions for the current user
+         */
         getUserSessions: function() {
             var _self = this;
             console.log('getUserSessions', _self.user_id);
             return request.get(this.apiUrlBase + `/get-all-sessions?user_id=${encodeURIComponent(_self.user_id)}`, {
                 headers: {
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: ('')
                 }
             }).then(lang.hitch(this, function(response) {
                 var data = JSON.parse(response);
@@ -40,8 +63,16 @@ define([
             }));
         },
 
+        /**
+         * @method getNewSessionId
+         * @returns {Promise<string>} Promise resolving to new session ID
+         * @description Initiates a new chat session and returns its ID
+         */
         getNewSessionId: function() {
             return request.get(this.apiUrlBase + '/start-chat', {
+                headers: {
+                    Authorization: (window.App.authorizationToken || '')
+                },
                 handleAs: 'json'
             }).then(lang.hitch(this, function(response) {
                 console.log('CopilotAPI status:', response);
@@ -54,6 +85,13 @@ define([
             });
         },
 
+        /**
+         * @method submitQuery
+         * @param {string} inputText - User's query text
+         * @param {string} sessionId - Current session identifier
+         * @returns {Promise<Object>} Promise resolving to API response
+         * @description Submits a user query to the Copilot chat service
+         */
         submitQuery: function(inputText, sessionId) {
             var _self = this;
             return request.post(this.apiUrlBase + '/copilot-chat', {
@@ -76,6 +114,12 @@ define([
             });
         },
 
+        /**
+         * @method getSessionMessages
+         * @param {string} sessionId - Session identifier
+         * @returns {Promise<Object>} Promise resolving to session messages
+         * @description Retrieves all messages for a given chat session
+         */
         getSessionMessages: function(sessionId) {
             var _self = this;
             return request.get(this.apiUrlBase + `/get-session-messages?session_id=${encodeURIComponent(sessionId)}`, {
@@ -112,6 +156,35 @@ define([
                 console.error('Error getting session title:', error);
                 throw error;
             });
-        }
+        },
+
+        /**
+         * @method updateSessionTitle
+         * @param {string} sessionId - Session identifier
+         * @param {string} newTitle - New title for the session
+         * @returns {Promise<Object>} Promise resolving to updated session data
+         * @description Updates the title of a chat session
+         */
+        updateSessionTitle: function(sessionId, newTitle) {
+            var _self = this;
+            return request.post(this.apiUrlBase + '/update-session-title', {
+                data: JSON.stringify({
+                    session_id: sessionId,
+                    title: newTitle,
+                    user_id: _self.user_id
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                console.log('Session title updated:', response);
+                return response;
+            }).catch(function(error) {
+                console.error('Error updating session title:', error);
+                throw error;
+            });
+        },
     });
 });
