@@ -46,11 +46,11 @@ define([
          * @description Initializes the chat store and mixes in provided options
          */
         constructor: function(opts) {
-            this.inherited(arguments);
+            // this.inherited(arguments);
+            declare.safeMixin(this, opts);
             this.chatStore = new ChatSessionMemoryStore({
                 copilotApi: this.copilotApi
             });
-            declare.safeMixin(this, opts);
             window.App.chatStore = this.chatStore;
         },
 

@@ -37,6 +37,7 @@ define([
         templateString: '<div class="chat-session-card" data-dojo-attach-point="containerNode">' +
             '<div class="session-title" data-dojo-attach-point="titleNode"></div>' +
             '<div class="session-date" data-dojo-attach-point="dateNode"></div>' +
+            '<div class="delete-button" data-dojo-attach-point="deleteButtonNode">🗑️</div>' +
         '</div>',
 
         /** @property {string} baseClass - CSS class name for the root node */
@@ -60,7 +61,14 @@ define([
             this.containerNode.style.cssText =
                 'width: 100%; height: 180px; background-color: #f0f0f0; ' +
                 'border: 1px solid #ccc; border-radius: 0px; cursor: pointer; ' +
-                'padding: 10px; transition: background-color 0.2s;';
+                'padding: 10px; transition: background-color 0.2s; position: relative;';
+
+            // Style delete button
+            this.deleteButtonNode.style.cssText =
+                'position: absolute; top: 5px; right: 40px; cursor: pointer; ' +
+                'width: 20px; height: 20px; text-align: center; line-height: 20px; ' +
+                'border-radius: 50%; background-color: #f0f0f0; color: #808080; ' +
+                'font-size: 12px; display: flex; align-items: center; justify-content: center;';
 
             if (this.session) {
                 // Display session ID
@@ -80,7 +88,12 @@ define([
                 }
 
                 // Set up click handler to load session messages
-                on(this.containerNode, 'click', lang.hitch(this, function() {
+                on(this.containerNode, 'click', lang.hitch(this, function(evt) {
+                    // Don't trigger if clicking delete button
+                    if (evt.target === this.deleteButtonNode) {
+                        return;
+                    }
+
                     if (this.copilotApi) {
                         var _self = this;
                         this.copilotApi.getSessionMessages(_self.session.session_id).then(function(messages) {
@@ -94,6 +107,13 @@ define([
                     } else {
                         console.error('CopilotApi not initialized');
                     }
+                }));
+
+                // Set up delete button click handler
+                on(this.deleteButtonNode, 'click', lang.hitch(this, function(evt) {
+                    evt.stopPropagation(); // Prevent container click
+                    // topic.publish('ChatSession:Delete', this.session.session_id);
+                    console.log('delete button clicked: TODO implement');
                 }));
 
                 // Add hover effect styles

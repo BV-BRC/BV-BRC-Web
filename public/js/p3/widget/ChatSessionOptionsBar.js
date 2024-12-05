@@ -46,7 +46,7 @@ define([
 
             // Create 'Create New' button
             this.createNewButton = new Button({
-                label: 'Create New',
+                label: 'New Chat',
                 onClick: lang.hitch(this, function() {
                     // Publish event to create new chat session
                     topic.publish('createNewChatSession');

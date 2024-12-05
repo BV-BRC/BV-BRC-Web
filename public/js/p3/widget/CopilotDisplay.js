@@ -48,7 +48,7 @@ define([
       // Create a container for displaying the query result
       this.resultContainer = domConstruct.create('div', {
         class: 'copilot-result-container',
-        style: 'width: 60%; height: 100%; overflow-y: auto; padding: 10px; border: 0; margin: 0 auto;'
+        style: 'width: 90%; height: 100%; overflow-y: auto; padding: 10px; border: 0; margin: 0 auto;'
       }, this.containerNode);
 
       // Show empty state initially
@@ -57,9 +57,70 @@ define([
       // Configure markdown-it options
       this.md = markdownit();
 
+      // Add markdown styles
+      this.addMarkdownStyles();
+
       // Subscribe to the 'query' topic
       topic.subscribe('RefreshSessionDisplay', lang.hitch(this, 'showMessages'));
       topic.subscribe('CopilotApiError', lang.hitch(this, 'onQueryError'));
+    },
+
+    /**
+     * @method addMarkdownStyles
+     * @description Adds the markdown styling to the document if not already present
+     */
+    addMarkdownStyles: function() {
+      if (!document.getElementById('markdown-styles')) {
+        var style = domConstruct.create('style', {
+          id: 'markdown-styles',
+          innerHTML: `
+            .message {
+              max-width: 100%;
+              overflow-wrap: break-word;
+            }
+            .message * {
+              max-width: 100%;
+            }
+            .message img {
+              height: auto;
+            }
+            .message pre {
+              background-color: #f8f8f8;
+              padding: 10px;
+              border-radius: 4px;
+              overflow-x: auto;
+              white-space: pre-wrap;
+              word-wrap: break-word;
+            }
+            .message code {
+              background-color: #f8f8f8;
+              padding: 2px 4px;
+              border-radius: 3px;
+              word-wrap: break-word;
+            }
+            .message table {
+              width: 100%;
+              display: block;
+              overflow-x: auto;
+            }
+            .message p {
+              margin: 0 0 10px 0;
+            }
+            .message p:last-child {
+              margin-bottom: 0;
+            }
+          `
+        }, document.head);
+        var style2 = domConstruct.create('style', {
+          id: 'loading-animation',
+          innerHTML: `
+            @keyframes bounce {
+              0%, 100% { transform: translateY(0); }
+              50% { transform: translateY(-10px); }
+            }
+          `
+        }, document.head);
+      }
     },
 
     /**
@@ -85,70 +146,43 @@ define([
         domConstruct.empty(this.resultContainer);
         console.log('show messages', messages);
 
-        // Add responsive container styles if not already present
-        if (!document.getElementById('markdown-styles')) {
-          var style = domConstruct.create('style', {
-            id: 'markdown-styles',
-            innerHTML: `
-              .message {
-                max-width: 100%;
-                overflow-wrap: break-word;
-              }
-              .message * {
-                max-width: 100%;
-              }
-              .message img {
-                height: auto;
-              }
-              .message pre {
-                background-color: #f8f8f8;
-                padding: 10px;
-                border-radius: 4px;
-                overflow-x: auto;
-                white-space: pre-wrap;
-                word-wrap: break-word;
-              }
-              .message code {
-                background-color: #f8f8f8;
-                padding: 2px 4px;
-                border-radius: 3px;
-                word-wrap: break-word;
-              }
-              .message table {
-                width: 100%;
-                display: block;
-                overflow-x: auto;
-              }
-              .message p {
-                margin: 0 0 10px 0;
-              }
-              .message p:last-child {
-                margin-bottom: 0;
-              }
-            `
-          }, document.head);
-        }
-
         messages.forEach(lang.hitch(this, function(message) {
-            var messageDiv = domConstruct.create('div', {
-                class: 'message ' + message.role,
-                style: 'margin-bottom: 10px; padding: 10px; border-radius: 5px; width: 40%; ' +
-                       (message.role === 'user' ?
-                         'background-color: #e6f3ff; margin-left: auto;' :
-                         'background-color: #f5f5f5; margin-right: auto;')
-            }, this.resultContainer);
-
-            // Create content div with markdown
-            domConstruct.create('div', {
-                innerHTML: this.md.render(message.content),
-                class: 'markdown-content',
-                style: 'width: 100%;'
-            }, messageDiv);
+          this.addMessage(message);
         }));
 
         this.scrollToBottom();
       } else {
         this.showEmptyState();
+      }
+    },
+
+    /**
+     * @method addMessage
+     * @param {Object} message - Message object to display
+     * @description Creates and adds a single message to the display container
+     */
+    addMessage: function(message) {
+      var messageDiv = domConstruct.create('div', {
+        class: 'message ' + message.role,
+        style: 'margin-bottom: 10px; padding: 10px; border-radius: 5px; ' +
+               'max-width: 60%; display: inline-block; ' +
+               (message.role === 'user' ?
+                 'background-color: #e6f3ff; margin-left: auto; float: right; clear: both;' :
+                 'background-color: #f5f5f5; margin-right: auto; float: left; clear: both;')
+      }, this.resultContainer);
+
+      if (message.message_id === 'loading-indicator') {
+        domConstruct.create('div', {
+          innerHTML: '...',
+          style: 'font-size: 24px; animation: bounce 1s infinite;'
+        }, messageDiv);
+      } else {
+        // Create content div with markdown
+        domConstruct.create('div', {
+          innerHTML: this.md.render(message.content),
+          class: 'markdown-content',
+          style: 'width: 100%;'
+        }, messageDiv);
       }
     },
 
@@ -205,34 +239,19 @@ define([
      * @method showLoadingIndicator
      * @description Displays a loading animation at the bottom of the chat
      */
-    showLoadingIndicator: function() {
-      var loadingDiv = domConstruct.create('div', {
-        class: 'message assistant loading',
-        style: 'margin-bottom: 10px; padding: 10px; border-radius: 5px; background-color: #f5f5f5; width: 25%;'
-      }, this.resultContainer);
-
-      domConstruct.create('div', {
-        innerHTML: '...',
-        style: 'font-size: 24px; animation: bounce 1s infinite;'
-      }, loadingDiv);
-
-      // Add CSS animation
-      if (!document.getElementById('loading-animation')) {
-        var style = domConstruct.create('style', {
-          id: 'loading-animation',
-          innerHTML: `
-            @keyframes bounce {
-              0%, 100% { transform: translateY(0); }
-              50% { transform: translateY(-10px); }
-            }
-          `
-        }, document.head);
+    showLoadingIndicator: function(chatMessages) {
+      if (chatMessages && chatMessages.length > 0) {
+        domConstruct.empty(this.resultContainer);
+        chatMessages.forEach(lang.hitch(this, function(message) {
+          this.addMessage(message);
+        }));
       }
+      this.addMessage({
+        role: 'assistant',
+        content: '...',
+        message_id: 'loading-indicator'
+      });
 
-      // Store reference to remove later
-      this._loadingIndicator = loadingDiv;
-
-      // Scroll to show loading indicator
       this.scrollToBottom();
     },
 

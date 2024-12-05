@@ -89,17 +89,25 @@ define([
          * @method submitQuery
          * @param {string} inputText - User's query text
          * @param {string} sessionId - Current session identifier
+         * @param {string} systemPrompt - Optional system prompt to use
          * @returns {Promise<Object>} Promise resolving to API response
          * @description Submits a user query to the Copilot chat service
          */
-        submitQuery: function(inputText, sessionId) {
+        submitQuery: function(inputText, sessionId, systemPrompt) {
             var _self = this;
+            console.log('query');
+            var data = {
+                query: inputText,
+                session_id: sessionId,
+                user_id: _self.user_id
+            };
+
+            if (systemPrompt) {
+                data.system_prompt = systemPrompt;
+            }
+
             return request.post(this.apiUrlBase + '/copilot-chat', {
-                data: JSON.stringify({
-                    query: inputText,
-                    session_id: sessionId,
-                    user_id: _self.user_id
-                }),
+                data: JSON.stringify(data),
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: (window.App.authorizationToken || '')
@@ -139,7 +147,6 @@ define([
         // NOPE: going to have to do this on the server side
         getTitleFromMessage: function(message) {
             var _self = this;
-            debugger;
             return request.post(this.apiUrlBase + '/generate-title', {
                 data: JSON.stringify({
                     content: message,

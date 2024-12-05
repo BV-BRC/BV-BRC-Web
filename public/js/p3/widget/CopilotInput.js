@@ -22,6 +22,9 @@ define([
       /** @property {boolean} isSubmitting - Flag indicating if a query is being submitted */
       isSubmitting: false,
 
+      /** @property {string} systemPrompt - The system prompt to use for the chat session */
+      systemPrompt: null,
+
       /**
        * @constructor
        * @param {Object} args - Configuration arguments
@@ -66,15 +69,20 @@ define([
               var inputText = this.textArea.get('value');
               var _self = this;
 
+              // If state is provided, add it to the query
+              if (this.state) {
+                console.log('state', this.state);
+              }
+
               // Disable input while submitting
               this.isSubmitting = true;
               this.submitButton.set('disabled', true);
 
               // Show loading indicator
-              this.displayWidget.showLoadingIndicator();
+              this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
               // Submit query to API and handle response
-              this.copilotApi.submitQuery(inputText, this.sessionId).then(lang.hitch(this, function(response) {
+              this.copilotApi.submitQuery(inputText, this.sessionId, this.system_prompt).then(lang.hitch(this, function(response) {
                 // Add user query and assistant response to chat store
                 this.chatStore.addMessages([
                   {
@@ -152,6 +160,20 @@ define([
        */
       setSessionId: function(sessionId) {
         this.sessionId = sessionId;
+      },
+
+      setSystemPromptWithData: function(data) {
+        if (!data || !data.length) {
+          this.system_prompt = '';
+          return;
+        }
+
+        let promptStr = "Use the following information to answer the user's question:\n";
+        data.forEach(function(item) {
+          promptStr += JSON.stringify(item) + '\n';
+        });
+
+        this.system_prompt = promptStr;
       }
     });
   });
