@@ -10,7 +10,7 @@ define([
     './CopilotDisplay',
     './CopilotInput',
     './CopilotAPI',
-    '../store/ChatSessionMemoryStore',
+    '../../store/ChatSessionMemoryStore',
     'dojo/topic',
     'dojo/_base/lang',
     './ChatSessionTitle'

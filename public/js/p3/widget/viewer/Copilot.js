@@ -1,5 +1,5 @@
 define([
-    'dojo/_base/declare', 'dojo/request', './Base', '../CopilotGridContainer', 'dojo/dom-construct', 'dojo/on'
+    'dojo/_base/declare', 'dojo/request', './Base', '../copilot/CopilotGridContainer', 'dojo/dom-construct', 'dojo/on'
   ], function (
     declare, request, Base, GridContainer, domConstruct, on
   ) {

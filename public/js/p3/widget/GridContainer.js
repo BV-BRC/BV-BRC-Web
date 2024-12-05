@@ -6,7 +6,7 @@ define([
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog', './DownloadTooltipDialog', './PerspectiveToolTip',
   './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin',
   './FeatureDetailsTooltipDialog', './ServicesTooltipDialog', './RerunUtility', 'dojox/widget/Standby',
-  './ChatSessionSidePanel', './CopilotAPI'
+  './copilot/ChatSessionSidePanel', './copilot/CopilotAPI'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
