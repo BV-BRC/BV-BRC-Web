@@ -358,7 +358,9 @@ define([
                       patric_id: feature_id,
                       metadata: m_value.toString(),
                       group: g_value.toString(),
-                      genome_id: genome.genome_id
+                      genome_id: genome.genome_id,
+                      genbank_accessions: genome.genbank_accessions,
+                      strain: genome.strain
                     });
                   }
                 });
