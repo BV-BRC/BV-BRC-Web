@@ -25,6 +25,12 @@ define([
       /** @property {string} systemPrompt - The system prompt to use for the chat session */
       systemPrompt: null,
 
+      /** @property {string} model - The model to use for the chat session */
+      model: 'llama3.1-70b',
+
+      /** @property {string} ragDb - The RAG database to use for the chat session */
+      ragDb: null,
+
       /**
        * @constructor
        * @param {Object} args - Configuration arguments
@@ -65,11 +71,12 @@ define([
           onClick: lang.hitch(this, function() {
             if (this.isSubmitting) return;
 
-            if (this.copilotApi) {
+            if (this.copilotApi && this.ragDb) {
+              console.log('this.ragDb=', this.ragDb);
               var inputText = this.textArea.get('value');
               var _self = this;
 
-              // If state is provided, add it to the query
+              // TODO: If state is provided, add it to the query: Maybe for assistants
               if (this.state) {
                 console.log('state', this.state);
               }
@@ -82,7 +89,53 @@ define([
               this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
               // Submit query to API and handle response
-              this.copilotApi.submitQuery(inputText, this.sessionId, this.system_prompt).then(lang.hitch(this, function(response) {
+              this.copilotApi.submitRagQuery(inputText, 'cancer_papers').then(lang.hitch(this, function(response) {
+                debugger;
+                // Add user query and assistant response to chat store
+                this.chatStore.addMessages([
+                  {
+                    role: 'user',
+                    content: inputText
+                  },
+                  {
+                    role: 'assistant',
+                    content: response.response.content
+                  }
+                ]);
+                _self.textArea.set('value', '');
+                this.displayWidget.showMessages(this.chatStore.query());
+
+                // If this was a new chat, trigger session reload
+                if (_self.new_chat) {
+                  _self.new_chat = false;
+                  topic.publish('reloadUserSessions');
+                }
+              })).finally(lang.hitch(this, function() {
+                // Hide loading indicator
+                this.displayWidget.hideLoadingIndicator();
+
+                // Re-enable input after response or error
+                this.isSubmitting = false;
+                this.submitButton.set('disabled', false);
+              }));
+            } else if (this.copilotApi) {
+              var inputText = this.textArea.get('value');
+              var _self = this;
+
+              // TODO: If state is provided, add it to the query: Maybe for assistants
+              if (this.state) {
+                console.log('state', this.state);
+              }
+
+              // Disable input while submitting
+              this.isSubmitting = true;
+              this.submitButton.set('disabled', true);
+
+              // Show loading indicator
+              this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+              // Submit query to API and handle response
+              this.copilotApi.submitQuery(inputText, this.sessionId, this.system_prompt, this.model).then(lang.hitch(this, function(response) {
                 // Add user query and assistant response to chat store
                 this.chatStore.addMessages([
                   {
@@ -174,6 +227,16 @@ define([
         });
 
         this.system_prompt = promptStr;
+      },
+
+      setModel: function(model) {
+        console.log('setModel=', model);
+        this.model = model;
+      },
+
+      setRagDb: function(ragDb) {
+        console.log('setRagDb=', ragDb);
+        this.ragDb = ragDb;
       }
     });
   });

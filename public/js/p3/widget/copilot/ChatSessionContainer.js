@@ -172,6 +172,12 @@ define([
                 errorDialog.startup();
                 errorDialog.show();
             }));
+            topic.subscribe('ChatModel', lang.hitch(this, function(model) {
+                this.inputWidget.setModel(model);
+            }));
+            topic.subscribe('ChatRagDb', lang.hitch(this, function(ragDb) {
+                this.inputWidget.setRagDb(ragDb);
+            }));
         },
 
         /**

@@ -93,9 +93,19 @@ define([
          * @returns {Promise<Object>} Promise resolving to API response
          * @description Submits a user query to the Copilot chat service
          */
-        submitQuery: function(inputText, sessionId, systemPrompt) {
+        submitQuery: function(inputText, sessionId, systemPrompt, model) {
             var _self = this;
             console.log('query');
+
+            var model_route = '';
+            if (model === 'llama3.1-70b') {
+                model_route = '/copilot-chat';
+            } else if (model === 'gpt4o') {
+                model_route = '/argo/chat';
+            } else {
+                throw new Error('Invalid model: ' + model);
+            }
+
             var data = {
                 query: inputText,
                 session_id: sessionId,
@@ -106,7 +116,7 @@ define([
                 data.system_prompt = systemPrompt;
             }
 
-            return request.post(this.apiUrlBase + '/copilot-chat', {
+            return request.post(this.apiUrlBase + model_route, {
                 data: JSON.stringify(data),
                 headers: {
                     'Content-Type': 'application/json',
@@ -114,6 +124,38 @@ define([
                 },
                 handleAs: 'json'
             }).then(function(response) {
+                _self.storedResult = response;
+                return response;
+            }).catch(function(error) {
+                console.error('Error submitting query:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * @method submitRagQuery
+         * @param {string} inputQuery - User's query text
+         * @param {string} ragDb - RAG database to use
+         * @returns {Promise<Object>} Promise resolving to API response
+         * @description Submits a user query to the Copilot chat service with RAG
+         */
+        submitRagQuery: function(inputQuery, ragDb) {
+            var _self = this;
+            var data = {
+                query: inputQuery,
+                rag_db: ragDb,
+                user_id: _self.user_id
+            };
+
+            return request.post(this.apiUrlBase + '/rag/chat', {
+                data: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                debugger;
                 _self.storedResult = response;
                 return response;
             }).catch(function(error) {

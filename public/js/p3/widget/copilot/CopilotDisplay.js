@@ -179,7 +179,7 @@ define([
       } else {
         // Create content div with markdown
         domConstruct.create('div', {
-          innerHTML: this.md.render(message.content),
+          innerHTML: message.content ? this.md.render(message.content) : '',
           class: 'markdown-content',
           style: 'width: 100%;'
         }, messageDiv);
