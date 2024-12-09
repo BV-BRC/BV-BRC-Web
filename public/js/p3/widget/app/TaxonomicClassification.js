@@ -548,7 +548,6 @@ define([
     },
 
     setAnalysisType: function (job_data) {
-      // console.log('job_data = ', job_data);
       if ((job_data['sequence_type'] === 'sixteenS')) {
         this.wgs.set('checked', false);
         this.sixteenS.set('checked', true);
