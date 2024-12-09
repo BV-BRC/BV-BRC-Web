@@ -320,6 +320,8 @@ define([
       this.viewer.addChild(this.subsystems);
       this.viewer.addChild(this.experiments);
       this.viewer.addChild(this.interactions);
+      this.viewer.addChild(this.surveillance);
+      this.viewer.addChild(this.serology);
       this.viewer.addChild(this.sfvt);
     },
     onSetTotalGenomes: function (attr, oldVal, newVal) {

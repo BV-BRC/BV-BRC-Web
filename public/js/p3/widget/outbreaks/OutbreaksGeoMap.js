@@ -1,14 +1,12 @@
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dijit/_OnDijitClickMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/dom', 'dojo/dom-class', 'dijit/_TemplatedMixin', 'dojox/dtl/_Templated', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/mouse',
-  './OutbreaksGeoMapInfo', 'dojo/text!./OutbreaksGeoMap.html',
-  'dijit/ColorPalette', '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang',
+  'dojo/text!./OutbreaksGeoMap.html', 'dijit/ColorPalette', '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang',
   'https://maps.googleapis.com/maps/api/js?key=AIzaSyAo6Eq83tcpiWufvVpw_uuqdoRfWbFXfQ8&sensor=false&libraries=drawing'
 ], function (
   declare, WidgetBase, on, OnDijitClickMixin, _WidgetsInTemplateMixin,
   dom, domClass, Templated, DtlTemplated, domConstruct, domStyle, mouse,
-  OutbreaksGeoMapInfo, Template,
-  ColorPalette, PathJoin, xhr, lang
+  Template, ColorPalette, PathJoin, xhr, lang
 ) {
 
   return declare([WidgetBase, Templated], {
@@ -27,8 +25,6 @@ define([
     initialCenter: null, // Store the center location for future reset
     initialZoomLevel: -1, // Default to -1 to make sure it has been set later
     defaultMarkerColor: '#FE7569',
-    cattleMarkerColor: '#028c81',
-    cattleAndHumanMarkerColor: '#035999',
     defaultMapOptions: {
       backgroundColor: '#E7F1FA',
       //mapTypeId: google.maps.MapTypeId.TERRAIN,
@@ -41,7 +37,12 @@ define([
       minimumLongitude: -120.7401386
     },
     usaBounds: null,
+    focusOnUS: true,
     initialBounds: null,
+    createInfoWindowContent: null,
+    createMarker: null,
+    headerInfo: null,
+    footerInfo: null,
 
     _setStateAttr: function (state) {
       this._set('state', state);
@@ -70,93 +71,25 @@ define([
       }
     },
 
-    // Create a marker icon with a size fit to the count and selected color
-    createMarkerIcon: function (label, isCountryLevel, color = this.defaultMarkerColor) {
-      const length = label.length;
-      const scale = length === 1 ? 1 : 1.5 + (length - 2) * 0.2;
-
-      return {
-        path: isCountryLevel ? 'M 0,0 L 11,-15 L 0,-30 L -11,-15 Z' : 'M 0,0 C -2,-10 -10,-10 -10,-20 A 10,10 0 1,1 10,-20 C 10,-10 2,-10 0,0 Z',
-        fillColor: color,
-        fillOpacity: 1,
-        strokeColor: '#fff',
-        strokeWeight: 0.5,
-        scale: scale,
-        labelOrigin: isCountryLevel ? new google.maps.Point(0, -15) : new google.maps.Point(0, -18)
-      };
-    },
-
-    createInfoWindowContent: function (item) {
-      let contentValues = {map: this.map, index: this.index++};
-
-      //Sort host common names TODO: move this to index to make this func generic
-      let hostCommonNames = item.metadata.hostCommonNames;
-      const sortedKeys = Object.keys(hostCommonNames).sort();
-      const sortedHostCommonNames = {};
-      sortedKeys.forEach(key => {
-        sortedHostCommonNames[key] = hostCommonNames[key];
-      });
-      item.metadata.hostCommonNames = sortedHostCommonNames;
-      // ,eq(state_province,"{{ metadata.stateProvince }}"
-      const location = item.metadata.location;
-      const stateCountry = location.split(',');
-      let locationFilter = ''
-      if (stateCountry.length === 1) {
-        locationFilter = `,eq(isolation_country,"${stateCountry[0].trim()}")`;
-      } else {
-        locationFilter = `,eq(state_province,"${stateCountry[0].trim()}"),eq(isolation_country,"${stateCountry[1].trim()}")`;
-      }
-
-      let content = new OutbreaksGeoMapInfo(Object.assign({}, contentValues, {
-        metadata: item.metadata,
-        locationFilter: locationFilter,
-        longitude: item.longitude,
-        latitude: item.latitude
-      }));
-
-      return content.domNode.innerHTML;
-    },
-
     addMarkerToMap: function (item) {
-      const latitude = item.latitude.toFixed(5);
-      const longitude = item.longitude.toFixed(5);
-      const count = item.metadata.genomeNames.length;
-
-      const latLng = new google.maps.LatLng(latitude, longitude);
-      let markerColor, markerLabel;
-      if (item.metadata.hostCommonNames.hasOwnProperty('Human')) {
-        markerColor = this.cattleAndHumanMarkerColor;
-        const humanCount = item.metadata.hostCommonNames['Human'];
-        markerLabel = humanCount + ' / ' + (count - humanCount);
-      } else {
-        markerColor = this.cattleMarkerColor;
-        markerLabel = count.toString();
-      }
-      const icon = this.createMarkerIcon(markerLabel, item.isCountryLevel, markerColor);
-      const anchorPoint = count === 1 ? 1 : 1.5 + (count - 2) * 0.2;
-      const infoContent = this.createInfoWindowContent(item);
-
-      const marker = new google.maps.Marker({
-        position: latLng,
-        labelAnchor: new google.maps.Point(anchorPoint, 33),
-        label: {text: markerLabel, color: '#fff'},
-        icon: icon,
-        map: this.map
-      });
+      const marker = this.createMarker(item);
       this.markers.push(marker);
 
-      const infoWindow = new google.maps.InfoWindow({
-        content: infoContent
-      });
-      this.infoWindows.push(infoWindow);
-
-      marker.addListener('click', () => {
-        infoWindow.open({
-          anchor: marker,
-          map: this.map,
-          shouldFocus: false
+      if (this.createInfoWindowContent) {
+        const infoContent = this.createInfoWindowContent(item);
+        const infoWindow = new google.maps.InfoWindow({
+          content: infoContent
         });
-      });
+        this.infoWindows.push(infoWindow);
+
+        marker.addListener('click', () => {
+          infoWindow.open({
+            anchor: marker,
+            map: this.map,
+            shouldFocus: false
+          });
+        });
+      }
     },
 
     startup: function () {
@@ -172,6 +105,15 @@ define([
       this.usaBounds = new google.maps.LatLngBounds(minLatLong, maxLatLong);
     },
 
+    postCreate: function () {
+      if (this.headerInfo) {
+        this.headerInfoNode.innerHTML = this.headerInfo;
+      }
+      if (this.footerInfo) {
+        this.footerInfoNode.innerHTML = this.footerInfo;
+      }
+    },
+
     onSetData: async function () {
       if (this.data) {
         const geocoder = new google.maps.Geocoder();
@@ -183,13 +125,22 @@ define([
 
         for (const [location, info] of Object.entries(this.data)) {
           try {
-            let geocodeAddress = await this.geocodeAddress(geocoder, location);
-            const latitude = geocodeAddress.lat();
-            const longtitude = geocodeAddress.lng();
+            let latitude, longitude;
+
+            if (location.toLowerCase() === 'usa') {
+              // Set the latitude and longitude for USA specifically
+              latitude = 39.8283;
+              longitude = -101.3;
+            } else {
+              // Geocode other locations
+              let geocodeAddress = await this.geocodeAddress(geocoder, location);
+              latitude = geocodeAddress.lat();
+              longitude = geocodeAddress.lng();
+            }
 
             const item = {
               latitude: latitude,
-              longitude: longtitude,
+              longitude: longitude,
               isCountryLevel: !location.includes(','),
               metadata: {...info, location}
             };
@@ -204,12 +155,12 @@ define([
               maximumLatitude = latitude;
             }
 
-            if (!minimumLongitude || longtitude < minimumLongitude) {
-              minimumLongitude = longtitude;
+            if (!minimumLongitude || longitude < minimumLongitude) {
+              minimumLongitude = longitude;
             }
 
-            if (!maximumLongitude || longtitude > maximumLongitude) {
-              maximumLongitude = longtitude;
+            if (!maximumLongitude || longitude > maximumLongitude) {
+              maximumLongitude = longitude;
             }
 
           } catch (error) {
@@ -233,9 +184,14 @@ define([
           this.initialBounds = bounds;
 
           let options = this.defaultMapOptions;
-          options.center = this.usaBounds.getCenter();
+          if (this.focusOnUS) {
+            options.center = this.usaBounds.getCenter();
+          } else {
+            options.center = bounds.getCenter();
+          }
           options.streetViewControl = false;
-          options.disableDefaultUI = true
+          options.disableDefaultUI = true;
+          options.zoomControl = true;
 
           // Add styles to hide highways
           options.styles = [
@@ -247,13 +203,18 @@ define([
           ];
 
           this.map = new google.maps.Map(document.getElementById(this.canvasId), options);
-          this.map.fitBounds(this.usaBounds);
+          if (this.focusOnUS) {
+            this.map.fitBounds(this.usaBounds);
+          } else {
+            this.map.fitBounds(bounds);
+          }
 
-          /*google.maps.event.addListenerOnce(this.map, 'bounds_changed', lang.hitch(this, function () {
-            const initialZoomLevel = this.map.getZoom();
-            this.initialZoomLevel = initialZoomLevel;
-            this.map.setZoom(initialZoomLevel);
-          }));*/
+          google.maps.event.addListenerOnce(this.map, 'bounds_changed', lang.hitch(this, function () {
+            if (!this.focusOnUS) {
+              let map = dom.byId('global_map');
+              map.checked = true;
+            }
+          }));
 
           // Add marker and info windows for each location
           for (let item of mapData.items) {

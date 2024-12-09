@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/store/Memory', 'dojo/text!./templates/SFVTSearch.html', 'dojo/query',
-  './TextInputEncoder', './SearchBase', './FacetStoreBuilder', './PathogenGroups', '../../util/PathJoin', 'dojo/request/xhr',
-  'dijit/Dialog', 'dojo/on'
+  './TextInputEncoder', './SearchBase', './FacetStoreBuilder', '../../store/SFVTViruses', '../../util/PathJoin', 'dojo/request/xhr',
+  'dijit/Dialog', 'dojo/on', 'dojo/when', 'dojo/dom-construct'
 ], function (
   declare, lang, Memory, template, query,
-  TextInputEncoder, SearchBase, storeBuilder, pathogenGroupStore, PathJoin, xhr,
-  Dialog, on
+  TextInputEncoder, SearchBase, storeBuilder, SFVTViruses, PathJoin, xhr,
+  Dialog, on, when, domConstruct
 ) {
 
   const influenzaSegmentMapping = {
@@ -38,10 +38,11 @@ define([
     resultUrlBase: '/view/Taxonomy/{taxon_id}?',
     resultUrlHash: '#view_tab=sfvt',
     defaultTaxonId: '11320',
-    proteinOptions: ['12637'],
+    proteinOptions: ['10244', '12637'],
     segmentOptions: ['11320'],
     sfvtSequenceErrorMessage: 'There are too many Sequence Feature hits. Please refine Sequence Feature Variant Type Sequence pattern to narrow down the results.',
     sfvtMaxLimit: 300,
+    mpoxGeneProductMapping: {},
 
     startup: function () {
       let sfvtSeqSearchButton = query('#sfvt-seq-search')[0];
@@ -80,14 +81,34 @@ define([
     postCreate: function () {
       this.inherited(arguments);
 
+      this.additionalMetadataNode.addOption([
+        {
+          value: 'Clade I',
+          label: 'Clade I'
+        }, {
+          value: 'Clade II',
+          label: 'Clade II'
+        }
+      ]);
       storeBuilder('sequence_feature', 'taxon_id').then(lang.hitch(this, (store) => {
         // Display correct names based on taxon id
-        for (let item of store.data) {
-          const taxon = pathogenGroupStore.data.find(pathogen => pathogen.id == item.id);
-          if (taxon) {
-            item.name = taxon.name;
+        store.data.forEach(item => {
+          const virus = SFVTViruses.get(item.id);
+          if (virus) {
+            item.name = virus.name;
+          } else {
+            store.remove(item.id);
           }
-        }
+        });
+
+        store.data.sort((a, b) => a.name.localeCompare(b.name));
+
+        // Update the index to reflect the new order of the data
+        store.index = {}; // Reset the index
+        store.data.forEach((item, index) => {
+          store.index[item.id] = index; // Map each id to its new index
+        });
+
         this.pathogenGroupNode.store = store;
         if (this.defaultTaxonId) {
           this.pathogenGroupNode.set('value', this.defaultTaxonId);
@@ -103,6 +124,27 @@ define([
             });
         }
       }));
+
+      // Retrieve product values for gene
+      let self = this;
+      when(xhr.post(PathJoin(window.App.dataAPI, '/sequence_feature/'), {
+        handleAs: 'json',
+        headers: {
+          Accept: 'application/solr+json',
+          'Content-Type': 'application/solrquery+x-www-form-urlencoded',
+          'X-Requested-With': null,
+          Authorization: (window.App.authorizationToken || '')
+        },
+        data: `q=taxon_id:${self.proteinOptions.join(' OR ')}&fl=gene,product&group=true&group.field=gene`
+      }), function (response) {
+        if (response && response.grouped && response.grouped.gene) {
+          response.grouped.gene.groups.forEach(group => {
+            const gene = group.groupValue;
+            const product = group.doclist.docs[0].product;
+            self.mpoxGeneProductMapping[gene] = product;
+          });
+        }
+      });
     },
 
     onPathogenChange: function () {
@@ -112,18 +154,25 @@ define([
       //Clear multi select values
       /*this.virusTypeNode.set('options', []);
       this.virusTypeNode.reset();*/
+      this.subtypeNode.set('options', []);
+      this.subtypeNode.reset();
       this.subtypeHNode.set('options', []);
       this.subtypeHNode.reset();
       this.subtypeNNode.set('options', []);
       this.subtypeNNode.reset();
       this.geneNode.set('options', []);
       this.geneNode.reset();
+      this.additionalMetadataNode.set('value', []);
+      this.additionalMetadataNode._updateSelection();
+      //this.additionalMetadataNode.set('options', []);
+      //this.additionalMetadataNode.reset();
 
       //Update virus type multi select values with selected pathogen
       const condition = 'taxon_id:' + taxonId;
       storeBuilder('sequence_feature', 'subtype', condition).then(lang.hitch(this, (store) => {
         let hItems = [];
         let nItems = [];
+        let items = [];
 
         // Separate items based on their prefix
         for (let item of store.data) {
@@ -137,27 +186,43 @@ define([
               value: item.name,
               label: item.name.substring(1)
             });
+          } else {
+            items.push({
+              value: item.name,
+              label: item.name
+            });
           }
         }
 
         // Sort 'H' and 'N' items numerically by their suffix
         hItems.sort((a, b) => parseInt(a.label) - parseInt(b.label));
         nItems.sort((a, b) => parseInt(a.label) - parseInt(b.label));
+        items.sort((a, b) => parseInt(a.label) - parseInt(b.label));
 
         // Add sorted 'H' and 'N' items to nodes
         this.subtypeHNode.addOption(hItems);
         this.subtypeNNode.addOption(nItems);
+        this.subtypeNode.addOption(items);
       }));
 
       storeBuilder('sequence_feature', 'gene', condition).then(lang.hitch(this, (store) => {
-        let geneOptions = []
+        let geneOptions = [];
         for (let item of store.data) {
-          const segmentNo = influenzaSegmentMapping[item.name];
-          geneOptions.push(
-            {
-              value: item.name,
-              label: segmentNo ? `${segmentNo} / ${item.name}` : item.name
-            });
+          if (taxonId === this.defaultTaxonId) { // Influenza
+            const segmentNo = influenzaSegmentMapping[item.name];
+            geneOptions.push(
+              {
+                value: item.name,
+                label: segmentNo ? `${segmentNo} / ${item.name}` : item.name
+              });
+          } else {
+            const product = this.mpoxGeneProductMapping[item.name];
+            geneOptions.push(
+              {
+                value: item.name,
+                label: product ? `${item.name} - ${product}` : item.name
+              });
+          }
         }
 
         geneOptions.sort((a, b) => a.label.localeCompare(b.label));
@@ -165,16 +230,49 @@ define([
         this.geneNode.addOption(geneOptions);
       }));
 
+      query('.customFilter').style('display', 'none');
+      const customFilters = query('.customFilter');
       if (this.segmentOptions.includes(taxonId)) {
+        const options = query('#options1')[0];
+        customFilters.forEach(function (container) {
+          domConstruct.place(container, options, 'last');
+        });
+
         query('.proteinOptions').style('display', 'none');
         query('.segmentOptions').style('display', 'block');
       } else {
+        const options = query('#options2')[0];
+        customFilters.forEach(function (container) {
+          domConstruct.place(container, options, 'last');
+        });
+
         query('.segmentOptions').style('display', 'none');
         query('.proteinOptions').style('display', 'block');
       }
 
+      const taxonMapping = {
+        '10244': ['sequenceFeatureType', 'cladeType'],
+        '12637': ['sequenceFeatureType', 'subtype'],
+        'default': ['sequenceFeatureType']
+      };
+
+      // Determine which elements to show based on the taxonId
+      const elementsToShow = taxonMapping[taxonId] || taxonMapping['default'];
+
+      // Show relevant elements by class
+      elementsToShow.forEach(function (className) {
+        query(`#${className}`).style('display', 'block');
+      });
+
       query('.sfvtOptions').style('display', 'block');
       query('#pathogenInfoDiv').style('display', 'none');
+    },
+
+    buildDefaultColumns: function () {
+      const taxonId = this.pathogenGroupNode.value;
+
+      // Reorganize table columns for Monkeypox virus
+      return taxonId === '10244' ? '-source_strain,additional_metadata' : '';
     },
 
     buildFilter: async function () {
@@ -205,9 +303,18 @@ define([
         sfQueryArr.push(`in(gene,(${geneValue.join(',')}))`);
       }
 
+      let subtypeValue = this.subtypeNode.get('value');
+      if (subtypeValue.length === 1) {
+        filterArr.push(`eq(subtype,"${sanitizeInput(subtypeValue[0])}")`);
+        sfQueryArr.push(`eq(subtype,${sanitizeInput(subtypeValue[0])})`);
+      } else if (subtypeValue.length > 1) {
+        filterArr.push(`or(${subtypeValue.map(v => `eq(subtype,"${sanitizeInput(v)}")`)})`);
+        sfQueryArr.push(`in(subtype,(${subtypeValue.join(',')}))`);
+      }
+
       const subtypeHValue = this.subtypeHNode.get('value');
       const subtypeNValue = this.subtypeNNode.get('value');
-      let subtypeValue = subtypeHValue.concat(subtypeNValue);
+      subtypeValue = subtypeHValue.concat(subtypeNValue);
 
       // Update subtype options if any gene selected
       if (geneValue.length > 0) {
@@ -248,6 +355,15 @@ define([
       } else if (sequenceFeatureTypeValue.length > 1) {
         filterArr.push(`or(${sequenceFeatureTypeValue.map(v => `eq(sf_category,"${sanitizeInput(v)}")`)})`);
         sfQueryArr.push(`in(sf_category,(${sequenceFeatureTypeValue.join(',')}))`);
+      }
+
+      const additionalMetadataValue = this.additionalMetadataNode.get('value');
+      if (additionalMetadataValue.length === 1) {
+        filterArr.push(`eq(additional_metadata,"${TextInputEncoder(sanitizeInput(additionalMetadataValue[0]))}")`);
+        sfQueryArr.push(`eq(additional_metadata,${TextInputEncoder(sanitizeInput(additionalMetadataValue[0]))})`);
+      } else if (additionalMetadataValue.length > 1) {
+        filterArr.push(`or(${additionalMetadataValue.map(v => `eq(additional_metadata,"${TextInputEncoder(sanitizeInput(v))}")`)})`);
+        sfQueryArr.push(`in(additional_metadata,(${additionalMetadataValue.join(',')}))`);
       }
 
       /*const startValue = parseInt(this.aaCoordinatesStartNode.get('value'));
@@ -352,7 +468,7 @@ define([
       this.keywordNode.reset();
       this.sfvtSequenceNode.reset();
 
-      for (let el of [this.sequenceFeatureTypeNode, this.subtypeHNode, this.subtypeNNode, this.geneNode]) {
+      for (let el of [this.sequenceFeatureTypeNode, this.subtypeHNode, this.subtypeNNode, this.subtypeNode, this.geneNode]) {
         el.set('value', []);
         el._updateSelection();
       }

@@ -3,6 +3,7 @@
         .dojoxCheckedMultiSelectWrapper {
             width: 100%;
             height: 100% !important;
+            max-height: 250px;
         }
     </style>
     <div class="appTemplate">
@@ -54,21 +55,24 @@
                                 data-dojo-attach-point="virusTypeNode" multiple style="height: 100%"></select>
                     </div>
                 </div>-->
-                <div class="appFieldLong" style="display: flex;">
+                <div class="appFieldLong" style="display: flex;" id="options1">
                     <div style="box-sizing: border-box;margin-right: 50px;min-width: 120px;">
                         <div class="headerrow segmentOptions">
                             <label class="appBoxLabel">Segment / Protein</label>
+                        </div>
+                        <div class="headerrow proteinOptions">
+                            <label class="appBoxLabel">Gene - Protein</label>
                         </div>
                         <div class="appRow">
                             <div class="appFieldLong">
                                 <select data-dojo-type="dojox/form/CheckedMultiSelect" name="genes"
                                         data-dojo-props="disabled:false"
                                         data-dojo-attach-event="onChange: onSegmentChange"
-                                        data-dojo-attach-point="geneNode" multiple style="height: 100%"></select>
+                                        data-dojo-attach-point="geneNode" multiple style="height: 100%;"></select>
                             </div>
                         </div>
                     </div>
-                    <div style="flex: 1; box-sizing: border-box;">
+                    <div id="sequenceFeatureType" class="customFilter" style="flex: 1; box-sizing: border-box;">
                         <div class="headerrow">
                             <label class="appBoxLabel">Sequence Feature Type</label>
                         </div>
@@ -81,7 +85,34 @@
                             </div>
                         </div>
                     </div>
+                    <div id="cladeType" class="customFilter" style="flex: 1; box-sizing: border-box;">
+                        <div class="headerrow ">
+                            <label class="appBoxLabel">Clade</label>
+                        </div>
+                        <div class="appRow">
+                            <div class="appFieldLong">
+                                <select data-dojo-type="dojox/form/CheckedMultiSelect" name="additional_metadata"
+                                        data-dojo-props="disabled:false"
+                                        data-dojo-attach-point="additionalMetadataNode" multiple
+                                        style="height: 100%"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="subtype" class="customFilter" style="flex: 1; box-sizing: border-box;">
+                        <div class="headerrow">
+                            <label class="appBoxLabel">Subtype</label>
+                        </div>
+                        <div class="appRow">
+                            <div class="appFieldLong">
+                                <select data-dojo-type="dojox/form/CheckedMultiSelect" name="subtype"
+                                        data-dojo-props="disabled:false"
+                                        data-dojo-attach-point="subtypeNode" multiple
+                                        style="height: 100%"></select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                <div class="appFieldLong" style="display: flex;" id="options2"></div>
                 <div class="headerrow subtypeOptions" style="display: none;">
                     <label class="appBoxLabel">Subtype</label>
                 </div>
@@ -114,7 +145,8 @@
                     <div class="appFieldLong">
                         <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'eg. *RERE*'"
                              data-dojo-attach-point="sfvtSequenceNode" name="sfvtSequence" style="width: 500px"></div>
-                        <div class="warning" data-dojo-attach-point="sfvtSequenceMessage" style="font-size: 0.9em"></div>
+                        <div class="warning" data-dojo-attach-point="sfvtSequenceMessage"
+                             style="font-size: 0.9em"></div>
                     </div>
                 </div>
                 <!--<div class="headerrow">
@@ -141,7 +173,8 @@
         <div class="appSubmissionArea sfvtOptions" style="display: none;">
             <div style="margin-top: 10px; text-align:center;">
                 <div data-dojo-type="dijit/form/Button"
-                     data-dojo-attach-event="onClick: onReset">Reset</div>
+                     data-dojo-attach-event="onClick: onReset">Reset
+                </div>
                 <div data-dojo-attach-point="submitButton"
                      type="submit" data-dojo-type="dijit/form/Button">Search
                 </div>

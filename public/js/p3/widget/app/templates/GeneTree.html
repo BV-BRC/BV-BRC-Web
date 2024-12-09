@@ -225,23 +225,7 @@
               <label class="paramlabel">Metadata Fields:</label>
               <div name="metadata_selector" class="medInput">
                 <select data-dojo-attach-point="metadata_selector"
-                  data-dojo-type="dijit/form/Select" name="metadata_selector" required="false">
-                  <option value="genome_id">Genome ID</option>
-                  <option value="genome_name">Genome Name</option>
-                  <option value="genome_length">Genome Length</option>
-                  <option value="feature_group">Feature Group</option>
-                  <option value="species">Species</option>
-                  <option value="strain">Strain</option>
-                  <option value="accession">Accession</option>
-                  <option value="subtype">Subtype</option>
-                  <option value="lineage">Lineage</option>
-                  <option value="host_group">Host Group</option>
-                  <option value="host_common_name">Host Common Name</option>
-                  <option value="collection_date">Collection Date</option>
-                  <option value="collection_year">Collection Year</option>
-                  <option value="geographic_group">Geographic Group</option>
-                  <option value="isolation_country">Isolation Country</option>
-                  <option value="geographic_location">Geographic Location</option>
+                  data-dojo-type="dijit/form/Select" name="metadata_selector" required="false" data-dojo-attach-event="onChange:checkMoreOptions">
                 </select>
               </div>
             </td>

@@ -88,7 +88,9 @@ define([
               }, listItem);
 
               var author;
-              if (pubmedSummary.result[value].authors.length == 1) {
+              if (pubmedSummary.result[value].authors.length == 0) {
+                author = '';
+              } else if (pubmedSummary.result[value].authors.length == 1) {
                 author = pubmedSummary.result[value].authors[0].name;
               }
               else if (pubmedSummary.result[value].authors.length == 2) {
