@@ -436,6 +436,11 @@ define([
       // Fetch sf_id's if sfvt sequence is provided
       const sfvtSequenceValue = this.sfvtSequenceNode.get('value');
       if (sfvtSequenceValue !== '') {
+        const pathogen = SFVTViruses.data.find(entry => entry.id === parseInt(pathogenGroupValue, 10));
+        let solrQuery = `sfvt_sequence:${escapeSpecialCharacters(sfvtSequenceValue)}`;
+        if (pathogen && pathogen.name) {
+          solrQuery += ` AND sf_id:*${pathogen.name.split(' ')[0]}*`;
+        }
         const sfvtQuery = '?in(sfvt_sequence,(' + encodeURIComponent(escapeSpecialCharacters(sfvtSequenceValue)) + '))&select(sf_id)&limit(2500000)';
         const sfvtResponse = await xhr.post(PathJoin(window.App.dataAPI, 'sequence_feature_vt', sfvtQuery), {
           headers: {
@@ -446,7 +451,7 @@ define([
           },
           handleAs: 'json',
           data: {
-            q: 'sfvt_sequence:' + escapeSpecialCharacters(sfvtSequenceValue),
+            q: solrQuery,
             fl: 'sf_id',
             group: 'true',
             'group.field': 'sf_id',
