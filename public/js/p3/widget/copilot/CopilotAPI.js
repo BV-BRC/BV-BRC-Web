@@ -96,7 +96,6 @@ define([
         submitQuery: function(inputText, sessionId, systemPrompt, model) {
             var _self = this;
             console.log('query');
-
             var model_route = '';
             if (model === 'llama3.1-70b') {
                 model_route = '/copilot-chat';
@@ -139,14 +138,13 @@ define([
          * @returns {Promise<Object>} Promise resolving to API response
          * @description Submits a user query to the Copilot chat service with RAG
          */
-        submitRagQuery: function(inputQuery, ragDb) {
+        submitRagQuery: function(inputQuery, ragDb, sessionId, model) {
             var _self = this;
             var data = {
                 query: inputQuery,
                 rag_db: ragDb,
                 user_id: _self.user_id
             };
-
             return request.post(this.apiUrlBase + '/rag/chat', {
                 data: JSON.stringify(data),
                 headers: {
@@ -154,11 +152,17 @@ define([
                     Authorization: (window.App.authorizationToken || '')
                 },
                 handleAs: 'json'
-            }).then(function(response) {
-                debugger;
-                _self.storedResult = response;
-                return response;
-            }).catch(function(error) {
+            }).then(lang.hitch(this, function(response) {
+                if (response['message'] == 'success') {
+                    var system_prompt = 'Using the following documents as context, answer the user questions. Do not use any other sources of information:\n\n';
+                    response['documents'].forEach(function(doc) {
+                        system_prompt += doc['content'] + '\n';
+                    });
+                    return this.submitQuery(inputQuery, sessionId, system_prompt, model);
+                } else {
+                    throw new Error(response['message']);
+                }
+            })).catch(function(error) {
                 console.error('Error submitting query:', error);
                 throw error;
             });
@@ -235,5 +239,42 @@ define([
                 throw error;
             });
         },
+
+        getUserPrompts: function() {
+            var _self = this;
+            return request.get(this.apiUrlBase + '/get-user-prompts?user_id=' + _self.user_id, {
+                headers: {
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response.prompts[0];
+            }).catch(function(error) {
+                console.error('Error getting user prompts:', error);
+                throw error;
+            });
+        },
+
+        savePrompt: function(promptName, promptText) {
+            var _self = this;
+            return request.post(this.apiUrlBase + '/save-prompt', {
+                data: JSON.stringify({
+                    name: promptName,
+                    text: promptText,
+                    user_id: _self.user_id
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                console.log('Prompt saved:', response);
+                return true;
+            }).catch(function(error) {
+                console.error('Error saving prompt:', error);
+                throw error;
+            });
+        }
     });
 });

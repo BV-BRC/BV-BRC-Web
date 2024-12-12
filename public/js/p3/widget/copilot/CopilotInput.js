@@ -31,6 +31,7 @@ define([
       /** @property {string} ragDb - The RAG database to use for the chat session */
       ragDb: null,
 
+
       /**
        * @constructor
        * @param {Object} args - Configuration arguments
@@ -52,6 +53,17 @@ define([
         var wrapperDiv = domConstruct.create('div', {
           style: 'display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; border: 0;'
         }, this.containerNode);
+
+        // Create RAG button
+        this.ragButton = new Button({
+            label: 'RAG OFF',
+            style: 'height: 30px; margin-right: 10px;',
+            class: '.claro .dijitButton .dijitButtonNode',
+            onClick: lang.hitch(this, function() {
+                topic.publish('ragButtonPressed');
+            })
+        });
+        this.ragButton.placeAt(wrapperDiv);
 
         // Create Textarea widget
         this.textArea = new Textarea({
@@ -89,7 +101,7 @@ define([
               this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
               // Submit query to API and handle response
-              this.copilotApi.submitRagQuery(inputText, 'cancer_papers').then(lang.hitch(this, function(response) {
+              this.copilotApi.submitRagQuery(inputText, 'cancer_papers', this.sessionId, this.model).then(lang.hitch(this, function(response) {
                 debugger;
                 // Add user query and assistant response to chat store
                 this.chatStore.addMessages([
@@ -135,6 +147,7 @@ define([
               this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
               // Submit query to API and handle response
+              // previous conversation is added server side
               this.copilotApi.submitQuery(inputText, this.sessionId, this.system_prompt, this.model).then(lang.hitch(this, function(response) {
                 // Add user query and assistant response to chat store
                 this.chatStore.addMessages([
@@ -216,6 +229,7 @@ define([
       },
 
       setSystemPromptWithData: function(data) {
+        debugger;
         if (!data || !data.length) {
           this.system_prompt = '';
           return;
@@ -229,6 +243,10 @@ define([
         this.system_prompt = promptStr;
       },
 
+      setSystemPrompt: function(systemPrompt) {
+        this.system_prompt = systemPrompt;
+      },
+
       setModel: function(model) {
         console.log('setModel=', model);
         this.model = model;
@@ -236,7 +254,15 @@ define([
 
       setRagDb: function(ragDb) {
         console.log('setRagDb=', ragDb);
-        this.ragDb = ragDb;
+        if (ragDb == 'null') {
+          this.ragDb = null;
+        } else {
+          this.ragDb = ragDb;
+        }
+      },
+
+      setRagButtonLabel: function(ragDb) {
+        this.ragButton.set('label', ragDb);
       }
     });
   });

@@ -178,6 +178,12 @@ define([
             topic.subscribe('ChatRagDb', lang.hitch(this, function(ragDb) {
                 this.inputWidget.setRagDb(ragDb);
             }));
+            topic.subscribe('ChatSystemPrompt', lang.hitch(this, function(systemPrompt) {
+                this.inputWidget.setSystemPrompt(systemPrompt);
+            }));
+            topic.subscribe('changeRagButtonLabel', lang.hitch(this, function(ragDb) {
+                this.inputWidget.setRagButtonLabel(ragDb);
+            }));
         },
 
         /**

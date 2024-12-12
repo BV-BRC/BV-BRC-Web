@@ -48,7 +48,8 @@ define([
         // Add options bar to top of sidebar
         var leftTopPane = new ChatSessionOptionsBar({
           region: 'top',
-          style: 'height: 30px; '
+          style: 'height: 30px; ',
+          copilotApi: this.copilotApi
         });
         leftContainer.addChild(leftTopPane);
 
