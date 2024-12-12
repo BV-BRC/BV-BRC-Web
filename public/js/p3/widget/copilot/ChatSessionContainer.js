@@ -84,7 +84,7 @@ define([
                 // Add display pane
                 this.displayWidget = new CopilotDisplay({
                     region: 'center',
-                    style: 'padding: 10px; border: 0;',
+                    style: 'padding: 0; border: 1px solid #e6f3ff; overflow: hidden; height: 100%;',
                     copilotApi: this.copilotApi,
                     chatStore: this.chatStore,
                     sessionId: this.sessionId

@@ -59,11 +59,14 @@ define([
         postCreate: function() {
             this.inherited(arguments);
 
-            // Apply base styles to container
+            // Update container styles to lock position
             this.containerNode.style.cssText =
-                'width: 90.5%; height: 180px; background-color: #f0f0f0; ' +
+                'width: 100%; height: 180px; background-color: #f0f0f0; ' +
                 'border: 1px solid #ccc; border-radius: 0px; cursor: pointer; ' +
-                'padding: 10px; transition: background-color 0.2s; position: relative;';
+                'padding: 10px; transition: background-color 0.2s; ' +
+                'position: relative; margin:0px; ' +  // Changed position and added margin
+                'left: 0; right: 0; ' +  // Lock horizontal position
+                'box-sizing: border-box;'; // Ensure padding is included in width calculation
 
             // Style delete button
             this.deleteButtonNode.style.cssText =

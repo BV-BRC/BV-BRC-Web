@@ -48,7 +48,7 @@ define([
       // Create a container for displaying the query result
       this.resultContainer = domConstruct.create('div', {
         class: 'copilot-result-container',
-        style: 'width: 90%; height: 100%; overflow-y: auto; padding: 10px; border: 0; margin: 0 auto;'
+        style: 'width: 90%; height: 100%; overflow-y: auto; padding: 10px; border: 0; margin: 0 auto;padding-right: 100px;'
       }, this.containerNode);
 
       // Show empty state initially
@@ -162,9 +162,11 @@ define([
      * @description Creates and adds a single message to the display container
      */
     addMessage: function(message) {
+      var marginTop = this.resultContainer.children.length === 0 ? '20px' : '5px';
+
       var messageDiv = domConstruct.create('div', {
         class: 'message ' + message.role,
-        style: 'margin-bottom: 10px; padding: 10px; border-radius: 5px; ' +
+        style: 'margin-top: ' + marginTop + '; margin-bottom: 10px; padding: 10px; border-radius: 5px; ' +
                'max-width: 60%; display: inline-block; ' +
                (message.role === 'user' ?
                  'background-color: #e6f3ff; margin-left: auto; float: right; clear: both;' :
