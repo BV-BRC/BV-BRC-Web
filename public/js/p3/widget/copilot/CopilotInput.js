@@ -102,7 +102,7 @@ define([
 
               // Submit query to API and handle response
               this.copilotApi.submitRagQuery(inputText, 'cancer_papers', this.sessionId, this.model).then(lang.hitch(this, function(response) {
-                debugger;
+
                 // Add user query and assistant response to chat store
                 this.chatStore.addMessages([
                   {
@@ -121,6 +121,7 @@ define([
                 if (_self.new_chat) {
                   _self.new_chat = false;
                   topic.publish('reloadUserSessions');
+                  topic.publish('generateSessionTitle');
                 }
               })).finally(lang.hitch(this, function() {
                 // Hide loading indicator
@@ -167,6 +168,7 @@ define([
                 if (_self.new_chat) {
                   _self.new_chat = false;
                   topic.publish('reloadUserSessions');
+                  topic.publish('generateSessionTitle');
                 }
               })).finally(lang.hitch(this, function() {
                 // Hide loading indicator

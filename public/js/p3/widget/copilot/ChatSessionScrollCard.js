@@ -36,8 +36,10 @@ define([
         // '<div class="session-id" data-dojo-attach-point="sessionIdNode"></div>' +
         templateString: '<div class="chat-session-card" data-dojo-attach-point="containerNode">' +
             '<div class="session-title" data-dojo-attach-point="titleNode"></div>' +
-            '<div class="session-date" data-dojo-attach-point="dateNode"></div>' +
-            '<div class="delete-button" data-dojo-attach-point="deleteButtonNode">🗑️</div>' +
+            '<div class="session-date-container" style="display: flex; justify-content: space-between; align-items: center;">' +
+                '<div class="session-date" data-dojo-attach-point="dateNode"></div>' +
+                '<div class="delete-button" data-dojo-attach-point="deleteButtonNode">Delete</div>' +
+            '</div>' +
         '</div>',
 
         /** @property {string} baseClass - CSS class name for the root node */
@@ -59,16 +61,15 @@ define([
 
             // Apply base styles to container
             this.containerNode.style.cssText =
-                'width: 100%; height: 180px; background-color: #f0f0f0; ' +
+                'width: 90.5%; height: 180px; background-color: #f0f0f0; ' +
                 'border: 1px solid #ccc; border-radius: 0px; cursor: pointer; ' +
                 'padding: 10px; transition: background-color 0.2s; position: relative;';
 
             // Style delete button
             this.deleteButtonNode.style.cssText =
-                'position: absolute; top: 5px; right: 40px; cursor: pointer; ' +
-                'width: 20px; height: 20px; text-align: center; line-height: 20px; ' +
-                'border-radius: 50%; background-color: #f0f0f0; color: #808080; ' +
-                'font-size: 12px; display: flex; align-items: center; justify-content: center;';
+                'cursor: pointer; width: auto; height: 20px; text-align: center; line-height: 20px; ' +
+                'border-radius: 0; background-color: #f0f0f0; color: #808080; ' +
+                'font-size: 12px; display: flex; align-items: center; justify-content: center; padding: 0 5px;';
 
             if (this.session) {
                 // Display session ID
@@ -77,7 +78,7 @@ define([
 
                 // Format and display creation date
                 if (this.session.created_at) {
-                    this.dateNode.innerHTML = 'Created: ' + new Date(this.session.created_at).toLocaleString();
+                    this.dateNode.innerHTML = new Date(this.session.created_at).toLocaleString().split(',')[0];
                     this.dateNode.style.cssText = 'font-size: 0.9em;';
                 }
 
@@ -110,10 +111,21 @@ define([
                 }));
 
                 // Set up delete button click handler
-                on(this.deleteButtonNode, 'click', lang.hitch(this, function(evt) {
+                on(this.deleteButtonNode, 'mousedown', lang.hitch(this, function(evt) {
                     evt.stopPropagation(); // Prevent container click
-                    // topic.publish('ChatSession:Delete', this.session.session_id);
-                    console.log('delete button clicked: TODO implement');
+                    this.deleteButtonNode.style.backgroundColor = '#d0d0d0'; // Darker when pressed
+                }));
+                on(this.deleteButtonNode, 'mouseup', lang.hitch(this, function(evt) {
+                    evt.stopPropagation();
+                    this.deleteButtonNode.style.backgroundColor = '#f0f0f0'; // Original color
+                }));
+                on(this.deleteButtonNode, 'mouseleave', lang.hitch(this, function(evt) {
+                    evt.stopPropagation();
+                    this.deleteButtonNode.style.backgroundColor = '#f0f0f0'; // Reset if mouse leaves while pressed
+                }));
+                on(this.deleteButtonNode, 'click', lang.hitch(this, function(evt) {
+                    evt.stopPropagation();
+                    topic.publish('ChatSession:Delete', this.session.session_id);
                 }));
 
                 // Add hover effect styles

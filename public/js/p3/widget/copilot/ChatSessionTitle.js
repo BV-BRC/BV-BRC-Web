@@ -99,14 +99,14 @@ define([
       // Handle save on Enter and cancel on Escape
       on(this.titleEditor, 'keydown', lang.hitch(this, function(evt) {
         if (evt.keyCode === 13) { // Enter
-          this.saveTitle();
+          this.saveTitleEditor();
         } else if (evt.keyCode === 27) { // Escape
           this.cancelEditing();
         }
       }));
 
       // Handle blur event
-      on(this.titleEditor, 'blur', lang.hitch(this, 'saveTitle'));
+      on(this.titleEditor, 'blur', lang.hitch(this, 'saveTitleEditor'));
     },
 
     /**
@@ -122,12 +122,11 @@ define([
       this.titleEditor.domNode.style.display = 'block';
       this.titleEditor.focus();
     },
-
     /**
-     * @method saveTitle
+     * @method saveTitleEditor
      * @description Saves the edited title
      */
-    saveTitle: function() {
+    saveTitleEditor: function() {
       if (!this.isEditing) return;
 
       var newTitle = this.titleEditor.get('value').trim();
@@ -143,6 +142,23 @@ define([
         }));
       }
       this.cancelEditing();
+    },
+
+    /**
+     * @method saveTitle
+     * @description Saves the current title to the session
+     */
+    saveTitle: function() {
+      if (!this.sessionId) return;
+
+      this.copilotApi.updateSessionTitle(this.sessionId, this.title).then(lang.hitch(this, function() {
+        topic.publish('ChatSessionTitleChanged', {
+          sessionId: this.sessionId,
+          title: this.title
+        });
+      }), lang.hitch(this, function(error) {
+        topic.publish('UpdateSessionTitleError', error);
+      }));
     },
 
     /**

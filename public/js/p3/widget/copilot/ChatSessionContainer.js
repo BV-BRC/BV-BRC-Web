@@ -184,6 +184,36 @@ define([
             topic.subscribe('changeRagButtonLabel', lang.hitch(this, function(ragDb) {
                 this.inputWidget.setRagButtonLabel(ragDb);
             }));
+            topic.subscribe('generateSessionTitle', lang.hitch(this, function() {
+                var messages = this.chatStore.query().map(x => x.content);
+                this.copilotApi.generateTitleFromMessages(messages).then(lang.hitch(this, function(title) {
+                    if (title.startsWith('"') && title.endsWith('"')) {
+                        title = title.substring(1, title.length - 1);
+                    }
+                    this.titleWidget.updateTitle(title);
+                    this.titleWidget.saveTitle();
+                }));
+            }));
+            topic.subscribe('ChatSession:Delete', lang.hitch(this, function(sessionId) {
+                this.copilotApi.deleteSession(sessionId).then(lang.hitch(this, function (response) {
+                    if (response.status === 'ok') {
+                        if (this.sessionId === sessionId) {
+                            this.copilotApi.getUserSessions().then(lang.hitch(this, function(sessions) {
+                                const session_id = sessions[0].session_id;
+                                const messages = sessions[0].messages;
+                                const title = sessions[0].title;
+                                const data = {
+                                    sessionId: session_id,
+                                    messages: messages
+                                };
+                                topic.publish('ChatSession:Selected', data);
+                                this.titleWidget.updateTitle(title);
+                            }));
+                        }
+                    }
+                    topic.publish('reloadUserSessions');
+                }));
+            }));
         },
 
         /**

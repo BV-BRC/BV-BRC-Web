@@ -190,12 +190,11 @@ define([
             });
         },
 
-        // NOPE: going to have to do this on the server side
-        getTitleFromMessage: function(message) {
+        generateTitleFromMessages: function(messages) {
             var _self = this;
-            return request.post(this.apiUrlBase + '/generate-title', {
+            return request.post(this.apiUrlBase + '/generate-title-from-messages', {
                 data: JSON.stringify({
-                    content: message,
+                    messages: messages,
                     user_id: _self.user_id
                 }),
                 headers: {
@@ -204,7 +203,8 @@ define([
                 },
                 handleAs: 'json'
             }).then(function(response) {
-                return response.title;
+                const title = response.response.content;
+                return title;
             }).catch(function(error) {
                 console.error('Error getting session title:', error);
                 throw error;
@@ -273,6 +273,27 @@ define([
                 return true;
             }).catch(function(error) {
                 console.error('Error saving prompt:', error);
+                throw error;
+            });
+        },
+
+        deleteSession: function(sessionId) {
+            var _self = this;
+            return request.post(this.apiUrlBase + '/delete-session', {
+                data: JSON.stringify({
+                    session_id: sessionId,
+                    user_id: _self.user_id
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                console.log('Session deleted:', response);
+                return response;
+            }).catch(function(error) {
+                console.error('Error deleting session:', error);
                 throw error;
             });
         }
