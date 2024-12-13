@@ -1,9 +1,9 @@
 define([
-  'dojo/_base/declare', 'dojo/dom-construct', 'dojo/query', 'dojo/dom-style',
+  'dojo/_base/declare', 'dojo/dom-construct', 'dojo/query', 'dojo/dom-style', 'dojo/domReady',
   'dijit/_WidgetBase', 'dijit/_Templated', '../../widget/ExternalItemFormatter',
   'dojo/text!./OutbreaksOverview.html'
 ], function (
-  declare, domConstruct, dojoQuery, domStyle,
+  declare, domConstruct, dojoQuery, domStyle, domReady,
   WidgetBase, Templated, ExternalItemFormatter,
   Template
 ) {
@@ -53,6 +53,25 @@ define([
       } else {
         dojoQuery('#acknowledgementsSection').style('display', 'none');
       }
+
+      domReady(function () {
+        if (navigator.clipboard) {
+          let codeBlocks = dojoQuery('.bv-brc-code-block');
+
+          codeBlocks.forEach(codeBlock => {
+            let button = domConstruct.create('button', {
+              innerHTML: '<i class="icon-copy" style="padding: 2px 0 2px 0;"></i>'
+            }, codeBlock);
+
+            button.addEventListener('click', async () => {
+              const code = codeBlock.querySelector('code');
+              const text = code.innerText;
+
+              await navigator.clipboard.writeText(text);
+            });
+          });
+        }
+      });
     }
   });
 });

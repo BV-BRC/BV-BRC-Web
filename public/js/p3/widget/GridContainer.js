@@ -218,7 +218,20 @@ define([
           }
         }
 
+        // Show/hide columns if requested by user
+        if (state.hashParams.defaultColumns && this.grid) {
+          const columns = state.hashParams.defaultColumns.split(',');
+          for (let column of columns) {
+            column = column.trim();
+            if (!column) continue; // Skip empty columns
 
+            const isHidden = column.charAt(0) === '-';
+            const name = column.charAt(0) === '-' || column.charAt(0) === '+' ? column.substring(1) : column;
+            if (name in this.grid._columns) {
+              this.grid.toggleColumnHiddenState(name, isHidden);
+            }
+          }
+        }
       } else {
         state.hashParams = {};
         if (!oldState && this.defaultFilter) {
@@ -360,7 +373,7 @@ define([
           tooltip: 'Download Selection',
           max: 10000,
           tooltipDialog: downloadSelectionTT,
-          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
+          validContainerTypes: ['sequence_feature_data', 'genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
         },
         function (selection, container) {
 
@@ -393,7 +406,7 @@ define([
           tooltip: 'Copy Selection to Clipboard.',
           tooltipDialog: copySelectionTT,
           max: 5000,
-          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'pathway_summary_data', 'subsystem_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'surveillance_data', 'serology_data', 'strain_data', 'epitope_data']
+          validContainerTypes: ['sequence_feature_data', 'genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'pathway_summary_data', 'subsystem_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'surveillance_data', 'serology_data', 'strain_data', 'epitope_data']
         },
         function (selection, container) {
           this.selectionActionBar._actions.CopySelection.options.tooltipDialog.set('selection', selection);
@@ -571,6 +584,23 @@ define([
           Topic.publish('/navigate', {
             href: '/view/SpecialtyGeneEvidence/' + sel.source_id,
             target: 'blank'
+          });
+        },
+        false
+      ], [
+        'ViewSFVT',
+        'MultiButton fa icon-alignment fa-2x',
+        {
+          label: 'VARIANT TYPES',
+          validTypes: ['*'],
+          multiple: false,
+          validContainerTypes: ['sequence_feature_data'],
+          tooltip: 'View Sequence Feature Variant Types'
+        },
+        function (selection) {
+          var sel = selection[0];
+          Topic.publish('/navigate', {
+            href: '/view/SFVT/' + encodeURIComponent(sel.sf_id)
           });
         },
         false

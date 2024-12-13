@@ -1,6 +1,6 @@
 {
   "name": "p3-web",
-  "version": "3.36.16",
+  "version": "3.44.3",
   "private": true,
   "scripts": {
     "start": "node ./bin/p3-web",
@@ -14,6 +14,7 @@
   "dependencies": {
     "axios": "^1.6.8",
     "body-parser": "^1.20.2",
+    "braces": "^3.0.3",
     "bvbrc_js_client": "github:bv-brc/bvbrc_js_client",
     "cookie-parser": "~1.4.6",
     "cytoscape": "^3.2.4",
@@ -42,7 +43,7 @@
     "nodemailer-smtp-transport": "^2.7.4",
     "phyloxml": "^1.0.0",
     "promised-io": "^0.3.6",
-    "pug": "^3.0.2",
+    "pug": "^3.0.3",
     "rql": "^0.3.3",
     "serve-favicon": "^2.5.0",
     "underscore": "^1.13.6",

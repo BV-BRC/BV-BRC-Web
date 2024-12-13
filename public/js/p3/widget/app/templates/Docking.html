@@ -17,66 +17,123 @@
           href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.</p>
       </p>
     </div>
-    <div style="width:85%; margin:auto" class="formFieldsContainer">
-      <div id="annotationBox" style="width:97%;" class="appBox appShadow">
-        <div class="headerrow">
-          <div style="width:85%;display:inline-block;">
-            <label class="appBoxLabel">PDB Selection</label>
-            <div name="pdb-selection" class="infobox iconbox infobutton dialoginfo">
-              <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+      <div style="width:85%; margin:auto" class="formFieldsContainer">
+        <div id="annotationBox" style="width:97%;" class="appBox appShadow">
+          <div class="headerrow">
+            <div style="width:85%;display:inline-block;">
+              <label class="appBoxLabel">Protein Selection</label>
+              <div name="pdb-selection" class="infobox iconbox infobutton dialoginfo">
+                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="appRow">
-          <div class="appFieldLong">
-            <label>PDB Id</label><br>
-            <div data-dojo-type="p3/widget/StructureIdSelector" data-dojo-attach-point="pdb_list" name="pdb_id"
-              style="width:50%" data-dojo-attach-event="onChange:onPdbIdChange" required="true" data-dojo-props="">
+          <br>
+      <div class="appRow">
+        <!-- Radio Buttons -->
+        <input id="${id}_protein_databank_selection" type="radio" data-dojo-type="dijit/form/RadioButton"
+               data-dojo-attach-point="protein_databank_selection" name="protein_input" value="input_pdb"
+               data-dojo-attach-event="onChange:onProteinInputChange" checked />
+               <!-- data-dojo-attach-event="onChange:onInputChange" checked /> -->
+        <!-- <label for="${id}_protein_databank_selection">Protein Databank Archive</label> -->
+        <label for="${id}_protein_databank_selection">Precomputed Structures</label>      
+        <input id="${id}_user_pdb_file" type="radio" data-dojo-type="dijit/form/RadioButton"
+               data-dojo-attach-point="user_pdb_file" name="protein_input" value="user_pdb_file"
+               data-dojo-attach-event="onChange:onInputChange">
+        <label for="${id}_user_pdb_file">Upload a PDB File</label>
+      </div>
+
+      <!--  Protein Databank Selection Block  -->
+      <div data-dojo-attach-point="block_pdb_list" style="display: block;">
+        <div data-dojo-type="p3/widget/StructureIdSelector" data-dojo-attach-point="pdb_list" name="pdb_id"
+        style="width:50%" data-dojo-attach-event="onChange:onPdbIdChange" required="false" data-dojo-props="">
+      </div>
+
+      <input id="${id}_pdb_preview" data-dojo-type="dijit/form/Button" data-dojo-attach-point="pdb_preview"
+        name="pdb_preview" disabled label="Preview PDB" data-dojo-attach-event="onClick:onPdbPreview">
+      </div>
+      <!-- PDB File Upload Block -->
+       <!-- <div data-dojo-attach-point="block_pdb_upload" style="display: block;"> -->
+
+        <!-- <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_pdb" style="width:65%;"
+             data-dojo-attach-event="onChange:onPbdFileUpload"
+             data-dojo-attach-point="user_pdb" value="user_pdb"
+             data-dojo-props="type:['txt','unspecified', 'pdb'],multi:false,promptMessage:'Select a PDB file for the protein of interest',missingMessage:'Protein input is required',placeHolder:'PDB data file'"
+             style="display:inline-block">
             </div>
-
-            <input id="{id}_pdb_preview" data-dojo-type="dijit/form/Button" data-dojo-attach-point="pdb_preview"
-              name="pdb_preview" disabled label="Preview PDB" data-dojo-attach-event="onClick:onPdbPreview">
-
+             <input id="${id}_user_pdb_preview" data-dojo-type="dijit/form/Button" data-dojo-attach-point="user_pdb_preview"
+             name="user_pdb_preview" disabled label="Preview Structure" data-dojo-attach-event="onClick:onPdbPreviewFileUpload">
+            </div>
+      </div> -->
+<!-- PDB File Upload Block -->
+      <div data-dojo-attach-point="block_pdb_upload" style="display: block;">
+        <div style="display: flex; align-items: center;">
+          <!-- WorkspaceObjectSelector -->
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_pdb" style="width:65%;"
+              data-dojo-attach-event="onChange:onPbdFileUpload"
+              data-dojo-attach-point="user_pdb" value="user_pdb"
+              data-dojo-props="type:['txt','unspecified', 'pdb'],multi:false,promptMessage:'Select a PDB file for the protein of interest',missingMessage:'Protein input is required',placeHolder:'PDB data file'">
           </div>
+
+          <!-- Preview Button Next to the Selector -->
+          <input id="${id}_user_pdb_preview" data-dojo-type="dijit/form/Button" data-dojo-attach-point="user_pdb_preview"
+                name="user_pdb_preview" disabled label="Preview Structure" data-dojo-attach-event="onClick:onPdbPreviewFileUpload"
+                style="margin-left: 10px;">
         </div>
       </div>
+    </div>
       <div id="annotationBox" style="width:97%;" class="appBox appShadow">
-
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
-            <label class="appBoxLabel">Ligand library selection</label>
+            <label class="appBoxLabel">Ligand Library Selection</label>
             <div name="ligand-library-selection" class="infobox iconbox infobutton dialoginfo">
               <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
             </div>
           </div>
           <br>
           <div class="appRow">
-
+            <input id="${id}_ligand_named_library" type="radio" data-dojo-type="dijit/form/RadioButton"
+            data-dojo-attach-point="ligand_named_library" name="input" value="named_library"
+            data-dojo-attach-event="onChange:onInputChange" checked />
+            <label for="${id}_ligand_named_library">Predefined Ligand Libraries</label>
+            <input id="${id}_ws_file" type="radio" data-dojo-type="dijit/form/RadioButton"
+            data-dojo-attach-point="ws_file" name="input" value="ws_file"
+            data-dojo-attach-event="onChange:onInputChange" />
+            <label for="${id}_ws_file">Select file of smiles strings</label>
             <input id="${id}_smiles_text" type="radio" data-dojo-type="dijit/form/RadioButton"
               data-dojo-attach-point="input_sequence" name="input" value="smiles_list"
-              data-dojo-attach-event="onChange:onInputChange" checked />
-            <label for="${id}_smiles_text">Enter smiles strings</label>
-            <input id="${id}_ws_file" type="radio" data-dojo-type="dijit/form/RadioButton"
-              data-dojo-attach-point="ws_file" name="input" value="ws_file"
               data-dojo-attach-event="onChange:onInputChange" />
-            <label for="${id}_ws_file">Select file of smiles strings</label>
+            <label for="${id}_smiles_text">Enter smiles strings</label>
           </div>
-          <div data-dojo-attach-point="block_smiles_text" style="height:100px; ">
+          <div data-dojo-attach-point="block_smiles_dropdown" style="height:100px;width:400px">
+            <select data-dojo-type="dijit/form/Select"
+            name="smiles_dropdown"
+            value="smiles_dropdown_value"
+            data-dojo-attach-point="smiles_dropdown"
+            style="width:100%;"
+            data-dojo-props="intermediateChanges:true, missingMessage:'Please select from our options of predefined ligand libraries'"
+            data-dojo-attach-event="onChange:onDropdownChange">
+            <option value="small_db">Exemplar Drug Compounds</option>
+            <option value="approved-drugs">Approved Drug Compounds</option>
+            <option value="experimental_drugs">Experimental Drug Compounds</option>
+          </select>
+        </div>
+          <div data-dojo-attach-point="block_smiles_text" style="height:100px;">
             <textarea id="${id}_smiles_textarea" data-dojo-attach-point="smiles_text" name="smiles_text"
-              style="resize: none; height: 100%;width:96%; margin-left:10px; font-family: monospace; font-size:12px;"
+              style="resize: none; height:90%;width:96%; margin-left:10px; font-family: monospace; font-size:12px;"
               data-dojo-attach-point="sequence" data-dojo-type="dijit/form/SimpleTextarea"
               data-dojo-props="rows:13, placeholder:'Enter one or more SMILES strings, one per line.', intermediateChanges:true,  trim:true"></textarea>
           </div>
           <div data-dojo-attach-point="block_smiles_ws" style="height:100px;">
-
-            <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
-              name="smiles_ws_file" data-dojo-attach-point="smiles_ws_file"
+            <div display:inline-block; margin:auto;" data-dojo-type="p3/widget/WorkspaceObjectSelector"
+              name="smiles_ws_file" 
+              style="height:100px; width:75%";
+              data-dojo-attach-point="smiles_ws_file"
               data-dojo-props="type:['txt','unspecified'],multi:false,promptMessage:'Select or upload file of SMILES strings to your workspace.',missingMessage:'SMILES strings file is required.',placeHolder:'SMILES data file'">
             </div>
           </div>
-
         </div>
       </div>
+      <div style="width:85%; margin:auto" class="formFieldsContainer"></div>
       <div id="annotationBox" style="width:97%;" class="appBox appShadow">
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
@@ -91,9 +148,10 @@
           <div class="appFieldLong">
             <label>Output Folder</label><br>
             <div data-dojo-attach-point="output_path" data-dojo-type="p3/widget/WorkspaceObjectSelector"
-              name="output_path" style="width:100%" required="true"
+              name="output_path" style="width:75%" required="true"
               data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'The output folder for your Docking Results',missingMessage:'Output Folder must be selected.'"
-              data-dojo-attach-event="onChange:onOutputPathChange"></div>
+              data-dojo-attach-event="onChange:onOutputPathChange">
+            </div>
           </div>
         </div>
 
@@ -102,7 +160,7 @@
             <label>Output Name</label><span class="charError"
               style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
             <div data-dojo-attach-point="output_file" data-dojo-attach-event="onChange:checkOutputName"
-              style="width:380px; background-color:#F0F1F3"
+              style="width:100%;"
               data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" required="true"
               data-dojo-props="intermediateChanges:true, promptMessage:'The output name for your Docking Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output name'">
             </div>

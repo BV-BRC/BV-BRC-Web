@@ -1,10 +1,10 @@
 define([
   'dojo/_base/declare', 'dojo/_base/Deferred', 'dojo/request', 'dojo/_base/lang', 'dojo/topic',
-  './_GenomeList', '../Phylogeny', '../../util/PathJoin',
+  './_GenomeList', '../Phylogeny', '../../util/PathJoin', '../../store/SFVTViruses',
   '../TaxonomyTreeGridContainer', '../TaxonomyOverview', '../../util/QueryToEnglish'
 ], function (
   declare, Deferred, xhr, lang, Topic,
-  GenomeList, Phylogeny, PathJoin,
+  GenomeList, Phylogeny, PathJoin, SFVTViruses,
   TaxonomyTreeGrid, TaxonomyOverview, QueryToEnglish
 ) {
   return declare([GenomeList], {
@@ -84,11 +84,24 @@ define([
       // customization for viruses only when the context is changed
       if (this.context === 'bacteria') {
         if (this.taxonomy.lineage_names.includes('Influenza A virus') || this.taxonomy.lineage_names.includes('Rhinovirus A')) {
-          this.viewer.addChild(this.surveillance);
-          this.viewer.addChild(this.serology);
+          if (!this.surveillance) {
+            this.viewer.addChild(this.surveillance);
+          }
+          if (!this.serology) {
+            this.viewer.addChild(this.serology);
+          }
         } else {
           this.viewer.removeChild(this.surveillance);
           this.viewer.removeChild(this.serology);
+        }
+
+        // SFVT
+        if (this.taxonomy.lineage_ids.some(id => SFVTViruses.get(id))) {
+          if (!this.sfvt) {
+            this.viewer.addChild(this.sfvt);
+          }
+        } else {
+          this.viewer.removeChild(this.sfvt);
         }
 
         // strains
@@ -249,6 +262,11 @@ define([
           break;
         case 'phylogeny':
           activeTab.set('state', lang.mixin({}, this.state));
+          break;
+        case 'sfvt':
+          activeTab.set('state', lang.mixin({}, this.state, {
+            search: 'eq(taxon_id,' + this.state.taxon_id + ')'
+          }));
           break;
         case 'structures':
         case 'surveillance':

@@ -18,6 +18,7 @@ define([], function () {
         'ComprehensiveGenomeAnalysis': 'ComprehensiveGenomeAnalysis',
         'ComprehensiveSARS2Analysis': 'ComprehensiveSARS2Analysis',
         'DifferentialExpression': 'Expression',
+        'Docking': 'Docking',
         'FastqUtils': 'FastqUtil',
         'GeneTree': {
           'viral_genome': 'ViralGenomeTree',

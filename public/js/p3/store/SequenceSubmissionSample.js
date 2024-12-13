@@ -38,6 +38,8 @@ define([
             this.isolationSourceAge = store.getValue(data, 'Isolation Source Age');
             this.ageForBird = store.getValue(data, 'Age for Bird');
             this.anatomicalRegion = store.getValue(data, 'Anatomical Region');
+            this.bioProject = store.getValue(data, 'BioProject Accession');
+            this.bioSample = store.getValue(data, 'BioSample Accession');
             this.validations = [];
         },
 
@@ -240,6 +242,27 @@ define([
                                 'year or month or week, for example, 5 Y, 2 M or 3 W.'
                         });
                     }
+                }
+            }
+
+            //Validate BioProject: must be the initial SUB* or PRJ* ID
+            if (this.bioProject) {
+                if (!this.bioProject.startsWith('SUB') && !this.bioProject.startsWith('PRJ')) {
+                    this.validations.push({
+                        type: 'error',
+                        message: 'BioProject must be the initial SUB* or PRJ* ID assigned when you registered the project'
+                    });
+                }
+            }
+
+            //Validate BioSample: must be the initial SUB* number or SAM* ID
+            if (this.bioSample) {
+                if (!this.bioSample.startsWith('SUB') && !this.bioSample.startsWith('SAM')) {
+                    this.validations.push({
+                        type: 'error',
+                        message: 'BioSample must be the initial SUB* number or SAM* ID assigned when you registered the ' +
+                          'sample, or the SRS/ERS/DRS identifier from your SRA submission'
+                    });
                 }
             }
         },

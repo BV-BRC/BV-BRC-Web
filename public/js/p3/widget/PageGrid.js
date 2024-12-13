@@ -162,6 +162,12 @@ define([
       if (!this.store && this.dataModel) {
         this.store = this.createStore(this.dataModel, this.primaryKey);
       }
+
+      // Filter the sort options to only include valid grid columns
+      if (this.queryOptions && this.queryOptions.sort && this.columns) {
+        this.queryOptions.sort = this.queryOptions.sort.filter(sort => sort.attribute in this.columns);
+      }
+
       this.inherited(arguments);
       this._started = true;
 

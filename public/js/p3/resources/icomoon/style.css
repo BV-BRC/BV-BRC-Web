@@ -3865,6 +3865,9 @@
   content: "\eaec";
   color: #fff;
 }
+.icon-alignment-green:before {
+  content: "\eaec";
+}
 .icon-anchor2:before {
   content: "\eaed";
 }

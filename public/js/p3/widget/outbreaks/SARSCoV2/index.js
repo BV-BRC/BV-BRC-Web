@@ -372,7 +372,7 @@ define([
       this.phylogeny = new OutbreaksPhylogenyTreeViewer({
         title: 'Phylogenetic Tree',
         id: this.viewer.id + '_phylogeny',
-        phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/SARS2_IT23_29400_09999_cdh_pango_4_MAFFT_05_GTR_fme_pdvxvm.xml',
+        phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/SARSCoV2/sarscov2.xml',
         nodeVisualizations: nodeVisualizations,
         specialVisualizations: specialVisualizations,
         settings: {
