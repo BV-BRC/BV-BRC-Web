@@ -820,7 +820,7 @@ define([
             const utcDate = new Date(Date.UTC(
               parsedDate.getUTCFullYear(),
               parsedDate.getUTCMonth(),
-              parsedDate.getUTCDate(),
+              parsedDate.getUTCDate()
             ));
             return encodeURIComponent(utcDate.toISOString());
           };
