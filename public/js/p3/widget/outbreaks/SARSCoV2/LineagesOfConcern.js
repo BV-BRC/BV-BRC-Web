@@ -62,7 +62,7 @@ define([
         'Emergence Date': 'June 2022',
         'Amino Acid Substitutions vs Wuhan-Hu-1: Spike': 'T19I, L24-, P25-, P26-, A27S, G142D, K147E, W152R, F157L, I210V, V213G, G257S, G339H, S371F, S373P, S375F, T376A, D405N, R408S, K417N, N440K, G446S, N460K, S477N, T478K, E484A, R493Q, Q498R, N501Y, Y505H, D614G, H655Y, N679K, P681H, N764K, D796Y, Q954H, N969K',
         'Amino Acid Substitutions vs Wuhan-Hu-1: Non-Spike': 'nsp1: S135R; nsp3: T24I, S403L, G489S, P822S; nsp4: L264F, T327I, L438F, T492I; nsp5: P132H; nsp6: S106-, G107-, F108-; nsp8: N118S; nsp12: P323L, G671S; nsp13: R392C; nsp14: I42V; nsp15: T112I; ORF3a:T223I; E:T9I, T11A; M:Q19E, A63T; ORF6:D61L; N:P13L, E31-, R32-, S33-, R203K, G204R, S413R',
-        'Representative Strain': '<a href="https://www.ncbi.nlm.nih.gov/nuccore/ON990685" target=_blank>SARS-CoV-2/human/USA/IL-CDC-STM-G6D8GUH6S/2022</a>',
+        'Representative Strain': '<a href="https://www.bv-brc.org/view/Genome/2697049.6057056" target=_blank>SARS-CoV-2/human/USA/IL-CDC-STM-G6D8GUH6S/2022</a>',
         'Relevant Publications': [
           '<a href="https://github.com/cov-lineages/pango-designation/issues/773" target=_blank>https://github.com/cov-lineages/pango-designation/issues/773</a>'
         ]
@@ -88,7 +88,7 @@ define([
         'Emergence Date': 'January 2022',
         'Amino Acid Substitutions vs Wuhan-Hu-1: Spike': 'T19I, L24-, P25-, P26-, A27S, H69-, V70-, V213G, G339D, S371F, S373P, S375F, T376A, D405N, R408S, K417N, N440K, L452R, S477N, T478K, E484A, F486V, Q498R, N501Y, Y505H, D614G, H655Y, N679K, P681H, N764K, D796Y, Q954H, N969K',
         'Amino Acid Substitutions vs Wuhan-Hu-1: Non-Spike': 'nsp1:S135R; nsp3:T24I, G489S; nsp4:L264F, T327I, T492I; nsp5: P132H; nsp6:S106-, G107-, F108-; nsp12:P323L; nsp13:R392C; nsp14:I42V; nsp15:T112I; ORF3a:T223I; E:T9I; M:Q19E, A63T; ORF6:D61L; ORF7b: L11F; N:P13L, E31-, R32-, S33-, P151S, R203K, G204R, S413R',
-        'Representative Strain': '<a href="https://www.ncbi.nlm.nih.gov/nuccore/ON373214" target=_blank>SARS-CoV-2/human/USA/PA-CDC-LC0583069/2022</a>',
+        'Representative Strain': '<a href="https://www.bv-brc.org/view/Genome/2697049.5037398" target=_blank>SARS-CoV-2/human/USA/PA-CDC-LC0583069/2022</a>',
         'Relevant Publications': [
           '<a href="https://github.com/cov-lineages/pango-designation/issues/517" target=_blank>https://github.com/cov-lineages/pango-designation/issues/517</a>'
         ]
