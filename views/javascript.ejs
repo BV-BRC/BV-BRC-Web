@@ -72,23 +72,33 @@ const load_scripts = [
     // News & Announcements Carousel
     $.getJSON("https://www.bv-brc.org/docs/_static/carousel.json", function (feed) {
       for (var i = 0; i < feed.length; i++) {
-        var link = feed[i].link;
-        var title = feed[i].title;
-        var desc = feed[i].desc;
-        var word_limit = (feed[i].img == "") ? 60 : 20
-        var descSnippit = desc.split(" ", word_limit).join(" ");
-        var img = feed[i].img;
+        const link = feed[i].link;
+        const title = feed[i].title;
+        const desc = feed[i].desc + feed[i].desc;
+        const img = feed[i].img;
+        console.log("DESCSPLIT: ", desc.split(" ").length)
+        // Determine description to display
+        let descContent;
+        const descArr = desc.split(" ");
+        if (img !== "" && descArr.length > 30) {
+          descContent = descArr.slice(0, 30).join(" ") + " ... <a href='" + link + "'>read more</a>";
+        } else if (descArr.length > 60) {
+          descContent = descArr.slice(0, 60).join(" ") + " ... <a href='" + link + "'>read more</a>";
+        } else {
+          descContent = desc;
+        }
+
         $("#announcements-slides").append(
-          `<li class="slide">
+                `<li class="slide">
                   <a href="${link}" class="feed-link">
                       <h4 class="feed-title">${title}</h4>
                   </a>
-                  <p class="feed-description">${descSnippit} ... <a href="${link}">read more</a></p>
+                  <p class="feed-description">${descContent}</p>
                   <img src="${img}" class="feed-img"  loading="lazy">
               </li>`
         );
         $("#announcements-dot-navigation").append(
-          `<div class="dot" role="button" aria-selected="false"></div>`
+                `<div class="dot" role="button" aria-selected="false"></div>`
         );
       }
 
