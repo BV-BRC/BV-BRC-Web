@@ -31,6 +31,37 @@ const load_scripts = [
 <% } %>
 
 <script type="text/javascript">
+  function toggleMenu() {
+    const hamburgerButton = document.querySelector('.hamburger-icon');
+    const menu = document.getElementById("mobile-navbar");
+
+    hamburgerButton.classList.toggle('open');
+    menu.classList.toggle("hidden");
+  }
+
+  function toggleSubMenu(header) {
+    const subMenu = header.nextElementSibling; // Get the the sub-menu
+    const icon = header.querySelector('.icon-chevron-down');
+
+    if (subMenu.style.display === "block") {
+      header.classList.remove('open');
+      subMenu.style.display = "none";
+      icon.classList.remove('open');
+    } else {
+      header.classList.add('open');
+      subMenu.style.display = "block";
+      icon.classList.add('open');
+    }
+  }
+
+  function toggleSearch() {
+    const searchButton = document.querySelector('.search-icon');
+    const searchbar = document.getElementById("mobile-searchbar");
+
+    searchButton.classList.toggle('open');
+    searchbar.classList.toggle("hidden");
+  }
+
   $(window).on('load', function () {
     // LinkedIn Feed
     let $linkedInFeedElm = $("#linkedin-feed");
