@@ -239,6 +239,16 @@
   flex-wrap: wrap;
 }
 
+@media (max-width: 768px) {
+  #bv-brc-home .bv-brc-mid-content .bv-brc-mid-content-links {
+    gap: 1rem;
+  }
+
+  .mid-content-section {
+    flex: 1 1 calc(50% - 10px); /* 2 boxes per row */
+  }
+}
+
 @media only screen and (min-width: 768px) {
   #bv-brc-home .bv-brc-info .browse .browse-options,
   #bv-brc-home .bv-brc-mid-content .bv-brc-mid-content-links,
@@ -291,12 +301,12 @@
 #bv-brc-home .analyze .bv-brc-mid-content-links .mid-links {
   flex-direction: column;
   flex: 1;
+  gap: 0.5rem;
 }
 
 #bv-brc-home .bv-brc-mid-content-links .mid-links a {
   font-size: 1.1em;
   line-height: 1.4em;
-  margin-bottom: 5px;
 }
 
 #bv-brc-home .mid-content-bottom {
