@@ -239,16 +239,6 @@
   flex-wrap: wrap;
 }
 
-@media (max-width: 768px) {
-  #bv-brc-home .bv-brc-mid-content .bv-brc-mid-content-links {
-    gap: 1rem;
-  }
-
-  .mid-content-section {
-    flex: 1 1 calc(50% - 10px); /* 2 boxes per row */
-  }
-}
-
 @media only screen and (min-width: 768px) {
   #bv-brc-home .bv-brc-info .browse .browse-options,
   #bv-brc-home .bv-brc-mid-content .bv-brc-mid-content-links,
@@ -261,6 +251,16 @@
 #bv-brc-home .bv-brc-mid .mid-content-buttons .btn {
   flex: 1; /* Makes all buttons equal width */
   display: table;
+}
+
+@media (max-width: 768px) {
+  #bv-brc-home .bv-brc-mid-content .bv-brc-mid-content-links {
+    gap: 1rem;
+  }
+
+  .mid-content-section {
+    flex: 1 1 calc(50% - 10px); /* 2 boxes per row */
+  }
 }
 
 #bv-brc-home .bv-brc-info .search .global-search .GSbody {
