@@ -544,6 +544,7 @@
 #bv-brc-home .slides .slide .feed-img {
   width: 100%;
   max-height: 170px !important;
+  margin-top: 0.5rem;
 }
 
 #bv-brc-home .slides .current-slide {
@@ -622,7 +623,7 @@
 
 #linkedin-slides,
 #announcements-slides {
-  height: 300px;
+  height: 315px;
 }
 
 #bv-brc-home .announcements,
@@ -729,7 +730,7 @@
   }*/
 
   #bv-brc-home .announcements{
-     flex-basis: 45%; /* Sidebar sections */
+     flex-basis: 40%; /* Sidebar sections */
    }
 
   #announcements-slides{
@@ -743,7 +744,7 @@
 
 @media (min-width: 1233px) {
   #announcements-slides {
-    height: 85%;
+    height: 83%;
   }
 }
 
