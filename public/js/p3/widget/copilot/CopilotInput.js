@@ -76,7 +76,7 @@ define([
 
         // Create RAG text
         this.ragText = domConstruct.create('div', {
-          innerHTML: 'RAG: None',
+          innerHTML: 'RAG: OFF',
           style: 'padding: 2px 5px; transition: color 0.2s;',
           onmouseover: function(evt) {
             evt.target.style.color = '#2196F3';
@@ -286,13 +286,14 @@ define([
         } else {
           this.ragDb = ragDb;
         }
+        this.setRagButtonLabel(ragDb);
       },
 
       setRagButtonLabel: function(ragDb) {
         if (ragDb && ragDb !== 'null') {
           this.ragText.innerHTML = 'RAG: ' + ragDb;
         } else {
-          this.ragText.innerHTML = 'RAG: None';
+          this.ragText.innerHTML = 'RAG: OFF';
         }
       },
 
