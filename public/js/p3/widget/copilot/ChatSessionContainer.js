@@ -9,7 +9,7 @@ define([
     'dijit/Dialog',
     './CopilotDisplay',
     './CopilotInput',
-    './CopilotAPI',
+    './CopilotApi',
     '../../store/ChatSessionMemoryStore',
     'dojo/topic',
     'dojo/_base/lang',
@@ -39,6 +39,10 @@ define([
         style: 'height: 100%; width: 100%;',
         /** @property {string} sessionId - Current chat session identifier */
         sessionId: null,
+        /** @property {string} design - Better handle splitter behavior */
+        design: 'sidebar',
+        /** @property {boolean} persist - Maintain splitter position */
+        persist: false,
 
         /**
          * @constructor
@@ -65,7 +69,6 @@ define([
 
             // check if copilotApi is passed in
             if (!this.copilotApi) {
-                throw new Error('CopilotApi is required');
                 return;
             }
 
@@ -81,26 +84,33 @@ define([
                 });
                 this.addChild(this.titleWidget);
 
-                // Add display pane
+                // Add display pane with modified style
+                // 1px solid #e6f3ff
                 this.displayWidget = new CopilotDisplay({
                     region: 'center',
-                    style: 'padding: 0; border: 1px solid #e6f3ff; overflow: hidden; height: 100%;',
+                    style: 'padding: 0; border: 0; overflow: hidden; height: 100%; min-height: 100px;',
                     copilotApi: this.copilotApi,
                     chatStore: this.chatStore,
                     sessionId: this.sessionId
                 });
                 this.addChild(this.displayWidget);
 
-                // Add input pane
+                // Add input pane with modified settings
                 this.inputWidget = new CopilotInput({
                     region: 'bottom',
-                    style: 'padding: 10px; border: 0;',
+                    splitter: true,
+                    minSize: 60,
+                    maxSize: 300,
+                    style: 'padding: 0 10px 10px 10px; border: 0; height: 30%;',
                     copilotApi: this.copilotApi,
                     chatStore: this.chatStore,
                     displayWidget: this.displayWidget,
                     sessionId: this.sessionId
                 });
                 this.addChild(this.inputWidget);
+
+                // set model to first option in model dropdown
+                topic.publish('SetInitialChatModel');
             })).catch(lang.hitch(this, function(error) {
                 // Create error display pane
                 //  2px solid red

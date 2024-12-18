@@ -51,24 +51,48 @@ define([
 
         // Create a wrapper div to center the textarea and button both horizontally and vertically
         var wrapperDiv = domConstruct.create('div', {
-          style: 'display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; border: 0;'
+          style: 'display: flex; justify-content: center; align-items: flex-start; width: 100%; height: 100%; padding-top: 2px; border: 0;'
         }, this.containerNode);
 
-        // Create RAG button
-        this.ragButton = new Button({
-            label: 'RAG OFF',
-            style: 'height: 30px; margin-right: 10px;',
-            class: '.claro .dijitButton .dijitButtonNode',
-            onClick: lang.hitch(this, function() {
-                topic.publish('ragButtonPressed');
-            })
-        });
-        this.ragButton.placeAt(wrapperDiv);
+        // Create settings div instead of RAG button
+        var settingsDiv = domConstruct.create('div', {
+          style: 'display: flex; flex-direction: column; margin-right: 10px; cursor: pointer; font-size: 0.9em;'
+        }, wrapperDiv);
+
+        // Create Model text
+        this.modelText = domConstruct.create('div', {
+          innerHTML: 'Model: None',
+          style: 'padding: 2px 5px; transition: color 0.2s;',
+          onmouseover: function(evt) {
+            evt.target.style.color = '#2196F3';
+          },
+          onmouseout: function(evt) {
+            evt.target.style.color = '';
+          },
+          onclick: lang.hitch(this, function() {
+            topic.publish('ragButtonPressed');
+          })
+        }, settingsDiv);
+
+        // Create RAG text
+        this.ragText = domConstruct.create('div', {
+          innerHTML: 'RAG: None',
+          style: 'padding: 2px 5px; transition: color 0.2s;',
+          onmouseover: function(evt) {
+            evt.target.style.color = '#2196F3';
+          },
+          onmouseout: function(evt) {
+            evt.target.style.color = '';
+          },
+          onclick: lang.hitch(this, function() {
+            topic.publish('ragButtonPressed');
+          })
+        }, settingsDiv);
 
         // Create Textarea widget
         this.textArea = new Textarea({
-          style: 'width: 60%; min-height: 10px; max-height: 200px; resize: none; overflow-y: hidden; border-radius: 5px; margin-right: 10px;',
-          rows: 1, // Start with 1 row
+          style: 'width: 60%; min-height: 40px; max-height: 100%; resize: none; overflow-y: hidden; border-radius: 5px; margin-right: 10px;',
+          rows: 3, // Changed from 1 to 2 rows
           maxLength: 10000,
           placeholder: 'Enter your text here...'
         });
@@ -79,7 +103,7 @@ define([
         // Create Submit button
         this.submitButton = new Button({
           label: 'Submit',
-          style: 'height: 30px; align-self: center;', // Added align-self: center to vertically center the button
+          style: 'height: 30px; margin-right: 10px;',
           onClick: lang.hitch(this, function() {
             if (this.isSubmitting) return;
 
@@ -252,6 +276,7 @@ define([
       setModel: function(model) {
         console.log('setModel=', model);
         this.model = model;
+        this.setModelText(model);
       },
 
       setRagDb: function(ragDb) {
@@ -264,7 +289,19 @@ define([
       },
 
       setRagButtonLabel: function(ragDb) {
-        this.ragButton.set('label', ragDb);
+        if (ragDb && ragDb !== 'null') {
+          this.ragText.innerHTML = 'RAG: ' + ragDb;
+        } else {
+          this.ragText.innerHTML = 'RAG: None';
+        }
+      },
+
+      setModelText: function(model) {
+        if (model) {
+          this.modelText.innerHTML = 'Model: ' + model;
+        } else {
+          this.modelText.innerHTML = 'Model: None';
+        }
       }
     });
   });

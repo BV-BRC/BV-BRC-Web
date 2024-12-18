@@ -8,7 +8,7 @@ define([
     'dojo/_base/declare', 'dijit/layout/BorderContainer', './CopilotDisplay',
     './CopilotInput', './CopilotApi', 'dojo/topic', 'dijit/layout/ContentPane', './ChatSessionScrollBar', './ChatSessionContainer', './ChatSessionOptionsBar'
   ], function (
-    declare, BorderContainer, CopilotDisplay, CopilotInput, CopilotApi, topic, ContentPane, ChatSessionScrollBar, ChatSessionContainer, ChatSessionOptionsBar
+    declare, BorderContainer, CopilotDisplay, CopilotInput, CopilotAPI, topic, ContentPane, ChatSessionScrollBar, ChatSessionContainer, ChatSessionOptionsBar
   ) {
 
     return declare([BorderContainer], {
@@ -34,7 +34,7 @@ define([
         this.inherited(arguments);
 
         // Initialize the CopilotApi with current user's ID
-        this.copilotApi = new CopilotApi({
+        this.copilotApi = new CopilotAPI({
           user_id: window.App.user.l_id
         });
 

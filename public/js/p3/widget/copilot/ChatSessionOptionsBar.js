@@ -272,7 +272,8 @@ define([
             modelLabel.textContent = 'Model:';
             modelLabel.style.marginBottom = '5px';
             modelDialog.containerNode.appendChild(modelLabel);
-            modelDialog.containerNode.appendChild(this.createModelDropdown());
+            this.modelDropdown = this.createModelDropdown();
+            modelDialog.containerNode.appendChild(this.modelDropdown);
 
             // Add RAG dropdown to tooltip
             modelDialog.containerNode.appendChild(this.createRagDropdown());
@@ -343,6 +344,11 @@ define([
 
             // get user prompts
             this.resetPromptList();
+
+            // set model to first option in model dropdown
+            topic.subscribe('SetInitialChatModel', lang.hitch(this, function() {
+                topic.publish('ChatModel', this.modelDropdown.options[0].value);
+            }));
         },
         resetPromptList: function() {
             var deferred = new Deferred();

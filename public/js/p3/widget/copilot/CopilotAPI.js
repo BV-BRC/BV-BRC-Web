@@ -1,5 +1,5 @@
 /**
- * @module p3/widget/CopilotAPI
+ * @module p3/widget/CopilotApi
  * @description A widget that handles API communication between the frontend and the PATRIC Copilot backend service.
  * Provides methods for managing chat sessions, submitting queries, and retrieving messages.
  */
@@ -8,8 +8,11 @@ define([
     'dijit/_WidgetBase',
     'dojo/request',
     'dojo/_base/lang',
-    'dojo/topic'
-], function(declare, _WidgetBase, request, lang, topic) {
+    'dojo/topic',
+    'dijit/Dialog'
+], function(
+    declare, _WidgetBase, request, lang, topic, Dialog
+) {
 
     /**
      * @class CopilotAPI
@@ -272,8 +275,17 @@ define([
                 console.log('Prompt saved:', response);
                 return true;
             }).catch(function(error) {
-                console.error('Error saving prompt:', error);
-                throw error;
+                if (error.response.status === 413) {
+                    new Dialog({
+                        title: "Error",
+                        content: "Prompt too long, please shorten it.",
+                        style: "width: 300px"
+                    }).show();
+                } else {
+                    topic.publish('CopilotApiError', {
+                        error: error
+                    });
+                }
             });
         },
 
