@@ -11,39 +11,9 @@
     border-bottom: 1px solid #333;
 }
 
-.TopMenuBar {
-    width: 100%;
-    height: 13px;
-    font-size: .75em;
-    background: black;
-    color: #efefef;
-    text-align: right;
-    margin: 0;
-    padding: 2px;
-}
-
-.RegistrationButton,
-.LoginButton {
-    padding: 2px 8px 4px 8px;
-    margin: 4px;
-    color: #000;
-    border: 1px solid #759dc0;
-    border-radius: 4px;
-    align-self: center;
-    align-items: center;
-}
-
-.LoginButton,
-.patric.claro .authLinks .dijitButtonNode,
-.patric.claro .authLinks .dijitButtonNode {
-    background: #f7ffba none;
-
-}
-
 .loginButton:hover,
 .patric.claro .P3Header .dijitButtonHover .dijitButtonNode {
-    background-color: #E8FFBA;
-
+    background-color: #e3e3e3;
 }
 
 .Authenticated .P3Header .HideWithAuth,
@@ -110,41 +80,6 @@
     color: orange;
 }
 
-.P3Header {
-    width: 100%;
-    height: 35px;
-    background: #2c5776;
-    padding: 0;
-    margin-top: 0;
-    border-top: 1px solid #999;
-    overflow: hidden;
-}
-
-.P3Header .logo {
-    font-size: 1.85em;
-    color: #fff;
-    font-weight: 400;
-}
-
-.P3Header .p3LogoImage {
-    height: 16px;
-    padding: 0;
-    margin-left: 4px;
-    margin-right: -95px;
-}
-
-.P3Header .appLabel {
-    font-size: 1em;
-    color: #ffbc3e;
-    font-weight: 600;
-    margin-left: 3px;
-    /*margin-bottom: -4px;*/
-}
-
-#widget_globalSearch .dijitPlaceHolder {
-    color: #6f6f6f;
-}
-
 .claro .topMenuButtonIcon.dijitDropDownButton .dijitButtonNode,
 .claro .topMenuButton.dijitDropDownButton .dijitButtonNode,
 .topMenuButtonIcon,
@@ -156,14 +91,13 @@
     border: 0;
     box-shadow: 0 0 0;
     margin: 0;
+    padding: 0;
 }
 
-.claro .topMenuButtonIcon.dijitDropDownButton {
-    margin: 4px 0 0;
-}
-
-.claro .topMenuButton.dijitDropDownButton {
-    margin: 10px 0 0;
+#header-menu {
+    display: flex;
+    flex: 1;
+    align-items: center;
 }
 
 .claro .topMenuButtonIcon .dijitArrowButtonInner {
@@ -172,22 +106,6 @@
 
 .claro .topMenuButton .dijitArrowButtonInner {
     margin: 0;
-}
-
-.P3Header .logo:hover,
-.topMenuButton:hover {
-    color: orange;
-}
-
-.claro .topMenuButton .dijitButtonText {
-    padding: 0;
-}
-
-.patric .P3Header .TopMenuLink,
-.patric .P3Header .TopMenuLink:visited,
-.patric .P3Header A,
-.patric .P3Header A:visited {
-    text-decoration: none;
 }
 
 .patric .TopMenuBar *:focus {
@@ -200,19 +118,4 @@
 
 .patric .dijitTooltipBelow {
     padding-top: 13px;
-}
-
-.FlowBoxItem {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    vertical-align: middle;
-    background-color: #fff;
-    padding: 4px;
-}
-
-.FlowBoxArrow {
-    margin: 4px;
-    width: 100%;
-    border: 0;
-    font-size: .5em;
 }

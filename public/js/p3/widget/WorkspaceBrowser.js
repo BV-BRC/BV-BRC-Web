@@ -1884,6 +1884,12 @@ define([
       this.addChild(this.browserHeader);
 
       this.inherited(arguments);
+
+      // Hide the panel on a small screen
+      if (window.innerWidth <= 768 && this.actionPanel) {
+        const hideBtn = query('[rel="ToggleItemDetail"]', this.actionPanel.domNode)[0];
+        hideBtn.click();
+      }
     },
 
     showPermDialog: function (selection) {

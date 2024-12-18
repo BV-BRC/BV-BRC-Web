@@ -832,41 +832,62 @@ define([
       var wsNode = dom.byId('YourWorkspaces');
       domConstruct.empty('YourWorkspaces');
 
-      data.forEach(function (ws) {
-        /* istanbul ignore if */
-        if (ws.name !== 'home') return;
-        var d = domConstruct.create('div', { style: { 'padding-left': '12px' } }, wsNode);
+      let wsMobileNode = dom.byId('YourWorkspaces-mobile');
+      domConstruct.empty('YourWorkspaces-mobile');
+
+      const ws = data.find(d => d.name === 'home');
+      if (ws) {
+        var d = domConstruct.create('div', {style: {'padding-left': '12px'}}, wsNode);
         domConstruct.create('i', {
           'class': 'fa icon-caret-down fa-1x noHoverIcon',
-          style: { 'margin-right': '4px' }
+          style: {'margin-right': '4px'}
         }, d);
         domConstruct.create('a', {
           'class': 'navigationLink',
           href: '/workspace' + ws.path,
           innerHTML: ws.name
         }, d);
+        domConstruct.create('a', {
+          href: '/workspace' + ws.path,
+          innerHTML: ws.name
+        }, wsMobileNode);
         domConstruct.create('br', {}, d);
         domConstruct.create('a', {
           'class': 'navigationLink',
-          'style': { 'padding-left': '16px' },
+          'style': {'padding-left': '16px'},
           href: '/workspace' + ws.path + '/Genome%20Groups',
           innerHTML: 'Genome Groups'
         }, d);
+        domConstruct.create('a', {
+          'style': {'padding-left': '16px'},
+          href: '/workspace' + ws.path + '/Genome%20Groups',
+          innerHTML: 'Genome Groups'
+        }, wsMobileNode);
         domConstruct.create('br', {}, d);
         domConstruct.create('a', {
           'class': 'navigationLink',
-          'style': { 'padding-left': '16px' },
+          'style': {'padding-left': '16px'},
           href: '/workspace' + ws.path + '/Feature%20Groups',
           innerHTML: 'Feature Groups'
         }, d);
+        domConstruct.create('a', {
+          'style': {'padding-left': '16px'},
+          href: '/workspace' + ws.path + '/Feature%20Groups',
+          innerHTML: 'Feature Groups'
+        }, wsMobileNode);
         domConstruct.create('br', {}, d);
         domConstruct.create('a', {
           'class': 'navigationLink',
-          'style': { 'padding-left': '16px' },
+          'style': {'padding-left': '16px'},
           href: '/workspace' + ws.path + '/Experiment%20Groups',
           innerHTML: 'Experiment Groups'
         }, d);
-      });
+        domConstruct.create('a', {
+          'style': {'padding-left': '16px'},
+          href: '/workspace' + ws.path + '/Experiment%20Groups',
+          innerHTML: 'Experiment Groups'
+        }, wsMobileNode);
+      }
     }
   });
 });
