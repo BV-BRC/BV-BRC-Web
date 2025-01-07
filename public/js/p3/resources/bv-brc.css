@@ -1043,7 +1043,7 @@ pre.bv-brc-code-block button:active {
 
 .mobile-menu {
   position: absolute;
-  max-height: 90vh;
+  max-height: 75vh;
   overflow-y: auto;
   background-color: #f9f9f9;
   padding: 1rem;
