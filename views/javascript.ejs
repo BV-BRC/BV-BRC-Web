@@ -12,7 +12,6 @@ dojoConfig = {
 <!-- Scripts -->
 <%
 const load_scripts = [
-  "mauve_viewer/dist/mauve-viewer.js",
   "msa/dist/msa.min.js",
   "bvbrc_js_client/dist/bvbrc_client.js",
   "bundle/bundle.js",
@@ -31,6 +30,37 @@ const load_scripts = [
 <% } %>
 
 <script type="text/javascript">
+  function toggleMenu() {
+    const hamburgerButton = document.querySelector('.hamburger-icon');
+    const menu = document.getElementById("mobile-navbar");
+
+    hamburgerButton.classList.toggle('open');
+    menu.classList.toggle("hidden");
+  }
+
+  function toggleSubMenu(header) {
+    const subMenu = header.nextElementSibling; // Get the the sub-menu
+    const icon = header.querySelector('.icon-chevron-down');
+
+    if (subMenu.style.display === "block") {
+      header.classList.remove('open');
+      subMenu.style.display = "none";
+      icon.classList.remove('open');
+    } else {
+      header.classList.add('open');
+      subMenu.style.display = "block";
+      icon.classList.add('open');
+    }
+  }
+
+  function toggleSearch() {
+    const searchButton = document.querySelector('.search-icon');
+    const searchbar = document.getElementById("mobile-searchbar");
+
+    searchButton.classList.toggle('open');
+    searchbar.classList.toggle("hidden");
+  }
+
   $(window).on('load', function () {
     // LinkedIn Feed
     let $linkedInFeedElm = $("#linkedin-feed");
@@ -72,23 +102,32 @@ const load_scripts = [
     // News & Announcements Carousel
     $.getJSON("https://www.bv-brc.org/docs/_static/carousel.json", function (feed) {
       for (var i = 0; i < feed.length; i++) {
-        var link = feed[i].link;
-        var title = feed[i].title;
-        var desc = feed[i].desc;
-        var word_limit = (feed[i].img == "") ? 60 : 20
-        var descSnippit = desc.split(" ", word_limit).join(" ");
-        var img = feed[i].img;
+        const link = feed[i].link;
+        const title = feed[i].title;
+        const desc = feed[i].desc;
+        const img = feed[i].img;
+        // Determine description to display
+        let descContent;
+        const descArr = desc.split(" ");
+        if (img !== "" && descArr.length > 30) {
+          descContent = descArr.slice(0, 30).join(" ") + " ... <a href='" + link + "'>read more</a>";
+        } else if (descArr.length > 60) {
+          descContent = descArr.slice(0, 60).join(" ") + " ... <a href='" + link + "'>read more</a>";
+        } else {
+          descContent = desc;
+        }
+
         $("#announcements-slides").append(
-          `<li class="slide">
+                `<li class="slide">
                   <a href="${link}" class="feed-link">
                       <h4 class="feed-title">${title}</h4>
                   </a>
-                  <p class="feed-description">${descSnippit} ... <a href="${link}">read more</a></p>
+                  <p class="feed-description">${descContent}</p>
                   <img src="${img}" class="feed-img"  loading="lazy">
               </li>`
         );
         $("#announcements-dot-navigation").append(
-          `<div class="dot" role="button" aria-selected="false"></div>`
+                `<div class="dot" role="button" aria-selected="false"></div>`
         );
       }
 
