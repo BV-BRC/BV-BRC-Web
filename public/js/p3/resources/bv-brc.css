@@ -269,6 +269,18 @@
   display: table;
 }
 
+@media (max-width: 450px) {
+  #bv-brc-home .mid-content-buttons #referenceGuides {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  #bv-brc-home .browse-options #eukaryoticHosts {
+    min-width: 0;
+  }
+}
+
 @media (max-width: 768px) {
   #bv-brc-home .bv-brc-mid-content .bv-brc-mid-content-links {
     gap: 1rem;
@@ -1043,7 +1055,7 @@ pre.bv-brc-code-block button:active {
 
 .mobile-menu {
   position: absolute;
-  max-height: 90vh;
+  max-height: 75vh;
   overflow-y: auto;
   background-color: #f9f9f9;
   padding: 1rem;
