@@ -2,12 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/dom-construct', 'dijit/layout/ContentPane',
   'd3.v5/d3.min', './Base', '../../WorkspaceManager',
   '../../DataAPI', 'dojo/promise/all', '../../util/loading', '../DataItemFormatter',
-  'dijit/Dialog', 'dojox/widget/Standby', 'dojo/query'
+  'dijit/Dialog', 'dojox/widget/Standby', 'dojo/query', 'mauve_viewer/dist/mauve-viewer',
+  'xstyle/css!mauve_viewer/dist/mauve-viewer.css'
 ], function (
   declare, domConstruct, ContentPane,
   d3, ViewerBase, WorkspaceManager,
   DataAPI, all, Loading, DataItemFormatter,
-  Dialog, Standby, query
+  Dialog, Standby, query, MauveViewer
 ) {
 
   return declare([ViewerBase], {

@@ -12,7 +12,8 @@ define([
   '../../WorkspaceManager',
   'dojo/_base/Deferred',
   'dojo/request',
-  'molstar/mol-bvbrc/index'
+  'molstar/mol-bvbrc/index',
+  'xstyle/css!molstar/mol-bvbrc/molstar.css'
 ], function (
   declare,
   lang,

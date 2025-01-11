@@ -66,20 +66,21 @@
     var servicesMiddle = Math.round(services.length / 2);
     var virusMiddle = Math.round(virus.length / 2);
     var featuredVirusMiddle = Math.round(featured_virus.length / 2);
+    var subMenuColumnCount = Math.round(services.length / 8);
     var isProd = request.applicationOptions.appLabel == "";
     %>
 
-    <div id="bv-brc-header" class="P3Header" role="heading" aria-level="1">
+    <div id="bv-brc-header" role="heading" aria-level="1">
 
         <div id="bv-brc-header-container">
             <div class="nav-logo">
                 <a class="nav-logo-link" href="/">
                     <img class="bv-brc-logo" src="/patric/images/bv-brc/bv-brc-header-logo.png" alt="BV-BRC Logo" style="height: 28px;"/>
-                    <span><i style="color: #ffffff; font-size: 12px; padding-left: 2px;"><%- request.package.version %><%- request.applicationOptions.appLabel || " " %></i></i></span>
+                    <span><i style="color: #ffffff; font-size: 12px; padding-left: 2px;"><%- request.package.version %><%- request.applicationOptions.appLabel || " " %></i></span>
                 </a>
             </div>
 
-            <div style="vertical-align: top; min-width: 435px; flex: 1">
+            <div id="header-menu">
                 <div class="topMenuButton showOnLoad dijitHidden" data-dojo-type="dijit/form/DropDownButton">
                     <span>ORGANISMS</span>
                     <div data-dojo-type="p3/widget/TooltipDialog">
@@ -102,16 +103,16 @@
                                 <br>
                                 <div>
                                     <span class="menuItem half">
-                                        <a class="" href="/view/Bacteria/2" title="Overview page for all Bacteria genomes">All Bacteria</a>
+                                        <a class="navigationLink" href="/view/Bacteria/2" title="Overview page for all Bacteria genomes">All Bacteria</a>
                                     </span>
                                     <span class="menuItem half">
-                                        <a class="" href="/view/Taxonomy/2157" title="Overview page for all Archea genomes">All Archaea</a>
+                                        <a class="navigationLink" href="/view/Taxonomy/2157" title="Overview page for all Archea genomes">All Archaea</a>
                                     </span>
                                     <span class="menuItem half">
-                                        <a class="" href="/view/Taxonomy/10239" title="Overview page for all Viruses">All Viruses</a>
+                                        <a class="navigationLink" href="/view/Taxonomy/10239" title="Overview page for all Viruses">All Viruses</a>
                                     </span>
                                     <span class="menuItem half">
-                                        <a class="" href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes"
+                                        <a class="navigationLink" href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes"
                                             title="Overview page for all Eukaryotic host genomes">Eukaryotic Hosts</a></span>
                                 </div>
                             </div>
@@ -124,11 +125,11 @@
                                 <% for (var i = 0; i < virusMiddle;i++){ %>
                                 <div>
                                     <span class="menuItem half">
-                                        <a class="" href="<%- virus[i].href %>" title="<%- virus[i].name %> overview"><%- virus[i].name %></a>
+                                        <a class="navigationLink" href="<%- virus[i].href %>" title="<%- virus[i].name %> overview"><%- virus[i].name %></a>
                                     </span>
                                     <span class="menuItem half">
                                         <% if (virus[virusMiddle + i]) { %>
-                                        <a class="" title="<%- virus[virusMiddle + i].name %> overview"
+                                        <a class="navigationLink" title="<%- virus[virusMiddle + i].name %> overview"
                                            href="<%- virus[virusMiddle + i].href %>"><%- virus[virusMiddle + i].name %></a>
                                         <% } %>
                                     </span>
@@ -142,11 +143,11 @@
                                 <% for (var i = 0; i < featuredVirusMiddle;i++){ %>
                                 <div>
                                     <span class="menuItem half">
-                                        <a class="" href="<%- featured_virus[i].href %>" title="<%- featured_virus[i].name %> overview"><%- featured_virus[i].name %></a>
+                                        <a class="navigationLink" href="<%- featured_virus[i].href %>" title="<%- featured_virus[i].name %> overview"><%- featured_virus[i].name %></a>
                                     </span>
                                     <span class="menuItem half">
                                         <% if (featured_virus[featuredVirusMiddle + i]) { %>
-                                        <a class="" title="<%- featured_virus[featuredVirusMiddle + i].name %> overview"
+                                        <a class="navigationLink" title="<%- featured_virus[featuredVirusMiddle + i].name %> overview"
                                            href="<%- featured_virus[featuredVirusMiddle + i].href %>"><%- featured_virus[featuredVirusMiddle + i].name %></a>
                                         <% } %>
                                     </span>
@@ -188,13 +189,13 @@
                             <div style="vertical-align: top;width:250px;margin-right:5px;display:inline-block">
                                 <div class="menuHeader">Genomics</div>
                                 <div class="menuItems">
-                                    <a class="navigationLink" href="/app/Assembly2">Genome Assembly</span></a>
+                                    <div><a class="navigationLink" href="/app/Assembly2">Genome Assembly</a></div>
                                     <div><a class="navigationLink" href="/app/Annotation">Genome Annotation</a></div>
                                     <div><a class="navigationLink" href="/app/ComprehensiveGenomeAnalysis">Comprehensive Genome Analysis <span style="font-style: italic;">(B)</span></a></div>
                                     <div><a class="navigationLink" href="/app/Homology">BLAST</a></div>
                                     <div><a class="navigationLink" href="/app/PrimerDesign">Primer Design</a></div>
-                                    <div><a class="navigationLink" href="/app/GenomeDistance">Similar Genome Finder</div>
-                                    <div><a class="navigationLink" href="/app/GenomeAlignment">Genome Alignment</span></a></div>
+                                    <div><a class="navigationLink" href="/app/GenomeDistance">Similar Genome Finder</a></div>
+                                    <div><a class="navigationLink" href="/app/GenomeAlignment">Genome Alignment</a></div>
                                     <div><a class="navigationLink" href="/app/Variation">Variation Analysis</a></div>
                                     <div><a class="navigationLink" href="/app/Tnseq">Tn-Seq Analysis</a></div>
                                 </div>
@@ -305,6 +306,8 @@
                         <div style="margin-left: 10px;"><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/cli_tutorial/index.html">Command Line Interface</a></div>
                         <div style="margin-left: 10px;"><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/videos/index.html">Instructional Videos</a></div>
                         <div style="margin-left: 10px;"><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/webinar/index.html">Webinars</a></div>
+                        <div style="margin-left: 10px;"><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/quick_start/data_functionality_overview.html">Information for PATRIC Users</a></div>
+                        <div style="margin-left: 10px;"><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/quick_start/ird-vipr_bv-brc_mapping.html">Information for IRD/ViPR Users</a></div>
 
                         <div style="margin-bottom: 5px;" class="menuHeader">System Documentation</div>
                         <div style="margin-left: 10px;"><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/system_documentation/system_architecture.html">System Architecture</a></div>
@@ -333,38 +336,288 @@
                 </div>
             </div>
 
-            <div id="p3header-search" style="padding: 6px 10px 2px 2px; width: 120px; flex-grow: 0.85">
+            <div id="p3header-search" style="width: 120px;flex-grow: 0.85;margin-right: 10px;">
                 <input style="width:100%;font-size:1em;" class="showOnLoad dijitHidden"
                        data-dojo-type="p3/widget/GlobalSearch"/>
             </div>
 
             <!-- <div class="navbar-flex-space" style="flex-grow: 0.85;"></div> -->
 
-            <div class="HideWithAuth authLinks showOnLoad dijitHidden" style="padding: 8px 10px 0 0;">
-                <a class="LoginButton navigationLink" href="/register">Register</a>
-                <a class="LoginButton navigationLink" href="/login">Sign In</a>
+            <div id="bv-brc-right-header">
+                <div class="HideWithAuth authLinks showOnLoad dijitHidden">
+                    <a class="auth-button navigationLink" href="/register">Register</a>
+                    <a class="auth-button navigationLink" href="/login">Sign In</a>
+                </div>
+
+                <div id="mobile-search-icon">
+                    <button class="search-icon" onclick="toggleSearch()">
+                        <span class="icon-search fa-2x"></span>
+                    </button>
+                </div>
+
+                <div class="showOnLoad ShowWithAuth dijitHidden">
+                    <div class="showOnLoad ShowWithAuth dijitHidden topMenuButtonIcon"
+                         data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-user fa-2x login-btn'">
+                        <span></span>
+                        <div class="warning_icon user_warning_icon icon-warning fa fa-1x"> </div>
+                        <div data-dojo-type="p3/widget/TooltipDialog">
+                            <div>Signed in as <span id="signedInAs" style="font-weight:bold;"></span></div>
+                            <hr>
+                            <div><a class="userProfile">Account Settings <i class="warning_icon account-settings-warning icon-warning fa fa-1x" style="vertical-align:middle;"> </i></a></div>
+                            <div><a class="sulogin">SU Login</a></div>
+                            <div><a class="suSwitchBack" onclick="window.App.suSwitchBack()" style="display:none">SU Switch Back</a></div>
+                            <div><a class="logoutLink" onclick="window.App.logout()">Logout</a></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="mobile-nav-icon">
+                    <button class="hamburger-icon" onclick="toggleMenu()">
+                        <span class="icon-bars fa-2x"></span>
+                    </button>
+                </div>
             </div>
+        </div>
 
+        <div id="mobile-searchbar" class="hidden">
+            <div id="mobile-search-div">
+                <input style="width:100%;font-size:1em;" data-dojo-type="p3/widget/GlobalSearch"/>
+            </div>
+        </div>
 
-            <div class="showOnLoad ShowWithAuth dijitHidden">
-                <div class="showOnLoad ShowWithAuth dijitHidden topMenuButtonIcon"
-                        data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-user fa-2x login-btn'">
-                    <span></span>
-                    <div class="warning_icon user_warning_icon icon-warning fa fa-1x"> </div>
-                    <div data-dojo-type="p3/widget/TooltipDialog">
-                        <div>Signed in as <span id="signedInAs" style="font-weight:bold;"></span></div>
-                        <hr>
-                        <div><a class="userProfile">Account Settings <i class="warning_icon account-settings-warning icon-warning fa fa-1x" style="vertical-align:middle;"> </i></a></div>
-                        <div><a class="sulogin">SU Login</a></div>
-                        <div><a class="suSwitchBack" onclick="window.App.suSwitchBack()" style="display:none">SU Switch Back</a></div>
-                        <div><a class="logoutLink" onclick="window.App.logout()">Logout</a></div>
+        <nav id="mobile-navbar" class="hidden">
+            <div id="mobile-menu" class="mobile-menu">
+                <div class="menu-section">
+                    <div class="menu-header" onclick="toggleSubMenu(this)">ORGANISMS <span
+                                class="icon-chevron-down"></span></div>
+                    <div class="menu-items" style="display: none;">
+                        <div style="column-count: 2;">
+                            <a href="/view/Bacteria/2"
+                               title="Overview page for all Bacteria genomes">All Bacteria</a>
+                            <a href="/view/Taxonomy/2157"
+                               title="Overview page for all Archea genomes">All Archaea</a>
+                            <a href="/view/Taxonomy/10239" title="Overview page for all Viruses">All Viruses</a>
+                            <a href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes"
+                               title="Overview page for all Eukaryotic host genomes">Eukaryotic Hosts</a>
+                        </div>
+
+                        <div>
+                            <div class="menuHeader">Bacterial Pathogens</div>
+                            <div class="sub-menu" style="column-count: <%- subMenuColumnCount %>">
+                                <% for (var i = 0; i < services.length;i++){ %>
+                                    <span class="sub-menu-items">
+                                                <a href="<%- services[i].href %>"
+                                                   title="<%- services[i].name %> overview"><%- services[i].name %></a>
+                                            </span>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="menuHeader">Viral Families</div>
+                            <div class="sub-menu" style="column-count: <%- subMenuColumnCount %>">
+                                <% for (var i = 0; i < virus.length;i++){ %>
+                                    <span class="sub-menu-items">
+                                        <a href="<%- virus[i].href %>"
+                                           title="<%- virus[i].name %> overview"><%- virus[i].name %></a>
+                                    </span>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="menuHeader">Featured Viruses</div>
+                            <div class="sub-menu" style="column-count: <%- subMenuColumnCount %>">
+                                <% for (var i = 0; i < featured_virus.length;i++){ %>
+                                    <span class="sub-menu-items">
+                                        <a href="<%- featured_virus[i].href %>"
+                                           title="<%- featured_virus[i].name %> overview"><%- featured_virus[i].name %></a>
+                                    </span>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="searches-services" class="menu-section">
+                    <div class="menu-header" onclick="toggleSubMenu(this)">SEARCHES <span
+                                class="icon-chevron-down"></span></div>
+                    <div class="menu-items" style="display: none;">
+                        <div><a href="/searches/TaxaSearch">Taxa</a></div>
+                        <div><a href="/searches/GenomeSearch">Genomes</a></div>
+                        <div><a href="/searches/StrainSearch">Strains</a></div>
+                        <div><a href="/searches/GenomicFeatureSearch">Features</a></div>
+                        <div><a href="/searches/ProteinSearch">Proteins</a></div>
+                        <div><a href="/searches/SpecialtyGeneSearch">Specialty Genes</a></div>
+                        <div><a href="/searches/DomainAndMotifSearch">Domains and Motifs</a></div>
+                        <div><a href="/searches/EpitopeSearch">Epitopes</a></div>
+                        <div><a href="/searches/ProteinStructureSearch">Protein Structures</a></div>
+                        <div><a href="/searches/PathwaySearch">Pathways</a></div>
+                        <div><a href="/searches/SubsystemSearch">Subsystems</a></div>
+                        <div><a href="/searches/SurveillanceSearch">Surveillance</a></div>
+                        <div><a href="/searches/SerologySearch">Serology</a></div>
+                        <div><a href="/searches/SFVTSearch">Sequence Feature Variant Types</a></div>
+                    </div>
+                </div>
+
+                <div id="tools-services" class="menu-section">
+                    <div class="menu-header" onclick="toggleSubMenu(this)">TOOLS &amp; SERVICES <span
+                                class="icon-chevron-down"></span></div>
+                    <div class="menu-items" style="display: none">
+                        <div>
+                            <div class="menuHeader">Genomics</div>
+                            <div class="sub-menu">
+                                <div><a href="/app/Assembly2">Genome Assembly</a></div>
+                                <div><a href="/app/Annotation">Genome Annotation</a></div>
+                                <div><a href="/app/ComprehensiveGenomeAnalysis">Comprehensive Genome Analysis <span style="font-style: italic;">(B)</span></a></div>
+                                <div><a href="/app/Homology">BLAST</a></div>
+                                <div><a href="/app/PrimerDesign">Primer Design</a></div>
+                                <div><a href="/app/GenomeDistance">Similar Genome Finder</a></div>
+                                <div><a href="/app/GenomeAlignment">Genome Alignment</a></div>
+                                <div><a href="/app/Variation">Variation Analysis</a></div>
+                                <div><a href="/app/Tnseq">Tn-Seq Analysis</a></div>
+                            </div>
+                            <div class="menuHeader">Phylogenomics</div>
+                            <div class="sub-menu">
+                                <div><a href="/app/PhylogeneticTree">Bacterial Genome Tree</a></div>
+                                <div><a href="/app/ViralGenomeTree">Viral Genome Tree</a></div>
+                                <div><a href="/app/GeneTree">Gene/Protein Tree</a></div>
+                            </div>
+                            <div class="menuHeader">Protein Tools</div>
+                            <div class="sub-menu">
+                                <div><a href="/app/MSA">MSA and SNP Analysis</a></div>
+                                <div><a href="/app/MetaCATS">Meta-CATS</a></div>
+                                <div><a href="/app/SeqComparison">Proteome Comparison</a></div>
+                                <div><a href="/app/ComparativeSystems">Protein Family Sorter</a></div>
+                                <div><a href="/app/ComparativeSystems">Comparative Systems</a></div>
+                                <div><a href="/app/Docking">Docking</a></div>
+                            </div>
+                            <div class="menuHeader">Metagenomics</div>
+                            <div class="sub-menu">
+                                <div><a href="/app/TaxonomicClassification">Taxonomic Classification</a></div>
+                                <div><a href="/app/MetagenomicBinning">Metagenomic Binning</a></div>
+                                <div><a href="/app/MetagenomicReadMapping">Metagenomic Read Mapping</a></div>
+                            </div>
+                            <div class="menuHeader">Transcriptomics</div>
+                            <div class="sub-menu">
+                                <div><a href="/app/Rnaseq">RNA-Seq Analysis</a></div>
+                                <div><a href="/app/Expression">Expression Import</a></div>
+                            </div>
+                            <div class="menuHeader">Utilities</div>
+                            <div class="sub-menu">
+                                <div><a href="/app/FastqUtil">Fastq Utilities</a></div>
+                                <div><a href="/app/IDMapper">ID Mapper</a></div>
+                            </div>
+                            <div class="menuHeader">Viral Tools</div>
+                            <div class="sub-menu">
+                                <div><a href="/app/ComprehensiveSARS2Analysis">SARS-CoV-2 Genome Analysis</a></div>
+                                <div><a href="/app/SARS2Wastewater">SARS-CoV-2 Wastewater Analysis</a></div>
+                                <div><a href="/app/SequenceSubmission">Influenza Sequence Submission</a></div>
+                                <div><a href="/app/HASubtypeNumberingConversion">Influenza HA Subtype Conversion</a></div>
+                                <div><a href="/app/SubspeciesClassification">Subspecies Classification</a></div>
+                            </div>
+                            <div class="menuHeader">OUTBREAK TRACKER</div>
+                            <div class="sub-menu">
+                                <div><a href="/outbreaks/Mpox/#view_tab=overview">Mpox 2024</a></div>
+                                <div><a href="/outbreaks/H5N1/#view_tab=overview">Influenza H5N1 2024</a></div>
+                                <div><a href="/outbreaks/SARSCoV2/#view_tab=overview">SARS-CoV-2</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-section">
+                    <div class="menu-header" onclick="toggleSubMenu(this)">WORKSPACES <span
+                                class="icon-chevron-down"></span></div>
+                    <div class="menu-items" style="display: none">
+                        <div class="HideWithAuth">
+                            Please <a class="loginLink">sign in</a> to view your workspaces.
+                        </div>
+                        <div class="ShowWithAuth">
+                            <div id="YourWorkspaces-mobile"></div>
+                            <div><a href="/workspace/public">Public Workspaces</a></div>
+                            <div><a href="/workspace/public/ARWattam@patricbrc.org/BV-BRC%20Workshop">BV-BRC Workshop</a></div>
+                            <div><a href="/job/">My Jobs</a></div>
+                            <div><a href="/view/GenomeList/?eq(public,false)">My Genomes</a></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="help-menu" class="menu-section">
+                    <div class="menu-header" onclick="toggleSubMenu(this)">HELP <span class="icon-chevron-down"></span></div>
+                    <div class="menu-items" style="display: none">
+                        <div style="font-weight: bold; font-size: 14px;"><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/">Documentation Website</a></div>
+
+                        <div class="menuHeader">Updates and Reports</div>
+                        <div class="sub-menu">
+                            <div><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/news/index.html">News
+                                    and Announcements</a></div>
+                            <div><a class="navigationLinkOut"
+                                    href="https://www.bv-brc.org/docs/reports_and_analysis/index.html">Reports and
+                                    Analysis</a></div>
+                        </div>
+
+                        <div class="menuHeader">Help Resources</div>
+                        <div class="sub-menu">
+                            <div><a class="navigationLinkOut"
+                                    href="https://www.bv-brc.org/docs/overview.html">Overview</a></div>
+                            <div><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/quick_start/index.html">Quick
+                                    Start</a></div>
+                            <div><a class="navigationLinkOut"
+                                    href="https://www.bv-brc.org/docs/data_protocols/index.html">Data Sources &amp;
+                                    Protocols</a></div>
+                            <div><a class="navigationLinkOut"
+                                    href="https://www.bv-brc.org/docs/quick_references/index.html">Quick Reference
+                                    Guides</a></div>
+                            <div><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/tutorial/index.html">Tutorials</a>
+                            </div>
+                            <div><a class="navigationLinkOut"
+                                    href="https://www.bv-brc.org/docs/common_tasks/index.html">Common Tasks</a></div>
+                            <div><a class="navigationLinkOut"
+                                    href="https://www.bv-brc.org/docs/cli_tutorial/index.html">Command Line
+                                    Interface</a></div>
+                            <div><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/videos/index.html">Instructional
+                                    Videos</a></div>
+                            <div><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/webinar/index.html">Webinars</a>
+                            </div>
+                            <div><a class="navigationLinkOut"
+                                    href="https://www.bv-brc.org/docs/quick_start/data_functionality_overview.html">Information
+                                    for PATRIC Users</a></div>
+                            <div><a class="navigationLinkOut"
+                                    href="https://www.bv-brc.org/docs/quick_start/ird-vipr_bv-brc_mapping.html">Information
+                                    for IRD/ViPR Users</a></div>
+                        </div>
+                        <div class="menuHeader">System Documentation</div>
+                        <div class="sub-menu">
+                            <div><a class="navigationLinkOut"
+                                    href="https://www.bv-brc.org/docs/system_documentation/system_architecture.html">System
+                                    Architecture</a></div>
+                            <div><a class="navigationLinkOut"
+                                    href="https://www.bv-brc.org/docs/test_procedures/index.html">Test Procedures</a>
+                            </div>
+                            <div><a class="navigationLinkOut" href="https://www.bv-brc.org/docs/usage_metrics.html">Usage
+                                    Metrics</a></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="about-menu" class="menu-section">
+                    <div class="menu-header" onclick="toggleSubMenu(this)">ABOUT <span class="icon-chevron-down"></span></div>
+                    <div class="menu-items" style="display: none">
+                        <div><a class="TopMenuLink" href="/about">About BV-BRC</a></div>
+                        <div><a class="DialogButton" rel="reportProblem:">Contact Us</a></div>
+                        <div><a class="TopMenuLink" href="/team">Our Team</a></div>
+                        <div><a class="TopMenuLink" href="https://www.bv-brc.org/docs/news/index.html" target="_blank">Announcements</a></div>
+                        <div><a class="TopMenuLink" href="/brc-calendar">BRC Calendar</a></div>
+                        <div><a class="TopMenuLink" href="/publications">Publications</a></div>
+                        <div><a class="TopMenuLink" href="/citation">Citation</a></div>
+                        <div><a class="TopMenuLink" href="/related-resources">Related Resources</a></div>
+                        <div><a class="TopMenuLink navigationLinkOut" href="https://github.com/BV-BRC" target="_blank" rel="noopener">BV-BRC GitHub</a></div>
+                        <div><a class="TopMenuLink" href="/privacy-policy">Privacy Policy</a></div>
                     </div>
                 </div>
             </div>
-
-
-        </div>
-
+        </nav>
     </div>
     <!-- -->
     <!-- <div class="msg-box-below-topnav"><strong>The BV-BRC scheduler will be undergoing maintenance on June 6, from 9:00AM-Noon (Chicago Time). Already running jobs will not be affected but job status and submission of new jobs will be unavailable. We are sorry for the inconvenience. -- BV-BRC Team</strong></div> -->

@@ -316,6 +316,12 @@ define([
         }
         _self.grid.set('query', filters);
       });
+
+      // Hide the panel on a small screen
+      if (window.innerWidth <= 768 && this.actionBar) {
+        const hideBtn = query('[rel="ToggleItemDetail"]', this.actionBar.domNode)[0];
+        hideBtn.click();
+      }
     },
 
     setupActions: function () {
