@@ -88,7 +88,7 @@ define([
         if (this.isSRAValid) {
           // Validate SRR accession id
           //this.onAddSRR();
-          assemblyValues.srr_id = values.sraAccession;
+          assemblyValues.srr_id = values.srr_accession;
         } else {
           return false;
         }
