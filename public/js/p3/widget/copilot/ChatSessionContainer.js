@@ -196,7 +196,8 @@ define([
             }));
             topic.subscribe('generateSessionTitle', lang.hitch(this, function() {
                 var messages = this.chatStore.query().map(x => x.content);
-                this.copilotApi.generateTitleFromMessages(messages).then(lang.hitch(this, function(title) {
+                var model = this.inputWidget.getModel();
+                this.copilotApi.generateTitleFromMessages(messages, model).then(lang.hitch(this, function(title) {
                     if (title.startsWith('"') && title.endsWith('"')) {
                         title = title.substring(1, title.length - 1);
                     }

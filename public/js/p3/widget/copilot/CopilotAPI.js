@@ -20,7 +20,7 @@ define([
      */
     return declare([_WidgetBase], {
         /** @property {string} apiUrlBase - Base URL for the Copilot API endpoints */
-        apiUrlBase: 'https://p3cp.theseed.org/copilot-api',
+        apiUrlBase: 'https://p3cp.theseed.org/copilot-api/chatbrc',
 
         /** @property {Object} storedResult - Stores the last API response */
         storedResult: null,
@@ -99,17 +99,10 @@ define([
         submitQuery: function(inputText, sessionId, systemPrompt, model) {
             var _self = this;
             console.log('query');
-            var model_route = '';
-            if (model === 'llama3.1-70b') {
-                model_route = '/copilot-chat';
-            } else if (model === 'gpt4o') {
-                model_route = '/argo/chat';
-            } else {
-                throw new Error('Invalid model: ' + model);
-            }
-
+            var model_route = '/chat';
             var data = {
                 query: inputText,
+                model: model,
                 session_id: sessionId,
                 user_id: _self.user_id
             };
@@ -126,7 +119,7 @@ define([
                 },
                 handleAs: 'json'
             }).then(function(response) {
-                _self.storedResult = response;
+                _self.storedResult = response.response;
                 return response;
             }).catch(function(error) {
                 console.error('Error submitting query:', error);
@@ -193,12 +186,13 @@ define([
             });
         },
 
-        generateTitleFromMessages: function(messages) {
+        generateTitleFromMessages: function(messages, model) {
             var _self = this;
             return request.post(this.apiUrlBase + '/generate-title-from-messages', {
                 data: JSON.stringify({
                     messages: messages,
-                    user_id: _self.user_id
+                    user_id: _self.user_id,
+                    model: model
                 }),
                 headers: {
                     'Content-Type': 'application/json',
@@ -206,7 +200,7 @@ define([
                 },
                 handleAs: 'json'
             }).then(function(response) {
-                const title = response.response.content;
+                const title = response.response;
                 return title;
             }).catch(function(error) {
                 console.error('Error getting session title:', error);

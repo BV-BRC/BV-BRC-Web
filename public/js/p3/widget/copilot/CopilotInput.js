@@ -182,7 +182,7 @@ define([
                   },
                   {
                     role: 'assistant',
-                    content: response.response.content
+                    content: response.response
                   }
                 ]);
                 _self.textArea.set('value', '');
@@ -277,6 +277,10 @@ define([
         console.log('setModel=', model);
         this.model = model;
         this.setModelText(model);
+      },
+
+      getModel: function() {
+        return this.model;
       },
 
       setRagDb: function(ragDb) {

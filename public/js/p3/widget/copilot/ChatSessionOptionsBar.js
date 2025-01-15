@@ -45,8 +45,10 @@ define([
             selectElement.style.marginBottom = '10px';
 
             var optionLLAMA31 = document.createElement('option');
-            optionLLAMA31.value = 'llama3.1-70b';
-            optionLLAMA31.text = 'LLAMA3.1-70B';
+            // optionLLAMA31.value = 'meta-llama/Meta-Llama-3.1-70B-Instruct';
+            // optionLLAMA31.text = 'LLAMA3.1-70B';
+            optionLLAMA31.value = 'meta-llama/Llama-3.3-70B-Instruct';
+            optionLLAMA31.text = 'LLAMA3.3-70B';
             selectElement.add(optionLLAMA31);
 
             var optionGPT4O = document.createElement('option');
@@ -276,7 +278,7 @@ define([
             modelDialog.containerNode.appendChild(this.modelDropdown);
 
             // Add RAG dropdown to tooltip
-            modelDialog.containerNode.appendChild(this.createRagDropdown());
+            // modelDialog.containerNode.appendChild(this.createRagDropdown());
 
             // Create prompts dialog
             var promptsDialog = this.createPromptsDialog();
