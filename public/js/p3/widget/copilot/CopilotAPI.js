@@ -13,14 +13,13 @@ define([
 ], function(
     declare, _WidgetBase, request, lang, topic, Dialog
 ) {
-
     /**
      * @class CopilotAPI
      * @extends {dijit/_WidgetBase}
      */
     return declare([_WidgetBase], {
         /** @property {string} apiUrlBase - Base URL for the Copilot API endpoints */
-        apiUrlBase: 'https://p3cp.theseed.org/copilot-api/chatbrc',
+        apiUrlBase: 'https://dev-3.bv-brc.org/copilot-api/chatbrc',
 
         /** @property {Object} storedResult - Stores the last API response */
         storedResult: null,
@@ -99,7 +98,6 @@ define([
         submitQuery: function(inputText, sessionId, systemPrompt, model) {
             var _self = this;
             console.log('query');
-            var model_route = '/chat';
             var data = {
                 query: inputText,
                 model: model,
@@ -111,7 +109,7 @@ define([
                 data.system_prompt = systemPrompt;
             }
 
-            return request.post(this.apiUrlBase + model_route, {
+            return request.post(this.apiUrlBase + '/chat', {
                 data: JSON.stringify(data),
                 headers: {
                     'Content-Type': 'application/json',
@@ -141,13 +139,16 @@ define([
                 rag_db: ragDb,
                 user_id: _self.user_id
             };
-            return request.post(this.apiUrlBase + '/rag/chat', {
+            return request.post(this.apiUrlBase + '/rag', {
                 data: JSON.stringify(data),
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: (window.App.authorizationToken || '')
                 },
-                handleAs: 'json'
+                handleAs: 'json',
+                agent: https.Agent({
+                    rejectUnauthorized: false
+                })
             }).then(lang.hitch(this, function(response) {
                 if (response['message'] == 'success') {
                     var system_prompt = 'Using the following documents as context, answer the user questions. Do not use any other sources of information:\n\n';
