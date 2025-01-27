@@ -85,34 +85,36 @@ define([
     },
 
     onInputChange: function (evt) {
-      // protein radio buttons
-      if (this.protein_databank_selection.checked) {
-        // set display logic
-        dojo.style(this.block_pdb_list, "display", "block");
-        dojo.style(this.block_pdb_upload, "display", "none");
-      }
-      else if (this.user_pdb_file.checked) {
-        dojo.style(this.block_pdb_list, "display", "none");
-        dojo.style(this.block_pdb_upload, "display", "block");
-      }
-      // ligand radio buttons
-      if (this.input_sequence.checked)
-      {
-        dojo.style(this.block_smiles_text, 'display', 'block');
-        dojo.style(this.block_smiles_ws, 'display', 'none');
-        dojo.style(this.block_smiles_dropdown, 'display', 'none');
-      }
-      else if (this.ws_file.checked)
-      {
-        dojo.style(this.block_smiles_text, 'display', 'none');
-        dojo.style(this.block_smiles_ws, 'display', 'block');
-        dojo.style(this.block_smiles_dropdown, 'display', 'none');
-      }
-      else if (this.ligand_named_library.checked)
+      if (typeof this.protein_databank_selection != "undefined"){
+        // protein radio buttons
+        if (this.protein_databank_selection.checked) {
+          // set display logic
+          dojo.style(this.block_pdb_list, "display", "block");
+          dojo.style(this.block_pdb_upload, "display", "none");
+        }
+        else if (this.user_pdb_file.checked) {
+          dojo.style(this.block_pdb_list, "display", "none");
+          dojo.style(this.block_pdb_upload, "display", "block");
+        }
+        // ligand radio buttons
+        if (this.input_sequence.checked)
         {
-        dojo.style(this.block_smiles_text, 'display', 'none');
-        dojo.style(this.block_smiles_ws, 'display', 'none');
-        dojo.style(this.block_smiles_dropdown, 'display', 'block');
+          dojo.style(this.block_smiles_text, 'display', 'block');
+          dojo.style(this.block_smiles_ws, 'display', 'none');
+          dojo.style(this.block_smiles_dropdown, 'display', 'none');
+        }
+        else if (this.ws_file.checked)
+        {
+          dojo.style(this.block_smiles_text, 'display', 'none');
+          dojo.style(this.block_smiles_ws, 'display', 'block');
+          dojo.style(this.block_smiles_dropdown, 'display', 'none');
+        }
+        else if (this.ligand_named_library.checked)
+          {
+          dojo.style(this.block_smiles_text, 'display', 'none');
+          dojo.style(this.block_smiles_ws, 'display', 'none');
+          dojo.style(this.block_smiles_dropdown, 'display', 'block');
+        }
       }
       },
 
@@ -269,4 +271,3 @@ define([
     }
   });
 });
-
