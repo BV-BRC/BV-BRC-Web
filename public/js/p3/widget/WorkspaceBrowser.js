@@ -1237,9 +1237,9 @@ define([
       }, function (selection) {
         const path = selection[0].autoMeta.output_files.find(meta_file_data =>
           meta_file_data[0].includes('AssemblyReport.html')
-        )?.[0];
-        if (path) {
-          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
+        );
+        if (path && path[0]) {
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path[0]) });
         } else {
           console.log('Error: could not find AssemblyReport.html output file');
         }
