@@ -56,7 +56,7 @@ define([
             selectElement.style.marginBottom = '10px';
 
             if (this.modelList) {
-                this.modelList.reverse().forEach(lang.hitch(this, function(model) {
+                this.modelList.forEach(lang.hitch(this, function(model) {
                     var option = document.createElement('option');
                     option.value = model.model;
                     option.text = model.model.split('/').reverse()[0];
