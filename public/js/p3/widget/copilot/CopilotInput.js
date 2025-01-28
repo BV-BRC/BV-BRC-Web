@@ -60,34 +60,10 @@ define([
         }, wrapperDiv);
 
         // Create Model text
-        this.modelText = domConstruct.create('div', {
-          innerHTML: 'Model: None',
-          style: 'padding: 2px 5px; transition: color 0.2s;',
-          onmouseover: function(evt) {
-            evt.target.style.color = '#2196F3';
-          },
-          onmouseout: function(evt) {
-            evt.target.style.color = '';
-          },
-          onclick: lang.hitch(this, function() {
-            topic.publish('ragButtonPressed');
-          })
-        }, settingsDiv);
+        this._createModelText(settingsDiv);
 
         // Create RAG text
-        this.ragText = domConstruct.create('div', {
-          innerHTML: 'RAG: OFF',
-          style: 'padding: 2px 5px; transition: color 0.2s;',
-          onmouseover: function(evt) {
-            evt.target.style.color = '#2196F3';
-          },
-          onmouseout: function(evt) {
-            evt.target.style.color = '';
-          },
-          onclick: lang.hitch(this, function() {
-            topic.publish('ragButtonPressed');
-          })
-        }, settingsDiv);
+        this._createRagText(settingsDiv);
 
         // Create Textarea widget
         this.textArea = new Textarea({
@@ -108,100 +84,9 @@ define([
             if (this.isSubmitting) return;
 
             if (this.copilotApi && this.ragDb) {
-              console.log('this.ragDb=', this.ragDb);
-              var inputText = this.textArea.get('value');
-              var _self = this;
-
-              // TODO: If state is provided, add it to the query: Maybe for assistants
-              if (this.state) {
-                console.log('state', this.state);
-              }
-
-              // Disable input while submitting
-              this.isSubmitting = true;
-              this.submitButton.set('disabled', true);
-
-              // Show loading indicator
-              this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
-              // Submit query to API and handle response
-              this.copilotApi.submitRagQuery(inputText, 'cancer_papers', this.sessionId, this.model).then(lang.hitch(this, function(response) {
-
-                // Add user query and assistant response to chat store
-                this.chatStore.addMessages([
-                  {
-                    role: 'user',
-                    content: inputText
-                  },
-                  {
-                    role: 'assistant',
-                    content: response.response.content
-                  }
-                ]);
-                _self.textArea.set('value', '');
-                this.displayWidget.showMessages(this.chatStore.query());
-
-                // If this was a new chat, trigger session reload
-                if (_self.new_chat) {
-                  _self.new_chat = false;
-                  topic.publish('reloadUserSessions');
-                  topic.publish('generateSessionTitle');
-                }
-              })).finally(lang.hitch(this, function() {
-                // Hide loading indicator
-                this.displayWidget.hideLoadingIndicator();
-
-                // Re-enable input after response or error
-                this.isSubmitting = false;
-                this.submitButton.set('disabled', false);
-              }));
+              this._handleRagSubmit();
             } else if (this.copilotApi) {
-              var inputText = this.textArea.get('value');
-              var _self = this;
-
-              // TODO: If state is provided, add it to the query: Maybe for assistants
-              if (this.state) {
-                console.log('state', this.state);
-              }
-
-              // Disable input while submitting
-              this.isSubmitting = true;
-              this.submitButton.set('disabled', true);
-
-              // Show loading indicator
-              this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
-              // Submit query to API and handle response
-              // previous conversation is added server side
-              this.copilotApi.submitQuery(inputText, this.sessionId, this.system_prompt, this.model).then(lang.hitch(this, function(response) {
-                // Add user query and assistant response to chat store
-                this.chatStore.addMessages([
-                  {
-                    role: 'user',
-                    content: inputText
-                  },
-                  {
-                    role: 'assistant',
-                    content: response.response
-                  }
-                ]);
-                _self.textArea.set('value', '');
-                this.displayWidget.showMessages(this.chatStore.query());
-
-                // If this was a new chat, trigger session reload
-                if (_self.new_chat) {
-                  _self.new_chat = false;
-                  topic.publish('reloadUserSessions');
-                  topic.publish('generateSessionTitle');
-                }
-              })).finally(lang.hitch(this, function() {
-                // Hide loading indicator
-                this.displayWidget.hideLoadingIndicator();
-
-                // Re-enable input after response or error
-                this.isSubmitting = false;
-                this.submitButton.set('disabled', false);
-              }));
+              this._handleRegularSubmit();
             } else {
               console.error('CopilotApi widget not initialized');
             }
@@ -233,6 +118,137 @@ define([
             evt.preventDefault();
             this.submitButton.onClick();
           }
+        }));
+      },
+
+      _createModelText: function(currDiv) {
+        this.modelText = domConstruct.create('div', {
+          innerHTML: 'Model: None',
+          style: 'padding: 2px 5px; transition: color 0.2s;',
+          onmouseover: function(evt) {
+            evt.target.style.color = '#2196F3';
+          },
+          onmouseout: function(evt) {
+            evt.target.style.color = '';
+          },
+          onclick: lang.hitch(this, function() {
+            topic.publish('ragButtonPressed');
+          })
+        }, currDiv);
+      },
+
+      _createRagText: function(currDiv) {
+        this.ragText = domConstruct.create('div', {
+          innerHTML: 'RAG: OFF',
+          style: 'padding: 2px 5px; transition: color 0.2s;',
+          onmouseover: function(evt) {
+            evt.target.style.color = '#2196F3';
+          },
+          onmouseout: function(evt) {
+            evt.target.style.color = '';
+          },
+          onclick: lang.hitch(this, function() {
+            topic.publish('ragButtonPressed');
+          })
+        }, settingsDiv);
+      },
+
+      _handleRagSubmit: function() {
+        console.log('this.ragDb=', this.ragDb);
+        var inputText = this.textArea.get('value');
+        var _self = this;
+
+        // TODO: If state is provided, add it to the query: Maybe for assistants
+        if (this.state) {
+          console.log('state', this.state);
+        }
+
+        // Disable input while submitting
+        this.isSubmitting = true;
+        this.submitButton.set('disabled', true);
+
+        // Show loading indicator
+        this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+        // Submit query to API and handle response
+        this.copilotApi.submitRagQuery(inputText, 'cancer_papers', this.sessionId, this.model).then(lang.hitch(this, function(response) {
+
+          // Add user query and assistant response to chat store
+          this.chatStore.addMessages([
+            {
+              role: 'user',
+              content: inputText
+            },
+            {
+              role: 'assistant',
+              content: response.response.content
+            }
+          ]);
+          _self.textArea.set('value', '');
+          this.displayWidget.showMessages(this.chatStore.query());
+
+          // If this was a new chat, trigger session reload
+          if (_self.new_chat) {
+            _self.new_chat = false;
+            topic.publish('reloadUserSessions');
+            topic.publish('generateSessionTitle');
+          }
+        })).finally(lang.hitch(this, function() {
+          // Hide loading indicator
+          this.displayWidget.hideLoadingIndicator();
+
+          // Re-enable input after response or error
+          this.isSubmitting = false;
+          this.submitButton.set('disabled', false);
+        }));
+      },
+
+      _handleRegularSubmit: function() {
+        var inputText = this.textArea.get('value');
+        var _self = this;
+
+        // TODO: If state is provided, add it to the query: Maybe for assistants
+        if (this.state) {
+          console.log('state', this.state);
+        }
+
+        // Disable input while submitting
+        this.isSubmitting = true;
+        this.submitButton.set('disabled', true);
+
+        // Show loading indicator
+        this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+        // Submit query to API and handle response
+        // previous conversation is added server side
+        this.copilotApi.submitQuery(inputText, this.sessionId, this.system_prompt, this.model).then(lang.hitch(this, function(response) {
+          // Add user query and assistant response to chat store
+          this.chatStore.addMessages([
+            {
+              role: 'user',
+              content: inputText
+            },
+            {
+              role: 'assistant',
+              content: response.response
+            }
+          ]);
+          _self.textArea.set('value', '');
+          this.displayWidget.showMessages(this.chatStore.query());
+
+          // If this was a new chat, trigger session reload
+          if (_self.new_chat) {
+            _self.new_chat = false;
+            topic.publish('reloadUserSessions');
+            topic.publish('generateSessionTitle');
+          }
+        })).finally(lang.hitch(this, function() {
+          // Hide loading indicator
+          this.displayWidget.hideLoadingIndicator();
+
+          // Re-enable input after response or error
+          this.isSubmitting = false;
+          this.submitButton.set('disabled', false);
         }));
       },
 

@@ -13,7 +13,8 @@ define([
     '../../store/ChatSessionMemoryStore',
     'dojo/topic',
     'dojo/_base/lang',
-    './ChatSessionTitle'
+    './ChatSessionTitle',
+    'dojo/Deferred'
 ], function (
     declare,
     BorderContainer,
@@ -24,7 +25,8 @@ define([
     ChatSessionMemoryStore,
     topic,
     lang,
-    ChatSessionTitle
+    ChatSessionTitle,
+    Deferred
 ) {
     /**
      * @class ChatSessionContainer
@@ -58,6 +60,10 @@ define([
             window.App.chatStore = this.chatStore;
         },
 
+        whenInitialized: function() {
+            return this._initialized.promise; // Provide a promise for child widgets
+        },
+
         /**
          * @method postCreate
          * @description Sets up the chat interface after widget creation
@@ -66,51 +72,20 @@ define([
          */
         postCreate: function() {
             this.inherited(arguments);
+            this._initialized = new Deferred();
 
-            // check if copilotApi is passed in
             if (!this.copilotApi) {
                 return;
             }
-
+            debugger;
             this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
                 this.sessionId = sessionId;
+                this._createTitleWidget();
+                this._createDisplayWidget();
+                this._createInputWidget();  // Separate this into its own method
 
-                // Add title pane
-                this.titleWidget = new ChatSessionTitle({
-                    region: 'top',
-                    style: 'padding: 5px;',
-                    copilotApi: this.copilotApi,
-                    sessionId: this.sessionId
-                });
-                this.addChild(this.titleWidget);
-
-                // Add display pane with modified style
-                // 1px solid #e6f3ff
-                this.displayWidget = new CopilotDisplay({
-                    region: 'center',
-                    style: 'padding: 0; border: 0; overflow: hidden; height: 100%; min-height: 100px;',
-                    copilotApi: this.copilotApi,
-                    chatStore: this.chatStore,
-                    sessionId: this.sessionId
-                });
-                this.addChild(this.displayWidget);
-
-                // Add input pane with modified settings
-                this.inputWidget = new CopilotInput({
-                    region: 'bottom',
-                    splitter: true,
-                    minSize: 60,
-                    maxSize: 300,
-                    style: 'padding: 0 10px 10px 10px; border: 0; height: 30%;',
-                    copilotApi: this.copilotApi,
-                    chatStore: this.chatStore,
-                    displayWidget: this.displayWidget,
-                    sessionId: this.sessionId
-                });
-                this.addChild(this.inputWidget);
-
-                // set model to first option in model dropdown
                 topic.publish('SetInitialChatModel');
+                this._initialized.resolve();
             })).catch(lang.hitch(this, function(error) {
                 // Create error display pane
                 //  2px solid red
@@ -147,41 +122,7 @@ define([
                     sessionId: data.sessionId
                 });
             }));
-            topic.subscribe('UpdateSessionTitleError', lang.hitch(this, function(error) {
-                var errorDialog = new Dialog({
-                    title: "Cannot Update Title",
-                    content: "The chat title cannot be changed until the conversation has started. Please send a message first.",
-                    style: "width: 300px"
-                });
-
-                // Create a container div for the button with flex styling
-                var buttonContainer = document.createElement('div');
-                buttonContainer.style.display = 'flex';
-                buttonContainer.style.justifyContent = 'center';
-                buttonContainer.style.marginTop = '20px';  // Add space between text and button
-
-                // Create and style the OK button
-                var okButton = document.createElement('button');
-                okButton.innerHTML = "OK";
-                okButton.style.backgroundColor = '#4CAF50';  // Green color
-                okButton.style.color = 'white';
-                okButton.style.padding = '8px 24px';
-                okButton.style.border = 'none';
-                okButton.style.borderRadius = '4px';
-                okButton.style.cursor = 'pointer';
-
-                okButton.onclick = function() {
-                    errorDialog.hide();
-                    errorDialog.destroy();
-                };
-
-                // Add button to container, then container to dialog
-                buttonContainer.appendChild(okButton);
-                errorDialog.containerNode.appendChild(buttonContainer);
-
-                errorDialog.startup();
-                errorDialog.show();
-            }));
+            topic.subscribe('UpdateSessionTitleError', lang.hitch(this, this._handleUpdateSessionTitleError));
             topic.subscribe('ChatModel', lang.hitch(this, function(model) {
                 this.inputWidget.setModel(model);
             }));
@@ -194,37 +135,113 @@ define([
             topic.subscribe('changeRagButtonLabel', lang.hitch(this, function(ragDb) {
                 this.inputWidget.setRagButtonLabel(ragDb);
             }));
-            topic.subscribe('generateSessionTitle', lang.hitch(this, function() {
-                var messages = this.chatStore.query().map(x => x.content);
-                var model = this.inputWidget.getModel();
-                this.copilotApi.generateTitleFromMessages(messages, model).then(lang.hitch(this, function(title) {
-                    if (title.startsWith('"') && title.endsWith('"')) {
-                        title = title.substring(1, title.length - 1);
-                    }
-                    this.titleWidget.updateTitle(title);
-                    this.titleWidget.saveTitle();
-                }));
+            topic.subscribe('generateSessionTitle', lang.hitch(this, this._handleGenerateSessionTitle));
+            topic.subscribe('ChatSession:Delete', lang.hitch(this, this._handleChatSessionDelete));
+        },
+
+        _handleUpdateSessionTitleError: function(error) {
+            var errorDialog = new Dialog({
+                title: "Cannot Update Title",
+                content: "The chat title cannot be changed until the conversation has started. Please send a message first.",
+                style: "width: 300px"
+            });
+
+            // Create a container div for the button with flex styling
+            var buttonContainer = document.createElement('div');
+            buttonContainer.style.display = 'flex';
+            buttonContainer.style.justifyContent = 'center';
+            buttonContainer.style.marginTop = '20px';  // Add space between text and button
+
+            // Create and style the OK button
+            var okButton = document.createElement('button');
+            okButton.innerHTML = "OK";
+            okButton.style.backgroundColor = '#4CAF50';  // Green color
+            okButton.style.color = 'white';
+            okButton.style.padding = '8px 24px';
+            okButton.style.border = 'none';
+            okButton.style.borderRadius = '4px';
+            okButton.style.cursor = 'pointer';
+
+            okButton.onclick = function() {
+                errorDialog.hide();
+                errorDialog.destroy();
+            };
+
+            // Add button to container, then container to dialog
+            buttonContainer.appendChild(okButton);
+            errorDialog.containerNode.appendChild(buttonContainer);
+
+            errorDialog.startup();
+            errorDialog.show();
+        },
+
+        _handleGenerateSessionTitle: function() {
+            var messages = this.chatStore.query().map(x => x.content);
+            var model = this.inputWidget.getModel();
+            this.copilotApi.generateTitleFromMessages(messages, model).then(lang.hitch(this, function(title) {
+                if (title.startsWith('"') && title.endsWith('"')) {
+                    title = title.substring(1, title.length - 1);
+                }
+                this.titleWidget.updateTitle(title);
+                this.titleWidget.saveTitle();
             }));
-            topic.subscribe('ChatSession:Delete', lang.hitch(this, function(sessionId) {
-                this.copilotApi.deleteSession(sessionId).then(lang.hitch(this, function (response) {
-                    if (response.status === 'ok') {
-                        if (this.sessionId === sessionId) {
-                            this.copilotApi.getUserSessions().then(lang.hitch(this, function(sessions) {
-                                const session_id = sessions[0].session_id;
-                                const messages = sessions[0].messages;
-                                const title = sessions[0].title;
-                                const data = {
-                                    sessionId: session_id,
-                                    messages: messages
-                                };
-                                topic.publish('ChatSession:Selected', data);
-                                this.titleWidget.updateTitle(title);
-                            }));
-                        }
+        },
+
+        _handleChatSessionDelete: function(sessionId) {
+            this.copilotApi.deleteSession(sessionId).then(lang.hitch(this, function (response) {
+                if (response.status === 'ok') {
+                    if (this.sessionId === sessionId) {
+                        this.copilotApi.getUserSessions().then(lang.hitch(this, function(sessions) {
+                            const session_id = sessions[0].session_id;
+                            const messages = sessions[0].messages;
+                            const title = sessions[0].title;
+                            const data = {
+                                sessionId: session_id,
+                                messages: messages
+                            };
+                            topic.publish('ChatSession:Selected', data);
+                            this.titleWidget.updateTitle(title);
+                        }));
                     }
-                    topic.publish('reloadUserSessions');
-                }));
+                }
+                topic.publish('reloadUserSessions');
             }));
+        },
+
+        _createTitleWidget: function() {
+            this.titleWidget = new ChatSessionTitle({
+                region: 'top',
+                style: 'padding: 5px;',
+                copilotApi: this.copilotApi,
+                sessionId: this.sessionId
+            });
+            this.addChild(this.titleWidget);
+        },
+
+        _createDisplayWidget: function() {
+            this.displayWidget = new CopilotDisplay({
+                region: 'center',
+                style: 'padding: 0; border: 0; overflow: hidden; height: 100%; min-height: 100px;',
+                copilotApi: this.copilotApi,
+                chatStore: this.chatStore,
+                sessionId: this.sessionId
+            });
+            this.addChild(this.displayWidget);
+        },
+
+        _createInputWidget: function() {
+            this.inputWidget = new CopilotInput({
+                region: 'bottom',
+                splitter: true,
+                minSize: 60,
+                maxSize: 300,
+                style: 'padding: 0 10px 10px 10px; border: 0; height: 30%;',
+                copilotApi: this.copilotApi,
+                chatStore: this.chatStore,
+                displayWidget: this.displayWidget,
+                sessionId: this.sessionId
+            });
+            this.addChild(this.inputWidget);
         },
 
         /**

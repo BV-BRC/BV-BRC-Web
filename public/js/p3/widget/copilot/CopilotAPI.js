@@ -20,6 +20,7 @@ define([
     return declare([_WidgetBase], {
         /** @property {string} apiUrlBase - Base URL for the Copilot API endpoints */
         apiUrlBase: 'https://dev-3.bv-brc.org/copilot-api/chatbrc',
+        dbUrlBase: 'https://dev-3.bv-brc.org/copilot-api/db',
 
         /** @property {Object} storedResult - Stores the last API response */
         storedResult: null,
@@ -301,6 +302,25 @@ define([
                 return response;
             }).catch(function(error) {
                 console.error('Error deleting session:', error);
+                throw error;
+            });
+        },
+
+        getModelList: function() {
+            var _self = this;
+            return request.post(this.dbUrlBase + '/get-model-list', {
+                data: JSON.stringify({
+                    project_id: 'test'
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return JSON.parse(response.models);
+            }).catch(function(error) {
+                console.error('Error getting model list:', error);
                 throw error;
             });
         }

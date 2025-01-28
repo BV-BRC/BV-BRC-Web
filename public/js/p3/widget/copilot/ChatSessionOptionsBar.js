@@ -33,6 +33,17 @@ define([
     return declare([ContentPane], {
         /** @property {string} style - CSS styling for the options bar */
         style: 'padding: 10px;',
+        modelList: null,
+
+        /**
+         * @constructor
+         * @param {Object} opts - Configuration options
+         * @description Initializes the widget and mixes in provided options
+         */
+        constructor: function(opts) {
+            this.inherited(arguments);
+            lang.mixin(this, opts);
+        },
 
         /**
          * @method createModelDropdown
@@ -44,17 +55,26 @@ define([
             selectElement.style.display = 'block';
             selectElement.style.marginBottom = '10px';
 
-            var optionLLAMA31 = document.createElement('option');
-            // optionLLAMA31.value = 'meta-llama/Meta-Llama-3.1-70B-Instruct';
-            // optionLLAMA31.text = 'LLAMA3.1-70B';
-            optionLLAMA31.value = 'meta-llama/Llama-3.3-70B-Instruct';
-            optionLLAMA31.text = 'LLAMA3.3-70B';
-            selectElement.add(optionLLAMA31);
+            if (this.modelList) {
+                this.modelList.reverse().forEach(lang.hitch(this, function(model) {
+                    var option = document.createElement('option');
+                    option.value = model.model;
+                    option.text = model.model.split('/').reverse()[0];
+                    selectElement.add(option);
+                }));
+            } else {
+                var optionLLAMA31 = document.createElement('option');
+                // optionLLAMA31.value = 'meta-llama/Meta-Llama-3.1-70B-Instruct';
+                // optionLLAMA31.text = 'LLAMA3.1-70B';
+                optionLLAMA31.value = 'meta-llama/Llama-3.3-70B-Instruct';
+                optionLLAMA31.text = 'LLAMA3.3-70B';
+                selectElement.add(optionLLAMA31);
 
-            var optionGPT4O = document.createElement('option');
-            optionGPT4O.value = 'gpt4o';
-            optionGPT4O.text = 'GPT-4o';
-            selectElement.add(optionGPT4O);
+                var optionGPT4O = document.createElement('option');
+                optionGPT4O.value = 'gpt4o';
+                optionGPT4O.text = 'GPT-4o';
+                selectElement.add(optionGPT4O);
+            }
 
             selectElement.addEventListener('change', lang.hitch(this, function(evt) {
                 var model = evt.target.value;

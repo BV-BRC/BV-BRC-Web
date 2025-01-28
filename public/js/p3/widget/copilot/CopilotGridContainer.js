@@ -5,10 +5,10 @@
  * for the active chat session.
  */
 define([
-    'dojo/_base/declare', 'dijit/layout/BorderContainer', './CopilotDisplay',
+    'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/_base/lang', 'dijit/Dialog', './CopilotDisplay',
     './CopilotInput', './CopilotApi', 'dojo/topic', 'dijit/layout/ContentPane', './ChatSessionScrollBar', './ChatSessionContainer', './ChatSessionOptionsBar'
   ], function (
-    declare, BorderContainer, CopilotDisplay, CopilotInput, CopilotAPI, topic, ContentPane, ChatSessionScrollBar, ChatSessionContainer, ChatSessionOptionsBar
+    declare, BorderContainer, lang, Dialog, CopilotDisplay, CopilotInput, CopilotAPI, topic, ContentPane, ChatSessionScrollBar, ChatSessionContainer, ChatSessionOptionsBar
   ) {
 
     return declare([BorderContainer], {
@@ -38,38 +38,48 @@ define([
           user_id: window.App.user.l_id
         });
 
-        // Create left sidebar container
-        var leftContainer = new BorderContainer({
-          region: 'left',
-          splitter: true, // Allows resizing
-          style: 'width: 240px;'
-        });
+        this.copilotApi.getModelList().then(lang.hitch(this, function(modelList) {
+          // Create left sidebar container
+          var leftContainer = new BorderContainer({
+            region: 'left',
+            splitter: true, // Allows resizing
+            style: 'width: 240px;'
+          });
 
-        // Add options bar to top of sidebar
-        var leftTopPane = new ChatSessionOptionsBar({
-          region: 'top',
-          style: 'height: 30px; ',
-          copilotApi: this.copilotApi
-        });
-        leftContainer.addChild(leftTopPane);
+          // Add options bar to top of sidebar
+          var leftTopPane = new ChatSessionOptionsBar({
+            region: 'top',
+            style: 'height: 30px; ',
+            copilotApi: this.copilotApi,
+            modelList: modelList
+          });
+          leftContainer.addChild(leftTopPane);
 
-        // Add scrollable chat history to sidebar
-        var chatSessionPane = new ChatSessionScrollBar({
-          region: 'center',
-          style: 'padding: 0px; border: 1px solid grey;',
-          copilotApi: this.copilotApi
-        });
-        leftContainer.addChild(chatSessionPane);
+          // Add scrollable chat history to sidebar
+          var chatSessionPane = new ChatSessionScrollBar({
+            region: 'center',
+            style: 'padding: 0px; border: 1px solid grey;',
+            copilotApi: this.copilotApi
+          });
+          leftContainer.addChild(chatSessionPane);
 
-        this.addChild(leftContainer);
+          this.addChild(leftContainer);
 
-        // Create main chat container
-        var rightContainer = new ChatSessionContainer({
-          region: 'center',
-          gutters: false,
-          copilotApi: this.copilotApi
-        });
-        this.addChild(rightContainer);
+          // Create main chat container
+          var rightContainer = new ChatSessionContainer({
+            region: 'center',
+            gutters: false,
+            copilotApi: this.copilotApi
+          });
+          this.addChild(rightContainer);
+        })).catch(lang.hitch(this, function(err) {
+          new Dialog({
+            title: "Service Unavailable",
+            content: "The BV-BRC Copilot service is currently disabled. Please try again later.",
+            style: "width: 300px"
+          }).show();
+          console.error('Error getting model list:', err);
+        }));
       }
     });
   });

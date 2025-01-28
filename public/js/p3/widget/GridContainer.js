@@ -399,31 +399,55 @@ define([
             user_id: window.App.user.l_id
           });
 
-          // Create new chat panel
-          this.chatPanel = new ChatSessionSidePanel({
-            region: 'right',
-            splitter: true,
-            style: 'width: 32%',
-            copilotApi: this.copilotAPI,
-            containerSelection: this.get('selection')
-          });
+          this.copilotAPI.getModelList().then(lang.hitch(this, function(modelList) {
 
-          // Add to container in same location as itemDetailPanel
-          if (this.itemDetailPanel && this.itemDetailPanel.domNode) {
-            // Get the position of itemDetailPanel
-            var pos = this.itemDetailPanel.domNode.style;
-            this.chatPanel.domNode.style.position = pos.position;
-            this.chatPanel.domNode.style.right = pos.right;
-            this.chatPanel.domNode.style.top = pos.top;
-          }
+            // Add options bar to top of sidebar
+            var chatOptionsBar = new ChatSessionOptionsBar({
+              region: 'top',
+              style: 'height: 30px; ',
+              copilotApi: this.copilotAPI,
+              modelList: modelList
+            });
 
-          // Remove itemDetailPanel if it exists
-          if (this.itemDetailPanel && this.getChildren().indexOf(this.itemDetailPanel) > -1) {
-            this.removeChild(this.itemDetailPanel);
-          }
+            // Create new chat panel
+            this.chatPanel = new ChatSessionSidePanel({
+              region: 'right',
+              splitter: true,
+              style: 'width: 32%',
+              copilotApi: this.copilotAPI,
+              containerSelection: this.get('selection'),
+              optionsBar: chatOptionsBar
+            });
 
-          // Add chat panel
-          this.addChild(this.chatPanel);
+            if (this.selectionActionBar.get('selection').length > 0) {
+              this.chatPanel.set('containerSelection', this.selectionActionBar.get('selection'));
+            }
+
+            // Add to container in same location as itemDetailPanel
+            // TODO: this is a hack to get the chat panel to appear in the same location as the itemDetailPanel
+            if (this.itemDetailPanel && this.itemDetailPanel.domNode) {
+              // Get the position of itemDetailPanel
+              var pos = this.itemDetailPanel.domNode.style;
+              this.chatPanel.domNode.style.position = pos.position;
+              this.chatPanel.domNode.style.right = pos.right;
+              this.chatPanel.domNode.style.top = pos.top;
+            }
+
+            // Remove itemDetailPanel if it exists
+            if (this.itemDetailPanel && this.getChildren().indexOf(this.itemDetailPanel) > -1) {
+              this.removeChild(this.itemDetailPanel);
+            }
+
+            // Add chat panel
+            this.addChild(this.chatPanel);
+          })).catch(lang.hitch(this, function(err) {
+            new Dialog({
+              title: "Service Unavailable",
+              content: "The BV-BRC Copilot service is currently disabled. Please try again later.",
+              style: "width: 300px"
+            }).show();
+            console.error('Error getting model list:', err);
+          }));
         },
         true
       ],
