@@ -150,7 +150,7 @@ define([
           onclick: lang.hitch(this, function() {
             topic.publish('ragButtonPressed');
           })
-        }, settingsDiv);
+        }, currDiv);
       },
 
       _handleRagSubmit: function() {
@@ -206,7 +206,6 @@ define([
       _handleRegularSubmit: function() {
         var inputText = this.textArea.get('value');
         var _self = this;
-
         // TODO: If state is provided, add it to the query: Maybe for assistants
         if (this.state) {
           console.log('state', this.state);
@@ -221,7 +220,7 @@ define([
 
         // Submit query to API and handle response
         // previous conversation is added server side
-        this.copilotApi.submitQuery(inputText, this.sessionId, this.system_prompt, this.model).then(lang.hitch(this, function(response) {
+        this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
           // Add user query and assistant response to chat store
           this.chatStore.addMessages([
             {
@@ -271,9 +270,8 @@ define([
       },
 
       setSystemPromptWithData: function(data) {
-        debugger;
         if (!data || !data.length) {
-          this.system_prompt = '';
+          this.systemPrompt = '';
           return;
         }
 
@@ -282,11 +280,11 @@ define([
           promptStr += JSON.stringify(item) + '\n';
         });
 
-        this.system_prompt = promptStr;
+        this.systemPrompt = promptStr;
       },
 
       setSystemPrompt: function(systemPrompt) {
-        this.system_prompt = systemPrompt;
+        this.systemPrompt = systemPrompt;
       },
 
       setModel: function(model) {

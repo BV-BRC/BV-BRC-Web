@@ -6,7 +6,7 @@ define([
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog', './DownloadTooltipDialog', './PerspectiveToolTip',
   './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin',
   './FeatureDetailsTooltipDialog', './ServicesTooltipDialog', './RerunUtility', 'dojox/widget/Standby',
-  './copilot/ChatSessionSidePanel', './copilot/CopilotApi'
+  './copilot/ChatSessionSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBar'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
@@ -14,7 +14,8 @@ define([
   Topic, query, ContentPane, IDMappingTemplate,
   Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
   CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin,
-  FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility, Standby, ChatSessionSidePanel, CopilotAPI
+  FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility, Standby,
+  ChatSessionSidePanel, CopilotAPI, ChatSessionOptionsBar
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -415,13 +416,10 @@ define([
               splitter: true,
               style: 'width: 32%',
               copilotApi: this.copilotAPI,
-              containerSelection: this.get('selection'),
+              containerSelection: this.selectionActionBar.get('selection'),
               optionsBar: chatOptionsBar
             });
-
-            if (this.selectionActionBar.get('selection').length > 0) {
-              this.chatPanel.set('containerSelection', this.selectionActionBar.get('selection'));
-            }
+            this.chatPanel._setupContainerWatch();
 
             // Add to container in same location as itemDetailPanel
             // TODO: this is a hack to get the chat panel to appear in the same location as the itemDetailPanel
@@ -440,13 +438,21 @@ define([
 
             // Add chat panel
             this.addChild(this.chatPanel);
+
+            // Wait for input widget to be created before setting initial selection
+            setTimeout(lang.hitch(this, function() {
+              if (this.chatPanel.inputWidget && this.selectionActionBar.get('selection').length > 0) {
+                this.chatPanel.set('containerSelection', this.selectionActionBar.get('selection'));
+                this.chatPanel.inputWidget.setSystemPromptWithData(this.selectionActionBar.get('selection'));
+              }
+            }), 100);
           })).catch(lang.hitch(this, function(err) {
             new Dialog({
               title: "Service Unavailable",
               content: "The BV-BRC Copilot service is currently disabled. Please try again later.",
               style: "width: 300px"
             }).show();
-            console.error('Error getting model list:', err);
+            console.error('Error setting up chat panel:', err);
           }));
         },
         true

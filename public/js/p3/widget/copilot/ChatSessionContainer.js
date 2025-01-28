@@ -77,7 +77,7 @@ define([
             if (!this.copilotApi) {
                 return;
             }
-            debugger;
+
             this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
                 this.sessionId = sessionId;
                 this._createTitleWidget();
