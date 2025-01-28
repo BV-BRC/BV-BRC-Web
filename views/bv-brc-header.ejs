@@ -373,36 +373,35 @@
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
         var user_data = JSON.parse(localStorage.getItem('userProfile'));
-        if (user_data.roles && user_data.roles.includes('admin')) {
-            var dropdownButton = document.createElement('div');
-            dropdownButton.className = 'topMenuButton showOnLoad dijitHidden';
-            dropdownButton.setAttribute('data-dojo-type', 'dijit/form/DropDownButton');
+        // if (user_data.roles && user_data.roles.includes('admin')) {
+        var dropdownButton = document.createElement('div');
+        dropdownButton.className = 'topMenuButton showOnLoad dijitHidden';
+        dropdownButton.setAttribute('data-dojo-type', 'dijit/form/DropDownButton');
 
-            var span = document.createElement('span');
-            span.textContent = 'COPILOT';
-            dropdownButton.appendChild(span);
+        var span = document.createElement('span');
+        span.textContent = 'COPILOT';
+        dropdownButton.appendChild(span);
 
-            var tooltipDialog = document.createElement('div');
-            tooltipDialog.setAttribute('data-dojo-type', 'p3/widget/TooltipDialog');
+        var tooltipDialog = document.createElement('div');
+        tooltipDialog.setAttribute('data-dojo-type', 'p3/widget/TooltipDialog');
 
-            var menuHeader = document.createElement('div');
-            menuHeader.className = 'menuHeader';
-            menuHeader.textContent = 'AI Assistant';
-            menuHeader.style.width = '100px';
-            tooltipDialog.appendChild(menuHeader);
+        var menuHeader = document.createElement('div');
+        menuHeader.className = 'menuHeader';
+        menuHeader.textContent = 'AI Assistant';
+        menuHeader.style.width = '100px';
+        tooltipDialog.appendChild(menuHeader);
 
-            var link = document.createElement('a');
-            link.className = 'TopMenuLink';
-            link.href = '/view/Copilot';
-            link.textContent = 'Chat';
+        var link = document.createElement('a');
+        link.className = 'TopMenuLink';
+        link.href = '/view/Copilot';
+        link.textContent = 'Chat';
 
-            var innerDiv = document.createElement('div');
-            innerDiv.appendChild(link);
-            tooltipDialog.appendChild(innerDiv);
-            dropdownButton.appendChild(tooltipDialog);
+        var innerDiv = document.createElement('div');
+        innerDiv.appendChild(link);
+        tooltipDialog.appendChild(innerDiv);
+        dropdownButton.appendChild(tooltipDialog);
 
-            var dropdownHeader = document.querySelector('[data-dojo-attach-point="dropdownHeader"]');
-            dropdownHeader.appendChild(dropdownButton);
-        }
+        var dropdownHeader = document.querySelector('[data-dojo-attach-point="dropdownHeader"]');
+        dropdownHeader.appendChild(dropdownButton);
     });
 </script>
