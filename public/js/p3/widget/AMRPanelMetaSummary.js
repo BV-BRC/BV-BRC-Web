@@ -74,7 +74,7 @@ define([
           // process table data
           var item = { antibiotic: antibiotic };
           d.pivot.forEach(function (phenotype) {
-            item[phenotype.value] = phenotype.pivot.length;
+            item[phenotype.value] = phenotype.count;
           });
           tableData.push(item);
 
@@ -82,7 +82,7 @@ define([
           var dist = [0, 0, 0];
           d.pivot.forEach(function (phenotype) {
             if (Object.prototype.hasOwnProperty.call(phenotypeDef, phenotype.value)) {
-              dist[phenotypeDef[phenotype.value]] = phenotype.pivot.length;
+              dist[phenotypeDef[phenotype.value]] = phenotype.count;
             }
           });
           var total = dist.reduce(function (a, b) {
