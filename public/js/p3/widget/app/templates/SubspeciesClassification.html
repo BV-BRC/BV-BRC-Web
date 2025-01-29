@@ -3,7 +3,7 @@
     <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
-            <h3>Subspecies Classification
+            <h1 class="appHeader">Subspecies Classification
                 <div name="overview" class="infobox iconbox infobutton dialoginfo">
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                 </div>
@@ -12,7 +12,7 @@
                         <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
                     </a>
                 </div>
-            </h3>
+            </h1>
             <p>
                 ${applicationDescription} Link to <a href="https://matsen.fhcrc.org/pplacer" target="_blank">pplacer</a>
                 and <a
@@ -107,7 +107,7 @@
                         <label class="appBoxLabel">Species</label>
                             <div name="species" class="infobox iconbox infobutton dialoginfo">
                                 <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                            </div>                        
+                            </div>
                     </div>
                     <div data-dojo-type="dijit/form/Select" name="virus_type" data-dojo-props="disabled:false"
                         maxHeight="200" style="width:100%" required="true" data-dojo-attach-point="virus_type">
@@ -122,7 +122,7 @@
                             <label class="appBoxLabel">Output Folder</label>
                                 <div name="output-folder" class="infobox iconbox infobutton dialoginfo">
                                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                                </div>                        
+                                </div>
                         </div>
                         <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
                             data-dojo-attach-point="output_path" style="width:300px" required="true"
@@ -134,7 +134,7 @@
                             <label class="appBoxLabel">Output Name</label>
                                 <div name="output-name" class="infobox iconbox infobutton dialoginfo">
                                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                                </div>                        
+                                </div>
                             <span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
                         </div>
                         <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
