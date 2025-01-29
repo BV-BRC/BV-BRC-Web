@@ -1959,6 +1959,12 @@ define([
       this.selectionActions.forEach(function (a) {
         this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
       }, this);
+
+      // Hide the panel on a small screen
+      if (window.innerWidth <= 768 && this.selectionActionBar) {
+        const hideBtn = query('[rel="ToggleItemDetail"]', this.selectionActionBar.domNode)[0];
+        hideBtn.click();
+      }
     },
 
     startup: function () {
