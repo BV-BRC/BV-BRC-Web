@@ -42,7 +42,8 @@ define([], function () {
         'HASubtypeNumberingConversion': 'HASubtypeNumberingConversion',
         'TaxonomicClassification': 'TaxonomicClassification',
         'TnSeq': 'Tnseq',
-        'Variation': 'Variation'
+        'Variation': 'Variation',
+        'ViralAssembly': 'ViralAssembly'
       };
 
       // TODO: addin modal parameter
