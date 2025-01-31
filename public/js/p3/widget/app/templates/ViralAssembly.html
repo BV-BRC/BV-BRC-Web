@@ -22,16 +22,20 @@
                     <label class="appBoxLabel">Input File</label>
                 </div>
                 <div class="appRow">
-                    <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="pairedReadCheck"
-                           name="inputType" value="pairedRead" checked/>
+                    <input type="radio" id="pairedRead" name="inputType" value="pairedRead" checked
+                           data-dojo-type="dijit/form/RadioButton"
+                           data-dojo-attach-point="pairedReadCheck"/>
                     <label for="pairedRead">Paired Read Library</label>
-                    <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="singleReadCheck"
-                           name="inputType" value="singleRead" data-dojo-attach-event="onChange:inputTypeChanged"/>
-                    <label for="singleRead">Single Read Library</label>
-                    <input type="radio" data-dojo-type="dijit/form/RadioButton"
-                           data-dojo-attach-point="sraAccessionCheck" name="inputType" value="sraAccession"
+                    <input type="radio" id="singleRead" name="inputType" value="singleRead"
+                           data-dojo-type="dijit/form/RadioButton"
+                           data-dojo-attach-point="singleReadCheck"
                            data-dojo-attach-event="onChange:inputTypeChanged"/>
-                    <label for="singleRead">Sra Run Accession</label>
+                    <label for="singleRead">Single Read Library</label>
+                    <input type="radio" id="sraAccession" name="inputType" value="sraAccession"
+                           data-dojo-type="dijit/form/RadioButton"
+                           data-dojo-attach-point="sraAccessionCheck"
+                           data-dojo-attach-event="onChange:inputTypeChanged"/>
+                    <label for="sraAccession">Sra Run Accession</label>
                 </div>
 
                 <div id="pairedReadLibraryBox">
