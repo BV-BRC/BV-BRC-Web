@@ -184,16 +184,26 @@ define([
         var sessionStorage = window.sessionStorage;
         if (sessionStorage.hasOwnProperty(rerun_key)) {
           try {
-            var param_dict = {'output_folder': 'output_path'};
-            var widget_map = {'single_end_libs': 'single_end_libsWidget'}; // TODO: remove this line?
-            param_dict['widget_map'] = widget_map;
-            // job : attach_point
-            param_dict['service_specific'] = service_spec;
-            AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
-            var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-            job_data = this.formatRerunJson(job_data);
-            this.setStrategy(job_data['strategy']);
-            AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
+            const jobData = JSON.parse(sessionStorage.getItem(rerun_key));
+
+            if (jobData['module']){
+              this.module.set('value', jobData['module']);
+            }
+            if (jobData['output_path']){
+              this.output_path.set('value', jobData['output_path']);
+            }
+            if (jobData['srr_id']){
+              this.srr_accession.set('value', jobData['srr_id']);
+              this.sraAccessionCheck.set('checked', true);
+              this.onSRRChange();
+            } else if (jobData['paired_end_lib']) {
+              this.read1.set('value', jobData['paired_end_lib'].read1);
+              this.read2.set('value', jobData['paired_end_lib'].read2);
+              this.pairedReadCheck.set('checked', true);
+            } else if (jobData['single_end_lib']) {
+              this.read.set('value', jobData['single_end_lib'].read);
+              this.singleReadCheck.set('checked', true);
+            }
             this.form_flag = true;
           } catch (error) {
             console.log('Error during intakeRerunForm: ', error);
@@ -202,16 +212,6 @@ define([
           }
         }
       }
-    },
-
-    formatRerunJson: function (job_data) {
-      if (!job_data.paired_end_libs) {
-        job_data.paired_end_libs = [];
-      }
-      if (!job_data.single_end_libs) {
-        job_data.single_end_libs = [];
-      }
-      return job_data;
     }
   });
 });
