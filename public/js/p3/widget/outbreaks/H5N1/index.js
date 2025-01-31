@@ -426,7 +426,7 @@ define([
       this.viewer.addChild(this.clt);
 
       // Fetch geomap data
-      xhr.get(PathJoin(this.apiServiceUrl, 'genome') + '/?eq(taxon_id,11320)&eq(subtype,"H5N1")&eq(collection_year,"2024")&in(genome_status,("Complete","Partial"))&select(genome_name,isolation_country,state_province,host_common_name)&limit(100000)', {
+      xhr.get(PathJoin(this.apiServiceUrl, 'genome') + '/?eq(taxon_id,11320)&eq(subtype,"H5N1")&in(collection_year,("2024","2025"))&in(genome_status,("Complete","Partial"))&select(genome_name,isolation_country,state_province,host_common_name)&limit(100000)', {
         headers: {
           accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',

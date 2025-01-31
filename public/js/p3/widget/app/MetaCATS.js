@@ -314,16 +314,37 @@ define([
               if (metadata_value == 'collection_year') {
                 ranges = self.getRanges();
                 if (ranges.length > 0) {
-                  year_groups.push('<=' + ranges[0][0]);
-                  for (var i = 1; i < ranges.length - 1; i++) {
-                    year_groups.push(ranges[i][0] + '-' + ranges[i][1]);
+                  // Process the first range
+                  if (ranges[0].length === 1) {
+                    year_groups.push('<=' + ranges[0][0]); // Single year
+                  } else {
+                    year_groups.push(ranges[0][0] + '-' + ranges[0][1]); // Range: start-end
                   }
-                  year_groups.push('>=' + ranges[ranges.length - 1][0]);
-                  year_groups.forEach(function (grp) {
-                    group_names.add(grp);
-                  });
+
+                  // Process middle ranges
+                  for (let i = 1; i < ranges.length - 1; i++) {
+                    let range = ranges[i];
+                    if (range.length === 1) {
+                      year_groups.push('' + range[0]); // Single year
+                    } else {
+                      year_groups.push(range[0] + '-' + range[1]); // Range: start-end
+                    }
+                  }
+
+                  // Process the last range
+                  if (ranges.length > 1) {
+                    let last = ranges[ranges.length - 1];
+                    if (last.length === 1) {
+                      year_groups.push('>=' + last[0]); // Single year
+                    } else {
+                      year_groups.push(last[0] + '-' + last[1]); // Range: start-end
+                    }
+                  }
+
+                  group_names = new Set(year_groups);
                 }
               }
+
               genome_results.items.forEach(function (genome) {
                 const m_value = genome[metadata_value] === undefined ? '' : genome[metadata_value];
                 var g_value = m_value;
@@ -332,21 +353,27 @@ define([
                   group_names.add(m_value.toString());
                 } else if (metadata_value == 'collection_year') {
                   if (m_value) {
-                    if (m_value <= ranges[0]) {
-                      g_value = year_groups[0];
-                    } else if (m_value >= ranges[ranges.length - 1]) {
-                      g_value = year_groups[ranges.length - 1];
-                    } else {
-                      for (var i = 1; i < ranges.length - 1; i++) {
-                        if (m_value >= ranges[i][0] && m_value <= ranges[i][1]) {
-                          g_value = year_groups[i];
+                    // Loop through the year_groups to find where m_value fits
+                    for (const group of year_groups) {
+                      if (group.indexOf('-') !== -1) { // Handle range like '2014-2016'
+                        let [start_year, end_year] = group.split('-').map(Number);
+                        if (m_value >= start_year && m_value <= end_year) {
+                          g_value = group;
+                          break;
+                        }
+                      } else { // Handle single year like '<=2014' or '>=2014'
+                        let year = Number(group.replace('<=', '').replace('>=', ''));
+                        if ((group.startsWith('<=') && m_value <= year) ||
+                          (group.startsWith('>=') && m_value >= year) ||
+                          (m_value == year)) {
+                          g_value = group;
                           break;
                         }
                       }
-                      if (m_value == g_value) {
-                        group_names.add(m_value.toString());
-                      }
                     }
+
+                    // Add the determined g_value to group_names
+                    group_names.add(g_value);
                   } else {
                     group_names.add(m_value.toString());
                   }
@@ -358,7 +385,9 @@ define([
                       patric_id: feature_id,
                       metadata: m_value.toString(),
                       group: g_value.toString(),
-                      genome_id: genome.genome_id
+                      genome_id: genome.genome_id,
+                      genbank_accessions: genome.genbank_accessions,
+                      strain: genome.strain
                     });
                   }
                 });

@@ -865,6 +865,9 @@ define([], function () {
         field: 'variant_types', type: 'str', facet: false, facet_hidden: true, search: true
       },
       {
+        field: 'product', type: 'str', facet: true, facet_hidden: false, search: true
+      },
+      {
         field: 'sf_category', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {

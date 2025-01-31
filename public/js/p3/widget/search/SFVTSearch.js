@@ -1,10 +1,10 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/store/Memory', 'dojo/text!./templates/SFVTSearch.html', 'dojo/query',
-  './TextInputEncoder', './SearchBase', './FacetStoreBuilder', './PathogenGroups', '../../util/PathJoin', 'dojo/request/xhr',
+  './TextInputEncoder', './SearchBase', './FacetStoreBuilder', '../../store/SFVTViruses', '../../util/PathJoin', 'dojo/request/xhr',
   'dijit/Dialog', 'dojo/on', 'dojo/when', 'dojo/dom-construct'
 ], function (
   declare, lang, Memory, template, query,
-  TextInputEncoder, SearchBase, storeBuilder, pathogenGroupStore, PathJoin, xhr,
+  TextInputEncoder, SearchBase, storeBuilder, SFVTViruses, PathJoin, xhr,
   Dialog, on, when, domConstruct
 ) {
 
@@ -20,10 +20,6 @@ define([
     'M2': '7',
     'NS1': '8',
     'NS2': '8'
-  };
-
-  const otherPathogenGroups = {
-    '10244': 'Monkeypox virus'
   };
 
   function sanitizeInput(str) {
@@ -42,7 +38,7 @@ define([
     resultUrlBase: '/view/Taxonomy/{taxon_id}?',
     resultUrlHash: '#view_tab=sfvt',
     defaultTaxonId: '11320',
-    proteinOptions: ['12637'],
+    proteinOptions: ['10244', '12637'],
     segmentOptions: ['11320'],
     sfvtSequenceErrorMessage: 'There are too many Sequence Feature hits. Please refine Sequence Feature Variant Type Sequence pattern to narrow down the results.',
     sfvtMaxLimit: 300,
@@ -94,19 +90,39 @@ define([
           label: 'Clade II'
         }
       ]);
+
+      // Initialize selected taxon id
+      const selectedPathogenGroup = this.state.pathogen_group;
+      let selectedTaxonId;
+      if (selectedPathogenGroup) {
+        const pathogen = SFVTViruses.data.find(entry => entry.name.toLowerCase() === selectedPathogenGroup.toLowerCase());
+        selectedTaxonId = pathogen ? pathogen.id : this.defaultTaxonId;
+      } else {
+        selectedTaxonId = this.defaultTaxonId;
+      }
+
       storeBuilder('sequence_feature', 'taxon_id').then(lang.hitch(this, (store) => {
         // Display correct names based on taxon id
-        for (let item of store.data) {
-          const taxon = pathogenGroupStore.data.find(pathogen => pathogen.id == item.id);
-          if (taxon) {
-            item.name = taxon.name;
-          } else if (otherPathogenGroups[item.id]) {
-            item.name = otherPathogenGroups[item.id];
+        store.data.forEach(item => {
+          const virus = SFVTViruses.get(item.id);
+          if (virus) {
+            item.name = virus.name;
+          } else {
+            store.remove(item.id);
           }
-        }
+        });
+
+        store.data.sort((a, b) => a.name.localeCompare(b.name));
+
+        // Update the index to reflect the new order of the data
+        store.index = {}; // Reset the index
+        store.data.forEach((item, index) => {
+          store.index[item.id] = index; // Map each id to its new index
+        });
+
         this.pathogenGroupNode.store = store;
-        if (this.defaultTaxonId) {
-          this.pathogenGroupNode.set('value', this.defaultTaxonId);
+        if (selectedTaxonId) {
+          this.pathogenGroupNode.set('value', selectedTaxonId);
         }
       }));
 
@@ -122,24 +138,55 @@ define([
 
       // Retrieve product values for gene
       let self = this;
-      when(xhr.post(PathJoin(window.App.dataAPI, '/sequence_feature/'), {
-        handleAs: 'json',
-        headers: {
-          Accept: 'application/solr+json',
-          'Content-Type': 'application/solrquery+x-www-form-urlencoded',
-          'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
-        },
-        data: 'q=taxon_id:10244&fl=gene,product&group=true&group.field=gene'
-      }), function (response) {
-        if (response && response.grouped && response.grouped.gene) {
-          response.grouped.gene.groups.forEach(group => {
-            const gene = group.groupValue;
-            const product = group.doclist.docs[0].product;
-            self.mpoxGeneProductMapping[gene] = product;
-          });
+      const sfURL = PathJoin(window.App.dataAPI, '/sequence_feature/');
+      const data = `q=taxon_id:${self.proteinOptions.join(' OR ')}&fl=gene,product&group=true&group.field=gene`;
+      if (selectedTaxonId === this.defaultTaxonId) {
+        when(xhr.post(sfURL, {
+          handleAs: 'json',
+          headers: {
+            Accept: 'application/solr+json',
+            'Content-Type': 'application/solrquery+x-www-form-urlencoded',
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
+          },
+          data: data
+        }), function (response) {
+          if (response && response.grouped && response.grouped.gene) {
+            response.grouped.gene.groups.forEach(group => {
+              const gene = group.groupValue;
+              const product = group.doclist.docs[0].product;
+              self.mpoxGeneProductMapping[gene] = product;
+            });
+          }
+        });
+      } else {
+        // Make a sync call to retrieve protein data
+        let xhr = new XMLHttpRequest();
+        xhr.open('POST', sfURL, false);
+        xhr.setRequestHeader('Accept', 'application/solr+json');
+        xhr.setRequestHeader('Content-Type', 'application/solrquery+x-www-form-urlencoded');
+        xhr.setRequestHeader('X-Requested-With', 'null');
+        if (window.App.authorizationToken) {
+          xhr.setRequestHeader('Authorization', window.App.authorizationToken);
         }
-      });
+        xhr.send(data);
+
+        // Check if the request was successful
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const response = JSON.parse(xhr.responseText);
+
+          // Check if the response is valid and has the desired data
+          if (response && response.grouped && response.grouped.gene) {
+            response.grouped.gene.groups.forEach(function (group) {
+              const gene = group.groupValue;
+              const product = group.doclist.docs[0].product;
+              self.mpoxGeneProductMapping[gene] = product;
+            });
+          }
+        } else {
+          console.error('Request failed with status:', xhr.status, xhr.statusText);
+        }
+      }
     },
 
     onPathogenChange: function () {
@@ -149,6 +196,8 @@ define([
       //Clear multi select values
       /*this.virusTypeNode.set('options', []);
       this.virusTypeNode.reset();*/
+      this.subtypeNode.set('options', []);
+      this.subtypeNode.reset();
       this.subtypeHNode.set('options', []);
       this.subtypeHNode.reset();
       this.subtypeNNode.set('options', []);
@@ -165,6 +214,7 @@ define([
       storeBuilder('sequence_feature', 'subtype', condition).then(lang.hitch(this, (store) => {
         let hItems = [];
         let nItems = [];
+        let items = [];
 
         // Separate items based on their prefix
         for (let item of store.data) {
@@ -178,16 +228,23 @@ define([
               value: item.name,
               label: item.name.substring(1)
             });
+          } else {
+            items.push({
+              value: item.name,
+              label: item.name
+            });
           }
         }
 
         // Sort 'H' and 'N' items numerically by their suffix
         hItems.sort((a, b) => parseInt(a.label) - parseInt(b.label));
         nItems.sort((a, b) => parseInt(a.label) - parseInt(b.label));
+        items.sort((a, b) => parseInt(a.label) - parseInt(b.label));
 
         // Add sorted 'H' and 'N' items to nodes
         this.subtypeHNode.addOption(hItems);
         this.subtypeNNode.addOption(nItems);
+        this.subtypeNode.addOption(items);
       }));
 
       storeBuilder('sequence_feature', 'gene', condition).then(lang.hitch(this, (store) => {
@@ -215,6 +272,7 @@ define([
         this.geneNode.addOption(geneOptions);
       }));
 
+      query('.customFilter').style('display', 'none');
       const customFilters = query('.customFilter');
       if (this.segmentOptions.includes(taxonId)) {
         const options = query('#options1')[0];
@@ -234,24 +292,19 @@ define([
         query('.proteinOptions').style('display', 'block');
       }
 
-      // Specific monkeypox option
-      if (taxonId === '10244') {
-        /*storeBuilder('sequence_feature', 'additional_metadata', condition).then(lang.hitch(this, (store) => {
-          let metadataOptions = [];
-          for (let item of store.data) {
-            metadataOptions.push({
-              value: item.name,
-              label: item.name
-            });
-          }
+      const taxonMapping = {
+        '10244': ['sequenceFeatureType', 'cladeType'],
+        '12637': ['sequenceFeatureType', 'subtype'],
+        'default': ['sequenceFeatureType']
+      };
 
-          this.additionalMetadataNode.addOption(metadataOptions);
-        }));*/
+      // Determine which elements to show based on the taxonId
+      const elementsToShow = taxonMapping[taxonId] || taxonMapping['default'];
 
-        query('.monkeypox').style('display', 'block');
-      } else {
-        query('.monkeypox').style('display', 'none');
-      }
+      // Show relevant elements by class
+      elementsToShow.forEach(function (className) {
+        query(`#${className}`).style('display', 'block');
+      });
 
       query('.sfvtOptions').style('display', 'block');
       query('#pathogenInfoDiv').style('display', 'none');
@@ -292,9 +345,18 @@ define([
         sfQueryArr.push(`in(gene,(${geneValue.join(',')}))`);
       }
 
+      let subtypeValue = this.subtypeNode.get('value');
+      if (subtypeValue.length === 1) {
+        filterArr.push(`eq(subtype,"${sanitizeInput(subtypeValue[0])}")`);
+        sfQueryArr.push(`eq(subtype,${sanitizeInput(subtypeValue[0])})`);
+      } else if (subtypeValue.length > 1) {
+        filterArr.push(`or(${subtypeValue.map(v => `eq(subtype,"${sanitizeInput(v)}")`)})`);
+        sfQueryArr.push(`in(subtype,(${subtypeValue.join(',')}))`);
+      }
+
       const subtypeHValue = this.subtypeHNode.get('value');
       const subtypeNValue = this.subtypeNNode.get('value');
-      let subtypeValue = subtypeHValue.concat(subtypeNValue);
+      subtypeValue = subtypeHValue.concat(subtypeNValue);
 
       // Update subtype options if any gene selected
       if (geneValue.length > 0) {
@@ -374,6 +436,11 @@ define([
       // Fetch sf_id's if sfvt sequence is provided
       const sfvtSequenceValue = this.sfvtSequenceNode.get('value');
       if (sfvtSequenceValue !== '') {
+        const pathogen = SFVTViruses.data.find(entry => entry.id === parseInt(pathogenGroupValue, 10));
+        let solrQuery = `sfvt_sequence:${escapeSpecialCharacters(sfvtSequenceValue)}`;
+        if (pathogen && pathogen.name) {
+          solrQuery += ` AND sf_id:*${pathogen.name.split(' ')[0]}*`;
+        }
         const sfvtQuery = '?in(sfvt_sequence,(' + encodeURIComponent(escapeSpecialCharacters(sfvtSequenceValue)) + '))&select(sf_id)&limit(2500000)';
         const sfvtResponse = await xhr.post(PathJoin(window.App.dataAPI, 'sequence_feature_vt', sfvtQuery), {
           headers: {
@@ -384,7 +451,7 @@ define([
           },
           handleAs: 'json',
           data: {
-            q: 'sfvt_sequence:' + escapeSpecialCharacters(sfvtSequenceValue),
+            q: solrQuery,
             fl: 'sf_id',
             group: 'true',
             'group.field': 'sf_id',
@@ -448,7 +515,7 @@ define([
       this.keywordNode.reset();
       this.sfvtSequenceNode.reset();
 
-      for (let el of [this.sequenceFeatureTypeNode, this.subtypeHNode, this.subtypeNNode, this.geneNode]) {
+      for (let el of [this.sequenceFeatureTypeNode, this.subtypeHNode, this.subtypeNNode, this.subtypeNode, this.geneNode]) {
         el.set('value', []);
         el._updateSelection();
       }

@@ -17,7 +17,13 @@ define([
     idProperty: 'patric_id',
     // filterOptions: {},
     data: [],
-    columns: [selector({ label: selector({ unidable: true }) }), { label: 'BRC ID', field: 'patric_id' }, { label: 'Metadata', field: 'metadata' }, { label: 'Group', field: 'group' }, { label: 'Genome ID', field: 'genome_id' }],
-
+    columns: [
+      selector({label: selector({unidable: true})}),
+      {label: 'Genbank Accession', field: 'genbank_accessions'},
+      {label: 'Strain', field: 'strain'},
+      {label: 'Metadata', field: 'metadata'},
+      {label: 'Group', field: 'group'},
+      {label: 'BRC ID', field: 'patric_id'},
+      {label: 'Genome ID', field: 'genome_id'}]
   });
 });
