@@ -6,7 +6,7 @@ define([
   '../ActionBar', '../FilterContainerActionBar', 'phyloview/PhyloTree', '../../WorkspaceManager',
   'd3/d3', 'phyloview/TreeNavSVG', '../../util/PathJoin', 'dijit/form/Button',
   'dijit/MenuItem', 'dijit/TooltipDialog', 'dijit/popup', '../SelectionToGroup', '../PerspectiveToolTip',
-  'dijit/Dialog', '../ItemDetailPanel', 'dojo/query', 'FileSaver'
+  'dijit/Dialog', '../ItemDetailPanel', 'dojo/query', 'FileSaver', 'dojo/dom-style'
 ], function (
   declare, Base, on, Topic,
   domClass, ContentPane, domConstruct,
@@ -15,7 +15,7 @@ define([
   ActionBar, ContainerActionBar, PhyloTree, WorkspaceManager,
   d3, d3Tree, PathJoin, Button,
   MenuItem, TooltipDialog, popup,
-  SelectionToGroup, PerspectiveToolTipDialog, Dialog, ItemDetailPanel, query, saveAs
+  SelectionToGroup, PerspectiveToolTipDialog, Dialog, ItemDetailPanel, query, saveAs, domStyle
 ) {
 
   var schemes = [{
@@ -213,6 +213,26 @@ define([
       popup.close(snapMenu);
     }
   });
+
+  const labelMappings = [
+    {key: 'genome_name', label: 'Genome Name'},
+    {key: 'gene_id', label: 'Gene ID'},
+    {key: 'genbank_accessions', label: 'Accession'},
+    {key: 'species', label: 'Species'},
+    {key: 'strain', label: 'Strain'},
+    {key: 'geographic_group', label: 'Geographic Group'},
+    {key: 'isolation_country', label: 'Isolation Country'},
+    {key: 'host_group', label: 'Host Group'},
+    {key: 'host_common_name', label: 'Host Common Name'},
+    {key: 'collection_year', label: 'Collection Year'},
+    {key: 'subtype', label: 'Subtype'},
+    {key: 'lineage', label: 'Lineage'},
+    {key: 'clade', label: 'Clade'},
+    {key: 'h1_clade_global', label: 'H1 Clade Global'},
+    {key: 'h1_clade_us', label: 'H1 Clade US'},
+    {key: 'h3_clade', label: 'H3 Clade'},
+    {key: 'h5_clade', label: 'H5 Clade'}
+  ];
 
   return declare([Base], {
     baseClass: 'Phylogeny',
@@ -951,63 +971,22 @@ define([
       console.log('in render, alt labels: this.alt_labels', this.alt_labels);
       console.log('in render, alt labels: this.alt_labels.genome_name', this.alt_labels.genome_name);
 
-      this.tree.addLabels(this.shortenLabel(this.alt_labels.genome_name), 'Genome Name');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="Genome Name">Genome Name</div>');
-
-      this.tree.addLabels(this.shortenLabel(this.alt_labels.gene_id), 'Gene ID');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="Gene ID">Gene ID</div>');
-
-      this.tree.addLabels(this.shortenLabel(this.alt_labels.genbank_accessions), 'Accession');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="Accession">Accession</div>');
-
-      this.tree.addLabels(this.shortenLabel(this.alt_labels.species), 'Species');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="Species">Species</div>');
-
-      this.tree.addLabels(this.shortenLabel(this.alt_labels.strain), 'Strain');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="Strain">Strain</div>');
-
-      this.tree.addLabels(this.shortenLabel(this.alt_labels.geographic_group), 'Geographic Group');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="Geographic Group">Geographic Group</div>');
-
-      this.tree.addLabels(this.shortenLabel(this.alt_labels.isolation_country), 'Isolation Country');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="Isolation Country">Isolation Country</div>');
-
-      this.tree.addLabels(this.shortenLabel(this.alt_labels.host_group), 'Host Group');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="Host Group">Host Group</div>');
-
-      this.tree.addLabels(this.shortenLabel(this.alt_labels.host_common_name), 'Host Common Name');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="Host Common Name">Host Common Name</div>');
-
-      this.tree.addLabels(this.shortenLabel(this.alt_labels.collection_year), 'Collection Year');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="Collection Year">Collection Year</div>');
-
-      this.tree.addLabels(this.shortenLabel(this.alt_labels.subtype), 'Subtype');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="Subtype">Subtype</div>');
-
-      this.tree.addLabels(this.shortenLabel(this.alt_labels.lineage), 'Lineage');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="Lineage">Lineage</div>');
-
-      this.tree.addLabels(this.shortenLabel(this.alt_labels.clade), 'Clade');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="Clade">Clade</div>');
-
-      this.tree.addLabels(this.shortenLabel(this.alt_labels.h1_clade_global), 'H1 Clade Global');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="H1 Clade Global">H1 Clade Global</div>');
-
-      this.tree.addLabels(this.shortenLabel(this.alt_labels.h1_clade_us), 'H1 Clade US');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="H1 Clade US">H1 Clade US</div>');
-
-      this.tree.addLabels(this.shortenLabel(this.alt_labels.h3_clade), 'H3 Clade');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="H3 Clade">H3 Clade</div>');
-
-      this.tree.addLabels(this.shortenLabel(this.alt_labels.h5_clade), 'H5 Clade');
-      idMenuDivs.push('<div class="wsActionTooltip" rel="H5 Clade">H5 Clade</div>');
+      labelMappings.forEach(({key, label}) => {
+        if (this.alt_labels[key]) {
+          this.tree.addLabels(this.shortenLabel(this.alt_labels[key]), label);
+          idMenuDivs.push(`<div class="wsActionTooltip" rel="${label}">${label}</div>`);
+        }
+      });
 
       console.log('after adding labels this.tree ', this.tree);
 
-      idMenu.set('content', idMenuDivs.join(''));
-
-      console.log('idMenuDivs ', idMenuDivs);
-      console.log('idMenu ', idMenu);
+      const idSelectionDiv = query('div.ActionButtonWrapper[rel="IDSelection"]');
+      if (idMenuDivs.length > 0) {
+        idMenu.set('content', idMenuDivs.join(''));
+        domStyle.set(idSelectionDiv[0], "display", "inline-block");
+      } else {
+        domStyle.set(idSelectionDiv[0], "display", "none");
+      }
 
       this.tree.startup();
       // this.tree.selectLabels('Genome Name');
