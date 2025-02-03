@@ -85,34 +85,36 @@ define([
     },
 
     onInputChange: function (evt) {
-      // protein radio buttons
-      if (this.protein_databank_selection.checked) {
-        // set display logic
-        dojo.style(this.block_pdb_list, "display", "block");
-        dojo.style(this.block_pdb_upload, "display", "none");
-      }
-      else if (this.user_pdb_file.checked) {
-        dojo.style(this.block_pdb_list, "display", "none");
-        dojo.style(this.block_pdb_upload, "display", "block");
-      }
-      // ligand radio buttons
-      if (this.input_sequence.checked)
-      {
-        dojo.style(this.block_smiles_text, 'display', 'block');
-        dojo.style(this.block_smiles_ws, 'display', 'none');
-        dojo.style(this.block_smiles_dropdown, 'display', 'none');
-      }
-      else if (this.ws_file.checked)
-      {
-        dojo.style(this.block_smiles_text, 'display', 'none');
-        dojo.style(this.block_smiles_ws, 'display', 'block');
-        dojo.style(this.block_smiles_dropdown, 'display', 'none');
-      }
-      else if (this.ligand_named_library.checked)
+      if (typeof this.protein_databank_selection != "undefined"){
+        // protein radio buttons
+        if (this.protein_databank_selection.checked) {
+          // set display logic
+          dojo.style(this.block_pdb_list, "display", "block");
+          dojo.style(this.block_pdb_upload, "display", "none");
+        }
+        else if (this.user_pdb_file.checked) {
+          dojo.style(this.block_pdb_list, "display", "none");
+          dojo.style(this.block_pdb_upload, "display", "block");
+        }
+        // ligand radio buttons
+        if (this.input_sequence.checked)
         {
-        dojo.style(this.block_smiles_text, 'display', 'none');
-        dojo.style(this.block_smiles_ws, 'display', 'none');
-        dojo.style(this.block_smiles_dropdown, 'display', 'block');
+          dojo.style(this.block_smiles_text, 'display', 'block');
+          dojo.style(this.block_smiles_ws, 'display', 'none');
+          dojo.style(this.block_smiles_dropdown, 'display', 'none');
+        }
+        else if (this.ws_file.checked)
+        {
+          dojo.style(this.block_smiles_text, 'display', 'none');
+          dojo.style(this.block_smiles_ws, 'display', 'block');
+          dojo.style(this.block_smiles_dropdown, 'display', 'none');
+        }
+        else if (this.ligand_named_library.checked)
+          {
+          dojo.style(this.block_smiles_text, 'display', 'none');
+          dojo.style(this.block_smiles_ws, 'display', 'none');
+          dojo.style(this.block_smiles_dropdown, 'display', 'block');
+        }
       }
       },
 
@@ -130,7 +132,7 @@ define([
     "pdb_preview": "",
     "input": "smiles_list",
     "smiles_text": "asdfasdf",
-    "smiles_ws_file": "",
+    "ligand_ws_file": "",
     "output_path": "/olson@patricbrc.org/home/test/test1/test2",
     "output_file": "abc"
 } */
@@ -179,7 +181,7 @@ define([
       }
       else if (values.input === 'ws_file')
       {
-        submit_values.ligand_ws_file = values.smiles_ws_file;
+        submit_values.ligand_ws_file = values.ligand_ws_file;
       }
       else if (values.input === 'named_library')
       {
@@ -201,7 +203,7 @@ define([
         }
       }
     },
-    
+
     onOutputPathChange: function (val) {
       this.inherited(arguments);
       this.checkParameterRequiredFields();
@@ -213,13 +215,25 @@ define([
     },
 
     addRerunFields: function (job_params) {
-      var ligand_library_type = job_params['ligand_library_type']; 
+      // Protein Input
+      if (job_params.protein_input_type === 'user_pdb_file'){
+        this.protein_databank_selection.set('checked', false);
+        this.user_pdb.set('value', job_params["user_pdb_file"])
+        this.user_pdb_file.set('checked', true);
+      }
+      else if (job_params.protein_input_type === 'input_pdb'){
+        this.pdb_list.set('value', job_params["input_pdb"]);
+      }
+      else {
+        console.log( 'Invalid protein input');
+      }
+      // ligand library is not working just yet
+      var ligand_library_type = job_params['ligand_library_type'];
       if (ligand_library_type === "ws_file"){
         this.ws_file.checked
         this.ws_file.set('value', ligand_library_type);
-        this.smiles_ws_file.set('value', job_params['ligand_ws_file']);
-
-        } 
+        this.ligand_ws_file.set('value', job_params['ligand_ws_file']);
+      } 
       else if (ligand_library_type === "smiles_list"){
         this.input_sequence.checked;
         this.input_sequence.set('value', ligand_library_type);
@@ -234,15 +248,13 @@ define([
       else if (ligand_library_type === "named_library"){
         this.ligand_named_library.checked;
         this.ligand_named_library.set('value', ligand_library_type);
-        this.smiles_dropdown.set('value', job_params['ligand_named_library'])
-        this.ligand_named_library.set('value', job_params['ligand_named_library']);
+        this.smiles_dropdown_attach_point.set('value', job_params['ligand_named_library']);
       } 
-      else{
+      else {
         console.log("Improper ligand library type passed.")
       }
-      this.pdb_list.set('value', job_params["input_pdb"]);
       this.output_path.set('value', job_params['output_path']);
-    },
+      },
 
     intakeRerunForm: function () {
       // assuming only one key
@@ -269,4 +281,3 @@ define([
     }
   });
 });
-
