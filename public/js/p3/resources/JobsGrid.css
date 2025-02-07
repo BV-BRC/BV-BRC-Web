@@ -1,15 +1,11 @@
-.dgrid-column-status_indicator{
-    width: 30px;
+.dgrid-column-status_indicator {
+    width: 30px
 }
-
-.dgrid-column-status_indicator.dgrid-cell{
+.dgrid-column-status_indicator.dgrid-cell {
     text-align: right;
     padding-right: 5px;
-    border-right: 0;
+    border-right: 0
 }
-.dgrid-column-status.dgrid-cell{
-    border-left: 0;
+.dgrid-column-status.dgrid-cell {
+    border-left: 0
 }
-
-
-

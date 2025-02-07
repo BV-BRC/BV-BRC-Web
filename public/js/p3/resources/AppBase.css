@@ -1,52 +1,44 @@
 .PanelForm {
-	overflow: auto;
+    overflow: auto
 }
-
-.PanelForm .messageContainer{
-	text-align: center;
-	margin: 4px auto;
-	padding: 4px;
-	border: 1px solid green;
-	display: none;
-	width: 300px;
+.PanelForm .messageContainer {
+    text-align: center;
+    margin: 4px auto;
+    padding: 4px;
+    border: 1px solid green;
+    display: none;
+    width: 300px
 }
-
 .PanelForm .submittedMessage,
 .PanelForm .workingMessage {
-	color: green;
-	border-color: green;
+    color: green;
+    border-color: green
 }
-
 .PanelForm .errorMessage {
-	color: red;
-	border-color: red;
+    color: red;
+    border-color: red
 }
-
 .PanelForm.Submitted .submittedMessage,
 .PanelForm.Working .workingMessage,
-.PanelForm.Error .errorMessage{
-	display: block;
+.PanelForm.Error .errorMessage {
+    display: block
 }
-
-
 .formFieldsContainer {
-	text-align:center;
+    text-align:center
 }
-.PanelForm .formFieldsContainer > *{
-	font-size: 1.1em;
-	margin-top: 10px;
+.PanelForm .formFieldsContainer > * {
+    font-size: 1.1em;
+    margin-top: 10px
 }
-
 .App {
+    
 }
-
 .App .TitleSection {
-	width:420px;
-	margin: 10px auto auto;
-	padding:10px;
+    width:420px;
+    margin: 10px auto auto;
+    padding:10px
 }
-
 .App LABEL {
-	font-size: .65em;
-	text-transform: uppercase;
+    font-size: .65em;
+    text-transform: uppercase
 }

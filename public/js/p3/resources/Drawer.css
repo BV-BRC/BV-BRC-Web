@@ -1,172 +1,156 @@
 .Drawer {
-
-	position: absolute;
-	z-index: 800;
-/*	width: 200px;*/
-	height: 80%;	
-	border: 1px solid #333;
-	background: #333;
+    position: absolute;
+    z-index: 800;
+    /*	width: 200px;
+    */
+	height: 80%;
+    border: 1px solid #333;
+    background: #333
 }
-
 .Drawer > .handle {
-	width: 16px;
-	height: 75px;
-	border: 2px solid #333;
-	background: #333;
-	z-index: 810;
-	cursor: pointer;
-	border-radius: 6px;
-/*	border: 2px solid green;*/
+    width: 16px;
+    height: 75px;
+    border: 2px solid #333;
+    background: #333;
+    z-index: 810;
+    cursor: pointer;
+    border-radius: 6px;
+    /*	border: 2px solid green;
+    */
 	overflow: hidden;
-	font-size: .75em;
-	color: white;
-	font-weight: 900;
+    font-size: .75em;
+    color: white;
+    font-weight: 900
 }
-
 .LeftDrawer {
-	float: left;
-	margin-left: -2px;
-	border-top-right-radius: 4px;
-	border-bottom-right-radius: 4px;
-	left: 0;
-	top: 120px;
-	box-shadow: 0 0 10px;
-	width: 300px;
+    float: left;
+    margin-left: -2px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    left: 0;
+    top: 120px;
+    box-shadow: 0 0 10px;
+    width: 300px
 }
-
 .RightDrawer {
-	float: right;
-	margin-right: -2px;
-	border-top-left-radius: 4px;
-	border-bottom-left-radius: 4px;
-	right: 0;
-	top: 10%;
-	box-shadow: 0 0 10px;
+    float: right;
+    margin-right: -2px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    right: 0;
+    top: 10%;
+    box-shadow: 0 0 10px
 }
-
 .TopDrawer {
-	position: absolute;
-	z-index: 800;
-	width: 80%;
-	height: 250px;
-	left: 10%;
-	top: 0;
-	margin-top:-2px;
-	border-bottom-right-radius: 4px;
-	border-bottom-left-radius: 4px;
-	box-shadow: 0 4px 10px;
+    position: absolute;
+    z-index: 800;
+    width: 80%;
+    height: 250px;
+    left: 10%;
+    top: 0;
+    margin-top:-2px;
+    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 4px 10px
 }
-
 .BottomDrawer {
-	position: absolute;
-	z-index: 800;
-	width: 80%;
-	height: 250px;
-	left: 10%;
-	bottom: 0;
-	margin-bottom:-2px;
-	border-top-right-radius: 4px;
-	border-top-left-radius: 4px;
-	box-shadow: 0 0 10px;
+    position: absolute;
+    z-index: 800;
+    width: 80%;
+    height: 250px;
+    left: 10%;
+    bottom: 0;
+    margin-bottom:-2px;
+    border-top-right-radius: 4px;
+    border-top-left-radius: 4px;
+    box-shadow: 0 0 10px
 }
-
-.LeftDrawer .handle .fa:hover  {
-	color: orange;
+.LeftDrawer .handle .fa:hover {
+    color: orange
 }
-
 .LeftDrawer .handle .fa {
-	color: #fff;
+    color: #fff
 }
-
-
-
 .LeftDrawer > .handle {
-	width: 36px;
-	height: 30px;
-	position: absolute;
-	right: 0;
-	margin-right: -33px;
-	top: 10px;
-	border-top-left-radius: 0;
-	border-bottom-left-radius: 0;
-	box-shadow: 4px 0 10px;
-	border-left: 0;
-	text-align: center;
-	color: #fff;
-
+    width: 36px;
+    height: 30px;
+    position: absolute;
+    right: 0;
+    margin-right: -33px;
+    top: 10px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    box-shadow: 4px 0 10px;
+    border-left: 0;
+    text-align: center;
+    color: #fff
 }
-
 .RightDrawer > .handle {
-	position: absolute;
-	float: left;
-	margin-left: -16px;
-	top: 100px;
-	border-top-right-radius: 0;
-	border-bottom-right-radius: 0;
-	box-shadow: -4px 0 10px;
-	border-right: 0;
+    position: absolute;
+    float: left;
+    margin-left: -16px;
+    top: 100px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    box-shadow: -4px 0 10px;
+    border-right: 0
 }
-
 .BottomDrawer > .handle {
-	position: absolute;
-	margin-left: 50%;
-	margin-top: -16px;
-	width: 75px;
-	height: 15px;
-	top:0;
-	border-bottom-right-radius: 0;
-	border-bottom-left-radius: 0;
-	box-shadow: 0 -4px 10px;
+    position: absolute;
+    margin-left: 50%;
+    margin-top: -16px;
+    width: 75px;
+    height: 15px;
+    top:0;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    box-shadow: 0 -4px 10px
 }
-
 .TopDrawer > .handle {
-	position: absolute;
-	margin-left: 45%;	
-	margin-bottom: -16px;
-	width: 75px;
-	height: 15px;
-	bottom:0;
-	border-top-right-radius: 0;
-	border-top-left-radius: 0;
-	box-shadow: 0 4px 10px;
+    position: absolute;
+    margin-left: 45%;
+    margin-bottom: -16px;
+    width: 75px;
+    height: 15px;
+    bottom:0;
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+    box-shadow: 0 4px 10px
 }
-
 .LeftDrawer.Closed,
 .RightDrawer.Closed {
-	width: 0;
-	box-shadow: 0 0 0;
+    width: 0;
+    box-shadow: 0 0 0
 }
-
 .BottomDrawer.Closed,
 .TopDrawer.Closed {
-	height: 0;
-	box-shadow: 0 0 0;
+    height: 0;
+    box-shadow: 0 0 0
 }
-
 .Drawer.Closed .PanelContainer {
-	display: none;
+    display: none
 }
-
 .LeftDrawer .handle > div {
-	text-align: center;
-	font-size: 1.5em;
-	height: 50px;
-	width: 50px;
-	/*vertical-align: left;*/
+    text-align: center;
+    font-size: 1.5em;
+    height: 50px;
+    width: 50px;
+    /*vertical-align: left;
+    */
 	margin-left: -50px;
-	margin-top: -20px;
-	overflow: visible;
+    margin-top: -20px;
+    overflow: visible
 }
-
 .RightDrawer .handle > div {
-	text-align: center;
-	height: 75px;
-	width: 75px;
-	vertical-align: bottom;
-	margin-right: -60px;
-	overflow: visible;
-	transform:rotate(-90deg);
-	-ms-transform:rotate(-90deg); /* IE 9 */
-	-webkit-transform:rotate(-90deg); /* Safari and Chrome */
-
+    text-align: center;
+    height: 75px;
+    width: 75px;
+    vertical-align: bottom;
+    margin-right: -60px;
+    overflow: visible;
+    transform:rotate(-90deg);
+    -ms-transform:rotate(-90deg);
+    /* IE 9 */
+	-webkit-transform:rotate(-90deg);
+    /* Safari and Chrome */
 }

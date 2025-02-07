@@ -1,26 +1,22 @@
 .bl_chart text {
-  font-size: 14px;
-  font-family: Open Sans, sans-serif;
+    font-size: 14px;
+    font-family: Open Sans, sans-serif
 }
-
 .bl_chart text.title {
-  font-size: 20px;
-  font-weight: 600;
+    font-size: 20px;
+    font-weight: 600
 }
-
 .bl_chart text.y1Axis {
-  font-weight: 400;
+    font-weight: 400
 }
-
 .bl_chart .tick text {
-  fill: #777777;
+    fill: #777777
 }
-
 .bl_chart .tick line {
-  shape-rendering: CrispEdges;
-  stroke: #ddd;
+    shape-rendering: CrispEdges;
+    stroke: #ddd
 }
-.bl_chart path.domain{
-  fill: none;
-  stroke: #ddd;
+.bl_chart path.domain {
+    fill: none;
+    stroke: #ddd
 }

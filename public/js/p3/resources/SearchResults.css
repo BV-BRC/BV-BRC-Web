@@ -1,60 +1,49 @@
 .AdvancedSearch {
-	overflow: auto;
+    overflow: auto
 }
 .resultTypeHeader {
-	font-size:1.5em;
-	border-bottom:1px solid #ddd;
+    font-size:1.5em;
+    border-bottom:1px solid #ddd
 }
-
-.resultTypeHeader A:hover{
-	color: orange;
+.resultTypeHeader A:hover {
+    color: orange
 }
 .resultHead {
-	font-size: 1.2em;
-	font-weight: 700;
-	color: #00079c;
+    font-size: 1.2em;
+    font-weight: 700;
+    color: #00079c
 }
-
 .resultHead A:hover {
-	color: orange;
+    color: orange
 }
-
 .resultInfo {
-	padding-left: 5px;
+    padding-left: 5px
 }
-
 .resultInfo.comments {
-	margin: 5px;
+    margin: 5px
 }
-
 .searchResult {
-	padding-left: 15px;
-	margin-bottom: 10px;
-
+    padding-left: 15px;
+    margin-bottom: 10px
 }
-
-.searchResultsContainer{
-	padding: 5px;
-
+.searchResultsContainer {
+    padding: 5px
 }
-
 .searchOperator {
-	color: #000;
-	background: #fff;
-	font-weight: 600;
-	text-transform: uppercase;
+    color: #000;
+    background: #fff;
+    font-weight: 600;
+    text-transform: uppercase
 }
-
 .searchValue {
-	background: orange;
-	color: #333;
-	border-radius: 3px;
-	border: 0px;
-	padding: 2px;
+    background: orange;
+    color: #333;
+    border-radius: 3px;
+    border: 0px;
+    padding: 2px
 }
-
 .searchField {
-	color: #2a6d9e;
-	text-transform: uppercase;
-	font-weight: 600;
+    color: #2a6d9e;
+    text-transform: uppercase;
+    font-weight: 600
 }

@@ -1,166 +1,144 @@
 .FacetFilterPanel {
-	background: #333;
-	padding:4px;
-	cursor: default;
+    background: #333;
+    padding:4px;
+    cursor: default
 }
-
 .FacetFilter {
-	border-radius: 4px;
-	color: #ccc;
-	margin-top: 4px;
-	margin-left: 4px;
-	margin-right: 4px;
-	display: inline-block;
-	overflow: hidden;
-	padding: 0;
-	white-space: nowrap;
-	vertical-align: top;
-	max-width: 350px;
+    border-radius: 4px;
+    color: #ccc;
+    margin-top: 4px;
+    margin-left: 4px;
+    margin-right: 4px;
+    display: inline-block;
+    overflow: hidden;
+    padding: 0;
+    white-space: nowrap;
+    vertical-align: top;
+    max-width: 350px
 }
-
-
 .FacetFilter .dataList {
-	min-height: 32px;
-	padding: 4px;
-	overflow-y: auto;
-	overflow-x: hidden;
+    min-height: 32px;
+    padding: 4px;
+    overflow-y: auto;
+    overflow-x: hidden
 }
-
 .dataList .FacetValue {
-	white-space: nowrap;
-	text-align: left;
-	margin-right: 8px;
+    white-space: nowrap;
+    text-align: left;
+    margin-right: 8px
 }
-
 .facetHeader {
-	display: flex;
-	border-bottom: 1px solid #fff;
+    display: flex;
+    border-bottom: 1px solid #fff
 }
-
 .FacetFilter .facetCategory {
-	color: #fff;;
-	font-weight: 900;
-	text-align: left;
-	padding: 4px;
-	margin-right: auto;
-	text-transform: capitalize;
+    color: #fff;
+    ;
+    font-weight: 900;
+    text-align: left;
+    padding: 4px;
+    margin-right: auto;
+    text-transform: capitalize
 }
-
 .FacetFilter .facetCategorySearchBtn {
-	color: #fff;
-	margin: 6px 2px 0 3px;
+    color: #fff;
+    margin: 6px 2px 0 3px
 }
-
 .facetCategory {
-	text-transform: capitalize;
+    text-transform: capitalize
 }
-
 .facetCategory.selected {
-	color: orange;
-	border-bottom: 1px solid orange;
+    color: orange;
+    border-bottom: 1px solid orange
 }
-
 .FacetValue.selected {
-	color: orange;
-	font-weight: 600;
+    color: orange;
+    font-weight: 600
 }
-.FacetValue.selected:hover{
-	cursor: pointer;
-	color: orange;
-	font-weight: 900;
+.FacetValue.selected:hover {
+    cursor: pointer;
+    color: orange;
+    font-weight: 900
 }
-
 .FacetValue:hover {
-	cursor: pointer;
-	color: #fff;
+    cursor: pointer;
+    color: #fff
 }
-
 .FilteredValueButton {
-/*	border: 1px solid #bbb;*/
+    /*	border: 1px solid #bbb;
+    */
 	overflow: hidden;
-	display: inline-block;
-	padding: 0;
-	font-size: 1em;
-	margin-bottom: 1px;
-	margin-left: 4px;
-	margin-top: 4px;
-	max-width: 200px;
-	vertical-align: top;
+    display: inline-block;
+    padding: 0;
+    font-size: 1em;
+    margin-bottom: 1px;
+    margin-left: 4px;
+    margin-top: 4px;
+    max-width: 200px;
+    vertical-align: top
 }
-
 .ValueWrapper {
-	display: inline-block;
-	white-space: nowrap;
-	font-size: .85em;
-	font-weight: 100;
-	padding: 2px;
-	border-radius: 3px;
+    display: inline-block;
+    white-space: nowrap;
+    font-size: .85em;
+    font-weight: 100;
+    padding: 2px;
+    border-radius: 3px
 }
-
 .BrowserHeader .minFilterView .ActionButtonContainer {
-	vertical-align: top;
-	display: inline-block;
-	float: none;
-	width: 100%;
+    vertical-align: top;
+    display: inline-block;
+    float: none;
+    width: 100%
 }
-
-
 .ValueWrapper > SPAN {
-	font-weight: 600;
+    font-weight: 600
 }
-
 .ValueWrapper > SPAN:hover {
-	color: red;
-	cursor: pointer;
+    color: red;
+    cursor: pointer
 }
-
 .selectedList {
-	padding: 0;
-	white-space: nowrap;
-	background: #ffcb00;
-	color: #333;
-	text-align: center;
-	min-height: 21px;
-	margin: 0 0 2px;
+    padding: 0;
+    white-space: nowrap;
+    background: #ffcb00;
+    color: #333;
+    text-align: center;
+    min-height: 21px;
+    margin: 0 0 2px
 }
-
 .fieldHeader {
-	font-size: 0.75em;
-	color: rgb(52,105,142);
+    font-size: 0.75em;
+    color: rgb(52,105,142)
 }
 .fieldTitle {
-	padding: 2px;
-	text-align: left;
-	text-transform: uppercase;
-	cursor: default;
+    padding: 2px;
+    text-align: left;
+    text-transform: uppercase;
+    cursor: default
 }
 .rightButtonContainer {
-	text-align: right;
-	padding-right:2px;
-	padding-left: 8px;
+    text-align: right;
+    padding-right:2px;
+    padding-left: 8px
 }
-
 .rightButtonContainer > *:hover {
-	cursor: pointer;
-	color: #333;
+    cursor: pointer;
+    color: #333
 }
-
 .minFilterView {
-	min-height: 43px;
+    min-height: 43px
 }
-
 .FullFilterControl .dijitIcon {
-	color: #fff;
+    color: #fff
 }
-
 .FullFilterControl .dijitDropDownButton span.dijitButtonNode {
-	border: 0px;
-	background-color: #333;
-	padding: 0
+    border: 0px;
+    background-color: #333;
+    padding: 0
 }
-
 .FullFilterControl .dijitDropDownButton span.dijitButtonText,
 .FullFilterControl .dijitDropDownButton span.dijitArrowButtonInner,
 .FullFilterControl .dijitDropDownButton span.dijitArrowButtonChar {
-	display: none
+    display: none
 }

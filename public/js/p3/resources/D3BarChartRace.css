@@ -1,46 +1,44 @@
 .bar_chart_r text {
-  font-size: 16px;
-  font-family: Open Sans, sans-serif;
+    font-size: 16px;
+    font-family: Open Sans, sans-serif
 }
 .bar_chart_r text.title {
-  font-size: 24px;
-  font-weight: 500;
+    font-size: 24px;
+    font-weight: 500
 }
-.bar_chart_r text.subTitle{
+.bar_chart_r text.subTitle {
     font-weight: 500;
-    fill: #777777;
+    fill: #777777
 }
-.bar_chart_r text.caption{
+.bar_chart_r text.caption {
     font-weight: 400;
     font-size: 14px;
-    fill: #777777;
+    fill: #777777
 }
-.bar_chart_r text.label{
-    font-weight: 300;
+.bar_chart_r text.label {
+    font-weight: 300
 }
-
-.bar_chart_r text.valueLabel{
-    font-weight: 600;
+.bar_chart_r text.valueLabel {
+    font-weight: 600
 }
-
-.bar_chart_r text.yearText{
+.bar_chart_r text.yearText {
     font-size: 32px;
     font-weight: 700;
-    opacity: 0.25;
+    opacity: 0.25
 }
 .bar_chart_r .tick text {
-    fill: #777777;
+    fill: #777777
 }
 .bar_chart_r .xAxis .tick:nth-child(2) text {
-    text-anchor: start;
+    text-anchor: start
 }
 .bar_chart_r .tick line {
     shape-rendering: CrispEdges;
-    stroke: #dddddd;
+    stroke: #dddddd
 }
-.bar_chart_r .tick line.origin{
-    stroke: #aaaaaa;
+.bar_chart_r .tick line.origin {
+    stroke: #aaaaaa
 }
-.bar_chart_r path.domain{
-    display: none;
+.bar_chart_r path.domain {
+    display: none
 }
