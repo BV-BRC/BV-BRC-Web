@@ -1,35 +1,31 @@
 .v_bar_chart text {
-  font-size: 14px;
-  font-family: Open Sans, sans-serif;
+    font-size: 14px;
+    font-family: Open Sans, sans-serif
 }
-
 .v_bar_chart text.title {
-  font-size: 20px;
-  font-weight: 600;
+    font-size: 20px;
+    font-weight: 600
 }
-
-.v_bar_chart text.value{
-  fill: #777777;
-  font-weight: 400;
+.v_bar_chart text.value {
+    fill: #777777;
+    font-weight: 400
 }
-
-.v_bar_chart text.label{
-  font-size: 12px;
+.v_bar_chart text.label {
+    font-size: 12px
 }
-
 .v_bar_chart .tick text {
-  fill: #777777;
+    fill: #777777
 }
 .v_bar_chart .xAxis .tick:nth-child(2) text {
-  text-anchor: start;
+    text-anchor: start
 }
 .v_bar_chart .tick line {
-  shape-rendering: CrispEdges;
-  stroke: #dddddd;
+    shape-rendering: CrispEdges;
+    stroke: #dddddd
 }
-.v_bar_chart .tick line.origin{
-  stroke: #aaaaaa;
+.v_bar_chart .tick line.origin {
+    stroke: #aaaaaa
 }
-.v_bar_chart path.domain{
-  display: none;
+.v_bar_chart path.domain {
+    display: none
 }

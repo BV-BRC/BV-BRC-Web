@@ -1,0 +1,1237 @@
+.icon-sort-alpha-asc {
+    margin-left: 0;
+    padding: 0;
+    font-size: 10pt;
+    cursor: pointer;
+    cursor: hand
+}
+.icon-sort-alpha-asc:hover {
+    color: #e75200
+}
+.bp-reset-element, body, h1, h2, h3, h4, h5, h6, article, aside, details, figcaption, figure,
+  footer, header, menu, nav, section, summary, blockquote, q, th, td, caption, table,
+  div, span, object, iframe, p,
+  pre, a, abbr, acronym, address,
+  code, del, dfn, em, img,
+  dl, dt, dd, ol, ul, li, fieldset,
+  form, label, legend,
+  caption, tbody, tfoot, thead, tr {
+    margin: 0;
+    padding: 0;
+    border: 0
+}
+html, body,
+  body.patric {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    overflow-x: auto;
+    padding: 0;
+    background: #fff;
+    line-height: 1.5;
+    font-family: Arial, sans-serif;
+    color: #333333;
+    font-size: .9em
+}
+body.patric {
+    min-width: 320px
+}
+A, A:visited {
+    text-decoration: none;
+    color: #09456f;
+    cursor: pointer
+}
+A:hover {
+    text-decoration: underline;
+    color: #34698e
+}
+body.patric *:focus {
+    outline: 0
+}
+ul {
+    list-style-position: inside
+}
+li ul {
+    margin-left: 2em
+}
+/*
+    Force old method of .dijitHidden.  New .dijitHidden 'fix' breaks our tabs.
+    See dojotoolkit issue #18612.
+  */
+  .dijitHidden {
+    display: none !important
+}
+iframe {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-weight: inherit;
+    font-style: inherit;
+    font-size: 100%;
+    font-family: inherit;
+    vertical-align: baseline
+}
+.layoutContainer {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden
+}
+.claro {
+    overflow: auto
+}
+.dijitTabPaneWrapper {
+    overflow-y: auto;
+    overflow-x: hidden
+}
+.layer {
+    width: 925px;
+    margin: 2px auto;
+    z-index: 10
+}
+.layer > H1 {
+    color: #333
+}
+.dijitToasterContainer {
+    margin: 10px;
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26)
+}
+.dijitToasterContainer .dijitToasterContent {
+    background-color: #313131;
+    color: #8cea00;
+    padding: 1em
+}
+.dijitToasterContainer .default {
+    color: #fff
+}
+.dijitToasterError .dijitToasterContent {
+    color: #ff1059
+}
+.ShowWithAuth {
+    display: none
+}
+.Authenticated .HideWithAuth {
+    display: none
+}
+.Authenticated .ShowWithAuth,
+  .patric .Authenticated .ShowWithAuth {
+    display: inherit
+}
+.Authenticated TD.ShowWithAuth {
+    display: table-cell
+}
+.patric .Authenticated .ShowWithoutAuth {
+    display: none
+}
+ol {
+    list-style-type: decimal;
+    padding: 0 0 0 30px;
+    margin: 0 0 17px 0
+}
+ol li {
+    list-style: decimal
+}
+TD.HomeServiceLink {
+    border-spacing: 0 0;
+    border-collapse: separate
+}
+.HomeServiceLink {
+    height: 75px;
+    /*border:0px;
+    */
+      border: 1px solid transparent;
+    border-left: #87b934 1px solid;
+    border-right: #2a5d40 1px solid;
+    margin: 0;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer
+}
+.HomeServiceLink.selected {
+    background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #659626), color-stop(100%, #86b834));
+    background-image: -webkit-linear-gradient(#659626, #86b834);
+    background-image: -moz-linear-gradient(#659626, #86b834);
+    background-image: -o-linear-gradient(#659626, #86b834);
+    background-image: -ms-linear-gradient(#659626, #86b834);
+    background-image: linear-gradient(#659626, #86b834)
+}
+.HomeServiceLink:hover {
+    
+}
+.HomeServiceLink H3,
+  .HomeServiceLink H4 {
+    margin: 0;
+    padding: 0 0 0 15px;
+    border: 0;
+    font-size: 14px;
+    font-family: "Didact Gothic",Arial, Helvetica, sans-serif;
+    font-weight: 100;
+    text-align: left;
+    line-height: 16px
+}
+.HomeServiceLink H4 {
+    color: #fff;
+    font-size: 12px;
+    line-height: 14px
+}
+table.p3basic {
+    border-collapse: separate;
+    empty-cells: hide;
+    border-bottom: #d3d3d3 1px solid;
+    border-right: #d3d3d3 1px solid;
+    border-spacing: 0
+}
+table.p3basic th, table.p3basic td, table.p3basic caption {
+    padding: 4px 5px
+}
+table.p3basic thead th {
+    background: #fff;
+    color: #666666;
+    font-weight: bold
+}
+table.p3basic td,
+  table.p3basic th {
+    border-top: #d3d3d3 1px solid;
+    border-left: #d3d3d3 1px solid
+}
+table.striped tr:nth-child(odd) td,
+  table.striped tr:nth-child(odd):not(:first-child) th,
+  table tr.even td {
+    background: #f5f5f5
+}
+/* a lighter striped table for grey panels (i.e., apps) */
+  table.p3basic.striped-light {
+    background: #fff
+}
+table.p3basic.striped-light thead th {
+    background: #fff;
+    color: #444;
+    font-weight: bold
+}
+table.striped-light tr:nth-child(odd) td,
+  table.striped-light tr:nth-child(odd):not(:first-child) th,
+  table tr.even td {
+    background: #f8f8f8
+}
+.claro .dijitDialog {
+    perspective: 2000px;
+    -webkit-perspective: 2000px
+}
+.claro .flippableDialog.dijitDialog {
+    border: 0;
+    box-shadow: 0 0 0;
+    -webkit-box-shadow: 0 0 0;
+    overflow: visible
+}
+.claro .flippableDialog.dijitDialog .flipper {
+    border: 1px solid #759dc0;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
+    -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25)
+}
+.claro .flipped .flipper {
+    transform: rotateY(180deg);
+    -webkit-transform: rotateY(180deg)
+}
+.flipper {
+    transition: transform 1s;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    -webkit-transition: transform 1s;
+    position: relative
+}
+.claro .dijitDialog .backpaneTitleBar,
+  .claro .dijitDialog .dijitDialogTitleBar,
+  .claro .dijitDialog .dijitDialogPaneContent,
+  .dijitDialog .backpane {
+    backface-visibility: hidden;
+    -webkit-backface-visiblity: hidden
+}
+.claro .dijitDialog .backpaneTitleBar,
+  .claro .dijitDialog .backpane {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 0
+}
+.claro .dijitDialog .backpane {
+    background: #fff;
+    padding: 8px;
+    margin: 0
+}
+.claro .dijitDialog .dijitDialogTitleBar,
+  .claro .dijitDialog .dijitDialogPaneContent {
+    z-index: 2;
+    transform: rotateY(0deg);
+    -webkit-transform: rotateY(0deg);
+    -webkit-backface-visiblity: hidden;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    backface-visibility: hidden
+}
+.claro .flippableDialog .backpaneTitleBar,
+  .claro .dijitDialog .backpane {
+    z-index: 3;
+    transform: rotateY(180deg);
+    -webkit-transform: rotateY(180deg);
+    -webkit-backface-visiblity: hidden;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    backface-visibility: hidden
+}
+.ActionBar {
+    background: #76a72d;
+    border-left: 1px solid #777;
+    overflow: hidden;
+    padding-top: 6px;
+    margin-right: -4px
+}
+.ActionBar .fa {
+    margin-bottom: 6px;
+    margin-top: 4px;
+    color: #eee;
+    margin-right: 4px;
+    font-size: 2em
+}
+.ActionBar .fa:hover {
+    color: #fff
+}
+.fa {
+    cursor: pointer;
+    color: #333
+}
+.fa:hover {
+    color: #e75200
+}
+.tutorialButton > a:hover,
+  .videoButton > a:hover {
+    text-decoration: none
+}
+.fileUploadButton {
+    position: relative;
+    overflow: hidden;
+    margin: auto auto 8px;
+    width: 90%;
+    border: 1px solid #333;
+    cursor: pointer;
+    text-align: center;
+    color: #333;
+    background: #bfdaf4
+}
+.fileUploadButton:hover {
+    border: 1px solid #333;
+    color: black;
+    font-weight: bold
+}
+.fileUploadButton > span {
+    padding: 4px;
+    font-size: 1.1em
+}
+.fileUploadButton > input {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
+    font-size: 1em;
+    width: 100%;
+    cursor: pointer;
+    opacity: 0;
+    filter: alpha(opacity=0)
+}
+.claro .dijitSelect .dijitInputField {
+    font-size: 1em;
+    padding-top: 2px;
+    padding-bottom: 2px
+}
+.disabled > .fa {
+    color: #aaa;
+    cursor: default
+}
+.patric .dgrid-header .dojoDndTarget .dojoDndItemOver {
+    background: #efefef
+}
+.UserProfileForm {
+    width: 700px;
+    margin: auto
+}
+.UserProfileForm Table {
+    border: 0;
+    width: 100%
+}
+.RegistrationForm TD,
+  .UserProfileForm TD {
+    border: 0;
+    padding: 4px 4px 8px 0
+}
+.RegistrationForm TH,
+  .UserProfileForm TH {
+    font-size: .85em;
+    border: 0;
+    padding: 4px
+}
+.GlobalSearch .dijitSelect,
+  .GlobalSearch .dijitTextBox {
+    margin: 0;
+    border: 0;
+    border-radius: 4px
+}
+.GlobalSearch > table {
+    padding: 0;
+    margin: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+    border-radius: 4px
+}
+.GlobalSearch {
+    border-radius: 4px;
+    background: #fff;
+    padding: 0
+}
+body.patric .dijitTabContainerTop-tabs .dijitTabChecked {
+    border-top: 5px solid #629821;
+    background: #fff none;
+    padding-top: 2px;
+    transition-duration: 0s
+}
+body.patric .dijitTabContainerTop-tabs .dijitTabActive,
+  body.patric .dijitTabContainerTop-tabs .dijitTabHover {
+    background: #dfe4ff none;
+    color: #000;
+    transition-duration: 0s
+}
+body.patric .dijitTabContainerTop-tabs .dijitTabActive {
+    border-color: #34698e;
+    transition-duration: 0s
+}
+body.patric.claro .dijitTabDisabled {
+    background: #f5f5f5 none;
+    color: #d9d9d9
+}
+.TextTabButtons {
+    margin: 0;
+    padding: 4px;
+    background: #eee;
+    border-bottom: 1px solid #bbb
+}
+.TextTabButtons .dijitTab {
+    display: inline-block;
+    transition-duration: 0s
+}
+.TextTabButtons .dijitTab,
+  .TextTabButtons .dijitToggleButton .dijitButtonNode {
+    border: 0;
+    background-color: inherit;
+    box-shadow: none;
+    border-radius: 0;
+    margin: 3px 15px
+}
+.TextTabButtonsViewer {
+    margin: 0;
+    padding: 4px;
+    background: #eee;
+    border-bottom: 1px solid #bbb;
+    height: 25px
+}
+.TextTabButtonsViewer .dijitTab {
+    display: inline-block;
+    transition-duration: 0s
+}
+.TextTabButtonsViewer .dijitTab,
+  .TextTabButtonsViewer .dijitToggleButton .dijitButtonNode {
+    border: 0;
+    background-color: inherit;
+    box-shadow: none;
+    border-radius: 0;
+    margin: 3px 15px
+}
+.claro .dijitTab:first-child {
+    margin-left: 10px
+}
+.TextTabButtons .dijitTab.dijitChecked .tabLabel {
+    color: #333;
+    font-weight: 900
+}
+.TextTabButtons .dijitTab.dijitChecked {
+    border-bottom: 4px solid #34698e
+}
+.TextTabButtons .dijitTab .tabLabel:hover {
+    color: black
+}
+.dgrid .dgrid-selector {
+    width: 3%;
+    min-width: 18px;
+    max-width: 20px;
+    padding: 0;
+    margin: 0;
+    text-align: center
+}
+.dgrid .dgrid-selector > * {
+    margin: 0;
+    padding: 0;
+    vertical-align: middle
+}
+.dgrid-selector INPUT {
+    margin: 1px;
+    vertical-align: middle;
+    width: 16px;
+    height: 16px
+}
+div.overview {
+    position: relative;
+    width: 100%;
+    padding: 0;
+    z-index: -5;
+    display: block;
+    height: 23px;
+    overflow: hidden;
+    background: #eee;
+    border-style: solid;
+    border-width: 1px 0 1px 0;
+    border-color: #555;
+    text-align: center;
+    cursor: crosshair
+}
+.jbrowse > .dijitContentPane {
+    padding: 0
+}
+.navbox {
+    font-size: .85em
+}
+.navbox.dijitInputInner {
+    font-size: 11px;
+    font-family: inherit
+}
+.navbox #hidetitles-btn {
+    height: 14px
+}
+#navbox.dijitButton {
+    height: 14px
+}
+.navbox.fa {
+    vertical-align: middle;
+    margin: 4px 4px 4px 10px;
+    color: #444
+}
+#navbox.claro.dijitButtonText {
+    padding: 0 0.3em;
+    text-align: center
+}
+#navbox.navbox {
+    font-size: .85em
+}
+#navbox.navbox .fa {
+    vertical-align: middle;
+    margin: 4px 4px 4px 10px;
+    color: #444
+}
+#navbox.navbox .fa-2x {
+    font-size: 2em
+}
+.msg-box-below-topnav {
+    width: 967px;
+    margin: 5px auto;
+    padding: 5px 10px;
+    border: 2px solid #444;
+    background: yellow;
+    border-radius: 4px
+}
+/*
+  .claro .dijitTooltipContainer {
+    
+}
+.claro .dijitTooltipBelow .dijitTooltipConnector {
+    top: 0;
+    left: 3px;
+    background-position: -31px 0;
+    width: 16px;
+    height: 20px
+}
+*/
+
+  #faceted_tracksel .faceted_tracksel_on_off.tab {
+    top: 170px;
+    font-size: .6em
+}
+.patric .GridContainer TH.dgrid-cell {
+    font-size: .95em
+}
+.patric .GridContainer TD.dgrid-cell {
+    font-size: .85em;
+    white-space: nowrap
+}
+.queryModel,
+  .queryField,
+  .queryValue {
+    font-weight: 600;
+    text-transform: uppercase
+}
+.queryModel {
+    color: #76a72d
+}
+.queryField {
+    color: #34698e
+}
+.queryValue {
+    background: #ffcb00;
+    color: #333;
+    text-transform: none;
+    padding:2px;
+    border-radius:3px
+}
+/*
+  .queryValue:hover {
+    /*text-decoration: line-through;
+    cursor: pointer;
+    background: url('data:image/png;
+    base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAADCAIAAADdv/LVAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAASSURBVHjaYvrPwMDEAMEAAQYACzEBBlU9CW8AAAAASUVORK5CYII=');
+    background-repeat: repeat-x;
+    background-position: center
+}
+*/
+
+  /*
+  div.tooltip {
+    position: absolute;
+    padding: 10px;
+    font: 15px sans-serif;
+    background: lightsteelblue;
+    border: 0;
+    border-radius: 4px;
+    pointer-events: none
+}
+*/
+
+  .kegg-map-legend-color-box {
+    float: left;
+    width: 16px;
+    height: 16px;
+    margin: 2px 5px 0 0;
+    border: 1px solid rgba(0, 0, 0, .2)
+}
+.white {
+    background: #ffffff
+}
+.green {
+    background: #befdbe
+}
+.darkgreen {
+    background: #d5e6d5
+}
+.blue {
+    background: #99ccff
+}
+.red {
+    background: #ff0000
+}
+.kegg-map-legend-label {
+    float: left;
+    white-space: nowrap
+}
+/* Generic Layout Classes */
+  .right {
+    float: right
+}
+.left {
+    float: left
+}
+.clear {
+    clear: both
+}
+.group {
+    overflow: hidden
+}
+.half {
+    width: 50%
+}
+.third {
+    width: 33.3333333%
+}
+.two-third {
+    width: 66.6666666%
+}
+.quarter {
+    width: 25%
+}
+.three-quarter {
+    width: 75%
+}
+.has-border {
+    border: #dfdfdf 1px solid
+}
+.has-border .wrapper {
+    margin: 5px 20px 20px 20px
+}
+.side-margins {
+    margin: 0 20px
+}
+table {
+    width: 100%
+}
+@media screen and (max-width: 768px) {
+    .column-prime,
+      .column-sub,
+      .column-opt {
+    min-width: 768px
+}
+}
+
+@media screen and (min-width: 1024px) {
+    .column-prime {
+    width: 66.666%;
+    float: right
+}
+.column-sub,
+      .column-opt {
+    width: 33.333%;
+    float: left
+}
+}
+
+@media screen and (min-width: 1200px) {
+    .column-prime {
+    width: 47.99%;
+    float: left
+}
+.column-sub {
+    width: 29.99%;
+    float: left
+}
+.column-opt {
+    width: 21.99%;
+    float: right
+}
+}
+
+.column-prime .section,
+  .column-sub .section,
+  .column-opt .section {
+    padding: 0 5px
+}
+.menuHeader,
+  .section-title {
+    /*
+      background-color: #34698e;
+    color: #efefef;
+    padding: 2px;
+    padding-left: 20px;
+    border-radius: 6px;
+    border-top-left-radius: 25px;
+    border-bottom-right-radius: 25px;
+    box-shadow: 2px 2px 2px #555;
+    margin-bottom: 8px;
+    */
+
+      background: #34598e;
+    border-radius: 0;
+    text-align: left;
+    box-shadow: none;
+    padding-left: 0;
+    margin-top: 12px
+}
+.section-title span.wrap {
+    background: #fff;
+    text-transform: capitalize;
+    color: #666666;
+    font-weight: normal;
+    font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    line-height: 20px;
+    padding: 5px 5px 5px 0
+}
+.section-title-plain {
+    color: #666;
+    font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
+    font-size: 1.5em;
+    margin-right: 10px
+}
+.menuHeader {
+    padding-left: 4px
+}
+.pubmed {
+    padding: 0 5px
+}
+.pubmed ul {
+    padding: 0;
+    margin: 0
+}
+div.pubmed ul li {
+    background: url('/patric/images/arrow-slate-e.png') scroll no-repeat 0 5px;
+    list-style: none;
+    line-height: 1.2;
+    margin: 0 0 5px 0;
+    padding: 0 0 5px 7px;
+    border-bottom: #aec9d2 1px solid
+}
+.PerspectiveHeader {
+    margin:0;
+    padding: 0
+}
+.patric .PerspectiveQuery .current {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #76a72d
+}
+.patric .PerspectiveTotalCount {
+    color: #666666
+}
+.patric .PerspectiveHeader .PerspectiveIcon.fa {
+    font-size:2.4em;
+    float:left;
+    color:#76a72d;
+    margin:4px;
+    padding-right: 3px
+}
+.patric.claro .breadcrumb.dijitContentPane {
+    padding: 8px 8px 3px 8px
+}
+.patric.claro .dijitButtonNode {
+    background-image: none
+}
+.FacetFilter ::-webkit-scrollbar,
+  .dgrid ::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+    background: #efefef
+}
+.FacetFilter ::-webkit-scrollbar {
+    background: #333
+}
+.FacetFilter ::-webkit-scrollbar-thumb,
+  .dgrid ::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 1ex;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.75)
+}
+.FacetFilter ::-webkit-scrollbar-thumb {
+    background: #333;
+    border: 1px solid #fff
+}
+.FacetFilter ::-webkit-scrollbar-corner,
+  .dgrid ::-webkit-scrollbar-corner {
+    background: #000
+}
+.dgrid ::-webkit-scrollbar:horizontal {
+    display: none
+}
+.WarningPanel {
+    margin:4px;
+    background: #f9ff85;
+    padding:4px;
+    border:0 solid #aaa;
+    border-radius:4px;
+    font-weight:200
+}
+.WarningBanner {
+    background: #f9ff85;
+    text-align: center;
+    margin: 0 4px 0;
+    padding:4px;
+    border:0 solid #aaa;
+    border-radius:4px
+}
+.WarningAlert {
+    background: #fff3cd;
+    padding: 10px;
+    border: 2px solid #ffeeba;
+    color: #856404;
+    margin-bottom: 10px
+}
+.patric .fa.icon-caret-down.noHoverIcon:hover {
+    color: #333;
+    cursor: default
+}
+/* =Vertical Rhythm Classes */
+  .HomeServiceLink .close,
+  .close {
+    margin-bottom: 2px
+}
+.close2x {
+    margin-bottom: .4em
+}
+.far {
+    margin-bottom: .8em
+}
+.far2x {
+    margin-bottom: 1.6em
+}
+.far4x {
+    margin-bottom: 3.2em
+}
+.sans-alternate {
+    font-family: "Didact Gothic", Arial, Helvetica, sans-serif
+}
+/* =Font size */
+  .smallest {
+    font-size: 11px;
+    line-height: 13px
+}
+.small {
+    font-size: 12px;
+    line-height: 13px
+}
+.normal {
+    font-size: 13px
+}
+.large {
+    font-size: 14px;
+    line-height: 18px
+}
+.largest {
+    font-size: 16px;
+    line-height: 18px
+}
+.mega {
+    font-size: 34px;
+    line-height: 28px
+}
+/* =Text Colors */
+  .ondark {
+    color: #fff
+}
+.light {
+    color: #666666
+}
+.highlight {
+    color: #1fa1c3
+}
+.highlight-b {
+    color: #ccff99
+}
+.highlight-c {
+    color: #227194
+}
+.highlight-d {
+    color: #7bc4d8
+}
+.highlight-e {
+    color: #09456f
+}
+.highlight-f {
+    color: #638826
+}
+/* =Link Styles */
+  .linkstyle-highlight a {
+    color: #1fa1c3
+}
+.linkstyle-highlight-b a {
+    color: #7bc4d8
+}
+.linkstyle-highlight-c a {
+    color: white
+}
+.linkstyle-highlight-c a:visited {
+    color: white
+}
+.linkstyle-highlight-c a:hover {
+    color: white
+}
+.linkstyle-highlight-c a:active {
+    color: white
+}
+.linkstyle-highlight-d a {
+    color: #666666
+}
+.linkstyle-highlight-d a:visited {
+    color: #666666
+}
+.linkstyle-highlight-d a:hover {
+    color: black
+}
+.linkstyle-highlight-d a:active {
+    color: #666666
+}
+.no-underline-links a {
+    text-decoration: none
+}
+a.double-arrow-link:after {
+    content: ' »'
+}
+a.icon-left {
+    display: inline-block;
+    line-height: 16px;
+    padding-left: 25px;
+    background: no-repeat left center
+}
+h1,h2,h3,h4,h5,h6 {
+    font-weight: 100
+}
+h1 {
+    font-size: 3em;
+    line-height: 1;
+    margin-bottom: 0.50em
+}
+h2 {
+    font-size: 2em;
+    margin-bottom: 0.75em
+}
+h3 {
+    font-size: 1.5em;
+    line-height: 1;
+    margin-bottom: 1.00em
+}
+h4 {
+    font-size: 1.2em;
+    line-height: 1.25;
+    margin-bottom: 1.25em
+}
+h5 {
+    font-size: 1em;
+    font-weight: bold;
+    margin-bottom: 1.50em
+}
+h6 {
+    font-size: 1em;
+    font-weight: bold
+}
+h1.xxxl,
+  h2.xxxl {
+    font-size: 40px;
+    line-height: 36px
+}
+h1.xxl,
+  h2.xxl {
+    font-size: 30px
+}
+h1.xl {
+    font-size: 26px
+}
+h2.xl,
+  h3.xl {
+    font-size: 20px
+}
+.upper {
+    text-transform: uppercase
+}
+.figure-right {
+    float: right;
+    display: inline;
+    margin: 0 0 10px 10px
+}
+body footer.main-footer {
+    background: #34698e;
+    background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #09456f), color-stop(100%, #34698e));
+    background-image: -webkit-linear-gradient(#09456f, #34698e);
+    background-image: -moz-linear-gradient(#09456f, #34698e);
+    background-image: -o-linear-gradient(#09456f, #34698e);
+    background-image: -ms-linear-gradient(#09456f, #34698e);
+    background-image: linear-gradient(#09456f, #34698e);
+    border-top: #227194;
+    padding: 12px 0 30px 0;
+    min-height:200px
+}
+footer.main-footer .container {
+    overflow: hidden
+}
+footer.main-footer .container .column {
+    float: left;
+    width: 229px;
+    border-left: #547f9d 1px solid;
+    min-height: 143px
+}
+* html body footer.main-footer .container .column {
+    overflow-x: hidden
+}
+body footer.main-footer .container .column .wrapper {
+    overflow: hidden;
+    padding: 0 15px
+}
+body footer.main-footer ul.left {
+    width: 99px
+}
+.heatmap-legend-entry {
+    float: left;
+    width: 20px;
+    height: 20px;
+    margin: 1px 10px 2px 0;
+    border: 1px solid rgba(0, 0, 0, .2)
+}
+.heatmap-legend-entry.black {
+    background: #000000
+}
+.heatmap-legend-entry.yellow {
+    background: rgb(248, 214, 63)
+}
+.heatmap-legend-entry.orange {
+    background: rgb(242, 166, 43)
+}
+.heatmap-legend-entry.red {
+    background: rgb(251, 79, 40)
+}
+.heatmap-legend-label {
+    float: left;
+    white-space: nowrap;
+    line-height: 23px
+}
+.warning {
+    font-weight: bold;
+    color: #E53935
+}
+.keyword {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    display: inline-block
+}
+.keyword.small {
+    margin: 0 2px 2px 0;
+    padding: 3px 5px
+}
+.keyword.medium {
+    margin: 0 5px 5px 0;
+    padding: 3px 6px
+}
+.center-text {
+    text-align: center
+}
+.subsystemslegend {
+    font-size: 15px
+}
+.subsystemsChartToolTip {
+    background: #eee;
+    box-shadow: 0 0 5px #999999;
+    color: #333;
+    display: none;
+    font-size: 12px;
+    left: 130px;
+    padding: 10px;
+    position: absolute;
+    text-align: center;
+    top: 95px;
+    width: 80px;
+    z-index: 10
+}
+#subsystemspiechart {
+    cursor: pointer
+}
+/* accessibility utils */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0
+}
+.banner-yellow {
+    padding: 10px;
+    color: #454545 !important;
+    background-color: #f0ad4e;
+    border-color: #eea236
+}
+/**
+   * system status page
+   */
+
+  .SystemStatus {
+    margin: 50px 150px 0 150px
+}
+.SystemStatus i.success {
+    color: #22b900
+}
+.SystemStatus i.fail {
+    color: #bd0000
+}
+/**
+   * CheckedMultiSelect
+   */
+  .facetColumnSelector .dojoxCheckedMultiSelect .dojoxCheckedMultiSelectWrapper {
+    height: 100%;
+    border: 0;
+    background: none;
+    padding: 4px
+}
+.facetColumnSelector .dojoxMultiSelectItem {
+    padding: 2px
+}
+.facetColumnSelector .dojoxMultiSelectItemLabel {
+    text-transform: capitalize
+}
+/* homology grid */
+  .blast_result {
+    height: 700px
+}
+.blast_result .dgrid-column-expand {
+    width: 20px
+}
+.blast_result .dgrid-column-product {
+    width: 20%
+}
+.blast_result .dgrid-column-identity,
+  .blast_result .dgrid-column-q_coverage,
+  .blast_result .dgrid-column-s_coverage,
+  .blast_result .dgrid-column-na_length,
+  .blast_result .dgrid-column-aa_length,
+  .blast_result .dgrid-column-score,
+  .blast_result .dgrid-column-evalue {
+    width: 4%;
+    text-align: center
+}
+.blast_result .dgrid-column-q_length,
+  .blast_result .dgrid-column-length {
+    width: 5%;
+    text-align: right
+}
+.blast_result .collapsed .detail {
+    display: none
+}
+.blast_result .detail {
+    background: #fff
+}
+.blast_result .detail .align {
+    width: 710px;
+    padding: 10px 20px
+}
+.blast_result .detail .align pre {
+    font-size: 100%;
+    color: #333;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 5px
+}
+.warning_icon {
+    display: none
+}
+.unverified_email .warning_icon {
+    display: block
+}
+.user_warning_icon {
+    background: 000;
+    color:orange;
+    z-index:9999;
+    margin-top:-15px;
+    margin-left:-10px
+}
+.unverified_email .account-settings-warning {
+    display: inline-block
+}
+.account-settings-warning {
+    color: orange;
+    margin-left: 4px;
+    margin-right: 4px
+}
+.user_profile_warning_icon {
+    color:orange;
+    z-index:9999;
+    margin:5px;
+    vertical-align: middle;
+    font-size: 2em
+}
+.verification_message {
+    display: none
+}
+.unverified_email .verification_message {
+    display: block;
+    cursor: pointer
+}
+.verification_message_inner {
+    border: 1px solid gray;
+    margin: 15px;
+    padding: 8px;
+    font-size: .9em
+}

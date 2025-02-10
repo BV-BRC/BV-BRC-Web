@@ -1,18 +1,15 @@
 .GenomeList {
-	font-size: 1.2em;
+    font-size: 1.2em
 }
-
 .dgrid-cell.field-genome_name {
-	width: 20%;
-	white-space: nowrap;
+    width: 20%;
+    white-space: nowrap
 }
-
 .dgrid-cell.field-host_name {
-	width: 15%;
-	white-space: nowrap;
+    width: 15%;
+    white-space: nowrap
 }
-
 .dgrid-cell.field-disease {
-	width: 15%;
-	white-space: nowrap;
+    width: 15%;
+    white-space: nowrap
 }
