@@ -139,7 +139,7 @@ define([
 
       _createRagText: function(currDiv) {
         this.ragText = domConstruct.create('div', {
-          innerHTML: 'RAG: OFF',
+          innerHTML: 'RAG: None',
           style: 'padding: 2px 5px; transition: color 0.2s;',
           onmouseover: function(evt) {
             evt.target.style.color = '#2196F3';
@@ -171,7 +171,7 @@ define([
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
         // Submit query to API and handle response
-        this.copilotApi.submitRagQuery(inputText, 'cancer_papers', this.sessionId, this.model).then(lang.hitch(this, function(response) {
+        this.copilotApi.submitRagQuery(inputText, this.ragDb, this.sessionId, this.model).then(lang.hitch(this, function(response) {
 
           // Add user query and assistant response to chat store
           this.chatStore.addMessages([
@@ -181,7 +181,7 @@ define([
             },
             {
               role: 'assistant',
-              content: response.response.content
+              content: response.response
             }
           ]);
           _self.textArea.set('value', '');
@@ -311,7 +311,7 @@ define([
         if (ragDb && ragDb !== 'null') {
           this.ragText.innerHTML = 'RAG: ' + ragDb;
         } else {
-          this.ragText.innerHTML = 'RAG: OFF';
+          this.ragText.innerHTML = 'RAG: None';
         }
       },
 

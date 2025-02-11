@@ -142,6 +142,7 @@ define([
      * Each message is styled differently based on role (user/assistant)
      */
     showMessages: function(messages) {
+      // debugger;
       if (messages.length) {
         domConstruct.empty(this.resultContainer);
         console.log('show messages', messages);

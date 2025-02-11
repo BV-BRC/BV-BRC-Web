@@ -138,7 +138,8 @@ define([
             var data = {
                 query: inputQuery,
                 rag_db: ragDb,
-                user_id: _self.user_id
+                user_id: _self.user_id,
+                model: model
             };
             return request.post(this.apiUrlBase + '/rag', {
                 data: JSON.stringify(data),
@@ -146,10 +147,7 @@ define([
                     'Content-Type': 'application/json',
                     Authorization: (window.App.authorizationToken || '')
                 },
-                handleAs: 'json',
-                agent: https.Agent({
-                    rejectUnauthorized: false
-                })
+                handleAs: 'json'
             }).then(lang.hitch(this, function(response) {
                 if (response['message'] == 'success') {
                     var system_prompt = 'Using the following documents as context, answer the user questions. Do not use any other sources of information:\n\n';
@@ -318,7 +316,8 @@ define([
                 },
                 handleAs: 'json'
             }).then(function(response) {
-                return JSON.parse(response.models);
+                // Returns both the list of chat models and rag databases
+                return response;
             }).catch(function(error) {
                 console.error('Error getting model list:', error);
                 throw error;

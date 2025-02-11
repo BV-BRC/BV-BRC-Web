@@ -37,8 +37,13 @@ define([
         this.copilotApi = new CopilotAPI({
           user_id: window.App.user.l_id
         });
+        console.log('getting model list');
+        this.copilotApi.getModelList().then(lang.hitch(this, function(modelsAndRag) {
 
-        this.copilotApi.getModelList().then(lang.hitch(this, function(modelList) {
+          // Get both the chat endpoints and model databases
+          var modelList = JSON.parse(modelsAndRag.models);
+          var ragList = JSON.parse(modelsAndRag.vdb_list);
+
           // Create left sidebar container
           var leftContainer = new BorderContainer({
             region: 'left',
@@ -51,7 +56,8 @@ define([
             region: 'top',
             style: 'height: 30px; ',
             copilotApi: this.copilotApi,
-            modelList: modelList
+            modelList: modelList,
+            ragList: ragList
           });
           leftContainer.addChild(leftTopPane);
 

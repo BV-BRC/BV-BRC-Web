@@ -34,6 +34,7 @@ define([
         /** @property {string} style - CSS styling for the options bar */
         style: 'padding: 10px;',
         modelList: null,
+        ragList: null,
 
         /**
          * @constructor
@@ -89,27 +90,34 @@ define([
          * @description Creates and returns the RAG selection dropdown
          */
         createRagDropdown: function() {
-            var label = document.createElement('span');
-            label.textContent = 'RAG: ';
-            label.style.marginRight = '5px';
-
             var selectElement = document.createElement('select');
             selectElement.style.marginRight = '10px';
+            selectElement.style.display = 'block';
+            selectElement.style.marginBottom = '10px';
 
             var optionNone = document.createElement('option');
-            optionNone.value = null;
+            optionNone.value = 'null';
             optionNone.text = 'None';
             selectElement.add(optionNone);
 
-            var optionCancer = document.createElement('option');
-            optionCancer.value = 'cancer_papers';
-            optionCancer.text = 'Cancer';
-            selectElement.add(optionCancer);
+            if (this.ragList) {
+                this.ragList.forEach(lang.hitch(this, function(ragdb) {
+                    var option = document.createElement('option');
+                    option.value = ragdb.name;
+                    option.text = ragdb.name.split('/').reverse()[0];
+                    selectElement.add(option);
+                }));
+            } else {
+                var optionNone = document.createElement('option');
+                optionNone.value = null;
+                optionNone.text = 'None';
+                selectElement.add(optionNone);
 
-            var wrapper = document.createElement('div');
-            wrapper.style.display = 'block';
-            wrapper.appendChild(label);
-            wrapper.appendChild(selectElement);
+                var optionCancer = document.createElement('option');
+                optionCancer.value = 'cancer_papers';
+                optionCancer.text = 'Cancer';
+                selectElement.add(optionCancer);
+            }
 
             selectElement.addEventListener('change', lang.hitch(this, function(evt) {
                 var ragDb = evt.target.value;
@@ -121,7 +129,7 @@ define([
                 }
             }));
 
-            return wrapper;
+            return selectElement;
         },
 
         /**
@@ -284,7 +292,7 @@ define([
             this.inherited(arguments);
 
             // Create tooltip dialog for advanced options
-            var modelDialog = new TooltipDialog({
+            var optionsDialog = new TooltipDialog({
                 style: "width: 250px;",
                 content: document.createElement('div')
             });
@@ -293,12 +301,18 @@ define([
             var modelLabel = document.createElement('div');
             modelLabel.textContent = 'Model:';
             modelLabel.style.marginBottom = '5px';
-            modelDialog.containerNode.appendChild(modelLabel);
+            optionsDialog.containerNode.appendChild(modelLabel);
             this.modelDropdown = this.createModelDropdown();
-            modelDialog.containerNode.appendChild(this.modelDropdown);
+            optionsDialog.containerNode.appendChild(this.modelDropdown);
 
             // Add RAG dropdown to tooltip
-            // modelDialog.containerNode.appendChild(this.createRagDropdown());
+            var ragLabel = document.createElement('div');
+            ragLabel.textContent = 'RAG:';
+            ragLabel.style.marginBottom = '5px';
+            optionsDialog.containerNode.appendChild(ragLabel);
+            this.ragDropdown = this.createRagDropdown();
+            optionsDialog.containerNode.appendChild(this.ragDropdown);
+            // optionsDialog.containerNode.appendChild(this.createRagDropdown());
 
             // Create prompts dialog
             var promptsDialog = this.createPromptsDialog();
@@ -320,7 +334,7 @@ define([
                 label: 'Model',
                 onClick: lang.hitch(this, function() {
                     popup.open({
-                        popup: modelDialog,
+                        popup: optionsDialog,
                         around: modelButton.domNode
                     });
                     modelButton.visible = true;
@@ -330,8 +344,8 @@ define([
             this.addChild(modelButton);
              // Listen for clicks outside the tooltip to close it
             document.addEventListener('click', lang.hitch(this, function(event) {
-                if (modelDialog._rendered && !modelDialog.domNode.contains(event.target) && !modelButton.domNode.contains(event.target)) {
-                    popup.close(modelDialog);
+                if (optionsDialog._rendered && !optionsDialog.domNode.contains(event.target) && !modelButton.domNode.contains(event.target)) {
+                    popup.close(optionsDialog);
                     modelButton.visible = false;
                 }
                 if (promptsDialog._rendered && !promptsDialog.domNode.contains(event.target) && !promptsButton.domNode.contains(event.target)) {
@@ -340,13 +354,13 @@ define([
             }));
             topic.subscribe('ragButtonPressed', lang.hitch(this, function() {
                 console.log('rag pressed');
-                if (modelDialog.visible) {
-                    popup.close(modelDialog);
+                if (optionsDialog.visible) {
+                    popup.close(optionsDialog);
                     modelButton.visible = false;
                 } else {
                     setTimeout(function() {
                         popup.open({
-                            popup: modelDialog,
+                            popup: optionsDialog,
                             around: modelButton.domNode
                         });
                     }, 100);
