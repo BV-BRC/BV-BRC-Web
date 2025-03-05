@@ -78,7 +78,7 @@ define([
             }
 
             this.ragText = domConstruct.create('div', {
-                innerHTML: 'RAG: OFF',
+                innerHTML: 'RAG: None',
                 style: 'padding: 2px 5px; transition: color 0.2s;',
                 onmouseover: function(evt) {
                     evt.target.style.color = '#2196F3';

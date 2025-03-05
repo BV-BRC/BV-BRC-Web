@@ -999,3 +999,79 @@ pre.bv-brc-code-block button:active {
 .column-right .section{
   padding: 0 5px;
 }
+
+/* Message Styles for Copilot Chat */
+.message {
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+.message * {
+  max-width: 100%;
+}
+.message img {
+  height: auto;
+}
+.message pre {
+  background-color: #f8f8f8;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.message code {
+  background-color: #f8f8f8;
+  padding: 2px 4px;
+  border-radius: 3px;
+  word-wrap: break-word;
+}
+.message table {
+  width: 100%;
+  display: block;
+  overflow-x: auto;
+}
+.message p {
+  margin: 0 0 10px 0;
+}
+.message p:last-child {
+  margin-bottom: 0;
+}
+
+.message.user {
+  background-color: #e6f3ff;
+  margin-left: auto;
+  float: right;
+  clear: both;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  max-width: 60%;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.message.assistant {
+  background-color: #f5f5f5;
+  margin-right: auto;
+  float: left;
+  clear: both;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  max-width: 60%;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.message.system {
+  background-color: #eaf3f8;
+  margin-right: auto;
+  float: left;
+  clear: both;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  max-width: 100%;
+  display: inline-block;
+  margin-top: 10px;
+}

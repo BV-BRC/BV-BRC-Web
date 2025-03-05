@@ -125,7 +125,7 @@ define([
                 if (ragDb != 'null') {
                     topic.publish('changeRagButtonLabel', ragDb);
                 } else {
-                    topic.publish('changeRagButtonLabel', 'OFF');
+                    topic.publish('changeRagButtonLabel', 'None');
                 }
             }));
 
