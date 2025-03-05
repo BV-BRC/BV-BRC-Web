@@ -71,46 +71,6 @@ define([
      */
     addMarkdownStyles: function() {
       if (!document.getElementById('markdown-styles')) {
-        var style = domConstruct.create('style', {
-          id: 'markdown-styles',
-          innerHTML: `
-            .message {
-              max-width: 100%;
-              overflow-wrap: break-word;
-            }
-            .message * {
-              max-width: 100%;
-            }
-            .message img {
-              height: auto;
-            }
-            .message pre {
-              background-color: #f8f8f8;
-              padding: 10px;
-              border-radius: 4px;
-              overflow-x: auto;
-              white-space: pre-wrap;
-              word-wrap: break-word;
-            }
-            .message code {
-              background-color: #f8f8f8;
-              padding: 2px 4px;
-              border-radius: 3px;
-              word-wrap: break-word;
-            }
-            .message table {
-              width: 100%;
-              display: block;
-              overflow-x: auto;
-            }
-            .message p {
-              margin: 0 0 10px 0;
-            }
-            .message p:last-child {
-              margin-bottom: 0;
-            }
-          `
-        }, document.head);
         var style2 = domConstruct.create('style', {
           id: 'loading-animation',
           innerHTML: `
@@ -167,11 +127,7 @@ define([
 
       var messageDiv = domConstruct.create('div', {
         class: 'message ' + message.role,
-        style: 'margin-top: ' + marginTop + '; margin-bottom: 10px; padding: 10px; border-radius: 5px; ' +
-               'max-width: 60%; display: inline-block; ' +
-               (message.role === 'user' ?
-                 'background-color: #e6f3ff; margin-left: auto; float: right; clear: both;' :
-                 'background-color: #f5f5f5; margin-right: auto; float: left; clear: both;')
+        style: 'margin-top: ' + marginTop + ';'
       }, this.resultContainer);
 
       if (message.message_id === 'loading-indicator') {
@@ -179,6 +135,33 @@ define([
           innerHTML: '...',
           style: 'font-size: 24px; animation: bounce 1s infinite;'
         }, messageDiv);
+      } else if (message.role === 'system') {
+        var messageHeight = '50px';
+        var systemContentDiv = domConstruct.create('div', {
+          class: 'system-content',
+          style: 'max-height: ' + messageHeight + '; overflow: hidden; transition: max-height 0.3s ease-out;'
+        }, messageDiv);
+
+        domConstruct.create('div', {
+          innerHTML: message.content ? this.md.render(message.content) : '',
+          class: 'markdown-content',
+          style: 'width: 100%;'
+        }, systemContentDiv);
+
+        var toggleButton = domConstruct.create('button', {
+          innerHTML: 'Show More',
+          style: 'display: block; margin-top: 5px; cursor: pointer;'
+        }, messageDiv);
+
+        on(toggleButton, 'click', function() {
+          if (systemContentDiv.style.maxHeight === messageHeight) {
+            systemContentDiv.style.maxHeight = systemContentDiv.scrollHeight + 'px';
+            toggleButton.innerHTML = 'Show Less';
+          } else {
+            systemContentDiv.style.maxHeight = messageHeight;
+            toggleButton.innerHTML = 'Show More';
+          }
+        });
       } else {
         // Create content div with markdown
         domConstruct.create('div', {

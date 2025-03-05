@@ -59,9 +59,9 @@ define([
         postCreate: function() {
             this.inherited(arguments);
 
-            // Update container styles to lock position
+            // Update container styles to lock position and limit height
             this.containerNode.style.cssText =
-                'width: 100%; height: 180px; background-color: #f0f0f0; ' +
+                'width: 100%; height: 110px; max-height: 110px; background-color: #f0f0f0; ' +
                 'border: 1px solid #ccc; border-radius: 0px; cursor: pointer; ' +
                 'padding: 10px; transition: background-color 0.2s; ' +
                 'position: relative; margin:0px; ' +  // Changed position and added margin
@@ -85,9 +85,11 @@ define([
                     this.dateNode.style.cssText = 'font-size: 0.9em;';
                 }
 
-                // Display session title if available
+                // Display session title if available, limited to 65 chars
                 if (this.session.title) {
-                    this.titleNode.innerHTML = this.session.title;
+                    this.titleNode.innerHTML = this.session.title.length > 60 ?
+                        this.session.title.substring(0, 60) + '...' :
+                        this.session.title;
                     this.titleNode.style.cssText = 'font-weight: bold; margin-bottom: 5px;';
                 }
 

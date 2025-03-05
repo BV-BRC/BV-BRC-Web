@@ -149,12 +149,9 @@ define([
                 },
                 handleAs: 'json'
             }).then(lang.hitch(this, function(response) {
+                _self.storedResult = response;
                 if (response['message'] == 'success') {
-                    var system_prompt = 'Using the following documents as context, answer the user questions. Do not use any other sources of information:\n\n';
-                    response['documents'][0].forEach(function(doc) {
-                        system_prompt += doc + '\n';
-                    });
-                    return this.submitQuery(inputQuery, sessionId, system_prompt, model);
+                    return response;
                 } else {
                     throw new Error(response['message']);
                 }

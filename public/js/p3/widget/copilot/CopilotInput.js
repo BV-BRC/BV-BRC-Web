@@ -68,7 +68,7 @@ define([
         // Create Textarea widget
         this.textArea = new Textarea({
           style: 'width: 60%; min-height: 40px; max-height: 100%; resize: none; overflow-y: hidden; border-radius: 5px; margin-right: 10px;',
-          rows: 3, // Changed from 1 to 2 rows
+          rows: 3,
           maxLength: 10000,
           placeholder: 'Enter your text here...'
         });
@@ -172,27 +172,38 @@ define([
 
         // Submit query to API and handle response
         this.copilotApi.submitRagQuery(inputText, this.ragDb, this.sessionId, this.model).then(lang.hitch(this, function(response) {
+          var system_prompt = 'Using the following documents as context, answer the user questions. Do not use any other sources of information:\n\n';
+          response['documents'][0].forEach(function(doc) {
+            system_prompt += doc + '\n';
+          });
 
-          // Add user query and assistant response to chat store
-          this.chatStore.addMessages([
-            {
-              role: 'user',
-              content: inputText
-            },
-            {
-              role: 'assistant',
-              content: response.response
+          this.copilotApi.submitQuery(inputText, this.sessionId, system_prompt, this.model).then(lang.hitch(this, function(llm_response) {
+
+            // Add user query and assistant response to chat store
+            this.chatStore.addMessages([
+              {
+                role: 'user',
+                content: inputText
+              },
+              {
+                role: 'system',
+                content: system_prompt
+              },
+              {
+                role: 'assistant',
+                content: llm_response.response
+              }
+            ]);
+            _self.textArea.set('value', '');
+            this.displayWidget.showMessages(this.chatStore.query());
+
+            // If this was a new chat, trigger session reload
+            if (_self.new_chat) {
+              _self.new_chat = false;
+              topic.publish('reloadUserSessions');
+              topic.publish('generateSessionTitle');
             }
-          ]);
-          _self.textArea.set('value', '');
-          this.displayWidget.showMessages(this.chatStore.query());
-
-          // If this was a new chat, trigger session reload
-          if (_self.new_chat) {
-            _self.new_chat = false;
-            topic.publish('reloadUserSessions');
-            topic.publish('generateSessionTitle');
-          }
+          }));
         })).finally(lang.hitch(this, function() {
           // Hide loading indicator
           this.displayWidget.hideLoadingIndicator();
