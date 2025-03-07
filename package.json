@@ -12,7 +12,7 @@
     "postinstall": "./post_install.sh"
   },
   "dependencies": {
-    "axios": "^1.6.8",
+    "axios": "^1.8.2",
     "body-parser": "^1.20.2",
     "braces": "^3.0.3",
     "bvbrc_js_client": "github:bv-brc/bvbrc_js_client",
