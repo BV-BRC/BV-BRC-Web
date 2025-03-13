@@ -400,14 +400,18 @@ define([
             user_id: window.App.user.l_id
           });
 
-          this.copilotAPI.getModelList().then(lang.hitch(this, function(modelList) {
+          this.copilotAPI.getModelList().then(lang.hitch(this, function(modelsAndRag) {
+
+            var modelList = JSON.parse(modelsAndRag.models);
+            var ragList = JSON.parse(modelsAndRag.vdb_list);
 
             // Add options bar to top of sidebar
             var chatOptionsBar = new ChatSessionOptionsBar({
               region: 'top',
               style: 'height: 30px; ',
               copilotApi: this.copilotAPI,
-              modelList: modelList
+              modelList: modelList,
+              ragList: ragList
             });
 
             // Create new chat panel
