@@ -1066,12 +1066,13 @@ pre.bv-brc-code-block button:active {
 .message.system {
   background-color: #eaf3f8;
   margin-right: auto;
-  float: left;
+  float: right;
   clear: both;
   margin-bottom: 10px;
   padding: 10px;
   border-radius: 5px;
-  max-width: 100%;
+  max-width: 60%;
   display: inline-block;
   margin-top: 10px;
+  margin-right: 11px;
 }
