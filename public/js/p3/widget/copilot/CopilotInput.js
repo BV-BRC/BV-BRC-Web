@@ -173,6 +173,9 @@ define([
         // Submit query to API and handle response
         this.copilotApi.submitRagQuery(inputText, this.ragDb, this.sessionId, this.model).then(lang.hitch(this, function(response) {
           var system_prompt = 'Using the following documents as context, answer the user questions. Do not use any other sources of information:\n\n';
+          if (this.systemPrompt && this.systemPrompt.length > 1) {
+            system_prompt = this.systemPrompt + '\n\n' + system_prompt;
+          }
           response['documents'][0].forEach(function(doc) {
             system_prompt += doc + '\n';
           });
