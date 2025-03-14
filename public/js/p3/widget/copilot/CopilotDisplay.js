@@ -7,9 +7,9 @@ define.amd.jQuery = true;
 // https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js
 define([
   'dojo/_base/declare', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/on', 'dojo/topic', 'dojo/_base/lang',
-  'markdown-it/dist/markdown-it.min'
+  'markdown-it/dist/markdown-it.min', './ChatMessage'
 ], function (
-  declare, ContentPane, domConstruct, on, topic, lang, markdownit
+  declare, ContentPane, domConstruct, on, topic, lang, markdownit, ChatMessage
 ) {
   /**
    * @class CopilotDisplay
@@ -102,13 +102,12 @@ define([
      * Each message is styled differently based on role (user/assistant)
      */
     showMessages: function(messages) {
-      // debugger;
       if (messages.length) {
         domConstruct.empty(this.resultContainer);
         console.log('show messages', messages);
 
         messages.forEach(lang.hitch(this, function(message) {
-          this.addMessage(message);
+          new ChatMessage(message, this.resultContainer);
         }));
 
         this.scrollToBottom();
@@ -123,53 +122,7 @@ define([
      * @description Creates and adds a single message to the display container
      */
     addMessage: function(message) {
-      var marginTop = this.resultContainer.children.length === 0 ? '20px' : '5px';
-
-      var messageDiv = domConstruct.create('div', {
-        class: 'message ' + message.role,
-        style: 'margin-top: ' + marginTop + ';'
-      }, this.resultContainer);
-
-      if (message.message_id === 'loading-indicator') {
-        domConstruct.create('div', {
-          innerHTML: '...',
-          style: 'font-size: 24px; animation: bounce 1s infinite;'
-        }, messageDiv);
-      } else if (message.role === 'system') {
-        var messageHeight = '50px';
-        var systemContentDiv = domConstruct.create('div', {
-          class: 'system-content',
-          style: 'max-height: ' + messageHeight + '; overflow: hidden; transition: max-height 0.3s ease-out;'
-        }, messageDiv);
-
-        domConstruct.create('div', {
-          innerHTML: message.content ? this.md.render(message.content) : '',
-          class: 'markdown-content',
-          style: 'width: 100%;'
-        }, systemContentDiv);
-
-        var toggleButton = domConstruct.create('button', {
-          innerHTML: 'Show More',
-          style: 'display: block; margin-top: 5px; cursor: pointer;'
-        }, messageDiv);
-
-        on(toggleButton, 'click', function() {
-          if (systemContentDiv.style.maxHeight === messageHeight) {
-            systemContentDiv.style.maxHeight = systemContentDiv.scrollHeight + 'px';
-            toggleButton.innerHTML = 'Show Less';
-          } else {
-            systemContentDiv.style.maxHeight = messageHeight;
-            toggleButton.innerHTML = 'Show More';
-          }
-        });
-      } else {
-        // Create content div with markdown
-        domConstruct.create('div', {
-          innerHTML: message.content ? this.md.render(message.content) : '',
-          class: 'markdown-content',
-          style: 'width: 100%;'
-        }, messageDiv);
-      }
+      new ChatMessage(message, this.resultContainer);
     },
 
     /**
