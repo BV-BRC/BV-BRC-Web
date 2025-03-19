@@ -1,105 +1,110 @@
-define.amd.jQuery = true;
 /**
  * @module p3/widget/CopilotDisplay
  * @description A ContentPane-based widget that displays chat messages in a scrollable container.
  * Handles rendering of user and assistant messages, error states, and empty states.
+ *
+ * Implementation:
+ * - Extends ContentPane to provide scrollable message display
+ * - Uses ChatMessage widget to render individual messages
+ * - Handles loading states and error conditions
+ * - Provides methods for message management and session control
+ * - Implements markdown rendering for message content
  */
+
+// Import markdown-it from CDN
 // https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js
+
 define([
-  'dojo/_base/declare', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/on', 'dojo/topic', 'dojo/_base/lang',
-  'markdown-it/dist/markdown-it.min', './ChatMessage'
+  'dojo/_base/declare', // Base class for creating Dojo classes
+  'dijit/layout/ContentPane', // Parent class for layout container
+  'dojo/dom-construct', // DOM manipulation utilities
+  'dojo/on', // Event handling
+  'dojo/topic', // Pub/sub messaging
+  'dojo/_base/lang', // Language utilities like hitch
+  'markdown-it/dist/markdown-it.min', // Markdown parser
+  './ChatMessage' // Custom message display widget
 ], function (
   declare, ContentPane, domConstruct, on, topic, lang, markdownit, ChatMessage
 ) {
+
   /**
    * @class CopilotDisplay
    * @extends {dijit/layout/ContentPane}
+   *
+   * Main widget class that manages chat message display.
+   * Handles message rendering, scrolling, loading states and errors.
    */
   return declare([ContentPane], {
-    /** @property {Object} copilotApi - Reference to the CopilotAPI instance */
+
+    // Reference to the CopilotAPI instance for backend operations
     copilotApi: null,
 
-    /** @property {string} sessionId - Current chat session identifier */
+    // Current chat session identifier
     sessionId: null,
 
-    /** @property {Array} messages - Array to store chat messages */
+    // Array to store chat message objects
     messages: [],
 
-    /** @property {string} emptyMessage - Text to display when no messages exist */
+    // Default message shown when no messages exist
     emptyMessage: 'No messages yet. Start a conversation!',
 
     /**
-     * @constructor
-     * @param {Object} args - Configuration arguments
-     * @description Initializes the widget and mixes in provided options
+     * Constructor that initializes the widget
+     * Mixes in any provided configuration options using safeMixin
      */
     constructor: function(args) {
       declare.safeMixin(this, args);
     },
 
     /**
-     * @method postCreate
-     * @description Sets up the widget after creation
-     * Creates message container, shows empty state, and subscribes to topics
+     * Sets up the widget after DOM creation
+     * Implementation:
+     * - Creates scrollable container for messages
+     * - Initializes empty state display
+     * - Sets up markdown parser
+     * - Adds required CSS styles
+     * - Subscribes to message refresh and error topics
      */
     postCreate: function() {
       this.inherited(arguments);
 
-      // Create a container for displaying the query result
+      // Create scrollable container for messages
       this.resultContainer = domConstruct.create('div', {
-        class: 'copilot-result-container',
-        style: 'width: 90%; height: 100%; overflow-y: auto; padding: 10px; border: 0; margin: 0 auto;padding-right: 100px;'
+        class: 'copilot-result-container'
       }, this.containerNode);
 
-      // Show empty state initially
+      // Show initial empty state
       this.showEmptyState();
 
-      // Configure markdown-it options
+      // Initialize markdown parser
       this.md = markdownit();
 
-      // Add markdown styles
-      this.addMarkdownStyles();
-
-      // Subscribe to the 'query' topic
+      // Subscribe to message events
       topic.subscribe('RefreshSessionDisplay', lang.hitch(this, 'showMessages'));
       topic.subscribe('CopilotApiError', lang.hitch(this, 'onQueryError'));
     },
 
     /**
-     * @method addMarkdownStyles
-     * @description Adds the markdown styling to the document if not already present
-     */
-    addMarkdownStyles: function() {
-      if (!document.getElementById('markdown-styles')) {
-        var style2 = domConstruct.create('style', {
-          id: 'loading-animation',
-          innerHTML: `
-            @keyframes bounce {
-              0%, 100% { transform: translateY(0); }
-              50% { transform: translateY(-10px); }
-            }
-          `
-        }, document.head);
-      }
-    },
-
-    /**
-     * @method showEmptyState
-     * @description Displays the empty state message when no chat messages exist
+     * Displays empty state message when no chat messages exist
+     * Implementation:
+     * - Clears existing messages
+     * - Shows centered empty state message
      */
     showEmptyState: function() {
       domConstruct.empty(this.resultContainer);
       domConstruct.create('div', {
         innerHTML: this.emptyMessage,
-        style: 'color: #666; padding: 10px; text-align: center;'
+        class: 'copilot-empty-state'
       }, this.resultContainer);
     },
 
     /**
-     * @method showMessages
-     * @param {Array} messages - Array of message objects to display
-     * @description Renders chat messages in the display container
-     * Each message is styled differently based on role (user/assistant)
+     * Renders an array of chat messages in the display
+     * Implementation:
+     * - Clears existing messages
+     * - Creates ChatMessage widget for each message
+     * - Scrolls to bottom after rendering
+     * - Shows empty state if no messages
      */
     showMessages: function(messages) {
       if (messages.length) {
@@ -117,17 +122,19 @@ define([
     },
 
     /**
-     * @method addMessage
-     * @param {Object} message - Message object to display
-     * @description Creates and adds a single message to the display container
+     * Adds a single message to the display
+     * Implementation:
+     * - Creates new ChatMessage widget
+     * - Appends to container
      */
     addMessage: function(message) {
       new ChatMessage(message, this.resultContainer);
     },
 
     /**
-     * @method scrollToBottom
-     * @description Scrolls the message container to the bottom
+     * Scrolls the message container to the bottom
+     * Implementation:
+     * - Sets scrollTop to maximum scroll height
      */
     scrollToBottom: function() {
       if (this.resultContainer) {
@@ -136,21 +143,25 @@ define([
     },
 
     /**
-     * @method onQueryError
-     * @description Displays error message when API request fails
+     * Displays error message when API request fails
+     * Implementation:
+     * - Clears existing messages
+     * - Shows red error message
      */
     onQueryError: function() {
       console.log('onQueryError');
       domConstruct.empty(this.resultContainer);
       domConstruct.create('div', {
         innerHTML: 'An error occurred while processing your request. Please try again later.',
-        style: 'color: red; padding: 10px;'
+        class: 'copilot-error'
       }, this.resultContainer);
     },
 
     /**
-     * @method clearMessages
-     * @description Clears all messages and shows empty state
+     * Clears all messages and resets to empty state
+     * Implementation:
+     * - Empties messages array
+     * - Shows empty state message
      */
     clearMessages: function() {
       this.messages = [];
@@ -158,25 +169,29 @@ define([
     },
 
     /**
-     * @method startNewChat
-     * @description Initiates a new chat session by clearing existing messages
+     * Starts a new chat session
+     * Implementation:
+     * - Clears existing messages
      */
     startNewChat: function() {
       this.clearMessages();
     },
 
     /**
-     * @method setSessionId
-     * @param {string} sessionId - Session identifier to set
-     * @description Updates the current session ID
+     * Updates the current session ID
+     * Implementation:
+     * - Sets new session identifier
      */
     setSessionId: function(sessionId) {
       this.sessionId = sessionId;
     },
 
     /**
-     * @method showLoadingIndicator
-     * @description Displays a loading animation at the bottom of the chat
+     * Shows loading animation while waiting for response
+     * Implementation:
+     * - Optionally re-renders existing messages
+     * - Adds loading indicator message
+     * - Scrolls to bottom
      */
     showLoadingIndicator: function(chatMessages) {
       if (chatMessages && chatMessages.length > 0) {
@@ -195,8 +210,9 @@ define([
     },
 
     /**
-     * @method hideLoadingIndicator
-     * @description Removes the loading animation
+     * Removes the loading animation
+     * Implementation:
+     * - Destroys loading indicator element if exists
      */
     hideLoadingIndicator: function() {
       if (this._loadingIndicator) {

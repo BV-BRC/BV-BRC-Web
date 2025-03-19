@@ -1076,3 +1076,31 @@ pre.bv-brc-code-block button:active {
   margin-top: 10px;
   margin-right: 11px;
 }
+
+/* Copilot Chat Container Styles */
+.copilot-result-container {
+  width: 90%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 10px;
+  border: 0;
+  margin: 0 auto;
+  padding-right: 100px;
+}
+
+.copilot-empty-state {
+  color: #666;
+  padding: 10px;
+  text-align: center;
+}
+
+.copilot-error {
+  color: red;
+  padding: 10px;
+}
+
+/* Loading Animation */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}

@@ -2,15 +2,22 @@
  * @module p3/widget/ChatSessionTitle
  * @description A ContentPane-based widget that displays and manages the title of a chat session.
  * Provides functionality to display, edit, and update chat session titles.
+ *
+ * Implementation:
+ * - Extends ContentPane to provide title display and editing capabilities
+ * - Uses TextBox widget for inline title editing
+ * - Handles keyboard events for save/cancel during editing
+ * - Publishes title change events for other widgets to subscribe to
+ * - Provides API for enabling/disabling title editing
  */
 define([
-  'dojo/_base/declare',
-  'dijit/layout/ContentPane',
-  'dojo/dom-construct',
-  'dojo/on',
-  'dojo/topic',
-  'dojo/_base/lang',
-  'dijit/form/TextBox'
+  'dojo/_base/declare', // Base class for creating Dojo classes
+  'dijit/layout/ContentPane', // Parent class for layout container
+  'dojo/dom-construct', // DOM manipulation utilities
+  'dojo/on', // Event handling
+  'dojo/topic', // Pub/sub messaging
+  'dojo/_base/lang', // Language utilities like hitch
+  'dijit/form/TextBox' // Text input widget
 ], function (
   declare,
   ContentPane,
@@ -23,37 +30,40 @@ define([
   /**
    * @class ChatSessionTitle
    * @extends {dijit/layout/ContentPane}
+   *
+   * Main widget class that manages chat session title display and editing.
+   * Handles title updates, editing state, and user interactions.
    */
   return declare([ContentPane], {
 
-    /** @property {Object} copilotApi - Reference to the CopilotAPI instance */
+    /** Reference to the CopilotAPI instance for backend operations */
     copilotApi: null,
 
-    /** @property {string} sessionId - Current chat session identifier */
+    /** Current chat session identifier */
     sessionId: null,
 
-    /** @property {string} title - Current title of the chat session */
+    /** Current title text of the chat session */
     title: 'New Chat',
 
-    /** @property {boolean} isEditing - Flag indicating if title is being edited */
+    /** Flag indicating if title is currently in edit mode */
     isEditing: false,
 
-    /** @property {boolean} editingEnabled - Flag indicating if editing is enabled */
+    /** Flag controlling whether title editing is allowed */
     editingEnabled: true,
 
     /**
-     * @constructor
-     * @param {Object} args - Configuration arguments
-     * @description Initializes the widget and mixes in provided options
+     * Constructor that initializes the widget
+     * Mixes in any provided configuration options using safeMixin
      */
     constructor: function(args) {
       declare.safeMixin(this, args);
     },
 
     /**
-     * @method postCreate
-     * @description Sets up the widget after creation
-     * Creates title display and edit functionality
+     * Sets up the widget after DOM creation
+     * - Creates main title container with flex layout
+     * - Initializes title display and editor components
+     * - Sets up event subscriptions for session changes
      */
     postCreate: function() {
       this.inherited(arguments);
@@ -73,8 +83,10 @@ define([
     },
 
     /**
-     * @method createTitleDisplay
-     * @description Creates the title display element
+     * Creates the title display element
+     * - Adds clickable div showing current title
+     * - Sets up click handler to start editing
+     * - Uses flex layout to fill available space
      */
     createTitleDisplay: function() {
       this.titleDisplay = domConstruct.create('div', {
@@ -86,8 +98,11 @@ define([
     },
 
     /**
-     * @method createTitleEditor
-     * @description Creates the title editor input field
+     * Creates the title editor input field
+     * - Uses TextBox widget for editing
+     * - Initially hidden until edit mode activated
+     * - Handles Enter to save and Escape to cancel
+     * - Auto-saves on blur event
      */
     createTitleEditor: function() {
       this.titleEditor = new TextBox({
@@ -110,8 +125,10 @@ define([
     },
 
     /**
-     * @method startEditing
-     * @description Switches to edit mode for the title
+     * Activates title editing mode
+     * - Shows editor and hides display
+     * - Sets focus to editor
+     * - Only works if session exists and editing enabled
      */
     startEditing: function() {
       if (!this.sessionId || !this.editingEnabled) return;
@@ -122,9 +139,13 @@ define([
       this.titleEditor.domNode.style.display = 'block';
       this.titleEditor.focus();
     },
+
     /**
-     * @method saveTitleEditor
-     * @description Saves the edited title
+     * Saves changes from title editor
+     * - Validates new title is not empty and changed
+     * - Calls API to update title
+     * - Publishes title change event
+     * - Handles errors via topic publish
      */
     saveTitleEditor: function() {
       if (!this.isEditing) return;
@@ -145,8 +166,10 @@ define([
     },
 
     /**
-     * @method saveTitle
-     * @description Saves the current title to the session
+     * Saves current title to session
+     * - Makes API call to update title
+     * - Publishes title change event
+     * - Handles errors via topic publish
      */
     saveTitle: function() {
       if (!this.sessionId) return;
@@ -162,8 +185,9 @@ define([
     },
 
     /**
-     * @method cancelEditing
-     * @description Cancels title editing mode
+     * Cancels title editing mode
+     * - Hides editor and shows display
+     * - Resets editing state
      */
     cancelEditing: function() {
       this.isEditing = false;
@@ -172,9 +196,9 @@ define([
     },
 
     /**
-     * @method updateTitle
-     * @param {string} newTitle - New title to display
-     * @description Updates the displayed title
+     * Updates displayed title text
+     * - Sets title property
+     * - Updates display element HTML
      */
     updateTitle: function(newTitle) {
       this.title = newTitle;
@@ -182,9 +206,9 @@ define([
     },
 
     /**
-     * @method onSessionSelected
-     * @param {Object} sessionData - Data about the selected session
-     * @description Handles session selection events
+     * Handles session selection events
+     * - Updates session ID and title
+     * - Uses default title if none provided
      */
     onSessionSelected: function(sessionData) {
       this.sessionId = sessionData.session_id;
@@ -192,8 +216,10 @@ define([
     },
 
     /**
-     * @method startNewChat
-     * @description Starts a new chat with a new title
+     * Starts new chat session
+     * - Sets session ID if provided
+     * - Resets title to default
+     * - Cancels any active editing
      */
     startNewChat: function(sessionId) {
       if (sessionId) {
@@ -204,17 +230,17 @@ define([
     },
 
     /**
-     * @method setSessionId
-     * @param {string} sessionId - Session identifier
-     * @description Sets the session identifier
+     * Sets the session identifier
+     * Simple setter for sessionId property
      */
     setSessionId: function(sessionId) {
       this.sessionId = sessionId;
     },
 
     /**
-     * @method enableEditing
-     * @description Enables title editing functionality
+     * Enables title editing functionality
+     * - Sets editing flag
+     * - Updates cursor style to indicate clickable
      */
     enableEditing: function() {
       this.editingEnabled = true;
@@ -222,8 +248,10 @@ define([
     },
 
     /**
-     * @method disableEditing
-     * @description Disables title editing functionality
+     * Disables title editing functionality
+     * - Clears editing flag
+     * - Updates cursor style
+     * - Cancels any active editing
      */
     disableEditing: function() {
       this.editingEnabled = false;

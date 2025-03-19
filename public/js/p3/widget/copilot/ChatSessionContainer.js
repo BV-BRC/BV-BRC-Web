@@ -2,6 +2,17 @@
  * @module p3/widget/ChatSessionContainer
  * @description A BorderContainer-based widget that manages a chat session interface with display and input components.
  * Handles session management, message display, and user input for the copilot chat system.
+ *
+ * Key components:
+ * - Title widget: Shows chat session title and allows editing
+ * - Display widget: Shows chat messages and history
+ * - Input widget: Handles user input and message sending
+ *
+ * Manages:
+ * - Chat session lifecycle (create, switch, delete)
+ * - Message history and storage
+ * - Title generation and updates
+ * - Error handling
  */
 define([
     'dojo/_base/declare',
@@ -31,75 +42,77 @@ define([
     /**
      * @class ChatSessionContainer
      * @extends {dijit/layout/BorderContainer}
+     *
+     * Main container widget that coordinates all chat functionality.
+     * Uses BorderContainer layout to organize sub-components.
      */
     return declare([BorderContainer], {
-        /** @property {boolean} gutters - Disables gutters between panes */
+        // Layout configuration properties
         gutters: false,
-        /** @property {boolean} liveSplitters - Enables live updates when resizing panes */
         liveSplitters: true,
-        /** @property {string} style - Sets container dimensions to fill parent */
         style: 'height: 100%; width: 100%;',
-        /** @property {string} sessionId - Current chat session identifier */
         sessionId: null,
-        /** @property {string} design - Better handle splitter behavior */
         design: 'sidebar',
-        /** @property {boolean} persist - Maintain splitter position */
         persist: false,
 
         /**
-         * @constructor
-         * @param {Object} opts - Configuration options
-         * @description Initializes the chat store and mixes in provided options
+         * Constructor initializes chat memory store and mixes in options
+         * @param {Object} opts Configuration options
          */
         constructor: function(opts) {
-            // this.inherited(arguments);
             declare.safeMixin(this, opts);
+            // Initialize chat store for message persistence
             this.chatStore = new ChatSessionMemoryStore({
                 copilotApi: this.copilotApi
             });
             window.App.chatStore = this.chatStore;
         },
 
+        /**
+         * Returns promise that resolves when initialization is complete
+         * Used by child widgets to ensure container is ready
+         */
         whenInitialized: function() {
-            return this._initialized.promise; // Provide a promise for child widgets
+            return this._initialized.promise;
         },
 
         /**
-         * @method postCreate
-         * @description Sets up the chat interface after widget creation
-         * Creates display and input components and sets up topic subscriptions
-         * @throws {Error} If copilotApi is not provided
+         * Main setup method called after widget creation
+         * - Initializes new chat session
+         * - Creates UI components (title, display, input)
+         * - Sets up all topic subscriptions for events
          */
         postCreate: function() {
             this.inherited(arguments);
             this._initialized = new Deferred();
 
+            // Exit if no API available
             if (!this.copilotApi) {
                 return;
             }
 
+            // Initialize new session and create widgets
             this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
                 this.sessionId = sessionId;
                 this._createTitleWidget();
                 this._createDisplayWidget();
-                this._createInputWidget();  // Separate this into its own method
+                this._createInputWidget();
 
                 topic.publish('SetInitialChatModel');
                 this._initialized.resolve();
             })).catch(lang.hitch(this, function(error) {
-                // Create error display pane
-                //  2px solid red
+                // Handle initialization error
                 this.displayWidget = new CopilotDisplay({
                     region: 'center',
                     style: 'padding: 10px; border: 0;'
                 });
                 this.addChild(this.displayWidget);
-
-                // Show error message
                 this.displayWidget.onQueryError();
             }));
 
-            // Subscribe to chat session events
+            // Set up topic subscriptions for various events
+
+            // Handle creating new chat sessions
             topic.subscribe('createNewChatSession', lang.hitch(this, function() {
                 this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
                     this.changeSessionId(sessionId);
@@ -108,12 +121,15 @@ define([
                     this.titleWidget.startNewChat(sessionId);
                 }));
             }));
+
+            // Handle selecting existing chat sessions
             topic.subscribe('ChatSession:Selected', lang.hitch(this, function(data) {
                 this.changeSessionId(data.sessionId);
                 this.chatStore.addMessages(data.messages);
                 this.displayWidget.showMessages(data.messages);
             }));
-            // Add subscription for title changes
+
+            // Handle chat title changes
             topic.subscribe('ChatSessionTitleChanged', lang.hitch(this, function(data) {
                 if (data.sessionId === this.sessionId) {
                     this.chatStore.updateSessionTitle(data.sessionId, data.title);
@@ -122,6 +138,8 @@ define([
                     sessionId: data.sessionId
                 });
             }));
+
+            // Handle various chat configuration changes
             topic.subscribe('UpdateSessionTitleError', lang.hitch(this, this._handleUpdateSessionTitleError));
             topic.subscribe('ChatModel', lang.hitch(this, function(model) {
                 this.inputWidget.setModel(model);
@@ -139,6 +157,10 @@ define([
             topic.subscribe('ChatSession:Delete', lang.hitch(this, this._handleChatSessionDelete));
         },
 
+        /**
+         * Displays error dialog when title update fails
+         * Shows message explaining title can only be changed after conversation starts
+         */
         _handleUpdateSessionTitleError: function(error) {
             var errorDialog = new Dialog({
                 title: "Cannot Update Title",
@@ -146,16 +168,15 @@ define([
                 style: "width: 300px"
             });
 
-            // Create a container div for the button with flex styling
+            // Style the error dialog with a centered button
             var buttonContainer = document.createElement('div');
             buttonContainer.style.display = 'flex';
             buttonContainer.style.justifyContent = 'center';
-            buttonContainer.style.marginTop = '20px';  // Add space between text and button
+            buttonContainer.style.marginTop = '20px';
 
-            // Create and style the OK button
             var okButton = document.createElement('button');
             okButton.innerHTML = "OK";
-            okButton.style.backgroundColor = '#4CAF50';  // Green color
+            okButton.style.backgroundColor = '#4CAF50';
             okButton.style.color = 'white';
             okButton.style.padding = '8px 24px';
             okButton.style.border = 'none';
@@ -167,7 +188,6 @@ define([
                 errorDialog.destroy();
             };
 
-            // Add button to container, then container to dialog
             buttonContainer.appendChild(okButton);
             errorDialog.containerNode.appendChild(buttonContainer);
 
@@ -175,6 +195,10 @@ define([
             errorDialog.show();
         },
 
+        /**
+         * Generates a title for the chat session based on message history
+         * Uses AI model to analyze messages and create relevant title
+         */
         _handleGenerateSessionTitle: function() {
             var messages = this.chatStore.query().map(x => x.content);
             var model = this.inputWidget.getModel();
@@ -187,6 +211,10 @@ define([
             }));
         },
 
+        /**
+         * Handles deletion of chat sessions
+         * If current session is deleted, switches to first available session
+         */
         _handleChatSessionDelete: function(sessionId) {
             this.copilotApi.deleteSession(sessionId).then(lang.hitch(this, function (response) {
                 if (response.status === 'ok') {
@@ -208,6 +236,10 @@ define([
             }));
         },
 
+        /**
+         * Creates title widget component
+         * Displays and manages chat session title
+         */
         _createTitleWidget: function() {
             this.titleWidget = new ChatSessionTitle({
                 region: 'top',
@@ -218,6 +250,10 @@ define([
             this.addChild(this.titleWidget);
         },
 
+        /**
+         * Creates display widget component
+         * Shows chat message history and handles message rendering
+         */
         _createDisplayWidget: function() {
             this.displayWidget = new CopilotDisplay({
                 region: 'center',
@@ -229,6 +265,10 @@ define([
             this.addChild(this.displayWidget);
         },
 
+        /**
+         * Creates input widget component
+         * Handles user message input and submission
+         */
         _createInputWidget: function() {
             this.inputWidget = new CopilotInput({
                 region: 'bottom',
@@ -245,9 +285,9 @@ define([
         },
 
         /**
-         * @method changeSessionId
-         * @param {string} sessionId - New session identifier
-         * @description Updates the session ID across all components and clears existing chat data
+         * Updates session ID across all components
+         * Clears existing chat data when switching sessions
+         * @param {string} sessionId New session identifier
          */
         changeSessionId: function(sessionId) {
             this.sessionId = sessionId;

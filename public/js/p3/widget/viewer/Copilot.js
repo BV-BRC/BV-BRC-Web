@@ -1,54 +1,96 @@
+/**
+ * @module p3/widget/viewer/Copilot
+ * @description Main viewer widget for the Copilot chat interface. Extends Base viewer class to provide
+ * a container for the CopilotGridContainer which manages the chat UI layout and functionality.
+ *
+ * Implementation:
+ * - Creates and initializes CopilotGridContainer for chat interface
+ * - Handles layout and sizing of container
+ * - Manages viewer state and configuration
+ */
 define([
-    'dojo/_base/declare', 'dojo/request', './Base', '../copilot/CopilotGridContainer', 'dojo/dom-construct', 'dojo/on'
+    'dojo/_base/declare', // Base class for creating Dojo classes
+    'dojo/request', // AJAX request handling
+    './Base', // Base viewer class
+    '../copilot/CopilotGridContainer', // Main chat interface container
+    'dojo/dom-construct', // DOM manipulation utilities
+    'dojo/on' // Event handling
   ], function (
     declare, request, Base, GridContainer, domConstruct, on
   ) {
     return declare([Base], {
 
+      // Flag to disable viewer functionality if needed
       disabled: false,
+
+      // Query parameters for data loading
       query: null,
+
+      // Type identifier for container
       containerType: '',
+
+      // Label shown in UI for this perspective
       perspectiveLabel: 'Copilot',
+
+      // URL for API service calls
       apiServiceUrl: window.App.dataAPI,
 
+      /**
+       * Sets up the viewer after DOM creation
+       * Implementation:
+       * - Calls parent class initialization
+       * - Logs debug information
+       * - Creates and attaches grid container
+       */
       postCreate: function () {
         console.log('window.App ', window.App);
-        // Call the inherited methods from the Base class
+        // Initialize parent class
         this.inherited(arguments);
 
-        // Log the state of the object to ensure it's initialized
+        // Debug logging of viewer state
         console.log(this.state);
 
-        // Create the GridContainer and attach it to the DOM
+        // Set up main container
         this._initializeGridContainer();
       },
 
+      /**
+       * Creates and configures the main grid container
+       * Implementation:
+       * - Creates container DOM node
+       * - Initializes CopilotGridContainer with configuration
+       * - Attaches container to viewer
+       */
       _initializeGridContainer: function () {
-        // Create a container element to place the GridContainer into
+        // Create wrapper div for grid container
         var containerNode = domConstruct.create('div', {
           id: 'gridContainerNode',
           style: 'height: 500px; width: 100%;'
         }, this.domNode);
 
-        // Initialize the GridContainer with necessary configuration
+        // Initialize main grid container with config
         this.gridContainer = new GridContainer({
           gridCtor: this._getGridConstructor(),
-          containerType: 'copilot',  // Specify container type if needed
+          containerType: 'copilot',
           facetFields: [],
           dataModel: 'llm',
           style: 'height: 100%; width: 100%;',
           region: 'center'
         }, containerNode);
 
-        // Start the GridContainer to render the content
-       // this.gridContainer.startup();
+        // Startup call currently disabled
+        // this.gridContainer.startup();
       },
 
+      /**
+       * Returns constructor function for grid component
+       * Implementation:
+       * - Currently returns placeholder function
+       * - To be expanded with actual grid initialization logic
+       */
       _getGridConstructor: function () {
-        // This function returns the grid constructor. It could be configured
-        // or passed down as an option. For now, assume the default grid constructor.
         return function (node) {
-          // Placeholder for actual grid logic.
+          // Placeholder for grid initialization logic
         };
       }
     });
