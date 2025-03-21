@@ -1,27 +1,23 @@
-
 .patric .dgrid-header .dgrid-cell {
-	font-weight: 600;
+    font-weight: 600
 }
 .dgrid-header .dojoDndTarget .dgrid-cell {
-        display: table-cell; /* override any spurious dojoDndItem settings elsewhere */
-        border-right: 1px solid #bbb;
+    display: table-cell;
+    /* override any spurious dojoDndItem settings elsewhere */
+        border-right: 1px solid #bbb
 }
-
-
 .ui-icon.dgrid-hider-toggle {
     background-position: 0 -190px;
     background-color: transparent;
     border: none;
     cursor: pointer;
     position: absolute;
-    top: 0;
+    top: 0
 }
-
 /*  */
 .patric .dgrid-cell.field-genome_id {
-    width: 8%;
+    width: 8%
 }
-
 /* feature grid */
 .dgrid-cell.field-genome_id,
 .dgrid-cell.field-taxon_id,
@@ -33,60 +29,49 @@
 .dgrid-cell.field-plfam_id,
 .dgrid-cell.field-pgfam_id,
 .dgrid-cell.field-figfam_id {
-    width: 8%;
+    width: 8%
 }
-
 .dgrid-cell.field-alt_locus_tag,
 .dgrid-cell.field-refseq_locus_tag,
 .dgrid-cell.field-uniprotkb_accession,
 .dgrid-cell.field-pdb_accession {
-    width: 6%;
+    width: 6%
 }
-
 .dgrid-cell.field-location,
 .dgrid-cell.field-segments,
 .dgrid-cell.field-codon_start {
-    width: 6%;
+    width: 6%
 }
-
 .dgrid-cell.field-product {
-    width: 25%;
+    width: 25%
 }
-
 .dgrid-cell.field-gene {
-    width: 8%;
+    width: 8%
 }
-
 .dgrid-cell.field-sog_id,
 .dgrid-cell.field-og_id,
 .dgrid-cell.field-go {
     width: 8%;
-	text-align: left;
+    text-align: left
 }
-
 .dgrid-cell.field-na_length,
 .dgrid-cell.field-aa_length {
-    width: 6%;
+    width: 6%
 }
-
 .dgrid-cell.field-na_sequence_md5,
 .dgrid-cell.field-aa_sequence_md5 {
-    width: 6%;
+    width: 6%
 }
-
 .dgrid-cell.field-property,
 .dgrid-cell.field-notes,
 .dgrid-cell.field-classifier_score,
 .dgrid-cell.field-classifier_round {
-    width: 8%;
+    width: 8%
 }
-
 /* protein family grid */
 .dgrid-cell.field-family_id {
-    width: 12%;
+    width: 12%
 }
-
-
 .dgrid-cell.field-annotation,
 .dgrid-cell.field-strand,
 .dgrid-cell.field-start,
@@ -101,92 +86,82 @@
 .dgrid-cell.field-aa_length_mean,
 .dgrid-cell.field-aa_length_std {
     width: 8%;
-    text-align: center;
+    text-align: center
 }
-
 .patric .tgFilterGrid,
 .patric .pfFilterGrid {
-    height: 270px;
+    height: 270px
 }
-
 /* pathway summary */
 .dgrid-cell.dgrid-column-pathway_summary_name.field-pathway_name {
-    width: 55%;
+    width: 55%
 }
 .dgrid-cell.dgrid-column-genes_selected,
 .dgrid-cell.dgrid-column-genes_annotated,
 .dgrid-cell.dgrid-column-coverage {
-    width: 15%;
+    width: 15%
 }
-
 .patric .tgFilterGrid TH.dgrid-cell,
 .patric .pfFilterGrid TH.dgrid-cell {
-    font-size: .95em;
+    font-size: .95em
 }
-
 .patric .tgFilterGrid TD.dgrid-cell,
 .patric .pfFilterGrid TD.dgrid-cell {
     font-size: .85em;
-    white-space: nowrap;
+    white-space: nowrap
 }
-
 .patric .tgFilterOptions,
 .patric .pfFilterOptions {
     line-height: 12px;
     font-size: 12px;
-    overflow: hidden;
+    overflow: hidden
 }
 .patric .pfFilterOptions .present {
-    margin-left: 2px;
+    margin-left: 2px
 }
 .patric .pfFilterOptions .absent {
-    margin-left: 22px;
+    margin-left: 22px
 }
 .patric .pfFilterOptions .mixed {
-    margin-left: 42px;
+    margin-left: 42px
 }
-
 .patric .tgFilterOptions div {
     display: inline-block;
     width: 21px;
-    text-align: center;
+    text-align: center
 }
-
 /* sequences */
 .patric .dgrid-cell.field-accession {
-    width: 10%;
+    width: 10%
 }
 .patric .dgrid-cell.field-description {
-    width: 35%;
+    width: 35%
 }
-
 /* pathways */
 .dgrid-cell.field-pathway_name,
 .dgrid-cell.field-pathway_class,
 .dgrid-cell.field-ec_description {
-    width: 20%;
+    width: 20%
 }
 .dgrid-cell.field-pathway_id {
-    width: 8%;
+    width: 8%
 }
-
 .dgrid-cell.field-feature_id,
 .dgrid-cell.field-patric_id,
 .dgrid-cell.field-refseq_locus_tag,
 .dgrid-cell.field-alt_locus_tag {
     width: 10%
 }
-
 /* transcriptomics */
 .dgrid-cell.field-title,
 .dgrid-cell.field-expname {
-    width: 20%;
+    width: 20%
 }
 .dgrid-cell.field-pmid {
-    width: 8%;
+    width: 8%
 }
 .dgrid-cell.field-organism {
-    width: 15%;
+    width: 15%
 }
 .dgrid-cell.field-samples,
 .dgrid-cell.field-genes,
@@ -194,58 +169,44 @@
 .dgrid-cell.field-sig_z_score {
     width: 5%
 }
-
 /* variant_lineage */
 .dgrid-cell.field-lineage {
-    width: 30%;
+    width: 30%
 }
-
 .patric .dijitTab .tabLabel {
-    font-weight: 600;
+    font-weight: 600
 }
-
 .patric .dgrid-row-odd {
-    background: #f5f5f5;
+    background: #f5f5f5
 }
-
-.patric .dgrid-selected{
-    background: #bfd6eb;
+.patric .dgrid-selected {
+    background: #bfd6eb
 }
-
-
 .patric .dgrid-footer {
-	font-size: 1.2em;
-	font-weight: bold;
+    font-size: 1.2em;
+    font-weight: bold
 }
-
 .TaxonTreeGrid .dgrid-cell {
-    border: 0;
+    border: 0
 }
-
 .TaxonTreeGrid .dgrid-cell.field-genomes {
-    width: 60px;
+    width: 60px
 }
-
 .TaxonTreeGrid .dgrid-cell.field-taxon_rank {
-    width: 90px;
+    width: 90px
 }
-
 .service_form {
-    margin-top: 10px;
+    margin-top: 10px
 }
-
 .blast_result {
-    height: 700px;
+    height: 700px
 }
-
 .blast_result .dgrid-column-expand {
-    width: 20px;
+    width: 20px
 }
-
 .blast_result .dgrid-column-product {
-    width: 20%;
+    width: 20%
 }
-
 .blast_result .dgrid-column-identity,
 .blast_result .dgrid-column-q_coverage,
 .blast_result .dgrid-column-s_coverage,
@@ -254,25 +215,22 @@
 .blast_result .dgrid-column-score,
 .blast_result .dgrid-column-evalue {
     width: 4%;
-    text-align: center;
+    text-align: center
 }
 .blast_result .dgrid-column-q_length,
 .blast_result .dgrid-column-length {
     width: 5%;
-    text-align: right;
+    text-align: right
 }
-
 .blast_result .collapsed .detail {
-    display: none;
+    display: none
 }
-
 .blast_result .detail {
-    background: #fff;
+    background: #fff
 }
-
 .blast_result .detail .align {
     width: 710px;
-    padding: 10px 20px;
+    padding: 10px 20px
 }
 .blast_result .detail .align pre {
     font-size: 100%;
@@ -280,45 +238,36 @@
     padding: 10px;
     background-color: #f5f5f5;
     border: 1px solid #ccc;
-    border-radius: 5px;
+    border-radius: 5px
 }
-
 .service_error {
     width: 700px;
     margin: auto;
-    padding-top: 30px;
+    padding-top: 30px
 }
 .service_message {
     border: 1px solid #ccc;
     border-radius: 5px;
     background: #f5f5f5;
-    padding: 15px;
+    padding: 15px
 }
-
 /* Protein Features Grid */
 /* .patric .dgrid-cell.field-product {
-    width: 15%;
-} */
-.patric .dgrid-cell.field-description {
-    width: 20%;
+    width: 15%
 }
-
+*/
+.patric .dgrid-cell.field-description {
+    width: 20%
+}
 /* Strains */
 .dgrid-column-species {
-    width: 10%;
+    width: 10%
 }
 .dgrid-column-strain {
-    width: 20%;
+    width: 20%
 }
-
 .hider-menu-group {
     font-weight: 600;
     text-transform: uppercase;
-    border-bottom: 1px solid #333;
-}
-
-.hider-menu-group {
-    font-weight: 600;
-    text-transform: uppercase;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #333
 }

@@ -1,196 +1,174 @@
 .WorkspaceController,
 .WorkspaceGlobalController {
-	padding: 4px;
+    padding: 4px
 }
-
 .WorkspaceController {
-	background:#eee;
-	border-top: 1px solid #e2e2e2;
+    background:#eee;
+    border-top: 1px solid #e2e2e2
 }
-
 /* browser header used all over the site */
 .BrowserHeader {
-	padding: 0;
-	vertical-align: bottom;
+    padding: 0;
+    vertical-align: bottom
 }
-
 /* specific to the workspace browser */
 .WSBrowserHeader {
-	display: flex;
-	justify-content: space-between;
+    display: flex;
+    justify-content: space-between
 }
-
 a.HelpLink {
-  color: #09456f;
+    color: #09456f
 }
 a.HelpLink:visited {
-  color: #09456f;
+    color: #09456f
 }
 a.HelpLink:focus {
-  color: #09456f;
+    color: #09456f
 }
 a.HelpLink:hover {
-  color: #34698e;
-  text-decoration: underline;
+    color: #34698e;
+    text-decoration: underline
 }
 a.HelpLink:active {
-  color: #09456f;
+    color: #09456f
 }
-
 .wsBreadCrumbContainer {
-	display: inline-block;
-	margin: 12px 0 12px 8px;
+    display: inline-block;
+    margin: 12px 0 12px 8px
 }
-
 .wsBreadCrumb {
-	font-size:1.2em;
-	margin: 2px 2px 2px 4px;
-	font-weight: 600;
-	padding:2px;
-	color: #134d75;
+    font-size:1.2em;
+    margin: 2px 2px 2px 4px;
+    font-weight: 600;
+    padding:2px;
+    color: #134d75
 }
-
 .wsBreadCrumb > .icon-globe {
-	position: relative;
-	font-size:1.4em;
-	top: 3px;
-	color: #333;
+    position: relative;
+    font-size:1.4em;
+    top: 3px;
+    color: #333
 }
 .wsBreadCrumb > .icon-caret-right {
-	position: relative;
-	top: 2px;
+    position: relative;
+    top: 2px
 }
 .wsBreadCrumb .perspective {
-	color: #333;
+    color: #333
 }
-
 .wsActionTooltip {
-	padding: 2px;
+    padding: 2px
 }
-
-.wsActionTooltip:hover{
-	background:#d2d2d2;
-	cursor: pointer;
+.wsActionTooltip:hover {
+    background:#d2d2d2;
+    cursor: pointer
 }
-
 .serviceActionTooltip {
-	padding: 2px;
+    padding: 2px
 }
-
 .serviceActionTooltip:hover {
-	background:#d2d2d2;
-	cursor: pointer;
+    background:#d2d2d2;
+    cursor: pointer
 }
-
 .closeServiceTooltip {
-	color:#09456f;
-	position:absolute;
-	bottom:0;
-	right:5px
+    color:#09456f;
+    position:absolute;
+    bottom:0;
+    right:5px
 }
-
 .closeServiceTooltip:hover {
-	color:#a94442
+    color:#a94442
 }
-
-.objSelectorActionIcon{
-	cursor: pointer;
-	vertical-align: bottom;
-	margin-left: 3px;
+.objSelectorActionIcon {
+    cursor: pointer;
+    vertical-align: bottom;
+    margin-left: 3px
 }
-
-.objSelectorActionIcon:hover{
-	color: #000;
+.objSelectorActionIcon:hover {
+    color: #000
 }
-
-.idMappingTable td:hover{
-background:#d2d2d2;
-cursor: pointer;
+.idMappingTable td:hover {
+    background:#d2d2d2;
+    cursor: pointer
 }
-
-.idMappingHeader{
-color:#fff;font-weight:600;background:#34698e;
+.idMappingHeader {
+    color:#fff;
+    font-weight:600;
+    background:#34698e
 }
-
 .patric .BrowserHeader A,
 .patric .wsBreadCrumb A {
-	color: #123d75;
-	font-size:1.0em;
-	font-weight: 600;
-	vertical-align: bottom;
+    color: #123d75;
+    font-size:1.0em;
+    font-weight: 600;
+    vertical-align: bottom
 }
-
 .TypeContainer {
-	display: inline-block;
-	width: 80px;
-	font-size:.65em;
-	border:1px solid gray;
-	padding:4px;
+    display: inline-block;
+    width: 80px;
+    font-size:.65em;
+    border:1px solid gray;
+    padding:4px
 }
-
-.ItemDetailAttribute{
-	display: inline-block;
+.ItemDetailAttribute {
+    display: inline-block
 }
-.ItemDetailAttributeValue{
-	font-style: italic;
-	display: inline-block;
-	font-weight:500;
+.ItemDetailAttributeValue {
+    font-style: italic;
+    display: inline-block;
+    font-weight:500
 }
-.ItemDetailHeaderTable{
-	width:100%;
-	margin-top:10px;
-	margin-bottom:10px;
+.ItemDetailHeaderTable {
+    width:100%;
+    margin-top:10px;
+    margin-bottom:10px
 }
-
-.ItemDetailHeader{
-	font-size:1.5em;font-weight:900;
-	margin-left:20px;
+.ItemDetailHeader {
+    font-size:1.5em;
+    font-weight:900;
+    margin-left:20px
 }
-
 .claro .ItemDetailPanel {
-	background:#eee;
-	color:#333;
-	padding:4px;
-	margin-left: -1px;
-	border-left: 0 solid #888;
-	border-top: 2px solid #76a72d; /*#34698e;*/
-	overflow: auto;
+    background:#eee;
+    color:#333;
+    padding:4px;
+    margin-left: -1px;
+    border-left: 0 solid #888;
+    border-top: 2px solid #76a72d;
+    /*#34698e;
+    */
+	overflow: auto
 }
 .ItemTypeIcon {
-	width:64px;
-	height: 64px;
-	margin:auto;
-	border: 1px solid gray;
+    width:64px;
+    height: 64px;
+    margin:auto;
+    border: 1px solid gray
 }
-
 .TypeContainer > DIV {
-	text-align: center;
+    text-align: center
 }
-
 .WorkspaceExplorerView .dgrid-row {
-	font-size: 1.2em;
-	cursor: pointer;
+    font-size: 1.2em;
+    cursor: pointer
 }
-
 .dgrid-cell.wsObjIcon,
 .wsObjIcon {
-	width: 32px;
-	text-align: center;
+    width: 32px;
+    text-align: center
 }
-
 th.dgrid-cell.wsObjIcon {
-	border-right: 0;
-	padding-left: 0;
+    border-right: 0;
+    padding-left: 0
 }
-
 .WorkspaceExplorerView .dgrid-cell {
-	border: 0;
+    border: 0
 }
 .wsItemName {
-/*	width: 450px;*/
-	white-space: nowrap;
+    /*	width: 450px;
+    */
+	white-space: nowrap
 }
-
 th.dgrid-cell.wsItemName,
 th.dgrid-cell.wsItemSize,
 th.dgrid-cell.wsItemType,
@@ -198,283 +176,240 @@ th.dgrid-cell.wsItemCreationTime,
 th.dgrid-cell.wsItemJobType,
 th.dgrid-cell.wsItemOwnerId,
 th.dgrid-cell.wsItemMembers {
-	border-right: 1px solid #C0C0C0;
+    border-right: 1px solid #C0C0C0
 }
-
 .dgrid-cell.wsItemName,
 .dgrid-cell.wsItemSize,
 .dgrid-cell.wsItemCreationTime,
 .dgrid-cell.wsItemJobType,
 .dgrid-cell.wsItemOwnerId {
-	padding-left:10px;
+    padding-left:10px
 }
-
 .wsItemOwnerId,
 .wsItemJobType,
 .wsItemMembers {
-	width: 90px;
+    width: 90px
 }
-
 .wsItemSize,
 .wsItemType {
-	width: 100px;
+    width: 100px
 }
-
-.wsItemCreationTime{
-	width: 150px;
+.wsItemCreationTime {
+    width: 150px
 }
-
 .JobStatusButton,
 .UploadStatusButton {
-	position: relative;
-	padding:1px;
-	margin:2px;
-	border-radius:3px;
-	background: #333;
-	color:#333;
-	font-size: 1.1em;
+    position: relative;
+    padding:1px;
+    margin:2px;
+    border-radius:3px;
+    background: #333;
+    color:#333;
+    font-size: 1.1em
 }
-
 .JobStatusButton {
-	cursor: pointer;
+    cursor: pointer
 }
-
 .JobStatusButton > a:first-child,
 .JobStatusButton > span:first-child {
-	color:#fff;
-	margin:2px;
-	padding:2px;
+    color:#fff;
+    margin:2px;
+    padding:2px
 }
-
 .UploadStatusArea > span {
-	color:#fff;
-	margin: 2px 2px 2px 0;
+    color:#fff;
+    margin: 2px 2px 2px 0
 }
-
-.UploadStatusArea{
-	cursor: pointer;
-	display:inline-block;
-    padding: 2px;
+.UploadStatusArea {
+    cursor: pointer;
+    display:inline-block;
+    padding: 2px
 }
-
-.UploadStatusUpload{
-	display:inline-block;
-	margin: 2px 0 2px 2px;
-    padding: 2px 0 2px 2px;
+.UploadStatusUpload {
+    display:inline-block;
+    margin: 2px 0 2px 2px;
+    padding: 2px 0 2px 2px
 }
-
 .UploadStatusUpload .fa {
-	color: #ddd;
+    color: #ddd
 }
-.UploadingProgress  {
-	border-left: 1px solid #ccc;
-	height: 30px;
-	padding-left: 5px;
+.UploadingProgress {
+    border-left: 1px solid #ccc;
+    height: 30px;
+    padding-left: 5px
 }
-
 .JobStatusCounts,
 .UploadStatusCounts {
-	display:inline-block;
-	background:#FFFFFF;
-	border-radius:2px;
-	margin:2px;
-	padding:2px;
+    display:inline-block;
+    background:#FFFFFF;
+    border-radius:2px;
+    margin:2px;
+    padding:2px
 }
-
 .JobStatusCounts {
-	color: #ddd;
+    color: #ddd
 }
-
 .JobStatusCounts span,
-.UploadStatusCounts span{
-	color: #333;
+.UploadStatusCounts span {
+    color: #333
 }
-
 .UploadStatusCounts .divider,
 .JobStatusCounts .divider {
-	border-left:1px solid #ccc;
-	height: 30px;
-	margin: 0 5px 0 0;
+    border-left:1px solid #ccc;
+    height: 30px;
+    margin: 0 5px 0 0
 }
-
 .Queued {
-	color: #777;
+    color: #777
 }
-
 .Running {
-	color: #ffa900;
+    color: #ffa900
 }
-
 .Completed {
-	color: #3c763d;
+    color: #3c763d
 }
-
 .Failed {
-	color: #a94442;
+    color: #a94442
 }
-
 .JobFilters .JobFilter {
-	opacity: 0.75;
-	padding: 0 0 5px 0;
+    opacity: 0.75;
+    padding: 0 0 5px 0
 }
 .JobFilters .JobFilter:hover,
-.JobFilters .JobFilter.active  {
-	opacity: 1.0;
-	cursor: pointer;
-}
-
-
 .JobFilters .JobFilter.active {
-	border-bottom: 3px solid #c0d3a2;
+    opacity: 1.0;
+    cursor: pointer
 }
-
+.JobFilters .JobFilter.active {
+    border-bottom: 3px solid #c0d3a2
+}
 .ActionButtonWrapper {
-	font-size: 1.1em;
-	display: inline-block;
-	text-align: center;
+    font-size: 1.1em;
+    display: inline-block;
+    text-align: center;
     margin: 1px 2px 1px 1px;
-	cursor: pointer;
-	width: 50px;
-	border-radius: 4px;
-	border: 1px solid #76a72d;
+    cursor: pointer;
+    width: 50px;
+    border-radius: 4px;
+    border: 1px solid #76a72d
 }
-
 .ActionButtonWrapper.depressed:hover,
 .ActionButtonWrapper.depressed .ActionButtonText,
 .ActionButtonWrapper.depressed .ActionButton.fa,
-.ActionButtonWrapper.depressed  {
-	color: #ddd;
-	border-color: #ddd;
+.ActionButtonWrapper.depressed {
+    color: #ddd;
+    border-color: #ddd
 }
-
 .ActionButtonWrapper.disabled,
 .ActionButtonWrapper.disabled .ActionButtonText,
 .ActionButtonWrapper.disabled .ActionButton.fa,
-.ActionButtonWrapper.disabled  {
-	color: #ccc;
-	border: 1px solid #76a72d;
+.ActionButtonWrapper.disabled {
+    color: #ccc;
+    border: 1px solid #76a72d
 }
-
 .ActionBar .ActionButtonWrapper.disabled:hover {
-	border: 1px solid #76a72d;
+    border: 1px solid #76a72d
 }
-
 .ActionButtonContainer {
-	float: left;
-	font-size:.85em;
-	padding-top: 0;
-	margin-top: 4px;
-	vertical-align: bottom;
-	bottom: 2px;
+    float: left;
+    font-size:.85em;
+    padding-top: 0;
+    margin-top: 4px;
+    vertical-align: bottom;
+    bottom: 2px
 }
-
 .wsActionContainer {
-	float: right;
-	white-space: nowrap;  /* don't wrap icons */
+    float: right;
+    white-space: nowrap;
+    /* don't wrap icons */
 }
-
 .ActionButtonWrapper .ActionButton.fa {
-	color: #fff;
-	margin: 2px 5px;
+    color: #fff;
+    margin: 2px 5px
 }
-
 .GeneExpFilterPanel .ActionButtonWrapper:hover,
 .GeneExpFilterPanel .ActionButtonWrapper .ActionButton,
 .BrowserHeader .ActionButtonWrapper:hover,
 .BrowserHeader .ActionButtonWrapper .ActionButton {
-	color: #34698e;
+    color: #34698e
 }
-
 .ActionButton.fa.ActiveActionButton {
-    color: #abd6ff;
+    color: #abd6ff
 }
-
 .ActionButtonText {
-	font-size: .6em;
-	color: #fff;
-	margin: 0;
-	text-align:center;
-	white-space: normal;
-	overflow: hidden;
+    font-size: .6em;
+    color: #fff;
+    margin: 0;
+    text-align:center;
+    white-space: normal;
+    overflow: hidden
 }
-
 .GeneExpFilterPanel .ActionButtonText,
 .BrowserHeader .ActionButtonText {
-	color: #34698e;
+    color: #34698e
 }
-
 .claro .dijitTooltipBelow.dijitTooltipABRight .dijitTooltipConnector {
-  /* above or below tooltip, but the arrow appears on the right,
+    /* above or below tooltip, but the arrow appears on the right,
 		and the right edges of target and tooltip are aligned rather than the left.
 		Override above rules for .dijitTooltipBelow, .dijitTooltipAbove */
 
   left: auto;
-  right: 3px;
+    right: 3px
 }
-
 .GeneExpFilterPanel .ActionButtonWrapper:hover {
-	border: 1px solid #34698e;
-	color: #34698e;
+    border: 1px solid #34698e;
+    color: #34698e
 }
-
 .ActionButtonWrapper:hover {
-	border: 1px solid #fff;
-	border-radius: 4px;
-	color: #fff;
+    border: 1px solid #fff;
+    border-radius: 4px;
+    color: #fff
 }
-
 .BrowserHeader .ActionButtonWrapper:hover {
-	border: 1px solid #34698e;
-	color: #34698e;
+    border: 1px solid #34698e;
+    color: #34698e
 }
-
 .BrowserHeader .ActionButtonWrapper {
-        margin-top: -3px;
-        margin-left: 2px;
-	color: #34698e;
-	border: 1px solid #fff;
-	width: 58px;
-	vertical-align: bottom;
+    margin-top: -3px;
+    margin-left: 2px;
+    color: #34698e;
+    border: 1px solid #fff;
+    width: 58px;
+    vertical-align: bottom
 }
-
 .GeneExpFilterPanel .ActionButtonWrapper {
     margin-top: -3px;
     margin-left: 2px;
     margin-right: 20px;
-	width: 58px;
-	border: 1px solid #fff;
-	color: #34698e;
-	vertical-align: bottom;
+    width: 58px;
+    border: 1px solid #fff;
+    color: #34698e;
+    vertical-align: bottom
 }
 .GeneExpFilterPanel .ActionButtonWrapper .fa {
-	color: #34698e;
+    color: #34698e
 }
 .GeneExpFilterPanel .ActionButtonWrapper .ActionButton.fa {
-	color: #fff;
+    color: #fff
 }
-
-.selectedDest{
-	background: #366998;
+.selectedDest {
+    background: #366998;
     color: #fff;
-	padding: 3px 5px;
+    padding: 3px 5px
 }
-
 .dataItemSelection,
 .workspaceItemSelection,
 .multipleItemSelection,
 .singleItemSelection,
 .noItemSelection {
-	display: block;
+    display: block
 }
-
 .multipleItemSelection,
 .noItemSelection {
-	text-align: center;
-	font-size:1.2em;
-	font-weight: bold;
+    text-align: center;
+    font-size:1.2em;
+    font-weight: bold
 }
-
-
 .dataItem .singleItemSelection .workspaceItemSelection,
 .workspaceItem .singleItemSelection .dataItemSelection,
 .multipleSelection .noItemSelection,
@@ -483,96 +418,82 @@ th.dgrid-cell.wsItemMembers {
 .singleSelection .multipleItemSelection,
 .noSelection .singleItemSelection,
 .noSelection .multipleItemSelection {
-	display: none;
+    display: none
 }
-
-.resultContentSection{
-	display:block;
+.resultContentSection {
+    display:block
 }
-
-.job_result .resultContentSection{
-	display:none;
+.job_result .resultContentSection {
+    display:none
 }
-.file .resultContentSection{
-	display:none;
+.file .resultContentSection {
+    display:none
 }
 .containerContentSection {
-	display: none;
+    display: none
 }
-
 .folder .containerContentSection.folder {
-	display: block;
+    display: block
 }
-
 .experiment .containerContentSection.experiment {
-    display: block;
+    display: block
 }
-
 .dataItemSelection {
-	font-size: .85em;
+    font-size: .85em
 }
-
 .tip {
-	border: 2px dotted #aaa;
-	margin-top: 10px;
-	vertical-align: top;
-	border-radius: 4px;
-	background: #fff;
-	text-align: left;
-	padding-left:4px;
-	padding-top:4px;
-	padding-bottom:4px
+    border: 2px dotted #aaa;
+    margin-top: 10px;
+    vertical-align: top;
+    border-radius: 4px;
+    background: #fff;
+    text-align: left;
+    padding-left:4px;
+    padding-top:4px;
+    padding-bottom:4px
 }
-
 .tip > p {
-	margin:4px;
+    margin:4px
 }
-
 .tipHeader > span {
-	cursor: default;
+    cursor: default;
     position: relative;
     bottom: 4px;
-	font-size: 1em;
-	font-weight: 600;
-	margin: 4px;
+    font-size: 1em;
+    font-weight: 600;
+    margin: 4px
 }
 .tipHeader {
-	font-size: 1.5em;
-	font-weight: 600;
-	background: #efefef;
-	vertical-align: top;
-	color: #333;
-	padding: 4px;
-	float:left;
-	height:22px;
-	border-radius:5px;
-	border:#d3d3d3 1px solid;
-	display:inline-block;
-	margin: 0 4px 0 0;
+    font-size: 1.5em;
+    font-weight: 600;
+    background: #efefef;
+    vertical-align: top;
+    color: #333;
+    padding: 4px;
+    float:left;
+    height:22px;
+    border-radius:5px;
+    border:#d3d3d3 1px solid;
+    display:inline-block;
+    margin: 0 4px 0 0
 }
-
 .userPermIcon {
-	background: #444;
-	color: #fff;
-	padding: 5px;
-	border-radius: 3px;
-	font-size: .8em;
-	margin-right: 3px;
+    background: #444;
+    color: #fff;
+    padding: 5px;
+    border-radius: 3px;
+    font-size: .8em;
+    margin-right: 3px
 }
-
-.userPermForm{
-	margin: 0 0 25px 0;
+.userPermForm {
+    margin: 0 0 25px 0
 }
-
-.userPermForm .publicCheckBox{
-	padding: 10px;
-	background: #f5f5f5;
-	border: 1px dashed #aaa;
-	margin-bottom: 25px;
+.userPermForm .publicCheckBox {
+    padding: 10px;
+    background: #f5f5f5;
+    border: 1px dashed #aaa;
+    margin-bottom: 25px
 }
-
-
-
 /**
  *  drag and drop
  */
@@ -585,6 +506,6 @@ th.dgrid-cell.wsItemMembers {
     left: 0;
     background: rgba(0, 136, 10, 0.37);
     z-index: 9999;
-	box-sizing: border-box;
-    border: 7px solid rgba(73, 187, 71, 5);
+    box-sizing: border-box;
+    border: 7px solid rgba(73, 187, 71, 5)
 }

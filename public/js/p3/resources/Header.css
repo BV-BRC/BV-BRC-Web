@@ -1,4 +1,3 @@
-
 .patric .HeaderBar {
     width: 100%;
     border: 0;
@@ -8,78 +7,63 @@
     z-index: 100;
     overflow: visible;
     box-shadow: 4px 0 4px;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #333
 }
-
 .loginButton:hover,
 .patric.claro .P3Header .dijitButtonHover .dijitButtonNode {
-    background-color: #e3e3e3;
+    background-color: #e3e3e3
 }
-
 .Authenticated .P3Header .HideWithAuth,
 .Authenticated .LoginButton.HideWithAuth,
 .Authenticated .RegistrationButton.HideWithAuth,
 .Authenticated .TopMenuLink.HideWithAuth {
-    display: none;
+    display: none
 }
-
 .Authenticated .P3Header .ShowWithAuth {
-    display: inherit;
+    display: inherit
 }
-
 .Authenticated .P3Header TD.ShowWithAuth {
-    display: table-cell;
+    display: table-cell
 }
-
 .Authenticated .TopMenuLink.ShowWithAuth {
-    display: inline;
+    display: inline
 }
-
 .menuHeader {
     text-align: center;
     font-weight: 600;
     background: #34698E;
-    color: #eee;
+    color: #eee
 }
-
 .menuItems {
-    margin: 0 5px;
+    margin: 0 5px
 }
-
 .menuItem {
-    display: inline-block;
+    display: inline-block
 }
-
 .menuItem.half {
-    width: 49%;
+    width: 49%
 }
-
 .TopMenuBar .TopMenuLink, .TopMenuBar .TopMenuLink A {
     display: inline;
     margin-right: 8px;
     cursor: pointer;
-    color: #fff;
+    color: #fff
 }
-
 .TopMenuBar A.TopMenuLink:hover {
     color: orange;
-    text-decoration: none;
+    text-decoration: none
 }
-
 .TopMenuBar A.TopMenuLink:visited {
-    text-decoration: none;
+    text-decoration: none
 }
-
 .TopMenuLink .fa {
     color: #76a72d;
     font-size: 12px;
-    vertical-align: middle;
+    vertical-align: middle
 }
-
 .TopMenuLink .fa:hover {
-    color: orange;
+    color: orange
 }
-
 .claro .topMenuButtonIcon.dijitDropDownButton .dijitButtonNode,
 .claro .topMenuButton.dijitDropDownButton .dijitButtonNode,
 .topMenuButtonIcon,
@@ -91,31 +75,25 @@
     border: 0;
     box-shadow: 0 0 0;
     margin: 0;
-    padding: 0;
+    padding: 0
 }
-
 #header-menu {
     display: flex;
     flex: 1;
-    align-items: center;
+    align-items: center
 }
-
 .claro .topMenuButtonIcon .dijitArrowButtonInner {
-    display: none;
+    display: none
 }
-
 .claro .topMenuButton .dijitArrowButtonInner {
-    margin: 0;
+    margin: 0
 }
-
 .patric .TopMenuBar *:focus {
-    outline: 0;
+    outline: 0
 }
-
 .patric .dijitTooltipDialogPopup {
-    margin-top: -8px;
+    margin-top: -8px
 }
-
 .patric .dijitTooltipBelow {
-    padding-top: 13px;
+    padding-top: 13px
 }

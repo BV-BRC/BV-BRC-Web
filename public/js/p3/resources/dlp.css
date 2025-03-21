@@ -1,750 +1,693 @@
 .patric .dlp {
-  width: 967px;
-  margin: 5px auto 0 auto;
-  position: relative
+    width: 967px;
+    margin: 5px auto 0 auto;
+    position: relative
 }
 .patric .dlp h1 {
-  color: #666666;
-  font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
-  font-size: 2em;
-  line-height: 1.286em;
-  margin-bottom: 0.75em;
+    color: #666666;
+    font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
+    font-size: 2em;
+    line-height: 1.286em;
+    margin-bottom: 0.75em
 }
-
 .patric .dlp h2 {
-  color: #666666;
-  font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
+    color: #666666;
+    font-family: "Didact Gothic", Arial, Helvetica, sans-serif
 }
-
 .patric .dlp h3 {
-  font-size: 16px;
-  line-height: 20px;
+    font-size: 16px;
+    line-height: 20px
 }
-
 .patric .dlp h4 {
-  font-size: 14px;
-  line-height: 16px;
-  margin: 0 0 0.25em 0;
+    font-size: 14px;
+    line-height: 16px;
+    margin: 0 0 0.25em 0
 }
-
 .patric .dlp p {
-  margin: 0 0 17px 0;
+    margin: 0 0 17px 0
 }
-
 .patric .dlp ul,
 .patric .dlp dl {
-  padding: 0 0 0 5px;
-  margin: 0 0 10px 0;
+    padding: 0 0 0 5px;
+    margin: 0 0 10px 0
 }
-
 .patric .dlp a {
-  color: #09456f;
-  text-decoration: underline;
+    color: #09456f;
+    text-decoration: underline
 }
 /* Data Tabs:  data-tab is the entire section that is scrolled to */
 .patric .dlp .tabbed .ui-tabs-hide {
-  display: none;
+    display: none
 }
 .patric .dlp .tabbed ul.tab-headers {
-  margin: 0 0 -1px 0;
-  padding: 0;
+    margin: 0 0 -1px 0;
+    padding: 0
 }
 .patric .dlp .tabbed ul.tab-headers li {
-  margin: 0 8px 0 0;
-  background: #dbe8ee;
-  border: #dbe3e5 1px solid;
-  padding: 10px;
+    margin: 0 8px 0 0;
+    background: #dbe8ee;
+    border: #dbe3e5 1px solid;
+    padding: 10px
 }
 .patric .dlp .tabbed .tab-headers .ui-state-active {
-  border-bottom: #f4f4f4 1px solid;
-  background: #f4f4f4;
+    border-bottom: #f4f4f4 1px solid;
+    background: #f4f4f4
 }
 .patric .dlp .data-tab {
-  margin-bottom: 40px;
-  padding-left: 21px;
+    margin-bottom: 40px;
+    padding-left: 21px
 }
 .patric .dlp .inline li {
-  display: inline-block;
-  vertical-align: middle;
+    display: inline-block;
+    vertical-align: middle
 }
-
 /* Data Boxes:  data-box is a container to be placed inside a data-tab,
  a drop-shadowed box to contain charts, info, etc. */
 .data-box {
-  padding: 20px;
-  margin: 0 0 40px 0;
-  background: #f4f4f4;
-  border: #dbe3e5 1px solid;
-  -webkit-box-shadow: #c3c3c3 2px 2px 10px;
-  -moz-box-shadow: #c3c3c3 2px 2px 10px;
-  box-shadow: #c3c3c3 2px 2px 10px;
+    padding: 20px;
+    margin: 0 0 40px 0;
+    background: #f4f4f4;
+    border: #dbe3e5 1px solid;
+    -webkit-box-shadow: #c3c3c3 2px 2px 10px;
+    -moz-box-shadow: #c3c3c3 2px 2px 10px;
+    box-shadow: #c3c3c3 2px 2px 10px
 }
 .patric .dlp .ribbon-title {
-  background: #34698e;
-  color: #fff;
-  font-weight: normal;
-  padding: 6px 15px 6px 28px;
-  margin: 0 0 20px -28px;
-  display: inline-block;
-  position: relative;
+    background: #34698e;
+    color: #fff;
+    font-weight: normal;
+    padding: 6px 15px 6px 28px;
+    margin: 0 0 20px -28px;
+    display: inline-block;
+    position: relative
 }
 .patric .dlp .ribbon-title .wrap {
-  background: no-repeat top left;
-  position: absolute;
-  bottom: -9px;
-  left: 0;
-  width: 8px;
-  height: 9px;
+    background: no-repeat top left;
+    position: absolute;
+    bottom: -9px;
+    left: 0;
+    width: 8px;
+    height: 9px
 }
-
 /* Popular Genomes Box */
 .patric .dlp .no-decoration li {
-  list-style: none;
+    list-style: none
 }
 .patric .dlp .no-decoration a {
-  text-decoration: none;
+    text-decoration: none
 }
 .patric .dlp .popular-box.tabbed ul.tab-headers li {
-  background: none;
-  border: 0;
-  position: relative;
+    background: none;
+    border: 0;
+    position: relative
 }
 .patric .dlp .popular-box.tabbed ul.tab-headers li a {
-  color: #000;
-  text-decoration: none;
+    color: #000;
+    text-decoration: none
 }
 .patric .dlp .popular-box.tabbed ul.tab-headers .ui-state-active {
-  background: #d8e0e5;
-  border: #c0cbcf 1px solid;
+    background: #d8e0e5;
+    border: #c0cbcf 1px solid
 }
 .patric .dlp .popular-box.tabbed .tab-headers .ui-state-active a {
-  color: #34698e;
+    color: #34698e
 }
 .patric .dlp .popular-box.tabbed .tab-headers .ui-state-active .arrow {
-  display: inline-block;
+    display: inline-block
 }
 .patric .dlp .popular-box.tabbed .tab-headers .ui-state-active .arrow_far {
-  display: inline-block;
+    display: inline-block
 }
 .patric .dlp .popular-box.tabbed .tab-headers .arrow {
-  text-indent: -119988px;
-  overflow: hidden;
-  text-align: left;
-  background: url(/patric/images/arrow-popular-genomes.png) no-repeat 50% 50%;
-  height: 36px;
-  width: 18px;
-  position: absolute;
-  top: 0;
-  right: -119px;
-  display: none;
+    text-indent: -119988px;
+    overflow: hidden;
+    text-align: left;
+    background: url(/patric/images/arrow-popular-genomes.png) no-repeat 50% 50%;
+    height: 36px;
+    width: 18px;
+    position: absolute;
+    top: 0;
+    right: -119px;
+    display: none
 }
 .patric .dlp .popular-box.tabbed .tab-headers .arrow_far {
-  text-indent: -119988px;
-  overflow: hidden;
-  text-align: left;
-  background: url(/patric/images/arrow-popular-genomes.png) no-repeat 50% 50%;
-  height: 36px;
-  width: 18px;
-  position: absolute;
-  top: 0;
-  right: -270px;
-  display: none;
+    text-indent: -119988px;
+    overflow: hidden;
+    text-align: left;
+    background: url(/patric/images/arrow-popular-genomes.png) no-repeat 50% 50%;
+    height: 36px;
+    width: 18px;
+    position: absolute;
+    top: 0;
+    right: -270px;
+    display: none
 }
 .patric .dlp .popular-box.tabbed .tab-headers .last {
-  margin-right: 8px;
+    margin-right: 8px
 }
 .patric .dlp .popular-box.tabbed .genome-data {
-  background: #d8e0e5;
-  border: #c0cbcf 1px solid;
-  padding: 20px;
-  height: 380px;
+    background: #d8e0e5;
+    border: #c0cbcf 1px solid;
+    padding: 20px;
+    height: 380px
 }
 .patric .dlp .popular-box.tabbed .genome-data .column {
-  width: 50%;
-  float: left;
+    width: 50%;
+    float: left
 }
 .patric .dlp .popular-box.tabbed .genome-data .column a.genome-data-item {
-  display: block;
-  color: #000;
+    display: block;
+    color: #000
 }
 .patric .dlp .popular-box.tabbed .genome-data .column a.genome-data-item .genome-data-icon {
-  height: 57px;
-  width: 64px;
-  margin: 0 5px 20px 0;
-  background: no-repeat top left;
+    height: 57px;
+    width: 64px;
+    margin: 0 5px 20px 0;
+    background: no-repeat top left
 }
 .patric .dlp .popular-box.tabbed .genome-data .column a.genome-data-item:hover .genome-data-icon {
-  background-position: bottom left;
+    background-position: bottom left
 }
-
 .data-tab .group .col {
-  float: left;
-  margin-right: 6px;
+    float: left;
+    margin-right: 6px
 }
 .data-tab .group {
-  overflow: visible;
-  clear: both;
+    /* The last column in a row needs this class. */
 }
 .data-tab .group:after {
-  content: '.';
-  display: block;
-  clear: both;
-  height: 1px;
-  text-indent: -999999em;
-}
-.data-tab .group {
-  /* The last column in a row needs this class. */
+    content: '.';
+    display: block;
+    clear: both;
+    height: 1px;
+    text-indent: -999999em
 }
 .data-tab .group .last {
-  margin-right: 0;
+    margin-right: 0
 }
 .data-tab .group .span-8 {
-  width: 190px;
+    width: 190px
 }
 .data-tab .group .span-9 {
-  width: 246px;
+    width: 246px
 }
 .data-tab .group .span-13 {
-  width: 330px;
+    width: 330px
 }
 .data-tab .group .span-26 {
-  width: 722px;
+    width: 722px
 }
 .data-tab .group .span-17 {
-  width: 470px;
+    width: 470px
 }
 .data-tab .group .span-11 {
-  width: 302px;
+    width: 302px
 }
 .data-tab .group .span-12 {
-  width: 330px;
+    width: 330px
 }
 .data-tab .group .span-34 {
-  width: 946px;
-  margin-right: 0;
+    width: 946px;
+    margin-right: 0
 }
 .data-tab .group .append {
-  padding-right: 22px;
+    padding-right: 22px
 }
 .data-tab .group .append-1 {
-  padding-right: 28px;
+    padding-right: 28px
 }
-
 .dlp .genome-data table.basic {
-  width:450px;
-  border:none;
-  border-collapse: separate;
-  font-size:11px;
-  position: inherit;
+    width:450px;
+    border:none;
+    border-collapse: separate;
+    font-size:11px;
+    position: inherit
 }
-
 .dlp .genome-data table.no-decoration tr th {
-  background: none;
-  border: none;
+    background: none;
+    border: none
 }
-
 .dlp .genome-data .right-align-text {
-  text-align: right;
+    text-align: right
 }
 .dlp .genome-data .center-text {
-  text-align: center;
+    text-align: center
 }
-
 .dlp .genome-data .attribute-line {
-  width:50px;
-  padding-right:10px;
-  font-size: 14px;
+    width:50px;
+    padding-right:10px;
+    font-size: 14px
 }
 .dlp .genome-data span {
-  line-height: 21px;
+    line-height: 21px
 }
-
 .patric .dlp .popular-box.tabbed .genome-data a.genome-data-item .genome-data-icon.feature {
-  background-image: url("/patric/images/icon-popular-feature.png");
-  position: inherit;
-  background-color: inherit;
+    background-image: url("/patric/images/icon-popular-feature.png");
+    position: inherit;
+    background-color: inherit
 }
 .patric .dlp .popular-box.tabbed .genome-data a.genome-data-item .genome-data-icon.experiment {
-  background-image: url("/patric/images/icon-popular-experiment.png");
+    background-image: url("/patric/images/icon-popular-experiment.png")
 }
 .patric .dlp .popular-box.tabbed .genome-data a.genome-data-item .genome-data-icon.pathway {
-  background-image: url("/patric/images/icon-popular-pathway.png");
+    background-image: url("/patric/images/icon-popular-pathway.png")
 }
 .patric .dlp .popular-box.tabbed .genome-data a.genome-data-item .genome-data-icon.proteinfamily {
-  background-image: url("/patric/images/icon-popular-proteinfamily.png");
+    background-image: url("/patric/images/icon-popular-proteinfamily.png")
 }
-
 /* general chart style */
 .patric .dlp .axis path {
-  stroke: #300;
-  stroke-width: 1px;
-  fill: none;
-  width: 1px;
-  shape-rendering: crispEdges;
+    stroke: #300;
+    stroke-width: 1px;
+    fill: none;
+    width: 1px;
+    shape-rendering: crispEdges
 }
 /*.patric .dlp .axis .tick {
-  stroke: #000;
-  stroke-width: 1px;
-  shape-rendering: crispEdges;
-}*/
-.patric .dlp .axis text {
-  font-size: 11px;
+    stroke: #000;
+    stroke-width: 1px;
+    shape-rendering: crispEdges
 }
-
-
+*/
+.patric .dlp .axis text {
+    font-size: 11px
+}
 /* DLP Genomes */
 #dlp-genomes-genomeStatus .gsc_bar {
-  cursor: pointer;
+    cursor: pointer
 }
 #dlp-genomes-genomeStatus .gsc_bar span {
-  display: block;
-  padding-left: 8px;
-  color: #fff;
-  text-shadow: 2px 2px 5px #000000;
-  font-size: 12px;
-  font-weight: bold;
+    display: block;
+    padding-left: 8px;
+    color: #fff;
+    text-shadow: 2px 2px 5px #000000;
+    font-size: 12px;
+    font-weight: bold
 }
 #dlp-genomes-genomeStatus .gsc_bar .value {
-  padding-top: 5px;
+    padding-top: 5px
 }
 #dlp-genomes-genomeStatus .gsc_bar.gsc_shotgun_sequence {
-  background-color: blue;
-  background: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iNTAlIiB4Mj0iMTAwJSIgeTI9IjUwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzZjOGQzZiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2E1Yzk2MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
-  background: -webkit-gradient(linear, 0% 50%, 100% 50%, color-stop(0%, #6c8d3f), color-stop(100%, #a5c960));
-  background: -webkit-linear-gradient(left, #6c8d3f 0%, #a5c960 100%);
-  background: -moz-linear-gradient(left, #6c8d3f 0%, #a5c960 100%);
-  background: -o-linear-gradient(left, #6c8d3f 0%, #a5c960 100%);
-  background: linear-gradient(to right, #6c8d3f 0%, #a5c960 100%);
+    background-color: blue;
+    background: url('data:image/svg+xml;
+    base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iNTAlIiB4Mj0iMTAwJSIgeTI9IjUwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzZjOGQzZiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2E1Yzk2MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+    background: -webkit-gradient(linear, 0% 50%, 100% 50%, color-stop(0%, #6c8d3f), color-stop(100%, #a5c960));
+    background: -webkit-linear-gradient(left, #6c8d3f 0%, #a5c960 100%);
+    background: -moz-linear-gradient(left, #6c8d3f 0%, #a5c960 100%);
+    background: -o-linear-gradient(left, #6c8d3f 0%, #a5c960 100%);
+    background: linear-gradient(to right, #6c8d3f 0%, #a5c960 100%)
 }
 #dlp-genomes-genomeStatus .gsc_bar.gsc_shotgun_sequence .value {
-    font-size: 20px;
+    font-size: 20px
 }
 #dlp-genomes-genomeStatus .gsc_bar.gsc_complete {
-  background-color: orange;
-  background: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iNTAlIiB4Mj0iMTAwJSIgeTI9IjUwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzkzYjVkMCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2NiZGNlOSIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
-  background: -webkit-gradient(linear, 0% 50%, 100% 50%, color-stop(0%, #93b5d0), color-stop(100%, #cbdce9));
-  background: -webkit-linear-gradient(left, #93b5d0 0%, #cbdce9 100%);
-  background: -moz-linear-gradient(right, #93b5d0 0%, #cbdce9 100%);
-  background: -o-linear-gradient(right, #93b5d0 0%, #cbdce9 100%);
-  background: linear-gradient(to right, #93b5d0 0%, #cbdce9 100%);
+    background-color: orange;
+    background: url('data:image/svg+xml;
+    base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iNTAlIiB4Mj0iMTAwJSIgeTI9IjUwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzkzYjVkMCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2NiZGNlOSIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+    background: -webkit-gradient(linear, 0% 50%, 100% 50%, color-stop(0%, #93b5d0), color-stop(100%, #cbdce9));
+    background: -webkit-linear-gradient(left, #93b5d0 0%, #cbdce9 100%);
+    background: -moz-linear-gradient(right, #93b5d0 0%, #cbdce9 100%);
+    background: -o-linear-gradient(right, #93b5d0 0%, #cbdce9 100%);
+    background: linear-gradient(to right, #93b5d0 0%, #cbdce9 100%)
 }
 #dlp-genomes-genomeStatus .gsc_bar.gsc_complete span {
-  display: inline;
+    display: inline
 }
 #dlp-genomes-genomeStatus .gsc_bar.gsc_plasmid {
-  background-color: green;
-  background: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iNTAlIiB4Mj0iMTAwJSIgeTI9IjUwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzUwNzE4OCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzdhYWNjNiIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
-  background: -webkit-gradient(linear, 0% 50%, 100% 50%, color-stop(0%, #507188), color-stop(100%, #7aacc6));
-  background: -webkit-linear-gradient(left, #507188 0%, #7aacc6 100%);
-  background: -moz-linear-gradient(right, #507188 0%, #7aacc6 100%);
-  background: -o-linear-gradient(right, #507188 0%, #7aacc6 100%);
-  background: linear-gradient(to right, #507188 0%, #7aacc6 100%);
+    background-color: green;
+    background: url('data:image/svg+xml;
+    base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iNTAlIiB4Mj0iMTAwJSIgeTI9IjUwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzUwNzE4OCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzdhYWNjNiIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+    background: -webkit-gradient(linear, 0% 50%, 100% 50%, color-stop(0%, #507188), color-stop(100%, #7aacc6));
+    background: -webkit-linear-gradient(left, #507188 0%, #7aacc6 100%);
+    background: -moz-linear-gradient(right, #507188 0%, #7aacc6 100%);
+    background: -o-linear-gradient(right, #507188 0%, #7aacc6 100%);
+    background: linear-gradient(to right, #507188 0%, #7aacc6 100%)
 }
 #dlp-genomes-genomeStatus .gsc_bar.gsc_plasmid span {
-  display: inline;
+    display: inline
 }
-
 #dlp-genomes-numberGenomes path.line {
-  fill: none;
-  stroke-width: 1px;
-  stroke: #ccc;
+    fill: none;
+    stroke-width: 1px;
+    stroke: #ccc
 }
 #dlp-genomes-numberGenomes path.line.sequenced {
-  stroke: #627b47;
-  stroke-width: 3px;
+    stroke: #627b47;
+    stroke-width: 3px
 }
 #dlp-genomes-numberGenomes path.line.total {
-  stroke: #41647c;
-  stroke-width: 3px;
+    stroke: #41647c;
+    stroke-width: 3px
 }
 #dlp-genomes-numberGenomes .point-sequenced {
-  fill: #627b47;
+    color: #627b47;
+    border-color: #627b47;
+    cursor: pointer
 }
 #dlp-genomes-numberGenomes .point-total {
-  fill: #41647c;
+    color: #41647c;
+    border-color: #41647c;
+    cursor: pointer
 }
 #dlp-genomes-numberGenomes .axis .domain {
-  fill: none;
-  stroke-width: 0px;
+    fill: none;
+    stroke-width: 0px
 }
 #dlp-genomes-numberGenomes .axis text {
-  fill: #3e3e3e;
-  font-size: 11px;
-  stroke: initial;
+    fill: #3e3e3e;
+    font-size: 11px;
+    stroke: initial
 }
 #dlp-genomes-numberGenomes .chart {
-  width: 288px;
-  height: 272px;
+    width: 288px;
+    height: 272px
 }
 #dlp-genomes-numberGenomes .chart-background {
-  fill: #fff;
-  stroke: #afafaf;
-  stroke-width: 1px;
-  shape-rendering: crispEdges;
+    fill: #fff;
+    stroke: #afafaf;
+    stroke-width: 1px;
+    shape-rendering: crispEdges
 }
 #dlp-genomes-numberGenomes .tick {
-  stroke: #f0f0f0;
+    stroke: #f0f0f0
 }
-#dlp-genomes-numberGenomes .point-sequenced {
-  color: #627b47;
-  border-color: #627b47;
-  cursor: pointer;
-}
-#dlp-genomes-numberGenomes .point-total {
-  color: #41647c;
-  border-color: #41647c;
-  cursor: pointer;
-}
-
 #dlp-genomes-chart .desc {
-  margin: 0 0 37px 0;
+    margin: 0 0 37px 0
 }
 #dlp-genomes-chart .top-5 {
-  shape-rendering: crispEdges;
+    shape-rendering: crispEdges
 }
 #dlp-genomes-chart .top-5 .chart {
-  height: 232px;
+    height: 232px
 }
 #dlp-genomes-chart .top-5 .label {
-  font-size: 1.1em;
-  color: #555555;
-  fill: #555555;
-  cursor: pointer;
+    font-size: 1.1em;
+    color: #555555;
+    fill: #555555;
+    cursor: pointer
 }
 #dlp-genomes-chart .top-5 .bar {
-  cursor: pointer;
+    cursor: pointer
 }
 #dlp-genomes-chart .top-5 g image {
-  cursor: pointer;
+    cursor: pointer
 }
-
 #dlp-genomes-chart .bar-0 {
-  fill: rgb(91,138,170);
+    fill: rgb(91,138,170)
 }
 #dlp-genomes-chart .bar-1 {
-  fill: rgb(151,199,90);
+    fill: rgb(151,199,90)
 }
 #dlp-genomes-chart .bar-2 {
-  fill: rgb(251,232,153);
+    fill: rgb(251,232,153)
 }
 #dlp-genomes-chart .bar-3 {
-  fill: rgb(102,130,149);
+    fill: rgb(102,130,149)
 }
 #dlp-genomes-chart .bar-4 {
-  fill: rgb(206,192,142);
+    fill: rgb(206,192,142)
 }
 #dlp-genomes-chart .sawtooth {
-  fill: #f4f4f4;
+    fill: #f4f4f4
 }
-
 /* DLP Genomic Features */
 #dlp-features-data h4 {
-	font-weight: bold;
+    font-weight: bold
 }
 #dlp-features-data li {
-	list-style-type: circle;
+    list-style-type: circle
 }
-#dlp-features-data .data-box  {
-  float: left;
-  width: 173px;
-  height: 298px;
-  margin: 0 5px;
-  background:#d8e0e5;
-  border: #c0cbcf 1px solid;
-  padding: 20px;
+#dlp-features-data .data-box {
+    float: left;
+    width: 173px;
+    height: 298px;
+    margin: 0 5px;
+    background:#d8e0e5;
+    border: #c0cbcf 1px solid;
+    padding: 20px
 }
-
-#dlp-features-data .data-box-lg  {
-  display: inline-flex;
-  flex-direction: column;
-  width: 400px;
-  height: 320px !important;
-  margin: 0 5px 5px 0;
-  background:#d8e0e5;
-  border: #c0cbcf 1px solid;
-  padding: 20px;
+#dlp-features-data .data-box-lg {
+    display: inline-flex;
+    flex-direction: column;
+    width: 400px;
+    height: 320px !important;
+    margin: 0 5px 5px 0;
+    background:#d8e0e5;
+    border: #c0cbcf 1px solid;
+    padding: 20px
 }
-
 /* DLP Specialty Features */
 #dlp-sp-features-data h4 {
-	font-weight: bold;
+    font-weight: bold
 }
 #dlp-sp-features-data p {
-  margin: 0 0 5px 10px;
+    margin: 0 0 5px 10px
 }
 #dlp-sp-features-data dd {
-  margin-left: 10px;
-  display: inline-block;
+    margin-left: 10px;
+    display: inline-block
 }
-
 /* DLP Protein Families */
 #dlp-proteinfamilies-dist-genera-header {
-  margin: 0;
+    margin: 0
 }
 #dlp-proteinfamilies-dist-genera {
-  position: relative;
+    position: relative
 }
 #dlp-proteinfamilies-dist-genera .chart-wrapper {
-  padding-top: 50px;
-  background-color: #f5f5f5;
-  background: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjUwJSIgeTE9IjAlIiB4Mj0iNTAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2EyYTJhMiIvPjxzdG9wIG9mZnNldD0iMSUiIHN0b3AtY29sb3I9IiNlYWVhZWEiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZmZmZmYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyYWQpIiAvPjwvc3ZnPiA=');
-  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #a2a2a2), color-stop(1%, #eaeaea), color-stop(100%, #ffffff));
-  background: -webkit-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
-  background: -moz-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
-  background: -o-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
-  background: linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
+    padding-top: 50px;
+    background-color: #f5f5f5;
+    background: url('data:image/svg+xml;
+    base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjUwJSIgeTE9IjAlIiB4Mj0iNTAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2EyYTJhMiIvPjxzdG9wIG9mZnNldD0iMSUiIHN0b3AtY29sb3I9IiNlYWVhZWEiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZmZmZmYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyYWQpIiAvPjwvc3ZnPiA=');
+    background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #a2a2a2), color-stop(1%, #eaeaea), color-stop(100%, #ffffff));
+    background: -webkit-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
+    background: -moz-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
+    background: -o-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
+    background: linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%)
 }
 #dlp-proteinfamilies-dist-genera .chart {
-  height: 400px;
+    height: 400px
 }
 #dlp-proteinfamilies-dist-genera .legend svg .bar0-sample {
-  fill: #cfdde6;
+    fill: #cfdde6
 }
 #dlp-proteinfamilies-dist-genera .legend svg .bar1-sample {
-  fill: #9ac85c;
+    fill: #9ac85c
 }
-
 #dlp-proteinfamilies-dist-genera rect.block-0 {
-  fill: #cfdde6;
-  stroke: #cfdde6;
+    fill: #cfdde6;
+    stroke: #cfdde6
 }
-
 #dlp-proteinfamilies-dist-genera rect.block-1 {
-  fill: #9ac85c;
-  stroke: #9ac85c;
+    fill: #9ac85c;
+    stroke: #9ac85c
 }
-
 #dlp-proteinfamilies-dist-genera text {
-  font-size: 13px;
-  fill: #346a8f;
-  pointer-events: none;
+    font-size: 13px;
+    fill: #346a8f;
+    pointer-events: none
 }
 #dlp-proteinfamilies-dist-genera nav {
-  position: absolute;
-  left: 15px;
-  top: 16px;
+    position: absolute;
+    left: 15px;
+    top: 16px
 }
 #dlp-proteinfamilies-dist-genera nav span.label {
-  display: block;
-  float: left;
-  font-size: 12px;
-  color: #3e3e3e;
-  height: 2em;
-  margin-right: 8px;
+    display: block;
+    float: left;
+    font-size: 12px;
+    color: #3e3e3e;
+    height: 2em;
+    margin-right: 8px
 }
 #dlp-proteinfamilies-dist-genera nav ul {
-  margin: 1px 0;
-  padding: 0;
-  list-style: none;
-  float: left;
-  position: relative;
-  top: -3px;
+    margin: 1px 0;
+    padding: 0;
+    list-style: none;
+    float: left;
+    position: relative;
+    top: -3px
 }
 #dlp-proteinfamilies-dist-genera nav li {
-  margin: 0 1em 0 0;
-  padding: 4px 6px;
-  list-style: none;
-  font-size: 12px;
-  color: #346a8f;
-  background-image: none;
+    margin-right: 1em
 }
 #dlp-proteinfamilies-dist-genera nav li:hover {
-  text-decoration: underline;
-  cursor: pointer;
+    text-decoration: underline;
+    cursor: pointer
 }
 #dlp-proteinfamilies-dist-genera nav li.active {
-  background-color: #346a8f;
-  color: #fff;
+    background-color: #346a8f;
+    color: #fff
 }
 #dlp-proteinfamilies-dist-genera nav li.head {
-  color: #3b3b3b;
+    color: #3b3b3b
 }
 #dlp-proteinfamilies-dist-genera nav li.head:hover {
-  text-decoration: none;
-  cursor: text;
+    text-decoration: none;
+    cursor: text
 }
-#dlp-proteinfamilies-dist-genera nav li {
-  margin-right: 1em;
-}
-
 #dlp-proteinfamily-dist .genome-list {
-  height: 405px;
+    height: 405px
 }
 #dlp-proteinfamily-dist ul li {
-  width: 120px;
-  height: 15px;
+    width: 120px;
+    height: 15px
 }
 #dlp-proteinfamily-dist ul li.right {
-  height: 17px;
+    height: 17px
 }
-
 #dlp-proteinfamilies-dist-genus .chart {
-  width: 454px;
-  height: 382px;
+    width: 454px;
+    height: 382px
 }
-
 #dlp-proteinfamilies-dist-genus .bar {
-  fill: #9ac85c;
-  stroke: #7aa93a;
+    fill: #9ac85c;
+    stroke: #7aa93a
 }
-
 /* DLP Pathways */
 #dlp-pathways-conservation-header {
-  margin: 0;
+    margin: 0
 }
 #dlp-pathways-conservation {
-  position: relative;
+    position: relative
 }
 #dlp-pathways-conservation .chart-wrapper {
-  padding-top: 50px;
-  background-color: #f5f5f5;
-  background: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjUwJSIgeTE9IjAlIiB4Mj0iNTAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2EyYTJhMiIvPjxzdG9wIG9mZnNldD0iMSUiIHN0b3AtY29sb3I9IiNlYWVhZWEiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZmZmZmYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyYWQpIiAvPjwvc3ZnPiA=');
-  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #a2a2a2), color-stop(1%, #eaeaea), color-stop(100%, #ffffff));
-  background: -webkit-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
-  background: -moz-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
-  background: -o-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
-  background: linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
+    padding-top: 50px;
+    background-color: #f5f5f5;
+    background: url('data:image/svg+xml;
+    base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjUwJSIgeTE9IjAlIiB4Mj0iNTAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2EyYTJhMiIvPjxzdG9wIG9mZnNldD0iMSUiIHN0b3AtY29sb3I9IiNlYWVhZWEiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZmZmZmYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyYWQpIiAvPjwvc3ZnPiA=');
+    background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #a2a2a2), color-stop(1%, #eaeaea), color-stop(100%, #ffffff));
+    background: -webkit-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
+    background: -moz-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
+    background: -o-linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%);
+    background: linear-gradient(top, #a2a2a2, #eaeaea 1%, #ffffff 100%)
 }
 #dlp-pathways-conservation .chart {
-  height: 400px;
+    height: 400px
 }
 #dlp-pathways-conservation .axis text {
-  fill: #346a8f;
+    fill: #346a8f
 }
 #dlp-pathways-conservation text {
-  font-size: 13px;
-  fill: #ebebeb;
-  pointer-events: none;
+    font-size: 13px;
+    fill: #ebebeb;
+    pointer-events: none
 }
 #dlp-pathways-conservation nav {
-  position: absolute;
-  left: 15px;
-  top: 16px;
+    position: absolute;
+    left: 15px;
+    top: 16px
 }
 #dlp-pathways-conservation nav span.label {
-  display: block;
-  float: left;
-  font-size: 12px;
-  color: #3e3e3e;
-  height: 2em;
-  margin-right: 8px;
+    display: block;
+    float: left;
+    font-size: 12px;
+    color: #3e3e3e;
+    height: 2em;
+    margin-right: 8px
 }
 #dlp-pathways-conservation nav ul {
-  margin: 1px 0;
-  padding: 0;
-  list-style: none;
-  float: left;
-  position: relative;
-  top: -3px;
+    margin: 1px 0;
+    padding: 0;
+    list-style: none;
+    float: left;
+    position: relative;
+    top: -3px
 }
 #dlp-pathways-conservation nav li {
-  margin: 0 1em 0 0;
-  padding: 4px 6px;
-  list-style: none;
-  font-size: 12px;
-  color: #346a8f;
-  background-image: none;
+    margin-right: 1em
 }
 #dlp-pathways-conservation nav li:hover {
-  text-decoration: underline;
-  cursor: pointer;
+    text-decoration: underline;
+    cursor: pointer
 }
 #dlp-pathways-conservation nav li.active {
-  background-color: #346a8f;
-  color: #fff;
+    background-color: #346a8f;
+    color: #fff
 }
 #dlp-pathways-conservation nav li.head {
-  color: #3b3b3b;
+    color: #3b3b3b
 }
 #dlp-pathways-conservation nav li.head:hover {
-  text-decoration: none;
-  cursor: text;
+    text-decoration: none;
+    cursor: text
 }
-#dlp-pathways-conservation nav li {
-  margin-right: 1em;
-}
-
 /* DLP Transcriptomics */
 #dlp-transcriptomics-top-species {
-  width: 410px;
+    width: 410px
 }
 #dlp-transcriptomics-top-species .chart {
-  width: 408px;
-  height: 272px;
+    width: 408px;
+    height: 272px
 }
 #dlp-transcriptomics-top-species .label1 {
-  font-weight:bold;
-  fill: #fbfbfb;
-  text-shadow: 1px 1px 2px #000;
-  cursor: pointer;
+    font-weight:bold;
+    fill: #fbfbfb;
+    text-shadow: 1px 1px 2px #000;
+    cursor: pointer
 }
 #dlp-transcriptomics-top-species .label2 {
-  font-size: 11px;
-  fill: #fbfbfb;
-  text-shadow: 1px 1px 2px #000;
-  cursor: pointer;
+    font-size: 11px;
+    fill: #fbfbfb;
+    text-shadow: 1px 1px 2px #000;
+    cursor: pointer
 }
 #dlp-transcriptomics-top-species .bar-0 {
-  fill: rgb(66,117,151);
-  cursor: pointer;
+    fill: rgb(66,117,151);
+    cursor: pointer
 }
 #dlp-transcriptomics-top-species .bar-1 {
-  fill: rgb(109,156,47);
-  cursor: pointer;
+    fill: rgb(109,156,47);
+    cursor: pointer
 }
 #dlp-transcriptomics-top-species .bar-2 {
-  fill: rgb(246,218,98);
-  cursor: pointer;
+    fill: rgb(246,218,98);
+    cursor: pointer
 }
 #dlp-transcriptomics-top-species .bar-3 {
-  fill: rgb(56,93,117);
-  cursor: pointer;
+    fill: rgb(56,93,117);
+    cursor: pointer
 }
 #dlp-transcriptomics-top-species .bar-4 {
-  fill: rgb(230,218,174);
-  cursor: pointer;
+    fill: rgb(230,218,174);
+    cursor: pointer
 }
-
 #dlp-transcriptomics-featured-experiments {
-  width:410px;
-  line-height: 1.6em;
+    width:410px;
+    line-height: 1.6em
 }
-
 #dlp-transcriptomics-featured-experiments img {
-  float: left;
-  padding: 3px 3px 0 3px;
+    float: left;
+    padding: 3px 3px 0 3px
 }
-
 #dlp-transcriptomics-featured-experiments .exp-name {
-  margin-left: 60px;
+    margin-left: 60px
 }
-
 #dlp-transcriptomics-featured-experiments .organism {
-  color: #C60;
+    color: #C60
 }
-
 #dlp-transcriptomics-top-mutants .bar {
-  fill: #4f81bd;
-  stroke: #4f81bd;
-  cursor: pointer;
+    fill: #4f81bd;
+    stroke: #4f81bd;
+    cursor: pointer
 }
 #dlp-transcriptomics-top-mutants .label {
-  fill: #ebebeb;
-  font-weight: normal;
-  cursor: pointer;
+    fill: #ebebeb;
+    font-weight: normal;
+    cursor: pointer
 }
 #dlp-transcriptomics-top-conditions .bar {
-  fill: #9bbb59;
-  stroke: #9bbb59;
-  cursor: pointer;
+    fill: #9bbb59;
+    stroke: #9bbb59;
+    cursor: pointer
 }
 #dlp-transcriptomics-top-conditions .label {
-  fill: #ebebeb;
-  font-weight: normal;
-  cursor: pointer;
+    fill: #ebebeb;
+    font-weight: normal;
+    cursor: pointer
 }
 #dlp-transcriptomics-top-mutants .chart,
 #dlp-transcriptomics-top-conditions .chart {
-  width: 410px;
-  height: 140px;
+    width: 410px;
+    height: 140px
 }

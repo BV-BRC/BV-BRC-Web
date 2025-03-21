@@ -1,29 +1,25 @@
 .carousel {
-	font-family: tahoma,arial,verdana,sans-serif;
+    font-family: tahoma,arial,verdana,sans-serif
 }
-
 .CarouselContent {
-	text-align: left;
-/*	font-size: 13px;
-	font-weight: normal;*/
-
+    text-align: left;
+    /*	font-size: 13px;
+    font-weight: normal;
+    */
 }
-
 .CarouselContent H1,
 .CarouselContent H2,
 .CarouselContent H3,
 .CarouselContent H4 {
-	font-weight: 100;
-	margin-bottom: .124em;
-	margin-top: 5px;
+    font-weight: 100;
+    margin-bottom: .124em;
+    margin-top: 5px
 }
-
 .CarouselContent IMG.right {
-	float: right;
-	margin-left: 20px;
-	height: 240px;
+    float: right;
+    margin-left: 20px;
+    height: 240px
 }
-
 .CarouselContent .button {
     padding: 5px 10px;
     line-height: 1.1em;
@@ -37,7 +33,5 @@
     background-image: -o-linear-gradient(#86b834, #659626);
     background-image: -ms-linear-gradient(#86b834, #659626);
     background-image: linear-gradient(#86b834, #659626);
-    border: rgba(101, 150, 37, 0.7) 1px outset;
-
+    border: rgba(101, 150, 37, 0.7) 1px outset
 }
-

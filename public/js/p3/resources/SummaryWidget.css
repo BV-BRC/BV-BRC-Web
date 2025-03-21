@@ -1,45 +1,36 @@
 .SummaryWidget {
-    margin: 4px;
+    margin: 4px
 }
-
 .SummaryWidget .tableNode,
 .SummaryWidget .chartNode,
 .chartView .tableNode,
 .tableView .chartNode {
-    display: none;
+    display: none
 }
-
 .tableView .chartNode {
-    border: 1px solid #aaa;
+    border: 1px solid #aaa
 }
-
 .SummaryWidget.chartView .chartNode,
 .SummaryWidget.tableView .tableNode {
-    display: block;
+    display: block
 }
-
 .SummaryWidget div.chartNode,
 .SummaryWidget div.tableNode {
-    height: 175px;
+    height: 175px
 }
-
 .SummaryWidget .actionButtons .fa {
-    color: #333;
+    color: #333
 }
-
 .SummaryWidget .actionButtons .fa:hover {
-    color: orange;
+    color: orange
 }
-
 .SummaryWidget.tableView .actionButtons .TableButton.fa,
 .SummaryWidget.chartView .actionButtons .ChartButton.fa {
-    color: green;
+    color: green
 }
-
 .SummaryWidget .dgrid-scroller {
-    overflow-y: auto;
+    overflow-y: auto
 }
-
 .SummaryWidget .actionButtons .actionButtonsRadio {
     border-radius: 4px;
     border: 1px solid #333;
@@ -48,139 +39,119 @@
     padding: 2px 0 2px 0;
     margin-bottom: 4px;
     font-size: .7em;
-    text-align: center;
+    text-align: center
 }
-
 .SummaryWidget.tableView .actionButtons .actionButtonsRadio .TableButton.fa,
 .SummaryWidget.chartView .actionButtons .actionButtonsRadio .ChartButton.fa {
     color: #efefef;
-    background: #333;
+    background: #333
 }
-
 .SummaryWidget .actionButtons .actionButtonsRadio .TableButton.fa,
 .SummaryWidget .actionButtons .actionButtonsRadio .ChartButton.fa {
     color: #333;
     background: #efefef;
     padding: 2px;
     border-radius: 2px;
-    vertical-align: middle;
+    vertical-align: middle
 }
-
 .patric .SummaryWidget .dgrid-cell {
-    border-left-style: none;
+    border-left-style: none
 }
 .patric .SummaryWidget .dgrid-cell:last-child {
     border-right-style: none;
-    padding-right: 10px;
+    padding-right: 10px
 }
-
 .patric .SummaryWidget .field-PATRIC,
 .patric .SummaryWidget .field-RefSeq {
     width: 20%;
-    text-align: right;
+    text-align: right
 }
-
 .patric .SummaryWidget .pie-chart-widget {
     display: inline-block;
     width: 278px;
-    height: 200px;
+    height: 200px
 }
-
 /* reference/representative genome */
 .patric .rgSummaryWidget.SummaryWidget .chartNode,
 .patric .rgSummaryWidget.SummaryWidget .tableNode {
-    min-height: 250px;
+    min-height: 250px
 }
-
 .patric .rgSummaryWidget.SummaryWidget .field-reference_genome {
-    width: 10%;
+    width: 10%
 }
 .patric .rgSummaryWidget.SummaryWidget .field-genome_name {
-    white-space: normal;
+    white-space: normal
 }
-
 /* genomes by antimicrobial resistance at taxon overview */
 .patric .apmSummaryWidget.SummaryWidget {
-    padding-bottom: 11px;
+    padding-bottom: 11px
 }
 .patric .apmSummaryWidget.SummaryWidget .chartNode,
 .patric .apmSummaryWidget.SummaryWidget .tableNode {
-    min-height: 245px;
+    min-height: 245px
 }
-
 /* genome metadata summary widget at taxon overview */
 .patric .gmSummaryWidget.SummaryWidget .chartNode,
 .patric .gmSummaryWidget.SummaryWidget .tableNode {
-    min-height: 400px;
+    min-height: 400px
 }
-
 /* Antimicrobial Resistance at genome overview */
 .patric .apSummaryWidget.SummaryWidget .tableNode {
-    height: 148px;
+    height: 148px
 }
 .patric .apSummaryWidget.SummaryWidget TH {
-    text-align: center;
+    text-align: center
 }
 .patric .apSummaryWidget.SummaryWidget .field-resistant_phenotype {
-    width: 20%;
+    width: 20%
 }
-
 /* Genomic Features at genome overview */
 .patric .gfSummaryWidget.SummaryWidget .field-feature_type {
     width: 60%;
-    text-align: left;
+    text-align: left
 }
-
 /* specialty genes at genome overview */
 .patric .spgSummaryWidget.SummaryWidget .field-source_x {
-    width: 20%;
+    width: 20%
 }
 .patric .spgSummaryWidget.SummaryWidget .field-y {
     width: 20%;
-    text-align: right;
+    text-align: right
 }
-
 /* protein feature summary widget at genome overview */
 .patric .pfSummaryWidget.SummaryWidget .chartNode,
 .patric .pfSummaryWidget.SummaryWidget .tableNode {
-    height: 275px;
+    height: 275px
 }
-
 /* function profile summary widget at feature-list overview */
 .patric .fpSummaryWidget.SummaryWidget .chartNode,
 .patric .fpSummaryWidget.SummaryWidget .tableNode {
-    min-height: 250px;
+    min-height: 250px
 }
-
 .patric .fnProfile g.bars rect {
-    cursor: pointer;
+    cursor: pointer
 }
-
 /* ID Mapping at feature overview */
 .patric .idmSummeryWidget.SummaryWidget {
-    height: 250px;
+    height: 250px
 }
-
 /* special properties summary widget at feature overview */
 .patric .spgSummaryWidget.SummaryWidget {
-    height: 250px;
+    height: 250px
 }
-
 /* feature comments summary widget at feature overview */
 .patric .fcSummaryWidget.SummaryWidget .field-source,
 .patric .fcSummaryWidget.SummaryWidget .field-property,
 .patric .fcSummaryWidget.SummaryWidget .field-evidence_code {
-    width: 10%;
+    width: 10%
 }
-
 .patric .sgViewerWidget {
-    /*height: 76px;*/
+    /*height: 76px;
+    */
 }
-
 .patric .sgViewerWidget .chart g polyline {
-    cursor: pointer;
+    cursor: pointer
 }
-
 .patric .fpViewerWidget {
-    height: 200px;
+    height: 200px
 }
