@@ -3,7 +3,7 @@
   <div class="appTemplate">
     <div class="appTitle">
       <span class="breadcrumb">Services</span>
-      <h3>${applicationLabel}
+      <h1 class="appHeader">${applicationLabel}
         <div name="overview" class="infobox iconbox infobutton dialoginfo">
           <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
         </div>
@@ -11,7 +11,7 @@
           <a href="${docsServiceURL}${tutorialLink}" target="_blank"><i class="fa icon-books fa-1x"
               title="click to open tutorial"></i></a>
         </div>
-      </h3>
+      </h1>
       <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a
           href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and <a
           href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.</p>
@@ -35,7 +35,7 @@
                data-dojo-attach-event="onChange:onProteinInputChange" checked />
                <!-- data-dojo-attach-event="onChange:onInputChange" checked /> -->
         <!-- <label for="${id}_protein_databank_selection">Protein Databank Archive</label> -->
-        <label for="${id}_protein_databank_selection">Precomputed Structures</label>      
+        <label for="${id}_protein_databank_selection">Precomputed Structures</label>
         <input id="${id}_user_pdb_file" type="radio" data-dojo-type="dijit/form/RadioButton"
                data-dojo-attach-point="user_pdb_file" name="protein_input" value="user_pdb_file"
                data-dojo-attach-event="onChange:onInputChange">

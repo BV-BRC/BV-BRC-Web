@@ -1,0 +1,138 @@
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
+      dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit">
+    <div class="appTemplate">
+        <div class="appTitle">
+            <span class="breadcrumb">Services</span>
+            <h3>${applicationLabel}
+                <!--?<div name="overview" class="infobox iconbox infobutton dialoginfo">
+                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                </div>-->
+                <div class="infobox iconbox tutorialButton tutorialInfo">
+                    <a href="${docsServiceURL}${tutorialLink}" target="_blank"><i class="fa icon-books fa-1x"
+                                                                                  title="click to open tutorial"></i></a>
+                </div>
+            </h3>
+            <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a
+                    href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.</p>
+        </div>
+        <div class="formFieldsContainer" style="max-width: 450px; margin: auto">
+            <div id="startWithBox" class="appBox appShadow">
+                <div class="headerrow">
+                    <label class="appBoxLabel">Input File</label>
+                </div>
+                <div class="appRow">
+                    <input type="radio" id="pairedRead" name="inputType" value="pairedRead" checked
+                           data-dojo-type="dijit/form/RadioButton"
+                           data-dojo-attach-point="pairedReadCheck"/>
+                    <label for="pairedRead">Paired Read Library</label>
+                    <input type="radio" id="singleRead" name="inputType" value="singleRead"
+                           data-dojo-type="dijit/form/RadioButton"
+                           data-dojo-attach-point="singleReadCheck"
+                           data-dojo-attach-event="onChange:inputTypeChanged"/>
+                    <label for="singleRead">Single Read Library</label>
+                    <input type="radio" id="sraAccession" name="inputType" value="sraAccession"
+                           data-dojo-type="dijit/form/RadioButton"
+                           data-dojo-attach-point="sraAccessionCheck"
+                           data-dojo-attach-event="onChange:inputTypeChanged"/>
+                    <label for="sraAccession">Sra Run Accession</label>
+                </div>
+
+                <div id="pairedReadLibraryBox">
+                    <div class="appRow">
+                        <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="read1"
+                             data-dojo-attach-point="read1" required="false"
+                             data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 1'"></div>
+                    </div>
+                    <div class="appRow">
+                        <div data-dojo-attach-point="read2block">
+                            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="read2"
+                                 data-dojo-attach-point="read2" required="false"
+                                 data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 2'"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="singleReadLibraryBox" style="display:none;">
+                    <div class="appRow">
+                        <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="read"
+                             data-dojo-attach-point="read" required="false"
+                             data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"></div>
+                    </div>
+                </div>
+
+                <div id="sraAccessionBox" style="display:none;">
+                    <div class="appRow">
+                        <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-point="srr_accession"
+                             style="width:400px" required="false" data-dojo-attach-event="onBlur:onSRRChange" name="srr_accession"
+                             data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRA Accession'"></div>
+                        <div data-dojo-attach-point="srr_accession_validation_message"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="appBox appShadow">
+                <div class="headerrow">
+                    <label class="appBoxLabel">Parameters</label>
+                    <div name="parameters" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                    </div>
+                </div>
+                <div class="appRow">
+                    <label class="paramlabel">Assembly Strategy</label><br>
+                    <select data-dojo-type="dijit/form/Select" name="strategy" data-dojo-attach-point="strategy"
+                            style="width:400px" required="true" data-dojo-attach-event="onChange:onStrategyChange">
+                        <!--?<option value="auto">Auto</option>-->
+                        <option value="irma">IRMA</option>
+                    </select>
+                </div>
+                <div class="appRow">
+                    <label class="paramlabel">Virus Genome</label><br>
+                    <select data-dojo-type="dijit/form/Select" name="module" data-dojo-attach-point="module"
+                            style="width:400px" required="true">
+                        <option value="FLU">FLU</option>
+                        <option value="CoV">CoV</option>
+                        <option value="RSV">RSV</option>
+                        <option value="EBOLA">EBOLA</option>
+                    </select>
+                </div>
+                <div class="appRow">
+                    <label class="paramlabel">Output Folder</label><br>
+                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
+                         data-dojo-attach-point="output_path" required="true"
+                         data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false"
+                         data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                </div>
+                <div class="appRow">
+                    <label class="paramlabel">Output Name</label><span class="charError"
+                                                                       style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+                    <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
+                         data-dojo-attach-event="onChange:checkOutputName" data-dojo-attach-point="output_file"
+                         style="width:400px" required="true"
+                         data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
+                </div>
+            </div>
+        </div>
+        <div class="appSubmissionArea">
+            <div style="width:400px; margin:auto" class="workingMessage messageContainer">
+                Submitting Assembly Job
+            </div>
+            <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+                 style="margin-top:10px; text-align:center;">
+                Your job has been submitted successfully. Please visit your <a
+                    data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job
+                and access the results.
+            </div>
+            <div style="width:400px; margin:auto" class="errorMessage messageContainer">
+                <div style="font-weight:900;font-size:1.1em;">Error Submitting Assembly Job</div>
+                <p data-dojo-attach-point="errorMessage">Error</p>
+            </div>
+            <div style="margin-top: 10px; text-align:center;">
+                <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel"
+                     data-dojo-type="dijit/form/Button">Cancel
+                </div>
+                <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+                <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Assemble
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

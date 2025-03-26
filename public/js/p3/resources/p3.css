@@ -1477,3 +1477,8 @@ body footer.main-footer ul.left {
     padding: 8px;
     font-size: .9em;
 }
+
+.appHeader {
+    font-size: 1.4rem;
+    color: black;
+}
