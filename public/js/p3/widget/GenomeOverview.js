@@ -3,7 +3,7 @@ define([
   'dojo/dom-class', 'dojo/query', 'dojo/dom-style', 'dojo/text!./templates/GenomeOverview.html', 'dojo/dom-construct',
   'dijit/_WidgetBase', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin', 'dijit/Dialog',
   '../util/PathJoin', './SelectionToGroup', './GenomeFeatureSummary', './DataItemFormatter',
-  './ExternalItemFormatter', './AdvancedDownload', 'dijit/form/TextBox', 'dijit/form/Form', './Confirmation',
+  './ExternalItemFormatter', './DownloadTooltipDialog', 'dijit/form/TextBox', 'dijit/form/Form', './Confirmation',
   './InputList', 'dijit/form/SimpleTextarea', 'dijit/form/DateTextBox', './MetaEditor',
   '../DataAPI', './PermissionEditor', './ServicesTooltipDialog', 'dijit/popup'
 ], function (
@@ -11,7 +11,7 @@ define([
   domClass, domQuery, domStyle, Template, domConstruct,
   WidgetBase, Templated, _WidgetsInTemplateMixin, Dialog,
   PathJoin, SelectionToGroup, GenomeFeatureSummary, DataItemFormatter,
-  ExternalItemFormatter, AdvancedDownload, TextBox, Form, Confirmation,
+  ExternalItemFormatter, DownloadTooltipDialog, TextBox, Form, Confirmation,
   InputList, TextArea, DateTextBox, MetaEditor,
   DataAPI, PermissionEditor, ServicesTooltipDialog, popup
 ) {
@@ -249,10 +249,16 @@ define([
     },
 
     onDownload: function () {
-      var dialog = new Dialog({ title: 'Download' });
-      var advDn = new AdvancedDownload({ selection: [this.genome], containerType: 'genome_data' });
-      domConstruct.place(advDn.domNode, dialog.containerNode);
-      dialog.show();
+      popup.open({
+        popup: new DownloadTooltipDialog({
+          selection: [this.genome],
+          containerType: 'genome_data',
+          isGenomeOverview: true
+        }),
+        parent: this,
+        around: this.genomeDownloadButton,
+        orient: ['below']
+      });
     },
 
     onClickUserGuide: function () {
