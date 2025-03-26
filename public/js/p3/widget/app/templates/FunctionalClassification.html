@@ -2,7 +2,7 @@
   <div class="appTemplate">
     <div class="appTitle">
       <span class="breadcrumb">Services</span>
-      <h3>${applicationLabel}
+      <h1 class="appHeader">${applicationLabel}
         <div name="overview" class="infobox iconbox infobutton dialoginfo">
           <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
         </div>
@@ -11,7 +11,7 @@
           <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
         </div>
 
-      </h3>
+      </h1>
       <p>${applicationDescription} For further explanation, please see <a href="${docsServiceURL}${applicationHelp}"
           target="_blank">${applicationLabel} Service User Guide</a> and
         <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
@@ -65,12 +65,12 @@
                 </div>
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
-              
+
               <div class="appRow">
                 <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-point="srr_accession" style="width: 300px" required="false" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"></div>
                 <br><i data-dojo-attach-point="srr_accession_validation_message"></i>
               </div>
-              
+
             </div>
           </td>
           <td>

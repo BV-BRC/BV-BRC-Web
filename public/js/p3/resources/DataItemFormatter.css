@@ -4,53 +4,45 @@
     font-weight: bold;
     margin-bottom: 6px;
     padding: 10px 0 7px 0;
-    overflow: hidden;
+    overflow: hidden
 }
-
 .DataItemHeader > span {
-    vertical-align: middle;
+    vertical-align: middle
 }
-
 .DataItemHeader .fa {
     color: #76a72d;
     font-size: 1.3em;
     padding-right: 5px;
-    cursor: initial;
+    cursor: initial
 }
-
 .DataItemSummary {
     font-weight: bold;
     padding: 0 0 7px 10px;
     margin-bottom: 6px;
-    border-bottom: 1px solid #afafaf;
+    border-bottom: 1px solid #afafaf
 }
-
 .DataItemSectionHead {
     background: #f2f2f2;
     padding: 3px 5px;
     border-top: 1px solid #ccc;
     border-bottom: 1px solid #ccc;
     font-family: "Didact Gothic", Arial, Helvetica, sans-serif;
-    font-size: 13px;
+    font-size: 13px
 }
-
 .DataItemProperty {
     vertical-align: top;
     padding: 0 4px 0 10px;
     width: 55%;
-    font-weight: bold;
+    font-weight: bold
 }
-
 .DataItemValue {
-    vertical-align: top;
+    vertical-align: top
 }
-
 .DataItemSectionNotFound {
     font-style: italic;
     color: #888;
-    padding: 0 4px 0 10px;
+    padding: 0 4px 0 10px
 }
-
 .ExperimentComparison .DataItemProperty {
-    width: 210px;
+    width: 210px
 }

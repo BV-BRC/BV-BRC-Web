@@ -1,113 +1,113 @@
-.chart-wrapper.amr{
-    overflow-x: scroll;
+.chart-wrapper.amr {
+    overflow-x: scroll
 }
 .chart-wrapper .chart {
     padding-top: 24px;
-    height: 200px;
+    height: 200px
 }
 .chart-wrapper .chart .svgChartContainer {
-    border-bottom: 1px solid silver;
+    border-bottom: 1px solid silver
 }
 .chart-wrapper .y.axis path {
-    display: none;
+    display: none
 }
 .chart-wrapper .legend {
     margin: 0;
     color: #3e3e3e;
-    text-align: right;
+    text-align: right
 }
 .chart-wrapper .legend svg {
     position: relative;
     top: 3px;
-    margin: 0 4px 0 14px;
+    margin: 0 4px 0 14px
 }
-
 .chart-wrapper.amr .legend svg .bar0-sample {
-    fill: #E53935;
+    fill: #E53935
 }
 .chart-wrapper.amr .legend svg .bar1-sample {
-    fill: #7CB342;
+    fill: #7CB342
 }
 .chart-wrapper.amr .legend svg .bar2-sample {
-    fill: #FFC107;
+    fill: #FFC107
 }
-
 .chart-wrapper.amr rect:hover {
-    cursor: pointer;
+    cursor: pointer
 }
-
 .chart-wrapper.amr rect.block-0 {
-    fill: #F44336; /* red 500 for resistant */
-    stroke: #E53935; /* red 600 */
+    fill: #F44336;
+    /* red 500 for resistant */
+    stroke: #E53935;
+    /* red 600 */
 }
-
 .chart-wrapper.amr rect.block-1 {
-    fill: #8BC34A; /* light green 500 susceptible */
-    stroke: #7CB342; /* light green 600 */
+    fill: #8BC34A;
+    /* light green 500 susceptible */
+    stroke: #7CB342;
+    /* light green 600 */
 }
-
 .chart-wrapper.amr rect.block-2 {
-    fill: #FFC107; /* amber 500 intermediate */
-    stroke: #FFB300; /* amber 600 */
+    fill: #FFC107;
+    /* amber 500 intermediate */
+    stroke: #FFB300;
+    /* amber 600 */
 }
-
 .chart-wrapper.amr text {
     font-size: 13px;
-    fill: #263238; /* blue grey 900 */
+    fill: #263238;
+    /* blue grey 900 */
     pointer-events: none;
-    text-shadow: -1px -1px 5px #fff, 1px -1px 5px #fff, -1px 1px 5px #fff, 1px 1px 5px #fff;
+    text-shadow: -1px -1px 5px #fff, 1px -1px 5px #fff, -1px 1px 5px #fff, 1px 1px 5px #fff
 }
-
 .chart-wrapper .legend svg .bar0-sample {
-    fill: #1f497d;
+    fill: #1f497d
 }
 .chart-wrapper .legend svg .bar1-sample {
-    fill: #4f81bd;
+    fill: #4f81bd
 }
 .chart-wrapper .legend svg .bar2-sample {
-    fill: #4bacc6;
+    fill: #4bacc6
 }
 .chart-wrapper .legend svg .bar3-sample {
-    fill: #f79646;
+    fill: #f79646
 }
 .chart-wrapper .legend svg .bar4-sample {
-    fill: #9bbb59;
+    fill: #9bbb59
 }
 .chart-wrapper rect {
     stroke-width: 1px;
     shape-rendering: crispEdges;
-    fill: #000;
+    fill: #000
 }
 .chart-wrapper rect.block-0 {
     fill: #1f497d;
-    stroke: #1f497d;
+    stroke: #1f497d
 }
 .chart-wrapper rect.block-1 {
     fill: #4f81bd;
-    stroke: #4f81bd;
+    stroke: #4f81bd
 }
 .chart-wrapper rect.block-2 {
     fill: #4bacc6;
-    stroke: #4bacc6;
+    stroke: #4bacc6
 }
 .chart-wrapper rect.block-3 {
     fill: #f79646;
-    stroke: #f79646;
+    stroke: #f79646
 }
 .chart-wrapper rect.block-4 {
     fill: #9bbb59;
-    stroke: #9bbb59;
+    stroke: #9bbb59
 }
 .chart-wrapper .axis text {
-    fill: #346a8f;
+    fill: #346a8f
 }
 .chart-wrapper text {
     font-size: 13px;
     fill: #ebebeb;
-    pointer-events: none;
+    pointer-events: none
 }
 .chart-wrapper nav {
-
+    
 }
 .chart-wrapper nav span.label {
     display: block;
@@ -118,13 +118,13 @@
     height: 2em;
     margin-right: 8px;
     position: relative;
-    top: 3px;
+    top: 3px
 }
 .chart-wrapper nav ul {
     margin: 0 15px 0 0;
     padding: 0;
     list-style: none;
-    float: left;
+    float: left
 }
 .chart-wrapper nav li {
     padding: 3px 6px;
@@ -132,22 +132,21 @@
     font-size: 12px;
     color: #346a8f;
     background-image: none;
-    display: inline-block;
+    display: inline-block
 }
 .chart-wrapper nav li:hover {
     text-decoration: underline;
-    cursor: pointer;
+    cursor: pointer
 }
 .chart-wrapper nav li.active {
     background-color: #346a8f;
-    color: #fff;
+    color: #fff
 }
-
 .patric div.tooltip {
     position: absolute;
     padding: 10px;
     background: lightsteelblue;
     border: 0;
     border-radius: 4px;
-    pointer-events: none;
+    pointer-events: none
 }

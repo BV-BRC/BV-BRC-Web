@@ -1,73 +1,68 @@
-
 .Phylogeny a:link, a:visited {
     color:black;
-    text-decoration: none;
+    text-decoration: none
 }
 .Phylogeny a:hover {
-    color:red;
+    color:red
 }
-.Phylogeny svg{
+.Phylogeny svg {
     background:#FFFFFF;
-    /*border: 1px dotted #222222;*/
+    /*border: 1px dotted #222222;
+    */
 }
 .Phylogeny g.node {
     font-family: Verdana, Helvetica, sans-serif;
     font-size: 12px;
-    font-weight: normal;
+    font-weight: normal
 }
 .Phylogeny g.node.selected {
-    font-weight:bold;
+    font-weight:bold
 }
 .Phylogeny text.support_label {
     fill: #222222;
     font-size:10px;
-    font-weight:normal;
+    font-weight:normal
 }
-
 .Phylogeny circle.inode-dot {
     fill: black;
     stroke: white;
-    stroke-width: 2px;
+    stroke-width: 2px
 }
 .Phylogeny circle.inode-dot:hover {
     fill:black;
     stroke: green;
-    stroke-width:10px;
+    stroke-width:10px
 }
 .Phylogeny circle.inode-dot.selected {
     fill: red;
     stroke: white;
-    stroke-width: 2px;
+    stroke-width: 2px
 }
-
 .Phylogeny circle.tip-dot {
+    
 }
-
 .Phylogeny path.link.selected {
     stroke: red;
     stroke-width:2px;
-    #stroke-dasharray: 3,2;
+    #stroke-dasharray: 3,2
 }
 .Phylogeny path.link {
     fill: none;
     stroke: #333333;
-    stroke-width:2px;
+    stroke-width:2px
 }
-
 .Phylogeny path.link.hover.selected {
     stroke: red;
     stroke-width:3px;
-    stroke-dasharray: 3,2;
+    stroke-dasharray: 3,2
 }
-
 .Phylogeny path.link.hover {
     stroke:red;
-    stroke-width:3px;
+    stroke-width:3px
 }
-
 .Phylogeny span.selected {
-    background: yellow;
+    background: yellow
 }
 .Phylogeny #tree-container {
-    width:98%;
+    width:98%
 }

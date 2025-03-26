@@ -1,7 +1,7 @@
 
 	<%
 	const load_css = [
-		"p3/resources/p3.css",
+		"p3/resources/p3.min.css",
 		"heatmap/dist/hotmap.css"
 	]
 	%>
@@ -16,11 +16,989 @@
 	  <% }) %>
 	<% } %>
 
+	<%
+    // Define routes with their corresponding descriptions
+	var routes = [
+		{
+			href: '/home',
+			title: "Home - BV-BRC: Bacterial and Viral Bioinformatics Resource Center",
+			description: "BV-BRC: Bacterial and Viral Bioinformatics Resource Center - A comprehensive platform for bacterial and viral infectious disease research with integrated data, bioinformatics tools, and analysis workflows.",
+			robots: "index,dontfollow",
+			keywords: "bacterial bioinformatics, viral bioinformatics, infectious disease research"
+		},
+		{
+			href: '/job',
+			title: "BV-BRC Jobs - Manage Your Analysis Jobs and Workflows",
+			description: "BV-BRC Jobs: View and manage your analysis jobs and workflows.",
+			robots: "index,follow",
+			keywords: "bioinformatics jobs, workflow management, analysis jobs"
+		},
+		{
+			href: '/view/Host/?eq(taxon_lineage_ids,2759)',
+			title: "Host Organisms - Explore Host-Pathogen Interactions",
+			description: "Host: Explore host organisms and their interactions with bacterial and viral pathogens, including host response, susceptibility, and disease outcomes.",
+			robots: "index,dontfollow",
+			keywords: "host-pathogen interaction, bacterial pathogens, viral pathogens"
+		},
+		{
+			href: '/',
+			description: "BV-BRC: Bacterial and Viral Bioinformatics Resource Center - A comprehensive platform for bacterial and viral infectious disease research with integrated data, bioinformatics tools, and analysis workflows.",
+			robots: "index,follow",
+			keywords: "bacterial bioinformatics, viral bioinformatics, infectious disease research"
+		}
+	];
 
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	var searches = [
+		{
+			href: '/searches/TaxaSearch',
+			title: "Taxa Search - Comprehensive Taxonomy Database",
+			description: "Search BV-BRC's comprehensive database of taxa.",
+			robots: "index,follow",
+			keywords: "taxa database, taxonomy search, bioinformatics taxa"
+		},
+		{
+			href: '/searches/GenomeSearch',
+			title: "Genome Search - Explore Comprehensive Genome Data",
+			description: "Search BV-BRC's comprehensive database of genomes.",
+			robots: "index,follow",
+			keywords: "genome database, genome search, genomic analysis"
+		},
+		{
+			href: '/searches/StrainSearch',
+			title: "Strain Search - Discover Bacterial and Viral Strains",
+			description: "Search BV-BRC's comprehensive database of strains.",
+			robots: "index,follow",
+			keywords: "strain database, bacterial strains, viral strains"
+		},
+		{
+			href: '/searches/GenomicFeatureSearch',
+			title: "Genomic Feature Search - Analyze Genomic Features",
+			description: "Search BV-BRC's comprehensive database of genomic features.",
+			robots: "index,follow",
+			keywords: "genomic features, bioinformatics search, genome analysis"
+		},
+		{
+			href: '/searches/ProteinSearch',
+			title: "Protein Search - Explore Protein Data and Analysis",
+			description: "Search BV-BRC's comprehensive database of proteins.",
+			robots: "index,follow",
+			keywords: "protein search, protein database, bioinformatics proteins"
+		},
+		{
+			href: '/searches/SpecialtyGeneSearch',
+			title: "Specialty Gene Search - Find Specialty Genes",
+			description: "Search BV-BRC's comprehensive database of specialty genes.",
+			robots: "index,follow",
+			keywords: "specialty genes, gene database, bioinformatics search"
+		},
+		{
+			href: '/searches/DomainAndMotifSearch',
+			title: "Domain and Motif Search - Analyze Domains and Motifs",
+			description: "Search BV-BRC's comprehensive database of domains and motifs.",
+			robots: "index,follow",
+			keywords: "domains and motifs, bioinformatics database, protein domains"
+		},
+		{
+			href: '/searches/EpitopeSearch',
+			title: "Epitope Search - Comprehensive Epitope Database",
+			description: "Search BV-BRC's comprehensive database of epitopes.",
+			robots: "index,follow",
+			keywords: "epitope search, immunology data, bioinformatics epitopes"
+		},
+		{
+			href: '/searches/ProteinStructureSearch',
+			title: "Protein Structure Search - Explore Protein Structures",
+			description: "Search BV-BRC's comprehensive database of protein structures.",
+			robots: "index,follow",
+			keywords: "protein structure, protein database, bioinformatics analysis"
+		},
+		{
+			href: '/searches/PathwaySearch',
+			title: "Pathway Search - Analyze Metabolic Pathways",
+			description: "Search BV-BRC's comprehensive database of pathways.",
+			robots: "index,follow",
+			keywords: "pathway analysis, metabolic pathways, bioinformatics pathways"
+		},
+		{
+			href: '/searches/SubsystemSearch',
+			title: "Subsystem Search - Explore Metabolic Subsystems",
+			description: "Search BV-BRC's comprehensive database of subsystems.",
+			robots: "index,follow",
+			keywords: "subsystem search, bioinformatics database, metabolic subsystems"
+		},
+		{
+			href: '/searches/SurveillanceSearch',
+			title: "Surveillance Search - Disease Tracking Data",
+			description: "Search BV-BRC's comprehensive database of surveillance data.",
+			robots: "index,follow",
+			keywords: "surveillance data, disease tracking, bioinformatics tools"
+		},
+		{
+			href: '/searches/SerologySearch',
+			title: "Serology Search - Explore Immunology Data",
+			description: "Search BV-BRC's comprehensive database of serology data.",
+			robots: "index,follow",
+			keywords: "serology data, immunology research, bioinformatics tools"
+		},
+		{
+			href: '/searches/SFVTSearch',
+			title: "SFVT Search - Sequence Feature Variant Types",
+			description: "Search BV-BRC's comprehensive database of sequence feature variant types.",
+			robots: "index,follow",
+			keywords: "sequence variants, bioinformatics tools, variant analysis"
+		}
+	];
+
+	// Define descriptions for bacteria and viruses
+	var bacteria = [
+		{
+			name: "Bacteria",
+			href: "/view/Bacteria/2",
+			title: "Bacteria - Explore Bacterial Genomes and Infectious Diseases",
+			description: "Explore bacterial genomes, including pathogens causing infectious diseases and microbes important for biotechnology and environmental processes.",
+			robots: "index,dontfollow",
+			keywords: "bacterial genomes, biotechnology, infectious diseases"
+		},
+		{
+			name: "Archaea",
+			href: "/view/Taxonomy/2157",
+			title: "Archaea - Explore Extremophiles and Unique Microorganisms",
+			description: "Explore archaeal genomes, including extremophiles and microorganisms with unique metabolic capabilities adapted to extreme environments.",
+			robots: "index,dontfollow",
+			keywords: "archaeal genomes, extremophiles, metabolic capabilities"
+		},
+		{
+			name: "Acinetobacter",
+			href: "/view/Taxonomy/469",
+			title: "Acinetobacter - Bacteria Linked to Hospital Infections",
+			description: "Explore data on Acinetobacter, a genus of bacteria associated with hospital-acquired infections.",
+			robots: "index,dontfollow",
+			keywords: "Acinetobacter, hospital infections, bacterial pathogens"
+		},
+		{
+			name: "Bacillus",
+			href: "/view/Taxonomy/1386",
+			title: "Bacillus - Soil Ecosystems and Antibiotic Producers",
+			description: "Discover information on Bacillus, known for its role in soil ecosystems and as a producer of antibiotics.",
+			robots: "index,dontfollow",
+			keywords: "Bacillus, soil ecosystems, antibiotic production"
+		},
+		{
+			name: "Bartonella",
+			href: "/view/Taxonomy/773",
+			title: "Bartonella - Bacteria Causing Cat-Scratch Disease",
+			description: "Investigate Bartonella, a genus of bacteria that includes species causing cat-scratch disease.",
+			robots: "index,dontfollow",
+			keywords: "Bartonella, cat-scratch disease, bacterial infections"
+		},
+		{
+			name: "Borreliella",
+			href: "/view/Taxonomy/64895",
+			title: "Borreliella - Spirochetes Linked to Lyme Disease",
+			description: "Learn about Borreliella, a genus of spirochetes associated with Lyme disease.",
+			robots: "index,dontfollow",
+			keywords: "Borreliella, Lyme disease, spirochetes"
+		},
+		{
+			name: "Brucella",
+			href: "/view/Taxonomy/234",
+			title: "Brucella - Zoonotic Disease-Causing Bacteria",
+			description: "Access information on Brucella, bacteria that cause brucellosis, a zoonotic disease.",
+			robots: "index,dontfollow",
+			keywords: "Brucella, brucellosis, zoonotic diseases"
+		},
+		{
+			name: "Burkholderia",
+			href: "/view/Taxonomy/32008",
+			title: "Burkholderia - Pathogens with Diverse Metabolic Capabilities",
+			description: "Examine Burkholderia, a genus known for its diverse metabolic capabilities and pathogenic species.",
+			robots: "index,dontfollow",
+			keywords: "Burkholderia, metabolic diversity, bacterial pathogens"
+		},
+		{
+			name: "Campylobacter",
+			href: "/view/Taxonomy/194",
+			title: "Campylobacter - Foodborne Illness-Causing Bacteria",
+			description: "Explore Campylobacter, a genus of bacteria often implicated in foodborne illnesses.",
+			robots: "index,dontfollow",
+			keywords: "Campylobacter, foodborne illnesses, bacterial infections"
+		},
+		{
+			name: "Chlamydia",
+			href: "/view/Taxonomy/810",
+			title: "Chlamydia - Intracellular Bacteria and Infections",
+			description: "Dive into Chlamydia, a genus of obligate intracellular bacteria associated with various infections.",
+			robots: "index,dontfollow",
+			keywords: "Chlamydia, intracellular bacteria, bacterial infections"
+		},
+		{
+			name: "Clostridium",
+			href: "/view/Taxonomy/1485",
+			title: "Clostridium - Bacteria Causing Tetanus and Botulism",
+			description: "Discover Clostridium, a genus that includes species causing tetanus, botulism, and gas gangrene.",
+			robots: "index,dontfollow",
+			keywords: "Clostridium, tetanus, botulism, gas gangrene"
+		},
+		{
+			name: "Coxiella",
+			href: "/view/Taxonomy/776",
+			title: "Coxiella - Bacteria Behind Q Fever",
+			description: "Learn about Coxiella, the genus that includes C. burnetii, the causative agent of Q fever.",
+			robots: "index,dontfollow",
+			keywords: "Coxiella, Q fever, bacterial infections"
+		},
+		{
+			name: "Ehrlichia",
+			href: "/view/Taxonomy/943",
+			title: "Ehrlichia - Tick-Borne Bacteria Causing Ehrlichiosis",
+			description: "Find information on Ehrlichia, a genus of bacteria transmitted by ticks and causing ehrlichiosis.",
+			robots: "index,dontfollow",
+			keywords: "Ehrlichia, tick-borne diseases, ehrlichiosis"
+		},
+		{
+			name: "Escherichia",
+			href: "/view/Taxonomy/561",
+			title: "Escherichia - E. coli and Biotechnology Applications",
+			description: "Access Escherichia data, including E. coli, widely studied for its role in microbiology and biotechnology.",
+			robots: "index,dontfollow",
+			keywords: "Escherichia, E. coli, microbiology, biotechnology"
+		},
+		{
+			name: "Francisella",
+			href: "/view/Taxonomy/262",
+			title: "Francisella - Bacteria Causing Tularemia",
+			description: "Examine Francisella, a genus that includes F. tularensis, the cause of tularemia.",
+			robots: "index,dontfollow",
+			keywords: "Francisella, tularemia, bacterial pathogens"
+		},
+		{
+			name: "Helicobacter",
+			href: "/view/Taxonomy/209",
+			title: "Helicobacter - Bacteria Linked to Peptic Ulcers",
+			description: "Explore Helicobacter, including H. pylori, known for its association with peptic ulcers.",
+			robots: "index,dontfollow",
+			keywords: "Helicobacter, H. pylori, peptic ulcers"
+		},
+		{
+			name: "Listeria",
+			href: "/view/Taxonomy/1637",
+			title: "Listeria - Bacteria Causing Listeriosis",
+			description: "Learn about Listeria, a genus of bacteria that includes species causing listeriosis.",
+			robots: "index,dontfollow",
+			keywords: "Listeria, listeriosis, bacterial pathogens"
+		},
+		{
+			name: "Mycobacterium",
+			href: "/view/Taxonomy/1763",
+			title: "Mycobacterium - Tuberculosis and Other Infections",
+			description: "Access data on Mycobacterium, including M. tuberculosis, the agent of tuberculosis.",
+			robots: "index,dontfollow",
+			keywords: "Mycobacterium, tuberculosis, bacterial infections"
+		},
+		{
+			name: "Pseudomonas",
+			href: "/view/Taxonomy/286",
+			title: "Pseudomonas - Environmental Versatility and Pathogenicity",
+			description: "Investigate Pseudomonas, a genus with species known for environmental versatility and pathogenicity.",
+			robots: "index,dontfollow",
+			keywords: "Pseudomonas, environmental versatility, bacterial pathogens"
+		},
+		{
+			name: "Rickettsia",
+			href: "/view/Taxonomy/780",
+			title: "Rickettsia - Bacteria Behind Rocky Mountain Spotted Fever",
+			description: "Discover Rickettsia, obligate intracellular bacteria causing diseases like Rocky Mountain spotted fever.",
+			robots: "index,dontfollow",
+			keywords: "Rickettsia, Rocky Mountain spotted fever, intracellular bacteria"
+		},
+		{
+			name: "Salmonella",
+			href: "/view/Taxonomy/590",
+			title: "Salmonella - Foodborne Illnesses and Typhoid Fever",
+			description: "Learn about Salmonella, a genus linked to foodborne illnesses and typhoid fever.",
+			robots: "index,dontfollow",
+			keywords: "Salmonella, foodborne illnesses, typhoid fever"
+		},
+		{
+			name: "Shigella",
+			href: "/view/Taxonomy/620",
+			title: "Shigella - Bacteria Causing Shigellosis",
+			description: "Explore Shigella, bacteria responsible for causing shigellosis, a severe intestinal disease.",
+			robots: "index,dontfollow",
+			keywords: "Shigella, shigellosis, intestinal infections"
+		},
+		{
+			name: "Staphylococcus",
+			href: "/view/Taxonomy/1279",
+			title: "Staphylococcus - Hospital-Acquired Infections",
+			description: "Access Staphylococcus data, including S. aureus, known for its role in hospital-acquired infections.",
+			robots: "index,dontfollow",
+			keywords: "Staphylococcus, S. aureus, hospital infections"
+		},
+		{
+			name: "Streptococcus",
+			href: "/view/Taxonomy/1301",
+			title: "Streptococcus - Strep Throat and Other Infections",
+			description: "Investigate Streptococcus, a genus with species causing strep throat and other infections.",
+			robots: "index,dontfollow",
+			keywords: "Streptococcus, strep throat, bacterial infections"
+		},
+		{
+			name: "Vibrio",
+			href: "/view/Taxonomy/662",
+			title: "Vibrio - Bacteria Behind Cholera Outbreaks",
+			description: "Dive into Vibrio, including V. cholerae, known for causing cholera outbreaks.",
+			robots: "index,dontfollow",
+			keywords: "Vibrio, cholera, bacterial infections"
+		},
+		{
+			name: "Yersinia",
+			href: "/view/Taxonomy/629",
+			title: "Yersinia - Bacteria Linked to the Plague",
+			description: "Learn about Yersinia, including Y. pestis, the causative agent of plague.",
+			robots: "index,dontfollow",
+			keywords: "Yersinia, plague, bacterial pathogens"
+		}
+	];
+
+	var virus = [
+		{
+			name: "Virus",
+			href: "/view/Taxonomy/10239",
+			title: "Virus - Explore Pathogens and Beneficial Microorganisms",
+			description: "Explore the diverse world of viruses, from common pathogens to beneficial microorganisms.",
+			robots: "index,dontfollow",
+			keywords: "viruses, viral pathogens, beneficial microorganisms"
+		},
+		{
+			name: "Adenoviridae",
+			href: "/view/Taxonomy/10508",
+			title: "Adenoviridae - Viruses Causing Respiratory and Gastrointestinal Infections",
+			description: "Explore Adenoviridae, a family of viruses causing respiratory and gastrointestinal infections.",
+			robots: "index,dontfollow",
+			keywords: "Adenoviridae, respiratory infections, gastrointestinal viruses"
+		},
+		{
+			name: "Asfarviridae",
+			href: "/view/Taxonomy/137992",
+			title: "Asfarviridae - African Swine Fever Virus Family",
+			description: "Discover Asfarviridae, the family that includes the African swine fever virus.",
+			robots: "index,dontfollow",
+			keywords: "Asfarviridae, African swine fever, viral pathogens"
+		},
+		{
+			name: "Bunyavirales",
+			href: "/view/Taxonomy/1980410",
+			title: "Bunyavirales - Hantaviruses and Other Viral Pathogens",
+			description: "Investigate Bunyavirales, an order of viruses that includes pathogens like hantaviruses.",
+			robots: "index,dontfollow",
+			keywords: "Bunyavirales, hantaviruses, viral pathogens"
+		},
+		{
+			name: "Caliciviridae",
+			href: "/view/Taxonomy/11974",
+			title: "Caliciviridae - Noroviruses Causing Gastroenteritis",
+			description: "Access data on Caliciviridae, a family of viruses that includes noroviruses causing gastroenteritis.",
+			robots: "index,dontfollow",
+			keywords: "Caliciviridae, noroviruses, gastroenteritis"
+		},
+		{
+			name: "Coronaviridae",
+			href: "/view/Taxonomy/11118",
+			title: "Coronaviridae - SARS-CoV and SARS-CoV-2 Virus Family",
+			description: "Explore Coronaviridae, the family of viruses including SARS-CoV and SARS-CoV-2.",
+			robots: "index,dontfollow",
+			keywords: "Coronaviridae, SARS-CoV, SARS-CoV-2, coronaviruses"
+		},
+		{
+			name: "Filoviridae",
+			href: "/view/Taxonomy/11266",
+			title: "Filoviridae - Ebola and Marburg Virus Family",
+			description: "Discover Filoviridae, the family of viruses including Ebola and Marburg viruses.",
+			robots: "index,dontfollow",
+			keywords: "Filoviridae, Ebola virus, Marburg virus"
+		},
+		{
+			name: "Flaviviridae",
+			href: "/view/Taxonomy/11050",
+			title: "Flaviviridae - Zika, Dengue, and West Nile Virus Family",
+			description: "Learn about Flaviviridae, including Zika, dengue, and West Nile viruses.",
+			robots: "index,dontfollow",
+			keywords: "Flaviviridae, Zika virus, dengue virus, West Nile virus"
+		},
+		{
+			name: "Hepadnaviridae",
+			href: "/view/Taxonomy/10404",
+			title: "Hepadnaviridae - Hepatitis B Virus Family",
+			description: "Access Hepadnaviridae data, the family that includes hepatitis B virus.",
+			robots: "index,dontfollow",
+			keywords: "Hepadnaviridae, hepatitis B virus, viral pathogens"
+		},
+		{
+			name: "Hepeviridae",
+			href: "/view/Taxonomy/291484",
+			title: "Hepeviridae - Hepatitis E Virus Family",
+			description: "Examine Hepeviridae, a family of viruses that includes hepatitis E virus.",
+			robots: "index,dontfollow",
+			keywords: "Hepeviridae, hepatitis E virus, viral infections"
+		},
+		{
+			name: "Herpesvirales",
+			href: "/view/Taxonomy/548681",
+			title: "Herpesvirales - Viruses Causing Herpes and Chickenpox",
+			description: "Explore Herpesvirales, an order of viruses causing diseases like herpes and chickenpox.",
+			robots: "index,dontfollow",
+			keywords: "Herpesvirales, herpes, chickenpox, viral diseases"
+		},
+		{
+			name: "Orthomyxoviridae",
+			href: "/view/Taxonomy/11308",
+			title: "Orthomyxoviridae - Influenza Virus Family",
+			description: "Discover Orthomyxoviridae, the family that includes influenza viruses.",
+			robots: "index,dontfollow",
+			keywords: "Orthomyxoviridae, influenza viruses, flu pathogens"
+		},
+		{
+			name: "Paramyxoviridae",
+			href: "/view/Taxonomy/11158",
+			title: "Paramyxoviridae - Measles and Mumps Virus Family",
+			description: "Learn about Paramyxoviridae, a family of viruses including measles and mumps pathogens.",
+			robots: "index,dontfollow",
+			keywords: "Paramyxoviridae, measles, mumps, viral infections"
+		},
+		{
+			name: "Parvoviridae",
+			href: "/view/Taxonomy/10780",
+			title: "Parvoviridae - Small DNA Viruses Family",
+			description: "Investigate Parvoviridae, a family of small DNA viruses including parvoviruses.",
+			robots: "index,dontfollow",
+			keywords: "Parvoviridae, parvoviruses, DNA viruses"
+		},
+		{
+			name: "Picornaviridae",
+			href: "/view/Taxonomy/12058",
+			title: "Picornaviridae - Poliovirus and Rhinovirus Family",
+			description: "Dive into Picornaviridae, a family of viruses that includes poliovirus and rhinovirus.",
+			robots: "index,dontfollow",
+			keywords: "Picornaviridae, poliovirus, rhinovirus, viral infections"
+		},
+		{
+			name: "Pneumoviridae",
+			href: "/view/Taxonomy/11244",
+			title: "Pneumoviridae - Respiratory Syncytial Virus (RSV) Family",
+			description: "Discover Pneumoviridae, a family of viruses including respiratory syncytial virus (RSV).",
+			robots: "index,dontfollow",
+			keywords: "Pneumoviridae, RSV, respiratory viruses"
+		},
+		{
+			name: "Polyomaviridae",
+			href: "/view/Taxonomy/151341",
+			title: "Polyomaviridae - Viruses Infecting Mammals and Birds",
+			description: "Learn about Polyomaviridae, a family of viruses infecting mammals and birds.",
+			robots: "index,dontfollow",
+			keywords: "Polyomaviridae, mammalian viruses, avian viruses"
+		},
+		{
+			name: "Poxviridae",
+			href: "/view/Taxonomy/10240",
+			title: "Poxviridae - Smallpox and Variola Virus Family",
+			description: "Explore Poxviridae, a family of viruses that includes variola virus causing smallpox.",
+			robots: "index,dontfollow",
+			keywords: "Poxviridae, variola virus, smallpox, viral diseases"
+		},
+		{
+			name: "Reovirales",
+			href: "/view/Taxonomy/2732541",
+			title: "Reovirales - Rotavirus and Other Viral Pathogens",
+			description: "Examine Reovirales, an order of viruses including rotaviruses.",
+			robots: "index,dontfollow",
+			keywords: "Reovirales, rotaviruses, viral pathogens"
+		},
+		{
+			name: "Rhabdoviridae",
+			href: "/view/Taxonomy/11270",
+			title: "Rhabdoviridae - Rabies Virus Family",
+			description: "Investigate Rhabdoviridae, a family of viruses including rabies virus.",
+			robots: "index,dontfollow",
+			keywords: "Rhabdoviridae, rabies virus, viral infections"
+		},
+		{
+			name: "Togaviridae",
+			href: "/view/Taxonomy/11018",
+			title: "Togaviridae - Chikungunya Virus Family",
+			description: "Dive into Togaviridae, a family of viruses including chikungunya virus.",
+			robots: "index,dontfollow",
+			keywords: "Togaviridae, chikungunya virus, viral diseases"
+		}
+	];
+
+	var featuredVirus = [
+		{
+			name: "Bacteriophages",
+			href: "/view/GenomeList/?eq(genome_name,phage)",
+			title: "Bacteriophages - Viruses Infecting Bacteria",
+			description: "Explore bacteriophages, viruses that infect and replicate within bacteria.",
+			robots: "index,dontfollow",
+			keywords: "bacteriophages, phage therapy, bacterial viruses"
+		},
+		{
+			name: "Dengue virus",
+			href: "/view/Taxonomy/12637",
+			title: "Dengue Virus - Mosquito-Borne Virus Causing Dengue Fever",
+			description: "Learn about the Dengue virus, a mosquito-borne virus causing dengue fever.",
+			robots: "index,dontfollow",
+			keywords: "Dengue virus, mosquito-borne diseases, dengue fever"
+		},
+		{
+			name: "Ebolavirus",
+			href: "/view/Taxonomy/186536",
+			title: "Ebolavirus - Virus Causing Severe Hemorrhagic Fever",
+			description: "Discover Ebolavirus, known for causing severe hemorrhagic fever in humans.",
+			robots: "index,dontfollow",
+			keywords: "Ebolavirus, hemorrhagic fever, Ebola virus"
+		},
+		{
+			name: "Enterovirus",
+			href: "/view/Taxonomy/12059",
+			title: "Enterovirus - Includes Poliovirus and Coxsackievirus",
+			description: "Investigate Enterovirus, a genus of viruses including poliovirus and coxsackievirus.",
+			robots: "index,dontfollow",
+			keywords: "Enterovirus, poliovirus, coxsackievirus, viral pathogens"
+		},
+		{
+			name: "Hepacivirus",
+			href: "/view/Taxonomy/11102",
+			title: "Hepacivirus - Includes Hepatitis C Virus",
+			description: "Access information on Hepacivirus, which includes the hepatitis C virus.",
+			robots: "index,dontfollow",
+			keywords: "Hepacivirus, hepatitis C virus, viral infections"
+		},
+		{
+			name: "Influenza A virus",
+			href: "/view/Taxonomy/11320",
+			title: "Influenza A Virus - Major Cause of Seasonal Flu",
+			description: "Explore Influenza A virus, a major cause of seasonal flu epidemics.",
+			robots: "index,dontfollow",
+			keywords: "Influenza A virus, seasonal flu, viral infections"
+		},
+		{
+			name: "Mammarenavirus lassaense",
+			href: "/view/Taxonomy/3052310",
+			title: "Mammarenavirus Lassaense - Virus Causing Lassa Fever",
+			description: "Learn about Mammarenavirus lassaense, the virus responsible for Lassa fever.",
+			robots: "index,dontfollow",
+			keywords: "Mammarenavirus lassaense, Lassa fever, hemorrhagic fever"
+		},
+		{
+			name: "Monkeypox virus",
+			href: "/view/Taxonomy/10244",
+			title: "Monkeypox Virus - Similar to Smallpox",
+			description: "Examine Monkeypox virus, a virus similar to smallpox causing monkeypox disease.",
+			robots: "index,dontfollow",
+			keywords: "Monkeypox virus, smallpox, zoonotic diseases"
+		},
+		{
+			name: "SARS-CoV-2",
+			href: "/view/Taxonomy/2697049",
+			title: "SARS-CoV-2 - Virus Responsible for COVID-19",
+			description: "Study SARS-CoV-2, the virus responsible for the COVID-19 pandemic.",
+			robots: "index,dontfollow",
+			keywords: "SARS-CoV-2, COVID-19, coronavirus pandemic"
+		},
+		{
+			name: "Zika virus",
+			href: "/view/Taxonomy/64320",
+			title: "Zika Virus - Mosquito-Borne Virus Linked to Birth Defects",
+			description: "Investigate Zika virus, a mosquito-borne virus linked to birth defects.",
+			robots: "index,dontfollow",
+			keywords: "Zika virus, mosquito-borne diseases, birth defects"
+		}
+	];
+
+	var toolsAndServices = [
+		{
+			name: "Genome Assembly",
+			href: "/app/Assembly2",
+			title: "Genome Assembly - Assemble Genomes from Sequencing Data",
+			description: "Assemble genomes from sequencing data.",
+			robots: "index,follow",
+			keywords: "genome assembly, sequencing data, bioinformatics tools"
+		},
+		{
+			name: "Genome Annotation",
+			href: "/app/Annotation",
+			title: "Genome Annotation - Add Functional Information to Genomes",
+			description: "Annotate genomes with functional information.",
+			robots: "index,follow",
+			keywords: "genome annotation, functional genomics, bioinformatics tools"
+		},
+		{
+			name: "Comprehensive Genome Analysis",
+			href: "/app/ComprehensiveGenomeAnalysis",
+			title: "Comprehensive Genome Analysis - Analyze Genomes in Detail",
+			description: "Perform a comprehensive analysis of genomes.",
+			robots: "index,follow",
+			keywords: "genome analysis, bioinformatics workflows, genomic insights"
+		},
+		{
+			name: "BLAST",
+			href: "/app/Homology",
+			title: "BLAST - Search for Sequence Similarity",
+			description: "Search for sequence similarity using BLAST.",
+			robots: "index,follow",
+			keywords: "BLAST search, sequence similarity, bioinformatics tools"
+		},
+		{
+			name: "Primer Design",
+			href: "/app/PrimerDesign",
+			title: "Primer Design - Create Primers for PCR Experiments",
+			description: "Design primers for PCR experiments.",
+			robots: "index,follow",
+			keywords: "primer design, PCR experiments, bioinformatics tools"
+		},
+		{
+			name: "Similar Genome Finder",
+			href: "/app/GenomeDistance",
+			title: "Similar Genome Finder - Find Similar Genomes",
+			description: "Find genomes similar to a query genome.",
+			robots: "index,follow",
+			keywords: "genome similarity, comparative genomics, bioinformatics tools"
+		},
+		{
+			name: "Genome Alignment",
+			href: "/app/GenomeAlignment",
+			title: "Genome Alignment - Compare Multiple Genomes",
+			description: "Align multiple genomes to identify similarities and differences.",
+			robots: "index,follow",
+			keywords: "genome alignment, multiple genome comparison, bioinformatics"
+		},
+		{
+			name: "Variation Analysis",
+			href: "/app/Variation",
+			title: "Variation Analysis - Analyze Genetic Variations",
+			description: "Analyze genetic variations within genomes.",
+			robots: "index,follow",
+			keywords: "variation analysis, genetic variations, bioinformatics workflows"
+		},
+		{
+			name: "Tn-Seq Analysis",
+			href: "/app/Tnseq",
+			title: "Tn-Seq Analysis - Study Transposon Sequencing Data",
+			description: "Analyze transposon sequencing data.",
+			robots: "index,follow",
+			keywords: "Tn-Seq, transposon sequencing, bioinformatics analysis"
+		},
+		{
+			name: "Bacterial Genome Tree",
+			href: "/app/PhylogeneticTree",
+			title: "Bacterial Genome Tree - Build Phylogenetic Trees for Bacteria",
+			description: "Construct phylogenetic trees for bacterial genomes.",
+			robots: "index,follow",
+			keywords: "phylogenetic tree, bacterial genomes, evolutionary analysis"
+		},
+		{
+			name: "Viral Genome Tree",
+			href: "/app/ViralGenomeTree",
+			title: "Viral Genome Tree - Build Phylogenetic Trees for Viruses",
+			description: "Construct phylogenetic trees for viral genomes.",
+			robots: "index,follow",
+			keywords: "viral phylogenetics, genome tree, evolutionary analysis"
+		},
+		{
+			name: "Gene/Protein Tree",
+			href: "/app/GeneTree",
+			title: "Gene/Protein Tree - Build Phylogenetic Trees for Genes or Proteins",
+			description: "Construct phylogenetic trees for genes or proteins.",
+			robots: "index,follow",
+			keywords: "gene phylogenetics, protein phylogenetics, evolutionary analysis"
+		},
+		{
+			name: "MSA and SNP Analysis",
+			href: "/app/MSA",
+			title: "MSA and SNP Analysis - Perform Multiple Sequence Alignment",
+			description: "Perform multiple sequence alignment and SNP analysis.",
+			robots: "index,follow",
+			keywords: "MSA, multiple sequence alignment, SNP analysis, bioinformatics"
+		},
+		{
+			name: "Meta-CATS",
+			href: "/app/MetaCATS",
+			title: "Meta-CATS - Conduct Meta-Analysis of Categorical Data",
+			description: "Conduct meta-analysis of categorical data.",
+			robots: "index,follow",
+			keywords: "meta-analysis, categorical data, bioinformatics tools"
+		},
+		{
+			name: "Proteome Comparison",
+			href: "/app/SeqComparison",
+			title: "Proteome Comparison - Compare Proteomes Across Organisms",
+			description: "Compare proteomes across different organisms.",
+			robots: "index,follow",
+			keywords: "proteome comparison, protein analysis, bioinformatics tools"
+		},
+		{
+			name: "Protein Family Sorter",
+			href: "/app/ComparativeSystems",
+			title: "Protein Family Sorter - Classify Proteins for Comparative Analysis",
+			description: "Sort proteins into families for comparative analysis.",
+			robots: "index,follow",
+			keywords: "protein families, comparative analysis, bioinformatics"
+		},
+		{
+			name: "Comparative Systems",
+			href: "/app/ComparativeSystems",
+			title: "Comparative Systems - Analyze Systems Biology Data",
+			description: "Analyze comparative systems biology data.",
+			robots: "index,follow",
+			keywords: "comparative systems biology, bioinformatics analysis, systems biology"
+		},
+		{
+			name: "Docking",
+			href: "/app/Docking",
+			title: "Docking - Perform Molecular Docking Simulations",
+			description: "Perform molecular docking simulations.",
+			robots: "index,follow",
+			keywords: "molecular docking, docking simulations, bioinformatics tools"
+		},
+		{
+			name: "Taxonomic Classification",
+			href: "/app/TaxonomicClassification",
+			title: "Taxonomic Classification - Classify Sequences into Categories",
+			description: "Classify sequences into taxonomic categories.",
+			robots: "index,follow",
+			keywords: "taxonomic classification, sequence taxonomy, bioinformatics tools"
+		},
+		{
+			name: "Metagenomic Binning",
+			href: "/app/MetagenomicBinning",
+			title: "Metagenomic Binning - Organize Sequences into OTUs",
+			description: "Bin metagenomic sequences into operational taxonomic units.",
+			robots: "index,follow",
+			keywords: "metagenomic binning, OTUs, bioinformatics analysis"
+		},
+		{
+			name: "Metagenomic Read Mapping",
+			href: "/app/MetagenomicReadMapping",
+			title: "Metagenomic Read Mapping - Map Reads to Reference Genomes",
+			description: "Map metagenomic reads to reference genomes.",
+			robots: "index,follow",
+			keywords: "metagenomic mapping, read mapping, bioinformatics workflows"
+		},
+		{
+			name: "RNA-Seq Analysis",
+			href: "/app/Rnaseq",
+			title: "RNA-Seq Analysis - Analyze Gene Expression Data",
+			description: "Analyze RNA-Seq data for gene expression.",
+			robots: "index,follow",
+			keywords: "RNA-Seq analysis, gene expression, bioinformatics tools"
+		},
+		{
+			name: "Expression Import",
+			href: "/app/Expression",
+			title: "Expression Import - Analyze Imported Gene Expression Data",
+			description: "Import and analyze gene expression data.",
+			robots: "index,follow",
+			keywords: "gene expression import, expression analysis, bioinformatics"
+		},
+		{
+			name: "Fastq Utilities",
+			href: "/app/FastqUtil",
+			title: "Fastq Utilities - Perform Operations on FASTQ Files",
+			description: "Perform various utilities on FASTQ files.",
+			robots: "index,follow",
+			keywords: "FASTQ utilities, sequencing files, bioinformatics tools"
+		},
+		{
+			name: "ID Mapper",
+			href: "/app/IDMapper",
+			title: "ID Mapper - Map Identifiers Across Databases",
+			description: "Map identifiers between different databases.",
+			robots: "index,follow",
+			keywords: "ID mapping, database identifiers, bioinformatics tools"
+		},
+		{
+			name: "SARS-CoV-2 Genome Analysis",
+			href: "/app/ComprehensiveSARS2Analysis",
+			title: "SARS-CoV-2 Genome Analysis - Study COVID-19 Genomes",
+			description: "Analyze SARS-CoV-2 genomes.",
+			robots: "index,follow",
+			keywords: "SARS-CoV-2 analysis, COVID-19 genomes, viral bioinformatics"
+		},
+		{
+			name: "SARS-CoV-2 Wastewater Analysis",
+			href: "/app/SARS2Wastewater",
+			title: "SARS-CoV-2 Wastewater Analysis - Monitor COVID-19 in Wastewater",
+			description: "Analyze SARS-CoV-2 in wastewater samples.",
+			robots: "index,follow",
+			keywords: "SARS-CoV-2 wastewater analysis, COVID-19 tracking, bioinformatics tools"
+		},
+		{
+			name: "Influenza Sequence Submission",
+			href: "/app/SequenceSubmission",
+			title: "Influenza Sequence Submission - Submit Sequences for Analysis",
+			description: "Submit influenza sequences for analysis.",
+			robots: "index,follow",
+			keywords: "influenza sequence submission, viral sequencing, bioinformatics tools"
+		},
+		{
+			name: "Influenza HA Subtype Conversion",
+			href: "/app/HASubtypeNumberingConversion",
+			title: "Influenza HA Subtype Conversion - Convert HA Numbering",
+			description: "Convert HA subtype numbering for influenza.",
+			robots: "index,follow",
+			keywords: "influenza subtype conversion, HA numbering, viral bioinformatics"
+		},
+		{
+			name: "Subspecies Classification",
+			href: "/app/SubspeciesClassification",
+			title: "Subspecies Classification - Classify Based on Genetic Data",
+			description: "Classify subspecies based on genetic data.",
+			robots: "index,follow",
+			keywords: "subspecies classification, genetic classification, bioinformatics tools"
+		}
+	];
+
+	var aboutLinks = [
+		{
+			name: "About BV-BRC",
+			href: "/about",
+			title: "About BV-BRC - Learn About the Bioinformatics Resource",
+			description: "Learn more about the Bacterial and Viral Bioinformatics Resource Center (BV-BRC).",
+			robots: "index,follow",
+			keywords: "about BV-BRC, bioinformatics resource, bacterial and viral research"
+		},
+		{
+			name: "Our Team",
+			href: "/team",
+			title: "Our Team - Meet the Researchers and Developers at BV-BRC",
+			description: "Meet the team behind BV-BRC, including researchers and developers.",
+			robots: "index,follow",
+			keywords: "BV-BRC team, bioinformatics researchers, developers"
+		},
+		{
+			name: "BRC Calendar",
+			href: "/brc-calendar",
+			title: "BRC Calendar - View Events and Important Dates",
+			description: "View upcoming events and important dates related to BV-BRC.",
+			robots: "index,follow",
+			keywords: "BRC events, bioinformatics calendar, BV-BRC dates"
+		},
+		{
+			name: "Publications",
+			href: "/publications",
+			title: "Publications - Research Papers from BV-BRC",
+			description: "Access a list of publications and research papers associated with BV-BRC.",
+			robots: "index,follow",
+			keywords: "BV-BRC publications, research papers, bioinformatics resources"
+		},
+		{
+			name: "Citation",
+			href: "/citation",
+			title: "Citation - Properly Cite BV-BRC in Your Research",
+			description: "Find out how to properly cite BV-BRC in your research and publications.",
+			robots: "index,follow",
+			keywords: "BV-BRC citation, research citation, bioinformatics citation"
+		},
+		{
+			name: "Related Resources",
+			href: "/related-resources",
+			title: "Related Resources - Explore Additional Bioinformatics Tools",
+			description: "Explore additional resources and tools related to BV-BRC.",
+			robots: "index,follow",
+			keywords: "related resources, bioinformatics tools, BV-BRC resources"
+		},
+		{
+			name: "Privacy Policy",
+			href: "/privacy-policy",
+			title: "Privacy Policy - Learn How BV-BRC Handles Your Data",
+			description: "Read the privacy policy to understand how BV-BRC handles your data.",
+			robots: "index,follow",
+			keywords: "BV-BRC privacy policy, data handling, user privacy"
+		}
+	];
+
+	const url = request.originalUrl || '';
+	function findMetaTag(items, tag) {
+		if (url.includes('workspace')) {
+			return null;
+		}
+		for (let item of items) {
+			if (url.startsWith(item.href)) {
+				return item[tag];
+			}
+		}
+		return null;
+	}
+
+	// Consolidated function usage to find description and robots meta tags
+	let pageDescription = '';
+	let robots = '';
+	let keywords = '';
+	let title = '';
+
+	pageDescription =
+		findMetaTag(bacteria, "description") ||
+		findMetaTag(virus, "description") ||
+		findMetaTag(featuredVirus, "description") ||
+		findMetaTag(searches, "description") ||
+		findMetaTag(toolsAndServices, "description") ||
+		findMetaTag(aboutLinks, "description") ||
+		findMetaTag(routes, "description") ||
+		pageDescription;
+
+	robots =
+		findMetaTag(bacteria, "robots") ||
+		findMetaTag(virus, "robots") ||
+		findMetaTag(featuredVirus, "robots") ||
+		findMetaTag(searches, "robots") ||
+		findMetaTag(toolsAndServices, "robots") ||
+		findMetaTag(aboutLinks, "robots") ||
+		findMetaTag(routes, "robots") ||
+		robots;
+
+	keywords =
+		findMetaTag(bacteria, "keywords") ||
+		findMetaTag(virus, "keywords") ||
+		findMetaTag(featuredVirus, "keywords") ||
+		findMetaTag(searches, "keywords") ||
+		findMetaTag(toolsAndServices, "keywords") ||
+		findMetaTag(aboutLinks, "keywords") ||
+		findMetaTag(routes, "keywords") ||
+		keywords;
+
+	title =
+		findMetaTag(bacteria, "title") ||
+		findMetaTag(virus, "title") ||
+		findMetaTag(featuredVirus, "title") ||
+		findMetaTag(searches, "title") ||
+		findMetaTag(toolsAndServices, "title") ||
+		findMetaTag(aboutLinks, "title") ||
+		findMetaTag(routes, "title") ||
+		title;
+	%>
+
+	<% if (pageDescription?.length > 0) {%>
+		<meta name="description" content="<%= pageDescription %>"/>
+	<% } %>
+	<% if (robots?.length > 0) { %>
+		<meta name="robots" content="<%= robots %>"/>
+	<% } %>
+	<% if (keywords?.length > 0) { %>
+		<meta name="keywords" content="<%= keywords %>"/>
+	<% } %>
+	<% if (title?.length > 0) { %>
+		<meta name="title" content="<%= title %>"/>
+	<% } %>
+
+
+	<meta charset="UTF-8"/>
 	<meta name="Keywords" content="BV-BRC, Bacterial and Viral Bioinformatics Resource Center"/>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta name="google-site-verification" content="TkjceNtwo7upCQl_gx8Zmhhp9tCmc08LitZGuvQ1Eb8" />
-	<link rel="manifest" href="/public/manifest.json">
-	<link rel="icon" sizes="16x16 32x32" href="/favicon.ico">
-	<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+	<link rel="manifest" href="/public/manifest.json"/>
+	<link rel="icon" sizes="16x16 32x32" href="/favicon.ico"/>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet"/>
+
+	<% if (!request.originalUrl || !request.originalUrl.includes('workspace')) { %>
+		<link rel="canonical" href="<%= request.originalUrl ? 'https://bv-brc.org' + request.originalUrl : 'https://bv-brc.org' %>"/>
+	<% } %>
