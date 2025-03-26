@@ -1,0 +1,91 @@
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
+  dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+  <div class="appTemplate">
+    <div class="appTitle">
+      <span class="breadcrumb">Services</span>
+      <h3>${applicationLabel}
+        <div name="overview" class="infobox iconbox infobutton dialoginfo">
+          <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+        </div>
+        <div class="infobox iconbox tutorialButton tutorialInfo">
+          <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
+        </div>
+        <div class="infobox iconbox videoButton videoInfo">
+          <a href="${videoLink}" target="_blank" ><i class="fa icon-play-circle fa-1x" title="click to open the video tutorial"></i></a>
+        </div>
+      </h3>
+      <p>
+        ${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a>, <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a> and <a href="${videoLink}" target="_blank">Instructional Video</a>.
+      </p>
+    </div>
+    <div class="formFieldsContainer">
+      <div style="width:97%;" class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Select a Genome Group</label>
+          <div name="start-with" class="infobox iconbox infobutton dialoginfo">
+            <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+          </div>
+        </div>
+        <div class="appRow">
+          <div class="appRow">
+            <label class="paramlabel">Select Genome Group</label><br>
+            <!-- <div style="width:78%;display:inline-block;"  -->
+            <div style="width:100%;display:inline-block;" 
+              data-dojo-type="p3/widget/WorkspaceObjectSelector" 
+              name="input_genome_group" required="false" 
+              data-dojo-attach-point="input_genome_group" 
+              data-dojo-attach-event="click:onAddGenomeGroup"
+              data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is required.', placeHolder:'Select an exisiting Genome Group'">
+            </div>
+            <br>
+        </div>
+      </div>
+    </div>
+    <div style="width:97%;" class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Parameters:</label>
+            <div name="parameters" class="infobox iconbox infobutton dialoginfo">
+              <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+            </div>
+        </div>
+      <div class="appRow">
+        <label class="paramlabel">Output Folder</label><br>
+        <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path"
+          required="true"
+          data-dojo-props="allowUpload:false,title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false,placeHolder:'Output Folder'"
+          data-dojo-attach-event="onChange:onOutputPathChange"></div>
+      </div>
+      <div class="appRow">
+        <label class="paramlabel">Output Name</label><span class="charError"
+          style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+        <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
+          data-dojo-attach-event="onChange:checkOutputName" name="output_file" data-dojo-attach-point="output_file"
+          style="width:85%" required="true"
+          data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="appSubmissionArea">
+    <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
+      style="margin-top:10px; text-align:center;">
+      Checking compatibility Genome ID and Selected Schema
+    </div>
+    <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
+      style="margin-top:10px; text-align:center;">
+      Error Submitting Job. Check that your genome group is within the supported schemas listed in the Tutorial.
+    </div>
+    <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+      style="margin-top:10px; text-align:center;">
+      Your job has been submitted successfully. Please visit your <a
+        data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job and
+      access
+      the results.
+    </div>
+    <div style="margin-top: 10px; text-align:center;">
+      <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+      <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
+    </div>
+  </div>
+</form>
