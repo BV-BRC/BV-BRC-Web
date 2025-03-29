@@ -3431,7 +3431,7 @@ define([
           text: 'host_common_name',
           editable: true
         }, {
-          name: 'Host Gender',
+          name: 'Host Sex',
           text: 'host_gender',
           editable: true
         }, {
