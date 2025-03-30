@@ -58,31 +58,27 @@ define([
       }
     },
 
-    onAddGenomeGroup: function (groupType) {
-      console.log("Create New Row", domConstruct);
-      var lrec = {};
-      lrec.groupType = groupType;
-      var path = lrec[this.input_genome_group];
-      if (path == '') {
+    onAddGenomeGroup: function () {
+      console.log("Fetching genome group path...");
+      
+      var path = this.input_genome_group;
+      if (!path) {
+        console.warn("No genome group path provided.");
         return;
       }
-      var loadingQueryString = '.loading-status-' + groupType;
-      domStyle.set( query(loadingQueryString)[0], 'display', 'block');
+    
       when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
-        domStyle.set( query(loadingQueryString)[0], 'display', 'none');
-        if (typeof res.data == 'string') {
+        if (typeof res.data === "string") {
           res.data = JSON.parse(res.data);
         }
-        if (res && res.data && res.data.id_list) {
-          if (res.data.id_list.genome_id) {
-            var newGenomeIds =  res.data.id_list.genome_id;
-            this.checkBacterialGenomes(newGenomeIds, groupType, false, path);
-          }
+    
+        if (res?.data?.id_list?.genome_id) {
+          var newGenomeIds = res.data.id_list.genome_id;
+          this.checkBacterialGenomes(newGenomeIds, groupType, false, path);
         }
       }));
-
-      // console.log(lrec);
     },
+    
 
         // function is from phylogenetic tree
         //  TO DO update to check genome
