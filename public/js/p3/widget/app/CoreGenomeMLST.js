@@ -140,33 +140,6 @@ define([
       return genomes_valid;
     },
 
-    // // nb dev 3/17/2025
-    // // NOTE:NOTE:change the function in the template
-    // onSelectSchema: function() {
-    //   var schemaStore= new Memory({
-    //     // name is the name displayed
-    //     // id is the data directory within the schema dirs
-    //     data: [
-    //       {name: "Acinetobacter baumannii", id: "Acinetobacter_baumannii"},
-    //       {name: "Bacillus anthracis", id: "Bacillus_anthracis"},
-    //       {name: "Bordetella pertussis", id: "Bordetella_pertussis"},
-    //       {name: "Brucella melitensis", id: "Brucella_melitensis"},
-    //       {name: "Brucella spp.", id: "Brucella_spp."},
-    //       {name: "Burkholderia mallei (FLI)", id: "Burkholderia_mallei_FLI"},
-    //       {name: "Burkholderia mallei (RKI)", id: "Burkholderia_mallei_RKI"},
-    //       {name: "Burkholderia pseudomallei", id: "Burkholderia_pseudomallei"}
-    //     ]
-    //   });
-
-    //   // Initalize the Filtering Select widget
-    //   var filteringSelect_ = new FilteringSelect({
-    //     store: schemaStore,  // connects to the Memory Store
-    //     searchAttr: "name", // search according to the name
-    //     required: true, // this tool needs a selected schema
-    //   }, "myFilteringSelect");
-    //   filteringSelect_.startup(); //s start the widget
-    // },
-
     onSelectSchema: function () {
       var schemaStore = new Memory({
         data: [
