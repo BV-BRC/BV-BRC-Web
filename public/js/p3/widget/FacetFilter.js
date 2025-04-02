@@ -2,12 +2,14 @@ define([
   'dojo/_base/declare', 'dojo/on', 'dojo/_base/Deferred', 'dijit/_Templated',
   'dojo/dom-class', 'dojo/dom-construct', 'dijit/_WidgetBase', 'dijit/form/TextBox',
   'dojo/_base/xhr', 'dojo/_base/lang', 'dojo/dom-attr', 'dojo/query',
-  'dojo/dom-geometry', 'dojo/dom-style', 'dojo/when'
+  'dojo/dom-geometry', 'dojo/dom-style', 'dojo/when', 
+  '../util/constructMetadataName',
 ], function (
   declare, on, Deferred, Templated,
   domClass, domConstruct, WidgetBase, TextBox,
   xhr, lang, domAttr, Query,
-  domGeometry, domStyle, when
+  domGeometry, domStyle, when,
+  constructMetadataName
 ) {
 
   return declare([WidgetBase, Templated], {
@@ -24,11 +26,10 @@ define([
     },
 
     _setCategoryAttr: function (category) {
-      var cat = category.replace(/_/g, ' ');
       this._set('category', category);
 
       if (this._started && this.categoryNode) {
-        this.categoryNode.innerHTML = cat.replace(/_/g, ' ');
+        this.categoryNode.innerHTML = constructMetadataName(category);
       }
     },
 
@@ -308,7 +309,7 @@ define([
       this.inherited(arguments);
       on(this.domNode, '.FacetValue:click', lang.hitch(this, 'toggleItem'));
       if (this.categoryNode && this.category) {
-        this.categoryNode.innerHTML = this.category.replace(/_/g, ' ');
+        this.categoryNode.innerHTML = constructMetadataName(this.category);
       }
       on(this.searchBtn, 'click', lang.hitch(this, 'toggleSearch'));
       this.createFacetFilters()
