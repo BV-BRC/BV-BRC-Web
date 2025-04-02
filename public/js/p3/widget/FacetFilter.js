@@ -24,11 +24,11 @@ define([
     },
 
     _setCategoryAttr: function (category) {
-//      var cat = category.replace(/_/g, ' ');
+      var cat = category.replace(/_/g, ' ');
       this._set('category', category);
 
       if (this._started && this.categoryNode) {
-        this.categoryNode.innerHTML = this.construct_label(category);
+        this.categoryNode.innerHTML = cat.replace(/_/g, ' ');
       }
     },
 
@@ -92,18 +92,6 @@ define([
         }
       }
     },
-
-    /* Given an attribute key, construct the user-visible name for the field */
-    construct_label: function(name) {
-	if (name = "host_gender") {
-	    return "Host Sex";
-	}
-	else
-	{
-	    return name.replace(/_/g, ' ')
-	}
-    },
-
 
     toggle: function (name, value) {
       name = name.replace(/"/g, '');
@@ -320,7 +308,7 @@ define([
       this.inherited(arguments);
       on(this.domNode, '.FacetValue:click', lang.hitch(this, 'toggleItem'));
       if (this.categoryNode && this.category) {
-        this.categoryNode.innerHTML = this.constuct_label(this.category);
+        this.categoryNode.innerHTML = this.category.replace(/_/g, ' ');
       }
       on(this.searchBtn, 'click', lang.hitch(this, 'toggleSearch'));
       this.createFacetFilters()
