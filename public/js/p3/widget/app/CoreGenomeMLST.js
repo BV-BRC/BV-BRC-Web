@@ -4,7 +4,7 @@ define([
   'dojo/text!./templates/CoreGenomeMLST.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox', 'dijit/form/Textarea', 'dijit/form/Select', 'dijit/form/FilteringSelect',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog', '../../DataAPI',
-  'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when',
+  'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when', 'dojo/dom-style',
 ], function (
   declare, WidgetBase, Topic, on,
   domClass,
@@ -36,42 +36,19 @@ define([
     fid_value: '',
     validFasta: false,
     textInput: false,
-
-    // original start up function
-    // startup: function () {
-    //   var _self = this;
-    //   if (this._started) {
-    //     return;
-    //   }
-    //   if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
-    //     return;
-    //   }
-
-    //   this.inherited(arguments);
-    //   _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
-    //   _self.output_path.set('value', _self.defaultPath);
-    //   this._started = true;
-    //   this.form_flag = false;
-    //   try {
-    //     this.intakeRerunForm();
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // },
-
     startup: function () {
       var _self = this;
-      console.log("app base start up is being called")
+
       this.inherited(arguments);
       if (this._started) {
         return;
       }
 
-      // nb dev
+
       // Call the startup of the base class explicitly
       this.constructor.superclass.startup.apply(this, arguments);
+      this.inherited(arguments);
 
-      // original
       if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
@@ -113,31 +90,27 @@ define([
       }
     },
 
-    onAddGenomeGroup: function (groupType) {
-      console.log("Create New Row", domConstruct);
-      var lrec = {};
-      lrec.groupType = groupType;
-      var path = lrec[this.input_genome_group];
-      if (path == '') {
+    onAddGenomeGroup: function () {
+      console.log("Fetching genome group path...");
+      
+      var path = this.input_genome_group;
+      if (!path) {
+        console.warn("No genome group path provided.");
         return;
       }
-      var loadingQueryString = '.loading-status-' + groupType;
-      domStyle.set( query(loadingQueryString)[0], 'display', 'block');
+    
       when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
-        domStyle.set( query(loadingQueryString)[0], 'display', 'none');
-        if (typeof res.data == 'string') {
+        if (typeof res.data === "string") {
           res.data = JSON.parse(res.data);
         }
-        if (res && res.data && res.data.id_list) {
-          if (res.data.id_list.genome_id) {
-            var newGenomeIds =  res.data.id_list.genome_id;
-            this.checkBacterialGenomes(newGenomeIds, groupType, false, path);
-          }
+    
+        if (res?.data?.id_list?.genome_id) {
+          var newGenomeIds = res.data.id_list.genome_id;
+          this.checkBacterialGenomes(newGenomeIds, groupType, false, path);
         }
       }));
-
-      // console.log(lrec);
     },
+    
         // function is from phylogenetic tree
         //  TO DO update to check genome
     validate: function () {
