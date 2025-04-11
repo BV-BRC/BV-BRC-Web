@@ -28,6 +28,7 @@ define([
      * Provides methods for chat sessions, queries, and message management.
      */
     return declare([_WidgetBase], {
+
         /** Base URL for main Copilot API endpoints */
         apiUrlBase: 'https://dev-3.bv-brc.org/copilot-api/chatbrc',
 
