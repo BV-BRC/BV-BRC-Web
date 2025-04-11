@@ -2,30 +2,47 @@
  * @module p3/widget/ChatSessionScrollBar
  * @description A ContentPane-based widget that displays a scrollable list of chat sessions.
  * Manages fetching, rendering and updating of chat session cards.
+ *
+ * Implementation:
+ * - Extends ContentPane to provide scrollable container functionality
+ * - Maintains list of chat sessions and handles updates
+ * - Creates ChatSessionScrollCard widgets for each session
+ * - Provides API for adding/updating sessions
  */
 define([
-  'dojo/_base/declare',
-  'dijit/layout/ContentPane',
-  'dojo/dom-construct',
-  'dojo/on',
-  'dojo/_base/lang',
-  'dojo/topic',
-  './ChatSessionScrollCard'
+  'dojo/_base/declare', // Base class for creating Dojo classes
+  'dijit/layout/ContentPane', // Parent class for scrollable container
+  'dojo/dom-construct', // DOM manipulation utilities
+  'dojo/on', // Event handling
+  'dojo/_base/lang', // Language utilities like hitch
+  'dojo/topic', // Pub/sub messaging
+  './ChatSessionScrollCard' // Individual session card widget
 ], function (
   declare, ContentPane, domConstruct, on, lang, topic, ChatSessionScrollCard
 ) {
   /**
    * @class ChatSessionScrollBar
    * @extends {dijit/layout/ContentPane}
+   *
+   * Main widget class that manages the scrollable list of chat sessions.
+   * Handles session data storage, rendering, and updates.
    */
   return declare([ContentPane], {
-    /** @property {Array} sessions_list - Array to hold chat session data */
+    /**
+     * @property {Array} sessions_list
+     * Internal array to store chat session data objects
+     * Each object contains session metadata like id, title, etc
+     */
     sessions_list: [],
 
     /**
      * @constructor
      * @param {Object} args - Configuration arguments
-     * @description Initializes the widget and mixes in provided options
+     *
+     * Implementation:
+     * - Calls parent constructor
+     * - Mixes in any provided configuration options
+     * - Initializes empty sessions list
      */
     constructor: function(args) {
       this.inherited(arguments);
@@ -34,9 +51,13 @@ define([
 
     /**
      * @method postCreate
-     * @description Sets up the widget after creation
-     * Creates scrollable container and fetches initial sessions
-     * Subscribes to session reload events
+     * Called after widget is created but before being rendered
+     *
+     * Implementation:
+     * - Creates scrollable container div that fills parent
+     * - Sets up flex column layout for session cards
+     * - Fetches initial session data
+     * - Subscribes to reload events to refresh sessions
      */
     postCreate: function() {
       this.inherited(arguments);
@@ -53,8 +74,13 @@ define([
 
     /**
      * @method renderSessions
-     * @description Renders the list of chat session cards
-     * Clears existing content and creates new cards for each session
+     * Renders the full list of chat session cards
+     *
+     * Implementation:
+     * - Clears existing content from container
+     * - Creates new ChatSessionScrollCard widget for each session
+     * - Places cards in container in order
+     * - Maintains consistent styling and layout
      */
     renderSessions: function() {
         // Clear existing content
@@ -73,7 +99,11 @@ define([
     /**
      * @method addSession
      * @param {Object} session - Session object to add
-     * @description Adds a new session to the list and re-renders
+     *
+     * Implementation:
+     * - Adds new session object to internal array
+     * - Triggers re-render of all sessions
+     * - Maintains array order
      */
     addSession: function(session) {
       this.sessions_list.push(session);
@@ -83,7 +113,11 @@ define([
     /**
      * @method setSessions
      * @param {Array} sessions - Array of session objects
-     * @description Updates the full list of sessions and re-renders
+     *
+     * Implementation:
+     * - Replaces entire sessions array with new data
+     * - Triggers complete re-render
+     * - Used for bulk updates
      */
     setSessions: function(sessions) {
       this.sessions_list = sessions;
@@ -92,8 +126,13 @@ define([
 
     /**
      * @method getSessions
-     * @description Fetches user's chat sessions from the API
-     * Updates the sessions list when complete
+     * Fetches user's chat sessions from API
+     *
+     * Implementation:
+     * - Calls API method to get user sessions
+     * - Updates internal sessions list with response
+     * - Handles promise resolution
+     * - Uses lang.hitch to maintain scope
      */
     getSessions: function() {
       this.copilotApi.getUserSessions().then(lang.hitch(this, function(sessions) {

@@ -2,12 +2,18 @@
  * @module p3/store/ChatSessionMemoryStore
  * @description A Memory store implementation for managing chat session messages.
  * Extends dojo/store/Memory to provide storage and retrieval of chat messages.
+ *
+ * Implementation:
+ * - Stores chat messages in memory as an array
+ * - Provides methods to add, query, and manage messages
+ * - Uses message_id as unique identifier for messages
+ * - Handles session title updates
  */
 define([
-  'dojo/_base/declare',
-  'dojo/store/Memory',
-  'dojo/_base/lang',
-  'dojo/topic'
+  'dojo/_base/declare', // Base class for creating Dojo classes
+  'dojo/store/Memory', // Parent class for in-memory data store
+  'dojo/_base/lang', // Language utilities
+  'dojo/topic' // Pub/sub messaging
 ], function (
   declare,
   Memory,
@@ -19,9 +25,12 @@ define([
     /**
      * @constructor
      * @param {Object} options - Configuration options for the store
-     * @description Initializes the chat session memory store.
-     * Sets up message_id as the unique identifier property and initializes an empty data array.
-     * Mixes in any provided options.
+     *
+     * Implementation:
+     * - Calls parent Memory constructor
+     * - Sets message_id as unique identifier
+     * - Initializes empty data array
+     * - Mixes in any provided options
      */
     constructor: function(options) {
       this.inherited(arguments);
@@ -33,7 +42,10 @@ define([
     /**
      * @method setData
      * @param {Array} messages - Array of message objects to store
-     * @description Replaces the entire store contents with the provided messages array
+     *
+     * Implementation:
+     * - Completely replaces existing data array with new messages
+     * - Used for bulk loading/resetting of message history
      */
     setData: function(messages) {
       this.data = messages;
@@ -42,7 +54,10 @@ define([
     /**
      * @method addMessage
      * @param {Object} message - Single message object to add
-     * @description Appends a single message to the store
+     *
+     * Implementation:
+     * - Appends single message to end of data array
+     * - Used for adding individual new messages
      */
     addMessage: function(message) {
       this.data.push(message);
@@ -51,7 +66,11 @@ define([
     /**
      * @method addMessages
      * @param {Array} messages - Array of message objects to add
-     * @description Appends multiple messages to the store using spread operator
+     *
+     * Implementation:
+     * - Uses spread operator to append multiple messages
+     * - More efficient than adding messages one at a time
+     * - Maintains message order from input array
      */
     addMessages: function(messages) {
       this.data.push(...messages);
@@ -59,7 +78,11 @@ define([
 
     /**
      * @method clearData
-     * @description Removes all messages from the store by resetting to empty array
+     *
+     * Implementation:
+     * - Resets data array to empty
+     * - Used when starting new chat session
+     * - Removes all existing messages
      */
     clearData: function() {
       this.data = [];
@@ -67,10 +90,13 @@ define([
 
     /**
      * @method query
-     * @param {Object} query - Query parameters (unused in current implementation)
-     * @returns {Array} The complete array of stored messages
-     * @description Returns all messages in the store. Query parameter included for API compatibility
-     * but currently unused.
+     * @param {Object} query - Query parameters (unused)
+     * @returns {Array} Complete array of stored messages
+     *
+     * Implementation:
+     * - Returns entire data array unfiltered
+     * - Query param included for API compatibility
+     * - Could be extended to support filtering in future
      */
     query: function(query) {
       return this.data;
@@ -80,7 +106,11 @@ define([
      * @method updateSessionTitle
      * @param {string} sessionId - Session identifier
      * @param {string} newTitle - New title for the session
-     * @description Updates the title of a chat session
+     *
+     * Implementation:
+     * - Iterates through all messages
+     * - Updates title field for messages matching sessionId
+     * - Used when user renames a chat session
      */
     updateSessionTitle: function(sessionId, newTitle) {
       this.data.forEach(message => {

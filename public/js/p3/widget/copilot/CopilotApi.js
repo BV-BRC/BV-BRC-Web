@@ -2,6 +2,13 @@
  * @module p3/widget/CopilotApi
  * @description A widget that handles API communication between the frontend and the PATRIC Copilot backend service.
  * Provides methods for managing chat sessions, submitting queries, and retrieving messages.
+ *
+ * Implementation:
+ * - Extends _WidgetBase to provide widget functionality
+ * - Uses dojo/request for making HTTP requests to backend API
+ * - Handles authentication via App.authorizationToken
+ * - Provides comprehensive error handling and logging
+ * - Maintains session state and caches responses
  */
 define([
     'dojo/_base/declare',
@@ -16,19 +23,23 @@ define([
     /**
      * @class CopilotAPI
      * @extends {dijit/_WidgetBase}
+     *
+     * Main API client class that handles all communication with the Copilot backend.
+     * Provides methods for chat sessions, queries, and message management.
      */
     return declare([_WidgetBase], {
-        /** @property {string} apiUrlBase - Base URL for the Copilot API endpoints */
+        /** Base URL for main Copilot API endpoints */
         apiUrlBase: 'https://dev-3.bv-brc.org/copilot-api/chatbrc',
+
+        /** Base URL for database-related endpoints */
         dbUrlBase: 'https://dev-3.bv-brc.org/copilot-api/db',
 
-        /** @property {Object} storedResult - Stores the last API response */
+        /** Caches the most recent API response */
         storedResult: null,
 
         /**
-         * @constructor
-         * @param {Object} opts - Configuration options
-         * @description Initializes the widget and mixes in provided options
+         * Constructor initializes the widget with provided options
+         * Mixes in any config options passed to override defaults
          */
         constructor: function(opts) {
             this.inherited(arguments);
@@ -36,8 +47,8 @@ define([
         },
 
         /**
-         * @method postCreate
-         * @description Lifecycle method called after widget creation
+         * Called after widget creation
+         * Currently just logs creation event
          */
         postCreate: function() {
             this.inherited(arguments);
@@ -45,9 +56,12 @@ define([
         },
 
         /**
-         * @method getUserSessions
-         * @returns {Promise<Array>} Promise resolving to array of user's chat sessions
-         * @description Fetches all chat sessions for the current user
+         * Fetches all chat sessions for current user
+         * Implementation:
+         * - Makes GET request to sessions endpoint
+         * - Handles auth via headers
+         * - Parses JSON response
+         * - Returns empty array if no sessions found
          */
         getUserSessions: function() {
             var _self = this;
@@ -67,9 +81,11 @@ define([
         },
 
         /**
-         * @method getNewSessionId
-         * @returns {Promise<string>} Promise resolving to new session ID
-         * @description Initiates a new chat session and returns its ID
+         * Starts a new chat session
+         * Implementation:
+         * - Makes GET request to start-chat endpoint
+         * - Returns new session ID on success
+         * - Publishes error events on failure
          */
         getNewSessionId: function() {
             return request.get(this.apiUrlBase + '/start-chat', {
@@ -89,12 +105,13 @@ define([
         },
 
         /**
-         * @method submitQuery
-         * @param {string} inputText - User's query text
-         * @param {string} sessionId - Current session identifier
-         * @param {string} systemPrompt - Optional system prompt to use
-         * @returns {Promise<Object>} Promise resolving to API response
-         * @description Submits a user query to the Copilot chat service
+         * Submits a regular chat query
+         * Implementation:
+         * - Builds query data object with text, model, session
+         * - Optionally includes system prompt if provided
+         * - Makes POST request to chat endpoint
+         * - Caches response in storedResult
+         * - Handles errors with detailed logging
          */
         submitQuery: function(inputText, sessionId, systemPrompt, model) {
             var _self = this;
@@ -127,11 +144,12 @@ define([
         },
 
         /**
-         * @method submitRagQuery
-         * @param {string} inputQuery - User's query text
-         * @param {string} ragDb - RAG database to use
-         * @returns {Promise<Object>} Promise resolving to API response
-         * @description Submits a user query to the Copilot chat service with RAG
+         * Submits a RAG-enhanced query
+         * Implementation:
+         * - Similar to submitQuery but uses RAG endpoint
+         * - Includes RAG database selection in query
+         * - Validates success message in response
+         * - Throws error if response indicates failure
          */
         submitRagQuery: function(inputQuery, ragDb, sessionId, model) {
             var _self = this;
@@ -162,10 +180,11 @@ define([
         },
 
         /**
-         * @method getSessionMessages
-         * @param {string} sessionId - Session identifier
-         * @returns {Promise<Object>} Promise resolving to session messages
-         * @description Retrieves all messages for a given chat session
+         * Retrieves all messages for a session
+         * Implementation:
+         * - Makes GET request with session ID
+         * - Returns full message history
+         * - Includes detailed error logging
          */
         getSessionMessages: function(sessionId) {
             var _self = this;
@@ -183,6 +202,13 @@ define([
             });
         },
 
+        /**
+         * Generates a title from chat messages
+         * Implementation:
+         * - Posts messages to title generation endpoint
+         * - Uses specified model for generation
+         * - Returns generated title string
+         */
         generateTitleFromMessages: function(messages, model) {
             var _self = this;
             return request.post(this.apiUrlBase + '/generate-title-from-messages', {
@@ -206,11 +232,11 @@ define([
         },
 
         /**
-         * @method updateSessionTitle
-         * @param {string} sessionId - Session identifier
-         * @param {string} newTitle - New title for the session
-         * @returns {Promise<Object>} Promise resolving to updated session data
-         * @description Updates the title of a chat session
+         * Updates a session's title
+         * Implementation:
+         * - Posts new title to update endpoint
+         * - Includes session and user IDs
+         * - Returns updated session data
          */
         updateSessionTitle: function(sessionId, newTitle) {
             var _self = this;
@@ -234,6 +260,12 @@ define([
             });
         },
 
+        /**
+         * Retrieves saved prompts for user
+         * Implementation:
+         * - Gets prompts from user prompts endpoint
+         * - Returns first prompt in array
+         */
         getUserPrompts: function() {
             var _self = this;
             return request.get(this.apiUrlBase + '/get-user-prompts?user_id=' + _self.user_id, {
@@ -249,6 +281,13 @@ define([
             });
         },
 
+        /**
+         * Saves a new prompt
+         * Implementation:
+         * - Posts prompt name and text
+         * - Shows dialog for length errors
+         * - Publishes general errors to topic
+         */
         savePrompt: function(promptName, promptText) {
             var _self = this;
             return request.post(this.apiUrlBase + '/save-prompt', {
@@ -280,6 +319,13 @@ define([
             });
         },
 
+        /**
+         * Deletes a chat session
+         * Implementation:
+         * - Posts session ID to delete endpoint
+         * - Returns response on success
+         * - Throws error on failure
+         */
         deleteSession: function(sessionId) {
             var _self = this;
             return request.post(this.apiUrlBase + '/delete-session', {
@@ -301,6 +347,13 @@ define([
             });
         },
 
+        /**
+         * Gets list of available models
+         * Implementation:
+         * - Posts to model list endpoint
+         * - Returns both chat models and RAG databases
+         * - Uses test project ID currently
+         */
         getModelList: function() {
             var _self = this;
             return request.post(this.dbUrlBase + '/get-model-list', {

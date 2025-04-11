@@ -3,16 +3,23 @@
  * @description A widget that displays a single chat session as a clickable card.
  * Renders session details like ID, creation date and title in a styled container.
  * Handles click interactions to load and display the selected chat session.
+ *
+ * Implementation:
+ * - Extends _WidgetBase and _TemplatedMixin for widget functionality
+ * - Uses HTML template with attachment points for dynamic content
+ * - Handles session data display, styling and click interactions
+ * - Manages session deletion through delete button
+ * - Provides hover effects and visual feedback
  */
 define([
-    'dojo/_base/declare',
-    'dijit/_WidgetBase',
-    'dijit/_TemplatedMixin',
-    'dojo/dom-construct',
-    'dojo/on',
-    'dojo/topic',
-    'dojo/_base/lang',
-    './CopilotApi'
+    'dojo/_base/declare', // Base class for creating Dojo classes
+    'dijit/_WidgetBase', // Base widget functionality
+    'dijit/_TemplatedMixin', // Template support
+    'dojo/dom-construct', // DOM manipulation
+    'dojo/on', // Event handling
+    'dojo/topic', // Pub/sub messaging
+    'dojo/_base/lang', // Language utilities
+    './CopilotApi' // API for chat operations
 ], function (
     declare,
     _WidgetBase,
@@ -25,15 +32,17 @@ define([
 ) {
     /**
      * @class ChatSessionScrollCard
-     * @extends {dijit/_WidgetBase}
-     * @extends {dijit/_TemplatedMixin}
+     * Main widget class for displaying individual chat session cards
+     * Handles display and interaction for a single chat session
      */
     return declare([_WidgetBase, _TemplatedMixin], {
         /**
-         * @property {string} templateString - HTML template for the card layout
-         * Defines attachment points for title, session ID and date elements
+         * HTML template for card layout with attachment points
+         * Structure:
+         * - Container div with chat-session-card class
+         * - Title section
+         * - Date container with date and delete button
          */
-        // '<div class="session-id" data-dojo-attach-point="sessionIdNode"></div>' +
         templateString: '<div class="chat-session-card" data-dojo-attach-point="containerNode">' +
             '<div class="session-title" data-dojo-attach-point="titleNode"></div>' +
             '<div class="session-date-container" style="display: flex; justify-content: space-between; align-items: center;">' +
@@ -42,50 +51,55 @@ define([
             '</div>' +
         '</div>',
 
-        /** @property {string} baseClass - CSS class name for the root node */
+        /** CSS class for root node styling */
         baseClass: 'chat-session-card',
 
-        /** @property {Object} session - Chat session data object */
+        /** Stores chat session data passed to widget */
         session: null,
 
-        /** @property {Object} copilotApi - Reference to the CopilotAPI instance */
+        /** Reference to CopilotAPI for backend operations */
         copilotApi: null,
 
         /**
-         * @method postCreate
-         * @description Initializes the card after creation
-         * Applies styles, populates session data and sets up event handlers
+         * Initializes card after creation
+         * - Applies container and element styles
+         * - Sets up session data display
+         * - Configures event handlers
+         *
+         * Implementation:
+         * 1. Style container with fixed dimensions and positioning
+         * 2. Style delete button with hover effects
+         * 3. Display session data (date, title)
+         * 4. Set up click handlers for session loading
+         * 5. Configure delete button behavior
+         * 6. Add hover effects
          */
         postCreate: function() {
             this.inherited(arguments);
 
-            // Update container styles to lock position and limit height
+            // Container styling for fixed positioning and dimensions
             this.containerNode.style.cssText =
                 'width: 100%; height: 110px; max-height: 110px; background-color: #f0f0f0; ' +
                 'border: 1px solid #ccc; border-radius: 0px; cursor: pointer; ' +
                 'padding: 10px; transition: background-color 0.2s; ' +
-                'position: relative; margin:0px; ' +  // Changed position and added margin
-                'left: 0; right: 0; ' +  // Lock horizontal position
-                'box-sizing: border-box;'; // Ensure padding is included in width calculation
+                'position: relative; margin:0px; ' +
+                'left: 0; right: 0; ' +
+                'box-sizing: border-box;';
 
-            // Style delete button
+            // Delete button styling with hover effects
             this.deleteButtonNode.style.cssText =
                 'cursor: pointer; width: auto; height: 20px; text-align: center; line-height: 20px; ' +
                 'border-radius: 0; background-color: #f0f0f0; color: #808080; ' +
                 'font-size: 12px; display: flex; align-items: center; justify-content: center; padding: 0 5px;';
 
             if (this.session) {
-                // Display session ID
-                // this.sessionIdNode.innerHTML = 'Session ID: ' + this.session.session_id;
-                // this.sessionIdNode.style.cssText = 'font-weight: bold; margin-bottom: 5px;';
-
-                // Format and display creation date
+                // Display formatted creation date
                 if (this.session.created_at) {
                     this.dateNode.innerHTML = new Date(this.session.created_at).toLocaleString().split(',')[0];
                     this.dateNode.style.cssText = 'font-size: 0.9em;';
                 }
 
-                // Display session title if available, limited to 65 chars
+                // Display truncated title (max 60 chars)
                 if (this.session.title) {
                     this.titleNode.innerHTML = this.session.title.length > 60 ?
                         this.session.title.substring(0, 60) + '...' :
@@ -93,9 +107,8 @@ define([
                     this.titleNode.style.cssText = 'font-weight: bold; margin-bottom: 5px;';
                 }
 
-                // Set up click handler to load session messages
+                // Click handler to load session messages
                 on(this.containerNode, 'click', lang.hitch(this, function(evt) {
-                    // Don't trigger if clicking delete button
                     if (evt.target === this.deleteButtonNode) {
                         return;
                     }
@@ -115,38 +128,31 @@ define([
                     }
                 }));
 
-                // Set up delete button click handler
+                // Delete button interaction handlers
                 on(this.deleteButtonNode, 'mousedown', lang.hitch(this, function(evt) {
-                    evt.stopPropagation(); // Prevent container click
-                    this.deleteButtonNode.style.backgroundColor = '#d0d0d0'; // Darker when pressed
+                    evt.stopPropagation();
+                    this.deleteButtonNode.style.backgroundColor = '#d0d0d0';
                 }));
                 on(this.deleteButtonNode, 'mouseup', lang.hitch(this, function(evt) {
                     evt.stopPropagation();
-                    this.deleteButtonNode.style.backgroundColor = '#f0f0f0'; // Original color
+                    this.deleteButtonNode.style.backgroundColor = '#f0f0f0';
                 }));
                 on(this.deleteButtonNode, 'mouseleave', lang.hitch(this, function(evt) {
                     evt.stopPropagation();
-                    this.deleteButtonNode.style.backgroundColor = '#f0f0f0'; // Reset if mouse leaves while pressed
+                    this.deleteButtonNode.style.backgroundColor = '#f0f0f0';
                 }));
                 on(this.deleteButtonNode, 'click', lang.hitch(this, function(evt) {
                     evt.stopPropagation();
                     topic.publish('ChatSession:Delete', this.session.session_id);
                 }));
 
-                // Add hover effect styles
+                // Container hover effects
                 on(this.containerNode, 'mouseover', function() {
                     this.style.backgroundColor = '#e0e0e0';
                 });
                 on(this.containerNode, 'mouseout', function() {
                     this.style.backgroundColor = '#f0f0f0';
                 });
-
-                // Generate title from first message if no title exists
-                /*
-                if (this.session.messages && this.session.messages.length > 0) {
-                    this.titleNode.innerHTML = this.session.messages[0].content.substring(0, 20);
-                }
-                */
             }
         }
     });
