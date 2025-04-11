@@ -9,7 +9,7 @@ define([
   'dijit/Dialog',
   './CopilotDisplay',
   './ChatSessionController',
-  './CopilotAPI',
+  './CopilotApi',
   './ChatSessionOptionsBar'
 ], function (
   declare,
