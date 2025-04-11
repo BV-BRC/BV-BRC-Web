@@ -53,6 +53,7 @@ define([
 
       // Add click handler to toggle window and create new button
       on(this.buttonNode, 'click', lang.hitch(this, function(evt) {
+        console.log('copilotApi = ', this.copilotApi);
         this.copilotApi.getModelList().then(lang.hitch(this, function(modelsAndRag) {
 
           var modelList = JSON.parse(modelsAndRag.models);
