@@ -507,7 +507,7 @@ define(['./formatter'], function (formatter) {
       group: 'Host Info'
     },
     host_gender: {
-      label: 'Host Gender',
+      label: 'Host Sex',
       field: 'host_gender',
       hidden: true,
       group: 'Host Info'
