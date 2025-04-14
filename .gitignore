@@ -1,4 +1,5 @@
 p3-web.conf
+package-lock.json
 node_modules/
 *.swp
 .DS_Store
