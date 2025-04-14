@@ -175,31 +175,65 @@
                 </div>
               </div>
               <div class="appRow" data-dojo-attach-point="advrow2" style="display: none">
-                  <div class="appRowSegment" style="margin:0 0 0 0">
-                    <label class="paramlabel">Trim reads before assembly</label>
-                    <div id="${id}_trim" name="trim" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="trim" checked></div>
+                <div class="appRowSegment" style="margin:0 0 0 0; text-align:left">
+
+                  <h4 style="margin-bottom:5px">Read Processing</h4>
+                  <div style="margin-left:10px">
+                    <div style="margin-bottom:8px">
+                      <label class="paramlabel">Normalize Illumina Reads</label>
+                      <div id="${id}_normalize" name="normalize" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="normalize" data-dojo-props="checked:true"></div>
+                    </div>
+                    <div style="margin-bottom:8px">
+                      <label class="paramlabel">Trim Short Reads</label>
+                      <div id="${id}_trim" name="trim" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="trim" checked></div>
+                    </div>
+                    <div style="margin-bottom:8px">
+                      <label class="paramlabel">Filter Long Reads</label>
+                      <div id="${id}_filter" name="filter" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="filter" checked></div>
+                    </div>
                   </div>
-                  <div class="appRowSegment" style="margin:0 0 0 0">
-                    <label class="paramlabel">Normalize Reads</label>
-                    <div id="${id}_normalize" name="normalize" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="normalize" checked></div>
-                  </div><br>
-                  <div class="appRowSegment" style="margin:0 0 0 0">
-                    <label class="paramlabel">Racon Iterations</label><br>
-                    <div class="insertspinner" name="racon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="racon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
+
+                  <h4 style="margin-bottom:5px">Genome Parameters</h4>
+                  <div style="margin-left:10px">
+                    <div style="margin-bottom:8px">
+                      <label class="paramlabel">Genome Coverage</label>
+                      <div class="insertspinner" name="coverage" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="coverage" data-dojo-props="value:200, smallDelta:50, constraints:{min:100,max:500,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                      x
+                    </div>
+                    <div style="margin-bottom:8px">
+                      <label class="paramlabel">Genome Size</label>
+                      <div class="insertspinner" name="expected_genome_size" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="expected_genome_size" data-dojo-props="value:5, smallDelta:1, constraints:{min:1,max:10,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                      <select style="width: 10%" name="genome_size_units" data-dojo-type="dijit/form/Select" data-dojo-attach-point="genome_size_units" data-dojo-attach-event="onChange:onGenomeSizeUnitsChange">
+                        <option value="M">M</option>
+                        <option value="K">K</option>
+                      </select>
+                    </div>
                   </div>
-                  <div class="appRowSegment" style="margin:10px 0 0 0">
-                    <label class="paramlabel">Pilon Iterations</label><br>
-                    <div class="insertspinner" name="pilon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="pilon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
+
+                  <h4 style="margin-bottom:5px">Assembly Polishing</h4>
+                  <div style="margin-left:10px">
+                    <div style="margin-bottom:8px">
+                      <label class="paramlabel">Racon Iterations</label>
+                      <div class="insertspinner" name="racon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="racon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                    </div>
+                    <div style="margin-bottom:8px">
+                      <label class="paramlabel">Pilon Iterations</label>
+                      <div class="insertspinner" name="pilon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="pilon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                    </div>
                   </div>
-                <div class="appRow" style="margin:0 0 0 0">
-                  <div class="appRowSegment" style="margin:0 0 0 0">
-                    <label class="paramlabel">Min. contig length</label><br>
-                    <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_len" data-dojo-props="value:300, smallDelta:10, constraints:{min:100,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
+
+                  <h4 style="margin-bottom:5px">Assembly Thresholds</h4>
+                  <div style="margin-left:10px">
+                    <div style="margin-bottom:8px">
+                      <label class="paramlabel">Min. contig length</label>
+                      <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_len" data-dojo-props="value:300, smallDelta:10, constraints:{min:100,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                    </div>
+                    <div style="margin-bottom:8px">
+                      <label class="paramlabel">Min. contig coverage</label>
+                      <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_cov" data-dojo-props="value:5, smallDelta:5, constraints:{min:0,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                    </div>
                   </div>
-                  <div class="appRowSegment" style="margin:10px 0 0 0">
-                    <label class="paramlabel">Min. contig coverage</label><br>
-                    <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_cov" data-dojo-props="value:5, smallDelta:5, constraints:{min:0,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
-                  </div>
+
                 </div>
               </div>
 

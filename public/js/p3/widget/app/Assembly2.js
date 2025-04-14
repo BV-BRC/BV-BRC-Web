@@ -154,11 +154,29 @@ define([
       if (Object.prototype.hasOwnProperty.call(values, 'normalize') && values.normalize) {
         assembly_values.normalize = (values.normalize[0] === 'on');
       }
+      if (Object.prototype.hasOwnProperty.call(values, 'filter') && values.filter) {
+        assembly_values.filtlong = (values.filter[0] === 'on');
+      }
+      if (Object.prototype.hasOwnProperty.call(values, 'coverage') && values.coverage) {
+        assembly_values.target_depth = values.coverage;
+      }
       if (Object.prototype.hasOwnProperty.call(values, 'min_contig_len') && values.min_contig_len) {
         assembly_values.min_contig_len = values.min_contig_len;
       }
       if (Object.prototype.hasOwnProperty.call(values, 'min_contig_cov') && values.min_contig_cov) {
         assembly_values.min_contig_cov = values.min_contig_cov;
+      }
+      if (Object.prototype.hasOwnProperty.call(values, 'expected_genome_size') && values.expected_genome_size) {
+        var expected_genome_size = parseInt(values.expected_genome_size);
+        var genome_size_units = values.genome_size_units;
+        var genome_size_value = 0;
+        if (genome_size_units == 'M') {
+          genome_size_value = 1000000;
+        }
+        else {
+          genome_size_value = 1000;
+        }
+        assembly_values.genome_size = genome_size_value * expected_genome_size;
       }
       return assembly_values;
     },
@@ -449,6 +467,20 @@ define([
       else {
         this.genome_size_block.style.display = 'none';
         this.checkParameterRequiredFields();
+      }
+    },
+
+    onGenomeSizeUnitsChange: function () {
+      console.log('genome_size_units = ', this.genome_size_units.value);
+      if (this.genome_size_units.value == 'M') {
+        this.expected_genome_size.set('constraints', { min: 1, max: 10, places: 0, smallDelta: 1 });
+        this.expected_genome_size.set('value', 5);
+        this.expected_genome_size.set('smallDelta', 1);
+      }
+      else { // K
+        this.expected_genome_size.set('constraints', { min: 100, max: 10000, places: 0 });
+        this.expected_genome_size.set('value', 500);
+        this.expected_genome_size.set('smallDelta', 100);
       }
     },
 
