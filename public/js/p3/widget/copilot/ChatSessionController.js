@@ -12,6 +12,7 @@ define([
   'dojo/dom-style',
   'dojo/on',
   'dojo/_base/lang',
+  'dojo/topic',
   './ChatSessionControllerPanel'
 ], function (
   declare,
@@ -22,6 +23,7 @@ define([
   domStyle,
   on,
   lang,
+  topic,
   ChatSessionControllerPanel
 ) {
 
@@ -61,6 +63,14 @@ define([
 
       // Initially hide the window
       this.hide();
+
+
+      topic.subscribe('hideChatPanel', lang.hitch(this, function() {
+        this.hide();
+      }));
+      topic.subscribe('showChatPanel', lang.hitch(this, function() {
+          this.show();
+      }));
     },
 
     show: function(buttonNode) {

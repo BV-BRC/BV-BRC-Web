@@ -16,7 +16,9 @@ define([
     'dijit/form/Button', // Button widget
     'dijit/form/Textarea', // Textarea widget
     'dojo/on', // Event handling
-    'dijit/form/CheckBox'  // Add CheckBox widget
+    'dijit/form/CheckBox',  // Add CheckBox widget
+    'dojo/topic',
+    'html2canvas/dist/html2canvas.min'
   ], function (
     declare,
     CopilotInput,
@@ -26,7 +28,9 @@ define([
     Button,
     Textarea,
     on,
-    CheckBox    // Include CheckBox in function parameters
+    CheckBox,
+    topic,
+    html2canvas
   ) {
 
     /**
@@ -100,7 +104,10 @@ define([
                 if (this.isSubmitting) return;
 
                 // Handle different submission types based on configuration
-                if (this.pageContentToggle.checked) {
+                // TODO: make it so only one of the following can be true at a time
+                if (this.screenshotToggle.checked) {
+                    this._handleScreenshotSubmit();
+                } else if (this.pageContentToggle.checked) {
                     this._handlePageContentSubmit();
                 } else if (this.copilotApi && this.ragDb) {
                     this._handleRagSubmit();
@@ -155,18 +162,31 @@ define([
                 style: 'display: flex; align-items: center; margin-left: 15px;'
             }, settingsDiv);
 
-            // Add label for the toggle
+            // Add label for the HTML toggle
             var toggleLabel = domConstruct.create('span', {
-                innerHTML: 'Page Content',
+                innerHTML: 'HTML',
                 style: 'margin-right: 5px; cursor: pointer;'
             }, toggleContainer);
 
-            // Create the toggle switch
+            // Create the HTML toggle switch
             this.pageContentToggle = new CheckBox({
                 checked: false,
                 style: 'cursor: pointer;'
             });
             this.pageContentToggle.placeAt(toggleContainer);
+
+            // Add label for the Screenshot toggle
+            var screenshotLabel = domConstruct.create('span', {
+                innerHTML: 'Screenshot',
+                style: 'margin-left: 15px; margin-right: 5px; cursor: pointer;'
+            }, toggleContainer);
+
+            // Create the Screenshot toggle switch
+            this.screenshotToggle = new CheckBox({
+                checked: false,
+                style: 'cursor: pointer;'
+            });
+            this.screenshotToggle.placeAt(toggleContainer);
 
             // Add CSS for toggle switch styling
             var style = document.createElement('style');
@@ -228,8 +248,8 @@ define([
             this.submitButton.set('disabled', true);
 
             this.displayWidget.showLoadingIndicator(this.chatStore.query());
+            const pageHtml = document.documentElement.innerHTML;
 
-            const pageHtml = document.documentElement.outerHTML;
             this.systemPrompt = 'You are a helpful assistant that can answer questions about the page content.\n' +
                 'Answer questions as if you were a user viewing the page.\n' +
                 'The page content is:\n' +
@@ -259,7 +279,47 @@ define([
                 this.isSubmitting = false;
                 this.submitButton.set('disabled', false);
             }));
-            }
+        },
 
+        /**
+         * @method _handleScreenshotSubmit
+         * @description Handles submission of screenshot
+         *
+         **/
+        _handleScreenshotSubmit: function() {
+            topic.publish('hideChatPanel');
+            // Take the screenshot
+            html2canvas(document.body).then(function(canvas) {
+                // Create download link
+                var link = document.createElement('a');
+                link.download = 'screenshot.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).finally(function() {
+                topic.publish('showChatPanel');
+            });
+        }
+
+                    /*
+                  '<button class="${baseClass}Button icon-camera" data-dojo-attach-point="cameraButtonNode"></button>' +
+
+                  // Add click handler for camera button
+      on(this.cameraButtonNode, 'click', lang.hitch(this, function(evt) {
+        html2canvas(document.body).then(function(canvas) {
+          // Create a download link
+          var link = document.createElement('a');
+          link.download = 'screenshot.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        }).catch(function(error) {
+          console.error('Error capturing screenshot:', error);
+          new Dialog({
+            title: "Screenshot Error",
+            content: "Failed to capture screenshot. Please try again.",
+            style: "width: 300px"
+          }).show();
+        });
+      }));
+            */
     });
   });
