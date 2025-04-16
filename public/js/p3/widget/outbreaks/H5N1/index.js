@@ -406,7 +406,7 @@ define([
       });
 
       this.map = new OutbreaksGeoMap({
-        title: 'Outbreak Map',
+        title: 'Map of Seq. Isolates',
         id: this.viewer.id + '_map',
         state: this.state,
         cattleMarkerColor: '#028c81',
