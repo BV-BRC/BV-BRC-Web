@@ -32,6 +32,7 @@
     "feedparser": "^2.2.10",
     "flag-icons": "^7.2.1",
     "formidable": "^2.1.2",
+    "html2canvas": "^1.4.1",
     "http-proxy": "^1.18.1",
     "httpntlm": "^1.8.13",
     "jbrowse": "github:GMOD/jbrowse#759433708fe59e2c0a09e781cf93dc7ec4670461",
