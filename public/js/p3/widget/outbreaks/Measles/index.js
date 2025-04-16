@@ -19,7 +19,7 @@ define([
     title: 'Measles 2025 Outbreak',
     segments: {1: 'PB2', 2: 'PB1', 3: 'PA', 4: 'HA', 5: 'NP', 6: 'NA', 7: 'M1, M2', 8: 'NS1, NEP'},
     googleNewsCount: 100,
-    googleNewsRSS: 'https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US%3Aen&oc=11&q=(measles)%20site%3Awww.cdc.gov%20OR%20site%3Anews.un.org%20OR%20site%3Awww.who.int%20OR%20site%3Awww.reuters.com%20OR%20site%3Acidrap.umn.edu&hl=en-US&gl=US&ceid=US%3Aen',
+    googleNewsRSS: 'https://news.google.com/rss/search?q=measles+(%22www.cdc.gov%22+OR+%22news.un.org%22+OR+%22www.who.int%22+OR+%22www.reuters.com%22+OR+%22cidrap.umn.edu%22)&hl=en-US&gl=US&ceid=US:en',
 
     onSetState: function (attr, oldVal, state) {
       if (!state) {
