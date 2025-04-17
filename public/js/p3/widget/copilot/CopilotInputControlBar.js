@@ -138,7 +138,7 @@ define([
                 evt.target.style.color = '';
                 },
                 onclick: lang.hitch(this, function() {
-                topic.publish('ragButtonPressed');
+                topic.publish('modelButtonPressed');
                 })
             }, settingsDiv);
 

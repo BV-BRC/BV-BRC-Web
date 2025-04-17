@@ -438,6 +438,23 @@ define([
                 }
             }));
 
+            // Handle model button clicks
+            topic.subscribe('modelButtonPressed', lang.hitch(this, function() {
+                console.log('model pressed');
+                if (modelDialog.visible) {
+                    popup.close(modelDialog);
+                    modelDialog.visible = false;
+                } else {
+                    setTimeout(function() {
+                        popup.open({
+                            popup: modelDialog,
+                            around: modelButton.domNode
+                        });
+                        modelDialog.visible = true;
+                    }, 100);
+                }
+            }));
+
             // Add New Chat button
             this.createNewButton = new Button({
                 label: 'New Chat',
