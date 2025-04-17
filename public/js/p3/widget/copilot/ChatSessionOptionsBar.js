@@ -308,6 +308,54 @@ define([
         },
 
         /**
+         * Creates dialog for managing RAG selection
+         * - Includes RAG selection dropdown
+         * - Publishes selected RAG DB on change
+         *
+         * @returns {TooltipDialog} Configured dialog for RAG selection
+         */
+        createRagDialog: function() {
+            var ragDialog = new TooltipDialog({
+                style: "width: 250px;",
+                content: document.createElement('div')
+            });
+
+            // Add RAG selection
+            var ragLabel = document.createElement('div');
+            ragLabel.textContent = 'RAG:';
+            ragLabel.style.marginBottom = '5px';
+            ragDialog.containerNode.appendChild(ragLabel);
+            this.ragDropdown = this.createRagDropdown();
+            ragDialog.containerNode.appendChild(this.ragDropdown);
+
+            return ragDialog;
+        },
+
+        /**
+         * Creates dialog for managing model selection
+         * - Includes model selection dropdown
+         * - Publishes selected model on change
+         *
+         * @returns {TooltipDialog} Configured dialog for model selection
+         */
+        createModelDialog: function() {
+            var modelDialog = new TooltipDialog({
+                style: "width: 250px;",
+                content: document.createElement('div')
+            });
+
+            // Add model selection
+            var modelLabel = document.createElement('div');
+            modelLabel.textContent = 'Model:';
+            modelLabel.style.marginBottom = '5px';
+            modelDialog.containerNode.appendChild(modelLabel);
+            this.modelDropdown = this.createModelDropdown();
+            modelDialog.containerNode.appendChild(this.modelDropdown);
+
+            return modelDialog;
+        },
+
+        /**
          * Sets up the widget after creation
          * - Creates options dialog with model and RAG selection
          * - Creates prompts dialog for system prompt management
@@ -317,52 +365,45 @@ define([
         postCreate: function() {
             this.inherited(arguments);
 
-            // Create options dialog
-            var optionsDialog = new TooltipDialog({
-                style: "width: 250px;",
-                content: document.createElement('div')
-            });
+            // Create model dialog
+            var modelDialog = this.createModelDialog();
 
-            // Add model selection
-            var modelLabel = document.createElement('div');
-            modelLabel.textContent = 'Model:';
-            modelLabel.style.marginBottom = '5px';
-            optionsDialog.containerNode.appendChild(modelLabel);
-            this.modelDropdown = this.createModelDropdown();
-            optionsDialog.containerNode.appendChild(this.modelDropdown);
+            // Create and add RAG dialog
+            var ragDialog = this.createRagDialog();
 
-            // Add RAG selection
-            var ragLabel = document.createElement('div');
-            ragLabel.textContent = 'RAG:';
-            ragLabel.style.marginBottom = '5px';
-            optionsDialog.containerNode.appendChild(ragLabel);
-            this.ragDropdown = this.createRagDropdown();
-            optionsDialog.containerNode.appendChild(this.ragDropdown);
-
-            // Create and add prompts dialog
-            var promptsDialog = this.createPromptsDialog();
-
-            // Add Prompts button
-            var promptsButton = new Button({
-                label: 'Prompts',
+            // Add RAG button
+            var ragButton = new Button({
+                label: 'RAG',
                 onClick: lang.hitch(this, function() {
-                    popup.open({
-                        popup: promptsDialog,
-                        around: promptsButton.domNode
-                    });
-                })
+                    if (!ragDialog.visible) {
+                        popup.open({
+                            popup: ragDialog,
+                            around: ragButton.domNode
+                        });
+                        ragDialog.visible = true;
+                    } else {
+                        popup.close(ragDialog);
+                        ragDialog.visible = false;
+                    }
+                }),
+                visible: false
             });
-            this.addChild(promptsButton);
+            this.addChild(ragButton);
 
             // Add Model button
             var modelButton = new Button({
                 label: 'Model',
                 onClick: lang.hitch(this, function() {
-                    popup.open({
-                        popup: optionsDialog,
-                        around: modelButton.domNode
-                    });
-                    modelButton.visible = true;
+                    if (!modelDialog.visible) {
+                        popup.open({
+                            popup: modelDialog,
+                            around: modelButton.domNode
+                        });
+                        modelDialog.visible = true;
+                    } else {
+                        popup.close(modelDialog);
+                        modelDialog.visible = false;
+                    }
                 }),
                 visible: false
             });
@@ -370,29 +411,30 @@ define([
 
             // Handle clicks outside dialogs
             document.addEventListener('click', lang.hitch(this, function(event) {
-                if (optionsDialog._rendered && !optionsDialog.domNode.contains(event.target) && !modelButton.domNode.contains(event.target)) {
-                    popup.close(optionsDialog);
-                    modelButton.visible = false;
+                if (modelDialog._rendered && !modelDialog.domNode.contains(event.target) && !modelButton.domNode.contains(event.target)) {
+                    popup.close(modelDialog);
+                    modelDialog.visible = false;
                 }
-                if (promptsDialog._rendered && !promptsDialog.domNode.contains(event.target) && !promptsButton.domNode.contains(event.target)) {
-                    popup.close(promptsDialog);
+                if (ragDialog._rendered && !ragDialog.domNode.contains(event.target) && !ragButton.domNode.contains(event.target)) {
+                    popup.close(ragDialog);
+                    ragDialog.visible = false;
                 }
             }));
 
             // Handle RAG button clicks
             topic.subscribe('ragButtonPressed', lang.hitch(this, function() {
                 console.log('rag pressed');
-                if (optionsDialog.visible) {
-                    popup.close(optionsDialog);
-                    modelButton.visible = false;
+                if (ragDialog.visible) {
+                    popup.close(ragDialog);
+                    ragDialog.visible = false;
                 } else {
                     setTimeout(function() {
                         popup.open({
-                            popup: optionsDialog,
-                            around: modelButton.domNode
+                            popup: ragDialog,
+                            around: ragButton.domNode
                         });
+                        ragDialog.visible = true;
                     }, 100);
-                    modelButton.visible = true;
                 }
             }));
 
