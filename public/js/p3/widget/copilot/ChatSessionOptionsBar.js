@@ -328,6 +328,32 @@ define([
             this.ragDropdown = this.createRagDropdown();
             ragDialog.containerNode.appendChild(this.ragDropdown);
 
+            // Add Number of Documents section
+            var numDocsContainer = document.createElement('div');
+            numDocsContainer.style.display = 'flex';
+            numDocsContainer.style.alignItems = 'center';
+            numDocsContainer.style.marginTop = '10px';
+            numDocsContainer.style.marginBottom = '10px';
+            numDocsContainer.style.gap = '10px';
+            ragDialog.containerNode.appendChild(numDocsContainer);
+
+            var numDocsLabel = document.createElement('div');
+            numDocsLabel.textContent = 'Number of Documents:';
+            numDocsContainer.appendChild(numDocsLabel);
+
+            var numDocsInput = document.createElement('input');
+            numDocsInput.type = 'number';
+            numDocsInput.min = '1';
+            numDocsInput.max = '10';
+            numDocsInput.value = '3';
+            numDocsInput.style.width = '60px';
+            numDocsInput.addEventListener('change', lang.hitch(this, function(evt) {
+                var numDocs = evt.target.value;
+                topic.publish('ChatNumDocs', numDocs);
+            }));
+            this.numDocsInput = numDocsInput;
+            numDocsContainer.appendChild(numDocsInput);
+
             return ragDialog;
         },
 

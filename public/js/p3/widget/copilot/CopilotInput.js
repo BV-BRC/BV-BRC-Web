@@ -39,6 +39,9 @@ define([
       /** Selected RAG database for enhanced responses */
       ragDb: null,
 
+      /** Number of documents to use for RAG queries */
+      numDocs: 3,
+
       /**
        * Constructor that initializes the widget with provided options
        * Uses safeMixin to safely merge configuration arguments
@@ -197,7 +200,7 @@ define([
 
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-        this.copilotApi.submitRagQuery(inputText, this.ragDb, this.sessionId, this.model).then(lang.hitch(this, function(response) {
+        this.copilotApi.submitRagQuery(inputText, this.ragDb, this.numDocs, this.sessionId, this.model).then(lang.hitch(this, function(response) {
           var system_prompt = 'Using the following documents as context, answer the user questions. Do not use any other sources of information:\n\n';
           if (this.systemPrompt && this.systemPrompt.length > 1) {
             system_prompt = this.systemPrompt + '\n\n' + system_prompt;
@@ -380,6 +383,13 @@ define([
         } else {
           this.modelText.innerHTML = 'Model: None';
         }
+      },
+
+      /**
+       * Updates the number of documents to use for RAG queries
+       */
+      setNumDocs: function(numDocs) {
+        this.numDocs = numDocs;
       }
     });
   });

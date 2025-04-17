@@ -152,13 +152,14 @@ define([
          * - Validates success message in response
          * - Throws error if response indicates failure
          */
-        submitRagQuery: function(inputQuery, ragDb, sessionId, model) {
+        submitRagQuery: function(inputQuery, ragDb, numDocs, sessionId, model) {
             var _self = this;
             var data = {
                 query: inputQuery,
                 rag_db: ragDb,
                 user_id: _self.user_id,
-                model: model
+                model: model,
+                num_docs: numDocs
             };
             return request.post(this.apiUrlBase + '/rag', {
                 data: JSON.stringify(data),
