@@ -58,7 +58,7 @@ define([
     'PATRIC CDS', 'RefSeq CDS',
     'Isolation Site', 'Isolation Source', 'Isolation Comments', 'Collection Date',
     'Isolation Country', 'Geographic Location', 'Latitude', 'Longitude', 'Altitude', 'Depth', 'Other Environmental',
-    'Host Name', 'Host Gender', 'Host Age', 'Host Health', 'Body Sample Site', 'Body Sample Subsite', 'Other Clinical',
+    'Host Name', 'Host Sex', 'Host Age', 'Host Health', 'Body Sample Site', 'Body Sample Subsite', 'Other Clinical',
     'AntiMicrobial Resistance', 'AntiMicrobial Resistance Evidence',
     'Gram Stain', 'Cell Shape', 'Motility', 'Sporulation', 'Temperature Range', 'Optimal Temperature', 'Salinity', 'Oxygen Requirement',
     'Habitat',

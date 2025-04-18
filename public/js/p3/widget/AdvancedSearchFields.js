@@ -311,7 +311,7 @@ define([], function () {
         field: 'host_common_name', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'host_gender', type: 'str', facet: true, facet_hidden: true, search: true
+        field: 'host_gender', type: 'str', facet: true, facet_hidden: true, search: true, label: 'host sex'
       },
       {
         field: 'host_age', type: 'str', facet: false, facet_hidden: true, search: true
