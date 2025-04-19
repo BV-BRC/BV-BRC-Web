@@ -221,18 +221,3 @@ const load_scripts = [
         });
         </script>
         <% } %>
-
-      <!-- Google UA (EOL) -->
-      <% if (request && request.applicationOptions.uaID) { %>
-          <!-- Global site tag (gtag.js) - Google Analytics -->
-          <script async src="https://www.googletagmanager.com/gtag/js?id=<%- request.applicationOptions.uaID %>"></script>
-          <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-
-          gtag('config', '<%- request.applicationOptions.uaID %>', {
-            'link_attribution': true
-          });
-          </script>
-          <% } %>
