@@ -998,7 +998,7 @@ define([], function () {
         field: 'collection_country', type: 'str', facet: true, facet_hidden: false, search: true
       },
       {
-        field: 'collector_state_province', type: 'str', facet: true, facet_hidden: true, search: true
+        field: 'collection_state_province', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'collection_city', type: 'str', facet: true, facet_hidden: true, search: true
