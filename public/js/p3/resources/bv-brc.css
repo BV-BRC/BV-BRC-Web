@@ -359,6 +359,7 @@
 
 #bv-brc-home .content-image img {
   max-height: 120px;
+  margin-top: -50px;
 }
 
 #bv-brc-home .bv-brc-info,
@@ -636,7 +637,7 @@
 
 #bv-brc-home .announcements,
 #bv-brc-home .linkedin-feed {
-  flex-basis: 50%;
+  flex-basis: 53%;
 }
 
 #bv-brc-home .home-banner,
@@ -723,15 +724,20 @@
     flex: 1 1 100%; /* Full width for top sections */
   }
 
-  #bv-brc-home .announcements{
-     flex-basis: 40%; /* Sidebar sections */
-   }
+  #bv-brc-home .bv-brc-bottom-left .content-image img,
+  #bv-brc-home .bv-brc-bottom-right .content-image img {
+    margin-top: 0;
+  }
 
-  #announcements-slides{
+  #bv-brc-home .announcements {
+    flex-basis: 40%; /* Sidebar sections */
+  }
+
+  #announcements-slides {
     height: 80%; /* Keep height lower as header is two lines */
   }
 
-  #linkedin-slides{
+  #linkedin-slides {
     height: 85%;
   }
 }
@@ -1062,12 +1068,12 @@ pre.bv-brc-code-block button:active {
   top: 50px;
   right: 0.5rem;
   left: 0.5rem;
-  -webkit-box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1);
-  -moz-box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1);
-  box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1);
+  -webkit-box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
 }
 
-.mobile-menu  .menu-section {
+.mobile-menu .menu-section {
   margin-bottom: 10px;
 }
 
@@ -1104,8 +1110,8 @@ pre.bv-brc-code-block button:active {
 }
 
 #searches-services.menu-section .menu-items,
-#tools-services.menu-section .sub-menu ,
-#help-menu.menu-section .sub-menu ,
+#tools-services.menu-section .sub-menu,
+#help-menu.menu-section .sub-menu,
 #about-menu.menu-section .menu-items {
   column-count: 2;
 }

@@ -1,10 +1,10 @@
-<form dojoAttachPoint="containerNode" 
-      class="PanelForm App ${baseClass}" 
+<form dojoAttachPoint="containerNode"
+      class="PanelForm App ${baseClass}"
       dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit">
   <div class="appTemplate">
     <div class="appTitle">
       <span class="breadcrumb">Services</span>
-      <h3>${applicationLabel}
+      <h1 class="appHeader">${applicationLabel}
         <div name="overview" class="infobox iconbox infobutton dialoginfo">
           <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
         </div>
@@ -14,16 +14,16 @@
         <div class="infobox iconbox videoButton videoInfo">
           <a href="${videoLink}" target="_blank" ><i class="fa icon-play-circle fa-1x" title="click to open the video tutorial"></i></a>
         </div>
-      </h3>
+      </h1>
       <p>
         ${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a>, <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a> and <a href="${videoLink}" target="_blank">Instructional Video</a>.
       </p>
     </div>
     <div class="formFieldsContainer">
       <div style="display: none;">
-        <input data-dojo-type="dijit/form/NumberTextBox" 
-               value="0" required="true" 
-               data-dojo-attach-point="numlibs" 
+        <input data-dojo-type="dijit/form/NumberTextBox"
+               value="0" required="true"
+               data-dojo-attach-point="numlibs"
                data-dojo-props="constraints:{min:1,max:1000}," />
       </div>
       </div>
@@ -48,22 +48,22 @@
                 </div>
               </div>
               <div class="appRow">
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" 
-                  name="libdat_file1pair" 
-                  data-dojo-attach-point="read1" 
-                  style="width:300px" 
-                  required="false" 
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                  name="libdat_file1pair"
+                  data-dojo-attach-point="read1"
+                  style="width:300px"
+                  required="false"
                   data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 1'"
                   data-dojo-attach-event="change:setPairedId"
                 ></div>
               </div>
               <div class="appRow">
                 <div data-dojo-attach-point="read2block">
-                  <div data-dojo-type="p3/widget/WorkspaceObjectSelector" 
-                    name="libdat_file2pair" 
-                    data-dojo-attach-point="read2" 
-                    style="width:300px" 
-                    required="false" 
+                  <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                    name="libdat_file2pair"
+                    data-dojo-attach-point="read2"
+                    style="width:300px"
+                    required="false"
                     data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 2'"
                     ></div>
                 </div>
@@ -84,10 +84,10 @@
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
               <div class="appRow">
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" 
-                      name="libdat_readfile" 
-                      data-dojo-attach-point="single_end_libsWidget" 
-                      style="width:285px" required="false" 
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                      name="libdat_readfile"
+                      data-dojo-attach-point="single_end_libsWidget"
+                      style="width:285px" required="false"
                       data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"
                       data-dojo-attach-event="change:setSingleId"
                       ></div>
@@ -108,10 +108,10 @@
                 <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
               <div class="appRow">
-                <div data-dojo-type="dijit/form/ValidationTextBox" 
-                    data-dojo-attach-point="srr_accession" 
-                    style="width: 300px" 
-                    required="false" 
+                <div data-dojo-type="dijit/form/ValidationTextBox"
+                    data-dojo-attach-point="srr_accession"
+                    style="width: 300px"
+                    required="false"
                     data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"
                     data-dojo-attach-event="change:setSrrId"
                     ></div>
@@ -138,9 +138,9 @@
                 <div class="appsublabel">Place read files here using the arrow buttons.</div>
               </div>
               <div class="appRow" style="width:100%; margin-top:10px; text-align: center;">
-                <table class="librarytable" 
-                       frame="box" 
-                       data-dojo-attach-point="libsTable" 
+                <table class="librarytable"
+                       frame="box"
+                       data-dojo-attach-point="libsTable"
                        style="margin:0 0 0 10px; width:90%;">
                   <tbody data-dojo-attach-point="libsTableBody">
                   </tbody>
@@ -172,19 +172,19 @@
                 <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
               </div><br>
                 <!-- end new i icon -->
-              <input type="radio" 
-                     data-dojo-type="dijit/form/RadioButton" 
-                     name="sequence_type" 
-                     value="wgs" 
-                     data-dojo-attach-point="wgs" 
+              <input type="radio"
+                     data-dojo-type="dijit/form/RadioButton"
+                     name="sequence_type"
+                     value="wgs"
+                     data-dojo-attach-point="wgs"
                      data-dojo-attach-event="Change: changeDatabaseBySequenceType"
                      data-dojo-props="missingMessage:'You must select a sequence type'" checked />
               <label for="radio1">Whole Genome Sequencing (WGS)</label>
             </div>
-              <input type="radio" 
-                     data-dojo-type="dijit/form/RadioButton" 
-                     name="sequence_type" value="sixteenS" 
-                     data-dojo-attach-point="sixteenS" 
+              <input type="radio"
+                     data-dojo-type="dijit/form/RadioButton"
+                     name="sequence_type" value="sixteenS"
+                     data-dojo-attach-point="sixteenS"
                      data-dojo-attach-event="Change: changeDatabaseBySequenceType" />
               <label for="radio2">16S RIBOSOMAL RNA</label>
           </div>
@@ -195,10 +195,10 @@
               <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
             </div><br>
               <!-- end new i icon -->
-            <select data-dojo-type="dijit/form/Select" 
-                    name="analysis_type" 
-                    data-dojo-attach-point="analysis_type" 
-                    style="width:300px" 
+            <select data-dojo-type="dijit/form/Select"
+                    name="analysis_type"
+                    data-dojo-attach-point="analysis_type"
+                    style="width:300px"
                     required="true"
                     data-dojo-props="intermediateChanges:true,missingMessage:'You must select a Sequencing type before analysis type',displayedValue:'Analysis type'" />
               <option value="microbiome">Microbiome Analysis</option>
@@ -212,10 +212,10 @@
                 <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
               </div><br>
                 <!-- end new i icon -->
-            <select data-dojo-type="dijit/form/Select" 
-                    name="database" 
-                    style="width:300px" 
-                    required="true" 
+            <select data-dojo-type="dijit/form/Select"
+                    name="database"
+                    style="width:300px"
+                    required="true"
                     data-dojo-attach-point="database"
                     data-dojo-attach-event="onChange: checkParameterRequiredFields"
                     data-dojo-props="intermediateChanges:true, missingMessage:'You must select a datbase'">
@@ -232,11 +232,11 @@
             <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
           </div><br>
             <!-- end new i icon -->
-          <select data-dojo-type="dijit/form/Select" 
-                  name="host_genome" 
-                  data-dojo-attach-point="host_genome" 
-                  style="width:300px" 
-                  required="true" 
+          <select data-dojo-type="dijit/form/Select"
+                  name="host_genome"
+                  data-dojo-attach-point="host_genome"
+                  style="width:300px"
+                  required="true"
                   data-dojo-props="intermediateChanges:false">
             <option value="no_host" selected="selected">None</option>
             <option value="homo_sapiens">Homo sapiens</option>
@@ -258,11 +258,11 @@
           <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
         </div><br>
           <!-- end new i icon -->
-        <select data-dojo-type="dijit/form/Select" 
-                name="confidence_interval" 
+        <select data-dojo-type="dijit/form/Select"
+                name="confidence_interval"
                 data-dojo-attach-point="confidence_interval"
-                style="width:300px" 
-                required="true" 
+                style="width:300px"
+                required="true"
                 data-dojo-props="intermediateChanges:true">
           <option value="0">0</option>
           <option value="0.1" selected="selected">0.1</option>
@@ -279,24 +279,24 @@
     </div>
       <div class="appRow">
         <label class="paramlabel">Save Classified Sequences</label><br>
-        <input type="radio" 
-               data-dojo-type="dijit/form/RadioButton" 
-               name="save_classified_sequences" value="false" 
+        <input type="radio"
+               data-dojo-type="dijit/form/RadioButton"
+               name="save_classified_sequences" value="false"
                data-dojo-attach-point="save_classified_sequences_no" checked />
         <label for="radio1">No</label>
-        <input type="radio" 
-               data-dojo-type="dijit/form/RadioButton" 
-               name="save_classified_sequences" 
-               value="true" 
+        <input type="radio"
+               data-dojo-type="dijit/form/RadioButton"
+               name="save_classified_sequences"
+               value="true"
                data-dojo-attach-point="save_classified_sequences_yes"/>
         <label for="radio2">Yes</label>
       </div>
         <div class="appRow">
           <label class="paramlabel">Save Unclassified Sequences</label><br>
-          <input type="radio" 
-                 data-dojo-type="dijit/form/RadioButton" 
-                 name="save_unclassified_sequences" 
-                 value="false" 
+          <input type="radio"
+                 data-dojo-type="dijit/form/RadioButton"
+                 name="save_unclassified_sequences"
+                 value="false"
                  data-dojo-attach-point="save_unclassified_sequences_no" checked />
           <label for="radio1">No</label>
           <input type="radio" data-dojo-type="dijit/form/RadioButton" name="save_unclassified_sequences" value="true" data-dojo-attach-point="save_unclassified_sequences_yes"/>

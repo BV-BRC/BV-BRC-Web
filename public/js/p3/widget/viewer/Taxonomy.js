@@ -80,7 +80,8 @@ define([
 
     onSetTaxonomy: function (attr, oldVal, taxonomy) {
       this.queryNode.innerHTML = this.buildHeaderContent(taxonomy);
-
+      var taxon_header_label = 'Taxon View - ' + taxonomy.lineage.split(',').reverse()[0];
+      this.perspectiveLabel = taxon_header_label;
       // customization for viruses only when the context is changed
       if (this.context === 'bacteria') {
         if (this.taxonomy.lineage_names.includes('Influenza A virus') || this.taxonomy.lineage_names.includes('Rhinovirus A')) {
