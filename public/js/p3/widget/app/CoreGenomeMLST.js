@@ -4,7 +4,7 @@ define([
   'dojo/text!./templates/CoreGenomeMLST.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox', 'dijit/form/Textarea', 'dijit/form/Select', 'dijit/form/FilteringSelect',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog', '../../DataAPI',
-  'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when', 'dojo/dom-style',
+  'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when'
 ], function (
   declare, WidgetBase, Topic, on,
   domClass,
@@ -16,7 +16,7 @@ define([
   return declare([AppBase], {
     baseClass: 'CoreGenomeMLST',
     templateString: Template,
-    applicationName: 'Core Genome MLST',
+    applicationName: 'CoreGenomeMLST',
     requireAuth: true,
     applicationLabel: 'Core Genome MLST',
     applicationDescription: 'The Core Genome MLST service accepts genome groups. The genome groups are used to create and evaulate a core genome through MultiLocus Sequence Typing (MLST). The service uses a software tool called chewBBACA. This list of bacterial species this service supports are available at',
@@ -52,17 +52,17 @@ define([
       if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
-    
+
       // Ensure FilteringSelect is preloaded
         require(["dijit/form/FilteringSelect"], function(FilteringSelect) {
-        _self.inherited(arguments); 
+        _self.inherited(arguments);
         _self._started = true;
         _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
         _self.output_path.set('value', _self.defaultPath);
-        
+
         // Initialize FilteringSelect manually
         _self.initFilteringSelect();
-        
+
         try {
           _self.intakeRerunForm();
         } catch (error) {
@@ -76,10 +76,10 @@ define([
       var schemaStore = new Memory({
         data: storeData
       });
-    
+
       // Initialize FilteringSelect widget
       var filteringSelect_ = registry.byId("input_schema_selection");
-    
+
       if (filteringSelect_) {
         filteringSelect_.set("store", schemaStore);
         filteringSelect_.set("searchAttr", "name");
@@ -92,25 +92,25 @@ define([
 
     onAddGenomeGroup: function () {
       console.log("Fetching genome group path...");
-      
+
       var path = this.input_genome_group;
       if (!path) {
         console.warn("No genome group path provided.");
         return;
       }
-    
+
       when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
         if (typeof res.data === "string") {
           res.data = JSON.parse(res.data);
         }
-    
+
         if (res?.data?.id_list?.genome_id) {
           var newGenomeIds = res.data.id_list.genome_id;
           this.checkBacterialGenomes(newGenomeIds, groupType, false, path);
         }
       }));
     },
-    
+
         // function is from phylogenetic tree
         //  TO DO update to check genome
     validate: function () {
@@ -205,10 +205,10 @@ define([
           { name: "Yersinia enterocolitica", id: "Yersinia_enterocolitica" }
         ]
       });
-    
+
       // Using the attach point to get the widget instance
       var filteringSelect_ = registry.byId("input_schema_selection");  // Assuming you have the id attribute set
-    
+
       if (filteringSelect_) {
         filteringSelect_.set("store", schemaStore);
         filteringSelect_.set("searchAttr", "name");
@@ -218,7 +218,7 @@ define([
         console.error("FilteringSelect widget not found!");
       }
     },
-  
+
     openJobsList: function () {
       Topic.publish('/navigate', { href: '/job/' });
     },
@@ -230,6 +230,12 @@ define([
       values.analysis_type = "chewbbaca";
       if (values.select_genomegroup) {
         values.select_genomegroup = [values.select_genomegroup];
+      }
+      if (values.input_genome_group) {
+        values.input_genome_group = values.input_genome_group.replace(/\/\/+/g, '/');
+      }
+      if (values.output_path) {
+        values.output_path = values.output_path.replace(/\/\/+/g, '/');
       }
       return values;
     },
