@@ -18,7 +18,7 @@ define([
   return declare([TabViewerBase], {
     perspectiveLabel: '',
     perspectiveIconClass: '',
-    title: 'SARS-CoV-2 Variants and Lineages of Concern',
+    title: '<h1 class="appHeader" style="color: #2a6d9e; margin-top: 10px; font-weight: bold;">SARS-CoV-2 Variants and Lineages of Concern</h1>',
 
     onSetState: function (attr, oldVal, state) {
       if (!state) {

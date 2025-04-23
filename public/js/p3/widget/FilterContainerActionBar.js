@@ -6,7 +6,7 @@ define([
   'dojo/data/ObjectStore', 'dojo/store/Memory', 'dojox/form/CheckedMultiSelect',
   'dijit/form/DropDownButton', 'dijit/DropDownMenu',
   'dijit/Dialog', 'dijit/form/Button', 'dijit/form/Select', './AdvancedSearchRowForm',
-  'dijit/focus', '../util/PathJoin'
+  'dijit/focus', '../util/PathJoin', '../util/constructMetadataName'
 ], function (
   declare, ContainerActionBar, lang,
   domConstruct, domGeometry, domStyle, domClass,
@@ -15,7 +15,7 @@ define([
   ObjectStore, Memory, CheckedMultiSelect,
   DropDownButton, DropDownMenu,
   Dialog, Button, Select, AdvancedSearchRowForm,
-  focusUtil, PathJoin
+  focusUtil, PathJoin, constructMetadataName
 ) {
 
   function sortByLabel(firstEl, secondEl) {
@@ -697,7 +697,7 @@ define([
     buildAddFilters: function () {
       const fields = this.facetFields.map((ff) => {
         const field = ff.field || ff;
-        return { id: field, label: field.replace(/_/g, ' '), value: field }
+        return { id: field, label: constructMetadataName(field), value: field }
       })
       const m_store = new Memory({
         data: fields
@@ -776,7 +776,7 @@ define([
       const searchableFields = this.advancedSearchFields || this.facetFields.filter((ff) => ff.search)
       this.fieldSelectOptions = searchableFields.map((ff) => {
         const field = ff.field || ff;
-        return { label: field.replace(/_/g, ' '), value: field }
+        return { label: constructMetadataName(field), value: field }
       })
       this.fieldTypes = {}
       searchableFields.forEach((ff) => {

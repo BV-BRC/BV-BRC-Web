@@ -108,6 +108,32 @@ define([
       // moved common fields to standard function
       values = this.checkBaseParameters(values);
 
+
+      if (Object.prototype.hasOwnProperty.call(values, 'trim') && values.trim) {
+        values.trim = (values.trim[0] === 'on');
+      }
+      if (Object.prototype.hasOwnProperty.call(values, 'normalize') && values.normalize) {
+        values.normalize = (values.normalize[0] === 'on');
+      }
+      if (Object.prototype.hasOwnProperty.call(values, 'filter') && values.filter) {
+        values.filtlong = (values.filter[0] === 'on');
+      }
+      if (Object.prototype.hasOwnProperty.call(values, 'coverage') && values.coverage) {
+        values.target_depth = values.coverage;
+      }
+      if (Object.prototype.hasOwnProperty.call(values, 'expected_genome_size') && values.expected_genome_size) {
+        var expected_genome_size = parseInt(values.expected_genome_size);
+        var genome_size_units = values.genome_size_units;
+        var genome_size_value = 0;
+        if (genome_size_units == 'M') {
+          genome_size_value = 1000000;
+        }
+        else {
+          genome_size_value = 1000;
+        }
+        values.genome_size = genome_size_value * expected_genome_size;
+      }
+
       return values;
     },
 
@@ -399,6 +425,20 @@ define([
       this._autoTaxSet = false;
     },
 
+    onGenomeSizeUnitsChange: function () {
+      console.log('genome_size_units = ', this.genome_size_units.value);
+      if (this.genome_size_units.value == 'M') {
+        this.expected_genome_size.set('constraints', { min: 1, max: 10, places: 0, smallDelta: 1 });
+        this.expected_genome_size.set('value', 5);
+        this.expected_genome_size.set('smallDelta', 1);
+      }
+      else { // K
+        this.expected_genome_size.set('constraints', { min: 100, max: 10000, places: 0 });
+        this.expected_genome_size.set('value', 500);
+        this.expected_genome_size.set('smallDelta', 100);
+      }
+    },
+
     updateOutputName: function () {
       var charError = document.getElementsByClassName('charError')[0];
       charError.innerHTML = '&nbsp;';
@@ -533,7 +573,7 @@ define([
       values.taxonomy_id = this.target_genome_id;
       if (this.startWithContigs.checked) {  // starting from contigs
         values.input_type = 'contigs'; // set input_type to be 'contigs'
-        var assembly_inputs = ['recipe', 'genome_size', 'trim', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
+        var assembly_inputs = ['recipe', 'genome_size', 'trim', 'normalize', 'racon_iter', 'pilon_iter', 'min_contig_len', 'min_contig_cov'];
         assembly_inputs.forEach(function (key) {
           if (Object.prototype.hasOwnProperty.call(values, key)) {
             delete values[key];
