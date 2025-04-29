@@ -31,7 +31,7 @@
     "express-formidable": "^1.2.0",
     "feedparser": "^2.2.10",
     "flag-icons": "^7.2.1",
-    "formidable": "^2.1.2",
+    "formidable": "^3.5.4",
     "http-proxy": "^1.18.1",
     "httpntlm": "^1.8.13",
     "jbrowse": "github:GMOD/jbrowse#759433708fe59e2c0a09e781cf93dc7ec4670461",
