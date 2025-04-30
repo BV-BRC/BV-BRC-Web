@@ -170,10 +170,10 @@ define([
 
         let mapData = {
           items: items,
-          minimumLatitude: minimumLatitude || -90.0,
-          maximumLatitude: maximumLatitude || 90.0,
-          minimumLongitude: minimumLongitude || -180.0,
-          maximumLongitude: maximumLongitude || 180.0
+          maximumLatitude: 51.165691,
+          maximumLongitude: 138.252924,
+          minimumLatitude: -25.274398,
+          minimumLongitude: -120.7401386
         };
 
         if (mapData && mapData.items) {
