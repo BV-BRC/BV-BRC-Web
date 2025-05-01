@@ -29,11 +29,16 @@ define([
     defaultPath: '',
     startingRows: 8,
     maxGenomes: 500,
+    genomeCount: 0,
 
     constructor: function () {
       this.addedLibs = 0;
       this.addedList = [];
       this.addedGenomes = 0;
+      this.errorDialog = new Dialog({
+        title: 'Error',
+        style: 'width: 300px'
+      });
     },
 
     startup: function () {
@@ -100,6 +105,12 @@ define([
     },
 
     onAddGenome: function () {
+      if (this.genomeCount >= this.maxGenomes) {
+        this.errorDialog.set('content', 'Maximum number of genomes (500) has been reached. Please remove some genomes before adding more.');
+        this.errorDialog.show();
+        return;
+      }
+
       var lrec = {};
 
       var label = this.genome.get('displayedValue');
@@ -107,8 +118,6 @@ define([
       lrec.label = label;
       lrec.genome_ids = [genome_id];
       lrec.type = 'genome';
-
-      // console.log(lrec);
 
       var tr = this.libsTable.insertRow(0);
       var td = domConstruct.create('td', { 'class': 'textcol singledata', innerHTML: '' }, tr);
@@ -130,8 +139,10 @@ define([
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
         }
+        this.genomeCount--;
         handle.remove();
       }));
+      this.genomeCount++;
       this.increaseLib(lrec);
     },
 
@@ -145,20 +156,28 @@ define([
       lrec.type = 'genome_group';
 
       WorkspaceManager.getObjects(paths, false).then(lang.hitch(this, function (objs) {
-
         var genomeIdHash = {};
+        var genomesInGroup = 0;
         objs.forEach(function (obj) {
           var data = JSON.parse(obj.data);
           data.id_list.genome_id.forEach(function (d) {
             if (!Object.prototype.hasOwnProperty.call(genomeIdHash, d)) {
               genomeIdHash[d] = true;
             }
+            genomesInGroup++;
           });
         });
+
+        // Check if adding this group would exceed the maximum
+        if (this.genomeCount + genomesInGroup > this.maxGenomes) {
+          this.errorDialog.set('content', 'Adding this genome group would exceed the maximum number of genomes (500). Please remove some genomes before adding this group.');
+          this.errorDialog.show();
+          return;
+        }
+
+        this.genomeCount += genomesInGroup;
         lrec.genome_ids = Object.keys(genomeIdHash);
         var count = lrec.genome_ids.length;
-
-        console.log(lrec);
 
         var tr = this.libsTable.insertRow(0);
         var td = domConstruct.create('td', { 'class': 'textcol singledata', innerHTML: '' }, tr);
@@ -180,6 +199,7 @@ define([
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
             domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
           }
+          this.genomeCount -= genomesInGroup;
           handle.remove();
         }));
         this.increaseLib(lrec);
@@ -259,6 +279,7 @@ define([
           lrec.label = label;
           lrec.genome_ids = [genome_id];
           lrec.type = 'genome';
+          this.genomeCount++;
 
           var tr = this.libsTable.insertRow(0);
           var td = domConstruct.create('td', { 'class': 'textcol singledata', innerHTML: '' }, tr);
@@ -280,6 +301,7 @@ define([
               domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
               domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
             }
+            this.genomeCount--;
             handle.remove();
           }));
           this.increaseLib(lrec);
@@ -305,14 +327,17 @@ define([
         WorkspaceManager.getObjects(paths, false).then(lang.hitch(this, function (objs) {
 
           var genomeIdHash = {};
+          var genomesInGroup = 0;
           objs.forEach(function (obj) {
             var data = JSON.parse(obj.data);
             data.id_list.genome_id.forEach(function (d) {
               if (!Object.prototype.hasOwnProperty.call(genomeIdHash, d)) {
                 genomeIdHash[d] = true;
               }
+              genomesInGroup++;
             });
           });
+          this.genomeCount += genomesInGroup;
           lrec.genome_ids = Object.keys(genomeIdHash);
           var count = lrec.genome_ids.length;
 
@@ -336,6 +361,7 @@ define([
               domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
               domConstruct.create('td', { innerHTML: "<div class='emptyrow'></div>" }, ntr);
             }
+            this.genomeCount -= genomesInGroup;
             handle.remove();
           }));
           this.increaseLib(lrec);

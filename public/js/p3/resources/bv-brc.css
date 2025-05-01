@@ -684,6 +684,11 @@
   #bv-brc-home .home-main-right {
     flex-direction: row;
   }
+
+  #bv-brc-home .bv-brc-bottom-left .content-image img,
+  #bv-brc-home .bv-brc-bottom-right .content-image img {
+    margin-top: 0;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -722,11 +727,6 @@
   #bv-brc-home .home-banner,
   #bv-brc-home .bv-brc-info {
     flex: 1 1 100%; /* Full width for top sections */
-  }
-
-  #bv-brc-home .bv-brc-bottom-left .content-image img,
-  #bv-brc-home .bv-brc-bottom-right .content-image img {
-    margin-top: 0;
   }
 
   #bv-brc-home .announcements {
