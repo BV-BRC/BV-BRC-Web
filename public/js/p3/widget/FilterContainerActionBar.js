@@ -917,7 +917,7 @@ define([
     },
 
     getFacets: function (query, facetFields) {
-      if (!query || query == '?') {
+      if (!query || query == '?' || facetFields === undefined) {
         const def = new Deferred();
         def.resolve(false);
         return def.promise;
