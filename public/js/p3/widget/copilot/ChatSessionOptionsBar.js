@@ -322,8 +322,9 @@ define([
 
             // Add RAG selection
             var ragLabel = document.createElement('div');
-            ragLabel.textContent = 'RAG:';
+            ragLabel.textContent = 'Database:';
             ragLabel.style.marginBottom = '5px';
+            ragLabel.title = 'Select the database to use for the RAG query';
             ragDialog.containerNode.appendChild(ragLabel);
             this.ragDropdown = this.createRagDropdown();
             ragDialog.containerNode.appendChild(this.ragDropdown);
@@ -339,6 +340,7 @@ define([
 
             var numDocsLabel = document.createElement('div');
             numDocsLabel.textContent = 'Number of Documents:';
+            numDocsLabel.title = 'Number of documents to retrieve from the database';
             numDocsContainer.appendChild(numDocsLabel);
 
             var numDocsInput = document.createElement('input');
@@ -353,6 +355,29 @@ define([
             }));
             this.numDocsInput = numDocsInput;
             numDocsContainer.appendChild(numDocsInput);
+
+            // Add Summarize Documents checkbox
+            var summarizeContainer = document.createElement('div');
+            summarizeContainer.style.display = 'flex';
+            summarizeContainer.style.alignItems = 'center';
+            summarizeContainer.style.marginTop = '10px';
+            summarizeContainer.style.marginBottom = '10px';
+            summarizeContainer.style.gap = '10px';
+            ragDialog.containerNode.appendChild(summarizeContainer);
+
+            var summarizeLabel = document.createElement('div');
+            summarizeLabel.textContent = 'Summarize Documents';
+            summarizeLabel.title = 'Summarize each matched document; takes longer but may improve generated response';
+            summarizeContainer.appendChild(summarizeLabel);
+
+            var summarizeCheckbox = document.createElement('input');
+            summarizeCheckbox.type = 'checkbox';
+            summarizeCheckbox.checked = true;
+            summarizeCheckbox.addEventListener('change', lang.hitch(this, function(evt) {
+                var shouldSummarize = evt.target.checked;
+                topic.publish('ChatSummarizeDocs', shouldSummarize);
+            }));
+            summarizeContainer.appendChild(summarizeCheckbox);
 
             return ragDialog;
         },

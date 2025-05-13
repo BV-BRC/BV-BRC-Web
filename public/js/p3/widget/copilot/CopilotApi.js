@@ -114,14 +114,15 @@ define([
          * - Caches response in storedResult
          * - Handles errors with detailed logging
          */
-        submitQuery: function(inputText, sessionId, systemPrompt, model) {
+        submitQuery: function(inputText, sessionId, systemPrompt, model, save_chat = true) {
             var _self = this;
             console.log('query');
             var data = {
                 query: inputText,
                 model: model,
                 session_id: sessionId,
-                user_id: _self.user_id
+                user_id: _self.user_id,
+                save_chat: save_chat
             };
 
             if (systemPrompt) {
@@ -152,8 +153,9 @@ define([
          * - Validates success message in response
          * - Throws error if response indicates failure
          */
-        submitRagQuery: function(inputQuery, ragDb, numDocs, sessionId, model) {
+        submitRagQuery: function(inputQuery, ragDb, numDocs, sessionId, model, summarizeDocs) {
             var _self = this;
+
             var data = {
                 query: inputQuery,
                 rag_db: ragDb,
@@ -171,11 +173,71 @@ define([
             }).then(lang.hitch(this, function(response) {
                 _self.storedResult = response;
                 if (response['message'] == 'success') {
+                    // If summarizeDocs is true and we have documents to summarize
+                    if (summarizeDocs && response.documents && response.documents.length > 0) {
+                        // Create an array of promises for each document summarization
+                        var summarizationPromises = response.documents.map(lang.hitch(this, function(doc) {
+                            // Create a prompt for summarizing the document
+                            var summaryPrompt = `Please summarize the following document in the context of this query: "${inputQuery}"\n\nDocument:\n${doc}`;
+                            // Call submitQuery for each document with save_chat=false to prevent saving to history
+                            return this.submitQueryChatOnly(summaryPrompt, '', model)
+                                .then(lang.hitch(this, function(summaryResponse) {
+                                    // Only store the summary in the document, don't add to chat history
+                                    doc.summary = summaryResponse.response;
+                                    return doc;
+                                }));
+                        }));
+
+                        // Wait for all summarizations to complete
+                        return Promise.all(summarizationPromises)
+                            .then(lang.hitch(this, function(summarizedDocs) {
+                                // Update the response with summarized documents
+                                response.documents = summarizedDocs;
+                                return response;
+                            }));
+                    }
                     return response;
                 } else {
                     throw new Error(response['message']);
                 }
             })).catch(function(error) {
+                console.error('Error submitting query:', error);
+                throw error;
+            });
+        },
+
+                /**
+         * Submits a regular chat query
+         * Implementation:
+         * - Builds query data object with text, model, session
+         * - Optionally includes system prompt if provided
+         * - Makes POST request to chat endpoint
+         * - Caches response in storedResult
+         * - Handles errors with detailed logging
+         */
+        submitQueryChatOnly: function(inputText, systemPrompt, model) {
+            var _self = this;
+            console.log('query');
+            var data = {
+                query: inputText,
+                model: model,
+                user_id: _self.user_id,
+            };
+
+            if (systemPrompt) {
+                data.system_prompt = systemPrompt;
+            }
+
+            return request.post(this.apiUrlBase + '/chat-only', {
+                data: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response.response;
+            }).catch(function(error) {
                 console.error('Error submitting query:', error);
                 throw error;
             });
