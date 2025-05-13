@@ -51,6 +51,13 @@
   padding-right: 5px;
 }
 
+#bv-brc-right-header {
+  display: flex;
+  gap: 0.5rem;
+  align-items: right;
+  margin-left: auto;
+}
+
 .nav-logo-link {
   display: flex;
   width: 200px;
