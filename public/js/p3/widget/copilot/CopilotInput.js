@@ -72,12 +72,14 @@ define([
 
         // Create centered wrapper div
         var wrapperDiv = domConstruct.create('div', {
-          style: 'display: flex; justify-content: center; align-items: flex-start; width: 100%; height: 100%; padding-top: 2px; border: 0;'
+          class: 'copilot-input-wrapper',
+          id: 'copilot-input-wrapper'
         }, this.containerNode);
 
         // Create settings panel
         var settingsDiv = domConstruct.create('div', {
-          style: 'display: flex; flex-direction: column; margin-right: 10px; cursor: pointer; font-size: 0.9em;'
+          class: 'copilot-input-settings',
+          id: 'copilot-input-settings'
         }, wrapperDiv);
 
         // Add model selector
@@ -88,10 +90,11 @@ define([
 
         // Create expandable textarea
         this.textArea = new Textarea({
-          style: 'width: 60%; min-height: 40px; max-height: 100%; resize: none; overflow-y: hidden; border-radius: 5px; margin-right: 10px;',
+          class: 'copilot-input-textarea',
           rows: 3,
           maxLength: 10000,
-          placeholder: 'Enter your text here...'
+          placeholder: 'Enter your text here...',
+          id: 'copilot-input-textarea'
         });
         this.textArea.placeAt(wrapperDiv);
 
