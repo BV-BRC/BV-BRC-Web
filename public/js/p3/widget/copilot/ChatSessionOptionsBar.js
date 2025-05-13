@@ -308,6 +308,105 @@ define([
         },
 
         /**
+         * Creates dialog for managing RAG selection
+         * - Includes RAG selection dropdown
+         * - Publishes selected RAG DB on change
+         *
+         * @returns {TooltipDialog} Configured dialog for RAG selection
+         */
+        createRagDialog: function() {
+            var ragDialog = new TooltipDialog({
+                style: "width: 250px;",
+                content: document.createElement('div')
+            });
+
+            // Add RAG selection
+            var ragLabel = document.createElement('div');
+            ragLabel.textContent = 'Database:';
+            ragLabel.style.marginBottom = '5px';
+            ragLabel.title = 'Select the database to use for the RAG query';
+            ragDialog.containerNode.appendChild(ragLabel);
+            this.ragDropdown = this.createRagDropdown();
+            ragDialog.containerNode.appendChild(this.ragDropdown);
+
+            // Add Number of Documents section
+            var numDocsContainer = document.createElement('div');
+            numDocsContainer.style.display = 'flex';
+            numDocsContainer.style.alignItems = 'center';
+            numDocsContainer.style.marginTop = '10px';
+            numDocsContainer.style.marginBottom = '10px';
+            numDocsContainer.style.gap = '10px';
+            ragDialog.containerNode.appendChild(numDocsContainer);
+
+            var numDocsLabel = document.createElement('div');
+            numDocsLabel.textContent = 'Number of Documents:';
+            numDocsLabel.title = 'Number of documents to retrieve from the database';
+            numDocsContainer.appendChild(numDocsLabel);
+
+            var numDocsInput = document.createElement('input');
+            numDocsInput.type = 'number';
+            numDocsInput.min = '1';
+            numDocsInput.max = '10';
+            numDocsInput.value = '3';
+            numDocsInput.style.width = '60px';
+            numDocsInput.addEventListener('change', lang.hitch(this, function(evt) {
+                var numDocs = evt.target.value;
+                topic.publish('ChatNumDocs', numDocs);
+            }));
+            this.numDocsInput = numDocsInput;
+            numDocsContainer.appendChild(numDocsInput);
+
+            // Add Summarize Documents checkbox
+            var summarizeContainer = document.createElement('div');
+            summarizeContainer.style.display = 'flex';
+            summarizeContainer.style.alignItems = 'center';
+            summarizeContainer.style.marginTop = '10px';
+            summarizeContainer.style.marginBottom = '10px';
+            summarizeContainer.style.gap = '10px';
+            ragDialog.containerNode.appendChild(summarizeContainer);
+
+            var summarizeLabel = document.createElement('div');
+            summarizeLabel.textContent = 'Summarize Documents';
+            summarizeLabel.title = 'Summarize each matched document; takes longer but may improve generated response';
+            summarizeContainer.appendChild(summarizeLabel);
+
+            var summarizeCheckbox = document.createElement('input');
+            summarizeCheckbox.type = 'checkbox';
+            summarizeCheckbox.checked = true;
+            summarizeCheckbox.addEventListener('change', lang.hitch(this, function(evt) {
+                var shouldSummarize = evt.target.checked;
+                topic.publish('ChatSummarizeDocs', shouldSummarize);
+            }));
+            summarizeContainer.appendChild(summarizeCheckbox);
+
+            return ragDialog;
+        },
+
+        /**
+         * Creates dialog for managing model selection
+         * - Includes model selection dropdown
+         * - Publishes selected model on change
+         *
+         * @returns {TooltipDialog} Configured dialog for model selection
+         */
+        createModelDialog: function() {
+            var modelDialog = new TooltipDialog({
+                style: "width: 250px;",
+                content: document.createElement('div')
+            });
+
+            // Add model selection
+            var modelLabel = document.createElement('div');
+            modelLabel.textContent = 'Model:';
+            modelLabel.style.marginBottom = '5px';
+            modelDialog.containerNode.appendChild(modelLabel);
+            this.modelDropdown = this.createModelDropdown();
+            modelDialog.containerNode.appendChild(this.modelDropdown);
+
+            return modelDialog;
+        },
+
+        /**
          * Sets up the widget after creation
          * - Creates options dialog with model and RAG selection
          * - Creates prompts dialog for system prompt management
@@ -317,52 +416,45 @@ define([
         postCreate: function() {
             this.inherited(arguments);
 
-            // Create options dialog
-            var optionsDialog = new TooltipDialog({
-                style: "width: 250px;",
-                content: document.createElement('div')
-            });
+            // Create model dialog
+            var modelDialog = this.createModelDialog();
 
-            // Add model selection
-            var modelLabel = document.createElement('div');
-            modelLabel.textContent = 'Model:';
-            modelLabel.style.marginBottom = '5px';
-            optionsDialog.containerNode.appendChild(modelLabel);
-            this.modelDropdown = this.createModelDropdown();
-            optionsDialog.containerNode.appendChild(this.modelDropdown);
+            // Create and add RAG dialog
+            var ragDialog = this.createRagDialog();
 
-            // Add RAG selection
-            var ragLabel = document.createElement('div');
-            ragLabel.textContent = 'RAG:';
-            ragLabel.style.marginBottom = '5px';
-            optionsDialog.containerNode.appendChild(ragLabel);
-            this.ragDropdown = this.createRagDropdown();
-            optionsDialog.containerNode.appendChild(this.ragDropdown);
-
-            // Create and add prompts dialog
-            var promptsDialog = this.createPromptsDialog();
-
-            // Add Prompts button
-            var promptsButton = new Button({
-                label: 'Prompts',
+            // Add RAG button
+            var ragButton = new Button({
+                label: 'RAG',
                 onClick: lang.hitch(this, function() {
-                    popup.open({
-                        popup: promptsDialog,
-                        around: promptsButton.domNode
-                    });
-                })
+                    if (!ragDialog.visible) {
+                        popup.open({
+                            popup: ragDialog,
+                            around: ragButton.domNode
+                        });
+                        ragDialog.visible = true;
+                    } else {
+                        popup.close(ragDialog);
+                        ragDialog.visible = false;
+                    }
+                }),
+                visible: false
             });
-            this.addChild(promptsButton);
+            this.addChild(ragButton);
 
             // Add Model button
             var modelButton = new Button({
                 label: 'Model',
                 onClick: lang.hitch(this, function() {
-                    popup.open({
-                        popup: optionsDialog,
-                        around: modelButton.domNode
-                    });
-                    modelButton.visible = true;
+                    if (!modelDialog.visible) {
+                        popup.open({
+                            popup: modelDialog,
+                            around: modelButton.domNode
+                        });
+                        modelDialog.visible = true;
+                    } else {
+                        popup.close(modelDialog);
+                        modelDialog.visible = false;
+                    }
                 }),
                 visible: false
             });
@@ -370,29 +462,47 @@ define([
 
             // Handle clicks outside dialogs
             document.addEventListener('click', lang.hitch(this, function(event) {
-                if (optionsDialog._rendered && !optionsDialog.domNode.contains(event.target) && !modelButton.domNode.contains(event.target)) {
-                    popup.close(optionsDialog);
-                    modelButton.visible = false;
+                if (modelDialog._rendered && !modelDialog.domNode.contains(event.target) && !modelButton.domNode.contains(event.target)) {
+                    popup.close(modelDialog);
+                    modelDialog.visible = false;
                 }
-                if (promptsDialog._rendered && !promptsDialog.domNode.contains(event.target) && !promptsButton.domNode.contains(event.target)) {
-                    popup.close(promptsDialog);
+                if (ragDialog._rendered && !ragDialog.domNode.contains(event.target) && !ragButton.domNode.contains(event.target)) {
+                    popup.close(ragDialog);
+                    ragDialog.visible = false;
                 }
             }));
 
             // Handle RAG button clicks
             topic.subscribe('ragButtonPressed', lang.hitch(this, function() {
                 console.log('rag pressed');
-                if (optionsDialog.visible) {
-                    popup.close(optionsDialog);
-                    modelButton.visible = false;
+                if (ragDialog.visible) {
+                    popup.close(ragDialog);
+                    ragDialog.visible = false;
                 } else {
                     setTimeout(function() {
                         popup.open({
-                            popup: optionsDialog,
+                            popup: ragDialog,
+                            around: ragButton.domNode
+                        });
+                        ragDialog.visible = true;
+                    }, 100);
+                }
+            }));
+
+            // Handle model button clicks
+            topic.subscribe('modelButtonPressed', lang.hitch(this, function() {
+                console.log('model pressed');
+                if (modelDialog.visible) {
+                    popup.close(modelDialog);
+                    modelDialog.visible = false;
+                } else {
+                    setTimeout(function() {
+                        popup.open({
+                            popup: modelDialog,
                             around: modelButton.domNode
                         });
+                        modelDialog.visible = true;
                     }, 100);
-                    modelButton.visible = true;
                 }
             }));
 
