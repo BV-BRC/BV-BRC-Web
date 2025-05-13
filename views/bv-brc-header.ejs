@@ -339,31 +339,33 @@
 
             <!-- <div class="navbar-flex-space" style="flex-grow: 0.85;"></div> -->
 
-            <div class="HideWithAuth authLinks showOnLoad dijitHidden" style="padding: 8px 10px 0 0;">
-                <a class="LoginButton navigationLink" href="/register">Register</a>
-                <a class="LoginButton navigationLink" href="/login">Sign In</a>
-            </div>
-
-
-            <div class="showOnLoad ShowWithAuth dijitHidden">
-
-                <div id="chat-icon" style="width: 30px; align-self: right; justify-content: center; align-items: center; display: flex;">
-                    <a href="/view/Copilot">
-                        <img src="/patric/images/chat-lines.svg" alt="Chat Icon" style="width: 25px; height: 25px; justify-content: center; align-items: center;margin-top: 5px;">
-                    </a>
+            <div id="bv-brc-right-header">
+                <div class="HideWithAuth authLinks showOnLoad dijitHidden" style="padding: 8px 10px 0 0;">
+                    <a class="LoginButton navigationLink" href="/register">Register</a>
+                    <a class="LoginButton navigationLink" href="/login">Sign In</a>
                 </div>
 
-                <div class="showOnLoad ShowWithAuth dijitHidden topMenuButtonIcon"
-                        data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-user fa-2x login-btn'">
-                    <span></span>
-                    <div class="warning_icon user_warning_icon icon-warning fa fa-1x"> </div>
-                    <div data-dojo-type="p3/widget/TooltipDialog">
-                        <div>Signed in as <span id="signedInAs" style="font-weight:bold;"></span></div>
-                        <hr>
-                        <div><a class="userProfile">Account Settings <i class="warning_icon account-settings-warning icon-warning fa fa-1x" style="vertical-align:middle;"> </i></a></div>
-                        <div><a class="sulogin">SU Login</a></div>
-                        <div><a class="suSwitchBack" onclick="window.App.suSwitchBack()" style="display:none">SU Switch Back</a></div>
-                        <div><a class="logoutLink" onclick="window.App.logout()">Logout</a></div>
+
+                <div class="showOnLoad ShowWithAuth dijitHidden">
+
+                    <div id="chat-icon" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; margin-right: 3px; margin-top: 3px;">
+                        <a href="/view/Copilot" style="display: flex; align-items: center; justify-content: center;">
+                            <img src="/patric/images/chat-lines.svg" alt="Chat Icon" style="width: 25px; height: 25px;">
+                        </a>
+                    </div>
+
+                    <div class="showOnLoad ShowWithAuth dijitHidden topMenuButtonIcon"
+                            data-dojo-type="dijit/form/DropDownButton" data-dojo-props="iconClass:'icon-user fa-2x login-btn'">
+                        <span></span>
+                        <div class="warning_icon user_warning_icon icon-warning fa fa-1x"> </div>
+                        <div data-dojo-type="p3/widget/TooltipDialog">
+                            <div>Signed in as <span id="signedInAs" style="font-weight:bold;"></span></div>
+                            <hr>
+                            <div><a class="userProfile">Account Settings <i class="warning_icon account-settings-warning icon-warning fa fa-1x" style="vertical-align:middle;"> </i></a></div>
+                            <div><a class="sulogin">SU Login</a></div>
+                            <div><a class="suSwitchBack" onclick="window.App.suSwitchBack()" style="display:none">SU Switch Back</a></div>
+                            <div><a class="logoutLink" onclick="window.App.logout()">Logout</a></div>
+                        </div>
                     </div>
                 </div>
             </div>
