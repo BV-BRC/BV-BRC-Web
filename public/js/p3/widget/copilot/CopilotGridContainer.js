@@ -23,7 +23,7 @@ define([
     'dijit/layout/ContentPane', // Basic content container
     './ChatSessionScrollBar', // Scrollable chat history widget
     './ChatSessionContainer', // Main chat session container
-    './ChatSessionOptionsBar' // Options bar widget
+    './ChatSessionOptionsBar'
   ], function (
     declare, BorderContainer, lang, Dialog, CopilotDisplay, CopilotInput, CopilotAPI, topic, ContentPane, ChatSessionScrollBar, ChatSessionContainer, ChatSessionOptionsBar
   ) {
