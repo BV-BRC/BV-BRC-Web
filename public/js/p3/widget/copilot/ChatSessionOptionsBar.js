@@ -372,7 +372,7 @@ define([
 
             var summarizeCheckbox = document.createElement('input');
             summarizeCheckbox.type = 'checkbox';
-            summarizeCheckbox.checked = true;
+            summarizeCheckbox.checked = false;
             summarizeCheckbox.addEventListener('change', lang.hitch(this, function(evt) {
                 var shouldSummarize = evt.target.checked;
                 topic.publish('ChatSummarizeDocs', shouldSummarize);
