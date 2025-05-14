@@ -243,6 +243,31 @@ define([
             });
         },
 
+        submitQueryWithImage: function(inputText, sessionId, systemPrompt, model, image) {
+            var _self = this;
+            console.log('query');
+            var data = {
+                query: inputText,
+                model: model,
+                session_id: sessionId,
+                user_id: _self.user_id,
+                image: image
+            };
+            return request.post(this.apiUrlBase + '/chat-image', {
+                data: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response.response;
+            }).catch(function(error) {
+                console.error('Error submitting query:', error);
+                throw error;
+            });
+        },
+
         /**
          * Retrieves all messages for a session
          * Implementation:
