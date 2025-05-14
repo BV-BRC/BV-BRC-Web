@@ -78,7 +78,8 @@ define([
                 this.modelList.forEach(lang.hitch(this, function(model) {
                     var option = document.createElement('option');
                     option.value = model.model;
-                    option.text = model.model.split('/').reverse()[0];
+                    var modelName = model.model.split('/').reverse()[0];
+                    option.text = modelName.substring(0, 30);
                     selectElement.add(option);
                 }));
             } else {
@@ -391,7 +392,7 @@ define([
          */
         createModelDialog: function() {
             var modelDialog = new TooltipDialog({
-                style: "width: 250px;",
+                style: "width: 275px;",
                 content: document.createElement('div')
             });
 
