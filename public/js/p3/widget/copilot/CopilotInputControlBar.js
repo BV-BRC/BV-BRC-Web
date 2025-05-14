@@ -287,17 +287,63 @@ define([
          *
          **/
         _handleScreenshotSubmit: function() {
-            topic.publish('hideChatPanel');
-            // Take the screenshot
-            html2canvas(document.body).then(function(canvas) {
-                // Create download link
-                var link = document.createElement('a');
-                link.download = 'screenshot.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            }).finally(function() {
-                topic.publish('showChatPanel');
-            });
+            var inputText = this.textArea.get('value');
+            var _self = this;
+
+            if (this.state) {
+                console.log('state', this.state);
+            }
+
+            this.isSubmitting = true;
+            this.submitButton.set('disabled', true);
+            this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+            topic.publish('hideChatPanel'); // Hide panel before taking screenshot
+
+            html2canvas(document.body).then(lang.hitch(this, function(canvas) {
+                var base64Image = canvas.toDataURL('image/png');
+                // Remove the "data:image/png;base64," prefix
+                // base64Image = base64Image.split(',')[1];
+
+                topic.publish('showChatPanel'); // Show panel again
+
+                this.systemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\n' +
+                                    'Analyze the screenshot and respond to the user\'s query.';
+                var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
+                this.copilotApi.submitQueryWithImage(inputText, this.sessionId, this.systemPrompt, imgtxt_model, base64Image)
+                    .then(lang.hitch(this, function(response) {
+                        this.chatStore.addMessages([
+                            {
+                                role: 'user',
+                                content: inputText
+                            },
+                            {
+                                role: 'assistant',
+                                content: response
+                            }
+                        ]);
+                        _self.textArea.set('value', '');
+                        this.displayWidget.showMessages(this.chatStore.query());
+
+                        if (_self.new_chat) {
+                            _self.new_chat = false;
+                            topic.publish('reloadUserSessions');
+                            topic.publish('generateSessionTitle');
+                        }
+                    })).finally(lang.hitch(this, function() {
+                        this.displayWidget.hideLoadingIndicator();
+                        this.isSubmitting = false;
+                        this.submitButton.set('disabled', false);
+                    }));
+            })).catch(lang.hitch(this, function(error) {
+                console.error('Error capturing or processing screenshot:', error);
+                this.displayWidget.hideLoadingIndicator();
+                this.isSubmitting = false;
+                this.submitButton.set('disabled', false);
+                topic.publish('showChatPanel'); // Ensure panel is shown even on error
+                // Optionally, show an error message to the user
+                // new Dialog({ title: "Screenshot Error", content: "Failed to process screenshot.", style: "width: 300px" }).show();
+            }));
         }
 
                     /*
