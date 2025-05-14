@@ -275,10 +275,10 @@ define([
         _createInputWidget: function() {
             this.inputWidget = new CopilotInput({
                 region: 'bottom',
-                splitter: true,
+                splitter: false,
                 minSize: 60,
                 maxSize: 300,
-                style: 'padding: 0 10px 10px 10px; border: 0; height: 30%;',
+                style: 'padding: 0 10px 10px 10px; border: 0; height: 20%; overflow: hidden;',
                 copilotApi: this.copilotApi,
                 chatStore: this.chatStore,
                 displayWidget: this.displayWidget,

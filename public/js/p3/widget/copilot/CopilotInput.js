@@ -73,7 +73,8 @@ define([
         // Create centered wrapper div
         var wrapperDiv = domConstruct.create('div', {
           class: 'copilot-input-wrapper',
-          id: 'copilot-input-wrapper'
+          id: 'copilot-input-wrapper',
+          style: 'height: 95%;'
         }, this.containerNode);
 
         // Create settings panel
