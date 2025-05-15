@@ -32,7 +32,7 @@
             <!-- <div style="width:78%;display:inline-block;"  -->
             <div style="width:100%;display:inline-block;" 
               data-dojo-type="p3/widget/WorkspaceObjectSelector" 
-              name="input_genome_group" required="true" 
+              name="input_genome_group" required="false" 
               data-dojo-attach-point="input_genome_group" 
               data-dojo-attach-event="click:onAddGenomeGroup"
               data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is required.', placeHolder:'Select an exisiting Genome Group'">
@@ -48,34 +48,31 @@
               <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
             </div>
         </div>
-        <div class="appRow">
+            <div class="appRow">
           <label>Majority SNP Threshold</label>
-          <br>
-          <input
-            type="number"
-            name="majority-threshold"
-            data-dojo-type="dijit/form/NumberTextBox"
-            data-dojo-attach-point="majority-threshold"
-            style="width: 110px"
-            min="1"
-            max="99"
-            step="0.1"
-            required="false"
-            disabled="false"
-            data-dojo-props="
-              intermediateChanges: true,
-              missingMessage: 'Define the minimum threshold of genomes a SNP must be present in to be included in the Majority SNP output files.',placeHolder:'Default 50%',
-              trim: true">
+            <input
+              type="number"
+              name="majority-threshold"
+              data-dojo-type="dijit/form/NumberTextBox"
+              data-dojo-attach-point="majority-threshold"
+              style="width: 110px"
+              min="1"
+              max="99"
+              step="0.1"
+              required="false"
+              disabled="false"
+              data-dojo-props="
+                intermediateChanges: true,
+                missingMessage: 'Define the minimum threshold of genomes a SNP must be present in to be included in the Majority SNP output files.',placeHolder:'Default 50%',
+                trim: true">
         </div>
-
-        <div class="appRow" style="margin-top: 15px;">
+                <div class="appRow" style="margin-top: 15px;">
           <label>SNP Distance Treshold Configuration</label>
           <br>
-        
-          <div style="margin-bottom: 10px;">
+                    <div style="margin-bottom: 10px;">
             <label>Strong Linkage</label>
-            <br>
-            <input
+          <br>
+          <input
             type="number"
             name="min_strong_linkage"
             data-dojo-type="dijit/form/NumberTextBox"
@@ -86,8 +83,8 @@
             data-dojo-props="
               intermediateChanges: true,
               placeHolder:'0',
-              trim: true">
-            <input
+              trim: true"/>
+          <input
             type="number"
             name="max_strong_linkage"
             data-dojo-type="dijit/form/NumberTextBox"
@@ -98,12 +95,12 @@
             disabled="true"
             data-dojo-props="
               intermediateChanges: true,
-              placeHolder:'10',
-              trim: true">
-          <div style="margin-bottom: 10px;">
+              placeHolder:'0',
+              trim: true"/>
+            <div style="margin-bottom: 10px;">
             <label>Mid</label>
             <br>
-            <input
+          <input
             type="number"
             name="min_mid_linkage"
             data-dojo-type="dijit/form/NumberTextBox"
@@ -115,8 +112,8 @@
             data-dojo-props="
               intermediateChanges: true,
               placeHolder:'10',
-              trim: true">
-            <input
+              trim: true"/>
+          <input
             type="number"
             name="max_mid_linkage"
             data-dojo-type="dijit/form/NumberTextBox"
@@ -128,24 +125,24 @@
             data-dojo-props="
               intermediateChanges: true,
               placeHolder:'40',
-              trim: true">
-          <div style="margin-bottom: 10px;">
-            <label>Weak</label>
+              trim: true"/>
+        <div style="margin-bottom: 10px;">
+          <label>Weak</label>
             <br>
+          <input
+              type="number"
+              name="min_weak_linkage"
+              data-dojo-type="dijit/form/NumberTextBox"
+              data-dojo-attach-point="min_weak_linkage"
+              data-dojo-attach-event="onChange:onChangeMinWeakLinkage"
+              style="width: 110px"
+              required="false"
+              disabled="true"
+              data-dojo-props="
+                intermediateChanges: true,
+                placeHolder:'40',
+                trim: true"/>
             <input
-            type="number"
-            name="min_weak_linkage"
-            data-dojo-type="dijit/form/NumberTextBox"
-            data-dojo-attach-point="min_weak_linkage"
-            data-dojo-attach-event="onChange:onChangeMinWeakLinkage"
-            style="width: 110px"
-            required="false"
-            disabled="true"
-            data-dojo-props="
-              intermediateChanges: true,
-              placeHolder:'40',
-              trim: true">
-              <input
               type="number"
               name="max_weak_linkage"
               data-dojo-type="dijit/form/NumberTextBox"
@@ -156,9 +153,8 @@
               data-dojo-props="
                 intermediateChanges: true
                 ,placeHolder:'Max',
-                trim: true">
-                <!-- optional: value="50" -->
-          </div>
+                trim: true"/>
+        </div>
         </div>
       <div class="appRow">
         <label class="paramlabel">Output Folder</label><br>

@@ -24,7 +24,7 @@ define([
     tutorialLink: 'tutorial/WholeGenome SNPAnalysis/WholeGenomeSNPAnalysis.html',
     videoLink: '',
     pageTitle: 'Whole Genome SNP Analysis Service | BV-BRC',
-    appBaseURL: 'WholeGenomeSNPAnalysis',
+    appBaseURL: 'Whole Genome SNP Analysis',
     defaultPath: '',
     startingRows: 14,
     alphabet: '',
@@ -45,6 +45,7 @@ define([
       if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
+
       this.inherited(arguments);
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
       _self.output_path.set('value', _self.defaultPath);
@@ -55,21 +56,6 @@ define([
       } catch (error) {
         console.error(error);
       }
-    },
-
-    onChangeMinMidLinkage: function () {
-      console.log('called_onchange event')
-      if (this.min_mid_linkage.value !== null) {
-        this.max_strong_linkage.set("value", this.min_mid_linkage.value);
-      }
-    },
-
-    onChangeMaxMidLinkage: function () {
-      console.log('called_onchange event')
-      if (this.max_mid_linkage.value !== null) {
-        this.min_weak_linkage.set("value", this.max_mid_linkage.value);
-      }
-      
     },
 
     onAddGenomeGroup: function () {
@@ -85,14 +71,25 @@ define([
         if (typeof res.data === "string") {
           res.data = JSON.parse(res.data);
         }
+    
         if (res?.data?.id_list?.genome_id) {
           var newGenomeIds = res.data.id_list.genome_id;
           this.checkBacterialGenomes(newGenomeIds, groupType, false, path);
         }
       }));
     },
+    
 
+        // function is from phylogenetic tree
+        //  TO DO update to check genome
     validate: function () {
+      //  from MSA
+      //  just check that the genome Id is valid?
+      //   var ref_id = this.select_genome_id.get('value');
+      //   var id_valid = true;
+      //   if (this.genome_id.get('checked')) {
+      //     id_valid = this.validateReferenceID(ref_id);
+      //   }
       return this.inherited(arguments);
     },
 
@@ -127,6 +124,37 @@ define([
       return values;
     },
 
+    onChangeMinMidLinkage: function () {
+      console.log('called_onchange event minmid')
+      if (this.min_mid_linkage.value !== null) {
+        this.max_strong_linkage.set("value", this.min_mid_linkage.value);
+      }
+    },
+
+    // can delete if we field remains disabled
+    onChangeMaxStrongLinkage: function () {
+      console.log('called_onchange event max')
+      if (this.max_strong_linkage.value !== null) {
+        console.log(this.max_strong_linkage.value);
+        this.min_mid_linkage.set("value", this.max_strong_linkage.value);
+      }
+    },
+    
+    onChangeMaxMidLinkage: function () {
+      console.log('called_onchange event mix mid')
+      if (this.max_mid_linkage.value !== null) {
+        this.min_weak_linkage.set("value", this.max_mid_linkage.value);
+      }
+    },
+
+    // can delete if we field remains disabled
+    onChangeMinWeakLinkage: function () {
+      console.log('called_onchange event minweak')
+      if (this.min_weak_linkage.value !== null) {
+        console.log(this.min_weak_linkage.value);
+        this.max_mid_linkage.set("value", this.min_weak_linkage.value);
+      }
+    },
 
     checkBaseParameters: function (values, seqcomp_values) {
       seqcomp_values.output_path = values.output_path;
