@@ -24,7 +24,7 @@ define([
     tutorialLink: 'tutorial/WholeGenome SNPAnalysis/WholeGenomeSNPAnalysis.html',
     videoLink: '',
     pageTitle: 'Whole Genome SNP Analysis Service | BV-BRC',
-    appBaseURL: 'Whole Genome SNP Analysis',
+    appBaseURL: 'WholeGenomeSNPAnalysis',
     defaultPath: '',
     startingRows: 14,
     alphabet: '',
