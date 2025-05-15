@@ -274,7 +274,9 @@ define([
                 topic.publish('reloadUserSessions');
                 topic.publish('generateSessionTitle');
                 }
-            })).finally(lang.hitch(this, function() {
+            })).catch(function(error) {
+                topic.publish('CopilotApiError', { error: error });
+            }).finally(lang.hitch(this, function() {
                 this.displayWidget.hideLoadingIndicator();
                 this.isSubmitting = false;
                 this.submitButton.set('disabled', false);
@@ -330,7 +332,9 @@ define([
                             topic.publish('reloadUserSessions');
                             topic.publish('generateSessionTitle');
                         }
-                    })).finally(lang.hitch(this, function() {
+                    })).catch(function(error) {
+                        topic.publish('CopilotApiError', { error: error });
+                    }).finally(lang.hitch(this, function() {
                         this.displayWidget.hideLoadingIndicator();
                         this.isSubmitting = false;
                         this.submitButton.set('disabled', false);
