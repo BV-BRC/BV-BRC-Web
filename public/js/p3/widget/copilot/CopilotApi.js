@@ -65,6 +65,7 @@ define([
          * - Returns empty array if no sessions found
          */
         getUserSessions: function() {
+            if (!this._loggedIn) return Promise.reject('Not logged in');
             var _self = this;
             console.log('getUserSessions', _self.user_id);
             return request.get(this.apiUrlBase + `/get-all-sessions?user_id=${encodeURIComponent(_self.user_id)}`, {
@@ -89,6 +90,7 @@ define([
          * - Publishes error events on failure
          */
         getNewSessionId: function() {
+            if (!this._loggedIn) return Promise.reject('Not logged in');
             return request.get(this.apiUrlBase + '/start-chat', {
                 headers: {
                     Authorization: (window.App.authorizationToken || '')
@@ -106,6 +108,25 @@ define([
         },
 
         /**
+         * Checks if the user is logged in
+         * Returns false if not logged in and shows dialog
+         * Returns true if logged in
+         */
+        _checkLoggedIn: function() {
+            if (!window.App || !window.App.authorizationToken) {
+                new Dialog({
+                    title: "Not Logged In",
+                    content: "You must be logged in to use the Copilot chat.",
+                    style: "width: 300px"
+                }).show();
+                this._loggedIn = false;
+                return false;
+            }
+            this._loggedIn = true;
+            return true;
+        },
+
+        /**
          * Submits a regular chat query
          * Implementation:
          * - Builds query data object with text, model, session
@@ -115,6 +136,7 @@ define([
          * - Handles errors with detailed logging
          */
         submitQuery: function(inputText, sessionId, systemPrompt, model, save_chat = true) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             console.log('query');
             var data = {
@@ -154,6 +176,7 @@ define([
          * - Throws error if response indicates failure
          */
         submitRagQuery: function(inputQuery, ragDb, numDocs, sessionId, model, summarizeDocs) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
 
             var data = {
@@ -206,7 +229,7 @@ define([
             });
         },
 
-                /**
+        /**
          * Submits a regular chat query
          * Implementation:
          * - Builds query data object with text, model, session
@@ -216,6 +239,7 @@ define([
          * - Handles errors with detailed logging
          */
         submitQueryChatOnly: function(inputText, systemPrompt, model) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             console.log('query');
             var data = {
@@ -244,6 +268,7 @@ define([
         },
 
         submitQueryWithImage: function(inputText, sessionId, systemPrompt, model, image) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             console.log('query');
             var data = {
@@ -276,6 +301,7 @@ define([
          * - Includes detailed error logging
          */
         getSessionMessages: function(sessionId) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             return request.get(this.apiUrlBase + `/get-session-messages?session_id=${encodeURIComponent(sessionId)}`, {
                 headers: {
@@ -299,6 +325,7 @@ define([
          * - Returns generated title string
          */
         generateTitleFromMessages: function(messages, model) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             return request.post(this.apiUrlBase + '/generate-title-from-messages', {
                 data: JSON.stringify({
@@ -328,6 +355,7 @@ define([
          * - Returns updated session data
          */
         updateSessionTitle: function(sessionId, newTitle) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             return request.post(this.apiUrlBase + '/update-session-title', {
                 data: JSON.stringify({
@@ -356,6 +384,7 @@ define([
          * - Returns first prompt in array
          */
         getUserPrompts: function() {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             return request.get(this.apiUrlBase + '/get-user-prompts?user_id=' + _self.user_id, {
                 headers: {
@@ -378,6 +407,7 @@ define([
          * - Publishes general errors to topic
          */
         savePrompt: function(promptName, promptText) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             return request.post(this.apiUrlBase + '/save-prompt', {
                 data: JSON.stringify({
@@ -394,7 +424,7 @@ define([
                 console.log('Prompt saved:', response);
                 return true;
             }).catch(function(error) {
-                if (error.response.status === 413) {
+                if (error.response && error.response.status === 413) {
                     new Dialog({
                         title: "Error",
                         content: "Prompt too long, please shorten it.",
@@ -416,6 +446,7 @@ define([
          * - Throws error on failure
          */
         deleteSession: function(sessionId) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             return request.post(this.apiUrlBase + '/delete-session', {
                 data: JSON.stringify({
@@ -444,6 +475,7 @@ define([
          * - Uses test project ID currently
          */
         getModelList: function() {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             return request.post(this.dbUrlBase + '/get-model-list', {
                 data: JSON.stringify({
