@@ -24,7 +24,7 @@ define([
     tutorialLink: 'tutorial/WholeGenome SNPAnalysis/WholeGenomeSNPAnalysis.html',
     videoLink: '',
     pageTitle: 'Whole Genome SNP Analysis Service | BV-BRC',
-    appBaseURL: 'Whole Genome SNP Analysis',
+    appBaseURL: 'WholeGenomeSNPAnalysis',
     defaultPath: '',
     startingRows: 14,
     alphabet: '',
@@ -50,7 +50,6 @@ define([
       _self.output_path.set('value', _self.defaultPath);
       this._started = true;
       this.form_flag = false;
-      // on(this.max-strong-linkage), "change", (value) => {this.min_mid_linkage.set("value", value);}
       try {
         this.intakeRerunForm();
       } catch (error) {
@@ -65,14 +64,6 @@ define([
       }
     },
 
-    // can delete if we field remains disabled
-    onChangeMaxStrongLinkage: function () {
-      console.log('called_onchange event')
-      if (this.max_strong_linkage.value !== null) {
-        console.log(this.max_strong_linkage.value);
-        this.min_mid_linkage.set("value", this.max_strong_linkage.value);
-      }
-    },
     onChangeMaxMidLinkage: function () {
       console.log('called_onchange event')
       if (this.max_mid_linkage.value !== null) {
@@ -81,14 +72,6 @@ define([
       
     },
 
-    // can delete if we field remains disabled
-    onChangeMinWeakLinkage: function () {
-      console.log('called_onchange event')
-      if (this.min_weak_linkage.value !== null) {
-        console.log(this.min_weak_linkage.value);
-        this.max_mid_linkage.set("value", this.min_weak_linkage.value);
-      }
-    },
     onAddGenomeGroup: function () {
       console.log("Fetching genome group path...");
       
