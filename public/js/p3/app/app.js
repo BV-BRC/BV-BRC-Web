@@ -137,6 +137,12 @@ define([
         Parser.parse().then(function () {
           // console.log("ApplicationContainer: ", _self.getApplicationContainer());
           _self.startup();
+
+          // Initialize chat button
+          var chatButton = Registry.byId('chatButton');
+          if (chatButton) {
+            chatButton.startup();
+          }
         });
       });
     },

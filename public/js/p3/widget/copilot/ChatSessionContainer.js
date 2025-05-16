@@ -50,7 +50,7 @@ define([
         // Layout configuration properties
         gutters: false,
         liveSplitters: true,
-        style: 'height: 100%; width: 100%;',
+        style: 'height: 100%; width: 100%; background-color: #ffffff; opacity: 1;',
         sessionId: null,
         design: 'sidebar',
         persist: false,
