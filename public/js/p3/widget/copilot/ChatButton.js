@@ -13,7 +13,9 @@ define([
     'dijit/popup',
     'dojo/dom-style',
     './CopilotApi',
-    './ChatSessionOptionsBar'
+    './ChatSessionOptionsBar',
+    '../copilot/CopilotGridContainer',
+    'require'
 ], function(
     declare,
     Button,
@@ -29,7 +31,9 @@ define([
     popup,
     domStyle,
     CopilotAPI,
-    ChatSessionOptionsBar
+    ChatSessionOptionsBar,
+    CopilotGridContainer,
+    require
 ) {
     return declare([Button], {
         // Base class for styling
@@ -117,7 +121,7 @@ define([
                 label: "Larger",
                 onClick: lang.hitch(this, function(evt) {
                     popup.close(this.optionsDialog);
-                    // this._openLargeChat();
+                    this._openLargeChat();
                     evt.stopPropagation();
                 })
             }).placeAt(contentDiv);
@@ -128,11 +132,8 @@ define([
         _openSmallChat: function() {
             // If controller panel already exists, just show it
             if (this.controllerPanel && this.controllerPanel.domNode) {
-                if (this.chatTooltip) {
-                    popup.open({
-                        popup: this.chatTooltip,
-                        around: this.domNode
-                    });
+                if (this.chatContainer) {
+                    this._showControllerPanel();
                 }
                 return;
             }
@@ -257,6 +258,81 @@ define([
             }
         },
 
+        _openLargeChat: function() {
+            // If the large view dialog already exists, just show it
+            if (this.largeViewDialog) {
+                this.largeViewDialog.show();
+                return;
+            }
+
+            // get the vw and vh of the window
+            var vw = window.innerWidth;
+            var vh = window.innerHeight;
+
+            // Create a new dialog for large view
+            this.largeViewDialog = new Dialog({
+                title: "BV-BRC Copilot",
+                style: "width: " + (vw - 60) + "px; height: " + (vh - 40) + "px; left: 30px; top: 20px;",
+                onHide: lang.hitch(this, function() {
+                    // Destroy the dialog when closed
+                    setTimeout(lang.hitch(this, function() {
+                        // Clean up grid container if it exists
+                        if (this.gridContainer) {
+                            if (this.gridContainer.destroyRecursive) {
+                                this.gridContainer.destroyRecursive();
+                            }
+                            this.gridContainer = null;
+                        }
+
+                        // Destroy the dialog
+                        this.largeViewDialog.destroyRecursive();
+                        this.largeViewDialog = null;
+                    }), 0);
+                })
+            });
+
+            // Create a container node for the grid container
+            var containerNode = domConstruct.create('div', {
+                id: 'copilotLargeViewContainer',
+                style: 'height: 100%; width: 100%;'
+            });
+            this.largeViewDialog.set('content', containerNode);
+
+            // Initialize copilotApi if it doesn't exist
+            if (!this.copilotApi) {
+                this.copilotApi = new CopilotAPI({
+                    user_id: window.App.user.l_id
+                });
+            }
+
+            // Fetch model list and RAG database list
+            this.copilotApi.getModelList().then(lang.hitch(this, function(modelsAndRag) {
+                var modelList = JSON.parse(modelsAndRag.models);
+                var ragList = JSON.parse(modelsAndRag.vdb_list);
+
+                // Create main grid container in dialog
+                this.gridContainer = new CopilotGridContainer({
+                    copilotApi: this.copilotApi,
+                    style: 'height: 100%; width: 100%;'
+                }, containerNode);
+
+                // Start up the container
+                this.gridContainer.startup();
+
+                // Show the dialog after container is created
+                this.largeViewDialog.show();
+
+            })).catch(lang.hitch(this, function(err) {
+                // Show error dialog if service is unavailable
+                new Dialog({
+                    title: "Service Unavailable",
+                    content: "The BV-BRC Copilot service is currently unavailable. Please try again later.",
+                    style: "width: 300px"
+                }).show();
+                console.error('Error setting up large chat view:', err);
+            }));
+        },
+
         _showControllerPanel: function() {
             if (this.chatContainer) {
                 domStyle.set(this.chatContainer, {
@@ -294,15 +370,10 @@ define([
         // Override onClick to show the controller panel
         onClick: function(evt) {
             this.inherited(arguments);
-            // Only show the options dialog when chat button is clicked
-            if (this.controllerPanel) {
-                this._showControllerPanel();
-            } else {
-                popup.open({
-                    popup: this.optionsDialog,
-                    around: this.domNode
-                });
-            }
+            popup.open({
+                popup: this.optionsDialog,
+                around: this.domNode
+            });
 
             evt.stopPropagation();
         },
