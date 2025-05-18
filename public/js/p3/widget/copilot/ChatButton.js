@@ -219,6 +219,14 @@ define([
                 style: 'position: absolute; top: 5px; right: 5px; z-index: 10000; display: flex;'
             }, this.chatContainer);
 
+            // Add expand button
+            var expandButton = domConstruct.create('div', {
+                className: 'copilotChatExpandButton',
+                style: 'width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; border-radius: 50%; margin-right: 8px;',
+                innerHTML: '↗︎',
+                title: 'Expand to large view'
+            }, buttonsContainer);
+
             // Add minimize button
             var minimizeButton = domConstruct.create('div', {
                 className: 'copilotChatMinimizeButton',
@@ -234,6 +242,13 @@ define([
                 innerHTML: '✕',
                 title: 'Close (start new chat next time)'
             }, buttonsContainer);
+
+            // Expand button click handler - open large chat and hide small chat
+            on(expandButton, 'click', lang.hitch(this, function(evt) {
+                this._hideControllerPanel();
+                this._openLargeChat();
+                evt.stopPropagation();
+            }));
 
             // Minimize button click handler - just hide the panel
             on(minimizeButton, 'click', lang.hitch(this, function(evt) {
@@ -297,6 +312,24 @@ define([
                 style: 'height: 100%; width: 100%;'
             });
             this.largeViewDialog.set('content', containerNode);
+
+            // Add shrink button to the dialog's title bar
+            var titleBar = this.largeViewDialog.domNode.querySelector('.dijitDialogTitleBar');
+            if (titleBar) {
+                var shrinkButton = domConstruct.create('div', {
+                    className: 'copilotChatShrinkButton',
+                    style: 'width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; border-radius: 50%; margin-right: 8px; position: absolute; right: 30px; top: 8px;',
+                    innerHTML: '↘︎',
+                    title: 'Switch to small chat view'
+                }, titleBar);
+
+                // Shrink button click handler - close large chat and open small chat
+                on(shrinkButton, 'click', lang.hitch(this, function(evt) {
+                    this.largeViewDialog.hide();
+                    this._openSmallChat();
+                    evt.stopPropagation();
+                }));
+            }
 
             // Initialize copilotApi if it doesn't exist
             if (!this.copilotApi) {
