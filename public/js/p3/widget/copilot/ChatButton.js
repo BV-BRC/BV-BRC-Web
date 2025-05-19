@@ -354,7 +354,6 @@ define([
                         this.currentSessionId = this.gridContainer.rightContainer.getSessionId();
                     }
                     this.largeViewDialog.hide();
-                    this.chatOpen = false;
                     // this._openSmallChat();
                 })
             });
@@ -398,6 +397,7 @@ define([
                 // Close button click handler
                 on(closeButton, 'click', lang.hitch(this, function(evt) {
                     this.largeViewDialog.hide();
+                    this.chatOpen = false;
                     evt.stopPropagation();
                 }));
             }
