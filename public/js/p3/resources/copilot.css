@@ -1,0 +1,298 @@
+/* Copilot Chat Interface Styling */
+
+/* Main Component Classes */
+.ChatButton {
+  position: fixed;
+  bottom: calc(40px + 3.5vh);
+  right: 1vw;
+  z-index: 9999;
+  background-color: var(--blue);
+  background-image: url('/patric/images/chat-lines.svg');
+  background-size: 30px;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.ChatButton:hover {
+  background-color: #0056b3;
+  transform: scale(1.1);
+}
+
+.ChatButton.active {
+  background-color: #0056b3;
+}
+
+.ChatSessionControllerPanel {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  background-color: #ffffff;
+  opacity: 1;
+}
+
+.ChatSessionControllerPanel .closeButton:hover {
+  color: #dc3545;
+}
+
+.ChatSessionControllerPanel .floatingPanel {
+  background-color: #ffffff;
+  opacity: 1;
+}
+
+.copilotLargeDialog {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.copilotOptionsDialog .dijitDialogTitle {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #333;
+}
+
+.copilotOptionsDialog .dijitButton {
+  padding: 10px 20px;
+  margin: 0 10px;
+  border-radius: 4px;
+}
+
+.copilotLargeDialog .dijitDialogTitle {
+  font-size: 1.4em;
+  font-weight: bold;
+  color: #333;
+  padding: 15px;
+}
+
+/* Container Styles */
+.copilot-result-container {
+    width: 90%;
+    height: 100%;
+    overflow-y: auto;          /* Vertical scroll only */
+    overflow-x: hidden;        /* Prevent horizontal scroll */
+    padding: 10px;
+    padding-right: 100px;
+    border: 0;
+    margin: 0 auto;
+    background-color: #ffffff;
+    box-sizing: border-box;    /* Prevent padding from expanding width */
+    word-wrap: break-word;     /* Force word breaks if needed */
+  }
+
+
+.copilot-empty-state {
+  color: #666;
+  padding: 10px;
+  text-align: center;
+}
+
+.copilot-error {
+  color: red;
+  padding: 10px;
+}
+
+.copilot-input-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end; /* Aligns items to bottom */
+  width: 100%;
+  min-height: 40px; /* Minimum height to match textarea */
+  border: 0;
+  position: relative;
+  height: auto;
+  overflow-y: auto;
+  padding-top: 10px;
+}
+
+.copilot-input-settings {
+  display: flex;
+  flex-direction: column;
+  margin-right: 10px;
+  cursor: pointer;
+  font-size: 0.9em;
+  align-self: flex-end; /* Ensures settings stays at bottom */
+  overflow-y: auto;
+}
+
+.copilot-input-textarea {
+  width: 60%;
+  min-height: 100px;
+  max-height: 200px;
+  border-radius: 5px;
+  margin-right: 10px;
+  margin-bottom: 2px;
+  resize: none;
+}
+
+/* Button Element Styles */
+.ChatButton .dijitButtonNode {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+}
+
+.ChatButton .dijitButtonContents {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+}
+
+.ChatButton .dijitIcon {
+  font-size: 24px;
+  margin: 0;
+}
+
+.ChatButton .dijitButtonText {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Message Styles */
+.message {
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+.message * {
+  max-width: 100%;
+}
+
+.message img {
+  height: auto;
+}
+
+.message pre {
+  background-color: #f8f8f8;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.message code {
+  background-color: #f8f8f8;
+  padding: 2px 4px;
+  border-radius: 3px;
+  word-wrap: break-word;
+}
+
+.message table {
+  width: 100%;
+  display: block;
+  overflow-x: auto;
+}
+
+.message p {
+  margin: 0 0 10px 0;
+}
+
+.message p:last-child {
+  margin-bottom: 0;
+}
+
+.message.user {
+  background-color: #e6f3ff;
+  margin-left: auto;
+  float: right;
+  clear: both;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  max-width: 60%;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.message.assistant {
+  background-color: #f5f5f5;
+  margin-right: auto;
+  float: left;
+  clear: both;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  max-width: 60%;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.message.system {
+  background-color: #eaf3f8;
+  margin-right: auto;
+  float: right;
+  clear: both;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  max-width: 60%;
+  display: inline-block;
+  margin-top: 10px;
+  margin-right: 11px;
+}
+
+/* Animations */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Tooltip Dialog Styling */
+.copilotChatTooltip {
+  display: none;
+}
+
+/* Chat Container Styling */
+.copilotChatContainer {
+  transition: all 0.3s ease;
+  border: 1px solid #ccc;
+}
+
+.copilotChatButtonsContainer {
+  display: flex;
+  gap: 8px;
+}
+
+.copilotChatMinimizeButton,
+.copilotChatCloseButton,
+.copilotChatExpandButton {
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.copilotChatMinimizeButton {
+  font-weight: bold;
+  padding-bottom: 2px;
+}
+
+.copilotChatMinimizeButton:hover,
+.copilotChatCloseButton:hover,
+.copilotChatExpandButton:hover {
+  opacity: 1;
+  transform: scale(1.1);
+  background-color: #f0f0f0 !important;
+}

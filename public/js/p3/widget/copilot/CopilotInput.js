@@ -221,7 +221,6 @@ define([
             system_prompt += doc + '\n';
           });
           this.copilotApi.submitQuery(inputText, this.sessionId, system_prompt, this.model).then(lang.hitch(this, function(llm_response) {
-
             this.chatStore.addMessages([
               {
                 role: 'user',
@@ -244,6 +243,12 @@ define([
               topic.publish('reloadUserSessions');
               topic.publish('generateSessionTitle');
             }
+          })).catch(function(error) {
+            topic.publish('CopilotApiError', { error: error });
+          }).finally(lang.hitch(this, function() {
+            this.displayWidget.hideLoadingIndicator();
+            this.isSubmitting = false;
+            this.submitButton.set('disabled', false);
           }));
         })).finally(lang.hitch(this, function() {
           this.displayWidget.hideLoadingIndicator();
@@ -293,7 +298,9 @@ define([
             topic.publish('reloadUserSessions');
             topic.publish('generateSessionTitle');
           }
-        })).finally(lang.hitch(this, function() {
+        })).catch(function(error) {
+          topic.publish('CopilotApiError', { error: error });
+        }).finally(lang.hitch(this, function() {
           this.displayWidget.hideLoadingIndicator();
           this.isSubmitting = false;
           this.submitButton.set('disabled', false);

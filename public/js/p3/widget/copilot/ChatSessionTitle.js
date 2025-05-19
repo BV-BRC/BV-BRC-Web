@@ -206,6 +206,14 @@ define([
     },
 
     /**
+     * Returns the current title
+     * @returns {string} The current title
+     */
+    getTitle: function() {
+      return this.title;
+    },
+
+    /**
      * Handles session selection events
      * - Updates session ID and title
      * - Uses default title if none provided

@@ -50,7 +50,7 @@ define([
         // Layout configuration properties
         gutters: false,
         liveSplitters: true,
-        style: 'height: 100%; width: 100%;',
+        style: 'height: 100%; width: 100%; background-color: #ffffff; opacity: 1;',
         sessionId: null,
         design: 'sidebar',
         persist: false,
@@ -275,9 +275,9 @@ define([
         _createInputWidget: function() {
             this.inputWidget = new CopilotInput({
                 region: 'bottom',
-                splitter: false,
+                splitter: true,
                 minSize: 60,
-                maxSize: 300,
+                maxSize: 400,
                 style: 'padding: 0 10px 10px 10px; border: 0; height: 20%; overflow: hidden;',
                 copilotApi: this.copilotApi,
                 chatStore: this.chatStore,
@@ -298,6 +298,14 @@ define([
             this.inputWidget.setSessionId(sessionId);
             this.displayWidget.setSessionId(sessionId);
             this.titleWidget.setSessionId(sessionId);
+        },
+
+        /**
+         * Returns the current session ID
+         * @returns {string} The current session ID
+         */
+        getSessionId: function() {
+            return this.sessionId;
         }
     });
 });
