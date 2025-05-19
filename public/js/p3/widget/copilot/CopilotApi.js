@@ -318,6 +318,29 @@ define([
         },
 
         /**
+         * Retrieves the title for a session
+         * Implementation:
+         * - Makes GET request with session ID
+         * - Returns session title
+         * - Includes detailed error logging
+         */
+        getSessionTitle: function(sessionId) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            return request.get(this.apiUrlBase + `/get-session-title?session_id=${encodeURIComponent(sessionId)}`, {
+                headers: {
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('Error getting session title:', error);
+                throw error;
+            });
+        },
+
+        /**
          * Generates a title from chat messages
          * Implementation:
          * - Posts messages to title generation endpoint

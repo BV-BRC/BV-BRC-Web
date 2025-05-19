@@ -16,9 +16,11 @@ define([
   'dojo/on', // Event handling
   'dojo/_base/lang', // Language utilities like hitch
   'dojo/topic', // Pub/sub messaging
-  './ChatSessionScrollCard' // Individual session card widget
+  './ChatSessionScrollCard', // Individual session card widget
+  'dojo/query', // DOM query functions
+  'dojo/dom-class' // Class manipulation
 ], function (
-  declare, ContentPane, domConstruct, on, lang, topic, ChatSessionScrollCard
+  declare, ContentPane, domConstruct, on, lang, topic, ChatSessionScrollCard, query, domClass
 ) {
   /**
    * @class ChatSessionScrollBar
@@ -36,6 +38,12 @@ define([
     sessions_list: [],
 
     /**
+     * @property {Object} sessionCards
+     * Map of session IDs to card widgets for quick access
+     */
+    sessionCards: {},
+
+    /**
      * @constructor
      * @param {Object} args - Configuration arguments
      *
@@ -47,6 +55,7 @@ define([
     constructor: function(args) {
       this.inherited(arguments);
       declare.safeMixin(this, args);
+      this.sessionCards = {};
     },
 
     /**
@@ -81,10 +90,14 @@ define([
      * - Creates new ChatSessionScrollCard widget for each session
      * - Places cards in container in order
      * - Maintains consistent styling and layout
+     * - Stores references to cards for later highlighting
      */
     renderSessions: function() {
         // Clear existing content
         domConstruct.empty(this.scrollContainer);
+
+        // Reset session cards map
+        this.sessionCards = {};
 
         // Create session cards
         this.sessions_list.forEach(function(session) {
@@ -93,7 +106,48 @@ define([
             copilotApi: this.copilotApi
           });
           sessionCard.placeAt(this.scrollContainer);
+
+          // Store reference to the card widget keyed by session ID
+          this.sessionCards[session.session_id] = sessionCard;
         }, this);
+    },
+
+    /**
+     * @method highlightSession
+     * @param {string} sessionId - ID of session to highlight
+     *
+     * Implementation:
+     * - Removes highlighting from all sessions
+     * - Adds highlight class to the specified session
+     * - If session card is found, changes its background color
+     * - Scrolls the highlighted session into view
+     */
+    highlightSession: function(sessionId) {
+      if (!sessionId || !this.sessionCards) {
+        return;
+      }
+
+      // Get the session card for this ID
+      var sessionCard = this.sessionCards[sessionId];
+
+      if (sessionCard) {
+        // Reset all cards to default style
+        for (var id in this.sessionCards) {
+          if (this.sessionCards[id] && this.sessionCards[id].containerNode) {
+            this.sessionCards[id].containerNode.style.backgroundColor = '#f0f0f0';
+            this.sessionCards[id].containerNode.style.borderLeft = '1px solid #ccc';
+          }
+        }
+
+        // Highlight the selected card
+        sessionCard.containerNode.style.backgroundColor = '#e6f7ff';
+        sessionCard.containerNode.style.borderLeft = '3px solid #1890ff';
+
+        // Scroll card into view if it's out of the visible area
+        if (sessionCard.containerNode) {
+          sessionCard.containerNode.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
     },
 
     /**

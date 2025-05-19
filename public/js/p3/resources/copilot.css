@@ -77,15 +77,19 @@
 
 /* Container Styles */
 .copilot-result-container {
-  width: 90%;
-  height: 100%;
-  overflow-y: auto;
-  padding: 10px;
-  border: 0;
-  margin: 0 auto;
-  padding-right: 100px;
-  background-color: #ffffff;
-}
+    width: 90%;
+    height: 100%;
+    overflow-y: auto;          /* Vertical scroll only */
+    overflow-x: hidden;        /* Prevent horizontal scroll */
+    padding: 10px;
+    padding-right: 100px;
+    border: 0;
+    margin: 0 auto;
+    background-color: #ffffff;
+    box-sizing: border-box;    /* Prevent padding from expanding width */
+    word-wrap: break-word;     /* Force word breaks if needed */
+  }
+
 
 .copilot-empty-state {
   color: #666;
@@ -270,7 +274,8 @@
 }
 
 .copilotChatMinimizeButton,
-.copilotChatCloseButton {
+.copilotChatCloseButton,
+.copilotChatExpandButton {
   opacity: 0.7;
   transition: all 0.2s ease;
   display: flex;
@@ -285,7 +290,8 @@
 }
 
 .copilotChatMinimizeButton:hover,
-.copilotChatCloseButton:hover {
+.copilotChatCloseButton:hover,
+.copilotChatExpandButton:hover {
   opacity: 1;
   transform: scale(1.1);
   background-color: #f0f0f0 !important;

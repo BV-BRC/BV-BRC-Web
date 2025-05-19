@@ -298,6 +298,14 @@ define([
             this.inputWidget.setSessionId(sessionId);
             this.displayWidget.setSessionId(sessionId);
             this.titleWidget.setSessionId(sessionId);
+        },
+
+        /**
+         * Returns the current session ID
+         * @returns {string} The current session ID
+         */
+        getSessionId: function() {
+            return this.sessionId;
         }
     });
 });

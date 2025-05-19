@@ -98,6 +98,7 @@ define([
           leftContainer.addChild(chatSessionPane);
 
           this.addChild(leftContainer);
+          this.leftContainer = leftContainer;
 
           // Create main chat container in center region
           var rightContainer = new ChatSessionContainer({
@@ -106,6 +107,7 @@ define([
             copilotApi: this.copilotApi
           });
           this.addChild(rightContainer);
+          this.rightContainer = rightContainer;
 
         })).catch(lang.hitch(this, function(err) {
           // Show error dialog if service is unavailable
