@@ -1,20 +1,19 @@
 define([
    'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
    'dojo/on', 'dojo/query', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/topic',
-   './AppBase',
+   './AppBase', 'dijit/form/Checkbox',
    'dojo/text!./templates/TreeSort.html', 'dijit/form/Form',
-   '../../util/PathJoin', '../../WorkspaceManager',
-   'dijit/form/Checkbox'
+   '../../util/PathJoin', '../../WorkspaceManager'
 ], function (
    declare, lang, Deferred,
    on, query, domClass, domConstruct, domStyle, Topic,
-   AppBase,
-   Template, FormMixin, PathJoin, WorkspaceManager,
-   Checkbox
+   AppBase, Checkbox,
+   Template, FormMixin, PathJoin, WorkspaceManager
+
 ) {
 
-
-   const segmentedViruses = {
+   // TODO: This could be expanded to include other segmented viruses.
+   const SegmentedViruses = {
       influenza: {
          segments: [
             { name: "PB2", isDefault: false },
@@ -30,30 +29,18 @@ define([
    }
 
 
-   /*const FluSegmentOptions = [
-      { value: "PB2", label: "PB2" },
-      { value: "PB1", label: "PB1" },
-      { value: "PA", label: "PA" },
-      { value: "HA", label: "HA (default)" },
-      { value: "NP", label: "NP" },
-      { value: "NA", label: "NA" },
-      { value: "MP", label: "MP" },
-      { value: "NS", label: "NS" }
-   ];*/
-
-   //const FluSegments = ["PB2", "PB1", "PA", "HA", "NP", "NA", "MP", "NS"];
-
    const InferenceMethodOptions = [
       { value: "local", label: "local (default)" },
       { value: "mincut", label: "mincut" } // Always determine the most parsimonious reassortment placement even in ambiguous circumstances
    ]
 
-   const InputSourceOptions = [
-      { value: "fasta_data", label: "FASTA data" },
-      { value: "fasta_existing_dataset", label: "An existing dataset" },
-      { value: "fasta_file_id", label: "A file from the workspace" },
-      { value: "fasta_group_id", label: "A genome group" }
-   ];
+   // An "enum" for input sources
+   const InputSource = Object.freeze({
+      FastaData: "fasta_data",
+      FastaExistingDataset: "fasta_existing_dataset",
+      FastaFileID: "fasta_file_id",
+      FastaGroupID: "fasta_group_id",
+   })
 
    // An "enum" for match types
    const MatchType = Object.freeze({
@@ -87,18 +74,29 @@ define([
       applicationLabel: "TreeSort",
       applicationName: "TreeSort",
       baseClass: "TreeSort",
-
-      // The workspace manager's default folder.
-      defaultPath: "",
-
+      defaultPath: "", // The workspace manager's default folder.
       demo: true, // dmd
+      form_flag: false, // TODO: This is something related to intakeRerunForm
       pageTitle: "TreeSort Service | BV-BRC",
       requireAuth: false,  // dmd
       templateString: Template,
       tutorialLink: "tutorial/treesort/treesort.html",
       videoLink: "",
 
+
+      // TODO: A future version can use this variable to lookup different segments in the SegmentedViruses JSON.
+      virusTaxon: "influenza",
+
+
+
+      //----------------------------------------------------------------------------------------------------------------------------
+      // Data
+      //----------------------------------------------------------------------------------------------------------------------------
+      inputSource: InputSource.FastaFileID, // The default input source
+
+      //----------------------------------------------------------------------------------------------------------------------------
       // References to HTML elements/controls
+      //----------------------------------------------------------------------------------------------------------------------------
       //clades_path: null,
       deviationEl: null,
       equalRatesEl: null,
@@ -125,10 +123,10 @@ define([
       inferenceMethodMessageEl: null,
 
       // The radio buttons that select the input source type.
-      inputSourceFastaDataEl: null,
-      inputSourceFastaExistingDatasetEl: null,
-      inputSourceFastaFileIdEl: null,
-      inputSourceFastaGroupIdEl: null,
+      inputSource_FastaDataEl: null,
+      inputSource_FastaExistingDatasetEl: null,
+      inputSource_FastaFileIdEl: null,
+      inputSource_FastaGroupIdEl: null,
 
       // "Is time scaled" element
       isTimeScaledEl: null,
@@ -161,16 +159,12 @@ define([
       segmentsMessageEl: null,
 
 
-      // DMD testing
-      virusTaxon: "influenza",
-
 
       constructor: function () {
          //this.genomeToAttachPt = ['genome_id'];
          //this.genomeGroupToAttachPt = ['query_genomegroup'];
          //this.fastaToAttachPt = ['query_fasta'];
       },
-
 
       checkFasta: function () {
 
@@ -210,7 +204,7 @@ define([
          //const containerEl = document.querySelector(".segmentsPanel");
          if (!this.segmentsContainerEl) { throw new Error("Invalid segments container element"); }
 
-         const segments = segmentedViruses[this.virusTaxon].segments;
+         const segments = SegmentedViruses[this.virusTaxon].segments;
          if (!segments) { throw new Error("Invalid virus segment data"); }
 
          segments.forEach((segment_, index_) => {
@@ -241,7 +235,7 @@ define([
       // Iterate over the virus taxon's segments to create list options.
       getSegmentOptions: function () {
 
-         const segments = segmentedViruses[this.virusTaxon].segments;
+         const segments = SegmentedViruses[this.virusTaxon].segments;
          if (!segments) { throw new Error("Invalid virus segment data"); }
 
          return segments.map((segment_) => {
@@ -259,14 +253,49 @@ define([
          var output_file = this.output_file.get('value');
          var output_path = this.output_path.get('value');*/
 
+
+         let deviation = this.deviationEl.get("value");
+         let equalRates = this.equalRatesEl.get("checked");
+
+         /*fastaDataEl
+         fastaExistingDatasetEl
+         fastaFileIdEl
+         fastaGroupIdEl*/
+         let inferenceMethod = this.inferenceMethodEl.get("value");
+         let isTimeScaled = this.isTimeScaledEl.get("checked");
+         let matchRegex = this.matchRegexEl.get("value");
+         let matchType = this.matchTypeEl.get("value");
+         let noCollapse = this.noCollapseEl.get("checked");
+         //outputPathEl
+         let pValue = this.pValueEl.get("value");
+         let refSegment = this.refSegmentEl.get("value");
+         let refTreeInference = this.refTreeInferenceEl.get("value");
+
+         // TODO: Segments
+
          // Prepare the submission values (I think this will become job_desc.json)
-         var submit_values = {
-            /*'input_source': _self.input_source,
-            'virus_type': this.virus_type.value,
-            'output_file': output_file,
-            'output_path': output_path,*/
+         let submit_values = {
+            "clades_path": "",
+            "deviation": deviation,
+            "equal_rates": equalRates,
+            "inference_method": inferenceMethod,
+            "input_fasta_existing_dataset": null,
+            "input_fasta_data": null,
+            "input_fasta_file_id": null,
+            "input_fasta_group_id": null,
+            "input_source": this.input_source,
+            "is_time_scaled": isTimeScaled,
+            "match_regex": matchRegex,
+            "match_type": matchType,
+            "no_collapse": noCollapse,
+            "output_path": null,
+            "p_value": pValue,
+            "ref_segment": refSegment,
+            "ref_tree_inference": refTreeInference,
+            "segments": null
          };
 
+         console.log(submit_values)
 
          /*
          if (_self.input_source == 'fasta_file') {
@@ -298,82 +327,8 @@ define([
          }
       },
 
-      intakeRerunForm: function () {
-         // assuming only one key
-         let service_fields = window.location.search.replace('?', '');
-         let rerun_fields = service_fields.split('=');
-         let rerun_key;
-         if (rerun_fields.length > 1) {
-            try {
-               rerun_key = rerun_fields[1];
-               /*
-               // Look for an existing job_data object from session storage.
-               let sessionStorage = window.sessionStorage;
-               if (sessionStorage.hasOwnProperty(rerun_key)) {
-                  this.form_flag = true;
-
-                  // Deserialize the job_data
-                  let job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-                  this.setInputSource(job_data);
-
-                  // Populate form controls using the job data.
-                  if (Object.keys(job_data).includes('virus_type')) {
-                     this.virus_type.set('value', job_data['virus_type']);
-                  }
-               }*/
-            } catch (error) {
-               console.log(`Error during intakeRerunForm: ${error}`);
-            } finally {
-               sessionStorage.removeItem(rerun_key);
-            }
-         }
-      },
-
-      // Handle a change event on the input_source radio buttons.
-      onInputSourceChange: function (evt) {
-
-         // Hide all input source tables.
-         this.fasta_data_table.style.display = "none";
-         this.fasta_file_id_table.style.display = "none";
-         this.fasta_group_id_table.style.display = "none";
-         this.fasta_existing_dataset_table.style.display = "none";
-
-         // Remove existing requirements.
-         this.fasta_data.set("required", false);
-         this.fasta_file_id.set("required", false);
-         this.fasta_group_id.set("required", false);
-         this.fasta_existing_dataset.set("required", false);
-
-         // The selected input source control determines which table is displayed.
-         if (this.fasta_data_ctrl.checked) {
-            this.input_source = "fasta_data";
-            this.fasta_data_table.style.display = "table";
-            this.fasta_data.set("required", true);
-
-         } else if (this.fasta_file_id_ctrl.checked) {
-            this.input_source = "fasta_file_id";
-            this.fasta_file_id_table.style.display = "table";
-            this.fasta_file_id.set("required", true);
-
-         } else if (this.fasta_group_id_ctrl.checked) {
-            this.input_source = "fasta_group_id";
-            this.fasta_group_id_table.style.display = "table";
-            this.fasta_group_id.set("required", true);
-
-         } else if (this.existing_dataset_ctrl.checked) {
-            this.input_source = "existing_dataset";
-            this.fasta_existing_dataset_table.style.display = "table";
-            this.fasta_existing_dataset.set("required", true);
-
-         } else {
-            console.log("unrecognized input source")
-         }
-
-         if (!evt) { this.validate(); }
-      },
-
       // Handle a change event on the match_type list.
-      onMatchTypeChange: function (evt) {
+      handleMatchTypeChange: function () {
 
          if (this.matchTypeEl.value == MatchType.Regex) {
             this.matchRegexContainerEl.style.display = "block";
@@ -387,16 +342,94 @@ define([
          return;
       },
 
+      intakeRerunForm: function () {
+
+         // We are assuming that there's only 1 rerun key in the query string parameters.
+         let service_fields = window.location.search.replace('?', '');
+         let rerun_fields = service_fields.split('=');
+         let rerun_key;
+         if (rerun_fields.length > 1) {
+            try {
+               rerun_key = rerun_fields[1];
+
+               // Look for an existing job_data object from session storage.
+               let sessionStorage = window.sessionStorage;
+               if (sessionStorage.hasOwnProperty(rerun_key)) {
+                  this.form_flag = true;
+
+                  // Deserialize the job_data
+                  let jobData = JSON.parse(sessionStorage.getItem(rerun_key));
+                  if (jobData) { this.populateFromJobData(jobData); }
+               }
+            } catch (error) {
+               console.log(`Error during intakeRerunForm: ${error}`);
+            } finally {
+               sessionStorage.removeItem(rerun_key);
+            }
+         }
+      },
+
+      // Handle a change event on the input_source radio buttons.
+      onInputSourceChange: function (evt) {
+
+         // Hide all FASTA panels
+         this.fastaDataPanelEl.style.display = "none";
+         this.fastaFileIdPanelEl.style.display = "none";
+         this.fastaGroupIdPanelEl.style.display = "none";
+         this.fastaExistingDatasetPanelEl.style.display = "none";
+
+         // Make all FASTA elements optional.
+         this.fastaDataEl.set("required", false);
+         this.fastaFileIdEl.set("required", false);
+         this.fastaGroupIdEl.set("required", false);
+         this.fastaExistingDatasetEl.set("required", false);
+
+         // The selected input source control determines which table is displayed.
+         if (this.inputSourceFastaDataEl.checked) {
+            this.input_source = "fasta_data";
+            this.fastaDataPanelEl.style.display = "block";
+            this.fastaDataEl.set("required", true);
+
+         } else if (this.inputSourceFastaFileIdEl.checked) {
+            this.input_source = "fasta_file_id";
+            this.fastaFileIdPanelEl.style.display = "block";
+            this.fastaFileIdEl.set("required", true);
+
+         } else if (this.inputSourceFastaGroupIdEl.checked) {
+            this.input_source = "fasta_group_id";
+            this.fastaGroupIdPanelEl.style.display = "block";
+            this.fastaGroupIdEl.set("required", true);
+
+         } else if (this.inputSourceFastaExistingDatasetEl.checked) {
+            this.input_source = "existing_dataset";
+            this.fastaExistingDatasetPanelEl.style.display = "block";
+            this.fastaExistingDatasetEl.set("required", true);
+
+         } else {
+            console.log("unrecognized input source")
+         }
+
+         if (!evt) { this.validate(); }
+      },
+
       onOutputPathChange: function (evt) {
 
       },
 
-      onReset: function (evt) {
+      onReset: function () {
+
+         // TODO: What does this do?
          this.inherited(arguments);
       },
 
       openJobsList: function () {
          Topic.publish('/navigate', { href: '/job/' });
+      },
+
+      populateFromJobData: function (jobData) {
+
+
+
       },
 
       resubmit: function () {
@@ -405,33 +438,13 @@ define([
          query('.reSubmitBtn').style('visibility', 'hidden');
       },
 
-      setInputSource: function (job_data) {
-
-         /*
-         var s = job_data['input_source'];
-         if (s === 'fasta_data') {
-            this.input_sequence.set('checked', true);
-            this.input_fasta.set('checked', false);
-            this.sequence.set('value', job_data['input_fasta_data']);
-         } else if (s === 'fasta_file') {
-            this.input_fasta.set('checked', true);
-            this.input_sequence.set('checked', false);
-            this.query_fasta.set('value', job_data['input_fasta_file']);
-         }
-
-         this.output_path.set('value', job_data['output_path']);
-         this.virus_type.set('value', job_data['virus_type']);
-         */
-      },
-
-      /* TODO: add these
       setTooltips: function () {
          new Tooltip({
             connectId: ['exclude_tooltip'],
             label: 'OR: mark the source sequence with < and >: e.g. ...ATCT&#60;CCCC&#62;TCAT.. forbids primers in the central CCCC. '
          });
 
-      },*/
+      },
 
       startup: function() {
 
@@ -447,8 +460,6 @@ define([
             this.defaultPath = WorkspaceManager.getDefaultFolder() || this.activeWorkspacePath;
          }
 
-         //this.onInputSourceChange(true);
-
          // Populate the select lists.
          this.inferenceMethodEl.addOption(InferenceMethodOptions);
          this.matchTypeEl.addOption(MatchTypeOptions);
@@ -460,11 +471,34 @@ define([
 
          this._started = true;
 
-         /*try {
+         try {
             this.intakeRerunForm();
          } catch (error) {
             console.error(error);
-         }*/
+         }
+
+         // TEST: Click the input source radio button.
+         switch (this.inputSource) {
+
+            case InputSource.FastaData:
+               this.inputSourceFastaDataEl.set("checked", true);
+               break;
+
+            case InputSource.FastaExistingDataset:
+               this.inputSourceFastaExistingDatasetEl.set("checked", true);
+               break;
+
+            case InputSource.FastaData:
+               this.inputSourceFastaDataEl.set("checked", true);
+               break;
+
+            case InputSource.FastaData:
+               this.inputSourceFastaDataEl.set("checked", true);
+               break;
+
+            default:
+
+         }
       },
 
       validate: function () {
@@ -490,9 +524,21 @@ define([
          return true;
       },
 
+      // TEST
+      validateDeviation: function (value_, evt_) {
+
+         console.log("value_ = ", value_)
+         console.log("evt_ = ", evt_)
+
+         this.getValues();
+
+         return;
+      },
+
       validateFastaData: function (evt) {
 
-         console.log(`In validateFastaData evt = `, evt)
+         let fasta = this.fastaDataEl.get("value");
+         if (!fasta) { }
 
          // input_fasta_data
       },
@@ -519,6 +565,10 @@ define([
       },
 
       validateMatchRegex: function (evt) {
+
+      },
+
+      validatePValue: function (evt) {
 
       }
 
