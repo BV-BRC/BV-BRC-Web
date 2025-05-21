@@ -1,0 +1,412 @@
+<form dojoAttachPoint="containerNode" class="PanelForm"
+   dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+
+   <!-- DMD TEST-->
+   <br />
+
+   <div class="appTemplate">
+      <div class="appTitle">
+         <span class="breadcrumb">Services</span>
+         <h1 class="appHeader">TreeSort
+            <div name="overview" class="infobox iconbox infobutton dialoginfo">
+               <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+            </div>
+            <div class="infobox iconbox tutorialButton tutorialInfo">
+               <a href="${docsServiceURL}${tutorialLink}" target="_blank">
+                  <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+               </a>
+            </div>
+         </h1>
+         <p>
+            ${applicationDescription} Link to <a href="https://github.com/flu-crew/TreeSort" target="_blank">TreeSort</a>.
+         </p>
+         <br>
+         <p>For further explanation, please see the ${applicationLabel} Service <a
+            href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and <a
+            href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+         </p>
+      </div>
+
+
+      <div class="appBox appShadow" style="margin-top:10px">
+
+         <div class="headerrow">
+            <div style="width:85%;display:inline-block;">
+               <label class="appBoxLabel">Input data</label>
+               <div name="query-source" class="infobox iconbox infobutton dialoginfo">
+                  <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+               </div>
+            </div>
+            <br/>
+
+            <!-- Controls to determine the input source -->
+            <div class="appRow">
+               <input name="input_source"
+                  data-dojo-attach-event="onChange:onInputSourceChange"
+                  data-dojo-attach-point="fasta_data_ctrl"
+                  data-dojo-type="dijit/form/RadioButton"
+                  id="${id}_fasta_data_ctrl"
+                  type="radio"
+                  value="fasta_data"
+                  checked
+               />
+               <label for="${id}_fasta_data_ctrl">Enter sequence</label>&nbsp;&nbsp;
+
+               <input name="input_source"
+                  data-dojo-attach-event="onChange:onInputSourceChange"
+                  data-dojo-attach-point="fasta_file_id_ctrl"
+                  data-dojo-type="dijit/form/RadioButton"
+                  id="${id}_fasta_file_id_ctrl"
+                  type="radio"
+                  value="fasta_file_id"
+               />
+               <label for="${id}_fasta_file_id_ctrl">Select FASTA file</label>&nbsp;&nbsp;
+
+               <input name="input_source"
+                  data-dojo-attach-event="onChange:onInputSourceChange"
+                  data-dojo-attach-point="fasta_group_id_ctrl"
+                  data-dojo-type="dijit/form/RadioButton"
+                  id="${id}_fasta_group_id_ctrl"
+                  type="radio"
+                  value="fasta_group_id"
+               />
+               <label for="${id}_fasta_group_id_ctrl">Select genome group</label>&nbsp;&nbsp;
+
+               <input name="input_source"
+                  data-dojo-attach-event="onChange:onInputSourceChange"
+                  data-dojo-attach-point="existing_dataset_ctrl"
+                  data-dojo-type="dijit/form/RadioButton"
+                  id="${id}_existing_dataset_ctrl"
+                  type="radio"
+                  value="existing_dataset"
+               />
+               <label for="${id}_existing_dataset_ctrl">Use existing data</label>
+            </div>
+
+            <!-- FASTA data -->
+            <table data-dojo-attach-point="input_fasta_data_table" style="width:100%; display:none">
+               <tr>
+                  <td>
+                     <textarea name="fasta_data"
+                        data-dojo-attach-event="onBlur:validateFastaData"
+                        data-dojo-attach-point="fasta_data"
+                        data-dojo-props="rows:13, placeholder:'Enter one or more nucleotide sequences in FASTA format.', intermediateChanges:true"
+                        data-dojo-type="dijit/form/Textarea"
+                        required="false"
+                        style="width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px"
+                     ></textarea>
+                     <div class="warning" data-dojo-attach-point="fasta_data_message"></div>
+                  </td>
+               </tr>
+            </table>
+
+            <!-- FASTA file ID -->
+            <table data-dojo-attach-point="fasta_file_id_table" style="width:100%; display:none">
+               <tr>
+                  <td>
+                     <div name="fasta_file_id"
+                        data-dojo-attach-event="onChange:validateFastaFileID"
+                        data-dojo-attach-point="fasta_file_id"
+                        data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                        data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta', 'genome_protein_fasta', 'genome_dna_fasta', 'contigs'],multi:false,promptMessage:'Select or upload a FASTA file from your workspace.',missingMessage:'FASTA file is required.',placeHolder:'FASTA file'"
+                        required="false"
+                        style="width:85%;display:inline-block;"
+                     ></div>
+                  </td>
+               </tr>
+            </table>
+
+            <!-- FASTA group ID -->
+            <table data-dojo-attach-point="fasta_group_id_table" style="width:100%; display:none">
+               <tr>
+                  <td>
+                     <div name="fasta_group_id"
+                        data-dojo-attach-event="onChange:validateFastaGroupID"
+                        data-dojo-attach-point="fasta_group_id"
+                        data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace.',missingMessage:'Genome group is required.',placeHolder:'Genome group'"
+                        data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                        required="false"
+                        style="width:85%;display:inline-block;"
+                     ></div>
+                  </td>
+               </tr>
+            </table>
+
+            <!-- Existing dataset -->
+            <table data-dojo-attach-point="fasta_existing_dataset_table" style="width:100%; display:none">
+               <tr>
+                  <td>
+                     <div name="fasta_existing_dataset"
+                        data-dojo-attach-event="onChange:validateFastaExistingDataset"
+                        data-dojo-attach-point="fasta_existing_dataset"
+                        data-dojo-props="type:['folder'],multi:false,promptMessage:'Select a folder containing an existing dataset.',missingMessage:'An existing dataset folder is required.',placeHolder:'Existing dataset directory'"
+                        data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                        required="false"
+                        style="width:85%;display:inline-block;"
+                     ></div>
+                  </td>
+               </tr>
+            </table>
+         </div>
+      </div>
+
+      <div class="appBox appShadow">
+
+         <!-- Output path -->
+         <div class="appRow" style="margin-bottom: 1.0rem">
+            <div style="text-align:left;">
+               <div class="headerrow" style="margin-bottom: 7px">
+                  <label class="appBoxLabel">Output path</label>
+                  <div name="output_path" class="infobox iconbox infobutton dialoginfo">
+                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                  </div>
+               </div>
+               <div name="output_path"
+                  data-dojo-attach-event="onChange:onOutputPathChange"
+                  data-dojo-attach-point="output_path"
+                  data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false,placeHolder:'Output Folder'"
+                  data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                  required="true"
+                  style="width: 32rem"></div>
+               <div class="warning" data-dojo-attach-point="output_path_message"></div>
+            </div>
+         </div>
+
+         <div class="appRow" style="margin-bottom: 1.0rem">
+            <div style="align-items: flex-start; display: flex; flex-flow: row nowrap; justify-content:space-between;">
+
+               <!-- Match type -->
+               <div style="text-align:left;">
+                  <div class="headerrow" style="margin-bottom: 7px">
+                     <label class="appBoxLabel">Match type</label>
+                     <div name="match_type" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                     </div>
+                  </div>
+                  <div name="match_type"
+                     data-dojo-attach-event="onChange:onMatchTypeChange"
+                     data-dojo-attach-point="match_type"
+                     data-dojo-props="disabled:false"
+                     data-dojo-type="dijit/form/Select"
+                     maxHeight="200"
+                     required="true"
+                     style="width: 27.5rem">
+                  </div>
+                  <div class="warning" data-dojo-attach-point="match_type_message"></div>
+               </div>
+
+               <!-- Match regex -->
+               <div data-dojo-attach-point="match_regex_container" style="text-align:left; margin-left: 1.0rem; display: none">
+                  <div class="headerrow" style="margin-bottom: 7px">
+                     <label class="appBoxLabel">Regular expression</label>
+                     <div name="match_regex" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                     </div>
+                  </div>
+                  <input name="match_regex"
+                     data-dojo-attach-event="onChange:validateMatchRegex"
+                     data-dojo-attach-point="match_regex"
+                     data-dojo-props="trim:true, placeholder:'A regular expression', intermediateChanges:true"
+                     data-dojo-type="dijit/form/ValidationTextBox"
+                     required="false"
+                     style="text-align: right; height:20px; font-family: monospace; font-size:12px" />
+                  <div class="warning" data-dojo-attach-point="match_regex_message"></div>
+               </div>
+            </div>
+         </div>
+
+         <div class="appRow" style="margin-bottom: 1.0rem">
+            <div style="align-items: flex-start; display: flex; flex-flow: row nowrap; justify-content:space-between;">
+
+               <!-- Reference segment -->
+               <div style="text-align:left;">
+                  <div class="headerrow" style="margin-bottom: 7px">
+                     <label class="appBoxLabel">Reference segment</label>
+                     <div name="ref_segment" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                     </div>
+                  </div>
+                  <div name="ref_segment"
+                     data-dojo-attach-point="ref_segment"
+                     data-dojo-props="disabled:false"
+                     data-dojo-type="dijit/form/Select"
+                     maxHeight="200"
+                     required="true"
+                     style="width:12rem">
+                  </div>
+                  <div class="warning" data-dojo-attach-point="ref_segment_message"></div>
+               </div>
+
+               <!-- Inference method -->
+               <div style="text-align:left;">
+                  <div class="headerrow" style="margin-bottom: 7px">
+                     <label class="appBoxLabel">Inference method</label>
+                     <div name="inference_method" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                     </div>
+                  </div>
+                  <div name="inference_method"
+                     data-dojo-attach-point="inference_method"
+                     data-dojo-props="disabled:false"
+                     data-dojo-type="dijit/form/Select"
+                     maxHeight="200"
+                     required="false"
+                     style="width:12rem">
+                  </div>
+                  <div class="warning" data-dojo-attach-point="inference_method_message"></div>
+               </div>
+
+               <!-- Reference tree inference method -->
+               <div style="text-align:left;">
+                  <div class="headerrow" style="margin-bottom: 7px">
+                     <label class="appBoxLabel">Reference tree inference method</label>
+                     <div name="ref_tree_inference" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                     </div>
+                  </div>
+                  <div name="ref_tree_inference"
+                     data-dojo-attach-point="ref_tree_inference"
+                     data-dojo-props="disabled:false"
+                     data-dojo-type="dijit/form/Select"
+                     maxHeight="200"
+                     required="true"
+                     style="width:12rem">
+                  </div>
+                  <div class="warning" data-dojo-attach-point="ref_tree_inference_message"></div>
+               </div>
+            </div>
+         </div>
+
+
+
+         <div class="appRow" style="margin-bottom: 1.0rem">
+            <div style="align-items: flex-start; display: flex; flex-flow: row nowrap; justify-content: flex-start;">
+
+            <!-- Deviation -->
+            <div style="text-align:left;">
+               <div class="headerrow" style="margin-bottom: 7px">
+                  <label class="appBoxLabel">Deviation</label>
+                  <div name="deviation" class="infobox iconbox infobutton dialoginfo">
+                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                  </div>
+               </div>
+               <input name="deviation"
+                  data-dojo-attach-point="deviation"
+                  data-dojo-props="trim:true,regExp:'(([0-9])+)', placeholder:'', intermediateChanges:true"
+                  data-dojo-type="dijit/form/ValidationTextBox"
+                  required="false"
+                  style="text-align: right; height:20px; font-family: monospace; font-size:12px;"
+                  value="2"/>
+               <div class="warning" data-dojo-attach-point="deviation_message"></div>
+            </div>
+
+            <!-- P-value -->
+            <div style="text-align:left;">
+               <div class="headerrow" style="margin-bottom: 7px">
+                  <label class="appBoxLabel">P-value cuttof</label> <!-- The cutoff p-value for the reassortment tests -->
+                  <div name="p_value" class="infobox iconbox infobutton dialoginfo">
+                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                  </div>
+               </div>
+               <input name="p_value"
+                  data-dojo-attach-point="p_value"
+                  data-dojo-props="trim:true,regExp:'/^\d*(\.\d*)?$/', placeholder:'', intermediateChanges:true"
+                  data-dojo-type="dijit/form/ValidationTextBox"
+                  required="false"
+                  style="text-align: right; height:20px; font-family: monospace; font-size:12px"
+                  value="0.001"/>
+               <div class="warning" data-dojo-attach-point="pvalue_message"></div>
+            </div>
+         </div>
+
+         <!-- Equal rates -->
+         <div class="appRow" style="margin-top: 1.0rem">
+            <div id="${id}_equal_rates"
+               data-dojo-attach-point="equal_rates"
+               data-dojo-type="dijit/form/CheckBox"
+               checked></div>
+            <label for="${id}_equal_rates">Don’t estimate molecular clock rates for different segments</label>
+         </div>
+
+         <!-- Is time scaled -->
+         <div class="appRow" style="margin-top: 1.0rem">
+            <div id="${id}_is_time_scaled"
+               data-dojo-attach-point="is_time_scaled"
+               data-dojo-type="dijit/form/CheckBox"
+               checked></div>
+            <label for="${id}_equal_rates">Time-scale the reference tree</label>
+         </div>
+
+         <!-- No collapse -->
+         <div class="appRow" style="margin-top: 1.0rem">
+            <div id="${id}_no_collapse"
+               data-dojo-attach-point="no_collapse"
+               data-dojo-type="dijit/form/CheckBox"
+               checked></div>
+            <label for="${id}_no_collapse">Collapse near-zero length branches into multifurcations</label>
+         </div>
+
+
+
+         <!--
+         <table>
+            <tr>
+               <td>
+                  <div class="headerrow" style="margin: 16px 0 7px 0">
+                     <label class="appBoxLabel">Output Folder</label>
+                     <div name="output-folder" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                     </div>
+                  </div>
+                  <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
+                     data-dojo-attach-point="output_path" style="width:300px" required="true"
+                     data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false,placeHolder:'Output Folder'"
+                     data-dojo-attach-event="onChange:onOutputPathChange"></div>
+               </td>
+               <td>
+                  <div class="headerrow" style="margin: 16px 0 7px 0">
+                     <label class="appBoxLabel">Output Name</label>
+                     <div name="output-name" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                     </div>
+                     <span class="charError"
+                        style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br/>
+                  </div>
+                  <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
+                     data-dojo-attach-event="onChange:checkOutputName" data-dojo-attach-point="output_file"
+                     style="width:300px" required="true"
+                     data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
+                  </div>
+               </td>
+            </tr>
+         </table> -->
+
+         <div class="warning" data-dojo-attach-point="database_message"></div>
+      </div>
+   </div>
+   <div class="appSubmissionArea">
+      <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
+         style="margin-top:10px; text-align:center;">
+         Submitting ${applicationLabel} job
+      </div>
+      <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
+         style="margin-top:10px; text-align:center;">
+         Error submitting job
+      </div>
+      <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+         style="margin-top:10px; text-align:center;">
+         Your job has been submitted successfully. Please visit your <a
+            data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job and
+         access the results.
+      </div>
+      <div style="margin-top: 10px; text-align:center;">
+         <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel"
+            data-dojo-type="dijit/form/Button">Cancel
+         </div>
+         <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset
+         </div>
+         <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit
+         </div>
+      </div>
+   </div>
+</form>
