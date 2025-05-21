@@ -80,34 +80,67 @@ define([
       tutorialLink: "tutorial/treesort/treesort.html",
       videoLink: "",
 
-      // Controls (?)
+      // References to HTML elements/controls
       //clades_path: null,
-      deviation: null,
-      equal_rates: null,
-      inference_method: null,
-      /*input_fasta_data: null,
-      input_fasta_existing_dataset: null,
-      input_fasta_file_id: null,
-      input_fasta_group_id: null,
-      input_source: null,*/
-      is_time_scaled: null,
-      match_regex: null,
-      match_regex_container: null,
-      match_type: null,
-      no_collapse: null,
-      output_path: null,
-      p_value: null,
-      ref_segment: null,
-      ref_tree_inference: null,
-      //segments: null,
+      deviationEl: null,
+      equalRatesEl: null,
 
+      // FASTA data elements
+      fastaDataEl: null,
+      fastaDataMessageEl: null,
+      fastaDataPanelEl: null,
 
-      // I don't think these are used. These were possibly used by the example code I based this on.
-      allowMultiple: false,
-      loadingMask: null,
-      result_store: null,
-      result_grid: null,
-      sequence_type: null,
+      // FASTA existing dataset elements
+      fastaExistingDatasetEl: null,
+      fastaExistingDatasetPanelEl: null,
+
+      // FASTA file ID elements
+      fastaFileIdEl: null,
+      fastaFileIdPanelEl: null,
+
+      // FASTA group ID elements
+      fastaGroupIdEl: null,
+      fastaGroupIdPanelEl: null,
+
+      // Inference method elements
+      inferenceMethodEl: null,
+      inferenceMethodMessageEl: null,
+
+      // The radio buttons that select the input source type.
+      inputSourceFastaDataEl: null,
+      inputSourceFastaExistingDatasetEl: null,
+      inputSourceFastaFileIdEl: null,
+      inputSourceFastaGroupIdEl: null,
+
+      // "Is time scaled" element
+      isTimeScaledEl: null,
+
+      // Match regex elements
+      matchRegexEl: null,
+      matchRegexContainerEl: null,
+
+      // Match type element
+      matchTypeEl: null,
+
+      // "No collapse" element
+      noCollapseEl: null,
+
+      // Output path element
+      outputPathEl: null,
+
+      // P-value elements
+      pValueEl: null,
+      pValueMessageEl: null,
+
+      // Reference segment element
+      refSegmentEl: null,
+
+      // Reference tree inference element
+      refTreeInferenceEl: null,
+
+      // Segments elements
+      segmentsEl: null,
+      segmentsMessageEl: null,
 
 
       constructor: function () {

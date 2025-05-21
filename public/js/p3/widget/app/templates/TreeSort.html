@@ -17,13 +17,11 @@
                </a>
             </div>
          </h1>
-         <p>
-            ${applicationDescription} Link to <a href="https://github.com/flu-crew/TreeSort" target="_blank">TreeSort</a>.
-         </p>
-         <br>
-         <p>For further explanation, please see the ${applicationLabel} Service <a
-            href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and <a
-            href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+         <p>${applicationDescription} Link to <a href="https://github.com/flu-crew/TreeSort" target="_blank">TreeSort</a>.</p>
+         <br/>
+         <p>For further explanation, please see the ${applicationLabel} Service
+            <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and
+            <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
          </p>
       </div>
 
@@ -39,74 +37,74 @@
             </div>
             <br/>
 
-            <!-- Controls to determine the input source -->
+            <!-- Radio buttons to determine the input source -->
             <div class="appRow">
                <input name="input_source"
                   data-dojo-attach-event="onChange:onInputSourceChange"
-                  data-dojo-attach-point="fasta_data_ctrl"
+                  data-dojo-attach-point="inputSourceFastaDataEl"
                   data-dojo-type="dijit/form/RadioButton"
-                  id="${id}_fasta_data_ctrl"
+                  id="${id}_inputSourceFastaData"
                   type="radio"
                   value="fasta_data"
                   checked
                />
-               <label for="${id}_fasta_data_ctrl">Enter sequence</label>&nbsp;&nbsp;
+               <label for="${id}_inputSourceFastaData">Enter sequence</label>&nbsp;&nbsp;
 
                <input name="input_source"
                   data-dojo-attach-event="onChange:onInputSourceChange"
-                  data-dojo-attach-point="fasta_file_id_ctrl"
+                  data-dojo-attach-point="inputSourceFastaFileIdEl"
                   data-dojo-type="dijit/form/RadioButton"
-                  id="${id}_fasta_file_id_ctrl"
+                  id="${id}_inputSourceFastaFileId"
                   type="radio"
                   value="fasta_file_id"
                />
-               <label for="${id}_fasta_file_id_ctrl">Select FASTA file</label>&nbsp;&nbsp;
+               <label for="${id}_inputSourceFastaFileId">Select FASTA file</label>&nbsp;&nbsp;
 
                <input name="input_source"
                   data-dojo-attach-event="onChange:onInputSourceChange"
-                  data-dojo-attach-point="fasta_group_id_ctrl"
+                  data-dojo-attach-point="inputSourceFastaGroupIdEl"
                   data-dojo-type="dijit/form/RadioButton"
-                  id="${id}_fasta_group_id_ctrl"
+                  id="${id}_inputSourceFastaGroupId"
                   type="radio"
                   value="fasta_group_id"
                />
-               <label for="${id}_fasta_group_id_ctrl">Select genome group</label>&nbsp;&nbsp;
+               <label for="${id}_inputSourceFastaGroupId">Select genome group</label>&nbsp;&nbsp;
 
                <input name="input_source"
                   data-dojo-attach-event="onChange:onInputSourceChange"
-                  data-dojo-attach-point="existing_dataset_ctrl"
+                  data-dojo-attach-point="inputSourceFastaExistingDatasetEl"
                   data-dojo-type="dijit/form/RadioButton"
-                  id="${id}_existing_dataset_ctrl"
+                  id="${id}_inputSourceFastaExistingDataset"
                   type="radio"
                   value="existing_dataset"
                />
-               <label for="${id}_existing_dataset_ctrl">Use existing data</label>
+               <label for="${id}_inputSourceFastaExistingDataset">Use existing data</label>
             </div>
 
             <!-- FASTA data -->
-            <table data-dojo-attach-point="input_fasta_data_table" style="width:100%; display:none">
+            <table data-dojo-attach-point="fastaDataPanelEl" style="width:100%; display:none">
                <tr>
                   <td>
                      <textarea name="fasta_data"
                         data-dojo-attach-event="onBlur:validateFastaData"
-                        data-dojo-attach-point="fasta_data"
+                        data-dojo-attach-point="fastaDataEl"
                         data-dojo-props="rows:13, placeholder:'Enter one or more nucleotide sequences in FASTA format.', intermediateChanges:true"
                         data-dojo-type="dijit/form/Textarea"
                         required="false"
                         style="width:96%; height:175px; margin-left:10px; font-family: monospace; font-size:12px"
                      ></textarea>
-                     <div class="warning" data-dojo-attach-point="fasta_data_message"></div>
+                     <div class="warning" data-dojo-attach-point="fastaDataMessageEl"></div>
                   </td>
                </tr>
             </table>
 
             <!-- FASTA file ID -->
-            <table data-dojo-attach-point="fasta_file_id_table" style="width:100%; display:none">
+            <table data-dojo-attach-point="fastaFileIdPanelEl" style="width:100%; display:none">
                <tr>
                   <td>
                      <div name="fasta_file_id"
                         data-dojo-attach-event="onChange:validateFastaFileID"
-                        data-dojo-attach-point="fasta_file_id"
+                        data-dojo-attach-point="fastaFileIdEl"
                         data-dojo-type="p3/widget/WorkspaceObjectSelector"
                         data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta', 'genome_protein_fasta', 'genome_dna_fasta', 'contigs'],multi:false,promptMessage:'Select or upload a FASTA file from your workspace.',missingMessage:'FASTA file is required.',placeHolder:'FASTA file'"
                         required="false"
@@ -117,12 +115,12 @@
             </table>
 
             <!-- FASTA group ID -->
-            <table data-dojo-attach-point="fasta_group_id_table" style="width:100%; display:none">
+            <table data-dojo-attach-point="fastaGroupIdPanelEl" style="width:100%; display:none">
                <tr>
                   <td>
                      <div name="fasta_group_id"
                         data-dojo-attach-event="onChange:validateFastaGroupID"
-                        data-dojo-attach-point="fasta_group_id"
+                        data-dojo-attach-point="fastaGroupIdEl"
                         data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace.',missingMessage:'Genome group is required.',placeHolder:'Genome group'"
                         data-dojo-type="p3/widget/WorkspaceObjectSelector"
                         required="false"
@@ -133,12 +131,12 @@
             </table>
 
             <!-- Existing dataset -->
-            <table data-dojo-attach-point="fasta_existing_dataset_table" style="width:100%; display:none">
+            <table data-dojo-attach-point="fastaExistingDatasetPanelEl" style="width:100%; display:none">
                <tr>
                   <td>
                      <div name="fasta_existing_dataset"
                         data-dojo-attach-event="onChange:validateFastaExistingDataset"
-                        data-dojo-attach-point="fasta_existing_dataset"
+                        data-dojo-attach-point="fastaExistingDatasetEl"
                         data-dojo-props="type:['folder'],multi:false,promptMessage:'Select a folder containing an existing dataset.',missingMessage:'An existing dataset folder is required.',placeHolder:'Existing dataset directory'"
                         data-dojo-type="p3/widget/WorkspaceObjectSelector"
                         required="false"
@@ -163,15 +161,17 @@
                </div>
                <div name="output_path"
                   data-dojo-attach-event="onChange:onOutputPathChange"
-                  data-dojo-attach-point="output_path"
+                  data-dojo-attach-point="outputPathEl"
                   data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false,placeHolder:'Output Folder'"
                   data-dojo-type="p3/widget/WorkspaceObjectSelector"
                   required="true"
                   style="width: 32rem"></div>
-               <div class="warning" data-dojo-attach-point="output_path_message"></div>
+               <div class="warning" data-dojo-attach-point="outputPathMessageEl"></div>
             </div>
          </div>
+      </div>
 
+      <div class="appBox appShadow">
          <div class="appRow" style="margin-bottom: 1.0rem">
             <div style="align-items: flex-start; display: flex; flex-flow: row nowrap; justify-content:space-between;">
 
@@ -185,18 +185,18 @@
                   </div>
                   <div name="match_type"
                      data-dojo-attach-event="onChange:onMatchTypeChange"
-                     data-dojo-attach-point="match_type"
+                     data-dojo-attach-point="matchTypeEl"
                      data-dojo-props="disabled:false"
                      data-dojo-type="dijit/form/Select"
                      maxHeight="200"
                      required="true"
                      style="width: 27.5rem">
                   </div>
-                  <div class="warning" data-dojo-attach-point="match_type_message"></div>
+                  <div class="warning" data-dojo-attach-point="matchTypeMessageEl"></div>
                </div>
 
                <!-- Match regex -->
-               <div data-dojo-attach-point="match_regex_container" style="text-align:left; margin-left: 1.0rem; display: none">
+               <div data-dojo-attach-point="matchRegexContainerEl" style="text-align:left; margin-left: 1.0rem; display: none">
                   <div class="headerrow" style="margin-bottom: 7px">
                      <label class="appBoxLabel">Regular expression</label>
                      <div name="match_regex" class="infobox iconbox infobutton dialoginfo">
@@ -205,18 +205,18 @@
                   </div>
                   <input name="match_regex"
                      data-dojo-attach-event="onChange:validateMatchRegex"
-                     data-dojo-attach-point="match_regex"
+                     data-dojo-attach-point="matchRegexEl"
                      data-dojo-props="trim:true, placeholder:'A regular expression', intermediateChanges:true"
                      data-dojo-type="dijit/form/ValidationTextBox"
                      required="false"
                      style="text-align: right; height:20px; font-family: monospace; font-size:12px" />
-                  <div class="warning" data-dojo-attach-point="match_regex_message"></div>
+                  <div class="warning" data-dojo-attach-point="matchRegexMessageEl"></div>
                </div>
             </div>
          </div>
 
          <div class="appRow" style="margin-bottom: 1.0rem">
-            <div style="align-items: flex-start; display: flex; flex-flow: row nowrap; justify-content:space-between;">
+            <div style="align-items: flex-start; display: flex; flex-flow: row nowrap; justify-content: flex-start;">
 
                <!-- Reference segment -->
                <div style="text-align:left;">
@@ -227,15 +227,39 @@
                      </div>
                   </div>
                   <div name="ref_segment"
-                     data-dojo-attach-point="ref_segment"
+                     data-dojo-attach-point="refSegmentEl"
                      data-dojo-props="disabled:false"
                      data-dojo-type="dijit/form/Select"
                      maxHeight="200"
                      required="true"
                      style="width:12rem">
                   </div>
-                  <div class="warning" data-dojo-attach-point="ref_segment_message"></div>
+                  <div class="warning" data-dojo-attach-point="refSegmentMessageEl"></div>
                </div>
+
+               <!-- Segments -->
+               <div style="text-align:left;">
+                  <div class="headerrow" style="margin-bottom: 7px">
+                     <label class="appBoxLabel">Segments</label>
+                     <div name="segments" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                     </div>
+                  </div>
+                  <div name="segments"
+                     data-dojo-attach-point="segmentsEl"
+                     data-dojo-props="disabled:false"
+                     data-dojo-type="dijit/form/Select"
+                     maxHeight="200"
+                     required="true"
+                     style="width:12rem">
+                  </div>
+                  <div class="warning" data-dojo-attach-point="segmentsMessageEl"></div>
+               </div>
+            </div>
+         </div>
+
+         <div class="appRow" style="margin-bottom: 1.0rem">
+            <div style="align-items: flex-start; display: flex; flex-flow: row nowrap; justify-content:space-between;">
 
                <!-- Inference method -->
                <div style="text-align:left;">
@@ -246,14 +270,14 @@
                      </div>
                   </div>
                   <div name="inference_method"
-                     data-dojo-attach-point="inference_method"
+                     data-dojo-attach-point="inferenceMethodEl"
                      data-dojo-props="disabled:false"
                      data-dojo-type="dijit/form/Select"
                      maxHeight="200"
                      required="false"
                      style="width:12rem">
                   </div>
-                  <div class="warning" data-dojo-attach-point="inference_method_message"></div>
+                  <div class="warning" data-dojo-attach-point="inferenceMethodMessageEl"></div>
                </div>
 
                <!-- Reference tree inference method -->
@@ -265,19 +289,18 @@
                      </div>
                   </div>
                   <div name="ref_tree_inference"
-                     data-dojo-attach-point="ref_tree_inference"
+                     data-dojo-attach-point="refTreeInferenceEl"
                      data-dojo-props="disabled:false"
                      data-dojo-type="dijit/form/Select"
                      maxHeight="200"
                      required="true"
                      style="width:12rem">
                   </div>
-                  <div class="warning" data-dojo-attach-point="ref_tree_inference_message"></div>
+                  <div class="warning" data-dojo-attach-point="refTreeInferenceMessageEl"></div>
                </div>
+
             </div>
          </div>
-
-
 
          <div class="appRow" style="margin-bottom: 1.0rem">
             <div style="align-items: flex-start; display: flex; flex-flow: row nowrap; justify-content: flex-start;">
@@ -291,13 +314,13 @@
                   </div>
                </div>
                <input name="deviation"
-                  data-dojo-attach-point="deviation"
+                  data-dojo-attach-point="deviationEl"
                   data-dojo-props="trim:true,regExp:'(([0-9])+)', placeholder:'', intermediateChanges:true"
                   data-dojo-type="dijit/form/ValidationTextBox"
                   required="false"
                   style="text-align: right; height:20px; font-family: monospace; font-size:12px;"
                   value="2"/>
-               <div class="warning" data-dojo-attach-point="deviation_message"></div>
+               <div class="warning" data-dojo-attach-point="deviationMessageEl"></div>
             </div>
 
             <!-- P-value -->
@@ -309,20 +332,20 @@
                   </div>
                </div>
                <input name="p_value"
-                  data-dojo-attach-point="p_value"
+                  data-dojo-attach-point="pValueEl"
                   data-dojo-props="trim:true,regExp:'/^\d*(\.\d*)?$/', placeholder:'', intermediateChanges:true"
                   data-dojo-type="dijit/form/ValidationTextBox"
                   required="false"
                   style="text-align: right; height:20px; font-family: monospace; font-size:12px"
                   value="0.001"/>
-               <div class="warning" data-dojo-attach-point="pvalue_message"></div>
+               <div class="warning" data-dojo-attach-point="pValueMessageEl"></div>
             </div>
          </div>
 
          <!-- Equal rates -->
          <div class="appRow" style="margin-top: 1.0rem">
             <div id="${id}_equal_rates"
-               data-dojo-attach-point="equal_rates"
+               data-dojo-attach-point="equalRatesEl"
                data-dojo-type="dijit/form/CheckBox"
                checked></div>
             <label for="${id}_equal_rates">Don’t estimate molecular clock rates for different segments</label>
@@ -331,7 +354,7 @@
          <!-- Is time scaled -->
          <div class="appRow" style="margin-top: 1.0rem">
             <div id="${id}_is_time_scaled"
-               data-dojo-attach-point="is_time_scaled"
+               data-dojo-attach-point="isTimeScaledEl"
                data-dojo-type="dijit/form/CheckBox"
                checked></div>
             <label for="${id}_equal_rates">Time-scale the reference tree</label>
@@ -340,7 +363,7 @@
          <!-- No collapse -->
          <div class="appRow" style="margin-top: 1.0rem">
             <div id="${id}_no_collapse"
-               data-dojo-attach-point="no_collapse"
+               data-dojo-attach-point="noCollapseEl"
                data-dojo-type="dijit/form/CheckBox"
                checked></div>
             <label for="${id}_no_collapse">Collapse near-zero length branches into multifurcations</label>
