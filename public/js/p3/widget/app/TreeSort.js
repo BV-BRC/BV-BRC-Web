@@ -3,16 +3,34 @@ define([
    'dojo/on', 'dojo/query', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/topic',
    './AppBase',
    'dojo/text!./templates/TreeSort.html', 'dijit/form/Form',
-   '../../util/PathJoin', '../../WorkspaceManager'
+   '../../util/PathJoin', '../../WorkspaceManager',
+   'dijit/form/Checkbox'
 ], function (
    declare, lang, Deferred,
    on, query, domClass, domConstruct, domStyle, Topic,
    AppBase,
-   Template, FormMixin, PathJoin, WorkspaceManager
+   Template, FormMixin, PathJoin, WorkspaceManager,
+   Checkbox
 ) {
 
 
-   const FluSegmentOptions = [
+   const segmentedViruses = {
+      influenza: {
+         segments: [
+            { name: "PB2", isDefault: false },
+            { name: "PB1", isDefault: false },
+            { name: "PA", isDefault: false },
+            { name: "HA", isDefault: true },
+            { name: "NP", isDefault: false },
+            { name: "NA", isDefault: false },
+            { name: "MP", isDefault: false },
+            { name: "NS", isDefault: false }
+         ]
+      }
+   }
+
+
+   /*const FluSegmentOptions = [
       { value: "PB2", label: "PB2" },
       { value: "PB1", label: "PB1" },
       { value: "PA", label: "PA" },
@@ -21,13 +39,13 @@ define([
       { value: "NA", label: "NA" },
       { value: "MP", label: "MP" },
       { value: "NS", label: "NS" }
-   ];
+   ];*/
 
-   const FluSegments = ["PB2", "PB1", "PA", "HA", "NP", "NA", "MP", "NS"];
+   //const FluSegments = ["PB2", "PB1", "PA", "HA", "NP", "NA", "MP", "NS"];
 
    const InferenceMethodOptions = [
       { value: "local", label: "local (default)" },
-      { value: "mincut", label: "mincut: Always determine the most parsimonious reassortment placement even in ambiguous circumstances" }
+      { value: "mincut", label: "mincut" } // Always determine the most parsimonious reassortment placement even in ambiguous circumstances
    ]
 
    const InputSourceOptions = [
@@ -139,8 +157,12 @@ define([
       refTreeInferenceEl: null,
 
       // Segments elements
-      segmentsEl: null,
+      segmentsContainerEl: null,
       segmentsMessageEl: null,
+
+
+      // DMD testing
+      virusTaxon: "influenza",
 
 
       constructor: function () {
@@ -176,14 +198,58 @@ define([
          return false
       },
 
-
-
       checkOutputName: function () {
          if (this.demo) { return true; }
          this.validate();
          return this.inherited(arguments);
       },
 
+      // Dynamically generate segment controls and add them to the page.
+      createSegmentControls: function () {
+
+         //const containerEl = document.querySelector(".segmentsPanel");
+         if (!this.segmentsContainerEl) { throw new Error("Invalid segments container element"); }
+
+         const segments = segmentedViruses[this.virusTaxon].segments;
+         if (!segments) { throw new Error("Invalid virus segment data"); }
+
+         segments.forEach((segment_, index_) => {
+
+            // Create a checkbox for a segment and add its DOM element to the page.
+            const checkbox = new Checkbox({
+               id: `${index_}_segmentCheckbox`,
+               name: segment_.name,
+               checked: true,
+               value: segment_.name
+            })
+
+            this.segmentsContainerEl.appendChild(checkbox.domNode);
+
+            // Initialize the checkbox dijit widget.
+            checkbox.startup();
+
+            // Create a label element and add it to the page.
+            const label = document.createElement("label");
+            label.setAttribute("for", `${index_}_segmentCheckbox`);
+            label.innerHTML = segment_.name;
+            label.style.marginRight = "1.0rem";
+
+            this.segmentsContainerEl.appendChild(label);
+         })
+      },
+
+      // Iterate over the virus taxon's segments to create list options.
+      getSegmentOptions: function () {
+
+         const segments = segmentedViruses[this.virusTaxon].segments;
+         if (!segments) { throw new Error("Invalid virus segment data"); }
+
+         return segments.map((segment_) => {
+            let label = segment_.name;
+            if (segment_.isDefault) { label += " (default) "; }
+            return { value: segment_.name, label: label};
+         });
+      },
 
       getValues: function () {
 
@@ -309,13 +375,13 @@ define([
       // Handle a change event on the match_type list.
       onMatchTypeChange: function (evt) {
 
-         if (this.match_type.value == MatchType.Regex) {
-            this.match_regex_container.style.display = "block";
-            this.match_regex.set("required", true);
+         if (this.matchTypeEl.value == MatchType.Regex) {
+            this.matchRegexContainerEl.style.display = "block";
+            this.matchRegexEl.set("required", true);
 
          } else {
-            this.match_regex_container.style.display = "none";
-            this.match_regex.set("required", false);
+            this.matchRegexContainerEl.style.display = "none";
+            this.matchRegexEl.set("required", false);
          }
 
          return;
@@ -384,10 +450,13 @@ define([
          //this.onInputSourceChange(true);
 
          // Populate the select lists.
-         this.inference_method.addOption(InferenceMethodOptions);
-         this.match_type.addOption(MatchTypeOptions);
-         this.ref_segment.addOption(FluSegmentOptions);
-         this.ref_tree_inference.addOption(RefTreeInferenceOptions);
+         this.inferenceMethodEl.addOption(InferenceMethodOptions);
+         this.matchTypeEl.addOption(MatchTypeOptions);
+         this.refSegmentEl.addOption(this.getSegmentOptions());
+         this.refTreeInferenceEl.addOption(RefTreeInferenceOptions);
+
+         // Dynamically generate segment controls and add them to the page.
+         this.createSegmentControls();
 
          this._started = true;
 

@@ -172,60 +172,53 @@
       </div>
 
       <div class="appBox appShadow">
-         <div class="appRow" style="margin-bottom: 1.0rem">
-            <div style="align-items: flex-start; display: flex; flex-flow: row nowrap; justify-content:space-between;">
 
-               <!-- Match type -->
-               <div style="text-align:left;">
-                  <div class="headerrow" style="margin-bottom: 7px">
-                     <label class="appBoxLabel">Match type</label>
-                     <div name="match_type" class="infobox iconbox infobutton dialoginfo">
-                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                     </div>
-                  </div>
-                  <div name="match_type"
-                     data-dojo-attach-event="onChange:onMatchTypeChange"
-                     data-dojo-attach-point="matchTypeEl"
-                     data-dojo-props="disabled:false"
-                     data-dojo-type="dijit/form/Select"
-                     maxHeight="200"
-                     required="true"
-                     style="width: 27.5rem">
-                  </div>
-                  <div class="warning" data-dojo-attach-point="matchTypeMessageEl"></div>
-               </div>
-
-               <!-- Match regex -->
-               <div data-dojo-attach-point="matchRegexContainerEl" style="text-align:left; margin-left: 1.0rem; display: none">
-                  <div class="headerrow" style="margin-bottom: 7px">
-                     <label class="appBoxLabel">Regular expression</label>
-                     <div name="match_regex" class="infobox iconbox infobutton dialoginfo">
-                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                     </div>
-                  </div>
-                  <input name="match_regex"
-                     data-dojo-attach-event="onChange:validateMatchRegex"
-                     data-dojo-attach-point="matchRegexEl"
-                     data-dojo-props="trim:true, placeholder:'A regular expression', intermediateChanges:true"
-                     data-dojo-type="dijit/form/ValidationTextBox"
-                     required="false"
-                     style="text-align: right; height:20px; font-family: monospace; font-size:12px" />
-                  <div class="warning" data-dojo-attach-point="matchRegexMessageEl"></div>
-               </div>
+         <div class="headerrow" style="margin-bottom: 7px">
+            <label class="appBoxLabel">TreeSort parameters</label>
+            <div name="treesort_parameters" class="infobox iconbox infobutton dialoginfo">
+               <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
             </div>
          </div>
 
-         <div class="appRow" style="margin-bottom: 1.0rem">
-            <div style="align-items: flex-start; display: flex; flex-flow: row nowrap; justify-content: flex-start;">
-
-               <!-- Reference segment -->
-               <div style="text-align:left;">
-                  <div class="headerrow" style="margin-bottom: 7px">
-                     <label class="appBoxLabel">Reference segment</label>
-                     <div name="ref_segment" class="infobox iconbox infobutton dialoginfo">
-                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                     </div>
+         <!--<div class="appRow" style="margin-bottom: 1.0rem">
+            <div style="align-items: flex-start; display: flex; flex-flow: row nowrap; justify-content: flex-start;">-->
+         <table>
+            <tr>
+               <td>
+                  <!-- Match type
+                  <div style="margin-right: 2.0rem; text-align: left;">-->
+                     <div class="paramlabel">Match type</div>
+                     <div name="match_type"
+                        data-dojo-attach-event="onChange:onMatchTypeChange"
+                        data-dojo-attach-point="matchTypeEl"
+                        data-dojo-props="disabled:false"
+                        data-dojo-type="dijit/form/Select"
+                        maxHeight="200"
+                        required="true"
+                     ></div>
+                     <div class="warning" data-dojo-attach-point="matchTypeMessageEl"></div>
+                  <!--</div>-->
+               </td>
+               <td>
+                  <!-- Match regex -->
+                  <div data-dojo-attach-point="matchRegexContainerEl" style="text-align: left; display: none">
+                     <div class="paramlabel">Regular expression</div>
+                     <input name="match_regex"
+                        data-dojo-attach-event="onChange:validateMatchRegex"
+                        data-dojo-attach-point="matchRegexEl"
+                        data-dojo-props="trim:true, placeholder:'A regular expression', intermediateChanges:true"
+                        data-dojo-type="dijit/form/ValidationTextBox"
+                        required="false"
+                        style="text-align: right; height:20px; font-family: monospace; font-size:12px" />
+                     <div class="warning" data-dojo-attach-point="matchRegexMessageEl"></div>
                   </div>
+               </td>
+            </tr>
+            <tr>
+               <td>
+               <!-- Reference segment -->
+               <div style="margin-right: 2.0rem; text-align: left;">
+                  <div class="paramlabel">Reference segment</div>
                   <div name="ref_segment"
                      data-dojo-attach-point="refSegmentEl"
                      data-dojo-props="disabled:false"
@@ -236,39 +229,20 @@
                   </div>
                   <div class="warning" data-dojo-attach-point="refSegmentMessageEl"></div>
                </div>
-
+               </td>
+               <td>
                <!-- Segments -->
                <div style="text-align:left;">
-                  <div class="headerrow" style="margin-bottom: 7px">
-                     <label class="appBoxLabel">Segments</label>
-                     <div name="segments" class="infobox iconbox infobutton dialoginfo">
-                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                     </div>
-                  </div>
-                  <div name="segments"
-                     data-dojo-attach-point="segmentsEl"
-                     data-dojo-props="disabled:false"
-                     data-dojo-type="dijit/form/Select"
-                     maxHeight="200"
-                     required="true"
-                     style="width:12rem">
-                  </div>
-                  <div class="warning" data-dojo-attach-point="segmentsMessageEl"></div>
+                  <div class="paramlabel">Segments</div>
+                  <div name="segments" data-dojo-attach-point="segmentsContainerEl"></div>
                </div>
-            </div>
-         </div>
-
-         <div class="appRow" style="margin-bottom: 1.0rem">
-            <div style="align-items: flex-start; display: flex; flex-flow: row nowrap; justify-content:space-between;">
-
+               </td>
+            </tr>
+            <tr>
+               <td>
                <!-- Inference method -->
-               <div style="text-align:left;">
-                  <div class="headerrow" style="margin-bottom: 7px">
-                     <label class="appBoxLabel">Inference method</label>
-                     <div name="inference_method" class="infobox iconbox infobutton dialoginfo">
-                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                     </div>
-                  </div>
+               <div style="margin-right: 2.0rem; text-align: left;">
+                  <div class="paramlabel">Inference method</div>
                   <div name="inference_method"
                      data-dojo-attach-point="inferenceMethodEl"
                      data-dojo-props="disabled:false"
@@ -279,15 +253,11 @@
                   </div>
                   <div class="warning" data-dojo-attach-point="inferenceMethodMessageEl"></div>
                </div>
-
+               </td>
+               <td>
                <!-- Reference tree inference method -->
                <div style="text-align:left;">
-                  <div class="headerrow" style="margin-bottom: 7px">
-                     <label class="appBoxLabel">Reference tree inference method</label>
-                     <div name="ref_tree_inference" class="infobox iconbox infobutton dialoginfo">
-                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                     </div>
-                  </div>
+                  <div class="paramlabel">Reference tree inference method</div>
                   <div name="ref_tree_inference"
                      data-dojo-attach-point="refTreeInferenceEl"
                      data-dojo-props="disabled:false"
@@ -298,78 +268,68 @@
                   </div>
                   <div class="warning" data-dojo-attach-point="refTreeInferenceMessageEl"></div>
                </div>
-
-            </div>
-         </div>
-
-         <div class="appRow" style="margin-bottom: 1.0rem">
-            <div style="align-items: flex-start; display: flex; flex-flow: row nowrap; justify-content: flex-start;">
-
-            <!-- Deviation -->
-            <div style="text-align:left;">
-               <div class="headerrow" style="margin-bottom: 7px">
-                  <label class="appBoxLabel">Deviation</label>
-                  <div name="deviation" class="infobox iconbox infobutton dialoginfo">
-                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+               </td>
+            </tr>
+            <tr>
+               <td>
+                  <!-- Deviation -->
+                  <div style="margin-right: 1.7rem; text-align: left;">
+                     <div class="paramlabel">Deviation</div>
+                     <input name="deviation"
+                        data-dojo-attach-point="deviationEl"
+                        data-dojo-props="trim:true,regExp:'(([0-9])+)', placeholder:'', intermediateChanges:true"
+                        data-dojo-type="dijit/form/ValidationTextBox"
+                        required="false"
+                        style="text-align: right; height:20px; font-family: monospace; font-size:12px;"
+                        value="2"/>
+                     <div class="warning" data-dojo-attach-point="deviationMessageEl"></div>
                   </div>
-               </div>
-               <input name="deviation"
-                  data-dojo-attach-point="deviationEl"
-                  data-dojo-props="trim:true,regExp:'(([0-9])+)', placeholder:'', intermediateChanges:true"
-                  data-dojo-type="dijit/form/ValidationTextBox"
-                  required="false"
-                  style="text-align: right; height:20px; font-family: monospace; font-size:12px;"
-                  value="2"/>
-               <div class="warning" data-dojo-attach-point="deviationMessageEl"></div>
-            </div>
-
-            <!-- P-value -->
-            <div style="text-align:left;">
-               <div class="headerrow" style="margin-bottom: 7px">
-                  <label class="appBoxLabel">P-value cuttof</label> <!-- The cutoff p-value for the reassortment tests -->
-                  <div name="p_value" class="infobox iconbox infobutton dialoginfo">
-                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+               </td>
+               <td>
+                  <!-- P-value -->
+                  <div style="text-align:left;">
+                     <div class="paramlabel">P-value cutoff for reassortment tests</div>
+                     <input name="p_value"
+                        data-dojo-attach-point="pValueEl"
+                        data-dojo-props="trim:true,regExp:'/^\d*(\.\d*)?$/', placeholder:'', intermediateChanges:true"
+                        data-dojo-type="dijit/form/ValidationTextBox"
+                        required="false"
+                        style="text-align: right; height:20px; font-family: monospace; font-size:12px"
+                        value="0.001"/>
+                     <div class="warning" data-dojo-attach-point="pValueMessageEl"></div>
                   </div>
-               </div>
-               <input name="p_value"
-                  data-dojo-attach-point="pValueEl"
-                  data-dojo-props="trim:true,regExp:'/^\d*(\.\d*)?$/', placeholder:'', intermediateChanges:true"
-                  data-dojo-type="dijit/form/ValidationTextBox"
-                  required="false"
-                  style="text-align: right; height:20px; font-family: monospace; font-size:12px"
-                  value="0.001"/>
-               <div class="warning" data-dojo-attach-point="pValueMessageEl"></div>
-            </div>
-         </div>
+               </td>
+            </tr>
 
-         <!-- Equal rates -->
+
+         <!-- Equal rates
          <div class="appRow" style="margin-top: 1.0rem">
             <div id="${id}_equal_rates"
                data-dojo-attach-point="equalRatesEl"
                data-dojo-type="dijit/form/CheckBox"
                checked></div>
             <label for="${id}_equal_rates">Don’t estimate molecular clock rates for different segments</label>
-         </div>
+         </div>-->
 
-         <!-- Is time scaled -->
+         <!-- Is time scaled
          <div class="appRow" style="margin-top: 1.0rem">
             <div id="${id}_is_time_scaled"
                data-dojo-attach-point="isTimeScaledEl"
                data-dojo-type="dijit/form/CheckBox"
                checked></div>
             <label for="${id}_equal_rates">Time-scale the reference tree</label>
-         </div>
+         </div>-->
 
-         <!-- No collapse -->
+         <!-- No collapse
          <div class="appRow" style="margin-top: 1.0rem">
             <div id="${id}_no_collapse"
                data-dojo-attach-point="noCollapseEl"
                data-dojo-type="dijit/form/CheckBox"
                checked></div>
             <label for="${id}_no_collapse">Collapse near-zero length branches into multifurcations</label>
-         </div>
+         </div>-->
 
-
+         </table>
 
          <!--
          <table>
