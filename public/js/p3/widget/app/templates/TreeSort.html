@@ -18,10 +18,9 @@
          margin: 0.25rem 0 0 0.5rem;
       }
       .treesort--numeric-ctrl {
-         font-family: monospace;
-         font-size: 1.0rem;
-         height: 20px;
+         font-family: monospace; font-size: 1.0rem; height: 20px;
          text-align: right !important;
+         /*width: 60px;*/
       }
       .treesort--text-ctrl {
          font-family: monospace;
@@ -55,12 +54,10 @@
          margin-right: 0.25rem;
       }
 
-      /*.treesort--match-type {
-         width: 500px;
+      .treesort--error-message {
+         position: absolute;
+         width: auto;
       }
-      .treesort--match-type * {
-         width: unset;
-      }*/
    </style>
 
    <div class="appTemplate">
@@ -99,7 +96,7 @@
             <!-- FASTA file ID -->
             <input name="input_source"
                className="treesort--input-source-control"
-               data-dojo-attach-event="onChange:onInputSourceChange"
+               data-dojo-attach-event="onChange:handleInputSourceChange"
                data-dojo-attach-point="inputSource_FastaFileIdEl"
                data-dojo-type="dijit/form/RadioButton"
                id="${id}_inputSource_FastaFileId"
@@ -111,7 +108,7 @@
             <!-- FASTA data -->
             <input name="input_source"
                className="treesort--input-source-control"
-               data-dojo-attach-event="onChange:onInputSourceChange"
+               data-dojo-attach-event="onChange:handleInputSourceChange"
                data-dojo-attach-point="inputSource_FastaDataEl"
                data-dojo-type="dijit/form/RadioButton"
                id="${id}_inputSource_FastaData"
@@ -123,7 +120,7 @@
             <!-- FASTA genome group ID -->
             <input name="input_source"
                className="treesort--input-source-control"
-               data-dojo-attach-event="onChange:onInputSourceChange"
+               data-dojo-attach-event="onChange:handleInputSourceChange"
                data-dojo-attach-point="inputSource_FastaGroupIdEl"
                data-dojo-type="dijit/form/RadioButton"
                id="${id}_inputSource_FastaGroupId"
@@ -135,7 +132,7 @@
             <!-- FASTA existing dataset -->
             <input name="input_source"
                className="treesort--input-source-control"
-               data-dojo-attach-event="onChange:onInputSourceChange"
+               data-dojo-attach-event="onChange:handleInputSourceChange"
                data-dojo-attach-point="inputSource_FastaExistingDatasetEl"
                data-dojo-type="dijit/form/RadioButton"
                id="${id}_inputSource_FastaExistingDataset"
@@ -163,13 +160,12 @@
          <div class="treesort--data-panel" data-dojo-attach-point="fastaDataPanelEl" style="display: none">
 
             <textarea name="fasta_data"
-               className="treesort--text-ctrl"
                data-dojo-attach-event="onBlur:validateFastaData"
                data-dojo-attach-point="fastaDataEl"
                data-dojo-props="rows:13, placeholder:'Enter one or more nucleotide sequences in FASTA format.', intermediateChanges:true"
                data-dojo-type="dijit/form/Textarea"
                required="false"
-               style="width: 99%; height:175px;"
+               style="width: 99%; height: 175px;"
             ></textarea>
             <div class="warning" data-dojo-attach-point="fastaDataMessageEl" style="display: none"></div>
 
@@ -208,7 +204,7 @@
 
          <div class="treesort--title">
             <label class="appBoxLabel">Output path</label>
-            <div name="output_path" class="infobox iconbox infobutton dialoginfo">
+            <div name="output_path" class="infobox iconbox infobutton dialoginfo" id="output_path_tooltip">
                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
             </div>
          </div>
@@ -217,13 +213,15 @@
 
             <!-- Output path -->
             <div name="output_path"
-               data-dojo-attach-event="onChange:onOutputPathChange"
+               data-dojo-attach-event="onChange:validateOutputPath"
                data-dojo-attach-point="outputPathEl"
-               data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false,placeHolder:'Output Folder'"
+               data-dojo-props="title:'Select an Output Folder', autoSelectCurrent:true, selectionText:'Destination',
+                  title:'Select an Output Folder', type:['folder'], multi:false, placeHolder:'Output Folder'"
                data-dojo-type="p3/widget/WorkspaceObjectSelector"
-               required="true"
+               required="true",
+               style="width: 200px"
             ></div>
-            <div class="warning" data-dojo-attach-point="outputPathMessageEl" style="display: none"></div>
+            <div class="warning treesort--error-message" data-dojo-attach-point="outputPathMessageEl"></div>
 
          </div>
       </div>
@@ -243,13 +241,13 @@
                <!-- Match type -->
                <div class="paramlabel">Match type</div>
                <div name="match_type"
-                  className="treesort--match-type"
                   data-dojo-attach-event="onChange:handleMatchTypeChange"
                   data-dojo-attach-point="matchTypeEl"
                   data-dojo-props="disabled:false"
                   data-dojo-type="dijit/form/Select"
                   maxHeight="200"
-                  required="true"
+                  required="true",
+                  style="width: 160px;"
                ></div>
                <div class="warning" data-dojo-attach-point="matchTypeMessageEl" style="display: none"></div>
 
@@ -261,14 +259,13 @@
 
                   <div class="paramlabel">Regular expression</div>
                   <input name="match_regex"
-                     className="treesort--text-ctrl"
-                     data-dojo-attach-event="onBlur:validateMatchRegex"
+                     data-dojo-attach-event="onChange:validateMatchRegex"
                      data-dojo-attach-point="matchRegexEl"
-                     data-dojo-props="trim:true, placeholder:'A regular expression', intermediateChanges:true"
+                     data-dojo-props="intermediateChanges: false, invalidMessage:'Enter a regular expression', trim:true, placeholder:'A regular expression'"
                      data-dojo-type="dijit/form/ValidationTextBox"
                      required="false"
-                     style="text-align: right;" />
-                  <div class="warning" data-dojo-attach-point="matchRegexMessageEl" style="display: none"></div>
+                     style="font-family: monospace; font-size: 1.0rem; height: 20px;" />
+                  <div class="warning treesort--error-message" data-dojo-attach-point="matchRegexMessageEl"></div>
 
                </div>
             </div>
@@ -310,7 +307,7 @@
                   maxHeight="200"
                   required="false"
                ></div>
-               <div class="warning" data-dojo-attach-point="inferenceMethodMessageEl" style="display: none"></div>
+               <div class="warning treesort--error-message" data-dojo-attach-point="inferenceMethodMessageEl"></div>
 
             </div>
 
@@ -325,7 +322,7 @@
                   maxHeight="200"
                   required="true"
                ></div>
-               <div class="warning" data-dojo-attach-point="refTreeInferenceMessageEl" style="display: none"></div>
+               <div class="warning treesort--error-message" data-dojo-attach-point="refTreeInferenceMessageEl"></div>
 
             </div>
          </div>
@@ -334,34 +331,34 @@
             <div class="treesort--column-left">
 
                <!-- Deviation -->
-               <div class="paramlabel">Deviation</div>
+               <div class="paramlabel">Allowed deviation</div>
                <input name="deviation"
-                  className="treesort--numeric-ctrl"
                   data-dojo-attach-event="onChange:validateDeviation"
                   data-dojo-attach-point="deviationEl"
-                  data-dojo-props="trim:true,regExp:'(([0-9])+)', placeholder:'', intermediateChanges:false"
-                  data-dojo-type="dijit/form/ValidationTextBox"
+                  data-dojo-props="constraints:{min:1,places:0},
+                     invalidMessage:'Enter a number > 1.0'"
+                  data-dojo-type="dijit/form/NumberTextBox"
                   required="false"
-                  style="width: 100px"
+                  style="font-family: monospace; font-size: 1.0rem; height: 20px;"
                   value="2" />
-               <div class="warning" data-dojo-attach-point="deviationMessageEl"></div>
+               <div class="warning treesort--error-message" data-dojo-attach-point="deviationMessageEl"></div>
 
             </div>
             <div class="treesort--row-column-right">
 
                <!-- P-value -->
-               <div class="paramlabel">P-value cutoff for reassortment tests</div>
+               <div class="paramlabel">P-value threshold</div>
                <input name="p_value"
-                  className="treesort--numeric-ctrl"
-                  data-dojo-attach-event="onBlur:validatePValue"
+                  data-dojo-attach-event="onChange:validatePValue"
                   data-dojo-attach-point="pValueEl"
-                  data-dojo-props="trim:true, regExp:'/^\d*(\.\d*)?$/', placeholder:'', intermediateChanges:false"
-                  data-dojo-type="dijit/form/ValidationTextBox"
+                  data-dojo-props="constraints:{min:0, max:1.0,places:4},
+                     invalidMessage:'Enter a number between 0-1.0'"
+                  data-dojo-type="dijit/form/NumberTextBox"
                   required="false"
-                  style="width: 100px"
+                  style="font-family: monospace; font-size: 1.0rem; height: 20px;"
                   value="0.001"
-               /> <!-- regExp:'/^\d*(\.\d*)?$/',  -->
-               <div class="warning" data-dojo-attach-point="pValueMessageEl" style="display: none"></div>
+               />
+               <div class="warning treesort--error-message" data-dojo-attach-point="pValueMessageEl"></div>
 
             </div>
          </div>

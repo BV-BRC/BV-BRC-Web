@@ -1,13 +1,13 @@
 define([
    'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
    'dojo/on', 'dojo/query', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/topic',
-   './AppBase', 'dijit/form/Checkbox',
+   './AppBase', 'dijit/form/Checkbox', 'dijit/Tooltip',
    'dojo/text!./templates/TreeSort.html', 'dijit/form/Form',
    '../../util/PathJoin', '../../WorkspaceManager'
 ], function (
    declare, lang, Deferred,
    on, query, domClass, domConstruct, domStyle, Topic,
-   AppBase, Checkbox,
+   AppBase, Checkbox, Tooltip,
    Template, FormMixin, PathJoin, WorkspaceManager
 
 ) {
@@ -143,6 +143,7 @@ define([
 
       // Output path element
       outputPathEl: null,
+      outputPathMessageEl: null,
 
       // P-value elements
       pValueEl: null,
@@ -158,8 +159,10 @@ define([
       segmentsContainerEl: null,
       segmentsMessageEl: null,
 
+      segmentCheckboxes: [],
 
 
+      // C-tor
       constructor: function () {
          //this.genomeToAttachPt = ['genome_id'];
          //this.genomeGroupToAttachPt = ['query_genomegroup'];
@@ -207,11 +210,13 @@ define([
          const segments = SegmentedViruses[this.virusTaxon].segments;
          if (!segments) { throw new Error("Invalid virus segment data"); }
 
+         this.segmentCheckboxes = [];
+
          segments.forEach((segment_, index_) => {
 
             // Create a checkbox for a segment and add its DOM element to the page.
             const checkbox = new Checkbox({
-               id: `${index_}_segmentCheckbox`,
+               id: `segmentCheckbox_${index_}`,
                name: segment_.name,
                checked: true,
                value: segment_.name
@@ -221,6 +226,9 @@ define([
 
             // Initialize the checkbox dijit widget.
             checkbox.startup();
+
+            // Add the widget to the array of segment checkbox references.
+            this.segmentCheckboxes.push(checkbox);
 
             // Create a label element and add it to the page.
             const label = document.createElement("label");
@@ -249,29 +257,57 @@ define([
 
          var _self = this;
 
-         /*var sequence = this.sequence.get('value');
-         var output_file = this.output_file.get('value');
-         var output_path = this.output_path.get('value');*/
-
-
          let deviation = this.deviationEl.get("value");
          let equalRates = this.equalRatesEl.get("checked");
 
-         /*fastaDataEl
-         fastaExistingDatasetEl
-         fastaFileIdEl
-         fastaGroupIdEl*/
+         let fastaData = null;
+         let fastaExistingDataset = null;
+         let fastaFileId = null;
+         let fastaGroupId = null;
+
+         switch (this.inputSource) {
+            case InputSource.FastaData:
+               fastaData = this.fastaDataEl.get("value");
+               console.log(this.fastaDataEl)
+               break;
+
+            case InputSource.FastaExistingDataset:
+               fastaExistingDataset = this.fastaExistingDatasetEl.get("value");
+               break;
+
+            case InputSource.FastaFileID:
+               fastaFileId = this.fastaFileIdEl.get("value");
+               break;
+
+            case InputSource.FastaGroupID:
+               fastaGroupId = this.fastaGroupIdEl.get("value");
+               break;
+
+            default:
+               // TODO: error!
+         }
+
          let inferenceMethod = this.inferenceMethodEl.get("value");
          let isTimeScaled = this.isTimeScaledEl.get("checked");
          let matchRegex = this.matchRegexEl.get("value");
          let matchType = this.matchTypeEl.get("value");
          let noCollapse = this.noCollapseEl.get("checked");
-         //outputPathEl
+         let outputPath = this.outputPathEl.get("value");
          let pValue = this.pValueEl.get("value");
          let refSegment = this.refSegmentEl.get("value");
          let refTreeInference = this.refTreeInferenceEl.get("value");
 
-         // TODO: Segments
+         let segments = "";
+
+         // Segments
+         if (this.segmentCheckboxes) {
+            this.segmentCheckboxes.forEach(checkbox_ => {
+               if (checkbox_.get("checked")) {
+                  if (segments.length > 0) { segments += ","; }
+                  segments += checkbox_.get("name");
+               }
+            })
+         }
 
          // Prepare the submission values (I think this will become job_desc.json)
          let submit_values = {
@@ -279,20 +315,20 @@ define([
             "deviation": deviation,
             "equal_rates": equalRates,
             "inference_method": inferenceMethod,
-            "input_fasta_existing_dataset": null,
-            "input_fasta_data": null,
-            "input_fasta_file_id": null,
-            "input_fasta_group_id": null,
-            "input_source": this.input_source,
+            "input_fasta_data": fastaData,
+            "input_fasta_existing_dataset": fastaExistingDataset,
+            "input_fasta_file_id": fastaFileId,
+            "input_fasta_group_id": fastaGroupId,
+            "input_source": this.inputSource,
             "is_time_scaled": isTimeScaled,
             "match_regex": matchRegex,
             "match_type": matchType,
             "no_collapse": noCollapse,
-            "output_path": null,
+            "output_path": outputPath,
             "p_value": pValue,
             "ref_segment": refSegment,
             "ref_tree_inference": refTreeInference,
-            "segments": null
+            "segments": segments
          };
 
          console.log(submit_values)
@@ -325,6 +361,49 @@ define([
          if (this.validate()) {
             return submit_values;
          }
+      },
+
+      // Handle a change event on the input_source radio buttons.
+      handleInputSourceChange: function (evt) {
+
+         // Hide all FASTA panels
+         this.fastaDataPanelEl.style.display = "none";
+         this.fastaFileIdPanelEl.style.display = "none";
+         this.fastaGroupIdPanelEl.style.display = "none";
+         this.fastaExistingDatasetPanelEl.style.display = "none";
+
+         // Make all FASTA elements optional.
+         this.fastaDataEl.set("required", false);
+         this.fastaFileIdEl.set("required", false);
+         this.fastaGroupIdEl.set("required", false);
+         this.fastaExistingDatasetEl.set("required", false);
+
+         // The selected input source control determines which table is displayed.
+         if (this.inputSource_FastaDataEl.checked) {
+            this.inputSource = InputSource.FastaData;
+            this.fastaDataPanelEl.style.display = "block";
+            this.fastaDataEl.set("required", true);
+
+         } else if (this.inputSource_FastaFileIdEl.checked) {
+            this.inputSource = InputSource.FastaFileID;
+            this.fastaFileIdPanelEl.style.display = "block";
+            this.fastaFileIdEl.set("required", true);
+
+         } else if (this.inputSource_FastaGroupIdEl.checked) {
+            this.inputSource = InputSource.FastaGroupID;
+            this.fastaGroupIdPanelEl.style.display = "block";
+            this.fastaGroupIdEl.set("required", true);
+
+         } else if (this.inputSource_FastaExistingDatasetEl.checked) {
+            this.inputSource = InputSource.FastaExistingDataset;
+            this.fastaExistingDatasetPanelEl.style.display = "block";
+            this.fastaExistingDatasetEl.set("required", true);
+
+         } else {
+            console.log("unrecognized input source")
+         }
+
+         if (!evt) { this.validate(); }
       },
 
       // Handle a change event on the match_type list.
@@ -369,53 +448,6 @@ define([
          }
       },
 
-      // Handle a change event on the input_source radio buttons.
-      onInputSourceChange: function (evt) {
-
-         // Hide all FASTA panels
-         this.fastaDataPanelEl.style.display = "none";
-         this.fastaFileIdPanelEl.style.display = "none";
-         this.fastaGroupIdPanelEl.style.display = "none";
-         this.fastaExistingDatasetPanelEl.style.display = "none";
-
-         // Make all FASTA elements optional.
-         this.fastaDataEl.set("required", false);
-         this.fastaFileIdEl.set("required", false);
-         this.fastaGroupIdEl.set("required", false);
-         this.fastaExistingDatasetEl.set("required", false);
-
-         // The selected input source control determines which table is displayed.
-         if (this.inputSourceFastaDataEl.checked) {
-            this.input_source = "fasta_data";
-            this.fastaDataPanelEl.style.display = "block";
-            this.fastaDataEl.set("required", true);
-
-         } else if (this.inputSourceFastaFileIdEl.checked) {
-            this.input_source = "fasta_file_id";
-            this.fastaFileIdPanelEl.style.display = "block";
-            this.fastaFileIdEl.set("required", true);
-
-         } else if (this.inputSourceFastaGroupIdEl.checked) {
-            this.input_source = "fasta_group_id";
-            this.fastaGroupIdPanelEl.style.display = "block";
-            this.fastaGroupIdEl.set("required", true);
-
-         } else if (this.inputSourceFastaExistingDatasetEl.checked) {
-            this.input_source = "existing_dataset";
-            this.fastaExistingDatasetPanelEl.style.display = "block";
-            this.fastaExistingDatasetEl.set("required", true);
-
-         } else {
-            console.log("unrecognized input source")
-         }
-
-         if (!evt) { this.validate(); }
-      },
-
-      onOutputPathChange: function (evt) {
-
-      },
-
       onReset: function () {
 
          // TODO: What does this do?
@@ -428,6 +460,37 @@ define([
 
       populateFromJobData: function (jobData) {
 
+         if (!jobData) { throw new Error("Invalid job data"); }
+
+         // TODO: clades_path
+         if (jobData.deviation) { this.deviationEl.set("value", jobData.deviation); }
+         if (jobData.equal_rates) { this.equalRatesEl.set("checked", jobData.equal_rates); }
+         if (jobData.inference_method) { this.inferenceMethodEl.set("value", jobData.inference_method); }
+         if (jobData.input_fasta_data) { this.fastaDataEl.set("value", jobData.input_fasta_data); }
+         if (jobData.input_fasta_existing_dataset) { this.fastaFileIdEl.set("value", jobData.input_fasta_existing_dataset); }
+         if (jobData.input_fasta_group_id) { this.fastaGroupIdEl.set("value", jobData.input_fasta_group_id); }
+         if (jobData.input_source) { this.inputSource = jobData.input_source; }
+         if (jobData.is_time_scaled) { this.isTimeScaledEl.set("checked", jobData.is_time_scaled); }
+         if (jobData.match_regex) { this.matchRegexEl.set("value", jobData.match_regex); }
+         if (jobData.match_type) { this.matchTypeEl.set("value", jobData.match_type); }
+         if (jobData.no_collapse) { this.noCollapseEl.set("checked", jobData.no_collapse); }
+         if (jobData.output_path) { this.outputPathEl.set("value", jobData.output_path); }
+         if (jobData.p_value) { this.pValueEl.set("value", jobData.p_value); }
+         if (jobData.ref_segment) { this.refSegmentEl.set("value", jobData.ref_segment); }
+         if (jobData.ref_tree_inference) { this.refTreeInferenceEl.set("value", jobData.ref_tree_inference); }
+
+         if (jobData.segments) {
+            const segmentArray = jobData.segments.split(",");
+            if (segmentArray && this.segmentCheckboxes) {
+
+               // Iterate over all segment checkboxes.
+               this.segmentCheckboxes.forEach(checkbox_ => {
+
+                  // If the segment array contains the checkbox name, checked = true.
+                  checkbox_.set("checked", segmentArray.includes(checkbox_.get("name")));
+               })
+            }
+         }
 
 
       },
@@ -440,8 +503,8 @@ define([
 
       setTooltips: function () {
          new Tooltip({
-            connectId: ['exclude_tooltip'],
-            label: 'OR: mark the source sequence with < and >: e.g. ...ATCT&#60;CCCC&#62;TCAT.. forbids primers in the central CCCC. '
+            connectId: ["output_path_tooltip"],
+            label: "The path to the output file where the tree will be saved in nexus format."
          });
 
       },
@@ -477,28 +540,31 @@ define([
             console.error(error);
          }
 
-         // TEST: Click the input source radio button.
+         // Click the input source radio button.
          switch (this.inputSource) {
 
             case InputSource.FastaData:
-               this.inputSourceFastaDataEl.set("checked", true);
+               this.inputSource_FastaDataEl.focusNode.click();
                break;
 
             case InputSource.FastaExistingDataset:
-               this.inputSourceFastaExistingDatasetEl.set("checked", true);
+               this.inputSource_FastaExistingDatasetEl.focusNode.click();
                break;
 
             case InputSource.FastaData:
-               this.inputSourceFastaDataEl.set("checked", true);
+               this.inputSource_FastaDataEl.focusNode.click();
                break;
 
             case InputSource.FastaData:
-               this.inputSourceFastaDataEl.set("checked", true);
+               this.inputSource_FastaDataEl.focusNode.click();
                break;
 
             default:
-
+               this.inputSource_FastaExistingDatasetEl.focusNode.click();
          }
+
+         // Add tooltips
+         this.setTooltips();
       },
 
       validate: function () {
@@ -524,23 +590,75 @@ define([
          return true;
       },
 
-      // TEST
-      validateDeviation: function (value_, evt_) {
+      // Validate the deviation widget.
+      validateDeviation: function (strValue_) {
 
-         console.log("value_ = ", value_)
-         console.log("evt_ = ", evt_)
+         let errorMessage = "";
+         let isValid = true;
 
+         let value = parseInt(strValue_);
+         if (isNaN(value)) {
+            isValid = false;
+            errorMessage = "Enter a valid integer";
+         } else if (value < 1.0) {
+            isValid = false;
+            errorMessage = "Enter an integer ≥ 1";
+         }
+
+         if (!isValid) {
+            this.deviationEl.set("state", "Error");
+            this.deviationEl.set("message", errorMessage);
+            this.deviationMessageEl.innerHTML = errorMessage;
+         } else {
+
+            // Clear any existing error status.
+            this.deviationEl.set("state", "");
+            this.deviationEl.set("message", "");
+            this.deviationMessageEl.innerHTML = "";
+         }
+
+         // REMOVE THIS SOON!
          this.getValues();
 
          return;
       },
 
-      validateFastaData: function (evt) {
+      validateFastaData: function () {
 
-         let fasta = this.fastaDataEl.get("value");
-         if (!fasta) { }
+         // Get the FASTA text and validate it.
+         let fastaText = this.fastaDataEl.get("value");
+         const result = this.validateFasta(fastaText, 'DNA', true, 'record_1');
 
-         // input_fasta_data
+         /*
+         The result object schema:
+         {
+            valid,
+            status,
+            numseq,
+            message,
+            trimFasta
+         }
+         */
+
+         // Replace the FASTA text with trimmed text.
+         this.fastaDataEl.set('value', result.trimFasta);
+
+         // Update the error message.
+         if (result.status == "need_dna") {
+            this.fastaDataMessageEl.innerHTML = `TreeSort requires nucleotide sequences. ${result.message}`;
+         } else {
+            this.fastaDataMessageEl.innerHTML = result.message;
+         }
+
+         // Set the validity with the number of records.
+         if (result.valid) {
+            this.validFasta = result.numseq;
+            return true;
+         }
+
+         this.validFasta = 0;
+
+         return false;
       },
 
       validateFastaFileID: function (evt) {
@@ -564,12 +682,76 @@ define([
         // input_fasta_existing_dataset
       },
 
-      validateMatchRegex: function (evt) {
+      validateMatchRegex: function () {
 
+         let isValid = true;
+
+         let regex = this.matchRegexEl.get("value");
+         if (regex) { regex = regex.trim(); }
+
+         if (!regex || regex.length < 1) {
+            isValid = false;
+            this.matchRegexEl.set("state", "Error");
+            this.matchRegexEl.set("message", "Enter a non-empty regular expression");
+            this.matchRegexMessageEl.innerHTML = "Enter a non-empty regular expression";
+         } else {
+            this.matchRegexEl.set("state", "");
+            this.matchRegexEl.set("message", "");
+            this.matchRegexMessageEl.innerHTML = "";
+         }
+
+         return isValid;
       },
 
-      validatePValue: function (evt) {
+      // Validate the output path.
+      validateOutputPath: function () {
 
+         let isValid = true;
+
+         let outputPath = this.outputPathEl.get("value");
+         if (outputPath) { outputPath = regex.trim(); }
+
+         if (!outputPath || outputPath.length < 1) {
+            isValid = false;
+            this.outputPathEl.set("state", "Error");
+            this.outputPathEl.set("message", "Enter an output path");
+            this.outputPathMessageEl.innerHTML = "Enter an output path";
+         } else {
+            this.outputPathEl.set("state", "");
+            this.outputPathEl.set("message", "");
+            this.outputPathMessageEl.innerHTML = "";
+         }
+
+         return isValid;
+      },
+
+      // Validate the p-value cuttoff.
+      validatePValue: function (strValue_) {
+
+         let errorMessage = "";
+         let isValid = true;
+
+         let value = parseFloat(strValue_);
+         if (isNaN(value)) {
+            isValid = false;
+            errorMessage = "Please enter a valid number";
+         } else if (value < 0 || value > 1.0) {
+            isValid = false;
+            errorMessage = "Please enter a number between 0 and 1";
+         }
+
+         if (!isValid) {
+            this.pValueEl.set("state", "Error");
+            this.pValueEl.set("message", errorMessage);
+            this.pValueMessageEl.innerHTML = errorMessage;
+         } else {
+            // Clear any existing error status.
+            this.pValueEl.set("state", "");
+            this.pValueEl.set("message", "");
+            this.pValueMessageEl.innerHTML = "";
+         }
+
+         return;
       }
 
    });
