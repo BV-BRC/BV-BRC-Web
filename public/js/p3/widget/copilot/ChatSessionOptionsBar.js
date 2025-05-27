@@ -474,7 +474,7 @@ define([
             }));
 
             // Handle RAG button clicks
-            topic.subscribe('ragButtonPressed', lang.hitch(this, function() {
+            topic.subscribe('ragButtonPressed', lang.hitch(this, function(buttonNode, orient) {
                 console.log('rag pressed');
                 if (ragDialog.visible) {
                     popup.close(ragDialog);
@@ -483,7 +483,8 @@ define([
                     setTimeout(function() {
                         popup.open({
                             popup: ragDialog,
-                            around: ragButton.domNode
+                            around: buttonNode,
+                            orient: orient
                         });
                         ragDialog.visible = true;
                     }, 100);
@@ -491,7 +492,7 @@ define([
             }));
 
             // Handle model button clicks
-            topic.subscribe('modelButtonPressed', lang.hitch(this, function() {
+            topic.subscribe('modelButtonPressed', lang.hitch(this, function(buttonNode, orient) {
                 console.log('model pressed');
                 if (modelDialog.visible) {
                     popup.close(modelDialog);
@@ -500,11 +501,20 @@ define([
                     setTimeout(function() {
                         popup.open({
                             popup: modelDialog,
-                            around: modelButton.domNode
+                            around: buttonNode,
+                            orient: orient
                         });
                         modelDialog.visible = true;
                     }, 100);
                 }
+            }));
+
+            topic.subscribe('get_model_list', lang.hitch(this, function() {
+                topic.publish('return_model_list', this.modelList);
+            }));
+
+            topic.subscribe('get_rag_list', lang.hitch(this, function() {
+                topic.publish('return_rag_list', this.ragList);
             }));
 
             // Add New Chat button

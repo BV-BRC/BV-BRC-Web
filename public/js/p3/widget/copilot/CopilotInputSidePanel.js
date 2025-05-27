@@ -119,7 +119,7 @@ define([
             evt.target.style.color = '';
           },
           onclick: lang.hitch(this, function() {
-            topic.publish('modelButtonPressed');
+            topic.publish('modelButtonPressed', this.modelText, ['above']);
           })
         }, settingsDiv);
 
@@ -134,7 +134,7 @@ define([
             evt.target.style.color = '';
           },
           onclick: lang.hitch(this, function() {
-            topic.publish('ragButtonPressed');
+            topic.publish('ragButtonPressed', this.ragText, ['above']);
           })
         }, settingsDiv);
 

@@ -182,7 +182,7 @@ define([
             // Create a container div for the chat panel
             this.chatContainer = domConstruct.create('div', {
                 className: 'copilotChatContainer',
-                style: 'position: fixed; width: 500px; height: 600px; z-index: 9999; top: 10vh; right: 50px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); border-radius: 8px; overflow: hidden; background-color: white; display: block;'
+                style: 'position: fixed; width: 500px; height: 600px; z-index: 800; top: 10vh; right: 50px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); border-radius: 8px; overflow: hidden; background-color: white; display: block;'
             }, document.body);
 
             // Create controller panel inside the div
@@ -300,6 +300,7 @@ define([
                     this.controllerPanel.resize();
                 }
                 this.currentSessionId = this.controllerPanel.getSessionId();
+                Topic.publish('ChatSessionTitleMaxLengthChanged', 50);
             }), 200);
         },
 

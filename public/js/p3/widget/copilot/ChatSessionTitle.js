@@ -51,6 +51,9 @@ define([
     /** Flag controlling whether title editing is allowed */
     editingEnabled: true,
 
+    /** Maximum length of the title */
+    maxLength: 100,
+
     /**
      * Constructor that initializes the widget
      * Mixes in any provided configuration options using safeMixin
@@ -80,6 +83,7 @@ define([
       // Subscribe to relevant topics
       topic.subscribe('ChatSessionSelected', lang.hitch(this, 'onSessionSelected'));
       topic.subscribe('ChatSessionTitleUpdated', lang.hitch(this, 'updateTitle'));
+      topic.subscribe('ChatSessionTitleMaxLengthChanged', lang.hitch(this, 'setMaxLength'));
     },
 
     /**
@@ -90,8 +94,8 @@ define([
      */
     createTitleDisplay: function() {
       this.titleDisplay = domConstruct.create('div', {
-        innerHTML: this.title,
-        style: 'cursor: pointer; padding: 5px; flex-grow: 1; font-size: 1.2em; font-weight: bold;'
+        innerHTML: this.truncateTitle(this.title),
+        style: 'cursor: pointer; padding: 5px; flex-grow: 1; font-size: 1.2em; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
       }, this.titleContainer);
 
       on(this.titleDisplay, 'click', lang.hitch(this, 'startEditing'));
@@ -107,7 +111,7 @@ define([
     createTitleEditor: function() {
       this.titleEditor = new TextBox({
         style: 'display: none; width: 100%; font-size: 1.2em; font-weight: bold;',
-        maxLength: 100
+        maxLength: this.maxLength
       });
       this.titleEditor.placeAt(this.titleContainer);
 
@@ -122,6 +126,19 @@ define([
 
       // Handle blur event
       on(this.titleEditor, 'blur', lang.hitch(this, 'saveTitleEditor'));
+    },
+
+    /**
+     * Truncates title if it exceeds maxLength
+     * - Adds ellipsis if title is longer than maxLength
+     * @param {string} title - The title to truncate
+     * @returns {string} Truncated title with ellipsis if needed
+     */
+    truncateTitle: function(title) {
+      if (title.length <= this.maxLength) {
+        return title;
+      }
+      return title.substr(0, this.maxLength - 3) + '...';
     },
 
     /**
@@ -202,7 +219,7 @@ define([
      */
     updateTitle: function(newTitle) {
       this.title = newTitle;
-      this.titleDisplay.innerHTML = newTitle;
+      this.titleDisplay.innerHTML = this.truncateTitle(newTitle);
     },
 
     /**
@@ -266,6 +283,32 @@ define([
       this.titleDisplay.style.cursor = 'default';
       if (this.isEditing) {
         this.cancelEditing();
+      }
+    },
+
+    /**
+     * Sets the maximum length for titles
+     * - Updates maxLength property
+     * - Updates TextBox constraints
+     * - Re-truncates current title if needed
+     * @param {number|Object} length - New max length or object containing maxLength property
+     */
+    setMaxLength: function(length) {
+      // Handle both direct value or object parameter
+      const newMaxLength = typeof length === 'object' ? length.maxLength : length;
+
+      if (typeof newMaxLength === 'number' && newMaxLength > 0) {
+        this.maxLength = newMaxLength;
+
+        // Update TextBox constraints
+        if (this.titleEditor) {
+          this.titleEditor.set('maxLength', this.maxLength);
+        }
+
+        // Re-truncate current title if needed
+        if (this.titleDisplay) {
+          this.titleDisplay.innerHTML = this.truncateTitle(this.title);
+        }
       }
     }
   });

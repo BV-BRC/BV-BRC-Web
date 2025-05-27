@@ -60,7 +60,6 @@ define([
             // Force layout recalculation after creation
             setTimeout(lang.hitch(this, function() {
                 this.resize();
-                // topic.publish('resize_chat');
             }), 0);
         },
 
