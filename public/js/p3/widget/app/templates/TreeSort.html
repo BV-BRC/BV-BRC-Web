@@ -57,6 +57,44 @@
          margin-right: 0.25rem;
       }
 
+      /* The advanced options section */
+      /*.treesort--advanced-options-container {
+
+      }*/
+      .treesort--advanced-options-control {
+         align-items: center;
+         display: flex;
+         flex-flow: row nowrap;
+         justify-content: flex-start;
+         line-height: 3.0rem;
+      }
+      .treesort--icon-container {
+         margin-right: 0.5rem;
+      }
+      .treesort--advanced-options-container .treesort--advanced-options-control i {
+         display: inline-block;
+         transform: rotate(0deg);
+         transform-origin: center center;
+         transition: transform 0.25s ease-out;
+      }
+      .treesort--advanced-options-container.visible .treesort--advanced-options-control i {
+         transform: rotate(90deg);
+      }
+      .treesort--advanced-options-container .treesort--advanced-options {
+         max-height: 0;
+         opacity: 0;
+         overflow: hidden;
+         transition: all 0.25s ease-out;
+         visibility: hidden;
+         will-change: max-height;
+      }
+      .treesort--advanced-options-container.visible .treesort--advanced-options {
+         max-height: 100%;
+         opacity: 1;
+         visibility: visible;
+      }
+
+
       .treesort--error-message {
          position: absolute;
          width: auto;
@@ -93,111 +131,15 @@
             </div>
          </div>
 
-         <!-- Radio buttons to determine the input source -->
          <div class="treesort--row last-or-only">
 
             <!-- FASTA file ID -->
-            <input name="input_source"
-               className="treesort--input-source-control"
-               data-dojo-attach-event="onChange:handleInputSourceChange"
-               data-dojo-attach-point="inputSource_FastaFileIdEl"
-               data-dojo-type="dijit/form/RadioButton"
-               id="${id}_inputSource_FastaFileId"
-               type="radio"
-               value="fasta_file_id"
-            />
-            <label for="${id}_inputSource_FastaFileId" class="treesort--input-source">Select FASTA file</label>
-
-            <!-- FASTA data -->
-            <input name="input_source"
-               className="treesort--input-source-control"
-               data-dojo-attach-event="onChange:handleInputSourceChange"
-               data-dojo-attach-point="inputSource_FastaDataEl"
-               data-dojo-type="dijit/form/RadioButton"
-               id="${id}_inputSource_FastaData"
-               type="radio"
-               value="fasta_data"
-            />
-            <label for="${id}_inputSource_FastaData" class="treesort--input-source">Enter sequence</label>
-
-            <!-- FASTA genome group ID -->
-            <input name="input_source"
-               className="treesort--input-source-control"
-               data-dojo-attach-event="onChange:handleInputSourceChange"
-               data-dojo-attach-point="inputSource_FastaGroupIdEl"
-               data-dojo-type="dijit/form/RadioButton"
-               id="${id}_inputSource_FastaGroupId"
-               type="radio"
-               value="fasta_group_id"
-            />
-            <label for="${id}_inputSource_FastaGroupId" class="treesort--input-source">Select feature group</label>
-
-            <!-- FASTA existing dataset -->
-            <input name="input_source"
-               className="treesort--input-source-control"
-               data-dojo-attach-event="onChange:handleInputSourceChange"
-               data-dojo-attach-point="inputSource_FastaExistingDatasetEl"
-               data-dojo-type="dijit/form/RadioButton"
-               id="${id}_inputSource_FastaExistingDataset"
-               type="radio"
-               value="existing_dataset"
-            />
-            <label for="${id}_inputSource_FastaExistingDataset" class="treesort--input-source">Use existing data</label>
-
-         </div>
-
-         <!-- FASTA file ID -->
-         <div class="treesort--data-panel" data-dojo-attach-point="fastaFileIdPanelEl" style="display: none">
-
             <div name="fasta_file_id"
                data-dojo-attach-event="onChange:validateFastaFileID"
                data-dojo-attach-point="fastaFileIdEl"
                data-dojo-type="p3/widget/WorkspaceObjectSelector"
                data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta', 'genome_protein_fasta', 'genome_dna_fasta', 'contigs'],multi:false,promptMessage:'Select or upload a FASTA file from your workspace.',missingMessage:'FASTA file is required.',placeHolder:'FASTA file'"
                required="false"
-            ></div>
-
-         </div>
-
-         <!-- FASTA data -->
-         <div class="treesort--data-panel" data-dojo-attach-point="fastaDataPanelEl" style="display: none">
-
-            <textarea name="fasta_data"
-               data-dojo-attach-event="onBlur:validateFastaData"
-               data-dojo-attach-point="fastaDataEl"
-               data-dojo-props="rows:13, placeholder:'Enter one or more nucleotide sequences in FASTA format.', intermediateChanges:true"
-               data-dojo-type="dijit/form/Textarea"
-               required="false"
-               style="width: 99%; height: 175px;"
-            ></textarea>
-            <div class="warning" data-dojo-attach-point="fastaDataMessageEl" style="display: none"></div>
-
-         </div>
-
-         <!-- FASTA group ID -->
-         <div class="treesort--data-panel" data-dojo-attach-point="fastaGroupIdPanelEl" style="display: none">
-
-            <div name="fasta_group_id"
-               data-dojo-attach-event="onChange:validateFastaGroupID"
-               data-dojo-attach-point="fastaGroupIdEl"
-               data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace.',missingMessage:'Genome group is required.',placeHolder:'Genome group'"
-               data-dojo-type="p3/widget/WorkspaceObjectSelector"
-               required="false"
-               style="width:85%;"
-            ></div>
-
-         </div>
-
-         <!-- Existing dataset -->
-         <div class="treesort--data-panel" data-dojo-attach-point="fastaExistingDatasetPanelEl" style="display: none">
-
-            <div name="fasta_existing_dataset"
-               data-dojo-attach-event="onChange:validateFastaExistingDataset"
-               data-dojo-attach-point="fastaExistingDatasetEl"
-               data-dojo-props="type:['folder'],multi:false,promptMessage:'Select a folder containing an existing dataset.',missingMessage:'An existing dataset folder is required.',placeHolder:'Existing dataset directory'"
-               data-dojo-type="p3/widget/WorkspaceObjectSelector"
-               required="false"
-               style="width:85%;"
             ></div>
 
          </div>
@@ -241,42 +183,6 @@
          <div class="treesort--row">
             <div class="treesort--column-left">
 
-               <!-- Match type -->
-               <div class="paramlabel">Match type</div>
-               <div name="match_type"
-                  data-dojo-attach-event="onChange:handleMatchTypeChange"
-                  data-dojo-attach-point="matchTypeEl"
-                  data-dojo-props="disabled:false"
-                  data-dojo-type="dijit/form/Select"
-                  maxHeight="200"
-                  required="true",
-                  style="width: 160px;"
-               ></div>
-               <div class="warning" data-dojo-attach-point="matchTypeMessageEl" style="display: none"></div>
-
-            </div>
-            <div class="treesort--row-column-right">
-
-               <!-- Match regex -->
-               <div data-dojo-attach-point="matchRegexContainerEl" style="display: none">
-
-                  <div class="paramlabel">Regular expression</div>
-                  <input name="match_regex"
-                     data-dojo-attach-event="onChange:validateMatchRegex"
-                     data-dojo-attach-point="matchRegexEl"
-                     data-dojo-props="intermediateChanges: false, invalidMessage:'Enter a regular expression', trim:true, placeholder:'A regular expression'"
-                     data-dojo-type="dijit/form/ValidationTextBox"
-                     required="false"
-                     style="font-family: monospace; font-size: 1.0rem; height: 20px;" />
-                  <div class="warning treesort--error-message" data-dojo-attach-point="matchRegexMessageEl"></div>
-
-               </div>
-            </div>
-         </div>
-
-         <div class="treesort--row">
-            <div class="treesort--column-left">
-
                <!-- Reference segment -->
                <div class="paramlabel">Reference segment</div>
                <div name="ref_segment"
@@ -298,104 +204,158 @@
             </div>
          </div>
 
-         <div class="treesort--row">
-            <div class="treesort--column-left">
+         <div class="treesort--advanced-options-container" data-dojo-attach-point="advancedOptionsContainerEl">
 
-               <!-- Inference method -->
-               <div class="paramlabel">Inference method</div>
-               <div name="inference_method"
-                  data-dojo-attach-point="inferenceMethodEl"
-                  data-dojo-props="disabled:false"
-                  data-dojo-type="dijit/form/Select"
-                  maxHeight="200"
-                  required="false"
-               ></div>
-               <div class="warning treesort--error-message" data-dojo-attach-point="inferenceMethodMessageEl"></div>
-
+            <!-- The advanced options control / label -->
+            <div class="treesort--advanced-options-control" data-dojo-attach-event="onClick:handleAdvancedOptionsClick">
+               <div class="treesort--icon-container">
+                  <i class="fa icon-caret-right"></i>
+               </div>
+               <label class="largelabel">Advanced options</label>
             </div>
 
-            <div class="treesort--row-column-right">
+            <!-- The advanced options control toggles the visibility of this section. -->
+            <div class="treesort--advanced-options">
 
-               <!-- Reference tree inference method -->
-               <div class="paramlabel">Reference tree inference method</div>
-               <div name="ref_tree_inference"
-                  data-dojo-attach-point="refTreeInferenceEl"
-                  data-dojo-props="disabled:false"
-                  data-dojo-type="dijit/form/Select"
-                  maxHeight="200"
-                  required="true"
-               ></div>
-               <div class="warning treesort--error-message" data-dojo-attach-point="refTreeInferenceMessageEl"></div>
+               <div class="treesort--row">
+                  <div class="treesort--column-left">
 
+                     <!-- Match type -->
+                     <div class="paramlabel">Match type</div>
+                     <div name="match_type"
+                        data-dojo-attach-event="onChange:handleMatchTypeChange"
+                        data-dojo-attach-point="matchTypeEl"
+                        data-dojo-props="disabled:false"
+                        data-dojo-type="dijit/form/Select"
+                        maxHeight="200"
+                        required="true",
+                        style="width: 160px;"
+                     ></div>
+                     <div class="warning" data-dojo-attach-point="matchTypeMessageEl" style="display: none"></div>
+
+                  </div>
+                  <div class="treesort--row-column-right">
+
+                     <!-- Match regex -->
+                     <div data-dojo-attach-point="matchRegexContainerEl" style="display: none">
+
+                        <div class="paramlabel">Regular expression</div>
+                        <input name="match_regex"
+                           data-dojo-attach-event="onChange:validateMatchRegex"
+                           data-dojo-attach-point="matchRegexEl"
+                           data-dojo-props="intermediateChanges: false, invalidMessage:'Enter a regular expression', trim:true, placeholder:'A regular expression'"
+                           data-dojo-type="dijit/form/ValidationTextBox"
+                           required="false"
+                           style="font-family: monospace; font-size: 1.0rem; height: 20px;" />
+                        <div class="warning treesort--error-message" data-dojo-attach-point="matchRegexMessageEl"></div>
+
+                     </div>
+                  </div>
+               </div>
+
+               <div class="treesort--row">
+                  <div class="treesort--column-left">
+
+                     <!-- Inference method -->
+                     <div class="paramlabel">Inference method</div>
+                     <div name="inference_method"
+                        data-dojo-attach-point="inferenceMethodEl"
+                        data-dojo-props="disabled:false"
+                        data-dojo-type="dijit/form/Select"
+                        maxHeight="200"
+                        required="false"
+                     ></div>
+                     <div class="warning treesort--error-message" data-dojo-attach-point="inferenceMethodMessageEl"></div>
+
+                  </div>
+
+                  <div class="treesort--row-column-right">
+
+                     <!-- Reference tree inference method -->
+                     <div class="paramlabel">Reference tree inference method</div>
+                     <div name="ref_tree_inference"
+                        data-dojo-attach-point="refTreeInferenceEl"
+                        data-dojo-props="disabled:false"
+                        data-dojo-type="dijit/form/Select"
+                        maxHeight="200"
+                        required="true"
+                     ></div>
+                     <div class="warning treesort--error-message" data-dojo-attach-point="refTreeInferenceMessageEl"></div>
+
+                  </div>
+               </div>
+
+               <div class="treesort--row">
+                  <div class="treesort--column-left">
+
+                     <!-- Deviation -->
+                     <div class="paramlabel">Allowed deviation</div>
+                     <input name="deviation"
+                        data-dojo-attach-event="onChange:validateDeviation"
+                        data-dojo-attach-point="deviationEl"
+                        data-dojo-props="constraints:{min:1,places:0},
+                           invalidMessage:'Enter a number > 1.0'"
+                        data-dojo-type="dijit/form/NumberTextBox"
+                        required="false"
+                        style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 100px;"
+                     />
+                     <div class="warning treesort--error-message" data-dojo-attach-point="deviationMessageEl"></div>
+
+                  </div>
+                  <div class="treesort--row-column-right">
+
+                     <!-- P-value -->
+                     <div class="paramlabel">P-value threshold</div>
+                     <input name="p_value"
+                        data-dojo-attach-event="onChange:validatePValue"
+                        data-dojo-attach-point="pValueEl"
+                        data-dojo-props="constraints:{min:0, max:1.0,places:3},
+                           invalidMessage:'Enter a number between 0-1.0'"
+                        data-dojo-type="dijit/form/NumberTextBox"
+                        required="false"
+                        style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 110px;"
+                     />
+                     <div class="warning treesort--error-message" data-dojo-attach-point="pValueMessageEl"></div>
+
+                  </div>
+               </div>
+
+               <!-- Equal rates -->
+               <div class="treesort--row">
+                  <div id="${id}_equal_rates"
+                     data-dojo-attach-point="equalRatesEl"
+                     data-dojo-type="dijit/form/CheckBox"
+                     name="equal_rates"
+                  ></div>
+                  <label for="${id}_equal_rates">Estimate molecular clock rates for different segments</label>
+               </div>
+
+               <!-- Is time scaled -->
+               <div class="treesort--row">
+                  <div id="${id}_is_time_scaled"
+                     data-dojo-attach-point="isTimeScaledEl"
+                     data-dojo-type="dijit/form/CheckBox"
+                  ></div>
+                  <label for="${id}_equal_rates">Time-scale the reference tree</label>
+               </div>
+
+               <!-- No collapse -->
+               <div class="treesort--row last-or-only">
+                  <div id="${id}_no_collapse"
+                     data-dojo-attach-point="noCollapseEl"
+                     data-dojo-type="dijit/form/CheckBox"
+                  ></div>
+                  <label for="${id}_no_collapse">Collapse near-zero length branches into multifurcations</label>
+               </div>
+
+               <div class="warning" data-dojo-attach-point="database_message"></div>
             </div>
+
          </div>
 
-         <div class="treesort--row">
-            <div class="treesort--column-left">
-
-               <!-- Deviation -->
-               <div class="paramlabel">Allowed deviation</div>
-               <input name="deviation"
-                  data-dojo-attach-event="onChange:validateDeviation"
-                  data-dojo-attach-point="deviationEl"
-                  data-dojo-props="constraints:{min:1,places:0},
-                     invalidMessage:'Enter a number > 1.0'"
-                  data-dojo-type="dijit/form/NumberTextBox"
-                  required="false"
-                  style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 100px;"
-               />
-               <div class="warning treesort--error-message" data-dojo-attach-point="deviationMessageEl"></div>
-
-            </div>
-            <div class="treesort--row-column-right">
-
-               <!-- P-value -->
-               <div class="paramlabel">P-value threshold</div>
-               <input name="p_value"
-                  data-dojo-attach-event="onChange:validatePValue"
-                  data-dojo-attach-point="pValueEl"
-                  data-dojo-props="constraints:{min:0, max:1.0,places:3},
-                     invalidMessage:'Enter a number between 0-1.0'"
-                  data-dojo-type="dijit/form/NumberTextBox"
-                  required="false"
-                  style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 110px;"
-               />
-               <div class="warning treesort--error-message" data-dojo-attach-point="pValueMessageEl"></div>
-
-            </div>
-         </div>
-
-         <!-- Equal rates -->
-         <div class="treesort--row">
-            <div id="${id}_equal_rates"
-               data-dojo-attach-point="equalRatesEl"
-               data-dojo-type="dijit/form/CheckBox"
-               name="equal_rates"
-            ></div>
-            <label for="${id}_equal_rates">Estimate molecular clock rates for different segments</label>
-         </div>
-
-         <!-- Is time scaled -->
-         <div class="treesort--row">
-            <div id="${id}_is_time_scaled"
-               data-dojo-attach-point="isTimeScaledEl"
-               data-dojo-type="dijit/form/CheckBox"
-            ></div>
-            <label for="${id}_equal_rates">Time-scale the reference tree</label>
-         </div>
-
-         <!-- No collapse -->
-         <div class="treesort--row last-or-only">
-            <div id="${id}_no_collapse"
-               data-dojo-attach-point="noCollapseEl"
-               data-dojo-type="dijit/form/CheckBox"
-            ></div>
-            <label for="${id}_no_collapse">Collapse near-zero length branches into multifurcations</label>
-         </div>
-
-         <div class="warning" data-dojo-attach-point="database_message"></div>
       </div>
    </div>
+
    <div class="appSubmissionArea">
       <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
          style="margin-top:10px; text-align:center;">

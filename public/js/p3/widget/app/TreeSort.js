@@ -28,23 +28,25 @@ define([
       }
    }
 
-
+   // An "enum" for inference methods
    const InferenceMethod = Object.freeze({
       Local: "local",
       MinCut: "mincut"
    })
 
+   // Options for the "inference method" select list.
    const InferenceMethodOptions = [
       { value: InferenceMethod.Local, label: "local (default)" },
-      { value: InferenceMethod.MinCut, label: "mincut" } // Always determine the most parsimonious reassortment placement even in ambiguous circumstances
+      { value: InferenceMethod.MinCut, label: "mincut" } // "Always determine the most parsimonious reassortment placement even in ambiguous circumstances"
    ]
 
    // An "enum" for input sources
    const InputSource = Object.freeze({
+      FastaFileID: "fasta_file_id"
+      /* TODO: Include these in a future version.
       FastaData: "fasta_data",
       FastaExistingDataset: "fasta_existing_dataset",
-      FastaFileID: "fasta_file_id",
-      FastaGroupID: "fasta_group_id",
+      FastaGroupID: "fasta_group_id" */
    })
 
    // An "enum" for match types
@@ -55,6 +57,7 @@ define([
       Strain: "strain"
    });
 
+   // Options for the "match type" select list.
    const MatchTypeOptions = [
       { value: MatchType.Default, label: `Default` },
       { value: MatchType.EPI, label: `EPI_ISL_XXX field` },
@@ -62,11 +65,13 @@ define([
       { value: MatchType.Strain, label: `Strain name` } // Match the names across the segments based on the strain name
    ];
 
+   // An "enum" for reference tree inference.
    const RefTreeInference = Object.freeze({
       FastTree: "FastTree",
       IQTree: "IQTree"
    })
 
+   // Options for the "ref tree inference" select list.
    const RefTreeInferenceOptions = [
       { value: RefTreeInference.FastTree, label: `FastTree` },
       { value: RefTreeInference.IQTree, label: `IQ-Tree` }
@@ -110,10 +115,16 @@ define([
       //----------------------------------------------------------------------------------------------------------------------------
       // References to HTML elements/controls
       //----------------------------------------------------------------------------------------------------------------------------
+
+      // The "advanced options" container and control.
+      advancedOptionsContainerEl: null,
+      advancedOptionsControlEl: null,
+
       //clades_path: null,
       deviationEl: null,
       equalRatesEl: null,
 
+      /* TODO: Include these in a future version.
       // FASTA data elements
       fastaDataEl: null,
       fastaDataMessageEl: null,
@@ -122,24 +133,27 @@ define([
       // FASTA existing dataset elements
       fastaExistingDatasetEl: null,
       fastaExistingDatasetPanelEl: null,
+      */
 
       // FASTA file ID elements
       fastaFileIdEl: null,
       fastaFileIdPanelEl: null,
 
+      /* TODO: Include these in a future version.
       // FASTA group ID elements
       fastaGroupIdEl: null,
-      fastaGroupIdPanelEl: null,
+      fastaGroupIdPanelEl: null, */
 
       // Inference method elements
       inferenceMethodEl: null,
       inferenceMethodMessageEl: null,
 
+      /* TODO: Include this in a future version.
       // The radio buttons that select the input source type.
       inputSource_FastaDataEl: null,
       inputSource_FastaExistingDatasetEl: null,
       inputSource_FastaFileIdEl: null,
-      inputSource_FastaGroupIdEl: null,
+      inputSource_FastaGroupIdEl: null,*/
 
       // "Is time scaled" element
       isTimeScaledEl: null,
@@ -184,31 +198,6 @@ define([
          //this.fastaToAttachPt = ['query_fasta'];
       },
 
-      checkFasta: function () {
-
-         /*
-         // Check the FASTA data.
-         var fastaText = this.sequence.get('value');
-         var fastaObject = this.validateFasta(fastaText, this.input_type);
-
-         // Replace the FASTA data with trimmed data.
-         this.sequence.set('value', fastaObject.trimFasta);
-
-         // Update the error message.
-         if (fastaObject.status == 'need_dna') {
-            this.sequence_message.innerHTML = this.program.toUpperCase() + ' requires nucleotide sequences. ' + fastaObject.message;
-         } else {
-            this.sequence_message.innerHTML = fastaObject.message;
-         }
-
-         // Set the validity with the number of records.
-         if (fastaObject.valid) {
-            this.validFasta = fastaObject.numseq;
-            return true;
-         }*/
-         this.validFasta = 0;
-         return false
-      },
 
       checkOutputName: function () {
          if (this.demo) { return true; }
@@ -277,10 +266,11 @@ define([
 
          let deviation = this.deviationEl.get("value");
          let equalRates = this.equalRatesEl.get("checked");
+         let fastaFileId = this.fastaFileIdEl.get("value");
 
+         /* TODO: Include this in a future version.
          let fastaData = null;
          let fastaExistingDataset = null;
-         let fastaFileId = null;
          let fastaGroupId = null;
 
          switch (this.inputSource) {
@@ -304,6 +294,7 @@ define([
             default:
                // TODO: error!
          }
+         */
 
          let inferenceMethod = this.inferenceMethodEl.get("value");
          let isTimeScaled = this.isTimeScaledEl.get("checked");
@@ -333,10 +324,10 @@ define([
             "deviation": deviation,
             "equal_rates": equalRates,
             "inference_method": inferenceMethod,
-            "input_fasta_data": fastaData,
-            "input_fasta_existing_dataset": fastaExistingDataset,
+            "input_fasta_data": null, // TODO: Use fastaData in the future.
+            "input_fasta_existing_dataset": null, // TODO: Use fastaExistingDataset in the future.
             "input_fasta_file_id": fastaFileId,
-            "input_fasta_group_id": fastaGroupId,
+            "input_fasta_group_id": null, // TODO: Use fastaGroupId in the future.
             "input_source": this.inputSource,
             "is_time_scaled": isTimeScaled,
             "match_regex": matchRegex,
@@ -352,21 +343,7 @@ define([
          console.log(submit_values)
 
          /*
-         if (_self.input_source == 'fasta_file') {
-            submit_values['input_fasta_file'] = _self.query_fasta.get('value')
-
-         } else if (_self.input_source == 'fasta_data') {
-
-            submit_values['input_fasta_data'] = '';
-            if (sequence) {
-               if (this.validFasta == 0) {
-                  sequence = '>fasta_record1\n' + sequence;
-               }
-               submit_values['input_fasta_data'] = sequence;
-            }
-         } else if (_self.input_source == 'genome_group') {
-            submit_values['input_genome_group'] = _self.query_genomegroup.get('value')
-         }
+         TODO: Do I need to include something like this?
 
          if (this.demo) {
 
@@ -374,54 +351,16 @@ define([
             submit_values['db_source'] = 'fasta_data';
             submit_values['db_fasta_data'] = '>id1\ngtgtcgtttatcagtcttgcaagaaatgtttttgtatatatatcaattgggttatttgta\ngctccaatattttcgttagtatcaattatattcactgaacgcgaagtagtagatttgttt\ngcgtatattttttctgaatatacagttaatactgtaattttaatgttaggtgttgggatt\n' +
                '>id2\nataacgttgattgttgggatagcaacagcttggtttgtaacttattattcttttcctgga\ncgtaagttttttgagatagcacttttcttgccactttcaataccagggtatatagttgca\ntatgtatatgtaaatatttttgaattttcaggtcctgtacaaagttttttaagggtgata\ntttcattggaataaaggtgattattactttcctagtgtgaaatcattagcatgtggaatt\n'
-
          }*/
+
          if (this.validate()) {
             return submit_values;
          }
       },
 
-      // Handle a change event on the input_source radio buttons.
-      handleInputSourceChange: function (evt) {
-
-         // Hide all FASTA panels
-         this.fastaDataPanelEl.style.display = "none";
-         this.fastaFileIdPanelEl.style.display = "none";
-         this.fastaGroupIdPanelEl.style.display = "none";
-         this.fastaExistingDatasetPanelEl.style.display = "none";
-
-         // Make all FASTA elements optional.
-         this.fastaDataEl.set("required", false);
-         this.fastaFileIdEl.set("required", false);
-         this.fastaGroupIdEl.set("required", false);
-         this.fastaExistingDatasetEl.set("required", false);
-
-         // The selected input source control determines which table is displayed.
-         if (this.inputSource_FastaDataEl.checked) {
-            this.inputSource = InputSource.FastaData;
-            this.fastaDataPanelEl.style.display = "block";
-            this.fastaDataEl.set("required", true);
-
-         } else if (this.inputSource_FastaFileIdEl.checked) {
-            this.inputSource = InputSource.FastaFileID;
-            this.fastaFileIdPanelEl.style.display = "block";
-            this.fastaFileIdEl.set("required", true);
-
-         } else if (this.inputSource_FastaGroupIdEl.checked) {
-            this.inputSource = InputSource.FastaGroupID;
-            this.fastaGroupIdPanelEl.style.display = "block";
-            this.fastaGroupIdEl.set("required", true);
-
-         } else if (this.inputSource_FastaExistingDatasetEl.checked) {
-            this.inputSource = InputSource.FastaExistingDataset;
-            this.fastaExistingDatasetPanelEl.style.display = "block";
-            this.fastaExistingDatasetEl.set("required", true);
-
-         } else {
-            console.log("unrecognized input source")
-         }
-
-         if (!evt) { this.validate(); }
+      // Handle a click event on the advanced options control.
+      handleAdvancedOptionsClick() {
+         this.advancedOptionsContainerEl.classList.toggle("visible");
       },
 
       // Handle a change event on the match_type list.
@@ -477,6 +416,8 @@ define([
 
       onReset: function () {
 
+         console.log("In onReset")
+
          // TODO: What does this do?
          this.inherited(arguments);
       },
@@ -494,9 +435,11 @@ define([
          if (jobData.deviation) { this.deviationEl.set("value", jobData.deviation); }
          if (jobData.equal_rates) { this.equalRatesEl.set("checked", jobData.equal_rates); }
          if (jobData.inference_method) { this.inferenceMethodEl.set("value", jobData.inference_method); }
-         if (jobData.input_fasta_data) { this.fastaDataEl.set("value", jobData.input_fasta_data); }
-         if (jobData.input_fasta_existing_dataset) { this.fastaFileIdEl.set("value", jobData.input_fasta_existing_dataset); }
-         if (jobData.input_fasta_group_id) { this.fastaGroupIdEl.set("value", jobData.input_fasta_group_id); }
+         if (jobData.input_fasta_file_id) { this.fastaFileIdEl.set("value", jobData.input_fasta_file_id); }
+         // TODO: Include these in a future version.
+         //if (jobData.input_fasta_data) { this.fastaDataEl.set("value", jobData.input_fasta_data); }
+         //if (jobData.input_fasta_existing_dataset) { this.fastaFileIdEl.set("value", jobData.input_fasta_existing_dataset); }
+         //if (jobData.input_fasta_group_id) { this.fastaGroupIdEl.set("value", jobData.input_fasta_group_id); }
          if (jobData.input_source) { this.inputSource = jobData.input_source; }
          if (jobData.is_time_scaled) { this.isTimeScaledEl.set("checked", jobData.is_time_scaled); }
          if (jobData.match_regex) { this.matchRegexEl.set("value", jobData.match_regex); }
@@ -519,8 +462,6 @@ define([
                })
             }
          }
-
-
       },
 
       resubmit: function () {
@@ -534,20 +475,9 @@ define([
 
          this.deviationEl.set("value", 2);
          this.equalRatesEl.set("value", false);
-
-         // FASTA input sources
-         this.fastaDataEl.set("value", "");
-         this.fastaExistingDatasetEl.set("value", "");
          this.fastaFileIdEl.set("value", "");
-         this.fastaGroupIdEl.set("value", "");
-
          this.inferenceMethodEl.set("value", InferenceMethod.Local);
-
          this.inputSource = InputSource.FastaFileID;
-
-         // Select the default input source radio button.
-         this.updateInputSourceControls();
-
          this.isTimeScaledEl.set("value", true);
          this.matchRegexEl.set("value", "");
          this.matchTypeEl.set("value", MatchType.Default);
@@ -562,16 +492,27 @@ define([
             checkbox_.set("checked", true);
          })
 
+         /* TODO: Include these in a future version.
+         // FASTA input sources
+         this.fastaDataEl.set("value", "");
+         this.fastaExistingDatasetEl.set("value", "");
+         this.fastaGroupIdEl.set("value", "");
+
+         // Select the default input source radio button.
+         this.updateInputSourceControls();
+         */
+
          return;
       },
 
+      /* TODO: I don't think this is necessary.
       setTooltips: function () {
          new Tooltip({
             connectId: ["output_path_tooltip"],
             label: "The path to the output file where the tree will be saved in nexus format."
          });
 
-      },
+      },*/
 
       startup: function() {
 
@@ -596,11 +537,13 @@ define([
          // Dynamically generate segment controls and add them to the page.
          this.createSegmentControls();
 
+         // TODO: Include this in a future version.
          // Select the default input source radio button.
-         this.updateInputSourceControls();
+         //this.updateInputSourceControls();
 
+         // TODO: Is this necessary?
          // Add tooltips
-         this.setTooltips();
+         // this.setTooltips();
 
          try {
             // NOTE: this sets this.displayDefaults to false if we are populating the
@@ -619,38 +562,13 @@ define([
          this._started = true;
       },
 
-      // Use the input source to determine which radio button to select.
-      updateInputSourceControls: function () {
-
-         switch (this.inputSource) {
-
-            case InputSource.FastaData:
-               this.inputSource_FastaDataEl.focusNode.click();
-               break;
-
-            case InputSource.FastaExistingDataset:
-               this.inputSource_FastaExistingDatasetEl.focusNode.click();
-               break;
-
-            case InputSource.FastaData:
-               this.inputSource_FastaDataEl.focusNode.click();
-               break;
-
-            case InputSource.FastaData:
-               this.inputSource_FastaDataEl.focusNode.click();
-               break;
-
-            default:
-               this.inputSource_FastaExistingDatasetEl.focusNode.click();
-         }
-      },
-
       validate: function () {
          if (this.inherited(arguments)) {
 
             console.log("this.inherited(arguments) = ", this.inherited(arguments))
 
-            /*var val = true;
+            /* TODO: What do I need to do here?
+            var val = true;
             switch (this.input_source) {
                case 'fasta_data': // Validate the sequence text area.
                   val = (this.sequence.get('value') && this.validFasta);
@@ -701,63 +619,11 @@ define([
          return;
       },
 
-      validateFastaData: function () {
-
-         // Get the FASTA text and validate it.
-         let fastaText = this.fastaDataEl.get("value");
-         const result = this.validateFasta(fastaText, 'DNA', true, 'record_1');
-
-         /*
-         The result object schema:
-         {
-            valid,
-            status,
-            numseq,
-            message,
-            trimFasta
-         }
-         */
-
-         // Replace the FASTA text with trimmed text.
-         this.fastaDataEl.set('value', result.trimFasta);
-
-         // Update the error message.
-         if (result.status == "need_dna") {
-            this.fastaDataMessageEl.innerHTML = `TreeSort requires nucleotide sequences. ${result.message}`;
-         } else {
-            this.fastaDataMessageEl.innerHTML = result.message;
-         }
-
-         // Set the validity with the number of records.
-         if (result.valid) {
-            this.validFasta = result.numseq;
-            return true;
-         }
-
-         this.validFasta = 0;
-
-         return false;
-      },
-
       validateFastaFileID: function (evt) {
 
          console.log(`In validateFastaFileID evt = `, evt)
 
          // input_fasta_file_id
-      },
-
-      validateFastaGroupID: function (evt) {
-
-         console.log(`In validateFastaGroupID evt = `, evt)
-
-         // input_fasta_group_id
-      },
-
-      validateFastaExistingDataset: function (evt) {
-
-         console.log(`In validateFastaExistingDataset evt = `, evt)
-
-        // input_fasta_existing_dataset
       },
 
       validateMatchRegex: function () {
@@ -832,5 +698,129 @@ define([
          return;
       }
 
+      /* TODO: Include these in a future version.
+
+      // Handle a change event on the input_source radio buttons.
+      handleInputSourceChange: function (evt) {
+
+         // Hide all FASTA panels
+         this.fastaDataPanelEl.style.display = "none";
+         this.fastaFileIdPanelEl.style.display = "none";
+         this.fastaGroupIdPanelEl.style.display = "none";
+         this.fastaExistingDatasetPanelEl.style.display = "none";
+
+         // Make all FASTA elements optional.
+         this.fastaDataEl.set("required", false);
+         this.fastaFileIdEl.set("required", false);
+         this.fastaGroupIdEl.set("required", false);
+         this.fastaExistingDatasetEl.set("required", false);
+
+         // The selected input source control determines which table is displayed.
+         if (this.inputSource_FastaDataEl.checked) {
+            this.inputSource = InputSource.FastaData;
+            this.fastaDataPanelEl.style.display = "block";
+            this.fastaDataEl.set("required", true);
+
+         } else if (this.inputSource_FastaFileIdEl.checked) {
+            this.inputSource = InputSource.FastaFileID;
+            this.fastaFileIdPanelEl.style.display = "block";
+            this.fastaFileIdEl.set("required", true);
+
+         } else if (this.inputSource_FastaGroupIdEl.checked) {
+            this.inputSource = InputSource.FastaGroupID;
+            this.fastaGroupIdPanelEl.style.display = "block";
+            this.fastaGroupIdEl.set("required", true);
+
+         } else if (this.inputSource_FastaExistingDatasetEl.checked) {
+            this.inputSource = InputSource.FastaExistingDataset;
+            this.fastaExistingDatasetPanelEl.style.display = "block";
+            this.fastaExistingDatasetEl.set("required", true);
+
+         } else {
+            console.log("unrecognized input source")
+         }
+
+         if (!evt) { this.validate(); }
+      },
+
+      // Use the input source to determine which radio button to select.
+      updateInputSourceControls: function () {
+
+         switch (this.inputSource) {
+
+            case InputSource.FastaData:
+               this.inputSource_FastaDataEl.focusNode.click();
+               break;
+
+            case InputSource.FastaExistingDataset:
+               this.inputSource_FastaExistingDatasetEl.focusNode.click();
+               break;
+
+            case InputSource.FastaData:
+               this.inputSource_FastaDataEl.focusNode.click();
+               break;
+
+            case InputSource.FastaData:
+               this.inputSource_FastaDataEl.focusNode.click();
+               break;
+
+            default:
+               this.inputSource_FastaExistingDatasetEl.focusNode.click();
+         }
+      },
+
+      validateFastaData: function () {
+
+         // Get the FASTA text and validate it.
+         let fastaText = this.fastaDataEl.get("value");
+         const result = this.validateFasta(fastaText, 'DNA', true, 'record_1');
+         */
+         /*
+         The result object schema:
+         {
+            valid,
+            status,
+            numseq,
+            message,
+            trimFasta
+         }
+         */
+         /*
+         // Replace the FASTA text with trimmed text.
+         this.fastaDataEl.set('value', result.trimFasta);
+
+         // Update the error message.
+         if (result.status == "need_dna") {
+            this.fastaDataMessageEl.innerHTML = `TreeSort requires nucleotide sequences. ${result.message}`;
+         } else {
+            this.fastaDataMessageEl.innerHTML = result.message;
+         }
+
+         // Set the validity with the number of records.
+         if (result.valid) {
+            this.validFasta = result.numseq;
+            return true;
+         }
+
+         this.validFasta = 0;
+
+         return false;
+      },
+
+      validateFastaGroupID: function (evt) {
+
+         console.log(`In validateFastaGroupID evt = `, evt)
+
+         // input_fasta_group_id
+      },
+
+      validateFastaExistingDataset: function (evt) {
+
+         console.log(`In validateFastaExistingDataset evt = `, evt)
+
+        // input_fasta_existing_dataset
+      },
+
+      */
    });
 });
