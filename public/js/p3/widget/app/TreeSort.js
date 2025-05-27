@@ -29,9 +29,14 @@ define([
    }
 
 
+   const InferenceMethod = Object.freeze({
+      Local: "local",
+      MinCut: "mincut"
+   })
+
    const InferenceMethodOptions = [
-      { value: "local", label: "local (default)" },
-      { value: "mincut", label: "mincut" } // Always determine the most parsimonious reassortment placement even in ambiguous circumstances
+      { value: InferenceMethod.Local, label: "local (default)" },
+      { value: InferenceMethod.MinCut, label: "mincut" } // Always determine the most parsimonious reassortment placement even in ambiguous circumstances
    ]
 
    // An "enum" for input sources
@@ -57,9 +62,14 @@ define([
       { value: MatchType.Strain, label: `Strain name` } // Match the names across the segments based on the strain name
    ];
 
+   const RefTreeInference = Object.freeze({
+      FastTree: "FastTree",
+      IQTree: "IQTree"
+   })
+
    const RefTreeInferenceOptions = [
-      { value: "FastTree", label: `FastTree` },
-      { value: "IQTree", label: `IQ-Tree` }
+      { value: RefTreeInference.FastTree, label: `FastTree` },
+      { value: RefTreeInference.IQTree, label: `IQ-Tree` }
    ]
 
 
@@ -87,7 +97,10 @@ define([
       // TODO: A future version can use this variable to lookup different segments in the SegmentedViruses JSON.
       virusTaxon: "influenza",
 
+      // This is set by createSegmentControls().
+      defaultRefSegment: null,
 
+      displayDefaults: true,
 
       //----------------------------------------------------------------------------------------------------------------------------
       // Data
@@ -159,11 +172,13 @@ define([
       segmentsContainerEl: null,
       segmentsMessageEl: null,
 
+      // The segment checkbox elements.
       segmentCheckboxes: [],
 
 
       // C-tor
       constructor: function () {
+         // TODO: Do I need to do something like this???
          //this.genomeToAttachPt = ['genome_id'];
          //this.genomeGroupToAttachPt = ['query_genomegroup'];
          //this.fastaToAttachPt = ['query_fasta'];
@@ -213,6 +228,9 @@ define([
          this.segmentCheckboxes = [];
 
          segments.forEach((segment_, index_) => {
+
+            // If this is the default segment, set the corresponding member attribute.
+            if (segment_.isDefault) { this.defaultRefSegment = segment_.name; }
 
             // Create a checkbox for a segment and add its DOM element to the page.
             const checkbox = new Checkbox({
@@ -434,11 +452,20 @@ define([
                // Look for an existing job_data object from session storage.
                let sessionStorage = window.sessionStorage;
                if (sessionStorage.hasOwnProperty(rerun_key)) {
+
+                  // TODO: How is this used?
                   this.form_flag = true;
 
                   // Deserialize the job_data
                   let jobData = JSON.parse(sessionStorage.getItem(rerun_key));
-                  if (jobData) { this.populateFromJobData(jobData); }
+                  if (jobData) {
+
+                     // Don't display the default values in the page controls.
+                     this.displayDefaults = false;
+
+                     // Populate page controls using job data.
+                     this.populateFromJobData(jobData);
+                  }
                }
             } catch (error) {
                console.log(`Error during intakeRerunForm: ${error}`);
@@ -458,6 +485,7 @@ define([
          Topic.publish('/navigate', { href: '/job/' });
       },
 
+      // Populate page controls using job data.
       populateFromJobData: function (jobData) {
 
          if (!jobData) { throw new Error("Invalid job data"); }
@@ -501,6 +529,42 @@ define([
          query('.reSubmitBtn').style('visibility', 'hidden');
       },
 
+      // Update the page controls with default values.
+      setDefaultValues() {
+
+         this.deviationEl.set("value", 2);
+         this.equalRatesEl.set("value", false);
+
+         // FASTA input sources
+         this.fastaDataEl.set("value", "");
+         this.fastaExistingDatasetEl.set("value", "");
+         this.fastaFileIdEl.set("value", "");
+         this.fastaGroupIdEl.set("value", "");
+
+         this.inferenceMethodEl.set("value", InferenceMethod.Local);
+
+         this.inputSource = InputSource.FastaFileID;
+
+         // Select the default input source radio button.
+         this.updateInputSourceControls();
+
+         this.isTimeScaledEl.set("value", true);
+         this.matchRegexEl.set("value", "");
+         this.matchTypeEl.set("value", MatchType.Default);
+         this.noCollapseEl.set("value", true);
+         this.outputPathEl.set("value", "");
+         this.pValueEl.set("value", 0.001);
+         this.refSegmentEl.set("value", this.defaultRefSegment);
+         this.refTreeInferenceEl.set("value", RefTreeInference.FastTree);
+
+         // Select all segment checkboxes.
+         this.segmentCheckboxes.forEach(checkbox_ => {
+            checkbox_.set("checked", true);
+         })
+
+         return;
+      },
+
       setTooltips: function () {
          new Tooltip({
             connectId: ["output_path_tooltip"],
@@ -532,15 +596,32 @@ define([
          // Dynamically generate segment controls and add them to the page.
          this.createSegmentControls();
 
-         this._started = true;
+         // Select the default input source radio button.
+         this.updateInputSourceControls();
+
+         // Add tooltips
+         this.setTooltips();
 
          try {
+            // NOTE: this sets this.displayDefaults to false if we are populating the
+            // page controls using job data.
             this.intakeRerunForm();
+
          } catch (error) {
             console.error(error);
          }
 
-         // Click the input source radio button.
+         if (this.displayDefaults) {
+            // Populate the page controls with default values.
+            this.setDefaultValues();
+         }
+
+         this._started = true;
+      },
+
+      // Use the input source to determine which radio button to select.
+      updateInputSourceControls: function () {
+
          switch (this.inputSource) {
 
             case InputSource.FastaData:
@@ -562,9 +643,6 @@ define([
             default:
                this.inputSource_FastaExistingDatasetEl.focusNode.click();
          }
-
-         // Add tooltips
-         this.setTooltips();
       },
 
       validate: function () {

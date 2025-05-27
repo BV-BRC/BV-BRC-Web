@@ -45,6 +45,9 @@
       }
       /*.treesort--column-right {
       }*/
+      label.treesort--input-source {
+         margin-right: 1.0rem;
+      }
       .treesort--data-panel {
          margin-top: 1.0rem;
          width: 100%;
@@ -103,7 +106,7 @@
                type="radio"
                value="fasta_file_id"
             />
-            <label for="${id}_inputSource_FastaFileId">Select FASTA file</label>&nbsp;&nbsp;
+            <label for="${id}_inputSource_FastaFileId" class="treesort--input-source">Select FASTA file</label>
 
             <!-- FASTA data -->
             <input name="input_source"
@@ -115,7 +118,7 @@
                type="radio"
                value="fasta_data"
             />
-            <label for="${id}_inputSource_FastaData">Enter sequence</label>&nbsp;&nbsp;
+            <label for="${id}_inputSource_FastaData" class="treesort--input-source">Enter sequence</label>
 
             <!-- FASTA genome group ID -->
             <input name="input_source"
@@ -127,7 +130,7 @@
                type="radio"
                value="fasta_group_id"
             />
-            <label for="${id}_inputSource_FastaGroupId">Select genome group</label>&nbsp;&nbsp;
+            <label for="${id}_inputSource_FastaGroupId" class="treesort--input-source">Select feature group</label>
 
             <!-- FASTA existing dataset -->
             <input name="input_source"
@@ -139,7 +142,7 @@
                type="radio"
                value="existing_dataset"
             />
-            <label for="${id}_inputSource_FastaExistingDataset">Use existing data</label>
+            <label for="${id}_inputSource_FastaExistingDataset" class="treesort--input-source">Use existing data</label>
 
          </div>
 
@@ -339,8 +342,8 @@
                      invalidMessage:'Enter a number > 1.0'"
                   data-dojo-type="dijit/form/NumberTextBox"
                   required="false"
-                  style="font-family: monospace; font-size: 1.0rem; height: 20px;"
-                  value="2" />
+                  style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 100px;"
+               />
                <div class="warning treesort--error-message" data-dojo-attach-point="deviationMessageEl"></div>
 
             </div>
@@ -351,12 +354,11 @@
                <input name="p_value"
                   data-dojo-attach-event="onChange:validatePValue"
                   data-dojo-attach-point="pValueEl"
-                  data-dojo-props="constraints:{min:0, max:1.0,places:4},
+                  data-dojo-props="constraints:{min:0, max:1.0,places:3},
                      invalidMessage:'Enter a number between 0-1.0'"
                   data-dojo-type="dijit/form/NumberTextBox"
                   required="false"
-                  style="font-family: monospace; font-size: 1.0rem; height: 20px;"
-                  value="0.001"
+                  style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 110px;"
                />
                <div class="warning treesort--error-message" data-dojo-attach-point="pValueMessageEl"></div>
 
@@ -369,8 +371,8 @@
                data-dojo-attach-point="equalRatesEl"
                data-dojo-type="dijit/form/CheckBox"
                name="equal_rates"
-               checked></div>
-            <label for="${id}_equal_rates">Don't estimate molecular clock rates for different segments</label>
+            ></div>
+            <label for="${id}_equal_rates">Estimate molecular clock rates for different segments</label>
          </div>
 
          <!-- Is time scaled -->
@@ -378,7 +380,7 @@
             <div id="${id}_is_time_scaled"
                data-dojo-attach-point="isTimeScaledEl"
                data-dojo-type="dijit/form/CheckBox"
-               checked></div>
+            ></div>
             <label for="${id}_equal_rates">Time-scale the reference tree</label>
          </div>
 
@@ -387,7 +389,7 @@
             <div id="${id}_no_collapse"
                data-dojo-attach-point="noCollapseEl"
                data-dojo-type="dijit/form/CheckBox"
-               checked></div>
+            ></div>
             <label for="${id}_no_collapse">Collapse near-zero length branches into multifurcations</label>
          </div>
 
