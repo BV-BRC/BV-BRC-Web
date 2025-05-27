@@ -221,15 +221,6 @@ define([
                 }), 500);
             }
 
-            // Force resize of panel after placement
-            // Also get the session ID from the controller panel
-            setTimeout(lang.hitch(this, function() {
-                if (this.controllerPanel && this.controllerPanel.resize) {
-                    this.controllerPanel.resize();
-                }
-                this.currentSessionId = this.controllerPanel.getSessionId();
-            }), 100);
-
             // Add control buttons container
             var buttonsContainer = domConstruct.create('div', {
                 className: 'copilotChatButtonsContainer',
@@ -301,6 +292,15 @@ define([
                 }
                 evt.stopPropagation();
             }));
+
+                        // Force resize of panel after placement
+            // Also get the session ID from the controller panel
+            setTimeout(lang.hitch(this, function() {
+                if (this.controllerPanel && this.controllerPanel.resize) {
+                    this.controllerPanel.resize();
+                }
+                this.currentSessionId = this.controllerPanel.getSessionId();
+            }), 200);
         },
 
         _hideControllerPanel: function() {
