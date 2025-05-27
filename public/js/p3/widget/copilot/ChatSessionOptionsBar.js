@@ -480,6 +480,9 @@ define([
                     popup.close(ragDialog);
                     ragDialog.visible = false;
                 } else {
+                    if (!buttonNode) {
+                        buttonNode = ragButton.domNode;
+                    }
                     setTimeout(function() {
                         popup.open({
                             popup: ragDialog,
@@ -498,6 +501,9 @@ define([
                     popup.close(modelDialog);
                     modelDialog.visible = false;
                 } else {
+                    if (!buttonNode) {
+                        buttonNode = modelButton.domNode;
+                    }
                     setTimeout(function() {
                         popup.open({
                             popup: modelDialog,
