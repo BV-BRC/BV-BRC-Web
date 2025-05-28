@@ -186,7 +186,11 @@ define([
                 model: model,
                 num_docs: numDocs
             };
-            return request.post(this.apiUrlBase + '/rag', {
+            var rag_endpoint = this.apiUrlBase + '/rag';
+            if (ragDb === 'bvbrc_docs_distllm') {
+                rag_endpoint = this.apiUrlBase + '/rag-distllm';
+            }
+            return request.post(rag_endpoint, {
                 data: JSON.stringify(data),
                 headers: {
                     'Content-Type': 'application/json',
@@ -195,6 +199,9 @@ define([
                 handleAs: 'json'
             }).then(lang.hitch(this, function(response) {
                 _self.storedResult = response;
+                if (ragDb === 'bvbrc_docs_distllm') {
+                    return response.response;
+                }
                 if (response['message'] == 'success') {
                     // If summarizeDocs is true and we have documents to summarize
                     if (summarizeDocs && response.documents && response.documents.length > 0) {

@@ -231,7 +231,7 @@ define([
             var expandButton = domConstruct.create('div', {
                 className: 'copilotChatExpandButton',
                 style: 'width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; border-radius: 50%; margin-right: 8px;',
-                innerHTML: '↗︎',
+                innerHTML: '↖︎',
                 title: 'Expand to large view'
             }, buttonsContainer);
 
@@ -300,7 +300,7 @@ define([
                     this.controllerPanel.resize();
                 }
                 this.currentSessionId = this.controllerPanel.getSessionId();
-                Topic.publish('ChatSessionTitleMaxLengthChanged', 50);
+                Topic.publish('ChatSessionTitleMaxLengthChanged', 30);
             }), 200);
         },
 
@@ -380,8 +380,8 @@ define([
                 var closeButton = domConstruct.create('div', {
                     className: 'copilotChatCloseButton',
                     style: 'width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; border-radius: 10%; position: absolute; right: 8px; top: 8px;',
-                    innerHTML: '_',
-                    title: 'Minimize chat'
+                    innerHTML: '<b style="color: black;">&#x2715;</b>',
+                    title: 'Close chat'
                 }, titleBar);
 
                 // Shrink button click handler - close large chat and open small chat
