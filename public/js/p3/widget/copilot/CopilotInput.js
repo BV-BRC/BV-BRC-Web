@@ -43,7 +43,7 @@ define([
       numDocs: 3,
 
       /** Flag indicating whether to summarize documents in RAG queries */
-      summarizeDocs: true,
+      summarizeDocs: false,
 
       /**
        * Constructor that initializes the widget with provided options
@@ -397,6 +397,10 @@ define([
        */
       setModelText: function(model) {
         if (model) {
+          model = model.split('/').reverse()[0];
+          if (model.length > 30) {
+            model = model.substring(0, 30) + '...';
+          }
           this.modelText.innerHTML = 'Model: ' + model;
         } else {
           this.modelText.innerHTML = 'Model: None';

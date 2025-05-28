@@ -104,11 +104,8 @@ define([
                 if (this.isSubmitting) return;
 
                 // Handle different submission types based on configuration
-                // TODO: make it so only one of the following can be true at a time
-                if (this.screenshotToggle.checked) {
-                    this._handleScreenshotSubmit();
-                } else if (this.pageContentToggle.checked) {
-                    this._handlePageContentSubmit();
+                if (this.pageContentToggle.checked) {
+                    this._handlePageSubmit();
                 } else if (this.copilotApi && this.ragDb) {
                     this._handleRagSubmit();
                 } else if (this.copilotApi) {
@@ -162,31 +159,20 @@ define([
                 style: 'display: flex; align-items: center; margin-left: 15px;'
             }, settingsDiv);
 
-            // Add label for the HTML toggle
+            // Add label for the page content toggle
             var toggleLabel = domConstruct.create('span', {
-                innerHTML: 'HTML',
-                style: 'margin-right: 5px; cursor: pointer;'
+                innerHTML: 'Ask about this page',
+                style: 'margin-right: 5px; cursor: pointer;',
+                title: 'Sends page content to help answer your question.'
             }, toggleContainer);
 
-            // Create the HTML toggle switch
+            // Create the page content toggle switch
             this.pageContentToggle = new CheckBox({
                 checked: false,
-                style: 'cursor: pointer;'
+                style: 'cursor: pointer;',
+                title: 'Sends page content to help answer your question.'
             });
             this.pageContentToggle.placeAt(toggleContainer);
-
-            // Add label for the Screenshot toggle
-            var screenshotLabel = domConstruct.create('span', {
-                innerHTML: 'Screenshot',
-                style: 'margin-left: 15px; margin-right: 5px; cursor: pointer;'
-            }, toggleContainer);
-
-            // Create the Screenshot toggle switch
-            this.screenshotToggle = new CheckBox({
-                checked: false,
-                style: 'cursor: pointer;'
-            });
-            this.screenshotToggle.placeAt(toggleContainer);
 
             // Add CSS for toggle switch styling
             var style = document.createElement('style');
@@ -231,64 +217,12 @@ define([
             }));
         },
 
-         /**
-         * @method _handlePageContentSubmit
-         * @description Handles submission of page content
-         *
-         **/
-        _handlePageContentSubmit: function() {
-            var inputText = this.textArea.get('value');
-            var _self = this;
-
-            if (this.state) {
-                console.log('state', this.state);
-            }
-
-            this.isSubmitting = true;
-            this.submitButton.set('disabled', true);
-
-            this.displayWidget.showLoadingIndicator(this.chatStore.query());
-            const pageHtml = document.documentElement.innerHTML;
-
-            this.systemPrompt = 'You are a helpful assistant that can answer questions about the page content.\n' +
-                'Answer questions as if you were a user viewing the page.\n' +
-                'The page content is:\n' +
-                pageHtml;
-
-            this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
-                this.chatStore.addMessages([
-                {
-                    role: 'user',
-                    content: inputText
-                },
-                {
-                    role: 'assistant',
-                    content: response.response
-                }
-                ]);
-                _self.textArea.set('value', '');
-                this.displayWidget.showMessages(this.chatStore.query());
-
-                if (_self.new_chat) {
-                _self.new_chat = false;
-                topic.publish('reloadUserSessions');
-                topic.publish('generateSessionTitle');
-                }
-            })).catch(function(error) {
-                topic.publish('CopilotApiError', { error: error });
-            }).finally(lang.hitch(this, function() {
-                this.displayWidget.hideLoadingIndicator();
-                this.isSubmitting = false;
-                this.submitButton.set('disabled', false);
-            }));
-        },
-
         /**
-         * @method _handleScreenshotSubmit
-         * @description Handles submission of screenshot
+         * @method _handlePageSubmit
+         * @description Handles submission about the current page (screenshot first, HTML fallback)
          *
          **/
-        _handleScreenshotSubmit: function() {
+        _handlePageSubmit: function() {
             var inputText = this.textArea.get('value');
             var _self = this;
 
@@ -304,8 +238,6 @@ define([
 
             html2canvas(document.body).then(lang.hitch(this, function(canvas) {
                 var base64Image = canvas.toDataURL('image/png');
-                // Remove the "data:image/png;base64," prefix
-                // base64Image = base64Image.split(',')[1];
 
                 topic.publish('showChatPanel'); // Show panel again
 
@@ -341,35 +273,56 @@ define([
                     }));
             })).catch(lang.hitch(this, function(error) {
                 console.error('Error capturing or processing screenshot:', error);
+                topic.publish('showChatPanel'); // Ensure panel is shown even on error
+
+                // Fall back to HTML content if screenshot fails
+                console.log('Falling back to HTML content');
+                this._handlePageContentSubmit();
+            }));
+        },
+
+        /**
+         * @method _handlePageContentSubmit
+         * @description Handles submission of page content (HTML)
+         * Used as a fallback when screenshot fails
+         **/
+        _handlePageContentSubmit: function() {
+            var inputText = this.textArea.get('value');
+            var _self = this;
+
+            const pageHtml = document.documentElement.innerHTML;
+
+            this.systemPrompt = 'You are a helpful assistant that can answer questions about the page content.\n' +
+                'Answer questions as if you were a user viewing the page.\n' +
+                'The page content is:\n' +
+                pageHtml;
+
+            this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
+                this.chatStore.addMessages([
+                {
+                    role: 'user',
+                    content: inputText
+                },
+                {
+                    role: 'assistant',
+                    content: response.response
+                }
+                ]);
+                _self.textArea.set('value', '');
+                this.displayWidget.showMessages(this.chatStore.query());
+
+                if (_self.new_chat) {
+                _self.new_chat = false;
+                topic.publish('reloadUserSessions');
+                topic.publish('generateSessionTitle');
+                }
+            })).catch(function(error) {
+                topic.publish('CopilotApiError', { error: error });
+            }).finally(lang.hitch(this, function() {
                 this.displayWidget.hideLoadingIndicator();
                 this.isSubmitting = false;
                 this.submitButton.set('disabled', false);
-                topic.publish('showChatPanel'); // Ensure panel is shown even on error
-                // Optionally, show an error message to the user
-                // new Dialog({ title: "Screenshot Error", content: "Failed to process screenshot.", style: "width: 300px" }).show();
             }));
         }
-
-                    /*
-                  '<button class="${baseClass}Button icon-camera" data-dojo-attach-point="cameraButtonNode"></button>' +
-
-                  // Add click handler for camera button
-      on(this.cameraButtonNode, 'click', lang.hitch(this, function(evt) {
-        html2canvas(document.body).then(function(canvas) {
-          // Create a download link
-          var link = document.createElement('a');
-          link.download = 'screenshot.png';
-          link.href = canvas.toDataURL('image/png');
-          link.click();
-        }).catch(function(error) {
-          console.error('Error capturing screenshot:', error);
-          new Dialog({
-            title: "Screenshot Error",
-            content: "Failed to capture screenshot. Please try again.",
-            style: "width: 300px"
-          }).show();
-        });
-      }));
-            */
     });
   });
