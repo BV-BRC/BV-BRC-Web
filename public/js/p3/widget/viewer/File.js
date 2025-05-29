@@ -1,9 +1,9 @@
 define([
-  'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on',
+  'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on', "dojo/_base/lang",
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/dom-style',
   '../formatter', '../../WorkspaceManager', 'dojo/_base/Deferred', 'dojo/dom-attr', 'dojo/_base/array'
 ], function (
-  declare, BorderContainer, on,
+  declare, BorderContainer, on, lang,
   domClass, ContentPane, domConstruct, domStyle,
   formatter, WS, Deferred, domAttr, array
 ) {
@@ -96,7 +96,7 @@ define([
 
       (async () => {
         try {
-          const res = await fetch("https://alpha.bv-brc.org/services/WorkspaceDownload/set-cookie-auth", {
+          const res = await fetch(window.App.workspaceDownloadAPI + "/set-cookie-auth", {
             method: "POST",
             headers: {
               "Authorization": window.App.authorizationToken,
@@ -130,27 +130,30 @@ define([
       if (this.file && this.file.metadata) {
         if (this.viewable) {
           this.viewSubHeader.set('content', this.formatFileMetaData(false));
-
           // Set cookie for workspace load
-
           this.authorize().then(lang.hitch(this, function () {
+            const docURL = window.App.workspaceDownloadAPI + "/view" + this.filepath;
+
             var iframe = domConstruct.create('iframe', { style: 'width:100%;height:100%' });
             domConstruct.empty(this.viewer.containerNode);
             domStyle.set(this.viewer.containerNode, 'overflow', 'hidden');
             domConstruct.place(iframe, this.viewer.containerNode);
-            /*
-            iframe.onload = function(){
+
+            iframe.onload = function () {
               var nodes = iframe.contentWindow.document.getElementsByTagName("a")
-              var i=0
-              while (i<nodes.length){
+              var i = 0
+              while (i < nodes.length) {
                 var n = nodes.item(i)
-                n.target="_parent";
+                console.log("modify", n.target, n)
+                //n.target = "_parent";
                 i++
               }
-            */
-            iframe.src = "https://alpha.bv-brc.org/services/WorkspaceDownload/view/" + this.filepath;
+
+            }
+            iframe.src = docURL;
+
           }), function () {
-            console.log("Failure");
+            console.log("Cookie auth failure");
           });
         } else {
           this.viewSubHeader.set('content', this.formatFileMetaData(true));
