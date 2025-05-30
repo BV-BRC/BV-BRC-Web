@@ -809,7 +809,7 @@ define([
         const condition = col.getValues()
         let q;
         if (condition.type === 'str') {
-          q = `${condition.op === 'NOT' ? 'ne' : 'eq'}(${condition.column},${condition.value})`
+          q = `${condition.op === 'NOT' ? 'ne' : 'eq'}(${condition.column},${encodeURIComponent(condition.value)})`;
         } else if (condition.type === 'date') {
           const encode = (date) => {
             if (!date) {
