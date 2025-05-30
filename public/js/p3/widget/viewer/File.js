@@ -133,13 +133,32 @@ define([
           // Set cookie for workspace load
           this.authorize().then(lang.hitch(this, function () {
             const docURL = window.App.workspaceDownloadAPI + "/view" + this.filepath;
+            // Create a spinner div
+            const spinner = domConstruct.create("div", {
+              className: "spinner",
+              innerHTML: "Loading..."
+            });
 
+            // Style the spinner (you can customize this or use a CSS class)
+            domStyle.set(spinner, {
+              position: "absolute",
+              fontSize: "2.5em",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 10,
+              backgroundColor: "white",
+              padding: "10px",
+              borderRadius: "4px"
+            });
             var iframe = domConstruct.create('iframe', { style: 'width:100%;height:100%' });
             domConstruct.empty(this.viewer.containerNode);
             domStyle.set(this.viewer.containerNode, 'overflow', 'hidden');
+            domConstruct.place(spinner, this.viewer.containerNode);
             domConstruct.place(iframe, this.viewer.containerNode);
 
             iframe.onload = function () {
+              /*
               var nodes = iframe.contentWindow.document.getElementsByTagName("a")
               var i = 0
               while (i < nodes.length) {
@@ -148,6 +167,8 @@ define([
                 //n.target = "_parent";
                 i++
               }
+              */
+              domConstruct.destroy(spinner);
 
             }
             iframe.src = docURL;
