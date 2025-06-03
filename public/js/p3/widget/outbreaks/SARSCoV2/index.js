@@ -366,7 +366,7 @@ define([
         property_datatype: 'xsd:string',
         property_applies_to: 'node',
         color: '#FF0000',
-        property_values: ['BA.1', 'BA.2', 'BA.2.75', 'BA.2.3.20', 'BA.3', 'BA.4', 'BA.4.6', 'BA.5', 'B.1.1.7', 'B.1.351', 'P.1', 'B.1.617.2', 'B.1.1.529', 'BQ.1', 'XB', 'XBB.1.5']
+        property_values: ['BA.1', 'BA.2', 'BA.2.75', 'BA.2.3.20', 'BA.3', 'BA.4', 'BA.4.6', 'BA.5', 'B.1.1.7', 'B.1.351', 'P.1', 'B.1.617.2', 'B.1.1.529', 'BQ.1', 'NB.1.8.1', 'XB', 'XBB.1.5']
       };
 
       this.phylogeny = new OutbreaksPhylogenyTreeViewer({
@@ -380,7 +380,23 @@ define([
             {
               source: 'vipr:PANGO_Lineage',
               target: 'vipr:PANGO_Select_Lineage',
-              pass: ['BA.1', 'BA.2', 'BA.2.75', 'BA.2.3.20', 'BA.3', 'BA.4', 'BA.4.6', 'BA.5', 'B.1.1.7', 'B.1.351', 'P.1', 'B.1.617.2', 'B.1.1.529', 'BQ.1', 'XB', 'XBB.1.5']
+              pass: ['BA.1', 'BA.2', 'BA.2.75', 'BA.2.3.20', 'BA.3', 'BA.4', 'BA.4.6', 'BA.5', 'B.1.1.7', 'B.1.351', 'P.1', 'B.1.617.2', 'B.1.1.529', 'BQ.1', 'NB.1.8.1', 'XB', 'XBB.1.5']
+            }]
+        }
+      });
+
+      this.clusteredPhylogeny = new OutbreaksPhylogenyTreeViewer({
+        title: 'Clustered Phylogenetic Tree',
+        id: this.viewer.id + '_clusteredPhylogeny',
+        phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/SARSCoV2/sarscov2_clustered.xml',
+        nodeVisualizations: nodeVisualizations,
+        specialVisualizations: specialVisualizations,
+        settings: {
+          filterValues: [
+            {
+              source: 'vipr:PANGO_Lineage',
+              target: 'vipr:PANGO_Select_Lineage',
+              pass: ['BA.1', 'BA.2', 'BA.2.75', 'BA.2.3.20', 'BA.3', 'BA.4', 'BA.4.6', 'BA.5', 'B.1.1.7', 'B.1.351', 'P.1', 'B.1.617.2', 'B.1.1.529', 'BQ.1', 'NB.1.8.1', 'XB', 'XBB.1.5']
             }]
         }
       });
@@ -398,6 +414,7 @@ define([
       this.viewer.addChild(this.jbrowse);
       this.viewer.addChild(this.structure);
       this.viewer.addChild(this.phylogeny);
+      this.viewer.addChild(this.clusteredPhylogeny);
       this.viewer.addChild(this.resources);
     }
   });
