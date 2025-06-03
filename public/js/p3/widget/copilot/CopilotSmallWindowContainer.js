@@ -7,6 +7,7 @@ define([
     'dojo/_base/declare',
     'dijit/_WidgetBase',
     'dijit/layout/BorderContainer',
+    'dijit/layout/ContentPane',
     'dojo/_base/lang',
     'dojo/dom-class',
     'dojo/dom-style',
@@ -16,13 +17,16 @@ define([
     './CopilotInput',
     'dojo/dom-construct',
     '../copilot/ChatSessionControllerPanel',
+    '../copilot/ChatSessionScrollBar',
     'dijit/Dialog',
     'dojo/fx',
-    'dojo/_base/fx'
+    'dojo/_base/fx',
+    'dojo/dnd/Moveable'
 ], function(
     declare,
     _WidgetBase,
     BorderContainer,
+    ContentPane,
     lang,
     domClass,
     domStyle,
@@ -32,9 +36,11 @@ define([
     CopilotInput,
     domConstruct,
     ChatSessionControllerPanel,
+    ChatSessionScrollBar,
     Dialog,
     fx,
-    baseFx
+    baseFx,
+    Moveable
 ) {
     return declare([BorderContainer], {
         baseClass: 'CopilotSmallWindowContainer',
@@ -67,6 +73,15 @@ define([
         // Options sidebar reference
         optionsSidebar: null,
 
+        // Moveable reference for cleanup
+        _moveable: null,
+
+        // Top content pane reference for options sidebar
+        topContentPane: null,
+
+        // Bottom content pane reference for options sidebar
+        bottomContentPane: null,
+
         constructor: function(options) {
             this.inherited(arguments);
             if (options) {
@@ -80,16 +95,16 @@ define([
             // Create header
             this.headerNode = domConstruct.create('div', {
                 className: 'copilotChatHeader',
-                style: 'width: 100%; height: 30px; background-color: #f8f8f8; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; padding: 0 10px;'
+                style: 'width: 100%; height: 30px; background-color: #f8f8f8; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; padding: 0 10px; cursor: move;'
             }, this.containerNode, 'first');
 
-            // Create left side options button container
+            // Create left side options button container FIRST
             var leftButtonContainer = domConstruct.create('div', {
                 className: 'copilotLeftButtonContainer',
                 style: 'display: flex;'
             }, this.headerNode);
 
-            // Add options button
+            // Add options button to the left container
             var optionsButton = domConstruct.create('div', {
                 className: 'copilotChatOptionsButton',
                 style: 'font-size: 17px; width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; border-radius: 50%;',
@@ -97,14 +112,14 @@ define([
                 title: 'Options'
             }, leftButtonContainer);
 
-            // Create title in header with centered style
+            // Create draggable area (the title area that will be the drag handle) SECOND
             var titleNode = domConstruct.create('div', {
-                className: 'copilotChatHeaderTitle',
+                className: 'copilotChatHeaderTitle copilotDragHandle',
                 innerHTML: 'BV-BRC Copilot',
-                style: 'font-weight: bold; flex-grow: 1; text-align: center;'
+                style: 'font-weight: bold; flex-grow: 1; text-align: center; cursor: move; user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;'
             }, this.headerNode);
 
-            // Create buttons container in header
+            // Create buttons container in header THIRD (on the right)
             var buttonsContainer = domConstruct.create('div', {
                 className: 'copilotChatButtonsContainer',
                 style: 'display: flex;'
@@ -168,6 +183,23 @@ define([
                 style: 'width: 100%; height: 93%;'
             });
             this.layoutContainer.addChild(this.mainContentContainer);
+
+            // Setup drag functionality - use the entire widget as the moveable node
+            // but restrict the drag handle to the title area only
+            this._moveable = new Moveable(this.domNode, {
+                handle: titleNode
+            });
+
+            // Optional: Add visual feedback when dragging starts/stops
+            this._moveable.onMoveStart = lang.hitch(this, function(mover) {
+                domClass.add(this.domNode, 'copilotDragging');
+                domStyle.set(this.headerNode, 'background-color', '#e8e8e8');
+            });
+
+            this._moveable.onMoveStop = lang.hitch(this, function(mover) {
+                domClass.remove(this.domNode, 'copilotDragging');
+                domStyle.set(this.headerNode, 'background-color', '#f8f8f8');
+            });
         },
 
         startup: function() {
@@ -190,16 +222,18 @@ define([
         createControllerPanel: function(options) {
             // Create controller panel inside the main content container
             this.controllerPanel = new ChatSessionControllerPanel({
-                style: "width: 100%; height: 100%;",
+                region: 'center',
+                style: "width: 100%; height: 80%;",
                 copilotApi: options.copilotApi,
                 optionsBar: options.optionsBar
             });
 
-            // Add the control panel to the main content container
-            this.controllerPanel.placeAt(this.mainContentContainer.containerNode);
+            // Add the control panel to the main content container using addChild
+            this.mainContentContainer.addChild(this.controllerPanel);
 
             // Store the options bar reference
             this.optionsBar = options.optionsBar;
+            this.copilotApi = options.copilotApi;
 
             // If we have a current session ID, load it
             if (options.currentSessionId) {
@@ -281,21 +315,25 @@ define([
             this.optionsSidebarOpen = !this.optionsSidebarOpen;
 
             if (this.optionsSidebarOpen) {
-                // Create two divs with random content instead of adding optionsBar widget
+                // Create two content panes instead of adding optionsBar widget
                 if (this.optionsBarContainer.getChildren().length === 0) {
-                    // Create top div (70% height)
-                    var topDiv = domConstruct.create('div', {
+                    // Use chatSessionPane directly as the top content (70% height)
+                    this.topContentPane = new ChatSessionScrollBar({
                         className: 'optionsTopSection',
-                        style: 'height: 70%; padding: 10px; background-color: #f0f0f0; border-bottom: 1px solid #ddd; overflow-y: auto;',
-                        innerHTML: '<h4>Quick Actions</h4><p>• New conversation</p><p>• Clear history</p><p>• Export chat</p><p>• Settings</p><p>• Help & tutorials</p><p>• Keyboard shortcuts</p><p>• Theme options</p>'
-                    }, this.optionsBarContainer.containerNode);
+                        region: 'top',
+                        style: 'padding: 0px; margin: 0px; height: 70%; border: 1px solid grey; background-color: #f0f0f0; border-bottom: 1px solid #ddd;',
+                        copilotApi: this.copilotApi
+                    });
+                    this.optionsBarContainer.addChild(this.topContentPane);
 
-                    // Create bottom div (30% height)
-                    var bottomDiv = domConstruct.create('div', {
+                    // Create bottom content pane (30% height)
+                    this.bottomContentPane = new ContentPane({
                         className: 'optionsBottomSection',
+                        region: 'bottom',
                         style: 'height: 30%; padding: 10px; background-color: #e8e8e8; overflow-y: auto;',
-                        innerHTML: '<h5>Status</h5><p>Session: Active</p><p>Model: GPT-4</p><p>Tokens: 1,250</p><p>Response time: 1.2s</p>'
-                    }, this.optionsBarContainer.containerNode);
+                        content: '<h5>Status</h5><p>Session: Active</p><p>Model: GPT-4</p><p>Tokens: 1,250</p><p>Response time: 1.2s</p>'
+                    });
+                    this.optionsBarContainer.addChild(this.bottomContentPane);
                 }
 
                 // Show the options bar container
@@ -311,8 +349,7 @@ define([
                 var anim = baseFx.animateProperty({
                     node: this.domNode,
                     properties: {
-                        width: newWidth,
-                        right: parseInt(domStyle.get(this.domNode, 'right') || 20) + sidebarWidth
+                        width: newWidth
                     },
                     duration: 300,
                     onEnd: lang.hitch(this, function() {
@@ -337,19 +374,20 @@ define([
                 var anim = baseFx.animateProperty({
                     node: this.domNode,
                     properties: {
-                        width: originalWidth,
-                        right: parseInt(domStyle.get(this.domNode, 'right') || 20) - sidebarWidth
+                        width: originalWidth
                     },
                     duration: 300,
                     onEnd: lang.hitch(this, function() {
-                        // Remove the content divs to clean up
-                        var topDiv = this.optionsBarContainer.containerNode.querySelector('.optionsTopSection');
-                        var bottomDiv = this.optionsBarContainer.containerNode.querySelector('.optionsBottomSection');
-                        if (topDiv) {
-                            domConstruct.destroy(topDiv);
+                        // Clean up the content panes
+                        if (this.topContentPane) {
+                            this.optionsBarContainer.removeChild(this.topContentPane);
+                            this.topContentPane.destroyRecursive();
+                            this.topContentPane = null;
                         }
-                        if (bottomDiv) {
-                            domConstruct.destroy(bottomDiv);
+                        if (this.bottomContentPane) {
+                            this.optionsBarContainer.removeChild(this.bottomContentPane);
+                            this.bottomContentPane.destroyRecursive();
+                            this.bottomContentPane = null;
                         }
                         // Force layout recalculation after animation
                         if (this.layoutContainer && this.layoutContainer.resize) {
@@ -373,6 +411,15 @@ define([
                     });
                 }
             }
+        },
+
+        destroy: function() {
+            // Clean up the moveable when the widget is destroyed
+            if (this._moveable) {
+                this._moveable.destroy();
+                this._moveable = null;
+            }
+            this.inherited(arguments);
         }
     });
 });
