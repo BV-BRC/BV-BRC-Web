@@ -52,7 +52,7 @@ define([
 
       switch (active) {
         case 'phylogenetics':
-          this.phylogenyMeasles.set('state', lang.mixin({}, this.state));
+          this.phylogenyCompleteMeasles.set('state', lang.mixin({}, this.state));
           break;
 
         default:
@@ -219,11 +219,23 @@ define([
       settings.showExternalNodesButton = false;
       settings.showInternalNodesButton = false;
 
-      const phylogenyId = 'phylogenyMeasles';
-      this[phylogenyId] = new OutbreaksPhylogenyTreeViewer({
-        title: `Measles`,
-        id: this.viewer.id + '_' + phylogenyId,
+      const phylogenyCompleteMeasles = 'phylogenyCompleteMeasles';
+      this[phylogenyCompleteMeasles] = new OutbreaksPhylogenyTreeViewer({
+        title: 'Measles complete genomes',
+        id: this.viewer.id + '_' + phylogenyCompleteMeasles,
         phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/measles/measles.xml',
+        updateState: true,
+        settings: settings,
+        options: options,
+        nodeVisualizations: nodeVisualizations,
+        specialVisualizations: nodeLabels
+      });
+
+      const phylogenyNGeneMeasles = 'phylogenyNGeneMeasles';
+      this[phylogenyNGeneMeasles] = new OutbreaksPhylogenyTreeViewer({
+        title: 'Measles N gene tree',
+        id: this.viewer.id + '_' + phylogenyNGeneMeasles,
+        phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/measles/measles_n_gene.xml',
         updateState: true,
         settings: settings,
         options: options,
@@ -234,7 +246,7 @@ define([
       this.phylogenetics = new OutbreaksTabContainer({
         title: 'Phylogenetics',
         id: this.viewer.id + '_phylogenetics',
-        tabContainers: [this[phylogenyId]]
+        tabContainers: [this[phylogenyCompleteMeasles], this[phylogenyNGeneMeasles]]
       });
 
       this.resources = new OutbreaksTab({
