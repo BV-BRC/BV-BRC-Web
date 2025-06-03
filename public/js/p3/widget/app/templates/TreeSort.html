@@ -1,8 +1,8 @@
 <form dojoAttachPoint="containerNode" class="PanelForm"
    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
 
-   <!-- DMD TEST-->
-   <br />
+   <!-- DMD TEST
+   <br />-->
 
    <style>
       .treesort--title {
@@ -11,56 +11,76 @@
          flex-flow: row nowrap;
          justify-content: flex-start;
          line-height: 16px;
-         margin-bottom: 0.25rem;
+         margin-bottom: 0.75rem;
          width: 100%;
       }
       .treesort--title .infobutton {
          margin: 0.25rem 0 0 0.5rem;
       }
-      .treesort--numeric-ctrl {
-         font-family: monospace; font-size: 1.0rem; height: 20px;
-         text-align: right !important;
-         /*width: 60px;*/
+      .treesort--title .infobutton i {
+         font-size: 1.15rem;
       }
-      .treesort--text-ctrl {
-         font-family: monospace;
-         font-size: 1.0rem;
-         height: 20px;
+
+      .treesort--label-tooltip {
+         align-items: center;
+         display: flex;
+         flex-flow: row nowrap;
+         justify-content: flex-start;
+         line-height: 16px;
+         margin-bottom: 0.25rem;
+         width: 100%;
       }
+      .treesort--label-tooltip i {
+         font-size: 1.15rem;
+      }
+
+      .treesort--param-label {
+         font-size: 0.7rem;
+         text-transform: uppercase;
+      }
+
+      /* A row in an appBox containing a control and possibly a label. */
       .treesort--row {
          align-items: center;
          display: flex;
          flex-flow: row nowrap;
          justify-content: flex-start;
-         margin-bottom: 1.5rem;
+         margin-bottom: 1.75rem;
          text-align: left;
          width: 100%;
       }
-      .treesort--row.last-or-only {
-         margin-bottom: 0;
+      .treesort--row.margin-below {
+         margin-bottom: 1.0rem;
       }
+      .treesort--row.only-row {
+         margin-bottom: 0.5rem;
+      }
+
       .treesort--column-left {
          margin-right: 2.0rem;
          text-align: left;
       }
-      /*.treesort--column-right {
-      }*/
-      label.treesort--input-source {
-         margin-right: 1.0rem;
-      }
-      .treesort--data-panel {
-         margin-top: 1.0rem;
+
+      /* Some whitespace between rows */
+      .treesort--row-separator {
+         margin-bottom: 1.5rem;
          width: 100%;
       }
 
-      .treesort--input-source-control {
-         margin-right: 0.25rem;
+      .treesort--error-message {
+         position: absolute;
+         width: auto;
+      }
+
+      /* The container of the segment controls (checkboxes and labels) */
+      .treesort--segment-container {
+         align-items: center;
+         display: flex;
+         flex-flow: row nowrap;
+         justify-content: flex-start;
       }
 
       /* The advanced options section */
-      /*.treesort--advanced-options-container {
-
-      }*/
       .treesort--advanced-options-control {
          align-items: center;
          display: flex;
@@ -92,12 +112,6 @@
          max-height: 100%;
          opacity: 1;
          visibility: visible;
-      }
-
-
-      .treesort--error-message {
-         position: absolute;
-         width: auto;
       }
    </style>
 
@@ -131,11 +145,11 @@
             </div>
          </div>
 
-         <div class="treesort--row last-or-only">
+         <div class="treesort--row only-row">
 
             <!-- FASTA file ID -->
             <div name="fasta_file_id"
-               data-dojo-attach-event="onChange:validateFastaFileID"
+               data-dojo-attach-event="onChange:handleFastaFileIdChange"
                data-dojo-attach-point="fastaFileIdEl"
                data-dojo-type="p3/widget/WorkspaceObjectSelector"
                data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta', 'genome_protein_fasta', 'genome_dna_fasta', 'contigs'],multi:false,promptMessage:'Select or upload a FASTA file from your workspace.',missingMessage:'FASTA file is required.',placeHolder:'FASTA file'"
@@ -148,26 +162,52 @@
       <div class="appBox appShadow">
 
          <div class="treesort--title">
-            <label class="appBoxLabel">Output path</label>
-            <div name="output_path" class="infobox iconbox infobutton dialoginfo" id="output_path_tooltip">
+            <label class="appBoxLabel">Output data</label>
+            <div name="output-data" class="infobox iconbox infobutton dialoginfo" id="output_data_tooltip">
                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
             </div>
          </div>
 
-         <div class="treesort--row last-or-only">
+         <div class="treesort--row only-row">
+            <div class="treesort--column-left">
 
-            <!-- Output path -->
-            <div name="output_path"
-               data-dojo-attach-event="onChange:validateOutputPath"
-               data-dojo-attach-point="outputPathEl"
-               data-dojo-props="title:'Select an Output Folder', autoSelectCurrent:true, selectionText:'Destination',
-                  title:'Select an Output Folder', type:['folder'], multi:false, placeHolder:'Output Folder'"
-               data-dojo-type="p3/widget/WorkspaceObjectSelector"
-               required="true",
-               style="width: 200px"
-            ></div>
-            <div class="warning treesort--error-message" data-dojo-attach-point="outputPathMessageEl"></div>
+               <!-- Output path -->
+               <div class="treesort--label-tooltip">
+                  <div class="treesort--param-label">Folder</div>
+                  <div name="output-path" class="infobox iconbox infobutton tooltipinfo">
+                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                  </div>
+               </div>
+               <div name="output_path"
+                  data-dojo-attach-event="onChange:handleOutputPathChange"
+                  data-dojo-attach-point="outputPathEl"
+                  data-dojo-props="title:'Select an Output Folder', autoSelectCurrent:true, selectionText:'Destination',
+                     title:'Select an Output Folder', type:['folder'], multi:false, placeHolder:'Output Folder'"
+                  data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                  required="true",
+                  style="width: 200px"
+               ></div>
+               <div class="warning treesort--error-message" data-dojo-attach-point="outputPathMessageEl"></div>
 
+            </div>
+            <div class="treesort--row-column-right">
+
+               <!-- Output filename -->
+               <div class="treesort--label-tooltip">
+                  <div class="treesort--param-label">Filename</div>
+                  <div name="output-filename" class="infobox iconbox infobutton tooltipinfo">
+                     <i class="fa icon-question-circle fa"></i>
+                  </div>
+               </div>
+               <input name="output_filename"
+                  data-dojo-attach-event="onChange:handleOutputFilenameChange"
+                  data-dojo-attach-point="outputFilenameEl"
+                  data-dojo-props="intermediateChanges: false, invalidMessage:'Enter a name for the output file', trim:true, placeholder:'The output filename'"
+                  data-dojo-type="dijit/form/ValidationTextBox"
+                  required="false"
+                  style="font-family: monospace; font-size: 1.0rem; height: 20px;" />
+               <div class="warning treesort--error-message" data-dojo-attach-point="outputFilenameMessageEl"></div>
+            </div>
          </div>
       </div>
 
@@ -175,7 +215,7 @@
 
          <div class="treesort--title">
             <label class="appBoxLabel">TreeSort parameters</label>
-            <div name="treesort_parameters" class="infobox iconbox infobutton dialoginfo">
+            <div name="treesort-parameters" class="infobox iconbox infobutton dialoginfo">
                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
             </div>
          </div>
@@ -184,13 +224,20 @@
             <div class="treesort--column-left">
 
                <!-- Reference segment -->
-               <div class="paramlabel">Reference segment</div>
+               <div class="treesort--label-tooltip">
+                  <div class="treesort--param-label">Reference segments</div>
+                  <div name="ref-segment" class="infobox iconbox infobutton tooltipinfo">
+                     <i class="fa icon-question-circle fa"></i>
+                  </div>
+               </div>
                <div name="ref_segment"
+                  data-dojo-attach-event="onChange:handleSegmentChange"
                   data-dojo-attach-point="refSegmentEl"
                   data-dojo-props="disabled:false"
                   data-dojo-type="dijit/form/Select"
                   maxHeight="200"
                   required="true"
+                  style="width: auto"
                ></div>
                <div class="warning" data-dojo-attach-point="refSegmentMessageEl" style="display: none"></div>
 
@@ -198,8 +245,13 @@
             <div class="treesort--row-column-right">
 
                <!-- Segments -->
-               <div class="paramlabel">Segments</div>
-               <div name="segments" data-dojo-attach-point="segmentsContainerEl"></div>
+               <div class="treesort--label-tooltip">
+                  <div class="treesort--param-label">Segments</div>
+                  <div name="segments" class="infobox iconbox infobutton tooltipinfo">
+                     <i class="fa icon-question-circle fa"></i>
+                  </div>
+               </div>
+               <div name="segments" class="treesort--segment-container" data-dojo-attach-point="segmentsContainerEl"></div>
 
             </div>
          </div>
@@ -221,7 +273,12 @@
                   <div class="treesort--column-left">
 
                      <!-- Match type -->
-                     <div class="paramlabel">Match type</div>
+                     <div class="treesort--label-tooltip">
+                        <div class="treesort--param-label">Match type</div>
+                        <div name="match-type" class="infobox iconbox infobutton tooltipinfo">
+                           <i class="fa icon-question-circle fa"></i>
+                        </div>
+                     </div>
                      <div name="match_type"
                         data-dojo-attach-event="onChange:handleMatchTypeChange"
                         data-dojo-attach-point="matchTypeEl"
@@ -239,9 +296,14 @@
                      <!-- Match regex -->
                      <div data-dojo-attach-point="matchRegexContainerEl" style="display: none">
 
-                        <div class="paramlabel">Regular expression</div>
+                        <div class="treesort--label-tooltip">
+                           <div class="treesort--param-label">Regular expression</div>
+                           <div name="match-regex" class="infobox iconbox infobutton tooltipinfo">
+                              <i class="fa icon-question-circle fa"></i>
+                           </div>
+                        </div>
                         <input name="match_regex"
-                           data-dojo-attach-event="onChange:validateMatchRegex"
+                           data-dojo-attach-event="onChange:handleMatchRegexChange"
                            data-dojo-attach-point="matchRegexEl"
                            data-dojo-props="intermediateChanges: false, invalidMessage:'Enter a regular expression', trim:true, placeholder:'A regular expression'"
                            data-dojo-type="dijit/form/ValidationTextBox"
@@ -257,13 +319,19 @@
                   <div class="treesort--column-left">
 
                      <!-- Inference method -->
-                     <div class="paramlabel">Inference method</div>
+                     <div class="treesort--label-tooltip">
+                        <div class="treesort--param-label">Inference method</div>
+                        <div name="inference-method" class="infobox iconbox infobutton tooltipinfo">
+                           <i class="fa icon-question-circle fa"></i>
+                        </div>
+                     </div>
                      <div name="inference_method"
                         data-dojo-attach-point="inferenceMethodEl"
                         data-dojo-props="disabled:false"
                         data-dojo-type="dijit/form/Select"
                         maxHeight="200"
                         required="false"
+                        style="width: auto"
                      ></div>
                      <div class="warning treesort--error-message" data-dojo-attach-point="inferenceMethodMessageEl"></div>
 
@@ -272,13 +340,19 @@
                   <div class="treesort--row-column-right">
 
                      <!-- Reference tree inference method -->
-                     <div class="paramlabel">Reference tree inference method</div>
+                     <div class="treesort--label-tooltip">
+                        <div class="treesort--param-label">Reference tree inference method</div>
+                        <div name="ref-tree-inference" class="infobox iconbox infobutton tooltipinfo">
+                           <i class="fa icon-question-circle fa"></i>
+                        </div>
+                     </div>
                      <div name="ref_tree_inference"
                         data-dojo-attach-point="refTreeInferenceEl"
                         data-dojo-props="disabled:false"
                         data-dojo-type="dijit/form/Select"
                         maxHeight="200"
                         required="true"
+                        style="width: auto"
                      ></div>
                      <div class="warning treesort--error-message" data-dojo-attach-point="refTreeInferenceMessageEl"></div>
 
@@ -289,12 +363,16 @@
                   <div class="treesort--column-left">
 
                      <!-- Deviation -->
-                     <div class="paramlabel">Allowed deviation</div>
+                     <div class="treesort--label-tooltip">
+                        <div class="treesort--param-label">Allowed deviation</div>
+                        <div name="deviation" class="infobox iconbox infobutton tooltipinfo">
+                           <i class="fa icon-question-circle fa"></i>
+                        </div>
+                     </div>
                      <input name="deviation"
-                        data-dojo-attach-event="onChange:validateDeviation"
+                        data-dojo-attach-event="onChange:handleDeviationChange"
                         data-dojo-attach-point="deviationEl"
-                        data-dojo-props="constraints:{min:1,places:0},
-                           invalidMessage:'Enter a number > 1.0'"
+                        data-dojo-props="constraints:{min:1,places:0}, invalidMessage:'Enter an integer > 1.0'"
                         data-dojo-type="dijit/form/NumberTextBox"
                         required="false"
                         style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 100px;"
@@ -305,9 +383,14 @@
                   <div class="treesort--row-column-right">
 
                      <!-- P-value -->
-                     <div class="paramlabel">P-value threshold</div>
+                     <div class="treesort--label-tooltip">
+                        <div class="treesort--param-label">P-value threshold</div>
+                        <div name="p-value" class="infobox iconbox infobutton tooltipinfo">
+                           <i class="fa icon-question-circle fa"></i>
+                        </div>
+                     </div>
                      <input name="p_value"
-                        data-dojo-attach-event="onChange:validatePValue"
+                        data-dojo-attach-event="onChange:handlePValueChange"
                         data-dojo-attach-point="pValueEl"
                         data-dojo-props="constraints:{min:0, max:1.0,places:3},
                            invalidMessage:'Enter a number between 0-1.0'"
@@ -320,8 +403,10 @@
                   </div>
                </div>
 
+               <div class="treesort--row-separator"></div>
+
                <!-- Equal rates -->
-               <div class="treesort--row">
+               <div class="treesort--row margin-below">
                   <div id="${id}_equal_rates"
                      data-dojo-attach-point="equalRatesEl"
                      data-dojo-type="dijit/form/CheckBox"
@@ -331,7 +416,7 @@
                </div>
 
                <!-- Is time scaled -->
-               <div class="treesort--row">
+               <div class="treesort--row margin-below">
                   <div id="${id}_is_time_scaled"
                      data-dojo-attach-point="isTimeScaledEl"
                      data-dojo-type="dijit/form/CheckBox"
@@ -340,7 +425,7 @@
                </div>
 
                <!-- No collapse -->
-               <div class="treesort--row last-or-only">
+               <div class="treesort--row margin-below">
                   <div id="${id}_no_collapse"
                      data-dojo-attach-point="noCollapseEl"
                      data-dojo-type="dijit/form/CheckBox"

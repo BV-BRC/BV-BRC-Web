@@ -34,19 +34,15 @@ define([
       MinCut: "mincut"
    })
 
-   // Options for the "inference method" select list.
+   // Options for the inference method control.
    const InferenceMethodOptions = [
       { value: InferenceMethod.Local, label: "local (default)" },
-      { value: InferenceMethod.MinCut, label: "mincut" } // "Always determine the most parsimonious reassortment placement even in ambiguous circumstances"
+      { value: InferenceMethod.MinCut, label: "mincut" }
    ]
 
    // An "enum" for input sources
    const InputSource = Object.freeze({
       FastaFileID: "fasta_file_id"
-      /* TODO: Include these in a future version.
-      FastaData: "fasta_data",
-      FastaExistingDataset: "fasta_existing_dataset",
-      FastaGroupID: "fasta_group_id" */
    })
 
    // An "enum" for match types
@@ -57,12 +53,12 @@ define([
       Strain: "strain"
    });
 
-   // Options for the "match type" select list.
+   // Options for the match type control.
    const MatchTypeOptions = [
       { value: MatchType.Default, label: `Default` },
       { value: MatchType.EPI, label: `EPI_ISL_XXX field` },
-      { value: MatchType.Regex, label: `Regular expression` }, // Provide a regular expression to match segments across the alignments
-      { value: MatchType.Strain, label: `Strain name` } // Match the names across the segments based on the strain name
+      { value: MatchType.Regex, label: `Regular expression` },
+      { value: MatchType.Strain, label: `Strain name` }
    ];
 
    // An "enum" for reference tree inference.
@@ -71,7 +67,7 @@ define([
       IQTree: "IQTree"
    })
 
-   // Options for the "ref tree inference" select list.
+   // Options for the ref tree inference control.
    const RefTreeInferenceOptions = [
       { value: RefTreeInference.FastTree, label: `FastTree` },
       { value: RefTreeInference.IQTree, label: `IQ-Tree` }
@@ -84,16 +80,18 @@ define([
       // Application settings
       //----------------------------------------------------------------------------------------------------------------------------
       appBaseURL: "TreeSort",
-      applicationDescription: "The TreeSort tool infers both recent and ancestral reassortment events along the branches of a phylogenetic tree of a fixed genomic segment. It uses a statistical hypothesis testing framework to identify branches where reassortment with other segments has occurred and reports these events.",
+      applicationDescription: "The TreeSort tool infers both recent and ancestral reassortment events along the branches of a phylogenetic " +
+         "tree of a fixed genomic segment. It uses a statistical hypothesis testing framework to identify branches where reassortment with " +
+         "other segments has occurred and reports these events.",
       applicationHelp: "quick_references/services/treesort_service.html",
       applicationLabel: "TreeSort",
       applicationName: "TreeSort",
       baseClass: "TreeSort",
       defaultPath: "", // The workspace manager's default folder.
-      demo: true, // dmd
+      demo: false,
       form_flag: false, // TODO: This is something related to intakeRerunForm
       pageTitle: "TreeSort Service | BV-BRC",
-      requireAuth: false,  // dmd
+      requireAuth: true,
       templateString: Template,
       tutorialLink: "tutorial/treesort/treesort.html",
       videoLink: "",
@@ -112,6 +110,7 @@ define([
       //----------------------------------------------------------------------------------------------------------------------------
       inputSource: InputSource.FastaFileID, // The default input source
 
+
       //----------------------------------------------------------------------------------------------------------------------------
       // References to HTML elements/controls
       //----------------------------------------------------------------------------------------------------------------------------
@@ -124,36 +123,13 @@ define([
       deviationEl: null,
       equalRatesEl: null,
 
-      /* TODO: Include these in a future version.
-      // FASTA data elements
-      fastaDataEl: null,
-      fastaDataMessageEl: null,
-      fastaDataPanelEl: null,
-
-      // FASTA existing dataset elements
-      fastaExistingDatasetEl: null,
-      fastaExistingDatasetPanelEl: null,
-      */
-
       // FASTA file ID elements
       fastaFileIdEl: null,
       fastaFileIdPanelEl: null,
 
-      /* TODO: Include these in a future version.
-      // FASTA group ID elements
-      fastaGroupIdEl: null,
-      fastaGroupIdPanelEl: null, */
-
       // Inference method elements
       inferenceMethodEl: null,
       inferenceMethodMessageEl: null,
-
-      /* TODO: Include this in a future version.
-      // The radio buttons that select the input source type.
-      inputSource_FastaDataEl: null,
-      inputSource_FastaExistingDatasetEl: null,
-      inputSource_FastaFileIdEl: null,
-      inputSource_FastaGroupIdEl: null,*/
 
       // "Is time scaled" element
       isTimeScaledEl: null,
@@ -172,12 +148,17 @@ define([
       outputPathEl: null,
       outputPathMessageEl: null,
 
+      // Output filename element
+      outputFilenameEl: null,
+      outputFilenameMessageEl: null,
+
       // P-value elements
       pValueEl: null,
       pValueMessageEl: null,
 
       // Reference segment element
       refSegmentEl: null,
+      refSegmentMessageEl: null,
 
       // Reference tree inference element
       refTreeInferenceEl: null,
@@ -198,17 +179,10 @@ define([
          //this.fastaToAttachPt = ['query_fasta'];
       },
 
-
-      checkOutputName: function () {
-         if (this.demo) { return true; }
-         this.validate();
-         return this.inherited(arguments);
-      },
-
       // Dynamically generate segment controls and add them to the page.
       createSegmentControls: function () {
 
-         //const containerEl = document.querySelector(".segmentsPanel");
+         // Validate the reference to the container element.
          if (!this.segmentsContainerEl) { throw new Error("Invalid segments container element"); }
 
          const segments = SegmentedViruses[this.virusTaxon].segments;
@@ -221,6 +195,10 @@ define([
             // If this is the default segment, set the corresponding member attribute.
             if (segment_.isDefault) { this.defaultRefSegment = segment_.name; }
 
+            const segmentControl = document.createElement("div");
+            segmentControl.className = "treesort--segment-control";
+            segmentControl.setAttribute("data-index", `${index_}`);
+
             // Create a checkbox for a segment and add its DOM element to the page.
             const checkbox = new Checkbox({
                id: `segmentCheckbox_${index_}`,
@@ -229,7 +207,8 @@ define([
                value: segment_.name
             })
 
-            this.segmentsContainerEl.appendChild(checkbox.domNode);
+            // Add the checkbox to the control.
+            segmentControl.appendChild(checkbox.domNode);
 
             // Initialize the checkbox dijit widget.
             checkbox.startup();
@@ -243,7 +222,10 @@ define([
             label.innerHTML = segment_.name;
             label.style.marginRight = "1.0rem";
 
-            this.segmentsContainerEl.appendChild(label);
+            // Add the label to the control.
+            segmentControl.appendChild(label);
+
+            this.segmentsContainerEl.appendChild(segmentControl);
          })
       },
 
@@ -267,45 +249,16 @@ define([
          let deviation = this.deviationEl.get("value");
          let equalRates = this.equalRatesEl.get("checked");
          let fastaFileId = this.fastaFileIdEl.get("value");
-
-         /* TODO: Include this in a future version.
-         let fastaData = null;
-         let fastaExistingDataset = null;
-         let fastaGroupId = null;
-
-         switch (this.inputSource) {
-            case InputSource.FastaData:
-               fastaData = this.fastaDataEl.get("value");
-               console.log(this.fastaDataEl)
-               break;
-
-            case InputSource.FastaExistingDataset:
-               fastaExistingDataset = this.fastaExistingDatasetEl.get("value");
-               break;
-
-            case InputSource.FastaFileID:
-               fastaFileId = this.fastaFileIdEl.get("value");
-               break;
-
-            case InputSource.FastaGroupID:
-               fastaGroupId = this.fastaGroupIdEl.get("value");
-               break;
-
-            default:
-               // TODO: error!
-         }
-         */
-
          let inferenceMethod = this.inferenceMethodEl.get("value");
          let isTimeScaled = this.isTimeScaledEl.get("checked");
          let matchRegex = this.matchRegexEl.get("value");
          let matchType = this.matchTypeEl.get("value");
          let noCollapse = this.noCollapseEl.get("checked");
          let outputPath = this.outputPathEl.get("value");
+         let outputFilename = this.outputFilenameEl.get("value");
          let pValue = this.pValueEl.get("value");
          let refSegment = this.refSegmentEl.get("value");
          let refTreeInference = this.refTreeInferenceEl.get("value");
-
          let segments = "";
 
          // Segments
@@ -333,6 +286,7 @@ define([
             "match_regex": matchRegex,
             "match_type": matchType,
             "no_collapse": noCollapse,
+            "output_filename": outputFilename,
             "output_path": outputPath,
             "p_value": pValue,
             "ref_segment": refSegment,
@@ -340,8 +294,8 @@ define([
             "segments": segments
          };
 
-         console.log(submit_values)
-
+         console.log("In getValues submit values = ", submit_values)
+         console.log("inherited arguments = ", this.inherited(arguments));
          /*
          TODO: Do I need to include something like this?
 
@@ -353,9 +307,7 @@ define([
                '>id2\nataacgttgattgttgggatagcaacagcttggtttgtaacttattattcttttcctgga\ncgtaagttttttgagatagcacttttcttgccactttcaataccagggtatatagttgca\ntatgtatatgtaaatatttttgaattttcaggtcctgtacaaagttttttaagggtgata\ntttcattggaataaaggtgattattactttcctagtgtgaaatcattagcatgtggaatt\n'
          }*/
 
-         if (this.validate()) {
-            return submit_values;
-         }
+         if (this.validate()) { return submit_values; }
       },
 
       // Handle a click event on the advanced options control.
@@ -363,19 +315,170 @@ define([
          this.advancedOptionsContainerEl.classList.toggle("visible");
       },
 
-      // Handle a change event on the match_type list.
+      // Handle a change to the deviation control.
+      handleDeviationChange: function (value_) {
+
+         let result = this.isDeviationValid(value_);
+         if (!result.isValid) {
+            this.deviationEl.set("state", "Error");
+            this.deviationEl.set("message", result.errorMessage);
+            this.deviationMessageEl.innerHTML = result.errorMessage;
+         } else {
+            // Clear any existing error status.
+            this.deviationEl.set("state", "");
+            this.deviationEl.set("message", "");
+            this.deviationMessageEl.innerHTML = "";
+         }
+
+         // Validate all controls
+         this.validate();
+
+         return result.isValid;
+      },
+
+      // Handle a change to the FASTA file ID control.
+      handleFastaFileIdChange: function (value_) {
+
+         console.log(`In validateFastaFileID value_ = `, value_)
+
+         let result = this.isFastaFileIdValid(value_);
+         if (!result.isValid) {
+            this.deviationEl.set("state", "Error");
+            this.deviationEl.set("message", result.errorMessage);
+            this.deviationMessageEl.innerHTML = result.errorMessage;
+         } else {
+            // Clear any existing error status.
+            this.deviationEl.set("state", "");
+            this.deviationEl.set("message", "");
+            this.deviationMessageEl.innerHTML = "";
+         }
+
+         // Validate all controls
+         this.validate();
+
+         return result.isValid;
+      },
+
+      // Handle a change to the match's regular expression control.
+      handleMatchRegexChange: function (value_) {
+
+         let result = this.isMatchRegexValid(value_);
+
+         if (!result.isValid) {
+            this.matchRegexEl.set("state", "Error");
+            this.matchRegexEl.set("message", result.errorMessage);
+            this.matchRegexMessageEl.innerHTML = result.errorMessage;
+         } else {
+            this.matchRegexEl.set("state", "");
+            this.matchRegexEl.set("message", "");
+            this.matchRegexMessageEl.innerHTML = "";
+         }
+
+         // Validate all controls
+         this.validate();
+
+         return result.isValid;
+      },
+
+      // Handle a change to the match type control.
       handleMatchTypeChange: function () {
 
          if (this.matchTypeEl.value == MatchType.Regex) {
             this.matchRegexContainerEl.style.display = "block";
-            this.matchRegexEl.set("required", true);
+            //this.matchRegexEl.set("required", true);
 
          } else {
             this.matchRegexContainerEl.style.display = "none";
-            this.matchRegexEl.set("required", false);
+            //this.matchRegexEl.set("required", false);
          }
 
          return;
+      },
+
+      // Handle a change to the output filename control.
+      handleOutputFilenameChange: function (value_) {
+
+         let result = this.isOutputFilenameValid(value_);
+
+         if (!result.isValid) {
+            this.outputFilenameEl.set("state", "Error");
+            this.outputFilenameEl.set("message", result.errorMessage);
+            this.outputFilenameMessageEl.innerHTML = result.errorMessage;
+         } else {
+            this.outputFilenameEl.set("state", "");
+            this.outputFilenameEl.set("message", "");
+            this.outputFilenameMessageEl.innerHTML = "";
+         }
+
+         // Validate all controls
+         this.validate();
+
+         return result.isValid;
+      },
+
+      // Handle a change to the output path control.
+      handleOutputPathChange: function (value_) {
+
+         let result = this.isOutputPathValid(value_);
+
+         if (!result.isValid) {
+            this.outputPathEl.set("state", "Error");
+            this.outputPathEl.set("message", result.errorMessage);
+            this.outputPathMessageEl.innerHTML = result.errorMessage;
+         } else {
+            this.outputPathEl.set("state", "");
+            this.outputPathEl.set("message", "");
+            this.outputPathMessageEl.innerHTML = "";
+         }
+
+         // Validate all controls
+         this.validate();
+
+         return result.isValid;
+      },
+
+      // Handle a change to the p-value control.
+      handlePValueChange: function (value_) {
+
+         let result = this.isPValueValid(value_);
+
+         if (!result.isValid) {
+            this.pValueEl.set("state", "Error");
+            this.pValueEl.set("message", result.errorMessage);
+            this.pValueMessageEl.innerHTML = result.errorMessage;
+         } else {
+            // Clear any existing error status.
+            this.pValueEl.set("state", "");
+            this.pValueEl.set("message", "");
+            this.pValueMessageEl.innerHTML = "";
+         }
+
+         // Validate all controls
+         this.validate();
+
+         return result.isValid;
+      },
+
+      // Handle a change to the reference segment or the segment checkboxes.
+      handleSegmentChange: function () {
+
+         const result = this.isRefSegmentValid();
+
+         console.log("in handleSegmentChange and result = ", result)
+
+         if (!result.isValid) {
+            this.refSegmentEl.set("state", "Error");
+            this.refSegmentEl.set("message", result.errorMessage);
+            this.refSegmentMessageEl.innerHTML = result.errorMessage;
+         } else {
+            // Clear any existing error status.
+            this.refSegmentEl.set("state", "");
+            this.refSegmentEl.set("message", "");
+            this.refSegmentMessageEl.innerHTML = "";
+         }
+
+         // Validate all controls
+         this.validate();
       },
 
       intakeRerunForm: function () {
@@ -414,6 +517,153 @@ define([
          }
       },
 
+      // Is this deviation value valid?
+      isDeviationValid: function (value_) {
+
+         // Initialize the result
+         let result = { isValid: true, errorMessage: null };
+
+         value_ = this.safeTrim(value_);
+         if (!value_) {
+
+            // If no value was provided, get the value directly from the control.
+            value_ = this.safeTrim(this.deviationEl.get("value"));
+            if (!value_) {
+               result.isValid = false;
+               result.errorMessage = "Enter an integer ≥ 1";
+               return result;
+            }
+         }
+
+         let deviation = parseInt(value_);
+         if (isNaN(deviation) || deviation < 1.0) {
+            result.isValid = false;
+            result.errorMessage = "Enter an integer ≥ 1";
+         }
+
+         return result;
+      },
+
+      // Is the FASTA file ID valid?
+      isFastaFileIdValid: function (value_) {
+
+         // Initialize the result
+         let result = { isValid: true, errorMessage: null };
+
+         value_ = this.safeTrim(value_);
+
+         // If no value was provided, get the value directly from the control.
+         if (!value_) { value_ = this.safeTrim(this.fastaFileIdEl.get("value")); }
+
+         if (!value_) {
+            result.isValid = false;
+            result.errorMessage = "Select a FASTA file";
+         }
+
+         return result;
+      },
+
+      // Is the match's regular expression valid?
+      isMatchRegexValid: function (value_) {
+
+         // Initialize the result
+         let result = { isValid: true, errorMessage: null };
+
+         value_ = this.safeTrim(value_);
+
+         // If no value was provided, get the value directly from the control.
+         if (!value_) { value_ = this.safeTrim(this.matchRegexEl.get("value")); }
+
+         if (!value_) {
+            result.isValid = false;
+            result.errorMessage = "Enter a valid regular expression";
+         }
+
+         return result;
+      },
+
+      // Is the output filename valid?
+      isOutputFilenameValid: function (value_) {
+
+         // Initialize the result
+         let result = { isValid: true, errorMessage: null };
+
+         value_ = this.safeTrim(value_);
+
+         // If no value was provided, get the value directly from the control.
+         if (!value_) { value_ = this.safeTrim(this.outputFilenameEl.get("value")); }
+
+         if (!value_) {
+            result.isValid = false;
+            result.errorMessage = "Enter a valid filename";
+         }
+
+         return result;
+      },
+
+      // Is the output path valid?
+      isOutputPathValid: function (value_) {
+
+         // Initialize the result
+         let result = { isValid: true, errorMessage: null };
+
+         value_ = this.safeTrim(value_);
+
+         // If no value was provided, get the value directly from the control.
+         if (!value_) { value_ = this.safeTrim(this.outputPathEl.get("value")); }
+
+         if (!value_) {
+            result.isValid = false;
+            result.errorMessage = "Select an output folder";
+         }
+
+         return result;
+      },
+
+      // Is the p-value valid?
+      isPValueValid: function (value_) {
+
+         // Initialize the result
+         let result = { isValid: true, errorMessage: null };
+
+         value_ = this.safeTrim(value_);
+
+         // If no value was provided, get the value directly from the control.
+         if (!value_) { value_ = this.safeTrim(this.pValueEl.get("value")); }
+
+         let pValue = parseFloat(value_);
+         if (isNaN(pValue) || pValue < 0 || pValue > 1.0) {
+            result.isValid = false;
+            result.errorMessage = "Enter a number between 0 and 1.0";
+         }
+
+         return result;
+      },
+
+      // Is the reference segment valid?
+      isRefSegmentValid: function () {
+
+         // Initialize the result
+         let result = { isValid: true, errorMessage: null };
+
+         if (!this.segmentCheckboxes) { throw new Error("Invalid segment checkboxes"); }
+
+         const refSegment = this.refSegmentEl.get("value");
+
+         // Make sure the segment selected as the reference segment isn't unchecked.
+         this.segmentCheckboxes.forEach(checkbox_ => {
+            if (!checkbox_.get("checked")) {
+               const segment = checkbox_.get("name");
+               if (segment == refSegment) {
+                  result.isValid = false;
+                  result.errorMessage = `Reference segment ${refSegment} is unchecked and will not be included`;
+               }
+            }
+         })
+
+         return result;
+      },
+
       onReset: function () {
 
          console.log("In onReset")
@@ -445,6 +695,7 @@ define([
          if (jobData.match_regex) { this.matchRegexEl.set("value", jobData.match_regex); }
          if (jobData.match_type) { this.matchTypeEl.set("value", jobData.match_type); }
          if (jobData.no_collapse) { this.noCollapseEl.set("checked", jobData.no_collapse); }
+         if (jobData.output_filename) { this.outputFilenameEl.set("value", jobData.outputFilename); }
          if (jobData.output_path) { this.outputPathEl.set("value", jobData.output_path); }
          if (jobData.p_value) { this.pValueEl.set("value", jobData.p_value); }
          if (jobData.ref_segment) { this.refSegmentEl.set("value", jobData.ref_segment); }
@@ -470,6 +721,13 @@ define([
          query('.reSubmitBtn').style('visibility', 'hidden');
       },
 
+      // Safely trim non-null values and return an empty string for a null value.
+      safeTrim: function (value_) {
+         if (!value_) { return ""; }
+         if (typeof value_ === 'string' || value_ instanceof String) { return value_.trim(); }
+         return String(value_);
+      },
+
       // Update the page controls with default values.
       setDefaultValues() {
 
@@ -482,6 +740,7 @@ define([
          this.matchRegexEl.set("value", "");
          this.matchTypeEl.set("value", MatchType.Default);
          this.noCollapseEl.set("value", true);
+         this.outputFilenameEl.set("value", " ");
          this.outputPathEl.set("value", "");
          this.pValueEl.set("value", 0.001);
          this.refSegmentEl.set("value", this.defaultRefSegment);
@@ -504,15 +763,6 @@ define([
 
          return;
       },
-
-      /* TODO: I don't think this is necessary.
-      setTooltips: function () {
-         new Tooltip({
-            connectId: ["output_path_tooltip"],
-            label: "The path to the output file where the tree will be saved in nexus format."
-         });
-
-      },*/
 
       startup: function() {
 
@@ -537,13 +787,32 @@ define([
          // Dynamically generate segment controls and add them to the page.
          this.createSegmentControls();
 
+         // Add a click event handler to the container of the segment controls.
+         this.segmentsContainerEl.addEventListener("click", (event_) => {
+
+            if (event_.target.nodeName == "INPUT") { return false; }
+
+            // Get the parent DIV and its "data-index" attribute.
+            const segmentControl = event_.target.closest("div");
+            const strIndex = segmentControl.getAttribute("data-index");
+            if (!strIndex) { return false; }
+
+            const index = parseInt(strIndex);
+            if (isNaN(index)) { return false; }
+
+            // Find the checkbox at this index and toggle its value.
+            const checkbox = this.segmentCheckboxes[index];
+            if (!checkbox) { return false; }
+
+            checkbox.set('checked', !checkbox.get('checked'));
+
+            // Make sure the segment used as the reference segment is still checked.
+            this.handleSegmentChange();
+         })
+
          // TODO: Include this in a future version.
          // Select the default input source radio button.
          //this.updateInputSourceControls();
-
-         // TODO: Is this necessary?
-         // Add tooltips
-         // this.setTooltips();
 
          try {
             // NOTE: this sets this.displayDefaults to false if we are populating the
@@ -559,146 +828,58 @@ define([
             this.setDefaultValues();
          }
 
+         // TEST
+         this.validate();
          this._started = true;
       },
 
+      // Validate all page controls that require validation.
       validate: function () {
+
+         let result;
+
+         console.log("in validate")
+
          if (this.inherited(arguments)) {
 
-            console.log("this.inherited(arguments) = ", this.inherited(arguments))
+            let isValid = true;
 
-            /* TODO: What do I need to do here?
-            var val = true;
-            switch (this.input_source) {
-               case 'fasta_data': // Validate the sequence text area.
-                  val = (this.sequence.get('value') && this.validFasta);
-                  break;
-               default:
-                  break;
+            result = this.isDeviationValid();
+            isValid = isValid && result.isValid;
+
+            result = this.isFastaFileIdValid();
+            isValid = isValid && result.isValid;
+
+            if (this.matchTypeEl.get("value") == MatchType.Regex) {
+               result = this.isMatchRegexValid();
+               isValid = isValid && result.isValid;
             }
-            if (val) {
-               this.submitButton.set('disabled', false);
+
+            result = this.isOutputFilenameValid();
+            isValid = isValid && result.isValid;
+
+            result = this.isOutputPathValid();
+            isValid = isValid && result.isValid;
+
+            result = this.isPValueValid();
+            isValid = isValid && result.isValid;
+
+            if (isValid) {
+               console.log("submit btn is enabled")
+               this.submitButton.set("disabled", false);
                return true;
-            }*/
-         }
-         //this.submitButton.set('disabled', true);
-         //return false;
-         return true;
-      },
-
-      // Validate the deviation widget.
-      validateDeviation: function (strValue_) {
-
-         let errorMessage = "";
-         let isValid = true;
-
-         let value = parseInt(strValue_);
-         if (isNaN(value)) {
-            isValid = false;
-            errorMessage = "Enter a valid integer";
-         } else if (value < 1.0) {
-            isValid = false;
-            errorMessage = "Enter an integer ≥ 1";
+            }
          }
 
-         if (!isValid) {
-            this.deviationEl.set("state", "Error");
-            this.deviationEl.set("message", errorMessage);
-            this.deviationMessageEl.innerHTML = errorMessage;
-         } else {
-
-            // Clear any existing error status.
-            this.deviationEl.set("state", "");
-            this.deviationEl.set("message", "");
-            this.deviationMessageEl.innerHTML = "";
-         }
-
-         // REMOVE THIS SOON!
-         this.getValues();
-
-         return;
-      },
-
-      validateFastaFileID: function (evt) {
-
-         console.log(`In validateFastaFileID evt = `, evt)
-
-         // input_fasta_file_id
-      },
-
-      validateMatchRegex: function () {
-
-         let isValid = true;
-
-         let regex = this.matchRegexEl.get("value");
-         if (regex) { regex = regex.trim(); }
-
-         if (!regex || regex.length < 1) {
-            isValid = false;
-            this.matchRegexEl.set("state", "Error");
-            this.matchRegexEl.set("message", "Enter a non-empty regular expression");
-            this.matchRegexMessageEl.innerHTML = "Enter a non-empty regular expression";
-         } else {
-            this.matchRegexEl.set("state", "");
-            this.matchRegexEl.set("message", "");
-            this.matchRegexMessageEl.innerHTML = "";
-         }
-
-         return isValid;
-      },
-
-      // Validate the output path.
-      validateOutputPath: function () {
-
-         let isValid = true;
-
-         let outputPath = this.outputPathEl.get("value");
-         if (outputPath) { outputPath = regex.trim(); }
-
-         if (!outputPath || outputPath.length < 1) {
-            isValid = false;
-            this.outputPathEl.set("state", "Error");
-            this.outputPathEl.set("message", "Enter an output path");
-            this.outputPathMessageEl.innerHTML = "Enter an output path";
-         } else {
-            this.outputPathEl.set("state", "");
-            this.outputPathEl.set("message", "");
-            this.outputPathMessageEl.innerHTML = "";
-         }
-
-         return isValid;
-      },
-
-      // Validate the p-value cuttoff.
-      validatePValue: function (strValue_) {
-
-         let errorMessage = "";
-         let isValid = true;
-
-         let value = parseFloat(strValue_);
-         if (isNaN(value)) {
-            isValid = false;
-            errorMessage = "Please enter a valid number";
-         } else if (value < 0 || value > 1.0) {
-            isValid = false;
-            errorMessage = "Please enter a number between 0 and 1";
-         }
-
-         if (!isValid) {
-            this.pValueEl.set("state", "Error");
-            this.pValueEl.set("message", errorMessage);
-            this.pValueMessageEl.innerHTML = errorMessage;
-         } else {
-            // Clear any existing error status.
-            this.pValueEl.set("state", "");
-            this.pValueEl.set("message", "");
-            this.pValueMessageEl.innerHTML = "";
-         }
-
-         return;
+         console.log("disabling submit btn")
+         this.submitButton.set("disabled", true);
+         return false;
       }
 
-      /* TODO: Include these in a future version.
+
+
+      /*
+      TODO: Include these in a future version.
 
       // Handle a change event on the input_source radio buttons.
       handleInputSourceChange: function (evt) {
