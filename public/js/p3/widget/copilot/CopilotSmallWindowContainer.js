@@ -16,7 +16,9 @@ define([
     './CopilotInput',
     'dojo/dom-construct',
     '../copilot/ChatSessionControllerPanel',
-    'dijit/Dialog'
+    'dijit/Dialog',
+    'dojo/fx',
+    'dojo/_base/fx'
 ], function(
     declare,
     _WidgetBase,
@@ -30,7 +32,9 @@ define([
     CopilotInput,
     domConstruct,
     ChatSessionControllerPanel,
-    Dialog
+    Dialog,
+    fx,
+    baseFx
 ) {
     return declare([BorderContainer], {
         baseClass: 'CopilotSmallWindowContainer',
@@ -56,6 +60,12 @@ define([
 
         // Content container reference
         contentContainer: null,
+
+        // Options sidebar state
+        optionsSidebarOpen: false,
+
+        // Options sidebar reference
+        optionsSidebar: null,
 
         constructor: function(options) {
             this.inherited(arguments);
@@ -130,11 +140,34 @@ define([
                 title: 'New Chat (start a new session)'
             }, controlButtonsContainer);
 
-            // Create content container
+            // Create content container that will house the BorderContainer for main content + options
             this.contentContainer = domConstruct.create('div', {
                 className: 'copilotChatContent',
-                style: 'width: 100%; height: calc(100% - 30px); overflow: hidden;'
+                style: 'width: 100%; height: 100%; overflow: hidden; position: relative;'
             }, this.containerNode);
+
+            // Create a BorderContainer within the content container for layout management
+            this.layoutContainer = new BorderContainer({
+                gutters: false,
+                style: 'width: 100%; height: 100%;'
+            });
+            this.layoutContainer.placeAt(this.contentContainer);
+
+            // Create options bar container (initially hidden) - positioned on the left
+            this.optionsBarContainer = new BorderContainer({
+                region: 'left',
+                splitter: false,
+                style: 'width: 150px; overflow: hidden; background-color: #f8f8f8; border-right: 1px solid #ddd; display: none;'
+            });
+            this.layoutContainer.addChild(this.optionsBarContainer);
+
+            // Create main content area that will house the controller panel
+            this.mainContentContainer = new BorderContainer({
+                region: 'center',
+                gutters: false,
+                style: 'width: 100%; height: 93%;'
+            });
+            this.layoutContainer.addChild(this.mainContentContainer);
         },
 
         startup: function() {
@@ -155,15 +188,18 @@ define([
         },
 
         createControllerPanel: function(options) {
-            // Create controller panel inside the content container
+            // Create controller panel inside the main content container
             this.controllerPanel = new ChatSessionControllerPanel({
                 style: "width: 100%; height: 100%;",
                 copilotApi: options.copilotApi,
                 optionsBar: options.optionsBar
             });
 
-            // Add the control panel to the content container
-            this.controllerPanel.placeAt(this.contentContainer);
+            // Add the control panel to the main content container
+            this.controllerPanel.placeAt(this.mainContentContainer.containerNode);
+
+            // Store the options bar reference
+            this.optionsBar = options.optionsBar;
 
             // If we have a current session ID, load it
             if (options.currentSessionId) {
@@ -211,11 +247,18 @@ define([
 
             if (options.onOptionsClick && optionsButton) {
                 on(optionsButton, 'click', options.onOptionsClick);
+            } else if (optionsButton) {
+                // If no external handler is provided, use our internal toggle function
+                on(optionsButton, 'click', lang.hitch(this, 'toggleOptionsBar'));
             }
 
             // Force resize of panel after placement
-            // Also get the session ID from the controller panel
             setTimeout(lang.hitch(this, function() {
+                /*
+                if (this.layoutContainer && this.layoutContainer.resize) {
+                    this.layoutContainer.resize();
+                }
+                */
                 if (this.controllerPanel && this.controllerPanel.resize) {
                     this.controllerPanel.resize();
                 }
@@ -223,9 +266,113 @@ define([
                     options.onResize(this.controllerPanel.getSessionId());
                 }
                 topic.publish('ChatSessionTitleMaxLengthChanged', 30);
-            }), 200);
+            }), 100);
 
             return this.controllerPanel;
+        },
+
+        /**
+         * Toggles the options bar open/closed by showing/hiding the container
+         */
+        toggleOptionsBar: function() {
+            if (!this.optionsBarContainer) return;
+
+            // Toggle the state
+            this.optionsSidebarOpen = !this.optionsSidebarOpen;
+
+            if (this.optionsSidebarOpen) {
+                // Create two divs with random content instead of adding optionsBar widget
+                if (this.optionsBarContainer.getChildren().length === 0) {
+                    // Create top div (70% height)
+                    var topDiv = domConstruct.create('div', {
+                        className: 'optionsTopSection',
+                        style: 'height: 70%; padding: 10px; background-color: #f0f0f0; border-bottom: 1px solid #ddd; overflow-y: auto;',
+                        innerHTML: '<h4>Quick Actions</h4><p>• New conversation</p><p>• Clear history</p><p>• Export chat</p><p>• Settings</p><p>• Help & tutorials</p><p>• Keyboard shortcuts</p><p>• Theme options</p>'
+                    }, this.optionsBarContainer.containerNode);
+
+                    // Create bottom div (30% height)
+                    var bottomDiv = domConstruct.create('div', {
+                        className: 'optionsBottomSection',
+                        style: 'height: 30%; padding: 10px; background-color: #e8e8e8; overflow-y: auto;',
+                        innerHTML: '<h5>Status</h5><p>Session: Active</p><p>Model: GPT-4</p><p>Tokens: 1,250</p><p>Response time: 1.2s</p>'
+                    }, this.optionsBarContainer.containerNode);
+                }
+
+                // Show the options bar container
+                domStyle.set(this.optionsBarContainer.domNode, {
+                    display: 'block'
+                });
+
+                // Expand the main container width to accommodate the sidebar
+                var currentContainerWidth = parseInt(domStyle.get(this.domNode, 'width') || 350);
+                var sidebarWidth = 150;
+                var newWidth = currentContainerWidth + sidebarWidth;
+
+                var anim = baseFx.animateProperty({
+                    node: this.domNode,
+                    properties: {
+                        width: newWidth,
+                        right: parseInt(domStyle.get(this.domNode, 'right') || 20) + sidebarWidth
+                    },
+                    duration: 300,
+                    onEnd: lang.hitch(this, function() {
+                        // Force layout recalculation after animation
+                        if (this.layoutContainer && this.layoutContainer.resize) {
+                            this.layoutContainer.resize();
+                        }
+                    })
+                });
+                anim.play();
+            } else {
+                // Hide the options bar container
+                domStyle.set(this.optionsBarContainer.domNode, {
+                    display: 'none'
+                });
+
+                // Return container to original size
+                var currentContainerWidth = parseInt(domStyle.get(this.domNode, 'width') || 350);
+                var sidebarWidth = 150;
+                var originalWidth = currentContainerWidth - sidebarWidth;
+
+                var anim = baseFx.animateProperty({
+                    node: this.domNode,
+                    properties: {
+                        width: originalWidth,
+                        right: parseInt(domStyle.get(this.domNode, 'right') || 20) - sidebarWidth
+                    },
+                    duration: 300,
+                    onEnd: lang.hitch(this, function() {
+                        // Remove the content divs to clean up
+                        var topDiv = this.optionsBarContainer.containerNode.querySelector('.optionsTopSection');
+                        var bottomDiv = this.optionsBarContainer.containerNode.querySelector('.optionsBottomSection');
+                        if (topDiv) {
+                            domConstruct.destroy(topDiv);
+                        }
+                        if (bottomDiv) {
+                            domConstruct.destroy(bottomDiv);
+                        }
+                        // Force layout recalculation after animation
+                        if (this.layoutContainer && this.layoutContainer.resize) {
+                            this.layoutContainer.resize();
+                        }
+                    })
+                });
+                anim.play();
+            }
+
+            // Update the options button appearance when sidebar is open
+            var optionsButton = this.headerNode.querySelector('.copilotChatOptionsButton');
+            if (optionsButton) {
+                if (this.optionsSidebarOpen) {
+                    domStyle.set(optionsButton, {
+                        color: '#2a7aeb'  // Highlight color when open
+                    });
+                } else {
+                    domStyle.set(optionsButton, {
+                        color: 'inherit'  // Return to default color
+                    });
+                }
+            }
         }
     });
 });
