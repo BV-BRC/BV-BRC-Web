@@ -276,7 +276,8 @@
 
 .copilotChatMinimizeButton,
 .copilotChatCloseButton,
-.copilotChatExpandButton {
+.copilotChatExpandButton,
+.copilotChatOptionsButton {
   opacity: 0.7;
   transition: all 0.2s ease;
   display: flex;
@@ -293,7 +294,7 @@
 .copilotChatMinimizeButton:hover,
 .copilotChatCloseButton:hover,
 .copilotChatExpandButton:hover,
-.copilotChatShrinkButton:hover {
+.copilotChatOptionsButton:hover {
   opacity: 1;
   transform: scale(1.1);
   background-color: #f0f0f0 !important;

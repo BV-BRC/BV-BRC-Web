@@ -15,6 +15,7 @@ define([
     './CopilotApi',
     './ChatSessionOptionsBar',
     '../copilot/CopilotGridContainer',
+    './CopilotSmallWindowContainer',
     'require'
 ], function(
     declare,
@@ -33,6 +34,7 @@ define([
     CopilotAPI,
     ChatSessionOptionsBar,
     CopilotGridContainer,
+    CopilotSmallWindowContainer,
     require
 ) {
     return declare([Button], {
@@ -162,8 +164,8 @@ define([
                         ragList: ragList
                     });
 
-                    // Create and show controller panel
-                    this._createControllerPanel();
+                    // Create and show controller panel via container
+                    this._initializeSmallWindowContainer();
                 })).catch(lang.hitch(this, function(err) {
                     new Dialog({
                         title: "Service Unavailable",
@@ -173,142 +175,68 @@ define([
                     console.error('Error setting up chat panel:', err);
                 }));
             } else {
-                // If we already have optionsBar, just create controller panel
-                this._createControllerPanel();
+                // If we already have optionsBar, just create controller panel via container
+                this._initializeSmallWindowContainer();
             }
         },
 
-        _createControllerPanel: function() {
-            // Create a container div for the chat panel
-            this.chatContainer = domConstruct.create('div', {
-                className: 'copilotChatContainer',
+        _initializeSmallWindowContainer: function() {
+            // Create a container div for the chat panel using CopilotSmallWindowContainer
+            this.chatContainer = new CopilotSmallWindowContainer({
                 style: 'position: fixed; width: 500px; height: 600px; z-index: 800; top: 10vh; right: 50px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); border-radius: 8px; overflow: hidden; background-color: white; display: block;'
-            }, document.body);
-
-            // Create controller panel inside the div
-            this.controllerPanel = new ChatSessionControllerPanel({
-                style: "width: 100%; height: 100%;",
-                copilotApi: this.copilotApi,
-                optionsBar: this.optionsBar
             });
+            this.chatContainer.placeAt(document.body);
 
-            // Add the control panel to the container
-            this.controllerPanel.placeAt(this.chatContainer);
+            // Create the controller panel via the container's method
+            this.controllerPanel = this.chatContainer.createControllerPanel({
+                copilotApi: this.copilotApi,
+                optionsBar: this.optionsBar,
+                currentSessionId: this.currentSessionId,
+                onExpandClick: lang.hitch(this, function(evt) {
+                    this._hideControllerPanel();
+                    this._openLargeChat();
+                    this.currentOpenChatView = 'large';
+                    evt.stopPropagation();
+                }),
+                onMinimizeClick: lang.hitch(this, function(evt) {
+                    this._hideControllerPanel();
+                    this.chatOpen = false;
+                    evt.stopPropagation();
+                }),
+                onCloseClick: lang.hitch(this, function(evt) {
+                    // Create a new chat session immediately
+                    if (this.copilotApi) {
+                        this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
+                            this.currentSessionId = sessionId;
 
-            // If we have a current session from the large view, load it
-            if (this.currentSessionId) {
-                // Use setTimeout to ensure the controller panel is fully initialized
-                setTimeout(lang.hitch(this, function() {
-                    if (this.controllerPanel) {
-                        this.controllerPanel.changeSessionId(this.currentSessionId);
-                        console.log('get session messages', this.currentSessionId);
-                        this.copilotApi.getSessionMessages(this.currentSessionId).then(lang.hitch(this, function(messages) {
-                            if (messages.messages && messages.messages.length > 0 && messages.messages[0].messages) {
-                                var messages = messages.messages[0].messages;
-                                this.controllerPanel.chatStore.addMessages(messages);
-                                this.controllerPanel.displayWidget.showMessages(messages);
-                            }
-                        }));
+                            // Reset everything in the controller panel for the new session
+                            if (this.controllerPanel) {
+                                this.controllerPanel.changeSessionId(sessionId);
 
-                        // Set the title if available
-                        this.copilotApi.getSessionTitle(this.currentSessionId).then(lang.hitch(this, function(title_response) {
-                            var title = title_response.title[0].title;
-                            if (this.controllerPanel.titleWidget) {
-                                this.controllerPanel.titleWidget.updateTitle(title);
+                                // Reset input widget and display
+                                if (this.controllerPanel.inputWidget) {
+                                    this.controllerPanel.inputWidget.startNewChat();
+                                }
+                                if (this.controllerPanel.displayWidget) {
+                                    this.controllerPanel.displayWidget.startNewChat();
+                                }
+                                if (this.controllerPanel.titleWidget) {
+                                    this.controllerPanel.titleWidget.startNewChat(sessionId);
+                                }
                             }
                         }));
                     }
-                }), 500);
-            }
-
-            // Add control buttons container
-            var buttonsContainer = domConstruct.create('div', {
-                className: 'copilotChatButtonsContainer',
-                style: 'position: absolute; top: 5px; right: 5px; z-index: 10000; display: flex;'
-            }, this.chatContainer);
-
-            // Add expand button
-            var expandButton = domConstruct.create('div', {
-                className: 'copilotChatExpandButton',
-                style: 'width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; border-radius: 50%; margin-right: 8px;',
-                innerHTML: '↖︎',
-                title: 'Expand to large view'
-            }, buttonsContainer);
-
-            // Add minimize button
-            var minimizeButton = domConstruct.create('div', {
-                className: 'copilotChatMinimizeButton',
-                style: 'width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; border-radius: 50%; margin-right: 8px;',
-                innerHTML: '_',
-                title: 'Minimize (keep session)'
-            }, buttonsContainer);
-
-            // Add close button
-            var closeButton = domConstruct.create('div', {
-                className: 'copilotChatCloseButton',
-                style: 'width: 24px; height: 24px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; border-radius: 50%;',
-                innerHTML: '+',
-                title: 'New Chat (start a new session)'
-            }, buttonsContainer);
-
-            // Expand button click handler - open large chat and hide small chat
-            on(expandButton, 'click', lang.hitch(this, function(evt) {
-                this._hideControllerPanel();
-                this._openLargeChat();
-                this.currentOpenChatView = 'large';
-                evt.stopPropagation();
-            }));
-
-            // Minimize button click handler - just hide the panel
-            on(minimizeButton, 'click', lang.hitch(this, function(evt) {
-                this._hideControllerPanel();
-                this.chatOpen = false;
-                evt.stopPropagation();
-            }));
-
-            // Close button click handler - hide panel and reset session
-            on(closeButton, 'click', lang.hitch(this, function(evt) {
-                // Create a new chat session immediately
-                if (this.copilotApi) {
-                    this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
-                        this.currentSessionId = sessionId;
-
-                        // Reset everything in the controller panel for the new session
-                        if (this.controllerPanel) {
-                            this.controllerPanel.changeSessionId(sessionId);
-
-                            // Reset input widget and display
-                            if (this.controllerPanel.inputWidget) {
-                                this.controllerPanel.inputWidget.startNewChat();
-                            }
-                            if (this.controllerPanel.displayWidget) {
-                                this.controllerPanel.displayWidget.startNewChat();
-                            }
-                            if (this.controllerPanel.titleWidget) {
-                                this.controllerPanel.titleWidget.startNewChat(sessionId);
-                            }
-                        }
-                    }));
-                }
-                evt.stopPropagation();
-            }));
-
-                        // Force resize of panel after placement
-            // Also get the session ID from the controller panel
-            setTimeout(lang.hitch(this, function() {
-                if (this.controllerPanel && this.controllerPanel.resize) {
-                    this.controllerPanel.resize();
-                }
-                this.currentSessionId = this.controllerPanel.getSessionId();
-                Topic.publish('ChatSessionTitleMaxLengthChanged', 30);
-            }), 200);
+                    evt.stopPropagation();
+                }),
+                onResize: lang.hitch(this, function(sessionId) {
+                    this.currentSessionId = sessionId;
+                })
+            });
         },
 
         _hideControllerPanel: function() {
             if (this.chatContainer) {
-                domStyle.set(this.chatContainer, {
-                    display: 'none'
-                });
+                this.chatContainer.hide();
             }
         },
 
@@ -460,9 +388,7 @@ define([
 
         _showControllerPanel: function() {
             if (this.chatContainer) {
-                domStyle.set(this.chatContainer, {
-                    display: 'block'
-                });
+                this.chatContainer.show();
 
                 // Check if we need to start a new session: happens when clicking the close button on the small chat
                 if (this.startNewSession && this.controllerPanel) {
