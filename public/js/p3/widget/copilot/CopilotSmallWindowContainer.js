@@ -49,7 +49,7 @@ define([
 
         // Configuration properties
         gutters: false,
-        style: 'width: 350px; height: 450px; position: absolute; bottom: 20px; right: 20px; overflow: hidden;',
+        style: 'width: 1000px; height: 450px; position: absolute; bottom: 20px; right: 20px; overflow: hidden;',
 
         // Controller panel reference
         controllerPanel: null,
@@ -69,8 +69,8 @@ define([
         // Content container reference
         contentContainer: null,
 
-        // Options sidebar state
-        optionsSidebarOpen: false,
+        // Options sidebar state - start as open by default
+        optionsSidebarOpen: true,
 
         // Options sidebar reference
         optionsSidebar: null,
@@ -93,6 +93,12 @@ define([
 
         postCreate: function() {
             this.inherited(arguments);
+
+            // Ensure the initial width is properly applied
+            domStyle.set(this.domNode, {
+                width: '650px',
+                height: '600px'
+            });
 
             // Create header
             this.headerNode = domConstruct.create('div', {
@@ -170,11 +176,11 @@ define([
             });
             this.layoutContainer.placeAt(this.contentContainer);
 
-            // Create options bar container (initially hidden) - positioned on the left
+            // Create options bar container (initially visible) - positioned on the left
             this.optionsBarContainer = new BorderContainer({
                 region: 'left',
                 splitter: false,
-                style: 'width: 150px; overflow: hidden; background-color: #f8f8f8; border-right: 1px solid #ddd; display: none;'
+                style: 'width: 150px; overflow: hidden; background-color: #f8f8f8; border-right: 1px solid #ddd;'
             });
             this.layoutContainer.addChild(this.optionsBarContainer);
 
@@ -236,6 +242,35 @@ define([
             this.optionsBar = options.optionsBar;
             this.copilotApi = options.copilotApi;
 
+            // Initialize the options bar container with its content panes
+            if (this.optionsBarContainer && this.optionsBarContainer.getChildren().length === 0) {
+                // Create top content pane
+                this.topContentPane = new ChatSessionOptionsBar({
+                    className: 'optionsTopSection',
+                    region: 'top',
+                    style: 'height: 20%; padding: 5px; background-color: #e8e8e8; overflow-y: auto;',
+                    copilotApi: this.copilotApi
+                });
+                this.optionsBarContainer.addChild(this.topContentPane);
+
+                // Create bottom content pane
+                this.bottomContentPane = new ChatSessionScrollBar({
+                    className: 'optionsBottomSection',
+                    region: 'center',
+                    style: 'padding: 0px; margin: 0px; height: 70%; border: 1px solid grey; background-color: #f0f0f0; border-bottom: 1px solid #ddd;',
+                    copilotApi: this.copilotApi
+                });
+                this.optionsBarContainer.addChild(this.bottomContentPane);
+            }
+
+            // Set initial options button appearance to show it's active
+            var optionsButton = this.headerNode.querySelector('.copilotChatOptionsButton');
+            if (optionsButton) {
+                domStyle.set(optionsButton, {
+                    color: '#2a7aeb'  // Highlight color when open by default
+                });
+            }
+
             // If we have a current session ID, load it
             if (options.currentSessionId) {
                 // Use setTimeout to ensure the controller panel is fully initialized
@@ -289,9 +324,7 @@ define([
 
             // Force resize of panel after placement
             setTimeout(lang.hitch(this, function() {
-
                 this.layoutContainer.resize();
-                this.toggleOptionsBar();
                 if (options.onResize) {
                     options.onResize(this.controllerPanel.getSessionId());
                 }
@@ -311,35 +344,13 @@ define([
             this.optionsSidebarOpen = !this.optionsSidebarOpen;
 
             if (this.optionsSidebarOpen) {
-                // Create two content panes instead of adding optionsBar widget
-                if (this.optionsBarContainer.getChildren().length === 0) {
-
-                    // Create bottom content pane (30% height)
-                    this.topContentPane = new ChatSessionOptionsBar({
-                        className: 'optionsTopSection',
-                        region: 'top',
-                        style: 'height: 20%; padding: 5px; background-color: #e8e8e8; overflow-y: auto;',
-                        copilotApi: this.copilotApi
-                    });
-                    this.optionsBarContainer.addChild(this.topContentPane);
-
-                    // Use chatSessionPane directly as the top content (70% height)
-                    this.bottomContentPane = new ChatSessionScrollBar({
-                        className: 'optionsBottomSection',
-                        region: 'center',
-                        style: 'padding: 0px; margin: 0px; height: 70%; border: 1px solid grey; background-color: #f0f0f0; border-bottom: 1px solid #ddd;',
-                        copilotApi: this.copilotApi
-                    });
-                    this.optionsBarContainer.addChild(this.bottomContentPane);
-                }
-
                 // Show the options bar container
                 domStyle.set(this.optionsBarContainer.domNode, {
                     display: 'block'
                 });
 
                 // Get current position and dimensions
-                var currentContainerWidth = parseInt(domStyle.get(this.domNode, 'width') || 350);
+                var currentContainerWidth = parseInt(domStyle.get(this.domNode, 'width') || 650);
                 var currentLeft = parseInt(domStyle.get(this.domNode, 'left') || 0);
                 var sidebarWidth = 150;
                 var newWidth = currentContainerWidth + sidebarWidth;
@@ -367,7 +378,7 @@ define([
                 });
 
                 // Get current position and dimensions
-                var currentContainerWidth = parseInt(domStyle.get(this.domNode, 'width') || 350);
+                var currentContainerWidth = parseInt(domStyle.get(this.domNode, 'width') || 650);
                 var currentLeft = parseInt(domStyle.get(this.domNode, 'left') || 0);
                 var sidebarWidth = 150;
                 var originalWidth = currentContainerWidth - sidebarWidth;
@@ -381,17 +392,6 @@ define([
                     },
                     duration: 300,
                     onEnd: lang.hitch(this, function() {
-                        // Clean up the content panes
-                        if (this.topContentPane) {
-                            this.optionsBarContainer.removeChild(this.topContentPane);
-                            this.topContentPane.destroyRecursive();
-                            this.topContentPane = null;
-                        }
-                        if (this.bottomContentPane) {
-                            this.optionsBarContainer.removeChild(this.bottomContentPane);
-                            this.bottomContentPane.destroyRecursive();
-                            this.bottomContentPane = null;
-                        }
                         // Force layout recalculation after animation
                         if (this.layoutContainer && this.layoutContainer.resize) {
                             this.layoutContainer.resize();
@@ -417,6 +417,16 @@ define([
         },
 
         destroy: function() {
+            // Clean up the content panes
+            if (this.topContentPane) {
+                this.topContentPane.destroyRecursive();
+                this.topContentPane = null;
+            }
+            if (this.bottomContentPane) {
+                this.bottomContentPane.destroyRecursive();
+                this.bottomContentPane = null;
+            }
+
             // Clean up the moveable when the widget is destroyed
             if (this._moveable) {
                 this._moveable.destroy();
