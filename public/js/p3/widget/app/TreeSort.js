@@ -119,7 +119,7 @@ define([
       advancedOptionsContainerEl: null,
       advancedOptionsControlEl: null,
 
-      //clades_path: null,
+      cladesPathEl: null,
       deviationEl: null,
       equalRatesEl: null,
 
@@ -204,8 +204,12 @@ define([
                id: `segmentCheckbox_${index_}`,
                name: segment_.name,
                checked: true,
+               onClick: this.handleSegmentChange.bind(this),
                value: segment_.name
             })
+
+            // Add the index as a custom attribute on the Checkbox's DOM element.
+            checkbox.domNode.setAttribute("data-index", `${index_}`);
 
             // Add the checkbox to the control.
             segmentControl.appendChild(checkbox.domNode);
@@ -218,13 +222,13 @@ define([
 
             // Create a label element and add it to the page.
             const label = document.createElement("label");
-            label.setAttribute("for", `${index_}_segmentCheckbox`);
+            label.setAttribute("for", `segmentCheckbox_${index_}`);
             label.innerHTML = segment_.name;
-            label.style.marginRight = "1.0rem";
 
             // Add the label to the control.
             segmentControl.appendChild(label);
 
+            // Add the control to the parent container.
             this.segmentsContainerEl.appendChild(segmentControl);
          })
       },
@@ -244,8 +248,7 @@ define([
 
       getValues: function () {
 
-         var _self = this;
-
+         let cladesPath = this.cladesPathEl.get("value");
          let deviation = this.deviationEl.get("value");
          let equalRates = this.equalRatesEl.get("checked");
          let fastaFileId = this.fastaFileIdEl.get("value");
@@ -273,7 +276,7 @@ define([
 
          // Prepare the submission values (I think this will become job_desc.json)
          let submit_values = {
-            "clades_path": "",
+            "clades_path": cladesPath,
             "deviation": deviation,
             "equal_rates": equalRates,
             "inference_method": inferenceMethod,
@@ -295,9 +298,8 @@ define([
          };
 
          console.log("In getValues submit values = ", submit_values)
-         console.log("inherited arguments = ", this.inherited(arguments));
          /*
-         TODO: Do I need to include something like this?
+         TODO: Support the demo functionality
 
          if (this.demo) {
 
@@ -305,7 +307,8 @@ define([
             submit_values['db_source'] = 'fasta_data';
             submit_values['db_fasta_data'] = '>id1\ngtgtcgtttatcagtcttgcaagaaatgtttttgtatatatatcaattgggttatttgta\ngctccaatattttcgttagtatcaattatattcactgaacgcgaagtagtagatttgttt\ngcgtatattttttctgaatatacagttaatactgtaattttaatgttaggtgttgggatt\n' +
                '>id2\nataacgttgattgttgggatagcaacagcttggtttgtaacttattattcttttcctgga\ncgtaagttttttgagatagcacttttcttgccactttcaataccagggtatatagttgca\ntatgtatatgtaaatatttttgaattttcaggtcctgtacaaagttttttaagggtgata\ntttcattggaataaaggtgattattactttcctagtgtgaaatcattagcatgtggaatt\n'
-         }*/
+         }
+         */
 
          if (this.validate()) { return submit_values; }
       },
@@ -338,8 +341,6 @@ define([
 
       // Handle a change to the FASTA file ID control.
       handleFastaFileIdChange: function (value_) {
-
-         console.log(`In validateFastaFileID value_ = `, value_)
 
          let result = this.isFastaFileIdValid(value_);
          if (!result.isValid) {
@@ -385,13 +386,12 @@ define([
 
          if (this.matchTypeEl.value == MatchType.Regex) {
             this.matchRegexContainerEl.style.display = "block";
-            //this.matchRegexEl.set("required", true);
-
          } else {
             this.matchRegexContainerEl.style.display = "none";
-            //this.matchRegexEl.set("required", false);
          }
 
+         // Validate all controls
+         this.validate();
          return;
       },
 
@@ -462,19 +462,18 @@ define([
       // Handle a change to the reference segment or the segment checkboxes.
       handleSegmentChange: function () {
 
+         // Validate the reference segment.
          const result = this.isRefSegmentValid();
-
-         console.log("in handleSegmentChange and result = ", result)
 
          if (!result.isValid) {
             this.refSegmentEl.set("state", "Error");
             this.refSegmentEl.set("message", result.errorMessage);
-            this.refSegmentMessageEl.innerHTML = result.errorMessage;
+            this.segmentsMessageEl.innerHTML = result.errorMessage;
          } else {
             // Clear any existing error status.
             this.refSegmentEl.set("state", "");
             this.refSegmentEl.set("message", "");
-            this.refSegmentMessageEl.innerHTML = "";
+            this.segmentsMessageEl.innerHTML = "";
          }
 
          // Validate all controls
@@ -648,15 +647,16 @@ define([
 
          if (!this.segmentCheckboxes) { throw new Error("Invalid segment checkboxes"); }
 
+         // Get the reference segment for comparison.
          const refSegment = this.refSegmentEl.get("value");
 
-         // Make sure the segment selected as the reference segment isn't unchecked.
+         // Make sure the segment selected as the reference segment is checked.
          this.segmentCheckboxes.forEach(checkbox_ => {
             if (!checkbox_.get("checked")) {
                const segment = checkbox_.get("name");
                if (segment == refSegment) {
                   result.isValid = false;
-                  result.errorMessage = `Reference segment ${refSegment} is unchecked and will not be included`;
+                  result.errorMessage = `${refSegment} should be checked in order to be the reference segment`;
                }
             }
          })
@@ -790,10 +790,12 @@ define([
          // Add a click event handler to the container of the segment controls.
          this.segmentsContainerEl.addEventListener("click", (event_) => {
 
-            if (event_.target.nodeName == "INPUT") { return false; }
+            if (event_.target.nodeName == "INPUT") { return true; }
 
             // Get the parent DIV and its "data-index" attribute.
-            const segmentControl = event_.target.closest("div");
+            const segmentControl = event_.target.closest("div.treesort--segment-control");
+
+            // Get the data index attribute to determine the associated checkbox.
             const strIndex = segmentControl.getAttribute("data-index");
             if (!strIndex) { return false; }
 
@@ -805,18 +807,11 @@ define([
             if (!checkbox) { return false; }
 
             checkbox.set('checked', !checkbox.get('checked'));
-
-            // Make sure the segment used as the reference segment is still checked.
-            this.handleSegmentChange();
          })
 
-         // TODO: Include this in a future version.
-         // Select the default input source radio button.
-         //this.updateInputSourceControls();
-
          try {
-            // NOTE: this sets this.displayDefaults to false if we are populating the
-            // page controls using job data.
+            // NOTE: this sets this.displayDefaults to false if we are populating
+            // the page controls using job data.
             this.intakeRerunForm();
 
          } catch (error) {
@@ -837,8 +832,6 @@ define([
       validate: function () {
 
          let result;
-
-         console.log("in validate")
 
          if (this.inherited(arguments)) {
 
@@ -864,144 +857,18 @@ define([
             result = this.isPValueValid();
             isValid = isValid && result.isValid;
 
+            result = this.isRefSegmentValid();
+            isValid = isValid && result.isValid;
+
             if (isValid) {
-               console.log("submit btn is enabled")
                this.submitButton.set("disabled", false);
                return true;
             }
          }
 
-         console.log("disabling submit btn")
          this.submitButton.set("disabled", true);
          return false;
       }
 
-
-
-      /*
-      TODO: Include these in a future version.
-
-      // Handle a change event on the input_source radio buttons.
-      handleInputSourceChange: function (evt) {
-
-         // Hide all FASTA panels
-         this.fastaDataPanelEl.style.display = "none";
-         this.fastaFileIdPanelEl.style.display = "none";
-         this.fastaGroupIdPanelEl.style.display = "none";
-         this.fastaExistingDatasetPanelEl.style.display = "none";
-
-         // Make all FASTA elements optional.
-         this.fastaDataEl.set("required", false);
-         this.fastaFileIdEl.set("required", false);
-         this.fastaGroupIdEl.set("required", false);
-         this.fastaExistingDatasetEl.set("required", false);
-
-         // The selected input source control determines which table is displayed.
-         if (this.inputSource_FastaDataEl.checked) {
-            this.inputSource = InputSource.FastaData;
-            this.fastaDataPanelEl.style.display = "block";
-            this.fastaDataEl.set("required", true);
-
-         } else if (this.inputSource_FastaFileIdEl.checked) {
-            this.inputSource = InputSource.FastaFileID;
-            this.fastaFileIdPanelEl.style.display = "block";
-            this.fastaFileIdEl.set("required", true);
-
-         } else if (this.inputSource_FastaGroupIdEl.checked) {
-            this.inputSource = InputSource.FastaGroupID;
-            this.fastaGroupIdPanelEl.style.display = "block";
-            this.fastaGroupIdEl.set("required", true);
-
-         } else if (this.inputSource_FastaExistingDatasetEl.checked) {
-            this.inputSource = InputSource.FastaExistingDataset;
-            this.fastaExistingDatasetPanelEl.style.display = "block";
-            this.fastaExistingDatasetEl.set("required", true);
-
-         } else {
-            console.log("unrecognized input source")
-         }
-
-         if (!evt) { this.validate(); }
-      },
-
-      // Use the input source to determine which radio button to select.
-      updateInputSourceControls: function () {
-
-         switch (this.inputSource) {
-
-            case InputSource.FastaData:
-               this.inputSource_FastaDataEl.focusNode.click();
-               break;
-
-            case InputSource.FastaExistingDataset:
-               this.inputSource_FastaExistingDatasetEl.focusNode.click();
-               break;
-
-            case InputSource.FastaData:
-               this.inputSource_FastaDataEl.focusNode.click();
-               break;
-
-            case InputSource.FastaData:
-               this.inputSource_FastaDataEl.focusNode.click();
-               break;
-
-            default:
-               this.inputSource_FastaExistingDatasetEl.focusNode.click();
-         }
-      },
-
-      validateFastaData: function () {
-
-         // Get the FASTA text and validate it.
-         let fastaText = this.fastaDataEl.get("value");
-         const result = this.validateFasta(fastaText, 'DNA', true, 'record_1');
-         */
-         /*
-         The result object schema:
-         {
-            valid,
-            status,
-            numseq,
-            message,
-            trimFasta
-         }
-         */
-         /*
-         // Replace the FASTA text with trimmed text.
-         this.fastaDataEl.set('value', result.trimFasta);
-
-         // Update the error message.
-         if (result.status == "need_dna") {
-            this.fastaDataMessageEl.innerHTML = `TreeSort requires nucleotide sequences. ${result.message}`;
-         } else {
-            this.fastaDataMessageEl.innerHTML = result.message;
-         }
-
-         // Set the validity with the number of records.
-         if (result.valid) {
-            this.validFasta = result.numseq;
-            return true;
-         }
-
-         this.validFasta = 0;
-
-         return false;
-      },
-
-      validateFastaGroupID: function (evt) {
-
-         console.log(`In validateFastaGroupID evt = `, evt)
-
-         // input_fasta_group_id
-      },
-
-      validateFastaExistingDataset: function (evt) {
-
-         console.log(`In validateFastaExistingDataset evt = `, evt)
-
-        // input_fasta_existing_dataset
-      },
-
-      */
    });
 });

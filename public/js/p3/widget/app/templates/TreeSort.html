@@ -1,9 +1,6 @@
 <form dojoAttachPoint="containerNode" class="PanelForm"
    dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
 
-   <!-- DMD TEST
-   <br />-->
-
    <style>
       .treesort--title {
          align-items: center;
@@ -49,9 +46,13 @@
          text-align: left;
          width: 100%;
       }
-      .treesort--row.margin-below {
+      .treesort--row.checkbox-row {
          margin-bottom: 1.0rem;
       }
+      .treesort--row.checkbox-row .dijitCheckBox {
+         margin-right: 0.5rem;
+      }
+
       .treesort--row.only-row {
          margin-bottom: 0.5rem;
       }
@@ -60,10 +61,14 @@
          margin-right: 2.0rem;
          text-align: left;
       }
+      .treesort--column-right {
+         margin-right: 2.0rem;
+         text-align: left;
+      }
 
       /* Some whitespace between rows */
       .treesort--row-separator {
-         margin-bottom: 1.5rem;
+         margin-bottom: 2.5rem;
          width: 100%;
       }
 
@@ -78,6 +83,9 @@
          display: flex;
          flex-flow: row nowrap;
          justify-content: flex-start;
+      }
+      .treesort--segment-container label {
+         margin-right: 1.0rem;
       }
 
       /* The advanced options section */
@@ -239,7 +247,7 @@
                   required="true"
                   style="width: auto"
                ></div>
-               <div class="warning" data-dojo-attach-point="refSegmentMessageEl" style="display: none"></div>
+               <div class="warning treesort--error-message" data-dojo-attach-point="refSegmentMessageEl"></div>
 
             </div>
             <div class="treesort--row-column-right">
@@ -252,7 +260,7 @@
                   </div>
                </div>
                <div name="segments" class="treesort--segment-container" data-dojo-attach-point="segmentsContainerEl"></div>
-
+               <div class="warning treesort--error-message" data-dojo-attach-point="segmentsMessageEl"></div>
             </div>
          </div>
 
@@ -288,7 +296,7 @@
                         required="true",
                         style="width: 160px;"
                      ></div>
-                     <div class="warning" data-dojo-attach-point="matchTypeMessageEl" style="display: none"></div>
+                     <div class="warning treesort--error-message" data-dojo-attach-point="matchTypeMessageEl"></div>
 
                   </div>
                   <div class="treesort--row-column-right">
@@ -380,7 +388,7 @@
                      <div class="warning treesort--error-message" data-dojo-attach-point="deviationMessageEl"></div>
 
                   </div>
-                  <div class="treesort--row-column-right">
+                  <div class="treesort--column-right">
 
                      <!-- P-value -->
                      <div class="treesort--label-tooltip">
@@ -401,12 +409,29 @@
                      <div class="warning treesort--error-message" data-dojo-attach-point="pValueMessageEl"></div>
 
                   </div>
+                  <div class="treesort--column-right">
+
+                     <!-- Clades path (filename) -->
+                     <div class="treesort--label-tooltip">
+                        <div class="treesort--param-label">Clades filename</div>
+                        <div name="clades-path" class="infobox iconbox infobutton tooltipinfo">
+                           <i class="fa icon-question-circle fa"></i>
+                        </div>
+                     </div>
+                     <input name="clades_path"
+                        data-dojo-attach-point="cladesPathEl"
+                        data-dojo-props="intermediateChanges: false, trim:true, placeholder:'Optional'"
+                        data-dojo-type="dijit/form/ValidationTextBox"
+                        required="false"
+                        style="font-family: monospace; font-size: 1.0rem; height: 20px;" />
+
+                  </div>
                </div>
 
                <div class="treesort--row-separator"></div>
 
                <!-- Equal rates -->
-               <div class="treesort--row margin-below">
+               <div class="treesort--row checkbox-row">
                   <div id="${id}_equal_rates"
                      data-dojo-attach-point="equalRatesEl"
                      data-dojo-type="dijit/form/CheckBox"
@@ -416,7 +441,7 @@
                </div>
 
                <!-- Is time scaled -->
-               <div class="treesort--row margin-below">
+               <div class="treesort--row checkbox-row">
                   <div id="${id}_is_time_scaled"
                      data-dojo-attach-point="isTimeScaledEl"
                      data-dojo-type="dijit/form/CheckBox"
@@ -425,7 +450,7 @@
                </div>
 
                <!-- No collapse -->
-               <div class="treesort--row margin-below">
+               <div class="treesort--row checkbox-row">
                   <div id="${id}_no_collapse"
                      data-dojo-attach-point="noCollapseEl"
                      data-dojo-type="dijit/form/CheckBox"
