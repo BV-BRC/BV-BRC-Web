@@ -201,7 +201,7 @@ define([
             }).then(lang.hitch(this, function(response) {
                 _self.storedResult = response;
                 if (ragDb === 'bvbrc_docs_distllm') {
-                    return response.response;
+                    return response;
                 }
                 if (response['message'] == 'success') {
                     // If summarizeDocs is true and we have documents to summarize

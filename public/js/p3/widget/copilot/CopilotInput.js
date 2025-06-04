@@ -336,8 +336,12 @@ define([
             content: inputText
           },
           {
+            role: 'system',
+            content: response.system_prompt
+          },
+          {
             role: 'assistant',
-            content: response
+            content: response.response
           }
         ]);
         _self.textArea.set('value', '');

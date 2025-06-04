@@ -329,7 +329,7 @@ define([
                     options.onResize(this.controllerPanel.getSessionId());
                 }
                 topic.publish('ChatSessionTitleMaxLengthChanged', 30);
-            }), 100);
+            }), 200);
 
             return this.controllerPanel;
         },
