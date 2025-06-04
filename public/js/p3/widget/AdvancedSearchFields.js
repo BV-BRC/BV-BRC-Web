@@ -1076,7 +1076,7 @@ define([], function () {
         field: 'host_capture_status', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
-        field: 'host_health', type: 'str', facet: false, facet_hidden: true, search: true
+        field: 'host_health', type: 'str', facet: true, facet_hidden: true, search: true
       },
       {
         field: 'exposure', type: 'str', facet: false, facet_hidden: true, search: true

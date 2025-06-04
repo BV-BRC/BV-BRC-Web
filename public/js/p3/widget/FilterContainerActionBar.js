@@ -763,6 +763,7 @@ define([
 
       on(_row, 'remove', (evt) => {
         this._Searches[evt.idx].destroyRecursive()
+        delete this._Searches[evt.idx];
       })
       on(_row, 'create', lang.hitch(this, 'createAdvancedSearchRow'))
       this._Searches[this._SearchesIdx] = _row
@@ -804,12 +805,13 @@ define([
       // TODO: implement this and trigger when context has changed
     },
     buildFilterQueryFromAdvancedSearch: function () {
+      this._filter = {};
       Object.keys(this._Searches).map((idx) => {
         const col = this._Searches[idx]
         const condition = col.getValues()
         let q;
         if (condition.type === 'str') {
-          q = `${condition.op === 'NOT' ? 'ne' : 'eq'}(${condition.column},${condition.value})`
+          q = `${condition.op === 'NOT' ? 'ne' : 'eq'}(${condition.column},${encodeURIComponent(condition.value)})`;
         } else if (condition.type === 'date') {
           const encode = (date) => {
             if (!date) {
@@ -862,7 +864,9 @@ define([
           }
         }
         if (this._filter.hasOwnProperty(condition.column)) {
-          this._filter[condition.column].push(q)
+          if (!this._filter[condition.column].includes(q)) {
+            this._filter[condition.column].push(q);
+          }
         } else {
           this._filter[condition.column] = [q]
         }
