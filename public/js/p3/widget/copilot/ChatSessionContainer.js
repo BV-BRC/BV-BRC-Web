@@ -97,7 +97,6 @@ define([
                 this._createTitleWidget();
                 this._createDisplayWidget();
                 this._createInputWidget();
-
                 topic.publish('SetInitialChatModel');
                 this._initialized.resolve();
             })).catch(lang.hitch(this, function(error) {
@@ -146,15 +145,13 @@ define([
             }));
             topic.subscribe('ChatRagDb', lang.hitch(this, function(ragDb) {
                 this.inputWidget.setRagDb(ragDb);
+                this.inputWidget.setRagButtonLabel(ragDb);
             }));
             topic.subscribe('ChatNumDocs', lang.hitch(this, function(numDocs) {
                 this.inputWidget.setNumDocs(numDocs);
             }));
             topic.subscribe('ChatSystemPrompt', lang.hitch(this, function(systemPrompt) {
                 this.inputWidget.setSystemPrompt(systemPrompt);
-            }));
-            topic.subscribe('changeRagButtonLabel', lang.hitch(this, function(ragDb) {
-                this.inputWidget.setRagButtonLabel(ragDb);
             }));
             topic.subscribe('generateSessionTitle', lang.hitch(this, this._handleGenerateSessionTitle));
             topic.subscribe('ChatSession:Delete', lang.hitch(this, this._handleChatSessionDelete));
@@ -165,6 +162,7 @@ define([
          * Shows message explaining title can only be changed after conversation starts
          */
         _handleUpdateSessionTitleError: function(error) {
+            debugger;
             var errorDialog = new Dialog({
                 title: "Cannot Update Title",
                 content: "The chat title cannot be changed until the conversation has started. Please send a message first.",

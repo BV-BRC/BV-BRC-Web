@@ -328,7 +328,6 @@ define([
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
        this.copilotApi.submitRagQuery(inputText, this.ragDb, this.numDocs, this.sessionId, this.model, this.summarizeDocs).then(lang.hitch(this, function(response) {
-
         this.chatStore.addMessages([
           {
             role: 'user',
@@ -336,7 +335,7 @@ define([
           },
           {
             role: 'assistant',
-            content: response.response
+            content: response
           }
         ]);
         _self.textArea.set('value', '');
@@ -435,6 +434,9 @@ define([
        * Updates RAG selection UI text
        */
       setRagButtonLabel: function(ragDb) {
+        if (!this.ragText) {
+          return;
+        }
         if (ragDb && ragDb !== 'null') {
           this.ragText.innerHTML = 'RAG: ' + ragDb;
         } else {
@@ -446,6 +448,9 @@ define([
        * Updates model selection UI text
        */
       setModelText: function(model) {
+        if (!this.modelText) {
+          return;
+        }
         if (model) {
           model = model.split('/').reverse()[0];
           if (model.length > 30) {

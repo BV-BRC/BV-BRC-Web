@@ -153,11 +153,6 @@ define([
             selectElement.addEventListener('change', lang.hitch(this, function(evt) {
                 var ragDb = evt.target.value;
                 topic.publish('ChatRagDb', ragDb);
-                if (ragDb != 'null') {
-                    topic.publish('changeRagButtonLabel', ragDb);
-                } else {
-                    topic.publish('changeRagButtonLabel', 'None');
-                }
             }));
 
             return selectElement;
@@ -416,7 +411,7 @@ define([
          * - Sets up event handlers for dialogs
          */
         postCreate: function() {
-            this.inherited(arguments);
+            // this.inherited(arguments);
 
             // Create model dialog
             var modelDialog = this.createModelDialog();

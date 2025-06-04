@@ -22,7 +22,7 @@ define([
     Button,
     domClass,
     on,
-    Topic,
+    topic,
     Dialog,
     ContentPane,
     domConstruct,
@@ -89,6 +89,14 @@ define([
                 popup.close(this.optionsDialog);
             }));
             */
+
+            topic.subscribe('hideChatPanel', lang.hitch(this, function(checked) {
+                this._hideControllerPanel();
+            }));
+
+            topic.subscribe('showChatPanel', lang.hitch(this, function(checked) {
+                this._showControllerPanel();
+            }));
         },
 
         _createOptionsDialog: function() {

@@ -184,7 +184,8 @@ define([
                 rag_db: ragDb,
                 user_id: _self.user_id,
                 model: model,
-                num_docs: numDocs
+                num_docs: numDocs,
+                session_id: sessionId
             };
             var rag_endpoint = this.apiUrlBase + '/rag';
             if (ragDb === 'bvbrc_docs_distllm') {

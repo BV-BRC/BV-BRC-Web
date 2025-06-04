@@ -117,9 +117,10 @@ define([
                         var _self = this;
                         this.copilotApi.getSessionMessages(_self.session.session_id).then(function(messages) {
                             console.log('Session messages:', messages.messages);
+                            var messages = messages.messages.length > 0 ? messages.messages[0].messages : [];
                             topic.publish('ChatSession:Selected', {
                                 sessionId: _self.session.session_id,
-                                messages: messages.messages[0].messages
+                                messages: messages
                             });
                             topic.publish('ChatSessionTitleUpdated', _self.session.title);
                         });

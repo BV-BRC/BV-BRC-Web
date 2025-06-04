@@ -51,6 +51,9 @@ define([
         minSize: 40,
         maxSize: 200,
 
+        // Flag to track page content toggle state
+        pageContentEnabled: false,
+
         /**
          * @constructor
          * @param {Object} args - Configuration arguments
@@ -104,7 +107,7 @@ define([
                 if (this.isSubmitting) return;
 
                 // Handle different submission types based on configuration
-                if (this.pageContentToggle.checked) {
+                if (this.pageContentEnabled) {
                     this._handlePageSubmit();
                 } else if (this.copilotApi && this.ragDb) {
                     this._handleRagSubmit();
@@ -123,6 +126,14 @@ define([
             var settingsDiv = domConstruct.create('div', {
                 style: 'display: flex; flex-direction: row; justify-content: center; align-items: center; margin-top: 10px; cursor: pointer; font-size: 0.9em;'
             }, wrapperDiv);
+
+            // Subscribe to page content toggle changes from ChatSessionOptionsBarSmallWindow
+            topic.subscribe('pageContentToggleChanged', lang.hitch(this, function(checked) {
+                this.pageContentEnabled = checked;
+                console.log('Page content toggle changed to:', checked);
+            }));
+
+            /*
 
             // Add model selection text with hover effects
             this.modelText = domConstruct.create('div', {
@@ -153,6 +164,7 @@ define([
                     topic.publish('ragButtonPressed', this.ragText, ['above']);
                 })
             }, settingsDiv);
+
 
             // Add container for the toggle switch and label
             var toggleContainer = domConstruct.create('div', {
@@ -190,6 +202,7 @@ define([
                 }
             `;
             document.head.appendChild(style);
+            */
 
             // Maximum height for textarea before scrolling
             const maxHeight = 200; // ~9 rows
@@ -297,7 +310,7 @@ define([
                 'The page content is:\n' +
                 pageHtml;
 
-            this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
+                this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
                 this.chatStore.addMessages([
                 {
                     role: 'user',
@@ -323,6 +336,27 @@ define([
                 this.isSubmitting = false;
                 this.submitButton.set('disabled', false);
             }));
+        },
+
+              /**
+       * Updates selected model and UI
+       */
+      setModel: function(model) {
+        console.log('setModel=', model);
+        this.model = model;
+      },
+
+
+      /**
+       * Updates selected RAG database and UI
+       */
+      setRagDb: function(ragDb) {
+        console.log('setRagDb=', ragDb);
+        if (ragDb == 'null') {
+          this.ragDb = null;
+        } else {
+          this.ragDb = ragDb;
         }
+      },
     });
   });

@@ -7,14 +7,20 @@ define([
     'dojo/_base/declare',
     'dojo/_base/lang',
     'dojo/topic',
-    'dijit/form/Button',
-    'p3/widget/copilot/ChatSessionOptionsBar'
+    'dojo/dom-construct',
+    'p3/widget/copilot/ChatSessionOptionsBar',
+    'p3/widget/copilot/CopilotApi',
+    'dijit/Popup',
+    'dijit/form/CheckBox'
 ], function (
     declare,
     lang,
     topic,
-    Button,
-    ChatSessionOptionsBar
+    domConstruct,
+    ChatSessionOptionsBar,
+    CopilotAPI,
+    popup,
+    CheckBox
 ) {
     /**
      * @class BasicChatOptionsWidget
@@ -34,13 +40,27 @@ define([
         /** @property {Object} customOptions - Custom configuration options */
         customOptions: null,
 
+        /** @property {Object} copilotApi - Reference to CopilotAPI instance */
+        copilotApi: null,
+
+        /** @property {Array} modelList - Available models list */
+        modelList: null,
+
+        /** @property {Array} ragList - Available RAG databases list */
+        ragList: null,
+
+        /** @property {Object} pageContentToggle - CheckBox for page content functionality */
+        pageContentToggle: null,
+
         /**
          * @constructor
          * Initializes the widget with provided options
          * @param {Object} opts - Configuration options to mix into the widget
          */
         constructor: function(opts) {
-            this.inherited(arguments);
+            if (opts) {
+                lang.mixin(this, opts);
+            }
         },
 
         /**
@@ -48,8 +68,149 @@ define([
          * Override to add custom functionality
          */
         postCreate: function() {
-            // Call parent postCreate first
-            this.inherited(arguments);
+            // Initialize CopilotAPI if not provided
+            if (!this.copilotApi) {
+                this.copilotApi = new CopilotAPI({
+                    user_id: window.App.user ? window.App.user.l_id : null
+                });
+            }
+
+            this.name_map = {
+                "Llama-4-Scout-17B-16E-Instruct-quantized.w4a16": "Llama-4-Scout",
+                "Llama-3.3-70B-Instruct": "Llama-3.3-70B"
+            };
+
+            // Create container for text buttons
+            var buttonsContainer = domConstruct.create('div', {
+                style: 'display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; margin-top: 10px; font-size: 0.9em; padding-left: 5px;'
+            }, this.containerNode);
+
+            // Add Model text display with hover effects
+            this.modelText = domConstruct.create('div', {
+                innerHTML: 'Model: Loading...',
+                style: 'padding: 2px 5px; transition: color 0.2s; margin-bottom: 5px; cursor: pointer;',
+                onmouseover: function(evt) {
+                    evt.target.style.color = '#2196F3';
+                },
+                onmouseout: function(evt) {
+                    evt.target.style.color = '';
+                },
+                onclick: lang.hitch(this, function() {
+                    topic.publish('modelButtonPressed', this.modelText, ['below']);
+                })
+            }, buttonsContainer);
+
+            // Add RAG text display with hover effects
+            this.ragText = domConstruct.create('div', {
+                innerHTML: 'RAG: Loading...',
+                style: 'padding: 2px 5px; transition: color 0.2s; cursor: pointer;',
+                onmouseover: function(evt) {
+                    evt.target.style.color = '#2196F3';
+                },
+                onmouseout: function(evt) {
+                    evt.target.style.color = '';
+                },
+                onclick: lang.hitch(this, function() {
+                    topic.publish('ragButtonPressed', this.ragText, ['below']);
+                })
+            }, buttonsContainer);
+
+            // Add container for the "Ask about this page" toggle switch and label
+            var toggleContainer = domConstruct.create('div', {
+                style: 'display: flex; align-items: center; margin-top: 5px; padding-left: 5px;'
+            }, buttonsContainer);
+
+            // Add label for the page content toggle
+            var toggleLabel = domConstruct.create('span', {
+                innerHTML: 'Ask about this page',
+                style: 'margin-right: 5px; cursor: pointer; font-size: 0.9em;',
+                title: 'Sends page content to help answer your question.',
+                onclick: lang.hitch(this, function() {
+                    // Toggle the checkbox when label is clicked
+                    this.pageContentToggle.set('checked', !this.pageContentToggle.get('checked'));
+                    topic.publish('pageContentToggleChanged', this.pageContentToggle.get('checked'));
+                })
+            }, toggleContainer);
+
+            // Create the page content toggle switch
+            this.pageContentToggle = new CheckBox({
+                checked: false,
+                style: 'cursor: pointer;',
+                title: 'Sends page content to help answer your question.',
+                onChange: lang.hitch(this, function(checked) {
+                    // Publish topic when toggle state changes
+                    topic.publish('pageContentToggleChanged', checked);
+                })
+            });
+            this.pageContentToggle.placeAt(toggleContainer);
+
+            // Subscribe to topic changes to update display text
+            topic.subscribe('ChatModel', lang.hitch(this, function(model) {
+                // Update model display text with just the model name (last part after /)
+                var modelName = model.split('/').reverse()[0];
+                if (this.name_map[modelName]) {
+                    modelName = this.name_map[modelName];
+                }
+                this.modelText.innerHTML = 'Model: ' + modelName;
+            }));
+
+            topic.subscribe('ChatRagDb', lang.hitch(this, function(ragDb) {
+                // Update RAG display text
+                this.ragText.innerHTML = 'RAG: ' + (ragDb === 'null' ? 'None' : ragDb);
+            }));
+
+            topic.subscribe('pageContentToggleStateChange', lang.hitch(this, function(checked) {
+                // Handle external changes to page content toggle state
+                this.pageContentToggle.set('checked', checked);
+            }));
+
+            // Fetch model and RAG lists from API
+            this._loadModelAndRagLists();
+        },
+
+        /**
+         * Loads model and RAG lists from the CopilotAPI
+         * @private
+         */
+        _loadModelAndRagLists: function() {
+
+            if (this.copilotApi) {
+                this.copilotApi.getModelList().then(lang.hitch(this, function(modelsAndRag) {
+                    try {
+                        // Parse the response
+                        this.modelList = JSON.parse(modelsAndRag.models);
+                        this.ragList = JSON.parse(modelsAndRag.vdb_list);
+
+                        // Update displays with first available options or "None" if empty
+                        var defaultModel = this.modelList && this.modelList.length > 0 ? this.modelList[0] : 'None';
+                        var defaultRag = this.ragList && this.ragList.length > 0 ? this.ragList[0] : 'None';
+                        var modelName = defaultModel.model.split('/').reverse()[0];
+                        if (this.name_map[modelName]) {
+                            modelName = this.name_map[modelName];
+                        }
+                        this.modelText.innerHTML = 'Model: ' + modelName;
+                        // this.ragText.innerHTML = 'RAG: ' + defaultRag.name;
+                        this.ragText.innerHTML = 'RAG: None';
+
+                        console.log('Model and RAG lists loaded successfully', {
+                            models: this.modelList,
+                            rags: this.ragList
+                        });
+                    } catch (error) {
+                        console.error('Error parsing model/RAG lists:', error);
+                        this.modelText.innerHTML = 'Model: Error';
+                        this.ragText.innerHTML = 'RAG: Error';
+                    }
+                })).catch(lang.hitch(this, function(error) {
+                    console.error('Error fetching model/RAG lists:', error);
+                    this.modelText.innerHTML = 'Model: Error';
+                    this.ragText.innerHTML = 'RAG: Error';
+                }));
+            } else {
+                console.error('CopilotAPI not available');
+                this.modelText.innerHTML = 'Model: N/A';
+                this.ragText.innerHTML = 'RAG: N/A';
+            }
         }
     });
 });

@@ -190,7 +190,6 @@ define([
      */
     saveTitle: function() {
       if (!this.sessionId) return;
-
       this.copilotApi.updateSessionTitle(this.sessionId, this.title).then(lang.hitch(this, function() {
         topic.publish('ChatSessionTitleChanged', {
           sessionId: this.sessionId,

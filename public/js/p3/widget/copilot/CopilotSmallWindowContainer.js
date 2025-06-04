@@ -291,6 +291,7 @@ define([
             setTimeout(lang.hitch(this, function() {
 
                 this.layoutContainer.resize();
+                this.toggleOptionsBar();
                 if (options.onResize) {
                     options.onResize(this.controllerPanel.getSessionId());
                 }
@@ -317,7 +318,7 @@ define([
                     this.topContentPane = new ChatSessionOptionsBar({
                         className: 'optionsTopSection',
                         region: 'top',
-                        style: 'height: 20%; padding: 10px; background-color: #e8e8e8; overflow-y: auto;',
+                        style: 'height: 20%; padding: 5px; background-color: #e8e8e8; overflow-y: auto;',
                         copilotApi: this.copilotApi
                     });
                     this.optionsBarContainer.addChild(this.topContentPane);

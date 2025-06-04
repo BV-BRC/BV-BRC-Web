@@ -151,6 +151,7 @@ define([
     onQueryError: function() {
       console.log('onQueryError');
       domConstruct.empty(this.resultContainer);
+      debugger;
       domConstruct.create('div', {
         innerHTML: 'An error occurred while processing your request. Please try again later.',
         class: 'copilot-error'
