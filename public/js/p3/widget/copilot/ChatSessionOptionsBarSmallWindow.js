@@ -10,7 +10,7 @@ define([
     'dojo/dom-construct',
     'p3/widget/copilot/ChatSessionOptionsBar',
     'p3/widget/copilot/CopilotApi',
-    'dijit/Popup',
+    'dijit/popup',
     'dijit/form/CheckBox'
 ], function (
     declare,
