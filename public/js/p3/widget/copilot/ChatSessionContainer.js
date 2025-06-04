@@ -162,7 +162,6 @@ define([
          * Shows message explaining title can only be changed after conversation starts
          */
         _handleUpdateSessionTitleError: function(error) {
-            debugger;
             var errorDialog = new Dialog({
                 title: "Cannot Update Title",
                 content: "The chat title cannot be changed until the conversation has started. Please send a message first.",

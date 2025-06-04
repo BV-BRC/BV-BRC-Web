@@ -303,7 +303,9 @@ define([
           if (_self.new_chat) {
             _self.new_chat = false;
             topic.publish('reloadUserSessions');
-            topic.publish('generateSessionTitle');
+            setTimeout(() => {
+              topic.publish('generateSessionTitle');
+            }, 100);
           }
         })).catch(function(error) {
           topic.publish('CopilotApiError', { error: error });
@@ -344,7 +346,9 @@ define([
         if (_self.new_chat) {
           _self.new_chat = false;
           topic.publish('reloadUserSessions');
-          topic.publish('generateSessionTitle');
+          setTimeout(() => {
+            topic.publish('generateSessionTitle');
+          }, 100);
         }
 
        })).catch(function(error) {

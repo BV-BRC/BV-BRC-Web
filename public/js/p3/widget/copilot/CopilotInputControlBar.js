@@ -245,7 +245,6 @@ define([
 
             this.isSubmitting = true;
             this.submitButton.set('disabled', true);
-            this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
             topic.publish('hideChatPanel'); // Hide panel before taking screenshot
 
@@ -254,9 +253,13 @@ define([
 
                 topic.publish('showChatPanel'); // Show panel again
 
+                this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
                 this.systemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\n' +
                                     'Analyze the screenshot and respond to the user\'s query.';
                 var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
+
+
                 this.copilotApi.submitQueryWithImage(inputText, this.sessionId, this.systemPrompt, imgtxt_model, base64Image)
                     .then(lang.hitch(this, function(response) {
                         this.chatStore.addMessages([
@@ -275,7 +278,9 @@ define([
                         if (_self.new_chat) {
                             _self.new_chat = false;
                             topic.publish('reloadUserSessions');
-                            topic.publish('generateSessionTitle');
+                            setTimeout(() => {
+                                topic.publish('generateSessionTitle');
+                            }, 100);
                         }
                     })).catch(function(error) {
                         topic.publish('CopilotApiError', { error: error });
@@ -310,7 +315,9 @@ define([
                 'The page content is:\n' +
                 pageHtml;
 
-                this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
+            this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+            this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
                 this.chatStore.addMessages([
                 {
                     role: 'user',
@@ -327,7 +334,9 @@ define([
                 if (_self.new_chat) {
                 _self.new_chat = false;
                 topic.publish('reloadUserSessions');
-                topic.publish('generateSessionTitle');
+                setTimeout(() => {
+                    topic.publish('generateSessionTitle');
+                }, 100);
                 }
             })).catch(function(error) {
                 topic.publish('CopilotApiError', { error: error });
