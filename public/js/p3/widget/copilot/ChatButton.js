@@ -166,6 +166,7 @@ define([
 
                     // Create and show controller panel via container
                     this._initializeSmallWindowContainer();
+
                 })).catch(lang.hitch(this, function(err) {
                     new Dialog({
                         title: "Service Unavailable",
@@ -456,6 +457,7 @@ define([
                     this._openLargeChat();
                 } else {
                     this._openSmallChat();
+                    this.controllerPanel.resize();
                 }
                 this.chatOpen = true;
                 evt.stopPropagation();

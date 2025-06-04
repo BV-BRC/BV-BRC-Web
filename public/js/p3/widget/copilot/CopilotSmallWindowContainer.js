@@ -18,6 +18,7 @@ define([
     'dojo/dom-construct',
     '../copilot/ChatSessionControllerPanel',
     '../copilot/ChatSessionScrollBar',
+    '../copilot/ChatSessionOptionsBarSmallWindow',
     'dijit/Dialog',
     'dojo/fx',
     'dojo/_base/fx',
@@ -37,6 +38,7 @@ define([
     domConstruct,
     ChatSessionControllerPanel,
     ChatSessionScrollBar,
+    ChatSessionOptionsBar,
     Dialog,
     fx,
     baseFx,
@@ -47,7 +49,7 @@ define([
 
         // Configuration properties
         gutters: false,
-        style: 'width: 350px; height: 450px; position: absolute; bottom: 20px; right: 20px;',
+        style: 'width: 350px; height: 450px; position: absolute; bottom: 20px; right: 20px; overflow: hidden;',
 
         // Controller panel reference
         controllerPanel: null,
@@ -158,7 +160,7 @@ define([
             // Create content container that will house the BorderContainer for main content + options
             this.contentContainer = domConstruct.create('div', {
                 className: 'copilotChatContent',
-                style: 'width: 100%; height: 100%; overflow: hidden; position: relative;'
+                style: 'width: 100%; height: calc(100% - 30px); overflow: hidden; position: relative;'
             }, this.containerNode);
 
             // Create a BorderContainer within the content container for layout management
@@ -179,8 +181,7 @@ define([
             // Create main content area that will house the controller panel
             this.mainContentContainer = new BorderContainer({
                 region: 'center',
-                gutters: false,
-                style: 'width: 100%; height: 93%;'
+                gutters: false
             });
             this.layoutContainer.addChild(this.mainContentContainer);
 
@@ -223,7 +224,7 @@ define([
             // Create controller panel inside the main content container
             this.controllerPanel = new ChatSessionControllerPanel({
                 region: 'center',
-                style: "width: 100%; height: 80%;",
+                style: "width: 100%; height: 100%;",
                 copilotApi: options.copilotApi,
                 optionsBar: options.optionsBar
             });
@@ -288,14 +289,8 @@ define([
 
             // Force resize of panel after placement
             setTimeout(lang.hitch(this, function() {
-                /*
-                if (this.layoutContainer && this.layoutContainer.resize) {
-                    this.layoutContainer.resize();
-                }
-                */
-                if (this.controllerPanel && this.controllerPanel.resize) {
-                    this.controllerPanel.resize();
-                }
+
+                this.layoutContainer.resize();
                 if (options.onResize) {
                     options.onResize(this.controllerPanel.getSessionId());
                 }
@@ -317,21 +312,22 @@ define([
             if (this.optionsSidebarOpen) {
                 // Create two content panes instead of adding optionsBar widget
                 if (this.optionsBarContainer.getChildren().length === 0) {
-                    // Use chatSessionPane directly as the top content (70% height)
-                    this.topContentPane = new ChatSessionScrollBar({
+
+                    // Create bottom content pane (30% height)
+                    this.topContentPane = new ChatSessionOptionsBar({
                         className: 'optionsTopSection',
                         region: 'top',
-                        style: 'padding: 0px; margin: 0px; height: 70%; border: 1px solid grey; background-color: #f0f0f0; border-bottom: 1px solid #ddd;',
+                        style: 'height: 20%; padding: 10px; background-color: #e8e8e8; overflow-y: auto;',
                         copilotApi: this.copilotApi
                     });
                     this.optionsBarContainer.addChild(this.topContentPane);
 
-                    // Create bottom content pane (30% height)
-                    this.bottomContentPane = new ContentPane({
+                    // Use chatSessionPane directly as the top content (70% height)
+                    this.bottomContentPane = new ChatSessionScrollBar({
                         className: 'optionsBottomSection',
-                        region: 'bottom',
-                        style: 'height: 30%; padding: 10px; background-color: #e8e8e8; overflow-y: auto;',
-                        content: '<h5>Status</h5><p>Session: Active</p><p>Model: GPT-4</p><p>Tokens: 1,250</p><p>Response time: 1.2s</p>'
+                        region: 'center',
+                        style: 'padding: 0px; margin: 0px; height: 70%; border: 1px solid grey; background-color: #f0f0f0; border-bottom: 1px solid #ddd;',
+                        copilotApi: this.copilotApi
                     });
                     this.optionsBarContainer.addChild(this.bottomContentPane);
                 }
@@ -341,15 +337,18 @@ define([
                     display: 'block'
                 });
 
-                // Expand the main container width to accommodate the sidebar
+                // Get current position and dimensions
                 var currentContainerWidth = parseInt(domStyle.get(this.domNode, 'width') || 350);
+                var currentLeft = parseInt(domStyle.get(this.domNode, 'left') || 0);
                 var sidebarWidth = 150;
                 var newWidth = currentContainerWidth + sidebarWidth;
+                var newLeft = currentLeft - sidebarWidth; // Move left to keep right side fixed
 
                 var anim = baseFx.animateProperty({
                     node: this.domNode,
                     properties: {
-                        width: newWidth
+                        width: newWidth,
+                        left: newLeft
                     },
                     duration: 300,
                     onEnd: lang.hitch(this, function() {
@@ -366,15 +365,18 @@ define([
                     display: 'none'
                 });
 
-                // Return container to original size
+                // Get current position and dimensions
                 var currentContainerWidth = parseInt(domStyle.get(this.domNode, 'width') || 350);
+                var currentLeft = parseInt(domStyle.get(this.domNode, 'left') || 0);
                 var sidebarWidth = 150;
                 var originalWidth = currentContainerWidth - sidebarWidth;
+                var originalLeft = currentLeft + sidebarWidth; // Move right to keep right side fixed
 
                 var anim = baseFx.animateProperty({
                     node: this.domNode,
                     properties: {
-                        width: originalWidth
+                        width: originalWidth,
+                        left: originalLeft
                     },
                     duration: 300,
                     onEnd: lang.hitch(this, function() {

@@ -55,8 +55,9 @@ define([
          * @param {Object} opts - Configuration options to mix into the widget
          */
         constructor: function(opts) {
-            this.inherited(arguments);
-            lang.mixin(this, opts);
+            if (opts) {
+                lang.mixin(this, opts);
+            }
         },
 
         /**
