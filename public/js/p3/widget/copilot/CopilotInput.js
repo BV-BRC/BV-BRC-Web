@@ -188,15 +188,14 @@ define([
       },
 
       /**
-       * Handles submission of RAG-enhanced queries
+       * Handles submission of RAG queries with document retrieval
        * Implementation:
        * - Disables input during submission
        * - Shows loading indicator
-       * - Makes RAG query to get relevant documents
-       * - Uses documents to build system prompt
-       * - Makes LLM query with enhanced prompt
-       * - Updates chat store with messages
-       * - Handles new chat initialization
+       * - Retrieves documents via RAG API
+       * - Builds system prompt with document context
+       * - Makes follow-up LLM query with enhanced context
+       * - Updates chat store with all messages including context
        */
       _handleRagSubmit: function() {
         console.log('this.ragDb=', this.ragDb);
@@ -210,7 +209,7 @@ define([
         this.isSubmitting = true;
         this.submitButton.set('disabled', true);
 
-        if (this.ragDb === 'bvbrc_docs_distllm') {
+        if (this.ragDb.indexOf('_distllm') !== -1) {
           this._handleDistllmRagSubmit();
         } else {
 

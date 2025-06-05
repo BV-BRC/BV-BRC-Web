@@ -188,7 +188,7 @@ define([
                 session_id: sessionId
             };
             var rag_endpoint = this.apiUrlBase + '/rag';
-            if (ragDb === 'bvbrc_docs_distllm') {
+            if (ragDb.indexOf('_distllm') !== -1) {
                 rag_endpoint = this.apiUrlBase + '/rag-distllm';
             }
             return request.post(rag_endpoint, {
@@ -200,7 +200,7 @@ define([
                 handleAs: 'json'
             }).then(lang.hitch(this, function(response) {
                 _self.storedResult = response;
-                if (ragDb === 'bvbrc_docs_distllm') {
+                if (ragDb.indexOf('_distllm') !== -1) {
                     return response;
                 }
                 if (response['message'] == 'success') {
