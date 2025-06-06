@@ -37,6 +37,13 @@ define([
     // CSS class for styling
     baseClass: 'CopilotInputSidePanel',
 
+    // Widget styling
+    style: 'padding: 0 5px 5px 5px; border: 0; height: 20%;',
+
+    // Size constraints for the widget
+    minSize: 40,
+    maxSize: 200,
+
     /**
      * @constructor
      * @param {Object} args - Configuration arguments
@@ -164,11 +171,56 @@ define([
         }));
     },
 
-    // Widget styling
-    style: 'padding: 0 5px 5px 5px; border: 0; height: 20%;',
+    /**
+     * Handles submission of regular (non-RAG) queries
+     * Implementation:
+     * - Disables input during submission
+     * - Shows loading indicator
+     * - Makes LLM query with basic system prompt
+     * - Updates chat store with messages
+     * - Handles new chat initialization
+     */
+      _handleRegularSubmit: function() {
+        var inputText = this.textArea.get('value');
+        var _self = this;
 
-    // Size constraints for the widget
-    minSize: 40,
-    maxSize: 200
+        if (this.state) {
+          console.log('state', this.state);
+        }
+
+        this.isSubmitting = true;
+        this.submitButton.set('disabled', true);
+
+        this.displayWidget.showLoadingIndicator(this.chatStore.query());
+        debugger;
+        this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
+          this.chatStore.addMessages([
+            {
+              role: 'user',
+              content: inputText
+            },
+            {
+              role: 'assistant',
+              content: response.response
+            }
+          ]);
+          _self.textArea.set('value', '');
+          this.displayWidget.showMessages(this.chatStore.query());
+
+          if (_self.new_chat) {
+            _self.new_chat = false;
+            topic.publish('reloadUserSessions');
+            setTimeout(() => {
+              topic.publish('generateSessionTitle');
+            }, 100);
+          }
+        })).catch(function(error) {
+          topic.publish('CopilotApiError', { error: error });
+        }).finally(lang.hitch(this, function() {
+          this.displayWidget.hideLoadingIndicator();
+          this.isSubmitting = false;
+          this.submitButton.set('disabled', false);
+        }));
+      }
   });
 });

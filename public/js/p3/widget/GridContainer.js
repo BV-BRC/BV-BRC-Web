@@ -421,7 +421,8 @@ define([
               style: 'width: 32%',
               copilotApi: this.copilotAPI,
               containerSelection: this.selectionActionBar.get('selection'),
-              optionsBar: chatOptionsBar
+              optionsBar: chatOptionsBar,
+              context: 'grid-container'
             });
             this.chatPanel._setupContainerWatch();
 

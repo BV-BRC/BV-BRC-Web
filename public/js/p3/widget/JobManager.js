@@ -2,12 +2,16 @@ define([
   'dojo/_base/declare', 'dojo/on', 'dojo/_base/lang', 'dojo/query',
   'dojo/dom-class', 'dojo/dom-attr', 'dojo/dom-construct', './JobsGrid', './JobContainerActionBar',
   'dojo/_base/Deferred', '../JobManager', './Confirmation', './RerunUtility',
-  'dojo/topic', 'dijit/layout/BorderContainer', './ActionBar', './ItemDetailPanel', '../util/encodePath'
+  'dojo/topic', 'dijit/layout/BorderContainer', './ActionBar', './ItemDetailPanel', '../util/encodePath',
+  './copilot/ChatSessionSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBar',
+  'dijit/Dialog'
 ], function (
   declare, on, lang, query,
   domClass, domAttr, domConstr, JobsGrid, JobContainerActionBar,
   Deferred, JobManager, Confirmation, rerunUtility,
-  Topic, BorderContainer, ActionBar, ItemDetailPanel, encodePath
+  Topic, BorderContainer, ActionBar, ItemDetailPanel, encodePath,
+  ChatSessionSidePanel, CopilotAPI, ChatSessionOptionsBar,
+  Dialog
 ) {
   return declare([BorderContainer], {
     disabled: false,
@@ -186,6 +190,102 @@ define([
           rerunUtility.rerun(JSON.stringify(selection[0].parameters), selection[0].app, window, Topic);
         },
         false
+      ], [
+        'CopilotChat',
+        'fa icon-comment fa-2x',
+        {
+          label: 'Chat',
+          tooltip: 'Chat with Copilot',
+          persistent: true,
+          validTypes: ['*'],
+        },
+        function (selection, container, button) {
+          console.log('CopilotChat');
+          // Check if chat panel already exists
+          if (this.chatPanel) {
+            // If chat panel exists, toggle between chat and details panel
+            if (this.getChildren().indexOf(this.chatPanel) > -1) {
+              // Chat panel is currently shown, switch to details panel
+              this.removeChild(this.chatPanel);
+              if (this.itemDetailPanel) {
+                this.addChild(this.itemDetailPanel);
+              }
+            } else {
+              // Details panel is shown, switch to chat panel
+              if (this.itemDetailPanel) {
+                this.removeChild(this.itemDetailPanel);
+              }
+              this.addChild(this.chatPanel);
+            }
+            return;
+          }
+
+          // Create new CopilotAPI
+          this.copilotAPI = new CopilotAPI({
+            user_id: window.App.user.l_id
+          });
+
+          this.copilotAPI.getModelList().then(lang.hitch(this, function(modelsAndRag) {
+
+            var modelList = JSON.parse(modelsAndRag.models);
+            var ragList = JSON.parse(modelsAndRag.vdb_list);
+
+            // Add options bar to top of sidebar
+            var chatOptionsBar = new ChatSessionOptionsBar({
+              region: 'top',
+              style: 'height: 30px; ',
+              copilotApi: this.copilotAPI,
+              modelList: modelList,
+              ragList: ragList
+            });
+
+            // Create new chat panel
+            this.chatPanel = new ChatSessionSidePanel({
+              region: 'right',
+              splitter: true,
+              style: 'width: 32%',
+              copilotApi: this.copilotAPI,
+              containerSelection: selection,
+              optionsBar: chatOptionsBar,
+              context: 'job-manager'
+            });
+            this.chatPanel._setupContainerWatch();
+
+            // Add to container in same location as itemDetailPanel
+            // TODO: this is a hack to get the chat panel to appear in the same location as the itemDetailPanel
+            if (this.itemDetailPanel && this.itemDetailPanel.domNode) {
+              // Get the position of itemDetailPanel
+              var pos = this.itemDetailPanel.domNode.style;
+              this.chatPanel.domNode.style.position = pos.position;
+              this.chatPanel.domNode.style.right = pos.right;
+              this.chatPanel.domNode.style.top = pos.top;
+            }
+
+            // Remove itemDetailPanel if it exists
+            if (this.itemDetailPanel && this.getChildren().indexOf(this.itemDetailPanel) > -1) {
+              this.removeChild(this.itemDetailPanel);
+            }
+
+            // Add chat panel
+            this.addChild(this.chatPanel);
+
+            // Wait for input widget to be created before setting initial selection
+            setTimeout(lang.hitch(this, function() {
+              if (this.chatPanel.inputWidget && selection.length > 0) {
+                this.chatPanel.set('containerSelection', selection);
+                this.chatPanel.inputWidget.setSystemPromptWithData(selection);
+              }
+            }), 100);
+          })).catch(lang.hitch(this, function(err) {
+            new Dialog({
+              title: "Service Unavailable",
+              content: "The BV-BRC Copilot service is currently disabled. Please try again later.",
+              style: "width: 300px"
+            }).show();
+            console.error('Error setting up chat panel:', err);
+          }));
+        },
+        false
       ]
     ],
 
@@ -246,6 +346,10 @@ define([
 
         this.actionBar.set('selection', sel);
         this.itemDetailPanel.set('selection', sel);
+
+        if (this.chatPanel) {
+          this.chatPanel.set('containerSelection', sel);
+        }
       }));
 
       this.addChild(this.grid);

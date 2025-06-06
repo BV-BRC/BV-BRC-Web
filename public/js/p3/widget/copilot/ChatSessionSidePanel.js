@@ -72,6 +72,9 @@ define([
          * Configures region, styling and required dependencies
          */
         _createInputWidget: function() {
+            if (!this.context) {
+                this.context = 'grid-container';
+            }
             this.inputWidget = new CopilotInputSidePanel({
                 region: 'bottom',
                 splitter: true,
@@ -79,7 +82,8 @@ define([
                 copilotApi: this.copilotApi,
                 chatStore: this.chatStore,
                 displayWidget: this.displayWidget,
-                sessionId: this.sessionId
+                sessionId: this.sessionId,
+                context: this.context
             });
             this.addChild(this.inputWidget);
         },
