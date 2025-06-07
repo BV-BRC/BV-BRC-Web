@@ -149,6 +149,8 @@ define([
 
             if (systemPrompt) {
                 data.system_prompt = systemPrompt;
+            } else {
+                data.system_prompt = 'You are a helpful assistant that can answer questions.';
             }
 
             return request.post(this.apiUrlBase + '/chat', {
@@ -188,9 +190,6 @@ define([
                 session_id: sessionId
             };
             var rag_endpoint = this.apiUrlBase + '/rag';
-            if (ragDb.indexOf('_distllm') !== -1) {
-                rag_endpoint = this.apiUrlBase + '/rag-distllm';
-            }
             return request.post(rag_endpoint, {
                 data: JSON.stringify(data),
                 headers: {
@@ -199,34 +198,8 @@ define([
                 },
                 handleAs: 'json'
             }).then(lang.hitch(this, function(response) {
-                _self.storedResult = response;
-                if (ragDb.indexOf('_distllm') !== -1) {
-                    return response;
-                }
                 if (response['message'] == 'success') {
-                    // If summarizeDocs is true and we have documents to summarize
-                    if (summarizeDocs && response.documents && response.documents.length > 0) {
-                        // Create an array of promises for each document summarization
-                        var summarizationPromises = response.documents.map(lang.hitch(this, function(doc) {
-                            // Create a prompt for summarizing the document
-                            var summaryPrompt = `Please summarize the following document in the context of this query: "${inputQuery}"\n\nDocument:\n${doc}`;
-                            // Call submitQuery for each document with save_chat=false to prevent saving to history
-                            return this.submitQueryChatOnly(summaryPrompt, '', model)
-                                .then(lang.hitch(this, function(summaryResponse) {
-                                    // Only store the summary in the document, don't add to chat history
-                                    doc.summary = summaryResponse.response;
-                                    return doc;
-                                }));
-                        }));
-
-                        // Wait for all summarizations to complete
-                        return Promise.all(summarizationPromises)
-                            .then(lang.hitch(this, function(summarizedDocs) {
-                                // Update the response with summarized documents
-                                response.documents = summarizedDocs;
-                                return response;
-                            }));
-                    }
+                    _self.storedResult = response;
                     return response;
                 } else {
                     throw new Error(response['message']);

@@ -209,58 +209,44 @@ define([
         this.isSubmitting = true;
         this.submitButton.set('disabled', true);
 
-        if (this.ragDb.indexOf('_distllm') !== -1) {
-          this._handleDistllmRagSubmit();
-        } else {
+        this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-          this.displayWidget.showLoadingIndicator(this.chatStore.query());
+        this.copilotApi.submitRagQuery(inputText, this.ragDb, this.numDocs, this.sessionId, this.model, this.summarizeDocs).then(lang.hitch(this, function(response) {
 
-          this.copilotApi.submitRagQuery(inputText, this.ragDb, this.numDocs, this.sessionId, this.model, this.summarizeDocs).then(lang.hitch(this, function(response) {
-            var system_prompt = 'Using the following documents as context, answer the user questions. Do not use any other sources of information:\n\n';
-            if (this.systemPrompt && this.systemPrompt.length > 1) {
-              system_prompt = this.systemPrompt + '\n\n' + system_prompt;
+          this.chatStore.addMessages([
+            {
+              role: 'user',
+              content: inputText
             }
-            response['documents'].forEach(function(doc) {
-              system_prompt += doc + '\n';
-            });
-            this.copilotApi.submitQuery(inputText, this.sessionId, system_prompt, this.model).then(lang.hitch(this, function(llm_response) {
-              this.chatStore.addMessages([
-                {
-                  role: 'user',
-                  content: inputText
-                },
-                {
-                  role: 'system',
-                  content: system_prompt
-                },
-                {
-                  role: 'assistant',
-                  content: llm_response.response
-                }
-              ]);
-              _self.textArea.set('value', '');
-              this.displayWidget.showMessages(this.chatStore.query());
+          ]);
+          if (response.system_prompt) {
+            system_prompt = {
+              role: 'system',
+              content: response.system_prompt
+            };
+            this.chatStore.addMessages([system_prompt]);
+          }
+          this.chatStore.addMessages([
+            {
+              role: 'assistant',
+              content: response.response
+            }
+          ]);
+          _self.textArea.set('value', '');
+          this.displayWidget.showMessages(this.chatStore.query());
 
-              if (_self.new_chat) {
-                _self.new_chat = false;
-                topic.publish('reloadUserSessions');
-                setTimeout(() => {
-                  topic.publish('generateSessionTitle');
-                }, 100);
-              }
-            })).catch(function(error) {
-              topic.publish('CopilotApiError', { error: error });
-            }).finally(lang.hitch(this, function() {
-              this.displayWidget.hideLoadingIndicator();
-              this.isSubmitting = false;
-              this.submitButton.set('disabled', false);
-            }));
-          })).finally(lang.hitch(this, function() {
-            this.displayWidget.hideLoadingIndicator();
-            this.isSubmitting = false;
-            this.submitButton.set('disabled', false);
-          }));
-        }
+          if (_self.new_chat) {
+            _self.new_chat = false;
+            topic.publish('reloadUserSessions');
+            setTimeout(() => {
+              topic.publish('generateSessionTitle');
+            }, 100);
+          }
+        })).finally(lang.hitch(this, function() {
+          this.displayWidget.hideLoadingIndicator();
+          this.isSubmitting = false;
+          this.submitButton.set('disabled', false);
+        }));
       },
 
       /**
@@ -313,54 +299,6 @@ define([
           this.isSubmitting = false;
           this.submitButton.set('disabled', false);
         }));
-      },
-
-      _handleDistllmRagSubmit: function() {
-        var inputText = this.textArea.get('value');
-        var _self = this;
-
-        if (this.state) {
-          console.log('state', this.state);
-        }
-
-        this.isSubmitting = true;
-        this.submitButton.set('disabled', true);
-
-        this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
-       this.copilotApi.submitRagQuery(inputText, this.ragDb, this.numDocs, this.sessionId, this.model, this.summarizeDocs).then(lang.hitch(this, function(response) {
-        this.chatStore.addMessages([
-          {
-            role: 'user',
-            content: inputText
-          },
-          {
-            role: 'system',
-            content: response.system_prompt
-          },
-          {
-            role: 'assistant',
-            content: response.response
-          }
-        ]);
-        _self.textArea.set('value', '');
-        this.displayWidget.showMessages(this.chatStore.query());
-
-        if (_self.new_chat) {
-          _self.new_chat = false;
-          topic.publish('reloadUserSessions');
-          setTimeout(() => {
-            topic.publish('generateSessionTitle');
-          }, 100);
-        }
-
-       })).catch(function(error) {
-        console.error('error', error);
-       }).finally(lang.hitch(this, function() {
-        this.displayWidget.hideLoadingIndicator();
-        this.isSubmitting = false;
-        this.submitButton.set('disabled', false);
-       }));
       },
 
       /**
