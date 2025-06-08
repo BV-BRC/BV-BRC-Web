@@ -11,6 +11,7 @@ define([
     'dojo/Deferred',
     'dojo/topic',
     './CopilotInputSidePanel',
+    './CopilotDisplaySmallWindow',
     'dijit/Dialog'
 ], function(
     declare,
@@ -20,6 +21,7 @@ define([
     Deferred,
     topic,
     CopilotInputSidePanel,
+    CopilotDisplaySmallWindow,
     Dialog
 ) {
     /**
@@ -82,6 +84,17 @@ define([
                 sessionId: this.sessionId
             });
             this.addChild(this.inputWidget);
+        },
+
+        _createDisplayWidget: function() {
+            this.displayWidget = new CopilotDisplaySmallWindow({
+                region: 'center',
+                style: 'padding: 0 5px 5px 5px; border: 0; background-color: #ffffff; opacity: 1;',
+                copilotApi: this.copilotApi,
+                chatStore: this.chatStore,
+                sessionId: this.sessionId
+            });
+            this.addChild(this.displayWidget);
         },
 
         /**
