@@ -110,7 +110,6 @@ define([
       if (messages.length) {
         domConstruct.empty(this.resultContainer);
         console.log('show messages', messages);
-
         messages.forEach(lang.hitch(this, function(message) {
           new ChatMessage(message, this.resultContainer);
         }));

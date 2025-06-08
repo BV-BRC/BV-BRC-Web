@@ -150,9 +150,9 @@ define([
             if (systemPrompt) {
                 data.system_prompt = systemPrompt;
             } else {
-                data.system_prompt = 'You are a helpful assistant that can answer questions.';
+                data.system_prompt = '';
             }
-
+            console.log('submitting query to', this.apiUrlBase + '/chat');
             return request.post(this.apiUrlBase + '/chat', {
                 data: JSON.stringify(data),
                 headers: {
@@ -190,6 +190,7 @@ define([
                 session_id: sessionId
             };
             var rag_endpoint = this.apiUrlBase + '/rag';
+            console.log('submitting rag query to', rag_endpoint);
             return request.post(rag_endpoint, {
                 data: JSON.stringify(data),
                 headers: {
@@ -232,7 +233,7 @@ define([
             if (systemPrompt) {
                 data.system_prompt = systemPrompt;
             }
-
+            console.log('submitting query to', this.apiUrlBase + '/chat-only');
             return request.post(this.apiUrlBase + '/chat-only', {
                 data: JSON.stringify(data),
                 headers: {
@@ -259,6 +260,7 @@ define([
                 user_id: _self.user_id,
                 image: image
             };
+            console.log('submitting query to', this.apiUrlBase + '/chat-image');
             return request.post(this.apiUrlBase + '/chat-image', {
                 data: JSON.stringify(data),
                 headers: {
