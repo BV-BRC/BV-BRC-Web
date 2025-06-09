@@ -275,8 +275,10 @@ define([
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
       var job_id = this.currentSelection[0].id;
+      debugger;
 
       JobManager.queryTaskDetail(job_id, true, true).then(function(response) {
+        debugger;
         var stdout = response.stdout || '';
         var stderr = response.stderr || '';
 
