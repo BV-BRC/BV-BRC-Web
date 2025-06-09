@@ -16,7 +16,6 @@ define([
     'dijit/form/Button', // Button widget
     'dijit/form/Textarea', // Textarea widget
     'dojo/on', // Event handling
-    'dijit/form/CheckBox',  // Add CheckBox widget
     'dojo/topic',
     'html2canvas/dist/html2canvas.min'
   ], function (
@@ -28,7 +27,6 @@ define([
     Button,
     Textarea,
     on,
-    CheckBox,
     topic,
     html2canvas
   ) {
@@ -87,9 +85,39 @@ define([
                 style: 'display: flex; justify-content: center; align-items: flex-start; width: 100%;'
             }, wrapperDiv);
 
+            // Add container for the toggle switch and label on the left side
+            var toggleContainer = domConstruct.create('div', {
+                style: 'width: 35px; height: 35px; display: flex; flex-direction: column; align-items: center; margin-right: 15px;'
+            }, inputContainer);
+
+            // Create camera div above the toggle button
+            var cameraDiv = domConstruct.create('div', {
+                'class': 'cameraDivAboveToggle'
+            });
+
+            // Create the page content toggle using the camera div
+            this.pageContentToggle = {
+                domNode: cameraDiv,
+                placeAt: function(container) {
+                    container.appendChild(cameraDiv);
+                }
+            };
+
+            // Add click handler and properties to camera div
+            cameraDiv.title = 'Ask about page - Sends page content to help answer your question.';
+            cameraDiv.style.cursor = 'pointer';
+            on(cameraDiv, 'click', lang.hitch(this, function() {
+                topic.publish('pageContentToggleChanged', !this.pageContentEnabled);
+            }));
+
+            this.pageContentToggle.placeAt(toggleContainer);
+
+            // Initialize button style
+            this._updateToggleButtonStyle();
+
             // Configure textarea with auto-expansion and styling
             this.textArea = new Textarea({
-                style: 'width: 60%; min-height: 40px; max-height: 100%; resize: none; overflow-y: hidden; border-radius: 5px; margin-right: 10px;',
+                style: 'width: 60%; min-height: 50px; max-height: 100%; resize: none; overflow-y: hidden; border-radius: 5px; margin-right: 10px;',
                 rows: 3, // Default visible rows
                 maxLength: 10000,
                 placeholder: 'Enter your text here...'
@@ -130,6 +158,7 @@ define([
             // Subscribe to page content toggle changes from ChatSessionOptionsBarSmallWindow
             topic.subscribe('pageContentToggleChanged', lang.hitch(this, function(checked) {
                 this.pageContentEnabled = checked;
+                this._updateToggleButtonStyle();
                 console.log('Page content toggle changed to:', checked);
             }));
 
@@ -165,43 +194,6 @@ define([
                 })
             }, settingsDiv);
 
-
-            // Add container for the toggle switch and label
-            var toggleContainer = domConstruct.create('div', {
-                style: 'display: flex; align-items: center; margin-left: 15px;'
-            }, settingsDiv);
-
-            // Add label for the page content toggle
-            var toggleLabel = domConstruct.create('span', {
-                innerHTML: 'Ask about this page',
-                style: 'margin-right: 5px; cursor: pointer;',
-                title: 'Sends page content to help answer your question.'
-            }, toggleContainer);
-
-            // Create the page content toggle switch
-            this.pageContentToggle = new CheckBox({
-                checked: false,
-                style: 'cursor: pointer;',
-                title: 'Sends page content to help answer your question.'
-            });
-            this.pageContentToggle.placeAt(toggleContainer);
-
-            // Add CSS for toggle switch styling
-            var style = document.createElement('style');
-            style.textContent = `
-                .toggleSwitch {
-                position: relative;
-                display: inline-block;
-                width: 40px;
-                height: 20px;
-                }
-                .toggleSwitch input {
-                opacity: 0;
-                width: 0;
-                height: 0;
-                }
-            `;
-            document.head.appendChild(style);
             */
 
             // Maximum height for textarea before scrolling
@@ -253,12 +245,11 @@ define([
 
                 topic.publish('showChatPanel'); // Show panel again
 
-                this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
                 this.systemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\n' +
                                     'Analyze the screenshot and respond to the user\'s query.';
                 var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
 
+                this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
                 this.copilotApi.submitQueryWithImage(inputText, this.sessionId, this.systemPrompt, imgtxt_model, base64Image)
                     .then(lang.hitch(this, function(response) {
@@ -367,5 +358,20 @@ define([
           this.ragDb = ragDb;
         }
       },
+
+        /**
+         * @method _updateToggleButtonStyle
+         * @description Updates the toggle button's visual state based on pageContentEnabled
+         */
+        _updateToggleButtonStyle: function() {
+            var buttonNode = this.pageContentToggle.domNode;
+            if (this.pageContentEnabled) {
+                buttonNode.classList.remove('pageContentToggleInactive');
+                buttonNode.classList.add('pageContentToggleActive');
+            } else {
+                buttonNode.classList.remove('pageContentToggleActive');
+                buttonNode.classList.add('pageContentToggleInactive');
+            }
+        },
     });
   });

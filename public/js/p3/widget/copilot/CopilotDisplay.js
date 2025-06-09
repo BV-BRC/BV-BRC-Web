@@ -70,7 +70,8 @@ define([
 
       // Create scrollable container for messages
       this.resultContainer = domConstruct.create('div', {
-        class: 'copilot-result-container'
+        class: 'copilot-result-container',
+        style: 'padding-right: 130px;padding-left: 130px;'
       }, this.containerNode);
 
       // Show initial empty state
@@ -110,7 +111,6 @@ define([
       if (messages.length) {
         domConstruct.empty(this.resultContainer);
         console.log('show messages', messages);
-
         messages.forEach(lang.hitch(this, function(message) {
           new ChatMessage(message, this.resultContainer);
         }));
@@ -151,7 +151,6 @@ define([
     onQueryError: function() {
       console.log('onQueryError');
       domConstruct.empty(this.resultContainer);
-      debugger;
       domConstruct.create('div', {
         innerHTML: 'An error occurred while processing your request. Please try again later.',
         class: 'copilot-error'

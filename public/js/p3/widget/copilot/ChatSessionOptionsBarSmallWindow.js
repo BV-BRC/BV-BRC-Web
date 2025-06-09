@@ -115,6 +115,7 @@ define([
                 })
             }, buttonsContainer);
 
+            /*
             // Add container for the "Ask about this page" toggle switch and label
             var toggleContainer = domConstruct.create('div', {
                 style: 'display: flex; align-items: center; margin-top: 5px; padding-left: 5px;'
@@ -144,6 +145,12 @@ define([
             });
             this.pageContentToggle.placeAt(toggleContainer);
 
+            topic.subscribe('pageContentToggleStateChange', lang.hitch(this, function(checked) {
+                // Handle external changes to page content toggle state
+                this.pageContentToggle.set('checked', checked);
+            }));
+            */
+
             // Subscribe to topic changes to update display text
             topic.subscribe('ChatModel', lang.hitch(this, function(model) {
                 // Update model display text with just the model name (last part after /)
@@ -157,11 +164,6 @@ define([
             topic.subscribe('ChatRagDb', lang.hitch(this, function(ragDb) {
                 // Update RAG display text
                 this.ragText.innerHTML = 'RAG: ' + (ragDb === 'null' ? 'None' : ragDb);
-            }));
-
-            topic.subscribe('pageContentToggleStateChange', lang.hitch(this, function(checked) {
-                // Handle external changes to page content toggle state
-                this.pageContentToggle.set('checked', checked);
             }));
 
             // Fetch model and RAG lists from API
