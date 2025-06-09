@@ -129,11 +129,15 @@ define([
 
             // Add RAG DBs from provided list or use defaults
             if (this.ragList) {
+                var check_names = [];
                 this.ragList.forEach(lang.hitch(this, function(ragdb) {
                     var option = document.createElement('option');
                     option.value = ragdb.name;
                     option.text = ragdb.name.split('/').reverse()[0];
-                    selectElement.add(option);
+                    if (!check_names.includes(option.text)) {
+                        check_names.push(option.text);
+                        selectElement.add(option);
+                    }
                 }));
             } else {
                 // Add default None option
