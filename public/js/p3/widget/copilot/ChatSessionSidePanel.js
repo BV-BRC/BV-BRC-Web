@@ -180,6 +180,7 @@ define([
             this.watch('containerSelection', lang.hitch(this, function(prop, oldVal, selection) {
                 if (this.inputWidget) {
                     this.inputWidget.setSystemPromptWithData(selection);
+                    this.inputWidget.setCurrentSelection(selection);
                 }
             }));
         },

@@ -15,7 +15,8 @@ define([
   'dojo/dom-construct', // DOM manipulation utilities
   'dijit/form/Button', // Button widget
   'dijit/form/Textarea', // Textarea widget
-  'dojo/on' // Event handling
+  'dojo/on', // Event handling
+  '../../JobManager'
 ], function (
   declare,
   CopilotInput,
@@ -24,7 +25,8 @@ define([
   domConstruct,
   Button,
   Textarea,
-  on
+  on,
+  JobManager
 ) {
 
   /**
@@ -43,6 +45,8 @@ define([
     // Size constraints for the widget
     minSize: 40,
     maxSize: 200,
+
+    currentSelection: null,
 
     /**
      * @constructor
@@ -174,53 +178,146 @@ define([
     /**
      * Handles submission of regular (non-RAG) queries
      * Implementation:
+     * - Checks context to determine submission type
+     * - Routes to appropriate handler based on context
+     * - Throws error for unsupported contexts
+     */
+    _handleRegularSubmit: function() {
+      try {
+        if (this.context === 'grid-container') {
+          this._submitToGridContainer();
+        } else if (this.context === 'job-manager') {
+          this._submitToJobManager();
+        } else {
+          throw new Error('Unsupported context: ' + (this.context || 'undefined'));
+        }
+      } catch (error) {
+        console.error('Error in _handleRegularSubmit:', error.message);
+        topic.publish('CopilotApiError', { error: error });
+        this.isSubmitting = false;
+        this.submitButton.set('disabled', false);
+      }
+    },
+
+    /**
+     * Handles submission for grid-container context using copilotAPI
+     * Implementation:
      * - Disables input during submission
      * - Shows loading indicator
      * - Makes LLM query with basic system prompt
      * - Updates chat store with messages
      * - Handles new chat initialization
      */
-      _handleRegularSubmit: function() {
-        var inputText = this.textArea.get('value');
-        var _self = this;
+    _submitToGridContainer: function() {
+      var inputText = this.textArea.get('value');
+      var _self = this;
 
-        if (this.state) {
-          console.log('state', this.state);
-        }
-
-        this.isSubmitting = true;
-        this.submitButton.set('disabled', true);
-
-        this.displayWidget.showLoadingIndicator(this.chatStore.query());
-        debugger;
-        this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
-          this.chatStore.addMessages([
-            {
-              role: 'user',
-              content: inputText
-            },
-            {
-              role: 'assistant',
-              content: response.response
-            }
-          ]);
-          _self.textArea.set('value', '');
-          this.displayWidget.showMessages(this.chatStore.query());
-
-          if (_self.new_chat) {
-            _self.new_chat = false;
-            topic.publish('reloadUserSessions');
-            setTimeout(() => {
-              topic.publish('generateSessionTitle');
-            }, 100);
-          }
-        })).catch(function(error) {
-          topic.publish('CopilotApiError', { error: error });
-        }).finally(lang.hitch(this, function() {
-          this.displayWidget.hideLoadingIndicator();
-          this.isSubmitting = false;
-          this.submitButton.set('disabled', false);
-        }));
+      if (this.state) {
+        console.log('state', this.state);
       }
+
+      this.isSubmitting = true;
+      this.submitButton.set('disabled', true);
+
+      this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+      this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
+        this.chatStore.addMessages([
+          {
+            role: 'user',
+            content: inputText
+          },
+          {
+            role: 'assistant',
+            content: response.response
+          }
+        ]);
+        _self.textArea.set('value', '');
+        this.displayWidget.showMessages(this.chatStore.query());
+
+        if (_self.new_chat) {
+          _self.new_chat = false;
+          topic.publish('reloadUserSessions');
+          setTimeout(() => {
+            topic.publish('generateSessionTitle');
+          }, 100);
+        }
+      })).catch(function(error) {
+        topic.publish('CopilotApiError', { error: error });
+      }).finally(lang.hitch(this, function() {
+        this.displayWidget.hideLoadingIndicator();
+        this.isSubmitting = false;
+        this.submitButton.set('disabled', false);
+      }));
+    },
+
+    /**
+     * Handles submission for job-manager context using copilotAPI with job details
+     * Implementation:
+     * - Disables input during submission
+     * - Shows loading indicator
+     * - Queries job details to get stdout/stderr
+     * - Makes LLM query with stdout/stderr as system prompt
+     * - Updates chat store with messages
+     * - Handles new chat initialization
+     */
+    _submitToJobManager: function() {
+      var inputText = this.textArea.get('value');
+      var _self = this;
+
+      if (this.state) {
+        console.log('state', this.state);
+      }
+
+      this.isSubmitting = true;
+      this.submitButton.set('disabled', true);
+
+      this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+      var job_id = this.currentSelection[0].id;
+
+      JobManager.queryTaskDetail(job_id, true, true).then(function(response) {
+        var stdout = response.stdout || '';
+        var stderr = response.stderr || '';
+
+        // Combine stdout and stderr as system prompt
+        var jobSystemPrompt = 'Job stdout:\n' + stdout + '\n\nJob stderr:\n' + stderr;
+
+        // Submit query with job details as system prompt
+        return _self.copilotApi.submitQuery(inputText, _self.sessionId, jobSystemPrompt, _self.model);
+      }).then(lang.hitch(this, function(response) {
+        this.chatStore.addMessages([
+          {
+            role: 'user',
+            content: inputText
+          },
+          {
+            role: 'assistant',
+            content: response.response
+          }
+        ]);
+        _self.textArea.set('value', '');
+        this.displayWidget.showMessages(this.chatStore.query());
+
+        if (_self.new_chat) {
+          _self.new_chat = false;
+          topic.publish('reloadUserSessions');
+          setTimeout(() => {
+            topic.publish('generateSessionTitle');
+          }, 100);
+        }
+      })).catch(function(error) {
+        console.error('Error in _submitToJobManager:', error);
+        topic.publish('CopilotApiError', { error: error });
+      }).finally(lang.hitch(this, function() {
+        this.displayWidget.hideLoadingIndicator();
+        this.isSubmitting = false;
+        this.submitButton.set('disabled', false);
+      }));
+    },
+
+    setCurrentSelection: function(selection) {
+      this.currentSelection = selection;
+    }
   });
 });

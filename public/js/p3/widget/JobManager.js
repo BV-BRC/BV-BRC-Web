@@ -197,6 +197,7 @@ define([
           label: 'Chat',
           tooltip: 'Chat with Copilot',
           persistent: true,
+          multiple: false,
           validTypes: ['*'],
         },
         function (selection, container, button) {
@@ -249,6 +250,7 @@ define([
               optionsBar: chatOptionsBar,
               context: 'job-manager'
             });
+
             this.chatPanel._setupContainerWatch();
 
             // Add to container in same location as itemDetailPanel
@@ -274,6 +276,7 @@ define([
               if (this.chatPanel.inputWidget && selection.length > 0) {
                 this.chatPanel.set('containerSelection', selection);
                 this.chatPanel.inputWidget.setSystemPromptWithData(selection);
+                this.chatPanel.inputWidget.setCurrentSelection(selection);
               }
             }), 100);
           })).catch(lang.hitch(this, function(err) {

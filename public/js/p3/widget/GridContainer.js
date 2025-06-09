@@ -450,7 +450,7 @@ define([
                 this.chatPanel.set('containerSelection', this.selectionActionBar.get('selection'));
                 this.chatPanel.inputWidget.setSystemPromptWithData(this.selectionActionBar.get('selection'));
               }
-            }), 100);
+            }), 300);
           })).catch(lang.hitch(this, function(err) {
             new Dialog({
               title: "Service Unavailable",
