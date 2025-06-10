@@ -7,6 +7,7 @@ define([
     'dojo/_base/declare',
     'dojo/_base/lang',
     'dojo/on',
+    'dojo/topic',
     'dijit/TooltipDialog',
     'dijit/popup',
     'dojo/dom-construct',
@@ -15,6 +16,7 @@ define([
     declare,
     lang,
     on,
+    topic,
     TooltipDialog,
     popup,
     domConstruct,
@@ -86,22 +88,24 @@ define([
 
             // Set up rating button with star outline styling and click handler
             if (this.ratingButtonNode) {
-                this.ratingButtonNode.innerHTML = '☆'; // Star outline character
+                // Check if session has an existing rating and set appropriate star
+                var hasRating = this.session && this.session.rating;
+                this.ratingButtonNode.innerHTML = hasRating ? '★' : '☆'; // Filled or empty star
                 this.ratingButtonNode.style.cssText =
                     'cursor: pointer; width: auto; height: 18px; text-align: center; line-height: 18px; ' +
-                    'border-radius: 3px; background-color: transparent; color: #666; ' +
+                    'border-radius: 3px; background-color: transparent; color: ' + (hasRating ? 'var(--main-blue)' : '#666') + '; ' +
                     'font-size: 14px; display: flex; align-items: center; justify-content: center; padding: 0 4px; ' +
                     'border: none; transition: all 0.2s ease; user-select: none;';
 
                 // Add hover effect
                 this.ratingButtonNode.onmouseenter = function() {
                     this.style.backgroundColor = '#e8e8e8';
-                    this.style.color = '#333';
+                    this.style.color = hasRating ? 'var(--main-blue)' : '#333';
                 };
 
                 this.ratingButtonNode.onmouseleave = function() {
                     this.style.backgroundColor = 'transparent';
-                    this.style.color = '#666';
+                    this.style.color = hasRating ? 'var(--main-blue)' : '#666';
                 };
 
                 // Create rating dialog
@@ -173,37 +177,28 @@ define([
                     'data-rating': i
                 }, ratingContainer);
 
-                // Add hover effects
-                star.onmouseenter = function() {
-                    var rating = parseInt(this.getAttribute('data-rating'));
-                    var stars = this.parentNode.children;
-                    for (var j = 0; j < stars.length; j++) {
-                        if (j < rating) {
-                            stars[j].style.color = '#ffc107'; // Gold color for hover
-                            stars[j].innerHTML = '★'; // Filled star
-                        } else {
-                            stars[j].style.color = '#ccc';
-                            stars[j].innerHTML = '☆'; // Empty star
-                        }
-                    }
-                };
-
                 // Add click handler
                 this.own(on(star, 'click', lang.hitch(this, function(event) {
                     var rating = parseInt(event.target.getAttribute('data-rating'));
-                    console.log('Star rating clicked:', rating, 'for session:', this.session ? this.session.title || 'Unknown Session' : 'No Session');
-                    console.log('Session data:', this.session);
+
+                    // Publish topic for setting conversation rating
+                    topic.publish('SetConversationRating', {
+                        sessionId: this.session ? this.session.session_id : null,
+                        rating: rating
+                    });
 
                     // Update stars to show selected rating
-                    var stars = event.target.parentNode.children;
-                    for (var k = 0; k < stars.length; k++) {
-                        if (k < rating) {
-                            stars[k].style.color = '#ffc107';
-                            stars[k].innerHTML = '★';
-                        } else {
-                            stars[k].style.color = '#ccc';
-                            stars[k].innerHTML = '☆';
-                        }
+                    this.updateStarDisplay(event.target.parentNode, rating);
+
+                    // Store the rating for this session
+                    if (this.session) {
+                        this.session.rating = rating;
+                    }
+
+                    // Update the main rating button to show filled star
+                    if (this.ratingButtonNode) {
+                        this.ratingButtonNode.innerHTML = '★';
+                        this.ratingButtonNode.style.color = 'var(--main-blue)';
                     }
 
                     // Close the popup after a brief delay to show the selection
@@ -216,17 +211,32 @@ define([
                 })));
             }
 
-            // Reset stars on mouse leave
-            ratingContainer.onmouseleave = function() {
-                var stars = this.children;
-                for (var i = 0; i < stars.length; i++) {
+            this.ratingDialog.containerNode.appendChild(ratingContainer);
+
+            // If session has an existing rating, display it
+            if (this.session && this.session.rating) {
+                this.updateStarDisplay(ratingContainer, this.session.rating);
+            }
+
+            return this.ratingDialog;
+        },
+
+        /**
+         * Updates the star display to show the specified rating
+         * @param {HTMLElement} ratingContainer - The container holding the star elements
+         * @param {number} rating - The rating value (1-5) to display
+         */
+        updateStarDisplay: function(ratingContainer, rating) {
+            var stars = ratingContainer.children;
+            for (var i = 0; i < stars.length; i++) {
+                if (i < rating) {
+                    stars[i].style.color = 'var(--main-blue)';
+                    stars[i].innerHTML = '★';
+                } else {
                     stars[i].style.color = '#ccc';
                     stars[i].innerHTML = '☆';
                 }
-            };
-
-            this.ratingDialog.containerNode.appendChild(ratingContainer);
-            return this.ratingDialog;
+            }
         }
     });
 });

@@ -155,6 +155,7 @@ define([
             }));
             topic.subscribe('generateSessionTitle', lang.hitch(this, this._handleGenerateSessionTitle));
             topic.subscribe('ChatSession:Delete', lang.hitch(this, this._handleChatSessionDelete));
+            topic.subscribe('SetConversationRating', lang.hitch(this, this._handleSetConversationRating));
         },
 
         /**
@@ -303,6 +304,18 @@ define([
          */
         getSessionId: function() {
             return this.sessionId;
+        },
+
+        /**
+         * Handles setting conversation rating
+         * @param {Object} data Rating data containing sessionId and rating
+         */
+        _handleSetConversationRating: function(data) {
+            this.copilotApi.setConversationRating(data.sessionId, data.rating).then(lang.hitch(this, function(response) {
+                topic.publish('reloadUserSessions');
+            })).catch(lang.hitch(this, function(error) {
+                console.error('Error setting conversation rating:', error);
+            }));
         }
     });
 });

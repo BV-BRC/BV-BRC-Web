@@ -178,37 +178,27 @@ define([
                     'data-rating': i
                 }, ratingContainer);
 
-                // Add hover effects
-                this.own(on(star, 'mouseenter', lang.hitch(this, function(event) {
-                    var rating = parseInt(event.target.getAttribute('data-rating'));
-                    var stars = event.target.parentNode.children;
-                    for (var j = 0; j < stars.length; j++) {
-                        if (j < rating) {
-                            stars[j].style.color = '#ffc107'; // Gold color for hover
-                            stars[j].innerHTML = '★'; // Filled star
-                        } else {
-                            stars[j].style.color = '#ccc';
-                            stars[j].innerHTML = '☆'; // Empty star
-                        }
-                    }
-                })));
-
                 // Add click handler
                 this.own(on(star, 'click', lang.hitch(this, function(event) {
                     var rating = parseInt(event.target.getAttribute('data-rating'));
-                    console.log('Star rating clicked:', rating, 'for session:', this.session ? this.session.title || 'Unknown Session' : 'No Session');
 
                     // Update stars to show selected rating
                     var stars = event.target.parentNode.children;
                     for (var k = 0; k < stars.length; k++) {
                         if (k < rating) {
-                            stars[k].style.color = '#ffc107';
+                            stars[k].style.color = 'var(--main-blue)';
                             stars[k].innerHTML = '★';
                         } else {
                             stars[k].style.color = '#ccc';
                             stars[k].innerHTML = '☆';
                         }
                     }
+
+                    // Publish topic for setting conversation rating
+                    topic.publish('SetConversationRating', {
+                        sessionId: this.session ? this.session.session_id : null,
+                        rating: rating
+                    });
 
                     // Store the rating for this session
                     if (this.session) {
@@ -218,15 +208,6 @@ define([
                     event.stopPropagation();
                 })));
             }
-
-            // Reset stars on mouse leave from container
-            this.own(on(ratingContainer, 'mouseleave', function() {
-                var stars = this.children;
-                for (var i = 0; i < stars.length; i++) {
-                    stars[i].style.color = '#ccc';
-                    stars[i].innerHTML = '☆';
-                }
-            }));
 
             return ratingContainer;
         },
@@ -238,6 +219,29 @@ define([
             if (this.ratingContainerNode) {
                 var ratingContainer = this.createRatingContainer();
                 domConstruct.place(ratingContainer, this.ratingContainerNode);
+
+                // If session has an existing rating, display it
+                if (this.session && this.session.rating) {
+                    this.updateStarDisplay(ratingContainer, this.session.rating);
+                }
+            }
+        },
+
+        /**
+         * Updates the star display to show the specified rating
+         * @param {HTMLElement} ratingContainer - The container holding the star elements
+         * @param {number} rating - The rating value (1-5) to display
+         */
+        updateStarDisplay: function(ratingContainer, rating) {
+            var stars = ratingContainer.children;
+            for (var i = 0; i < stars.length; i++) {
+                if (i < rating) {
+                    stars[i].style.color = 'var(--main-blue)';
+                    stars[i].innerHTML = '★';
+                } else {
+                    stars[i].style.color = '#ccc';
+                    stars[i].innerHTML = '☆';
+                }
             }
         }
     });
