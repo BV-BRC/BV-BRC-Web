@@ -48,7 +48,7 @@ define([
             '<div class="session-date-container" style="display: flex; justify-content: space-between; align-items: center;">' +
                 '<div class="session-date" data-dojo-attach-point="dateNode"></div>' +
                 '<div class="rating-container" data-dojo-attach-point="ratingContainerNode"></div>' +
-                '<div class="delete-button" data-dojo-attach-point="deleteButtonNode">Delete</div>' +
+                '<div class="delete-button" data-dojo-attach-point="deleteButtonNode"></div>' +
             '</div>' +
         '</div>',
 
@@ -89,9 +89,14 @@ define([
 
             // Delete button styling with hover effects
             this.deleteButtonNode.style.cssText =
-                'cursor: pointer; width: auto; height: 20px; text-align: center; line-height: 20px; ' +
-                'border-radius: 0; background-color: #f0f0f0; color: #808080; ' +
-                'font-size: 12px; display: flex; align-items: center; justify-content: center; padding: 0 5px;';
+                'cursor: pointer; width: 30px; height: 30px; text-align: center; line-height: 20px; ' +
+                'border-radius: 3px; background-color: transparent; color: #808080; ' +
+                'font-size: 12px; display: flex; align-items: center; justify-content: center; padding: 0; ' +
+                'background-image: url("/public/icon_source/trash.svg"); ' +
+                'background-repeat: no-repeat; background-position: center; background-size: 14px 14px;';
+
+            // Add tooltip to delete button
+            this.deleteButtonNode.title = 'Delete chat session';
 
             if (this.session) {
                 // Display formatted creation date
@@ -137,11 +142,15 @@ define([
                 }));
                 on(this.deleteButtonNode, 'mouseup', lang.hitch(this, function(evt) {
                     evt.stopPropagation();
-                    this.deleteButtonNode.style.backgroundColor = '#f0f0f0';
+                    this.deleteButtonNode.style.backgroundColor = 'transparent';
                 }));
                 on(this.deleteButtonNode, 'mouseleave', lang.hitch(this, function(evt) {
                     evt.stopPropagation();
-                    this.deleteButtonNode.style.backgroundColor = '#f0f0f0';
+                    this.deleteButtonNode.style.backgroundColor = 'transparent';
+                }));
+                on(this.deleteButtonNode, 'mouseenter', lang.hitch(this, function(evt) {
+                    evt.stopPropagation();
+                    this.deleteButtonNode.style.backgroundColor = '#e0e0e0';
                 }));
                 on(this.deleteButtonNode, 'click', lang.hitch(this, function(evt) {
                     evt.stopPropagation();
@@ -167,7 +176,7 @@ define([
         createRatingContainer: function() {
             // Create rating container
             var ratingContainer = domConstruct.create('div', {
-                style: 'display: flex; justify-content: center; align-items: center; gap: 5px;'
+                style: 'display: flex; justify-content: center; align-items: center; gap: 2px; padding: 0 8px;'
             });
 
             // Create 5 star rating buttons
