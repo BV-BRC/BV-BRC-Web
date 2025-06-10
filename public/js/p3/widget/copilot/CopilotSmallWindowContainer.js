@@ -17,7 +17,7 @@ define([
     './CopilotInput',
     'dojo/dom-construct',
     '../copilot/ChatSessionControllerPanel',
-    '../copilot/ChatSessionScrollBar',
+    '../copilot/ChatSessionScrollBarSmallWindow',
     '../copilot/ChatSessionOptionsBarSmallWindow',
     'dijit/Dialog',
     'dojo/fx',
@@ -257,7 +257,7 @@ define([
                 this.bottomContentPane = new ChatSessionScrollBar({
                     className: 'optionsBottomSection',
                     region: 'center',
-                    style: 'padding: 0px; margin: 0px; height: 70%; border: 1px solid grey; background-color: #f0f0f0; border-bottom: 1px solid #ddd;',
+                    style: 'padding: 0px; margin: 0px; height: 70%; border: 0px solid grey; background-color: #f0f0f0; border-bottom: 1px solid #ddd;',
                     copilotApi: this.copilotApi
                 });
                 this.optionsBarContainer.addChild(this.bottomContentPane);
@@ -328,7 +328,7 @@ define([
                 if (options.onResize) {
                     options.onResize(this.controllerPanel.getSessionId());
                 }
-                topic.publish('ChatSessionTitleMaxLengthChanged', 30);
+                topic.publish('ChatSessionTitleMaxLengthChanged', 60);
             }), 200);
 
             return this.controllerPanel;

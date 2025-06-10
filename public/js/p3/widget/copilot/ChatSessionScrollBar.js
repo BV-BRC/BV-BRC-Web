@@ -53,7 +53,6 @@ define([
      * - Initializes empty sessions list
      */
     constructor: function(args) {
-      this.inherited(arguments);
       declare.safeMixin(this, args);
       this.sessionCards = {};
     },
@@ -73,7 +72,7 @@ define([
 
       // Create scrollable container that fills parent width
       this.scrollContainer = domConstruct.create('div', {
-        style: 'width: 100%; height: 100%; overflow-y: auto; display: flex; flex-direction: column; padding: 0;'
+        style: 'width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; padding: 0;'
       }, this.containerNode);
 
       this.getSessions();

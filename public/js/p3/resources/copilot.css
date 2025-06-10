@@ -306,7 +306,7 @@
     height: 30px;
     cursor: pointer;
     border-radius: 5px;
-    background-image: url("/public/icon_source/camera.svg");
+    background-image: url("/public/icon_source/screenshot.svg");
     background-size: 20px 20px;
     background-repeat: no-repeat;
     background-position: center;
@@ -341,11 +341,11 @@
     background-color: rgba(0, 0, 0, 0.05) !important;
 }
 
-.cameraDivAboveToggle {
+.screenshotDivAboveToggle {
     width: 40px;
     height: 40px;
-    background-image: url("/public/icon_source/camera.svg");
-    background-size: 20px 20px;
+    background-image: url("/public/icon_source/screenshot.svg");
+    background-size: 30px 30px;
     background-repeat: no-repeat;
     background-position: center;
     background-color: #f5f5f5; /* Default off-grey color */
@@ -354,16 +354,16 @@
     transition: all 0.2s ease;
 }
 
-.cameraDivAboveToggle:hover {
+.screenshotDivAboveToggle:hover {
     background-color: rgba(0, 0, 0, 0.05);
 }
 
 /* Active state for camera div when page content is enabled */
-.cameraDivAboveToggle.pageContentToggleActive {
+.screenshotDivAboveToggle.pageContentToggleActive {
     background-color: #e3f2fd !important; /* Light blue background */
     border-color: #2196F3 !important;
 }
 
-.cameraDivAboveToggle.pageContentToggleActive:hover {
+.screenshotDivAboveToggle.pageContentToggleActive:hover {
     background-color: rgba(33, 150, 243, 0.2) !important;
 }

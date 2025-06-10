@@ -90,23 +90,23 @@ define([
                 style: 'width: 35px; height: 35px; display: flex; flex-direction: column; align-items: center; margin-right: 15px;'
             }, inputContainer);
 
-            // Create camera div above the toggle button
-            var cameraDiv = domConstruct.create('div', {
-                'class': 'cameraDivAboveToggle'
+            // Create screenshot div above the toggle button
+            var screenshotDiv = domConstruct.create('div', {
+                'class': 'screenshotDivAboveToggle'
             });
 
-            // Create the page content toggle using the camera div
+            // Create the page content toggle using the screenshot div
             this.pageContentToggle = {
-                domNode: cameraDiv,
+                domNode: screenshotDiv,
                 placeAt: function(container) {
-                    container.appendChild(cameraDiv);
+                    container.appendChild(screenshotDiv);
                 }
             };
 
-            // Add click handler and properties to camera div
-            cameraDiv.title = 'Ask about page - Sends page content to help answer your question.';
-            cameraDiv.style.cursor = 'pointer';
-            on(cameraDiv, 'click', lang.hitch(this, function() {
+            // Add click handler and properties to screenshot div
+            screenshotDiv.title = 'Ask about page - Sends page content to help answer your question.';
+            screenshotDiv.style.cursor = 'pointer';
+            on(screenshotDiv, 'click', lang.hitch(this, function() {
                 topic.publish('pageContentToggleChanged', !this.pageContentEnabled);
             }));
 
