@@ -522,10 +522,37 @@ define([
                 },
                 handleAs: 'json'
             }).then(function(response) {
-                console.log('Conversation rating set:', response);
                 return response;
             }).catch(function(error) {
                 console.error('Error setting conversation rating:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Rates a message
+         * @param {string} messageId The ID of the message to rate
+         * @param {number} rating The rating to set (1 or -1)
+         * @returns {Promise} A promise that resolves when the rating is set
+         */
+        rateMessage: function(messageId, rating) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            return request.post(this.apiUrlBase + '/rate-message', {
+                data: JSON.stringify({
+                    message_id: messageId,
+                    rating: rating,
+                    user_id: _self.user_id
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('Error rating message:', error);
                 throw error;
             });
         }

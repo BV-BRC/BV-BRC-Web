@@ -2,9 +2,11 @@ define([
   'dojo/_base/declare', // Base class for creating Dojo classes
   'dojo/dom-construct', // DOM manipulation utilities
   'dojo/on', // Event handling
+  'dojo/topic', // Topic messaging
+  'dojo/_base/lang', // Language utilities
   'markdown-it/dist/markdown-it.min' // Markdown parser and renderer
 ], function (
-  declare, domConstruct, on, markdownit
+  declare, domConstruct, on, topic, lang, markdownit
 ) {
   /**
    * @class ChatMessage
@@ -50,7 +52,6 @@ define([
         style: 'margin-top: ' + marginTop + ';'
       }, this.container);
 
-      // Render appropriate message type
       if (this.message.message_id === 'loading-indicator') {
         // Show animated loading dots
         domConstruct.create('div', {
@@ -131,6 +132,78 @@ define([
         innerHTML: this.message.content ? this.md.render(this.message.content) : '',
         class: 'markdown-content'
       }, messageDiv);
+
+      if (this.message.role === 'assistant') {
+        // Create button container for assistant messages
+        var buttonContainer = domConstruct.create('div', {
+          class: 'message-button-container'
+        }, messageDiv);
+
+        // Add copy text button
+        this.createMessageActionButtons(buttonContainer);
+      }
+    },
+
+    /**
+     * Creates a button element with standard styling
+     *
+     *
+     *
+     */
+    createMessageActionButtons: function(buttonContainer) {
+      var copyButton = this.createButton('', 'copy-button');
+      var thumbUpButton = this.createButton('', 'thumb-up-button');
+      var thumbDownButton = this.createButton('', 'thumb-down-button');
+
+      // Highlight buttons based on existing rating
+      if (this.message.rating === 1) {
+        thumbUpButton.classList.add('highlighted');
+      } else if (this.message.rating === -1) {
+        thumbDownButton.classList.add('highlighted');
+      }
+
+      // Add click handler for copy button
+      on(copyButton, 'click', lang.hitch(this, function(event) {
+        topic.publish('copy-message', this.message.content);
+        event.stopPropagation();
+      }));
+
+      on(thumbUpButton, 'click', lang.hitch(this, function(event) {
+        // topic.publish('thumb-up-message', this.message.content);
+        topic.publish('rate-message', {
+          message_id: this.message.message_id,
+          rating: 1
+        });
+        event.stopPropagation();
+      }));
+
+      on(thumbDownButton, 'click', lang.hitch(this, function(event) {
+        // topic.publish('thumb-down-message', this.message.content);
+        topic.publish('rate-message', {
+          message_id: this.message.message_id,
+          rating: -1
+        });
+        event.stopPropagation();
+      }));
+
+      domConstruct.place(copyButton, buttonContainer);
+      domConstruct.place(thumbUpButton, buttonContainer);
+      domConstruct.place(thumbDownButton, buttonContainer);
+    },
+
+    /**
+     * Creates a button element with standard styling
+     * @param {string} text - The text to display on the button
+     * @param {string} [additionalClass] - Optional additional CSS class
+     * @returns {HTMLElement} Button element that can be added to a container
+     */
+    createButton: function(text, additionalClass) {
+      var className = 'message-action-button' + (additionalClass ? ' ' + additionalClass : '');
+
+      return domConstruct.create('button', {
+        innerHTML: text,
+        class: className
+      });
     }
   });
 });

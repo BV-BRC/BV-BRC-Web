@@ -121,6 +121,14 @@ define([
                 }));
             }));
 
+            topic.subscribe('RefreshSession', lang.hitch(this, function(sessionId) {
+                this.copilotApi.getSessionMessages(sessionId).then(lang.hitch(this, function(res) {
+                    const messages = res.messages[0].messages;
+                    this.chatStore.setData(messages);
+                    this.displayWidget.showMessages(messages);
+                }));
+            }));
+
             // Handle selecting existing chat sessions
             topic.subscribe('ChatSession:Selected', lang.hitch(this, function(data) {
                 this.changeSessionId(data.sessionId);
@@ -156,6 +164,8 @@ define([
             topic.subscribe('generateSessionTitle', lang.hitch(this, this._handleGenerateSessionTitle));
             topic.subscribe('ChatSession:Delete', lang.hitch(this, this._handleChatSessionDelete));
             topic.subscribe('SetConversationRating', lang.hitch(this, this._handleSetConversationRating));
+            topic.subscribe('copy-message', lang.hitch(this, this._handleCopyMessage));
+            topic.subscribe('rate-message', lang.hitch(this, this._handleRateMessage));
         },
 
         /**
@@ -315,6 +325,37 @@ define([
                 topic.publish('reloadUserSessions');
             })).catch(lang.hitch(this, function(error) {
                 console.error('Error setting conversation rating:', error);
+            }));
+        },
+
+        /**
+         * Handles copying a message to the clipboard
+         * @param {string} message The message to copy
+         */
+        _handleCopyMessage: function(message) {
+            // Modern browsers - use Clipboard API
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(message).then(function() {
+                    console.log('Message copied to clipboard successfully');
+                }).catch(function(err) {
+                    console.error('Failed to copy message to clipboard:', err);
+                    throw new Error('Failed to copy message to clipboard: ' + err.message);
+                });
+            } else {
+                throw new Error('Clipboard API not available or not in secure context');
+            }
+        },
+
+        /**
+         * Handles rating a message
+         * @param {Object} data Rating data containing messageId and rating
+         */
+        _handleRateMessage: function(data) {
+            this.copilotApi.rateMessage(data.message_id, data.rating).then(lang.hitch(this, function(response) {
+                // Refresh the session display to show updated rating
+                topic.publish('RefreshSession', this.sessionId);
+            })).catch(lang.hitch(this, function(error) {
+                console.error('Error rating message:', error);
             }));
         }
     });
