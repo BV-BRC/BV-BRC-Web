@@ -24,7 +24,7 @@ define([
     tutorialLink: 'tutorial/WholeGenome SNPAnalysis/WholeGenomeSNPAnalysis.html',
     videoLink: '',
     pageTitle: 'Whole Genome SNP Analysis Service | BV-BRC',
-    appBaseURL: 'Whole Genome SNP Analysis',
+    appBaseURL: 'WholeGenomeSNPAnalysis',
     defaultPath: '',
     startingRows: 14,
     alphabet: '',
@@ -124,6 +124,37 @@ define([
       return values;
     },
 
+    onChangeMinMidLinkage: function () {
+      console.log('called_onchange event minmid')
+      if (this.min_mid_linkage.value !== null) {
+        this.max_strong_linkage.set("value", this.min_mid_linkage.value);
+      }
+    },
+
+    // can delete if we field remains disabled
+    onChangeMaxStrongLinkage: function () {
+      console.log('called_onchange event max')
+      if (this.max_strong_linkage.value !== null) {
+        console.log(this.max_strong_linkage.value);
+        this.min_mid_linkage.set("value", this.max_strong_linkage.value);
+      }
+    },
+    
+    onChangeMaxMidLinkage: function () {
+      console.log('called_onchange event mix mid')
+      if (this.max_mid_linkage.value !== null) {
+        this.min_weak_linkage.set("value", this.max_mid_linkage.value);
+      }
+    },
+
+    // can delete if we field remains disabled
+    onChangeMinWeakLinkage: function () {
+      console.log('called_onchange event minweak')
+      if (this.min_weak_linkage.value !== null) {
+        console.log(this.min_weak_linkage.value);
+        this.max_mid_linkage.set("value", this.min_weak_linkage.value);
+      }
+    },
 
     checkBaseParameters: function (values, seqcomp_values) {
       seqcomp_values.output_path = values.output_path;
