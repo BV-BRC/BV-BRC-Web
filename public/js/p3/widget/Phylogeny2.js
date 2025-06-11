@@ -61,7 +61,7 @@ define([
     phylogram: true,
     containerType: 'unknown',
     docsServiceURL: window.App.docsServiceURL,
-    tutorialLink: 'quick_references/organisms_taxon/phylogeny.html',
+    tutorialLink: 'quick_references/services/archaeopteryx.html',
     nodeSelection: null,
     featureData: null,
     genomeData: null,
@@ -647,7 +647,7 @@ define([
         },
         function (selection, container) {
           // console.log('USER GUIDE action', container);
-          window.open(PathJoin(this.docsServiceURL, this.tutorialLink));
+          window.open(PathJoin(container.docsServiceURL, container.tutorialLink));
         },
         true
       ], [
