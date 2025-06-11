@@ -141,14 +141,6 @@ define([
                 style: 'display: flex;padding-right: 15px;'
             }, buttonsContainer);
 
-            // Add expand button
-            var expandButton = domConstruct.create('div', {
-                className: 'copilotChatExpandButton',
-                style: 'width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; border-radius: 50%; margin-right: 8px;',
-                innerHTML: '↖︎',
-                title: 'Expand to large view'
-            }, controlButtonsContainer);
-
             // Add minimize button
             var minimizeButton = domConstruct.create('div', {
                 className: 'copilotChatMinimizeButton',
@@ -160,7 +152,7 @@ define([
             // Add close button
             var closeButton = domConstruct.create('div', {
                 className: 'copilotChatCloseButton',
-                style: 'width: 24px; height: 24px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; border-radius: 50%;',
+                style: 'width: 24px; height: 24px; font-size: 17px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; border-radius: 50%;',
                 innerHTML: '+',
                 title: 'New Chat (start a new session)'
             }, controlButtonsContainer);
@@ -463,14 +455,9 @@ define([
             }
 
             // Setup event handlers for the buttons in the header
-            var expandButton = this.headerNode.querySelector('.copilotChatExpandButton');
             var minimizeButton = this.headerNode.querySelector('.copilotChatMinimizeButton');
             var closeButton = this.headerNode.querySelector('.copilotChatCloseButton');
             var optionsButton = this.headerNode.querySelector('.copilotChatOptionsButton');
-
-            if (options.onExpandClick && expandButton) {
-                on(expandButton, 'click', options.onExpandClick);
-            }
 
             if (options.onMinimizeClick && minimizeButton) {
                 on(minimizeButton, 'click', options.onMinimizeClick);

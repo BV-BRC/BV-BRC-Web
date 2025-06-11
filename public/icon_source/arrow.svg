@@ -1,14 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Up arrow -->
-  <rect x="45" y="25" width="10" height="25" fill="black"/>
-  <polygon points="40,25 60,25 50,15" fill="black"/>
-  <!-- Down arrow -->
-  <rect x="45" y="50" width="10" height="25" fill="black"/>
-  <polygon points="40,75 60,75 50,85" fill="black"/>
-  <!-- Left arrow -->
-  <rect x="25" y="45" width="25" height="10" fill="black"/>
-  <polygon points="25,40 25,60 15,50" fill="black"/>
-  <!-- Right arrow -->
-  <rect x="50" y="45" width="25" height="10" fill="black"/>
-  <polygon points="75,40 75,60 85,50" fill="black"/>
+  <g transform="rotate(45 50 50)">
+    <!-- Up arrow -->
+    <rect x="45" y="25" width="10" height="25" fill="black"/>
+    <polygon points="40,25 60,25 50,15" fill="black"/>
+    <!-- Down arrow -->
+    <rect x="45" y="50" width="10" height="25" fill="black"/>
+    <polygon points="40,75 60,75 50,85" fill="black"/>
+    <!-- Left arrow -->
+    <rect x="25" y="45" width="25" height="10" fill="black"/>
+    <polygon points="25,40 25,60 15,50" fill="black"/>
+    <!-- Right arrow -->
+    <rect x="50" y="45" width="25" height="10" fill="black"/>
+    <polygon points="75,40 75,60 85,50" fill="black"/>
+  </g>
 </svg>

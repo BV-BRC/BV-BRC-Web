@@ -22,11 +22,13 @@ define([
         baseClass: 'ChatSessionScrollCardSmallWindow',
 
         templateString: '<div class="chat-session-card" data-dojo-attach-point="containerNode">' +
-        '<div class="session-title" data-dojo-attach-point="titleNode"></div>' +
+        '<div class="session-title-container" style="display: flex; justify-content: space-between; align-items: center;">' +
+            '<div class="session-title" data-dojo-attach-point="titleNode"></div>' +
+            '<div class="delete-button" data-dojo-attach-point="deleteButtonNode"></div>' +
+        '</div>' +
         '<div class="session-date-container" style="display: flex; justify-content: space-between; align-items: center;">' +
             '<div class="session-date" data-dojo-attach-point="dateNode"></div>' +
             '<div class="rating-container" data-dojo-attach-point="ratingContainerNode"></div>' +
-            '<div class="delete-button" data-dojo-attach-point="deleteButtonNode"></div>' +
         '</div>' + '</div>',
 
         /**
@@ -71,26 +73,53 @@ define([
 
             // Modify title styling for smaller cards
             if (this.titleNode) {
-                this.titleNode.style.cssText = 'font-weight: bold; margin-bottom: 3px; font-size: 0.9em; line-height: 1.2;';
+                this.titleNode.style.cssText = 'font-weight: bold; margin-bottom: 3px; font-size: 0.9em; line-height: 1.2; max-height: 30px; overflow:hidden;';
+            }
+
+            // Style the delete button for small window
+            if (this.deleteButtonNode) {
+                this.deleteButtonNode.style.cssText =
+                    'opacity: 0.7; display: flex; align-items: center; justify-content: center; ' +
+                    'font-size: 14px; cursor: pointer; width: 30px; height: 25px; ' +
+                    'border-radius: 3px; background-color: transparent; color: #808080; ' +
+                    'background-image: url("/public/icon_source/trash.svg"); ' +
+                    'background-repeat: no-repeat; background-position: center; background-size: 12px 12px; ' +
+                    'transform: translate(5px, -10px);';
+
+                // Add tooltip to delete button
+                this.deleteButtonNode.title = 'Delete chat session';
+
+                // Add hover effects for delete button (matching copilotChatCloseButton:hover)
+                this.own(on(this.deleteButtonNode, 'mouseenter', lang.hitch(this, function() {
+                    this.deleteButtonNode.style.opacity = '1';
+                    this.deleteButtonNode.style.backgroundColor = '#f0f0f0';
+                })));
+
+                this.own(on(this.deleteButtonNode, 'mouseleave', lang.hitch(this, function() {
+                    this.deleteButtonNode.style.opacity = '0.7';
+                    this.deleteButtonNode.style.backgroundColor = 'transparent';
+                })));
+
+                this.own(on(this.deleteButtonNode, 'mousedown', lang.hitch(this, function(evt) {
+                    evt.stopPropagation();
+                    this.deleteButtonNode.style.backgroundColor = '#e0e0e0';
+                })));
+
+                this.own(on(this.deleteButtonNode, 'mouseup', lang.hitch(this, function(evt) {
+                    evt.stopPropagation();
+                    this.deleteButtonNode.style.backgroundColor = '#f0f0f0';
+                })));
+
+                // Add click handler for delete
+                this.own(on(this.deleteButtonNode, 'click', lang.hitch(this, function(evt) {
+                    evt.stopPropagation();
+                    topic.publish('ChatSession:Delete', this.session.session_id);
+                })));
             }
 
             // Modify date styling
             if (this.dateNode) {
                 this.dateNode.style.cssText = 'font-size: 0.7em; color: #666;';
-            }
-
-            // Modify delete button for smaller size
-            if (this.deleteButtonNode) {
-                this.deleteButtonNode.style.cssText =
-                    'cursor: pointer; width: auto; height: 18px; text-align: center; line-height: 18px; ' +
-                    'border-radius: 3px; background-color: transparent; color: #808080; ' +
-                    'font-size: 11px; display: flex; align-items: center; justify-content: center; padding: 0 4px; ' +
-                    'background-image: url("/public/icon_source/trash.svg"); ' +
-                    'background-repeat: no-repeat; background-position: center; background-size: 12px 12px; ' +
-                    'transition: all 0.2s ease;';
-
-                // Add tooltip to delete button
-                this.deleteButtonNode.title = 'Delete chat session';
             }
         },
 
