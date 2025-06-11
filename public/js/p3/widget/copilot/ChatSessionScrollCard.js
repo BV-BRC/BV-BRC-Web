@@ -61,6 +61,9 @@ define([
         /** Reference to CopilotAPI for backend operations */
         copilotApi: null,
 
+        /** Default background color for this card */
+        defaultBackgroundColor: '#f0f0f0',
+
         /**
          * Initializes card after creation
          * - Applies container and element styles
@@ -158,12 +161,21 @@ define([
                 }));
 
                 // Container hover effects
-                on(this.containerNode, 'mouseover', function() {
-                    this.style.backgroundColor = '#e0e0e0';
-                });
-                on(this.containerNode, 'mouseout', function() {
-                    this.style.backgroundColor = '#f0f0f0';
-                });
+                on(this.containerNode, 'mouseover', lang.hitch(this, function() {
+                    // Only apply hover color if not currently selected/highlighted
+                    // Check for the selection highlight color (#e6f7ff)
+                    var currentBg = this.containerNode.style.backgroundColor;
+                    if (currentBg !== 'rgb(230, 247, 255)' && currentBg !== '#e6f7ff') {
+                        this.containerNode.style.backgroundColor = '#e0e0e0';
+                    }
+                }));
+                on(this.containerNode, 'mouseout', lang.hitch(this, function() {
+                    // Only reset to default color if not currently selected/highlighted
+                    var currentBg = this.containerNode.style.backgroundColor;
+                    if (currentBg !== 'rgb(230, 247, 255)' && currentBg !== '#e6f7ff') {
+                        this.containerNode.style.backgroundColor = this.defaultBackgroundColor;
+                    }
+                }));
             }
 
             this.setupRating();

@@ -121,11 +121,11 @@ define([
                 }));
             }));
 
-            topic.subscribe('RefreshSession', lang.hitch(this, function(sessionId) {
+            topic.subscribe('RefreshSession', lang.hitch(this, function(sessionId, scrollToBottom = true) {
                 this.copilotApi.getSessionMessages(sessionId).then(lang.hitch(this, function(res) {
                     const messages = res.messages[0].messages;
                     this.chatStore.setData(messages);
-                    this.displayWidget.showMessages(messages);
+                    this.displayWidget.showMessages(messages, scrollToBottom);
                 }));
             }));
 
@@ -353,7 +353,7 @@ define([
         _handleRateMessage: function(data) {
             this.copilotApi.rateMessage(data.message_id, data.rating).then(lang.hitch(this, function(response) {
                 // Refresh the session display to show updated rating
-                topic.publish('RefreshSession', this.sessionId);
+                topic.publish('RefreshSession', this.sessionId, false);
             })).catch(lang.hitch(this, function(error) {
                 console.error('Error rating message:', error);
             }));

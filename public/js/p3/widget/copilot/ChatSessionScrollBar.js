@@ -78,6 +78,11 @@ define([
       this.getSessions();
 
       topic.subscribe('reloadUserSessions', lang.hitch(this, 'getSessions'));
+
+      // Subscribe to session selection events to highlight the selected session
+      topic.subscribe('ChatSession:Selected', lang.hitch(this, function(data) {
+        this.highlightSession(data.sessionId);
+      }));
     },
 
     /**
@@ -130,11 +135,12 @@ define([
       var sessionCard = this.sessionCards[sessionId];
 
       if (sessionCard) {
-        // Reset all cards to default style
+        // Reset all cards to their default style
         for (var id in this.sessionCards) {
           if (this.sessionCards[id] && this.sessionCards[id].containerNode) {
-            this.sessionCards[id].containerNode.style.backgroundColor = '#f0f0f0';
-            this.sessionCards[id].containerNode.style.borderLeft = '1px solid #ccc';
+            var card = this.sessionCards[id];
+            card.containerNode.style.backgroundColor = card.defaultBackgroundColor || '#f0f0f0';
+            card.containerNode.style.borderLeft = '1px solid #ccc';
           }
         }
 

@@ -7,12 +7,14 @@ define([
     'dojo/_base/declare',
     'dojo/_base/lang',
     'dojo/dom-construct',
+    'dojo/topic',
     './ChatSessionScrollBar',
     './ChatSessionScrollCardSmallWindow'
 ], function(
     declare,
     lang,
     domConstruct,
+    topic,
     ChatSessionScrollBar,
     ChatSessionScrollCardSmallWindow
 ) {
@@ -60,6 +62,11 @@ define([
                 `;
                 document.head.appendChild(style);
             }
+
+            // Subscribe to session selection events to highlight the selected session
+            topic.subscribe('ChatSession:Selected', lang.hitch(this, function(data) {
+                this.highlightSession(data.sessionId);
+            }));
         },
 
         /**

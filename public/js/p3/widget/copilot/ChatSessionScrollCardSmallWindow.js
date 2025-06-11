@@ -50,6 +50,9 @@ define([
             // Call parent postCreate to get base functionality
             this.inherited(arguments);
 
+            // Set the default background color for small window cards
+            this.defaultBackgroundColor = '#f8f8f8';
+
             // Apply small window specific styling modifications
             if (this.containerNode) {
                 // Modify container styling for smaller size

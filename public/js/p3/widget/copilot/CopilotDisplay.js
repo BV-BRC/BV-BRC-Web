@@ -107,7 +107,7 @@ define([
      * - Scrolls to bottom after rendering
      * - Shows empty state if no messages
      */
-    showMessages: function(messages) {
+    showMessages: function(messages, scrollToBottom = true) {
       if (messages.length) {
         domConstruct.empty(this.resultContainer);
         console.log('show messages', messages);
@@ -115,7 +115,9 @@ define([
           new ChatMessage(message, this.resultContainer);
         }));
 
-        this.scrollToBottom();
+        if (scrollToBottom) {
+          this.scrollToBottom();
+        }
       } else {
         this.showEmptyState();
       }
