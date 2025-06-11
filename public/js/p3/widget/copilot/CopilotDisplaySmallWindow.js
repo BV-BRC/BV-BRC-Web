@@ -8,6 +8,7 @@ define([
     './CopilotDisplay',
     'dojo/_base/lang',
     'dojo/dom-construct',
+    'dojo/dom-style',
     'dojo/topic',
     'markdown-it/dist/markdown-it.min'
 ], function(
@@ -15,6 +16,7 @@ define([
     CopilotDisplay,
     lang,
     domConstruct,
+    domStyle,
     topic,
     markdownit
 ) {
@@ -32,6 +34,35 @@ define([
             }
         },
 
+        /**
+         * Updates the padding of resultContainer based on current display width
+         * @private
+         */
+        _updateResponsivePadding: function() {
+            if (!this.resultContainer) return;
+
+            // Get the width of the container or window
+            var containerWidth = this.domNode ?
+                domStyle.get(this.domNode, 'width') :
+                window.innerWidth;
+
+            // Apply responsive padding: 10px for < 800px, 100px for >= 800px
+            var padding = containerWidth < 800 ? '10px' : '100px';
+
+            domStyle.set(this.resultContainer, {
+                'padding-left': padding,
+                'padding-right': padding
+            });
+        },
+
+        /**
+         * Override resize method to update responsive padding
+         */
+        resize: function() {
+            this.inherited(arguments);
+            this._updateResponsivePadding();
+        },
+
     /**
      * Sets up the widget after DOM creation
      * Implementation:
@@ -47,6 +78,9 @@ define([
           class: 'copilot-result-container',
           style: 'padding-right: 10px;padding-left: 10px;'
         }, this.containerNode);
+
+        // Apply initial responsive padding
+        this._updateResponsivePadding();
 
         // Show initial empty state
         this.showEmptyState();

@@ -102,7 +102,7 @@ define([
         createRatingContainer: function() {
             // Create rating container
             var ratingContainer = domConstruct.create('div', {
-                style: 'display: flex; justify-content: center; align-items: center; gap: 2px;'
+                style: 'display: flex; justify-content: center; align-items: center; gap: 1px;'
             });
 
             // Create 5 star rating buttons

@@ -22,7 +22,8 @@ define([
     'dijit/Dialog',
     'dojo/fx',
     'dojo/_base/fx',
-    'dojo/dnd/Moveable'
+    'dojo/dnd/Moveable',
+    'dojox/layout/ResizeHandle'
 ], function(
     declare,
     _WidgetBase,
@@ -42,14 +43,15 @@ define([
     Dialog,
     fx,
     baseFx,
-    Moveable
+    Moveable,
+    ResizeHandle
 ) {
     return declare([BorderContainer], {
         baseClass: 'CopilotSmallWindowContainer',
 
         // Configuration properties
         gutters: false,
-        style: 'width: 1000px; height: 450px; position: absolute; bottom: 20px; right: 20px; overflow: hidden;',
+        style: 'width: 1000px; height: 450px; position: relative; bottom: 20px; right: 20px; overflow: hidden;',
 
         // Controller panel reference
         controllerPanel: null,
@@ -96,8 +98,8 @@ define([
 
             // Ensure the initial width is properly applied
             domStyle.set(this.domNode, {
-                width: '650px',
-                height: '600px'
+                width: '80%',
+                height: '70%'
             });
 
             // Create header
@@ -197,6 +199,30 @@ define([
                 handle: titleNode
             });
 
+            // Add bounds checking to prevent dragging outside viewport
+            this._moveable.onMove = lang.hitch(this, function(mover, leftTop) {
+                var viewport = {
+                    width: window.innerWidth || document.documentElement.clientWidth,
+                    height: window.innerHeight || document.documentElement.clientHeight
+                };
+
+                var widgetWidth = parseInt(domStyle.get(this.domNode, 'width')) || 650;
+                var widgetHeight = parseInt(domStyle.get(this.domNode, 'height')) || 450;
+
+                // Constrain horizontal position
+                var newLeft = Math.max(0, Math.min(leftTop.l, viewport.width - widgetWidth));
+                // Constrain vertical position
+                var newTop = Math.max(0, Math.min(leftTop.t, viewport.height - widgetHeight));
+
+                // Apply the constrained position
+                domStyle.set(this.domNode, {
+                    left: newLeft + 'px',
+                    top: newTop + 'px'
+                });
+
+                return false; // Prevent default positioning
+            });
+
             // Optional: Add visual feedback when dragging starts/stops
             this._moveable.onMoveStart = lang.hitch(this, function(mover) {
                 domClass.add(this.domNode, 'copilotDragging');
@@ -207,11 +233,150 @@ define([
                 domClass.remove(this.domNode, 'copilotDragging');
                 domStyle.set(this.headerNode, 'background-color', '#f8f8f8');
             });
+
+            // Add resize handle
+            var resizeHandle = new ResizeHandle({
+                targetId: this.id,
+                activeResize: true,
+                intermediateChanges: true
+            }).placeAt(this.domNode);
+
+            resizeHandle.on('resize', lang.hitch(this, function(e){
+                // Force layout recalculation when resizing
+                if (this.layoutContainer && this.layoutContainer.resize) {
+                    this.layoutContainer.resize();
+                }
+
+                // Notify any listeners that the widget has been resized
+                if (this.controllerPanel && this.controllerPanel.displayWidget) {
+                    this.controllerPanel.displayWidget.resize();
+                }
+            }));
+
+            // Create a custom resize handle that's more visible and user-friendly
+            this.resizeHandleNode = domConstruct.create('div', {
+                className: 'copilotResizeHandle',
+                style: 'position: absolute; bottom: 0px; right: 0px; width: 16px; height: 16px; cursor: nw-resize; ' +
+                       'background-color: transparent; border: 0px; border-bottom-right-radius: 3px; z-index: 1000; ' +
+                       'display: flex; align-items: center; justify-content: center; font-size: 12px; background-color: transparent;' +
+                       'background-image: url("/public/icon_source/arrow.svg"); background-size: 16px; background-position: center; background-repeat: no-repeat;',
+                innerHTML: ''
+            }, this.domNode);
+
+            // Add mouse events for custom resize functionality
+            var isResizing = false;
+            var startX, startY, startWidth, startHeight, startLeft, startTop;
+
+            this.own(
+                on(this.resizeHandleNode, 'mousedown', lang.hitch(this, function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    isResizing = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    startWidth = parseInt(domStyle.get(this.domNode, 'width'));
+                    startHeight = parseInt(domStyle.get(this.domNode, 'height'));
+                    startLeft = parseInt(domStyle.get(this.domNode, 'left') || 0);
+                    startTop = parseInt(domStyle.get(this.domNode, 'top') || 0);
+
+                    // Add global mouse events
+                    var mouseMoveHandle = on(document, 'mousemove', lang.hitch(this, function(e) {
+                        if (!isResizing) return;
+
+                        var deltaX = e.clientX - startX;
+                        var deltaY = e.clientY - startY;
+
+                        // Get viewport dimensions
+                        var viewport = {
+                            width: window.innerWidth || document.documentElement.clientWidth,
+                            height: window.innerHeight || document.documentElement.clientHeight
+                        };
+
+                        // Calculate proposed new dimensions
+                        var proposedWidth = Math.max(300, startWidth + deltaX);  // Minimum width of 300px
+                        var proposedHeight = Math.max(200, startHeight + deltaY); // Minimum height of 200px
+
+                        // Get current position
+                        var currentLeft = parseInt(domStyle.get(this.domNode, 'left') || 0);
+                        var currentTop = parseInt(domStyle.get(this.domNode, 'top') || 0);
+
+                        // Constrain width to not exceed viewport boundaries
+                        var maxWidth = viewport.width - currentLeft;
+                        var newWidth = Math.min(proposedWidth, maxWidth);
+
+                        // Constrain height to not exceed viewport boundaries
+                        var maxHeight = viewport.height - currentTop;
+                        var newHeight = Math.min(proposedHeight, maxHeight);
+
+                        domStyle.set(this.domNode, {
+                            width: newWidth + 'px',
+                            height: newHeight + 'px'
+                        });
+
+                        // Force layout recalculation
+                        if (this.layoutContainer && this.layoutContainer.resize) {
+                            this.layoutContainer.resize();
+                        }
+
+                        // Notify any listeners that the widget has been resized
+                        if (this.controllerPanel && this.controllerPanel.displayWidget) {
+                            this.controllerPanel.displayWidget.resize();
+                        }
+                    }));
+
+                    var mouseUpHandle = on(document, 'mouseup', function(e) {
+                        isResizing = false;
+                        mouseMoveHandle.remove();
+                        mouseUpHandle.remove();
+                    });
+                }))
+            );
         },
 
         startup: function() {
             this.inherited(arguments);
             this.resize();
+
+            // Add window resize listener to keep widget within bounds
+            this._windowResizeHandle = on(window, 'resize', lang.hitch(this, '_constrainToBounds'));
+        },
+
+        /**
+         * Constrains the widget to stay within viewport boundaries
+         */
+        _constrainToBounds: function() {
+            var viewport = {
+                width: window.innerWidth || document.documentElement.clientWidth,
+                height: window.innerHeight || document.documentElement.clientHeight
+            };
+
+            var widgetWidth = parseInt(domStyle.get(this.domNode, 'width')) || 650;
+            var widgetHeight = parseInt(domStyle.get(this.domNode, 'height')) || 450;
+            var currentLeft = parseInt(domStyle.get(this.domNode, 'left') || 0);
+            var currentTop = parseInt(domStyle.get(this.domNode, 'top') || 0);
+
+            // Check if widget extends beyond viewport and adjust position
+            var newLeft = Math.max(0, Math.min(currentLeft, viewport.width - widgetWidth));
+            var newTop = Math.max(0, Math.min(currentTop, viewport.height - widgetHeight));
+
+            // Also constrain size if needed
+            var maxWidth = viewport.width - newLeft;
+            var maxHeight = viewport.height - newTop;
+            var newWidth = Math.min(widgetWidth, maxWidth);
+            var newHeight = Math.min(widgetHeight, maxHeight);
+
+            domStyle.set(this.domNode, {
+                left: newLeft + 'px',
+                top: newTop + 'px',
+                width: newWidth + 'px',
+                height: newHeight + 'px'
+            });
+
+            // Force layout recalculation
+            if (this.layoutContainer && this.layoutContainer.resize) {
+                this.layoutContainer.resize();
+            }
         },
 
         show: function() {
@@ -351,16 +516,13 @@ define([
 
                 // Get current position and dimensions
                 var currentContainerWidth = parseInt(domStyle.get(this.domNode, 'width') || 650);
-                var currentLeft = parseInt(domStyle.get(this.domNode, 'left') || 0);
                 var sidebarWidth = 150;
                 var newWidth = currentContainerWidth + sidebarWidth;
-                var newLeft = currentLeft - sidebarWidth; // Move left to keep right side fixed
 
                 var anim = baseFx.animateProperty({
                     node: this.domNode,
                     properties: {
-                        width: newWidth,
-                        left: newLeft
+                        width: newWidth
                     },
                     duration: 300,
                     onEnd: lang.hitch(this, function() {
@@ -379,16 +541,13 @@ define([
 
                 // Get current position and dimensions
                 var currentContainerWidth = parseInt(domStyle.get(this.domNode, 'width') || 650);
-                var currentLeft = parseInt(domStyle.get(this.domNode, 'left') || 0);
                 var sidebarWidth = 150;
                 var originalWidth = currentContainerWidth - sidebarWidth;
-                var originalLeft = currentLeft + sidebarWidth; // Move right to keep right side fixed
 
                 var anim = baseFx.animateProperty({
                     node: this.domNode,
                     properties: {
-                        width: originalWidth,
-                        left: originalLeft
+                        width: originalWidth
                     },
                     duration: 300,
                     onEnd: lang.hitch(this, function() {
@@ -417,6 +576,12 @@ define([
         },
 
         destroy: function() {
+            // Clean up the window resize listener
+            if (this._windowResizeHandle) {
+                this._windowResizeHandle.remove();
+                this._windowResizeHandle = null;
+            }
+
             // Clean up the content panes
             if (this.topContentPane) {
                 this.topContentPane.destroyRecursive();
@@ -432,6 +597,13 @@ define([
                 this._moveable.destroy();
                 this._moveable = null;
             }
+
+            // Clean up the custom resize handle
+            if (this.resizeHandleNode) {
+                domConstruct.destroy(this.resizeHandleNode);
+                this.resizeHandleNode = null;
+            }
+
             this.inherited(arguments);
         }
     });

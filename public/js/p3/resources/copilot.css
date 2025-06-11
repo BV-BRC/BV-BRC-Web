@@ -261,15 +261,15 @@
 
 /* Highlighted state for rated buttons */
 .message-action-button.thumb-up-button.highlighted {
-  background-color: var(--blue-light-bg);
-  border-color: var(--blue-light-bg);
+  background-color: #bcd8f4;
+  border-color: #bcd8f4;
   color: white;
 }
 
 /* Highlighted state for rated buttons */
 .message-action-button.thumb-down-button.highlighted {
-  background-color: var(--blue-light-bg);
-  border-color: var(--blue-light-bg);
+  background-color: #bcd8f4;
+  border-color: #bcd8f4;
   color: white;
 }
 
