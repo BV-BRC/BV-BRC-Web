@@ -142,7 +142,7 @@ define([
                     this.chatStore.updateSessionTitle(data.sessionId, data.title);
                 }
                 topic.publish('reloadUserSessions', {
-                    sessionId: data.sessionId
+                    highlightSessionId: data.sessionId
                 });
             }));
 

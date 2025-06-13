@@ -538,6 +538,7 @@ define([
         rateMessage: function(messageId, rating) {
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
+            debugger;
             return request.post(this.apiUrlBase + '/rate-message', {
                 data: JSON.stringify({
                     message_id: messageId,

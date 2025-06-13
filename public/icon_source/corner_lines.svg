@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2">
+  <!-- furthest line -->
+  <line x1="4" y1="16" x2="16" y2="4"/>
+  <!-- middle line -->
+  <line x1="8" y1="16" x2="16" y2="8"/>
+  <!-- closest line -->
+  <line x1="12" y1="16" x2="16" y2="12"/>
+</svg>

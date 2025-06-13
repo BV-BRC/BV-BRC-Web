@@ -238,6 +238,8 @@ define([
             this.isSubmitting = true;
             this.submitButton.set('disabled', true);
 
+            this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
             topic.publish('hideChatPanel'); // Hide panel before taking screenshot
 
             html2canvas(document.body).then(lang.hitch(this, function(canvas) {
@@ -248,8 +250,6 @@ define([
                 this.systemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\n' +
                                     'Analyze the screenshot and respond to the user\'s query.';
                 var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
-
-                this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
                 this.copilotApi.submitQueryWithImage(inputText, this.sessionId, this.systemPrompt, imgtxt_model, base64Image)
                     .then(lang.hitch(this, function(response) {
@@ -268,7 +268,9 @@ define([
 
                         if (_self.new_chat) {
                             _self.new_chat = false;
-                            topic.publish('reloadUserSessions');
+                            topic.publish('reloadUserSessions', {
+                                highlightSessionId: this.sessionId
+                            });
                             setTimeout(() => {
                                 topic.publish('generateSessionTitle');
                             }, 100);
@@ -279,6 +281,11 @@ define([
                         this.displayWidget.hideLoadingIndicator();
                         this.isSubmitting = false;
                         this.submitButton.set('disabled', false);
+
+                        // Deselect the pageContentToggle after submission
+                        this.pageContentEnabled = false;
+                        this._updateToggleButtonStyle();
+                        topic.publish('pageContentToggleChanged', false);
                     }));
             })).catch(lang.hitch(this, function(error) {
                 console.error('Error capturing or processing screenshot:', error);
@@ -324,7 +331,9 @@ define([
 
                 if (_self.new_chat) {
                 _self.new_chat = false;
-                topic.publish('reloadUserSessions');
+                topic.publish('reloadUserSessions', {
+                    highlightSessionId: this.sessionId
+                });
                 setTimeout(() => {
                     topic.publish('generateSessionTitle');
                 }, 100);
@@ -335,6 +344,11 @@ define([
                 this.displayWidget.hideLoadingIndicator();
                 this.isSubmitting = false;
                 this.submitButton.set('disabled', false);
+
+                // Deselect the pageContentToggle after submission
+                this.pageContentEnabled = false;
+                this._updateToggleButtonStyle();
+                topic.publish('pageContentToggleChanged', false);
             }));
         },
 

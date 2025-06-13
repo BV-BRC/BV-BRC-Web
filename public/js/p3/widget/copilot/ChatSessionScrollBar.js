@@ -77,7 +77,13 @@ define([
 
       this.getSessions();
 
-      topic.subscribe('reloadUserSessions', lang.hitch(this, 'getSessions'));
+      topic.subscribe('reloadUserSessions', lang.hitch(this, function(data) {
+        if (data && data.highlightSessionId) {
+          // Store the session ID to highlight after reload
+          this._highlightAfterReload = data.highlightSessionId;
+        }
+        this.getSessions();
+      }));
 
       // Subscribe to session selection events to highlight the selected session
       topic.subscribe('ChatSession:Selected', lang.hitch(this, function(data) {
@@ -127,7 +133,13 @@ define([
      * - Scrolls the highlighted session into view
      */
     highlightSession: function(sessionId) {
-      if (!sessionId || !this.sessionCards) {
+      if (!this.sessionCards) {
+        return;
+      }
+
+      // If no sessionId provided, just clear all highlighting
+      if (!sessionId) {
+        this.clearHighlight();
         return;
       }
 
@@ -136,13 +148,7 @@ define([
 
       if (sessionCard) {
         // Reset all cards to their default style
-        for (var id in this.sessionCards) {
-          if (this.sessionCards[id] && this.sessionCards[id].containerNode) {
-            var card = this.sessionCards[id];
-            card.containerNode.style.backgroundColor = card.defaultBackgroundColor || '#f0f0f0';
-            card.containerNode.style.borderLeft = '1px solid #ccc';
-          }
-        }
+        this.clearHighlight();
 
         // Highlight the selected card
         sessionCard.containerNode.style.backgroundColor = '#e6f7ff';
@@ -151,6 +157,25 @@ define([
         // Scroll card into view if it's out of the visible area
         if (sessionCard.containerNode) {
           sessionCard.containerNode.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    },
+
+    /**
+     * @method clearHighlight
+     * Clears highlighting from all session cards, resetting them to default state
+     */
+    clearHighlight: function() {
+      if (!this.sessionCards) {
+        return;
+      }
+
+      // Reset all cards to their default style
+      for (var id in this.sessionCards) {
+        if (this.sessionCards[id] && this.sessionCards[id].containerNode) {
+          var card = this.sessionCards[id];
+          card.containerNode.style.backgroundColor = card.defaultBackgroundColor || '#f0f0f0';
+          card.containerNode.style.borderLeft = '1px solid #ccc';
         }
       }
     },
@@ -181,6 +206,15 @@ define([
     setSessions: function(sessions) {
       this.sessions_list = sessions;
       this.renderSessions();
+
+      // If there's a session to highlight after reload, do it now
+      if (this._highlightAfterReload) {
+        // Use setTimeout to ensure the DOM is updated before highlighting
+        setTimeout(lang.hitch(this, function() {
+          this.highlightSession(this._highlightAfterReload);
+          this._highlightAfterReload = null; // Clear the pending highlight
+        }), 100);
+      }
     },
 
     /**

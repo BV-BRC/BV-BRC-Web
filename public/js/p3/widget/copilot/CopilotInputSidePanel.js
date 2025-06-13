@@ -237,7 +237,9 @@ define([
 
         if (_self.new_chat) {
           _self.new_chat = false;
-          topic.publish('reloadUserSessions');
+          topic.publish('reloadUserSessions', {
+            highlightSessionId: this.sessionId
+          });
           setTimeout(() => {
             topic.publish('generateSessionTitle');
           }, 100);
@@ -301,7 +303,9 @@ define([
 
         if (_self.new_chat) {
           _self.new_chat = false;
-          topic.publish('reloadUserSessions');
+          topic.publish('reloadUserSessions', {
+            highlightSessionId: this.sessionId
+          });
           setTimeout(() => {
             topic.publish('generateSessionTitle');
           }, 100);

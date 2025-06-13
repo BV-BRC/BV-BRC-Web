@@ -145,16 +145,8 @@ define([
             var minimizeButton = domConstruct.create('div', {
                 className: 'copilotChatMinimizeButton',
                 style: 'width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; border-radius: 50%; margin-right: 8px;',
-                innerHTML: '_',
-                title: 'Minimize (keep session)'
-            }, controlButtonsContainer);
-
-            // Add close button
-            var closeButton = domConstruct.create('div', {
-                className: 'copilotChatCloseButton',
-                style: 'width: 24px; height: 24px; font-size: 17px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; border-radius: 50%;',
-                innerHTML: '+',
-                title: 'New Chat (start a new session)'
+                innerHTML: 'X',
+                title: 'Close'
             }, controlButtonsContainer);
 
             // Create content container that will house the BorderContainer for main content + options
@@ -165,25 +157,31 @@ define([
 
             // Create a BorderContainer within the content container for layout management
             this.layoutContainer = new BorderContainer({
-                gutters: false,
+                design: 'sidebar',
+                gutters: true,
+                liveSplitters: true,
                 style: 'width: 100%; height: 100%;'
             });
             this.layoutContainer.placeAt(this.contentContainer);
 
             // Create options bar container (initially visible) - positioned on the left
-            this.optionsBarContainer = new BorderContainer({
+            this.optionsBarContainer = new ContentPane({
                 region: 'left',
-                splitter: false,
-                style: 'width: 150px; overflow: hidden; background-color: #f8f8f8; border-right: 1px solid #ddd;'
+                splitter: true,
+                gutters: false,
+                style: 'width: 150px; overflow: hidden; background-color: #f8f8f8; border-right: 1px solid #ddd;padding:0px;'
             });
             this.layoutContainer.addChild(this.optionsBarContainer);
 
             // Create main content area that will house the controller panel
-            this.mainContentContainer = new BorderContainer({
+            this.mainContentContainer = new ContentPane({
                 region: 'center',
-                gutters: false
+                style: 'border: 0px;'
             });
             this.layoutContainer.addChild(this.mainContentContainer);
+
+            // Start up the layout container to initialize splitters
+            this.layoutContainer.startup();
 
             // Setup drag functionality - use the entire widget as the moveable node
             // but restrict the drag handle to the title area only
@@ -251,7 +249,7 @@ define([
                 style: 'position: absolute; bottom: 0px; right: 0px; width: 16px; height: 16px; cursor: nw-resize; ' +
                        'background-color: transparent; border: 0px; border-bottom-right-radius: 3px; z-index: 1000; ' +
                        'display: flex; align-items: center; justify-content: center; font-size: 12px; background-color: transparent;' +
-                       'background-image: url("/public/icon_source/arrow.svg"); background-size: 16px; background-position: center; background-repeat: no-repeat;',
+                       'background-image: url("/public/icon_source/corner_lines.svg"); background-size: 16px; background-position: center; background-repeat: no-repeat;',
                 innerHTML: ''
             }, this.domNode);
 
@@ -386,14 +384,13 @@ define([
         createControllerPanel: function(options) {
             // Create controller panel inside the main content container
             this.controllerPanel = new ChatSessionControllerPanel({
-                region: 'center',
                 style: "width: 100%; height: 100%;",
                 copilotApi: options.copilotApi,
                 optionsBar: options.optionsBar
             });
 
-            // Add the control panel to the main content container using addChild
-            this.mainContentContainer.addChild(this.controllerPanel);
+            // Place the control panel directly in the main content container
+            this.controllerPanel.placeAt(this.mainContentContainer.domNode);
 
             // Store the options bar reference
             this.optionsBar = options.optionsBar;
@@ -401,23 +398,33 @@ define([
 
             // Initialize the options bar container with its content panes
             if (this.optionsBarContainer && this.optionsBarContainer.getChildren().length === 0) {
+                // Create a BorderContainer for the options sidebar to contain the two sections
+                this.optionsSidebarContainer = new BorderContainer({
+                    gutters: false,
+                    style: 'width: 100%; height: 100%;'
+                });
+                this.optionsSidebarContainer.placeAt(this.optionsBarContainer.domNode);
+
                 // Create top content pane
                 this.topContentPane = new ChatSessionOptionsBar({
                     className: 'optionsTopSection',
                     region: 'top',
-                    style: 'height: 20%; padding: 5px; background-color: #e8e8e8; overflow-y: auto;',
+                    style: 'height: 20%; padding: 0px; background-color: #e8e8e8; overflow-y: auto;',
                     copilotApi: this.copilotApi
                 });
-                this.optionsBarContainer.addChild(this.topContentPane);
+                this.optionsSidebarContainer.addChild(this.topContentPane);
 
                 // Create bottom content pane
                 this.bottomContentPane = new ChatSessionScrollBar({
                     className: 'optionsBottomSection',
                     region: 'center',
-                    style: 'padding: 0px; margin: 0px; height: 70%; border: 0px solid grey; background-color: #f0f0f0; border-bottom: 1px solid #ddd;',
+                    style: 'padding: 0px; margin: 0px; height: 70%; border: 0px; background-color: #f0f0f0;',
                     copilotApi: this.copilotApi
                 });
-                this.optionsBarContainer.addChild(this.bottomContentPane);
+                this.optionsSidebarContainer.addChild(this.bottomContentPane);
+
+                // Start up the options sidebar container
+                this.optionsSidebarContainer.startup();
             }
 
             // Set initial options button appearance to show it's active
@@ -456,15 +463,10 @@ define([
 
             // Setup event handlers for the buttons in the header
             var minimizeButton = this.headerNode.querySelector('.copilotChatMinimizeButton');
-            var closeButton = this.headerNode.querySelector('.copilotChatCloseButton');
             var optionsButton = this.headerNode.querySelector('.copilotChatOptionsButton');
 
             if (options.onMinimizeClick && minimizeButton) {
                 on(minimizeButton, 'click', options.onMinimizeClick);
-            }
-
-            if (options.onCloseClick && closeButton) {
-                on(closeButton, 'click', options.onCloseClick);
             }
 
             if (options.onOptionsClick && optionsButton) {
@@ -567,6 +569,12 @@ define([
             if (this._windowResizeHandle) {
                 this._windowResizeHandle.remove();
                 this._windowResizeHandle = null;
+            }
+
+            // Clean up the options sidebar container
+            if (this.optionsSidebarContainer) {
+                this.optionsSidebarContainer.destroyRecursive();
+                this.optionsSidebarContainer = null;
             }
 
             // Clean up the content panes

@@ -115,6 +115,32 @@ define([
                 })
             }, buttonsContainer);
 
+            // Add New Chat button with hover effects
+            this.newChatButton = domConstruct.create('div', {
+                innerHTML: 'New Chat',
+                style: 'padding: 2px 5px; transition: color 0.2s; cursor: pointer; margin-top: 5px;',
+                onmouseover: function(evt) {
+                    evt.target.style.color = '#2196F3';
+                },
+                onmouseout: function(evt) {
+                    evt.target.style.color = '';
+                },
+                onclick: lang.hitch(this, function() {
+                    // Create a new chat session immediately
+                    if (this.copilotApi) {
+                        this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
+                            // Publish the createNewChatSession topic
+                            topic.publish('createNewChatSession');
+
+                            // Publish reloadUserSessions with the new session highlighted
+                            topic.publish('reloadUserSessions', {
+                                highlightSessionId: sessionId
+                            });
+                        }));
+                    }
+                })
+            }, buttonsContainer);
+
             /*
             // Add container for the "Ask about this page" toggle switch and label
             var toggleContainer = domConstruct.create('div', {

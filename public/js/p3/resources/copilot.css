@@ -414,7 +414,7 @@
 }
 
 .copilotChatMinimizeButton,
-.copilotChatCloseButton,
+.copilotChatNewChatButton,
 .copilotChatOptionsButton {
   opacity: 0.7;
   transition: all 0.2s ease;
@@ -430,7 +430,7 @@
 }
 
 .copilotChatMinimizeButton:hover,
-.copilotChatCloseButton:hover,
+.copilotChatNewChatButton:hover,
 .copilotChatExpandButton:hover,
 .copilotChatOptionsButton:hover {
   opacity: 1;

@@ -237,7 +237,9 @@ define([
 
           if (_self.new_chat) {
             _self.new_chat = false;
-            topic.publish('reloadUserSessions');
+            topic.publish('reloadUserSessions', {
+              highlightSessionId: this.sessionId
+            });
             setTimeout(() => {
               topic.publish('generateSessionTitle');
             }, 100);
@@ -272,6 +274,7 @@ define([
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
         this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
+          // TODO: maybe I should query for the messages again here and add that to the chat store
           this.chatStore.addMessages([
             {
               role: 'user',
@@ -287,7 +290,9 @@ define([
 
           if (_self.new_chat) {
             _self.new_chat = false;
-            topic.publish('reloadUserSessions');
+            topic.publish('reloadUserSessions', {
+              highlightSessionId: this.sessionId
+            });
             setTimeout(() => {
               topic.publish('generateSessionTitle');
             }, 100);

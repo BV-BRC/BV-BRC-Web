@@ -143,31 +143,6 @@ define([
                     this.chatOpen = false;
                     evt.stopPropagation();
                 }),
-                onCloseClick: lang.hitch(this, function(evt) {
-                    // Create a new chat session immediately
-                    if (this.copilotApi) {
-                        this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
-                            this.currentSessionId = sessionId;
-
-                            // Reset everything in the controller panel for the new session
-                            if (this.controllerPanel) {
-                                this.controllerPanel.changeSessionId(sessionId);
-
-                                // Reset input widget and display
-                                if (this.controllerPanel.inputWidget) {
-                                    this.controllerPanel.inputWidget.startNewChat();
-                                }
-                                if (this.controllerPanel.displayWidget) {
-                                    this.controllerPanel.displayWidget.startNewChat();
-                                }
-                                if (this.controllerPanel.titleWidget) {
-                                    this.controllerPanel.titleWidget.startNewChat(sessionId);
-                                }
-                            }
-                        }));
-                    }
-                    evt.stopPropagation();
-                }),
                 onResize: lang.hitch(this, function(sessionId) {
                     this.currentSessionId = sessionId;
                 })
@@ -193,6 +168,12 @@ define([
                         this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
                             if (this.controllerPanel) {
                                 this.currentSessionId = sessionId;
+
+                                // Clear highlighting from all scroll cards when starting a new chat
+                                if (this.chatContainer && this.chatContainer.bottomContentPane) {
+                                    this.chatContainer.bottomContentPane.clearHighlight();
+                                }
+
                                 // Change the session ID and reset the chat components
                                 this.controllerPanel.changeSessionId(sessionId);
 
