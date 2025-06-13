@@ -117,7 +117,7 @@ define([
             // Add options button to the left container
             var optionsButton = domConstruct.create('div', {
                 className: 'copilotChatOptionsButton',
-                style: 'font-size: 17px; width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; border-radius: 50%;',
+                style: 'font-size: 17px; width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8;',
                 innerHTML: '☰',
                 title: 'Options'
             }, leftButtonContainer);
@@ -144,7 +144,7 @@ define([
             // Add minimize button
             var minimizeButton = domConstruct.create('div', {
                 className: 'copilotChatMinimizeButton',
-                style: 'width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; border-radius: 50%; margin-right: 8px;',
+                style: 'width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8;margin-right: 2px;',
                 innerHTML: 'X',
                 title: 'Close'
             }, controlButtonsContainer);

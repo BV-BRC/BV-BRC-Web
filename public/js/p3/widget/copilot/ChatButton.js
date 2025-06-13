@@ -160,8 +160,7 @@ define([
                 this.chatContainer.show();
 
                 // Check if we need to start a new session: happens when clicking the close button on the small chat
-                if (this.startNewSession && this.controllerPanel) {
-                    this.startNewSession = false;
+                if (this.controllerPanel) {
 
                     // Create a new chat session
                     if (this.copilotApi) {

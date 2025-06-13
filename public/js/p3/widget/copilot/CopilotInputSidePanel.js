@@ -222,16 +222,18 @@ define([
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
       this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
-        this.chatStore.addMessages([
-          {
-            role: 'user',
-            content: inputText
-          },
-          {
-            role: 'assistant',
-            content: response.response
-          }
-        ]);
+        if (response.systemMessage) {
+          this.chatStore.addMessages([
+            response.userMessage,
+            response.systemMessage,
+            response.assistantMessage
+          ]);
+        } else {
+          this.chatStore.addMessages([
+            response.userMessage,
+            response.assistantMessage
+          ]);
+        }
         _self.textArea.set('value', '');
         this.displayWidget.showMessages(this.chatStore.query());
 
@@ -288,16 +290,18 @@ define([
         // Submit query with job details as system prompt
         return _self.copilotApi.submitQuery(inputText, _self.sessionId, jobSystemPrompt, _self.model);
       }).then(lang.hitch(this, function(response) {
-        this.chatStore.addMessages([
-          {
-            role: 'user',
-            content: inputText
-          },
-          {
-            role: 'assistant',
-            content: response.response
-          }
-        ]);
+        if (response.systemMessage) {
+          this.chatStore.addMessages([
+            response.userMessage,
+            response.systemMessage,
+            response.assistantMessage
+          ]);
+        } else {
+          this.chatStore.addMessages([
+            response.userMessage,
+            response.assistantMessage
+          ]);
+        }
         _self.textArea.set('value', '');
         this.displayWidget.showMessages(this.chatStore.query());
 

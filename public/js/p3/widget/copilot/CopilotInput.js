@@ -212,26 +212,18 @@ define([
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
         this.copilotApi.submitRagQuery(inputText, this.ragDb, this.numDocs, this.sessionId, this.model, this.summarizeDocs).then(lang.hitch(this, function(response) {
-
-          this.chatStore.addMessages([
-            {
-              role: 'user',
-              content: inputText
-            }
-          ]);
-          if (response.system_prompt) {
-            system_prompt = {
-              role: 'system',
-              content: response.system_prompt
-            };
-            this.chatStore.addMessages([system_prompt]);
+          if (response.systemMessage) {
+            this.chatStore.addMessages([
+              response.userMessage,
+              response.systemMessage,
+              response.assistantMessage
+            ]);
+          } else {
+            this.chatStore.addMessages([
+              response.userMessage,
+              response.assistantMessage
+            ]);
           }
-          this.chatStore.addMessages([
-            {
-              role: 'assistant',
-              content: response.response
-            }
-          ]);
           _self.textArea.set('value', '');
           this.displayWidget.showMessages(this.chatStore.query());
 
@@ -244,7 +236,9 @@ define([
               topic.publish('generateSessionTitle');
             }, 100);
           }
-        })).finally(lang.hitch(this, function() {
+        })).catch(function(error) {
+          topic.publish('CopilotApiError', { error: error });
+        }).finally(lang.hitch(this, function() {
           this.displayWidget.hideLoadingIndicator();
           this.isSubmitting = false;
           this.submitButton.set('disabled', false);
@@ -274,17 +268,18 @@ define([
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
         this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
-          // TODO: maybe I should query for the messages again here and add that to the chat store
-          this.chatStore.addMessages([
-            {
-              role: 'user',
-              content: inputText
-            },
-            {
-              role: 'assistant',
-              content: response.response
-            }
-          ]);
+          if (response.systemMessage) {
+            this.chatStore.addMessages([
+              response.userMessage,
+              response.systemMessage,
+              response.assistantMessage
+            ]);
+          } else {
+            this.chatStore.addMessages([
+              response.userMessage,
+              response.assistantMessage
+            ]);
+          }
           _self.textArea.set('value', '');
           this.displayWidget.showMessages(this.chatStore.query());
 

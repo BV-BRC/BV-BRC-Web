@@ -97,6 +97,7 @@ define([
                 this._createTitleWidget();
                 this._createDisplayWidget();
                 this._createInputWidget();
+                this.changeSessionId(sessionId);
                 topic.publish('SetInitialChatModel');
                 this._initialized.resolve();
             })).catch(lang.hitch(this, function(error) {
@@ -114,7 +115,6 @@ define([
             // Handle creating new chat sessions
             topic.subscribe('createNewChatSession', lang.hitch(this, function() {
                 this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
-                    this.changeSessionId(sessionId);
                     this.inputWidget.startNewChat();
                     this.displayWidget.startNewChat();
                     this.titleWidget.startNewChat(sessionId);

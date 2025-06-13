@@ -253,16 +253,18 @@ define([
 
                 this.copilotApi.submitQueryWithImage(inputText, this.sessionId, this.systemPrompt, imgtxt_model, base64Image)
                     .then(lang.hitch(this, function(response) {
-                        this.chatStore.addMessages([
-                            {
-                                role: 'user',
-                                content: inputText
-                            },
-                            {
-                                role: 'assistant',
-                                content: response
-                            }
-                        ]);
+                        if (response.systemMessage) {
+                            this.chatStore.addMessages([
+                                response.userMessage,
+                                response.systemMessage,
+                                response.assistantMessage
+                            ]);
+                        } else {
+                            this.chatStore.addMessages([
+                                response.userMessage,
+                                response.assistantMessage
+                            ]);
+                        }
                         _self.textArea.set('value', '');
                         this.displayWidget.showMessages(this.chatStore.query());
 
@@ -273,7 +275,7 @@ define([
                             });
                             setTimeout(() => {
                                 topic.publish('generateSessionTitle');
-                            }, 100);
+                            }, 200);
                         }
                     })).catch(function(error) {
                         topic.publish('CopilotApiError', { error: error });
@@ -316,27 +318,29 @@ define([
             this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
             this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
-                this.chatStore.addMessages([
-                {
-                    role: 'user',
-                    content: inputText
-                },
-                {
-                    role: 'assistant',
-                    content: response.response
+                if (response.systemMessage) {
+                    this.chatStore.addMessages([
+                        response.userMessage,
+                        response.systemMessage,
+                        response.assistantMessage
+                    ]);
+                } else {
+                    this.chatStore.addMessages([
+                        response.userMessage,
+                        response.assistantMessage
+                    ]);
                 }
-                ]);
                 _self.textArea.set('value', '');
                 this.displayWidget.showMessages(this.chatStore.query());
 
                 if (_self.new_chat) {
-                _self.new_chat = false;
-                topic.publish('reloadUserSessions', {
-                    highlightSessionId: this.sessionId
-                });
-                setTimeout(() => {
-                    topic.publish('generateSessionTitle');
-                }, 100);
+                    _self.new_chat = false;
+                    topic.publish('reloadUserSessions', {
+                        highlightSessionId: this.sessionId
+                    });
+                    setTimeout(() => {
+                        topic.publish('generateSessionTitle');
+                    }, 100);
                 }
             })).catch(function(error) {
                 topic.publish('CopilotApiError', { error: error });
