@@ -117,7 +117,8 @@ define([
                 this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
                     this.inputWidget.startNewChat();
                     this.displayWidget.startNewChat();
-                    this.titleWidget.startNewChat(sessionId);
+                    this.titleWidget.startNewChat();
+                    this.changeSessionId(sessionId);
                 }));
             }));
 
@@ -141,9 +142,6 @@ define([
                 if (data.sessionId === this.sessionId) {
                     this.chatStore.updateSessionTitle(data.sessionId, data.title);
                 }
-                topic.publish('reloadUserSessions', {
-                    highlightSessionId: data.sessionId
-                });
             }));
 
             // Handle various chat configuration changes

@@ -11,7 +11,8 @@ define([
     'p3/widget/copilot/ChatSessionOptionsBar',
     'p3/widget/copilot/CopilotApi',
     'dijit/popup',
-    'dijit/form/CheckBox'
+    'dijit/form/CheckBox',
+    'dojo/dom-style'
 ], function (
     declare,
     lang,
@@ -20,7 +21,8 @@ define([
     ChatSessionOptionsBar,
     CopilotAPI,
     popup,
-    CheckBox
+    CheckBox,
+    domStyle
 ) {
     /**
      * @class BasicChatOptionsWidget
@@ -51,6 +53,9 @@ define([
 
         /** @property {Object} pageContentToggle - CheckBox for page content functionality */
         pageContentToggle: null,
+
+        /** @property {boolean} helpdeskSelected - Tracks if helpdesk button is selected */
+        helpdeskSelected: false,
 
         /**
          * @constructor
@@ -88,12 +93,12 @@ define([
             // Add Model text display with hover effects
             this.modelText = domConstruct.create('div', {
                 innerHTML: 'Model: Loading...',
-                style: 'padding: 2px 5px; transition: color 0.2s; margin-bottom: 5px; cursor: pointer;',
+                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 12px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
                 onmouseover: function(evt) {
-                    evt.target.style.color = '#2196F3';
+                    evt.target.style.background = '#e3e8ea';
                 },
                 onmouseout: function(evt) {
-                    evt.target.style.color = '';
+                    evt.target.style.background = '#f8f9fa';
                 },
                 onclick: lang.hitch(this, function() {
                     topic.publish('modelButtonPressed', this.modelText, ['below']);
@@ -103,40 +108,84 @@ define([
             // Add RAG text display with hover effects
             this.ragText = domConstruct.create('div', {
                 innerHTML: 'RAG: Loading...',
-                style: 'padding: 2px 5px; transition: color 0.2s; cursor: pointer;',
+                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 12px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
                 onmouseover: function(evt) {
-                    evt.target.style.color = '#2196F3';
+                    evt.target.style.background = '#e3e8ea';
                 },
                 onmouseout: function(evt) {
-                    evt.target.style.color = '';
+                    evt.target.style.background = '#f8f9fa';
                 },
                 onclick: lang.hitch(this, function() {
                     topic.publish('ragButtonPressed', this.ragText, ['below']);
                 })
             }, buttonsContainer);
 
+            // Add Helpdesk button with hover effects
+            this.helpdeskButton = domConstruct.create('div', {
+                innerHTML: 'Ask Helpdesk?',
+                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 12px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
+                onmouseover: lang.hitch(this, function(evt) {
+                    if (!this.helpdeskSelected) {
+                        evt.target.style.background = '#e3e8ea';
+                    }
+                }),
+                onmouseout: lang.hitch(this, function(evt) {
+                    if (!this.helpdeskSelected) {
+                        evt.target.style.background = '#f8f9fa';
+                    }
+                }),
+                onclick: lang.hitch(this, function() {
+                    this.helpdeskSelected = !this.helpdeskSelected;
+                    if (this.helpdeskSelected) {
+                        domStyle.set(this.helpdeskButton, {
+                            background: '#2a7aeb',
+                            color: '#ffffff'
+                        });
+                        // Publish the helpdesk RAG selection
+                        topic.publish('ChatRagDb', 'bvbrc_helpdesk');
+                    } else {
+                        domStyle.set(this.helpdeskButton, {
+                            background: '#f8f9fa',
+                            color: '#374151'
+                        });
+                        // Publish null RAG selection
+                        topic.publish('ChatRagDb', 'null');
+                    }
+                })
+            }, buttonsContainer);
+
             // Add New Chat button with hover effects
             this.newChatButton = domConstruct.create('div', {
                 innerHTML: 'New Chat',
-                style: 'padding: 2px 5px; transition: color 0.2s; cursor: pointer; margin-top: 5px;',
+                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 12px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
                 onmouseover: function(evt) {
-                    evt.target.style.color = '#2196F3';
+                    evt.target.style.background = '#e3e8ea';
                 },
                 onmouseout: function(evt) {
-                    evt.target.style.color = '';
+                    evt.target.style.background = '#f8f9fa';
                 },
                 onclick: lang.hitch(this, function() {
+                    // Temporarily change button color
+                    domStyle.set(this.newChatButton, {
+                        background: '#2a7aeb',
+                        color: '#ffffff'
+                    });
+
                     // Create a new chat session immediately
                     if (this.copilotApi) {
-                        this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
-                            // Publish the createNewChatSession topic
-                            topic.publish('createNewChatSession');
+                        // Publish the createNewChatSession topic
+                        topic.publish('createNewChatSession');
 
-                            // Publish reloadUserSessions with the new session highlighted
-                            topic.publish('reloadUserSessions', {
-                                highlightSessionId: sessionId
+                        // Publish reloadUserSessions to remove session highlight
+                        topic.publish('reloadUserSessions');
+
+                        // Revert button color after a short delay
+                        setTimeout(lang.hitch(this, function() {
+                            domStyle.set(this.newChatButton, {
+                                background: '#f8f9fa',
+                                color: '#374151'
                             });
-                        }));
+                        }), 500);
                     }
                 })
             }, buttonsContainer);

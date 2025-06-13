@@ -169,7 +169,7 @@ define([
                 region: 'left',
                 splitter: true,
                 gutters: false,
-                style: 'width: 150px; overflow: hidden; background-color: #f8f8f8; border-right: 1px solid #ddd;padding:0px;'
+                style: 'width: 150px; overflow: hidden; background-color: #ffffff; border: 0px;padding:0px;'
             });
             this.layoutContainer.addChild(this.optionsBarContainer);
 
@@ -401,7 +401,7 @@ define([
                 // Create a BorderContainer for the options sidebar to contain the two sections
                 this.optionsSidebarContainer = new BorderContainer({
                     gutters: false,
-                    style: 'width: 100%; height: 100%;'
+                    style: 'width: 100%; height: 100%;border: 0px;'
                 });
                 this.optionsSidebarContainer.placeAt(this.optionsBarContainer.domNode);
 
@@ -409,7 +409,7 @@ define([
                 this.topContentPane = new ChatSessionOptionsBar({
                     className: 'optionsTopSection',
                     region: 'top',
-                    style: 'height: 20%; padding: 0px; background-color: #e8e8e8; overflow-y: auto;',
+                    style: 'height: 27%; padding: 0px; background-color: #ffffff; overflow-y: auto; border: 0px;margin-bottom: 10px;',
                     copilotApi: this.copilotApi
                 });
                 this.optionsSidebarContainer.addChild(this.topContentPane);
