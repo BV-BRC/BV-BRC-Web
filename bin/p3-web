@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+
+const https = require('https');
+const fs = require('fs');
+
 var debug = require('debug')('p3-web');
 var app = require('../app');
 var conf = require('../config');
@@ -7,6 +11,21 @@ debug('Launching p3-www...');
 
 app.set('port', conf.get('http_port') || 3000);
 
-var server = app.listen(app.get('port'), function () {
-  debug('Express server listening on port ' + server.address().port);
-});
+const sslConfig = conf.get('sslConfig');
+var server;
+
+if (sslConfig) {
+  // Read SSL cert and key
+  const sslOptions = {
+    key: fs.readFileSync(sslConfig.ssl_key),
+    cert: fs.readFileSync(sslConfig.ssl_cert)
+  };
+  server = https.createServer(sslOptions, app).listen(app.get('port'), function () {
+    debug('Express server listening on SSL port ' + server.address().port);
+  });
+}
+else {
+  server = app.listen(app.get('port'), function () {
+    debug('Express server listening on port ' + server.address().port);
+  });
+}

@@ -196,6 +196,7 @@ const load_scripts = [
       require(["<%= request.applicationModule %>"], function(App){
         appOpts = <%- JSON.stringify(request.applicationOptions || {}) %>;
         appOpts.workspaceAPI = "<%= request.applicationOptions.workspaceServiceURL %>";
+        appOpts.workspaceDownloadAPI = "<%= request.applicationOptions.workspaceDownloadServiceURL %>";
         appOpts.serviceAPI = "<%= request.applicationOptions.appServiceURL %>";
         appOpts.dataAPI = "<%= request.applicationOptions.dataServiceURL %>";
         appOpts.userServiceURL = "<%= request.applicationOptions.userServiceURL %>";
