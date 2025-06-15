@@ -57,13 +57,14 @@ define([
             if (this.containerNode) {
                 // Modify container styling for smaller size
                 this.containerNode.style.cssText =
-                    'width: 100%; height: 100%; max-height: 70px; background-color: #f8f8f8; ' +
+                    'width: 100%; height: 80px; max-height: 80px; background-color: #f8f8f8; ' +
                     'border: 1px solid #ddd; border-radius: 0px; cursor: pointer; ' +
                     'padding: 8px; padding-right: 10px; transition: all 0.2s ease; ' +
                     'position: relative; margin: 0px 0; ' +
                     'left: 0; right: 0; ' +
                     'box-sizing: border-box; ' +
-                    'box-shadow: 0 1px 3px rgba(0,0,0,0.1);';
+                    'box-shadow: 0 1px 3px rgba(0,0,0,0.1);' +
+                    'flex: 0 0 auto;';
             }
 
             // Override title content with custom length limit for small window
@@ -76,7 +77,7 @@ define([
 
             // Modify title styling for smaller cards
             if (this.titleNode) {
-                this.titleNode.style.cssText = 'font-weight: bold; margin-bottom: 3px; font-size: 0.9em; line-height: 1.2; max-height: 30px; overflow:hidden;';
+                this.titleNode.style.cssText = 'width: 80%;min-height: 40px;font-weight: bold; margin-bottom: 3px; font-size: 14px; line-height: 1.2; max-height: 30px; overflow:hidden;';
             }
 
             // Style the delete button for small window
@@ -86,8 +87,8 @@ define([
                     'font-size: 14px; cursor: pointer; width: 30px; height: 25px; ' +
                     'border-radius: 3px; background-color: transparent; color: #808080; ' +
                     'background-image: url("/public/icon_source/trash.svg"); ' +
-                    'background-repeat: no-repeat; background-position: center; background-size: 12px 12px; ' +
-                    'transform: translate(5px, -10px);';
+                    'background-repeat: no-repeat; background-position: center; background-size: 15px 15px; ' +
+                    'position: absolute; top: 3px; right: 3px;';
 
                 // Add tooltip to delete button
                 this.deleteButtonNode.title = 'Delete chat session';
@@ -122,7 +123,7 @@ define([
 
             // Modify date styling
             if (this.dateNode) {
-                this.dateNode.style.cssText = 'font-size: 0.7em; color: #666;';
+                this.dateNode.style.cssText = 'font-size: 0.8em; color: #666;';
             }
         },
 
@@ -141,7 +142,7 @@ define([
             for (var i = 1; i <= 5; i++) {
                 var star = domConstruct.create('div', {
                     innerHTML: '☆', // Empty star
-                    style: 'cursor: pointer; font-size: 12px; color: #ccc; transition: color 0.2s ease; user-select: none;',
+                    style: 'cursor: pointer; font-size: 14px; color: #ccc; transition: color 0.2s ease; user-select: none;',
                     'data-rating': i
                 }, ratingContainer);
 

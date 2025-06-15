@@ -93,7 +93,7 @@ define([
             // Add Model text display with hover effects
             this.modelText = domConstruct.create('div', {
                 innerHTML: 'Model: Loading...',
-                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 12px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
+                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 14px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
                 onmouseover: function(evt) {
                     evt.target.style.background = '#e3e8ea';
                 },
@@ -108,7 +108,7 @@ define([
             // Add RAG text display with hover effects
             this.ragText = domConstruct.create('div', {
                 innerHTML: 'RAG: Loading...',
-                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 12px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
+                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 14px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
                 onmouseover: function(evt) {
                     evt.target.style.background = '#e3e8ea';
                 },
@@ -123,7 +123,7 @@ define([
             // Add Helpdesk button with hover effects
             this.helpdeskButton = domConstruct.create('div', {
                 innerHTML: 'Ask Helpdesk?',
-                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 12px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
+                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 14px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
                 onmouseover: lang.hitch(this, function(evt) {
                     if (!this.helpdeskSelected) {
                         evt.target.style.background = '#e3e8ea';
@@ -157,7 +157,7 @@ define([
             // Add New Chat button with hover effects
             this.newChatButton = domConstruct.create('div', {
                 innerHTML: 'New Chat',
-                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 12px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
+                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 14px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
                 onmouseover: function(evt) {
                     evt.target.style.background = '#e3e8ea';
                 },

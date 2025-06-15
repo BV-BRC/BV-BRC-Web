@@ -169,7 +169,7 @@ define([
                 region: 'left',
                 splitter: true,
                 gutters: false,
-                style: 'width: 150px; overflow: hidden; background-color: #ffffff; border: 0px;padding:0px;'
+                style: 'width: 175px; overflow: hidden; background-color: #ffffff; border: 0px;padding:0px;'
             });
             this.layoutContainer.addChild(this.optionsBarContainer);
 
@@ -409,7 +409,7 @@ define([
                 this.topContentPane = new ChatSessionOptionsBar({
                     className: 'optionsTopSection',
                     region: 'top',
-                    style: 'height: 27%; padding: 0px; background-color: #ffffff; overflow-y: auto; border: 0px;margin-bottom: 10px;',
+                    style: 'height: 30%; padding: 0px; background-color: #ffffff; overflow-y: auto; border: 0px;margin-bottom: 10px;',
                     copilotApi: this.copilotApi
                 });
                 this.optionsSidebarContainer.addChild(this.topContentPane);
