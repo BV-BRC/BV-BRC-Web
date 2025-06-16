@@ -93,6 +93,11 @@ define([
                 style: 'display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; margin-top: 10px; font-size: 0.9em; padding-left: 5px;'
             }, this.containerNode);
 
+            // Create container for model and RAG text elements
+            this.modelRagContainer = domConstruct.create('div', {
+                style: 'display: none; width: 100%;'
+            }, buttonsContainer);
+
             // Add Model text display with hover effects
             this.modelText = domConstruct.create('div', {
                 innerHTML: 'Model: Loading...',
@@ -106,12 +111,12 @@ define([
                 onclick: lang.hitch(this, function() {
                     topic.publish('modelButtonPressed', this.modelText, ['below']);
                 })
-            }, buttonsContainer);
+            }, this.modelRagContainer);
 
             // Add RAG text display with hover effects
             this.ragText = domConstruct.create('div', {
                 innerHTML: 'RAG: Loading...',
-                style: 'display: none; width: 90%; margin: 0px; padding: 2px 0; font-size: 14px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
+                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 14px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
                 onmouseover: function(evt) {
                     evt.target.style.background = '#e3e8ea';
                 },
@@ -121,7 +126,7 @@ define([
                 onclick: lang.hitch(this, function() {
                     topic.publish('ragButtonPressed', this.ragText, ['below']);
                 })
-            }, buttonsContainer);
+            }, this.modelRagContainer);
 
             // Add CEPI journal rag button
             this.cepiText = domConstruct.create('div', {
@@ -288,6 +293,11 @@ define([
             topic.subscribe('ChatRagDb', lang.hitch(this, function(ragDb) {
                 // Update RAG display text
                 this.ragText.innerHTML = 'RAG: ' + (ragDb === 'null' ? 'None' : ragDb);
+            }));
+
+            // Subscribe to topic to control model/rag container visibility
+            topic.subscribe('toggleModelRagVisibility', lang.hitch(this, function(visible) {
+                domStyle.set(this.modelRagContainer, 'display', visible ? 'block' : 'none');
             }));
 
             // Fetch model and RAG lists from API

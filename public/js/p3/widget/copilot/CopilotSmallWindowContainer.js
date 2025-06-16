@@ -86,6 +86,9 @@ define([
         // Bottom content pane reference for options sidebar
         bottomContentPane: null,
 
+        // Tracks if model/RAG container is visible
+        modelRagVisible: false,
+
         constructor: function(options) {
             this.inherited(arguments);
             if (options) {
@@ -119,8 +122,22 @@ define([
                 className: 'copilotChatOptionsButton',
                 style: 'font-size: 17px; width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8;',
                 innerHTML: '☰',
-                title: 'Options'
+                title: 'Close/Open Sidebar'
             }, leftButtonContainer);
+
+            // Add developer options button
+            var devOptionsButton = domConstruct.create('div', {
+                className: 'copilotChatDevOptionsButton',
+                style: 'font-size: 20px; width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; margin-left: 5px;',
+                innerHTML: '⚙',
+                title: 'Toggle Developer Options'
+            }, leftButtonContainer);
+
+            // Add click handler for developer options button
+            on(devOptionsButton, 'click', lang.hitch(this, function() {
+                this.modelRagVisible = !this.modelRagVisible;
+                topic.publish('toggleModelRagVisibility', this.modelRagVisible);
+            }));
 
             // Create draggable area (the title area that will be the drag handle) SECOND
             var titleNode = domConstruct.create('div', {
@@ -409,7 +426,7 @@ define([
                 this.topContentPane = new ChatSessionOptionsBar({
                     className: 'optionsTopSection',
                     region: 'top',
-                    style: 'height: 32%; padding: 0px; background-color: #ffffff; overflow-y: auto; margin-bottom: 5px;',
+                    style: 'height: 25%; padding: 0px; background-color: #ffffff; overflow-y: auto; margin-bottom: 5px;',
                     copilotApi: this.copilotApi
                 });
                 this.optionsSidebarContainer.addChild(this.topContentPane);
@@ -418,7 +435,7 @@ define([
                 this.bottomContentPane = new ChatSessionScrollBar({
                     className: 'optionsBottomSection',
                     region: 'center',
-                    style: 'padding: 0px; margin: 0px; height: 68%; border: 0px; background-color: #f0f0f0;',
+                    style: 'padding: 0px; margin: 0px; height: 75%; border: 0px; background-color: #f0f0f0;',
                     copilotApi: this.copilotApi
                 });
                 this.optionsSidebarContainer.addChild(this.bottomContentPane);
