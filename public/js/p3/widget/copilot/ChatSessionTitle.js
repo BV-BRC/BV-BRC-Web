@@ -95,7 +95,7 @@ define([
     createTitleDisplay: function() {
       this.titleDisplay = domConstruct.create('div', {
         innerHTML: this.truncateTitle(this.title),
-        style: 'cursor: pointer; padding: 5px; flex-grow: 1; font-size: 1.2em; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
+        style: 'cursor: pointer; padding: 5px; flex-grow: 1; font-size: 1.6em; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
       }, this.titleContainer);
 
       on(this.titleDisplay, 'click', lang.hitch(this, 'startEditing'));

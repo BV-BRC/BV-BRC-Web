@@ -426,7 +426,7 @@ define([
                 this.topContentPane = new ChatSessionOptionsBar({
                     className: 'optionsTopSection',
                     region: 'top',
-                    style: 'height: 25%; padding: 0px; background-color: #ffffff; overflow-y: auto; margin-bottom: 5px;',
+                    style: 'height: 27%; padding: 0px; background-color: #ffffff; overflow-y: auto; margin-bottom: 5px;',
                     copilotApi: this.copilotApi
                 });
                 this.optionsSidebarContainer.addChild(this.topContentPane);
@@ -435,7 +435,7 @@ define([
                 this.bottomContentPane = new ChatSessionScrollBar({
                     className: 'optionsBottomSection',
                     region: 'center',
-                    style: 'padding: 0px; margin: 0px; height: 75%; border: 0px; background-color: #f0f0f0;',
+                    style: 'padding: 0px; margin: 0px; height: 73%; border: 0px; background-color: #f0f0f0;',
                     copilotApi: this.copilotApi
                 });
                 this.optionsSidebarContainer.addChild(this.bottomContentPane);

@@ -46,8 +46,22 @@ define([
                 domStyle.get(this.domNode, 'width') :
                 window.innerWidth;
 
-            // Apply responsive padding: 10px for < 800px, 100px for >= 800px
-            var padding = containerWidth < 800 ? '10px' : '100px';
+            // Calculate padding based on width
+            var padding;
+            if (containerWidth < 600) {
+                padding = '10px';
+            } else {
+                // Linear increase from 10px to 100px between 600px and 1200px
+                var minPadding = 10;
+                var maxPadding = 100;
+                var minWidth = 600;
+                var maxWidth = 1200;
+
+                // Calculate linear interpolation
+                var ratio = 2.3*Math.min(1, (containerWidth - minWidth) / (maxWidth - minWidth));
+                var calculatedPadding = Math.round(minPadding + (maxPadding - minPadding) * ratio);
+                padding = calculatedPadding + 'px';
+            }
 
             domStyle.set(this.resultContainer, {
                 'padding-left': padding,

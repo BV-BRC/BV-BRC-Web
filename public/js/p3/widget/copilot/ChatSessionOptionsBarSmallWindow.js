@@ -12,7 +12,8 @@ define([
     'p3/widget/copilot/CopilotApi',
     'dijit/popup',
     'dijit/form/CheckBox',
-    'dojo/dom-style'
+    'dojo/dom-style',
+    'dojo/dom-class'
 ], function (
     declare,
     lang,
@@ -22,7 +23,8 @@ define([
     CopilotAPI,
     popup,
     CheckBox,
-    domStyle
+    domStyle,
+    domClass
 ) {
     /**
      * @class BasicChatOptionsWidget
@@ -90,7 +92,7 @@ define([
 
             // Create container for text buttons
             var buttonsContainer = domConstruct.create('div', {
-                style: 'display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; margin-top: 10px; font-size: 0.9em; padding-left: 5px;'
+                style: 'display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; margin-top: 10px; font-size: 0.9em; padding-left: 5px;gap: 2px;'
             }, this.containerNode);
 
             // Create container for model and RAG text elements
@@ -101,13 +103,7 @@ define([
             // Add Model text display with hover effects
             this.modelText = domConstruct.create('div', {
                 innerHTML: 'Model: Loading...',
-                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 14px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
-                onmouseover: function(evt) {
-                    evt.target.style.background = '#e3e8ea';
-                },
-                onmouseout: function(evt) {
-                    evt.target.style.background = '#f8f9fa';
-                },
+                className: 'chat-window-options-button',
                 onclick: lang.hitch(this, function() {
                     topic.publish('modelButtonPressed', this.modelText, ['below']);
                 })
@@ -116,13 +112,7 @@ define([
             // Add RAG text display with hover effects
             this.ragText = domConstruct.create('div', {
                 innerHTML: 'RAG: Loading...',
-                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 14px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
-                onmouseover: function(evt) {
-                    evt.target.style.background = '#e3e8ea';
-                },
-                onmouseout: function(evt) {
-                    evt.target.style.background = '#f8f9fa';
-                },
+                className: 'chat-window-options-button',
                 onclick: lang.hitch(this, function() {
                     topic.publish('ragButtonPressed', this.ragText, ['below']);
                 })
@@ -131,116 +121,52 @@ define([
             // Add CEPI journal rag button
             this.cepiText = domConstruct.create('div', {
                 innerHTML: 'CEPI Journals',
-                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 14px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
-                onmouseover: lang.hitch(this, function(evt) {
-                    if (!this.cepiSelected) {
-                        evt.target.style.background = '#e3e8ea';
-                    }
-                }),
-                onmouseout: lang.hitch(this, function(evt) {
-                    if (!this.cepiSelected) {
-                        evt.target.style.background = '#f8f9fa';
-                    }
-                }),
+                className: 'chat-window-options-button',
                 onclick: lang.hitch(this, function() {
                     this.cepiSelected = !this.cepiSelected;
-                    if (this.cepiSelected) {
-                        if (this.helpdeskSelected) {
-                            domStyle.set(this.helpdeskButton, {
-                                background: '#f8f9fa',
-                                color: '#374151'
-                            });
-                            this.helpdeskSelected = false;
-                        }
-                        domStyle.set(this.cepiText, {
-                            background: '#2a7aeb',
-                            color: '#ffffff'
-                        });
-                        topic.publish('ChatRagDb', 'cepi_journals');
-                    } else {
-                        domStyle.set(this.cepiText, {
-                            background: '#f8f9fa',
-                            color: '#374151'
-                        });
-                        topic.publish('ChatRagDb', 'null');
+                    domClass.toggle(this.cepiText, 'selected', this.cepiSelected);
+
+                    if (this.cepiSelected && this.helpdeskSelected) {
+                        this.helpdeskSelected = false;
+                        domClass.remove(this.helpdeskButton, 'selected');
                     }
+
+                    topic.publish(
+                        'ChatRagDb',
+                        this.cepiSelected ? 'cepi_journals' : 'null'
+                    );
                 })
             }, buttonsContainer);
 
             // Add Helpdesk button with hover effects
             this.helpdeskButton = domConstruct.create('div', {
-                innerHTML: 'Ask Helpdesk?',
-                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 14px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
-                onmouseover: lang.hitch(this, function(evt) {
-                    if (!this.helpdeskSelected) {
-                        evt.target.style.background = '#e3e8ea';
-                    }
-                }),
-                onmouseout: lang.hitch(this, function(evt) {
-                    if (!this.helpdeskSelected) {
-                        evt.target.style.background = '#f8f9fa';
-                    }
-                }),
+                innerHTML: 'Help Center Chat',
+                className: 'chat-window-options-button',
                 onclick: lang.hitch(this, function() {
                     this.helpdeskSelected = !this.helpdeskSelected;
-                    if (this.helpdeskSelected) {
-                        if (this.cepiSelected) {
-                            domStyle.set(this.cepiText, {
-                                background: '#f8f9fa',
-                                color: '#374151'
-                            });
-                            this.cepiSelected = false;
-                        }
-                        domStyle.set(this.helpdeskButton, {
-                            background: '#2a7aeb',
-                            color: '#ffffff'
-                        });
-                        // Publish the helpdesk RAG selection
-                        topic.publish('ChatRagDb', 'bvbrc_helpdesk');
-                    } else {
-                        domStyle.set(this.helpdeskButton, {
-                            background: '#f8f9fa',
-                            color: '#374151'
-                        });
-                        // Publish null RAG selection
-                        topic.publish('ChatRagDb', 'null');
+                    domClass.toggle(this.helpdeskButton, 'selected', this.helpdeskSelected);
+
+                    if (this.helpdeskSelected && this.cepiSelected) {
+                        this.cepiSelected = false;
+                        domClass.remove(this.cepiText, 'selected');
                     }
+
+                    topic.publish('ChatRagDb', this.helpdeskSelected ? 'bvbrc_helpdesk' : 'null');
                 })
             }, buttonsContainer);
 
             // Add New Chat button with hover effects
             this.newChatButton = domConstruct.create('div', {
                 innerHTML: 'New Chat',
-                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 14px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
-                onmouseover: function(evt) {
-                    evt.target.style.background = '#e3e8ea';
-                },
-                onmouseout: function(evt) {
-                    evt.target.style.background = '#f8f9fa';
-                },
+                className: 'chat-window-options-button',
                 onclick: lang.hitch(this, function() {
-                    // Temporarily change button color
-                    domStyle.set(this.newChatButton, {
-                        background: '#2a7aeb',
-                        color: '#ffffff'
-                    });
-
                     // Create a new chat session immediately
                     if (this.copilotApi) {
-
                         // Publish reloadUserSessions to remove session highlight
                         topic.publish('reloadUserSessions');
 
                         // Publish the createNewChatSession topic
                         topic.publish('createNewChatSession');
-
-                        // Revert button color after a short delay
-                        setTimeout(lang.hitch(this, function() {
-                            domStyle.set(this.newChatButton, {
-                                background: '#f8f9fa',
-                                color: '#374151'
-                            });
-                        }), 500);
                     }
                 })
             }, buttonsContainer);
