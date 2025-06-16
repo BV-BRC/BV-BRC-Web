@@ -68,16 +68,29 @@ define([
             }
 
             // Override title content with custom length limit for small window
+            /*
             if (this.session && this.session.title && this.titleNode) {
                 var maxLength = 30;
                 this.titleNode.innerHTML = this.session.title.length > maxLength ?
                     this.session.title.substring(0, maxLength) + '...' :
                     this.session.title;
             }
+            */
 
             // Modify title styling for smaller cards
             if (this.titleNode) {
-                this.titleNode.style.cssText = 'width: 80%;min-height: 40px;font-weight: bold; margin-bottom: 3px; font-size: 14px; line-height: 1.2; max-height: 30px; overflow:hidden;';
+                this.titleNode.style.cssText = `
+                    width: 80%;
+                    min-height: 36px;
+                    font-weight: bold;
+                    margin-bottom: 3px;
+                    font-size: 14px;
+                    line-height: 1.2;
+                    overflow: hidden;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                `;
             }
 
             // Style the delete button for small window
