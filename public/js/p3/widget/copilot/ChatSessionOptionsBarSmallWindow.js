@@ -227,11 +227,12 @@ define([
 
                     // Create a new chat session immediately
                     if (this.copilotApi) {
-                        // Publish the createNewChatSession topic
-                        topic.publish('createNewChatSession');
 
                         // Publish reloadUserSessions to remove session highlight
                         topic.publish('reloadUserSessions');
+
+                        // Publish the createNewChatSession topic
+                        topic.publish('createNewChatSession');
 
                         // Revert button color after a short delay
                         setTimeout(lang.hitch(this, function() {

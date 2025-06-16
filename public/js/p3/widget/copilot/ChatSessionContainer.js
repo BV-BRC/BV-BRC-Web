@@ -117,7 +117,7 @@ define([
                 this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
                     this.inputWidget.startNewChat();
                     this.displayWidget.startNewChat();
-                    this.titleWidget.startNewChat();
+                    this.titleWidget.startNewChat(sessionId);
                     this.changeSessionId(sessionId);
                 }));
             }));
@@ -217,6 +217,9 @@ define([
                 }
                 this.titleWidget.updateTitle(title);
                 this.titleWidget.saveTitle();
+                topic.publish('reloadUserSessions', {
+                    highlightSessionId: this.sessionId
+                });
             }));
         },
 
