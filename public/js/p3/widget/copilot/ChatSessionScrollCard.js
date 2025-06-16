@@ -132,6 +132,8 @@ define([
                                 messages: messages
                             });
                             topic.publish('ChatSessionTitleUpdated', _self.session.title);
+                        }).catch(function(error) {
+                            console.error('Error fetching session messages:', error);
                         });
                     } else {
                         console.error('CopilotApi not initialized');

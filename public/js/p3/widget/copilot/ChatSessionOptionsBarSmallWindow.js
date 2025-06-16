@@ -96,7 +96,7 @@ define([
             // Add Model text display with hover effects
             this.modelText = domConstruct.create('div', {
                 innerHTML: 'Model: Loading...',
-                style: 'display: none; width: 90%; margin: 0px; padding: 2px 0; font-size: 14px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
+                style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 14px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
                 onmouseover: function(evt) {
                     evt.target.style.background = '#e3e8ea';
                 },
@@ -127,15 +127,26 @@ define([
             this.cepiText = domConstruct.create('div', {
                 innerHTML: 'CEPI Journals',
                 style: 'display: block; width: 90%; margin: 0px; padding: 2px 0; font-size: 14px; font-weight: 7; color: #374151; background: #f8f9fa; border: 4px solid #e3e8ea; border-radius: 999px; text-align: center; box-shadow: none; cursor: pointer; transition: background 0.2s, border 0.2s; margin-bottom: 3px;',
-                onmouseover: function(evt) {
-                    evt.target.style.background = '#e3e8ea';
-                },
-                onmouseout: function(evt) {
-                    evt.target.style.background = '#f8f9fa';
-                },
+                onmouseover: lang.hitch(this, function(evt) {
+                    if (!this.cepiSelected) {
+                        evt.target.style.background = '#e3e8ea';
+                    }
+                }),
+                onmouseout: lang.hitch(this, function(evt) {
+                    if (!this.cepiSelected) {
+                        evt.target.style.background = '#f8f9fa';
+                    }
+                }),
                 onclick: lang.hitch(this, function() {
                     this.cepiSelected = !this.cepiSelected;
                     if (this.cepiSelected) {
+                        if (this.helpdeskSelected) {
+                            domStyle.set(this.helpdeskButton, {
+                                background: '#f8f9fa',
+                                color: '#374151'
+                            });
+                            this.helpdeskSelected = false;
+                        }
                         domStyle.set(this.cepiText, {
                             background: '#2a7aeb',
                             color: '#ffffff'
@@ -168,6 +179,13 @@ define([
                 onclick: lang.hitch(this, function() {
                     this.helpdeskSelected = !this.helpdeskSelected;
                     if (this.helpdeskSelected) {
+                        if (this.cepiSelected) {
+                            domStyle.set(this.cepiText, {
+                                background: '#f8f9fa',
+                                color: '#374151'
+                            });
+                            this.cepiSelected = false;
+                        }
                         domStyle.set(this.helpdeskButton, {
                             background: '#2a7aeb',
                             color: '#ffffff'
