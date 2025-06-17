@@ -67,15 +67,9 @@ define([
                     'flex: 0 0 auto;';
             }
 
-            // Override title content with custom length limit for small window
-            /*
             if (this.session && this.session.title && this.titleNode) {
-                var maxLength = 30;
-                this.titleNode.innerHTML = this.session.title.length > maxLength ?
-                    this.session.title.substring(0, maxLength) + '...' :
-                    this.session.title;
+                this.titleNode.innerHTML = this.session.title
             }
-            */
 
             // Modify title styling for smaller cards
             if (this.titleNode) {
@@ -130,7 +124,7 @@ define([
                 // Add click handler for delete
                 this.own(on(this.deleteButtonNode, 'click', lang.hitch(this, function(evt) {
                     evt.stopPropagation();
-                    topic.publish('ChatSession:Delete', this.session.session_id);s
+                    topic.publish('ChatSession:Delete', this.session.session_id);
                 })));
             }
 

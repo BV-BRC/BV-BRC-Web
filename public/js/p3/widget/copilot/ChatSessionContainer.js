@@ -219,9 +219,11 @@ define([
                 }
                 this.titleWidget.updateTitle(title);
                 this.titleWidget.saveTitle();
-                topic.publish('reloadUserSessions', {
-                    highlightSessionId: this.sessionId
-                });
+                setTimeout(lang.hitch(this, function() {
+                    topic.publish('reloadUserSessions', {
+                        highlightSessionId: this.sessionId
+                    });
+                }), 100);
             }));
         },
 
