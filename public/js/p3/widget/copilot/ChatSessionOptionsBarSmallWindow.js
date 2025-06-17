@@ -145,7 +145,7 @@ define([
 
             // Add CEPI journal rag button
             this.cepiText = domConstruct.create('div', {
-                innerHTML: 'CEPI Journals',
+                innerHTML: 'Publications',
                 className: 'chat-window-options-button',
                 onclick: lang.hitch(this, function() {
                     this.cepiSelected = !this.cepiSelected;
@@ -165,7 +165,7 @@ define([
 
             // Add Helpdesk button with hover effects
             this.helpdeskButton = domConstruct.create('div', {
-                innerHTML: 'Help Center Chat',
+                innerHTML: 'Help Center',
                 className: 'chat-window-options-button',
                 onclick: lang.hitch(this, function() {
                     this.helpdeskSelected = !this.helpdeskSelected;
