@@ -238,14 +238,14 @@ define([
             this.isSubmitting = true;
             this.submitButton.set('disabled', true);
 
-            this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
             topic.publish('hideChatPanel'); // Hide panel before taking screenshot
 
             html2canvas(document.body).then(lang.hitch(this, function(canvas) {
                 var base64Image = canvas.toDataURL('image/png');
 
                 topic.publish('showChatPanel'); // Show panel again
+
+                this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
                 this.systemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\n' +
                                     'Analyze the screenshot and respond to the user\'s query.';

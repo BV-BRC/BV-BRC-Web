@@ -388,9 +388,11 @@ define([
                         issueText: content,
                         issueSubject: 'Reporting Issue with Chat Session',
                         jobDescriptRequired: false,
-                        jobStatus: 'chat'
+                        jobStatus: 'chat',
+                        showChat: true
                     }
                 });
+                // topic.publish("hideChatPanel")
             } catch (e) {
                 var content = 'There was an issue fetching chat session info. Error: ' + e;
             }

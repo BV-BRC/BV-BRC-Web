@@ -4,9 +4,10 @@ define([
   'dojo/on', // Event handling
   'dojo/topic', // Topic messaging
   'dojo/_base/lang', // Language utilities
-  'markdown-it/dist/markdown-it.min' // Markdown parser and renderer
+  'markdown-it/dist/markdown-it.min', // Markdown parser and renderer
+  'dijit/Dialog' // Dialog widget
 ], function (
-  declare, domConstruct, on, topic, lang, markdownit
+  declare, domConstruct, on, topic, lang, markdownit, Dialog
 ) {
   /**
    * @class ChatMessage
@@ -74,50 +75,49 @@ define([
      * @param {HTMLElement} messageDiv - Container to render system message into
      */
     renderSystemMessage: function(messageDiv) {
-      var isExpanded = false;
-
-      // Create collapsible content container
-      var systemContentDiv = domConstruct.create('div', {
-        class: 'system-content',
-        style: 'max-height: 24px; overflow: hidden; transition: max-height 0.3s ease-out;'
+      // Create a simple button
+      var showDocsButton = domConstruct.create('button', {
+        innerHTML: 'Show Retrieved Documents',
+        class: 'show-docs-button'
       }, messageDiv);
 
-      // Add placeholder text shown when collapsed
-      var placeholderText = domConstruct.create('div', {
-        innerHTML: 'Show the System Message',
-        class: 'placeholder-text'
-      }, systemContentDiv);
+      // Handle button click
+      on(showDocsButton, 'click', function() {
+        // Create dialog to show markdown content
+        var docsDialog = new Dialog({
+          title: "Retrieved Documents",
+          style: "width: 600px; max-height: 80vh;",
+          content: domConstruct.create('div', {
+            innerHTML: this.message.content,
+            style: 'background-color: white; padding: 20px; overflow-y: auto; max-height: 70vh;'
+          })
+        });
 
-      // Container for markdown content (initially hidden)
-      var markdownContainer = domConstruct.create('div', {
-        class: 'markdown-content',
-        style: 'display: none;'
-      }, systemContentDiv);
+        // Add close button
+        var buttonContainer = document.createElement('div');
+        buttonContainer.style.display = 'flex';
+        buttonContainer.style.justifyContent = 'center';
+        buttonContainer.style.marginTop = '20px';
 
-      // Toggle button for expand/collapse
-      var toggleButton = domConstruct.create('button', {
-        innerHTML: 'Show More',
-        style: 'display: block; margin-top: 5px; cursor: pointer;'
-      }, messageDiv);
+        var closeButton = document.createElement('button');
+        closeButton.innerHTML = "Close";
+        closeButton.style.backgroundColor = '#4CAF50';
+        closeButton.style.color = 'white';
+        closeButton.style.padding = '8px 24px';
+        closeButton.style.border = 'none';
+        closeButton.style.borderRadius = '4px';
+        closeButton.style.cursor = 'pointer';
 
-      // Handle toggle button clicks
-      on(toggleButton, 'click', function() {
-        if (!isExpanded) {
-          // Expand content
-          systemContentDiv.style.maxHeight = '9999px';
-          placeholderText.style.display = 'none';
-          markdownContainer.style.display = 'block';
-          markdownContainer.innerHTML = this.message.content ? this.md.render(this.message.content) : '';
-          toggleButton.innerHTML = 'Show Less';
-        } else {
-          // Collapse content
-          systemContentDiv.style.maxHeight = '24px';
-          placeholderText.style.display = 'block';
-          markdownContainer.style.display = 'none';
-          markdownContainer.innerHTML = '';
-          toggleButton.innerHTML = 'Show More';
-        }
-        isExpanded = !isExpanded;
+        closeButton.onclick = function() {
+          docsDialog.hide();
+          docsDialog.destroy();
+        };
+
+        buttonContainer.appendChild(closeButton);
+        docsDialog.containerNode.appendChild(buttonContainer);
+
+        docsDialog.startup();
+        docsDialog.show();
       }.bind(this));
     },
 

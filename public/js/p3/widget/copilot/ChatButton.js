@@ -158,58 +158,6 @@ define([
         _showControllerPanel: function() {
             if (this.chatContainer) {
                 this.chatContainer.show();
-
-                // Check if we need to start a new session: happens when clicking the close button on the small chat
-                if (this.controllerPanel) {
-
-                    // Create a new chat session
-                    if (this.copilotApi) {
-                        this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
-                            if (this.controllerPanel) {
-                                this.currentSessionId = sessionId;
-
-                                // Clear highlighting from all scroll cards when starting a new chat
-                                if (this.chatContainer && this.chatContainer.bottomContentPane) {
-                                    this.chatContainer.bottomContentPane.clearHighlight();
-                                }
-
-                                // Change the session ID and reset the chat components
-                                this.controllerPanel.changeSessionId(sessionId);
-
-                                // Reset input widget and display
-                                if (this.controllerPanel.inputWidget) {
-                                    this.controllerPanel.inputWidget.startNewChat();
-                                }
-                                if (this.controllerPanel.displayWidget) {
-                                    this.controllerPanel.displayWidget.startNewChat();
-                                }
-                                if (this.controllerPanel.titleWidget) {
-                                    this.controllerPanel.titleWidget.startNewChat(sessionId);
-                                }
-                            }
-                        }));
-                    }
-                } else {
-                    // Update controller panel with current session
-                    this.controllerPanel.changeSessionId(this.currentSessionId);
-                    this.copilotApi.getSessionMessages(this.currentSessionId).then(lang.hitch(this, function(messages) {
-                        if (messages.messages && messages.messages.length > 0 && messages.messages[0].messages) {
-                            var messages = messages.messages[0].messages;
-                            this.controllerPanel.chatStore.addMessages(messages);
-                            this.controllerPanel.displayWidget.showMessages(messages);
-                        }
-                    }));
-
-                    // Set the title if available
-                    this.copilotApi.getSessionTitle(this.currentSessionId).then(lang.hitch(this, function(title_response) {
-                        if (title_response.title && title_response.title.length > 0 && title_response.title[0].title) {
-                            var title = title_response.title[0].title;
-                            if (this.controllerPanel.titleWidget) {
-                                this.controllerPanel.titleWidget.updateTitle(title);
-                            }
-                        }
-                    }));
-                }
             }
         },
 

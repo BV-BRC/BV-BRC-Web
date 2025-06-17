@@ -128,7 +128,6 @@ define([
             // Add developer options button
             var devOptionsButton = domConstruct.create('div', {
                 className: 'copilotChatDevOptionsButton',
-                style: 'font-size: 20px; width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; margin-left: 5px;',
                 innerHTML: '⚙',
                 title: 'Toggle Developer Options'
             }, leftButtonContainer);
@@ -137,12 +136,18 @@ define([
             on(devOptionsButton, 'click', lang.hitch(this, function() {
                 this.modelRagVisible = !this.modelRagVisible;
                 topic.publish('toggleModelRagVisibility', this.modelRagVisible);
+
+                // Update the button color based on state
+                if (this.modelRagVisible) {
+                    domClass.add(devOptionsButton, 'active');
+                } else {
+                    domClass.remove(devOptionsButton, 'active');
+                }
             }));
 
             // Add Report Issue button
             var reportIssueButton = domConstruct.create('div', {
                 className: 'copilotChatReportIssueButton',
-                style: 'padding-top:2px; font-size: 15px; width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; margin-left: 5px;',
                 innerHTML: '<i class="fa icon-commenting-o"></i>',
                 title: 'Report an issue with the chat session'
             }, leftButtonContainer);
@@ -150,6 +155,7 @@ define([
             // Add click handler for report issue button
             on(reportIssueButton, 'click', lang.hitch(this, function() {
                 topic.publish('openReportIssueDialog');
+                domClass.add(reportIssueButton, 'active');
             }));
 
             // Create draggable area (the title area that will be the drag handle) SECOND
