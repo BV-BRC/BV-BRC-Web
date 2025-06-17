@@ -92,7 +92,7 @@ define([
 
             // Create container for text buttons
             var buttonsContainer = domConstruct.create('div', {
-                style: 'display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; margin-top: 10px; font-size: 0.9em; padding-left: 5px;gap: 2px;'
+                style: 'display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; margin-top: 10px; font-size: 0.9em; gap: 2px;'
             }, this.containerNode);
 
             // Create container for model and RAG text elements

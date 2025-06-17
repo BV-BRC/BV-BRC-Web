@@ -84,7 +84,7 @@ define([
             // Container styling for fixed positioning and dimensions
             this.containerNode.style.cssText =
                 'width: 100%; height: 110px; max-height: 110px; background-color: #f0f0f0; ' +
-                'border: 1px solid #ccc; border-radius: 0px; cursor: pointer; ' +
+                'border: 1px solid #ccc; border-radius: 5px; cursor: pointer; ' +
                 'padding: 10px; transition: background-color 0.2s; ' +
                 'position: relative; margin:0px; ' +
                 'left: 0; right: 0; ' +

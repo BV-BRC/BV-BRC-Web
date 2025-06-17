@@ -176,7 +176,8 @@ define([
             title: newTitle
           });
         }), lang.hitch(this, function(error) {
-          topic.publish('UpdateSessionTitleError', error);
+          // topic.publish('UpdateSessionTitleError', error);
+          console.log('Error updating session title', error);
         }));
       }
       this.cancelEditing();
@@ -196,7 +197,8 @@ define([
           title: this.title
         });
       }), lang.hitch(this, function(error) {
-        topic.publish('UpdateSessionTitleError', error);
+        // topic.publish('UpdateSessionTitleError', error);
+        console.log('Error updating session title', error);
       }));
     },
 

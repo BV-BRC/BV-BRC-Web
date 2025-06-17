@@ -139,6 +139,19 @@ define([
                 topic.publish('toggleModelRagVisibility', this.modelRagVisible);
             }));
 
+            // Add Report Issue button
+            var reportIssueButton = domConstruct.create('div', {
+                className: 'copilotChatReportIssueButton',
+                style: 'padding-top:2px; font-size: 15px; width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8; margin-left: 5px;',
+                innerHTML: '<i class="fa icon-commenting-o"></i>',
+                title: 'Report an issue with the chat session'
+            }, leftButtonContainer);
+
+            // Add click handler for report issue button
+            on(reportIssueButton, 'click', lang.hitch(this, function() {
+                topic.publish('openReportIssueDialog');
+            }));
+
             // Create draggable area (the title area that will be the drag handle) SECOND
             var titleNode = domConstruct.create('div', {
                 className: 'copilotChatHeaderTitle copilotDragHandle',

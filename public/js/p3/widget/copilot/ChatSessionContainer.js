@@ -164,6 +164,7 @@ define([
             topic.subscribe('SetConversationRating', lang.hitch(this, this._handleSetConversationRating));
             topic.subscribe('copy-message', lang.hitch(this, this._handleCopyMessage));
             topic.subscribe('rate-message', lang.hitch(this, this._handleRateMessage));
+            topic.subscribe('openReportIssueDialog', lang.hitch(this, this._handleOpenReportIssueDialog));
         },
 
         /**
@@ -358,6 +359,41 @@ define([
             })).catch(lang.hitch(this, function(error) {
                 console.error('Error rating message:', error);
             }));
+        },
+
+        /**
+         * Handles opening the report issue dialog
+         */
+        _handleOpenReportIssueDialog: function() {
+            var sessionId = this.sessionId;
+            var messages = this.chatStore.query();
+
+            try {
+                var content =
+                    '\n[Please feel free to add any additional information regarding this issue here.]\n\n\n' +
+                    '********************** CHAT SESSION INFO *************************\n\n' +
+                    'Session ID: ' + sessionId + '\n\n' +
+                    'Chat Messages (showing first 4):\n' +
+                    '{code}\n' +
+                    JSON.stringify(messages.slice(0, 4).map(msg => ({
+                        role: msg.role,
+                        content: msg.content,
+                        timestamp: msg.timestamp
+                    })), null, 4) +
+                    '\n{code}\n';
+
+                topic.publish('/openDialog', {
+                    type: 'reportProblem',
+                    params: {
+                        issueText: content,
+                        issueSubject: 'Reporting Issue with Chat Session',
+                        jobDescriptRequired: false,
+                        jobStatus: 'chat'
+                    }
+                });
+            } catch (e) {
+                var content = 'There was an issue fetching chat session info. Error: ' + e;
+            }
         }
     });
 });

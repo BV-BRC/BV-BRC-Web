@@ -519,7 +519,7 @@
   color: #374151;
   background: #f8f9fa;
   border: 1px solid #e3e8ea;
-  border-radius: 999px;
+  border-radius: 3px;
   text-align: left;
   cursor: pointer;
   transition:
