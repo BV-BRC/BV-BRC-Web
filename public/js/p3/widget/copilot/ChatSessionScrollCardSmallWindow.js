@@ -130,7 +130,7 @@ define([
                 // Add click handler for delete
                 this.own(on(this.deleteButtonNode, 'click', lang.hitch(this, function(evt) {
                     evt.stopPropagation();
-                    topic.publish('ChatSession:Delete', this.session.session_id);
+                    topic.publish('ChatSession:Delete', this.session.session_id);s
                 })));
             }
 

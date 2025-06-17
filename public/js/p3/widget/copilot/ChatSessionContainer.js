@@ -245,7 +245,9 @@ define([
                         }));
                     }
                 }
-                topic.publish('reloadUserSessions');
+                topic.publish('reloadUserSessions', {
+                    highlightSessionId: this.sessionId
+                });
             }));
         },
 
@@ -388,11 +390,9 @@ define([
                         issueText: content,
                         issueSubject: 'Reporting Issue with Chat Session',
                         jobDescriptRequired: false,
-                        jobStatus: 'chat',
-                        showChat: true
+                        jobStatus: 'chat'
                     }
                 });
-                // topic.publish("hideChatPanel")
             } catch (e) {
                 var content = 'There was an issue fetching chat session info. Error: ' + e;
             }
