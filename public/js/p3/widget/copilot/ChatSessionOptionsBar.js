@@ -440,7 +440,7 @@ define([
                 }),
                 visible: false
             });
-            this.addChild(ragButton);
+            // this.addChild(ragButton);
 
             // Add Model button
             var modelButton = new Button({
@@ -459,7 +459,7 @@ define([
                 }),
                 visible: false
             });
-            this.addChild(modelButton);
+            // this.addChild(modelButton);
 
             // Handle clicks outside dialogs
             document.addEventListener('click', lang.hitch(this, function(event) {
