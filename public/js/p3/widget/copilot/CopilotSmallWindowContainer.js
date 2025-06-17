@@ -129,7 +129,7 @@ define([
             var devOptionsButton = domConstruct.create('div', {
                 className: 'copilotChatDevOptionsButton',
                 innerHTML: '⚙',
-                title: 'Toggle Developer Options'
+                title: 'Advanced Options'
             }, leftButtonContainer);
 
             // Add click handler for developer options button

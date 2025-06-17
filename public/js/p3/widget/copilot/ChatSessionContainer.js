@@ -165,6 +165,7 @@ define([
             topic.subscribe('copy-message', lang.hitch(this, this._handleCopyMessage));
             topic.subscribe('rate-message', lang.hitch(this, this._handleRateMessage));
             topic.subscribe('openReportIssueDialog', lang.hitch(this, this._handleOpenReportIssueDialog));
+            topic.subscribe('chatTextSizeChanged', lang.hitch(this, this._handleChatTextSizeChanged));
         },
 
         /**
@@ -396,6 +397,15 @@ define([
             } catch (e) {
                 var content = 'There was an issue fetching chat session info. Error: ' + e;
             }
+        },
+
+        /**
+         * Handles changing the text size of the chat messages
+         * @param {number} newSize The new text size
+         */
+        _handleChatTextSizeChanged: function(newSize) {
+            this.displayWidget.fontSize = newSize;
+            topic.publish('RefreshSession', this.sessionId, false);
         }
     });
 });

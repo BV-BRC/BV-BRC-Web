@@ -96,7 +96,7 @@ define([
             }, this.containerNode);
 
             // Create container for model and RAG text elements
-            this.modelRagContainer = domConstruct.create('div', {
+            this.advancedOptionsContainer = domConstruct.create('div', {
                 style: 'display: none; width: 100%;'
             }, buttonsContainer);
 
@@ -107,7 +107,7 @@ define([
                 onclick: lang.hitch(this, function() {
                     topic.publish('modelButtonPressed', this.modelText, ['below']);
                 })
-            }, this.modelRagContainer);
+            }, this.advancedOptionsContainer);
 
             // Add RAG text display with hover effects
             this.ragText = domConstruct.create('div', {
@@ -116,7 +116,32 @@ define([
                 onclick: lang.hitch(this, function() {
                     topic.publish('ragButtonPressed', this.ragText, ['below']);
                 })
-            }, this.modelRagContainer);
+            }, this.advancedOptionsContainer);
+
+            // add a text size input field
+            var textSizeContainer = domConstruct.create('div', {
+                className: 'chat-window-options-button',
+                style: 'display: flex; align-items: center; gap: 5px;'
+            }, this.advancedOptionsContainer);
+
+            domConstruct.create('span', {
+                innerHTML: 'Text Size: ',
+                style: 'white-space: nowrap;'
+            }, textSizeContainer);
+
+            this.textSizeInput = domConstruct.create('input', {
+                type: 'number',
+                value: 13,
+                min: 1,
+                max: 100,
+                style: 'width: 50px; padding: 2px;',
+                onchange: lang.hitch(this, function(evt) {
+                    var newSize = parseInt(evt.target.value);
+                    if (newSize >= 1 && newSize <= 100) {
+                        topic.publish('chatTextSizeChanged', newSize);
+                    }
+                })
+            }, textSizeContainer);
 
             // Add CEPI journal rag button
             this.cepiText = domConstruct.create('div', {
@@ -224,7 +249,7 @@ define([
 
             // Subscribe to topic to control model/rag container visibility
             topic.subscribe('toggleModelRagVisibility', lang.hitch(this, function(visible) {
-                domStyle.set(this.modelRagContainer, 'display', visible ? 'block' : 'none');
+                domStyle.set(this.advancedOptionsContainer, 'display', visible ? 'block' : 'none');
             }));
 
             // Fetch model and RAG lists from API

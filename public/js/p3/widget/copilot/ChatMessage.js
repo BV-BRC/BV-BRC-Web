@@ -22,6 +22,9 @@ define([
     /** @property {Object} md - Initialized markdown-it instance for rendering markdown content */
     md: markdownit(),
 
+    /** @property {number} fontSize - Stores the font size for the message content */
+    fontSize: null,
+
     /**
      * @constructor
      * Creates a new ChatMessage instance
@@ -31,6 +34,7 @@ define([
     constructor: function(message, container) {
       this.message = message;
       this.container = container;
+      this.fontSize = message.fontSize || 13; // Get fontSize from message or use default
       this.renderMessage(); // Immediately render on construction
     },
 
@@ -130,7 +134,8 @@ define([
     renderUserOrAssistantMessage: function(messageDiv) {
       domConstruct.create('div', {
         innerHTML: this.message.content ? this.md.render(this.message.content) : '',
-        class: 'markdown-content'
+        class: 'markdown-content',
+        style: 'font-size: ' + this.fontSize + 'px;'
       }, messageDiv);
 
       if (this.message.role === 'assistant') {

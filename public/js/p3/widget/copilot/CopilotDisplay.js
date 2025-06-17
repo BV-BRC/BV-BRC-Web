@@ -48,6 +48,9 @@ define([
     // Default message shown when no messages exist
     emptyMessage: 'No messages yet. Start a conversation!',
 
+    // Default font size
+    fontSize: 13,
+
     /**
      * Constructor that initializes the widget
      * Mixes in any provided configuration options using safeMixin
@@ -83,6 +86,7 @@ define([
       // Subscribe to message events
       topic.subscribe('RefreshSessionDisplay', lang.hitch(this, 'showMessages'));
       topic.subscribe('CopilotApiError', lang.hitch(this, 'onQueryError'));
+      topic.subscribe('chatTextSizeChanged', lang.hitch(this, 'setFontSize'));
     },
 
     /**
@@ -100,6 +104,17 @@ define([
     },
 
     /**
+     * Sets the font size and redraws messages
+     * @param {number} size The new font size
+     */
+    setFontSize: function(size) {
+      this.fontSize = size;
+      if (this.messages && this.messages.length > 0) {
+        this.showMessages(this.messages, false);
+      }
+    },
+
+    /**
      * Renders an array of chat messages in the display
      * Implementation:
      * - Clears existing messages
@@ -109,10 +124,14 @@ define([
      */
     showMessages: function(messages, scrollToBottom = true) {
       if (messages.length) {
+        this.messages = messages; // Store messages for redrawing
         domConstruct.empty(this.resultContainer);
         console.log('show messages', messages);
         messages.forEach(lang.hitch(this, function(message) {
-          new ChatMessage(message, this.resultContainer);
+          new ChatMessage({
+            ...message,
+            fontSize: this.fontSize
+          }, this.resultContainer);
         }));
 
         if (scrollToBottom) {
