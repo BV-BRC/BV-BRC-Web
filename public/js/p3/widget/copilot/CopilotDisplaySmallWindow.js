@@ -105,6 +105,11 @@ define([
         // Subscribe to message events
         topic.subscribe('RefreshSessionDisplay', lang.hitch(this, 'showMessages'));
         topic.subscribe('CopilotApiError', lang.hitch(this, 'onQueryError'));
+        topic.subscribe('chatTextSizeChanged', lang.hitch(this, 'setFontSize'));
+        topic.subscribe('noJobDataError', lang.hitch(this, function(error) {
+            error.message = 'No job data found.\n\n' + error.message;
+            this.onQueryError(error);
+        }));
       },
     });
 });

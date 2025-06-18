@@ -88,13 +88,16 @@ define([
       // Handle button click
       on(showDocsButton, 'click', function() {
         // Create dialog to show markdown content
+        var dialogContent = this.createSystemDialogContent(this.message);
+        dialogContent.style.backgroundColor = 'white';
+        dialogContent.style.padding = '20px';
+        dialogContent.style.overflowY = 'auto';
+        dialogContent.style.maxHeight = '70vh';
+
         var docsDialog = new Dialog({
           title: "Retrieved Documents",
           style: "width: 600px; max-height: 80vh;",
-          content: domConstruct.create('div', {
-            innerHTML: this.message.content,
-            style: 'background-color: white; padding: 20px; overflow-y: auto; max-height: 70vh;'
-          })
+          content: dialogContent
         });
 
         // Add close button
@@ -209,6 +212,111 @@ define([
         innerHTML: text,
         class: className
       });
+    },
+
+    /**
+     * Creates collapsible content for system messages using proper DOM construction
+     * @param {Object} message - The message object containing content
+     * @returns {HTMLElement} DOM container with the system dialog content
+     */
+    createSystemDialogContent: function(message) {
+      var container = domConstruct.create('div');
+
+      // Add CSS for collapsible functionality
+      var style = domConstruct.create('style', {
+        innerHTML: `
+          .collapsible-header {
+            background-color: #f1f1f1;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px 0;
+            border-radius: 4px;
+          }
+          .collapsible-header:hover { background-color: #ddd; }
+          .collapsible-content {
+            display: none;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background-color: #fafafa;
+          }
+          .collapsible-content.expanded { display: block; }
+        `
+      }, container);
+
+      // Create collapsible section for message content
+      if (message.content) {
+        var headerButton1 = domConstruct.create('button', {
+          innerHTML: '► System Message Content',
+          class: 'collapsible-header'
+        }, container);
+
+        var contentDiv1 = domConstruct.create('div', {
+          innerHTML: this.md.render(message.content),
+          class: 'collapsible-content'
+        }, container);
+
+        // Add click handler for toggle functionality
+        on(headerButton1, 'click', lang.hitch(this, function() {
+          if (contentDiv1.classList.contains('expanded')) {
+            contentDiv1.classList.remove('expanded');
+            headerButton1.innerHTML = headerButton1.innerHTML.replace('▼', '►');
+          } else {
+            contentDiv1.classList.add('expanded');
+            headerButton1.innerHTML = headerButton1.innerHTML.replace('►', '▼');
+          }
+        }));
+      }
+
+      // Check for documents and create collapsible sections for each
+      if (message.documents && Array.isArray(message.documents) && message.documents.length > 0) {
+        for (var i = 0; i < message.documents.length; i++) {
+          var doc = message.documents[i];
+          var title = '► Document ' + (i + 1);
+          if (doc.title || doc.name) {
+            title += ': ' + (doc.title || doc.name);
+          }
+
+          var headerButton = domConstruct.create('button', {
+            innerHTML: title,
+            class: 'collapsible-header'
+          }, container);
+
+          var content;
+          if (typeof doc === 'string') {
+            content = this.md.render(doc);
+          } else if (doc.content) {
+            content = this.md.render(doc.content);
+          } else {
+            content = '<pre>' + JSON.stringify(doc, null, 2) + '</pre>';
+          }
+
+          var contentDiv = domConstruct.create('div', {
+            innerHTML: content,
+            class: 'collapsible-content'
+          }, container);
+
+          // Add click handler for toggle functionality
+          (function(button, div) {
+            on(button, 'click', lang.hitch(this, function() {
+              if (div.classList.contains('expanded')) {
+                div.classList.remove('expanded');
+                button.innerHTML = button.innerHTML.replace('▼', '►');
+              } else {
+                div.classList.add('expanded');
+                button.innerHTML = button.innerHTML.replace('►', '▼');
+              }
+            }));
+          }.bind(this))(headerButton, contentDiv);
+        }
+      }
+
+      return container;
     }
   });
 });

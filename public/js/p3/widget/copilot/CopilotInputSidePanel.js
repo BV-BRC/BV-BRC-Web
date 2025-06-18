@@ -421,6 +421,13 @@ define([
       JobManager.queryTaskDetail(job_id, true, true).then(function(response) {
         var stdout = response.stdout || '';
         var stderr = response.stderr || '';
+        const currMaxLength = 100000;
+        if (stdout.length > currMaxLength) {
+          stdout = stdout.substring(stdout.length - currMaxLength);
+        }
+        if (stderr.length > currMaxLength) {
+          stderr = stderr.substring(stderr.length - currMaxLength);
+        }
 
         // Combine stdout and stderr as system prompt
         var jobSystemPrompt = 'Job stdout:\n' + stdout + '\n\nJob stderr:\n' + stderr;
@@ -453,8 +460,7 @@ define([
           }, 100);
         }
       })).catch(function(error) {
-        console.error('Error in _submitToJobManager:', error);
-        topic.publish('CopilotApiError', { error: error });
+        topic.publish('noJobDataError', error);
       }).finally(lang.hitch(this, function() {
         this.displayWidget.hideLoadingIndicator();
         this.isSubmitting = false;

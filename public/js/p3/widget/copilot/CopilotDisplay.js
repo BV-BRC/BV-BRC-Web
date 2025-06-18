@@ -169,11 +169,12 @@ define([
      * - Clears existing messages
      * - Shows red error message
      */
-    onQueryError: function() {
-      console.log('onQueryError');
+    onQueryError: function(error = null) {
+      console.log('onQueryError', error);
       domConstruct.empty(this.resultContainer);
+      var errorMessage = error ? error.message : 'An error occurred while processing your request. Please try again later.';
       domConstruct.create('div', {
-        innerHTML: 'An error occurred while processing your request. Please try again later.',
+        innerHTML: errorMessage,
         class: 'copilot-error'
       }, this.resultContainer);
     },
