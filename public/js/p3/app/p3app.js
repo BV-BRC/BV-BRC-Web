@@ -51,7 +51,7 @@ define([
             width: '60px',
             height: '60px',
             backgroundColor: '#007bff',
-            borderRadius: '50%',
+            borderRadius: '50%'
           }).placeAt(document.body);
         })
       }

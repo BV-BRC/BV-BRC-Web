@@ -555,6 +555,34 @@ define([
                 console.error('Error rating message:', error);
                 throw error;
             });
+        },
+
+        /**
+         * Gets the path state
+         * @param {string} path The path to get the state for
+         * @returns {Promise} A promise that resolves when the path state is retrieved
+         */
+        getPathState: function(url_path) {
+            // TODO: add this path to the api
+            if (url_path == '/') {
+                return Promise.resolve(null);
+            }
+            console.log('getting path state for', url_path);
+            return request.post(this.apiUrlBase + '/get-path-state', {
+                data: JSON.stringify({
+                    path: url_path
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('Error getting path state:', error);
+                throw error;
+            });
         }
     });
 });

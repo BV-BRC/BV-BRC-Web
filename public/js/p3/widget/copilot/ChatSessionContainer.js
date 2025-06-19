@@ -97,6 +97,7 @@ define([
                 this._createTitleWidget();
                 this._createDisplayWidget();
                 this._createInputWidget();
+                this._getPathState();
                 this.changeSessionId(sessionId);
                 topic.publish('SetInitialChatModel');
                 this._initialized.resolve();
@@ -166,6 +167,9 @@ define([
             topic.subscribe('rate-message', lang.hitch(this, this._handleRateMessage));
             topic.subscribe('openReportIssueDialog', lang.hitch(this, this._handleOpenReportIssueDialog));
             topic.subscribe('chatTextSizeChanged', lang.hitch(this, this._handleChatTextSizeChanged));
+
+            // Start path monitoring
+            this._startPathMonitoring();
         },
 
         /**
@@ -408,6 +412,59 @@ define([
         _handleChatTextSizeChanged: function(newSize) {
             this.displayWidget.fontSize = newSize;
             topic.publish('RefreshSession', this.sessionId, false);
+        },
+
+        /**
+         * Gets the current path state
+         */
+        _getPathState: function() {
+            this.path = window.location.pathname;
+            this.copilotApi.getPathState(this.path).then(lang.hitch(this, function(state) {
+                if (state && state.message == 'success' && state.pathState && state.pathState.state) {
+                    this.pathState = state.pathState.state;
+                } else {
+                    this.pathState = null;
+                    console.log('No path state found for path:', this.path);
+                }
+            })).catch(lang.hitch(this, function(error) {
+                console.error('Error getting path state:', error);
+            }));
+        },
+
+        /**
+         * Checks if the current path has changed and updates path state if so
+         */
+        _checkPathChange: function() {
+            var currentPath = window.location.pathname;
+            if (currentPath !== this.path) {
+                console.log('Path changed from', this.path, 'to', currentPath);
+                this._getPathState();
+            }
+        },
+
+        /**
+         * Starts monitoring path changes every 3 seconds
+         */
+        _startPathMonitoring: function() {
+            this._pathMonitorInterval = setInterval(lang.hitch(this, this._checkPathChange), 3000);
+        },
+
+        /**
+         * Stops monitoring path changes
+         */
+        _stopPathMonitoring: function() {
+            if (this._pathMonitorInterval) {
+                clearInterval(this._pathMonitorInterval);
+                this._pathMonitorInterval = null;
+            }
+        },
+
+        /**
+         * Cleanup when widget is destroyed
+         */
+        destroy: function() {
+            this._stopPathMonitoring();
+            this.inherited(arguments);
         }
     });
 });
