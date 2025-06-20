@@ -34,7 +34,7 @@
   background-color: #0056b3;
 }
 
-.ChatSessionControllerPanel {
+.ChatSessionContainer {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -43,11 +43,11 @@
   z-index: 900;
 }
 
-.ChatSessionControllerPanel .closeButton:hover {
+.ChatSessionContainer .closeButton:hover {
   color: #dc3545;
 }
 
-.ChatSessionControllerPanel .floatingPanel {
+.ChatSessionContainer .floatingPanel {
   background-color: #ffffff;
   opacity: 1;
 }

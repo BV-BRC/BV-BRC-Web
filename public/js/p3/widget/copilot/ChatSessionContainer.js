@@ -25,7 +25,9 @@ define([
     'dojo/topic',
     'dojo/_base/lang',
     './ChatSessionTitle',
-    'dojo/Deferred'
+    'dojo/Deferred',
+    'dojo/dom-class',
+    'dojo/dom-style'
 ], function (
     declare,
     BorderContainer,
@@ -37,7 +39,9 @@ define([
     topic,
     lang,
     ChatSessionTitle,
-    Deferred
+    Deferred,
+    domClass,
+    domStyle
 ) {
     /**
      * @class ChatSessionContainer
@@ -60,7 +64,9 @@ define([
          * @param {Object} opts Configuration options
          */
         constructor: function(opts) {
-            declare.safeMixin(this, opts);
+            if (opts) {
+                lang.mixin(this, opts);
+            }
             // Initialize chat store for message persistence
             this.chatStore = new ChatSessionMemoryStore({
                 copilotApi: this.copilotApi
@@ -110,7 +116,23 @@ define([
                 this.displayWidget.onQueryError();
             }));
 
+            domClass.add(this.domNode, 'floatingPanel');
+
+            // Ensure this widget and its domNode properly fill the parent container
+            domStyle.set(this.domNode, {
+                height: '100%',
+                width: '100%',
+                overflow: 'hidden',
+                position: 'relative'
+            });
+
+            // Force layout recalculation after creation
+            setTimeout(lang.hitch(this, function() {
+                this.resize();
+            }), 0);
+
             // Set up topic subscriptions for various events
+
 
             // Handle creating new chat sessions
             topic.subscribe('createNewChatSession', lang.hitch(this, function() {
@@ -269,21 +291,6 @@ define([
         },
 
         /**
-         * Creates display widget component
-         * Shows chat message history and handles message rendering
-         */
-        _createDisplayWidget: function() {
-            this.displayWidget = new CopilotDisplay({
-                region: 'center',
-                style: 'padding: 0; border: 0; overflow: hidden; height: 100%; min-height: 100px;',
-                copilotApi: this.copilotApi,
-                chatStore: this.chatStore,
-                sessionId: this.sessionId
-            });
-            this.addChild(this.displayWidget);
-        },
-
-        /**
          * Creates input widget component
          * Handles user message input and submission
          */
@@ -291,15 +298,28 @@ define([
             this.inputWidget = new CopilotInput({
                 region: 'bottom',
                 splitter: true,
-                minSize: 60,
-                maxSize: 400,
-                style: 'padding: 0 10px 10px 10px; border: 0; height: 20%; overflow: hidden;',
+                style: 'height: 15%; padding: 0 5px 5px 20px; border: 0;',
                 copilotApi: this.copilotApi,
                 chatStore: this.chatStore,
                 displayWidget: this.displayWidget,
                 sessionId: this.sessionId
             });
             this.addChild(this.inputWidget);
+        },
+
+        /**
+         * Creates display widget component
+         * Handles user message input and submission
+         */
+        _createDisplayWidget: function() {
+            this.displayWidget = new CopilotDisplay({
+                region: 'center',
+                style: 'padding: 0 5px 5px 5px; border: 0; background-color: #ffffff; opacity: 1;',
+                copilotApi: this.copilotApi,
+                chatStore: this.chatStore,
+                sessionId: this.sessionId
+            });
+            this.addChild(this.displayWidget);
         },
 
         /**

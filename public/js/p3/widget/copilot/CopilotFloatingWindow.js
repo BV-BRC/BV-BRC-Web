@@ -16,7 +16,7 @@ define([
     './CopilotDisplay',
     './CopilotInput',
     'dojo/dom-construct',
-    '../copilot/ChatSessionControllerPanel',
+    '../copilot/ChatSessionContainer',
     '../copilot/ChatSessionScrollBar',
     '../copilot/ChatSessionOptionsBar',
     'dijit/Dialog',
@@ -37,7 +37,7 @@ define([
     CopilotDisplay,
     CopilotInput,
     domConstruct,
-    ChatSessionControllerPanel,
+    ChatSessionContainer,
     ChatSessionScrollBar,
     ChatSessionOptionsBar,
     Dialog,
@@ -419,7 +419,7 @@ define([
 
         createControllerPanel: function(options) {
             // Create controller panel inside the main content container
-            this.controllerPanel = new ChatSessionControllerPanel({
+            this.controllerPanel = new ChatSessionContainer({
                 style: "width: 100%; height: 100%;",
                 copilotApi: options.copilotApi,
                 optionsBar: options.optionsBar
