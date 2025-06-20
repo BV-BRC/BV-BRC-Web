@@ -1,5 +1,5 @@
 /**
- * @module p3/widget/copilot/CopilotSmallWindowContainer
+ * @module p3/widget/copilot/CopilotSmallWindow
  * @description A widget that provides a small floating window container for the PATRIC Copilot interface.
  * Designed to be a compact version of the chat interface that can be positioned anywhere on the screen.
  */
@@ -47,7 +47,7 @@ define([
     ResizeHandle
 ) {
     return declare([BorderContainer], {
-        baseClass: 'CopilotSmallWindowContainer',
+        baseClass: 'CopilotSmallWindow',
 
         // Configuration properties
         gutters: false,
