@@ -11,7 +11,7 @@ define([
     'dojo/dom-construct',
     'dojo/dom-style',
     'dojo/on',
-    './CopilotInputControlBar',
+    './CopilotInput',
     './CopilotDisplay'
 ], function(
     declare,
@@ -21,7 +21,7 @@ define([
     domConstruct,
     domStyle,
     on,
-    CopilotInputControlBar,
+    CopilotInput,
     CopilotDisplay
 ) {
     return declare([ChatSessionContainer], {
@@ -68,7 +68,7 @@ define([
          * Handles user message input and submission
          */
         _createInputWidget: function() {
-            this.inputWidget = new CopilotInputControlBar({
+            this.inputWidget = new CopilotInput({
                 region: 'bottom',
                 splitter: true,
                 style: 'height: 15%; padding: 0 5px 5px 20px; border: 0;',
