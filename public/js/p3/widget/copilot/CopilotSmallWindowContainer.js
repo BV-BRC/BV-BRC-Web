@@ -18,7 +18,7 @@ define([
     'dojo/dom-construct',
     '../copilot/ChatSessionControllerPanel',
     '../copilot/ChatSessionScrollBarSmallWindow',
-    '../copilot/ChatSessionOptionsBarSmallWindow',
+    '../copilot/ChatSessionOptionsBar',
     'dijit/Dialog',
     'dojo/fx',
     'dojo/_base/fx',
@@ -442,12 +442,15 @@ define([
                 this.optionsSidebarContainer.placeAt(this.optionsBarContainer.domNode);
 
                 // Create top content pane
-                this.topContentPane = new ChatSessionOptionsBar({
-                    className: 'optionsTopSection',
-                    region: 'top',
-                    style: 'height: 27%; padding: 0px; background-color: #ffffff; overflow-y: auto; margin-bottom: 5px;',
-                    copilotApi: this.copilotApi
-                });
+                if (this.optionsBar) {
+                    this.topContentPane = this.optionsBar;
+                } else {
+                    this.topContentPane = new ChatSessionOptionsBar({
+                        region: 'top',
+                        style: 'height: 27%; padding: 0px; background-color: #ffffff; overflow-y: auto; margin-bottom: 5px;',
+                        copilotApi: this.copilotApi
+                    });
+                }
                 this.optionsSidebarContainer.addChild(this.topContentPane);
 
                 // Create bottom content pane

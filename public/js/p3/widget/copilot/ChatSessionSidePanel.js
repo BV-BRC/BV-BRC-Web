@@ -47,6 +47,12 @@ define([
         /** @property {Object} optionsBar - Reference to options bar widget */
         optionsBar: null,
 
+        /** @property {string} model - Current model */
+        model: "RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16",
+
+        /** @property {string} ragDb - Current RAG database */
+        ragDb: null,
+
         /**
          * @constructor
          * Initializes the widget with provided options
@@ -85,7 +91,9 @@ define([
                 chatStore: this.chatStore,
                 displayWidget: this.displayWidget,
                 sessionId: this.sessionId,
-                context: this.context
+                context: this.context,
+                model: this.model,
+                ragDb: this.ragDb
             });
             this.addChild(this.inputWidget);
         },

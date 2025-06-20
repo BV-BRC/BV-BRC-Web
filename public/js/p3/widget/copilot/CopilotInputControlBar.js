@@ -155,7 +155,7 @@ define([
                 style: 'display: flex; flex-direction: row; justify-content: center; align-items: center; margin-top: 10px; cursor: pointer; font-size: 0.9em;'
             }, wrapperDiv);
 
-            // Subscribe to page content toggle changes from ChatSessionOptionsBarSmallWindow
+            // Subscribe to page content toggle changes from ChatSessionOptionsBar
             topic.subscribe('pageContentToggleChanged', lang.hitch(this, function(checked) {
                 this.pageContentEnabled = checked;
                 this._updateToggleButtonStyle();

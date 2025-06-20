@@ -19,7 +19,9 @@ define([
     'dijit/popup',
     'dijit/Dialog',
     'dojo/dom-construct',
-    'dojo/Deferred'
+    'dojo/Deferred',
+    'dojo/dom-style',
+    'dojo/dom-class'
 ], function (
     declare,
     ContentPane,
@@ -30,24 +32,38 @@ define([
     popup,
     Dialog,
     domConstruct,
-    Deferred
+    Deferred,
+    domStyle,
+    domClass
 ) {
     /**
      * @class ChatSessionOptionsBar
-     * @extends {dijit/layout/ContentPane}
+     * @extends {dijit/layout/ContentPane}d
      *
      * Main widget class that provides the options bar interface.
-     * Handles model selection, RAG database selection, and system prompts.
+     * Handles model selection, RAG database selection
      */
     return declare([ContentPane], {
-        /** @property {string} style - CSS styling for the options bar */
-        style: 'padding: 10px;',
+        /** @property {string} title - Widget title */
+        title: 'Basic Chat Options',
 
-        /** @property {Array} modelList - List of available AI models */
+        /** @property {Object} copilotApi - Reference to CopilotAPI instance */
+        copilotApi: null,
+
+        /** @property {Array} modelList - Available models list */
         modelList: null,
 
-        /** @property {Array} ragList - List of available RAG databases */
+        /** @property {Array} ragList - Available RAG databases list */
         ragList: null,
+
+        /** @property {Object} pageContentToggle - CheckBox for page content functionality */
+        pageContentToggle: null,
+
+        /** @property {boolean} helpdeskSelected - Tracks if helpdesk button is selected */
+        helpdeskSelected: false,
+
+        /** @property {boolean} cepiSelected - Tracks if CEPI button is selected */
+        cepiSelected: false,
 
         /**
          * @constructor
@@ -73,7 +89,6 @@ define([
             selectElement.style.marginRight = '10px';
             selectElement.style.display = 'block';
             selectElement.style.marginBottom = '10px';
-
             // Add models from provided list or use defaults
             if (this.modelList) {
                 this.modelList.forEach(lang.hitch(this, function(model) {
@@ -160,152 +175,6 @@ define([
             }));
 
             return selectElement;
-        },
-
-        /**
-         * Creates dialog for managing system prompts
-         * - Includes prompt type selection dropdown
-         * - Text area for editing prompt content
-         * - Save button to store custom prompts
-         *
-         * @returns {TooltipDialog} Configured dialog for prompt management
-         */
-        createPromptsDialog: function() {
-            var promptsDialog = new TooltipDialog({
-                style: "width: 250px;",
-                content: document.createElement('div')
-            });
-
-            // Add prompt type selection UI
-            var promptTypeWrapper = document.createElement('div');
-            promptTypeWrapper.style.display = 'flex';
-            promptTypeWrapper.style.alignItems = 'center';
-            promptTypeWrapper.style.marginBottom = '10px';
-
-            var promptTypeLabel = document.createElement('span');
-            promptTypeLabel.textContent = 'Select Prompt:';
-            promptTypeLabel.style.marginRight = '5px';
-            promptTypeWrapper.appendChild(promptTypeLabel);
-
-            // Configure prompt type dropdown
-            var promptTypeSelect = document.createElement('select');
-            promptTypeSelect.style.width = '40%';
-            promptTypeWrapper.appendChild(promptTypeSelect);
-            this.promptTypeSelect = promptTypeSelect;
-            this.promptTypeSelect.addEventListener('change', lang.hitch(this, function(evt) {
-                var prompt = evt.target.value;
-                var promptName = this.promptTypeSelect.options[this.promptTypeSelect.selectedIndex].text;
-                this.updatePromptText(promptName, prompt);
-                topic.publish('ChatSystemPrompt', prompt);
-            }));
-            promptsDialog.containerNode.appendChild(promptTypeWrapper);
-
-            // Add system prompt editing area
-            var promptLabel = document.createElement('div');
-            promptLabel.textContent = 'System Prompt:';
-            promptLabel.style.marginBottom = '5px';
-            promptsDialog.containerNode.appendChild(promptLabel);
-            var promptTextArea = document.createElement('textarea');
-            promptTextArea.style.width = '100%';
-            promptTextArea.style.height = '100px';
-            promptTextArea.style.marginBottom = '10px';
-            promptTextArea.addEventListener('change', lang.hitch(this, function(evt) {
-                var systemPrompt = evt.target.value;
-                topic.publish('ChatSystemPrompt', systemPrompt);
-            }));
-            this.promptTextArea = promptTextArea;
-            promptsDialog.containerNode.appendChild(promptTextArea);
-
-            // Add button container
-            var buttonWrapper = document.createElement('div');
-            buttonWrapper.style.display = 'flex';
-            buttonWrapper.style.gap = '10px';
-
-            // Add save prompt button
-            var saveButton = document.createElement('button');
-            saveButton.textContent = 'Save Prompt';
-            saveButton.style.flex = '1';
-            saveButton.addEventListener('click', lang.hitch(this, function() {
-                var promptNameDialog = this.createPromptNameDialog();
-                promptNameDialog.show();
-            }));
-            buttonWrapper.appendChild(saveButton);
-
-            promptsDialog.containerNode.appendChild(buttonWrapper);
-
-            return promptsDialog;
-        },
-
-        /**
-         * Creates dialog for naming and saving a new prompt
-         * - Input field for prompt name
-         * - Save/Cancel buttons
-         * - Handles saving prompt and updating prompt list
-         *
-         * @returns {Dialog} Configured dialog for prompt naming
-         */
-        createPromptNameDialog: function() {
-            var contentDiv = domConstruct.create('div', {});
-
-            var labelDiv = domConstruct.create('div', {
-                innerHTML: 'Enter a name for this prompt:',
-                style: {
-                    marginBottom: '10px'
-                }
-            }, contentDiv);
-
-            var input = domConstruct.create('input', {
-                type: 'text',
-                style: {
-                    width: '100%'
-                },
-                'data-dojo-attach-point': 'promptNameInput'
-            }, contentDiv);
-
-            var promptNameDialog = new Dialog({
-                title: "Save Prompt",
-                content: contentDiv,
-                style: "width: 300px"
-            });
-
-            // Add button container
-            var buttonContainer = document.createElement('div');
-            buttonContainer.style.display = 'flex';
-            buttonContainer.style.justifyContent = 'flex-end';
-            buttonContainer.style.marginTop = '20px';
-            buttonContainer.style.gap = '10px';
-
-            // Configure save button
-            var saveButton = document.createElement('button');
-            saveButton.innerHTML = "Save";
-            saveButton.onclick = lang.hitch(this, function() {
-                promptNameDialog.hide();
-                this.copilotApi.savePrompt(input.value, this.promptTextArea.value).then(lang.hitch(this, function(response) {
-                    this.resetPromptList().then(lang.hitch(this, function() {
-                        this.updatePromptText(input.value, this.promptTextArea.value);
-                        // Select the new prompt in dropdown
-                        for (var i = 0; i < this.promptTypeSelect.options.length; i++) {
-                            if (this.promptTypeSelect.options[i].text === input.value) {
-                                this.promptTypeSelect.selectedIndex = i;
-                                break;
-                            }
-                        }
-                    }));
-                }));
-            });
-
-            // Configure cancel button
-            var cancelButton = document.createElement('button');
-            cancelButton.innerHTML = "Cancel";
-            cancelButton.onclick = function() {
-                promptNameDialog.hide();
-            };
-
-            buttonContainer.appendChild(cancelButton);
-            buttonContainer.appendChild(saveButton);
-            promptNameDialog.containerNode.appendChild(buttonContainer);
-
-            return promptNameDialog;
         },
 
         /**
@@ -408,66 +277,139 @@ define([
         },
 
         /**
-         * Sets up the widget after creation
-         * - Creates options dialog with model and RAG selection
-         * - Creates prompts dialog for system prompt management
-         * - Adds buttons for prompts, model selection and new chat
-         * - Sets up event handlers for dialogs
+         * Called after widget creation
+         * Override to add custom functionality
          */
         postCreate: function() {
-            // this.inherited(arguments);
+            // Initialize CopilotAPI if not provided
+            if (!this.copilotApi) {
+                this.copilotApi = new CopilotAPI({
+                    user_id: window.App.user ? window.App.user.l_id : null
+                });
+            }
 
-            // Create model dialog
+            this.name_map = {
+                "Llama-4-Scout-17B-16E-Instruct-quantized.w4a16": "Llama-4-Scout",
+                "Llama-3.3-70B-Instruct": "Llama-3.3-70B"
+            };
+
+            // Create model and RAG dialogs
             var modelDialog = this.createModelDialog();
-
-            // Create and add RAG dialog
             var ragDialog = this.createRagDialog();
 
-            // Add RAG button
-            var ragButton = new Button({
-                label: 'RAG',
-                onClick: lang.hitch(this, function() {
-                    if (!ragDialog.visible) {
-                        popup.open({
-                            popup: ragDialog,
-                            around: ragButton.domNode
-                        });
-                        ragDialog.visible = true;
-                    } else {
-                        popup.close(ragDialog);
-                        ragDialog.visible = false;
-                    }
-                }),
-                visible: false
-            });
-            // this.addChild(ragButton);
+            // Create container for text buttons
+            var buttonsContainer = domConstruct.create('div', {
+                style: 'display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; margin-top: 10px; font-size: 0.9em; gap: 2px;'
+            }, this.containerNode);
 
-            // Add Model button
-            var modelButton = new Button({
-                label: 'Model',
-                onClick: lang.hitch(this, function() {
-                    if (!modelDialog.visible) {
-                        popup.open({
-                            popup: modelDialog,
-                            around: modelButton.domNode
-                        });
-                        modelDialog.visible = true;
-                    } else {
-                        popup.close(modelDialog);
-                        modelDialog.visible = false;
-                    }
-                }),
-                visible: false
-            });
-            // this.addChild(modelButton);
+            // Create container for model and RAG text elements
+            this.advancedOptionsContainer = domConstruct.create('div', {
+                style: 'display: none; width: 100%;'
+            }, buttonsContainer);
 
-            // Handle clicks outside dialogs
+            // Add Model text display with hover effects
+            this.modelText = domConstruct.create('div', {
+                innerHTML: 'Model: Loading...',
+                className: 'chat-window-options-button',
+                onclick: lang.hitch(this, function() {
+                    topic.publish('modelButtonPressed', this.modelText, ['below']);
+                })
+            }, this.advancedOptionsContainer);
+
+            // Add RAG text display with hover effects
+            this.ragText = domConstruct.create('div', {
+                innerHTML: 'RAG: Loading...',
+                className: 'chat-window-options-button',
+                onclick: lang.hitch(this, function() {
+                    topic.publish('ragButtonPressed', this.ragText, ['below']);
+                })
+            }, this.advancedOptionsContainer);
+
+            // add a text size input field
+            var textSizeContainer = domConstruct.create('div', {
+                className: 'chat-window-options-button',
+                style: 'display: flex; align-items: center; gap: 5px;'
+            }, this.advancedOptionsContainer);
+
+            domConstruct.create('span', {
+                innerHTML: 'Text Size: ',
+                style: 'white-space: nowrap;'
+            }, textSizeContainer);
+
+            this.textSizeInput = domConstruct.create('input', {
+                type: 'number',
+                value: 13,
+                min: 1,
+                max: 100,
+                style: 'width: 50px; padding: 2px;',
+                onchange: lang.hitch(this, function(evt) {
+                    var newSize = parseInt(evt.target.value);
+                    if (newSize >= 1 && newSize <= 100) {
+                        topic.publish('chatTextSizeChanged', newSize);
+                    }
+                })
+            }, textSizeContainer);
+
+            // Add CEPI journal rag button
+            this.cepiText = domConstruct.create('div', {
+                innerHTML: 'Publications',
+                className: 'chat-window-options-button',
+                onclick: lang.hitch(this, function() {
+                    this.cepiSelected = !this.cepiSelected;
+                    domClass.toggle(this.cepiText, 'selected', this.cepiSelected);
+
+                    if (this.cepiSelected && this.helpdeskSelected) {
+                        this.helpdeskSelected = false;
+                        domClass.remove(this.helpdeskButton, 'selected');
+                    }
+
+                    topic.publish(
+                        'ChatRagDb',
+                        this.cepiSelected ? 'cepi_journals' : 'null'
+                    );
+                })
+            }, buttonsContainer);
+
+            // Add Helpdesk button with hover effects
+            this.helpdeskButton = domConstruct.create('div', {
+                innerHTML: 'Help Center',
+                className: 'chat-window-options-button',
+                onclick: lang.hitch(this, function() {
+                    this.helpdeskSelected = !this.helpdeskSelected;
+                    domClass.toggle(this.helpdeskButton, 'selected', this.helpdeskSelected);
+
+                    if (this.helpdeskSelected && this.cepiSelected) {
+                        this.cepiSelected = false;
+                        domClass.remove(this.cepiText, 'selected');
+                    }
+
+                    topic.publish('ChatRagDb', this.helpdeskSelected ? 'bvbrc_helpdesk' : 'null');
+                })
+            }, buttonsContainer);
+
+            // Add New Chat button with hover effects
+            this.newChatButton = domConstruct.create('div', {
+                innerHTML: 'New Chat',
+                className: 'chat-window-options-button',
+                onclick: lang.hitch(this, function() {
+                    // Create a new chat session immediately
+                    if (this.copilotApi) {
+                        // Publish reloadUserSessions to remove session highlight
+                        topic.publish('reloadUserSessions');
+
+                        // Publish the createNewChatSession topic
+                        topic.publish('createNewChatSession');
+                    }
+                })
+            }, buttonsContainer);
+
+            // Handle clicks outside dialogs to close them
             document.addEventListener('click', lang.hitch(this, function(event) {
-                if (modelDialog._rendered && !modelDialog.domNode.contains(event.target) && !modelButton.domNode.contains(event.target)) {
+                if (modelDialog._rendered && !modelDialog.domNode.contains(event.target) && !this.modelText.contains(event.target)) {
                     popup.close(modelDialog);
                     modelDialog.visible = false;
                 }
-                if (ragDialog._rendered && !ragDialog.domNode.contains(event.target) && !ragButton.domNode.contains(event.target)) {
+                if (ragDialog._rendered && !ragDialog.domNode.contains(event.target) && !this.ragText.contains(event.target)) {
                     popup.close(ragDialog);
                     ragDialog.visible = false;
                 }
@@ -481,7 +423,7 @@ define([
                     ragDialog.visible = false;
                 } else {
                     if (!buttonNode) {
-                        buttonNode = ragButton.domNode;
+                        buttonNode = this.ragText;
                     }
                     setTimeout(function() {
                         popup.open({
@@ -502,7 +444,7 @@ define([
                     modelDialog.visible = false;
                 } else {
                     if (!buttonNode) {
-                        buttonNode = modelButton.domNode;
+                        buttonNode = this.modelText;
                     }
                     setTimeout(function() {
                         popup.open({
@@ -515,6 +457,27 @@ define([
                 }
             }));
 
+            // Subscribe to topic changes to update display text
+            topic.subscribe('ChatModel', lang.hitch(this, function(model) {
+                // Update model display text with just the model name (last part after /)
+                var modelName = model.split('/').reverse()[0];
+                if (this.name_map[modelName]) {
+                    modelName = this.name_map[modelName];
+                }
+                this.modelText.innerHTML = 'Model: ' + modelName;
+            }));
+
+            topic.subscribe('ChatRagDb', lang.hitch(this, function(ragDb) {
+                // Update RAG display text
+                this.ragText.innerHTML = 'RAG: ' + (ragDb === 'null' ? 'None' : ragDb);
+            }));
+
+            // Subscribe to topic to control model/rag container visibility
+            topic.subscribe('toggleModelRagVisibility', lang.hitch(this, function(visible) {
+                domStyle.set(this.advancedOptionsContainer, 'display', visible ? 'block' : 'none');
+            }));
+
+            // Additional topic subscriptions from older version
             topic.subscribe('get_model_list', lang.hitch(this, function() {
                 topic.publish('return_model_list', this.modelList);
             }));
@@ -523,81 +486,59 @@ define([
                 topic.publish('return_rag_list', this.ragList);
             }));
 
-            // Add New Chat button
-            this.createNewButton = new Button({
-                label: 'New Chat',
-                onClick: lang.hitch(this, function() {
-                    topic.publish('createNewChatSession');
-                })
-            });
-            this.addChild(this.createNewButton);
-
-            // Initialize prompts
-            this.resetPromptList();
-
             // Set initial model
             topic.subscribe('SetInitialChatModel', lang.hitch(this, function() {
-                topic.publish('ChatModel', this.modelDropdown.options[0].value);
+                if (this.modelDropdown && this.modelDropdown.options && this.modelDropdown.options.length > 0) {
+                    topic.publish('ChatModel', this.modelDropdown.options[0].value);
+                }
             }));
+
+            // Fetch model and RAG lists from API
+            this._loadModelAndRagLists();
         },
 
         /**
-         * Resets the prompt list by fetching latest prompts from API
-         * @returns {Promise} Resolves when prompt list is updated
+         * Loads model and RAG lists from the CopilotAPI
+         * @private
          */
-        resetPromptList: function() {
-            var deferred = new Deferred();
+        _loadModelAndRagLists: function() {
+
             if (this.copilotApi) {
-                this.copilotApi.getUserPrompts().then(lang.hitch(this, function(response) {
-                    var prompt_list = response.saved_prompts;
-                    this.updatePromptList(prompt_list);
-                    deferred.resolve(prompt_list);
-                })).otherwise(function(err) {
-                    deferred.reject(err);
-                });
-            } else {
-                deferred.resolve(true);
-            }
-            return deferred.promise;
-        },
+                this.copilotApi.getModelList().then(lang.hitch(this, function(modelsAndRag) {
+                    try {
+                        // Parse the response
+                        this.modelList = JSON.parse(modelsAndRag.models);
+                        this.ragList = JSON.parse(modelsAndRag.vdb_list);
 
-        /**
-         * Updates the prompt type dropdown with provided prompt list
-         * @param {Array} prompt_list List of prompts to add to dropdown
-         */
-        updatePromptList: function(prompt_list) {
-            // Clear existing options
-            while (this.promptTypeSelect.options.length >= 1) {
-                this.promptTypeSelect.remove(0);
-            }
+                        // Update displays with first available options or "None" if empty
+                        var defaultModel = this.modelList && this.modelList.length > 0 ? this.modelList[0] : 'None';
+                        var defaultRag = this.ragList && this.ragList.length > 0 ? this.ragList[0] : 'None';
+                        var modelName = defaultModel.model.split('/').reverse()[0];
+                        if (this.name_map[modelName]) {
+                            modelName = this.name_map[modelName];
+                        }
+                        this.modelText.innerHTML = 'Model: ' + modelName;
+                        // this.ragText.innerHTML = 'RAG: ' + defaultRag.name;
+                        this.ragText.innerHTML = 'RAG: None';
 
-            // Add None option
-            var noneOption = document.createElement('option');
-            noneOption.text = 'None';
-            noneOption.value = 'None';
-            this.promptTypeSelect.add(noneOption);
-
-            // Add prompts from list
-            if (prompt_list && prompt_list.length) {
-                prompt_list.forEach(lang.hitch(this, function(prompt) {
-                    var option = document.createElement('option');
-                    option.text = prompt.title;
-                    option.value = prompt.text;
-                    this.promptTypeSelect.add(option);
+                        console.log('Model and RAG lists loaded successfully', {
+                            models: this.modelList,
+                            rags: this.ragList
+                        });
+                    } catch (error) {
+                        console.error('Error parsing model/RAG lists:', error);
+                        this.modelText.innerHTML = 'Model: Error';
+                        this.ragText.innerHTML = 'RAG: Error';
+                    }
+                })).catch(lang.hitch(this, function(error) {
+                    console.error('Error fetching model/RAG lists:', error);
+                    this.modelText.innerHTML = 'Model: Error';
+                    this.ragText.innerHTML = 'RAG: Error';
                 }));
-            }
-        },
-
-        /**
-         * Updates the prompt text area with selected prompt
-         * @param {string} promptName Name of selected prompt
-         * @param {string} promptText Text content of selected prompt
-         */
-        updatePromptText: function(promptName, promptText) {
-            if (promptName === 'None') {
-                this.promptTextArea.value = '';
             } else {
-                this.promptTextArea.value = `${promptText}`;
+                console.error('CopilotAPI not available');
+                this.modelText.innerHTML = 'Model: N/A';
+                this.ragText.innerHTML = 'RAG: N/A';
             }
         }
     });

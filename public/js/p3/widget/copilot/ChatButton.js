@@ -103,7 +103,7 @@ define([
                     // Create options bar
                     this.optionsBar = new ChatSessionOptionsBar({
                         region: 'top',
-                        style: 'height: 40px;',
+                        style: 'height: 27%; padding: 0px; background-color: #ffffff; overflow-y: auto; margin-bottom: 5px;',
                         copilotApi: this.copilotApi,
                         modelList: modelList,
                         ragList: ragList

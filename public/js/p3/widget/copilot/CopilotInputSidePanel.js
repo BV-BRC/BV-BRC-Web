@@ -151,7 +151,7 @@ define([
         // Add button to container
         this.submitButton.placeAt(inputContainer);
 
-        // Subscribe to page content toggle changes from ChatSessionOptionsBarSmallWindow
+        // Subscribe to page content toggle changes from ChatSessionOptionsBar
         topic.subscribe('pageContentToggleChanged', lang.hitch(this, function(checked) {
             this.pageContentEnabled = checked;
             this._updateToggleButtonStyle();

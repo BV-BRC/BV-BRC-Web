@@ -34,7 +34,7 @@ define([
       systemPrompt: null,
 
       /** Selected language model for chat completion */
-      model: 'llama3.1-70b',
+      model: null,
 
       /** Selected RAG database for enhanced responses */
       ragDb: null,
