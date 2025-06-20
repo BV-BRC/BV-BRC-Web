@@ -17,7 +17,7 @@ define([
     './CopilotInput',
     'dojo/dom-construct',
     '../copilot/ChatSessionControllerPanel',
-    '../copilot/ChatSessionScrollBarSmallWindow',
+    '../copilot/ChatSessionScrollBar',
     '../copilot/ChatSessionOptionsBar',
     'dijit/Dialog',
     'dojo/fx',

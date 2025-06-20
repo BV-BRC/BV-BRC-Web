@@ -16,11 +16,11 @@ define([
   'dojo/on', // Event handling
   'dojo/_base/lang', // Language utilities like hitch
   'dojo/topic', // Pub/sub messaging
-  './ChatSessionScrollCard', // Individual session card widget
+  './ChatSessionScrollCardSmallWindow', // Individual session card widget
   'dojo/query', // DOM query functions
   'dojo/dom-class' // Class manipulation
 ], function (
-  declare, ContentPane, domConstruct, on, lang, topic, ChatSessionScrollCard, query, domClass
+  declare, ContentPane, domConstruct, on, lang, topic, ChatSessionScrollCardSmallWindow, query, domClass
 ) {
   /**
    * @class ChatSessionScrollBar
@@ -77,6 +77,30 @@ define([
 
       this.getSessions();
 
+      // Modify the scroll container to hide scrollbar while maintaining scroll functionality
+      if (this.scrollContainer) {
+        this.scrollContainer.style.cssText =
+            'width: 100%; height: 100%; overflow-x: hidden; display: flex; flex-direction: column; padding: 0; ' +
+            'overflow-y: scroll; scrollbar-width: none; -ms-overflow-style: none;';
+
+        // Hide webkit scrollbars (Chrome, Safari, Edge)
+        this.scrollContainer.style.setProperty('overflow-y', 'scroll');
+
+        // Add webkit-scrollbar hiding styles dynamically
+        var style = document.createElement('style');
+        style.textContent = `
+            .ChatSessionScrollBar .dijitContentPane > div::-webkit-scrollbar {
+                display: none;
+            }
+            .ChatSessionScrollBar .dijitContentPane > div {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+        `;
+        document.head.appendChild(style);
+      }
+
+
       topic.subscribe('reloadUserSessions', lang.hitch(this, function(data) {
         if (data && data.highlightSessionId) {
           // Store the session ID to highlight after reload
@@ -93,33 +117,27 @@ define([
 
     /**
      * @method renderSessions
-     * Renders the full list of chat session cards
-     *
-     * Implementation:
-     * - Clears existing content from container
-     * - Creates new ChatSessionScrollCard widget for each session
-     * - Places cards in container in order
-     * - Maintains consistent styling and layout
-     * - Stores references to cards for later highlighting
+     * Renders the full list of chat session cards using ChatSessionScrollCardSmallWindow
+     * Overrides parent method to use small window version of cards
      */
     renderSessions: function() {
-        // Clear existing content
-        domConstruct.empty(this.scrollContainer);
+      // Clear existing content
+      domConstruct.empty(this.scrollContainer);
 
-        // Reset session cards map
-        this.sessionCards = {};
+      // Reset session cards map
+      this.sessionCards = {};
 
-        // Create session cards
-        this.sessions_list.forEach(function(session) {
-          var sessionCard = new ChatSessionScrollCard({
-            session: session,
-            copilotApi: this.copilotApi
+      // Create session cards using small window version
+      this.sessions_list.forEach(function(session) {
+          var sessionCard = new ChatSessionScrollCardSmallWindow({
+              session: session,
+              copilotApi: this.copilotApi
           });
           sessionCard.placeAt(this.scrollContainer);
 
           // Store reference to the card widget keyed by session ID
           this.sessionCards[session.session_id] = sessionCard;
-        }, this);
+      }, this);
     },
 
     /**
