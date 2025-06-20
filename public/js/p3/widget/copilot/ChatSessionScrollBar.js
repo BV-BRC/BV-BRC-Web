@@ -16,11 +16,11 @@ define([
   'dojo/on', // Event handling
   'dojo/_base/lang', // Language utilities like hitch
   'dojo/topic', // Pub/sub messaging
-  './ChatSessionScrollCardSmallWindow', // Individual session card widget
+  './ChatSessionScrollCard', // Individual session card widget
   'dojo/query', // DOM query functions
   'dojo/dom-class' // Class manipulation
 ], function (
-  declare, ContentPane, domConstruct, on, lang, topic, ChatSessionScrollCardSmallWindow, query, domClass
+  declare, ContentPane, domConstruct, on, lang, topic, ChatSessionScrollCard, query, domClass
 ) {
   /**
    * @class ChatSessionScrollBar
@@ -117,7 +117,7 @@ define([
 
     /**
      * @method renderSessions
-     * Renders the full list of chat session cards using ChatSessionScrollCardSmallWindow
+     * Renders the full list of chat session cards using ChatSessionScrollCard
      * Overrides parent method to use small window version of cards
      */
     renderSessions: function() {
@@ -129,7 +129,7 @@ define([
 
       // Create session cards using small window version
       this.sessions_list.forEach(function(session) {
-          var sessionCard = new ChatSessionScrollCardSmallWindow({
+          var sessionCard = new ChatSessionScrollCard({
               session: session,
               copilotApi: this.copilotApi
           });

@@ -44,13 +44,14 @@ define([
          * - Date container with date and delete button
          */
         templateString: '<div class="chat-session-card" data-dojo-attach-point="containerNode">' +
+        '<div class="session-title-container" style="display: flex; justify-content: space-between; align-items: center;">' +
             '<div class="session-title" data-dojo-attach-point="titleNode"></div>' +
-            '<div class="session-date-container" style="display: flex; justify-content: space-between; align-items: center;">' +
-                '<div class="session-date" data-dojo-attach-point="dateNode"></div>' +
-                '<div class="rating-container" data-dojo-attach-point="ratingContainerNode"></div>' +
-                '<div class="delete-button" data-dojo-attach-point="deleteButtonNode"></div>' +
-            '</div>' +
-        '</div>',
+            '<div class="delete-button" data-dojo-attach-point="deleteButtonNode"></div>' +
+        '</div>' +
+        '<div class="session-date-container" style="display: flex; justify-content: space-between; align-items: center;">' +
+            '<div class="session-date" data-dojo-attach-point="dateNode"></div>' +
+            '<div class="rating-container" data-dojo-attach-point="ratingContainerNode"></div>' +
+        '</div>' + '</div>',
 
         /** CSS class for root node styling */
         baseClass: 'chat-session-card',
@@ -62,7 +63,7 @@ define([
         copilotApi: null,
 
         /** Default background color for this card */
-        defaultBackgroundColor: '#f0f0f0',
+        defaultBackgroundColor: '#f8f8f8',
 
         /**
          * Initializes card after creation
@@ -83,12 +84,14 @@ define([
 
             // Container styling for fixed positioning and dimensions
             this.containerNode.style.cssText =
-                'width: 100%; height: 110px; max-height: 110px; background-color: #f0f0f0; ' +
-                'border: 1px solid #ccc; border-radius: 5px; cursor: pointer; ' +
-                'padding: 10px; transition: background-color 0.2s; ' +
-                'position: relative; margin:0px; ' +
+                'width: 100%; height: 80px; max-height: 80px; background-color: #f8f8f8; ' +
+                'border: 1px solid #ddd; border-radius: 0px; cursor: pointer; ' +
+                'padding: 8px; padding-right: 10px; transition: all 0.2s ease; ' +
+                'position: relative; margin: 0px 0; ' +
                 'left: 0; right: 0; ' +
-                'box-sizing: border-box;';
+                'box-sizing: border-box; ' +
+                'box-shadow: 0 1px 3px rgba(0,0,0,0.1);' +
+                'flex: 0 0 auto;';
 
             // Delete button styling with hover effects
             this.deleteButtonNode.style.cssText =
@@ -102,6 +105,9 @@ define([
             this.deleteButtonNode.title = 'Delete chat session';
 
             if (this.session) {
+
+
+
                 // Display formatted creation date
                 if (this.session.created_at) {
                     this.dateNode.innerHTML = new Date(this.session.created_at).toLocaleString().split(',')[0];
@@ -110,10 +116,19 @@ define([
 
                 // Display truncated title (max 60 chars)
                 if (this.session.title) {
-                    this.titleNode.innerHTML = this.session.title.length > 60 ?
-                        this.session.title.substring(0, 60) + '...' :
-                        this.session.title;
-                    this.titleNode.style.cssText = 'font-weight: bold; margin-bottom: 5px;';
+                    this.titleNode.innerHTML = this.session.title;
+                    this.titleNode.style.cssText = `
+                        width: 80%;
+                        min-height: 36px;
+                        font-weight: bold;
+                        margin-bottom: 3px;
+                        font-size: 14px;
+                        line-height: 1.2;
+                        overflow: hidden;
+                        display: -webkit-box;
+                        -webkit-line-clamp: 2;
+                        -webkit-box-orient: vertical;
+                    `;
                 }
 
                 // Click handler to load session messages
@@ -141,26 +156,43 @@ define([
                 }));
 
                 // Delete button interaction handlers
-                on(this.deleteButtonNode, 'mousedown', lang.hitch(this, function(evt) {
-                    evt.stopPropagation();
-                    this.deleteButtonNode.style.backgroundColor = '#d0d0d0';
-                }));
-                on(this.deleteButtonNode, 'mouseup', lang.hitch(this, function(evt) {
-                    evt.stopPropagation();
+                this.deleteButtonNode.style.cssText =
+                    'opacity: 0.7; display: flex; align-items: center; justify-content: center; ' +
+                    'font-size: 14px; cursor: pointer; width: 30px; height: 25px; ' +
+                    'border-radius: 3px; background-color: transparent; color: #808080; ' +
+                    'background-image: url("/public/icon_source/trash.svg"); ' +
+                    'background-repeat: no-repeat; background-position: center; background-size: 15px 15px; ' +
+                    'position: absolute; top: 3px; right: 3px;';
+
+                // Add tooltip to delete button
+                this.deleteButtonNode.title = 'Delete chat session';
+
+                // Add hover effects for delete button (matching copilotChatCloseButton:hover)
+                this.own(on(this.deleteButtonNode, 'mouseenter', lang.hitch(this, function() {
+                    this.deleteButtonNode.style.opacity = '1';
+                    this.deleteButtonNode.style.backgroundColor = '#f0f0f0';
+                })));
+
+                this.own(on(this.deleteButtonNode, 'mouseleave', lang.hitch(this, function() {
+                    this.deleteButtonNode.style.opacity = '0.7';
                     this.deleteButtonNode.style.backgroundColor = 'transparent';
-                }));
-                on(this.deleteButtonNode, 'mouseleave', lang.hitch(this, function(evt) {
-                    evt.stopPropagation();
-                    this.deleteButtonNode.style.backgroundColor = 'transparent';
-                }));
-                on(this.deleteButtonNode, 'mouseenter', lang.hitch(this, function(evt) {
+                })));
+
+                this.own(on(this.deleteButtonNode, 'mousedown', lang.hitch(this, function(evt) {
                     evt.stopPropagation();
                     this.deleteButtonNode.style.backgroundColor = '#e0e0e0';
-                }));
-                on(this.deleteButtonNode, 'click', lang.hitch(this, function(evt) {
+                })));
+
+                this.own(on(this.deleteButtonNode, 'mouseup', lang.hitch(this, function(evt) {
+                    evt.stopPropagation();
+                    this.deleteButtonNode.style.backgroundColor = '#f0f0f0';
+                })));
+
+                // Add click handler for delete
+                this.own(on(this.deleteButtonNode, 'click', lang.hitch(this, function(evt) {
                     evt.stopPropagation();
                     topic.publish('ChatSession:Delete', this.session.session_id);
-                }));
+                })));
 
                 // Container hover effects
                 on(this.containerNode, 'mouseover', lang.hitch(this, function() {
@@ -178,6 +210,8 @@ define([
                         this.containerNode.style.backgroundColor = this.defaultBackgroundColor;
                     }
                 }));
+
+                this.dateNode.style.cssText = 'font-size: 0.8em; color: #666;';
             }
 
             this.setupRating();
@@ -185,19 +219,20 @@ define([
 
         /**
          * Creates and configures the rating container with 5-star rating system
+         * Override to use smaller stars for the small window
          * @returns {HTMLElement} The rating container element
          */
         createRatingContainer: function() {
             // Create rating container
             var ratingContainer = domConstruct.create('div', {
-                style: 'display: flex; justify-content: center; align-items: center; gap: 2px; padding: 0 8px;'
+                style: 'display: flex; justify-content: center; align-items: center; gap: 1px;'
             });
 
             // Create 5 star rating buttons
             for (var i = 1; i <= 5; i++) {
                 var star = domConstruct.create('div', {
                     innerHTML: '☆', // Empty star
-                    style: 'cursor: pointer; font-size: 18px; color: #ccc; transition: color 0.2s ease; user-select: none;',
+                    style: 'cursor: pointer; font-size: 14px; color: #ccc; transition: color 0.2s ease; user-select: none;',
                     'data-rating': i
                 }, ratingContainer);
 
