@@ -1,5 +1,5 @@
 /**
- * @module p3/widget/ChatSessionSidePanel
+ * @module p3/widget/ChatSessionSidePanelContainer
  * @description A BorderContainer-based widget that extends ChatSessionContainer to provide a side panel interface.
  * Manages chat session display, input, and settings for the side panel view.
  */
@@ -25,7 +25,7 @@ define([
     Dialog
 ) {
     /**
-     * @class ChatSessionSidePanel
+     * @class ChatSessionSidePanelContainer
      * @extends {ChatSessionContainer}
      *
      * Main widget class that provides side panel chat interface.

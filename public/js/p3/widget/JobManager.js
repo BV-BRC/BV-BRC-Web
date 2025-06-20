@@ -3,14 +3,14 @@ define([
   'dojo/dom-class', 'dojo/dom-attr', 'dojo/dom-construct', './JobsGrid', './JobContainerActionBar',
   'dojo/_base/Deferred', '../JobManager', './Confirmation', './RerunUtility',
   'dojo/topic', 'dijit/layout/BorderContainer', './ActionBar', './ItemDetailPanel', '../util/encodePath',
-  './copilot/ChatSessionSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBar',
+  './copilot/ChatSessionSidePanelContainer', './copilot/CopilotApi', './copilot/ChatSessionOptionsBar',
   'dijit/Dialog'
 ], function (
   declare, on, lang, query,
   domClass, domAttr, domConstr, JobsGrid, JobContainerActionBar,
   Deferred, JobManager, Confirmation, rerunUtility,
   Topic, BorderContainer, ActionBar, ItemDetailPanel, encodePath,
-  ChatSessionSidePanel, CopilotAPI, ChatSessionOptionsBar,
+  ChatSessionSidePanelContainer, CopilotAPI, ChatSessionOptionsBar,
   Dialog
 ) {
   return declare([BorderContainer], {
@@ -241,7 +241,7 @@ define([
             });
 
             // Create new chat panel
-            this.chatPanel = new ChatSessionSidePanel({
+            this.chatPanel = new ChatSessionSidePanelContainer({
               region: 'right',
               splitter: true,
               style: 'width: 32%',

@@ -6,7 +6,7 @@ define([
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog', './DownloadTooltipDialog', './PerspectiveToolTip',
   './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin',
   './FeatureDetailsTooltipDialog', './ServicesTooltipDialog', './RerunUtility', 'dojox/widget/Standby',
-  './copilot/ChatSessionSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel'
+  './copilot/ChatSessionSidePanelContainer', './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
@@ -15,7 +15,7 @@ define([
   Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
   CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin,
   FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility, Standby,
-  ChatSessionSidePanel, CopilotAPI, ChatSessionOptionsBar
+  ChatSessionSidePanelContainer, CopilotAPI, ChatSessionOptionsBar
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -415,7 +415,7 @@ define([
             });
 
             // Create new chat panel
-            this.chatPanel = new ChatSessionSidePanel({
+            this.chatPanel = new ChatSessionSidePanelContainer({
               region: 'right',
               splitter: true,
               style: 'width: 32%',

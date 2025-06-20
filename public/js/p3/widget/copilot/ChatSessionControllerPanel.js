@@ -1,6 +1,6 @@
 /**
  * @module p3/widget/ChatSessionControllerPanel
- * @description A specialized version of ChatSessionSidePanel designed to work within the ChatSessionController window.
+ * @description A specialized version of ChatSessionSidePanelContainer designed to work within the ChatSessionController window.
  * Provides chat functionality in a floating window context.
  */
 define([
