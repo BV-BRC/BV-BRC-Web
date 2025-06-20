@@ -12,7 +12,7 @@ define([
     'dojo/dom-style',
     'dojo/on',
     './CopilotInputControlBar',
-    './CopilotDisplaySmallWindow'
+    './CopilotDisplay'
 ], function(
     declare,
     ChatSessionContainer,

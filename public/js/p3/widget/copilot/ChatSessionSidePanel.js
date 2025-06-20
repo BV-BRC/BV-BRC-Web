@@ -11,7 +11,7 @@ define([
     'dojo/Deferred',
     'dojo/topic',
     './CopilotInputSidePanel',
-    './CopilotDisplaySmallWindow',
+    './CopilotDisplay',
     'dijit/Dialog'
 ], function(
     declare,
@@ -21,7 +21,7 @@ define([
     Deferred,
     topic,
     CopilotInputSidePanel,
-    CopilotDisplaySmallWindow,
+    CopilotDisplay,
     Dialog
 ) {
     /**
@@ -99,7 +99,7 @@ define([
         },
 
         _createDisplayWidget: function() {
-            this.displayWidget = new CopilotDisplaySmallWindow({
+            this.displayWidget = new CopilotDisplay({
                 region: 'center',
                 style: 'padding: 0 5px 5px 5px; border: 0; background-color: #ffffff; opacity: 1;',
                 copilotApi: this.copilotApi,
