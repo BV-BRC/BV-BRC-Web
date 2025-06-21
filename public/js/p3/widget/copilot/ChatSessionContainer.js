@@ -54,7 +54,7 @@ define([
         // Layout configuration properties
         gutters: false,
         liveSplitters: true,
-        style: 'height: 100%; width: 100%; background-color: #ffffff; opacity: 1;',
+        style: 'height: 100%; width: 100%; background-color: #ffffff; opacity: 1; overflow: hidden; position: relative;',
         sessionId: null,
         design: 'sidebar',
         persist: false,
@@ -117,14 +117,6 @@ define([
             }));
 
             domClass.add(this.domNode, 'floatingPanel');
-
-            // Ensure this widget and its domNode properly fill the parent container
-            domStyle.set(this.domNode, {
-                height: '100%',
-                width: '100%',
-                overflow: 'hidden',
-                position: 'relative'
-            });
 
             // Force layout recalculation after creation
             setTimeout(lang.hitch(this, function() {
