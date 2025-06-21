@@ -1,6 +1,12 @@
-/* Copilot Chat Interface Styling */
+/* ========================================
+   COPILOT CHAT INTERFACE STYLING
+   ======================================== */
 
-/* Main Component Classes */
+/* ========================================
+   MAIN CHAT COMPONENTS
+   ======================================== */
+
+/* Chat Button */
 .ChatButton {
   position: fixed;
   bottom: calc(40px + 3.5vh);
@@ -34,6 +40,39 @@
   background-color: #0056b3;
 }
 
+/* Chat Button Elements */
+.ChatButton .dijitButtonNode {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+}
+
+.ChatButton .dijitButtonContents {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+}
+
+.ChatButton .dijitIcon {
+  font-size: 24px;
+  margin: 0;
+}
+
+.ChatButton .dijitButtonText {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Chat Session Container */
 .ChatSessionContainer {
   border-radius: 8px;
   overflow: hidden;
@@ -52,7 +91,11 @@
   opacity: 1;
 }
 
-/* Container Styles */
+/* ========================================
+   CONTAINER STYLES
+   ======================================== */
+
+/* Main Result Container */
 .copilot-result-container {
     width: 100%;
     height: 100%;
@@ -67,7 +110,7 @@
     word-wrap: break-word;     /* Force word breaks if needed */
   }
 
-
+/* State Containers */
 .copilot-empty-state {
   color: #666;
   padding: 10px;
@@ -79,7 +122,113 @@
   padding: 10px;
 }
 
-/* Action Button Styles */
+/* ========================================
+   MESSAGE STYLES
+   ======================================== */
+
+/* Base Message Styles */
+.message {
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+.message * {
+  max-width: 100%;
+}
+
+.message img {
+  height: auto;
+}
+
+.message pre {
+  background-color: #f8f8f8;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.message code {
+  background-color: #f8f8f8;
+  padding: 2px 4px;
+  border-radius: 3px;
+  word-wrap: break-word;
+}
+
+.message table {
+  width: 100%;
+  display: block;
+  overflow-x: auto;
+}
+
+.message p {
+  margin: 0 0 10px 0;
+}
+
+.message p:last-child {
+  margin-bottom: 0;
+}
+
+/* Message Type Variants */
+.message.user {
+  background-color: #e6f3ff;
+  margin-left: auto;
+  float: right;
+  clear: both;
+  padding: 10px;
+  border-radius: 5px;
+  max-width: 60%;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.message.assistant {
+  background-color: transparent;
+  border: 0;
+  margin-right: auto;
+  float: left;
+  clear: both;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  max-width: 90%;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.message.system {
+  background-color: transparent;
+  margin-right: auto;
+  float: right;
+  clear: both;
+  margin-bottom: 10px;
+  padding: 0;
+  border-radius: 5px;
+  border: 0px;
+  max-width: 60%;
+  display: block;
+  margin-top: 0px;
+  margin-right: 11px;
+  overflow: hidden;
+  word-wrap: break-word;
+}
+
+.message.system .show-docs-button {
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ========================================
+   ACTION BUTTONS
+   ======================================== */
+
+/* Message Action Button Container */
 .message-button-container {
   margin-top: 8px;
   display: flex;
@@ -88,6 +237,7 @@
   align-items: center;
 }
 
+/* Base Action Button Styles */
 .message-action-button {
   /* Base styling */
   padding: 6px 12px;
@@ -153,7 +303,7 @@
   color: #374151;
 }
 
-/* Button variants for different actions */
+/* Action Button Variants */
 .message-action-button.copy-button {
   height: 25px;
   width: 25px;
@@ -202,150 +352,20 @@
   color: #0c4a6e;
 }
 
-/* Highlighted state for rated buttons */
+/* Highlighted States */
 .message-action-button.thumb-up-button.highlighted {
   background-color: #bcd8f4;
   border-color: #bcd8f4;
   color: white;
 }
 
-/* Highlighted state for rated buttons */
 .message-action-button.thumb-down-button.highlighted {
   background-color: #bcd8f4;
   border-color: #bcd8f4;
   color: white;
 }
 
-
-/* Button Element Styles */
-.ChatButton .dijitButtonNode {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: transparent;
-}
-
-.ChatButton .dijitButtonContents {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  height: 100%;
-}
-
-.ChatButton .dijitIcon {
-  font-size: 24px;
-  margin: 0;
-}
-
-.ChatButton .dijitButtonText {
-  font-size: 16px;
-  font-weight: bold;
-}
-
-/* Message Styles */
-.message {
-  max-width: 100%;
-  overflow-wrap: break-word;
-}
-
-.message * {
-  max-width: 100%;
-}
-
-.message img {
-  height: auto;
-}
-
-.message pre {
-  background-color: #f8f8f8;
-  padding: 10px;
-  border-radius: 4px;
-  overflow-x: auto;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-.message code {
-  background-color: #f8f8f8;
-  padding: 2px 4px;
-  border-radius: 3px;
-  word-wrap: break-word;
-}
-
-.message table {
-  width: 100%;
-  display: block;
-  overflow-x: auto;
-}
-
-.message p {
-  margin: 0 0 10px 0;
-}
-
-.message p:last-child {
-  margin-bottom: 0;
-}
-
-.message.user {
-  background-color: #e6f3ff;
-  margin-left: auto;
-  float: right;
-  clear: both;
-  padding: 10px;
-  border-radius: 5px;
-  max-width: 60%;
-  display: inline-block;
-  margin-top: 10px;
-}
-
-.message.assistant {
-  background-color: transparent;
-  border: 0;
-  margin-right: auto;
-  float: left;
-  clear: both;
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 5px;
-  max-width: 90%;
-  display: inline-block;
-  margin-top: 10px;
-}
-
-.message.system {
-  background-color: transparent;
-  margin-right: auto;
-  float: right;
-  clear: both;
-  margin-bottom: 10px;
-  padding: 0;
-  border-radius: 5px;
-  border: 0px;
-  max-width: 60%;
-  display: block;
-  margin-top: 0px;
-  margin-right: 11px;
-  overflow: hidden;
-  word-wrap: break-word;
-}
-
-.message.system .show-docs-button {
-  width: 100%;
-  text-align: left;
-  padding: 8px 12px;
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
+/* Show Docs Button */
 .show-docs-button {
   padding: 6px 12px;
   font-size: 12px;
@@ -369,14 +389,11 @@
   background-color: transparent;
 }
 
-/* Animations */
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
+/* ========================================
+   UI CONTROLS
+   ======================================== */
 
-/* Chat Container Styling */
-
+/* Chat Control Buttons */
 .copilotChatMinimizeButton,
 .copilotChatCloseButton,
 .copilotChatOptionsButton {
@@ -453,7 +470,43 @@
   color: #2a7aeb;
 }
 
-/* Page Content Toggle Styles */
+/* Chat Window Options Button */
+.chat-window-options-button {
+  display: block;
+  width: 90%;
+  margin-bottom: 0.25em;
+  padding: 0.4em 0;
+  padding-left: 0.7em;
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+  background: #f8f9fa;
+  border: 1px solid #e3e8ea;
+  border-radius: 3px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.chat-window-options-button:hover {
+  background: #e3e8ea;
+}
+
+.chat-window-options-button.selected {
+  background: #2a7aeb;
+  color: #fff;
+  border-color: #1f5ec4;
+}
+
+/* ========================================
+   PAGE CONTENT TOGGLE
+   ======================================== */
+
+/* Toggle State Classes */
 .pageContentToggleActive {
     background-color: transparent !important;
     border-color: #2196F3 !important;
@@ -472,6 +525,7 @@
     background-color: rgba(0, 0, 0, 0.05) !important;
 }
 
+/* Screenshot Button */
 .screenshotDivAboveToggle {
     width: 40px;
     height: 40px;
@@ -499,33 +553,11 @@
     background-color: rgba(33, 150, 243, 0.2) !important;
 }
 
-/* in your main stylesheet or a <style> block */
-.chat-window-options-button {
-  display: block;
-  width: 90%;
-  margin-bottom: 0.25em;
-  padding: 0.4em 0;
-  padding-left: 0.7em;
-  font-size: 14px;
-  font-weight: 700;
-  color: #374151;
-  background: #f8f9fa;
-  border: 1px solid #e3e8ea;
-  border-radius: 3px;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-.chat-window-options-button:hover {
-  background: #e3e8ea;
-}
+/* ========================================
+   ANIMATIONS
+   ======================================== */
 
-.chat-window-options-button.selected {
-  background: #2a7aeb;
-  color: #fff;
-  border-color: #1f5ec4;
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
