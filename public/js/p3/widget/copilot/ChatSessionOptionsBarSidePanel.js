@@ -40,7 +40,7 @@ define([
 
             // Create container for the New Chat button only
             var buttonsContainer = domConstruct.create('div', {
-                style: 'display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; margin-top: 10px; font-size: 0.9em; gap: 2px;'
+                class: 'sidePanelButtonContainer'
             }, this.containerNode);
 
             // Add New Chat button with hover effects

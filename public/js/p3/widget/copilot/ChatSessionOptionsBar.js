@@ -86,9 +86,7 @@ define([
          */
         createModelDropdown: function() {
             var selectElement = document.createElement('select');
-            selectElement.style.marginRight = '10px';
-            selectElement.style.display = 'block';
-            selectElement.style.marginBottom = '10px';
+            selectElement.className = 'copilotSelectElement';
             // Add models from provided list or use defaults
             if (this.modelList) {
                 this.modelList.forEach(lang.hitch(this, function(model) {
@@ -99,17 +97,11 @@ define([
                     selectElement.add(option);
                 }));
             } else {
-                // Add default LLAMA model option
-                var optionLLAMA31 = document.createElement('option');
-                optionLLAMA31.value = 'meta-llama/Llama-3.3-70B-Instruct';
-                optionLLAMA31.text = 'LLAMA3.3-70B';
-                selectElement.add(optionLLAMA31);
-
-                // Add default GPT4 option
-                var optionGPT4O = document.createElement('option');
-                optionGPT4O.value = 'gpt4o';
-                optionGPT4O.text = 'GPT-4o';
-                selectElement.add(optionGPT4O);
+                // Add 'No Models Available' option
+                var optionNoModels = document.createElement('option');
+                optionNoModels.value = null;
+                optionNoModels.text = 'No Models Available';
+                selectElement.add(optionNoModels);
             }
 
             // Publish selected model when changed
@@ -132,9 +124,7 @@ define([
          */
         createRagDropdown: function() {
             var selectElement = document.createElement('select');
-            selectElement.style.marginRight = '10px';
-            selectElement.style.display = 'block';
-            selectElement.style.marginBottom = '10px';
+            selectElement.className = 'copilotSelectElement';
 
             // Add None option
             var optionNone = document.createElement('option');

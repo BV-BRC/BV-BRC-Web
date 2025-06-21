@@ -414,6 +414,13 @@
    UI CONTROLS
    ======================================== */
 
+/* Select Element Styling */
+.copilotSelectElement {
+  margin-right: 10px;
+  display: block;
+  margin-bottom: 10px;
+}
+
 /* Collapsible System Message Styles */
 .collapsible-header {
   background-color: #f1f1f1;
@@ -645,4 +652,20 @@
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
+}
+
+/* ========================================
+   SIDE PANEL STYLES
+   ======================================== */
+
+/* Side Panel Button Container */
+.sidePanelButtonContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  margin-top: 10px;
+  font-size: 0.9em;
+  gap: 2px;
+  overflow: hidden;
 }
