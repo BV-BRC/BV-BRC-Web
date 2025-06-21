@@ -60,7 +60,7 @@ define([
         pageContentToggle: null,
 
         /** @property {boolean} helpdeskSelected - Tracks if helpdesk button is selected */
-        helpdeskSelected: false,
+        helpdeskSelected: true,
 
         /** @property {boolean} cepiSelected - Tracks if CEPI button is selected */
         cepiSelected: false,
@@ -363,7 +363,7 @@ define([
             // Add Helpdesk button with hover effects
             this.helpdeskButton = domConstruct.create('div', {
                 innerHTML: 'Help Center',
-                className: 'chat-window-options-button',
+                className: 'chat-window-options-button selected',
                 onclick: lang.hitch(this, function() {
                     this.helpdeskSelected = !this.helpdeskSelected;
                     domClass.toggle(this.helpdeskButton, 'selected', this.helpdeskSelected);
@@ -376,6 +376,9 @@ define([
                     topic.publish('ChatRagDb', this.helpdeskSelected ? 'bvbrc_helpdesk' : 'null');
                 })
             }, buttonsContainer);
+
+            // Publish initial helpdesk selection since it's on by default
+            topic.publish('ChatRagDb', 'bvbrc_helpdesk');
 
             // Add New Chat button with hover effects
             this.newChatButton = domConstruct.create('div', {
