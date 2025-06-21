@@ -112,6 +112,31 @@
   background-color: white;
   display: block;
 }
+
+/* ========================================
+   CHAT SESSION TITLE STYLES
+   ======================================== */
+
+/* Chat Title Display */
+.chatTitleDisplay {
+  cursor: pointer;
+  padding: 5px;
+  flex-grow: 1;
+  font-size: 1.6em;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Chat Title Editor */
+.chatTitleEditor {
+  display: none;
+  width: 100%;
+  font-size: 1.6em;
+  font-weight: bold;
+}
+
 /* ========================================
    CONTAINER STYLES
    ======================================== */

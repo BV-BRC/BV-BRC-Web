@@ -95,7 +95,7 @@ define([
     createTitleDisplay: function() {
       this.titleDisplay = domConstruct.create('div', {
         innerHTML: this.truncateTitle(this.title),
-        style: 'cursor: pointer; padding: 5px; flex-grow: 1; font-size: 1.6em; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
+        class: 'chatTitleDisplay'
       }, this.titleContainer);
 
       on(this.titleDisplay, 'click', lang.hitch(this, 'startEditing'));
@@ -110,7 +110,7 @@ define([
      */
     createTitleEditor: function() {
       this.titleEditor = new TextBox({
-        style: 'display: none; width: 100%; font-size: 1.2em; font-weight: bold;',
+        class: 'chatTitleEditor',
         maxLength: this.maxLength
       });
       this.titleEditor.placeAt(this.titleContainer);

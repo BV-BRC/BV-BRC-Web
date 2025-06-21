@@ -188,50 +188,6 @@ define([
       },
 
       /**
-       * Creates the model selection text element
-       * Implementation:
-       * - Adds hoverable/clickable div showing current model
-       * - Triggers model selection dialog on click
-       */
-      _createModelText: function(currDiv) {
-        this.modelText = domConstruct.create('div', {
-          innerHTML: 'Model: None',
-          style: 'padding: 2px 5px; transition: color 0.2s;',
-          onmouseover: function(evt) {
-            evt.target.style.color = '#2196F3';
-          },
-          onmouseout: function(evt) {
-            evt.target.style.color = '';
-          },
-          onclick: lang.hitch(this, function() {
-            topic.publish('modelButtonPressed', null, ['below']);
-          })
-        }, currDiv);
-      },
-
-      /**
-       * Creates the RAG database selection text element
-       * Implementation:
-       * - Adds hoverable/clickable div showing current RAG DB
-       * - Triggers RAG selection dialog on click
-       */
-      _createRagText: function(currDiv) {
-        this.ragText = domConstruct.create('div', {
-          innerHTML: 'RAG: None',
-          style: 'padding: 2px 5px; transition: color 0.2s;',
-          onmouseover: function(evt) {
-            evt.target.style.color = '#2196F3';
-          },
-          onmouseout: function(evt) {
-            evt.target.style.color = '';
-          },
-          onclick: lang.hitch(this, function() {
-            topic.publish('ragButtonPressed', null, ['below']);
-          })
-        }, currDiv);
-      },
-
-      /**
        * Handles submission of RAG queries with document retrieval
        * Implementation:
        * - Disables input during submission
