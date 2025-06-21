@@ -669,3 +669,97 @@
   gap: 2px;
   overflow: hidden;
 }
+
+/* ========================================
+   CHAT SESSION SCROLL BAR STYLES
+   ======================================== */
+
+/* Chat Session Scroll Container */
+.chatSessionScrollContainer {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Hide webkit scrollbars */
+.chatSessionScrollContainer::-webkit-scrollbar {
+  display: none;
+}
+
+/* Additional scrollbar hiding for nested elements */
+.ChatSessionScrollBar .dijitContentPane > div::-webkit-scrollbar {
+  display: none;
+}
+
+.ChatSessionScrollBar .dijitContentPane > div {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* ========================================
+   CHAT SESSION SCROLL CARD STYLES
+   ======================================== */
+
+/* Scroll Card Container */
+.scrollCardContainer {
+  width: 100%;
+  height: 80px;
+  max-height: 80px;
+  background-color: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: 0px;
+  cursor: pointer;
+  padding: 8px;
+  padding-right: 10px;
+  transition: all 0.2s ease;
+  position: relative;
+  margin: 0px 0;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  flex: 0 0 auto;
+}
+
+/* Scroll Card Delete Button */
+.scrollCardDelete {
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  width: 30px;
+  height: 25px;
+  border-radius: 3px;
+  background-color: transparent;
+  color: #808080;
+  background-image: url("/public/icon_source/trash.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 15px 15px;
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  padding: 0;
+}
+
+/* Scroll Card Title */
+.scrollCardTitle {
+  width: 80%;
+  min-height: 36px;
+  font-weight: bold;
+  margin-bottom: 3px;
+  font-size: 14px;
+  line-height: 1.2;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}

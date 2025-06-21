@@ -72,34 +72,10 @@ define([
 
       // Create scrollable container that fills parent width
       this.scrollContainer = domConstruct.create('div', {
-        style: 'width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; padding: 0;'
+        class: 'chatSessionScrollContainer'
       }, this.containerNode);
 
       this.getSessions();
-
-      // Modify the scroll container to hide scrollbar while maintaining scroll functionality
-      if (this.scrollContainer) {
-        this.scrollContainer.style.cssText =
-            'width: 100%; height: 100%; overflow-x: hidden; display: flex; flex-direction: column; padding: 0; ' +
-            'overflow-y: scroll; scrollbar-width: none; -ms-overflow-style: none;';
-
-        // Hide webkit scrollbars (Chrome, Safari, Edge)
-        this.scrollContainer.style.setProperty('overflow-y', 'scroll');
-
-        // Add webkit-scrollbar hiding styles dynamically
-        var style = document.createElement('style');
-        style.textContent = `
-            .ChatSessionScrollBar .dijitContentPane > div::-webkit-scrollbar {
-                display: none;
-            }
-            .ChatSessionScrollBar .dijitContentPane > div {
-                scrollbar-width: none;
-                -ms-overflow-style: none;
-            }
-        `;
-        document.head.appendChild(style);
-      }
-
 
       topic.subscribe('reloadUserSessions', lang.hitch(this, function(data) {
         if (data && data.highlightSessionId) {

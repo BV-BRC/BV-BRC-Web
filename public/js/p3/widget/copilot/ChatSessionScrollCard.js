@@ -82,32 +82,14 @@ define([
         postCreate: function() {
             this.inherited(arguments);
 
-            // Container styling for fixed positioning and dimensions
-            this.containerNode.style.cssText =
-                'width: 100%; height: 80px; max-height: 80px; background-color: #f8f8f8; ' +
-                'border: 1px solid #ddd; border-radius: 0px; cursor: pointer; ' +
-                'padding: 8px; padding-right: 10px; transition: all 0.2s ease; ' +
-                'position: relative; margin: 0px 0; ' +
-                'left: 0; right: 0; ' +
-                'box-sizing: border-box; ' +
-                'box-shadow: 0 1px 3px rgba(0,0,0,0.1);' +
-                'flex: 0 0 auto;';
-
-            // Delete button styling with hover effects
-            this.deleteButtonNode.style.cssText =
-                'cursor: pointer; width: 30px; height: 30px; text-align: center; line-height: 20px; ' +
-                'border-radius: 3px; background-color: transparent; color: #808080; ' +
-                'font-size: 12px; display: flex; align-items: center; justify-content: center; padding: 0; ' +
-                'background-image: url("/public/icon_source/trash.svg"); ' +
-                'background-repeat: no-repeat; background-position: center; background-size: 14px 14px;';
+            // Apply CSS classes instead of inline styles
+            this.containerNode.className += ' scrollCardContainer';
+            this.deleteButtonNode.className += ' scrollCardDelete';
 
             // Add tooltip to delete button
             this.deleteButtonNode.title = 'Delete chat session';
 
             if (this.session) {
-
-
-
                 // Display formatted creation date
                 if (this.session.created_at) {
                     this.dateNode.innerHTML = new Date(this.session.created_at).toLocaleString().split(',')[0];
@@ -117,18 +99,7 @@ define([
                 // Display truncated title (max 60 chars)
                 if (this.session.title) {
                     this.titleNode.innerHTML = this.session.title;
-                    this.titleNode.style.cssText = `
-                        width: 80%;
-                        min-height: 36px;
-                        font-weight: bold;
-                        margin-bottom: 3px;
-                        font-size: 14px;
-                        line-height: 1.2;
-                        overflow: hidden;
-                        display: -webkit-box;
-                        -webkit-line-clamp: 2;
-                        -webkit-box-orient: vertical;
-                    `;
+                    this.titleNode.className += ' scrollCardTitle';
                 }
 
                 // Click handler to load session messages
@@ -154,18 +125,6 @@ define([
                         console.error('CopilotApi not initialized');
                     }
                 }));
-
-                // Delete button interaction handlers
-                this.deleteButtonNode.style.cssText =
-                    'opacity: 0.7; display: flex; align-items: center; justify-content: center; ' +
-                    'font-size: 14px; cursor: pointer; width: 30px; height: 25px; ' +
-                    'border-radius: 3px; background-color: transparent; color: #808080; ' +
-                    'background-image: url("/public/icon_source/trash.svg"); ' +
-                    'background-repeat: no-repeat; background-position: center; background-size: 15px 15px; ' +
-                    'position: absolute; top: 3px; right: 3px;';
-
-                // Add tooltip to delete button
-                this.deleteButtonNode.title = 'Delete chat session';
 
                 // Add hover effects for delete button (matching copilotChatCloseButton:hover)
                 this.own(on(this.deleteButtonNode, 'mouseenter', lang.hitch(this, function() {
