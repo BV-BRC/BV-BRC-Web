@@ -51,7 +51,6 @@ define([
 
         // Configuration properties
         gutters: false,
-        style: 'width: 1000px; height: 450px; position: relative; bottom: 20px; right: 20px; overflow: hidden;',
 
         // Controller panel reference
         controllerPanel: null,
@@ -98,12 +97,6 @@ define([
 
         postCreate: function() {
             this.inherited(arguments);
-
-            // Ensure the initial width is properly applied
-            domStyle.set(this.domNode, {
-                width: '80%',
-                height: '70%'
-            });
 
             // Create header
             this.headerNode = domConstruct.create('div', {

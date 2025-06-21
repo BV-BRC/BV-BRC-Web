@@ -102,8 +102,8 @@ define([
 
                     // Create options bar
                     this.optionsBar = new ChatSessionOptionsBar({
+                        className: 'ChatSessionOptionsBar',
                         region: 'top',
-                        style: 'height: 27%; padding: 0px; background-color: #ffffff; overflow-y: auto; margin-bottom: 5px;',
                         copilotApi: this.copilotApi,
                         modelList: modelList,
                         ragList: ragList
@@ -129,7 +129,7 @@ define([
         _initializeSmallWindowContainer: function() {
             // Create a container div for the chat panel using CopilotFloatingWindow
             this.chatContainer = new CopilotFloatingWindow({
-                style: 'position: fixed; width: 500px; height: 600px; z-index: 800; top: 10vh; left: 10vw; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); border-radius: 8px; overflow: hidden; background-color: white; display: block;'
+                className: 'ChatContainerFloatingWindow'
             });
             this.chatContainer.placeAt(document.body);
 

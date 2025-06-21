@@ -91,6 +91,27 @@
   opacity: 1;
 }
 
+.ChatSessionOptionsBar {
+  height: 27%;
+  padding: 0px;
+  background-color: #ffffff;
+  overflow-y: auto;
+  margin-bottom: 5px;
+}
+
+.ChatContainerFloatingWindow {
+  position: fixed;
+  width: 80%;
+  height: 70%;
+  z-index: 800;
+  top: 10vh;
+  left: 10vw;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+  display: block;
+}
 /* ========================================
    CONTAINER STYLES
    ======================================== */
