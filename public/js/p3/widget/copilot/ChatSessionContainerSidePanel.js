@@ -51,7 +51,7 @@ define([
         model: "RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16",
 
         /** @property {string} ragDb - Current RAG database */
-        ragDb: null,
+        ragDb: 'bvbrc_helpdesk',
 
         /**
          * @constructor
@@ -72,6 +72,17 @@ define([
             if (this.optionsBar) {
                 this.addChild(this.optionsBar);
             }
+
+            // Subscribe to RAG database changes
+            topic.subscribe('ChatRagDb', lang.hitch(this, function(ragDb) {
+                this.ragDb = ragDb;
+                if (this.inputWidget) {
+                    this.inputWidget.setRagDb(ragDb);
+                    if (this.inputWidget.setRagButtonLabel) {
+                        this.inputWidget.setRagButtonLabel(ragDb);
+                    }
+                }
+            }));
         },
 
         /**

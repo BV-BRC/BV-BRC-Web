@@ -53,6 +53,8 @@ define([
     // Flag to track page content toggle state
     pageContentEnabled: false,
 
+    ragDb: null,
+
     /**
      * @constructor
      * @param {Object} args - Configuration arguments
@@ -136,6 +138,7 @@ define([
             if (this.isSubmitting) return;
 
             // Handle different submission types based on configuration
+            this.ragDb = null;
             if (this.pageContentEnabled) {
                 this._handlePageSubmit();
             } else if (this.copilotApi && this.ragDb) {
@@ -358,7 +361,6 @@ define([
       this.submitButton.set('disabled', true);
 
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
       this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
         if (response.systemMessage) {
           this.chatStore.addMessages([

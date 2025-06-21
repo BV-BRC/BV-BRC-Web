@@ -37,7 +37,7 @@ define([
       model: null,
 
       /** Selected RAG database for enhanced responses */
-      ragDb: null,
+      ragDb: 'bvbrc_helpdesk',
 
       /** Number of documents to use for RAG queries */
       numDocs: 3,
@@ -132,7 +132,6 @@ define([
             onClick: lang.hitch(this, function() {
             // Prevent multiple simultaneous submissions
             if (this.isSubmitting) return;
-
             // Handle different submission types based on configuration
             if (this.pageContentEnabled) {
                 this._handlePageSubmit();
@@ -252,7 +251,6 @@ define([
       _handleRegularSubmit: function() {
         var inputText = this.textArea.get('value');
         var _self = this;
-
         if (this.state) {
           console.log('state', this.state);
         }

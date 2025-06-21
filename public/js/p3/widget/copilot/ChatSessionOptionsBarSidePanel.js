@@ -28,15 +28,14 @@ define([
 
         /**
          * Called after widget creation
-         * Override to only show the New Chat button
+         * Override to only show the New Chat button, but inherit parent initialization
          */
         postCreate: function() {
-            // Initialize CopilotAPI if not provided
-            if (!this.copilotApi) {
-                this.copilotApi = new CopilotAPI({
-                    user_id: window.App.user ? window.App.user.l_id : null
-                });
-            }
+            // Call parent postCreate to inherit all initialization including bvbrc_helpdesk default
+            this.inherited(arguments);
+
+            // Clear the container that was created by parent
+            this.containerNode.innerHTML = '';
 
             // Create container for the New Chat button only
             var buttonsContainer = domConstruct.create('div', {

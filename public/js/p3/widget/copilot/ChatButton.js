@@ -164,7 +164,6 @@ define([
         // Override onClick to show the controller panel
         onClick: function(evt) {
             this.inherited(arguments);
-
             if (!this.chatOpen) {
                 this._openSmallChat();
                 this.chatOpen = true;
