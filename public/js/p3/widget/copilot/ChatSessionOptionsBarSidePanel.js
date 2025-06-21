@@ -46,7 +46,7 @@ define([
             // Add New Chat button with hover effects
             this.newChatButton = new Button({
                 label: 'New Chat',
-                style: 'height: 30px; margin-right: 10px;',
+                style: 'height: 30px; margin-right: 10px; margin-top: 10px;',
                 onClick: lang.hitch(this, function() {
                     // Create a new chat session immediately
                     if (this.copilotApi) {

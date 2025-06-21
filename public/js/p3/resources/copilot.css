@@ -786,14 +786,11 @@
 
 /* Side Panel Button Container */
 .sidePanelButtonContainer {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  margin-top: 10px;
+  height: 100%;
+  overflow: hidden;
+  display: block;
   font-size: 0.9em;
   gap: 2px;
-  overflow: hidden;
 }
 
 /* ========================================
