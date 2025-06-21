@@ -8,13 +8,13 @@ define([
     'dijit/layout/ContentPane',
     'dojo/dom-construct',
     'dojo/_base/lang',
-    '../copilot/ChatSessionControllerPanel',
+    '../copilot/ChatSessionContainer',
     'dijit/TooltipDialog',
     'dijit/popup',
     'dojo/dom-style',
     './CopilotApi',
     './ChatSessionOptionsBar',
-    './CopilotSmallWindowContainer',
+    './CopilotFloatingWindow',
     'require'
 ], function(
     declare,
@@ -26,13 +26,13 @@ define([
     ContentPane,
     domConstruct,
     lang,
-    ChatSessionControllerPanel,
+    ChatSessionContainer,
     TooltipDialog,
     popup,
     domStyle,
     CopilotAPI,
     ChatSessionOptionsBar,
-    CopilotSmallWindowContainer,
+    CopilotFloatingWindow,
     require
 ) {
     return declare([Button], {
@@ -102,8 +102,8 @@ define([
 
                     // Create options bar
                     this.optionsBar = new ChatSessionOptionsBar({
+                        className: 'ChatSessionOptionsBar',
                         region: 'top',
-                        style: 'height: 40px;',
                         copilotApi: this.copilotApi,
                         modelList: modelList,
                         ragList: ragList
@@ -127,9 +127,9 @@ define([
         },
 
         _initializeSmallWindowContainer: function() {
-            // Create a container div for the chat panel using CopilotSmallWindowContainer
-            this.chatContainer = new CopilotSmallWindowContainer({
-                style: 'position: fixed; width: 500px; height: 600px; z-index: 800; top: 10vh; left: 10vw; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); border-radius: 8px; overflow: hidden; background-color: white; display: block;'
+            // Create a container div for the chat panel using CopilotFloatingWindow
+            this.chatContainer = new CopilotFloatingWindow({
+                className: 'ChatContainerFloatingWindow'
             });
             this.chatContainer.placeAt(document.body);
 

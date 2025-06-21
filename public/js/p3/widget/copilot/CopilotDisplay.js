@@ -21,10 +21,11 @@ define([
   'dojo/on', // Event handling
   'dojo/topic', // Pub/sub messaging
   'dojo/_base/lang', // Language utilities like hitch
+  'dojo/dom-style',
   'markdown-it/dist/markdown-it.min', // Markdown parser
   './ChatMessage' // Custom message display widget
 ], function (
-  declare, ContentPane, domConstruct, on, topic, lang, markdownit, ChatMessage
+  declare, ContentPane, domConstruct, on, topic, lang, domStyle, markdownit, ChatMessage
 ) {
 
   /**
@@ -52,11 +53,14 @@ define([
     fontSize: 13,
 
     /**
-     * Constructor that initializes the widget
-     * Mixes in any provided configuration options using safeMixin
+     * @constructor
+     * Initializes the widget with provided options
+     * @param {Object} opts - Configuration options
      */
-    constructor: function(args) {
-      declare.safeMixin(this, args);
+    constructor: function(opts) {
+      if (opts) {
+          lang.mixin(this, opts);
+      }
     },
 
     /**
@@ -69,24 +73,29 @@ define([
      * - Subscribes to message refresh and error topics
      */
     postCreate: function() {
-      this.inherited(arguments);
+        // Create scrollable container for messages
+        this.resultContainer = domConstruct.create('div', {
+          class: 'copilot-result-container',
+          style: 'padding-right: 10px;padding-left: 10px;'
+        }, this.containerNode);
 
-      // Create scrollable container for messages
-      this.resultContainer = domConstruct.create('div', {
-        class: 'copilot-result-container',
-        style: 'padding-right: 130px;padding-left: 130px;'
-      }, this.containerNode);
+        // Apply initial responsive padding
+        this._updateResponsivePadding();
 
-      // Show initial empty state
-      this.showEmptyState();
+        // Show initial empty state
+        this.showEmptyState();
 
-      // Initialize markdown parser
-      this.md = markdownit();
+        // Initialize markdown parser
+        this.md = markdownit();
 
-      // Subscribe to message events
-      topic.subscribe('RefreshSessionDisplay', lang.hitch(this, 'showMessages'));
-      topic.subscribe('CopilotApiError', lang.hitch(this, 'onQueryError'));
-      topic.subscribe('chatTextSizeChanged', lang.hitch(this, 'setFontSize'));
+        // Subscribe to message events
+        topic.subscribe('RefreshSessionDisplay', lang.hitch(this, 'showMessages'));
+        topic.subscribe('CopilotApiError', lang.hitch(this, 'onQueryError'));
+        topic.subscribe('chatTextSizeChanged', lang.hitch(this, 'setFontSize'));
+        topic.subscribe('noJobDataError', lang.hitch(this, function(error) {
+            error.message = 'No job data found.\n\n' + error.message;
+            this.onQueryError(error);
+        }));
     },
 
     /**
@@ -241,6 +250,49 @@ define([
         domConstruct.destroy(this._loadingIndicator);
         this._loadingIndicator = null;
       }
-    }
+    },
+
+    /**
+     * Updates the padding of resultContainer based on current display width
+     * @private
+     */
+    _updateResponsivePadding: function() {
+      if (!this.resultContainer) return;
+
+        // Get the width of the container or window
+        var containerWidth = this.domNode ?
+            domStyle.get(this.domNode, 'width') :
+            window.innerWidth;
+
+        // Calculate padding based on width
+        var padding;
+        if (containerWidth < 600) {
+            padding = '10px';
+        } else {
+          // Linear increase from 10px to 100px between 600px and 1200px
+          var minPadding = 10;
+          var maxPadding = 100;
+          var minWidth = 600;
+          var maxWidth = 1200;
+
+          // Calculate linear interpolation
+          var ratio = 2.3*Math.min(1, (containerWidth - minWidth) / (maxWidth - minWidth));
+          var calculatedPadding = Math.round(minPadding + (maxPadding - minPadding) * ratio);
+          padding = calculatedPadding + 'px';
+        }
+
+        domStyle.set(this.resultContainer, {
+            'padding-left': padding,
+            'padding-right': padding
+        });
+      },
+
+      /**
+       * Override resize method to update responsive padding
+       */
+      resize: function() {
+          this.inherited(arguments);
+          this._updateResponsivePadding();
+      }
   });
 });

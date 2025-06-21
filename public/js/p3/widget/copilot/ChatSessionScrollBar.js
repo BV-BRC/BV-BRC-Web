@@ -72,7 +72,7 @@ define([
 
       // Create scrollable container that fills parent width
       this.scrollContainer = domConstruct.create('div', {
-        style: 'width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; padding: 0;'
+        class: 'chatSessionScrollContainer'
       }, this.containerNode);
 
       this.getSessions();
@@ -93,33 +93,27 @@ define([
 
     /**
      * @method renderSessions
-     * Renders the full list of chat session cards
-     *
-     * Implementation:
-     * - Clears existing content from container
-     * - Creates new ChatSessionScrollCard widget for each session
-     * - Places cards in container in order
-     * - Maintains consistent styling and layout
-     * - Stores references to cards for later highlighting
+     * Renders the full list of chat session cards using ChatSessionScrollCard
+     * Overrides parent method to use small window version of cards
      */
     renderSessions: function() {
-        // Clear existing content
-        domConstruct.empty(this.scrollContainer);
+      // Clear existing content
+      domConstruct.empty(this.scrollContainer);
 
-        // Reset session cards map
-        this.sessionCards = {};
+      // Reset session cards map
+      this.sessionCards = {};
 
-        // Create session cards
-        this.sessions_list.forEach(function(session) {
+      // Create session cards using small window version
+      this.sessions_list.forEach(function(session) {
           var sessionCard = new ChatSessionScrollCard({
-            session: session,
-            copilotApi: this.copilotApi
+              session: session,
+              copilotApi: this.copilotApi
           });
           sessionCard.placeAt(this.scrollContainer);
 
           // Store reference to the card widget keyed by session ID
           this.sessionCards[session.session_id] = sessionCard;
-        }, this);
+      }, this);
     },
 
     /**

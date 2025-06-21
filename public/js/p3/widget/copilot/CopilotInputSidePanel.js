@@ -151,7 +151,7 @@ define([
         // Add button to container
         this.submitButton.placeAt(inputContainer);
 
-        // Subscribe to page content toggle changes from ChatSessionOptionsBarSmallWindow
+        // Subscribe to page content toggle changes from ChatSessionOptionsBar
         topic.subscribe('pageContentToggleChanged', lang.hitch(this, function(checked) {
             this.pageContentEnabled = checked;
             this._updateToggleButtonStyle();
@@ -205,11 +205,11 @@ define([
 
             this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-            this.systemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\n' +
+            var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\n' +
                                 'Analyze the screenshot and respond to the user\'s query.';
             var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
 
-            this.copilotApi.submitQueryWithImage(inputText, this.sessionId, this.systemPrompt, imgtxt_model, base64Image)
+            this.copilotApi.submitQueryWithImage(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, base64Image)
                 .then(lang.hitch(this, function(response) {
                     if (response.systemMessage) {
                         this.chatStore.addMessages([
@@ -267,14 +267,14 @@ define([
 
         const pageHtml = document.documentElement.innerHTML;
 
-        this.systemPrompt = 'You are a helpful assistant that can answer questions about the page content.\n' +
+        var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the page content.\n' +
             'Answer questions as if you were a user viewing the page.\n' +
             'The page content is:\n' +
             pageHtml;
 
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-        this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
+        this.copilotApi.submitQuery(inputText, this.sessionId, imageSystemPrompt, this.model).then(lang.hitch(this, function(response) {
             if (response.systemMessage) {
                 this.chatStore.addMessages([
                     response.userMessage,

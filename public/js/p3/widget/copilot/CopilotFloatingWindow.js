@@ -1,5 +1,5 @@
 /**
- * @module p3/widget/copilot/CopilotSmallWindowContainer
+ * @module p3/widget/copilot/CopilotFloatingWindow
  * @description A widget that provides a small floating window container for the PATRIC Copilot interface.
  * Designed to be a compact version of the chat interface that can be positioned anywhere on the screen.
  */
@@ -16,9 +16,9 @@ define([
     './CopilotDisplay',
     './CopilotInput',
     'dojo/dom-construct',
-    '../copilot/ChatSessionControllerPanel',
-    '../copilot/ChatSessionScrollBarSmallWindow',
-    '../copilot/ChatSessionOptionsBarSmallWindow',
+    '../copilot/ChatSessionContainer',
+    '../copilot/ChatSessionScrollBar',
+    '../copilot/ChatSessionOptionsBar',
     'dijit/Dialog',
     'dojo/fx',
     'dojo/_base/fx',
@@ -37,7 +37,7 @@ define([
     CopilotDisplay,
     CopilotInput,
     domConstruct,
-    ChatSessionControllerPanel,
+    ChatSessionContainer,
     ChatSessionScrollBar,
     ChatSessionOptionsBar,
     Dialog,
@@ -47,11 +47,10 @@ define([
     ResizeHandle
 ) {
     return declare([BorderContainer], {
-        baseClass: 'CopilotSmallWindowContainer',
+        baseClass: 'CopilotFloatingWindow',
 
         // Configuration properties
         gutters: false,
-        style: 'width: 1000px; height: 450px; position: relative; bottom: 20px; right: 20px; overflow: hidden;',
 
         // Controller panel reference
         controllerPanel: null,
@@ -99,28 +98,19 @@ define([
         postCreate: function() {
             this.inherited(arguments);
 
-            // Ensure the initial width is properly applied
-            domStyle.set(this.domNode, {
-                width: '80%',
-                height: '70%'
-            });
-
             // Create header
             this.headerNode = domConstruct.create('div', {
-                className: 'copilotChatHeader',
-                style: 'width: 100%; height: 30px; background-color: #f8f8f8; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; padding: 0 10px; cursor: move;'
+                className: 'copilotChatHeader'
             }, this.containerNode, 'first');
 
             // Create left side options button container FIRST
             var leftButtonContainer = domConstruct.create('div', {
-                className: 'copilotLeftButtonContainer',
-                style: 'display: flex;'
+                className: 'copilotLeftButtonContainer'
             }, this.headerNode);
 
             // Add options button to the left container
             var optionsButton = domConstruct.create('div', {
                 className: 'copilotChatOptionsButton',
-                style: 'font-size: 17px; width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8;',
                 innerHTML: '☰',
                 title: 'Close/Open Sidebar'
             }, leftButtonContainer);
@@ -161,34 +151,29 @@ define([
             // Create draggable area (the title area that will be the drag handle) SECOND
             var titleNode = domConstruct.create('div', {
                 className: 'copilotChatHeaderTitle copilotDragHandle',
-                innerHTML: 'BV-BRC Copilot',
-                style: 'font-weight: bold; flex-grow: 1; text-align: center; cursor: move; user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;'
+                innerHTML: 'BV-BRC Copilot'
             }, this.headerNode);
 
             // Create buttons container in header THIRD (on the right)
             var buttonsContainer = domConstruct.create('div', {
-                className: 'copilotChatButtonsContainer',
-                style: 'display: flex;'
+                className: 'copilotChatButtonsContainer'
             }, this.headerNode);
 
             // Create control buttons container
             var controlButtonsContainer = domConstruct.create('div', {
-                className: 'copilotControlButtonsContainer',
-                style: 'display: flex;padding-right: 15px;'
+                className: 'copilotControlButtonsContainer'
             }, buttonsContainer);
 
             // Add minimize button
             var minimizeButton = domConstruct.create('div', {
                 className: 'copilotChatMinimizeButton',
-                style: 'width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8;margin-right: 2px;',
                 innerHTML: 'X',
                 title: 'Close'
             }, controlButtonsContainer);
 
             // Create content container that will house the BorderContainer for main content + options
             this.contentContainer = domConstruct.create('div', {
-                className: 'copilotChatContent',
-                style: 'width: 100%; height: calc(100% - 30px); overflow: hidden; position: relative;'
+                className: 'copilotChatContent'
             }, this.containerNode);
 
             // Create a BorderContainer within the content container for layout management
@@ -282,10 +267,6 @@ define([
             // Create a custom resize handle that's more visible and user-friendly
             this.resizeHandleNode = domConstruct.create('div', {
                 className: 'copilotResizeHandle',
-                style: 'position: absolute; bottom: 0px; right: 0px; width: 16px; height: 16px; cursor: nw-resize; ' +
-                       'background-color: transparent; border: 0px; border-bottom-right-radius: 3px; z-index: 1000; ' +
-                       'display: flex; align-items: center; justify-content: center; font-size: 12px; background-color: transparent;' +
-                       'background-image: url("/public/icon_source/corner_lines.svg"); background-size: 16px; background-position: center; background-repeat: no-repeat;',
                 innerHTML: ''
             }, this.domNode);
 
@@ -419,7 +400,7 @@ define([
 
         createControllerPanel: function(options) {
             // Create controller panel inside the main content container
-            this.controllerPanel = new ChatSessionControllerPanel({
+            this.controllerPanel = new ChatSessionContainer({
                 style: "width: 100%; height: 100%;",
                 copilotApi: options.copilotApi,
                 optionsBar: options.optionsBar
@@ -442,12 +423,15 @@ define([
                 this.optionsSidebarContainer.placeAt(this.optionsBarContainer.domNode);
 
                 // Create top content pane
-                this.topContentPane = new ChatSessionOptionsBar({
-                    className: 'optionsTopSection',
-                    region: 'top',
-                    style: 'height: 27%; padding: 0px; background-color: #ffffff; overflow-y: auto; margin-bottom: 5px;',
-                    copilotApi: this.copilotApi
-                });
+                if (this.optionsBar) {
+                    this.topContentPane = this.optionsBar;
+                } else {
+                    this.topContentPane = new ChatSessionOptionsBar({
+                        region: 'top',
+                        style: 'height: 27%; padding: 0px; background-color: #ffffff; overflow-y: auto; margin-bottom: 5px;',
+                        copilotApi: this.copilotApi
+                    });
+                }
                 this.optionsSidebarContainer.addChild(this.topContentPane);
 
                 // Create bottom content pane

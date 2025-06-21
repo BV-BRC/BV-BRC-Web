@@ -12,9 +12,9 @@
  * - Provides model and RAG database selection UI
  */
 define([
-    'dojo/_base/declare', 'dojo/dom-construct', 'dojo/on', 'dijit/layout/ContentPane', 'dijit/form/Textarea', 'dijit/form/Button', 'dojo/topic', 'dojo/_base/lang'
+    'dojo/_base/declare', 'dojo/dom-construct', 'dojo/on', 'dijit/layout/ContentPane', 'dijit/form/Textarea', 'dijit/form/Button', 'dojo/topic', 'dojo/_base/lang', 'html2canvas/dist/html2canvas.min'
   ], function (
-    declare, domConstruct, on, ContentPane, Textarea, Button, topic, lang
+    declare, domConstruct, on, ContentPane, Textarea, Button, topic, lang, html2canvas
   ) {
     /**
      * @class CopilotInput
@@ -34,7 +34,7 @@ define([
       systemPrompt: null,
 
       /** Selected language model for chat completion */
-      model: 'llama3.1-70b',
+      model: null,
 
       /** Selected RAG database for enhanced responses */
       ragDb: null,
@@ -44,6 +44,17 @@ define([
 
       /** Flag indicating whether to summarize documents in RAG queries */
       summarizeDocs: false,
+
+
+      // Widget styling
+      style: 'padding: 0 5px 5px 5px; border: 0; height: 20%;',
+
+      // Size constraints for the widget
+      minSize: 40,
+      maxSize: 200,
+
+      // Flag to track page content toggle state
+      pageContentEnabled: false,
 
       /**
        * Constructor that initializes the widget with provided options
@@ -56,135 +67,119 @@ define([
       /**
        * Sets up the widget UI after DOM creation
        * Implementation:
-       * - Creates centered wrapper div for components
-       * - Adds settings panel with model/RAG selection
-       * - Creates auto-expanding textarea with max height
-       * - Adds submit button with loading state
-       * - Sets up event handlers for submission
+       * - Creates flex container layout
+       * - Adds auto-expanding textarea
+       * - Adds submit button
+       * - Creates model/RAG selection UI
+       * - Sets up event handlers
        */
       postCreate: function() {
-        this.inherited(arguments);
-
-        // Subscribe to summarize documents changes
-        topic.subscribe('ChatSummarizeDocs', lang.hitch(this, function(shouldSummarize) {
-          this.summarizeDocs = shouldSummarize;
-        }));
-
-        // Create centered wrapper div
+        // Create main wrapper with flex layout
         var wrapperDiv = domConstruct.create('div', {
-          class: 'copilot-input-wrapper',
-          id: 'copilot-input-wrapper',
-          style: 'height: 95%;'
+            style: 'display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%; padding-top: 2px; border: 0;'
         }, this.containerNode);
 
-        // Create settings panel
-        var settingsDiv = domConstruct.create('div', {
-          class: 'copilot-input-settings',
-          id: 'copilot-input-settings'
+        // Container for input elements with flex layout
+        var inputContainer = domConstruct.create('div', {
+            style: 'display: flex; justify-content: center; align-items: flex-start; width: 100%;'
         }, wrapperDiv);
 
-        // Add model selector
-        this._createModelText(settingsDiv);
+        // Add container for the toggle switch and label on the left side
+        var toggleContainer = domConstruct.create('div', {
+            style: 'width: 35px; height: 35px; display: flex; flex-direction: column; align-items: center; margin-right: 15px;'
+        }, inputContainer);
 
-        // Add RAG database selector
-        this._createRagText(settingsDiv);
-
-        // Create expandable textarea
-        this.textArea = new Textarea({
-          class: 'copilot-input-textarea',
-          rows: 3,
-          maxLength: 10000,
-          placeholder: 'Enter your text here...',
-          id: 'copilot-input-textarea'
+        // Create screenshot div above the toggle button
+        var screenshotDiv = domConstruct.create('div', {
+            'class': 'screenshotDivAboveToggle'
         });
-        this.textArea.placeAt(wrapperDiv);
 
-        // Create submit button
+        // Create the page content toggle using the screenshot div
+        this.pageContentToggle = {
+            domNode: screenshotDiv,
+            placeAt: function(container) {
+                container.appendChild(screenshotDiv);
+            }
+        };
+
+        // Add click handler and properties to screenshot div
+        screenshotDiv.title = 'Ask about page - Sends page content to help answer your question.';
+        screenshotDiv.style.cursor = 'pointer';
+        on(screenshotDiv, 'click', lang.hitch(this, function() {
+            topic.publish('pageContentToggleChanged', !this.pageContentEnabled);
+        }));
+
+        this.pageContentToggle.placeAt(toggleContainer);
+
+        // Initialize button style
+        this._updateToggleButtonStyle();
+
+        // Configure textarea with auto-expansion and styling
+        this.textArea = new Textarea({
+            style: 'width: 60%; min-height: 50px; max-height: 100%; resize: none; overflow-y: hidden; border-radius: 5px; margin-right: 10px;',
+            rows: 3, // Default visible rows
+            maxLength: 10000,
+            placeholder: 'Enter your text here...'
+        });
+
+        // Add textarea to container
+        this.textArea.placeAt(inputContainer);
+
+        // Configure submit button with click handler
         this.submitButton = new Button({
-          label: 'Submit',
-          style: 'height: 30px; margin-right: 10px;',
-          onClick: lang.hitch(this, function() {
+            label: 'Submit',
+            style: 'height: 30px; margin-right: 10px;',
+            onClick: lang.hitch(this, function() {
+            // Prevent multiple simultaneous submissions
             if (this.isSubmitting) return;
 
-            // Handle submission based on RAG status
-            if (this.copilotApi && this.ragDb) {
-              this._handleRagSubmit();
+            // Handle different submission types based on configuration
+            if (this.pageContentEnabled) {
+                this._handlePageSubmit();
+            } else if (this.copilotApi && this.ragDb) {
+                this._handleRagSubmit();
             } else if (this.copilotApi) {
-              this._handleRegularSubmit();
+                this._handleRegularSubmit();
             } else {
-              console.error('CopilotApi widget not initialized');
+                console.error('CopilotApi widget not initialized');
             }
-          })
+            })
         });
-        this.submitButton.placeAt(wrapperDiv);
 
-        // Configure textarea auto-expansion
-        const maxHeight = 200; // Max height ~9 rows
+        // Add button to container
+        this.submitButton.placeAt(inputContainer);
 
-        // Handle textarea resizing
+        // Subscribe to page content toggle changes from ChatSessionOptionsBar
+        topic.subscribe('pageContentToggleChanged', lang.hitch(this, function(checked) {
+            this.pageContentEnabled = checked;
+            this._updateToggleButtonStyle();
+            console.log('Page content toggle changed to:', checked);
+        }));
+
+        // Maximum height for textarea before scrolling
+        const maxHeight = 200; // ~9 rows
+
+        // Handle textarea auto-expansion on input
         on(this.textArea, 'input', function() {
-          this.textArea.style.height = 'auto';
-          this.textArea.style.height = (this.textArea.scrollHeight) + 'px';
+            this.textArea.style.height = 'auto'; // Reset height
+            this.textArea.style.height = (this.textArea.scrollHeight) + 'px'; // Expand to content
 
-          if (this.textArea.scrollHeight > maxHeight) {
+            // Enable scrolling if content exceeds max height
+            if (this.textArea.scrollHeight > maxHeight) {
             this.textArea.style.height = maxHeight + 'px';
             this.textArea.style.overflowY = 'auto';
-          } else {
+            } else {
             this.textArea.style.overflowY = 'hidden';
-          }
+            }
         }.bind(this));
 
-        // Handle Enter key submission
+        // Handle Enter key for submission (except with Shift)
         on(this.textArea, 'keypress', lang.hitch(this, function(evt) {
-          if (evt.keyCode === 13 && !evt.shiftKey && !this.isSubmitting) {
+            if (evt.keyCode === 13 && !evt.shiftKey && !this.isSubmitting) {
             evt.preventDefault();
             this.submitButton.onClick();
-          }
+            }
         }));
-      },
-
-      /**
-       * Creates the model selection text element
-       * Implementation:
-       * - Adds hoverable/clickable div showing current model
-       * - Triggers model selection dialog on click
-       */
-      _createModelText: function(currDiv) {
-        this.modelText = domConstruct.create('div', {
-          innerHTML: 'Model: None',
-          style: 'padding: 2px 5px; transition: color 0.2s;',
-          onmouseover: function(evt) {
-            evt.target.style.color = '#2196F3';
-          },
-          onmouseout: function(evt) {
-            evt.target.style.color = '';
-          },
-          onclick: lang.hitch(this, function() {
-            topic.publish('modelButtonPressed', null, ['below']);
-          })
-        }, currDiv);
-      },
-
-      /**
-       * Creates the RAG database selection text element
-       * Implementation:
-       * - Adds hoverable/clickable div showing current RAG DB
-       * - Triggers RAG selection dialog on click
-       */
-      _createRagText: function(currDiv) {
-        this.ragText = domConstruct.create('div', {
-          innerHTML: 'RAG: None',
-          style: 'padding: 2px 5px; transition: color 0.2s;',
-          onmouseover: function(evt) {
-            evt.target.style.color = '#2196F3';
-          },
-          onmouseout: function(evt) {
-            evt.target.style.color = '';
-          },
-          onclick: lang.hitch(this, function() {
-            topic.publish('ragButtonPressed', null, ['below']);
-          })
-        }, currDiv);
       },
 
       /**
@@ -344,15 +339,6 @@ define([
       },
 
       /**
-       * Updates selected model and UI
-       */
-      setModel: function(model) {
-        console.log('setModel=', model);
-        this.model = model;
-        this.setModelText(model);
-      },
-
-      /**
        * Returns currently selected model
        */
       getModel: function() {
@@ -360,16 +346,22 @@ define([
       },
 
       /**
+       * Updates selected model and UI
+       */
+      setModel: function(model) {
+        this.model = model;
+      },
+
+
+      /**
        * Updates selected RAG database and UI
        */
       setRagDb: function(ragDb) {
-        console.log('setRagDb=', ragDb);
         if (ragDb == 'null') {
           this.ragDb = null;
         } else {
           this.ragDb = ragDb;
         }
-        this.setRagButtonLabel(ragDb);
       },
 
       /**
@@ -409,6 +401,156 @@ define([
        */
       setNumDocs: function(numDocs) {
         this.numDocs = numDocs;
+      },
+
+
+        /**
+         * @method _handlePageSubmit
+         * @description Handles submission about the current page (screenshot first, HTML fallback)
+         *
+         **/
+        _handlePageSubmit: function() {
+          var inputText = this.textArea.get('value');
+          var _self = this;
+
+          if (this.state) {
+              console.log('state', this.state);
+          }
+
+          this.isSubmitting = true;
+          this.submitButton.set('disabled', true);
+
+          topic.publish('hideChatPanel'); // Hide panel before taking screenshot
+
+          html2canvas(document.body).then(lang.hitch(this, function(canvas) {
+            var base64Image = canvas.toDataURL('image/png');
+
+            topic.publish('showChatPanel'); // Show panel again
+
+            this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+            this.systemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\n' +
+                                'Analyze the screenshot and respond to the user\'s query.';
+            var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
+
+            this.copilotApi.submitQueryWithImage(inputText, this.sessionId, this.systemPrompt, imgtxt_model, base64Image)
+                .then(lang.hitch(this, function(response) {
+                    if (response.systemMessage) {
+                        this.chatStore.addMessages([
+                            response.userMessage,
+                            response.systemMessage,
+                            response.assistantMessage
+                        ]);
+                    } else {
+                        this.chatStore.addMessages([
+                            response.userMessage,
+                            response.assistantMessage
+                        ]);
+                    }
+                    _self.textArea.set('value', '');
+                    this.displayWidget.showMessages(this.chatStore.query());
+
+                    if (_self.new_chat) {
+                        _self.new_chat = false;
+                        topic.publish('reloadUserSessions', {
+                            highlightSessionId: this.sessionId
+                        });
+                        setTimeout(() => {
+                            topic.publish('generateSessionTitle');
+                        }, 200);
+                    }
+                })).catch(function(error) {
+                    topic.publish('CopilotApiError', { error: error });
+                }).finally(lang.hitch(this, function() {
+                    this.displayWidget.hideLoadingIndicator();
+                    this.isSubmitting = false;
+                    this.submitButton.set('disabled', false);
+
+                    // Deselect the pageContentToggle after submission
+                    this.pageContentEnabled = false;
+                    this._updateToggleButtonStyle();
+                    topic.publish('pageContentToggleChanged', false);
+                }));
+        })).catch(lang.hitch(this, function(error) {
+            console.error('Error capturing or processing screenshot:', error);
+            topic.publish('showChatPanel'); // Ensure panel is shown even on error
+
+            // Fall back to HTML content if screenshot fails
+            console.log('Falling back to HTML content');
+            this._handlePageContentSubmit();
+        }));
+      },
+
+      /**
+       * @method _handlePageContentSubmit
+       * @description Handles submission of page content (HTML)
+       * Used as a fallback when screenshot fails
+       **/
+      _handlePageContentSubmit: function() {
+        var inputText = this.textArea.get('value');
+        var _self = this;
+
+        const pageHtml = document.documentElement.innerHTML;
+
+        this.systemPrompt = 'You are a helpful assistant that can answer questions about the page content.\n' +
+            'Answer questions as if you were a user viewing the page.\n' +
+            'The page content is:\n' +
+            pageHtml;
+
+        this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+        this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
+            if (response.systemMessage) {
+                this.chatStore.addMessages([
+                    response.userMessage,
+                    response.systemMessage,
+                    response.assistantMessage
+                ]);
+            } else {
+                this.chatStore.addMessages([
+                    response.userMessage,
+                    response.assistantMessage
+                ]);
+            }
+            _self.textArea.set('value', '');
+            this.displayWidget.showMessages(this.chatStore.query());
+
+            if (_self.new_chat) {
+                _self.new_chat = false;
+                topic.publish('reloadUserSessions', {
+                    highlightSessionId: this.sessionId
+                });
+                setTimeout(() => {
+                    topic.publish('generateSessionTitle');
+                }, 100);
+            }
+        })).catch(function(error) {
+            topic.publish('CopilotApiError', { error: error });
+        }).finally(lang.hitch(this, function() {
+            this.displayWidget.hideLoadingIndicator();
+            this.isSubmitting = false;
+            this.submitButton.set('disabled', false);
+
+            // Deselect the pageContentToggle after submission
+            this.pageContentEnabled = false;
+            this._updateToggleButtonStyle();
+            topic.publish('pageContentToggleChanged', false);
+        }));
+      },
+
+      /**
+         * @method _updateToggleButtonStyle
+         * @description Updates the toggle button's visual state based on pageContentEnabled
+         */
+      _updateToggleButtonStyle: function() {
+        var buttonNode = this.pageContentToggle.domNode;
+        if (this.pageContentEnabled) {
+            buttonNode.classList.remove('pageContentToggleInactive');
+            buttonNode.classList.add('pageContentToggleActive');
+        } else {
+            buttonNode.classList.remove('pageContentToggleActive');
+            buttonNode.classList.add('pageContentToggleInactive');
+        }
       }
     });
   });

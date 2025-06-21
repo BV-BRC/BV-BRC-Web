@@ -6,7 +6,7 @@ define([
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog', './DownloadTooltipDialog', './PerspectiveToolTip',
   './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin',
   './FeatureDetailsTooltipDialog', './ServicesTooltipDialog', './RerunUtility', 'dojox/widget/Standby',
-  './copilot/ChatSessionSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBar'
+  './copilot/ChatSessionContainerSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
@@ -15,7 +15,7 @@ define([
   Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
   CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin,
   FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility, Standby,
-  ChatSessionSidePanel, CopilotAPI, ChatSessionOptionsBar
+  ChatSessionContainerSidePanel, CopilotAPI, ChatSessionOptionsBar
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -377,11 +377,11 @@ define([
         function (selection, container, button) {
           console.log('CopilotChat');
           // Check if chat panel already exists
-          if (this.chatPanel) {
+          if (this.chatPanelWrapper) {
             // If chat panel exists, toggle between chat and details panel
-            if (this.getChildren().indexOf(this.chatPanel) > -1) {
+            if (this.getChildren().indexOf(this.chatPanelWrapper) > -1) {
               // Chat panel is currently shown, switch to details panel
-              this.removeChild(this.chatPanel);
+              this.removeChild(this.chatPanelWrapper);
               if (this.itemDetailPanel) {
                 this.addChild(this.itemDetailPanel);
               }
@@ -390,7 +390,7 @@ define([
               if (this.itemDetailPanel) {
                 this.removeChild(this.itemDetailPanel);
               }
-              this.addChild(this.chatPanel);
+              this.addChild(this.chatPanelWrapper);
             }
             return;
           }
@@ -414,11 +414,16 @@ define([
               ragList: ragList
             });
 
-            // Create new chat panel
-            this.chatPanel = new ChatSessionSidePanel({
+            // Create new chat panel wrapped in a ContentPane to prevent layout conflicts
+            this.chatPanelWrapper = new ContentPane({
               region: 'right',
               splitter: true,
-              style: 'width: 32%',
+              style: 'width: 32%; padding: 0; margin: 0; overflow: hidden;',
+              layoutPriority: 3
+            });
+
+            this.chatPanel = new ChatSessionContainerSidePanel({
+              style: 'width: 100%; height: 100%; border: 0; padding: 0; margin: 0;',
               copilotApi: this.copilotAPI,
               containerSelection: this.selectionActionBar.get('selection'),
               optionsBar: chatOptionsBar,
@@ -426,23 +431,16 @@ define([
             });
             this.chatPanel._setupContainerWatch();
 
-            // Add to container in same location as itemDetailPanel
-            // TODO: this is a hack to get the chat panel to appear in the same location as the itemDetailPanel
-            if (this.itemDetailPanel && this.itemDetailPanel.domNode) {
-              // Get the position of itemDetailPanel
-              var pos = this.itemDetailPanel.domNode.style;
-              this.chatPanel.domNode.style.position = pos.position;
-              this.chatPanel.domNode.style.right = pos.right;
-              this.chatPanel.domNode.style.top = pos.top;
-            }
+            // Add chat panel to wrapper
+            this.chatPanelWrapper.addChild(this.chatPanel);
 
-            // Remove itemDetailPanel if it exists
+            // Remove itemDetailPanel if it exists and add wrapped chat panel in its place
             if (this.itemDetailPanel && this.getChildren().indexOf(this.itemDetailPanel) > -1) {
               this.removeChild(this.itemDetailPanel);
             }
 
-            // Add chat panel
-            this.addChild(this.chatPanel);
+            // Add wrapped chat panel
+            this.addChild(this.chatPanelWrapper);
 
             // Wait for input widget to be created before setting initial selection
             setTimeout(lang.hitch(this, function() {
@@ -461,8 +459,7 @@ define([
           }));
         },
         true
-      ],
-      [
+      ], [
         'DownloadSelection',
         'fa icon-download fa-2x',
         {
@@ -1999,7 +1996,7 @@ define([
         this.selectionActionBar.set('selection', sel);
         this.itemDetailPanel.set('selection', sel);
 
-        if (this.chatPanel) {
+        if (this.chatPanelWrapper && this.chatPanel) {
           this.chatPanel.set('containerSelection', sel);
         }
       }));
@@ -2026,7 +2023,7 @@ define([
         this.selectionActionBar.set('selection', sel);
         this.itemDetailPanel.set('selection', sel);
 
-        if (this.chatPanel) {
+        if (this.chatPanelWrapper && this.chatPanel) {
           this.chatPanel.set('containerSelection', sel);
         }
       }));

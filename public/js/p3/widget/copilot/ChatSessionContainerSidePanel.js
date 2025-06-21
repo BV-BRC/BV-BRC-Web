@@ -1,5 +1,5 @@
 /**
- * @module p3/widget/ChatSessionSidePanel
+ * @module p3/widget/ChatSessionContainerSidePanel
  * @description A BorderContainer-based widget that extends ChatSessionContainer to provide a side panel interface.
  * Manages chat session display, input, and settings for the side panel view.
  */
@@ -11,7 +11,7 @@ define([
     'dojo/Deferred',
     'dojo/topic',
     './CopilotInputSidePanel',
-    './CopilotDisplaySmallWindow',
+    './CopilotDisplay',
     'dijit/Dialog'
 ], function(
     declare,
@@ -21,11 +21,11 @@ define([
     Deferred,
     topic,
     CopilotInputSidePanel,
-    CopilotDisplaySmallWindow,
+    CopilotDisplay,
     Dialog
 ) {
     /**
-     * @class ChatSessionSidePanel
+     * @class ChatSessionContainerSidePanel
      * @extends {ChatSessionContainer}
      *
      * Main widget class that provides side panel chat interface.
@@ -46,6 +46,12 @@ define([
 
         /** @property {Object} optionsBar - Reference to options bar widget */
         optionsBar: null,
+
+        /** @property {string} model - Current model */
+        model: "RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16",
+
+        /** @property {string} ragDb - Current RAG database */
+        ragDb: null,
 
         /**
          * @constructor
@@ -85,13 +91,15 @@ define([
                 chatStore: this.chatStore,
                 displayWidget: this.displayWidget,
                 sessionId: this.sessionId,
-                context: this.context
+                context: this.context,
+                model: this.model,
+                ragDb: this.ragDb
             });
             this.addChild(this.inputWidget);
         },
 
         _createDisplayWidget: function() {
-            this.displayWidget = new CopilotDisplaySmallWindow({
+            this.displayWidget = new CopilotDisplay({
                 region: 'center',
                 style: 'padding: 0 5px 5px 5px; border: 0; background-color: #ffffff; opacity: 1;',
                 copilotApi: this.copilotApi,
