@@ -256,7 +256,7 @@ define([
 
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
+        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, null, null).then(lang.hitch(this, function(response) {
           if (response.systemMessage) {
             this.chatStore.addMessages([
               response.userMessage,
@@ -427,7 +427,7 @@ define([
                                 'Analyze the screenshot and respond to the user\'s query.';
             var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
 
-            this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, imgtxt_model, true, null, null, base64Image)
+            this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image)
                 .then(lang.hitch(this, function(response) {
                     if (response.systemMessage) {
                         this.chatStore.addMessages([
@@ -493,7 +493,7 @@ define([
 
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
+        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, this.ragDb, this.numDocs).then(lang.hitch(this, function(response) {
             if (response.systemMessage) {
                 this.chatStore.addMessages([
                     response.userMessage,
