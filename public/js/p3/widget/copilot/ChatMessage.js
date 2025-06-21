@@ -89,10 +89,7 @@ define([
       on(showDocsButton, 'click', function() {
         // Create dialog to show markdown content
         var dialogContent = this.createSystemDialogContent(this.message);
-        dialogContent.style.backgroundColor = 'white';
-        dialogContent.style.padding = '20px';
-        dialogContent.style.overflowY = 'auto';
-        dialogContent.style.maxHeight = '70vh';
+        dialogContent.className = 'systemDialogContent';
 
         var docsDialog = new Dialog({
           title: "Retrieved Documents",
@@ -102,18 +99,11 @@ define([
 
         // Add close button
         var buttonContainer = document.createElement('div');
-        buttonContainer.style.display = 'flex';
-        buttonContainer.style.justifyContent = 'center';
-        buttonContainer.style.marginTop = '20px';
+        buttonContainer.className = 'systemDialogButtonContainer';
 
         var closeButton = document.createElement('button');
         closeButton.innerHTML = "Close";
-        closeButton.style.backgroundColor = '#4CAF50';
-        closeButton.style.color = 'white';
-        closeButton.style.padding = '8px 24px';
-        closeButton.style.border = 'none';
-        closeButton.style.borderRadius = '4px';
-        closeButton.style.cursor = 'pointer';
+        closeButton.className = 'systemDialogCloseButton';
 
         closeButton.onclick = function() {
           docsDialog.hide();
@@ -221,33 +211,6 @@ define([
      */
     createSystemDialogContent: function(message) {
       var container = domConstruct.create('div');
-
-      // Add CSS for collapsible functionality
-      var style = domConstruct.create('style', {
-        innerHTML: `
-          .collapsible-header {
-            background-color: #f1f1f1;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            text-align: left;
-            cursor: pointer;
-            font-weight: bold;
-            margin: 5px 0;
-            border-radius: 4px;
-          }
-          .collapsible-header:hover { background-color: #ddd; }
-          .collapsible-content {
-            display: none;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-bottom: 10px;
-            background-color: #fafafa;
-          }
-          .collapsible-content.expanded { display: block; }
-        `
-      }, container);
 
       // Create collapsible section for message content
       if (message.content) {

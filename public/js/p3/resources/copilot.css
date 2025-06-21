@@ -414,6 +414,36 @@
    UI CONTROLS
    ======================================== */
 
+/* Collapsible System Message Styles */
+.collapsible-header {
+  background-color: #f1f1f1;
+  border: none;
+  padding: 10px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-weight: bold;
+  margin: 5px 0;
+  border-radius: 4px;
+}
+
+.collapsible-header:hover {
+  background-color: #ddd;
+}
+
+.collapsible-content {
+  display: none;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  background-color: #fafafa;
+}
+
+.collapsible-content.expanded {
+  display: block;
+}
+
 /* Chat Control Buttons */
 .copilotChatMinimizeButton,
 .copilotChatCloseButton,
@@ -572,6 +602,40 @@
 
 .screenshotDivAboveToggle.pageContentToggleActive:hover {
     background-color: rgba(33, 150, 243, 0.2) !important;
+}
+
+/* ========================================
+   SYSTEM DIALOG STYLES
+   ======================================== */
+
+/* System Dialog Content */
+.systemDialogContent {
+  background-color: white;
+  padding: 20px;
+  overflow-y: auto;
+  max-height: 70vh;
+}
+
+/* System Dialog Button Container */
+.systemDialogButtonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* System Dialog Close Button */
+.systemDialogCloseButton {
+  background-color: #4CAF50;
+  color: white;
+  padding: 8px 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.systemDialogCloseButton:hover {
+  background-color: #45a049;
 }
 
 /* ========================================
