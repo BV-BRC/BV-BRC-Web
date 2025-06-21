@@ -26,6 +26,8 @@ define([
      */
     return declare([ChatSessionOptionsBar], {
 
+        style: 'overflow: hidden;',
+
         /**
          * Called after widget creation
          * Override to only show the New Chat button, but inherit parent initialization
@@ -45,7 +47,7 @@ define([
             // Add New Chat button with hover effects
             this.newChatButton = new Button({
                 label: 'New Chat',
-                style: 'height: 30px; margin-right: 10px; margin-top: 10px;',
+                style: 'margin-left: 3px; margin-top: 2px; ',
                 onClick: lang.hitch(this, function() {
                     // Create a new chat session immediately
                     if (this.copilotApi) {

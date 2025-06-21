@@ -210,6 +210,9 @@ define([
 
             var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\n' +
                                 'Analyze the screenshot and respond to the user\'s query.';
+            if (this.systemPrompt) {
+                imageSystemPrompt += '\n' + this.systemPrompt;
+            }
             var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
 
             this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, null, null, base64Image)
@@ -274,6 +277,9 @@ define([
             'Answer questions as if you were a user viewing the page.\n' +
             'The page content is:\n' +
             pageHtml;
+        if (this.systemPrompt) {
+            imageSystemPrompt += '\n' + this.systemPrompt;
+        }
 
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 

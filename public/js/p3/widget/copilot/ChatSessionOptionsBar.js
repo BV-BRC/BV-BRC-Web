@@ -292,6 +292,22 @@ define([
                 style: 'display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; margin-top: 10px; font-size: 0.9em; gap: 2px;'
             }, this.containerNode);
 
+            // Add New Chat button with hover effects (moved to be first)
+            this.newChatButton = domConstruct.create('div', {
+                innerHTML: 'New Chat',
+                className: 'chat-window-options-button',
+                onclick: lang.hitch(this, function() {
+                    // Create a new chat session immediately
+                    if (this.copilotApi) {
+                        // Publish reloadUserSessions to remove session highlight
+                        topic.publish('reloadUserSessions');
+
+                        // Publish the createNewChatSession topic
+                        topic.publish('createNewChatSession');
+                    }
+                })
+            }, buttonsContainer);
+
             // Create container for model and RAG text elements
             this.advancedOptionsContainer = domConstruct.create('div', {
                 style: 'display: none; width: 100%;'
@@ -358,7 +374,7 @@ define([
                         this.cepiSelected ? 'cepi_journals' : 'null'
                     );
                 })
-            }, buttonsContainer);
+            }, this.advancedOptionsContainer);
 
             // Add Helpdesk button with hover effects
             this.helpdeskButton = domConstruct.create('div', {
@@ -375,26 +391,10 @@ define([
 
                     topic.publish('ChatRagDb', this.helpdeskSelected ? 'bvbrc_helpdesk' : 'null');
                 })
-            }, buttonsContainer);
+            }, this.advancedOptionsContainer);
 
             // Publish initial helpdesk selection since it's on by default
             topic.publish('ChatRagDb', 'bvbrc_helpdesk');
-
-            // Add New Chat button with hover effects
-            this.newChatButton = domConstruct.create('div', {
-                innerHTML: 'New Chat',
-                className: 'chat-window-options-button',
-                onclick: lang.hitch(this, function() {
-                    // Create a new chat session immediately
-                    if (this.copilotApi) {
-                        // Publish reloadUserSessions to remove session highlight
-                        topic.publish('reloadUserSessions');
-
-                        // Publish the createNewChatSession topic
-                        topic.publish('createNewChatSession');
-                    }
-                })
-            }, buttonsContainer);
 
             // Handle clicks outside dialogs to close them
             document.addEventListener('click', lang.hitch(this, function(event) {
@@ -468,6 +468,23 @@ define([
             // Subscribe to topic to control model/rag container visibility
             topic.subscribe('toggleModelRagVisibility', lang.hitch(this, function(visible) {
                 domStyle.set(this.advancedOptionsContainer, 'display', visible ? 'block' : 'none');
+
+                // Adjust containerNode size to accommodate advanced options
+                if (visible) {
+                    // Increase height when advanced options are shown
+                    domStyle.set(this.containerNode, {
+                        'min-height': '250px',
+                        'transition': 'min-height 0.3s ease-in-out',
+                        'overflow': 'hidden'
+                    });
+                } else {
+                    // Reset to smaller height when advanced options are hidden
+                    domStyle.set(this.containerNode, {
+                        'min-height': '50px',
+                        'transition': 'min-height 0.3s ease-in-out',
+                        'overflow': 'hidden'
+                    });
+                }
             }));
 
             // Additional topic subscriptions from older version

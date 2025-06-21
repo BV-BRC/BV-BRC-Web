@@ -172,11 +172,12 @@
 }
 
 .ChatSessionOptionsBar {
-  height: 27%;
+  height: 10%;
   padding: 0px;
   background-color: #ffffff;
   overflow-y: auto;
   margin-bottom: 5px;
+  min-height: 50px;
 }
 
 .ChatContainerFloatingWindow {
@@ -788,9 +789,12 @@
 .sidePanelButtonContainer {
   height: 100%;
   overflow: hidden;
-  display: block;
+  display: flex;
   font-size: 0.9em;
   gap: 2px;
+  position: relative;
+  flex-shrink: 0;
+  min-height: 10px;
 }
 
 /* ========================================
