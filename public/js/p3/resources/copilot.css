@@ -52,30 +52,6 @@
   opacity: 1;
 }
 
-.copilotLargeDialog {
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.copilotOptionsDialog .dijitDialogTitle {
-  font-size: 1.2em;
-  font-weight: bold;
-  color: #333;
-}
-
-.copilotOptionsDialog .dijitButton {
-  padding: 10px 20px;
-  margin: 0 10px;
-  border-radius: 4px;
-}
-
-.copilotLargeDialog .dijitDialogTitle {
-  font-size: 1.4em;
-  font-weight: bold;
-  color: #333;
-  padding: 15px;
-}
-
 /* Container Styles */
 .copilot-result-container {
     width: 100%;
@@ -101,39 +77,6 @@
 .copilot-error {
   color: red;
   padding: 10px;
-}
-
-.copilot-input-wrapper {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end; /* Aligns items to bottom */
-  width: 100%;
-  min-height: 40px; /* Minimum height to match textarea */
-  border: 0;
-  position: relative;
-  height: auto;
-  overflow-y: auto;
-  padding-top: 10px;
-}
-
-.copilot-input-settings {
-  display: flex;
-  flex-direction: column;
-  margin-right: 10px;
-  cursor: pointer;
-  font-size: 0.9em;
-  align-self: flex-end; /* Ensures settings stays at bottom */
-  overflow-y: auto;
-}
-
-.copilot-input-textarea {
-  width: 60%;
-  min-height: 100px;
-  max-height: 200px;
-  border-radius: 5px;
-  margin-right: 10px;
-  margin-bottom: 2px;
-  resize: none;
 }
 
 /* Action Button Styles */
@@ -432,25 +375,10 @@
   50% { transform: translateY(-10px); }
 }
 
-/* Tooltip Dialog Styling */
-.copilotChatTooltip {
-  display: none;
-}
-
 /* Chat Container Styling */
-.copilotChatContainer {
-  transition: all 0.3s ease;
-  border: 1px solid #ccc;
-}
-
-.copilotChatButtonsContainer {
-  display: flex;
-  gap: 8px;
-}
 
 .copilotChatMinimizeButton,
 .copilotChatCloseButton,
-.copilotChatNewChatButton,
 .copilotChatOptionsButton {
   opacity: 0.7;
   transition: all 0.2s ease;
@@ -466,8 +394,6 @@
 }
 
 .copilotChatMinimizeButton:hover,
-.copilotChatNewChatButton:hover,
-.copilotChatExpandButton:hover,
 .copilotChatOptionsButton:hover {
   opacity: 1;
   transform: scale(1.1);
@@ -528,28 +454,6 @@
 }
 
 /* Page Content Toggle Styles */
-.pageContentToggle {
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-    border-radius: 5px;
-    background-image: url("/public/icon_source/screenshot.svg");
-    background-size: 20px 20px;
-    background-repeat: no-repeat;
-    background-position: center;
-    border: 1px solid #ccc;
-    background-color: transparent;
-}
-
-.pageContentToggleLabel {
-    font-size: 0.8em;
-    text-align: center;
-    margin-top: 5px;
-    cursor: pointer;
-    line-height: 1.2;
-    white-space: nowrap;
-}
-
 .pageContentToggleActive {
     background-color: transparent !important;
     border-color: #2196F3 !important;
