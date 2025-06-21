@@ -127,6 +127,63 @@ define([
         },
 
         /**
+         * Submits a copilot query with combined functionality
+         * Implementation:
+         * - Builds query data object with text, model, session
+         * - Optionally includes system prompt if provided
+         * - Optionally includes RAG functionality (rag_db, num_docs)
+         * - Optionally includes image if provided
+         * - Makes POST request to copilot endpoint
+         * - Handles errors with detailed logging
+         */
+        submitCopilotQuery: function(inputText, sessionId, systemPrompt, model, save_chat = true, ragDb, numDocs, image) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            console.log('query');
+            var data = {
+                query: inputText,
+                model: model,
+                session_id: sessionId,
+                user_id: _self.user_id,
+                save_chat: save_chat
+            };
+
+            if (systemPrompt) {
+                data.system_prompt = systemPrompt;
+            } else {
+                data.system_prompt = '';
+            }
+
+            // Add RAG functionality if ragDb is provided
+            if (ragDb) {
+                data.rag_db = ragDb;
+                if (numDocs) {
+                    data.num_docs = numDocs;
+                }
+            }
+
+            // Add image functionality if image is provided
+            if (image) {
+                data.image = image;
+            }
+
+            return request.post(this.apiUrlBase + '/copilot', {
+                data: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                _self.storedResult = response.response || response;
+                return response;
+            }).catch(function(error) {
+                console.error('Error submitting copilot query:', error);
+                throw error;
+            });
+        },
+
+        /**
          * Submits a regular chat query
          * Implementation:
          * - Builds query data object with text, model, session
@@ -177,7 +234,7 @@ define([
          * - Validates success message in response
          * - Throws error if response indicates failure
          */
-        submitRagQuery: function(inputQuery, ragDb, numDocs, sessionId, model, summarizeDocs) {
+        submitRagQuery: function(inputQuery, ragDb, numDocs, sessionId, model) {
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
 

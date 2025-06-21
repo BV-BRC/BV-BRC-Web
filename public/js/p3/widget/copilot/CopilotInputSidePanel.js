@@ -212,7 +212,7 @@ define([
                                 'Analyze the screenshot and respond to the user\'s query.';
             var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
 
-            this.copilotApi.submitQueryWithImage(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, base64Image)
+            this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, null, null, base64Image)
                 .then(lang.hitch(this, function(response) {
                     if (response.systemMessage) {
                         this.chatStore.addMessages([
@@ -277,7 +277,7 @@ define([
 
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-        this.copilotApi.submitQuery(inputText, this.sessionId, imageSystemPrompt, this.model).then(lang.hitch(this, function(response) {
+        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, this.model).then(lang.hitch(this, function(response) {
             if (response.systemMessage) {
                 this.chatStore.addMessages([
                     response.userMessage,
@@ -361,7 +361,7 @@ define([
       this.submitButton.set('disabled', true);
 
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
-      this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
+      this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
         if (response.systemMessage) {
           this.chatStore.addMessages([
             response.userMessage,
@@ -435,7 +435,7 @@ define([
         var jobSystemPrompt = 'Job stdout:\n' + stdout + '\n\nJob stderr:\n' + stderr;
 
         // Submit query with job details as system prompt
-        return _self.copilotApi.submitQuery(inputText, _self.sessionId, jobSystemPrompt, _self.model);
+        return _self.copilotApi.submitCopilotQuery(inputText, _self.sessionId, jobSystemPrompt, _self.model);
       }).then(lang.hitch(this, function(response) {
         if (response.systemMessage) {
           this.chatStore.addMessages([
