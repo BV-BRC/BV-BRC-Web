@@ -100,20 +100,17 @@ define([
 
             // Create header
             this.headerNode = domConstruct.create('div', {
-                className: 'copilotChatHeader',
-                style: 'width: 100%; height: 30px; background-color: #f8f8f8; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; padding: 0 10px; cursor: move;'
+                className: 'copilotChatHeader'
             }, this.containerNode, 'first');
 
             // Create left side options button container FIRST
             var leftButtonContainer = domConstruct.create('div', {
-                className: 'copilotLeftButtonContainer',
-                style: 'display: flex;'
+                className: 'copilotLeftButtonContainer'
             }, this.headerNode);
 
             // Add options button to the left container
             var optionsButton = domConstruct.create('div', {
                 className: 'copilotChatOptionsButton',
-                style: 'font-size: 17px; width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8;',
                 innerHTML: '☰',
                 title: 'Close/Open Sidebar'
             }, leftButtonContainer);
@@ -154,34 +151,29 @@ define([
             // Create draggable area (the title area that will be the drag handle) SECOND
             var titleNode = domConstruct.create('div', {
                 className: 'copilotChatHeaderTitle copilotDragHandle',
-                innerHTML: 'BV-BRC Copilot',
-                style: 'font-weight: bold; flex-grow: 1; text-align: center; cursor: move; user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;'
+                innerHTML: 'BV-BRC Copilot'
             }, this.headerNode);
 
             // Create buttons container in header THIRD (on the right)
             var buttonsContainer = domConstruct.create('div', {
-                className: 'copilotChatButtonsContainer',
-                style: 'display: flex;'
+                className: 'copilotChatButtonsContainer'
             }, this.headerNode);
 
             // Create control buttons container
             var controlButtonsContainer = domConstruct.create('div', {
-                className: 'copilotControlButtonsContainer',
-                style: 'display: flex;padding-right: 15px;'
+                className: 'copilotControlButtonsContainer'
             }, buttonsContainer);
 
             // Add minimize button
             var minimizeButton = domConstruct.create('div', {
                 className: 'copilotChatMinimizeButton',
-                style: 'width: 20px; height: 20px; cursor: pointer; text-align: center; line-height: 20px; background-color: #f8f8f8;margin-right: 2px;',
                 innerHTML: 'X',
                 title: 'Close'
             }, controlButtonsContainer);
 
             // Create content container that will house the BorderContainer for main content + options
             this.contentContainer = domConstruct.create('div', {
-                className: 'copilotChatContent',
-                style: 'width: 100%; height: calc(100% - 30px); overflow: hidden; position: relative;'
+                className: 'copilotChatContent'
             }, this.containerNode);
 
             // Create a BorderContainer within the content container for layout management
@@ -275,10 +267,6 @@ define([
             // Create a custom resize handle that's more visible and user-friendly
             this.resizeHandleNode = domConstruct.create('div', {
                 className: 'copilotResizeHandle',
-                style: 'position: absolute; bottom: 0px; right: 0px; width: 16px; height: 16px; cursor: nw-resize; ' +
-                       'background-color: transparent; border: 0px; border-bottom-right-radius: 3px; z-index: 1000; ' +
-                       'display: flex; align-items: center; justify-content: center; font-size: 12px; background-color: transparent;' +
-                       'background-image: url("/public/icon_source/corner_lines.svg"); background-size: 16px; background-position: center; background-repeat: no-repeat;',
                 innerHTML: ''
             }, this.domNode);
 

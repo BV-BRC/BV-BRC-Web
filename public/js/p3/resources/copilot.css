@@ -72,6 +72,86 @@
   font-weight: bold;
 }
 
+/* Chat Header */
+.copilotChatHeader {
+  width: 100%;
+  height: 30px;
+  background-color: #f8f8f8;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px;
+  cursor: move;
+}
+
+/* Left Button Container */
+.copilotLeftButtonContainer {
+  display: flex;
+}
+
+/* Chat Header Title */
+.copilotChatHeaderTitle {
+  font-weight: bold;
+  flex-grow: 1;
+  text-align: center;
+  cursor: move;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Drag Handle */
+.copilotDragHandle {
+  cursor: move;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Chat Buttons Container */
+.copilotChatButtonsContainer {
+  display: flex;
+}
+
+/* Control Buttons Container */
+.copilotControlButtonsContainer {
+  display: flex;
+  padding-right: 15px;
+}
+
+/* Chat Content */
+.copilotChatContent {
+  width: 100%;
+  height: calc(100% - 30px);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Resize Handle */
+.copilotResizeHandle {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 16px;
+  height: 16px;
+  cursor: nw-resize;
+  background-color: transparent;
+  border: 0px;
+  border-bottom-right-radius: 3px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  background-image: url("/public/icon_source/corner_lines.svg");
+  background-size: 16px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 /* Chat Session Container */
 .ChatSessionContainer {
   border-radius: 8px;
@@ -478,8 +558,7 @@
 
 /* Chat Control Buttons */
 .copilotChatMinimizeButton,
-.copilotChatCloseButton,
-.copilotChatOptionsButton {
+.copilotChatCloseButton {
   opacity: 0.7;
   transition: all 0.2s ease;
   display: flex;
@@ -488,9 +567,31 @@
   font-size: 14px;
 }
 
+.copilotChatOptionsButton {
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 20px;
+  background-color: #f8f8f8;
+}
+
 .copilotChatMinimizeButton {
   font-weight: bold;
   padding-bottom: 2px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 20px;
+  background-color: #f8f8f8;
+  margin-right: 2px;
 }
 
 .copilotChatMinimizeButton:hover,
@@ -788,3 +889,4 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
+
