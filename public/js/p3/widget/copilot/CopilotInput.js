@@ -37,14 +37,10 @@ define([
       model: null,
 
       /** Selected RAG database for enhanced responses */
-      ragDb: null,
+      ragDb: 'bvbrc_helpdesk',
 
       /** Number of documents to use for RAG queries */
       numDocs: 3,
-
-      /** Flag indicating whether to summarize documents in RAG queries */
-      summarizeDocs: false,
-
 
       // Widget styling
       style: 'padding: 0 5px 5px 5px; border: 0; height: 20%;',
@@ -132,7 +128,6 @@ define([
             onClick: lang.hitch(this, function() {
             // Prevent multiple simultaneous submissions
             if (this.isSubmitting) return;
-
             // Handle different submission types based on configuration
             if (this.pageContentEnabled) {
                 this._handlePageSubmit();
@@ -206,7 +201,7 @@ define([
 
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-        this.copilotApi.submitRagQuery(inputText, this.ragDb, this.numDocs, this.sessionId, this.model, this.summarizeDocs).then(lang.hitch(this, function(response) {
+        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, this.ragDb, this.numDocs).then(lang.hitch(this, function(response) {
           if (response.systemMessage) {
             this.chatStore.addMessages([
               response.userMessage,
@@ -252,7 +247,6 @@ define([
       _handleRegularSubmit: function() {
         var inputText = this.textArea.get('value');
         var _self = this;
-
         if (this.state) {
           console.log('state', this.state);
         }
@@ -262,7 +256,7 @@ define([
 
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-        this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
+        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, null, null).then(lang.hitch(this, function(response) {
           if (response.systemMessage) {
             this.chatStore.addMessages([
               response.userMessage,
@@ -433,7 +427,7 @@ define([
                                 'Analyze the screenshot and respond to the user\'s query.';
             var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
 
-            this.copilotApi.submitQueryWithImage(inputText, this.sessionId, this.systemPrompt, imgtxt_model, base64Image)
+            this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image)
                 .then(lang.hitch(this, function(response) {
                     if (response.systemMessage) {
                         this.chatStore.addMessages([
@@ -499,7 +493,7 @@ define([
 
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-        this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
+        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, this.ragDb, this.numDocs).then(lang.hitch(this, function(response) {
             if (response.systemMessage) {
                 this.chatStore.addMessages([
                     response.userMessage,

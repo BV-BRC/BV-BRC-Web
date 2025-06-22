@@ -53,6 +53,8 @@ define([
     // Flag to track page content toggle state
     pageContentEnabled: false,
 
+    ragDb: null,
+
     /**
      * @constructor
      * @param {Object} args - Configuration arguments
@@ -136,6 +138,7 @@ define([
             if (this.isSubmitting) return;
 
             // Handle different submission types based on configuration
+            this.ragDb = null;
             if (this.pageContentEnabled) {
                 this._handlePageSubmit();
             } else if (this.copilotApi && this.ragDb) {
@@ -207,9 +210,12 @@ define([
 
             var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\n' +
                                 'Analyze the screenshot and respond to the user\'s query.';
+            if (this.systemPrompt) {
+                imageSystemPrompt += '\n' + this.systemPrompt;
+            }
             var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
 
-            this.copilotApi.submitQueryWithImage(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, base64Image)
+            this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, null, null, base64Image)
                 .then(lang.hitch(this, function(response) {
                     if (response.systemMessage) {
                         this.chatStore.addMessages([
@@ -271,10 +277,13 @@ define([
             'Answer questions as if you were a user viewing the page.\n' +
             'The page content is:\n' +
             pageHtml;
+        if (this.systemPrompt) {
+            imageSystemPrompt += '\n' + this.systemPrompt;
+        }
 
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-        this.copilotApi.submitQuery(inputText, this.sessionId, imageSystemPrompt, this.model).then(lang.hitch(this, function(response) {
+        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, this.model).then(lang.hitch(this, function(response) {
             if (response.systemMessage) {
                 this.chatStore.addMessages([
                     response.userMessage,
@@ -358,8 +367,7 @@ define([
       this.submitButton.set('disabled', true);
 
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
-      this.copilotApi.submitQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
+      this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
         if (response.systemMessage) {
           this.chatStore.addMessages([
             response.userMessage,
@@ -433,7 +441,7 @@ define([
         var jobSystemPrompt = 'Job stdout:\n' + stdout + '\n\nJob stderr:\n' + stderr;
 
         // Submit query with job details as system prompt
-        return _self.copilotApi.submitQuery(inputText, _self.sessionId, jobSystemPrompt, _self.model);
+        return _self.copilotApi.submitCopilotQuery(inputText, _self.sessionId, jobSystemPrompt, _self.model);
       }).then(lang.hitch(this, function(response) {
         if (response.systemMessage) {
           this.chatStore.addMessages([
