@@ -27,7 +27,8 @@ define([
     './ChatSessionTitle',
     'dojo/Deferred',
     'dojo/dom-class',
-    'dojo/dom-style'
+    'dojo/dom-style',
+    './CopilotStateManager'
 ], function (
     declare,
     BorderContainer,
@@ -41,7 +42,8 @@ define([
     ChatSessionTitle,
     Deferred,
     domClass,
-    domStyle
+    domStyle,
+    CopilotStateManager
 ) {
     /**
      * @class ChatSessionContainer
@@ -181,6 +183,7 @@ define([
             topic.subscribe('rate-message', lang.hitch(this, this._handleRateMessage));
             topic.subscribe('openReportIssueDialog', lang.hitch(this, this._handleOpenReportIssueDialog));
             topic.subscribe('chatTextSizeChanged', lang.hitch(this, this._handleChatTextSizeChanged));
+            topic.subscribe('setStatePrompt', lang.hitch(this, this._handleSetStatePrompt));
 
             // Start path monitoring
             this._startPathMonitoring();
@@ -426,14 +429,29 @@ define([
             topic.publish('RefreshSession', this.sessionId, false);
         },
 
+        _handleSetStatePrompt: function() {
+            if (this.statePrompt) {
+                this.inputWidget.setStatePrompt(this.statePrompt);
+            }
+        },
+
         /**
          * Gets the current path state
          */
         _getPathState: function() {
             this.path = window.location.pathname;
+            if (window.location.search && window.location.search !== '') {
+                this.path += window.location.search;
+            }
+            if (window.location.hash && window.location.hash !== '') {
+                this.path += window.location.hash;
+            }
             this.copilotApi.getPathState(this.path).then(lang.hitch(this, function(state) {
                 if (state && state.message == 'success' && state.pathState && state.pathState.state) {
-                    this.pathState = state.pathState.state;
+                    this.pathState = state.pathState;
+                    this.statePrompt = CopilotStateManager.createStatePrompt(this.pathState);
+                    console.log('path state = ', this.pathState);
+                    topic.publish('setStatePrompt');
                 } else {
                     this.pathState = null;
                     console.log('No path state found for path:', this.path);
@@ -448,6 +466,12 @@ define([
          */
         _checkPathChange: function() {
             var currentPath = window.location.pathname;
+            if (window.location.search && window.location.search !== '') {
+                currentPath += window.location.search;
+            }
+            if (window.location.hash && window.location.hash !== '') {
+                currentPath += window.location.hash;
+            }
             if (currentPath !== this.path) {
                 console.log('Path changed from', this.path, 'to', currentPath);
                 this._getPathState();

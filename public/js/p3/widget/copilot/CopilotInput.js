@@ -39,6 +39,8 @@ define([
       /** Selected RAG database for enhanced responses */
       ragDb: 'bvbrc_helpdesk',
 
+      statePrompt: null,
+
       /** Number of documents to use for RAG queries */
       numDocs: 3,
 
@@ -201,7 +203,16 @@ define([
 
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, this.ragDb, this.numDocs).then(lang.hitch(this, function(response) {
+        var systemPrompt = this.systemPrompt;
+        if (this.statePrompt) {
+          if (systemPrompt) {
+            systemPrompt += this.statePrompt;
+          } else {
+            systemPrompt = this.statePrompt;
+          }
+        }
+
+        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, this.ragDb, this.numDocs).then(lang.hitch(this, function(response) {
           if (response.systemMessage) {
             this.chatStore.addMessages([
               response.userMessage,
@@ -256,7 +267,16 @@ define([
 
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, null, null).then(lang.hitch(this, function(response) {
+        var systemPrompt = this.systemPrompt;
+        if (this.statePrompt) {
+          if (systemPrompt) {
+            systemPrompt += this.statePrompt;
+          } else {
+            systemPrompt = this.statePrompt;
+          }
+        }
+
+        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, null, null).then(lang.hitch(this, function(response) {
           if (response.systemMessage) {
             this.chatStore.addMessages([
               response.userMessage,
@@ -397,154 +417,170 @@ define([
         this.numDocs = numDocs;
       },
 
-
-        /**
-         * @method _handlePageSubmit
-         * @description Handles submission about the current page (screenshot first, HTML fallback)
-         *
-         **/
-        _handlePageSubmit: function() {
-          var inputText = this.textArea.get('value');
-          var _self = this;
-
-          if (this.state) {
-              console.log('state', this.state);
-          }
-
-          this.isSubmitting = true;
-          this.submitButton.set('disabled', true);
-
-          topic.publish('hideChatPanel'); // Hide panel before taking screenshot
-
-          html2canvas(document.body).then(lang.hitch(this, function(canvas) {
-            var base64Image = canvas.toDataURL('image/png');
-
-            topic.publish('showChatPanel'); // Show panel again
-
-            this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
-            this.systemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\n' +
-                                'Analyze the screenshot and respond to the user\'s query.';
-            var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
-
-            this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image)
-                .then(lang.hitch(this, function(response) {
-                    if (response.systemMessage) {
-                        this.chatStore.addMessages([
-                            response.userMessage,
-                            response.systemMessage,
-                            response.assistantMessage
-                        ]);
-                    } else {
-                        this.chatStore.addMessages([
-                            response.userMessage,
-                            response.assistantMessage
-                        ]);
-                    }
-                    _self.textArea.set('value', '');
-                    this.displayWidget.showMessages(this.chatStore.query());
-
-                    if (_self.new_chat) {
-                        _self.new_chat = false;
-                        topic.publish('reloadUserSessions', {
-                            highlightSessionId: this.sessionId
-                        });
-                        setTimeout(() => {
-                            topic.publish('generateSessionTitle');
-                        }, 200);
-                    }
-                })).catch(function(error) {
-                    topic.publish('CopilotApiError', { error: error });
-                }).finally(lang.hitch(this, function() {
-                    this.displayWidget.hideLoadingIndicator();
-                    this.isSubmitting = false;
-                    this.submitButton.set('disabled', false);
-
-                    // Deselect the pageContentToggle after submission
-                    this.pageContentEnabled = false;
-                    this._updateToggleButtonStyle();
-                    topic.publish('pageContentToggleChanged', false);
-                }));
-        })).catch(lang.hitch(this, function(error) {
-            console.error('Error capturing or processing screenshot:', error);
-            topic.publish('showChatPanel'); // Ensure panel is shown even on error
-
-            // Fall back to HTML content if screenshot fails
-            console.log('Falling back to HTML content');
-            this._handlePageContentSubmit();
-        }));
+      setStatePrompt: function(statePrompt) {
+        this.statePrompt = statePrompt;
       },
 
       /**
-       * @method _handlePageContentSubmit
-       * @description Handles submission of page content (HTML)
-       * Used as a fallback when screenshot fails
+       * @method _handlePageSubmit
+       * @description Handles submission about the current page (screenshot first, HTML fallback)
+       *
        **/
-      _handlePageContentSubmit: function() {
+      _handlePageSubmit: function() {
         var inputText = this.textArea.get('value');
         var _self = this;
 
-        const pageHtml = document.documentElement.innerHTML;
-
-        this.systemPrompt = 'You are a helpful assistant that can answer questions about the page content.\n' +
-            'Answer questions as if you were a user viewing the page.\n' +
-            'The page content is:\n' +
-            pageHtml;
-
-        this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
-        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, this.ragDb, this.numDocs).then(lang.hitch(this, function(response) {
-            if (response.systemMessage) {
-                this.chatStore.addMessages([
-                    response.userMessage,
-                    response.systemMessage,
-                    response.assistantMessage
-                ]);
-            } else {
-                this.chatStore.addMessages([
-                    response.userMessage,
-                    response.assistantMessage
-                ]);
-            }
-            _self.textArea.set('value', '');
-            this.displayWidget.showMessages(this.chatStore.query());
-
-            if (_self.new_chat) {
-                _self.new_chat = false;
-                topic.publish('reloadUserSessions', {
-                    highlightSessionId: this.sessionId
-                });
-                setTimeout(() => {
-                    topic.publish('generateSessionTitle');
-                }, 100);
-            }
-        })).catch(function(error) {
-            topic.publish('CopilotApiError', { error: error });
-        }).finally(lang.hitch(this, function() {
-            this.displayWidget.hideLoadingIndicator();
-            this.isSubmitting = false;
-            this.submitButton.set('disabled', false);
-
-            // Deselect the pageContentToggle after submission
-            this.pageContentEnabled = false;
-            this._updateToggleButtonStyle();
-            topic.publish('pageContentToggleChanged', false);
-        }));
-      },
-
-      /**
-         * @method _updateToggleButtonStyle
-         * @description Updates the toggle button's visual state based on pageContentEnabled
-         */
-      _updateToggleButtonStyle: function() {
-        var buttonNode = this.pageContentToggle.domNode;
-        if (this.pageContentEnabled) {
-            buttonNode.classList.remove('pageContentToggleInactive');
-            buttonNode.classList.add('pageContentToggleActive');
-        } else {
-            buttonNode.classList.remove('pageContentToggleActive');
-            buttonNode.classList.add('pageContentToggleInactive');
+        if (this.state) {
+            console.log('state', this.state);
         }
+
+        this.isSubmitting = true;
+        this.submitButton.set('disabled', true);
+
+        topic.publish('hideChatPanel'); // Hide panel before taking screenshot
+
+        html2canvas(document.body).then(lang.hitch(this, function(canvas) {
+          var base64Image = canvas.toDataURL('image/png');
+
+          topic.publish('showChatPanel'); // Show panel again
+
+          this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+          var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\n' +
+          'Analyze the screenshot and respond to the user\'s query.';
+          if (this.systemPrompt) {
+              imageSystemPrompt += '\n' + this.systemPrompt;
+          }
+          if (this.statePrompt) {
+              imageSystemPrompt = this.statePrompt + '\n\n' + imageSystemPrompt;
+          }
+          var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
+
+          this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image)
+              .then(lang.hitch(this, function(response) {
+                  if (response.systemMessage) {
+                      this.chatStore.addMessages([
+                          response.userMessage,
+                          response.systemMessage,
+                          response.assistantMessage
+                      ]);
+                  } else {
+                      this.chatStore.addMessages([
+                          response.userMessage,
+                          response.assistantMessage
+                      ]);
+                  }
+                  _self.textArea.set('value', '');
+                  this.displayWidget.showMessages(this.chatStore.query());
+
+                  if (_self.new_chat) {
+                      _self.new_chat = false;
+                      topic.publish('reloadUserSessions', {
+                          highlightSessionId: this.sessionId
+                      });
+                      setTimeout(() => {
+                          topic.publish('generateSessionTitle');
+                      }, 200);
+                  }
+              })).catch(function(error) {
+                  topic.publish('CopilotApiError', { error: error });
+              }).finally(lang.hitch(this, function() {
+                  this.displayWidget.hideLoadingIndicator();
+                  this.isSubmitting = false;
+                  this.submitButton.set('disabled', false);
+
+                  // Deselect the pageContentToggle after submission
+                  this.pageContentEnabled = false;
+                  this._updateToggleButtonStyle();
+                  topic.publish('pageContentToggleChanged', false);
+              }));
+      })).catch(lang.hitch(this, function(error) {
+          console.error('Error capturing or processing screenshot:', error);
+          topic.publish('showChatPanel'); // Ensure panel is shown even on error
+
+          // Fall back to HTML content if screenshot fails
+          console.log('Falling back to HTML content');
+          this._handlePageContentSubmit();
+      }));
+    },
+
+    /**
+     * @method _handlePageContentSubmit
+     * @description Handles submission of page content (HTML)
+     * Used as a fallback when screenshot fails
+     **/
+    _handlePageContentSubmit: function() {
+      var inputText = this.textArea.get('value');
+      var _self = this;
+
+      const pageHtml = document.documentElement.innerHTML;
+
+      var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the page content.\n' +
+          'Answer questions as if you were a user viewing the page.\n' +
+          'The page content is:\n' +
+          pageHtml;
+      if (this.systemPrompt) {
+          imageSystemPrompt += '\n' + this.systemPrompt;
       }
-    });
+      if (this.statePrompt) {
+        imageSystemPrompt = this.statePrompt + '\n\n' + imageSystemPrompt;
+      }
+
+      this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+
+      this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, this.ragDb, this.numDocs).then(lang.hitch(this, function(response) {
+          if (response.systemMessage) {
+              this.chatStore.addMessages([
+                  response.userMessage,
+                  response.systemMessage,
+                  response.assistantMessage
+              ]);
+          } else {
+              this.chatStore.addMessages([
+                  response.userMessage,
+                  response.assistantMessage
+              ]);
+          }
+          _self.textArea.set('value', '');
+          this.displayWidget.showMessages(this.chatStore.query());
+
+          if (_self.new_chat) {
+              _self.new_chat = false;
+              topic.publish('reloadUserSessions', {
+                  highlightSessionId: this.sessionId
+              });
+              setTimeout(() => {
+                  topic.publish('generateSessionTitle');
+              }, 100);
+          }
+      })).catch(function(error) {
+          topic.publish('CopilotApiError', { error: error });
+      }).finally(lang.hitch(this, function() {
+          this.displayWidget.hideLoadingIndicator();
+          this.isSubmitting = false;
+          this.submitButton.set('disabled', false);
+
+          // Deselect the pageContentToggle after submission
+          this.pageContentEnabled = false;
+          this._updateToggleButtonStyle();
+          topic.publish('pageContentToggleChanged', false);
+      }));
+    },
+
+    /**
+       * @method _updateToggleButtonStyle
+       * @description Updates the toggle button's visual state based on pageContentEnabled
+       */
+    _updateToggleButtonStyle: function() {
+      var buttonNode = this.pageContentToggle.domNode;
+      if (this.pageContentEnabled) {
+          buttonNode.classList.remove('pageContentToggleInactive');
+          buttonNode.classList.add('pageContentToggleActive');
+      } else {
+          buttonNode.classList.remove('pageContentToggleActive');
+          buttonNode.classList.add('pageContentToggleInactive');
+      }
+    }
   });
+});
