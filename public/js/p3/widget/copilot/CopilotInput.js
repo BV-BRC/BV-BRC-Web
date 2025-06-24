@@ -56,6 +56,8 @@ define([
 
       level: 0,
 
+      enhancedPrompt: null,
+
       /**
        * Constructor that initializes the widget with provided options
        * Uses safeMixin to safely merge configuration arguments
@@ -183,6 +185,10 @@ define([
         topic.subscribe('levelChanged', lang.hitch(this, function(level) {
           this.level = level;
         }));
+
+        topic.subscribe('enhancePromptChange', lang.hitch(this, function(enhancedPrompt) {
+          this.enhancedPrompt = enhancedPrompt;
+        }));
       },
 
       /**
@@ -226,7 +232,7 @@ define([
           return;
         }
 
-        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.level).then(lang.hitch(this, function(response) {
+        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.level, this.enhancedPrompt).then(lang.hitch(this, function(response) {
           if (response.systemMessage) {
             this.chatStore.addMessages([
               response.userMessage,
@@ -479,7 +485,7 @@ define([
 
           var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
 
-          this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image, this.level)
+          this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image, this.level, this.enhancedPrompt)
               .then(lang.hitch(this, function(response) {
                   if (response.systemMessage) {
                       this.chatStore.addMessages([
@@ -552,7 +558,7 @@ define([
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
 
-      this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, this.ragDb, this.numDocs).then(lang.hitch(this, function(response) {
+      this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.level, this.enhancedPrompt).then(lang.hitch(this, function(response) {
           if (response.systemMessage) {
               this.chatStore.addMessages([
                   response.userMessage,

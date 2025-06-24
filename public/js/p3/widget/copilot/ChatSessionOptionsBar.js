@@ -267,6 +267,45 @@ define([
         },
 
         /**
+         * Creates dialog for managing enhance prompt
+         * - Includes text area for prompt enhancement
+         * - Publishes prompt changes
+         *
+         * @returns {TooltipDialog} Configured dialog for enhance prompt
+         */
+        createEnhancePromptDialog: function() {
+            var enhancePromptDialog = new TooltipDialog({
+                style: "width: 350px;",
+                content: document.createElement('div')
+            });
+
+            // Add enhance prompt text area
+            var promptLabel = document.createElement('div');
+            promptLabel.textContent = 'Enhance Prompt:';
+            promptLabel.style.marginBottom = '5px';
+            promptLabel.title = 'Add additional instructions to enhance the AI prompt';
+            enhancePromptDialog.containerNode.appendChild(promptLabel);
+
+            var promptTextArea = document.createElement('textarea');
+            promptTextArea.style.width = '100%';
+            promptTextArea.style.height = '80px';
+            promptTextArea.style.resize = 'vertical';
+            promptTextArea.style.padding = '5px';
+            promptTextArea.placeholder = 'Enter additional prompt instructions...';
+
+            // Publish prompt changes when text changes
+            promptTextArea.addEventListener('input', lang.hitch(this, function(evt) {
+                var promptText = evt.target.value;
+                topic.publish('enhancePromptChange', promptText);
+            }));
+
+            this.enhancePromptTextArea = promptTextArea;
+            enhancePromptDialog.containerNode.appendChild(promptTextArea);
+
+            return enhancePromptDialog;
+        },
+
+        /**
          * Called after widget creation
          * Override to add custom functionality
          */
@@ -283,9 +322,10 @@ define([
                 "Llama-3.3-70B-Instruct": "Llama-3.3-70B"
             };
 
-            // Create model and RAG dialogs
+            // Create model, RAG, and enhance prompt dialogs
             var modelDialog = this.createModelDialog();
             var ragDialog = this.createRagDialog();
+            var enhancePromptDialog = this.createEnhancePromptDialog();
 
             // Create container for text buttons
             var buttonsContainer = domConstruct.create('div', {
@@ -312,6 +352,15 @@ define([
             this.advancedOptionsContainer = domConstruct.create('div', {
                 style: 'display: none; width: 100%;'
             }, buttonsContainer);
+
+            // Add Enhance Prompt button with hover effects (at the top)
+            this.enhancePromptText = domConstruct.create('div', {
+                innerHTML: 'Enhance Prompt',
+                className: 'chat-window-options-button',
+                onclick: lang.hitch(this, function() {
+                    topic.publish('enhancePromptButtonPressed', this.enhancePromptText, ['below']);
+                })
+            }, this.advancedOptionsContainer);
 
             // Add Model text display with hover effects
             this.modelText = domConstruct.create('div', {
@@ -435,6 +484,10 @@ define([
                     popup.close(ragDialog);
                     ragDialog.visible = false;
                 }
+                if (enhancePromptDialog._rendered && !enhancePromptDialog.domNode.contains(event.target) && !this.enhancePromptText.contains(event.target)) {
+                    popup.close(enhancePromptDialog);
+                    enhancePromptDialog.visible = false;
+                }
             }));
 
             // Handle RAG button clicks
@@ -475,6 +528,27 @@ define([
                             orient: orient
                         });
                         modelDialog.visible = true;
+                    }, 100);
+                }
+            }));
+
+            // Handle enhance prompt button clicks
+            topic.subscribe('enhancePromptButtonPressed', lang.hitch(this, function(buttonNode, orient) {
+                console.log('enhance prompt pressed');
+                if (enhancePromptDialog.visible) {
+                    popup.close(enhancePromptDialog);
+                    enhancePromptDialog.visible = false;
+                } else {
+                    if (!buttonNode) {
+                        buttonNode = this.enhancePromptText;
+                    }
+                    setTimeout(function() {
+                        popup.open({
+                            popup: enhancePromptDialog,
+                            around: buttonNode,
+                            orient: orient
+                        });
+                        enhancePromptDialog.visible = true;
                     }, 100);
                 }
             }));
