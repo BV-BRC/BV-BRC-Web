@@ -136,7 +136,7 @@ define([
          * - Makes POST request to copilot endpoint
          * - Handles errors with detailed logging
          */
-        submitCopilotQuery: function(inputText, sessionId, systemPrompt, model, save_chat = true, ragDb, numDocs, image) {
+        submitCopilotQuery: function(inputText, sessionId, systemPrompt, model, save_chat = true, ragDb, numDocs, image, level = 0) {
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             console.log('query');
@@ -145,7 +145,8 @@ define([
                 model: model,
                 session_id: sessionId,
                 user_id: _self.user_id,
-                save_chat: save_chat
+                save_chat: save_chat,
+                level: level
             };
 
             if (systemPrompt) {

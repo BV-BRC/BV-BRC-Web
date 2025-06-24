@@ -54,6 +54,8 @@ define([
       // Flag to track page content toggle state
       pageContentEnabled: false,
 
+      level: 0,
+
       /**
        * Constructor that initializes the widget with provided options
        * Uses safeMixin to safely merge configuration arguments
@@ -177,6 +179,10 @@ define([
             this.submitButton.onClick();
             }
         }));
+
+        topic.subscribe('levelChanged', lang.hitch(this, function(level) {
+          this.level = level;
+        }));
       },
 
       /**
@@ -204,15 +210,23 @@ define([
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
         var systemPrompt = this.systemPrompt;
-        if (this.statePrompt) {
-          if (systemPrompt) {
-            systemPrompt += this.statePrompt;
-          } else {
-            systemPrompt = this.statePrompt;
+        if (this.level == 0 || this.level == 2) {
+          if (this.statePrompt) {
+            if (systemPrompt) {
+              systemPrompt += this.statePrompt;
+            } else {
+              systemPrompt = this.statePrompt;
+            }
           }
+        } else if (this.level == 1) {
+          if (this.statePrompt) {
+            inputText = inputText + '\n\n' + this.statePrompt;
+          }
+        } else {
+          return;
         }
 
-        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, this.ragDb, this.numDocs).then(lang.hitch(this, function(response) {
+        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.level).then(lang.hitch(this, function(response) {
           if (response.systemMessage) {
             this.chatStore.addMessages([
               response.userMessage,
@@ -448,15 +462,24 @@ define([
 
           var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\n' +
           'Analyze the screenshot and respond to the user\'s query.';
-          if (this.systemPrompt) {
-              imageSystemPrompt += '\n' + this.systemPrompt;
+          if (this.level == 0 || this.level == 2) {
+            if (this.systemPrompt) {
+                imageSystemPrompt += '\n\n' + this.systemPrompt;
+            }
+            if (this.statePrompt) {
+                imageSystemPrompt = imageSystemPrompt + '\n\n' + this.statePrompt;
+            }
+          } else if (this.level == 1) {
+            if (this.statePrompt) {
+              inputText = inputText + '\n\n' + this.statePrompt;
+            }
+          }else {
+            return;
           }
-          if (this.statePrompt) {
-              imageSystemPrompt = this.statePrompt + '\n\n' + imageSystemPrompt;
-          }
+
           var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
 
-          this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image)
+          this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image, this.level)
               .then(lang.hitch(this, function(response) {
                   if (response.systemMessage) {
                       this.chatStore.addMessages([

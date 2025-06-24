@@ -356,6 +356,35 @@ define([
                 })
             }, textSizeContainer);
 
+            // Add a level input field (uses number counter similar to Text Size)
+            var levelContainer = domConstruct.create('div', {
+                className: 'chat-window-options-button',
+                style: 'display: flex; align-items: center; gap: 5px;'
+            }, this.advancedOptionsContainer);
+
+            domConstruct.create('span', {
+                innerHTML: 'Level: ',
+                style: 'white-space: nowrap;'
+            }, levelContainer);
+
+            this.levelInput = domConstruct.create('input', {
+                type: 'number',
+                value: 0,
+                min: 0,
+                max: 2,
+                style: 'width: 50px; padding: 2px;',
+                onchange: lang.hitch(this, function(evt) {
+                    var newLevel = parseInt(evt.target.value);
+                    // Publish the levelChanged topic as used by CopilotInput
+                    if (!isNaN(newLevel)) {
+                        topic.publish('levelChanged', newLevel);
+                    }
+                })
+            }, levelContainer);
+
+            // Publish initial level value
+            topic.publish('levelChanged', 0);
+
             // Add CEPI journal rag button
             this.cepiText = domConstruct.create('div', {
                 innerHTML: 'Publications',

@@ -96,6 +96,79 @@ define([
     }
 
     /**
+     * Maps hashtag parameters to human-readable text
+     * @param {Object} hashtagParams - The hashtag_params object from pathState
+     * @returns {string} A formatted string describing the hashtag parameters
+     */
+    function mapHashtagParamsToText(hashtagParams) {
+        if (!hashtagParams || typeof hashtagParams !== 'object') {
+            return "";
+        }
+
+        const paramMappings = [];
+
+        // Map view_tab parameter
+        if (hashtagParams.view_tab) {
+            const viewTab = hashtagParams.view_tab;
+            switch (viewTab.toLowerCase()) {
+                case 'proteins':
+                    paramMappings.push("viewing the proteins tab");
+                    break;
+                case 'features':
+                    paramMappings.push("viewing the features tab");
+                    break;
+                case 'genomes':
+                    paramMappings.push("viewing the genomes tab");
+                    break;
+                case 'overview':
+                    paramMappings.push("viewing the overview tab");
+                    break;
+                case 'phylogeny':
+                    paramMappings.push("viewing the phylogeny tab");
+                    break;
+                case 'transcriptomics':
+                    paramMappings.push("viewing the transcriptomics tab");
+                    break;
+                case 'interactions':
+                    paramMappings.push("viewing the interactions tab");
+                    break;
+                case 'pathways':
+                    paramMappings.push("viewing the pathways tab");
+                    break;
+                case 'subsystems':
+                    paramMappings.push("viewing the subsystems tab");
+                    break;
+                case 'taxonomy':
+                    paramMappings.push("viewing the taxonomy tab");
+                    break;
+                default:
+                    paramMappings.push(`viewing the ${viewTab} tab`);
+                    break;
+            }
+        }
+
+        // Map other common hashtag parameters as needed
+        if (hashtagParams.filter) {
+            paramMappings.push(`with filter: ${hashtagParams.filter}`);
+        }
+
+        if (hashtagParams.sort) {
+            paramMappings.push(`sorted by ${hashtagParams.sort}`);
+        }
+
+        if (hashtagParams.search) {
+            paramMappings.push(`searching for: ${hashtagParams.search}`);
+        }
+
+        // Return formatted string or empty if no mappings
+        if (paramMappings.length === 0) {
+            return "";
+        }
+
+        return ` Currently ${paramMappings.join(', ')}.`;
+    }
+
+    /**
      * Creates a taxonomy-specific state prompt
      * @param {Object} pathState - The path state object for taxonomy view
      * @returns {string} A formatted prompt string for taxonomy data
@@ -118,24 +191,15 @@ define([
 
         prompt += ".";
 
-        // Add lineage information if available
-        if (taxonomyData.lineage) {
-            prompt += ` This organism belongs to the taxonomic lineage: ${taxonomyData.lineage}.`;
-        }
-
         // Add genome count if available
         if (taxonomyData.genomes) {
             prompt += ` There are ${taxonomyData.genomes} genomes associated with this taxonomy.`;
         }
 
-        // Add division information if available
-        if (taxonomyData.division) {
-            prompt += ` It belongs to the ${taxonomyData.division} division.`;
-        }
-
-        // Add genetic code information if available
-        if (taxonomyData.genetic_code) {
-            prompt += ` It uses genetic code ${taxonomyData.genetic_code}.`;
+        // Add hashtag parameters context
+        const hashtagText = mapHashtagParamsToText(pathState.hashtag_params);
+        if (hashtagText) {
+            prompt += hashtagText;
         }
 
         // Add URL path context
@@ -143,7 +207,7 @@ define([
             prompt += ` Currently viewing at URL path: ${pathState.path}.`;
         }
 
-        prompt += "If the content is relevant to the query, include this content in your response. Otherwise, ignore it.";
+        prompt += " If the content is relevant to the query, include this content in your response. Otherwise, ignore it.";
 
         return prompt;
     }
@@ -231,20 +295,6 @@ define([
             prompt += ` It also contains ${rnaInfo.join(' and ')}.`;
         }
 
-        // Add taxonomic information
-        if (genomeData.taxon_lineage_names && Array.isArray(genomeData.taxon_lineage_names)) {
-            prompt += ` Taxonomically, it belongs to: ${genomeData.taxon_lineage_names.join(' > ')}.`;
-        }
-
-        // Add isolation and collection information
-        if (genomeData.isolation_source) {
-            prompt += ` This genome was isolated from ${genomeData.isolation_source}`;
-            if (genomeData.isolation_country) {
-                prompt += ` in ${genomeData.isolation_country}`;
-            }
-            prompt += ".";
-        }
-
         // Add sequencing information
         if (genomeData.sequencing_platform) {
             prompt += ` It was sequenced using ${genomeData.sequencing_platform}`;
@@ -254,16 +304,10 @@ define([
             prompt += ".";
         }
 
-        // Add quality metrics
-        if (genomeData.checkm_completeness || genomeData.checkm_contamination) {
-            prompt += ` Quality metrics:`;
-            if (genomeData.checkm_completeness) {
-                prompt += ` ${genomeData.checkm_completeness}% completeness`;
-            }
-            if (genomeData.checkm_contamination) {
-                prompt += `, ${genomeData.checkm_contamination}% contamination`;
-            }
-            prompt += ".";
+        // Add hashtag parameters context
+        const hashtagText = mapHashtagParamsToText(pathState.hashtag_params);
+        if (hashtagText) {
+            prompt += hashtagText;
         }
 
         // Add URL path context
@@ -310,19 +354,7 @@ define([
         // Add genomic location information
         if (featureData.start && featureData.end) {
             prompt += ` It is located at positions ${featureData.start.toLocaleString()} to ${featureData.end.toLocaleString()}`;
-            if (featureData.strand) {
-                prompt += ` on the ${featureData.strand === '+' ? 'forward' : 'reverse'} strand`;
-            }
-            if (featureData.location) {
-                prompt += ` (${featureData.location})`;
-            }
             prompt += ".";
-        }
-
-        // Add sequence information
-        if (featureData.sequence_id || featureData.accession) {
-            const seqId = featureData.sequence_id || featureData.accession;
-            prompt += ` The feature is found on sequence ${seqId}.`;
         }
 
         // Add length information
@@ -373,20 +405,10 @@ define([
             prompt += ` Family classifications: ${familyInfo.join(', ')}.`;
         }
 
-        // Add annotation source
-        if (featureData.annotation) {
-            prompt += ` This feature was annotated by ${featureData.annotation}.`;
-        }
-
-        // Add taxonomic information
-        if (featureData.taxon_id) {
-            prompt += ` The organism has taxonomic ID ${featureData.taxon_id}.`;
-        }
-
-        // Add timestamps if available
-        if (featureData.date_inserted) {
-            const insertDate = new Date(featureData.date_inserted).toLocaleDateString();
-            prompt += ` This feature record was created on ${insertDate}.`;
+        // Add hashtag parameters context
+        const hashtagText = mapHashtagParamsToText(pathState.hashtag_params);
+        if (hashtagText) {
+            prompt += hashtagText;
         }
 
         // Add URL path context
