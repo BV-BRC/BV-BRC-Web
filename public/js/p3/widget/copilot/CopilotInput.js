@@ -54,7 +54,7 @@ define([
       // Flag to track page content toggle state
       pageContentEnabled: false,
 
-      level: 0,
+      level: 3,
 
       enhancedPrompt: null,
 

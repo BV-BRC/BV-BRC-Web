@@ -393,7 +393,7 @@ define([
 
             this.textSizeInput = domConstruct.create('input', {
                 type: 'number',
-                value: 13,
+                value: 14,
                 min: 1,
                 max: 100,
                 style: 'width: 50px; padding: 2px;',
@@ -418,7 +418,7 @@ define([
 
             this.levelInput = domConstruct.create('input', {
                 type: 'number',
-                value: 0,
+                value: 3,
                 min: 0,
                 max: 3,
                 style: 'width: 50px; padding: 2px;',

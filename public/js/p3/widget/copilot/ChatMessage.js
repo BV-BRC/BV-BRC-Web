@@ -34,7 +34,7 @@ define([
     constructor: function(message, container) {
       this.message = message;
       this.container = container;
-      this.fontSize = message.fontSize || 13; // Get fontSize from message or use default
+      this.fontSize = message.fontSize || 14; // Get fontSize from message or use default
       this.renderMessage(); // Immediately render on construction
     },
 

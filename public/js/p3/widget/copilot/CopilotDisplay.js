@@ -50,7 +50,7 @@ define([
     emptyMessage: 'No messages yet. Start a conversation!',
 
     // Default font size
-    fontSize: 13,
+    fontSize: 14,
 
     /**
      * @constructor
