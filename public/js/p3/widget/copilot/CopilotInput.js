@@ -210,7 +210,7 @@ define([
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
         var systemPrompt = this.systemPrompt;
-        if (this.level == 0 || this.level == 2) {
+        if (this.level == 0 || this.level == 2 || this.level == 3) {
           if (this.statePrompt) {
             if (systemPrompt) {
               systemPrompt += this.statePrompt;

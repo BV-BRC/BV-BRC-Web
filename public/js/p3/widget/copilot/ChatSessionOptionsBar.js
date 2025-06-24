@@ -371,7 +371,7 @@ define([
                 type: 'number',
                 value: 0,
                 min: 0,
-                max: 2,
+                max: 3,
                 style: 'width: 50px; padding: 2px;',
                 onchange: lang.hitch(this, function(evt) {
                     var newLevel = parseInt(evt.target.value);
