@@ -43,6 +43,7 @@ define([
    // An "enum" for input sources
    const InputSource = Object.freeze({
       FastaFileID: "fasta_file_id"
+      // TODO: Other sources will be added in a future release.
    })
 
    // An "enum" for match types
@@ -87,15 +88,18 @@ define([
       applicationLabel: "TreeSort",
       applicationName: "TreeSort",
       baseClass: "TreeSort",
-      defaultPath: "", // The workspace manager's default folder.
+      defaultPath: "",
       demo: false,
-      form_flag: false, // TODO: This is something related to intakeRerunForm
+      form_flag: false, // This is something related to intakeRerunForm
       pageTitle: "TreeSort Service | BV-BRC",
       requireAuth: true,
       templateString: Template,
       tutorialLink: "tutorial/treesort/treesort.html",
       videoLink: "",
 
+      // Validation of control values is skipped when resetting the form or populating from job data.
+      skipCount: 0,
+      skipValidation: false,
 
       // TODO: A future version can use this variable to lookup different segments in the SegmentedViruses JSON.
       virusTaxon: "influenza",
@@ -110,6 +114,8 @@ define([
       //----------------------------------------------------------------------------------------------------------------------------
       inputSource: InputSource.FastaFileID, // The default input source
 
+      // Keep track of which controls are required based on the dojo/dijit control "required" property.
+      requiredControls: [],
 
       //----------------------------------------------------------------------------------------------------------------------------
       // References to HTML elements/controls
@@ -126,6 +132,7 @@ define([
       // FASTA file ID elements
       fastaFileIdEl: null,
       fastaFileIdPanelEl: null,
+      fastaFileIdMessageEl: null,
 
       // Inference method elements
       inferenceMethodEl: null,
@@ -144,13 +151,13 @@ define([
       // "No collapse" element
       noCollapseEl: null,
 
+      // Output filename element
+      outputFileEl: null,
+      outputFileMessageEl: null,
+
       // Output path element
       outputPathEl: null,
       outputPathMessageEl: null,
-
-      // Output filename element
-      outputFilenameEl: null,
-      outputFilenameMessageEl: null,
 
       // P-value elements
       pValueEl: null,
@@ -170,14 +177,6 @@ define([
       // The segment checkbox elements.
       segmentCheckboxes: [],
 
-
-      // C-tor
-      constructor: function () {
-         // TODO: Do I need to do something like this???
-         //this.genomeToAttachPt = ['genome_id'];
-         //this.genomeGroupToAttachPt = ['query_genomegroup'];
-         //this.fastaToAttachPt = ['query_fasta'];
-      },
 
       // Dynamically generate segment controls and add them to the page.
       createSegmentControls: function () {
@@ -258,7 +257,7 @@ define([
          let matchType = this.matchTypeEl.get("value");
          let noCollapse = this.noCollapseEl.get("checked");
          let outputPath = this.outputPathEl.get("value");
-         let outputFilename = this.outputFilenameEl.get("value");
+         let outputFile = this.outputFileEl.get("value");
          let pValue = this.pValueEl.get("value");
          let refSegment = this.refSegmentEl.get("value");
          let refTreeInference = this.refTreeInferenceEl.get("value");
@@ -274,43 +273,60 @@ define([
             })
          }
 
-         // Prepare the submission values (I think this will become job_desc.json)
-         let submit_values = {
-            "clades_path": cladesPath,
-            "deviation": deviation,
-            "equal_rates": equalRates,
-            "inference_method": inferenceMethod,
-            "input_fasta_data": null, // TODO: Use fastaData in the future.
-            "input_fasta_existing_dataset": null, // TODO: Use fastaExistingDataset in the future.
-            "input_fasta_file_id": fastaFileId,
-            "input_fasta_group_id": null, // TODO: Use fastaGroupId in the future.
-            "input_source": this.inputSource,
-            "is_time_scaled": isTimeScaled,
-            "match_regex": matchRegex,
-            "match_type": matchType,
-            "no_collapse": noCollapse,
-            "output_filename": outputFilename,
-            "output_path": outputPath,
-            "p_value": pValue,
-            "ref_segment": refSegment,
-            "ref_tree_inference": refTreeInference,
-            "segments": segments
-         };
-
-         console.log("In getValues submit values = ", submit_values)
-         /*
-         TODO: Support the demo functionality
+         let jobDescription;
 
          if (this.demo) {
 
-            resultType = 'custom';
-            submit_values['db_source'] = 'fasta_data';
-            submit_values['db_fasta_data'] = '>id1\ngtgtcgtttatcagtcttgcaagaaatgtttttgtatatatatcaattgggttatttgta\ngctccaatattttcgttagtatcaattatattcactgaacgcgaagtagtagatttgttt\ngcgtatattttttctgaatatacagttaatactgtaattttaatgttaggtgttgggatt\n' +
-               '>id2\nataacgttgattgttgggatagcaacagcttggtttgtaacttattattcttttcctgga\ncgtaagttttttgagatagcacttttcttgccactttcaataccagggtatatagttgca\ntatgtatatgtaaatatttttgaattttcaggtcctgtacaaagttttttaagggtgata\ntttcattggaataaaggtgattattactttcctagtgtgaaatcattagcatgtggaatt\n'
-         }
-         */
+            // Create an example job description.
+            jobDescription = {
+               "clades_path": "cladeInfo",
+               "deviation": 2.0,
+               "equal_rates": true,
+               "inference_method": "local",
+               "input_fasta_existing_dataset": null,
+               "input_fasta_data": null,
+               "input_fasta_file_id": "/testUser@bvbrc/home/TreeSort/swine_H1/swine_H1_HANA.fasta",
+               "input_fasta_group_id": null,
+               "input_source": "fasta_file_id",
+               "is_time_scaled": false,
+               "match_regex": null,
+               "match_type": "default",
+               "no_collapse": true,
+               "output_file": "annotatedTree",
+               "output_path": "/testUser@bvbrc/home/TreeSort/swine_H1/output",
+               "p_value": 0.001,
+               "ref_segment": "HA",
+               "ref_tree_inference": "FastTree",
+               "segments": null
+            }
 
-         if (this.validate()) { return submit_values; }
+         } else {
+
+            // Create the job description JSON that will be submitted to the TreeSort service.
+            jobDescription = {
+               "clades_path": cladesPath,
+               "deviation": deviation,
+               "equal_rates": equalRates,
+               "inference_method": inferenceMethod,
+               "input_fasta_data": null, // TODO: Use fastaData in the future.
+               "input_fasta_existing_dataset": null, // TODO: Use fastaExistingDataset in the future.
+               "input_fasta_file_id": fastaFileId,
+               "input_fasta_group_id": null, // TODO: Use fastaGroupId in the future.
+               "input_source": this.inputSource,
+               "is_time_scaled": isTimeScaled,
+               "match_regex": matchRegex,
+               "match_type": matchType,
+               "no_collapse": noCollapse,
+               "output_file": outputFile,
+               "output_path": outputPath,
+               "p_value": pValue,
+               "ref_segment": refSegment,
+               "ref_tree_inference": refTreeInference,
+               "segments": segments
+            };
+         }
+
+         if (this.validate()) { return jobDescription; }
       },
 
       // Handle a click event on the advanced options control.
@@ -342,20 +358,35 @@ define([
       // Handle a change to the FASTA file ID control.
       handleFastaFileIdChange: function (value_) {
 
+         // If we're skipping validation, make the control temporarily optional.
+         if (this.skipValidation) { this.fastaFileIdEl.set("required", false); }
+
          let result = this.isFastaFileIdValid(value_);
-         if (!result.isValid) {
-            this.deviationEl.set("state", "Error");
-            this.deviationEl.set("message", result.errorMessage);
-            this.deviationMessageEl.innerHTML = result.errorMessage;
+
+         if (!result.isValid && !this.skipValidation) {
+            this.fastaFileIdEl.set("state", "Error");
+            this.fastaFileIdEl.set("message", result.errorMessage);
+            this.fastaFileIdMessageEl.innerHTML = result.errorMessage;
+
+            // Update the control as required since it has an invalid value.
+            this.fastaFileIdEl.set("required", true);
+
          } else {
+
             // Clear any existing error status.
-            this.deviationEl.set("state", "");
-            this.deviationEl.set("message", "");
-            this.deviationMessageEl.innerHTML = "";
+            this.fastaFileIdEl.set("state", "");
+            this.fastaFileIdEl.set("message", "");
+            this.fastaFileIdMessageEl.innerHTML = "";
+
+            // Make the control optional until it is assigned an invalid value.
+            this.fastaFileIdEl.set("required", false);
          }
 
          // Validate all controls
          this.validate();
+
+         // Update the "skip validation" count and flag.
+         if (this.skipValidation) { this.updateSkipValidation(); }
 
          return result.isValid;
       },
@@ -396,22 +427,37 @@ define([
       },
 
       // Handle a change to the output filename control.
-      handleOutputFilenameChange: function (value_) {
+      handleOutputFileChange: function (value_) {
 
-         let result = this.isOutputFilenameValid(value_);
+         // If we're skipping validation, make the control temporarily optional.
+         if (this.skipValidation) { this.outputFileEl.set("required", false); }
 
-         if (!result.isValid) {
-            this.outputFilenameEl.set("state", "Error");
-            this.outputFilenameEl.set("message", result.errorMessage);
-            this.outputFilenameMessageEl.innerHTML = result.errorMessage;
+         let result = this.isOutputFileValid(value_);
+
+         if (!result.isValid && !this.skipValidation) {
+            this.outputFileEl.set("state", "Error");
+            this.outputFileEl.set("message", result.errorMessage);
+            this.outputFileMessageEl.innerHTML = result.errorMessage;
+
+            // Update the control as required since it has an invalid value.
+            this.outputFileEl.set("required", true);
+
          } else {
-            this.outputFilenameEl.set("state", "");
-            this.outputFilenameEl.set("message", "");
-            this.outputFilenameMessageEl.innerHTML = "";
+
+            // Clear any existing error status.
+            this.outputFileEl.set("state", "");
+            this.outputFileEl.set("message", "");
+            this.outputFileMessageEl.innerHTML = "";
+
+            // Make the control optional until it is assigned an invalid value.
+            this.outputFileEl.set("required", false);
          }
 
          // Validate all controls
          this.validate();
+
+         // Update the "skip validation" count and flag.
+         if (this.skipValidation) { this.updateSkipValidation(); }
 
          return result.isValid;
       },
@@ -419,22 +465,50 @@ define([
       // Handle a change to the output path control.
       handleOutputPathChange: function (value_) {
 
+         // If we're skipping validation, make the control temporarily optional.
+         if (this.skipValidation) { this.outputPathEl.set("required", false); }
+
          let result = this.isOutputPathValid(value_);
 
-         if (!result.isValid) {
+         if (!result.isValid && !this.skipValidation) {
             this.outputPathEl.set("state", "Error");
             this.outputPathEl.set("message", result.errorMessage);
             this.outputPathMessageEl.innerHTML = result.errorMessage;
+
+            // Update the control as required since it has an invalid value.
+            this.outputPathEl.set("required", true);
+
          } else {
+
+            // Clear any existing error status.
             this.outputPathEl.set("state", "");
             this.outputPathEl.set("message", "");
             this.outputPathMessageEl.innerHTML = "";
+
+            // Make the control optional until it is assigned an invalid value.
+            this.outputPathEl.set("required", false);
          }
 
          // Validate all controls
          this.validate();
 
+         // Update the "skip validation" count and flag.
+         if (this.skipValidation) { this.updateSkipValidation(); }
+
          return result.isValid;
+      },
+
+      // If we're skipping validation, update the skip count and the "skip validation" flag.
+      updateSkipValidation() {
+
+         // Decrement the skip count.
+         this.skipCount -= 1;
+
+         // If this is the last control that skips validation, reset the count and flag.
+         if (this.skipCount < 1) {
+            this.skipCount = 0;
+            this.skipValidation = false;
+         }
       },
 
       // Handle a change to the p-value control.
@@ -447,6 +521,7 @@ define([
             this.pValueEl.set("message", result.errorMessage);
             this.pValueMessageEl.innerHTML = result.errorMessage;
          } else {
+
             // Clear any existing error status.
             this.pValueEl.set("state", "");
             this.pValueEl.set("message", "");
@@ -470,6 +545,7 @@ define([
             this.refSegmentEl.set("message", result.errorMessage);
             this.segmentsMessageEl.innerHTML = result.errorMessage;
          } else {
+
             // Clear any existing error status.
             this.refSegmentEl.set("state", "");
             this.refSegmentEl.set("message", "");
@@ -485,34 +561,32 @@ define([
          // We are assuming that there's only 1 rerun key in the query string parameters.
          let service_fields = window.location.search.replace('?', '');
          let rerun_fields = service_fields.split('=');
-         let rerun_key;
-         if (rerun_fields.length > 1) {
-            try {
-               rerun_key = rerun_fields[1];
+         if (rerun_fields.length < 1) { return; }
 
-               // Look for an existing job_data object from session storage.
-               let sessionStorage = window.sessionStorage;
-               if (sessionStorage.hasOwnProperty(rerun_key)) {
+         let rerun_key = rerun_fields[1];
 
-                  // TODO: How is this used?
-                  this.form_flag = true;
+         try {
+            // Look for an existing job_data object from session storage.
+            let sessionStorage = window.sessionStorage;
+            if (sessionStorage.hasOwnProperty(rerun_key)) {
 
-                  // Deserialize the job_data
-                  let jobData = JSON.parse(sessionStorage.getItem(rerun_key));
-                  if (jobData) {
+               this.form_flag = true;
 
-                     // Don't display the default values in the page controls.
-                     this.displayDefaults = false;
+               // Deserialize the job_data
+               let jobData = JSON.parse(sessionStorage.getItem(rerun_key));
+               if (jobData) {
 
-                     // Populate page controls using job data.
-                     this.populateFromJobData(jobData);
-                  }
+                  // Don't display the default values in the page controls.
+                  this.displayDefaults = false;
+
+                  // Populate page controls using job data.
+                  this.populateFromJobData(jobData);
                }
-            } catch (error) {
-               console.log(`Error during intakeRerunForm: ${error}`);
-            } finally {
-               sessionStorage.removeItem(rerun_key);
             }
+         } catch (error) {
+            console.log(`Error during intakeRerunForm: ${error}`);
+         } finally {
+            sessionStorage.removeItem(rerun_key);
          }
       },
 
@@ -582,7 +656,7 @@ define([
       },
 
       // Is the output filename valid?
-      isOutputFilenameValid: function (value_) {
+      isOutputFileValid: function (value_) {
 
          // Initialize the result
          let result = { isValid: true, errorMessage: null };
@@ -590,11 +664,11 @@ define([
          value_ = this.safeTrim(value_);
 
          // If no value was provided, get the value directly from the control.
-         if (!value_) { value_ = this.safeTrim(this.outputFilenameEl.get("value")); }
+         if (!value_) { value_ = this.safeTrim(this.outputFileEl.get("value")); }
 
          if (!value_) {
             result.isValid = false;
-            result.errorMessage = "Enter a valid filename";
+            result.errorMessage = "Enter a valid output name";
          }
 
          return result;
@@ -666,10 +740,13 @@ define([
 
       onReset: function () {
 
-         console.log("In onReset")
-
-         // TODO: What does this do?
+         // TODO: Is this necessary?
          this.inherited(arguments);
+
+         // Wait until after the default reset has modified the form controls.
+         setTimeout(() => { this.setDefaultValues(); }, 0);
+
+         return true;
       },
 
       openJobsList: function () {
@@ -681,21 +758,23 @@ define([
 
          if (!jobData) { throw new Error("Invalid job data"); }
 
-         // TODO: clades_path
+         // Skip validation while we populate the form controls.
+         this.skipValidation = true;
+
+         // There are 3 controls that are required but are initialized with an empty value: fastaFileIdEl, outputPathEl, and outputFileEl.
+         this.skipCount = 3;
+
+         if (jobData.cladesPath) { this.cladesPathEl.set("value", jobData.cladesPath); }
          if (jobData.deviation) { this.deviationEl.set("value", jobData.deviation); }
          if (jobData.equal_rates) { this.equalRatesEl.set("checked", jobData.equal_rates); }
          if (jobData.inference_method) { this.inferenceMethodEl.set("value", jobData.inference_method); }
          if (jobData.input_fasta_file_id) { this.fastaFileIdEl.set("value", jobData.input_fasta_file_id); }
-         // TODO: Include these in a future version.
-         //if (jobData.input_fasta_data) { this.fastaDataEl.set("value", jobData.input_fasta_data); }
-         //if (jobData.input_fasta_existing_dataset) { this.fastaFileIdEl.set("value", jobData.input_fasta_existing_dataset); }
-         //if (jobData.input_fasta_group_id) { this.fastaGroupIdEl.set("value", jobData.input_fasta_group_id); }
          if (jobData.input_source) { this.inputSource = jobData.input_source; }
          if (jobData.is_time_scaled) { this.isTimeScaledEl.set("checked", jobData.is_time_scaled); }
          if (jobData.match_regex) { this.matchRegexEl.set("value", jobData.match_regex); }
          if (jobData.match_type) { this.matchTypeEl.set("value", jobData.match_type); }
          if (jobData.no_collapse) { this.noCollapseEl.set("checked", jobData.no_collapse); }
-         if (jobData.output_filename) { this.outputFilenameEl.set("value", jobData.outputFilename); }
+         if (jobData.output_file) { this.outputFileEl.set("value", jobData.outputFile); }
          if (jobData.output_path) { this.outputPathEl.set("value", jobData.output_path); }
          if (jobData.p_value) { this.pValueEl.set("value", jobData.p_value); }
          if (jobData.ref_segment) { this.refSegmentEl.set("value", jobData.ref_segment); }
@@ -728,9 +807,17 @@ define([
          return String(value_);
       },
 
-      // Update the page controls with default values.
+      // Update the form controls with default values.
       setDefaultValues() {
 
+         // Skip validation while we populate the form controls.
+         this.skipValidation = true;
+
+         // There are 3 controls that are required but are initialized with an empty value: fastaFileIdEl, outputPathEl, and outputFileEl.
+         this.skipCount = 3;
+
+         // Populate all controls with default values.
+         this.cladesPathEl.set("value", "");
          this.deviationEl.set("value", 2);
          this.equalRatesEl.set("value", false);
          this.fastaFileIdEl.set("value", "");
@@ -740,8 +827,8 @@ define([
          this.matchRegexEl.set("value", "");
          this.matchTypeEl.set("value", MatchType.Default);
          this.noCollapseEl.set("value", true);
-         this.outputFilenameEl.set("value", " ");
-         this.outputPathEl.set("value", "");
+         this.outputFileEl.set("value", "");
+         this.outputPathEl.set("value", this.defaultPath);
          this.pValueEl.set("value", 0.001);
          this.refSegmentEl.set("value", this.defaultRefSegment);
          this.refTreeInferenceEl.set("value", RefTreeInference.FastTree);
@@ -750,16 +837,6 @@ define([
          this.segmentCheckboxes.forEach(checkbox_ => {
             checkbox_.set("checked", true);
          })
-
-         /* TODO: Include these in a future version.
-         // FASTA input sources
-         this.fastaDataEl.set("value", "");
-         this.fastaExistingDatasetEl.set("value", "");
-         this.fastaGroupIdEl.set("value", "");
-
-         // Select the default input source radio button.
-         this.updateInputSourceControls();
-         */
 
          return;
       },
@@ -771,11 +848,15 @@ define([
             return;
          }
 
+         this.form_flag = false;
+
          this.inherited(arguments);
 
-         // Determine the default path.
          if (window.App.user) {
+
+            // Get the default path and assign it to the output path element.
             this.defaultPath = WorkspaceManager.getDefaultFolder() || this.activeWorkspacePath;
+            this.outputPathEl.set('value', this.defaultPath);
          }
 
          // Populate the select lists.
@@ -810,26 +891,26 @@ define([
          })
 
          try {
-            // NOTE: this sets this.displayDefaults to false if we are populating
-            // the page controls using job data.
+            // NOTE: this sets this.displayDefaults to false if we are populating the page controls using job data.
             this.intakeRerunForm();
 
          } catch (error) {
             console.error(error);
          }
 
-         if (this.displayDefaults) {
-            // Populate the page controls with default values.
-            this.setDefaultValues();
-         }
+         // Should we populate the form controls with default values?
+         if (this.displayDefaults) { this.setDefaultValues(); }
 
-         // TEST
-         this.validate();
          this._started = true;
       },
 
       // Validate all page controls that require validation.
       validate: function () {
+
+         if (this.demo) {
+            this.submitButton.set("disabled", true);
+            return true;
+         }
 
          let result;
 
@@ -848,7 +929,7 @@ define([
                isValid = isValid && result.isValid;
             }
 
-            result = this.isOutputFilenameValid();
+            result = this.isOutputFileValid();
             isValid = isValid && result.isValid;
 
             result = this.isOutputPathValid();

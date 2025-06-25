@@ -161,8 +161,9 @@
                data-dojo-attach-point="fastaFileIdEl"
                data-dojo-type="p3/widget/WorkspaceObjectSelector"
                data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta', 'genome_protein_fasta', 'genome_dna_fasta', 'contigs'],multi:false,promptMessage:'Select or upload a FASTA file from your workspace.',missingMessage:'FASTA file is required.',placeHolder:'FASTA file'"
-               required="false"
+               required="true"
             ></div>
+            <div class="warning treesort--error-message" data-dojo-attach-point="fastaFileIdMessageEl"></div>
 
          </div>
       </div>
@@ -181,7 +182,7 @@
 
                <!-- Output path -->
                <div class="treesort--label-tooltip">
-                  <div class="treesort--param-label">Folder</div>
+                  <div class="treesort--param-label">Output folder</div>
                   <div name="output-path" class="infobox iconbox infobutton tooltipinfo">
                      <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                   </div>
@@ -202,19 +203,19 @@
 
                <!-- Output filename -->
                <div class="treesort--label-tooltip">
-                  <div class="treesort--param-label">Filename</div>
-                  <div name="output-filename" class="infobox iconbox infobutton tooltipinfo">
+                  <div class="treesort--param-label">Output name</div>
+                  <div name="output-file" class="infobox iconbox infobutton tooltipinfo">
                      <i class="fa icon-question-circle fa"></i>
                   </div>
                </div>
-               <input name="output_filename"
-                  data-dojo-attach-event="onChange:handleOutputFilenameChange"
-                  data-dojo-attach-point="outputFilenameEl"
-                  data-dojo-props="intermediateChanges: false, invalidMessage:'Enter a name for the output file', trim:true, placeholder:'The output filename'"
+               <input name="output_file"
+                  data-dojo-attach-event="onChange:handleOutputFileChange"
+                  data-dojo-attach-point="outputFileEl"
+                  data-dojo-props="intermediateChanges: false, invalidMessage:'A name must be provided for the job result', trim:true, placeholder:'Output name'"
                   data-dojo-type="dijit/form/ValidationTextBox"
-                  required="false"
+                  required="true"
                   style="font-family: monospace; font-size: 1.0rem; height: 20px;" />
-               <div class="warning treesort--error-message" data-dojo-attach-point="outputFilenameMessageEl"></div>
+               <div class="warning treesort--error-message" data-dojo-attach-point="outputFileMessageEl"></div>
             </div>
          </div>
       </div>
@@ -485,10 +486,8 @@
          <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel"
             data-dojo-type="dijit/form/Button">Cancel
          </div>
-         <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset
-         </div>
-         <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit
-         </div>
+         <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+         <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
       </div>
    </div>
 </form>
