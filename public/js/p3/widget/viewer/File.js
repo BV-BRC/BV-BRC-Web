@@ -1,9 +1,9 @@
 define([
-  'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on',
+  'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on', "dojo/_base/lang",
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/dom-style',
   '../formatter', '../../WorkspaceManager', 'dojo/_base/Deferred', 'dojo/dom-attr', 'dojo/_base/array'
 ], function (
-  declare, BorderContainer, on,
+  declare, BorderContainer, on, lang,
   domClass, ContentPane, domConstruct, domStyle,
   formatter, WS, Deferred, domAttr, array
 ) {
@@ -17,6 +17,8 @@ define([
     preload: true,
 
     _setFileAttr: function (val) {
+      // this is invoked by the widget creation mechanism
+      // with the value of the "file" key in params.
       // console.log('[File] _setFileAttr:', val);
       if (!val) {
         this.file = {}; this.filepath = ''; this.url = '';
@@ -36,6 +38,7 @@ define([
       }
     },
     _setFilepathAttr: function (val) {
+      // If we were set up with just a path, retrieve metadata from workspace
       // console.log('[File] _setFilepathAttr:', val);
       this.filepath = val;
       var _self = this;
@@ -57,33 +60,14 @@ define([
       this.addChild(this.viewer);
 
       var _self = this;
-      Deferred.when(WS.getDownloadUrls(_self.filepath), function (url) {
-        _self.url = url;
-      }).then(function () {
-        _self.refresh();
-      });
-
+      // for direct load, make everything viewable
+      this.viewable = true;
+      /*
       if (WS.viewableTypes.indexOf(this.file.metadata.type) >= 0 && this.file.metadata.size <= 10000000) {
         this.viewable = true;
       }
+      */
       // console.log('[File] viewable?:', this.viewable);
-
-      if (!this.file.data && this.viewable) {
-        var _self = this;
-
-        // some filetypes we just want to reference by url, some we can go ahead and load
-        var reftypes = ['pdf', 'gif', 'png', 'jpg'];
-        if (reftypes.indexOf(this.file.metadata.type) >= 0) this.preload = false;
-        // console.log('[File] preload?:', this.preload);
-
-        // get the object to display
-        Deferred.when(WS.getObject(this.filepath, !this.preload), function (obj) {
-          // console.log('[File] obj:', obj);
-          _self.set('file', obj);
-        }).then(function () {
-          _self.refresh();
-        });
-      }
 
       this.refresh();
     },
@@ -107,6 +91,33 @@ define([
       return content;
     },
 
+    authorize: function () {
+      const d = new Deferred();
+
+      (async () => {
+        try {
+          const res = await fetch(window.App.workspaceDownloadAPI + "/set-cookie-auth", {
+            method: "POST",
+            headers: {
+              "Authorization": window.App.authorizationToken,
+              "Content-Type": "application/json"
+            },
+            credentials: "include"
+          });
+
+          if (!res.ok) {
+            throw new Error("Authorization failed with status " + res.status);
+          }
+
+          const data = await res.text();
+          d.resolve(data);
+        } catch (err) {
+          d.reject(err);
+        }
+      })();
+
+      return d.promise;
+    },
     refresh: function () {
       if (!this._started) {
         return;
@@ -119,62 +130,52 @@ define([
       if (this.file && this.file.metadata) {
         if (this.viewable) {
           this.viewSubHeader.set('content', this.formatFileMetaData(false));
+          // Set cookie for workspace load
+          this.authorize().then(lang.hitch(this, function () {
+            const docURL = window.App.workspaceDownloadAPI + "/view" + this.filepath;
+            // Create a spinner div
+            const spinner = domConstruct.create("div", {
+              className: "spinner",
+              innerHTML: "Loading..."
+            });
 
-          if (this.file.data || (!this.preload && this.url)) {
-            // console.log('[File] type:', this.file.metadata.type);
-            var childContent = '</br>';
-            switch (this.file.metadata.type) {
-              case 'html':
-                var iframe = domConstruct.create('iframe', { style: 'width:100%;height:100%' });
-                domConstruct.empty(this.viewer.containerNode);
-                domStyle.set(this.viewer.containerNode, 'overflow', 'hidden');
-                domConstruct.place(iframe, this.viewer.containerNode);
-                var iframe_contents = this.file.data;
-                if (this.file.metadata.name == 'GenomeReport.html'){
-                          iframe_contents = iframe_contents.replaceAll('="https://www.patricbrc.org/view/Feature',
-							       '="' + window.App.appBaseURL + '/view/Feature');
-	             	}
+            // Style the spinner (you can customize this or use a CSS class)
+            domStyle.set(spinner, {
+              position: "absolute",
+              fontSize: "2.5em",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 10,
+              backgroundColor: "white",
+              padding: "10px",
+              borderRadius: "4px"
+            });
+            var iframe = domConstruct.create('iframe', { style: 'width:100%;height:100%' });
+            domConstruct.empty(this.viewer.containerNode);
+            domStyle.set(this.viewer.containerNode, 'overflow', 'hidden');
+            domConstruct.place(spinner, this.viewer.containerNode);
+            domConstruct.place(iframe, this.viewer.containerNode);
 
-                iframe.onload = function(){
-                  var nodes = iframe.contentWindow.document.getElementsByTagName("a")
-                  var i=0
-                  while (i<nodes.length){
-                    var n = nodes.item(i)
-                    n.target="_parent";
-                    i++
-                  }
-                }
-                iframe.srcdoc = iframe_contents;
+            iframe.onload = function () {
+              /*
+              var nodes = iframe.contentWindow.document.getElementsByTagName("a")
+              var i = 0
+              while (i < nodes.length) {
+                var n = nodes.item(i)
+                console.log("modify", n.target, n)
+                //n.target = "_parent";
+                i++
+              }
+              */
+              domConstruct.destroy(spinner);
 
-                return;
-              case 'json':
-              case 'diffexp_experiment':
-              case 'diffexp_expression':
-              case 'diffexp_mapping':
-              case 'diffexp_sample':
-                childContent = '<pre style="font-size:.8em; background-color:#ffffff;">' + JSON.stringify(JSON.parse(this.file.data || null), null, 2) + '</pre>';
-                break;
-              case 'pdf':
-                childContent = '<iframe src="https://docs.google.com/gview?url=' + this.url + '&embedded=true" style="width:100%; height:100%;" frameborder="0"></iframe>';
-                // childContent = '<a href="'+ this.url + '">';
-                break;
-              case 'gif':
-              case 'png':
-              case 'jpg':
-                childContent = '<img src="' + this.url + '">';
-                break;
-              case 'svg':
-              case 'txt':
-              default:
-                childContent = '<pre style="font-size:.8em; background-color:#ffffff;">' + this.file.data + '</pre>';
-                break;
             }
-            // this.viewer.addChild(new ContentPane({content: childContent, region: "center", style: "width:100%;height:100%;overflow:hidden;"}));
-            this.viewer.set('content', childContent);
-          } else {
-            // this.viewer.addChild(new ContentPane({content: '<pre style="font-size:.8em; background-color:#ffffff;">Loading file preview.  Content will appear here when available.  Wait time is usually less than 10 seconds.</pre>', region: "center"}));
-            this.viewer.set('content', '<pre style="font-size:.8em; background-color:#ffffff;">Loading file preview.  Content will appear here when available.  Wait time is usually less than 10 seconds.</pre>');
-          }
+            iframe.src = docURL;
+
+          }), function () {
+            console.log("Cookie auth failure");
+          });
         } else {
           this.viewSubHeader.set('content', this.formatFileMetaData(true));
         }
