@@ -97,9 +97,20 @@ define([
       tutorialLink: "tutorial/treesort/treesort.html",
       videoLink: "",
 
-      // Validation of control values is skipped when resetting the form or populating from job data.
-      skipCount: 0,
-      skipValidation: false,
+
+      // Certain controls aren't validated after resetting the form or populating from job data.
+      validationContext: {
+
+         // The number of controls that are required and default to an empty value.
+         controlCount: 4,
+
+         // Should we skip validation of these controls?
+         isSuspended: false,
+
+         // The number of controls that haven't been processed to skip validation. When skipping validation, this count is initially set to
+         // "controlCount" and decremented every time a control is skipped. When the value is < 1, isSuspended is set to false.
+         unprocessed: 0
+      },
 
       // TODO: A future version can use this variable to lookup different segments in the SegmentedViruses JSON.
       virusTaxon: "influenza",
@@ -358,12 +369,12 @@ define([
       // Handle a change to the FASTA file ID control.
       handleFastaFileIdChange: function (value_) {
 
-         // If we're skipping validation, make the control temporarily optional.
-         if (this.skipValidation) { this.fastaFileIdEl.set("required", false); }
+         // If we're suspending validation for this control, make it temporarily optional.
+         if (this.validationContext.isSuspended) { this.fastaFileIdEl.set("required", false); }
 
          let result = this.isFastaFileIdValid(value_);
 
-         if (!result.isValid && !this.skipValidation) {
+         if (!result.isValid && !this.validationContext.isSuspended) {
             this.fastaFileIdEl.set("state", "Error");
             this.fastaFileIdEl.set("message", result.errorMessage);
             this.fastaFileIdMessageEl.innerHTML = result.errorMessage;
@@ -385,8 +396,8 @@ define([
          // Validate all controls
          this.validate();
 
-         // Update the "skip validation" count and flag.
-         if (this.skipValidation) { this.updateSkipValidation(); }
+         // Update the validation context's "unprocessed" count.
+         if (this.validationContext.isSuspended) { this.updateValidationContext(); }
 
          return result.isValid;
       },
@@ -429,12 +440,12 @@ define([
       // Handle a change to the output filename control.
       handleOutputFileChange: function (value_) {
 
-         // If we're skipping validation, make the control temporarily optional.
-         if (this.skipValidation) { this.outputFileEl.set("required", false); }
+         // If we're suspending validation for this control, make it temporarily optional.
+         if (this.validationContext.isSuspended) { this.outputFileEl.set("required", false); }
 
          let result = this.isOutputFileValid(value_);
 
-         if (!result.isValid && !this.skipValidation) {
+         if (!result.isValid && !this.validationContext.isSuspended) {
             this.outputFileEl.set("state", "Error");
             this.outputFileEl.set("message", result.errorMessage);
             this.outputFileMessageEl.innerHTML = result.errorMessage;
@@ -449,6 +460,8 @@ define([
             this.outputFileEl.set("message", "");
             this.outputFileMessageEl.innerHTML = "";
 
+            console.log("about to make output file el optional")
+
             // Make the control optional until it is assigned an invalid value.
             this.outputFileEl.set("required", false);
          }
@@ -456,8 +469,8 @@ define([
          // Validate all controls
          this.validate();
 
-         // Update the "skip validation" count and flag.
-         if (this.skipValidation) { this.updateSkipValidation(); }
+         // Update the validation context's "unprocessed" count.
+         if (this.validationContext.isSuspended) { this.updateValidationContext(); }
 
          return result.isValid;
       },
@@ -465,12 +478,12 @@ define([
       // Handle a change to the output path control.
       handleOutputPathChange: function (value_) {
 
-         // If we're skipping validation, make the control temporarily optional.
-         if (this.skipValidation) { this.outputPathEl.set("required", false); }
+         // If we're suspending validation for this control, make it temporarily optional.
+         if (this.validationContext.isSuspended) { this.outputPathEl.set("required", false); }
 
          let result = this.isOutputPathValid(value_);
 
-         if (!result.isValid && !this.skipValidation) {
+         if (!result.isValid && !this.validationContext.isSuspended) {
             this.outputPathEl.set("state", "Error");
             this.outputPathEl.set("message", result.errorMessage);
             this.outputPathMessageEl.innerHTML = result.errorMessage;
@@ -492,23 +505,10 @@ define([
          // Validate all controls
          this.validate();
 
-         // Update the "skip validation" count and flag.
-         if (this.skipValidation) { this.updateSkipValidation(); }
+         // Update the validation context's "unprocessed" count.
+         if (this.validationContext.isSuspended) { this.updateValidationContext(); }
 
          return result.isValid;
-      },
-
-      // If we're skipping validation, update the skip count and the "skip validation" flag.
-      updateSkipValidation() {
-
-         // Decrement the skip count.
-         this.skipCount -= 1;
-
-         // If this is the last control that skips validation, reset the count and flag.
-         if (this.skipCount < 1) {
-            this.skipCount = 0;
-            this.skipValidation = false;
-         }
       },
 
       // Handle a change to the p-value control.
@@ -758,11 +758,8 @@ define([
 
          if (!jobData) { throw new Error("Invalid job data"); }
 
-         // Skip validation while we populate the form controls.
-         this.skipValidation = true;
-
-         // There are 3 controls that are required but are initialized with an empty value: fastaFileIdEl, outputPathEl, and outputFileEl.
-         this.skipCount = 3;
+         // Suspend/skip validation on controls that are required but default to an empty value.
+         this.suspendValidation();
 
          if (jobData.cladesPath) { this.cladesPathEl.set("value", jobData.cladesPath); }
          if (jobData.deviation) { this.deviationEl.set("value", jobData.deviation); }
@@ -810,11 +807,8 @@ define([
       // Update the form controls with default values.
       setDefaultValues() {
 
-         // Skip validation while we populate the form controls.
-         this.skipValidation = true;
-
-         // There are 3 controls that are required but are initialized with an empty value: fastaFileIdEl, outputPathEl, and outputFileEl.
-         this.skipCount = 3;
+         // Suspend/skip validation on controls that are required but default to an empty value.
+         this.suspendValidation();
 
          // Populate all controls with default values.
          this.cladesPathEl.set("value", "");
@@ -902,6 +896,28 @@ define([
          if (this.displayDefaults) { this.setDefaultValues(); }
 
          this._started = true;
+      },
+
+      // Suspend/skip validation on controls that are required but default to an empty value.
+      suspendValidation() {
+
+         this.validationContext.isSuspended = true;
+
+         // No controls have been processed yet.
+         this.validationContext.unprocessed = this.validationContext.controlCount;
+      },
+
+      // If we're suspending validation, update the number of unprocessed controls and the "is suspended" flag.
+      updateValidationContext() {
+
+         // Decrement the number of skipped/processed controls.
+         this.validationContext.unprocessed -= 1;
+
+         // If this is the last control that skips validation, reset the count and flag.
+         if (this.validationContext.unprocessed < 1) {
+            this.validationContext.unprocessed = 0;
+            this.validationContext.isSuspended = false;
+         }
       },
 
       // Validate all page controls that require validation.
