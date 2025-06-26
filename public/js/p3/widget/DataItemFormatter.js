@@ -149,7 +149,7 @@ define([
 
     var mini = options && options.mini || false;
 
-    var table = domConstruct.create('table', {}, parent);
+    var table = domConstruct.create('table', { 'style': 'table-layout: fixed;' }, parent);
     var tbody = domConstruct.create('tbody', {}, table);
 
     sections.forEach(function (section) {
@@ -3431,7 +3431,7 @@ define([
           text: 'host_common_name',
           editable: true
         }, {
-          name: 'Host Gender',
+          name: 'Host Sex',
           text: 'host_gender',
           editable: true
         }, {

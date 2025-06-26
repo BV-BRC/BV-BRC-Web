@@ -1,10 +1,10 @@
-<form dojoAttachPoint="containerNode" 
-      class="PanelForm App ${baseClass}" 
+<form dojoAttachPoint="containerNode"
+      class="PanelForm App ${baseClass}"
       dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit">
   <div class="appTemplate">
     <div class="appTitle">
       <span class="breadcrumb">Services</span>
-      <h3>${applicationLabel}
+      <h1 class="appHeader">${applicationLabel}
         <div name="overview" class="infobox iconbox infobutton dialoginfo">
           <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
         </div>
@@ -14,16 +14,16 @@
         <div class="infobox iconbox videoButton videoInfo">
           <a href="${videoLink}" target="_blank" ><i class="fa icon-play-circle fa-1x" title="click to open the video tutorial"></i></a>
         </div>
-      </h3>
+      </h1>
       <p>
         ${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a>, <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a> and <a href="${videoLink}" target="_blank">Instructional Video</a>.
       </p>
     </div>
     <div class="formFieldsContainer">
       <div style="display: none;">
-        <input data-dojo-type="dijit/form/NumberTextBox" 
-               value="0" required="true" 
-               data-dojo-attach-point="numlibs" 
+        <input data-dojo-type="dijit/form/NumberTextBox"
+               value="0" required="true"
+               data-dojo-attach-point="numlibs"
                data-dojo-props="constraints:{min:1,max:1000}," />
       </div>
       </div>
@@ -51,22 +51,22 @@
                   <label class="paramlabel">Paired read library</label>
               </div>
               <div class="appRow">
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" 
-                  name="libdat_file1pair" 
-                  data-dojo-attach-point="read1" 
-                  style="width:300px; height:20px;" 
-                  required="false" 
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                  name="libdat_file1pair"
+                  data-dojo-attach-point="read1"
+                  style="width:300px; height:20px;"
+                  required="false"
                   data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 1'"
                   data-dojo-attach-event="change:setPairedId"
                 ></div>
               </div>
               <div class="appRow">
                 <div data-dojo-attach-point="read2block">
-                  <div data-dojo-type="p3/widget/WorkspaceObjectSelector" 
-                    name="libdat_file2pair" 
-                    data-dojo-attach-point="read2" 
-                    style="width:300px; height:20px;" 
-                    required="false" 
+                  <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                    name="libdat_file2pair"
+                    data-dojo-attach-point="read2"
+                    style="width:300px; height:20px;"
+                    required="false"
                     data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 2'"
                     ></div>
                 </div>
@@ -75,10 +75,10 @@
                   <label class="paramlabel">Single read library</label>
                     <div style="width:50%; display:inline-block;"></div>
               <div class="appRow">
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" 
-                      name="libdat_readfile" 
-                      data-dojo-attach-point="single_end_libsWidget" 
-                      style="width:300px; height:20px;" required="false" 
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                      name="libdat_readfile"
+                      data-dojo-attach-point="single_end_libsWidget"
+                      style="width:300px; height:20px;" required="false"
                       data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"
                       data-dojo-attach-event="change:setSingleId"
                       ></div>
@@ -87,8 +87,8 @@
                 <div style="width:85%;display:inline-block;">
                   <label class="paramlabel">SRA run accession</label>  <i data-dojo-attach-point="srr_accession_validation_message"></i>
                 </div>
-                <div data-dojo-type="dijit/form/ValidationTextBox" 
-                data-dojo-attach-point="srr_accession" style="width:300px; height:20px;" required="false" 
+                <div data-dojo-type="dijit/form/ValidationTextBox"
+                data-dojo-attach-point="srr_accession" style="width:300px; height:20px;" required="false"
                 data-dojo-props="intermediateChanges:true,missingMessage:'You must provide an accession',trim:true,placeHolder:'SRR'"
                 data-dojo-attach-event="change:setSrrId"></div>
               </div>
@@ -122,8 +122,8 @@
             <div class="appRow">
               <div style="width:85%;display:inline-block;">
                 <label class="paramlabel">Sample Identifier</label>
-              <div data-dojo-type="dijit/form/ValidationTextBox" 
-              data-dojo-attach-point="input_sample_id" style="width:300px; height:20px;" required="false" 
+              <div data-dojo-type="dijit/form/ValidationTextBox"
+              data-dojo-attach-point="input_sample_id" style="width:300px; height:20px;" required="false"
               data-dojo-props="intermediateChanges:true,trim:true,placeHolder:'SAMPLE ID'"></div>
             </div>
           </div>
@@ -131,8 +131,8 @@
           <div class="appRow">
             <div style="width:85%;display:inline-block;">
               <label class="paramlabel">Sample Date</label>
-            <div data-dojo-type="dijit/form/ValidationTextBox" 
-            data-dojo-attach-point="sample_level_date" style="width:300px; height:20px;" required="false" 
+            <div data-dojo-type="dijit/form/ValidationTextBox"
+            data-dojo-attach-point="sample_level_date" style="width:300px; height:20px;" required="false"
             data-dojo-props="trim:true,placeholder:'MM/DD/YYYY', intermediateChanges:true, regExp:'^(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])/(1000|1\d{3}|2[0-9]{3})$', invalidMessage:'Please enter a date in format MM/DD/YYYY.',"></div>
             <!-- this regex pattern is designed to validate a date format in the form of "MM/DD/YYYY," where MM is the month (01 to 12), DD is the day (01 to 31), and YYYY is the year (1000 to 2999). -->
           </div>
@@ -151,9 +151,9 @@
                 <div class="appsublabel">Place read files here using the arrow buttons.</div>
               </div>
               <div class="appRow" style="width:100%; margin-top:10px; text-align: center;">
-                <table class="librarytable" 
-                       frame="box" 
-                       data-dojo-attach-point="libsTable" 
+                <table class="librarytable"
+                       frame="box"
+                       data-dojo-attach-point="libsTable"
                        style="margin:0 0 0 10px; width:90%;">
                   <tbody data-dojo-attach-point="libsTableBody">
                   </tbody>

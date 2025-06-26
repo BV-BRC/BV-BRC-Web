@@ -6,7 +6,7 @@ define([
   'dojo/data/ObjectStore', 'dojo/store/Memory', 'dojox/form/CheckedMultiSelect',
   'dijit/form/DropDownButton', 'dijit/DropDownMenu',
   'dijit/Dialog', 'dijit/form/Button', 'dijit/form/Select', './AdvancedSearchRowForm',
-  'dijit/focus', '../util/PathJoin'
+  'dijit/focus', '../util/PathJoin', '../util/constructMetadataName'
 ], function (
   declare, ContainerActionBar, lang,
   domConstruct, domGeometry, domStyle, domClass,
@@ -15,7 +15,7 @@ define([
   ObjectStore, Memory, CheckedMultiSelect,
   DropDownButton, DropDownMenu,
   Dialog, Button, Select, AdvancedSearchRowForm,
-  focusUtil, PathJoin
+  focusUtil, PathJoin, constructMetadataName
 ) {
 
   function sortByLabel(firstEl, secondEl) {
@@ -697,7 +697,7 @@ define([
     buildAddFilters: function () {
       const fields = this.facetFields.map((ff) => {
         const field = ff.field || ff;
-        return { id: field, label: field.replace(/_/g, ' '), value: field }
+        return { id: field, label: constructMetadataName(field), value: field }
       })
       const m_store = new Memory({
         data: fields
@@ -763,6 +763,7 @@ define([
 
       on(_row, 'remove', (evt) => {
         this._Searches[evt.idx].destroyRecursive()
+        delete this._Searches[evt.idx];
       })
       on(_row, 'create', lang.hitch(this, 'createAdvancedSearchRow'))
       this._Searches[this._SearchesIdx] = _row
@@ -776,7 +777,7 @@ define([
       const searchableFields = this.advancedSearchFields || this.facetFields.filter((ff) => ff.search)
       this.fieldSelectOptions = searchableFields.map((ff) => {
         const field = ff.field || ff;
-        return { label: field.replace(/_/g, ' '), value: field }
+        return { label: constructMetadataName(field), value: field }
       })
       this.fieldTypes = {}
       searchableFields.forEach((ff) => {
@@ -804,12 +805,13 @@ define([
       // TODO: implement this and trigger when context has changed
     },
     buildFilterQueryFromAdvancedSearch: function () {
+      this._filter = {};
       Object.keys(this._Searches).map((idx) => {
         const col = this._Searches[idx]
         const condition = col.getValues()
         let q;
         if (condition.type === 'str') {
-          q = `${condition.op === 'NOT' ? 'ne' : 'eq'}(${condition.column},${condition.value})`
+          q = `${condition.op === 'NOT' ? 'ne' : 'eq'}(${condition.column},${encodeURIComponent(condition.value)})`;
         } else if (condition.type === 'date') {
           const encode = (date) => {
             if (!date) {
@@ -820,7 +822,7 @@ define([
             const utcDate = new Date(Date.UTC(
               parsedDate.getUTCFullYear(),
               parsedDate.getUTCMonth(),
-              parsedDate.getUTCDate(),
+              parsedDate.getUTCDate()
             ));
             return encodeURIComponent(utcDate.toISOString());
           };
@@ -862,7 +864,9 @@ define([
           }
         }
         if (this._filter.hasOwnProperty(condition.column)) {
-          this._filter[condition.column].push(q)
+          if (!this._filter[condition.column].includes(q)) {
+            this._filter[condition.column].push(q);
+          }
         } else {
           this._filter[condition.column] = [q]
         }
@@ -917,7 +921,7 @@ define([
     },
 
     getFacets: function (query, facetFields) {
-      if (!query || query == '?') {
+      if (!query || query == '?' || facetFields === undefined) {
         const def = new Deferred();
         def.resolve(false);
         return def.promise;

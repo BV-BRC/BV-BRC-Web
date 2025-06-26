@@ -42,7 +42,9 @@ define([], function () {
         'HASubtypeNumberingConversion': 'HASubtypeNumberingConversion',
         'TaxonomicClassification': 'TaxonomicClassification',
         'TnSeq': 'Tnseq',
-        'Variation': 'Variation'
+        'TreeSort': 'TreeSort',
+        'Variation': 'Variation',
+        'ViralAssembly': 'ViralAssembly'
       };
 
       // TODO: addin modal parameter

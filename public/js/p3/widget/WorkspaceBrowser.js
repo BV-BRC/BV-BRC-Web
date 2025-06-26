@@ -1229,6 +1229,22 @@ define([
         }
       }, false);
 
+      this.browserHeader.addAction('ViewViralAssemblyReport', 'fa icon-eye fa-2x', {
+        label: 'Report',
+        multiple: false,
+        validTypes: ['ViralAssembly'],
+        tooltip: 'View Viral Assembly Report'
+      }, function (selection) {
+        const path = selection[0].autoMeta.output_files.find(meta_file_data =>
+          meta_file_data[0].includes('AssemblyReport.html')
+        );
+        if (path && path[0]) {
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path[0]) });
+        } else {
+          console.log('Error: could not find AssemblyReport.html output file');
+        }
+      }, false);
+
       this.browserHeader.addAction('ViewHASubtypeNumberingReport', 'fa icon-eye fa-2x', {
         label: 'Report',
         multiple: false,
@@ -1884,6 +1900,12 @@ define([
       this.addChild(this.browserHeader);
 
       this.inherited(arguments);
+
+      // Hide the panel on a small screen
+      if (window.innerWidth <= 768 && this.actionPanel) {
+        const hideBtn = query('[rel="ToggleItemDetail"]', this.actionPanel.domNode)[0];
+        hideBtn.click();
+      }
     },
 
     showPermDialog: function (selection) {

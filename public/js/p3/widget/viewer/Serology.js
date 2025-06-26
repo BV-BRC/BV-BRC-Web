@@ -29,6 +29,9 @@ define([
       if (state.experiment) {
         this.set('experiment', state.experiment);
       }
+      if (state.search) {
+        this.set('query', state.search);
+      }
       this._set('state', state);
     },
 
@@ -36,7 +39,16 @@ define([
       if (!experiment) {
         return;
       }
-      this.queryNode.innerHTML = experiment.sample_identifier + ' | ' + experiment.host_common_name + ' | ' + experiment.collection_country;
+
+      let parts = [experiment.sample_identifier];
+      if (experiment.host_common_name) {
+        parts.push(experiment.host_common_name);
+      }
+      if (experiment.collection_country) {
+        parts.push(experiment.collection_country);
+      }
+
+      this.queryNode.innerHTML = parts.join(' | ');
     },
 
     onSetState: function (attr, oldVal, state) {
@@ -117,7 +129,17 @@ define([
 
       this.totalCountNode.innerHTML = '';
 
-      xhr.get(PathJoin(this.apiServiceUrl, 'serology', `?eq(sample_identifier,${this.eid})`), {
+      let q = `?eq(sample_identifier,${this.eid})`;
+      if (this.query) {
+        this.query.split('&').forEach(pair => {
+          const [key, value] = pair.split('=');
+          if (key && value) {
+            q += `&eq(${key},${value})`;
+          }
+        });
+      }
+
+      xhr.get(PathJoin(this.apiServiceUrl, 'serology', q), {
         headers: {
           accept: 'application/json',
           'X-Requested-With': null,

@@ -3,7 +3,7 @@
     <div class="appTemplate">
         <div class="appTitle">
             <span class="breadcrumb">Services</span>
-            <h3>Sequence Submission
+            <h1 class="appHeader">Sequence Submission
                 <!--<div name="overview" class="infobox iconbox infobutton dialoginfo">
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                 </div>
@@ -12,7 +12,7 @@
                         <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
                     </a>
                 </div>-->
-            </h3>
+            </h1>
             <p>
                 ${applicationDescription} For further explanation, please see the ${applicationLabel} Service
                 <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and
@@ -37,7 +37,7 @@
                     </div>
                     <div name="submitter-information" class="infobox iconbox infobutton dialoginfo">
                         <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                    </div>                        
+                    </div>
                 </div>
             </div>
             <div data-dojo-attach-point="submitterrow">
@@ -128,7 +128,7 @@
                     <label class="appBoxLabel">Sequence FASTA File</label>
                         <div name="sequence-fasta-file" class="infobox iconbox infobutton dialoginfo">
                             <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                        </div>                        
+                        </div>
                 </div>
                 <br>
                 <div class="appRow">
@@ -170,7 +170,7 @@
                 <label class="appBoxLabel">Metadata file</label>
                     <div name="metadata-file" class="infobox iconbox infobutton dialoginfo">
                         <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                    </div>                        
+                    </div>
             </div>
             <div class="appRow">
                 <div style="width:85%;display:inline-block;"
@@ -186,7 +186,7 @@
                             <label class="appBoxLabel">Output Folder</label>
                             <div name="output-folder" class="infobox iconbox infobutton dialoginfo">
                                 <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                            </div>                        
+                            </div>
                         </div>
                         <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
                              data-dojo-attach-point="output_path" style="width:300px" required="true"
@@ -198,7 +198,7 @@
                             <label class="appBoxLabel">Output Name</label>
                             <div name="output-name" class="infobox iconbox infobutton dialoginfo">
                                 <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                            </div>                        
+                            </div>
                             <span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
                         </div>
                         <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"

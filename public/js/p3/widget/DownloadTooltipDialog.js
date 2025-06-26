@@ -230,14 +230,27 @@ define([
       domConstruct.create('div', { 'class': 'wsActionTooltip', rel: 'csv', innerHTML: 'CSV' }, tData);
       // domConstruct.create("div", {"class": "wsActionTooltip", rel: "excel", innerHTML: "Excel"}, tData);
 
-      tr = domConstruct.create('tr', {}, table);
-      var td = domConstruct.create('td', { colspan: 3, style: 'text-align:right' }, tr);
-      this.advancedDownloadButton = domConstruct.create('span', {
-        'class': 'wsActionTooltip',
-        style: 'padding:4px;',
-        rel: 'advancedDownload',
-        innerHTML: 'More Options'
-      }, td);
+      if (this.isGenomeOverview) {
+        const conf = this.downloadableConfig[this.containerType] || this.downloadableConfig['default'];
+        if (conf && conf.otherData) {
+          conf.otherData.forEach(function (type) {
+            domConstruct.create('div', {
+              'class': 'wsActionTooltip',
+              rel: type,
+              innerHTML: this.downloadableDataTypes[type]
+            }, this.otherDownloadNode);
+          }, this);
+        }
+      } else {
+        tr = domConstruct.create('tr', {}, table);
+        var td = domConstruct.create('td', {colspan: 3, style: 'text-align:right'}, tr);
+        this.advancedDownloadButton = domConstruct.create('span', {
+          'class': 'wsActionTooltip',
+          style: 'padding:4px;',
+          rel: 'advancedDownload',
+          innerHTML: 'More Options'
+        }, td);
+      }
 
       this.set('content', dstContent);
 
@@ -250,7 +263,7 @@ define([
     _setLabelAttr: function (val) {
       this.label = val;
       if (this._started) {
-        this.labelNode.innerHTML = 'Download selected ' + val + ' (' + (this.selection ? this.selection.length : '0') + ') as...';
+        this.labelNode.innerHTML = this.isGenomeOverview ? 'Download options' : 'Download selected ' + val + ' (' + (this.selection ? this.selection.length : '0') + ') as...';
       }
     },
 

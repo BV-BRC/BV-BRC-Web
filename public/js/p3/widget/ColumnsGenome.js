@@ -506,8 +506,14 @@ define(['./formatter'], function (formatter) {
       hidden: false,
       group: 'Host Info'
     },
+    host_scientific_name: {
+      label: 'Host Scientific Name',
+      field: 'host_scientific_name',
+      hidden: true,
+      group: 'Host Info'
+    },
     host_gender: {
-      label: 'Host Gender',
+      label: 'Host Sex',
       field: 'host_gender',
       hidden: true,
       group: 'Host Info'

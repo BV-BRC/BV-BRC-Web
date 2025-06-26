@@ -535,6 +535,8 @@ define([
             AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
             this.setAnalysisType(job_data);
             this.output_path.set('value', job_data['output_path']);
+            this.save_unclassified_sequences_yes.set('value', job_data['save_unclassified_sequences']);
+            this.save_classified_sequences_yes.set('value', job_data['save_classified_sequences']);
             this.form_flag = true;
           }
         } catch (error) {
@@ -544,8 +546,8 @@ define([
         }
       }
     },
+
     setAnalysisType: function (job_data) {
-      console.log('job_data = ', job_data);
       if ((job_data['sequence_type'] === 'sixteenS')) {
         this.wgs.set('checked', false);
         this.sixteenS.set('checked', true);

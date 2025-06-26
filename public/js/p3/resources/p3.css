@@ -76,7 +76,7 @@ body.patric {
 }
 
 body.patric {
-    min-width: 1099px;
+    min-width: 320px;
 }
 
 A, A:visited {
@@ -1477,4 +1477,9 @@ body footer.main-footer ul.left {
     margin: 15px;
     padding: 8px;
     font-size: .9em;
+}
+
+.appHeader {
+    font-size: 1.4rem;
+    color: black;
 }

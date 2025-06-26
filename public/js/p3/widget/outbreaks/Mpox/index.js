@@ -16,7 +16,7 @@ define([
   return declare([TabViewerBase], {
     perspectiveLabel: '',
     perspectiveIconClass: '',
-    title: 'Mpox 2024 Outbreak',
+    title: '<h1 class="appHeader" style="color: #2a6d9e; margin-top: 10px; font-weight: bold;">Mpox 2024 Outbreak</h1>',
     segments: {1: 'PB2', 2: 'PB1', 3: 'PA', 4: 'HA', 5: 'NP', 6: 'NA', 7: 'M1, M2', 8: 'NS1, NEP'},
     googleNewsCount: 100,
     googleNewsRSS: 'https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US%3Aen&oc=11&q=(MPOX%20OR%20monkeypox%20OR%20MPXV)%20site:www.cdc.gov%20OR%20site:news.un.org%20OR%20site:www.who.int%20OR%20site:news.un.org/en',
@@ -244,7 +244,7 @@ define([
       });
 
       this.map = new OutbreaksGeoMap({
-        title: 'Outbreak Map',
+        title: 'Map of Seq. Isolates',
         id: this.viewer.id + '_map',
         state: this.state,
         cladeIDetected: '#028c81',
@@ -265,7 +265,7 @@ define([
       this.viewer.addChild(this.clt);
 
       // Fetch geomap data
-      xhr.get(PathJoin(this.apiServiceUrl, 'genome') + '/?eq(taxon_id,10244)&eq(collection_year,"2024")&in(genome_status,("Complete","Partial"))&select(genome_name,clade,isolation_country,state_province)&limit(100000)', {
+      xhr.get(PathJoin(this.apiServiceUrl, 'genome') + '/?eq(taxon_id,10244)&in(collection_year,("2024","2025"))&in(genome_status,("Complete","Partial"))&select(genome_name,clade,isolation_country,state_province)&limit(100000)', {
         headers: {
           accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',

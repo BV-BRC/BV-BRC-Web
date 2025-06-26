@@ -2,7 +2,7 @@
   <div class="appTemplate">
     <div class="appTitle">
       <span class="breadcrumb">Services</span>
-      <h3>${applicationLabel}
+      <h1 class="appHeader">${applicationLabel}
         <div name="overview" class="infobox iconbox infobutton dialoginfo">
           <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
         </div>
@@ -12,7 +12,7 @@
         <!-- <div class="infobox iconbox videoButton videoInfo">
           <a href="${docsServiceURL}${videoLink}" target="_blank" ><i class="fa icon-play-circle fa-1x" title="click to open the video tutorial"></i></a>
         </div> -->
-      </h3>
+      </h1>
       <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>..</p>
     </div>
     <div class="formFieldsContainer">
@@ -142,7 +142,8 @@
                   <option value="meta-spades">metaSPAdes</option>
                   <option value="plasmid-spades">plasmidSPAdes</option>
                   <option value="single-cell">MDA (single-cell)</option>
-                  <option value="flye">flye</option>
+                  <option value="flye">Flye</option>
+                  <option value="megahit">MegaHit</option>
                 </select>
               </div>
               <div class="appRow">
@@ -175,31 +176,97 @@
                 </div>
               </div>
               <div class="appRow" data-dojo-attach-point="advrow2" style="display: none">
-                  <div class="appRowSegment" style="margin:0 0 0 0">
-                    <label class="paramlabel">Trim reads before assembly</label>
-                    <div id="trim" name="trim" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="trim" checked></div>
+                <div class="appRowSegment" style="margin:0 0 0 0; text-align:left">
+              <div class="headerrow">
+                <label class="appBoxLabel">Read Processing</label>
+                  <div style="margin-left:10px">
+                    <div style="margin-bottom:8px">
+                    <!-- trying to make read procesing its own app row -->
+                      <div class="appRow">
+                                <div id="${id}_normalize2" name="normalize2" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="normalize2" data-dojo-props="checked:true"></div>
+                                <label class="paramlabel">Normalize Illumina Reads2</label>
+                                <div name="normalize_reads_tooltip" id="normalize_reads_tooltip" data-dojo-attach-point="normalize_reads_tooltip" class="infobox iconbox tooltipinfo">
+                                    <i class="fa icon-question-circle fa"></i>
+                                    </div>
+                                    <br>
+                      <div class="appRow">
+                              <div id="${id}_trim" name="trim" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="normalize2" data-dojo-props="checked:true"></div>
+                              <label class="paramlabel">Trim Short Reads</label>
+                              <div name="numReturn_tooltip" id="numReturn_tooltip" data-dojo-attach-point="numReturn_tooltip" class="infobox iconbox tooltipinfo">
+                                  <i class="fa icon-question-circle fa"></i>
+                                    </div>
+                                    <br>
+                    <div class="appRow">
+                              <div id="${id}_filt_long" name="_filt_long" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="normalize2" data-dojo-props="checked:true"></div>
+                              <label class="paramlabel">Filter Long Reads</label>
+                              <div name="filt_long_tooltip" id="filt_long_tooltip" data-dojo-attach-point="filt_long_tooltip" class="infobox iconbox tooltipinfo">
+                                  <i class="fa icon-question-circle fa"></i>
+                                    </div>
+                                    <br>
+                  <label class="appBoxLabel">Genome Parameters</label>
+                  <div style="margin-left:10px">
+                    <div style="margin-bottom:8px">
+                      <label class="paramlabel">Estimated Genome Size</label>
+                      <div name="filt_long_tooltip" id="filt_long_tooltip" data-dojo-attach-point="filt_long_tooltip" class="infobox iconbox tooltipinfo">
+                          <i class="fa icon-question-circle fa"></i>
+                          </div>
+                      <br>
+                      <div class="insertspinner" name="expected_genome_size" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="expected_genome_size" data-dojo-props="value:5, smallDelta:1, constraints:{min:1,max:10,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                      <select style="width: 10%" name="genome_size_units" data-dojo-type="dijit/form/Select" data-dojo-attach-point="genome_size_units" data-dojo-attach-event="onChange:onGenomeSizeUnitsChange">
+                        <option value="M">M</option>
+                        <option value="K">K</option>
+                      </select>
+                      x
+                      <br>
+                      <label class="paramlabel">Target Genome Coverage</label>
+                      <div name="filt_long_tooltip" id="filt_long_tooltip" data-dojo-attach-point="filt_long_tooltip" class="infobox iconbox tooltipinfo">
+                          <i class="fa icon-question-circle fa"></i>
+                          </div>
+                      <br>
+                      <div class="insertspinner" name="coverage" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="coverage" data-dojo-props="value:200, smallDelta:50, constraints:{min:100,max:500,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                    </div>
+                    </div>
                   </div>
-                  <div class="appRowSegment" style="margin:0 0 0 0">
-                    <label class="paramlabel">Normalize Reads</label>
-                    <div id="normalize" name="normalize" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="normalize" checked></div>
-                  </div><br>
-                  <div class="appRowSegment" style="margin:0 0 0 0">
-                    <label class="paramlabel">Racon Iterations</label><br>
-                    <div class="insertspinner" name="racon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="racon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                  <label class="appBoxLabel">Assembly Polishing</label>
+                  <br>
+                  <div style="margin-left:10px">
+                    <div style="margin-bottom:8px">
+                      <label class="paramlabel">Racon Iterations</label>
+                      <div name="filt_long_tooltip" id="filt_long_tooltip" data-dojo-attach-point="filt_long_tooltip" class="infobox iconbox tooltipinfo">
+                          <i class="fa icon-question-circle fa"></i>
+                          </div>
+                      <br>
+                      <div class="insertspinner" name="racon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="racon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                    </div>
+                    <div style="margin-bottom:8px">
+                      <label class="paramlabel">Pilon Iterations</label>
+                      <div name="filt_long_tooltip" id="filt_long_tooltip" data-dojo-attach-point="filt_long_tooltip" class="infobox iconbox tooltipinfo">
+                          <i class="fa icon-question-circle fa"></i>
+                          </div>
+                      <br>
+                      <div class="insertspinner" name="pilon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="pilon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                    </div>
                   </div>
-                  <div class="appRowSegment" style="margin:10px 0 0 0">
-                    <label class="paramlabel">Pilon Iterations</label><br>
-                    <div class="insertspinner" name="pilon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="pilon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                  <label class="appBoxLabel">Assembly Thresholds</label>
+                  <div style="margin-left:10px">
+                    <div style="margin-bottom:8px">
+                      <label class="paramlabel">Min. contig length</label>
+                      <div name="filt_long_tooltip" id="filt_long_tooltip" data-dojo-attach-point="filt_long_tooltip" class="infobox iconbox tooltipinfo">
+                          <i class="fa icon-question-circle fa"></i>
+                          </div>
+                      <br>
+                      <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_len" data-dojo-props="value:300, smallDelta:10, constraints:{min:100,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                    </div>
+                    <div style="margin-bottom:8px">
+                      <label class="paramlabel">Min. contig coverage</label>
+                      <div name="filt_long_tooltip" id="filt_long_tooltip" data-dojo-attach-point="filt_long_tooltip" class="infobox iconbox tooltipinfo">
+                          <i class="fa icon-question-circle fa"></i>
+                          </div>
+                      <br>
+                      <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_cov" data-dojo-props="value:5, smallDelta:5, constraints:{min:0,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                    </div>
                   </div>
-                <div class="appRow" style="margin:0 0 0 0">
-                  <div class="appRowSegment" style="margin:0 0 0 0">
-                    <label class="paramlabel">Min. contig length</label><br>
-                    <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_len" data-dojo-props="value:300, smallDelta:10, constraints:{min:100,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
-                  </div>
-                  <div class="appRowSegment" style="margin:10px 0 0 0">
-                    <label class="paramlabel">Min. contig coverage</label><br>
-                    <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_cov" data-dojo-props="value:5, smallDelta:5, constraints:{min:0,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
-                  </div>
+
                 </div>
               </div>
 
@@ -210,7 +277,7 @@
           <td>
             <div class="appBox appShadow" style="height:379px; width:330px">
               <div class="headerrow">
-                <label class="appBoxLabel">Selected libraries</label>
+                <label class="appBoxLabel">Selected Libraries</label>
                 <div name="selected-libraries" class="infobox iconbox infobutton tooltipinfo">
                   <i class="fa icon-question-circle fa"></i>
                 </div>

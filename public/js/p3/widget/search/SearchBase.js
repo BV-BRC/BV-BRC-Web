@@ -29,7 +29,8 @@ define([
       const searchableFields = AdvancedSearchFields[this.dataKey].filter(ff => ff.search)
       this.fieldSelectOptions = searchableFields.map(ff => {
         const field = ff.field || ff;
-        return { id: field, label: field.replace(/_/g, ' '), value: field }
+	const label = ff.label || field;
+        return { id: field, label: label.replace(/_/g, ' '), value: field }
       })
 
       this.fieldTypes = {}
@@ -108,7 +109,7 @@ define([
             const utcDate = new Date(Date.UTC(
               parsedDate.getUTCFullYear(),
               parsedDate.getUTCMonth(),
-              parsedDate.getUTCDate(),
+              parsedDate.getUTCDate()
             ));
             return encodeURIComponent(utcDate.toISOString());
           };

@@ -1,10 +1,10 @@
 define([
   'dojo/_base/declare', 'dojo/_base/Deferred', 'dojo/request', 'dojo/_base/lang', 'dojo/topic',
-  './_GenomeList', '../Phylogeny', '../../util/PathJoin',
+  './_GenomeList', '../Phylogeny', '../../util/PathJoin', '../../store/SFVTViruses',
   '../TaxonomyTreeGridContainer', '../TaxonomyOverview', '../../util/QueryToEnglish'
 ], function (
   declare, Deferred, xhr, lang, Topic,
-  GenomeList, Phylogeny, PathJoin,
+  GenomeList, Phylogeny, PathJoin, SFVTViruses,
   TaxonomyTreeGrid, TaxonomyOverview, QueryToEnglish
 ) {
   return declare([GenomeList], {
@@ -80,7 +80,8 @@ define([
 
     onSetTaxonomy: function (attr, oldVal, taxonomy) {
       this.queryNode.innerHTML = this.buildHeaderContent(taxonomy);
-
+      var taxon_header_label = 'Taxon View - ' + taxonomy.lineage.split(',').reverse()[0];
+      this.perspectiveLabel = taxon_header_label;
       // customization for viruses only when the context is changed
       if (this.context === 'bacteria') {
         if (this.taxonomy.lineage_names.includes('Influenza A virus') || this.taxonomy.lineage_names.includes('Rhinovirus A')) {
@@ -96,8 +97,7 @@ define([
         }
 
         // SFVT
-        if (this.taxonomy.lineage_names.includes('Influenza A virus') ||
-          this.taxonomy.lineage_names.includes('Monkeypox virus')) {
+        if (this.taxonomy.lineage_ids.some(id => SFVTViruses.get(id))) {
           if (!this.sfvt) {
             this.viewer.addChild(this.sfvt);
           }
