@@ -297,7 +297,7 @@ define([
             this.inputWidget = new CopilotInput({
                 region: 'bottom',
                 splitter: true,
-                style: 'height: 15%; padding: 0 5px 5px 20px; border: 0;',
+                style: 'height: 15%; padding: 0 5px 5px 20px; border: 0;overflow: hidden;',
                 copilotApi: this.copilotApi,
                 chatStore: this.chatStore,
                 displayWidget: this.displayWidget,
