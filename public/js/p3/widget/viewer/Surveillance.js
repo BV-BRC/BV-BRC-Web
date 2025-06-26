@@ -29,6 +29,9 @@ define([
       if (state.experiment) {
         this.set('experiment', state.experiment);
       }
+      if (state.search) {
+        this.set('query', state.search);
+      }
       this._set('state', state);
     },
 
@@ -117,7 +120,17 @@ define([
 
       this.totalCountNode.innerHTML = '';
 
-      xhr.get(PathJoin(this.apiServiceUrl, 'surveillance', `?eq(sample_identifier,${this.eid})`), {
+      let q = `?eq(sample_identifier,${this.eid})`;
+      if (this.query) {
+        this.query.split('&').forEach(pair => {
+          const [key, value] = pair.split('=');
+          if (key && value) {
+            q += `&eq(${key},${value})`;
+          }
+        });
+      }
+
+      xhr.get(PathJoin(this.apiServiceUrl, 'surveillance', q), {
         headers: {
           accept: 'application/json',
           'X-Requested-With': null,

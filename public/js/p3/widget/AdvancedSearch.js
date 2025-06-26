@@ -429,34 +429,56 @@ define([
       return out.join('');
     },
 
-    formatsurveillance: function (docs, total) {
-      var q = this.state.search;
-      var out = ['<div class="searchResultsContainer surveillanceResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/SurveillanceList/?', q, '">Surveillance</a>&nbsp;(', total, ')</div>'];
+    formatSurveillanceSerologyResults: function (docs, total, type) {
+      const titleCaseType = type.charAt(0).toUpperCase() + type.slice(1);
+      const q = this.state.search;
+      let out = [
+        `<div class="searchResultsContainer ${type}Results">`,
+        `<div class="resultTypeHeader"><a class="navigationLink" href="/view/${type}List/?${q}">${titleCaseType}</a>&nbsp;(${total})</div>`
+      ];
 
       docs.forEach(function (doc) {
-        out.push("<div class='searchResult'>");
-        out.push("<div class='resultHead'><a class=\"navigationLinkOut\" href='/view/Surveillance/" + doc.sample_identifier + "'>" + doc.sample_identifier + ' | ' + doc.host_identifier + '</a></div>');
-        out.push("<div class='resultInfo'>" + doc.host_common_name + ' | ' + doc.collection_country + ' | ' + doc.collection_year + '</div>');
+        out.push('<div class="searchResult">');
+
+        const sampleId = doc.sample_identifier;
+        const hostType = doc.pathogen_type || doc.host_type || ''; // pathogen_type for Surveillance and host_type for Serology
+        const testType = doc.pathogen_test_type || doc.test_type || ''; // pathogen_test_type for Surveillance and test_type for Serology
+
+        let headerText = sampleId;
+        if (hostType) {
+          headerText += ' | ' + hostType;
+        }
+        if (testType) {
+          headerText += (hostType ? ' - ' : ' | ') + testType;
+        }
+
+        let url = `/view/${titleCaseType}List/?eq(id,*)#view_tab=${type}`;
+        if (testType) {
+          const queryKey = type === 'surveillance' ? 'pathogen_test_type' : 'test_type';
+          url += `&filter=and(eq(${queryKey},${encodeURIComponent(testType)}),eq(sample_identifier,${sampleId}))`;
+        }
+
+        out.push(`<div class="resultHead"><a class="navigationLinkOut" href="${url}">${headerText}</a></div>`);
+
+        const fields = [
+          doc.host_common_name,
+          doc.collection_country,
+          doc.collection_year || (doc.collection_date ? doc.collection_date.slice(0, 10) : null)
+        ].filter(Boolean).slice(0, 3);
+        out.push(`<div class="resultInfo">${fields.join(' | ')}</div>`);
         out.push('</div>');
       });
-      out.push('</div>');
 
+      out.push('</div>');
       return out.join('');
     },
 
+    formatsurveillance: function (docs, total) {
+      return this.formatSurveillanceSerologyResults(docs, total, 'surveillance');
+    },
+
     formatserology: function (docs, total) {
-      var q = this.state.search;
-      var out = ['<div class="searchResultsContainer serologyResults">', '<div class="resultTypeHeader"><a class="navigationLink" href="/view/SerologyList/?', q, '">Serology</a>&nbsp;(', total, ')</div>'];
-
-      docs.forEach(function (doc) {
-        out.push("<div class='searchResult'>");
-        out.push("<div class='resultHead'><a class=\"navigationLinkOut\" href='/view/Serology/" + doc.sample_identifier + "'>" + doc.sample_identifier + ' | ' + doc.host_identifier + '</a></div>');
-        out.push("<div class='resultInfo'>" + doc.host_common_name + ' | ' + doc.collection_country + ' | ' + doc.collection_year + '</div>');
-        out.push('</div>');
-      });
-      out.push('</div>');
-
-      return out.join('');
+      return this.formatSurveillanceSerologyResults(docs, total, 'serology');
     },
 
     formatsp_gene: function (docs, total) {

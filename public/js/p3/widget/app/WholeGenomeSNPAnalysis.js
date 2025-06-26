@@ -20,11 +20,11 @@ define([
     requireAuth: true,
     applicationLabel: 'Whole Genome SNP Analysis',
     applicationDescription: 'The Whole Genome SNP Analysis service accepts genome groups. This service will identify single nucleotide polymorphisms (SNPs) for tracking viral and bacterial pathogens during outbreaks. The software, kSNP4 will identify SNPs and estimate phylogenetic trees based on those SNPs.',
-    applicationHelp: 'quick_references/services/Whole Genome SNP Analysis_service.html',
-    tutorialLink: 'tutorial/WholeGenome SNPAnalysis/WholeGenomeSNPAnalysis.html',
+    applicationHelp: 'quick_references/services/whole_genome_snp_analysis_service.html',
+    tutorialLink: 'tutorial/WholeGenome_SNPAnalysis/whole_genome_snp_analysis_service.html',
     videoLink: '',
     pageTitle: 'Whole Genome SNP Analysis Service | BV-BRC',
-    appBaseURL: 'Whole Genome SNP Analysis',
+    appBaseURL: 'WholeGenomeSNPAnalysis',
     defaultPath: '',
     startingRows: 14,
     alphabet: '',
@@ -123,7 +123,6 @@ define([
       }
       return values;
     },
-
 
     checkBaseParameters: function (values, seqcomp_values) {
       seqcomp_values.output_path = values.output_path;

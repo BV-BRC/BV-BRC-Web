@@ -20,8 +20,8 @@ define([
     requireAuth: true,
     applicationLabel: 'Core Genome MLST',
     applicationDescription: 'The Core Genome MLST service accepts genome groups. The genome groups are used to create and evaulate a core genome through MultiLocus Sequence Typing (MLST). The service uses a software tool called chewBBACA. This list of bacterial species this service supports are available at',
-    applicationHelp: 'quick_references/services/CoreGenomeMLST_service.html',
-    tutorialLink: 'tutorial/CoreGenomeMLST/CoreGenomeMLST.html',
+    applicationHelp: 'quick_references/services/core_genome_mlst.html',
+    tutorialLink: 'tutorial/core_genome_mlst/core_genome_mlst.html',
     videoLink: '',
     pageTitle: 'Core Genome MLST Service | BV-BRC',
     appBaseURL: 'CoreGenomeMLST',
@@ -111,16 +111,7 @@ define([
       }));
     },
 
-        // function is from phylogenetic tree
-        //  TO DO update to check genome
     validate: function () {
-      //  from MSA
-      //  just check that the genome Id is valid?
-      //   var ref_id = this.select_genome_id.get('value');
-      //   var id_valid = true;
-      //   if (this.genome_id.get('checked')) {
-      //     id_valid = this.validateReferenceID(ref_id);
-      //   }
       return this.inherited(arguments);
     },
 
@@ -139,33 +130,6 @@ define([
       }));
       return genomes_valid;
     },
-
-    // // nb dev 3/17/2025
-    // // NOTE:NOTE:change the function in the template
-    // onSelectSchema: function() {
-    //   var schemaStore= new Memory({
-    //     // name is the name displayed
-    //     // id is the data directory within the schema dirs
-    //     data: [
-    //       {name: "Acinetobacter baumannii", id: "Acinetobacter_baumannii"},
-    //       {name: "Bacillus anthracis", id: "Bacillus_anthracis"},
-    //       {name: "Bordetella pertussis", id: "Bordetella_pertussis"},
-    //       {name: "Brucella melitensis", id: "Brucella_melitensis"},
-    //       {name: "Brucella spp.", id: "Brucella_spp."},
-    //       {name: "Burkholderia mallei (FLI)", id: "Burkholderia_mallei_FLI"},
-    //       {name: "Burkholderia mallei (RKI)", id: "Burkholderia_mallei_RKI"},
-    //       {name: "Burkholderia pseudomallei", id: "Burkholderia_pseudomallei"}
-    //     ]
-    //   });
-
-    //   // Initalize the Filtering Select widget
-    //   var filteringSelect_ = new FilteringSelect({
-    //     store: schemaStore,  // connects to the Memory Store
-    //     searchAttr: "name", // search according to the name
-    //     required: true, // this tool needs a selected schema
-    //   }, "myFilteringSelect");
-    //   filteringSelect_.startup(); //s start the widget
-    // },
 
     onSelectSchema: function () {
       var schemaStore = new Memory({

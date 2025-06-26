@@ -36,6 +36,20 @@ app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
 app.use(logger('dev'));
 app.use(cookieParser(config.get('cookieSecret')));
 
+const proxyConfig = config.get('proxyConfig');
+if (proxyConfig) {
+  const proxy = require("express-http-proxy");
+  var prox;
+
+  for (const prox of proxyConfig) {
+    console.log(prox);
+    app.use(prox.local, proxy(prox.site, {
+      proxyReqPathResolver: req => req.originalUrl.replace(prox.local, ""),
+      https: true
+    }));
+  }
+}
+
 app.use(function (req, res, next) {
   // console.log("Config.production: ", config.production);
   // console.log("Session Data: ", req.session);
@@ -52,6 +66,7 @@ app.use(function (req, res, next) {
     probModelSeedServiceURL: config.get('probModelSeedServiceURL'), // for dashboard
     shockServiceURL: config.get('shockServiceURL'), // for dashboard
     workspaceServiceURL: config.get('workspaceServiceURL'),
+    workspaceDownloadServiceURL: config.get('workspaceDownloadServiceURL'),
     appBaseURL: config.get('appBaseURL'),
     appServiceURL: config.get('appServiceURL'),
     dataServiceURL: config.get('dataServiceURL'),

@@ -690,21 +690,16 @@ define([
           label: 'SURVEILLANCE',
           validTypes: ['*'],
           multiple: false,
-          tooltip: 'Switch to Surveillance View. Press and Hold for more options.',
+          tooltip: 'Switch to Surveillance View.',
           ignoreDataType: true,
-          validContainerTypes: ['surveillance_data'],
-          pressAndHold: function (selection, button, opts, evt) {
-            popup.open({
-              popup: new PerspectiveToolTipDialog({ perspectiveUrl: '/view/Surveillance/' + selection[0].sample_identifier }),
-              around: button,
-              orient: ['below'],
-            });
-
-          }
+          validContainerTypes: ['surveillance_data']
         },
         function (selection) {
           var sel = selection[0];
-          Topic.publish('/navigate', { href: '/view/Surveillance/' + sel.sample_identifier, target: 'blank' });
+          Topic.publish('/navigate', {
+            href: `/view/Surveillance/${sel.sample_identifier}?pathogen_test_type=${encodeURIComponent(sel.pathogen_test_type)}`,
+            target: 'blank'
+          });
         },
         false
       ],
@@ -795,21 +790,16 @@ define([
           label: 'SEROLOGY',
           validTypes: ['*'],
           multiple: false,
-          tooltip: 'Switch to Serology View. Press and Hold for more options.',
+          tooltip: 'Switch to Serology View.',
           ignoreDataType: true,
-          validContainerTypes: ['serology_data'],
-          pressAndHold: function (selection, button, opts, evt) {
-            popup.open({
-              popup: new PerspectiveToolTipDialog({ perspectiveUrl: '/view/Serology/' + selection[0].sample_identifier }),
-              around: button,
-              orient: ['below'],
-            });
-
-          }
+          validContainerTypes: ['serology_data']
         },
         function (selection) {
           var sel = selection[0];
-          Topic.publish('/navigate', { href: '/view/Serology/' + sel.sample_identifier, target: 'blank' });
+          Topic.publish('/navigate', {
+            href: `/view/Serology/${sel.sample_identifier}?test_type=${encodeURIComponent(sel.test_type)}`,
+            target: 'blank'
+          });
         },
         false
       ],
