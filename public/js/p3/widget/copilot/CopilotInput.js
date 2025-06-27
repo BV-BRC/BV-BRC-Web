@@ -468,7 +468,8 @@ define([
 
           var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\n' +
           'Analyze the screenshot and respond to the user\'s query.';
-          if (this.level == 0 || this.level == 2) {
+
+          if (this.level == 0 || this.level == 2 || this.level == 3) {
             if (this.systemPrompt) {
                 imageSystemPrompt += '\n\n' + this.systemPrompt;
             }
@@ -541,7 +542,7 @@ define([
     _handlePageContentSubmit: function() {
       var inputText = this.textArea.get('value');
       var _self = this;
-
+      debugger;
       const pageHtml = document.documentElement.innerHTML;
 
       var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the page content.\n' +
