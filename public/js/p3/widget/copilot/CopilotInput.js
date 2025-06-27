@@ -232,6 +232,10 @@ define([
           return;
         }
 
+        if (!systemPrompt) {
+          systemPrompt = 'You are a helpful scientist webiste assistant for the webiste BV-BRC, the Bacterial and Viral Bioinformatics Resource Center.\n'
+        }
+
         this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.level, this.enhancedPrompt).then(lang.hitch(this, function(response) {
           if (response.systemMessage) {
             this.chatStore.addMessages([
@@ -465,8 +469,7 @@ define([
           topic.publish('showChatPanel'); // Show panel again
 
           this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
-          var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\n' +
+          var imageSystemPrompt = 'You are a helpful scientist website assistant for the website BV-BRC, the Bacterial and Viral Bioinformatics Resource Center. You can also answer questions about the attached screenshot.\n' +
           'Analyze the screenshot and respond to the user\'s query.';
 
           if (this.level == 0 || this.level == 2 || this.level == 3) {

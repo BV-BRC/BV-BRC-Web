@@ -211,7 +211,6 @@ define([
      */
     createSystemDialogContent: function(message) {
       var container = domConstruct.create('div');
-
       // Create collapsible section for message content
       if (message.content) {
         var headerButton1 = domConstruct.create('button', {
@@ -232,6 +231,37 @@ define([
           } else {
             contentDiv1.classList.add('expanded');
             headerButton1.innerHTML = headerButton1.innerHTML.replace('►', '▼');
+          }
+        }));
+      }
+
+      // Create collapsible section for copilot details if present
+      if (message.copilotDetails) {
+        var headerButton2 = domConstruct.create('button', {
+          innerHTML: '► Copilot Details',
+          class: 'collapsible-header'
+        }, container);
+
+        var copilotContent;
+        if (typeof message.copilotDetails === 'string') {
+          copilotContent = this.md.render(message.copilotDetails);
+        } else {
+          copilotContent = '<pre>' + JSON.stringify(message.copilotDetails, null, 2) + '</pre>';
+        }
+
+        var contentDiv2 = domConstruct.create('div', {
+          innerHTML: copilotContent,
+          class: 'collapsible-content'
+        }, container);
+
+        // Add click handler for toggle functionality
+        on(headerButton2, 'click', lang.hitch(this, function() {
+          if (contentDiv2.classList.contains('expanded')) {
+            contentDiv2.classList.remove('expanded');
+            headerButton2.innerHTML = headerButton2.innerHTML.replace('▼', '►');
+          } else {
+            contentDiv2.classList.add('expanded');
+            headerButton2.innerHTML = headerButton2.innerHTML.replace('►', '▼');
           }
         }));
       }
