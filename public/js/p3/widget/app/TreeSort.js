@@ -888,6 +888,9 @@ define([
             checkbox.set('checked', !checkbox.get('checked'));
          })
 
+         // The submit button disables itself after it is clicked.
+         on(this.submitButton, "click", () => this.submitButton.set("disabled", true));
+
          try {
             // NOTE: this sets this.displayDefaults to false if we are populating the page controls using job data.
             this.intakeRerunForm();
