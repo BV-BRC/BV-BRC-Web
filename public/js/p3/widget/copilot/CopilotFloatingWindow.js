@@ -248,15 +248,182 @@ define([
                 domStyle.set(this.headerNode, 'background-color', '#f8f8f8');
             });
 
-            // Add resize handle
-            var resizeHandle = new ResizeHandle({
-                targetId: this.id,
-                activeResize: true,
-                intermediateChanges: true
-            }).placeAt(this.domNode);
+            // Create comprehensive resize handles for all sides and corners
+            this._createResizeHandles();
+        },
 
-            resizeHandle.on('resize', lang.hitch(this, function(e){
-                // Force layout recalculation when resizing
+        /**
+         * Creates resize handles for all sides and corners of the floating window
+         */
+        _createResizeHandles: function() {
+            // Define the resize handle configurations
+            var handles = [
+                // Corners
+                { className: 'copilot-resize-nw', cursor: 'nw-resize', position: { top: '-3px', left: '-3px' }, directions: ['n', 'w'] },
+                { className: 'copilot-resize-ne', cursor: 'ne-resize', position: { top: '-3px', right: '-3px' }, directions: ['n', 'e'] },
+                { className: 'copilot-resize-sw', cursor: 'sw-resize', position: { bottom: '-3px', left: '-3px' }, directions: ['s', 'w'] },
+                { className: 'copilot-resize-se', cursor: 'se-resize', position: { bottom: '-3px', right: '-3px' }, directions: ['s', 'e'] },
+                // Sides
+                { className: 'copilot-resize-n', cursor: 'n-resize', position: { top: '-3px', left: '10px', right: '10px' }, directions: ['n'] },
+                { className: 'copilot-resize-s', cursor: 's-resize', position: { bottom: '-3px', left: '10px', right: '10px' }, directions: ['s'] },
+                { className: 'copilot-resize-w', cursor: 'w-resize', position: { left: '-3px', top: '10px', bottom: '10px' }, directions: ['w'] },
+                { className: 'copilot-resize-e', cursor: 'e-resize', position: { right: '-3px', top: '10px', bottom: '10px' }, directions: ['e'] }
+            ];
+
+            // Store handles for cleanup
+            this._resizeHandles = [];
+
+            // Create each resize handle
+            handles.forEach(lang.hitch(this, function(handleConfig) {
+                var handle = domConstruct.create('div', {
+                    className: 'copilot-resize-handle ' + handleConfig.className,
+                    style: this._getHandleStyles(handleConfig.position, handleConfig.cursor)
+                }, this.domNode);
+
+                this._resizeHandles.push(handle);
+
+                // Add mouse event listeners
+                this.own(
+                    on(handle, 'mousedown', lang.hitch(this, function(e) {
+                        this._startResize(e, handleConfig.directions);
+                    }))
+                );
+            }));
+        },
+
+        /**
+         * Generates CSS styles for resize handles
+         */
+        _getHandleStyles: function(position, cursor) {
+            var styles = {
+                position: 'absolute',
+                cursor: cursor,
+                'background-color': 'transparent',
+                'z-index': '1000'
+            };
+
+            // Set dimensions based on handle type
+            if (position.top !== undefined && position.bottom === undefined && position.left !== undefined && position.right !== undefined) {
+                // Top side handle
+                styles.height = '6px';
+            } else if (position.bottom !== undefined && position.top === undefined && position.left !== undefined && position.right !== undefined) {
+                // Bottom side handle
+                styles.height = '6px';
+            } else if (position.left !== undefined && position.right === undefined && position.top !== undefined && position.bottom !== undefined) {
+                // Left side handle
+                styles.width = '6px';
+            } else if (position.right !== undefined && position.left === undefined && position.top !== undefined && position.bottom !== undefined) {
+                // Right side handle
+                styles.width = '6px';
+            } else {
+                // Corner handles
+                styles.width = '12px';
+                styles.height = '12px';
+            }
+
+            // Apply position styles
+            Object.keys(position).forEach(function(key) {
+                styles[key] = position[key];
+            });
+
+            // Convert to CSS string
+            var cssString = '';
+            Object.keys(styles).forEach(function(key) {
+                cssString += key + ': ' + styles[key] + '; ';
+            });
+
+            return cssString;
+        },
+
+        /**
+         * Starts the resize operation
+         */
+        _startResize: function(e, directions) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            var startX = e.clientX;
+            var startY = e.clientY;
+            var startWidth = parseInt(domStyle.get(this.domNode, 'width'));
+            var startHeight = parseInt(domStyle.get(this.domNode, 'height'));
+            var startLeft = parseInt(domStyle.get(this.domNode, 'left') || 0);
+            var startTop = parseInt(domStyle.get(this.domNode, 'top') || 0);
+
+            // Minimum dimensions
+            var minWidth = 300;
+            var minHeight = 200;
+
+            // Get viewport dimensions
+            var viewport = {
+                width: window.innerWidth || document.documentElement.clientWidth,
+                height: window.innerHeight || document.documentElement.clientHeight
+            };
+
+            // Add visual feedback
+            domClass.add(this.domNode, 'copilot-resizing');
+
+            var mouseMoveHandle = on(document, 'mousemove', lang.hitch(this, function(e) {
+                var deltaX = e.clientX - startX;
+                var deltaY = e.clientY - startY;
+
+                var newWidth = startWidth;
+                var newHeight = startHeight;
+                var newLeft = startLeft;
+                var newTop = startTop;
+
+                // Handle horizontal resizing
+                if (directions.indexOf('e') !== -1) {
+                    // Resize from right edge
+                    newWidth = Math.max(minWidth, startWidth + deltaX);
+                    newWidth = Math.min(newWidth, viewport.width - startLeft);
+                } else if (directions.indexOf('w') !== -1) {
+                    // Resize from left edge
+                    var proposedWidth = startWidth - deltaX;
+                    var proposedLeft = startLeft + deltaX;
+
+                    if (proposedWidth >= minWidth && proposedLeft >= 0) {
+                        newWidth = proposedWidth;
+                        newLeft = proposedLeft;
+                    } else if (proposedLeft < 0) {
+                        newWidth = startWidth + startLeft;
+                        newLeft = 0;
+                    } else {
+                        newWidth = minWidth;
+                        newLeft = startLeft + startWidth - minWidth;
+                    }
+                }
+
+                // Handle vertical resizing
+                if (directions.indexOf('s') !== -1) {
+                    // Resize from bottom edge
+                    newHeight = Math.max(minHeight, startHeight + deltaY);
+                    newHeight = Math.min(newHeight, viewport.height - startTop);
+                } else if (directions.indexOf('n') !== -1) {
+                    // Resize from top edge
+                    var proposedHeight = startHeight - deltaY;
+                    var proposedTop = startTop + deltaY;
+
+                    if (proposedHeight >= minHeight && proposedTop >= 0) {
+                        newHeight = proposedHeight;
+                        newTop = proposedTop;
+                    } else if (proposedTop < 0) {
+                        newHeight = startHeight + startTop;
+                        newTop = 0;
+                    } else {
+                        newHeight = minHeight;
+                        newTop = startTop + startHeight - minHeight;
+                    }
+                }
+
+                // Apply the new dimensions and position
+                domStyle.set(this.domNode, {
+                    width: newWidth + 'px',
+                    height: newHeight + 'px',
+                    left: newLeft + 'px',
+                    top: newTop + 'px'
+                });
+
+                // Force layout recalculation
                 if (this.layoutContainer && this.layoutContainer.resize) {
                     this.layoutContainer.resize();
                 }
@@ -267,81 +434,14 @@ define([
                 }
             }));
 
-            // Create a custom resize handle that's more visible and user-friendly
-            this.resizeHandleNode = domConstruct.create('div', {
-                className: 'copilotResizeHandle',
-                innerHTML: ''
-            }, this.domNode);
+            var mouseUpHandle = on(document, 'mouseup', lang.hitch(this, function(e) {
+                // Remove visual feedback
+                domClass.remove(this.domNode, 'copilot-resizing');
 
-            // Add mouse events for custom resize functionality
-            var isResizing = false;
-            var startX, startY, startWidth, startHeight, startLeft, startTop;
-
-            this.own(
-                on(this.resizeHandleNode, 'mousedown', lang.hitch(this, function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    isResizing = true;
-                    startX = e.clientX;
-                    startY = e.clientY;
-                    startWidth = parseInt(domStyle.get(this.domNode, 'width'));
-                    startHeight = parseInt(domStyle.get(this.domNode, 'height'));
-                    startLeft = parseInt(domStyle.get(this.domNode, 'left') || 0);
-                    startTop = parseInt(domStyle.get(this.domNode, 'top') || 0);
-
-                    // Add global mouse events
-                    var mouseMoveHandle = on(document, 'mousemove', lang.hitch(this, function(e) {
-                        if (!isResizing) return;
-
-                        var deltaX = e.clientX - startX;
-                        var deltaY = e.clientY - startY;
-
-                        // Get viewport dimensions
-                        var viewport = {
-                            width: window.innerWidth || document.documentElement.clientWidth,
-                            height: window.innerHeight || document.documentElement.clientHeight
-                        };
-
-                        // Calculate proposed new dimensions
-                        var proposedWidth = Math.max(300, startWidth + deltaX);  // Minimum width of 300px
-                        var proposedHeight = Math.max(200, startHeight + deltaY); // Minimum height of 200px
-
-                        // Get current position
-                        var currentLeft = parseInt(domStyle.get(this.domNode, 'left') || 0);
-                        var currentTop = parseInt(domStyle.get(this.domNode, 'top') || 0);
-
-                        // Constrain width to not exceed viewport boundaries
-                        var maxWidth = viewport.width - currentLeft;
-                        var newWidth = Math.min(proposedWidth, maxWidth);
-
-                        // Constrain height to not exceed viewport boundaries
-                        var maxHeight = viewport.height - currentTop;
-                        var newHeight = Math.min(proposedHeight, maxHeight);
-
-                        domStyle.set(this.domNode, {
-                            width: newWidth + 'px',
-                            height: newHeight + 'px'
-                        });
-
-                        // Force layout recalculation
-                        if (this.layoutContainer && this.layoutContainer.resize) {
-                            this.layoutContainer.resize();
-                        }
-
-                        // Notify any listeners that the widget has been resized
-                        if (this.controllerPanel && this.controllerPanel.displayWidget) {
-                            this.controllerPanel.displayWidget.resize();
-                        }
-                    }));
-
-                    var mouseUpHandle = on(document, 'mouseup', function(e) {
-                        isResizing = false;
-                        mouseMoveHandle.remove();
-                        mouseUpHandle.remove();
-                    });
-                }))
-            );
+                // Clean up event handlers
+                mouseMoveHandle.remove();
+                mouseUpHandle.remove();
+            }));
         },
 
         startup: function() {
@@ -646,10 +746,12 @@ define([
                 this._moveable = null;
             }
 
-            // Clean up the custom resize handle
-            if (this.resizeHandleNode) {
-                domConstruct.destroy(this.resizeHandleNode);
-                this.resizeHandleNode = null;
+            // Clean up the resize handles
+            if (this._resizeHandles) {
+                this._resizeHandles.forEach(function(handle) {
+                    domConstruct.destroy(handle);
+                });
+                this._resizeHandles = null;
             }
 
             this.inherited(arguments);
