@@ -122,6 +122,9 @@ define([
                 title: 'Advanced Options'
             }, leftButtonContainer);
 
+            // Hide the advanced options toggle button to keep all options visible by default
+            domStyle.set(devOptionsButton, 'display', 'none');
+
             // Add click handler for developer options button
             on(devOptionsButton, 'click', lang.hitch(this, function() {
                 this.modelRagVisible = !this.modelRagVisible;
@@ -428,7 +431,7 @@ define([
                 } else {
                     this.topContentPane = new ChatSessionOptionsBar({
                         region: 'top',
-                        style: 'height: 27%; padding: 0px; background-color: #ffffff; overflow-y: auto; margin-bottom: 5px;',
+                        style: 'padding: 0px; background-color: #ffffff; overflow-y: auto; margin-bottom: 5px;',
                         copilotApi: this.copilotApi
                     });
                 }
@@ -438,10 +441,40 @@ define([
                 this.bottomContentPane = new ChatSessionScrollBar({
                     className: 'optionsBottomSection',
                     region: 'center',
-                    style: 'padding: 0px; margin: 0px; height: 73%; border: 0px; background-color: #f0f0f0;',
+                    style: 'padding: 0px; margin: 0px; border: 0px; background-color: #f0f0f0;',
                     copilotApi: this.copilotApi
                 });
                 this.optionsSidebarContainer.addChild(this.bottomContentPane);
+
+                // Adjust the top pane height to fit its content so buttons are fully visible
+                setTimeout(lang.hitch(this, function() {
+                    var topHeight = this.topContentPane.domNode.scrollHeight;
+                    // Add a small buffer
+                    topHeight = topHeight + 10;
+
+                    domStyle.set(this.topContentPane.domNode, 'height', topHeight + 'px');
+                    domStyle.set(this.bottomContentPane.domNode, 'height', 'calc(100% - ' + topHeight + 'px)');
+
+                    // Re-layout the sidebar container with the new sizes
+                    if (this.optionsSidebarContainer && this.optionsSidebarContainer.resize) {
+                        this.optionsSidebarContainer.resize();
+                    }
+                }), 0);
+
+                // When the user toggles the advanced options we receive the new height via topic
+                topic.subscribe('advancedOptionsHeightChanged', lang.hitch(this, function(data) {
+                    // Determine the height of the top pane: use provided height when visible, otherwise 50px
+                    var topHeight = (data && data.visible) ? (data.height || 250) : 50;
+
+                    // Apply the new heights
+                    domStyle.set(this.topContentPane.domNode, 'height', topHeight + 'px');
+                    domStyle.set(this.bottomContentPane.domNode, 'height', 'calc(100% - ' + topHeight + 'px)');
+
+                    // Ensure BorderContainer recalculates layout after the change
+                    if (this.optionsSidebarContainer && this.optionsSidebarContainer.resize) {
+                        this.optionsSidebarContainer.resize();
+                    }
+                }));
 
                 // Start up the options sidebar container
                 this.optionsSidebarContainer.startup();

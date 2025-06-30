@@ -348,7 +348,8 @@ define([
          */
         _handleSetConversationRating: function(data) {
             this.copilotApi.setConversationRating(data.sessionId, data.rating).then(lang.hitch(this, function(response) {
-                topic.publish('reloadUserSessions');
+                // topic.publish('reloadUserSessions');
+                console.log('set conversation rating');
             })).catch(lang.hitch(this, function(error) {
                 console.error('Error setting conversation rating:', error);
             }));

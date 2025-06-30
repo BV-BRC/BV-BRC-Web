@@ -90,23 +90,6 @@ define([
       topic.subscribe('ChatSession:Selected', lang.hitch(this, function(data) {
         this.highlightSession(data.sessionId);
       }));
-
-      // Subscribe to topic to adjust scroll container height when options bar visibility changes
-      topic.subscribe('toggleModelRagVisibility', lang.hitch(this, function(visible) {
-        if (visible) {
-          // Move scroll container down when advanced options are shown
-          domStyle.set(this.containerNode, {
-            'margin-top': '200px',
-            'transition': 'margin-top 0.3s ease-in-out'
-          });
-        } else {
-          // Reset position when advanced options are hidden
-          domStyle.set(this.containerNode, {
-            'margin-top': '0px',
-            'transition': 'margin-top 0.3s ease-in-out'
-          });
-        }
-      }));
     },
 
     /**

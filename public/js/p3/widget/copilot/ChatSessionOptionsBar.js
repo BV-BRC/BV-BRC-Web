@@ -350,7 +350,7 @@ define([
 
             // Create container for model and RAG text elements
             this.advancedOptionsContainer = domConstruct.create('div', {
-                style: 'display: none; width: 100%;'
+                style: 'display: block; width: 100%;'
             }, buttonsContainer);
 
             // Add Enhance Prompt button with hover effects (at the top)
@@ -362,28 +362,28 @@ define([
                 })
             }, this.advancedOptionsContainer);
 
-            // Add Model text display with hover effects
-            this.modelText = domConstruct.create('div', {
-                innerHTML: 'Model: Loading...',
-                className: 'chat-window-options-button',
-                onclick: lang.hitch(this, function() {
-                    topic.publish('modelButtonPressed', this.modelText, ['below']);
-                })
-            }, this.advancedOptionsContainer);
+            // COMMENTED OUT: Add Model text display with hover effects
+            // this.modelText = domConstruct.create('div', {
+            //     innerHTML: 'Model: Loading...',
+            //     className: 'chat-window-options-button',
+            //     onclick: lang.hitch(this, function() {
+            //         topic.publish('modelButtonPressed', this.modelText, ['below']);
+            //     })
+            // }, this.advancedOptionsContainer);
 
-            // Add RAG text display with hover effects
-            this.ragText = domConstruct.create('div', {
-                innerHTML: 'RAG: Loading...',
-                className: 'chat-window-options-button',
-                onclick: lang.hitch(this, function() {
-                    topic.publish('ragButtonPressed', this.ragText, ['below']);
-                })
-            }, this.advancedOptionsContainer);
+            // COMMENTED OUT: Add RAG text display with hover effects
+            // this.ragText = domConstruct.create('div', {
+            //     innerHTML: 'RAG: Loading...',
+            //     className: 'chat-window-options-button',
+            //     onclick: lang.hitch(this, function() {
+            //         topic.publish('ragButtonPressed', this.ragText, ['below']);
+            //     })
+            // }, this.advancedOptionsContainer);
 
             // add a text size input field
             var textSizeContainer = domConstruct.create('div', {
-                className: 'chat-window-options-button',
-                style: 'display: flex; align-items: center; gap: 5px;'
+                className: 'chat-window-options-button no-hover',
+                style: 'display: flex; align-items: center; gap: 5px; cursor: default;'
             }, this.advancedOptionsContainer);
 
             domConstruct.create('span', {
@@ -391,146 +391,137 @@ define([
                 style: 'white-space: nowrap;'
             }, textSizeContainer);
 
+            // Load text size from localStorage or use default value of 14
+            var savedTextSize = localStorage.getItem('copilot-text-size');
+            var initialTextSize = savedTextSize ? parseInt(savedTextSize) : 14;
+
+            // Ensure the value is within valid range
+            if (initialTextSize < 1 || initialTextSize > 100) {
+                initialTextSize = 14;
+            }
+
             this.textSizeInput = domConstruct.create('input', {
                 type: 'number',
-                value: 14,
+                value: initialTextSize,
                 min: 1,
                 max: 100,
                 style: 'width: 50px; padding: 2px;',
                 onchange: lang.hitch(this, function(evt) {
                     var newSize = parseInt(evt.target.value);
                     if (newSize >= 1 && newSize <= 100) {
+                        // Save to localStorage
+                        localStorage.setItem('copilot-text-size', newSize.toString());
                         topic.publish('chatTextSizeChanged', newSize);
                     }
                 })
             }, textSizeContainer);
 
-            // Add a level input field (uses number counter similar to Text Size)
-            var levelContainer = domConstruct.create('div', {
-                className: 'chat-window-options-button',
-                style: 'display: flex; align-items: center; gap: 5px;'
-            }, this.advancedOptionsContainer);
+            // Publish the initial text size on load if it was saved
+            if (savedTextSize) {
+                setTimeout(function() {
+                    topic.publish('chatTextSizeChanged', initialTextSize);
+                }, 100);
+            }
 
-            domConstruct.create('span', {
-                innerHTML: 'Level: ',
-                style: 'white-space: nowrap;'
-            }, levelContainer);
+            // COMMENTED OUT: Add CEPI journal rag button
+            // this.cepiText = domConstruct.create('div', {
+            //     innerHTML: 'Publications',
+            //     className: 'chat-window-options-button',
+            //     onclick: lang.hitch(this, function() {
+            //         this.cepiSelected = !this.cepiSelected;
+            //         domClass.toggle(this.cepiText, 'selected', this.cepiSelected);
 
-            this.levelInput = domConstruct.create('input', {
-                type: 'number',
-                value: 3,
-                min: 0,
-                max: 3,
-                style: 'width: 50px; padding: 2px;',
-                onchange: lang.hitch(this, function(evt) {
-                    var newLevel = parseInt(evt.target.value);
-                    // Publish the levelChanged topic as used by CopilotInput
-                    if (!isNaN(newLevel)) {
-                        topic.publish('levelChanged', newLevel);
-                    }
-                })
-            }, levelContainer);
+            //         if (this.cepiSelected && this.helpdeskSelected) {
+            //             this.helpdeskSelected = false;
+            //             domClass.remove(this.helpdeskButton, 'selected');
+            //         }
 
-            // Publish initial level value
-            topic.publish('levelChanged', 0);
+            //         topic.publish(
+            //             'ChatRagDb',
+            //             this.cepiSelected ? 'cepi_journals' : 'null'
+            //         );
+            //     })
+            // }, this.advancedOptionsContainer);
 
-            // Add CEPI journal rag button
-            this.cepiText = domConstruct.create('div', {
-                innerHTML: 'Publications',
-                className: 'chat-window-options-button',
-                onclick: lang.hitch(this, function() {
-                    this.cepiSelected = !this.cepiSelected;
-                    domClass.toggle(this.cepiText, 'selected', this.cepiSelected);
+            // COMMENTED OUT: Add Helpdesk button with hover effects
+            // this.helpdeskButton = domConstruct.create('div', {
+            //     innerHTML: 'Help Center',
+            //     className: 'chat-window-options-button selected',
+            //     onclick: lang.hitch(this, function() {
+            //         this.helpdeskSelected = !this.helpdeskSelected;
+            //         domClass.toggle(this.helpdeskButton, 'selected', this.helpdeskSelected);
 
-                    if (this.cepiSelected && this.helpdeskSelected) {
-                        this.helpdeskSelected = false;
-                        domClass.remove(this.helpdeskButton, 'selected');
-                    }
+            //         if (this.helpdeskSelected && this.cepiSelected) {
+            //             this.cepiSelected = false;
+            //             domClass.remove(this.cepiText, 'selected');
+            //         }
 
-                    topic.publish(
-                        'ChatRagDb',
-                        this.cepiSelected ? 'cepi_journals' : 'null'
-                    );
-                })
-            }, this.advancedOptionsContainer);
+            //         topic.publish('ChatRagDb', this.helpdeskSelected ? 'bvbrc_helpdesk' : 'null');
+            //     })
+            // }, this.advancedOptionsContainer);
 
-            // Add Helpdesk button with hover effects
-            this.helpdeskButton = domConstruct.create('div', {
-                innerHTML: 'Help Center',
-                className: 'chat-window-options-button selected',
-                onclick: lang.hitch(this, function() {
-                    this.helpdeskSelected = !this.helpdeskSelected;
-                    domClass.toggle(this.helpdeskButton, 'selected', this.helpdeskSelected);
-
-                    if (this.helpdeskSelected && this.cepiSelected) {
-                        this.cepiSelected = false;
-                        domClass.remove(this.cepiText, 'selected');
-                    }
-
-                    topic.publish('ChatRagDb', this.helpdeskSelected ? 'bvbrc_helpdesk' : 'null');
-                })
-            }, this.advancedOptionsContainer);
-
-            // Publish initial helpdesk selection since it's on by default
-            topic.publish('ChatRagDb', 'bvbrc_helpdesk');
+            // COMMENTED OUT: Publish initial helpdesk selection since it's on by default
+            // topic.publish('ChatRagDb', 'bvbrc_helpdesk');
 
             // Handle clicks outside dialogs to close them
             document.addEventListener('click', lang.hitch(this, function(event) {
-                if (modelDialog._rendered && !modelDialog.domNode.contains(event.target) && !this.modelText.contains(event.target)) {
-                    popup.close(modelDialog);
-                    modelDialog.visible = false;
-                }
-                if (ragDialog._rendered && !ragDialog.domNode.contains(event.target) && !this.ragText.contains(event.target)) {
-                    popup.close(ragDialog);
-                    ragDialog.visible = false;
-                }
+                // COMMENTED OUT: Model dialog click handling
+                // if (modelDialog._rendered && !modelDialog.domNode.contains(event.target) && !this.modelText.contains(event.target)) {
+                //     popup.close(modelDialog);
+                //     modelDialog.visible = false;
+                // }
+                // COMMENTED OUT: RAG dialog click handling
+                // if (ragDialog._rendered && !ragDialog.domNode.contains(event.target) && !this.ragText.contains(event.target)) {
+                //     popup.close(ragDialog);
+                //     ragDialog.visible = false;
+                // }
                 if (enhancePromptDialog._rendered && !enhancePromptDialog.domNode.contains(event.target) && !this.enhancePromptText.contains(event.target)) {
                     popup.close(enhancePromptDialog);
                     enhancePromptDialog.visible = false;
                 }
             }));
 
-            // Handle RAG button clicks
-            topic.subscribe('ragButtonPressed', lang.hitch(this, function(buttonNode, orient) {
-                console.log('rag pressed');
-                if (ragDialog.visible) {
-                    popup.close(ragDialog);
-                    ragDialog.visible = false;
-                } else {
-                    if (!buttonNode) {
-                        buttonNode = this.ragText;
-                    }
-                    setTimeout(function() {
-                        popup.open({
-                            popup: ragDialog,
-                            around: buttonNode,
-                            orient: orient
-                        });
-                        ragDialog.visible = true;
-                    }, 100);
-                }
-            }));
+            // COMMENTED OUT: Handle RAG button clicks
+            // topic.subscribe('ragButtonPressed', lang.hitch(this, function(buttonNode, orient) {
+            //     console.log('rag pressed');
+            //     if (ragDialog.visible) {
+            //         popup.close(ragDialog);
+            //         ragDialog.visible = false;
+            //     } else {
+            //         if (!buttonNode) {
+            //             buttonNode = this.ragText;
+            //         }
+            //         setTimeout(function() {
+            //             popup.open({
+            //                 popup: ragDialog,
+            //                 around: buttonNode,
+            //                 orient: orient
+            //             });
+            //             ragDialog.visible = true;
+            //         }, 100);
+            //     }
+            // }));
 
-            // Handle model button clicks
-            topic.subscribe('modelButtonPressed', lang.hitch(this, function(buttonNode, orient) {
-                console.log('model pressed');
-                if (modelDialog.visible) {
-                    popup.close(modelDialog);
-                    modelDialog.visible = false;
-                } else {
-                    if (!buttonNode) {
-                        buttonNode = this.modelText;
-                    }
-                    setTimeout(function() {
-                        popup.open({
-                            popup: modelDialog,
-                            around: buttonNode,
-                            orient: orient
-                        });
-                        modelDialog.visible = true;
-                    }, 100);
-                }
-            }));
+            // COMMENTED OUT: Handle model button clicks
+            // topic.subscribe('modelButtonPressed', lang.hitch(this, function(buttonNode, orient) {
+            //     console.log('model pressed');
+            //     if (modelDialog.visible) {
+            //         popup.close(modelDialog);
+            //         modelDialog.visible = false;
+            //     } else {
+            //         if (!buttonNode) {
+            //             buttonNode = this.modelText;
+            //         }
+            //         setTimeout(function() {
+            //             popup.open({
+            //                 popup: modelDialog,
+            //                 around: buttonNode,
+            //                 orient: orient
+            //             });
+            //             modelDialog.visible = true;
+            //         }, 100);
+            //     }
+            // }));
 
             // Handle enhance prompt button clicks
             topic.subscribe('enhancePromptButtonPressed', lang.hitch(this, function(buttonNode, orient) {
@@ -553,24 +544,42 @@ define([
                 }
             }));
 
-            // Subscribe to topic changes to update display text
-            topic.subscribe('ChatModel', lang.hitch(this, function(model) {
-                // Update model display text with just the model name (last part after /)
-                var modelName = model.split('/').reverse()[0];
-                if (this.name_map[modelName]) {
-                    modelName = this.name_map[modelName];
-                }
-                this.modelText.innerHTML = 'Model: ' + modelName;
-            }));
+            // COMMENTED OUT: Subscribe to topic changes to update display text
+            // topic.subscribe('ChatModel', lang.hitch(this, function(model) {
+            //     // Update model display text with just the model name (last part after /)
+            //     var modelName = model.split('/').reverse()[0];
+            //     if (this.name_map[modelName]) {
+            //         modelName = this.name_map[modelName];
+            //     }
+            //     this.modelText.innerHTML = 'Model: ' + modelName;
+            // }));
 
-            topic.subscribe('ChatRagDb', lang.hitch(this, function(ragDb) {
-                // Update RAG display text
-                this.ragText.innerHTML = 'RAG: ' + (ragDb === 'null' ? 'None' : ragDb);
-            }));
+            // COMMENTED OUT: Subscribe to topic changes to update RAG display text
+            // topic.subscribe('ChatRagDb', lang.hitch(this, function(ragDb) {
+            //     // Update RAG display text
+            //     this.ragText.innerHTML = 'RAG: ' + (ragDb === 'null' ? 'None' : ragDb);
+            // }));
 
             // Subscribe to topic to control model/rag container visibility
             topic.subscribe('toggleModelRagVisibility', lang.hitch(this, function(visible) {
                 domStyle.set(this.advancedOptionsContainer, 'display', visible ? 'block' : 'none');
+
+                // Get the actual height of the advanced options container and publish it
+                var containerHeight = 200; // Default fallback height
+                if (visible) {
+                    // Wait a moment for the container to be shown, then get its height
+                    setTimeout(lang.hitch(this, function() {
+                        var actualHeight = domStyle.get(this.advancedOptionsContainer, 'height');
+                        if (actualHeight && actualHeight > 0) {
+                            containerHeight = actualHeight;
+                        }
+                        // Publish the height info for other widgets that need it
+                        topic.publish('advancedOptionsHeightChanged', { visible: true, height: containerHeight });
+                    }), 10);
+                } else {
+                    // Publish that advanced options are hidden
+                    topic.publish('advancedOptionsHeightChanged', { visible: false, height: 0 });
+                }
 
                 // Adjust containerNode size to accommodate advanced options
                 if (visible) {
@@ -601,13 +610,11 @@ define([
 
             // Set initial model
             topic.subscribe('SetInitialChatModel', lang.hitch(this, function() {
-                if (this.modelDropdown && this.modelDropdown.options && this.modelDropdown.options.length > 0) {
-                    topic.publish('ChatModel', this.modelDropdown.options[0].value);
-                }
+                topic.publish('ChatModel', 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16');
             }));
 
             // Fetch model and RAG lists from API
-            this._loadModelAndRagLists();
+            // this._loadModelAndRagLists();
         },
 
         /**
@@ -623,16 +630,16 @@ define([
                         this.modelList = JSON.parse(modelsAndRag.models);
                         this.ragList = JSON.parse(modelsAndRag.vdb_list);
 
-                        // Update displays with first available options or "None" if empty
-                        var defaultModel = this.modelList && this.modelList.length > 0 ? this.modelList[0] : 'None';
-                        var defaultRag = this.ragList && this.ragList.length > 0 ? this.ragList[0] : 'None';
-                        var modelName = defaultModel.model.split('/').reverse()[0];
-                        if (this.name_map[modelName]) {
-                            modelName = this.name_map[modelName];
-                        }
-                        this.modelText.innerHTML = 'Model: ' + modelName;
-                        // this.ragText.innerHTML = 'RAG: ' + defaultRag.name;
-                        this.ragText.innerHTML = 'RAG: None';
+                        // COMMENTED OUT: Update displays with first available options or "None" if empty
+                        // var defaultModel = this.modelList && this.modelList.length > 0 ? this.modelList[0] : 'None';
+                        // var defaultRag = this.ragList && this.ragList.length > 0 ? this.ragList[0] : 'None';
+                        // var modelName = defaultModel.model.split('/').reverse()[0];
+                        // if (this.name_map[modelName]) {
+                        //     modelName = this.name_map[modelName];
+                        // }
+                        // this.modelText.innerHTML = 'Model: ' + modelName;
+                        // // this.ragText.innerHTML = 'RAG: ' + defaultRag.name;
+                        // this.ragText.innerHTML = 'RAG: None';
 
                         console.log('Model and RAG lists loaded successfully', {
                             models: this.modelList,
@@ -640,18 +647,21 @@ define([
                         });
                     } catch (error) {
                         console.error('Error parsing model/RAG lists:', error);
-                        this.modelText.innerHTML = 'Model: Error';
-                        this.ragText.innerHTML = 'RAG: Error';
+                        // COMMENTED OUT: Update error displays
+                        // this.modelText.innerHTML = 'Model: Error';
+                        // this.ragText.innerHTML = 'RAG: Error';
                     }
                 })).catch(lang.hitch(this, function(error) {
                     console.error('Error fetching model/RAG lists:', error);
-                    this.modelText.innerHTML = 'Model: Error';
-                    this.ragText.innerHTML = 'RAG: Error';
+                    // COMMENTED OUT: Update error displays
+                    // this.modelText.innerHTML = 'Model: Error';
+                    // this.ragText.innerHTML = 'RAG: Error';
                 }));
             } else {
                 console.error('CopilotAPI not available');
-                this.modelText.innerHTML = 'Model: N/A';
-                this.ragText.innerHTML = 'RAG: N/A';
+                // COMMENTED OUT: Update N/A displays
+                // this.modelText.innerHTML = 'Model: N/A';
+                // this.ragText.innerHTML = 'RAG: N/A';
             }
         }
     });

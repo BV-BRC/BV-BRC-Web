@@ -54,8 +54,6 @@ define([
       // Flag to track page content toggle state
       pageContentEnabled: false,
 
-      level: 3,
-
       enhancedPrompt: null,
 
       /**
@@ -182,10 +180,6 @@ define([
             }
         }));
 
-        topic.subscribe('levelChanged', lang.hitch(this, function(level) {
-          this.level = level;
-        }));
-
         topic.subscribe('enhancePromptChange', lang.hitch(this, function(enhancedPrompt) {
           this.enhancedPrompt = enhancedPrompt;
         }));
@@ -216,27 +210,19 @@ define([
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
         var systemPrompt = this.systemPrompt;
-        if (this.level == 0 || this.level == 2 || this.level == 3) {
-          if (this.statePrompt) {
-            if (systemPrompt) {
-              systemPrompt += this.statePrompt;
-            } else {
-              systemPrompt = this.statePrompt;
-            }
+        if (this.statePrompt) {
+          if (systemPrompt) {
+            systemPrompt += this.statePrompt;
+          } else {
+            systemPrompt = this.statePrompt;
           }
-        } else if (this.level == 1) {
-          if (this.statePrompt) {
-            inputText = inputText + '\n\n' + this.statePrompt;
-          }
-        } else {
-          return;
         }
 
         if (!systemPrompt) {
           systemPrompt = 'You are a helpful scientist webiste assistant for the webiste BV-BRC, the Bacterial and Viral Bioinformatics Resource Center.\n'
         }
 
-        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.level, this.enhancedPrompt).then(lang.hitch(this, function(response) {
+        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt).then(lang.hitch(this, function(response) {
           if (response.systemMessage) {
             this.chatStore.addMessages([
               response.userMessage,
@@ -472,24 +458,16 @@ define([
           var imageSystemPrompt = 'You are a helpful scientist website assistant for the website BV-BRC, the Bacterial and Viral Bioinformatics Resource Center. You can also answer questions about the attached screenshot.\n' +
           'Analyze the screenshot and respond to the user\'s query.';
 
-          if (this.level == 0 || this.level == 2 || this.level == 3) {
-            if (this.systemPrompt) {
-                imageSystemPrompt += '\n\n' + this.systemPrompt;
-            }
-            if (this.statePrompt) {
-                imageSystemPrompt = imageSystemPrompt + '\n\n' + this.statePrompt;
-            }
-          } else if (this.level == 1) {
-            if (this.statePrompt) {
-              inputText = inputText + '\n\n' + this.statePrompt;
-            }
-          }else {
-            return;
+          if (this.systemPrompt) {
+              imageSystemPrompt += '\n\n' + this.systemPrompt;
+          }
+          if (this.statePrompt) {
+              imageSystemPrompt = imageSystemPrompt + '\n\n' + this.statePrompt;
           }
 
           var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
 
-          this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image, this.level, this.enhancedPrompt)
+          this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image, this.enhancedPrompt)
               .then(lang.hitch(this, function(response) {
                   if (response.systemMessage) {
                       this.chatStore.addMessages([
@@ -562,7 +540,7 @@ define([
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
 
-      this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.level, this.enhancedPrompt).then(lang.hitch(this, function(response) {
+      this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt).then(lang.hitch(this, function(response) {
           if (response.systemMessage) {
               this.chatStore.addMessages([
                   response.userMessage,

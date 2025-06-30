@@ -687,6 +687,14 @@
   border-color: #1f5ec4;
 }
 
+.chat-window-options-button.no-hover:hover {
+  background: #f8f9fa;
+}
+
+.chat-window-options-button.no-hover {
+  cursor: default !important;
+}
+
 /* ========================================
    PAGE CONTENT TOGGLE
    ======================================== */

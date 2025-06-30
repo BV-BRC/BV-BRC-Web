@@ -67,10 +67,9 @@ define([
         getUserSessions: function() {
             if (!this._loggedIn) return Promise.reject('Not logged in');
             var _self = this;
-            console.log('getUserSessions', _self.user_id);
             return request.get(this.apiUrlBase + `/get-all-sessions?user_id=${encodeURIComponent(_self.user_id)}`, {
                 headers: {
-                    Authorization: ('')
+                    Authorization: (window.App.authorizationToken || '')
                 }
             }).then(lang.hitch(this, function(response) {
                 var data = JSON.parse(response);
@@ -79,7 +78,10 @@ define([
                 } else {
                     return [];
                 }
-            }));
+            })).catch(function(error) {
+                console.error('Error getting user sessions:', error);
+                throw error;
+            });
         },
 
         /**
@@ -136,7 +138,7 @@ define([
          * - Makes POST request to copilot endpoint
          * - Handles errors with detailed logging
          */
-        submitCopilotQuery: function(inputText, sessionId, systemPrompt, model, save_chat = true, ragDb, numDocs, image, level = 0, enhancedPrompt = null) {
+        submitCopilotQuery: function(inputText, sessionId, systemPrompt, model, save_chat = true, ragDb, numDocs, image, enhancedPrompt = null) {
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             console.log('query');
@@ -146,7 +148,6 @@ define([
                 session_id: sessionId,
                 user_id: _self.user_id,
                 save_chat: save_chat,
-                level: level,
                 enhanced_prompt: enhancedPrompt
             };
 

@@ -81,7 +81,7 @@ define([
     renderSystemMessage: function(messageDiv) {
       // Create a simple button
       var showDocsButton = domConstruct.create('button', {
-        innerHTML: 'Show Retrieved Documents',
+        innerHTML: 'Show Prompt Details',
         class: 'show-docs-button'
       }, messageDiv);
 
@@ -211,6 +211,7 @@ define([
      */
     createSystemDialogContent: function(message) {
       var container = domConstruct.create('div');
+
       // Create collapsible section for message content
       if (message.content) {
         var headerButton1 = domConstruct.create('button', {
