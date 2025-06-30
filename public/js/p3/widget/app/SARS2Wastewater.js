@@ -515,7 +515,8 @@ define([
         { label: 'V3', value: 'V3' }
       ];
       var qiagenOptions = [
-        { label: 'V1', value: 'V1' }
+        { label: 'V1', value: 'V1' },
+        { label: 'V1+BoosterA', value: 'V1+BoosterA' }
       ];
       var swiftOptions = [
         { label: 'V1', value: 'V1' }
