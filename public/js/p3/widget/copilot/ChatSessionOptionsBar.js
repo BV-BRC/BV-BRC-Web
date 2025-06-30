@@ -380,48 +380,7 @@ define([
             //     })
             // }, this.advancedOptionsContainer);
 
-            // add a text size input field
-            var textSizeContainer = domConstruct.create('div', {
-                className: 'chat-window-options-button no-hover',
-                style: 'display: flex; align-items: center; gap: 5px; cursor: default;'
-            }, this.advancedOptionsContainer);
-
-            domConstruct.create('span', {
-                innerHTML: 'Text Size: ',
-                style: 'white-space: nowrap;'
-            }, textSizeContainer);
-
-            // Load text size from localStorage or use default value of 14
-            var savedTextSize = localStorage.getItem('copilot-text-size');
-            var initialTextSize = savedTextSize ? parseInt(savedTextSize) : 14;
-
-            // Ensure the value is within valid range
-            if (initialTextSize < 1 || initialTextSize > 100) {
-                initialTextSize = 14;
-            }
-
-            this.textSizeInput = domConstruct.create('input', {
-                type: 'number',
-                value: initialTextSize,
-                min: 1,
-                max: 100,
-                style: 'width: 50px; padding: 2px;',
-                onchange: lang.hitch(this, function(evt) {
-                    var newSize = parseInt(evt.target.value);
-                    if (newSize >= 1 && newSize <= 100) {
-                        // Save to localStorage
-                        localStorage.setItem('copilot-text-size', newSize.toString());
-                        topic.publish('chatTextSizeChanged', newSize);
-                    }
-                })
-            }, textSizeContainer);
-
-            // Publish the initial text size on load if it was saved
-            if (savedTextSize) {
-                setTimeout(function() {
-                    topic.publish('chatTextSizeChanged', initialTextSize);
-                }, 100);
-            }
+            // MOVED: Text size functionality moved to Advanced Options popup in CopilotFloatingWindow.js
 
             // COMMENTED OUT: Add CEPI journal rag button
             // this.cepiText = domConstruct.create('div', {

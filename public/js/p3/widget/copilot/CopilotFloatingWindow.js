@@ -23,7 +23,9 @@ define([
     'dojo/fx',
     'dojo/_base/fx',
     'dojo/dnd/Moveable',
-    'dojox/layout/ResizeHandle'
+    'dojox/layout/ResizeHandle',
+    'dijit/TooltipDialog',
+    'dijit/popup'
 ], function(
     declare,
     _WidgetBase,
@@ -44,7 +46,9 @@ define([
     fx,
     baseFx,
     Moveable,
-    ResizeHandle
+    ResizeHandle,
+    TooltipDialog,
+    popup
 ) {
     return declare([BorderContainer], {
         baseClass: 'CopilotFloatingWindow',
@@ -88,6 +92,9 @@ define([
         // Tracks if model/RAG container is visible
         modelRagVisible: false,
 
+        // Advanced options dialog reference
+        advancedOptionsDialog: null,
+
         constructor: function(options) {
             this.inherited(arguments);
             if (options) {
@@ -115,26 +122,33 @@ define([
                 title: 'Close/Open Sidebar'
             }, leftButtonContainer);
 
-            // Add developer options button
-            var devOptionsButton = domConstruct.create('div', {
+            // Add advanced options button (now visible and positioned correctly)
+            var advancedOptionsButton = domConstruct.create('div', {
                 className: 'copilotChatDevOptionsButton',
                 innerHTML: '⚙',
                 title: 'Advanced Options'
             }, leftButtonContainer);
 
-            // Hide the advanced options toggle button to keep all options visible by default
-            domStyle.set(devOptionsButton, 'display', 'none');
+            // Create advanced options dialog
+            this.advancedOptionsDialog = this.createAdvancedOptionsDialog();
 
-            // Add click handler for developer options button
-            on(devOptionsButton, 'click', lang.hitch(this, function() {
-                this.modelRagVisible = !this.modelRagVisible;
-                topic.publish('toggleModelRagVisibility', this.modelRagVisible);
-
-                // Update the button color based on state
-                if (this.modelRagVisible) {
-                    domClass.add(devOptionsButton, 'active');
+            // Add click handler for advanced options button
+            on(advancedOptionsButton, 'click', lang.hitch(this, function(evt) {
+                evt.stopPropagation();
+                if (this.advancedOptionsDialog.visible) {
+                    popup.close(this.advancedOptionsDialog);
+                    this.advancedOptionsDialog.visible = false;
+                    domClass.remove(advancedOptionsButton, 'active');
                 } else {
-                    domClass.remove(devOptionsButton, 'active');
+                    setTimeout(lang.hitch(this, function() {
+                        popup.open({
+                            popup: this.advancedOptionsDialog,
+                            around: advancedOptionsButton,
+                            orient: ['below']
+                        });
+                        this.advancedOptionsDialog.visible = true;
+                        domClass.add(advancedOptionsButton, 'active');
+                    }), 100);
                 }
             }));
 
@@ -149,6 +163,17 @@ define([
             on(reportIssueButton, 'click', lang.hitch(this, function() {
                 topic.publish('openReportIssueDialog');
                 domClass.add(reportIssueButton, 'active');
+            }));
+
+            // Handle clicks outside dialog to close it
+            document.addEventListener('click', lang.hitch(this, function(event) {
+                if (this.advancedOptionsDialog && this.advancedOptionsDialog._rendered &&
+                    !this.advancedOptionsDialog.domNode.contains(event.target) &&
+                    !advancedOptionsButton.contains(event.target)) {
+                    popup.close(this.advancedOptionsDialog);
+                    this.advancedOptionsDialog.visible = false;
+                    domClass.remove(advancedOptionsButton, 'active');
+                }
             }));
 
             // Create draggable area (the title area that will be the drag handle) SECOND
@@ -250,6 +275,62 @@ define([
 
             // Create comprehensive resize handles for all sides and corners
             this._createResizeHandles();
+        },
+
+        /**
+         * Creates the advanced options dialog with text size functionality
+         */
+        createAdvancedOptionsDialog: function() {
+            var advancedOptionsDialog = new TooltipDialog({
+                style: "width: 200px;",
+                content: document.createElement('div')
+            });
+
+            // Add Text Size section
+            var textSizeContainer = domConstruct.create('div', {
+                style: 'display: flex; align-items: center; gap: 10px; padding: 10px;'
+            }, advancedOptionsDialog.containerNode);
+
+            domConstruct.create('span', {
+                innerHTML: 'Text Size:',
+                style: 'white-space: nowrap; font-size: 14px;'
+            }, textSizeContainer);
+
+            // Load text size from localStorage or use default value of 14
+            var savedTextSize = localStorage.getItem('copilot-text-size');
+            var initialTextSize = savedTextSize ? parseInt(savedTextSize) : 14;
+
+            // Ensure the value is within valid range
+            if (initialTextSize < 1 || initialTextSize > 100) {
+                initialTextSize = 14;
+            }
+
+            var textSizeInput = domConstruct.create('input', {
+                type: 'number',
+                value: initialTextSize,
+                min: 1,
+                max: 100,
+                style: 'width: 60px; padding: 2px; font-size: 12px;'
+            }, textSizeContainer);
+
+            // Add change handler for text size
+            on(textSizeInput, 'change', function(evt) {
+                var newSize = parseInt(evt.target.value);
+                if (newSize >= 1 && newSize <= 100) {
+                    // Save to localStorage
+                    localStorage.setItem('copilot-text-size', newSize.toString());
+                    topic.publish('chatTextSizeChanged', newSize);
+                }
+            });
+
+            // Publish the initial text size if it was saved
+            if (savedTextSize) {
+                setTimeout(function() {
+                    topic.publish('chatTextSizeChanged', initialTextSize);
+                }, 100);
+            }
+
+            return advancedOptionsDialog;
         },
 
         /**
@@ -531,7 +612,7 @@ define([
                 } else {
                     this.topContentPane = new ChatSessionOptionsBar({
                         region: 'top',
-                        style: 'padding: 0px; background-color: #ffffff; overflow-y: auto; margin-bottom: 5px;',
+                        style: 'padding: 0px; background-color: #ffffff; overflow-y: none; margin-bottom: 0px;',
                         copilotApi: this.copilotApi
                     });
                 }
@@ -548,9 +629,7 @@ define([
 
                 // Adjust the top pane height to fit its content so buttons are fully visible
                 setTimeout(lang.hitch(this, function() {
-                    var topHeight = this.topContentPane.domNode.scrollHeight;
-                    // Add a small buffer
-                    topHeight = topHeight + 10;
+                    var topHeight = this.topContentPane.domNode.height;
 
                     domStyle.set(this.topContentPane.domNode, 'height', topHeight + 'px');
                     domStyle.set(this.bottomContentPane.domNode, 'height', 'calc(100% - ' + topHeight + 'px)');
@@ -722,6 +801,15 @@ define([
             if (this._windowResizeHandle) {
                 this._windowResizeHandle.remove();
                 this._windowResizeHandle = null;
+            }
+
+            // Clean up the advanced options dialog
+            if (this.advancedOptionsDialog) {
+                if (this.advancedOptionsDialog.visible) {
+                    popup.close(this.advancedOptionsDialog);
+                }
+                this.advancedOptionsDialog.destroyRecursive();
+                this.advancedOptionsDialog = null;
             }
 
             // Clean up the options sidebar container
