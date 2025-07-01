@@ -13,15 +13,11 @@ define([
   'dojo/_base/declare', // Base class for creating Dojo classes
   'dijit/layout/ContentPane', // Parent class for scrollable container
   'dojo/dom-construct', // DOM manipulation utilities
-  'dojo/on', // Event handling
   'dojo/_base/lang', // Language utilities like hitch
   'dojo/topic', // Pub/sub messaging
-  './ChatSessionScrollCard', // Individual session card widget
-  'dojo/query', // DOM query functions
-  'dojo/dom-class', // Class manipulation
-  'dojo/dom-style' // Style manipulation
+  './ChatSessionScrollCard' // Individual session card widget
 ], function (
-  declare, ContentPane, domConstruct, on, lang, topic, ChatSessionScrollCard, query, domClass, domStyle
+  declare, ContentPane, domConstruct, lang, topic, ChatSessionScrollCard
 ) {
   /**
    * @class ChatSessionScrollBar
@@ -176,20 +172,6 @@ define([
     },
 
     /**
-     * @method addSession
-     * @param {Object} session - Session object to add
-     *
-     * Implementation:
-     * - Adds new session object to internal array
-     * - Triggers re-render of all sessions
-     * - Maintains array order
-     */
-    addSession: function(session) {
-      this.sessions_list.push(session);
-      this.renderSessions();
-    },
-
-    /**
      * @method setSessions
      * @param {Array} sessions - Array of session objects
      *
@@ -202,24 +184,13 @@ define([
       this.sessions_list = sessions;
       this.renderSessions();
 
+      // If there's a session to highlight after reload, do it now
       if (this._highlightAfterReload) {
         // Use setTimeout to ensure the DOM is updated before highlighting
         setTimeout(lang.hitch(this, function() {
           this.highlightSession(this._highlightAfterReload);
           this._highlightAfterReload = null; // Clear the pending highlight
-        }), 100);
-      } else {
-        // If no specific session to highlight, attempt to highlight the currently stored session
-        try {
-          var savedId = (window && window.localStorage) ? localStorage.getItem('copilot-current-session-id') : null;
-          if (savedId) {
-            setTimeout(lang.hitch(this, function() {
-              this.highlightSession(savedId);
-            }), 100);
-          }
-        } catch (e) {
-          console.warn('Unable to access localStorage for current session id', e);
-        }
+        }), 300);
       }
     },
 
@@ -236,6 +207,20 @@ define([
     getSessions: function() {
       this.copilotApi.getUserSessions().then(lang.hitch(this, function(sessions) {
         this.setSessions(sessions);
+
+        // If no specific session to highlight, attempt to highlight the currently stored session
+        if (!this._highlightAfterReload) {
+          try {
+            var savedId = (window && window.localStorage) ? localStorage.getItem('copilot-current-session-id') : null;
+            if (savedId) {
+              setTimeout(lang.hitch(this, function() {
+                this.highlightSession(savedId);
+              }), 300);
+            }
+          } catch (e) {
+            console.warn('Unable to access localStorage for current session id', e);
+          }
+        }
       }));
     }
   });

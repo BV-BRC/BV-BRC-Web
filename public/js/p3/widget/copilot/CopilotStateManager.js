@@ -5,11 +5,20 @@
  */
 define([
     'dojo/_base/declare',
-    'dojo/_base/lang'
+    'dojo/_base/lang',
+    'dojo/topic'
 ], function (
     declare,
-    lang
+    lang,
+    topic
 ) {
+    // Store the latest JobResult data published by JobResult viewer
+    var jobResultData = null;
+
+    // Subscribe to JobResult broadcasts so this module always has access
+    topic.subscribe('Copilot/JobResultReady', function (data) {
+        jobResultData = data;
+    });
 
     /**
      * Creates a state prompt from the given path state
@@ -1100,9 +1109,27 @@ define([
 
     function createWorkspaceStatePrompt(pathState) {
         var prompt = 'This is a Workspace page.';
+
+        // Append details from the most recently viewed JobResult, if present
+        if (jobResultData && jobResultData.name) {
+            prompt += ` You are currently viewing a job result with output name "${jobResultData.name}".`;
+
+            // Include app description and label if available
+            if (jobResultData.autoMeta && jobResultData.autoMeta.app) {
+                const app = jobResultData.autoMeta.app;
+                if (app.id) {
+                    prompt += ` This is a "${app.id}" service job.`;
+                }
+                if (app.description) {
+                    prompt += ` ${app.description}`;
+                }
+            }
+        }
+
         if (pathState.state) {
             prompt += ' ' + pathState.state;
         }
+
         return prompt;
     }
 

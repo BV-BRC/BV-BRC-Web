@@ -343,6 +343,11 @@ define([
             this.inputWidget.setSessionId(sessionId);
             this.displayWidget.setSessionId(sessionId);
             this.titleWidget.setSessionId(sessionId);
+
+            // Notify the session scroll bar to reload and highlight the current session
+            topic.publish('reloadUserSessions', {
+                highlightSessionId: sessionId
+            });
         },
 
         /**
