@@ -395,6 +395,30 @@ define([
             var sessionId = this.sessionId;
             var messages = this.chatStore.query();
 
+            // Helper function to truncate long content
+            var truncateContent = function(content, maxLength) {
+                if (!content || content.length <= maxLength) {
+                    return content;
+                }
+
+                var halfLength = Math.floor((maxLength - 3) / 2); // Account for "..."
+                var firstPart = content.substring(0, halfLength);
+                var lastPart = content.substring(content.length - halfLength);
+
+                // Try to break on word boundaries
+                var firstWordBreak = firstPart.lastIndexOf(' ');
+                var lastWordBreak = lastPart.indexOf(' ');
+
+                if (firstWordBreak > halfLength * 0.7) { // If we found a reasonable word break
+                    firstPart = firstPart.substring(0, firstWordBreak);
+                }
+                if (lastWordBreak !== -1 && lastWordBreak < halfLength * 0.3) { // If we found a reasonable word break
+                    lastPart = lastPart.substring(lastWordBreak + 1);
+                }
+
+                return firstPart + '...' + lastPart;
+            };
+
             try {
                 var content =
                     '\n[Please feel free to add any additional information regarding this issue here.]\n\n\n' +
@@ -404,7 +428,7 @@ define([
                     '{code}\n' +
                     JSON.stringify(messages.slice(0, 4).map(msg => ({
                         role: msg.role,
-                        content: msg.content,
+                        content: truncateContent(msg.content, 80), // Truncate to ~80 chars total
                         timestamp: msg.timestamp
                     })), null, 4) +
                     '\n{code}\n';
