@@ -78,6 +78,16 @@ define([
         },
 
         _openSmallChat: function() {
+            // Attempt to restore a previously saved session ID, if available
+            try {
+                var savedSessionId = (window && window.localStorage) ? localStorage.getItem('copilot-current-session-id') : null;
+                if (savedSessionId) {
+                    this.currentSessionId = savedSessionId;
+                }
+            } catch (e) {
+                console.warn('Unable to access localStorage to retrieve chat session id', e);
+            }
+
             // If controller panel already exists, just show it
             if (this.controllerPanel && this.controllerPanel.domNode) {
                 if (this.chatContainer) {

@@ -330,6 +330,15 @@ define([
          */
         changeSessionId: function(sessionId) {
             this.sessionId = sessionId;
+            // Persist the current session ID so it can be restored the next time the chat opens
+            try {
+                if (window && window.localStorage) {
+                    localStorage.setItem('copilot-current-session-id', sessionId);
+                }
+            } catch (e) {
+                // Failing to access localStorage should not break the application
+                console.warn('Unable to persist chat session id to localStorage', e);
+            }
             this.chatStore.clearData();
             this.inputWidget.setSessionId(sessionId);
             this.displayWidget.setSessionId(sessionId);

@@ -202,13 +202,24 @@ define([
       this.sessions_list = sessions;
       this.renderSessions();
 
-      // If there's a session to highlight after reload, do it now
       if (this._highlightAfterReload) {
         // Use setTimeout to ensure the DOM is updated before highlighting
         setTimeout(lang.hitch(this, function() {
           this.highlightSession(this._highlightAfterReload);
           this._highlightAfterReload = null; // Clear the pending highlight
         }), 100);
+      } else {
+        // If no specific session to highlight, attempt to highlight the currently stored session
+        try {
+          var savedId = (window && window.localStorage) ? localStorage.getItem('copilot-current-session-id') : null;
+          if (savedId) {
+            setTimeout(lang.hitch(this, function() {
+              this.highlightSession(savedId);
+            }), 100);
+          }
+        } catch (e) {
+          console.warn('Unable to access localStorage for current session id', e);
+        }
       }
     },
 
