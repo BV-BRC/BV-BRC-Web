@@ -209,17 +209,12 @@ define([
 
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-        var systemPrompt = this.systemPrompt;
-        if (this.statePrompt) {
-          if (systemPrompt) {
-            systemPrompt += this.statePrompt;
-          } else {
-            systemPrompt = this.statePrompt;
-          }
+        var systemPrompt = 'You are a helpful scientist website assistant for the website BV-BRC, the Bacterial and Viral Bioinformatics Resource Center.\n\n';
+        if (this.systemPrompt) {
+            systemPrompt += this.systemPrompt;
         }
-
-        if (!systemPrompt) {
-          systemPrompt = 'You are a helpful scientist webiste assistant for the webiste BV-BRC, the Bacterial and Viral Bioinformatics Resource Center.\n'
+        if (this.statePrompt) {
+            systemPrompt += this.statePrompt;
         }
 
         this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt).then(lang.hitch(this, function(response) {
@@ -277,13 +272,12 @@ define([
 
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-        var systemPrompt = this.systemPrompt;
+        var systemPrompt = 'You are a helpful scientist website assistant for the website BV-BRC, the Bacterial and Viral Bioinformatics Resource Center.\n\n';
+        if (this.systemPrompt) {
+            systemPrompt += this.systemPrompt;
+        }
         if (this.statePrompt) {
-          if (systemPrompt) {
             systemPrompt += this.statePrompt;
-          } else {
-            systemPrompt = this.statePrompt;
-          }
         }
 
         this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, null, null).then(lang.hitch(this, function(response) {

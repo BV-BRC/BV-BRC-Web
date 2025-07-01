@@ -141,9 +141,11 @@ define([
 
             topic.subscribe('RefreshSession', lang.hitch(this, function(sessionId, scrollToBottom = true) {
                 this.copilotApi.getSessionMessages(sessionId).then(lang.hitch(this, function(res) {
-                    const messages = res.messages[0].messages;
-                    this.chatStore.setData(messages);
-                    this.displayWidget.showMessages(messages, scrollToBottom);
+                    if (res.messages.length > 0) {
+                        const messages = res.messages[0].messages;
+                        this.chatStore.setData(messages);
+                        this.displayWidget.showMessages(messages, scrollToBottom);
+                    }
                 }));
             }));
 
@@ -448,7 +450,7 @@ define([
                 this.path += window.location.hash;
             }
             this.copilotApi.getPathState(this.path).then(lang.hitch(this, function(state) {
-                if (state && state.message == 'success' && state.pathState && state.pathState.state) {
+                if (state && state.message == 'success' && state.pathState) {
                     this.pathState = state.pathState;
                     this.statePrompt = CopilotStateManager.createStatePrompt(this.pathState);
                     console.log('path state = ', this.pathState);

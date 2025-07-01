@@ -17,16 +17,60 @@ define([
      * @returns {string} A formatted prompt string based on the path state
      */
     function createStatePrompt(pathState) {
-        if (!pathState || !pathState.view_type) {
+
+        if (!pathState || !pathState.type) {
             let fallbackPrompt = "Currently viewing data, but the specific view type is not available.";
             if (pathState && pathState.path) {
                 fallbackPrompt += ` Currently viewing at URL path: ${pathState.path}.`;
             }
             return fallbackPrompt;
         }
+        if (pathState.status === 'search') {
+            var prompt = createSearchStatePrompt(pathState);
+            if (pathState.path) {
+                prompt += `\n\nCurrently viewing at URL path: ${pathState.path}.`;
+            }
+            return prompt;
+        }
+        if (pathState.status == 'app') {
+            var prompt = createAppStatePrompt(pathState);
+            if (pathState.path) {
+                prompt += `\n\nCurrently viewing at URL path: ${pathState.path}.`;
+            }
+            return prompt;
+        }
+        if (pathState.status == 'outbreaks') {
+            var prompt = createOutbreakStatePrompt(pathState);
+            if (pathState.path) {
+                prompt += `\n\nCurrently viewing at URL path: ${pathState.path}.`;
+            }
+            return prompt;
+        }
+        if (pathState.status == 'workspace') {
+            var prompt = createWorkspaceStatePrompt(pathState);
+            if (pathState.path) {
+                prompt += `\n\nCurrently viewing at URL path: ${pathState.path}.`;
+            }
+            return prompt;
+        }
+        if (pathState.status == 'job') {
+            var prompt = createJobStatePrompt(pathState);
+            if (pathState.path) {
+                prompt += `\n\nCurrently viewing at URL path: ${pathState.path}.`;
+            }
+            return prompt;
+        }
+        if (pathState.status == 'about' || pathState.status == 'home') {
+            var prompt = createAboutStatePrompt(pathState);
+            if (pathState.path) {
+                prompt += `\n\nCurrently viewing at URL path: ${pathState.path}.`;
+            }
+            return prompt;
+        }
 
         // Dispatch to appropriate helper function based on view_type
-        switch (pathState.view_type.toLowerCase()) {
+        switch (pathState.type.toLowerCase()) {
+            // View types
             case 'taxonomy':
                 return createTaxonomyStatePrompt(pathState);
             case 'genome':
@@ -45,10 +89,19 @@ define([
                 return createExperimentStatePrompt(pathState);
             case 'bioset_result':
                 return createBiosetStatePrompt(pathState);
+            // Search types
+            case 'protein_search':
+                return createProteinSearchStatePrompt(pathState);
+            case 'genome_search':
+                return createGenomeSearchStatePrompt(pathState);
+            case 'feature_search':
+                return createFeatureSearchStatePrompt(pathState);
+            case 'antibiotic_search':
+                return createAntibioticSearchStatePrompt(pathState);
 
             default:
                 // Generic fallback for unknown view types
-                let genericPrompt = `Currently viewing ${pathState.view_type} data`;
+                let genericPrompt = `Currently viewing ${pathState.type} data`;
                 if (pathState.state && Array.isArray(pathState.state)) {
                     genericPrompt += ` with ${pathState.state.length} data item(s)`;
                 }
@@ -1017,6 +1070,55 @@ define([
 
         prompt += " If the content is relevant to the query, include this content in your response. Otherwise, ignore it.";
 
+        return prompt;
+    }
+
+    function createSearchStatePrompt(pathState) {
+
+        var prompt = 'This is an advanced search page.';
+        if (pathState.state) {
+            prompt += ' ' + pathState.state;
+        }
+        return prompt;
+    }
+
+    function createAppStatePrompt(pathState) {
+        var prompt = 'This is a Tools & Services page.';
+        if (pathState.state) {
+            prompt += ' ' + pathState.state;
+        }
+        return prompt;
+    }
+
+    function createOutbreakStatePrompt(pathState) {
+        var prompt = 'This is an Outbreak page.';
+        if (pathState.state) {
+            prompt += ' ' + pathState.state;
+        }
+        return prompt;
+    }
+
+    function createWorkspaceStatePrompt(pathState) {
+        var prompt = 'This is a Workspace page.';
+        if (pathState.state) {
+            prompt += ' ' + pathState.state;
+        }
+        return prompt;
+    }
+
+    function createJobStatePrompt(pathState) {
+        var prompt = '';
+        if (pathState.state) {
+            prompt += ' ' + pathState.state;
+        }
+        return prompt;
+    }
+
+    function createAboutStatePrompt(pathState) {
+        var prompt = '';
+        if (pathState.state) {
+            prompt += ' ' + pathState.state;
+        }
         return prompt;
     }
 
