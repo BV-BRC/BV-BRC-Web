@@ -1,7 +1,7 @@
 define([
    'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
    'dojo/on', 'dojo/query', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/topic',
-   './AppBase', 'dijit/form/Checkbox', 'dijit/Tooltip',
+   './AppBase', 'dijit/form/CheckBox', 'dijit/Tooltip',
    'dojo/text!./templates/TreeSort.html', 'dijit/form/Form',
    '../../util/PathJoin', '../../WorkspaceManager'
 ], function (
@@ -460,8 +460,6 @@ define([
             this.outputFileEl.set("message", "");
             this.outputFileMessageEl.innerHTML = "";
 
-            console.log("about to make output file el optional")
-
             // Make the control optional until it is assigned an invalid value.
             this.outputFileEl.set("required", false);
          }
@@ -480,6 +478,9 @@ define([
 
          // If we're suspending validation for this control, make it temporarily optional.
          if (this.validationContext.isSuspended) { this.outputPathEl.set("required", false); }
+
+         // TEST: This is a huge hack to make the output file control required after it has been initialized.
+         this.outputFileEl.set("required", true);
 
          let result = this.isOutputPathValid(value_);
 
@@ -507,6 +508,9 @@ define([
 
          // Update the validation context's "unprocessed" count.
          if (this.validationContext.isSuspended) { this.updateValidationContext(); }
+
+         // TEST: This is a huge hack to make the output file control required at a later point than when it is initialized.
+         this.outputFileEl.set("required", true);
 
          return result.isValid;
       },
@@ -883,6 +887,9 @@ define([
 
             checkbox.set('checked', !checkbox.get('checked'));
          })
+
+         // The submit button disables itself after it is clicked.
+         on(this.submitButton, "click", () => this.submitButton.set("disabled", true));
 
          try {
             // NOTE: this sets this.displayDefaults to false if we are populating the page controls using job data.

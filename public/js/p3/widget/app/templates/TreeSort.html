@@ -49,8 +49,16 @@
       .treesort--row.checkbox-row {
          margin-bottom: 1.0rem;
       }
-      .treesort--row.checkbox-row .dijitCheckBox {
-         margin-right: 0.5rem;
+      .treesort--row.checkbox-row label {
+         font-size: 1.0rem;
+         margin-left: 0.25rem;
+      }
+      .treesort--row.checkbox-row .infobutton {
+         margin: 0.25rem 0 0 0.25rem;
+      }
+      .treesort--row.checkbox-row .infobutton i {
+         font-size: 1.15rem;
+         margin: 0;
       }
 
       .treesort--row.only-row {
@@ -184,7 +192,7 @@
                <div class="treesort--label-tooltip">
                   <div class="treesort--param-label">Output folder</div>
                   <div name="output-path" class="infobox iconbox infobutton tooltipinfo">
-                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                     <i class="fa icon-question-circle fa"></i>
                   </div>
                </div>
                <div name="output_path"
@@ -439,6 +447,9 @@
                      name="equal_rates"
                   ></div>
                   <label for="${id}_equal_rates">Estimate molecular clock rates for different segments</label>
+                  <div name="equal-rates" class="infobox iconbox infobutton tooltipinfo">
+                     <i class="fa icon-question-circle fa"></i>
+                  </div>
                </div>
 
                <!-- Is time scaled -->
@@ -448,6 +459,9 @@
                      data-dojo-type="dijit/form/CheckBox"
                   ></div>
                   <label for="${id}_equal_rates">Time-scale the reference tree</label>
+                  <div name="is-time-scaled" class="infobox iconbox infobutton tooltipinfo">
+                     <i class="fa icon-question-circle fa"></i>
+                  </div>
                </div>
 
                <!-- No collapse -->
@@ -457,6 +471,9 @@
                      data-dojo-type="dijit/form/CheckBox"
                   ></div>
                   <label for="${id}_no_collapse">Collapse near-zero length branches into multifurcations</label>
+                  <div name="no-collapse" class="infobox iconbox infobutton tooltipinfo">
+                     <i class="fa icon-question-circle fa"></i>
+                  </div>
                </div>
 
                <div class="warning" data-dojo-attach-point="database_message"></div>
