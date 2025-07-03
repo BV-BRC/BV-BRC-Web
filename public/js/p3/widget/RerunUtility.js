@@ -42,6 +42,7 @@ define([], function () {
         'HASubtypeNumberingConversion': 'HASubtypeNumberingConversion',
         'TaxonomicClassification': 'TaxonomicClassification',
         'TnSeq': 'Tnseq',
+        'TreeSort': 'TreeSort',
         'Variation': 'Variation',
         'ViralAssembly': 'ViralAssembly'
       };

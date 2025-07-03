@@ -20,8 +20,8 @@ define([
     requireAuth: true,
     applicationLabel: 'Whole Genome SNP Analysis',
     applicationDescription: 'The Whole Genome SNP Analysis service accepts genome groups. This service will identify single nucleotide polymorphisms (SNPs) for tracking viral and bacterial pathogens during outbreaks. The software, kSNP4 will identify SNPs and estimate phylogenetic trees based on those SNPs.',
-    applicationHelp: 'quick_references/services/Whole Genome SNP Analysis_service.html',
-    tutorialLink: 'tutorial/WholeGenome SNPAnalysis/WholeGenomeSNPAnalysis.html',
+    applicationHelp: 'quick_references/services/whole_genome_snp_analysis_service.html',
+    tutorialLink: 'tutorial/whole_genome_snp_analysis/whole_genome_snp_analysis_service.html',
     videoLink: '',
     pageTitle: 'Whole Genome SNP Analysis Service | BV-BRC',
     appBaseURL: 'WholeGenomeSNPAnalysis',
@@ -122,38 +122,6 @@ define([
         values.select_genomegroup = [values.select_genomegroup];
       }
       return values;
-    },
-
-    onChangeMinMidLinkage: function () {
-      console.log('called_onchange event minmid')
-      if (this.min_mid_linkage.value !== null) {
-        this.max_strong_linkage.set("value", this.min_mid_linkage.value);
-      }
-    },
-
-    // can delete if we field remains disabled
-    onChangeMaxStrongLinkage: function () {
-      console.log('called_onchange event max')
-      if (this.max_strong_linkage.value !== null) {
-        console.log(this.max_strong_linkage.value);
-        this.min_mid_linkage.set("value", this.max_strong_linkage.value);
-      }
-    },
-    
-    onChangeMaxMidLinkage: function () {
-      console.log('called_onchange event mix mid')
-      if (this.max_mid_linkage.value !== null) {
-        this.min_weak_linkage.set("value", this.max_mid_linkage.value);
-      }
-    },
-
-    // can delete if we field remains disabled
-    onChangeMinWeakLinkage: function () {
-      console.log('called_onchange event minweak')
-      if (this.min_weak_linkage.value !== null) {
-        console.log(this.min_weak_linkage.value);
-        this.max_mid_linkage.set("value", this.min_weak_linkage.value);
-      }
     },
 
     checkBaseParameters: function (values, seqcomp_values) {
