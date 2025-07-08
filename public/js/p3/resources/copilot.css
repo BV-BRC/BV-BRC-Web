@@ -802,7 +802,8 @@
 
 /* Side Panel Button Container */
 .sidePanelButtonContainer {
-  height: 100%;
+  height: 20%;
+  border-bottom: 1px solid red;
   overflow: hidden;
   display: flex;
   font-size: 0.9em;
