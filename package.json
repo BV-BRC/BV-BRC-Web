@@ -1,10 +1,6 @@
 {
   "name": "p3-web",
-<<<<<<< HEAD
-  "version": "3.51.11",
-=======
   "version": "3.52.4",
->>>>>>> alpha
   "private": true,
   "scripts": {
     "start": "node ./bin/p3-web",
