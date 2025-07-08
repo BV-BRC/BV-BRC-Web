@@ -69,7 +69,7 @@ define([
         publicationsSelected: false,
 
         /** @property {boolean} showPublicationsButton - Flag to control publications button visibility */
-        showPublicationsButton: true,
+        showPublicationsButton: false,
 
         /**
          * @constructor
