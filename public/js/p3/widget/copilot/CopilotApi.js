@@ -30,12 +30,12 @@ define([
     return declare([_WidgetBase], {
 
         /** Base URL for main Copilot API endpoints */
-        // apiUrlBase: 'https://www.bv-brc.org/services/copilot-api/copilot-api/chatbrc',
+        apiUrlBase: 'https://www.bv-brc.org/services/copilot-api/copilot-api/chatbrc',
 
         /** Base URL for database-related endpoints */
         dbUrlBase: 'https://www.bv-brc.org/services/copilot-api/copilot-api/db',
 
-        apiUrlBase: 'https://dev-3.bv-brc.org/copilot-api/chatbrc',
+        // apiUrlBase: 'https://dev-3.bv-brc.org/copilot-api/chatbrc',
         // dbUrlBase: 'https://dev-3.bv-brc.org/copilot-api/db',
 
         /** Caches the most recent API response */
