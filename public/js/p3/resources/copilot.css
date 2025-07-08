@@ -177,6 +177,7 @@
   background-color: #ffffff;
   overflow-y: auto;
   margin-bottom: 0px;
+  min-height: 57px;
 }
 
 .ChatSessionOptionsBar-extended-one {

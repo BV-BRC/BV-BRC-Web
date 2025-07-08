@@ -184,7 +184,7 @@ define([
             // Create draggable area (the title area that will be the drag handle) SECOND
             var titleNode = domConstruct.create('div', {
                 className: 'copilotChatHeaderTitle copilotDragHandle',
-                innerHTML: 'BV-BRC Copilot'
+                innerHTML: 'BV-BRC Copilot - BETA'
             }, this.headerNode);
 
             // Create buttons container in header THIRD (on the right)
