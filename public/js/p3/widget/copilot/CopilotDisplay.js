@@ -47,10 +47,25 @@ define([
     messages: [],
 
     // Default message shown when no messages exist
-    emptyMessage: 'No messages yet. Start a conversation!',
+    emptyMessage: 'No messages yet!',
 
     // Default font size
     fontSize: 14,
+
+    // Suggested questions to display when chat is empty
+    suggestedQuestions: [
+      'How do I use the Genome Annotation Service?',
+      'What data types can I use with BV-BRC?',
+      'How do I navigate and search within this website?',
+      'How do I perform a BLAST search?',
+      'How do I upload data to my workspace?',
+      'How do I compare genomes?',
+      'How do I visualize phylogenetic trees?',
+      'What analysis services are available in BV-BRC?'
+    ],
+
+    // Flag to ensure styles are injected only once
+    _copilotStylesInjected: false,
 
     /**
      * @constructor
@@ -73,6 +88,18 @@ define([
      * - Subscribes to message refresh and error topics
      */
     postCreate: function() {
+        // Inject styles for suggestion chips if not already injected
+        if (!this._copilotStylesInjected) {
+          var styleTag = domConstruct.create('style', {
+            innerHTML: `
+              .copilot-suggested-container { text-align: center; }
+              .copilot-suggested-header { font-weight: 600; margin-bottom: 8px; }
+              .copilot-suggested-list { list-style: none; padding-left: 0; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+              .copilot-suggested-list li { background: #f1f5f9; border: 1px solid #d1d5db; border-radius: 16px; padding: 6px 12px; font-size: 13px; color: #1f2937; cursor: default; }
+            `
+          }, document.head || document.getElementsByTagName('head')[0]);
+          this._copilotStylesInjected = true;
+        }
         // Create scrollable container for messages
         this.resultContainer = domConstruct.create('div', {
           class: 'copilot-result-container',
@@ -108,8 +135,31 @@ define([
       domConstruct.empty(this.resultContainer);
       domConstruct.create('div', {
         innerHTML: this.emptyMessage,
-        class: 'copilot-empty-state'
+        class: 'copilot-empty-state',
+        style: 'text-align:center; margin-bottom: 12px;'
       }, this.resultContainer);
+
+      // Add suggested questions list below the empty state message
+      if (this.suggestedQuestions && this.suggestedQuestions.length) {
+        var suggestionContainer = domConstruct.create('div', {
+          class: 'copilot-suggested-container'
+        }, this.resultContainer);
+
+        domConstruct.create('div', {
+          innerHTML: 'Try asking:',
+          class: 'copilot-suggested-header'
+        }, suggestionContainer);
+
+        var ul = domConstruct.create('ul', {
+          class: 'copilot-suggested-list'
+        }, suggestionContainer);
+
+        this.suggestedQuestions.forEach(function(q) {
+          domConstruct.create('li', {
+            innerHTML: q
+          }, ul);
+        });
+      }
     },
 
     /**
