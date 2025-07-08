@@ -65,6 +65,12 @@ define([
         /** @property {boolean} cepiSelected - Tracks if CEPI button is selected */
         cepiSelected: false,
 
+        /** @property {boolean} publicationsSelected - Tracks if Publications button is selected */
+        publicationsSelected: false,
+
+        /** @property {boolean} showPublicationsButton - Flag to control publications button visibility */
+        showPublicationsButton: true,
+
         /**
          * @constructor
          * Initializes the widget with provided options
@@ -322,6 +328,11 @@ define([
                 "Llama-3.3-70B-Instruct": "Llama-3.3-70B"
             };
 
+            // Set CSS height based on publications button flag
+            if (this.showPublicationsButton) {
+                domClass.add(this.containerNode, 'ChatSessionOptionsBar-extended');
+            }
+
             // Create model, RAG, and enhance prompt dialogs
             var modelDialog = this.createModelDialog();
             var ragDialog = this.createRagDialog();
@@ -347,6 +358,21 @@ define([
                     }
                 })
             }, buttonsContainer);
+
+            // Conditionally add Publications button between New Chat and advanced options
+            if (this.showPublicationsButton) {
+                this.publicationsButton = domConstruct.create('div', {
+                    innerHTML: 'Publications',
+                    className: 'chat-window-options-button',
+                    onclick: lang.hitch(this, function() {
+                        this.publicationsSelected = !this.publicationsSelected;
+                        domClass.toggle(this.publicationsButton, 'selected', this.publicationsSelected);
+
+                        // Publish the RAG database change
+                        topic.publish('ChatRagDb', this.publicationsSelected ? 'cepi_journals' : 'null');
+                    })
+                }, buttonsContainer);
+            }
 
             // Create container for model and RAG text elements
             this.advancedOptionsContainer = domConstruct.create('div', {

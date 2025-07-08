@@ -180,6 +180,10 @@
   min-height: 20px;
 }
 
+.ChatSessionOptionsBar-extended {
+  height: 25% !important;
+}
+
 .ChatContainerFloatingWindow {
   position: fixed;
   width: 80%;
