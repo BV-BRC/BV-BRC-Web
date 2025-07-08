@@ -807,14 +807,13 @@
 /* Side Panel Button Container */
 .sidePanelButtonContainer {
   height: 20%;
-  border-bottom: 1px solid red;
   overflow: hidden;
   display: flex;
   font-size: 0.9em;
   gap: 2px;
   position: relative;
   flex-shrink: 0;
-  min-height: 10px;
+  min-height: 30px;
 }
 
 /* ========================================

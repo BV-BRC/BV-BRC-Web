@@ -42,7 +42,7 @@ define([
         liveSplitters: true,
 
         /** @property {string} style - CSS styling for container dimensions */
-        style: 'height: 100%; width: 100%;',
+        style: 'height: 100%; width: 100%; min-height:',
 
         /** @property {Object} optionsBar - Reference to options bar widget */
         optionsBar: null,
@@ -110,13 +110,42 @@ define([
         },
 
         _createDisplayWidget: function() {
-            this.displayWidget = new CopilotDisplay({
+            // Determine context-specific suggested questions for the empty state
+            var suggestedQuestions;
+            var ctx = this.context || 'grid-container';
+            if (ctx === 'job-manager') {
+                suggestedQuestions = [
+                    'How do I check the status of my submitted jobs?',
+                    'Can I filter jobs by status or date?',
+                    'How do I rerun a completed or failed job?',
+                    'What do the different job statuses mean?',
+                    'How can I download the results of a completed job?'
+                ];
+            } else if (ctx === 'grid-container') {
+                suggestedQuestions = [
+                    'How do I filter this table to refine my results?',
+                    'How can I download the selected rows?',
+                    'What do the columns in this table represent?',
+                    'How do I add the selected items to my workspace?',
+                    'How can I run an analysis on the selected items?'
+                ];
+            }
+
+            // Base options for the display widget
+            var displayOpts = {
                 region: 'center',
                 style: 'padding: 0 5px 5px 5px; border: 0; background-color: #ffffff; opacity: 1;',
                 copilotApi: this.copilotApi,
                 chatStore: this.chatStore,
                 sessionId: this.sessionId
-            });
+            };
+
+            // Include suggested questions only if we determined a list for the current context
+            if (suggestedQuestions) {
+                displayOpts.suggestedQuestions = suggestedQuestions;
+            }
+
+            this.displayWidget = new CopilotDisplay(displayOpts);
             this.addChild(this.displayWidget);
         },
 
