@@ -42,7 +42,7 @@ define([
         liveSplitters: true,
 
         /** @property {string} style - CSS styling for container dimensions */
-        style: 'height: 100%; width: 100%;',
+        style: 'height: 100%; width: 100%; min-height:',
 
         /** @property {Object} optionsBar - Reference to options bar widget */
         optionsBar: null,
