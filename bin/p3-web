@@ -9,7 +9,7 @@ var conf = require('../config');
 
 debug('Launching p3-www...');
 
-app.set('port', conf.get('http_port') || 7032);
+app.set('port', conf.get('http_port') || 3000);
 
 const sslConfig = conf.get('sslConfig');
 var server;
