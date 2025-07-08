@@ -149,9 +149,6 @@ define([
       inferenceMethodEl: null,
       inferenceMethodMessageEl: null,
 
-      // "Is time scaled" element
-      isTimeScaledEl: null,
-
       // Match regex elements
       matchRegexEl: null,
       matchRegexContainerEl: null,
@@ -263,7 +260,6 @@ define([
          let equalRates = this.equalRatesEl.get("checked");
          let fastaFileId = this.fastaFileIdEl.get("value");
          let inferenceMethod = this.inferenceMethodEl.get("value");
-         let isTimeScaled = this.isTimeScaledEl.get("checked");
          let matchRegex = this.matchRegexEl.get("value");
          let matchType = this.matchTypeEl.get("value");
          let noCollapse = this.noCollapseEl.get("checked");
@@ -299,7 +295,6 @@ define([
                "input_fasta_file_id": "/testUser@bvbrc/home/TreeSort/swine_H1/swine_H1_HANA.fasta",
                "input_fasta_group_id": null,
                "input_source": "fasta_file_id",
-               "is_time_scaled": false,
                "match_regex": null,
                "match_type": "default",
                "no_collapse": true,
@@ -324,7 +319,6 @@ define([
                "input_fasta_file_id": fastaFileId,
                "input_fasta_group_id": null, // TODO: Use fastaGroupId in the future.
                "input_source": this.inputSource,
-               "is_time_scaled": isTimeScaled,
                "match_regex": matchRegex,
                "match_type": matchType,
                "no_collapse": noCollapse,
@@ -771,7 +765,6 @@ define([
          if (jobData.inference_method) { this.inferenceMethodEl.set("value", jobData.inference_method); }
          if (jobData.input_fasta_file_id) { this.fastaFileIdEl.set("value", jobData.input_fasta_file_id); }
          if (jobData.input_source) { this.inputSource = jobData.input_source; }
-         if (jobData.is_time_scaled) { this.isTimeScaledEl.set("checked", jobData.is_time_scaled); }
          if (jobData.match_regex) { this.matchRegexEl.set("value", jobData.match_regex); }
          if (jobData.match_type) { this.matchTypeEl.set("value", jobData.match_type); }
          if (jobData.no_collapse) { this.noCollapseEl.set("checked", jobData.no_collapse); }
@@ -821,7 +814,6 @@ define([
          this.fastaFileIdEl.set("value", "");
          this.inferenceMethodEl.set("value", InferenceMethod.Local);
          this.inputSource = InputSource.FastaFileID;
-         this.isTimeScaledEl.set("value", true);
          this.matchRegexEl.set("value", "");
          this.matchTypeEl.set("value", MatchType.Default);
          this.noCollapseEl.set("value", true);
