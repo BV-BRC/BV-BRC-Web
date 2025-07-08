@@ -172,15 +172,18 @@
 }
 
 .ChatSessionOptionsBar {
-  height: 20%;
+  height: 15%;
   padding: 0px;
   background-color: #ffffff;
   overflow-y: auto;
   margin-bottom: 0px;
-  min-height: 20px;
 }
 
-.ChatSessionOptionsBar-extended {
+.ChatSessionOptionsBar-extended-one {
+  height: 20% !important;
+}
+
+.ChatSessionOptionsBar-extended-two {
   height: 25% !important;
 }
 
