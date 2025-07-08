@@ -408,7 +408,6 @@ define([
             // Add options bar to top of sidebar
             var chatOptionsBar = new ChatSessionOptionsBar({
               region: 'top',
-              style: 'height: 30px; ',
               copilotApi: this.copilotAPI,
               modelList: modelList,
               ragList: ragList

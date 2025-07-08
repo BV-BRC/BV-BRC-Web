@@ -71,6 +71,9 @@ define([
         /** @property {boolean} showPublicationsButton - Flag to control publications button visibility */
         showPublicationsButton: false,
 
+        /** @property {boolean} showEnhancePromptButton - Flag to control enhance prompt button visibility */
+        showEnhancePromptButton: false,
+
         /**
          * @constructor
          * Initializes the widget with provided options
@@ -328,15 +331,29 @@ define([
                 "Llama-3.3-70B-Instruct": "Llama-3.3-70B"
             };
 
-            // Set CSS height based on publications button flag
+            // Set CSS height based on number of additional features enabled
+            var additionalFeatures = 0;
             if (this.showPublicationsButton) {
-                domClass.add(this.containerNode, 'ChatSessionOptionsBar-extended');
+                additionalFeatures++;
+            }
+            if (this.showEnhancePromptButton) {
+                additionalFeatures++;
+            }
+
+            // Apply appropriate CSS class based on number of additional features
+            if (additionalFeatures === 1) {
+                domClass.add(this.containerNode, 'ChatSessionOptionsBar-extended-one');
+            } else if (additionalFeatures === 2 || additionalFeatures === 3) {
+                domClass.add(this.containerNode, 'ChatSessionOptionsBar-extended-two');
             }
 
             // Create model, RAG, and enhance prompt dialogs
             var modelDialog = this.createModelDialog();
             var ragDialog = this.createRagDialog();
-            var enhancePromptDialog = this.createEnhancePromptDialog();
+            var enhancePromptDialog = null;
+            if (this.showEnhancePromptButton) {
+                enhancePromptDialog = this.createEnhancePromptDialog();
+            }
 
             // Create container for text buttons
             var buttonsContainer = domConstruct.create('div', {
@@ -379,14 +396,16 @@ define([
                 style: 'display: block; width: 100%;'
             }, buttonsContainer);
 
-            // Add Enhance Prompt button with hover effects (at the top)
-            this.enhancePromptText = domConstruct.create('div', {
-                innerHTML: 'Enhance Prompt',
-                className: 'chat-window-options-button',
-                onclick: lang.hitch(this, function() {
-                    topic.publish('enhancePromptButtonPressed', this.enhancePromptText, ['below']);
-                })
-            }, this.advancedOptionsContainer);
+            // Conditionally add Enhance Prompt button with hover effects (at the top)
+            if (this.showEnhancePromptButton) {
+                this.enhancePromptText = domConstruct.create('div', {
+                    innerHTML: 'Enhance Prompt',
+                    className: 'chat-window-options-button',
+                    onclick: lang.hitch(this, function() {
+                        topic.publish('enhancePromptButtonPressed', this.enhancePromptText, ['below']);
+                    })
+                }, this.advancedOptionsContainer);
+            }
 
             // COMMENTED OUT: Add Model text display with hover effects
             // this.modelText = domConstruct.create('div', {
@@ -460,7 +479,7 @@ define([
                 //     popup.close(ragDialog);
                 //     ragDialog.visible = false;
                 // }
-                if (enhancePromptDialog._rendered && !enhancePromptDialog.domNode.contains(event.target) && !this.enhancePromptText.contains(event.target)) {
+                if (this.showEnhancePromptButton && enhancePromptDialog && enhancePromptDialog._rendered && !enhancePromptDialog.domNode.contains(event.target) && !this.enhancePromptText.contains(event.target)) {
                     popup.close(enhancePromptDialog);
                     enhancePromptDialog.visible = false;
                 }
@@ -509,25 +528,27 @@ define([
             // }));
 
             // Handle enhance prompt button clicks
-            topic.subscribe('enhancePromptButtonPressed', lang.hitch(this, function(buttonNode, orient) {
-                console.log('enhance prompt pressed');
-                if (enhancePromptDialog.visible) {
-                    popup.close(enhancePromptDialog);
-                    enhancePromptDialog.visible = false;
-                } else {
-                    if (!buttonNode) {
-                        buttonNode = this.enhancePromptText;
+            if (this.showEnhancePromptButton) {
+                topic.subscribe('enhancePromptButtonPressed', lang.hitch(this, function(buttonNode, orient) {
+                    console.log('enhance prompt pressed');
+                    if (enhancePromptDialog.visible) {
+                        popup.close(enhancePromptDialog);
+                        enhancePromptDialog.visible = false;
+                    } else {
+                        if (!buttonNode) {
+                            buttonNode = this.enhancePromptText;
+                        }
+                        setTimeout(function() {
+                            popup.open({
+                                popup: enhancePromptDialog,
+                                around: buttonNode,
+                                orient: orient
+                            });
+                            enhancePromptDialog.visible = true;
+                        }, 100);
                     }
-                    setTimeout(function() {
-                        popup.open({
-                            popup: enhancePromptDialog,
-                            around: buttonNode,
-                            orient: orient
-                        });
-                        enhancePromptDialog.visible = true;
-                    }, 100);
-                }
-            }));
+                }));
+            }
 
             // COMMENTED OUT: Subscribe to topic changes to update display text
             // topic.subscribe('ChatModel', lang.hitch(this, function(model) {
@@ -570,14 +591,14 @@ define([
                 if (visible) {
                     // Increase height when advanced options are shown
                     domStyle.set(this.containerNode, {
-                        'min-height': '250px',
+                        'min-height': '100px', // Reduced from 250px to allow smaller sizing
                         'transition': 'min-height 0.3s ease-in-out',
                         'overflow': 'hidden'
                     });
                 } else {
                     // Reset to smaller height when advanced options are hidden
                     domStyle.set(this.containerNode, {
-                        'min-height': '50px',
+                        'min-height': '30px', // Reduced from 50px to allow smaller sizing
                         'transition': 'min-height 0.3s ease-in-out',
                         'overflow': 'hidden'
                     });

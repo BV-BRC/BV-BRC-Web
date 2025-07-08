@@ -92,6 +92,11 @@ define([
         // Tracks if model/RAG container is visible
         modelRagVisible: false,
 
+        // Controls the height distribution between the top and bottom panes of the options sidebar.
+        //   Value should be between 0 and 1 where 0.3 = 30% of the sidebar height for the top pane.
+        //   Change this value (or pass it in via the widget options) to alter the relative heights.
+        topPaneHeightPercent: 0.1,
+
         // Advanced options dialog reference
         advancedOptionsDialog: null,
 
@@ -622,17 +627,21 @@ define([
                 this.bottomContentPane = new ChatSessionScrollBar({
                     className: 'optionsBottomSection',
                     region: 'center',
-                    style: 'padding: 0px; margin: 0px; border: 0px; background-color: #f0f0f0;',
+                    style: 'min-height: 100px; padding: 0px; margin: 0px; border: 0px; background-color: #f0f0f0;',
                     copilotApi: this.copilotApi
                 });
                 this.optionsSidebarContainer.addChild(this.bottomContentPane);
 
-                // Adjust the top pane height to fit its content so buttons are fully visible
+                // Apply the initial height distribution between the two panes based on the
+                // configurable `topPaneHeightPercent` value.
                 setTimeout(lang.hitch(this, function() {
-                    var topHeight = this.topContentPane.domNode.height;
+                    var topPercent = typeof this.topPaneHeightPercent === 'number' ? this.topPaneHeightPercent : 0.3;
+                    // Clamp to sensible bounds (5% – 95%)
+                    topPercent = Math.max(0.05, Math.min(topPercent, 0.95));
+                    var bottomPercent = 1 - topPercent;
 
-                    domStyle.set(this.topContentPane.domNode, 'height', topHeight + 'px');
-                    domStyle.set(this.bottomContentPane.domNode, 'height', 'calc(100% - ' + topHeight + 'px)');
+                    domStyle.set(this.topContentPane.domNode, 'height', (topPercent * 100) + '%');
+                    domStyle.set(this.bottomContentPane.domNode, 'height', (bottomPercent * 100) + '%');
 
                     // Re-layout the sidebar container with the new sizes
                     if (this.optionsSidebarContainer && this.optionsSidebarContainer.resize) {
