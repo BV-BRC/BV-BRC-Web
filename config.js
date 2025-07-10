@@ -21,6 +21,8 @@ const defaults = {
   accountURL: 'http://user.patric.local:3002/',
   docsServiceURL: 'https://www.bv-brc.org/docs/',
   userServiceURL: 'https://user.patricbrc.org',
+  'copilotApiURL': 'https://dev-3.bv-brc.org/copilot-api/chatbrc',
+  'copilotDbURL': 'https://www.bv-brc.org/services/copilot-api/copilot-api/db',
   localStorageCheckInterval: 86400,
   enableDevTools: false,
   reportProblemEmailAddress: 'help@bv-brc.org',
