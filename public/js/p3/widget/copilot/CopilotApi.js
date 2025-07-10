@@ -35,17 +35,11 @@ define([
         /** Base URL for database-related endpoints */
         dbUrlBase: null,
 
-        /** Base URL for main Copilot API endpoints */
-        // apiUrlBase: 'https://www.bv-brc.org/services/copilot-api/copilot-api/chatbrc',
-
-        /** Base URL for database-related endpoints */
-        // dbUrlBase: 'https://www.bv-brc.org/services/copilot-api/copilot-api/db',
-
-        // apiUrlBase: 'https://dev-3.bv-brc.org/copilot-api/chatbrc',
-        // dbUrlBase: 'https://dev-3.bv-brc.org/copilot-api/db',
-
         /** Caches the most recent API response */
         storedResult: null,
+
+        /** Indicates whether the Copilot service URLs are available */
+        copilotAvailable: true,
 
         /**
          * Constructor initializes the widget with provided options
@@ -66,6 +60,23 @@ define([
             this.apiUrlBase = window.App.copilotApiURL;
             this.dbUrlBase = window.App.copilotDbURL;
 
+<<<<<<< Updated upstream
+=======
+            // If either URL is missing, mark service as unavailable and notify listeners
+            if (!this.apiUrlBase || !this.dbUrlBase) {
+                this.copilotAvailable = false;
+                var error = new Error('The BV-BRC Copilot service is currently unavailable. Please try again later.');
+                // Publish a global error so UI components can respond accordingly
+                topic.publish('CopilotApiError', { error: error });
+                // Additionally show a dialog to the user
+                new Dialog({
+                    title: 'Service Unavailable',
+                    content: 'The BV-BRC Copilot service is currently unavailable. Please try again later.',
+                    style: 'width: 300px'
+                }).show();
+            }
+
+>>>>>>> Stashed changes
             console.log('CopilotAPI postCreate - API URLs initialized');
         },
 
@@ -555,6 +566,12 @@ define([
          */
         getModelList: function() {
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            // If the Copilot service is unavailable, immediately reject and publish the error
+            if (!this.copilotAvailable || !this.dbUrlBase) {
+                var error = new Error('The BV-BRC Copilot service is currently unavailable.');
+                topic.publish('CopilotApiError', { error: error });
+                return Promise.reject(error);
+            }
             var _self = this;
             return request.post(this.dbUrlBase + '/get-model-list', {
                 data: JSON.stringify({
