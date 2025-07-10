@@ -693,9 +693,11 @@ define([
 
                         // Set the title if available
                         options.copilotApi.getSessionTitle(options.currentSessionId).then(lang.hitch(this, function(title_response) {
-                            var title = title_response.title[0].title;
-                            if (this.controllerPanel.titleWidget) {
-                                this.controllerPanel.titleWidget.updateTitle(title);
+                            if (title_response.title && title_response.title.length > 0) {
+                                var title = title_response.title[0].title;
+                                if (this.controllerPanel.titleWidget) {
+                                    this.controllerPanel.titleWidget.updateTitle(title);
+                                }
                             }
                         }));
                     }

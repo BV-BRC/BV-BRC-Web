@@ -30,16 +30,16 @@ define([
     return declare([_WidgetBase], {
 
         /** Base URL for main Copilot API endpoints */
-        apiUrlBase: 'https://www.bv-brc.org/services/copilot-api/copilot-api/chatbrc',
+        apiUrlBase: null,
 
         /** Base URL for database-related endpoints */
-        dbUrlBase: 'https://www.bv-brc.org/services/copilot-api/copilot-api/db',
-
-        // apiUrlBase: 'https://dev-3.bv-brc.org/copilot-api/chatbrc',
-        // dbUrlBase: 'https://dev-3.bv-brc.org/copilot-api/db',
+        dbUrlBase: null,
 
         /** Caches the most recent API response */
         storedResult: null,
+
+        /** Indicates whether the Copilot service URLs are available */
+        copilotAvailable: true,
 
         /**
          * Constructor initializes the widget with provided options
@@ -52,11 +52,29 @@ define([
 
         /**
          * Called after widget creation
-         * Currently just logs creation event
+         * Initializes API URLs from window.App configuration
          */
         postCreate: function() {
             this.inherited(arguments);
-            console.log('CopilotAPI postCreate');
+            // Initialize API URLs from configuration (if not already set)
+            this.apiUrlBase = window.App.copilotApiURL;
+            this.dbUrlBase = window.App.copilotDbURL;
+
+            // If either URL is missing, mark service as unavailable and notify listeners
+            if (!this.apiUrlBase || !this.dbUrlBase) {
+                this.copilotAvailable = false;
+                var error = new Error('The BV-BRC Copilot service is currently unavailable. Please try again later.');
+                // Publish a global error so UI components can respond accordingly
+                topic.publish('CopilotApiError', { error: error });
+                // Additionally show a dialog to the user
+                new Dialog({
+                    title: 'Service Unavailable',
+                    content: 'The BV-BRC Copilot service is currently unavailable. Please try again later.',
+                    style: 'width: 300px'
+                }).show();
+            }
+
+            console.log('CopilotAPI postCreate - API URLs initialized');
         },
 
         /**
@@ -545,6 +563,12 @@ define([
          */
         getModelList: function() {
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            // If the Copilot service is unavailable, immediately reject and publish the error
+            if (!this.copilotAvailable || !this.dbUrlBase) {
+                var error = new Error('The BV-BRC Copilot service is currently unavailable.');
+                topic.publish('CopilotApiError', { error: error });
+                return Promise.reject(error);
+            }
             var _self = this;
             return request.post(this.dbUrlBase + '/get-model-list', {
                 data: JSON.stringify({
