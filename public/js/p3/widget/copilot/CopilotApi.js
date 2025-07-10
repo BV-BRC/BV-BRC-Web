@@ -60,8 +60,6 @@ define([
             this.apiUrlBase = window.App.copilotApiURL;
             this.dbUrlBase = window.App.copilotDbURL;
 
-<<<<<<< Updated upstream
-=======
             // If either URL is missing, mark service as unavailable and notify listeners
             if (!this.apiUrlBase || !this.dbUrlBase) {
                 this.copilotAvailable = false;
@@ -76,7 +74,6 @@ define([
                 }).show();
             }
 
->>>>>>> Stashed changes
             console.log('CopilotAPI postCreate - API URLs initialized');
         },
 
