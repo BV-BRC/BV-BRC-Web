@@ -466,8 +466,10 @@ define([
          * @param {number} newSize The new text size
          */
         _handleChatTextSizeChanged: function(newSize) {
-            this.displayWidget.fontSize = newSize;
-            topic.publish('RefreshSession', this.sessionId, false);
+            if (this.displayWidget) {
+                this.displayWidget.fontSize = newSize;
+                topic.publish('RefreshSession', this.sessionId, false);
+            }
         },
 
         _handleSetStatePrompt: function() {
