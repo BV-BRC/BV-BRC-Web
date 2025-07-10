@@ -30,10 +30,10 @@ define([
     return declare([_WidgetBase], {
 
         /** Base URL for main Copilot API endpoints */
-        apiUrlBase: window.App.copilotApiURL,
+        apiUrlBase: null,
 
         /** Base URL for database-related endpoints */
-        dbUrlBase: window.App.copilotDbURL,
+        dbUrlBase: null,
 
         /** Base URL for main Copilot API endpoints */
         // apiUrlBase: 'https://www.bv-brc.org/services/copilot-api/copilot-api/chatbrc',
@@ -58,11 +58,15 @@ define([
 
         /**
          * Called after widget creation
-         * Currently just logs creation event
+         * Initializes API URLs from window.App configuration
          */
         postCreate: function() {
             this.inherited(arguments);
-            console.log('CopilotAPI postCreate');
+            // Initialize API URLs from configuration (if not already set)
+            this.apiUrlBase = window.App.copilotApiURL;
+            this.dbUrlBase = window.App.copilotDbURL;
+
+            console.log('CopilotAPI postCreate - API URLs initialized');
         },
 
         /**
