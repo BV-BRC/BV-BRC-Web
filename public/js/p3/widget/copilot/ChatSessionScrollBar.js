@@ -15,10 +15,12 @@ define([
   'dojo/dom-construct', // DOM manipulation utilities
   'dojo/_base/lang', // Language utilities like hitch
   'dojo/topic', // Pub/sub messaging
+  'dojo/on',
+  'dojo/dom-style',
   '../../store/ChatSessionsMemoryStore', // Memory store for sessions
   './ChatSessionScrollCard' // Individual session card widget
 ], function (
-  declare, ContentPane, domConstruct, lang, topic, ChatSessionsMemoryStore, ChatSessionScrollCard
+  declare, ContentPane, domConstruct, lang, topic, on, domStyle, ChatSessionsMemoryStore, ChatSessionScrollCard
 ) {
   /**
    * @class ChatSessionScrollBar
@@ -43,6 +45,30 @@ define([
     currentHighlighted: null,
 
     /**
+     * @property {boolean} hasMore
+     * Indicates if there are more sessions available to load.
+     */
+    hasMore: true,
+
+    /**
+     * @property {number} pageSize
+     * Number of sessions to fetch per page.
+     */
+    pageSize: 20,
+
+    /**
+     * @property {number} offset
+     * The current offset for pagination.
+     */
+    offset: 0,
+
+    /**
+     * @property {HTMLElement} loadMoreButton
+     * The button element for loading more sessions.
+     */
+    loadMoreButton: null,
+
+    /**
      * @constructor
      * @param {Object} args - Configuration arguments
      *
@@ -53,6 +79,11 @@ define([
      */
     constructor: function(args) {
       declare.safeMixin(this, args);
+
+      // Pagination related defaults
+      this.pageSize = 20;
+      this.offset = 0;
+      this.hasMore = true;
 
       // Initialize (or retrieve) the shared sessions memory store
       if (window && window.App) {
@@ -86,6 +117,7 @@ define([
         class: 'chatSessionScrollContainer'
       }, this.containerNode);
 
+      // Initial load
       this._refreshSessions();
 
       topic.subscribe('reloadUserSessions', lang.hitch(this, function(data) {
@@ -141,6 +173,9 @@ define([
           // Store reference to the card widget keyed by session ID
           this.sessionCards[session.session_id] = sessionCard;
       }, this);
+
+      // Ensure the load-more button visibility/state is updated after rendering
+      this._renderLoadMoreButton();
     },
 
     /**
@@ -215,6 +250,9 @@ define([
       this.sessions_list = sessions;
       this.renderSessions();
 
+      // Ensure the load-more button visibility/state is updated after rendering
+      this._renderLoadMoreButton();
+
       // If there's a session to highlight after reload, do it now
       if (this._highlightAfterReload) {
         // Use setTimeout to ensure the DOM is updated before highlighting
@@ -231,21 +269,70 @@ define([
     },
 
     _refreshSessions: function() {
+      // Reset pagination state on a full refresh
+      this.offset = 0;
+
       var storeData = this.sessionsStore.query();
 
-      // If we already have sessions cached, use them directly
+      // If we already have sessions cached, use them directly (but still honour pagination)
       if (storeData && storeData.length > 0) {
         this.setSessions(storeData);
         this._highlightSavedSession();
         return;
       }
 
-      // Otherwise load from API (e.g., on initial boot or after a new chat is created)
-      this.copilotApi.getUserSessions().then(lang.hitch(this, function(sessions) {
+      // Load first page from API
+      this.copilotApi.getUserSessions(this.pageSize, this.offset).then(lang.hitch(this, function(res) {
+        var sessions = res.sessions || [];
+        this.hasMore = res.has_more;
+        this.offset += sessions.length;
+
         this.sessionsStore.setSessions(sessions);
         this.setSessions(sessions);
         this._highlightSavedSession();
       }));
+    },
+
+    /*
+     * Loads the next page of sessions when the user presses the "Load More" button.
+     */
+    _loadMoreSessions: function() {
+      if (!this.hasMore) { return; }
+
+      this.copilotApi.getUserSessions(this.pageSize, this.offset).then(lang.hitch(this, function(res) {
+        var newSessions = res.sessions || [];
+        this.hasMore = res.has_more;
+        this.offset += newSessions.length;
+
+        // Merge with existing list without duplicates
+        var combined = this.sessions_list.concat(newSessions);
+        this.sessionsStore.setSessions(combined);
+        this.setSessions(combined);
+      }));
+    },
+
+    /*
+     * Creates / updates the Load-More button based on `hasMore` flag.
+     */
+    _renderLoadMoreButton: function() {
+      if (!this.loadMoreButton) {
+        // Create the button once and wire the click handler
+        this.loadMoreButton = domConstruct.create('button', {
+          innerHTML: 'Load More Sessions',
+          class: 'chatLoadMoreButton',
+          style: 'width: 100%; padding: 6px; margin-top: 4px; background-color: #ffffff; border: 1px solid #ccc; cursor: pointer;'
+        }, this.scrollContainer);
+
+        on(this.loadMoreButton, 'click', lang.hitch(this, this._loadMoreSessions));
+      }
+
+      // Ensure the button is inside the container (empty() removes children)
+      if (this.loadMoreButton && this.loadMoreButton.parentNode !== this.scrollContainer) {
+        this.scrollContainer.appendChild(this.loadMoreButton);
+      }
+
+      // Toggle visibility
+      domStyle.set(this.loadMoreButton, 'display', this.hasMore ? 'block' : 'none');
     },
 
     _highlightSavedSession: function() {

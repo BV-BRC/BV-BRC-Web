@@ -85,21 +85,27 @@ define([
          * - Parses JSON response
          * - Returns empty array if no sessions found
          */
-        getUserSessions: function() {
+        // Updated to support server-side pagination. Returns the full response
+        // ( { sessions, total, has_more } ) so callers can decide what to do.
+        // Default page size is 20 and offset 0.
+        getUserSessions: function(limit = 20, offset = 0) {
             if (!this._loggedIn) return Promise.reject('Not logged in');
             var _self = this;
-            return request.get(this.apiUrlBase + `/get-all-sessions?user_id=${encodeURIComponent(_self.user_id)}`, {
+
+            // Build query string with pagination params
+            var qs = [`user_id=${encodeURIComponent(_self.user_id)}`,
+                      `limit=${limit}`,
+                      `offset=${offset}`].join('&');
+
+            return request.get(this.apiUrlBase + `/get-all-sessions?${qs}`, {
                 headers: {
                     Authorization: (window.App.authorizationToken || '')
-                }
-            }).then(lang.hitch(this, function(response) {
-                var data = JSON.parse(response);
-                if (data.sessions && data.sessions.length > 0) {
-                    return data.sessions;
-                } else {
-                    return [];
-                }
-            })).catch(function(error) {
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                // The server already returns JSON with { sessions, total, has_more }
+                return response;
+            }).catch(function(error) {
                 console.error('Error getting user sessions:', error);
                 throw error;
             });
