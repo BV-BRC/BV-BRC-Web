@@ -530,7 +530,7 @@ define([
     _handlePageContentSubmit: function() {
       var inputText = this.textArea.get('value');
       var _self = this;
-      debugger;
+
       const pageHtml = document.documentElement.innerHTML;
 
       var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the page content.\n' +

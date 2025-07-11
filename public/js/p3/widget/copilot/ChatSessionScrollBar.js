@@ -326,6 +326,9 @@ define([
     _loadMoreSessions: function() {
       if (!this.hasMore) { return; }
 
+      // Capture current scroll position relative to the bottom so we can restore it after re-rendering.
+      var prevScrollBottom = this.scrollContainer.scrollHeight - this.scrollContainer.scrollTop;
+
       this.copilotApi.getUserSessions(this.pageSize, this.offset).then(lang.hitch(this, function(res) {
         var newSessions = res.sessions || [];
         this.hasMore = res.has_more;
@@ -335,6 +338,13 @@ define([
         var combined = this.sessions_list.concat(newSessions);
         this.sessionsStore.setSessions(combined);
         this.setSessions(combined);
+
+        // Using a timeout ensures the DOM has finished re-rendering before we attempt to restore the scroll position.
+        setTimeout(lang.hitch(this, function() {
+          // Calculate the new scrollTop such that the previously visible content stays in view.
+          var newScrollTop = this.scrollContainer.scrollHeight - prevScrollBottom;
+          this.scrollContainer.scrollTop = newScrollTop >= 0 ? newScrollTop : 0;
+        }), 0);
       }));
     },
 
