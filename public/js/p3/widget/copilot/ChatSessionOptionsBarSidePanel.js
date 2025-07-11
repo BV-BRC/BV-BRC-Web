@@ -51,9 +51,6 @@ define([
                 onClick: lang.hitch(this, function() {
                     // Create a new chat session immediately
                     if (this.copilotApi) {
-                        // Publish reloadUserSessions to remove session highlight
-                        topic.publish('reloadUserSessions');
-
                         // Publish the createNewChatSession topic
                         topic.publish('createNewChatSession');
                     }

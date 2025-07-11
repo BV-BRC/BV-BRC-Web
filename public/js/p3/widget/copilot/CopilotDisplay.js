@@ -230,6 +230,7 @@ define([
      */
     onQueryError: function(error = null) {
       console.log('onQueryError', error);
+      debugger;
       domConstruct.empty(this.resultContainer);
       var errorMessage = error ? error.message : 'An error occurred while processing your request. Please try again later.';
       domConstruct.create('div', {

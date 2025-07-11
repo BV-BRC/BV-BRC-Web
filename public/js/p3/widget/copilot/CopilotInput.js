@@ -234,13 +234,7 @@ define([
           this.displayWidget.showMessages(this.chatStore.query());
 
           if (_self.new_chat) {
-            _self.new_chat = false;
-            topic.publish('reloadUserSessions', {
-              highlightSessionId: this.sessionId
-            });
-            setTimeout(() => {
-              topic.publish('generateSessionTitle');
-            }, 100);
+            _self._finishNewChat();
           }
         })).catch(function(error) {
           topic.publish('CopilotApiError', { error: error });
@@ -297,10 +291,7 @@ define([
           this.displayWidget.showMessages(this.chatStore.query());
 
           if (_self.new_chat) {
-            _self.new_chat = false;
-            setTimeout(() => {
-              topic.publish('generateSessionTitle');
-            }, 100);
+            _self._finishNewChat();
           }
         })).catch(function(error) {
           topic.publish('CopilotApiError', { error: error });
@@ -426,6 +417,34 @@ define([
       },
 
       /**
+       * Finalizes creation of a brand-new chat after the first successful response.
+       * Adds the session to the global sessions memory store, publishes reload event,
+       * then triggers title generation.
+       * @param {boolean} generateTitleImmediately – if false, skip title generation (default true)
+       */
+      _finishNewChat: function(generateTitleImmediately = true) {
+        this.new_chat = false;
+
+        // Add to global sessions store
+        if (window && window.App && window.App.chatSessionsStore) {
+          window.App.chatSessionsStore.addSession({
+            session_id: this.sessionId,
+            title: 'New Chat',
+            created_at: Date.now()
+          });
+        }
+
+        // Reload scroll bar and highlight
+        topic.publish('reloadUserSessions', { highlightSessionId: this.sessionId });
+
+        if (generateTitleImmediately) {
+          setTimeout(function() {
+            topic.publish('generateSessionTitle');
+          }, 100);
+        }
+      },
+
+      /**
        * @method _handlePageSubmit
        * @description Handles submission about the current page (screenshot first, HTML fallback)
        *
@@ -479,13 +498,7 @@ define([
                   this.displayWidget.showMessages(this.chatStore.query());
 
                   if (_self.new_chat) {
-                      _self.new_chat = false;
-                      topic.publish('reloadUserSessions', {
-                          highlightSessionId: this.sessionId
-                      });
-                      setTimeout(() => {
-                          topic.publish('generateSessionTitle');
-                      }, 200);
+                      _self._finishNewChat();
                   }
               })).catch(function(error) {
                   topic.publish('CopilotApiError', { error: error });
@@ -551,13 +564,7 @@ define([
           this.displayWidget.showMessages(this.chatStore.query());
 
           if (_self.new_chat) {
-              _self.new_chat = false;
-              topic.publish('reloadUserSessions', {
-                  highlightSessionId: this.sessionId
-              });
-              setTimeout(() => {
-                  topic.publish('generateSessionTitle');
-              }, 100);
+              _self._finishNewChat();
           }
       })).catch(function(error) {
           topic.publish('CopilotApiError', { error: error });

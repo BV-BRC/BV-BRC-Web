@@ -15,9 +15,10 @@ define([
   'dojo/dom-construct', // DOM manipulation utilities
   'dojo/_base/lang', // Language utilities like hitch
   'dojo/topic', // Pub/sub messaging
+  '../../store/ChatSessionsMemoryStore', // Memory store for sessions
   './ChatSessionScrollCard' // Individual session card widget
 ], function (
-  declare, ContentPane, domConstruct, lang, topic, ChatSessionScrollCard
+  declare, ContentPane, domConstruct, lang, topic, ChatSessionsMemoryStore, ChatSessionScrollCard
 ) {
   /**
    * @class ChatSessionScrollBar
@@ -39,6 +40,7 @@ define([
      * Map of session IDs to card widgets for quick access
      */
     sessionCards: {},
+    currentHighlighted: null,
 
     /**
      * @constructor
@@ -51,6 +53,18 @@ define([
      */
     constructor: function(args) {
       declare.safeMixin(this, args);
+
+      // Initialize (or retrieve) the shared sessions memory store
+      if (window && window.App) {
+        if (!window.App.chatSessionsStore) {
+          window.App.chatSessionsStore = new ChatSessionsMemoryStore();
+        }
+        this.sessionsStore = window.App.chatSessionsStore;
+      } else {
+        // Fallback – unlikely in BV-BRC context
+        this.sessionsStore = new ChatSessionsMemoryStore();
+      }
+
       this.sessionCards = {};
     },
 
@@ -72,19 +86,35 @@ define([
         class: 'chatSessionScrollContainer'
       }, this.containerNode);
 
-      this.getSessions();
+      this._refreshSessions();
 
       topic.subscribe('reloadUserSessions', lang.hitch(this, function(data) {
         if (data && data.highlightSessionId) {
           // Store the session ID to highlight after reload
           this._highlightAfterReload = data.highlightSessionId;
         }
-        this.getSessions();
+        this._refreshSessions();
       }));
 
       // Subscribe to session selection events to highlight the selected session
       topic.subscribe('ChatSession:Selected', lang.hitch(this, function(data) {
         this.highlightSession(data.sessionId);
+      }));
+
+      // When a brand-new chat is started, nothing should be highlighted yet
+      topic.subscribe('createNewChatSession', lang.hitch(this, function() {
+        this._highlightAfterReload = null;
+        this.currentHighlighted = null;
+        this.clearHighlight();
+
+        // Remove the persisted current-session-id so automatic highlight won't find it
+        try {
+          if (window && window.localStorage) {
+            localStorage.removeItem('copilot-current-session-id');
+          }
+        } catch (e) {
+          console.warn('Unable to clear localStorage current session id', e);
+        }
       }));
     },
 
@@ -124,6 +154,7 @@ define([
      * - Scrolls the highlighted session into view
      */
     highlightSession: function(sessionId) {
+      this.currentHighlighted = sessionId || null;
       if (!this.sessionCards) {
         return;
       }
@@ -191,37 +222,47 @@ define([
           this.highlightSession(this._highlightAfterReload);
           this._highlightAfterReload = null; // Clear the pending highlight
         }), 300);
+      } else if (this.currentHighlighted) {
+        // Re-apply existing highlight after rerender
+        setTimeout(lang.hitch(this, function() {
+          this.highlightSession(this.currentHighlighted);
+        }), 0);
       }
     },
 
-    /**
-     * @method getSessions
-     * Fetches user's chat sessions from API
-     *
-     * Implementation:
-     * - Calls API method to get user sessions
-     * - Updates internal sessions list with response
-     * - Handles promise resolution
-     * - Uses lang.hitch to maintain scope
-     */
-    getSessions: function() {
-      this.copilotApi.getUserSessions().then(lang.hitch(this, function(sessions) {
-        this.setSessions(sessions);
+    _refreshSessions: function() {
+      var storeData = this.sessionsStore.query();
 
-        // If no specific session to highlight, attempt to highlight the currently stored session
-        if (!this._highlightAfterReload) {
-          try {
-            var savedId = (window && window.localStorage) ? localStorage.getItem('copilot-current-session-id') : null;
-            if (savedId) {
-              setTimeout(lang.hitch(this, function() {
-                this.highlightSession(savedId);
-              }), 300);
-            }
-          } catch (e) {
-            console.warn('Unable to access localStorage for current session id', e);
-          }
-        }
+      // If we already have sessions cached, use them directly
+      if (storeData && storeData.length > 0) {
+        this.setSessions(storeData);
+        this._highlightSavedSession();
+        return;
+      }
+
+      // Otherwise load from API (e.g., on initial boot or after a new chat is created)
+      this.copilotApi.getUserSessions().then(lang.hitch(this, function(sessions) {
+        this.sessionsStore.setSessions(sessions);
+        this.setSessions(sessions);
+        this._highlightSavedSession();
       }));
+    },
+
+    _highlightSavedSession: function() {
+      if (this._highlightAfterReload) {
+        return; // Will be handled in setSessions
+      }
+
+      try {
+        var savedId = (window && window.localStorage) ? localStorage.getItem('copilot-current-session-id') : null;
+        if (savedId) {
+          setTimeout(lang.hitch(this, function() {
+            this.highlightSession(savedId);
+          }), 300);
+        }
+      } catch (e) {
+        console.warn('Unable to access localStorage for current session id', e);
+      }
     }
   });
 });
