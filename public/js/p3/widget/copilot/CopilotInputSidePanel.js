@@ -233,13 +233,7 @@ define([
                     this.displayWidget.showMessages(this.chatStore.query());
 
                     if (_self.new_chat) {
-                        _self.new_chat = false;
-                        topic.publish('reloadUserSessions', {
-                            highlightSessionId: this.sessionId
-                        });
-                        setTimeout(() => {
-                            topic.publish('generateSessionTitle');
-                        }, 300);
+                        _self._finishNewChat();
                     }
                 })).catch(function(error) {
                     topic.publish('CopilotApiError', { error: error });
@@ -300,13 +294,7 @@ define([
             this.displayWidget.showMessages(this.chatStore.query());
 
             if (_self.new_chat) {
-                _self.new_chat = false;
-                topic.publish('reloadUserSessions', {
-                    highlightSessionId: this.sessionId
-                });
-                setTimeout(() => {
-                    topic.publish('generateSessionTitle');
-                }, 100);
+                _self._finishNewChat();
             }
         })).catch(function(error) {
             topic.publish('CopilotApiError', { error: error });
@@ -384,13 +372,7 @@ define([
         this.displayWidget.showMessages(this.chatStore.query());
 
         if (_self.new_chat) {
-          _self.new_chat = false;
-          topic.publish('reloadUserSessions', {
-            highlightSessionId: this.sessionId
-          });
-          setTimeout(() => {
-            topic.publish('generateSessionTitle');
-          }, 100);
+          _self._finishNewChat();
         }
       })).catch(function(error) {
         topic.publish('CopilotApiError', { error: error });
@@ -459,13 +441,7 @@ define([
         this.displayWidget.showMessages(this.chatStore.query());
 
         if (_self.new_chat) {
-          _self.new_chat = false;
-          topic.publish('reloadUserSessions', {
-            highlightSessionId: this.sessionId
-          });
-          setTimeout(() => {
-            topic.publish('generateSessionTitle');
-          }, 100);
+          _self._finishNewChat();
         }
       })).catch(function(error) {
         topic.publish('noJobDataError', error);
@@ -509,6 +485,32 @@ define([
             buttonNode.classList.remove('pageContentToggleActive');
             buttonNode.classList.add('pageContentToggleInactive');
         }
+    },
+
+    /**
+     * Finalizes creation of a brand-new chat, mirroring CopilotInput._finishNewChat
+     * but scoped to the side-panel input.
+     */
+    _finishNewChat: function(generateTitleImmediately = true) {
+      this.new_chat = false;
+
+      // Add the new session to the global sessions store
+      if (window && window.App && window.App.chatSessionsStore) {
+        window.App.chatSessionsStore.addSession({
+          session_id: this.sessionId,
+          title: 'New Chat',
+          created_at: Date.now()
+        });
+      }
+
+      // Tell the scroll-bar to reload and highlight this new session
+      topic.publish('reloadUserSessions', { highlightSessionId: this.sessionId });
+
+      if (generateTitleImmediately) {
+        setTimeout(function() {
+          topic.publish('generateSessionTitle');
+        }, 100);
+      }
     },
 
     setCurrentSelection: function(selection) {

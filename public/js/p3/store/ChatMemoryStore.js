@@ -1,5 +1,5 @@
 /**
- * @module p3/store/ChatSessionMemoryStore
+ * @module p3/store/ChatMemoryStore
  * @description A Memory store implementation for managing chat session messages.
  * Extends dojo/store/Memory to provide storage and retrieval of chat messages.
  *
@@ -34,6 +34,7 @@ define([
      */
     constructor: function(options) {
       this.inherited(arguments);
+
       this.idProperty = 'message_id'; // Unique identifier for messages
       this.data = []; // Array to store chat messages
       declare.safeMixin(this, options);
@@ -102,6 +103,8 @@ define([
       return this.data;
     },
 
+    // No session list helpers in message store
+
     /**
      * @method updateSessionTitle
      * @param {string} sessionId - Session identifier
@@ -113,9 +116,9 @@ define([
      * - Used when user renames a chat session
      */
     updateSessionTitle: function(sessionId, newTitle) {
-      this.data.forEach(message => {
-        if (message.session_id === sessionId) {
-          message.title = newTitle;
+      this.data.forEach(function(item) {
+        if (item.session_id === sessionId) {
+          item.title = newTitle;
         }
       });
     }

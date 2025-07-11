@@ -21,7 +21,8 @@ define([
     './CopilotDisplay',
     './CopilotInput',
     './CopilotApi',
-    '../../store/ChatSessionMemoryStore',
+    '../../store/ChatMemoryStore',
+    '../../store/ChatSessionsMemoryStore',
     'dojo/topic',
     'dojo/_base/lang',
     './ChatSessionTitle',
@@ -36,7 +37,8 @@ define([
     CopilotDisplay,
     CopilotInput,
     CopilotAPI,
-    ChatSessionMemoryStore,
+    ChatMemoryStore,
+    ChatSessionsMemoryStore,
     topic,
     lang,
     ChatSessionTitle,
@@ -70,10 +72,20 @@ define([
                 lang.mixin(this, opts);
             }
             // Initialize chat store for message persistence
-            this.chatStore = new ChatSessionMemoryStore({
+            this.chatStore = new ChatMemoryStore({
                 copilotApi: this.copilotApi
             });
             window.App.chatStore = this.chatStore;
+
+            // Ensure global sessions store exists
+            if (window && window.App) {
+                if (!window.App.chatSessionsStore) {
+                    window.App.chatSessionsStore = new ChatSessionsMemoryStore();
+                }
+                this.sessionsStore = window.App.chatSessionsStore;
+            } else {
+                this.sessionsStore = new ChatSessionsMemoryStore();
+            }
         },
 
         /**
@@ -158,9 +170,13 @@ define([
 
             // Handle chat title changes
             topic.subscribe('ChatSessionTitleChanged', lang.hitch(this, function(data) {
+                // Update title in message store if current session
                 if (data.sessionId === this.sessionId) {
                     this.chatStore.updateSessionTitle(data.sessionId, data.title);
                 }
+
+                // Always update title in sessions store
+                this.sessionsStore.updateSessionTitle(data.sessionId, data.title);
             }));
 
             // Handle various chat configuration changes
@@ -257,18 +273,22 @@ define([
         _handleChatSessionDelete: function(sessionId) {
             this.copilotApi.deleteSession(sessionId).then(lang.hitch(this, function (response) {
                 if (response.status === 'ok') {
+
+                    // Remove session from local store
+                    this.sessionsStore.removeSession(sessionId);
+
                     if (this.sessionId === sessionId) {
-                        this.copilotApi.getUserSessions().then(lang.hitch(this, function(sessions) {
-                            const session_id = sessions[0].session_id;
-                            const messages = sessions[0].messages;
-                            const title = sessions[0].title;
-                            const data = {
-                                sessionId: session_id,
-                                messages: messages
+                        // Attempt to switch to the first available session from local store
+                        var remaining = this.sessionsStore.query();
+                        if (remaining && remaining.length > 0) {
+                            var next = remaining[0];
+                            var data = {
+                                sessionId: next.session_id,
+                                messages: next.messages || []
                             };
                             topic.publish('ChatSession:Selected', data);
-                            this.titleWidget.updateTitle(title);
-                        }));
+                            this.titleWidget.updateTitle(next.title || 'New Chat');
+                        }
                     }
                 }
                 topic.publish('reloadUserSessions', {
@@ -330,6 +350,7 @@ define([
          */
         changeSessionId: function(sessionId) {
             this.sessionId = sessionId;
+            // Do not add the session to the sessions store here; it will be added after the first successful message.
             // Persist the current session ID so it can be restored the next time the chat opens
             try {
                 if (window && window.localStorage) {
@@ -344,10 +365,9 @@ define([
             this.displayWidget.setSessionId(sessionId);
             this.titleWidget.setSessionId(sessionId);
 
-            // Notify the session scroll bar to reload and highlight the current session
-            topic.publish('reloadUserSessions', {
-                highlightSessionId: sessionId
-            });
+            // Removed reloadUserSessions publish: the scroll bar will react to
+            // ChatSession:Selected and other dedicated events, so a full reload
+            // is unnecessary here.
         },
 
         /**
