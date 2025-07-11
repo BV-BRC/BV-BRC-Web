@@ -133,6 +133,33 @@ define([
         this.highlightSession(data.sessionId);
       }));
 
+      // Subscribe to title change events so the scroll card updates immediately
+      topic.subscribe('ChatSessionTitleChanged', lang.hitch(this, function(data) {
+        if (!data || !data.sessionId) {
+          return;
+        }
+
+        // 1. Update local sessions list
+        for (var i = 0; i < this.sessions_list.length; i++) {
+          if (this.sessions_list[i].session_id === data.sessionId) {
+            this.sessions_list[i].title = data.title;
+            break;
+          }
+        }
+
+        // 2. Update the in-memory store (shared with other widgets)
+        if (this.sessionsStore && this.sessionsStore.updateSessionTitle) {
+          this.sessionsStore.updateSessionTitle(data.sessionId, data.title);
+        }
+
+        // 3. Update the title on the existing card UI if it has already been rendered
+        var card = this.sessionCards[data.sessionId];
+        if (card && card.titleNode) {
+          card.session.title = data.title; // keep card.session in sync
+          card.titleNode.innerHTML = data.title;
+        }
+      }));
+
       // When a brand-new chat is started, nothing should be highlighted yet
       topic.subscribe('createNewChatSession', lang.hitch(this, function() {
         this._highlightAfterReload = null;
