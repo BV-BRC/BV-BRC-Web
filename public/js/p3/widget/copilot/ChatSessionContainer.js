@@ -106,30 +106,40 @@ define([
             this.inherited(arguments);
             this._initialized = new Deferred();
 
-            // Exit if no API available
+            // Exit early if no API available
             if (!this.copilotApi) {
                 return;
             }
 
-            // Initialize new session and create widgets
-            this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
-                this.sessionId = sessionId;
+            if (this.sessionId) {
+                // We already have a session provided – just wire up the widgets.
                 this._createTitleWidget();
                 this._createDisplayWidget();
                 this._createInputWidget();
                 this._getPathState();
-                this.changeSessionId(sessionId);
-                topic.publish('SetInitialChatModel');
+                this.changeSessionId(this.sessionId);
                 this._initialized.resolve();
-            })).catch(lang.hitch(this, function(error) {
-                // Handle initialization error
-                this.displayWidget = new CopilotDisplay({
-                    region: 'center',
-                    style: 'padding: 10px; border: 0;'
-                });
-                this.addChild(this.displayWidget);
-                this.displayWidget.onQueryError();
-            }));
+            } else {
+                // No session supplied – create a brand-new one
+                this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
+                    this.sessionId = sessionId;
+                    this._createTitleWidget();
+                    this._createDisplayWidget();
+                    this._createInputWidget();
+                    this._getPathState();
+                    this.changeSessionId(sessionId);
+                    this._initialized.resolve();
+                })).catch(lang.hitch(this, function(error) {
+                    debugger;
+                    // Handle initialization error
+                    this.displayWidget = new CopilotDisplay({
+                        region: 'center',
+                        style: 'padding: 10px; border: 0;'
+                    });
+                    this.addChild(this.displayWidget);
+                    this.displayWidget.onQueryError();
+                }));
+            }
 
             domClass.add(this.domNode, 'floatingPanel');
 
@@ -148,6 +158,7 @@ define([
                     this.displayWidget.startNewChat();
                     this.titleWidget.startNewChat(sessionId);
                     this.changeSessionId(sessionId);
+                    this.inputWidget.new_chat = true;
                 }));
             }));
 
@@ -166,6 +177,7 @@ define([
                 this.changeSessionId(data.sessionId);
                 this.chatStore.addMessages(data.messages);
                 this.displayWidget.showMessages(data.messages);
+                this.inputWidget.new_chat = false;
             }));
 
             // Handle chat title changes
@@ -182,7 +194,9 @@ define([
             // Handle various chat configuration changes
             topic.subscribe('UpdateSessionTitleError', lang.hitch(this, this._handleUpdateSessionTitleError));
             topic.subscribe('ChatModel', lang.hitch(this, function(model) {
-                this.inputWidget.setModel(model);
+                if (this.inputWidget) {
+                    this.inputWidget.setModel(model);
+                }
             }));
             topic.subscribe('ChatRagDb', lang.hitch(this, function(ragDb) {
                 this.inputWidget.setRagDb(ragDb);
@@ -250,6 +264,16 @@ define([
          * Uses AI model to analyze messages and create relevant title
          */
         _handleGenerateSessionTitle: function() {
+            // Only auto-generate a title when the session still has the default
+            // placeholder title.  If the user (or a previous generation) has
+            // already set a custom title, we do *not* want to overwrite it.
+            var currentTitle = this.titleWidget && this.titleWidget.getTitle ? this.titleWidget.getTitle() : 'New Chat';
+
+            if (currentTitle && currentTitle !== 'New Chat') {
+                // Title has already been set to something meaningful – abort.
+                return;
+            }
+
             var messages = this.chatStore.query().map(x => x.content);
             var model = this.inputWidget.getModel();
             this.copilotApi.generateTitleFromMessages(messages, model).then(lang.hitch(this, function(title) {

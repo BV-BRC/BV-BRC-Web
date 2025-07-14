@@ -592,7 +592,8 @@ define([
             this.controllerPanel = new ChatSessionContainer({
                 style: "width: 100%; height: 100%;",
                 copilotApi: options.copilotApi,
-                optionsBar: options.optionsBar
+                optionsBar: options.optionsBar,
+                sessionId: options.currentSessionId || null // Pass through existing session if available
             });
 
             // Place the control panel directly in the main content container
@@ -681,7 +682,10 @@ define([
                 // Use setTimeout to ensure the controller panel is fully initialized
                 setTimeout(lang.hitch(this, function() {
                     if (this.controllerPanel) {
-                        this.controllerPanel.changeSessionId(options.currentSessionId);
+                        // If the controller panel is already on the desired session, avoid redundant reset
+                        if (this.controllerPanel.getSessionId() !== options.currentSessionId) {
+                            this.controllerPanel.changeSessionId(options.currentSessionId);
+                        }
                         console.log('get session messages', options.currentSessionId);
                         options.copilotApi.getSessionMessages(options.currentSessionId).then(lang.hitch(this, function(messages) {
                             if (messages.messages && messages.messages.length > 0 && messages.messages[0].messages) {

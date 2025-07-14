@@ -72,7 +72,7 @@ define([
         showPublicationsButton: false,
 
         /** @property {boolean} showEnhancePromptButton - Flag to control enhance prompt button visibility */
-        showEnhancePromptButton: false,
+        showEnhancePromptButton: true,
 
         /**
          * @constructor
@@ -611,10 +611,10 @@ define([
                 topic.publish('return_rag_list', this.ragList);
             }));
 
-            // Set initial model
-            topic.subscribe('SetInitialChatModel', lang.hitch(this, function() {
+            // Set initial model after a brief delay to ensure all subscribers are in place
+            setTimeout(lang.hitch(this, function() {
                 topic.publish('ChatModel', 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16');
-            }));
+            }), 100);
 
             // Fetch model and RAG lists from API
             // this._loadModelAndRagLists();

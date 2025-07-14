@@ -326,6 +326,11 @@ define([
     _loadMoreSessions: function() {
       if (!this.hasMore) { return; }
 
+      // Capture the current scroll position so we can restore it after the list re-renders.
+      // Using the absolute scrollTop value (distance from the top) avoids the previous
+      // behaviour where the view jumped to the bottom after new sessions were appended.
+      var prevScrollTop = this.scrollContainer.scrollTop;
+
       this.copilotApi.getUserSessions(this.pageSize, this.offset).then(lang.hitch(this, function(res) {
         var newSessions = res.sessions || [];
         this.hasMore = res.has_more;
@@ -335,6 +340,12 @@ define([
         var combined = this.sessions_list.concat(newSessions);
         this.sessionsStore.setSessions(combined);
         this.setSessions(combined);
+
+        // Using a timeout ensures the DOM has finished re-rendering before we attempt to restore the scroll position.
+        setTimeout(lang.hitch(this, function() {
+          // Restore the previous scroll position so the user’s viewport remains stable.
+          this.scrollContainer.scrollTop = prevScrollTop;
+        }), 0);
       }));
     },
 

@@ -188,12 +188,13 @@ define([
       /**
        * Handles submission of RAG queries with document retrieval
        * Implementation:
+       * - Immediately shows user message and clears text area
        * - Disables input during submission
        * - Shows loading indicator
        * - Retrieves documents via RAG API
        * - Builds system prompt with document context
        * - Makes follow-up LLM query with enhanced context
-       * - Updates chat store with all messages including context
+       * - Updates chat store with assistant/system messages only
        */
       _handleRagSubmit: function() {
         console.log('this.ragDb=', this.ragDb);
@@ -203,6 +204,18 @@ define([
         if (this.state) {
           console.log('state', this.state);
         }
+
+        // Immediately show user message and clear text area
+        var userMessage = {
+          role: 'user',
+          content: inputText,
+          message_id: 'user_' + Date.now(),
+          timestamp: new Date().toISOString()
+        };
+
+        this.chatStore.addMessage(userMessage);
+        this.displayWidget.showMessages(this.chatStore.query());
+        this.textArea.set('value', '');
 
         this.isSubmitting = true;
         this.submitButton.set('disabled', true);
@@ -218,19 +231,19 @@ define([
         }
 
         this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt).then(lang.hitch(this, function(response) {
+          // Only add assistant message and system message (if present) - user message was already added
+          var messagesToAdd = [];
           if (response.systemMessage) {
-            this.chatStore.addMessages([
-              response.userMessage,
-              response.systemMessage,
-              response.assistantMessage
-            ]);
-          } else {
-            this.chatStore.addMessages([
-              response.userMessage,
-              response.assistantMessage
-            ]);
+            messagesToAdd.push(response.systemMessage);
           }
-          _self.textArea.set('value', '');
+          if (response.assistantMessage) {
+            messagesToAdd.push(response.assistantMessage);
+          }
+
+          if (messagesToAdd.length > 0) {
+            this.chatStore.addMessages(messagesToAdd);
+          }
+
           this.displayWidget.showMessages(this.chatStore.query());
 
           if (_self.new_chat) {
@@ -248,10 +261,11 @@ define([
       /**
        * Handles submission of regular (non-RAG) queries
        * Implementation:
+       * - Immediately shows user message and clears text area
        * - Disables input during submission
        * - Shows loading indicator
        * - Makes LLM query with basic system prompt
-       * - Updates chat store with messages
+       * - Updates chat store with assistant/system messages only
        * - Handles new chat initialization
        */
       _handleRegularSubmit: function() {
@@ -260,6 +274,18 @@ define([
         if (this.state) {
           console.log('state', this.state);
         }
+
+        // Immediately show user message and clear text area
+        var userMessage = {
+          role: 'user',
+          content: inputText,
+          message_id: 'user_' + Date.now(),
+          timestamp: new Date().toISOString()
+        };
+
+        this.chatStore.addMessage(userMessage);
+        this.displayWidget.showMessages(this.chatStore.query());
+        this.textArea.set('value', '');
 
         this.isSubmitting = true;
         this.submitButton.set('disabled', true);
@@ -275,19 +301,19 @@ define([
         }
 
         this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, null, null).then(lang.hitch(this, function(response) {
+          // Only add assistant message and system message (if present) - user message was already added
+          var messagesToAdd = [];
           if (response.systemMessage) {
-            this.chatStore.addMessages([
-              response.userMessage,
-              response.systemMessage,
-              response.assistantMessage
-            ]);
-          } else {
-            this.chatStore.addMessages([
-              response.userMessage,
-              response.assistantMessage
-            ]);
+            messagesToAdd.push(response.systemMessage);
           }
-          _self.textArea.set('value', '');
+          if (response.assistantMessage) {
+            messagesToAdd.push(response.assistantMessage);
+          }
+
+          if (messagesToAdd.length > 0) {
+            this.chatStore.addMessages(messagesToAdd);
+          }
+
           this.displayWidget.showMessages(this.chatStore.query());
 
           if (_self.new_chat) {
@@ -447,7 +473,10 @@ define([
       /**
        * @method _handlePageSubmit
        * @description Handles submission about the current page (screenshot first, HTML fallback)
-       *
+       * Implementation:
+       * - Immediately shows user message and clears text area
+       * - Takes screenshot and makes API call
+       * - Updates chat store with assistant/system messages only
        **/
       _handlePageSubmit: function() {
         var inputText = this.textArea.get('value');
@@ -456,6 +485,18 @@ define([
         if (this.state) {
             console.log('state', this.state);
         }
+
+        // Immediately show user message and clear text area
+        var userMessage = {
+          role: 'user',
+          content: inputText,
+          message_id: 'user_' + Date.now(),
+          timestamp: new Date().toISOString()
+        };
+
+        this.chatStore.addMessage(userMessage);
+        this.displayWidget.showMessages(this.chatStore.query());
+        this.textArea.set('value', '');
 
         this.isSubmitting = true;
         this.submitButton.set('disabled', true);
@@ -482,19 +523,19 @@ define([
 
           this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image, this.enhancedPrompt)
               .then(lang.hitch(this, function(response) {
+                  // Only add assistant message and system message (if present) - user message was already added
+                  var messagesToAdd = [];
                   if (response.systemMessage) {
-                      this.chatStore.addMessages([
-                          response.userMessage,
-                          response.systemMessage,
-                          response.assistantMessage
-                      ]);
-                  } else {
-                      this.chatStore.addMessages([
-                          response.userMessage,
-                          response.assistantMessage
-                      ]);
+                      messagesToAdd.push(response.systemMessage);
                   }
-                  _self.textArea.set('value', '');
+                  if (response.assistantMessage) {
+                      messagesToAdd.push(response.assistantMessage);
+                  }
+
+                  if (messagesToAdd.length > 0) {
+                      this.chatStore.addMessages(messagesToAdd);
+                  }
+
                   this.displayWidget.showMessages(this.chatStore.query());
 
                   if (_self.new_chat) {
@@ -526,11 +567,27 @@ define([
      * @method _handlePageContentSubmit
      * @description Handles submission of page content (HTML)
      * Used as a fallback when screenshot fails
+     * Implementation:
+     * - Immediately shows user message and clears text area
+     * - Makes API call with page content
+     * - Updates chat store with assistant/system messages only
      **/
     _handlePageContentSubmit: function() {
       var inputText = this.textArea.get('value');
       var _self = this;
-      debugger;
+
+      // Immediately show user message and clear text area
+      var userMessage = {
+        role: 'user',
+        content: inputText,
+        message_id: 'user_' + Date.now(),
+        timestamp: new Date().toISOString()
+      };
+
+      this.chatStore.addMessage(userMessage);
+      this.displayWidget.showMessages(this.chatStore.query());
+      this.textArea.set('value', '');
+
       const pageHtml = document.documentElement.innerHTML;
 
       var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the page content.\n' +
@@ -546,21 +603,20 @@ define([
 
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-
       this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt).then(lang.hitch(this, function(response) {
+          // Only add assistant message and system message (if present) - user message was already added
+          var messagesToAdd = [];
           if (response.systemMessage) {
-              this.chatStore.addMessages([
-                  response.userMessage,
-                  response.systemMessage,
-                  response.assistantMessage
-              ]);
-          } else {
-              this.chatStore.addMessages([
-                  response.userMessage,
-                  response.assistantMessage
-              ]);
+              messagesToAdd.push(response.systemMessage);
           }
-          _self.textArea.set('value', '');
+          if (response.assistantMessage) {
+              messagesToAdd.push(response.assistantMessage);
+          }
+
+          if (messagesToAdd.length > 0) {
+              this.chatStore.addMessages(messagesToAdd);
+          }
+
           this.displayWidget.showMessages(this.chatStore.query());
 
           if (_self.new_chat) {
