@@ -183,6 +183,19 @@ define([
         topic.subscribe('enhancePromptChange', lang.hitch(this, function(enhancedPrompt) {
           this.enhancedPrompt = enhancedPrompt;
         }));
+
+        // Subscribe to main chat suggestion selection to populate input text area
+        topic.subscribe('populateInputSuggestion', lang.hitch(this, function(suggestion) {
+          if (this.textArea) {
+            this.textArea.set('value', suggestion);
+            // Focus on the text area and place cursor at the end
+            this.textArea.focus();
+            if (this.textArea.textbox) {
+              var textbox = this.textArea.textbox;
+              textbox.selectionStart = textbox.selectionEnd = suggestion.length;
+            }
+          }
+        }));
       },
 
       /**

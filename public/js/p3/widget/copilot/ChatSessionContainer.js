@@ -130,11 +130,11 @@ define([
                     this.changeSessionId(sessionId);
                     this._initialized.resolve();
                 })).catch(lang.hitch(this, function(error) {
-                    debugger;
                     // Handle initialization error
                     this.displayWidget = new CopilotDisplay({
                         region: 'center',
-                        style: 'padding: 10px; border: 0;'
+                        style: 'padding: 10px; border: 0;',
+                        context: 'main-chat'  // Mark this as main chat context
                     });
                     this.addChild(this.displayWidget);
                     this.displayWidget.onQueryError();
@@ -362,7 +362,8 @@ define([
                 style: 'padding: 0 5px 5px 5px; border: 0; background-color: #ffffff; opacity: 1;',
                 copilotApi: this.copilotApi,
                 chatStore: this.chatStore,
-                sessionId: this.sessionId
+                sessionId: this.sessionId,
+                context: 'main-chat'  // Mark this as main chat context
             });
             this.addChild(this.displayWidget);
         },

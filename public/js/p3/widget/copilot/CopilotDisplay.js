@@ -67,6 +67,9 @@ define([
     // Flag to ensure styles are injected only once
     _copilotStylesInjected: false,
 
+    // Context to differentiate between main chat and side panel
+    context: null,
+
     /**
      * @constructor
      * Initializes the widget with provided options
@@ -95,7 +98,9 @@ define([
               .copilot-suggested-container { text-align: center; }
               .copilot-suggested-header { font-weight: 600; margin-bottom: 8px; }
               .copilot-suggested-list { list-style: none; padding-left: 0; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-              .copilot-suggested-list li { background: #f1f5f9; border: 1px solid #d1d5db; border-radius: 16px; padding: 6px 12px; font-size: 13px; color: #1f2937; cursor: default; }
+              .copilot-suggested-list li { background: #f1f5f9; border: 1px solid #d1d5db; border-radius: 16px; padding: 6px 12px; font-size: 13px; color: #1f2937; cursor: pointer; transition: all 0.2s ease; }
+              .copilot-suggested-list li:hover { background: #e2e8f0; border-color: #9ca3af; }
+              .copilot-suggested-list li:active { background: #cbd5e1; }
             `
           }, document.head || document.getElementsByTagName('head')[0]);
           this._copilotStylesInjected = true;
@@ -130,6 +135,7 @@ define([
      * Implementation:
      * - Clears existing messages
      * - Shows centered empty state message
+     * - Creates clickable suggestion chips
      */
     showEmptyState: function() {
       domConstruct.empty(this.resultContainer);
@@ -154,11 +160,17 @@ define([
           class: 'copilot-suggested-list'
         }, suggestionContainer);
 
-        this.suggestedQuestions.forEach(function(q) {
-          domConstruct.create('li', {
+        this.suggestedQuestions.forEach(lang.hitch(this, function(q) {
+          var suggestionItem = domConstruct.create('li', {
             innerHTML: q
           }, ul);
-        });
+
+          // Add click handler to publish suggestion selection with context-specific topic
+          on(suggestionItem, 'click', lang.hitch(this, function() {
+            var topicKey = this.context === 'side-panel' ? 'populateInputSuggestionSidePanel' : 'populateInputSuggestion';
+            topic.publish(topicKey, q);
+          }));
+        }));
       }
     },
 

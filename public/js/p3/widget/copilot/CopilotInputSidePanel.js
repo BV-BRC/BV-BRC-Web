@@ -189,6 +189,19 @@ define([
         setTimeout(lang.hitch(this, function() {
           topic.publish('setInitialJobSelection');
         }), 100);
+
+        // Subscribe to side panel suggestion selection to populate input text area
+        topic.subscribe('populateInputSuggestionSidePanel', lang.hitch(this, function(suggestion) {
+          if (this.textArea) {
+            this.textArea.set('value', suggestion);
+            // Focus on the text area and place cursor at the end
+            this.textArea.focus();
+            if (this.textArea.textbox) {
+              var textbox = this.textArea.textbox;
+              textbox.selectionStart = textbox.selectionEnd = suggestion.length;
+            }
+          }
+        }));
     },
 
     /**
