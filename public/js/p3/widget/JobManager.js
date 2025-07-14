@@ -270,13 +270,14 @@ define([
             this.addChild(this.chatPanelWrapper);
 
             // Wait for input widget to be created before setting initial selection
-            setTimeout(lang.hitch(this, function() {
+            Topic.subscribe('setInitialJobSelection', lang.hitch(this, function() {
+              var selection = this.actionBar.get('selection');
               if (this.chatPanel.inputWidget && selection.length > 0) {
                 this.chatPanel.set('containerSelection', selection);
                 this.chatPanel.inputWidget.setSystemPromptWithData(selection);
                 this.chatPanel.inputWidget.setCurrentSelection(selection);
               }
-            }), 100);
+            }));
           })).catch(lang.hitch(this, function(err) {
             new Dialog({
               title: "Service Unavailable",

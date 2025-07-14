@@ -194,7 +194,9 @@ define([
             // Handle various chat configuration changes
             topic.subscribe('UpdateSessionTitleError', lang.hitch(this, this._handleUpdateSessionTitleError));
             topic.subscribe('ChatModel', lang.hitch(this, function(model) {
-                this.inputWidget.setModel(model);
+                if (this.inputWidget) {
+                    this.inputWidget.setModel(model);
+                }
             }));
             topic.subscribe('ChatRagDb', lang.hitch(this, function(ragDb) {
                 this.inputWidget.setRagDb(ragDb);

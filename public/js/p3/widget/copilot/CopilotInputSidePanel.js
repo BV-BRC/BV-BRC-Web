@@ -185,6 +185,10 @@ define([
             this.submitButton.onClick();
           }
         }));
+
+        setTimeout(lang.hitch(this, function() {
+          topic.publish('setInitialJobSelection');
+        }), 100);
     },
 
     /**

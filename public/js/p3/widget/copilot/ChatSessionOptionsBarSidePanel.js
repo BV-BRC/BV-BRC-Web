@@ -8,6 +8,8 @@ define([
     'dojo/_base/lang',
     'dojo/topic',
     'dojo/dom-construct',
+    'dojo/dom-style',
+    'dojo/dom-class',
     'dijit/form/Button',
     './ChatSessionOptionsBar'
 ], function (
@@ -15,6 +17,8 @@ define([
     lang,
     topic,
     domConstruct,
+    domStyle,
+    domClass,
     Button,
     ChatSessionOptionsBar
 ) {
@@ -26,6 +30,8 @@ define([
      */
     return declare([ChatSessionOptionsBar], {
 
+        baseClass: 'ChatSessionOptionsBarSidePanel',
+
         style: 'overflow: hidden;',
 
         /**
@@ -35,6 +41,10 @@ define([
         postCreate: function() {
             // Call parent postCreate to inherit all initialization including bvbrc_helpdesk default
             this.inherited(arguments);
+
+            // Remove the inherited "-extended" CSS classes from parent
+            domClass.remove(this.containerNode, 'ChatSessionOptionsBar-extended-one');
+            domClass.remove(this.containerNode, 'ChatSessionOptionsBar-extended-two');
 
             // Clear the container that was created by parent
             this.containerNode.innerHTML = '';

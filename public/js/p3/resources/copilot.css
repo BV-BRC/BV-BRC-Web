@@ -188,6 +188,12 @@
   height: 25% !important;
 }
 
+.ChatSessionOptionsBarSidePanel {
+  margin-top: 3px;
+  margin-left: 3px;
+  height: 5% !important;
+}
+
 .ChatContainerFloatingWindow {
   position: fixed;
   width: 80%;
