@@ -21,7 +21,8 @@ define([
     './CopilotDisplay',
     './CopilotInput',
     './CopilotApi',
-    '../../store/ChatSessionMemoryStore',
+    '../../store/ChatMemoryStore',
+    '../../store/ChatSessionsMemoryStore',
     'dojo/topic',
     'dojo/_base/lang',
     './ChatSessionTitle',
@@ -36,7 +37,8 @@ define([
     CopilotDisplay,
     CopilotInput,
     CopilotAPI,
-    ChatSessionMemoryStore,
+    ChatMemoryStore,
+    ChatSessionsMemoryStore,
     topic,
     lang,
     ChatSessionTitle,
@@ -70,10 +72,20 @@ define([
                 lang.mixin(this, opts);
             }
             // Initialize chat store for message persistence
-            this.chatStore = new ChatSessionMemoryStore({
+            this.chatStore = new ChatMemoryStore({
                 copilotApi: this.copilotApi
             });
             window.App.chatStore = this.chatStore;
+
+            // Ensure global sessions store exists
+            if (window && window.App) {
+                if (!window.App.chatSessionsStore) {
+                    window.App.chatSessionsStore = new ChatSessionsMemoryStore();
+                }
+                this.sessionsStore = window.App.chatSessionsStore;
+            } else {
+                this.sessionsStore = new ChatSessionsMemoryStore();
+            }
         },
 
         /**
@@ -94,30 +106,40 @@ define([
             this.inherited(arguments);
             this._initialized = new Deferred();
 
-            // Exit if no API available
+            // Exit early if no API available
             if (!this.copilotApi) {
                 return;
             }
 
-            // Initialize new session and create widgets
-            this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
-                this.sessionId = sessionId;
+            if (this.sessionId) {
+                // We already have a session provided – just wire up the widgets.
                 this._createTitleWidget();
                 this._createDisplayWidget();
                 this._createInputWidget();
                 this._getPathState();
-                this.changeSessionId(sessionId);
-                topic.publish('SetInitialChatModel');
+                this.changeSessionId(this.sessionId);
                 this._initialized.resolve();
-            })).catch(lang.hitch(this, function(error) {
-                // Handle initialization error
-                this.displayWidget = new CopilotDisplay({
-                    region: 'center',
-                    style: 'padding: 10px; border: 0;'
-                });
-                this.addChild(this.displayWidget);
-                this.displayWidget.onQueryError();
-            }));
+            } else {
+                // No session supplied – create a brand-new one
+                this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
+                    this.sessionId = sessionId;
+                    this._createTitleWidget();
+                    this._createDisplayWidget();
+                    this._createInputWidget();
+                    this._getPathState();
+                    this.changeSessionId(sessionId);
+                    this._initialized.resolve();
+                })).catch(lang.hitch(this, function(error) {
+                    debugger;
+                    // Handle initialization error
+                    this.displayWidget = new CopilotDisplay({
+                        region: 'center',
+                        style: 'padding: 10px; border: 0;'
+                    });
+                    this.addChild(this.displayWidget);
+                    this.displayWidget.onQueryError();
+                }));
+            }
 
             domClass.add(this.domNode, 'floatingPanel');
 
@@ -136,6 +158,7 @@ define([
                     this.displayWidget.startNewChat();
                     this.titleWidget.startNewChat(sessionId);
                     this.changeSessionId(sessionId);
+                    this.inputWidget.new_chat = true;
                 }));
             }));
 
@@ -154,19 +177,26 @@ define([
                 this.changeSessionId(data.sessionId);
                 this.chatStore.addMessages(data.messages);
                 this.displayWidget.showMessages(data.messages);
+                this.inputWidget.new_chat = false;
             }));
 
             // Handle chat title changes
             topic.subscribe('ChatSessionTitleChanged', lang.hitch(this, function(data) {
+                // Update title in message store if current session
                 if (data.sessionId === this.sessionId) {
                     this.chatStore.updateSessionTitle(data.sessionId, data.title);
                 }
+
+                // Always update title in sessions store
+                this.sessionsStore.updateSessionTitle(data.sessionId, data.title);
             }));
 
             // Handle various chat configuration changes
             topic.subscribe('UpdateSessionTitleError', lang.hitch(this, this._handleUpdateSessionTitleError));
             topic.subscribe('ChatModel', lang.hitch(this, function(model) {
-                this.inputWidget.setModel(model);
+                if (this.inputWidget) {
+                    this.inputWidget.setModel(model);
+                }
             }));
             topic.subscribe('ChatRagDb', lang.hitch(this, function(ragDb) {
                 this.inputWidget.setRagDb(ragDb);
@@ -234,6 +264,16 @@ define([
          * Uses AI model to analyze messages and create relevant title
          */
         _handleGenerateSessionTitle: function() {
+            // Only auto-generate a title when the session still has the default
+            // placeholder title.  If the user (or a previous generation) has
+            // already set a custom title, we do *not* want to overwrite it.
+            var currentTitle = this.titleWidget && this.titleWidget.getTitle ? this.titleWidget.getTitle() : 'New Chat';
+
+            if (currentTitle && currentTitle !== 'New Chat') {
+                // Title has already been set to something meaningful – abort.
+                return;
+            }
+
             var messages = this.chatStore.query().map(x => x.content);
             var model = this.inputWidget.getModel();
             this.copilotApi.generateTitleFromMessages(messages, model).then(lang.hitch(this, function(title) {
@@ -257,18 +297,22 @@ define([
         _handleChatSessionDelete: function(sessionId) {
             this.copilotApi.deleteSession(sessionId).then(lang.hitch(this, function (response) {
                 if (response.status === 'ok') {
+
+                    // Remove session from local store
+                    this.sessionsStore.removeSession(sessionId);
+
                     if (this.sessionId === sessionId) {
-                        this.copilotApi.getUserSessions().then(lang.hitch(this, function(sessions) {
-                            const session_id = sessions[0].session_id;
-                            const messages = sessions[0].messages;
-                            const title = sessions[0].title;
-                            const data = {
-                                sessionId: session_id,
-                                messages: messages
+                        // Attempt to switch to the first available session from local store
+                        var remaining = this.sessionsStore.query();
+                        if (remaining && remaining.length > 0) {
+                            var next = remaining[0];
+                            var data = {
+                                sessionId: next.session_id,
+                                messages: next.messages || []
                             };
                             topic.publish('ChatSession:Selected', data);
-                            this.titleWidget.updateTitle(title);
-                        }));
+                            this.titleWidget.updateTitle(next.title || 'New Chat');
+                        }
                     }
                 }
                 topic.publish('reloadUserSessions', {
@@ -330,6 +374,7 @@ define([
          */
         changeSessionId: function(sessionId) {
             this.sessionId = sessionId;
+            // Do not add the session to the sessions store here; it will be added after the first successful message.
             // Persist the current session ID so it can be restored the next time the chat opens
             try {
                 if (window && window.localStorage) {
@@ -344,10 +389,9 @@ define([
             this.displayWidget.setSessionId(sessionId);
             this.titleWidget.setSessionId(sessionId);
 
-            // Notify the session scroll bar to reload and highlight the current session
-            topic.publish('reloadUserSessions', {
-                highlightSessionId: sessionId
-            });
+            // Removed reloadUserSessions publish: the scroll bar will react to
+            // ChatSession:Selected and other dedicated events, so a full reload
+            // is unnecessary here.
         },
 
         /**

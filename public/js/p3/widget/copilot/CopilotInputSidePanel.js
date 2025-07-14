@@ -185,12 +185,19 @@ define([
             this.submitButton.onClick();
           }
         }));
+
+        setTimeout(lang.hitch(this, function() {
+          topic.publish('setInitialJobSelection');
+        }), 100);
     },
 
     /**
      * @method _handlePageSubmit
      * @description Handles submission about the current page (screenshot first, HTML fallback)
-     *
+     * Implementation:
+     * - Immediately shows user message and clears text area
+     * - Takes screenshot and makes API call
+     * - Updates chat store with assistant/system messages only
      **/
     _handlePageSubmit: function() {
         var inputText = this.textArea.get('value');
@@ -199,6 +206,18 @@ define([
         if (this.state) {
             console.log('state', this.state);
         }
+
+        // Immediately show user message and clear text area
+        var userMessage = {
+          role: 'user',
+          content: inputText,
+          message_id: 'user_' + Date.now(),
+          timestamp: new Date().toISOString()
+        };
+
+        this.chatStore.addMessage(userMessage);
+        this.displayWidget.showMessages(this.chatStore.query());
+        this.textArea.set('value', '');
 
         this.isSubmitting = true;
         this.submitButton.set('disabled', true);
@@ -217,29 +236,23 @@ define([
 
             this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, null, null, base64Image)
                 .then(lang.hitch(this, function(response) {
+                    // Only add assistant message and system message (if present) - user message was already added
+                    var messagesToAdd = [];
                     if (response.systemMessage) {
-                        this.chatStore.addMessages([
-                            response.userMessage,
-                            response.systemMessage,
-                            response.assistantMessage
-                        ]);
-                    } else {
-                        this.chatStore.addMessages([
-                            response.userMessage,
-                            response.assistantMessage
-                        ]);
+                        messagesToAdd.push(response.systemMessage);
                     }
-                    _self.textArea.set('value', '');
+                    if (response.assistantMessage) {
+                        messagesToAdd.push(response.assistantMessage);
+                    }
+
+                    if (messagesToAdd.length > 0) {
+                        this.chatStore.addMessages(messagesToAdd);
+                    }
+
                     this.displayWidget.showMessages(this.chatStore.query());
 
                     if (_self.new_chat) {
-                        _self.new_chat = false;
-                        topic.publish('reloadUserSessions', {
-                            highlightSessionId: this.sessionId
-                        });
-                        setTimeout(() => {
-                            topic.publish('generateSessionTitle');
-                        }, 300);
+                        _self._finishNewChat();
                     }
                 })).catch(function(error) {
                     topic.publish('CopilotApiError', { error: error });
@@ -266,10 +279,26 @@ define([
      * @method _handlePageContentSubmit
      * @description Handles submission of page content (HTML)
      * Used as a fallback when screenshot fails
+     * Implementation:
+     * - Immediately shows user message and clears text area
+     * - Makes API call with page content
+     * - Updates chat store with assistant/system messages only
      **/
     _handlePageContentSubmit: function() {
         var inputText = this.textArea.get('value');
         var _self = this;
+
+        // Immediately show user message and clear text area
+        var userMessage = {
+          role: 'user',
+          content: inputText,
+          message_id: 'user_' + Date.now(),
+          timestamp: new Date().toISOString()
+        };
+
+        this.chatStore.addMessage(userMessage);
+        this.displayWidget.showMessages(this.chatStore.query());
+        this.textArea.set('value', '');
 
         const pageHtml = document.documentElement.innerHTML;
 
@@ -284,29 +313,23 @@ define([
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
         this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, this.model).then(lang.hitch(this, function(response) {
+            // Only add assistant message and system message (if present) - user message was already added
+            var messagesToAdd = [];
             if (response.systemMessage) {
-                this.chatStore.addMessages([
-                    response.userMessage,
-                    response.systemMessage,
-                    response.assistantMessage
-                ]);
-            } else {
-                this.chatStore.addMessages([
-                    response.userMessage,
-                    response.assistantMessage
-                ]);
+                messagesToAdd.push(response.systemMessage);
             }
-            _self.textArea.set('value', '');
+            if (response.assistantMessage) {
+                messagesToAdd.push(response.assistantMessage);
+            }
+
+            if (messagesToAdd.length > 0) {
+                this.chatStore.addMessages(messagesToAdd);
+            }
+
             this.displayWidget.showMessages(this.chatStore.query());
 
             if (_self.new_chat) {
-                _self.new_chat = false;
-                topic.publish('reloadUserSessions', {
-                    highlightSessionId: this.sessionId
-                });
-                setTimeout(() => {
-                    topic.publish('generateSessionTitle');
-                }, 100);
+                _self._finishNewChat();
             }
         })).catch(function(error) {
             topic.publish('CopilotApiError', { error: error });
@@ -349,10 +372,11 @@ define([
     /**
      * Handles submission for grid-container context using copilotAPI
      * Implementation:
+     * - Immediately shows user message and clears text area
      * - Disables input during submission
      * - Shows loading indicator
      * - Makes LLM query with basic system prompt
-     * - Updates chat store with messages
+     * - Updates chat store with assistant/system messages only
      * - Handles new chat initialization
      */
     _submitToGridContainer: function() {
@@ -363,34 +387,40 @@ define([
         console.log('state', this.state);
       }
 
+      // Immediately show user message and clear text area
+      var userMessage = {
+        role: 'user',
+        content: inputText,
+        message_id: 'user_' + Date.now(),
+        timestamp: new Date().toISOString()
+      };
+
+      this.chatStore.addMessage(userMessage);
+      this.displayWidget.showMessages(this.chatStore.query());
+      this.textArea.set('value', '');
+
       this.isSubmitting = true;
       this.submitButton.set('disabled', true);
 
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
       this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
+        // Only add assistant message and system message (if present) - user message was already added
+        var messagesToAdd = [];
         if (response.systemMessage) {
-          this.chatStore.addMessages([
-            response.userMessage,
-            response.systemMessage,
-            response.assistantMessage
-          ]);
-        } else {
-          this.chatStore.addMessages([
-            response.userMessage,
-            response.assistantMessage
-          ]);
+          messagesToAdd.push(response.systemMessage);
         }
-        _self.textArea.set('value', '');
+        if (response.assistantMessage) {
+          messagesToAdd.push(response.assistantMessage);
+        }
+
+        if (messagesToAdd.length > 0) {
+          this.chatStore.addMessages(messagesToAdd);
+        }
+
         this.displayWidget.showMessages(this.chatStore.query());
 
         if (_self.new_chat) {
-          _self.new_chat = false;
-          topic.publish('reloadUserSessions', {
-            highlightSessionId: this.sessionId
-          });
-          setTimeout(() => {
-            topic.publish('generateSessionTitle');
-          }, 100);
+          _self._finishNewChat();
         }
       })).catch(function(error) {
         topic.publish('CopilotApiError', { error: error });
@@ -404,11 +434,12 @@ define([
     /**
      * Handles submission for job-manager context using copilotAPI with job details
      * Implementation:
+     * - Immediately shows user message and clears text area
      * - Disables input during submission
      * - Shows loading indicator
      * - Queries job details to get stdout/stderr
      * - Makes LLM query with stdout/stderr as system prompt
-     * - Updates chat store with messages
+     * - Updates chat store with assistant/system messages only
      * - Handles new chat initialization
      */
     _submitToJobManager: function() {
@@ -418,6 +449,18 @@ define([
       if (this.state) {
         console.log('state', this.state);
       }
+
+      // Immediately show user message and clear text area
+      var userMessage = {
+        role: 'user',
+        content: inputText,
+        message_id: 'user_' + Date.now(),
+        timestamp: new Date().toISOString()
+      };
+
+      this.chatStore.addMessage(userMessage);
+      this.displayWidget.showMessages(this.chatStore.query());
+      this.textArea.set('value', '');
 
       this.isSubmitting = true;
       this.submitButton.set('disabled', true);
@@ -443,29 +486,23 @@ define([
         // Submit query with job details as system prompt
         return _self.copilotApi.submitCopilotQuery(inputText, _self.sessionId, jobSystemPrompt, _self.model);
       }).then(lang.hitch(this, function(response) {
+        // Only add assistant message and system message (if present) - user message was already added
+        var messagesToAdd = [];
         if (response.systemMessage) {
-          this.chatStore.addMessages([
-            response.userMessage,
-            response.systemMessage,
-            response.assistantMessage
-          ]);
-        } else {
-          this.chatStore.addMessages([
-            response.userMessage,
-            response.assistantMessage
-          ]);
+          messagesToAdd.push(response.systemMessage);
         }
-        _self.textArea.set('value', '');
+        if (response.assistantMessage) {
+          messagesToAdd.push(response.assistantMessage);
+        }
+
+        if (messagesToAdd.length > 0) {
+          this.chatStore.addMessages(messagesToAdd);
+        }
+
         this.displayWidget.showMessages(this.chatStore.query());
 
         if (_self.new_chat) {
-          _self.new_chat = false;
-          topic.publish('reloadUserSessions', {
-            highlightSessionId: this.sessionId
-          });
-          setTimeout(() => {
-            topic.publish('generateSessionTitle');
-          }, 100);
+          _self._finishNewChat();
         }
       })).catch(function(error) {
         topic.publish('noJobDataError', error);
@@ -509,6 +546,32 @@ define([
             buttonNode.classList.remove('pageContentToggleActive');
             buttonNode.classList.add('pageContentToggleInactive');
         }
+    },
+
+    /**
+     * Finalizes creation of a brand-new chat, mirroring CopilotInput._finishNewChat
+     * but scoped to the side-panel input.
+     */
+    _finishNewChat: function(generateTitleImmediately = true) {
+      this.new_chat = false;
+
+      // Add the new session to the global sessions store
+      if (window && window.App && window.App.chatSessionsStore) {
+        window.App.chatSessionsStore.addSession({
+          session_id: this.sessionId,
+          title: 'New Chat',
+          created_at: Date.now()
+        });
+      }
+
+      // Tell the scroll-bar to reload and highlight this new session
+      topic.publish('reloadUserSessions', { highlightSessionId: this.sessionId });
+
+      if (generateTitleImmediately) {
+        setTimeout(function() {
+          topic.publish('generateSessionTitle');
+        }, 100);
+      }
     },
 
     setCurrentSelection: function(selection) {

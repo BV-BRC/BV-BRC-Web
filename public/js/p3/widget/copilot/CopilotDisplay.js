@@ -270,17 +270,12 @@ define([
     /**
      * Shows loading animation while waiting for response
      * Implementation:
-     * - Optionally re-renders existing messages
-     * - Adds loading indicator message
+     * - Only adds loading indicator message without re-rendering existing messages
      * - Scrolls to bottom
      */
     showLoadingIndicator: function(chatMessages) {
-      if (chatMessages && chatMessages.length > 0) {
-        domConstruct.empty(this.resultContainer);
-        chatMessages.forEach(lang.hitch(this, function(message) {
-          this.addMessage(message);
-        }));
-      }
+      // Only add the loading indicator, don't re-render existing messages
+      // since they're already displayed in the container
       this.addMessage({
         role: 'assistant',
         content: '...',
