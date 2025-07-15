@@ -72,7 +72,7 @@ define([
         showPublicationsButton: false,
 
         /** @property {boolean} showEnhancePromptButton - Flag to control enhance prompt button visibility */
-        showEnhancePromptButton: false,
+        showEnhancePromptButton: true,
 
         /**
          * @constructor
