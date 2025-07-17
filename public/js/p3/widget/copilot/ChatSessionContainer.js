@@ -313,9 +313,13 @@ define([
                         })).catch(lang.hitch(this, function(error) {
                             console.error('Error creating new session after delete:', error);
                         }));
+                        topic.publish('reloadUserSessions');
+                        return;
                     }
                 }
-                topic.publish('reloadUserSessions');
+                topic.publish('reloadUserSessions', {
+                    highlightSessionId: this.sessionId
+                });
             }));
         },
 
