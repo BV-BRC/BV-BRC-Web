@@ -85,6 +85,7 @@ app.use(function (req, res, next) {
     copilotDbURL: config.get('copilotDbURL') || false,
     copilotEnablePublications: config.get('copilotEnablePublications') || false,
     copilotEnableEnhancePrompt: config.get('copilotEnableEnhancePrompt') || false,
+    copilotEnableShowPromptDetails: config.get('copilotEnableShowPromptDetails') || false,
     localStorageCheckInterval: config.get('localStorageCheckInterval')
   };
   // console.log("Application Options: ", req.applicationOptions);
