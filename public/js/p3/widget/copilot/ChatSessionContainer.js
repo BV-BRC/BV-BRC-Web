@@ -130,11 +130,11 @@ define([
                     this.changeSessionId(sessionId);
                     this._initialized.resolve();
                 })).catch(lang.hitch(this, function(error) {
-                    debugger;
                     // Handle initialization error
                     this.displayWidget = new CopilotDisplay({
                         region: 'center',
-                        style: 'padding: 10px; border: 0;'
+                        style: 'padding: 10px; border: 0;',
+                        context: 'main-chat'  // Mark this as main chat context
                     });
                     this.addChild(this.displayWidget);
                     this.displayWidget.onQueryError();
@@ -292,7 +292,7 @@ define([
 
         /**
          * Handles deletion of chat sessions
-         * If current session is deleted, switches to first available session
+         * If current session is deleted, creates a new chat session automatically
          */
         _handleChatSessionDelete: function(sessionId) {
             this.copilotApi.deleteSession(sessionId).then(lang.hitch(this, function (response) {
@@ -302,17 +302,19 @@ define([
                     this.sessionsStore.removeSession(sessionId);
 
                     if (this.sessionId === sessionId) {
-                        // Attempt to switch to the first available session from local store
-                        var remaining = this.sessionsStore.query();
-                        if (remaining && remaining.length > 0) {
-                            var next = remaining[0];
-                            var data = {
-                                sessionId: next.session_id,
-                                messages: next.messages || []
-                            };
-                            topic.publish('ChatSession:Selected', data);
-                            this.titleWidget.updateTitle(next.title || 'New Chat');
-                        }
+
+                        // No remaining sessions - create a new chat session automatically
+                        this.copilotApi.getNewSessionId().then(lang.hitch(this, function(newSessionId) {
+                            this.inputWidget.startNewChat();
+                            this.displayWidget.startNewChat();
+                            this.titleWidget.startNewChat(newSessionId);
+                            this.changeSessionId(newSessionId);
+                            this.inputWidget.new_chat = true;
+                        })).catch(lang.hitch(this, function(error) {
+                            console.error('Error creating new session after delete:', error);
+                        }));
+                        topic.publish('reloadUserSessions');
+                        return;
                     }
                 }
                 topic.publish('reloadUserSessions', {
@@ -362,7 +364,8 @@ define([
                 style: 'padding: 0 5px 5px 5px; border: 0; background-color: #ffffff; opacity: 1;',
                 copilotApi: this.copilotApi,
                 chatStore: this.chatStore,
-                sessionId: this.sessionId
+                sessionId: this.sessionId,
+                context: 'main-chat'  // Mark this as main chat context
             });
             this.addChild(this.displayWidget);
         },

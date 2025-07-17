@@ -90,12 +90,13 @@ define([
 
         // Add container for the toggle switch and label on the left side
         var toggleContainer = domConstruct.create('div', {
-            style: 'width: 35px; height: 35px; display: flex; flex-direction: column; align-items: center; margin-right: 15px;'
+            style: 'width: auto; height: 35px; display: flex; flex-direction: column; align-items: center; margin-right: 15px;'
         }, inputContainer);
 
         // Create screenshot div above the toggle button
         var screenshotDiv = domConstruct.create('div', {
-            'class': 'screenshotDivAboveToggle'
+            'class': 'screenshotDivAboveToggle',
+            innerHTML: 'Include<br>Screenshot'
         });
 
         // Create the page content toggle using the screenshot div
@@ -107,7 +108,7 @@ define([
         };
 
         // Add click handler and properties to screenshot div
-        screenshotDiv.title = 'Ask about page - Sends page content to help answer your question.';
+        screenshotDiv.title = 'Sends a screenshot of the current BV-BRC page to help answer your question.';
         screenshotDiv.style.cursor = 'pointer';
         on(screenshotDiv, 'click', lang.hitch(this, function() {
             topic.publish('pageContentToggleChanged', !this.pageContentEnabled);
@@ -189,6 +190,19 @@ define([
         setTimeout(lang.hitch(this, function() {
           topic.publish('setInitialJobSelection');
         }), 100);
+
+        // Subscribe to side panel suggestion selection to populate input text area
+        topic.subscribe('populateInputSuggestionSidePanel', lang.hitch(this, function(suggestion) {
+          if (this.textArea) {
+            this.textArea.set('value', suggestion);
+            // Focus on the text area and place cursor at the end
+            this.textArea.focus();
+            if (this.textArea.textbox) {
+              var textbox = this.textArea.textbox;
+              textbox.selectionStart = textbox.selectionEnd = suggestion.length;
+            }
+          }
+        }));
     },
 
     /**

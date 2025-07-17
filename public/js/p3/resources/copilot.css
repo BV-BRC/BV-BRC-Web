@@ -573,7 +573,8 @@
 
 /* Chat Control Buttons */
 .copilotChatMinimizeButton,
-.copilotChatCloseButton {
+.copilotChatCloseButton,
+.copilotChatInfoButton {
   opacity: 0.7;
   transition: all 0.2s ease;
   display: flex;
@@ -609,7 +610,20 @@
   margin-right: 2px;
 }
 
+.copilotChatInfoButton {
+  font-weight: bold;
+  padding-bottom: 2px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 20px;
+  background-color: #f8f8f8;
+  margin-right: 2px;
+}
+
 .copilotChatMinimizeButton:hover,
+.copilotChatInfoButton:hover,
 .copilotChatOptionsButton:hover {
   opacity: 1;
   transform: scale(1.1);
@@ -737,16 +751,21 @@
 
 /* Screenshot Button */
 .screenshotDivAboveToggle {
-    width: 40px;
-    height: 40px;
-    background-image: url("/public/icon_source/screenshot.svg");
-    background-size: 30px 30px;
-    background-repeat: no-repeat;
-    background-position: center;
+    width: 65px;
+    height: 55px;
+    padding: 4px;
     background-color: #f5f5f5; /* Default off-grey color */
     border-radius: 5px;
     border: 1px solid #ccc;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: #374151;
+    text-align: center;
+    line-height: 1.2;
 }
 
 .screenshotDivAboveToggle:hover {
@@ -915,4 +934,3 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
-

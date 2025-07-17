@@ -137,7 +137,8 @@ define([
                 style: 'padding: 0 5px 5px 5px; border: 0; background-color: #ffffff; opacity: 1;',
                 copilotApi: this.copilotApi,
                 chatStore: this.chatStore,
-                sessionId: this.sessionId
+                sessionId: this.sessionId,
+                context: 'side-panel'  // Mark this as side panel context
             };
 
             // Include suggested questions only if we determined a list for the current context

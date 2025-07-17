@@ -83,6 +83,14 @@ define([
             if (opts) {
                 lang.mixin(this, opts);
             }
+
+            // Set button visibility based on configuration
+            if (window.App && window.App.copilotEnablePublications !== undefined) {
+                this.showPublicationsButton = window.App.copilotEnablePublications === 'true';
+            }
+            if (window.App && window.App.copilotEnableEnhancePrompt !== undefined) {
+                this.showEnhancePromptButton = window.App.copilotEnableEnhancePrompt === 'true';
+            }
         },
 
         /**

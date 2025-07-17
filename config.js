@@ -23,6 +23,8 @@ const defaults = {
   userServiceURL: '',
   'copilotApiURL': 'https://www.bv-brc.org/services/copilot-api/copilot-api/chatbrc',
   'copilotDbURL': 'https://www.bv-brc.org/services/copilot-api/copilot-api/db',
+  'copilotEnablePublications': false,
+  'copilotEnableEnhancePrompt': false,
   localStorageCheckInterval: 86400,
   enableDevTools: false,
   reportProblemEmailAddress: 'help@bv-brc.org',
