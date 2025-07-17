@@ -79,6 +79,10 @@ define([
         this.scientific_nameWidget.set('placeHolder', 'e.g. Bat coronavirus');
         this.scientific_nameWidget.set('includeViruses', true);
       }
+      else if (this.recipe.getValue() == 'viral-lovan') {
+        this.scientific_nameWidget.set('placeHolder', 'e.g. Measles morbillivirus');
+        this.scientific_nameWidget.set('includeViruses', true);
+      }
       else if (this.recipe.getValue() == 'default') {
         this.scientific_nameWidget.set('placeHolder', 'e.g. Bacillus Cereus');
         this.scientific_nameWidget.set('includeBacteria', true);
