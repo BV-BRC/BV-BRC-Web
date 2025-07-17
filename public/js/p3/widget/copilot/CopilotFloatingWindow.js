@@ -25,7 +25,10 @@ define([
     'dojo/dnd/Moveable',
     'dojox/layout/ResizeHandle',
     'dijit/TooltipDialog',
-    'dijit/popup'
+    'dijit/popup',
+    'dojo/request',
+    '../../util/PathJoin',
+    'dojo/dom'
 ], function(
     declare,
     _WidgetBase,
@@ -48,7 +51,10 @@ define([
     Moveable,
     ResizeHandle,
     TooltipDialog,
-    popup
+    popup,
+    xhr,
+    PathJoin,
+    dom
 ) {
     return declare([BorderContainer], {
         baseClass: 'CopilotFloatingWindow',
@@ -197,6 +203,19 @@ define([
                 className: 'copilotControlButtonsContainer'
             }, buttonsContainer);
 
+            // Add info button
+            var infoButton = domConstruct.create('div', {
+                className: 'copilotChatInfoButton',
+                innerHTML: '<i class="fa icon-info-circle"></i>',
+                title: 'Copilot Overview'
+            }, controlButtonsContainer);
+
+            // Add click handler for info button
+            on(infoButton, 'click', lang.hitch(this, function(evt) {
+                evt.stopPropagation();
+                this.showOverviewDialog();
+            }));
+
             // Add minimize button
             var minimizeButton = domConstruct.create('div', {
                 className: 'copilotChatMinimizeButton',
@@ -336,6 +355,56 @@ define([
             }
 
             return advancedOptionsDialog;
+        },
+
+                        /**
+         * Shows the overview dialog using extracted AppBase help logic
+         */
+        showOverviewDialog: function() {
+            // If dialog already exists and is open, just bring it to front
+            if (this.overviewDialog && this.overviewDialog.open) {
+                return;
+            }
+
+            // Load the help document (extracted from AppBase.gethelp)
+            var docsServiceURL = window.App.docsServiceURL;
+            var applicationHelp = 'copilot/overview.md';
+
+            var helprequest = xhr.get(PathJoin(docsServiceURL, applicationHelp), {
+                handleAs: 'text'
+            });
+
+            helprequest.then(lang.hitch(this, function(data) {
+                // Process the data (same as AppBase)
+                data = data.replace('<img src="../../_static/patric_logo.png" class="logo" />', '');
+                var help_doc = domConstruct.toDom(data);
+                var help_text = help_doc || domConstruct.toDom('<div>Help text missing</div>');
+
+                // Create the dialog (same pattern as AppBase)
+                this.overviewDialog = new Dialog({
+                    title: 'BV-BRC Copilot Overview',
+                    content: help_text,
+                    'class': 'helpModal',
+                    draggable: true,
+                    style: 'max-width: 600px;'
+                });
+
+                this.overviewDialog.show();
+
+            }), lang.hitch(this, function(error) {
+                // Handle error case
+                console.error('Failed to load copilot overview:', error);
+
+                this.overviewDialog = new Dialog({
+                    title: 'BV-BRC Copilot Overview',
+                    content: domConstruct.toDom('<div>Unable to load overview content. Please check that copilot/overview.md exists.</div>'),
+                    'class': 'helpModal',
+                    draggable: true,
+                    style: 'max-width: 400px;'
+                });
+
+                this.overviewDialog.show();
+            }));
         },
 
         /**
@@ -825,6 +894,15 @@ define([
                 }
                 this.advancedOptionsDialog.destroyRecursive();
                 this.advancedOptionsDialog = null;
+            }
+
+            // Clean up the overview dialog
+            if (this.overviewDialog) {
+                if (this.overviewDialog.open) {
+                    this.overviewDialog.hide();
+                }
+                this.overviewDialog.destroyRecursive();
+                this.overviewDialog = null;
             }
 
             // Clean up the options sidebar container

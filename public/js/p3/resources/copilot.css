@@ -573,7 +573,8 @@
 
 /* Chat Control Buttons */
 .copilotChatMinimizeButton,
-.copilotChatCloseButton {
+.copilotChatCloseButton,
+.copilotChatInfoButton {
   opacity: 0.7;
   transition: all 0.2s ease;
   display: flex;
@@ -609,7 +610,20 @@
   margin-right: 2px;
 }
 
+.copilotChatInfoButton {
+  font-weight: bold;
+  padding-bottom: 2px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 20px;
+  background-color: #f8f8f8;
+  margin-right: 2px;
+}
+
 .copilotChatMinimizeButton:hover,
+.copilotChatInfoButton:hover,
 .copilotChatOptionsButton:hover {
   opacity: 1;
   transform: scale(1.1);
@@ -920,4 +934,3 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
-
