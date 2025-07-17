@@ -81,8 +81,10 @@ app.use(function (req, res, next) {
     jiraLabel: config.get('jiraLabel'),
     appVersion: packageJSON.version,
     userServiceURL: config.get('userServiceURL'),
-    copilotApiURL: config.get('copilotApiURL'),
-    copilotDbURL: config.get('copilotDbURL'),
+    copilotApiURL: config.get('copilotApiURL') || false,
+    copilotDbURL: config.get('copilotDbURL') || false,
+    copilotEnablePublications: config.get('copilotEnablePublications') || false,
+    copilotEnableEnhancePrompt: config.get('copilotEnableEnhancePrompt') || false,
     localStorageCheckInterval: config.get('localStorageCheckInterval')
   };
   // console.log("Application Options: ", req.applicationOptions);

@@ -72,7 +72,7 @@ define([
         showPublicationsButton: false,
 
         /** @property {boolean} showEnhancePromptButton - Flag to control enhance prompt button visibility */
-        showEnhancePromptButton: true,
+        showEnhancePromptButton: false,
 
         /**
          * @constructor
@@ -82,6 +82,14 @@ define([
         constructor: function(opts) {
             if (opts) {
                 lang.mixin(this, opts);
+            }
+
+            // Set button visibility based on configuration
+            if (window.App && window.App.copilotEnablePublications !== undefined) {
+                this.showPublicationsButton = window.App.copilotEnablePublications === 'true';
+            }
+            if (window.App && window.App.copilotEnableEnhancePrompt !== undefined) {
+                this.showEnhancePromptButton = window.App.copilotEnableEnhancePrompt === 'true';
             }
         },
 
