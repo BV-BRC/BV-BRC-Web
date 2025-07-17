@@ -19,7 +19,7 @@ const defaults = {
   'shockServiceURL': 'https://p3.theseed.org/services/shock_api', // only for status dashboard
   dataServiceURL: 'https://p3.theseed.org/services/data_api',
   accountURL: 'http://user.patric.local:3002/',
-  docsServiceURL: 'https://alpha.bv-brc.org/docs/',
+  docsServiceURL: 'https://www.bv-brc.org/docs/',
   userServiceURL: '',
   'copilotApiURL': 'https://www.bv-brc.org/services/copilot-api/copilot-api/chatbrc',
   'copilotDbURL': 'https://www.bv-brc.org/services/copilot-api/copilot-api/db',
