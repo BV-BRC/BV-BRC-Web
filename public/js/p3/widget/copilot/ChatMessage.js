@@ -25,6 +25,9 @@ define([
     /** @property {number} fontSize - Stores the font size for the message content */
     fontSize: null,
 
+    /** @property {boolean} copilotEnableShowPromptDetails - Stores the value of the copilotEnableShowPromptDetails flag */
+    copilotEnableShowPromptDetails: false,
+
     /**
      * @constructor
      * Creates a new ChatMessage instance
@@ -35,6 +38,7 @@ define([
       this.message = message;
       this.container = container;
       this.fontSize = message.fontSize || 14; // Get fontSize from message or use default
+      this.copilotEnableShowPromptDetails = window.App && window.App.copilotEnableShowPromptDetails === 'true';
       this.renderMessage(); // Immediately render on construction
     },
 
@@ -64,7 +68,9 @@ define([
           style: 'font-size: 24px; animation: bounce 1s infinite;'
         }, messageDiv);
       } else if (this.message.role === 'system') {
-        this.renderSystemMessage(messageDiv);
+        if (this.copilotEnableShowPromptDetails) {
+          this.renderSystemMessage(messageDiv);
+        }
       } else {
         this.renderUserOrAssistantMessage(messageDiv);
       }
