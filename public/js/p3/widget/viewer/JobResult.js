@@ -2,12 +2,13 @@ define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
   '../PageGrid', '../formatter', '../../WorkspaceManager', 'dojo/_base/lang',
-  'dojo/dom-attr', '../WorkspaceExplorerView', 'dijit/Dialog', '../../util/encodePath'
+  'dojo/dom-attr', '../WorkspaceExplorerView', 'dijit/Dialog', '../../util/encodePath',
+  'dojo/topic'
 ], function (
   declare, BorderContainer, on,
   domClass, ContentPane, domConstruct,
   Grid, formatter, WorkspaceManager, lang,
-  domAttr, WorkspaceExplorerView, Dialog, encodePath
+  domAttr, WorkspaceExplorerView, Dialog, encodePath, topic
 ) {
   return declare([BorderContainer], {
     baseClass: 'ExperimentViewer',
@@ -50,6 +51,9 @@ define([
       this._hiddenPath = data.path + '.' + data.name;
       // console.log("[JobResult] Output Files: ", this.data.autoMeta.output_files);
       var _self = this;
+
+      // Publish the job result data so Copilot and other modules can access it
+      topic.publish('Copilot/JobResultReady', data);
 
       // check to see if there's a hidden .folder with the actual data
       WorkspaceManager.getObject(this._hiddenPath, true).otherwise(function (err) {

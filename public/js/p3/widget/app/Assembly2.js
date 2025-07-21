@@ -22,7 +22,7 @@ define([
     applicationDescription: 'The Genome Assembly Service allows single or multiple assemblers to be invoked to compare results. The service attempts to select the best assembly.',
     applicationHelp: 'quick_references/services/genome_assembly_service.html',
     tutorialLink: 'tutorial/genome_assembly/assembly.html',
-    videoLink: '',
+    videoLink: 'https://youtube.com/playlist?list=PLWfOyhOW_Oat3lYK7hXorV9jPZxgwBw32&si=L0ApfPQlx-65230D',
     libraryData: null,
     defaultPath: '',
     startingRows: 13,

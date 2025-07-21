@@ -18,7 +18,7 @@ define([
     requireAuth: true,
     applicationLabel: 'Similar Genome Finder',
     applicationDescription: 'The Similar Genome Finder Service will find similar public genomes in BV-BRC or compute genome distance estimation using Mash/MinHash. It returns a set of genomes matching the specified similarity criteria.',
-    videoLink: 'https://youtu.be/hZu2qK5TcgU',
+    videoLink: 'https://youtube.com/playlist?list=PLWfOyhOW_OashHfld0w1DUkO7rQz6s8SA&si=Enh6GME_i4LMcXL8',
     pageTitle: 'Similar Genome Finder Service | BV-BRC',
     appBaseURL: '',
     applicationHelp: 'quick_references/services/similar_genome_finder_service.html',

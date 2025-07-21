@@ -7,7 +7,9 @@ define([
   'dojo/ready', './app', '../router',
   'dojo/window', '../widget/Drawer', 'dijit/layout/ContentPane',
   '../jsonrpc', '../panels', '../WorkspaceManager', '../DataAPI', 'dojo/keys',
-  'dijit/ConfirmDialog', '../util/PathJoin', 'dojo/request', '../widget/WorkspaceController'
+  'dijit/ConfirmDialog', '../util/PathJoin', 'dojo/request', '../widget/WorkspaceController',
+  'p3/widget/copilot/ChatButton'
+
 ], function (
   declare,
   Topic, on, dom, domClass, domAttr, domConstruct, domQuery,
@@ -18,7 +20,7 @@ define([
   Router, Window,
   Drawer, ContentPane,
   RPC, Panels, WorkspaceManager, DataAPI, Keys,
-  ConfirmDialog, PathJoin, xhr, WorkspaceController
+  ConfirmDialog, PathJoin, xhr, WorkspaceController, ChatButton
 ) {
   return declare([App], {
     panels: Panels,
@@ -42,6 +44,15 @@ define([
           } else {
             domClass.add(document.body, 'unverified_email')
           }
+
+          // Initialize chat button
+          var chatButton = new ChatButton({
+            region: 'center',
+            width: '60px',
+            height: '60px',
+            backgroundColor: '#007bff',
+            borderRadius: '50%'
+          }).placeAt(document.body);
         })
       }
 
@@ -559,6 +570,7 @@ define([
           }, false)
           // show the upload and jobs widget
           window.App.uploadJobsWidget('show');
+          window.App.chatButtonWidget('show');
           window.App.checkSU();
           window.App.alreadyLoggedIn = true;
         } else {
@@ -734,6 +746,21 @@ define([
         }
       } else {
         console.log('I should not see the upload and jobs widget');
+      }
+    },
+    chatButtonWidget: function (action) {
+      if (action === 'show') {
+        var chatButton = new ChatButton({
+          region: 'center',
+          width: '60px',
+          height: '60px',
+          backgroundColor: '#007bff',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+        });
+      } else {
+        console.log('I should not see the chat button');
       }
     },
     refreshUser: function () {

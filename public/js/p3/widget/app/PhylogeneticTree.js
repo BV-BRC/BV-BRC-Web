@@ -20,7 +20,7 @@ define([
     applicationDescription: 'The Bacterial Genome Tree Service enables construction of custom phylogenetic trees for user-selected genomes using codon tree method.',
     applicationHelp: 'quick_references/services/phylogenetic_tree_building_service.html',
     tutorialLink: 'tutorial/phylogenetic_tree/phylogenetic_tree.html',
-    videoLink: 'https://youtu.be/ckNPGPwoT5U',
+    videoLink: 'https://youtube.com/playlist?list=PLWfOyhOW_Oavr0PDosswbQ6tfHBLCMBXZ&si=Tb61muJUHjiWrkaK',
     pageTitle: 'Phylogenetic Tree Building Service | BV-BRC',
     defaultPath: '',
     startingRows: 5,
