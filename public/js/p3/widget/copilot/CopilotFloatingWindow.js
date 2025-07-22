@@ -368,7 +368,7 @@ define([
 
             // Load the help document (extracted from AppBase.gethelp)
             var docsServiceURL = window.App.docsServiceURL;
-            var applicationHelp = 'copilot/overview.md';
+            var applicationHelp = 'quick_references/copilot/overview.md';
 
             var helprequest = xhr.get(PathJoin(docsServiceURL, applicationHelp), {
                 handleAs: 'text'
