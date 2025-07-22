@@ -1,0 +1,936 @@
+/* ========================================
+   COPILOT CHAT INTERFACE STYLING
+   ======================================== */
+
+/* ========================================
+   MAIN CHAT COMPONENTS
+   ======================================== */
+
+/* Chat Button */
+.ChatButton {
+  position: fixed;
+  bottom: calc(40px + 3.5vh);
+  right: 1vw;
+  z-index: 9999;
+  background-color: var(--blue);
+  background-image: url('/patric/images/chat-lines.svg');
+  background-size: 30px;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.ChatButton:hover {
+  background-color: #0056b3;
+  transform: scale(1.1);
+}
+
+.ChatButton.active {
+  background-color: #0056b3;
+}
+
+/* Chat Button Elements */
+.ChatButton .dijitButtonNode {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+}
+
+.ChatButton .dijitButtonContents {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+}
+
+.ChatButton .dijitIcon {
+  font-size: 24px;
+  margin: 0;
+}
+
+.ChatButton .dijitButtonText {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Chat Header */
+.copilotChatHeader {
+  width: 100%;
+  height: 30px;
+  background-color: #f8f8f8;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px;
+  cursor: move;
+}
+
+/* Left Button Container */
+.copilotLeftButtonContainer {
+  display: flex;
+}
+
+/* Chat Header Title */
+.copilotChatHeaderTitle {
+  font-weight: bold;
+  flex-grow: 1;
+  text-align: center;
+  cursor: move;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Drag Handle */
+.copilotDragHandle {
+  cursor: move;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Chat Buttons Container */
+.copilotChatButtonsContainer {
+  display: flex;
+}
+
+/* Control Buttons Container */
+.copilotControlButtonsContainer {
+  display: flex;
+  padding-right: 15px;
+}
+
+/* Chat Content */
+.copilotChatContent {
+  width: 100%;
+  height: calc(100% - 30px);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Resize Handle */
+.copilotResizeHandle {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 16px;
+  height: 16px;
+  cursor: nw-resize;
+  background-color: transparent;
+  border: 0px;
+  border-bottom-right-radius: 3px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  background-image: url("/public/icon_source/corner_lines.svg");
+  background-size: 16px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Chat Session Container */
+.ChatSessionContainer {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  background-color: #ffffff;
+  opacity: 1;
+  z-index: 900;
+}
+
+.ChatSessionContainer .closeButton:hover {
+  color: #dc3545;
+}
+
+.ChatSessionContainer .floatingPanel {
+  background-color: #ffffff;
+  opacity: 1;
+}
+
+.ChatSessionOptionsBar {
+  height: 15%;
+  padding: 0px;
+  background-color: #ffffff;
+  overflow-y: auto;
+  margin-bottom: 0px;
+  min-height: 57px;
+}
+
+.ChatSessionOptionsBar-extended-one {
+  height: 20% !important;
+}
+
+.ChatSessionOptionsBar-extended-two {
+  height: 25% !important;
+}
+
+.ChatSessionOptionsBarSidePanel {
+  margin-top: 3px;
+  margin-left: 3px;
+  height: 5% !important;
+}
+
+.ChatContainerFloatingWindow {
+  position: fixed;
+  width: 80%;
+  height: 70%;
+  z-index: 800;
+  top: 10vh;
+  left: 10vw;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+  display: block;
+}
+
+/* ========================================
+   CHAT SESSION TITLE STYLES
+   ======================================== */
+
+/* Chat Title Display */
+.chatTitleDisplay {
+  cursor: pointer;
+  padding: 5px;
+  flex-grow: 1;
+  font-size: 1.6em;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Chat Title Editor */
+.chatTitleEditor {
+  display: none;
+  width: 100%;
+  font-size: 1.6em;
+  font-weight: bold;
+}
+
+/* ========================================
+   CONTAINER STYLES
+   ======================================== */
+
+/* Main Result Container */
+.copilot-result-container {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;          /* Vertical scroll only */
+    overflow-x: hidden;        /* Prevent horizontal scroll */
+    padding: 10px;
+    padding-right: 15px;
+    border: 0;
+    margin: 0 auto;
+    background-color: #ffffff;
+    box-sizing: border-box;    /* Prevent padding from expanding width */
+    word-wrap: break-word;     /* Force word breaks if needed */
+  }
+
+/* State Containers */
+.copilot-empty-state {
+  color: #666;
+  padding: 10px;
+  text-align: center;
+}
+
+.copilot-error {
+  color: red;
+  padding: 10px;
+}
+
+/* ========================================
+   MESSAGE STYLES
+   ======================================== */
+
+/* Base Message Styles */
+.message {
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+.message * {
+  max-width: 100%;
+}
+
+.message img {
+  height: auto;
+}
+
+.message pre {
+  background-color: #f8f8f8;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.message code {
+  background-color: #f8f8f8;
+  padding: 2px 4px;
+  border-radius: 3px;
+  word-wrap: break-word;
+}
+
+.message table {
+  width: 100%;
+  display: block;
+  overflow-x: auto;
+}
+
+.message p {
+  margin: 0 0 10px 0;
+}
+
+.message p:last-child {
+  margin-bottom: 0;
+}
+
+/* Message Type Variants */
+.message.user {
+  background-color: #e6f3ff;
+  margin-left: auto;
+  float: right;
+  clear: both;
+  padding: 10px;
+  border-radius: 5px;
+  max-width: 60%;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.message.assistant {
+  background-color: transparent;
+  border: 0;
+  margin-right: auto;
+  float: left;
+  clear: both;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  max-width: 90%;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.message.system {
+  background-color: transparent;
+  margin-right: auto;
+  float: right;
+  clear: both;
+  margin-bottom: 10px;
+  padding: 0;
+  border-radius: 5px;
+  border: 0px;
+  max-width: 60%;
+  display: block;
+  margin-top: 0px;
+  margin-right: 11px;
+  overflow: hidden;
+  word-wrap: break-word;
+}
+
+.message.system .show-docs-button {
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ========================================
+   ACTION BUTTONS
+   ======================================== */
+
+/* Message Action Button Container */
+.message-button-container {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Base Action Button Styles */
+.message-action-button {
+  /* Base styling */
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  width: 25px;
+  cursor: pointer;
+  border: 1px solid #d1d5db;
+  background-color: transparent;
+  color: #374151;
+  border-radius: 6px;
+  white-space: nowrap;
+
+  /* Transition effects */
+  transition: all 0.2s ease-in-out;
+
+  /* Prevent text selection */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+
+  /* Typography */
+  font-family: inherit;
+  line-height: 1.4;
+
+  /* Flexbox for consistent alignment */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.message-action-button:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+  color: #1f2937;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.message-action-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  background-color: #e5e7eb;
+}
+
+.message-action-button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.message-action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.message-action-button:disabled:hover {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+/* Action Button Variants */
+.message-action-button.copy-button {
+  height: 25px;
+  width: 25px;
+  background-color: transparent;
+  background-image: url("/public/icon_source/copy-text.svg");
+  background-size: 13px 13px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.message-action-button.copy-button:hover {
+  background-color: #e0f2fe;
+  border-color: #0284c7;
+  color: #0c4a6e;
+}
+
+.message-action-button.thumb-up-button {
+  height: 25px;
+  width: 25px;
+  background-color: transparent;
+  background-image: url("/public/icon_source/thumb-up.svg");
+  background-size: 13px 13px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.message-action-button.thumb-up-button:hover {
+  background-color: #e0f2fe;
+  border-color: #0284c7;
+  color: #0c4a6e;
+}
+
+.message-action-button.thumb-down-button {
+  height: 25px;
+  width: 25px;
+  background-color: transparent;
+  background-image: url("/public/icon_source/thumb-down.svg");
+  background-size: 13px 13px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.message-action-button.thumb-down-button:hover {
+  background-color: #e0f2fe;
+  border-color: #0284c7;
+  color: #0c4a6e;
+}
+
+/* Highlighted States */
+.message-action-button.thumb-up-button.highlighted {
+  background-color: #bcd8f4;
+  border-color: #bcd8f4;
+  color: white;
+}
+
+.message-action-button.thumb-down-button.highlighted {
+  background-color: #bcd8f4;
+  border-color: #bcd8f4;
+  color: white;
+}
+
+/* Show Docs Button */
+.show-docs-button {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 0px;
+  background-color: transparent;
+  color: #374151;
+  border-radius: 6px;
+  transition: all 0.2s ease-in-out;
+}
+
+.show-docs-button:hover {
+  background-color: transparent;
+  border-color: transparent;
+  transform: translateY(-1px);
+}
+
+.show-docs-button:active {
+  transform: translateY(0);
+  background-color: transparent;
+}
+
+/* ========================================
+   UI CONTROLS
+   ======================================== */
+
+/* Select Element Styling */
+.copilotSelectElement {
+  margin-right: 10px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+/* Collapsible System Message Styles */
+.collapsible-header {
+  background-color: #f1f1f1;
+  border: none;
+  padding: 10px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-weight: bold;
+  margin: 5px 0;
+  border-radius: 4px;
+}
+
+.collapsible-header:hover {
+  background-color: #ddd;
+}
+
+.collapsible-content {
+  display: none;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  background-color: #fafafa;
+}
+
+.collapsible-content.expanded {
+  display: block;
+}
+
+/* Chat Control Buttons */
+.copilotChatMinimizeButton,
+.copilotChatCloseButton,
+.copilotChatInfoButton {
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.copilotChatOptionsButton {
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 20px;
+  background-color: #f8f8f8;
+}
+
+.copilotChatMinimizeButton {
+  font-weight: bold;
+  padding-bottom: 2px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 20px;
+  background-color: #f8f8f8;
+  margin-right: 2px;
+}
+
+.copilotChatInfoButton {
+  font-weight: bold;
+  padding-bottom: 2px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 20px;
+  background-color: #f8f8f8;
+  margin-right: 2px;
+}
+
+.copilotChatMinimizeButton:hover,
+.copilotChatInfoButton:hover,
+.copilotChatOptionsButton:hover {
+  opacity: 1;
+  transform: scale(1.1);
+  background-color: #f0f0f0 !important;
+}
+
+/* Developer Options Button */
+.copilotChatDevOptionsButton {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 20px;
+  background-color: #f8f8f8;
+  margin-left: 5px;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.copilotChatDevOptionsButton:hover {
+  opacity: 1;
+  transform: scale(1.1);
+  background-color: #f0f0f0;
+}
+
+.copilotChatDevOptionsButton.active {
+  color: #2a7aeb;
+}
+
+/* Report Issue Button */
+.copilotChatReportIssueButton {
+  padding-top: 2px;
+  font-size: 15px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 20px;
+  background-color: #f8f8f8;
+  margin-left: 5px;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.copilotChatReportIssueButton:hover {
+  opacity: 1;
+  transform: scale(1.1);
+  background-color: #f0f0f0;
+}
+
+.copilotChatReportIssueButton:hover .fa {
+  color: #333333;
+}
+
+.copilotChatReportIssueButton.active {
+  color: #2a7aeb;
+}
+
+/* Chat Window Options Button */
+.chat-window-options-button {
+  display: block;
+  width: 90%;
+  margin-bottom: 0.25em;
+  padding: 0.4em 0;
+  padding-left: 0.7em;
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+  background: #f8f9fa;
+  border: 1px solid #e3e8ea;
+  border-radius: 3px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.chat-window-options-button:hover {
+  background: #e3e8ea;
+}
+
+.chat-window-options-button.selected {
+  background: #2a7aeb;
+  color: #fff;
+  border-color: #1f5ec4;
+}
+
+.chat-window-options-button.no-hover:hover {
+  background: #f8f9fa;
+}
+
+.chat-window-options-button.no-hover {
+  cursor: default !important;
+}
+
+/* ========================================
+   PAGE CONTENT TOGGLE
+   ======================================== */
+
+/* Toggle State Classes */
+.pageContentToggleActive {
+    background-color: transparent !important;
+    border-color: #2196F3 !important;
+}
+
+.pageContentToggleInactive {
+    background-color: transparent !important;
+    border-color: #ccc !important;
+}
+
+.pageContentToggleActive:hover {
+    background-color: rgba(33, 150, 243, 0.1) !important;
+}
+
+.pageContentToggleInactive:hover {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Screenshot Button */
+.screenshotDivAboveToggle {
+    width: 65px;
+    height: 55px;
+    padding: 4px;
+    background-color: #f5f5f5; /* Default off-grey color */
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: #374151;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.screenshotDivAboveToggle:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Active state for camera div when page content is enabled */
+.screenshotDivAboveToggle.pageContentToggleActive {
+    background-color: #e3f2fd !important; /* Light blue background */
+    border-color: #2196F3 !important;
+}
+
+.screenshotDivAboveToggle.pageContentToggleActive:hover {
+    background-color: rgba(33, 150, 243, 0.2) !important;
+}
+
+/* ========================================
+   SYSTEM DIALOG STYLES
+   ======================================== */
+
+/* System Dialog Content */
+.systemDialogContent {
+  background-color: white;
+  padding: 20px;
+  overflow-y: auto;
+  max-height: 70vh;
+}
+
+/* System Dialog Button Container */
+.systemDialogButtonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* System Dialog Close Button */
+.systemDialogCloseButton {
+  background-color: #4CAF50;
+  color: white;
+  padding: 8px 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.systemDialogCloseButton:hover {
+  background-color: #45a049;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ========================================
+   SIDE PANEL STYLES
+   ======================================== */
+
+/* Side Panel Button Container */
+.sidePanelButtonContainer {
+  height: 20%;
+  overflow: hidden;
+  display: flex;
+  font-size: 0.9em;
+  gap: 2px;
+  position: relative;
+  flex-shrink: 0;
+  min-height: 30px;
+}
+
+/* ========================================
+   CHAT SESSION SCROLL BAR STYLES
+   ======================================== */
+
+/* Chat Session Scroll Container */
+.chatSessionScrollContainer {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Hide webkit scrollbars */
+.chatSessionScrollContainer::-webkit-scrollbar {
+  display: none;
+}
+
+/* Additional scrollbar hiding for nested elements */
+.ChatSessionScrollBar .dijitContentPane > div::-webkit-scrollbar {
+  display: none;
+}
+
+.ChatSessionScrollBar .dijitContentPane > div {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* ========================================
+   CHAT SESSION SCROLL CARD STYLES
+   ======================================== */
+
+/* Scroll Card Container */
+.scrollCardContainer {
+  width: 100%;
+  height: 80px;
+  max-height: 80px;
+  background-color: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: 0px;
+  cursor: pointer;
+  padding: 8px;
+  padding-right: 10px;
+  transition: all 0.2s ease;
+  position: relative;
+  margin: 0px 0;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  flex: 0 0 auto;
+}
+
+/* Scroll Card Delete Button */
+.scrollCardDelete {
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  width: 30px;
+  height: 25px;
+  border-radius: 3px;
+  background-color: transparent;
+  color: #808080;
+  background-image: url("/public/icon_source/trash.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 15px 15px;
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  padding: 0;
+}
+
+/* Scroll Card Title */
+.scrollCardTitle {
+  width: 80%;
+  min-height: 36px;
+  font-weight: bold;
+  margin-bottom: 3px;
+  font-size: 14px;
+  line-height: 1.2;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}

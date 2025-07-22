@@ -1,6 +1,6 @@
 {
   "name": "p3-web",
-  "version": "3.51.7",
+  "version": "3.52.9",
   "private": true,
   "scripts": {
     "start": "node ./bin/p3-web",
@@ -33,10 +33,12 @@
     "feedparser": "^2.2.10",
     "flag-icons": "^7.2.1",
     "formidable": "^2.1.2",
+    "html2canvas": "^1.4.1",
     "http-proxy": "^1.18.1",
     "httpntlm": "^1.8.13",
     "jbrowse": "github:GMOD/jbrowse#759433708fe59e2c0a09e781cf93dc7ec4670461",
     "jquery": "^3.7.1",
+    "markdown-it": "^14.1.0",
     "morgan": "^1.10.0",
     "MultiBigWig": "github:BV-BRC/multibigwig#master",
     "nconf": "^0.12.1",

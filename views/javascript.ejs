@@ -200,8 +200,13 @@ const load_scripts = [
         appOpts.serviceAPI = "<%= request.applicationOptions.appServiceURL %>";
         appOpts.dataAPI = "<%= request.applicationOptions.dataServiceURL %>";
         appOpts.userServiceURL = "<%= request.applicationOptions.userServiceURL %>";
+        appOpts.copilotApiURL = "<%= request.applicationOptions.copilotApiURL %>";
+        appOpts.copilotDbURL = "<%= request.applicationOptions.copilotDbURL %>";
         appOpts.mailinglistURL = "<%= request.applicationOptions.mailinglistURL %>";
         appOpts.localStorageCheckInterval = "<%= request.applicationOptions.localStorageCheckInterval %>";
+        appOpts.copilotEnablePublications = "<%= request.applicationOptions.copilotEnablePublications %>";
+        appOpts.copilotEnableEnhancePrompt = "<%= request.applicationOptions.copilotEnableEnhancePrompt %>";
+        appOpts.copilotEnableShowPromptDetails = "<%= request.applicationOptions.copilotEnableShowPromptDetails %>";
         window.App = new App(appOpts);
       });
       <% if (request && request.production){ %>
