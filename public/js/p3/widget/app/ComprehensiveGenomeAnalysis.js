@@ -117,6 +117,7 @@ define([
       }
       if (Object.prototype.hasOwnProperty.call(values, 'filter') && values.filter) {
         values.filtlong = (values.filter[0] === 'on');
+        delete values.filter;
       }
       if (Object.prototype.hasOwnProperty.call(values, 'coverage') && values.coverage) {
         values.target_depth = values.coverage;
