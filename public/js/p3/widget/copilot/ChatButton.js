@@ -75,6 +75,88 @@ define([
             topic.subscribe('showChatPanel', lang.hitch(this, function(checked) {
                 this._showControllerPanel();
             }));
+
+            // Initialize footer overlap detection
+            this._initFooterOverlapDetection();
+        },
+
+        _initFooterOverlapDetection: function() {
+            // Wait for DOM to be ready
+            var self = this;
+            setTimeout(function() {
+                self._setupFooterOverlapDetection();
+            }, 100);
+        },
+
+        _setupFooterOverlapDetection: function() {
+            var footer = document.getElementById('bv-brc-footer') ||
+                        document.querySelector('footer.main-footer') ||
+                        document.querySelector('footer');
+
+            if (!footer) {
+                // If no footer found, try again later
+                var self = this;
+                setTimeout(function() {
+                    self._setupFooterOverlapDetection();
+                }, 1000);
+                return;
+            }
+
+            // Use Intersection Observer if available, otherwise fall back to scroll detection
+            if (window.IntersectionObserver) {
+                this._useIntersectionObserver(footer);
+            } else {
+                this._useScrollDetection(footer);
+            }
+        },
+
+        _useIntersectionObserver: function(footer) {
+            var self = this;
+            var observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        domClass.add(self.domNode, 'inverted');
+                    } else {
+                        domClass.remove(self.domNode, 'inverted');
+                    }
+                });
+            }, {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            });
+
+            observer.observe(footer);
+            this._intersectionObserver = observer;
+        },
+
+        _useScrollDetection: function(footer) {
+            var self = this;
+            var checkOverlap = function() {
+                var buttonRect = self.domNode.getBoundingClientRect();
+                var footerRect = footer.getBoundingClientRect();
+
+                // Check if button overlaps with footer
+                var overlaps = !(buttonRect.right < footerRect.left ||
+                               buttonRect.left > footerRect.right ||
+                               buttonRect.bottom < footerRect.top ||
+                               buttonRect.top > footerRect.bottom);
+
+                if (overlaps) {
+                    domClass.add(self.domNode, 'inverted');
+                } else {
+                    domClass.remove(self.domNode, 'inverted');
+                }
+            };
+
+            // Check on scroll and resize
+            on(window, 'scroll', checkOverlap);
+            on(window, 'resize', checkOverlap);
+
+            // Initial check
+            checkOverlap();
+
+            this._scrollHandler = checkOverlap;
         },
 
         _openSmallChat: function() {
@@ -188,6 +270,20 @@ define([
         // Method to update button state
         updateState: function(isOpen) {
             domClass.toggle(this.domNode, 'active', isOpen);
+        },
+
+        // Cleanup method
+        destroy: function() {
+            // Clean up intersection observer
+            if (this._intersectionObserver) {
+                this._intersectionObserver.disconnect();
+                this._intersectionObserver = null;
+            }
+
+            // Clean up scroll handlers would be handled by dojo's on.remove if we stored the handles
+            // For simplicity, we'll rely on the browser's cleanup when the widget is destroyed
+
+            this.inherited(arguments);
         }
     });
 });

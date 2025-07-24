@@ -20,7 +20,6 @@
   color: white;
   border: none;
   border-radius: 50%;
-  border: 1px solid white;
   width: 50px;
   height: 50px;
   padding: 0;
@@ -39,6 +38,20 @@
 
 .ChatButton.active {
   background-color: #0056b3;
+}
+
+/* Inverted state for when overlapping footer */
+.ChatButton.inverted {
+  background-color: white;
+  color: var(--blue);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3), 0 0 0 2px var(--blue);
+  background-image: url('/patric/images/chat-lines-blue.svg');
+}
+
+.ChatButton.inverted:hover {
+  background-color: #f8f9fa;
+  color: #0056b3;
+  transform: scale(1.1);
 }
 
 /* Chat Button Elements */
