@@ -214,6 +214,142 @@ define([
         },
 
         /**
+         * Submits a copilot query with streaming
+         * @param {object} params - The parameters for the query
+         * @param {string} params.inputText - The user's input text
+         * @param {string} params.sessionId - The current session ID
+         * @param {string} params.systemPrompt - The system prompt
+         * @param {string} params.model - The model to use
+         * @param {boolean} params.save_chat - Whether to save the chat
+         * @param {string} params.ragDb - The RAG database to use
+         * @param {number} params.numDocs - The number of documents for RAG
+         * @param {string} params.image - A base64 encoded image
+         * @param {string} params.enhancedPrompt - An enhanced prompt
+         * @param {function} onData - Callback for each data chunk
+         * @param {function} onEnd - Callback for when the stream ends
+         * @param {function} onError - Callback for any errors
+         */
+        submitCopilotQueryStream: function(params, onData, onEnd, onError) {
+            if (!this._checkLoggedIn()) {
+                if (onError) onError(new Error('Not logged in'));
+                return;
+            }
+
+            var data = {
+                query: params.inputText,
+                model: params.model,
+                session_id: params.sessionId,
+                user_id: this.user_id,
+                stream: true,
+                save_chat: params.save_chat,
+                include_history: true,
+                enhanced_prompt: params.enhancedPrompt
+            };
+
+            if (params.systemPrompt) {
+                data.system_prompt = params.systemPrompt;
+            }
+
+            if (params.ragDb) {
+                data.rag_db = params.ragDb;
+                if (params.numDocs) {
+                    data.num_docs = params.numDocs;
+                }
+            }
+
+            if (params.image) {
+                data.image = params.image;
+            }
+
+            fetch(this.apiUrlBase + '/copilot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': (window.App.authorizationToken || ''),
+                    'Accept': 'text/event-stream',
+                    'Cache-Control': 'no-cache'
+                },
+                body: JSON.stringify(data)
+            }).then(response => {
+                if (!response.ok) {
+                    response.text().then(text => {
+                      const err = new Error(`HTTP error! status: ${response.status}, message: ${text}`);
+                      if (onError) onError(err);
+                    });
+                    return;
+                }
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let buffer = '';
+
+                const processLine = (line) => {
+                    if (line.startsWith('data:')) {
+                        let content = line.substring(5);
+                        if (content.startsWith(' ')) {
+                            content = content.substring(1);
+                        }
+
+                        if (content === '[DONE]') {
+                            if (onEnd) onEnd();
+                            return;
+                        }
+
+                        if (content) {
+                            try {
+                                const finalContent = content.replace(/\\n/g, '\n');
+                                console.log('here2 = ', finalContent);
+                                try {
+                                    const parsed = finalContent;
+                                    if (parsed && typeof parsed === 'object' && parsed.content) {
+                                        onData(parsed.content);
+                                    } else {
+                                        console.log('here5');
+                                        onData(finalContent);
+                                        console.log('here6');
+                                    }
+                                } catch (jsonError) {
+                                    onData(finalContent);
+                                }
+                            } catch (e) {
+                                if (onError) onError(e);
+                            }
+                        }
+                    }
+                }
+
+                function pump() {
+                    return reader.read().then(({
+                        done,
+                        value
+                    }) => {
+                        if (done) {
+                            if (buffer.length > 0) {
+                                processLine(buffer); // Process any remaining data
+                            }
+                            if (onEnd) onEnd();
+                            return;
+                        }
+                        buffer += decoder.decode(value, { stream: true });
+
+                        let eol;
+                        while ((eol = buffer.indexOf('\n')) >= 0) {
+                            const line = buffer.slice(0, eol).trim();
+                            buffer = buffer.slice(eol + 1);
+                            if(line) processLine(line);
+                        }
+
+                        return pump();
+                    });
+                }
+                return pump();
+
+            }).catch(err => {
+                if (onError) onError(err);
+            });
+        },
+
+
+        /**
          * Submits a regular chat query
          * Implementation:
          * - Builds query data object with text, model, session

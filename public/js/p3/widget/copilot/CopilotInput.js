@@ -135,11 +135,11 @@ define([
             if (this.isSubmitting) return;
             // Handle different submission types based on configuration
             if (this.pageContentEnabled) {
-                this._handlePageSubmit();
+                this._handlePageSubmitStream();
             } else if (this.copilotApi && this.ragDb) {
-                this._handleRagSubmit();
+                this._handleRagSubmitStream();
             } else if (this.copilotApi) {
-                this._handleRegularSubmit();
+                this._handleRegularSubmitStream();
             } else {
                 console.error('CopilotApi widget not initialized');
             }
@@ -604,50 +604,405 @@ define([
 
       const pageHtml = document.documentElement.innerHTML;
 
-      var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the page content.\n' +
-          'Answer questions as if you were a user viewing the page.\n' +
-          'The page content is:\n' +
+      var systemPrompt = 'You are a helpful assistant that can answer questions about the page content.\\n' +
+          'Answer questions as if you were a user viewing the page.\\n' +
+          'The page content is:\\n' +
           pageHtml;
       if (this.systemPrompt) {
-          imageSystemPrompt += '\n' + this.systemPrompt;
+          systemPrompt += '\\n' + this.systemPrompt;
       }
       if (this.statePrompt) {
-        imageSystemPrompt = this.statePrompt + '\n\n' + imageSystemPrompt;
+        systemPrompt = this.statePrompt + '\\n\\n' + systemPrompt;
       }
 
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-      this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt).then(lang.hitch(this, function(response) {
-          // Only add assistant message and system message (if present) - user message was already added
-          var messagesToAdd = [];
-          if (response.systemMessage) {
-              messagesToAdd.push(response.systemMessage);
-          }
-          if (response.assistantMessage) {
-              messagesToAdd.push(response.assistantMessage);
-          }
+      let assistantMessage = {
+          role: 'assistant',
+          content: '',
+          message_id: 'assistant_' + Date.now(),
+          timestamp: new Date().toISOString()
+      };
+      this.chatStore.addMessage(assistantMessage);
+      this.displayWidget.hideLoadingIndicator();
 
-          if (messagesToAdd.length > 0) {
-              this.chatStore.addMessages(messagesToAdd);
+      const params = {
+          inputText: inputText,
+          sessionId: this.sessionId,
+          systemPrompt: systemPrompt,
+          model: this.model,
+          save_chat: true,
+          ragDb: this.ragDb,
+          numDocs: this.numDocs,
+          enhancedPrompt: this.enhancedPrompt
+      };
+
+      this.copilotApi.submitCopilotQueryStream(params,
+          (chunk) => {
+              // onData
+              assistantMessage.content += chunk;
+              this.displayWidget.showMessages(this.chatStore.query());
+          },
+          () => {
+              // onEnd
+              if (_self.new_chat) {
+                  _self._finishNewChat();
+              }
+              this.isSubmitting = false;
+              this.submitButton.set('disabled', false);
+              // Deselect the pageContentToggle after submission
+              this.pageContentEnabled = false;
+              this._updateToggleButtonStyle();
+              topic.publish('pageContentToggleChanged', false);
+          },
+          (error) => {
+              // onError
+              topic.publish('CopilotApiError', {
+                  error: error
+              });
+              this.displayWidget.hideLoadingIndicator();
+              this.isSubmitting = false;
+              this.submitButton.set('disabled', false);
           }
+      );
+    },
 
-          this.displayWidget.showMessages(this.chatStore.query());
+    _handleRagSubmitStream: function() {
+      console.log('this.ragDb=', this.ragDb);
+      var inputText = this.textArea.get('value');
+      var _self = this;
 
-          if (_self.new_chat) {
-              _self._finishNewChat();
+      if (this.state) {
+        console.log('state', this.state);
+      }
+
+      // Immediately show user message and clear text area
+      var userMessage = {
+        role: 'user',
+        content: inputText,
+        message_id: 'user_' + Date.now(),
+        timestamp: new Date().toISOString()
+      };
+
+      this.chatStore.addMessage(userMessage);
+      this.displayWidget.showMessages(this.chatStore.query());
+      this.textArea.set('value', '');
+
+      this.isSubmitting = true;
+      this.submitButton.set('disabled', true);
+
+      this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+      var systemPrompt = 'You are a helpful scientist website assistant for the website BV-BRC, the Bacterial and Viral Bioinformatics Resource Center.\\n\\n';
+      if (this.systemPrompt) {
+          systemPrompt += this.systemPrompt;
+      }
+      if (this.statePrompt) {
+          systemPrompt += this.statePrompt;
+      }
+
+      let assistantMessage = {
+          role: 'assistant',
+          content: '',
+          message_id: 'assistant_' + Date.now(),
+          timestamp: new Date().toISOString()
+      };
+      this.chatStore.addMessage(assistantMessage);
+      this.displayWidget.hideLoadingIndicator();
+
+      const params = {
+        inputText: inputText,
+        sessionId: this.sessionId,
+        systemPrompt: systemPrompt,
+        model: this.model,
+        save_chat: true,
+        ragDb: this.ragDb,
+        numDocs: this.numDocs,
+        enhancedPrompt: this.enhancedPrompt
+      };
+
+      this.copilotApi.submitCopilotQueryStream(params,
+          (chunk) => {
+              // onData
+              assistantMessage.content += chunk;
+              this.displayWidget.showMessages(this.chatStore.query());
+          },
+          () => {
+              // onEnd
+              if (_self.new_chat) {
+                  _self._finishNewChat();
+              }
+              this.isSubmitting = false;
+              this.submitButton.set('disabled', false);
+          },
+          (error) => {
+              // onError
+              topic.publish('CopilotApiError', {
+                  error: error
+              });
+              this.displayWidget.hideLoadingIndicator();
+              this.isSubmitting = false;
+              this.submitButton.set('disabled', false);
           }
-      })).catch(function(error) {
-          topic.publish('CopilotApiError', { error: error });
-      }).finally(lang.hitch(this, function() {
-          this.displayWidget.hideLoadingIndicator();
-          this.isSubmitting = false;
-          this.submitButton.set('disabled', false);
+      );
+    },
 
-          // Deselect the pageContentToggle after submission
-          this.pageContentEnabled = false;
-          this._updateToggleButtonStyle();
-          topic.publish('pageContentToggleChanged', false);
-      }));
+    _handleRegularSubmitStream: function() {
+      var inputText = this.textArea.get('value');
+      var _self = this;
+      if (this.state) {
+        console.log('state', this.state);
+      }
+
+      // Immediately show user message and clear text area
+      var userMessage = {
+        role: 'user',
+        content: inputText,
+        message_id: 'user_' + Date.now(),
+        timestamp: new Date().toISOString()
+      };
+
+      this.chatStore.addMessage(userMessage);
+      this.displayWidget.showMessages(this.chatStore.query());
+      this.textArea.set('value', '');
+
+      this.isSubmitting = true;
+      this.submitButton.set('disabled', true);
+
+      this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+      var systemPrompt = 'You are a helpful scientist website assistant for the website BV-BRC, the Bacterial and Viral Bioinformatics Resource Center.\\n\\n';
+      if (this.systemPrompt) {
+          systemPrompt += this.systemPrompt;
+      }
+      if (this.statePrompt) {
+          systemPrompt += this.statePrompt;
+      }
+
+      let assistantMessage = {
+          role: 'assistant',
+          content: '',
+          message_id: 'assistant_' + Date.now(),
+          timestamp: new Date().toISOString()
+      };
+      this.chatStore.addMessage(assistantMessage);
+      this.displayWidget.hideLoadingIndicator();
+
+      const params = {
+          inputText: inputText,
+          sessionId: this.sessionId,
+          systemPrompt: systemPrompt,
+          model: this.model,
+          save_chat: true
+      };
+
+      this.copilotApi.submitCopilotQueryStream(params,
+          (chunk) => {
+              // onData
+              assistantMessage.content += chunk;
+              this.displayWidget.showMessages(this.chatStore.query());
+          },
+          () => {
+              // onEnd
+              if (_self.new_chat) {
+                  _self._finishNewChat();
+              }
+              this.isSubmitting = false;
+              this.submitButton.set('disabled', false);
+          },
+          (error) => {
+              // onError
+              topic.publish('CopilotApiError', {
+                  error: error
+              });
+              this.displayWidget.hideLoadingIndicator();
+              this.isSubmitting = false;
+              this.submitButton.set('disabled', false);
+          }
+      );
+    },
+
+    _handlePageSubmitStream: function() {
+      var inputText = this.textArea.get('value');
+      var _self = this;
+
+      if (this.state) {
+          console.log('state', this.state);
+      }
+
+      // Immediately show user message and clear text area
+      var userMessage = {
+        role: 'user',
+        content: inputText,
+        message_id: 'user_' + Date.now(),
+        timestamp: new Date().toISOString()
+      };
+
+      this.chatStore.addMessage(userMessage);
+      this.displayWidget.showMessages(this.chatStore.query());
+      this.textArea.set('value', '');
+
+      this.isSubmitting = true;
+      this.submitButton.set('disabled', true);
+
+      topic.publish('hideChatPanel'); // Hide panel before taking screenshot
+
+      html2canvas(document.body).then(lang.hitch(this, function(canvas) {
+        var base64Image = canvas.toDataURL('image/png');
+
+        topic.publish('showChatPanel'); // Show panel again
+
+        this.displayWidget.showLoadingIndicator(this.chatStore.query());
+        var imageSystemPrompt = 'You are a helpful scientist website assistant for the website BV-BRC, the Bacterial and Viral Bioinformatics Resource Center. You can also answer questions about the attached screenshot.\\n' +
+        'Analyze the screenshot and respond to the user\'s query.';
+
+        if (this.systemPrompt) {
+            imageSystemPrompt += '\\n\\n' + this.systemPrompt;
+        }
+        if (this.statePrompt) {
+            imageSystemPrompt = imageSystemPrompt + '\\n\\n' + this.statePrompt;
+        }
+
+        var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
+
+        let assistantMessage = {
+            role: 'assistant',
+            content: '',
+            message_id: 'assistant_' + Date.now(),
+            timestamp: new Date().toISOString()
+        };
+        this.chatStore.addMessage(assistantMessage);
+        this.displayWidget.hideLoadingIndicator();
+
+        const params = {
+            inputText: inputText,
+            sessionId: this.sessionId,
+            systemPrompt: imageSystemPrompt,
+            model: imgtxt_model,
+            save_chat: true,
+            ragDb: this.ragDb,
+            numDocs: this.numDocs,
+            image: base64Image,
+            enhancedPrompt: this.enhancedPrompt
+        };
+
+        this.copilotApi.submitCopilotQueryStream(params,
+            (chunk) => {
+                // onData
+                assistantMessage.content += chunk;
+                this.displayWidget.showMessages(this.chatStore.query());
+            },
+            () => {
+                // onEnd
+                if (_self.new_chat) {
+                    _self._finishNewChat();
+                }
+                this.isSubmitting = false;
+                this.submitButton.set('disabled', false);
+                // Deselect the pageContentToggle after submission
+                this.pageContentEnabled = false;
+                this._updateToggleButtonStyle();
+                topic.publish('pageContentToggleChanged', false);
+            },
+            (error) => {
+                // onError
+                topic.publish('CopilotApiError', {
+                    error: error
+                });
+                this.displayWidget.hideLoadingIndicator();
+                this.isSubmitting = false;
+                this.submitButton.set('disabled', false);
+            }
+        );
+    })).catch(lang.hitch(this, function(error) {
+        console.error('Error capturing or processing screenshot:', error);
+        topic.publish('showChatPanel'); // Ensure panel is shown even on error
+
+        // Fall back to HTML content if screenshot fails
+        console.log('Falling back to HTML content');
+        this._handlePageContentSubmitStream();
+    }));
+    },
+
+    _handlePageContentSubmitStream: function() {
+      var inputText = this.textArea.get('value');
+      var _self = this;
+
+      // Immediately show user message and clear text area
+      var userMessage = {
+        role: 'user',
+        content: inputText,
+        message_id: 'user_' + Date.now(),
+        timestamp: new Date().toISOString()
+      };
+
+      this.chatStore.addMessage(userMessage);
+      this.displayWidget.showMessages(this.chatStore.query());
+      this.textArea.set('value', '');
+
+      const pageHtml = document.documentElement.innerHTML;
+
+      var systemPrompt = 'You are a helpful assistant that can answer questions about the page content.\\n' +
+          'Answer questions as if you were a user viewing the page.\\n' +
+          'The page content is:\\n' +
+          pageHtml;
+      if (this.systemPrompt) {
+          systemPrompt += '\\n' + this.systemPrompt;
+      }
+      if (this.statePrompt) {
+        systemPrompt = this.statePrompt + '\\n\\n' + systemPrompt;
+      }
+
+      this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+      let assistantMessage = {
+          role: 'assistant',
+          content: '',
+          message_id: 'assistant_' + Date.now(),
+          timestamp: new Date().toISOString()
+      };
+      this.chatStore.addMessage(assistantMessage);
+      this.displayWidget.hideLoadingIndicator();
+
+      const params = {
+          inputText: inputText,
+          sessionId: this.sessionId,
+          systemPrompt: systemPrompt,
+          model: this.model,
+          save_chat: true,
+          ragDb: this.ragDb,
+          numDocs: this.numDocs,
+          enhancedPrompt: this.enhancedPrompt
+      };
+
+      this.copilotApi.submitCopilotQueryStream(params,
+          (chunk) => {
+              // onData
+              assistantMessage.content += chunk;
+              this.displayWidget.showMessages(this.chatStore.query());
+          },
+          () => {
+              // onEnd
+              if (_self.new_chat) {
+                  _self._finishNewChat();
+              }
+              this.isSubmitting = false;
+              this.submitButton.set('disabled', false);
+              // Deselect the pageContentToggle after submission
+              this.pageContentEnabled = false;
+              this._updateToggleButtonStyle();
+              topic.publish('pageContentToggleChanged', false);
+          },
+          (error) => {
+              // onError
+              topic.publish('CopilotApiError', {
+                  error: error
+              });
+              this.displayWidget.hideLoadingIndicator();
+              this.isSubmitting = false;
+              this.submitButton.set('disabled', false);
+          }
+      );
     },
 
     /**
