@@ -193,7 +193,7 @@ define([
      * - Scrolls to bottom after rendering
      * - Shows empty state if no messages
      */
-    showMessages: function(messages, scrollToBottom = true) {
+    showMessages: function(messages, scrollToBottom = false) {
       if (messages.length) {
         this.messages = messages; // Store messages for redrawing
         domConstruct.empty(this.resultContainer);
