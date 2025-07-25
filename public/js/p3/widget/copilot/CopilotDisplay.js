@@ -70,6 +70,10 @@ define([
     // Context to differentiate between main chat and side panel
     context: null,
 
+    // User scroll state management
+    _userIsScrolling: false,
+    _scrollTimeout: null,
+
     /**
      * @constructor
      * Initializes the widget with provided options
@@ -113,6 +117,21 @@ define([
 
         // Apply initial responsive padding
         this._updateResponsivePadding();
+
+        // Add scroll event listener to detect user scrolling
+        on(this.resultContainer, 'scroll', lang.hitch(this, function() {
+          this._userIsScrolling = true;
+
+          // Clear existing timeout
+          if (this._scrollTimeout) {
+            clearTimeout(this._scrollTimeout);
+          }
+
+          // Set timeout to reset scrolling flag after 1 second of no scrolling
+          this._scrollTimeout = setTimeout(lang.hitch(this, function() {
+            this._userIsScrolling = false;
+          }), 1000);
+        }));
 
         // Show initial empty state
         this.showEmptyState();
@@ -186,6 +205,24 @@ define([
     },
 
     /**
+     * Checks if the user is currently scrolled near the bottom
+     * @returns {boolean} True if user is at or near the bottom and not actively scrolling
+     */
+    _isNearBottom: function() {
+      if (!this.resultContainer) return true;
+
+      // Don't auto-scroll if user is actively scrolling or just stopped scrolling
+      if (this._userIsScrolling) return false;
+
+      var threshold = 100; // pixels from bottom to consider "near bottom"
+      var scrollTop = this.resultContainer.scrollTop;
+      var scrollHeight = this.resultContainer.scrollHeight;
+      var clientHeight = this.resultContainer.clientHeight;
+
+      return (scrollTop + clientHeight + threshold) >= scrollHeight;
+    },
+
+    /**
      * Renders an array of chat messages in the display
      * Implementation:
      * - Clears existing messages
@@ -196,8 +233,12 @@ define([
     showMessages: function(messages, scrollToBottom = false) {
       if (messages.length) {
         this.messages = messages; // Store messages for redrawing
+
+        // Check if user was near bottom before re-rendering
+        var wasNearBottom = this._isNearBottom();
+
         domConstruct.empty(this.resultContainer);
-        console.log('show messages', messages);
+        // console.log('show messages', messages);
         messages.forEach(lang.hitch(this, function(message) {
           new ChatMessage({
             ...message,
@@ -205,7 +246,8 @@ define([
           }, this.resultContainer);
         }));
 
-        if (scrollToBottom) {
+        // Auto-scroll if explicitly requested OR if user was near bottom
+        if (scrollToBottom || wasNearBottom) {
           this.scrollToBottom();
         }
       } else {

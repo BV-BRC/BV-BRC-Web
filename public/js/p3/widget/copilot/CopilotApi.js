@@ -297,15 +297,12 @@ define([
                         if (content) {
                             try {
                                 const finalContent = content.replace(/\\n/g, '\n');
-                                console.log('here2 = ', finalContent);
                                 try {
                                     const parsed = finalContent;
                                     if (parsed && typeof parsed === 'object' && parsed.content) {
                                         onData(parsed.content);
                                     } else {
-                                        console.log('here5');
                                         onData(finalContent);
-                                        console.log('here6');
                                     }
                                 } catch (jsonError) {
                                     onData(finalContent);
