@@ -247,6 +247,7 @@ define([
         }));
 
         // Auto-scroll if explicitly requested OR if user was near bottom
+        wasNearBottom = false;
         if (scrollToBottom || wasNearBottom) {
           this.scrollToBottom();
         }
