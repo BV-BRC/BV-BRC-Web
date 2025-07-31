@@ -214,7 +214,12 @@ define([
         },
 
         /**
-         * Submits a copilot query with streaming
+         * Submits a copilot query with streaming (v2 API - two-step workflow)
+         *
+         * This method uses a two-step process:
+         * 1. Setup: Call /setup-copilot-stream to prepare context and get stream_id
+         * 2. Stream: Call /copilot-stream with stream_id to get real-time response
+         *
          * @param {object} params - The parameters for the query
          * @param {string} params.inputText - The user's input text
          * @param {string} params.sessionId - The current session ID
@@ -225,88 +230,171 @@ define([
          * @param {number} params.numDocs - The number of documents for RAG
          * @param {string} params.image - A base64 encoded image
          * @param {string} params.enhancedPrompt - An enhanced prompt
-         * @param {function} onData - Callback for each data chunk
-         * @param {function} onEnd - Callback for when the stream ends
-         * @param {function} onError - Callback for any errors
+         * @param {function} onData - Callback for each data chunk: onData(chunk)
+         * @param {function} onEnd - Callback for when the stream ends: onEnd()
+         * @param {function} onError - Callback for any errors: onError(error)
+         * @param {function} onSetupComplete - Optional callback for when setup completes: onSetupComplete(metadata)
+         *                                     metadata includes: { stream_id, user_message_id, assistant_message_id, rag_docs }
+         *                                     rag_docs array contains retrieved documents for display in UI
+         *
+         * @example
+         * // Basic usage (backward compatible)
+         * api.submitCopilotQueryStream(params, onData, onEnd, onError);
+         *
+         * // With setup callback to show RAG documents
+         * api.submitCopilotQueryStream(params, onData, onEnd, onError, (metadata) => {
+         *     if (metadata.rag_docs && metadata.rag_docs.length > 0) {
+         *         displayRagDocuments(metadata.rag_docs);
+         *     }
+         * });
          */
-        submitCopilotQueryStream: function(params, onData, onEnd, onError) {
+        submitCopilotQueryStream: function(params, onData, onEnd, onError, onSetupComplete) {
+            // ========================================
+            // STEP 0: VALIDATION
+            // ========================================
             if (!this._checkLoggedIn()) {
                 if (onError) onError(new Error('Not logged in'));
                 return;
             }
 
-            var data = {
+            // ========================================
+            // STEP 1: PREPARE SETUP DATA
+            // ========================================
+            var _self = this;
+            var setupData = {
                 query: params.inputText,
                 model: params.model,
                 session_id: params.sessionId,
                 user_id: this.user_id,
-                stream: true,
-                save_chat: params.save_chat,
-                include_history: true,
-                enhanced_prompt: params.enhancedPrompt
+                save_chat: params.save_chat !== undefined ? params.save_chat : true,
+                include_history: true
             };
 
-            if (params.systemPrompt) {
-                data.system_prompt = params.systemPrompt;
+            // Add optional parameters
+            if (params.enhancedPrompt) {
+                setupData.enhanced_prompt = params.enhancedPrompt;
             }
-
+            if (params.systemPrompt) {
+                setupData.system_prompt = params.systemPrompt;
+            }
             if (params.ragDb) {
-                data.rag_db = params.ragDb;
+                setupData.rag_db = params.ragDb;
                 if (params.numDocs) {
-                    data.num_docs = params.numDocs;
+                    setupData.num_docs = params.numDocs;
                 }
             }
-
             if (params.image) {
-                data.image = params.image;
+                setupData.image = params.image;
             }
 
-            fetch(this.apiUrlBase + '/copilot', {
+            // ========================================
+            // STEP 2: CALL SETUP ENDPOINT
+            // ========================================
+            fetch(this.apiUrlBase + '/setup-copilot-stream', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': (window.App.authorizationToken || ''),
-                    'Accept': 'text/event-stream',
-                    'Cache-Control': 'no-cache'
+                    'Authorization': (window.App.authorizationToken || '')
                 },
-                body: JSON.stringify(data)
-            }).then(response => {
+                body: JSON.stringify(setupData)
+            })
+            .then(response => {
                 if (!response.ok) {
-                    response.text().then(text => {
-                      const err = new Error(`HTTP error! status: ${response.status}, message: ${text}`);
-                      if (onError) onError(err);
+                    return response.text().then(text => {
+                        const err = new Error(`Setup failed! status: ${response.status}, message: ${text}`);
+                        throw err;
                     });
-                    return;
                 }
+                return response.json();
+            })
+            .then(setupResponse => {
+                if (setupResponse.message !== 'success') {
+                    throw new Error('Setup failed: ' + (setupResponse.message || 'Unknown error'));
+                }
+
+                var setupMetadata = setupResponse.setup_data;
+
+                // Call the setup complete callback if provided
+                if (onSetupComplete) {
+                    onSetupComplete(setupMetadata);
+                }
+
+                // ========================================
+                // STEP 3: START STREAMING
+                // ========================================
+                return fetch(_self.apiUrlBase + '/copilot-stream', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': (window.App.authorizationToken || ''),
+                        'Accept': 'text/event-stream',
+                        'Cache-Control': 'no-cache'
+                    },
+                    body: JSON.stringify({
+                        stream_id: setupMetadata.stream_id
+                    })
+                });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        const err = new Error(`Stream failed! status: ${response.status}, message: ${text}`);
+                        throw err;
+                    });
+                }
+
+                // ========================================
+                // STEP 4: SETUP STREAM PROCESSING
+                // ========================================
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder('utf-8');
                 let buffer = '';
+                let isFirstEvent = true;
 
+                // ========================================
+                // STEP 5: PROCESS STREAM DATA
+                // ========================================
                 const processLine = (line) => {
+                    // Handle error events
+                    if (line.startsWith('event: error')) {
+                        return;
+                    }
+
+                    // Handle data events
                     if (line.startsWith('data:')) {
                         let content = line.substring(5);
                         if (content.startsWith(' ')) {
                             content = content.substring(1);
                         }
 
+                        // Check for DONE marker
                         if (content === '[DONE]') {
                             if (onEnd) onEnd();
                             return;
                         }
 
+                        // Process content
                         if (content) {
                             try {
-                                const finalContent = content.replace(/\\n/g, '\n');
-                                try {
-                                    const parsed = finalContent;
-                                    if (parsed && typeof parsed === 'object' && parsed.content) {
-                                        onData(parsed.content);
-                                    } else {
-                                        onData(finalContent);
+                                // Handle first event (metadata)
+                                if (isFirstEvent) {
+                                    try {
+                                        const metadata = JSON.parse(content);
+                                        if (metadata.type === 'message_metadata') {
+                                            isFirstEvent = false;
+                                            return;
+                                        }
+                                    } catch (parseError) {
+                                        // Not JSON metadata, treat as regular content
                                     }
-                                } catch (jsonError) {
-                                    onData(finalContent);
+                                    isFirstEvent = false;
                                 }
+
+                                // Process regular content
+                                const finalContent = content.replace(/\\n/g, '\n');
+
+                                // Content is plain text, not JSON
+                                onData(finalContent);
                             } catch (e) {
                                 if (onError) onError(e);
                             }
@@ -314,20 +402,22 @@ define([
                     }
                 }
 
+                // ========================================
+                // STEP 6: STREAM PUMP FUNCTION
+                // ========================================
                 function pump() {
-                    return reader.read().then(({
-                        done,
-                        value
-                    }) => {
+                    return reader.read().then(({ done, value }) => {
                         if (done) {
                             if (buffer.length > 0) {
-                                processLine(buffer); // Process any remaining data
+                                processLine(buffer);
                             }
                             if (onEnd) onEnd();
                             return;
                         }
+
                         buffer += decoder.decode(value, { stream: true });
 
+                        // Process complete lines
                         let eol;
                         while ((eol = buffer.indexOf('\n')) >= 0) {
                             const line = buffer.slice(0, eol).trim();
@@ -338,9 +428,10 @@ define([
                         return pump();
                     });
                 }
-                return pump();
 
-            }).catch(err => {
+                return pump();
+            })
+            .catch(err => {
                 if (onError) onError(err);
             });
         },

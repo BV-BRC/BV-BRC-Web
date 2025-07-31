@@ -138,6 +138,7 @@ define([
                 this._handlePageSubmitStream();
             } else if (this.copilotApi && this.ragDb) {
                 this._handleRagSubmitStream();
+                // this._handleRagSubmit();
             } else if (this.copilotApi) {
                 this._handleRegularSubmitStream();
             } else {
@@ -663,6 +664,25 @@ define([
               this.displayWidget.hideLoadingIndicator();
               this.isSubmitting = false;
               this.submitButton.set('disabled', false);
+          },
+          (setupMetadata) => {
+            // onSetupComplete - get message IDs from setup metadata
+            if (setupMetadata) {
+              assistantMessage.message_id = setupMetadata.assistant_message_id;
+              userMessage.message_id = setupMetadata.user_message_id;
+              if (setupMetadata.system_message_id) {
+                var systemMessage = {
+                    role: 'system',
+                    message_id: setupMetadata.system_message_id,
+                    content: '',
+                    copilotDetails: setupMetadata.copilot_details,
+                    ragDocs: setupMetadata.rag_docs,
+                    timestamp: new Date().toISOString()
+                };
+                this.chatStore.addMessage(systemMessage);
+              }
+              this.displayWidget.showMessages(this.chatStore.query());
+            }
           }
       );
     },
@@ -680,7 +700,7 @@ define([
       var userMessage = {
         role: 'user',
         content: inputText,
-        message_id: 'user_' + Date.now(),
+        message_id: null,
         timestamp: new Date().toISOString()
       };
 
@@ -701,10 +721,21 @@ define([
           systemPrompt += this.statePrompt;
       }
 
+      // Create system message first (for RAG queries, this will be populated in setupMetadata)
+      let systemMessage = {
+          role: 'system',
+          message_id: null,
+          content: '',
+          copilotDetails: null,
+          ragDocs: null,
+          timestamp: new Date().toISOString()
+      };
+      this.chatStore.addMessage(systemMessage);
+
       let assistantMessage = {
           role: 'assistant',
           content: '',
-          message_id: 'assistant_' + Date.now(),
+          message_id: null,
           timestamp: new Date().toISOString()
       };
       this.chatStore.addMessage(assistantMessage);
@@ -723,7 +754,7 @@ define([
 
       this.copilotApi.submitCopilotQueryStream(params,
           (chunk) => {
-              // onData
+              // onData - content is plain text
               assistantMessage.content += chunk;
               this.displayWidget.showMessages(this.chatStore.query());
           },
@@ -743,6 +774,33 @@ define([
               this.displayWidget.hideLoadingIndicator();
               this.isSubmitting = false;
               this.submitButton.set('disabled', false);
+          },
+          (setupMetadata) => {
+            // onSetupComplete - handle the new setupMetadata structure
+            if (setupMetadata) {
+              // Update message IDs from the metadata
+              if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
+                assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
+              }
+              if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
+                userMessage.message_id = setupMetadata.userMessage.message_id;
+              }
+
+              // Update system message with backend data if present
+              if (setupMetadata.systemMessage) {
+                systemMessage.message_id = setupMetadata.systemMessage.message_id;
+                systemMessage.content = setupMetadata.systemMessage.content || '';
+                systemMessage.copilotDetails = setupMetadata.copilot_details;
+                systemMessage.documents = setupMetadata.rag_docs;
+                systemMessage.timestamp = setupMetadata.systemMessage.timestamp || new Date().toISOString();
+              } else if (setupMetadata.copilot_details) {
+                // Fallback for non-RAG details - attach to assistant message
+                assistantMessage.copilotDetails = setupMetadata.copilot_details;
+              }
+
+              // Refresh the display to show the prompt details link
+              this.displayWidget.showMessages(this.chatStore.query());
+            }
           }
       );
     },
@@ -758,7 +816,7 @@ define([
       var userMessage = {
         role: 'user',
         content: inputText,
-        message_id: 'user_' + Date.now(),
+        message_id: null,
         timestamp: new Date().toISOString()
       };
 
@@ -779,10 +837,21 @@ define([
           systemPrompt += this.statePrompt;
       }
 
+      // Create system message first (for enhanced prompts, this will be populated in setupMetadata)
+      let systemMessage = {
+          role: 'system',
+          message_id: null,
+          content: '',
+          copilotDetails: null,
+          ragDocs: null,
+          timestamp: new Date().toISOString()
+      };
+      this.chatStore.addMessage(systemMessage);
+
       let assistantMessage = {
           role: 'assistant',
           content: '',
-          message_id: 'assistant_' + Date.now(),
+          message_id: null,
           timestamp: new Date().toISOString()
       };
       this.chatStore.addMessage(assistantMessage);
@@ -798,7 +867,7 @@ define([
 
       this.copilotApi.submitCopilotQueryStream(params,
           (chunk) => {
-              // onData
+              // onData - content is plain text
               assistantMessage.content += chunk;
               this.displayWidget.showMessages(this.chatStore.query());
           },
@@ -818,6 +887,33 @@ define([
               this.displayWidget.hideLoadingIndicator();
               this.isSubmitting = false;
               this.submitButton.set('disabled', false);
+          },
+          (setupMetadata) => {
+            // onSetupComplete - handle the new setupMetadata structure
+            if (setupMetadata) {
+              // Update message IDs from the metadata
+              if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
+                assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
+              }
+              if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
+                userMessage.message_id = setupMetadata.userMessage.message_id;
+              }
+
+              // Update system message with backend data if present
+              if (setupMetadata.systemMessage) {
+                systemMessage.message_id = setupMetadata.systemMessage.message_id;
+                systemMessage.content = setupMetadata.systemMessage.content || '';
+                systemMessage.copilotDetails = setupMetadata.copilot_details;
+                systemMessage.documents = setupMetadata.rag_docs;
+                systemMessage.timestamp = setupMetadata.systemMessage.timestamp || new Date().toISOString();
+              } else if (setupMetadata.copilot_details) {
+                // Fallback for non-RAG details - attach to assistant message
+                assistantMessage.copilotDetails = setupMetadata.copilot_details;
+              }
+
+              // Refresh the display to show the prompt details link
+              this.displayWidget.showMessages(this.chatStore.query());
+            }
           }
       );
     },
@@ -865,10 +961,21 @@ define([
 
         var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
 
+        // Create system message first (for image queries, this will be populated in setupMetadata)
+        let systemMessage = {
+            role: 'system',
+            message_id: null,
+            content: '',
+            copilotDetails: null,
+            ragDocs: null,
+            timestamp: new Date().toISOString()
+        };
+        this.chatStore.addMessage(systemMessage);
+
         let assistantMessage = {
             role: 'assistant',
             content: '',
-            message_id: 'assistant_' + Date.now(),
+            message_id: null,
             timestamp: new Date().toISOString()
         };
         this.chatStore.addMessage(assistantMessage);
@@ -888,7 +995,7 @@ define([
 
         this.copilotApi.submitCopilotQueryStream(params,
             (chunk) => {
-                // onData
+                // onData - content is plain text
                 assistantMessage.content += chunk;
                 this.displayWidget.showMessages(this.chatStore.query());
             },
@@ -912,6 +1019,33 @@ define([
                 this.displayWidget.hideLoadingIndicator();
                 this.isSubmitting = false;
                 this.submitButton.set('disabled', false);
+            },
+            (setupMetadata) => {
+                // onSetupComplete - handle the new setupMetadata structure
+                if (setupMetadata) {
+                    // Update message IDs from the metadata
+                    if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
+                        assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
+                    }
+                    if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
+                        userMessage.message_id = setupMetadata.userMessage.message_id;
+                    }
+
+                    // Update system message with backend data if present
+                    if (setupMetadata.systemMessage) {
+                        systemMessage.message_id = setupMetadata.systemMessage.message_id;
+                        systemMessage.content = setupMetadata.systemMessage.content || '';
+                        systemMessage.copilotDetails = setupMetadata.copilot_details;
+                        systemMessage.documents = setupMetadata.rag_docs;
+                        systemMessage.timestamp = setupMetadata.systemMessage.timestamp || new Date().toISOString();
+                    } else if (setupMetadata.copilot_details) {
+                        // Fallback for non-RAG details - attach to assistant message
+                        assistantMessage.copilotDetails = setupMetadata.copilot_details;
+                    }
+
+                    // Refresh the display to show the prompt details link
+                    this.displayWidget.showMessages(this.chatStore.query());
+                }
             }
         );
     })).catch(lang.hitch(this, function(error) {
@@ -955,10 +1089,21 @@ define([
 
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
+      // Create system message first (for page content queries, this will be populated in setupMetadata)
+      let systemMessage = {
+          role: 'system',
+          message_id: null,
+          content: '',
+          copilotDetails: null,
+          ragDocs: null,
+          timestamp: new Date().toISOString()
+      };
+      this.chatStore.addMessage(systemMessage);
+
       let assistantMessage = {
           role: 'assistant',
           content: '',
-          message_id: 'assistant_' + Date.now(),
+          message_id: null,
           timestamp: new Date().toISOString()
       };
       this.chatStore.addMessage(assistantMessage);
@@ -977,7 +1122,7 @@ define([
 
       this.copilotApi.submitCopilotQueryStream(params,
           (chunk) => {
-              // onData
+              // onData - content is plain text
               assistantMessage.content += chunk;
               this.displayWidget.showMessages(this.chatStore.query());
           },
@@ -1001,6 +1146,33 @@ define([
               this.displayWidget.hideLoadingIndicator();
               this.isSubmitting = false;
               this.submitButton.set('disabled', false);
+          },
+          (setupMetadata) => {
+              // onSetupComplete - handle the new setupMetadata structure
+              if (setupMetadata) {
+                  // Update message IDs from the metadata
+                  if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
+                      assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
+                  }
+                  if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
+                      userMessage.message_id = setupMetadata.userMessage.message_id;
+                  }
+
+                  // Update system message with backend data if present
+                  if (setupMetadata.systemMessage) {
+                      systemMessage.message_id = setupMetadata.systemMessage.message_id;
+                      systemMessage.content = setupMetadata.systemMessage.content || '';
+                      systemMessage.copilotDetails = setupMetadata.copilot_details;
+                      systemMessage.documents = setupMetadata.rag_docs;
+                      systemMessage.timestamp = setupMetadata.systemMessage.timestamp || new Date().toISOString();
+                  } else if (setupMetadata.copilot_details) {
+                      // Fallback for non-RAG details - attach to assistant message
+                      assistantMessage.copilotDetails = setupMetadata.copilot_details;
+                  }
+
+                  // Refresh the display to show the prompt details link
+                  this.displayWidget.showMessages(this.chatStore.query());
+              }
           }
       );
     },
