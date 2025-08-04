@@ -103,13 +103,13 @@ define([
 
       storeBuilder('sequence_feature', 'taxon_id').then(lang.hitch(this, (store) => {
         // Display correct names based on taxon id
-        store.data.forEach(item => {
+        store.data = store.data.filter(item => {
           const virus = SFVTViruses.get(item.id);
           if (virus) {
             item.name = virus.name;
-          } else {
-            store.remove(item.id);
+            return true;
           }
+          return false; // remove from data if not in SFVTViruses
         });
 
         store.data.sort((a, b) => a.name.localeCompare(b.name));
