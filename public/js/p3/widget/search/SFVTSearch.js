@@ -38,11 +38,11 @@ define([
     resultUrlBase: '/view/Taxonomy/{taxon_id}?',
     resultUrlHash: '#view_tab=sfvt',
     defaultTaxonId: '11320',
-    proteinOptions: ['10244', '12637'],
+    proteinOptions: ['10244', '11234', '12637'],
     segmentOptions: ['11320'],
     sfvtSequenceErrorMessage: 'There are too many Sequence Feature hits. Please refine Sequence Feature Variant Type Sequence pattern to narrow down the results.',
     sfvtMaxLimit: 300,
-    mpoxGeneProductMapping: {},
+    geneProductMapping: {},
 
     startup: function () {
       let sfvtSeqSearchButton = query('#sfvt-seq-search')[0];
@@ -103,13 +103,13 @@ define([
 
       storeBuilder('sequence_feature', 'taxon_id').then(lang.hitch(this, (store) => {
         // Display correct names based on taxon id
-        store.data.forEach(item => {
+        store.data = store.data.filter(item => {
           const virus = SFVTViruses.get(item.id);
           if (virus) {
             item.name = virus.name;
-          } else {
-            store.remove(item.id);
+            return true;
           }
+          return false; // remove from data if not in SFVTViruses
         });
 
         store.data.sort((a, b) => a.name.localeCompare(b.name));
@@ -155,7 +155,7 @@ define([
             response.grouped.gene.groups.forEach(group => {
               const gene = group.groupValue;
               const product = group.doclist.docs[0].product;
-              self.mpoxGeneProductMapping[gene] = product;
+              self.geneProductMapping[gene] = product;
             });
           }
         });
@@ -180,7 +180,7 @@ define([
             response.grouped.gene.groups.forEach(function (group) {
               const gene = group.groupValue;
               const product = group.doclist.docs[0].product;
-              self.mpoxGeneProductMapping[gene] = product;
+              self.geneProductMapping[gene] = product;
             });
           }
         } else {
@@ -258,7 +258,7 @@ define([
                 label: segmentNo ? `${segmentNo} / ${item.name}` : item.name
               });
           } else {
-            const product = this.mpoxGeneProductMapping[item.name];
+            const product = this.geneProductMapping[item.name];
             geneOptions.push(
               {
                 value: item.name,
