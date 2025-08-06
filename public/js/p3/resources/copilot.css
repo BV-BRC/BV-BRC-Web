@@ -54,6 +54,91 @@
   transform: scale(1.1);
 }
 
+/* Chat Button Hide Text */
+.chat-button-hide-text {
+  position: absolute;
+  top: -25px;
+  left: -35px;
+  width: 30px;
+  height: 20px;
+  background-color: #ffffff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: none;
+  z-index: 10000;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding-left: 10px;
+  padding-top: 5px;
+
+  /* Transition effects */
+  transition: all 0.2s ease-in-out;
+
+  /* Prevent text selection */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+
+  /* Typography */
+  font-family: inherit;
+  line-height: 1.4;
+}
+
+.chat-button-hide-text:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+  color: #1f2937;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.chat-button-hide-text:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  background-color: #e5e7eb;
+}
+
+/* Show Chat Rectangle Button */
+.ShowChatRectButton {
+  position: fixed;
+  bottom: 7vh;
+  right: 0px;
+  z-index: 9999;
+  background-color: var(--blue);
+  color: white;
+  border: none;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 6px;
+  padding-left: 8px;
+  padding-top: 2px;
+}
+
+.ShowChatRectButton:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+.ShowChatRectButton .show-chat-plus {
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
 /* Chat Button Elements */
 .ChatButton .dijitButtonNode {
   width: 100%;

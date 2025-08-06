@@ -1,6 +1,6 @@
 define([
   'dojo/_base/declare',
-  'dojo/topic', 'dojo/on', 'dojo/dom', 'dojo/dom-class', 'dojo/dom-attr', 'dojo/dom-construct', 'dojo/query',
+  'dojo/topic', 'dojo/on', 'dojo/dom', 'dojo/dom-class', 'dojo/dom-attr', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/query',
   'dijit/registry', 'dojo/_base/lang',
   'dojo/_base/Deferred',
   'dojo/store/JsonRest', 'dojox/widget/Toaster',
@@ -12,7 +12,7 @@ define([
 
 ], function (
   declare,
-  Topic, on, dom, domClass, domAttr, domConstruct, domQuery,
+  Topic, on, dom, domClass, domAttr, domConstruct, domStyle, domQuery,
   Registry, lang,
   Deferred,
   JsonRest, Toaster,
@@ -53,6 +53,52 @@ define([
             backgroundColor: '#007bff',
             borderRadius: '50%'
           }).placeAt(document.body);
+
+          // Create blue rectangle button for showing chat button when hidden
+          var showChatRectButton = domConstruct.create('div', {
+            className: 'ShowChatRectButton',
+            innerHTML: '<span class="show-chat-plus">+</span>',
+            title: 'show copilot button',
+            style: {
+              display: 'none'
+            }
+          });
+          domConstruct.place(showChatRectButton, document.body);
+
+          // Function to get chat button visibility from localStorage
+          function getChatButtonVisibility() {
+            try {
+              if (window && window.localStorage) {
+                var stored = localStorage.getItem('copilot-chat-button-visible');
+                return stored !== null ? (stored === 'true') : true; // default to visible
+              }
+            } catch (e) {
+              console.warn('Unable to read chat button visibility from localStorage', e);
+            }
+            return true; // default to visible
+          }
+
+          // Initialize showChatRectButton visibility based on localStorage
+          var initialChatButtonVisible = getChatButtonVisibility();
+          if (!initialChatButtonVisible) {
+            domStyle.set(showChatRectButton, 'display', 'block');
+          }
+
+          // Add click handler for the rectangle button
+          on(showChatRectButton, 'click', function(evt) {
+            Topic.publish('showChatButton', true);
+            evt.stopPropagation();
+          });
+
+          Topic.subscribe('hideChatButton', lang.hitch(this, function(checked) {
+            chatButton.hide();
+            domStyle.set(showChatRectButton, 'display', 'block');
+          }));
+
+          Topic.subscribe('showChatButton', lang.hitch(this, function(checked) {
+            chatButton.show();
+            domStyle.set(showChatRectButton, 'display', 'none');
+          }));
         })
       }
 
