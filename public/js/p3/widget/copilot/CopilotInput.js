@@ -625,7 +625,6 @@ define([
           timestamp: new Date().toISOString()
       };
       this.chatStore.addMessage(assistantMessage);
-      this.displayWidget.hideLoadingIndicator();
 
       const params = {
           inputText: inputText,
@@ -642,6 +641,7 @@ define([
           (chunk) => {
               // onData
               assistantMessage.content += chunk;
+              this.displayWidget.hideLoadingIndicator();
               this.displayWidget.showMessages(this.chatStore.query());
           },
           () => {
@@ -739,7 +739,6 @@ define([
           timestamp: new Date().toISOString()
       };
       this.chatStore.addMessage(assistantMessage);
-      this.displayWidget.hideLoadingIndicator();
 
       const params = {
         inputText: inputText,
@@ -756,6 +755,7 @@ define([
           (chunk) => {
               // onData - content is plain text
               assistantMessage.content += chunk;
+              this.displayWidget.hideLoadingIndicator();
               this.displayWidget.showMessages(this.chatStore.query());
           },
           () => {
@@ -855,7 +855,6 @@ define([
           timestamp: new Date().toISOString()
       };
       this.chatStore.addMessage(assistantMessage);
-      this.displayWidget.hideLoadingIndicator();
 
       const params = {
           inputText: inputText,
@@ -869,6 +868,7 @@ define([
           (chunk) => {
               // onData - content is plain text
               assistantMessage.content += chunk;
+              this.displayWidget.hideLoadingIndicator();
               this.displayWidget.showMessages(this.chatStore.query());
           },
           () => {
@@ -979,7 +979,6 @@ define([
             timestamp: new Date().toISOString()
         };
         this.chatStore.addMessage(assistantMessage);
-        this.displayWidget.hideLoadingIndicator();
 
         const params = {
             inputText: inputText,
@@ -997,6 +996,7 @@ define([
             (chunk) => {
                 // onData - content is plain text
                 assistantMessage.content += chunk;
+                this.displayWidget.hideLoadingIndicator();
                 this.displayWidget.showMessages(this.chatStore.query());
             },
             () => {
@@ -1107,7 +1107,6 @@ define([
           timestamp: new Date().toISOString()
       };
       this.chatStore.addMessage(assistantMessage);
-      this.displayWidget.hideLoadingIndicator();
 
       const params = {
           inputText: inputText,
@@ -1124,6 +1123,7 @@ define([
           (chunk) => {
               // onData - content is plain text
               assistantMessage.content += chunk;
+              this.displayWidget.hideLoadingIndicator();
               this.displayWidget.showMessages(this.chatStore.query());
           },
           () => {
