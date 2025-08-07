@@ -38,22 +38,40 @@ define([
    */
   return declare([CopilotInput], {
 
-    // CSS class for styling
+    //================================================================
+    // WIDGET CONFIGURATION & STATE PROPERTIES
+    //================================================================
+
+    /** CSS class for styling */
     baseClass: 'CopilotInputSidePanel',
 
-    // Widget styling
+    /** Widget styling */
     style: 'padding: 0 5px 5px 5px; border: 0; height: 20%;',
 
-    // Size constraints for the widget
+    /** Size constraints for the widget */
     minSize: 40,
     maxSize: 200,
 
+    //================================================================
+    // COPILOT API & SESSION PROPERTIES
+    //================================================================
+
+    /** Current selection for job manager context */
     currentSelection: null,
 
-    // Flag to track page content toggle state
+    /** Selected RAG database for enhanced responses */
+    ragDb: null,
+
+    //================================================================
+    // UI STATE PROPERTIES
+    //================================================================
+
+    /** Flag to track page content toggle state */
     pageContentEnabled: false,
 
-    ragDb: null,
+    //================================================================
+    // LIFECYCLE METHODS
+    //================================================================
 
     /**
      * @constructor
@@ -205,1002 +223,33 @@ define([
         }));
     },
 
-    /**
-     * @method _handlePageSubmit
-     * @description Handles submission about the current page (screenshot first, HTML fallback)
-     * Implementation:
-     * - Immediately shows user message and clears text area
-     * - Takes screenshot and makes API call
-     * - Updates chat store with assistant/system messages only
-     **/
-    _handlePageSubmit: function() {
-        var inputText = this.textArea.get('value');
-        var _self = this;
-
-        if (this.state) {
-            console.log('state', this.state);
-        }
-
-        // Immediately show user message and clear text area
-        var userMessage = {
-          role: 'user',
-          content: inputText,
-          message_id: 'user_' + Date.now(),
-          timestamp: new Date().toISOString()
-        };
-
-        this.chatStore.addMessage(userMessage);
-        this.displayWidget.showMessages(this.chatStore.query());
-        this.textArea.set('value', '');
-
-        this.isSubmitting = true;
-        this.submitButton.set('disabled', true);
-
-        html2canvas(document.body).then(lang.hitch(this, function(canvas) {
-            var base64Image = canvas.toDataURL('image/png');
-
-            this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
-            var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\n' +
-                                'Analyze the screenshot and respond to the user\'s query.';
-            if (this.systemPrompt) {
-                imageSystemPrompt += '\n' + this.systemPrompt;
-            }
-            var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
-
-            let assistantMessage = {
-                role: 'assistant',
-                content: '',
-                message_id: null,
-                timestamp: new Date().toISOString()
-            };
-            this.chatStore.addMessage(assistantMessage);
-            this.displayWidget.hideLoadingIndicator();
-
-            const params = {
-                inputText: inputText,
-                sessionId: this.sessionId,
-                systemPrompt: imageSystemPrompt,
-                model: imgtxt_model,
-                save_chat: true,
-                image: base64Image
-            };
-
-            this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, null, null, base64Image)
-                .then(lang.hitch(this, function(response) {
-                    // Only add assistant message and system message (if present) - user message was already added
-                    var messagesToAdd = [];
-                    if (response.systemMessage) {
-                        messagesToAdd.push(response.systemMessage);
-                    }
-                    if (response.assistantMessage) {
-                        messagesToAdd.push(response.assistantMessage);
-                    }
-
-                    if (messagesToAdd.length > 0) {
-                        this.chatStore.addMessages(messagesToAdd);
-                    }
-
-                    this.displayWidget.showMessages(this.chatStore.query());
-
-                    if (_self.new_chat) {
-                        _self._finishNewChat();
-                    }
-                })).catch(function(error) {
-                    topic.publish('CopilotApiError', { error: error });
-                }).finally(lang.hitch(this, function() {
-                    this.displayWidget.hideLoadingIndicator();
-                    this.isSubmitting = false;
-                    this.submitButton.set('disabled', false);
-
-                    // Deselect the pageContentToggle after submission
-                    this.pageContentEnabled = false;
-                    this._updateToggleButtonStyle();
-                    topic.publish('pageContentToggleChanged', false);
-                }));
-        })).catch(lang.hitch(this, function(error) {
-            console.error('Error capturing or processing screenshot:', error);
-
-            // Fall back to HTML content if screenshot fails
-            console.log('Falling back to HTML content');
-            this._handlePageContentSubmit();
-        }));
-    },
+    //================================================================
+    // SUBMISSION HANDLER METHODS
+    //================================================================
 
     /**
-     * @method _handlePageContentSubmit
-     * @description Handles submission of page content (HTML)
-     * Used as a fallback when screenshot fails
-     * Implementation:
-     * - Immediately shows user message and clears text area
-     * - Makes API call with page content
-     * - Updates chat store with assistant/system messages only
-     **/
-    _handlePageContentSubmit: function() {
-        var inputText = this.textArea.get('value');
-        var _self = this;
-
-        // Immediately show user message and clear text area
-        var userMessage = {
-          role: 'user',
-          content: inputText,
-          message_id: 'user_' + Date.now(),
-          timestamp: new Date().toISOString()
-        };
-
-        this.chatStore.addMessage(userMessage);
-        this.displayWidget.showMessages(this.chatStore.query());
-        this.textArea.set('value', '');
-
-        const pageHtml = document.documentElement.innerHTML;
-
-        var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the page content.\n' +
-            'Answer questions as if you were a user viewing the page.\n' +
-            'The page content is:\n' +
-            pageHtml;
-        if (this.systemPrompt) {
-            imageSystemPrompt += '\n' + this.systemPrompt;
-        }
-
-        this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
-        let assistantMessage = {
-            role: 'assistant',
-            content: '',
-            message_id: null,
-            timestamp: new Date().toISOString()
-        };
-        this.chatStore.addMessage(assistantMessage);
-        this.displayWidget.hideLoadingIndicator();
-
-        const params = {
-            inputText: inputText,
-            sessionId: this.sessionId,
-            systemPrompt: imageSystemPrompt,
-            model: this.model,
-            save_chat: true
-        };
-
-        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, this.model).then(lang.hitch(this, function(response) {
-            // Only add assistant message and system message (if present) - user message was already added
-            var messagesToAdd = [];
-            if (response.systemMessage) {
-                messagesToAdd.push(response.systemMessage);
-            }
-            if (response.assistantMessage) {
-                messagesToAdd.push(response.assistantMessage);
-            }
-
-            if (messagesToAdd.length > 0) {
-                this.chatStore.addMessages(messagesToAdd);
-            }
-
-            this.displayWidget.showMessages(this.chatStore.query());
-
-            if (_self.new_chat) {
-                _self._finishNewChat();
-            }
-        })).catch(function(error) {
-            topic.publish('CopilotApiError', { error: error });
-        }).finally(lang.hitch(this, function() {
-            this.displayWidget.hideLoadingIndicator();
-            this.isSubmitting = false;
-            this.submitButton.set('disabled', false);
-
-            // Deselect the pageContentToggle after submission
-            this.pageContentEnabled = false;
-            this._updateToggleButtonStyle();
-            topic.publish('pageContentToggleChanged', false);
-        }));
-    },
-
-    /**
-     * Handles submission of regular (non-RAG) queries
-     * Implementation:
-     * - Checks context to determine submission type
-     * - Routes to appropriate handler based on context
-     * - Throws error for unsupported contexts
+     * Handles submission of regular (non-RAG) queries with streaming
+     * Routes to appropriate handler based on context
      */
-    _handleRegularSubmit: function() {
+    _handleRegularSubmitStream: function() {
       try {
         if (this.context === 'grid-container') {
-          this._submitToGridContainer();
+          this._submitToGridContainerStream();
         } else if (this.context === 'job-manager') {
-          this._submitToJobManager();
+          this._submitToJobManagerStream();
         } else {
           throw new Error('Unsupported context: ' + (this.context || 'undefined'));
         }
       } catch (error) {
-        console.error('Error in _handleRegularSubmit:', error.message);
+        console.error('Error in _handleRegularSubmitStream:', error.message);
         topic.publish('CopilotApiError', { error: error });
         this.isSubmitting = false;
         this.submitButton.set('disabled', false);
       }
-    },
-
-    /**
-     * Handles submission for grid-container context using copilotAPI
-     * Implementation:
-     * - Immediately shows user message and clears text area
-     * - Disables input during submission
-     * - Shows loading indicator
-     * - Makes LLM query with basic system prompt
-     * - Updates chat store with assistant/system messages only
-     * - Handles new chat initialization
-     */
-    _submitToGridContainer: function() {
-      var inputText = this.textArea.get('value');
-      var _self = this;
-
-      if (this.state) {
-        console.log('state', this.state);
-      }
-
-      // Immediately show user message and clear text area
-      var userMessage = {
-        role: 'user',
-        content: inputText,
-        message_id: 'user_' + Date.now(),
-        timestamp: new Date().toISOString()
-      };
-
-      this.chatStore.addMessage(userMessage);
-      this.displayWidget.showMessages(this.chatStore.query());
-      this.textArea.set('value', '');
-
-      this.isSubmitting = true;
-      this.submitButton.set('disabled', true);
-
-      let assistantMessage = {
-          role: 'assistant',
-          content: '',
-          message_id: null,
-          timestamp: new Date().toISOString()
-      };
-      this.chatStore.addMessage(assistantMessage);
-      this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
-      const params = {
-          inputText: inputText,
-          sessionId: this.sessionId,
-          systemPrompt: this.systemPrompt,
-          model: this.model,
-          save_chat: true
-      };
-
-      this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
-        // Only add assistant message and system message (if present) - user message was already added
-        var messagesToAdd = [];
-        if (response.systemMessage) {
-          messagesToAdd.push(response.systemMessage);
-        }
-        if (response.assistantMessage) {
-          messagesToAdd.push(response.assistantMessage);
-        }
-
-        if (messagesToAdd.length > 0) {
-          this.chatStore.addMessages(messagesToAdd);
-        }
-
-        this.displayWidget.showMessages(this.chatStore.query());
-
-        if (_self.new_chat) {
-          _self._finishNewChat();
-        }
-      })).catch(function(error) {
-        topic.publish('CopilotApiError', { error: error });
-      }).finally(lang.hitch(this, function() {
-        this.displayWidget.hideLoadingIndicator();
-        this.isSubmitting = false;
-        this.submitButton.set('disabled', false);
-      }));
-    },
-
-    /**
-     * Handles submission for job-manager context using copilotAPI with job details
-     * Implementation:
-     * - Immediately shows user message and clears text area
-     * - Disables input during submission
-     * - Shows loading indicator
-     * - Queries job details to get stdout/stderr
-     * - Makes LLM query with stdout/stderr as system prompt
-     * - Updates chat store with assistant/system messages only
-     * - Handles new chat initialization
-     */
-    _submitToJobManager: function() {
-      var inputText = this.textArea.get('value');
-      var _self = this;
-
-      if (this.state) {
-        console.log('state', this.state);
-      }
-
-      // Immediately show user message and clear text area
-      var userMessage = {
-        role: 'user',
-        content: inputText,
-        message_id: 'user_' + Date.now(),
-        timestamp: new Date().toISOString()
-      };
-
-      this.chatStore.addMessage(userMessage);
-      this.displayWidget.showMessages(this.chatStore.query());
-      this.textArea.set('value', '');
-
-      this.isSubmitting = true;
-      this.submitButton.set('disabled', true);
-
-      this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
-      var job_id = this.currentSelection[0].id;
-
-      JobManager.queryTaskDetail(job_id, true, true).then(function(response) {
-        var stdout = response.stdout || '';
-        var stderr = response.stderr || '';
-        const currMaxLength = 100000;
-        if (stdout.length > currMaxLength) {
-          stdout = stdout.substring(stdout.length - currMaxLength);
-        }
-        if (stderr.length > currMaxLength) {
-          stderr = stderr.substring(stderr.length - currMaxLength);
-        }
-
-        // Combine stdout and stderr as system prompt
-        var jobSystemPrompt = 'Job stdout:\n' + stdout + '\n\nJob stderr:\n' + stderr;
-
-        // Create system message first (for job manager queries, this will be populated in setupMetadata)
-        let systemMessage = {
-            role: 'system',
-            message_id: null,
-            content: '',
-            copilotDetails: null,
-            ragDocs: null,
-            timestamp: new Date().toISOString()
-        };
-        _self.chatStore.addMessage(systemMessage);
-
-        // Submit query with job details as system prompt using streaming
-        let assistantMessage = {
-            role: 'assistant',
-            content: '',
-            message_id: null,
-            timestamp: new Date().toISOString()
-        };
-        _self.chatStore.addMessage(assistantMessage);
-        _self.displayWidget.hideLoadingIndicator();
-
-        const params = {
-            inputText: inputText,
-            sessionId: _self.sessionId,
-            systemPrompt: jobSystemPrompt,
-            model: _self.model,
-            save_chat: true
-        };
-
-        _self.copilotApi.submitCopilotQueryStream(params,
-            function(chunk) {
-                // onData - content is plain text
-                assistantMessage.content += chunk;
-                _self.displayWidget.showMessages(_self.chatStore.query());
-            },
-            function() {
-                // onEnd
-                if (_self.new_chat) {
-                    _self._finishNewChat();
-                }
-                _self.isSubmitting = false;
-                _self.submitButton.set('disabled', false);
-            },
-            function(error) {
-                // onError
-                topic.publish('noJobDataError', error);
-                _self.displayWidget.hideLoadingIndicator();
-                _self.isSubmitting = false;
-                _self.submitButton.set('disabled', false);
-            },
-            function(setupMetadata) {
-                // onSetupComplete - handle the new setupMetadata structure
-                if (setupMetadata) {
-                    // Update message IDs from the metadata
-                    if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
-                        assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
-                    }
-                    if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
-                        userMessage.message_id = setupMetadata.userMessage.message_id;
-                    }
-
-                    // Update system message with backend data if present
-                    if (setupMetadata.systemMessage) {
-                        systemMessage.message_id = setupMetadata.systemMessage.message_id;
-                        systemMessage.content = setupMetadata.systemMessage.content || '';
-                        systemMessage.copilotDetails = setupMetadata.copilot_details;
-                        systemMessage.documents = setupMetadata.rag_docs;
-                        systemMessage.timestamp = setupMetadata.systemMessage.timestamp || new Date().toISOString();
-                    } else if (setupMetadata.copilot_details) {
-                        // Fallback for non-RAG details - attach to assistant message
-                        assistantMessage.copilotDetails = setupMetadata.copilot_details;
-                    }
-
-                    // Refresh the display to show the prompt details link
-                    _self.displayWidget.showMessages(_self.chatStore.query());
-                }
-            }
-        );
-      });
-    },
-
-    /**
-     * Updates selected model and UI
-     */
-    setModel: function(model) {
-      console.log('setModel=', model);
-      this.model = model;
-    },
-
-    /**
-     * Updates selected RAG database and UI
-     */
-    setRagDb: function(ragDb) {
-      console.log('setRagDb=', ragDb);
-      if (ragDb == 'null') {
-        this.ragDb = null;
-      } else {
-        this.ragDb = ragDb;
-      }
-    },
-
-    /**
-     * @method _updateToggleButtonStyle
-     * @description Updates the toggle button's visual state based on pageContentEnabled
-     */
-    _updateToggleButtonStyle: function() {
-        var buttonNode = this.pageContentToggle.domNode;
-        if (this.pageContentEnabled) {
-            buttonNode.classList.remove('pageContentToggleInactive');
-            buttonNode.classList.add('pageContentToggleActive');
-        } else {
-            buttonNode.classList.remove('pageContentToggleActive');
-            buttonNode.classList.add('pageContentToggleInactive');
-        }
-    },
-
-    /**
-     * Finalizes creation of a brand-new chat, mirroring CopilotInput._finishNewChat
-     * but scoped to the side-panel input.
-     */
-    _finishNewChat: function(generateTitleImmediately = true) {
-      this.new_chat = false;
-
-      // Add the new session to the global sessions store
-      if (window && window.App && window.App.chatSessionsStore) {
-        window.App.chatSessionsStore.addSession({
-          session_id: this.sessionId,
-          title: 'New Chat',
-          created_at: Date.now()
-        });
-      }
-
-      // Tell the scroll-bar to reload and highlight this new session
-      topic.publish('reloadUserSessions', { highlightSessionId: this.sessionId });
-
-      if (generateTitleImmediately) {
-        setTimeout(function() {
-          topic.publish('generateSessionTitle');
-        }, 100);
-      }
-    },
-
-    setCurrentSelection: function(selection) {
-      this.currentSelection = selection;
-    },
-
-    /**
-     * @method _handlePageSubmitStream
-     * @description Handles submission about the current page with streaming (screenshot first, HTML fallback)
-     * Implementation:
-     * - Immediately shows user message and clears text area
-     * - Takes screenshot and makes streaming API call
-     * - Updates chat store with streaming assistant message
-     **/
-    _handlePageSubmitStream: function() {
-        var inputText = this.textArea.get('value');
-        var _self = this;
-
-        if (this.state) {
-            console.log('state', this.state);
-        }
-
-        // Immediately show user message and clear text area
-        var userMessage = {
-          role: 'user',
-          content: inputText,
-          message_id: null,
-          timestamp: new Date().toISOString()
-        };
-
-        this.chatStore.addMessage(userMessage);
-        this.displayWidget.showMessages(this.chatStore.query());
-        this.textArea.set('value', '');
-
-        this.isSubmitting = true;
-        this.submitButton.set('disabled', true);
-
-        html2canvas(document.body).then(lang.hitch(this, function(canvas) {
-            var base64Image = canvas.toDataURL('image/png');
-
-            this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
-            var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\n' +
-                                'Analyze the screenshot and respond to the user\'s query.';
-            if (this.systemPrompt) {
-                imageSystemPrompt += '\n' + this.systemPrompt;
-            }
-            var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
-
-            // Create system message first (for image queries, this will be populated in setupMetadata)
-            let systemMessage = {
-                role: 'system',
-                message_id: null,
-                content: '',
-                copilotDetails: null,
-                ragDocs: null,
-                timestamp: new Date().toISOString()
-            };
-            this.chatStore.addMessage(systemMessage);
-
-            let assistantMessage = {
-                role: 'assistant',
-                content: '',
-                message_id: null,
-                timestamp: new Date().toISOString()
-            };
-            this.chatStore.addMessage(assistantMessage);
-
-            const params = {
-                inputText: inputText,
-                sessionId: this.sessionId,
-                systemPrompt: imageSystemPrompt,
-                model: imgtxt_model,
-                save_chat: true,
-                image: base64Image
-            };
-
-            this.copilotApi.submitCopilotQueryStream(params,
-                lang.hitch(this, function(chunk) {
-                    // onData - content is plain text
-                    assistantMessage.content += chunk;
-                    this.displayWidget.hideLoadingIndicator();
-                    this.displayWidget.showMessages(this.chatStore.query());
-                }),
-                lang.hitch(this, function() {
-                    // onEnd
-                    if (_self.new_chat) {
-                        _self._finishNewChat();
-                    }
-                    this.isSubmitting = false;
-                    this.submitButton.set('disabled', false);
-                    // Deselect the pageContentToggle after submission
-                    this.pageContentEnabled = false;
-                    this._updateToggleButtonStyle();
-                    topic.publish('pageContentToggleChanged', false);
-                }),
-                lang.hitch(this, function(error) {
-                    // onError
-                    topic.publish('CopilotApiError', {
-                        error: error
-                    });
-                    this.displayWidget.hideLoadingIndicator();
-                    this.isSubmitting = false;
-                    this.submitButton.set('disabled', false);
-                }),
-                lang.hitch(this, function(setupMetadata) {
-                    // onSetupComplete - handle the new setupMetadata structure
-                    if (setupMetadata) {
-                        // Update message IDs from the metadata
-                        if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
-                            assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
-                        }
-                        if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
-                            userMessage.message_id = setupMetadata.userMessage.message_id;
-                        }
-
-                        // Update system message with backend data if present
-                        if (setupMetadata.systemMessage) {
-                            systemMessage.message_id = setupMetadata.systemMessage.message_id;
-                            systemMessage.content = setupMetadata.systemMessage.content || '';
-                            systemMessage.copilotDetails = setupMetadata.copilot_details;
-                            systemMessage.documents = setupMetadata.rag_docs;
-                            systemMessage.timestamp = setupMetadata.systemMessage.timestamp || new Date().toISOString();
-                        } else if (setupMetadata.copilot_details) {
-                            // Fallback for non-RAG details - attach to assistant message
-                            assistantMessage.copilotDetails = setupMetadata.copilot_details;
-                        }
-
-                        // Refresh the display to show the prompt details link
-                        this.displayWidget.showMessages(this.chatStore.query());
-                    }
-                })
-            );
-        })).catch(lang.hitch(this, function(error) {
-            console.error('Error capturing or processing screenshot:', error);
-
-            // Fall back to HTML content if screenshot fails
-            console.log('Falling back to HTML content');
-            this._handlePageContentSubmitStream();
-        }));
-    },
-
-    /**
-     * @method _handlePageContentSubmitStream
-     * @description Handles submission of page content with streaming (HTML)
-     * Used as a fallback when screenshot fails
-     * Implementation:
-     * - Immediately shows user message and clears text area
-     * - Makes streaming API call with page content
-     * - Updates chat store with streaming assistant message
-     **/
-    _handlePageContentSubmitStream: function() {
-        var inputText = this.textArea.get('value');
-        var _self = this;
-
-        // Immediately show user message and clear text area
-        var userMessage = {
-          role: 'user',
-          content: inputText,
-          message_id: null,
-          timestamp: new Date().toISOString()
-        };
-
-        this.chatStore.addMessage(userMessage);
-        this.displayWidget.showMessages(this.chatStore.query());
-        this.textArea.set('value', '');
-
-        const pageHtml = document.documentElement.innerHTML;
-
-        var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the page content.\n' +
-            'Answer questions as if you were a user viewing the page.\n' +
-            'The page content is:\n' +
-            pageHtml;
-        if (this.systemPrompt) {
-            imageSystemPrompt += '\n' + this.systemPrompt;
-        }
-
-        this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
-        // Create system message first (for page content queries, this will be populated in setupMetadata)
-        let systemMessage = {
-            role: 'system',
-            message_id: null,
-            content: '',
-            copilotDetails: null,
-            ragDocs: null,
-            timestamp: new Date().toISOString()
-        };
-        this.chatStore.addMessage(systemMessage);
-
-        let assistantMessage = {
-            role: 'assistant',
-            content: '',
-            message_id: null,
-            timestamp: new Date().toISOString()
-        };
-        this.chatStore.addMessage(assistantMessage);
-
-        const params = {
-            inputText: inputText,
-            sessionId: this.sessionId,
-            systemPrompt: imageSystemPrompt,
-            model: this.model,
-            save_chat: true
-        };
-
-        this.copilotApi.submitCopilotQueryStream(params,
-            lang.hitch(this, function(chunk) {
-                // onData - content is plain text
-                assistantMessage.content += chunk;
-                this.displayWidget.hideLoadingIndicator();
-                this.displayWidget.showMessages(this.chatStore.query());
-            }),
-            lang.hitch(this, function() {
-                // onEnd
-                if (_self.new_chat) {
-                    _self._finishNewChat();
-                }
-                this.isSubmitting = false;
-                this.submitButton.set('disabled', false);
-                // Deselect the pageContentToggle after submission
-                this.pageContentEnabled = false;
-                this._updateToggleButtonStyle();
-                topic.publish('pageContentToggleChanged', false);
-            }),
-            lang.hitch(this, function(error) {
-                // onError
-                topic.publish('CopilotApiError', {
-                    error: error
-                });
-                this.displayWidget.hideLoadingIndicator();
-                this.isSubmitting = false;
-                this.submitButton.set('disabled', false);
-            }),
-            lang.hitch(this, function(setupMetadata) {
-                // onSetupComplete - handle the new setupMetadata structure
-                if (setupMetadata) {
-                    // Update message IDs from the metadata
-                    if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
-                        assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
-                    }
-                    if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
-                        userMessage.message_id = setupMetadata.userMessage.message_id;
-                    }
-
-                    // Update system message with backend data if present
-                    if (setupMetadata.systemMessage) {
-                        systemMessage.message_id = setupMetadata.systemMessage.message_id;
-                        systemMessage.content = setupMetadata.systemMessage.content || '';
-                        systemMessage.copilotDetails = setupMetadata.copilot_details;
-                        systemMessage.documents = setupMetadata.rag_docs;
-                        systemMessage.timestamp = setupMetadata.systemMessage.timestamp || new Date().toISOString();
-                    } else if (setupMetadata.copilot_details) {
-                        // Fallback for non-RAG details - attach to assistant message
-                        assistantMessage.copilotDetails = setupMetadata.copilot_details;
-                    }
-
-                    // Refresh the display to show the prompt details link
-                    this.displayWidget.showMessages(this.chatStore.query());
-                }
-            })
-        );
-    },
-
-    /**
-     * Handles submission for grid-container context using streaming copilotAPI
-     * Implementation:
-     * - Immediately shows user message and clears text area
-     * - Disables input during submission
-     * - Shows loading indicator
-     * - Makes streaming LLM query with basic system prompt
-     * - Updates chat store with streaming assistant message
-     * - Handles new chat initialization
-     */
-    _submitToGridContainerStream: function() {
-      var inputText = this.textArea.get('value');
-      var _self = this;
-
-      if (this.state) {
-        console.log('state', this.state);
-      }
-
-      // Immediately show user message and clear text area
-      var userMessage = {
-        role: 'user',
-        content: inputText,
-        message_id: null,
-        timestamp: new Date().toISOString()
-      };
-
-      this.chatStore.addMessage(userMessage);
-      this.displayWidget.showMessages(this.chatStore.query());
-      this.textArea.set('value', '');
-
-      this.isSubmitting = true;
-      this.submitButton.set('disabled', true);
-
-      this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
-      // Create system message first (for grid container queries, this will be populated in setupMetadata)
-      let systemMessage = {
-          role: 'system',
-          message_id: null,
-          content: '',
-          copilotDetails: null,
-          ragDocs: null,
-          timestamp: new Date().toISOString()
-      };
-      this.chatStore.addMessage(systemMessage);
-
-      let assistantMessage = {
-          role: 'assistant',
-          content: '',
-          message_id: null,
-          timestamp: new Date().toISOString()
-      };
-      this.chatStore.addMessage(assistantMessage);
-
-      const params = {
-          inputText: inputText,
-          sessionId: this.sessionId,
-          systemPrompt: this.systemPrompt,
-          model: this.model,
-          save_chat: true
-      };
-
-      this.copilotApi.submitCopilotQueryStream(params,
-          lang.hitch(this, function(chunk) {
-              // onData - content is plain text
-              assistantMessage.content += chunk;
-              this.displayWidget.hideLoadingIndicator();
-              this.displayWidget.showMessages(this.chatStore.query());
-          }),
-          lang.hitch(this, function() {
-              // onEnd
-              if (_self.new_chat) {
-                  _self._finishNewChat();
-              }
-              this.isSubmitting = false;
-              this.submitButton.set('disabled', false);
-          }),
-          lang.hitch(this, function(error) {
-              // onError
-              topic.publish('CopilotApiError', {
-                  error: error
-              });
-              this.displayWidget.hideLoadingIndicator();
-              this.isSubmitting = false;
-              this.submitButton.set('disabled', false);
-          }),
-          lang.hitch(this, function(setupMetadata) {
-              // onSetupComplete - handle the new setupMetadata structure
-              if (setupMetadata) {
-                  // Update message IDs from the metadata
-                  if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
-                      assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
-                  }
-                  if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
-                      userMessage.message_id = setupMetadata.userMessage.message_id;
-                  }
-
-                  // Update system message with backend data if present
-                  if (setupMetadata.systemMessage) {
-                      systemMessage.message_id = setupMetadata.systemMessage.message_id;
-                      systemMessage.content = setupMetadata.systemMessage.content || '';
-                      systemMessage.copilotDetails = setupMetadata.copilot_details;
-                      systemMessage.documents = setupMetadata.rag_docs;
-                      systemMessage.timestamp = setupMetadata.systemMessage.timestamp || new Date().toISOString();
-                  } else if (setupMetadata.copilot_details) {
-                      // Fallback for non-RAG details - attach to assistant message
-                      assistantMessage.copilotDetails = setupMetadata.copilot_details;
-                  }
-
-                  // Refresh the display to show the prompt details link
-                  this.displayWidget.showMessages(this.chatStore.query());
-              }
-          })
-      );
-    },
-
-    /**
-     * Handles submission for job-manager context using streaming copilotAPI with job details
-     * Implementation:
-     * - Immediately shows user message and clears text area
-     * - Disables input during submission
-     * - Shows loading indicator
-     * - Queries job details to get stdout/stderr
-     * - Makes streaming LLM query with stdout/stderr as system prompt
-     * - Updates chat store with streaming assistant message
-     * - Handles new chat initialization
-     */
-    _submitToJobManagerStream: function() {
-      var inputText = this.textArea.get('value');
-      var _self = this;
-
-      if (this.state) {
-        console.log('state', this.state);
-      }
-
-      // Immediately show user message and clear text area
-      var userMessage = {
-        role: 'user',
-        content: inputText,
-        message_id: null,
-        timestamp: new Date().toISOString()
-      };
-
-      this.chatStore.addMessage(userMessage);
-      this.displayWidget.showMessages(this.chatStore.query());
-      this.textArea.set('value', '');
-
-      this.isSubmitting = true;
-      this.submitButton.set('disabled', true);
-
-      this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
-      var job_id = this.currentSelection[0].id;
-
-      JobManager.queryTaskDetail(job_id, true, true).then(function(response) {
-        var stdout = response.stdout || '';
-        var stderr = response.stderr || '';
-        const currMaxLength = 100000;
-        if (stdout.length > currMaxLength) {
-          stdout = stdout.substring(stdout.length - currMaxLength);
-        }
-        if (stderr.length > currMaxLength) {
-          stderr = stderr.substring(stderr.length - currMaxLength);
-        }
-
-        // Combine stdout and stderr as system prompt
-        var jobSystemPrompt = 'Job stdout:\n' + stdout + '\n\nJob stderr:\n' + stderr;
-
-        // Submit query with job details as system prompt using streaming
-        let assistantMessage = {
-            role: 'assistant',
-            content: '',
-            message_id: null,
-            timestamp: new Date().toISOString()
-        };
-        _self.chatStore.addMessage(assistantMessage);
-
-        const params = {
-            inputText: inputText,
-            sessionId: _self.sessionId,
-            systemPrompt: jobSystemPrompt,
-            model: _self.model,
-            save_chat: true
-        };
-
-        _self.copilotApi.submitCopilotQueryStream(params,
-            lang.hitch(_self, function(chunk) {
-                // onData - content is plain text
-                assistantMessage.content += chunk;
-                this.displayWidget.hideLoadingIndicator();
-                this.displayWidget.showMessages(this.chatStore.query());
-            }),
-            lang.hitch(_self, function() {
-                // onEnd
-                if (_self.new_chat) {
-                    _self._finishNewChat();
-                }
-                this.isSubmitting = false;
-                this.submitButton.set('disabled', false);
-            }),
-            lang.hitch(_self, function(error) {
-                // onError
-                topic.publish('noJobDataError', error);
-                this.displayWidget.hideLoadingIndicator();
-                this.isSubmitting = false;
-                this.submitButton.set('disabled', false);
-            }),
-            lang.hitch(_self, function(setupMetadata) {
-                // onSetupComplete - handle the new setupMetadata structure
-                if (setupMetadata) {
-                    // Update message IDs from the metadata
-                    if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
-                        assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
-                    }
-                    if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
-                        userMessage.message_id = setupMetadata.userMessage.message_id;
-                    }
-
-                    // Handle system message if present
-                    if (setupMetadata.systemMessage) {
-                        var systemMessage = {
-                            role: setupMetadata.systemMessage.role || 'system',
-                            message_id: setupMetadata.systemMessage.message_id,
-                            content: setupMetadata.systemMessage.content || '',
-                            copilotDetails: setupMetadata.copilot_details,
-                            ragDocs: setupMetadata.rag_docs,
-                            timestamp: setupMetadata.systemMessage.timestamp || new Date().toISOString()
-                        };
-                        this.chatStore.addMessage(systemMessage);
-                    } else if (setupMetadata.copilot_details) {
-                        // Fallback for non-RAG details - attach to assistant message
-                        assistantMessage.copilotDetails = setupMetadata.copilot_details;
-                    }
-                }
-            })
-        );
-      });
     },
 
     /**
      * Handles submission of RAG queries with streaming
-     * Implementation:
-     * - Immediately shows user message and clears text area
-     * - Disables input during submission
-     * - Shows loading indicator
-     * - Retrieves documents via RAG API
-     * - Builds system prompt with document context
-     * - Makes follow-up LLM query with enhanced context
-     * - Updates chat store with assistant/system messages only
      */
     _handleRagSubmitStream: function() {
       console.log('this.ragDb=', this.ragDb);
@@ -1225,7 +274,6 @@ define([
 
       this.isSubmitting = true;
       this.submitButton.set('disabled', true);
-
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
       var systemPrompt = 'You are a helpful scientist website assistant for the website BV-BRC, the Bacterial and Viral Bioinformatics Resource Center.\\n\\n';
@@ -1236,7 +284,7 @@ define([
           systemPrompt += this.statePrompt;
       }
 
-      // Create system message first (for RAG queries, this will be populated in setupMetadata)
+      // Create messages for streaming
       let systemMessage = {
           role: 'system',
           message_id: null,
@@ -1268,13 +316,11 @@ define([
 
       this.copilotApi.submitCopilotQueryStream(params,
           (chunk) => {
-              // onData - content is plain text
               assistantMessage.content += chunk;
               this.displayWidget.hideLoadingIndicator();
               this.displayWidget.showMessages(this.chatStore.query());
           },
           () => {
-              // onEnd
               if (_self.new_chat) {
                   _self._finishNewChat();
               }
@@ -1282,26 +328,19 @@ define([
               this.submitButton.set('disabled', false);
           },
           (error) => {
-              // onError
-              topic.publish('CopilotApiError', {
-                  error: error
-              });
+              topic.publish('CopilotApiError', { error: error });
               this.displayWidget.hideLoadingIndicator();
               this.isSubmitting = false;
               this.submitButton.set('disabled', false);
           },
           (setupMetadata) => {
-            // onSetupComplete - handle the new setupMetadata structure
             if (setupMetadata) {
-              // Update message IDs from the metadata
               if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
                 assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
               }
               if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
                 userMessage.message_id = setupMetadata.userMessage.message_id;
               }
-
-              // Update system message with backend data if present
               if (setupMetadata.systemMessage) {
                 systemMessage.message_id = setupMetadata.systemMessage.message_id;
                 systemMessage.content = setupMetadata.systemMessage.content || '';
@@ -1309,11 +348,8 @@ define([
                 systemMessage.documents = setupMetadata.rag_docs;
                 systemMessage.timestamp = setupMetadata.systemMessage.timestamp || new Date().toISOString();
               } else if (setupMetadata.copilot_details) {
-                // Fallback for non-RAG details - attach to assistant message
                 assistantMessage.copilotDetails = setupMetadata.copilot_details;
               }
-
-              // Refresh the display to show the prompt details link
               this.displayWidget.showMessages(this.chatStore.query());
             }
           }
@@ -1321,27 +357,510 @@ define([
     },
 
     /**
-     * Handles submission of regular (non-RAG) queries with streaming
-     * Implementation:
-     * - Checks context to determine submission type
-     * - Routes to appropriate handler based on context
-     * - Throws error for unsupported contexts
+     * Handles submission of page content with screenshot capture using streaming
      */
-    _handleRegularSubmitStream: function() {
-      try {
-        if (this.context === 'grid-container') {
-          this._submitToGridContainerStream();
-        } else if (this.context === 'job-manager') {
-          this._submitToJobManagerStream();
-        } else {
-          throw new Error('Unsupported context: ' + (this.context || 'undefined'));
+    _handlePageSubmitStream: function() {
+        var inputText = this.textArea.get('value');
+        var _self = this;
+
+        if (this.state) {
+            console.log('state', this.state);
         }
-      } catch (error) {
-        console.error('Error in _handleRegularSubmitStream:', error.message);
-        topic.publish('CopilotApiError', { error: error });
-        this.isSubmitting = false;
-        this.submitButton.set('disabled', false);
+
+        // Immediately show user message and clear text area
+        var userMessage = {
+          role: 'user',
+          content: inputText,
+          message_id: null,
+          timestamp: new Date().toISOString()
+        };
+
+        this.chatStore.addMessage(userMessage);
+        this.displayWidget.showMessages(this.chatStore.query());
+        this.textArea.set('value', '');
+
+        this.isSubmitting = true;
+        this.submitButton.set('disabled', true);
+
+        html2canvas(document.body).then(lang.hitch(this, function(canvas) {
+            var base64Image = canvas.toDataURL('image/png');
+
+            this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+            var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the attached screenshot.\\n' +
+                                'Analyze the screenshot and respond to the user\'s query.';
+            if (this.systemPrompt) {
+                imageSystemPrompt += '\\n' + this.systemPrompt;
+            }
+            var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
+
+            // Create messages for streaming
+            let systemMessage = {
+                role: 'system',
+                message_id: null,
+                content: '',
+                copilotDetails: null,
+                ragDocs: null,
+                timestamp: new Date().toISOString()
+            };
+            this.chatStore.addMessage(systemMessage);
+
+            let assistantMessage = {
+                role: 'assistant',
+                content: '',
+                message_id: null,
+                timestamp: new Date().toISOString()
+            };
+            this.chatStore.addMessage(assistantMessage);
+
+            const params = {
+                inputText: inputText,
+                sessionId: this.sessionId,
+                systemPrompt: imageSystemPrompt,
+                model: imgtxt_model,
+                save_chat: true,
+                image: base64Image
+            };
+
+            this.copilotApi.submitCopilotQueryStream(params,
+                lang.hitch(this, function(chunk) {
+                    assistantMessage.content += chunk;
+                    this.displayWidget.hideLoadingIndicator();
+                    this.displayWidget.showMessages(this.chatStore.query());
+                }),
+                lang.hitch(this, function() {
+                    if (_self.new_chat) {
+                        _self._finishNewChat();
+                    }
+                    this.isSubmitting = false;
+                    this.submitButton.set('disabled', false);
+                    this.pageContentEnabled = false;
+                    this._updateToggleButtonStyle();
+                    topic.publish('pageContentToggleChanged', false);
+                }),
+                lang.hitch(this, function(error) {
+                    topic.publish('CopilotApiError', { error: error });
+                    this.displayWidget.hideLoadingIndicator();
+                    this.isSubmitting = false;
+                    this.submitButton.set('disabled', false);
+                }),
+                lang.hitch(this, function(setupMetadata) {
+                    if (setupMetadata) {
+                        if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
+                            assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
+                        }
+                        if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
+                            userMessage.message_id = setupMetadata.userMessage.message_id;
+                        }
+                        if (setupMetadata.systemMessage) {
+                            systemMessage.message_id = setupMetadata.systemMessage.message_id;
+                            systemMessage.content = setupMetadata.systemMessage.content || '';
+                            systemMessage.copilotDetails = setupMetadata.copilot_details;
+                            systemMessage.documents = setupMetadata.rag_docs;
+                            systemMessage.timestamp = setupMetadata.systemMessage.timestamp || new Date().toISOString();
+                        } else if (setupMetadata.copilot_details) {
+                            assistantMessage.copilotDetails = setupMetadata.copilot_details;
+                        }
+                        this.displayWidget.showMessages(this.chatStore.query());
+                    }
+                })
+            );
+        })).catch(lang.hitch(this, function(error) {
+            console.error('Error capturing or processing screenshot:', error);
+            console.log('Falling back to HTML content');
+            this._handlePageContentSubmitStream();
+        }));
+    },
+
+    /**
+     * Handles streaming submission of page content (HTML) as fallback
+     */
+    _handlePageContentSubmitStream: function() {
+        var inputText = this.textArea.get('value');
+        var _self = this;
+
+        // Immediately show user message and clear text area
+        var userMessage = {
+          role: 'user',
+          content: inputText,
+          message_id: null,
+          timestamp: new Date().toISOString()
+        };
+
+        this.chatStore.addMessage(userMessage);
+        this.displayWidget.showMessages(this.chatStore.query());
+        this.textArea.set('value', '');
+
+        const pageHtml = document.documentElement.innerHTML;
+
+        var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the page content.\\n' +
+            'Answer questions as if you were a user viewing the page.\\n' +
+            'The page content is:\\n' +
+            pageHtml;
+        if (this.systemPrompt) {
+            imageSystemPrompt += '\\n' + this.systemPrompt;
+        }
+
+        this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+        // Create messages for streaming
+        let systemMessage = {
+            role: 'system',
+            message_id: null,
+            content: '',
+            copilotDetails: null,
+            ragDocs: null,
+            timestamp: new Date().toISOString()
+        };
+        this.chatStore.addMessage(systemMessage);
+
+        let assistantMessage = {
+            role: 'assistant',
+            content: '',
+            message_id: null,
+            timestamp: new Date().toISOString()
+        };
+        this.chatStore.addMessage(assistantMessage);
+
+        const params = {
+            inputText: inputText,
+            sessionId: this.sessionId,
+            systemPrompt: imageSystemPrompt,
+            model: this.model,
+            save_chat: true
+        };
+
+        this.copilotApi.submitCopilotQueryStream(params,
+            lang.hitch(this, function(chunk) {
+                assistantMessage.content += chunk;
+                this.displayWidget.hideLoadingIndicator();
+                this.displayWidget.showMessages(this.chatStore.query());
+            }),
+            lang.hitch(this, function() {
+                if (_self.new_chat) {
+                    _self._finishNewChat();
+                }
+                this.isSubmitting = false;
+                this.submitButton.set('disabled', false);
+                this.pageContentEnabled = false;
+                this._updateToggleButtonStyle();
+                topic.publish('pageContentToggleChanged', false);
+            }),
+            lang.hitch(this, function(error) {
+                topic.publish('CopilotApiError', { error: error });
+                this.displayWidget.hideLoadingIndicator();
+                this.isSubmitting = false;
+                this.submitButton.set('disabled', false);
+            }),
+            lang.hitch(this, function(setupMetadata) {
+                if (setupMetadata) {
+                    if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
+                        assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
+                    }
+                    if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
+                        userMessage.message_id = setupMetadata.userMessage.message_id;
+                    }
+                    if (setupMetadata.systemMessage) {
+                        systemMessage.message_id = setupMetadata.systemMessage.message_id;
+                        systemMessage.content = setupMetadata.systemMessage.content || '';
+                        systemMessage.copilotDetails = setupMetadata.copilot_details;
+                        systemMessage.documents = setupMetadata.rag_docs;
+                        systemMessage.timestamp = setupMetadata.systemMessage.timestamp || new Date().toISOString();
+                    } else if (setupMetadata.copilot_details) {
+                        assistantMessage.copilotDetails = setupMetadata.copilot_details;
+                    }
+                    this.displayWidget.showMessages(this.chatStore.query());
+                }
+            })
+        );
+    },
+
+    /**
+     * Handles submission for grid-container context using streaming
+     */
+    _submitToGridContainerStream: function() {
+      var inputText = this.textArea.get('value');
+      var _self = this;
+
+      if (this.state) {
+        console.log('state', this.state);
       }
+
+      // Immediately show user message and clear text area
+      var userMessage = {
+        role: 'user',
+        content: inputText,
+        message_id: null,
+        timestamp: new Date().toISOString()
+      };
+
+      this.chatStore.addMessage(userMessage);
+      this.displayWidget.showMessages(this.chatStore.query());
+      this.textArea.set('value', '');
+
+      this.isSubmitting = true;
+      this.submitButton.set('disabled', true);
+      this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+      // Create messages for streaming
+      let systemMessage = {
+          role: 'system',
+          message_id: null,
+          content: '',
+          copilotDetails: null,
+          ragDocs: null,
+          timestamp: new Date().toISOString()
+      };
+      this.chatStore.addMessage(systemMessage);
+
+      let assistantMessage = {
+          role: 'assistant',
+          content: '',
+          message_id: null,
+          timestamp: new Date().toISOString()
+      };
+      this.chatStore.addMessage(assistantMessage);
+
+      const params = {
+          inputText: inputText,
+          sessionId: this.sessionId,
+          systemPrompt: this.systemPrompt,
+          model: this.model,
+          save_chat: true
+      };
+
+      this.copilotApi.submitCopilotQueryStream(params,
+          lang.hitch(this, function(chunk) {
+              assistantMessage.content += chunk;
+              this.displayWidget.hideLoadingIndicator();
+              this.displayWidget.showMessages(this.chatStore.query());
+          }),
+          lang.hitch(this, function() {
+              if (_self.new_chat) {
+                  _self._finishNewChat();
+              }
+              this.isSubmitting = false;
+              this.submitButton.set('disabled', false);
+          }),
+          lang.hitch(this, function(error) {
+              topic.publish('CopilotApiError', { error: error });
+              this.displayWidget.hideLoadingIndicator();
+              this.isSubmitting = false;
+              this.submitButton.set('disabled', false);
+          }),
+          lang.hitch(this, function(setupMetadata) {
+              if (setupMetadata) {
+                  if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
+                      assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
+                  }
+                  if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
+                      userMessage.message_id = setupMetadata.userMessage.message_id;
+                  }
+                  if (setupMetadata.systemMessage) {
+                      systemMessage.message_id = setupMetadata.systemMessage.message_id;
+                      systemMessage.content = setupMetadata.systemMessage.content || '';
+                      systemMessage.copilotDetails = setupMetadata.copilot_details;
+                      systemMessage.documents = setupMetadata.rag_docs;
+                      systemMessage.timestamp = setupMetadata.systemMessage.timestamp || new Date().toISOString();
+                  } else if (setupMetadata.copilot_details) {
+                      assistantMessage.copilotDetails = setupMetadata.copilot_details;
+                  }
+                  this.displayWidget.showMessages(this.chatStore.query());
+              }
+          })
+      );
+    },
+
+    /**
+     * Handles submission for job-manager context using streaming with job details
+     */
+    _submitToJobManagerStream: function() {
+      var inputText = this.textArea.get('value');
+      var _self = this;
+
+      if (this.state) {
+        console.log('state', this.state);
+      }
+
+      // Immediately show user message and clear text area
+      var userMessage = {
+        role: 'user',
+        content: inputText,
+        message_id: null,
+        timestamp: new Date().toISOString()
+      };
+
+      this.chatStore.addMessage(userMessage);
+      this.displayWidget.showMessages(this.chatStore.query());
+      this.textArea.set('value', '');
+
+      this.isSubmitting = true;
+      this.submitButton.set('disabled', true);
+      this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+      var job_id = this.currentSelection[0].id;
+
+      JobManager.queryTaskDetail(job_id, true, true).then(function(response) {
+        var stdout = response.stdout || '';
+        var stderr = response.stderr || '';
+        const currMaxLength = 100000;
+        if (stdout.length > currMaxLength) {
+          stdout = stdout.substring(stdout.length - currMaxLength);
+        }
+        if (stderr.length > currMaxLength) {
+          stderr = stderr.substring(stderr.length - currMaxLength);
+        }
+
+        // Combine stdout and stderr as system prompt
+        var jobSystemPrompt = 'Job stdout:\\n' + stdout + '\\n\\nJob stderr:\\n' + stderr;
+
+        // Create messages for streaming
+        let systemMessage = {
+            role: 'system',
+            message_id: null,
+            content: '',
+            copilotDetails: null,
+            ragDocs: null,
+            timestamp: new Date().toISOString()
+        };
+        _self.chatStore.addMessage(systemMessage);
+
+        let assistantMessage = {
+            role: 'assistant',
+            content: '',
+            message_id: null,
+            timestamp: new Date().toISOString()
+        };
+        _self.chatStore.addMessage(assistantMessage);
+        _self.displayWidget.hideLoadingIndicator();
+
+        const params = {
+            inputText: inputText,
+            sessionId: _self.sessionId,
+            systemPrompt: jobSystemPrompt,
+            model: _self.model,
+            save_chat: true
+        };
+
+        _self.copilotApi.submitCopilotQueryStream(params,
+            function(chunk) {
+                assistantMessage.content += chunk;
+                _self.displayWidget.showMessages(_self.chatStore.query());
+            },
+            function() {
+                if (_self.new_chat) {
+                    _self._finishNewChat();
+                }
+                _self.isSubmitting = false;
+                _self.submitButton.set('disabled', false);
+            },
+            function(error) {
+                topic.publish('noJobDataError', error);
+                _self.displayWidget.hideLoadingIndicator();
+                _self.isSubmitting = false;
+                _self.submitButton.set('disabled', false);
+            },
+            function(setupMetadata) {
+                if (setupMetadata) {
+                    if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
+                        assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
+                    }
+                    if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
+                        userMessage.message_id = setupMetadata.userMessage.message_id;
+                    }
+                    if (setupMetadata.systemMessage) {
+                        systemMessage.message_id = setupMetadata.systemMessage.message_id;
+                        systemMessage.content = setupMetadata.systemMessage.content || '';
+                        systemMessage.copilotDetails = setupMetadata.copilot_details;
+                        systemMessage.documents = setupMetadata.rag_docs;
+                        systemMessage.timestamp = setupMetadata.systemMessage.timestamp || new Date().toISOString();
+                    } else if (setupMetadata.copilot_details) {
+                        assistantMessage.copilotDetails = setupMetadata.copilot_details;
+                    }
+                    _self.displayWidget.showMessages(_self.chatStore.query());
+                }
+            }
+        );
+      });
+    },
+
+    //================================================================
+    // SESSION MANAGEMENT METHODS
+    //================================================================
+
+    /**
+     * Finalizes creation of a brand-new chat, mirroring CopilotInput._finishNewChat
+     * but scoped to the side-panel input.
+     */
+    _finishNewChat: function(generateTitleImmediately = true) {
+      this.new_chat = false;
+
+      // Add the new session to the global sessions store
+      if (window && window.App && window.App.chatSessionsStore) {
+        window.App.chatSessionsStore.addSession({
+          session_id: this.sessionId,
+          title: 'New Chat',
+          created_at: Date.now()
+        });
+      }
+
+      // Tell the scroll-bar to reload and highlight this new session
+      topic.publish('reloadUserSessions', { highlightSessionId: this.sessionId });
+
+      if (generateTitleImmediately) {
+        setTimeout(function() {
+          topic.publish('generateSessionTitle');
+        }, 100);
+      }
+    },
+
+    //================================================================
+    // CONFIGURATION METHODS (SETTERS/GETTERS)
+    //================================================================
+
+    /**
+     * Updates selected model and UI
+     */
+    setModel: function(model) {
+      console.log('setModel=', model);
+      this.model = model;
+    },
+
+    /**
+     * Updates selected RAG database and UI
+     */
+    setRagDb: function(ragDb) {
+      console.log('setRagDb=', ragDb);
+      if (ragDb == 'null') {
+        this.ragDb = null;
+      } else {
+        this.ragDb = ragDb;
+      }
+    },
+
+    /**
+     * Sets the current selection for job manager context
+     */
+    setCurrentSelection: function(selection) {
+      this.currentSelection = selection;
+    },
+
+    //================================================================
+    // UTILITY METHODS
+    //================================================================
+
+    /**
+     * Updates the toggle button's visual state based on pageContentEnabled
+     */
+    _updateToggleButtonStyle: function() {
+        var buttonNode = this.pageContentToggle.domNode;
+        if (this.pageContentEnabled) {
+            buttonNode.classList.remove('pageContentToggleInactive');
+            buttonNode.classList.add('pageContentToggleActive');
+        } else {
+            buttonNode.classList.remove('pageContentToggleActive');
+            buttonNode.classList.add('pageContentToggleInactive');
+        }
     }
   });
 });

@@ -29,6 +29,10 @@ define([
      */
     return declare([_WidgetBase], {
 
+        // ========================================
+        // PROPERTIES
+        // ========================================
+
         /** Base URL for main Copilot API endpoints */
         apiUrlBase: null,
 
@@ -40,6 +44,10 @@ define([
 
         /** Indicates whether the Copilot service URLs are available */
         copilotAvailable: true,
+
+        // ========================================
+        // LIFECYCLE METHODS
+        // ========================================
 
         /**
          * Constructor initializes the widget with provided options
@@ -76,6 +84,33 @@ define([
 
             console.log('CopilotAPI postCreate - API URLs initialized');
         },
+
+        // ========================================
+        // AUTHENTICATION & UTILITY METHODS
+        // ========================================
+
+        /**
+         * Checks if the user is logged in
+         * Returns false if not logged in and shows dialog
+         * Returns true if logged in
+         */
+        _checkLoggedIn: function() {
+            if (!window.App || !window.App.authorizationToken) {
+                new Dialog({
+                    title: "Not Logged In",
+                    content: "You must be logged in to use the Copilot chat.",
+                    style: "width: 300px"
+                }).show();
+                this._loggedIn = false;
+                return false;
+            }
+            this._loggedIn = true;
+            return true;
+        },
+
+        // ========================================
+        // SESSION MANAGEMENT METHODS
+        // ========================================
 
         /**
          * Fetches all chat sessions for current user
@@ -137,23 +172,114 @@ define([
         },
 
         /**
-         * Checks if the user is logged in
-         * Returns false if not logged in and shows dialog
-         * Returns true if logged in
+         * Retrieves all messages for a session
+         * Implementation:
+         * - Makes GET request with session ID
+         * - Returns full message history
+         * - Includes detailed error logging
          */
-        _checkLoggedIn: function() {
-            if (!window.App || !window.App.authorizationToken) {
-                new Dialog({
-                    title: "Not Logged In",
-                    content: "You must be logged in to use the Copilot chat.",
-                    style: "width: 300px"
-                }).show();
-                this._loggedIn = false;
-                return false;
-            }
-            this._loggedIn = true;
-            return true;
+        getSessionMessages: function(sessionId) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            return request.get(this.apiUrlBase + `/get-session-messages?session_id=${encodeURIComponent(sessionId)}`, {
+                headers: {
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                console.log('Session messages retrieved:', response);
+                return response;
+            }).catch(function(error) {
+                console.error('Error getting session messages:', error);
+                throw error;
+            });
         },
+
+        /**
+         * Retrieves the title for a session
+         * Implementation:
+         * - Makes GET request with session ID
+         * - Returns session title
+         * - Includes detailed error logging
+         */
+        getSessionTitle: function(sessionId) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            return request.get(this.apiUrlBase + `/get-session-title?session_id=${encodeURIComponent(sessionId)}`, {
+                headers: {
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('Error getting session title:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Updates a session's title
+         * Implementation:
+         * - Posts new title to update endpoint
+         * - Includes session and user IDs
+         * - Returns updated session data
+         */
+        updateSessionTitle: function(sessionId, newTitle) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            return request.post(this.apiUrlBase + '/update-session-title', {
+                data: JSON.stringify({
+                    session_id: sessionId,
+                    title: newTitle,
+                    user_id: _self.user_id
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                console.log('Session title updated:', response);
+                return response;
+            }).catch(function(error) {
+                console.error('Error updating session title:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Deletes a chat session
+         * Implementation:
+         * - Posts session ID to delete endpoint
+         * - Returns response on success
+         * - Throws error on failure
+         */
+        deleteSession: function(sessionId) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            return request.post(this.apiUrlBase + '/delete-session', {
+                data: JSON.stringify({
+                    session_id: sessionId,
+                    user_id: _self.user_id
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                console.log('Session deleted:', response);
+                return response;
+            }).catch(function(error) {
+                console.error('Error deleting session:', error);
+                throw error;
+            });
+        },
+
+        // ========================================
+        // QUERY SUBMISSION METHODS
+        // ========================================
 
         /**
          * Submits a copilot query with combined functionality
@@ -436,7 +562,6 @@ define([
             });
         },
 
-
         /**
          * Submits a regular chat query
          * Implementation:
@@ -473,6 +598,79 @@ define([
                 handleAs: 'json'
             }).then(function(response) {
                 _self.storedResult = response.response;
+                return response;
+            }).catch(function(error) {
+                console.error('Error submitting query:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Submits a regular chat query without session management
+         * Implementation:
+         * - Builds query data object with text, model
+         * - Optionally includes system prompt if provided
+         * - Makes POST request to chat-only endpoint
+         * - Returns response directly without caching
+         * - Handles errors with detailed logging
+         */
+        submitQueryChatOnly: function(inputText, systemPrompt, model) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            console.log('query');
+            var data = {
+                query: inputText,
+                model: model,
+                user_id: _self.user_id,
+            };
+
+            if (systemPrompt) {
+                data.system_prompt = systemPrompt;
+            }
+            console.log('submitting query to', this.apiUrlBase + '/chat-only');
+            return request.post(this.apiUrlBase + '/chat-only', {
+                data: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('Error submitting query:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Submits a query with image support
+         * Implementation:
+         * - Builds query data object with text, model, session, image
+         * - Makes POST request to chat-image endpoint
+         * - Returns response directly
+         * - Handles errors with detailed logging
+         */
+        submitQueryWithImage: function(inputText, sessionId, systemPrompt, model, image) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            console.log('query');
+            var data = {
+                query: inputText,
+                model: model,
+                session_id: sessionId,
+                user_id: _self.user_id,
+                image: image
+            };
+            console.log('submitting query to', this.apiUrlBase + '/chat-image');
+            return request.post(this.apiUrlBase + '/chat-image', {
+                data: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
                 return response;
             }).catch(function(error) {
                 console.error('Error submitting query:', error);
@@ -522,117 +720,9 @@ define([
             });
         },
 
-        /**
-         * Submits a regular chat query
-         * Implementation:
-         * - Builds query data object with text, model, session
-         * - Optionally includes system prompt if provided
-         * - Makes POST request to chat endpoint
-         * - Caches response in storedResult
-         * - Handles errors with detailed logging
-         */
-        submitQueryChatOnly: function(inputText, systemPrompt, model) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-            console.log('query');
-            var data = {
-                query: inputText,
-                model: model,
-                user_id: _self.user_id,
-            };
-
-            if (systemPrompt) {
-                data.system_prompt = systemPrompt;
-            }
-            console.log('submitting query to', this.apiUrlBase + '/chat-only');
-            return request.post(this.apiUrlBase + '/chat-only', {
-                data: JSON.stringify(data),
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                return response;
-            }).catch(function(error) {
-                console.error('Error submitting query:', error);
-                throw error;
-            });
-        },
-
-        submitQueryWithImage: function(inputText, sessionId, systemPrompt, model, image) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-            console.log('query');
-            var data = {
-                query: inputText,
-                model: model,
-                session_id: sessionId,
-                user_id: _self.user_id,
-                image: image
-            };
-            console.log('submitting query to', this.apiUrlBase + '/chat-image');
-            return request.post(this.apiUrlBase + '/chat-image', {
-                data: JSON.stringify(data),
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                return response;
-            }).catch(function(error) {
-                console.error('Error submitting query:', error);
-                throw error;
-            });
-        },
-
-        /**
-         * Retrieves all messages for a session
-         * Implementation:
-         * - Makes GET request with session ID
-         * - Returns full message history
-         * - Includes detailed error logging
-         */
-        getSessionMessages: function(sessionId) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-            return request.get(this.apiUrlBase + `/get-session-messages?session_id=${encodeURIComponent(sessionId)}`, {
-                headers: {
-                    Authorization: (window.App.authorizationToken || '')
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                console.log('Session messages retrieved:', response);
-                return response;
-            }).catch(function(error) {
-                console.error('Error getting session messages:', error);
-                throw error;
-            });
-        },
-
-        /**
-         * Retrieves the title for a session
-         * Implementation:
-         * - Makes GET request with session ID
-         * - Returns session title
-         * - Includes detailed error logging
-         */
-        getSessionTitle: function(sessionId) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-            return request.get(this.apiUrlBase + `/get-session-title?session_id=${encodeURIComponent(sessionId)}`, {
-                headers: {
-                    Authorization: (window.App.authorizationToken || '')
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                return response;
-            }).catch(function(error) {
-                console.error('Error getting session title:', error);
-                throw error;
-            });
-        },
+        // ========================================
+        // TITLE MANAGEMENT METHODS
+        // ========================================
 
         /**
          * Generates a title from chat messages
@@ -664,35 +754,9 @@ define([
             });
         },
 
-        /**
-         * Updates a session's title
-         * Implementation:
-         * - Posts new title to update endpoint
-         * - Includes session and user IDs
-         * - Returns updated session data
-         */
-        updateSessionTitle: function(sessionId, newTitle) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-            return request.post(this.apiUrlBase + '/update-session-title', {
-                data: JSON.stringify({
-                    session_id: sessionId,
-                    title: newTitle,
-                    user_id: _self.user_id
-                }),
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                console.log('Session title updated:', response);
-                return response;
-            }).catch(function(error) {
-                console.error('Error updating session title:', error);
-                throw error;
-            });
-        },
+        // ========================================
+        // PROMPT MANAGEMENT METHODS
+        // ========================================
 
         /**
          * Retrieves saved prompts for user
@@ -755,68 +819,9 @@ define([
             });
         },
 
-        /**
-         * Deletes a chat session
-         * Implementation:
-         * - Posts session ID to delete endpoint
-         * - Returns response on success
-         * - Throws error on failure
-         */
-        deleteSession: function(sessionId) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-            return request.post(this.apiUrlBase + '/delete-session', {
-                data: JSON.stringify({
-                    session_id: sessionId,
-                    user_id: _self.user_id
-                }),
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                console.log('Session deleted:', response);
-                return response;
-            }).catch(function(error) {
-                console.error('Error deleting session:', error);
-                throw error;
-            });
-        },
-
-        /**
-         * Gets list of available models
-         * Implementation:
-         * - Posts to model list endpoint
-         * - Returns both chat models and RAG databases
-         * - Uses test project ID currently
-         */
-        getModelList: function() {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            // If the Copilot service is unavailable, immediately reject and publish the error
-            if (!this.copilotAvailable || !this.dbUrlBase) {
-                var error = new Error('The BV-BRC Copilot service is currently unavailable.');
-                topic.publish('CopilotApiError', { error: error });
-                return Promise.reject(error);
-            }
-            var _self = this;
-            return request.post(this.dbUrlBase + '/get-model-list', {
-                data: JSON.stringify({
-                    project_id: 'test'
-                }),
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                // Returns both the list of chat models and rag databases
-                return response;
-            }).catch(function(error) {
-                console.error('Error getting model list:', error);
-                throw error;
-            });
-        },
+        // ========================================
+        // RATING METHODS
+        // ========================================
 
         /**
          * Sets the rating for a conversation
@@ -873,6 +878,48 @@ define([
                 throw error;
             });
         },
+
+        // ========================================
+        // MODEL & CONFIGURATION METHODS
+        // ========================================
+
+        /**
+         * Gets list of available models
+         * Implementation:
+         * - Posts to model list endpoint
+         * - Returns both chat models and RAG databases
+         * - Uses test project ID currently
+         */
+        getModelList: function() {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            // If the Copilot service is unavailable, immediately reject and publish the error
+            if (!this.copilotAvailable || !this.dbUrlBase) {
+                var error = new Error('The BV-BRC Copilot service is currently unavailable.');
+                topic.publish('CopilotApiError', { error: error });
+                return Promise.reject(error);
+            }
+            var _self = this;
+            return request.post(this.dbUrlBase + '/get-model-list', {
+                data: JSON.stringify({
+                    project_id: 'test'
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                // Returns both the list of chat models and rag databases
+                return response;
+            }).catch(function(error) {
+                console.error('Error getting model list:', error);
+                throw error;
+            });
+        },
+
+        // ========================================
+        // PATH STATE METHODS
+        // ========================================
 
         /**
          * Gets the path state
