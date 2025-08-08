@@ -87,6 +87,14 @@ define([
 
             // Initialize footer overlap detection
             this._initFooterOverlapDetection();
+
+            topic.subscribe('showChatButton', lang.hitch(this, function(checked) {
+                this.show();
+            }));
+
+            topic.subscribe('hideChatButton', lang.hitch(this, function(checked) {
+                this.hide();
+            }));
         },
 
         _createHideText: function() {
@@ -105,7 +113,6 @@ define([
             // Add click handler to the hide text
             on(this.hideText, 'click', lang.hitch(this, function(evt) {
                 topic.publish('hideChatButton', true);
-                evt.stopPropagation();
             }));
         },
 
