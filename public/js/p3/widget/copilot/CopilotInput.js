@@ -153,19 +153,26 @@ define([
             label: 'Submit',
             style: 'height: 30px; margin-right: 10px;',
             onClick: lang.hitch(this, function() {
-            // Prevent multiple simultaneous submissions
-            if (this.isSubmitting) return;
-            // Handle different submission types based on configuration
-            if (this.pageContentEnabled) {
-                this._handlePageSubmitStream();
-            } else if (this.copilotApi && this.ragDb) {
-                this._handleRagSubmitStream();
-                // this._handleRagSubmit();
-            } else if (this.copilotApi) {
-                this._handleRegularSubmitStream();
-            } else {
-                console.error('CopilotApi widget not initialized');
-            }
+                // If currently streaming, stop the stream
+                if (this.isSubmitting) {
+                    this._stopStream();
+                    return;
+                }
+
+                // Prevent multiple simultaneous submissions
+                if (this.isSubmitting) return;
+
+                // Handle different submission types based on configuration
+                if (this.pageContentEnabled) {
+                    this._handlePageSubmitStream();
+                } else if (this.copilotApi && this.ragDb) {
+                    this._handleRagSubmitStream();
+                    // this._handleRagSubmit();
+                } else if (this.copilotApi) {
+                    this._handleRegularSubmitStream();
+                } else {
+                    console.error('CopilotApi widget not initialized');
+                }
             })
         });
 
@@ -227,6 +234,37 @@ define([
       //================================================================
 
       /**
+       * Stops the current streaming request and resets the UI
+       */
+      _stopStream: function() {
+          if (this.copilotApi && this.copilotApi.stopCurrentStream()) {
+              console.log('Stream stopped by user');
+          }
+
+          // Reset UI state
+          this.isSubmitting = false;
+          this.submitButton.set('label', 'Submit');
+          this.submitButton.set('disabled', false);
+          this.displayWidget.hideLoadingIndicator();
+      },
+
+      /**
+       * Updates the submit button to show "Stop" during streaming
+       */
+      _setButtonToStop: function() {
+          this.submitButton.set('label', 'Stop');
+          this.submitButton.set('disabled', false); // Keep enabled so user can stop
+      },
+
+      /**
+       * Updates the submit button to show "Submit" when not streaming
+       */
+      _setButtonToSubmit: function() {
+          this.submitButton.set('label', 'Submit');
+          this.submitButton.set('disabled', false);
+      },
+
+      /**
        * Handles streaming submission of RAG queries with document retrieval
        */
       _handleRagSubmitStream: function() {
@@ -251,7 +289,7 @@ define([
         this.textArea.set('value', '');
 
         this.isSubmitting = true;
-        this.submitButton.set('disabled', true);
+        this._setButtonToStop();
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
         var systemPrompt = 'You are a helpful scientist website assistant for the website BV-BRC, the Bacterial and Viral Bioinformatics Resource Center.\\n\\n';
@@ -303,13 +341,13 @@ define([
                     _self._finishNewChat();
                 }
                 this.isSubmitting = false;
-                this.submitButton.set('disabled', false);
+                this._setButtonToSubmit();
             },
             (error) => {
                 topic.publish('CopilotApiError', { error: error });
                 this.displayWidget.hideLoadingIndicator();
                 this.isSubmitting = false;
-                this.submitButton.set('disabled', false);
+                this._setButtonToSubmit();
             },
             (setupMetadata) => {
               if (setupMetadata) {
@@ -354,7 +392,7 @@ define([
         this.textArea.set('value', '');
 
         this.isSubmitting = true;
-        this.submitButton.set('disabled', true);
+        this._setButtonToStop();
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
         var systemPrompt = 'You are a helpful scientist website assistant for the website BV-BRC, the Bacterial and Viral Bioinformatics Resource Center.\\n\\n';
@@ -403,13 +441,13 @@ define([
                     _self._finishNewChat();
                 }
                 this.isSubmitting = false;
-                this.submitButton.set('disabled', false);
+                this._setButtonToSubmit();
             },
             (error) => {
                 topic.publish('CopilotApiError', { error: error });
                 this.displayWidget.hideLoadingIndicator();
                 this.isSubmitting = false;
-                this.submitButton.set('disabled', false);
+                this._setButtonToSubmit();
             },
             (setupMetadata) => {
               if (setupMetadata) {
@@ -454,7 +492,7 @@ define([
         this.textArea.set('value', '');
 
         this.isSubmitting = true;
-        this.submitButton.set('disabled', true);
+        this._setButtonToStop();
 
         topic.publish('hideChatPanel');
 
@@ -519,7 +557,7 @@ define([
                       _self._finishNewChat();
                   }
                   this.isSubmitting = false;
-                  this.submitButton.set('disabled', false);
+                  this._setButtonToSubmit();
                   this.pageContentEnabled = false;
                   this._updateToggleButtonStyle();
                   topic.publish('pageContentToggleChanged', false);
@@ -528,7 +566,7 @@ define([
                   topic.publish('CopilotApiError', { error: error });
                   this.displayWidget.hideLoadingIndicator();
                   this.isSubmitting = false;
-                  this.submitButton.set('disabled', false);
+                  this._setButtonToSubmit();
               },
               (setupMetadata) => {
                   if (setupMetadata) {
@@ -634,7 +672,7 @@ define([
                     _self._finishNewChat();
                 }
                 this.isSubmitting = false;
-                this.submitButton.set('disabled', false);
+                this._setButtonToSubmit();
                 this.pageContentEnabled = false;
                 this._updateToggleButtonStyle();
                 topic.publish('pageContentToggleChanged', false);
@@ -643,7 +681,7 @@ define([
                 topic.publish('CopilotApiError', { error: error });
                 this.displayWidget.hideLoadingIndicator();
                 this.isSubmitting = false;
-                this.submitButton.set('disabled', false);
+                this._setButtonToSubmit();
             },
             (setupMetadata) => {
                 if (setupMetadata) {

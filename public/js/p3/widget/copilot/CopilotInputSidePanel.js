@@ -153,8 +153,11 @@ define([
           label: 'Submit',
           style: 'height: 30px; margin-right: 10px;',
           onClick: lang.hitch(this, function() {
-            // Prevent multiple simultaneous submissions
-            if (this.isSubmitting) return;
+            // If currently streaming, stop the stream
+            if (this.isSubmitting) {
+              this._stopStream();
+              return;
+            }
 
             // Handle different submission types based on configuration
             this.ragDb = null;
@@ -273,7 +276,7 @@ define([
       this.textArea.set('value', '');
 
       this.isSubmitting = true;
-      this.submitButton.set('disabled', true);
+      this._setButtonToStop();
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
       var systemPrompt = 'You are a helpful scientist website assistant for the website BV-BRC, the Bacterial and Viral Bioinformatics Resource Center.\\n\\n';
@@ -325,13 +328,13 @@ define([
                   _self._finishNewChat();
               }
               this.isSubmitting = false;
-              this.submitButton.set('disabled', false);
+              this._setButtonToSubmit();
           },
           (error) => {
               topic.publish('CopilotApiError', { error: error });
               this.displayWidget.hideLoadingIndicator();
               this.isSubmitting = false;
-              this.submitButton.set('disabled', false);
+              this._setButtonToSubmit();
           },
           (setupMetadata) => {
             if (setupMetadata) {
@@ -380,7 +383,7 @@ define([
         this.textArea.set('value', '');
 
         this.isSubmitting = true;
-        this.submitButton.set('disabled', true);
+        this._setButtonToStop();
 
         html2canvas(document.body).then(lang.hitch(this, function(canvas) {
             var base64Image = canvas.toDataURL('image/png');
@@ -433,7 +436,7 @@ define([
                         _self._finishNewChat();
                     }
                     this.isSubmitting = false;
-                    this.submitButton.set('disabled', false);
+                    this._setButtonToSubmit();
                     this.pageContentEnabled = false;
                     this._updateToggleButtonStyle();
                     topic.publish('pageContentToggleChanged', false);
@@ -442,7 +445,7 @@ define([
                     topic.publish('CopilotApiError', { error: error });
                     this.displayWidget.hideLoadingIndicator();
                     this.isSubmitting = false;
-                    this.submitButton.set('disabled', false);
+                    this._setButtonToSubmit();
                 }),
                 lang.hitch(this, function(setupMetadata) {
                     if (setupMetadata) {
@@ -530,7 +533,7 @@ define([
             save_chat: true
         };
 
-        this.copilotApi.submitCopilotQueryStream(params,
+            this.copilotApi.submitCopilotQueryStream(params,
             lang.hitch(this, function(chunk) {
                 assistantMessage.content += chunk;
                 this.displayWidget.hideLoadingIndicator();
@@ -540,8 +543,8 @@ define([
                 if (_self.new_chat) {
                     _self._finishNewChat();
                 }
-                this.isSubmitting = false;
-                this.submitButton.set('disabled', false);
+                    this.isSubmitting = false;
+                    this._setButtonToSubmit();
                 this.pageContentEnabled = false;
                 this._updateToggleButtonStyle();
                 topic.publish('pageContentToggleChanged', false);
@@ -549,8 +552,8 @@ define([
             lang.hitch(this, function(error) {
                 topic.publish('CopilotApiError', { error: error });
                 this.displayWidget.hideLoadingIndicator();
-                this.isSubmitting = false;
-                this.submitButton.set('disabled', false);
+                    this.isSubmitting = false;
+                    this._setButtonToSubmit();
             }),
             lang.hitch(this, function(setupMetadata) {
                 if (setupMetadata) {
@@ -599,7 +602,7 @@ define([
       this.textArea.set('value', '');
 
       this.isSubmitting = true;
-      this.submitButton.set('disabled', true);
+      this._setButtonToStop();
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
       // Create messages for streaming
@@ -640,13 +643,13 @@ define([
                   _self._finishNewChat();
               }
               this.isSubmitting = false;
-              this.submitButton.set('disabled', false);
+              this._setButtonToSubmit();
           }),
           lang.hitch(this, function(error) {
               topic.publish('CopilotApiError', { error: error });
               this.displayWidget.hideLoadingIndicator();
               this.isSubmitting = false;
-              this.submitButton.set('disabled', false);
+              this._setButtonToSubmit();
           }),
           lang.hitch(this, function(setupMetadata) {
               if (setupMetadata) {
@@ -695,7 +698,7 @@ define([
       this.textArea.set('value', '');
 
       this.isSubmitting = true;
-      this.submitButton.set('disabled', true);
+      this._setButtonToStop();
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
       var job_id = this.currentSelection[0].id;
@@ -752,13 +755,13 @@ define([
                     _self._finishNewChat();
                 }
                 _self.isSubmitting = false;
-                _self.submitButton.set('disabled', false);
+                _self._setButtonToSubmit();
             },
             function(error) {
                 topic.publish('noJobDataError', error);
                 _self.displayWidget.hideLoadingIndicator();
                 _self.isSubmitting = false;
-                _self.submitButton.set('disabled', false);
+                _self._setButtonToSubmit();
             },
             function(setupMetadata) {
                 if (setupMetadata) {

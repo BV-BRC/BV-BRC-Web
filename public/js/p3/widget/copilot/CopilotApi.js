@@ -384,7 +384,15 @@ define([
             }
 
             // ========================================
-            // STEP 1: PREPARE SETUP DATA
+            // STEP 1: CREATE ABORT CONTROLLER
+            // ========================================
+            var abortController = new AbortController();
+
+            // Store the abort controller so it can be accessed externally
+            this.currentAbortController = abortController;
+
+            // ========================================
+            // STEP 2: PREPARE SETUP DATA
             // ========================================
             var _self = this;
             var setupData = {
@@ -414,7 +422,7 @@ define([
             }
 
             // ========================================
-            // STEP 2: CALL SETUP ENDPOINT
+            // STEP 3: CALL SETUP ENDPOINT
             // ========================================
             fetch(this.apiUrlBase + '/setup-copilot-stream', {
                 method: 'POST',
@@ -422,7 +430,8 @@ define([
                     'Content-Type': 'application/json',
                     'Authorization': (window.App.authorizationToken || '')
                 },
-                body: JSON.stringify(setupData)
+                body: JSON.stringify(setupData),
+                signal: abortController.signal
             })
             .then(response => {
                 if (!response.ok) {
@@ -446,7 +455,7 @@ define([
                 }
 
                 // ========================================
-                // STEP 3: START STREAMING
+                // STEP 4: START STREAMING
                 // ========================================
                 return fetch(_self.apiUrlBase + '/copilot-stream', {
                     method: 'POST',
@@ -458,7 +467,8 @@ define([
                     },
                     body: JSON.stringify({
                         stream_id: setupMetadata.stream_id
-                    })
+                    }),
+                    signal: abortController.signal
                 });
             })
             .then(response => {
@@ -558,6 +568,15 @@ define([
                 return pump();
             })
             .catch(err => {
+                // Clear the abort controller reference
+                this.currentAbortController = null;
+
+                // Don't call onError if the request was aborted
+                if (err.name === 'AbortError') {
+                    console.log('Stream request was aborted');
+                    return;
+                }
+
                 if (onError) onError(err);
             });
         },
@@ -915,6 +934,23 @@ define([
                 console.error('Error getting model list:', error);
                 throw error;
             });
+        },
+
+        // ========================================
+        // STREAM CONTROL METHODS
+        // ========================================
+
+        /**
+         * Stops the current streaming request
+         * @returns {boolean} True if a request was stopped, false if no request was active
+         */
+        stopCurrentStream: function() {
+            if (this.currentAbortController) {
+                this.currentAbortController.abort();
+                this.currentAbortController = null;
+                return true;
+            }
+            return false;
         },
 
         // ========================================
