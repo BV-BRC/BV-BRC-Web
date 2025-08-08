@@ -495,6 +495,7 @@ define([
           this.chatStore.addMessage(assistantMessage);
 
           const params = {
+              stream: true,
               inputText: inputText,
               sessionId: this.sessionId,
               systemPrompt: imageSystemPrompt,
@@ -509,6 +510,7 @@ define([
           this.copilotApi.submitCopilotQueryStream(params,
               (chunk) => {
                   assistantMessage.content += chunk;
+                  console.log('chunk=', chunk);
                   this.displayWidget.hideLoadingIndicator();
                   this.displayWidget.showMessages(this.chatStore.query());
               },
@@ -548,13 +550,13 @@ define([
                       this.displayWidget.showMessages(this.chatStore.query());
                   }
               }
-          );
-      })).catch(lang.hitch(this, function(error) {
-          console.error('Error capturing or processing screenshot:', error);
-          topic.publish('showChatPanel');
-          console.log('Falling back to HTML content');
-          this._handlePageContentSubmitStream();
-      }));
+            );
+        })).catch(lang.hitch(this, function(error) {
+            console.error('Error capturing or processing screenshot:', error);
+            topic.publish('showChatPanel');
+            console.log('Falling back to HTML content');
+            this._handlePageContentSubmitStream();
+        }));
       },
 
       /**
