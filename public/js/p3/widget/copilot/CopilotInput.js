@@ -21,6 +21,21 @@ define([
      * @extends {dijit/layout/ContentPane}
      */
     return declare([ContentPane], {
+      //================================================================
+      // WIDGET CONFIGURATION & STATE PROPERTIES
+      //================================================================
+
+      /** Widget styling */
+      style: 'padding: 0 5px 5px 5px; border: 0; height: 20%;',
+
+      /** Size constraints for the widget */
+      minSize: 40,
+      maxSize: 200,
+
+      //================================================================
+      // COPILOT API & SESSION PROPERTIES
+      //================================================================
+
       /** Reference to the CopilotAPI instance for making backend requests */
       copilotApi: null,
 
@@ -30,8 +45,18 @@ define([
       /** Flag to prevent multiple simultaneous submissions */
       isSubmitting: false,
 
+      //================================================================
+      // PROMPT & MODEL CONFIGURATION
+      //================================================================
+
       /** Custom system prompt to prepend to queries */
       systemPrompt: null,
+
+      /** State-specific prompt context */
+      statePrompt: null,
+
+      /** Enhanced prompt for advanced query processing */
+      enhancedPrompt: null,
 
       /** Selected language model for chat completion */
       model: null,
@@ -39,22 +64,19 @@ define([
       /** Selected RAG database for enhanced responses */
       ragDb: 'bvbrc_helpdesk',
 
-      statePrompt: null,
-
       /** Number of documents to use for RAG queries */
       numDocs: 3,
 
-      // Widget styling
-      style: 'padding: 0 5px 5px 5px; border: 0; height: 20%;',
+      //================================================================
+      // UI STATE PROPERTIES
+      //================================================================
 
-      // Size constraints for the widget
-      minSize: 40,
-      maxSize: 200,
-
-      // Flag to track page content toggle state
+      /** Flag to track page content toggle state */
       pageContentEnabled: false,
 
-      enhancedPrompt: null,
+      //================================================================
+      // LIFECYCLE METHODS
+      //================================================================
 
       /**
        * Constructor that initializes the widget with provided options
@@ -131,18 +153,26 @@ define([
             label: 'Submit',
             style: 'height: 30px; margin-right: 10px;',
             onClick: lang.hitch(this, function() {
-            // Prevent multiple simultaneous submissions
-            if (this.isSubmitting) return;
-            // Handle different submission types based on configuration
-            if (this.pageContentEnabled) {
-                this._handlePageSubmit();
-            } else if (this.copilotApi && this.ragDb) {
-                this._handleRagSubmit();
-            } else if (this.copilotApi) {
-                this._handleRegularSubmit();
-            } else {
-                console.error('CopilotApi widget not initialized');
-            }
+                // If currently streaming, stop the stream
+                if (this.isSubmitting) {
+                    this._stopStream();
+                    return;
+                }
+
+                // Prevent multiple simultaneous submissions
+                if (this.isSubmitting) return;
+
+                // Handle different submission types based on configuration
+                if (this.pageContentEnabled) {
+                    this._handlePageSubmitStream();
+                } else if (this.copilotApi && this.ragDb) {
+                    this._handleRagSubmitStream();
+                    // this._handleRagSubmit();
+                } else if (this.copilotApi) {
+                    this._handleRegularSubmitStream();
+                } else {
+                    console.error('CopilotApi widget not initialized');
+                }
             })
         });
 
@@ -199,18 +229,45 @@ define([
         }));
       },
 
+      //================================================================
+      // SUBMISSION HANDLER METHODS
+      //================================================================
+
       /**
-       * Handles submission of RAG queries with document retrieval
-       * Implementation:
-       * - Immediately shows user message and clears text area
-       * - Disables input during submission
-       * - Shows loading indicator
-       * - Retrieves documents via RAG API
-       * - Builds system prompt with document context
-       * - Makes follow-up LLM query with enhanced context
-       * - Updates chat store with assistant/system messages only
+       * Stops the current streaming request and resets the UI
        */
-      _handleRagSubmit: function() {
+      _stopStream: function() {
+          if (this.copilotApi && this.copilotApi.stopCurrentStream()) {
+              console.log('Stream stopped by user');
+          }
+
+          // Reset UI state
+          this.isSubmitting = false;
+          this.submitButton.set('label', 'Submit');
+          this.submitButton.set('disabled', false);
+          this.displayWidget.hideLoadingIndicator();
+      },
+
+      /**
+       * Updates the submit button to show "Stop" during streaming
+       */
+      _setButtonToStop: function() {
+          this.submitButton.set('label', 'Stop');
+          this.submitButton.set('disabled', false); // Keep enabled so user can stop
+      },
+
+      /**
+       * Updates the submit button to show "Submit" when not streaming
+       */
+      _setButtonToSubmit: function() {
+          this.submitButton.set('label', 'Submit');
+          this.submitButton.set('disabled', false);
+      },
+
+      /**
+       * Handles streaming submission of RAG queries with document retrieval
+       */
+      _handleRagSubmitStream: function() {
         console.log('this.ragDb=', this.ragDb);
         var inputText = this.textArea.get('value');
         var _self = this;
@@ -223,7 +280,7 @@ define([
         var userMessage = {
           role: 'user',
           content: inputText,
-          message_id: 'user_' + Date.now(),
+          message_id: null,
           timestamp: new Date().toISOString()
         };
 
@@ -232,11 +289,10 @@ define([
         this.textArea.set('value', '');
 
         this.isSubmitting = true;
-        this.submitButton.set('disabled', true);
-
+        this._setButtonToStop();
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-        var systemPrompt = 'You are a helpful scientist website assistant for the website BV-BRC, the Bacterial and Viral Bioinformatics Resource Center.\n\n';
+        var systemPrompt = 'You are a helpful scientist website assistant for the website BV-BRC, the Bacterial and Viral Bioinformatics Resource Center.\\n\\n';
         if (this.systemPrompt) {
             systemPrompt += this.systemPrompt;
         }
@@ -244,50 +300,184 @@ define([
             systemPrompt += this.statePrompt;
         }
 
-        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt).then(lang.hitch(this, function(response) {
-          // Only add assistant message and system message (if present) - user message was already added
-          var messagesToAdd = [];
-          if (response.systemMessage) {
-            messagesToAdd.push(response.systemMessage);
-          }
-          if (response.assistantMessage) {
-            messagesToAdd.push(response.assistantMessage);
-          }
+        // Create messages for streaming
+        let systemMessage = {
+            role: 'system',
+            message_id: null,
+            content: '',
+            copilotDetails: null,
+            ragDocs: null,
+            timestamp: new Date().toISOString()
+        };
+        this.chatStore.addMessage(systemMessage);
 
-          if (messagesToAdd.length > 0) {
-            this.chatStore.addMessages(messagesToAdd);
-          }
+        let assistantMessage = {
+            role: 'assistant',
+            content: '',
+            message_id: null,
+            timestamp: new Date().toISOString()
+        };
+        this.chatStore.addMessage(assistantMessage);
 
-          this.displayWidget.showMessages(this.chatStore.query());
+        const params = {
+          inputText: inputText,
+          sessionId: this.sessionId,
+          systemPrompt: systemPrompt,
+          model: this.model,
+          save_chat: true,
+          ragDb: this.ragDb,
+          numDocs: this.numDocs,
+          enhancedPrompt: this.enhancedPrompt
+        };
 
-          if (_self.new_chat) {
-            _self._finishNewChat();
-          }
-        })).catch(function(error) {
-          topic.publish('CopilotApiError', { error: error });
-        }).finally(lang.hitch(this, function() {
-          this.displayWidget.hideLoadingIndicator();
-          this.isSubmitting = false;
-          this.submitButton.set('disabled', false);
-        }));
+        this.copilotApi.submitCopilotQueryStream(params,
+            (chunk) => {
+                assistantMessage.content += chunk;
+                this.displayWidget.hideLoadingIndicator();
+                this.displayWidget.showMessages(this.chatStore.query());
+            },
+            () => {
+                if (_self.new_chat) {
+                    _self._finishNewChat();
+                }
+                this.isSubmitting = false;
+                this._setButtonToSubmit();
+            },
+            (error) => {
+                topic.publish('CopilotApiError', { error: error });
+                this.displayWidget.hideLoadingIndicator();
+                this.isSubmitting = false;
+                this._setButtonToSubmit();
+            },
+            (setupMetadata) => {
+              if (setupMetadata) {
+                if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
+                  assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
+                }
+                if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
+                  userMessage.message_id = setupMetadata.userMessage.message_id;
+                }
+                if (setupMetadata.systemMessage) {
+                  systemMessage.message_id = setupMetadata.systemMessage.message_id;
+                  systemMessage.content = setupMetadata.systemMessage.content || '';
+                  systemMessage.copilotDetails = setupMetadata.copilot_details;
+                  systemMessage.documents = setupMetadata.rag_docs;
+                  systemMessage.timestamp = setupMetadata.systemMessage.timestamp || new Date().toISOString();
+                } else if (setupMetadata.copilot_details) {
+                  assistantMessage.copilotDetails = setupMetadata.copilot_details;
+                }
+                this.displayWidget.showMessages(this.chatStore.query());
+              }
+            }
+        );
       },
 
       /**
-       * Handles submission of regular (non-RAG) queries
-       * Implementation:
-       * - Immediately shows user message and clears text area
-       * - Disables input during submission
-       * - Shows loading indicator
-       * - Makes LLM query with basic system prompt
-       * - Updates chat store with assistant/system messages only
-       * - Handles new chat initialization
+       * Handles streaming submission of regular (non-RAG) queries
        */
-      _handleRegularSubmit: function() {
+      _handleRegularSubmitStream: function() {
         var inputText = this.textArea.get('value');
         var _self = this;
-        if (this.state) {
-          console.log('state', this.state);
+
+        // Immediately show user message and clear text area
+        var userMessage = {
+          role: 'user',
+          content: inputText,
+          message_id: null,
+          timestamp: new Date().toISOString()
+        };
+
+        this.chatStore.addMessage(userMessage);
+        this.displayWidget.showMessages(this.chatStore.query());
+        this.textArea.set('value', '');
+
+        this.isSubmitting = true;
+        this._setButtonToStop();
+        this.displayWidget.showLoadingIndicator(this.chatStore.query());
+
+        var systemPrompt = 'You are a helpful scientist website assistant for the website BV-BRC, the Bacterial and Viral Bioinformatics Resource Center.\\n\\n';
+        if (this.systemPrompt) {
+            systemPrompt += this.systemPrompt;
         }
+        if (this.statePrompt) {
+            systemPrompt += this.statePrompt;
+        }
+
+        // Create messages for streaming
+        let systemMessage = {
+            role: 'system',
+            message_id: null,
+            content: '',
+            copilotDetails: null,
+            ragDocs: null,
+            timestamp: new Date().toISOString()
+        };
+        this.chatStore.addMessage(systemMessage);
+
+        let assistantMessage = {
+            role: 'assistant',
+            content: '',
+            message_id: null,
+            timestamp: new Date().toISOString()
+        };
+        this.chatStore.addMessage(assistantMessage);
+
+        const params = {
+            inputText: inputText,
+            sessionId: this.sessionId,
+            systemPrompt: systemPrompt,
+            model: this.model,
+            save_chat: true
+        };
+
+        this.copilotApi.submitCopilotQueryStream(params,
+            (chunk) => {
+                assistantMessage.content += chunk;
+                this.displayWidget.hideLoadingIndicator();
+                this.displayWidget.showMessages(this.chatStore.query());
+            },
+            () => {
+                if (_self.new_chat) {
+                    _self._finishNewChat();
+                }
+                this.isSubmitting = false;
+                this._setButtonToSubmit();
+            },
+            (error) => {
+                topic.publish('CopilotApiError', { error: error });
+                this.displayWidget.hideLoadingIndicator();
+                this.isSubmitting = false;
+                this._setButtonToSubmit();
+            },
+            (setupMetadata) => {
+              if (setupMetadata) {
+                if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
+                  assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
+                }
+                if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
+                  userMessage.message_id = setupMetadata.userMessage.message_id;
+                }
+                if (setupMetadata.systemMessage) {
+                  systemMessage.message_id = setupMetadata.systemMessage.message_id;
+                  systemMessage.content = setupMetadata.systemMessage.content || '';
+                  systemMessage.copilotDetails = setupMetadata.copilot_details;
+                  systemMessage.documents = setupMetadata.rag_docs;
+                  systemMessage.timestamp = setupMetadata.systemMessage.timestamp || new Date().toISOString();
+                } else if (setupMetadata.copilot_details) {
+                  assistantMessage.copilotDetails = setupMetadata.copilot_details;
+                }
+                this.displayWidget.showMessages(this.chatStore.query());
+              }
+            }
+        );
+      },
+
+      /**
+       * Handles submission of page content with screenshot capture
+       */
+      _handlePageSubmitStream: function() {
+        var inputText = this.textArea.get('value');
+        var _self = this;
 
         // Immediately show user message and clear text area
         var userMessage = {
@@ -302,45 +492,223 @@ define([
         this.textArea.set('value', '');
 
         this.isSubmitting = true;
-        this.submitButton.set('disabled', true);
+        this._setButtonToStop();
+
+        topic.publish('hideChatPanel');
+
+        html2canvas(document.body).then(lang.hitch(this, function(canvas) {
+          var base64Image = canvas.toDataURL('image/png');
+          topic.publish('showChatPanel');
+
+          this.displayWidget.showLoadingIndicator(this.chatStore.query());
+          var imageSystemPrompt = 'You are a helpful scientist website assistant for the website BV-BRC, the Bacterial and Viral Bioinformatics Resource Center. You can also answer questions about the attached screenshot.\\n' +
+          'Analyze the screenshot and respond to the user\'s query.';
+
+          if (this.systemPrompt) {
+              imageSystemPrompt += '\\n\\n' + this.systemPrompt;
+          }
+          if (this.statePrompt) {
+              imageSystemPrompt = imageSystemPrompt + '\\n\\n' + this.statePrompt;
+          }
+
+          var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
+
+          // Create messages for streaming
+          let systemMessage = {
+              role: 'system',
+              message_id: null,
+              content: '',
+              copilotDetails: null,
+              ragDocs: null,
+              timestamp: new Date().toISOString()
+          };
+          this.chatStore.addMessage(systemMessage);
+
+          let assistantMessage = {
+              role: 'assistant',
+              content: '',
+              message_id: null,
+              timestamp: new Date().toISOString()
+          };
+          this.chatStore.addMessage(assistantMessage);
+
+          const params = {
+              stream: true,
+              inputText: inputText,
+              sessionId: this.sessionId,
+              systemPrompt: imageSystemPrompt,
+              model: imgtxt_model,
+              save_chat: true,
+              ragDb: this.ragDb,
+              numDocs: this.numDocs,
+              image: base64Image,
+              enhancedPrompt: this.enhancedPrompt
+          };
+
+          this.copilotApi.submitCopilotQueryStream(params,
+              (chunk) => {
+                  assistantMessage.content += chunk;
+                  console.log('chunk=', chunk);
+                  this.displayWidget.hideLoadingIndicator();
+                  this.displayWidget.showMessages(this.chatStore.query());
+              },
+              () => {
+                  if (_self.new_chat) {
+                      _self._finishNewChat();
+                  }
+                  this.isSubmitting = false;
+                  this._setButtonToSubmit();
+                  this.pageContentEnabled = false;
+                  this._updateToggleButtonStyle();
+                  topic.publish('pageContentToggleChanged', false);
+              },
+              (error) => {
+                  topic.publish('CopilotApiError', { error: error });
+                  this.displayWidget.hideLoadingIndicator();
+                  this.isSubmitting = false;
+                  this._setButtonToSubmit();
+              },
+              (setupMetadata) => {
+                  if (setupMetadata) {
+                      if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
+                          assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
+                      }
+                      if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
+                          userMessage.message_id = setupMetadata.userMessage.message_id;
+                      }
+                      if (setupMetadata.systemMessage) {
+                          systemMessage.message_id = setupMetadata.systemMessage.message_id;
+                          systemMessage.content = setupMetadata.systemMessage.content || '';
+                          systemMessage.copilotDetails = setupMetadata.copilot_details;
+                          systemMessage.documents = setupMetadata.rag_docs;
+                          systemMessage.timestamp = setupMetadata.systemMessage.timestamp || new Date().toISOString();
+                      } else if (setupMetadata.copilot_details) {
+                          assistantMessage.copilotDetails = setupMetadata.copilot_details;
+                      }
+                      this.displayWidget.showMessages(this.chatStore.query());
+                  }
+              }
+            );
+        })).catch(lang.hitch(this, function(error) {
+            console.error('Error capturing or processing screenshot:', error);
+            topic.publish('showChatPanel');
+            console.log('Falling back to HTML content');
+            this._handlePageContentSubmitStream();
+        }));
+      },
+
+      /**
+       * Handles streaming submission of page content (HTML) as fallback
+       */
+      _handlePageContentSubmitStream: function() {
+        var inputText = this.textArea.get('value');
+        var _self = this;
+
+        // Immediately show user message and clear text area
+        var userMessage = {
+          role: 'user',
+          content: inputText,
+          message_id: 'user_' + Date.now(),
+          timestamp: new Date().toISOString()
+        };
+
+        this.chatStore.addMessage(userMessage);
+        this.displayWidget.showMessages(this.chatStore.query());
+        this.textArea.set('value', '');
+
+        const pageHtml = document.documentElement.innerHTML;
+
+        var systemPrompt = 'You are a helpful assistant that can answer questions about the page content.\\n' +
+            'Answer questions as if you were a user viewing the page.\\n' +
+            'The page content is:\\n' +
+            pageHtml;
+        if (this.systemPrompt) {
+            systemPrompt += '\\n' + this.systemPrompt;
+        }
+        if (this.statePrompt) {
+          systemPrompt = this.statePrompt + '\\n\\n' + systemPrompt;
+        }
 
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-        var systemPrompt = 'You are a helpful scientist website assistant for the website BV-BRC, the Bacterial and Viral Bioinformatics Resource Center.\n\n';
-        if (this.systemPrompt) {
-            systemPrompt += this.systemPrompt;
-        }
-        if (this.statePrompt) {
-            systemPrompt += this.statePrompt;
-        }
+        // Create messages for streaming
+        let systemMessage = {
+            role: 'system',
+            message_id: null,
+            content: '',
+            copilotDetails: null,
+            ragDocs: null,
+            timestamp: new Date().toISOString()
+        };
+        this.chatStore.addMessage(systemMessage);
 
-        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, null, null).then(lang.hitch(this, function(response) {
-          // Only add assistant message and system message (if present) - user message was already added
-          var messagesToAdd = [];
-          if (response.systemMessage) {
-            messagesToAdd.push(response.systemMessage);
-          }
-          if (response.assistantMessage) {
-            messagesToAdd.push(response.assistantMessage);
-          }
+        let assistantMessage = {
+            role: 'assistant',
+            content: '',
+            message_id: null,
+            timestamp: new Date().toISOString()
+        };
+        this.chatStore.addMessage(assistantMessage);
 
-          if (messagesToAdd.length > 0) {
-            this.chatStore.addMessages(messagesToAdd);
-          }
+        const params = {
+            inputText: inputText,
+            sessionId: this.sessionId,
+            systemPrompt: systemPrompt,
+            model: this.model,
+            save_chat: true,
+            ragDb: this.ragDb,
+            numDocs: this.numDocs,
+            enhancedPrompt: this.enhancedPrompt
+        };
 
-          this.displayWidget.showMessages(this.chatStore.query());
-
-          if (_self.new_chat) {
-            _self._finishNewChat();
-          }
-        })).catch(function(error) {
-          topic.publish('CopilotApiError', { error: error });
-        }).finally(lang.hitch(this, function() {
-          this.displayWidget.hideLoadingIndicator();
-          this.isSubmitting = false;
-          this.submitButton.set('disabled', false);
-        }));
+        this.copilotApi.submitCopilotQueryStream(params,
+            (chunk) => {
+                assistantMessage.content += chunk;
+                this.displayWidget.hideLoadingIndicator();
+                this.displayWidget.showMessages(this.chatStore.query());
+            },
+            () => {
+                if (_self.new_chat) {
+                    _self._finishNewChat();
+                }
+                this.isSubmitting = false;
+                this._setButtonToSubmit();
+                this.pageContentEnabled = false;
+                this._updateToggleButtonStyle();
+                topic.publish('pageContentToggleChanged', false);
+            },
+            (error) => {
+                topic.publish('CopilotApiError', { error: error });
+                this.displayWidget.hideLoadingIndicator();
+                this.isSubmitting = false;
+                this._setButtonToSubmit();
+            },
+            (setupMetadata) => {
+                if (setupMetadata) {
+                    if (setupMetadata.assistantMessage && setupMetadata.assistantMessage.message_id) {
+                        assistantMessage.message_id = setupMetadata.assistantMessage.message_id;
+                    }
+                    if (setupMetadata.userMessage && setupMetadata.userMessage.message_id) {
+                        userMessage.message_id = setupMetadata.userMessage.message_id;
+                    }
+                    if (setupMetadata.systemMessage) {
+                        systemMessage.message_id = setupMetadata.systemMessage.message_id;
+                        systemMessage.content = setupMetadata.systemMessage.content || '';
+                        systemMessage.copilotDetails = setupMetadata.copilot_details;
+                        systemMessage.documents = setupMetadata.rag_docs;
+                        systemMessage.timestamp = setupMetadata.systemMessage.timestamp || new Date().toISOString();
+                    } else if (setupMetadata.copilot_details) {
+                        assistantMessage.copilotDetails = setupMetadata.copilot_details;
+                    }
+                    this.displayWidget.showMessages(this.chatStore.query());
+                }
+            }
+        );
       },
+
+      //================================================================
+      // SESSION MANAGEMENT METHODS
+      //================================================================
 
       /**
        * Resets widget state for new chat session
@@ -358,6 +726,38 @@ define([
       setSessionId: function(sessionId) {
         this.sessionId = sessionId;
       },
+
+      /**
+       * Finalizes creation of a brand-new chat after the first successful response.
+       * Adds the session to the global sessions memory store, publishes reload event,
+       * then triggers title generation.
+       * @param {boolean} generateTitleImmediately – if false, skip title generation (default true)
+       */
+      _finishNewChat: function(generateTitleImmediately = true) {
+        this.new_chat = false;
+
+        // Add to global sessions store
+        if (window && window.App && window.App.chatSessionsStore) {
+          window.App.chatSessionsStore.addSession({
+            session_id: this.sessionId,
+            title: 'New Chat',
+            created_at: Date.now()
+          });
+        }
+
+        // Reload scroll bar and highlight
+        topic.publish('reloadUserSessions', { highlightSessionId: this.sessionId });
+
+        if (generateTitleImmediately) {
+          setTimeout(function() {
+            topic.publish('generateSessionTitle');
+          }, 100);
+        }
+      },
+
+      //================================================================
+      // CONFIGURATION METHODS (SETTERS/GETTERS)
+      //================================================================
 
       /**
        * Sets system prompt from structured data
@@ -400,7 +800,6 @@ define([
       setModel: function(model) {
         this.model = model;
       },
-
 
       /**
        * Updates selected RAG database and UI
@@ -452,217 +851,29 @@ define([
         this.numDocs = numDocs;
       },
 
+      /**
+       * Sets state-specific prompt context
+       */
       setStatePrompt: function(statePrompt) {
         this.statePrompt = statePrompt;
       },
 
-      /**
-       * Finalizes creation of a brand-new chat after the first successful response.
-       * Adds the session to the global sessions memory store, publishes reload event,
-       * then triggers title generation.
-       * @param {boolean} generateTitleImmediately – if false, skip title generation (default true)
-       */
-      _finishNewChat: function(generateTitleImmediately = true) {
-        this.new_chat = false;
-
-        // Add to global sessions store
-        if (window && window.App && window.App.chatSessionsStore) {
-          window.App.chatSessionsStore.addSession({
-            session_id: this.sessionId,
-            title: 'New Chat',
-            created_at: Date.now()
-          });
-        }
-
-        // Reload scroll bar and highlight
-        topic.publish('reloadUserSessions', { highlightSessionId: this.sessionId });
-
-        if (generateTitleImmediately) {
-          setTimeout(function() {
-            topic.publish('generateSessionTitle');
-          }, 100);
-        }
-      },
+      //================================================================
+      // UTILITY METHODS
+      //================================================================
 
       /**
-       * @method _handlePageSubmit
-       * @description Handles submission about the current page (screenshot first, HTML fallback)
-       * Implementation:
-       * - Immediately shows user message and clears text area
-       * - Takes screenshot and makes API call
-       * - Updates chat store with assistant/system messages only
-       **/
-      _handlePageSubmit: function() {
-        var inputText = this.textArea.get('value');
-        var _self = this;
-
-        if (this.state) {
-            console.log('state', this.state);
-        }
-
-        // Immediately show user message and clear text area
-        var userMessage = {
-          role: 'user',
-          content: inputText,
-          message_id: 'user_' + Date.now(),
-          timestamp: new Date().toISOString()
-        };
-
-        this.chatStore.addMessage(userMessage);
-        this.displayWidget.showMessages(this.chatStore.query());
-        this.textArea.set('value', '');
-
-        this.isSubmitting = true;
-        this.submitButton.set('disabled', true);
-
-        topic.publish('hideChatPanel'); // Hide panel before taking screenshot
-
-        html2canvas(document.body).then(lang.hitch(this, function(canvas) {
-          var base64Image = canvas.toDataURL('image/png');
-
-          topic.publish('showChatPanel'); // Show panel again
-
-          this.displayWidget.showLoadingIndicator(this.chatStore.query());
-          var imageSystemPrompt = 'You are a helpful scientist website assistant for the website BV-BRC, the Bacterial and Viral Bioinformatics Resource Center. You can also answer questions about the attached screenshot.\n' +
-          'Analyze the screenshot and respond to the user\'s query.';
-
-          if (this.systemPrompt) {
-              imageSystemPrompt += '\n\n' + this.systemPrompt;
-          }
-          if (this.statePrompt) {
-              imageSystemPrompt = imageSystemPrompt + '\n\n' + this.statePrompt;
-          }
-
-          var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
-
-          this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image, this.enhancedPrompt)
-              .then(lang.hitch(this, function(response) {
-                  // Only add assistant message and system message (if present) - user message was already added
-                  var messagesToAdd = [];
-                  if (response.systemMessage) {
-                      messagesToAdd.push(response.systemMessage);
-                  }
-                  if (response.assistantMessage) {
-                      messagesToAdd.push(response.assistantMessage);
-                  }
-
-                  if (messagesToAdd.length > 0) {
-                      this.chatStore.addMessages(messagesToAdd);
-                  }
-
-                  this.displayWidget.showMessages(this.chatStore.query());
-
-                  if (_self.new_chat) {
-                      _self._finishNewChat();
-                  }
-              })).catch(function(error) {
-                  topic.publish('CopilotApiError', { error: error });
-              }).finally(lang.hitch(this, function() {
-                  this.displayWidget.hideLoadingIndicator();
-                  this.isSubmitting = false;
-                  this.submitButton.set('disabled', false);
-
-                  // Deselect the pageContentToggle after submission
-                  this.pageContentEnabled = false;
-                  this._updateToggleButtonStyle();
-                  topic.publish('pageContentToggleChanged', false);
-              }));
-      })).catch(lang.hitch(this, function(error) {
-          console.error('Error capturing or processing screenshot:', error);
-          topic.publish('showChatPanel'); // Ensure panel is shown even on error
-
-          // Fall back to HTML content if screenshot fails
-          console.log('Falling back to HTML content');
-          this._handlePageContentSubmit();
-      }));
-    },
-
-    /**
-     * @method _handlePageContentSubmit
-     * @description Handles submission of page content (HTML)
-     * Used as a fallback when screenshot fails
-     * Implementation:
-     * - Immediately shows user message and clears text area
-     * - Makes API call with page content
-     * - Updates chat store with assistant/system messages only
-     **/
-    _handlePageContentSubmit: function() {
-      var inputText = this.textArea.get('value');
-      var _self = this;
-
-      // Immediately show user message and clear text area
-      var userMessage = {
-        role: 'user',
-        content: inputText,
-        message_id: 'user_' + Date.now(),
-        timestamp: new Date().toISOString()
-      };
-
-      this.chatStore.addMessage(userMessage);
-      this.displayWidget.showMessages(this.chatStore.query());
-      this.textArea.set('value', '');
-
-      const pageHtml = document.documentElement.innerHTML;
-
-      var imageSystemPrompt = 'You are a helpful assistant that can answer questions about the page content.\n' +
-          'Answer questions as if you were a user viewing the page.\n' +
-          'The page content is:\n' +
-          pageHtml;
-      if (this.systemPrompt) {
-          imageSystemPrompt += '\n' + this.systemPrompt;
-      }
-      if (this.statePrompt) {
-        imageSystemPrompt = this.statePrompt + '\n\n' + imageSystemPrompt;
-      }
-
-      this.displayWidget.showLoadingIndicator(this.chatStore.query());
-
-      this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt).then(lang.hitch(this, function(response) {
-          // Only add assistant message and system message (if present) - user message was already added
-          var messagesToAdd = [];
-          if (response.systemMessage) {
-              messagesToAdd.push(response.systemMessage);
-          }
-          if (response.assistantMessage) {
-              messagesToAdd.push(response.assistantMessage);
-          }
-
-          if (messagesToAdd.length > 0) {
-              this.chatStore.addMessages(messagesToAdd);
-          }
-
-          this.displayWidget.showMessages(this.chatStore.query());
-
-          if (_self.new_chat) {
-              _self._finishNewChat();
-          }
-      })).catch(function(error) {
-          topic.publish('CopilotApiError', { error: error });
-      }).finally(lang.hitch(this, function() {
-          this.displayWidget.hideLoadingIndicator();
-          this.isSubmitting = false;
-          this.submitButton.set('disabled', false);
-
-          // Deselect the pageContentToggle after submission
-          this.pageContentEnabled = false;
-          this._updateToggleButtonStyle();
-          topic.publish('pageContentToggleChanged', false);
-      }));
-    },
-
-    /**
-       * @method _updateToggleButtonStyle
-       * @description Updates the toggle button's visual state based on pageContentEnabled
+       * Updates the toggle button's visual state based on pageContentEnabled
        */
-    _updateToggleButtonStyle: function() {
-      var buttonNode = this.pageContentToggle.domNode;
-      if (this.pageContentEnabled) {
-          buttonNode.classList.remove('pageContentToggleInactive');
-          buttonNode.classList.add('pageContentToggleActive');
-      } else {
-          buttonNode.classList.remove('pageContentToggleActive');
-          buttonNode.classList.add('pageContentToggleInactive');
+      _updateToggleButtonStyle: function() {
+        var buttonNode = this.pageContentToggle.domNode;
+        if (this.pageContentEnabled) {
+            buttonNode.classList.remove('pageContentToggleInactive');
+            buttonNode.classList.add('pageContentToggleActive');
+        } else {
+            buttonNode.classList.remove('pageContentToggleActive');
+            buttonNode.classList.add('pageContentToggleInactive');
+        }
       }
-    }
+    });
   });
-});
