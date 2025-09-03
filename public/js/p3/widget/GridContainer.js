@@ -5,7 +5,8 @@ define([
   'dojo/topic', 'dojo/query', 'dijit/layout/ContentPane', 'dojo/text!./templates/IDMapping.html',
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog', './DownloadTooltipDialog', './PerspectiveToolTip',
   './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin',
-  './FeatureDetailsTooltipDialog', './ServicesTooltipDialog', './RerunUtility', 'dojox/widget/Standby'
+  './FeatureDetailsTooltipDialog', './ServicesTooltipDialog', './RerunUtility', 'dojox/widget/Standby',
+  './copilot/ChatSessionContainerSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
@@ -13,7 +14,8 @@ define([
   Topic, query, ContentPane, IDMappingTemplate,
   Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
   CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin,
-  FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility, Standby
+  FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility, Standby,
+  ChatSessionContainerSidePanel, CopilotAPI, ChatSessionOptionsBar
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -360,6 +362,100 @@ define([
         },
         function () {
           window.open(PathJoin(this.docsServiceURL, this.tutorialLink));
+        },
+        true
+      ],
+      [
+        'CopilotChat',
+        'fa icon-comment fa-2x',
+        {
+          label: 'Chat',
+          tooltip: 'Chat with Copilot',
+          persistent: true,
+          validTypes: ['*'],
+        },
+        function (selection, container, button) {
+          console.log('CopilotChat');
+          // Check if chat panel already exists
+          if (this.chatPanelWrapper) {
+            // If chat panel exists, toggle between chat and details panel
+            if (this.getChildren().indexOf(this.chatPanelWrapper) > -1) {
+              // Chat panel is currently shown, switch to details panel
+              this.removeChild(this.chatPanelWrapper);
+              if (this.itemDetailPanel) {
+                this.addChild(this.itemDetailPanel);
+              }
+            } else {
+              // Details panel is shown, switch to chat panel
+              if (this.itemDetailPanel) {
+                this.removeChild(this.itemDetailPanel);
+              }
+              this.addChild(this.chatPanelWrapper);
+            }
+            return;
+          }
+
+          // Create new CopilotAPI
+          this.copilotAPI = new CopilotAPI({
+            user_id: window.App.user.l_id
+          });
+
+          this.copilotAPI.getModelList().then(lang.hitch(this, function(modelsAndRag) {
+
+            var modelList = JSON.parse(modelsAndRag.models);
+            var ragList = JSON.parse(modelsAndRag.vdb_list);
+
+            // Add options bar to top of sidebar
+            var chatOptionsBar = new ChatSessionOptionsBar({
+              region: 'top',
+              copilotApi: this.copilotAPI,
+              modelList: modelList,
+              ragList: ragList
+            });
+
+            // Create new chat panel wrapped in a ContentPane to prevent layout conflicts
+            this.chatPanelWrapper = new ContentPane({
+              region: 'right',
+              splitter: true,
+              style: 'width: 32%; padding: 0; margin: 0; overflow: hidden;',
+              layoutPriority: 3
+            });
+
+            this.chatPanel = new ChatSessionContainerSidePanel({
+              style: 'width: 100%; height: 100%; border: 0; padding: 0; margin: 0;',
+              copilotApi: this.copilotAPI,
+              containerSelection: this.selectionActionBar.get('selection'),
+              optionsBar: chatOptionsBar,
+              context: 'grid-container'
+            });
+            this.chatPanel._setupContainerWatch();
+
+            // Add chat panel to wrapper
+            this.chatPanelWrapper.addChild(this.chatPanel);
+
+            // Remove itemDetailPanel if it exists and add wrapped chat panel in its place
+            if (this.itemDetailPanel && this.getChildren().indexOf(this.itemDetailPanel) > -1) {
+              this.removeChild(this.itemDetailPanel);
+            }
+
+            // Add wrapped chat panel
+            this.addChild(this.chatPanelWrapper);
+
+            // Wait for input widget to be created before setting initial selection
+            setTimeout(lang.hitch(this, function() {
+              if (this.chatPanel.inputWidget && this.selectionActionBar.get('selection').length > 0) {
+                this.chatPanel.set('containerSelection', this.selectionActionBar.get('selection'));
+                this.chatPanel.inputWidget.setSystemPromptWithData(this.selectionActionBar.get('selection'));
+              }
+            }), 300);
+          })).catch(lang.hitch(this, function(err) {
+            new Dialog({
+              title: "Service Unavailable",
+              content: "The BV-BRC Copilot service is currently disabled. Please try again later.",
+              style: "width: 300px"
+            }).show();
+            console.error('Error setting up chat panel:', err);
+          }));
         },
         true
       ], [
@@ -1888,6 +1984,10 @@ define([
         }), this);
         this.selectionActionBar.set('selection', sel);
         this.itemDetailPanel.set('selection', sel);
+
+        if (this.chatPanelWrapper && this.chatPanel) {
+          this.chatPanel.set('containerSelection', sel);
+        }
       }));
 
       this.grid.on('deselect', lang.hitch(this, function (evt) {
@@ -1911,6 +2011,10 @@ define([
         }
         this.selectionActionBar.set('selection', sel);
         this.itemDetailPanel.set('selection', sel);
+
+        if (this.chatPanelWrapper && this.chatPanel) {
+          this.chatPanel.set('containerSelection', sel);
+        }
       }));
 
       on(this.domNode, 'ToggleFilters', lang.hitch(this, function (evt) {

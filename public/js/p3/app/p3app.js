@@ -1,16 +1,18 @@
 define([
   'dojo/_base/declare',
-  'dojo/topic', 'dojo/on', 'dojo/dom', 'dojo/dom-class', 'dojo/dom-attr', 'dojo/dom-construct', 'dojo/query',
+  'dojo/topic', 'dojo/on', 'dojo/dom', 'dojo/dom-class', 'dojo/dom-attr', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/query',
   'dijit/registry', 'dojo/_base/lang',
   'dojo/_base/Deferred',
   'dojo/store/JsonRest', 'dojox/widget/Toaster',
   'dojo/ready', './app', '../router',
   'dojo/window', '../widget/Drawer', 'dijit/layout/ContentPane',
   '../jsonrpc', '../panels', '../WorkspaceManager', '../DataAPI', 'dojo/keys',
-  'dijit/ConfirmDialog', '../util/PathJoin', 'dojo/request', '../widget/WorkspaceController'
+  'dijit/ConfirmDialog', '../util/PathJoin', 'dojo/request', '../widget/WorkspaceController',
+  'p3/widget/copilot/ChatButton'
+
 ], function (
   declare,
-  Topic, on, dom, domClass, domAttr, domConstruct, domQuery,
+  Topic, on, dom, domClass, domAttr, domConstruct, domStyle, domQuery,
   Registry, lang,
   Deferred,
   JsonRest, Toaster,
@@ -18,7 +20,7 @@ define([
   Router, Window,
   Drawer, ContentPane,
   RPC, Panels, WorkspaceManager, DataAPI, Keys,
-  ConfirmDialog, PathJoin, xhr, WorkspaceController
+  ConfirmDialog, PathJoin, xhr, WorkspaceController, ChatButton
 ) {
   return declare([App], {
     panels: Panels,
@@ -42,6 +44,59 @@ define([
           } else {
             domClass.add(document.body, 'unverified_email')
           }
+
+          // Initialize chat button
+          var chatButton = new ChatButton({
+            region: 'center',
+            width: '60px',
+            height: '60px',
+            backgroundColor: '#007bff',
+            borderRadius: '50%'
+          }).placeAt(document.body);
+          this.chatButton = chatButton;
+
+          // Create blue rectangle button for showing chat button when hidden
+          var showChatRectButton = domConstruct.create('div', {
+            className: 'ShowChatRectButton',
+            innerHTML: '<span class="show-chat-plus">+</span>',
+            title: 'show copilot button',
+            style: {
+              display: 'none'
+            }
+          });
+          domConstruct.place(showChatRectButton, document.body);
+
+          // Function to get chat button visibility from localStorage
+          function getChatButtonVisibility() {
+            try {
+              if (window && window.localStorage) {
+                var stored = localStorage.getItem('copilot-chat-button-visible');
+                return stored !== null ? (stored === 'true') : true; // default to visible
+              }
+            } catch (e) {
+              console.warn('Unable to read chat button visibility from localStorage', e);
+            }
+            return true; // default to visible
+          }
+
+          // Initialize showChatRectButton visibility based on localStorage
+          var initialChatButtonVisible = getChatButtonVisibility();
+          if (!initialChatButtonVisible) {
+            domStyle.set(showChatRectButton, 'display', 'block');
+          }
+
+          // Add click handler for the rectangle button
+          on(showChatRectButton, 'click', function(evt) {
+            Topic.publish('showChatButton', true);
+          });
+
+          Topic.subscribe('hideChatButton', lang.hitch(this, function(checked) {
+            domStyle.set(showChatRectButton, 'display', 'block');
+          }));
+
+          Topic.subscribe('showChatButton', lang.hitch(this, function(checked) {
+            domStyle.set(showChatRectButton, 'display', 'none');
+          }));
         })
       }
 
@@ -559,6 +614,7 @@ define([
           }, false)
           // show the upload and jobs widget
           window.App.uploadJobsWidget('show');
+          window.App.chatButtonWidget('show');
           window.App.checkSU();
           window.App.alreadyLoggedIn = true;
         } else {
@@ -734,6 +790,21 @@ define([
         }
       } else {
         console.log('I should not see the upload and jobs widget');
+      }
+    },
+    chatButtonWidget: function (action) {
+      if (action === 'show') {
+        var chatButton = new ChatButton({
+          region: 'center',
+          width: '60px',
+          height: '60px',
+          backgroundColor: '#007bff',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+        });
+      } else {
+        console.log('I should not see the chat button');
       }
     },
     refreshUser: function () {

@@ -149,7 +149,7 @@ define([
 
     var mini = options && options.mini || false;
 
-    var table = domConstruct.create('table', {}, parent);
+    var table = domConstruct.create('table', { 'style': 'table-layout: fixed;' }, parent);
     var tbody = domConstruct.create('tbody', {}, table);
 
     sections.forEach(function (section) {

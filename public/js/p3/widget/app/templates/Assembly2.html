@@ -9,11 +9,13 @@
         <div class="infobox iconbox tutorialButton tutorialInfo">
           <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
         </div>
-        <!-- <div class="infobox iconbox videoButton videoInfo">
-          <a href="${docsServiceURL}${videoLink}" target="_blank" ><i class="fa icon-play-circle fa-1x" title="click to open the video tutorial"></i></a>
-        </div> -->
+        <div class="infobox iconbox videoButton videoInfo">
+            <a href="${videoLink}" target="_blank"><i class="fa icon-play-circle fa-1x" title="click to open the video tutorial"></i></a>
+         </div>
       </h1>
-      <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>..</p>
+      <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service
+         <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a>, <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>,
+         and <a href="${videoLink}" target="_blank">Instructional Video</a>.
     </div>
     <div class="formFieldsContainer">
       <div style="display: none;">
@@ -142,7 +144,8 @@
                   <option value="meta-spades">metaSPAdes</option>
                   <option value="plasmid-spades">plasmidSPAdes</option>
                   <option value="single-cell">MDA (single-cell)</option>
-                  <option value="flye">flye</option>
+                  <option value="flye">Flye</option>
+                  <option value="megahit">MegaHit</option>
                 </select>
               </div>
               <div class="appRow">
@@ -176,78 +179,94 @@
               </div>
               <div class="appRow" data-dojo-attach-point="advrow2" style="display: none">
                 <div class="appRowSegment" style="margin:0 0 0 0; text-align:left">
-
-                  <h4 style="margin-bottom:5px">Read Processing</h4>
+              <div class="headerrow">
+                <label class="appBoxLabel">Read Processing</label>
+                    <div name="read-processing" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                      </div>
+                    </div>
                   <div style="margin-left:10px">
                     <div style="margin-bottom:8px">
-                      <label class="paramlabel">Normalize Illumina Reads</label>
-                      <div id="${id}_normalize" name="normalize" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="normalize" data-dojo-props="checked:true"></div>
+                    <!-- trying to make read procesing its own app row -->
+                      <div class="appRow">
+                                <div id="${id}_normalize" name="normalize" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="normalize" data-dojo-props="checked:true"></div>
+                                <label class="paramlabel">Normalize Illumina Reads</label>
+                                    <br>
+                      <div class="appRow">
+                              <div id="${id}_trim" name="trim" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="trim" data-dojo-props="checked:true"></div>
+                              <label class="paramlabel">Trim Short Reads</label>
+                                    <br>
+                    <div class="appRow">
+                              <div id="${id}_filt_long" name="filter" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="filter" data-dojo-props="checked:true"></div>
+                              <label class="paramlabel">Filter Long Reads</label>
+                                    <br>
+                  <label class="appBoxLabel">Genome Parameters</label>
+                    <div name="genome-parameters" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                      </div>
                     </div>
-                    <div style="margin-bottom:8px">
-                      <label class="paramlabel">Trim Short Reads</label>
-                      <div id="${id}_trim" name="trim" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="trim" checked></div>
-                    </div>
-                    <div style="margin-bottom:8px">
-                      <label class="paramlabel">Filter Long Reads</label>
-                      <div id="${id}_filter" name="filter" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="filter" checked></div>
-                    </div>
-                  </div>
-
-                  <h4 style="margin-bottom:5px">Genome Parameters</h4>
                   <div style="margin-left:10px">
                     <div style="margin-bottom:8px">
-                      <label class="paramlabel">Genome Coverage</label>
-                      <div class="insertspinner" name="coverage" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="coverage" data-dojo-props="value:200, smallDelta:50, constraints:{min:100,max:500,places:0}, invalidMessage:'Please provide an integer value'"></div>
-                      x
-                    </div>
-                    <div style="margin-bottom:8px">
-                      <label class="paramlabel">Genome Size</label>
+                      <label class="paramlabel">Estimated Genome Size</label>
+                      <br>
                       <div class="insertspinner" name="expected_genome_size" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="expected_genome_size" data-dojo-props="value:5, smallDelta:1, constraints:{min:1,max:10,places:0}, invalidMessage:'Please provide an integer value'"></div>
                       <select style="width: 10%" name="genome_size_units" data-dojo-type="dijit/form/Select" data-dojo-attach-point="genome_size_units" data-dojo-attach-event="onChange:onGenomeSizeUnitsChange">
                         <option value="M">M</option>
                         <option value="K">K</option>
                       </select>
+                      x
+                      <br>
+                      <label class="paramlabel">Target Genome Coverage</label>
+                      <br>
+                      <div class="insertspinner" name="coverage" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="coverage" data-dojo-props="value:200, smallDelta:50, constraints:{min:100,max:500,places:0}, invalidMessage:'Please provide an integer value'"></div>
+                    </div>
                     </div>
                   </div>
-
-                  <h4 style="margin-bottom:5px">Assembly Polishing</h4>
+                  <label class="appBoxLabel">Assembly Polishing</label>
+                    <div name="assembly-polishing" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                      </div>
+                    </div>
+                  <br>
                   <div style="margin-left:10px">
                     <div style="margin-bottom:8px">
                       <label class="paramlabel">Racon Iterations</label>
+                      <br>
                       <div class="insertspinner" name="racon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="racon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
                     </div>
                     <div style="margin-bottom:8px">
                       <label class="paramlabel">Pilon Iterations</label>
+                      <br>
                       <div class="insertspinner" name="pilon_iter" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="pilon_iter" data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'"></div>
                     </div>
                   </div>
-
-                  <h4 style="margin-bottom:5px">Assembly Thresholds</h4>
+                  <label class="appBoxLabel">Assembly Thresholds</label>
+                    <div name="assembly-thresholds" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                      </div>
+                    </div>
                   <div style="margin-left:10px">
                     <div style="margin-bottom:8px">
                       <label class="paramlabel">Min. contig length</label>
+                      <br>
                       <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_len" data-dojo-props="value:300, smallDelta:10, constraints:{min:100,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
                     </div>
                     <div style="margin-bottom:8px">
                       <label class="paramlabel">Min. contig coverage</label>
+                      <br>
                       <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="min_contig_cov" data-dojo-props="value:5, smallDelta:5, constraints:{min:0,max:100000,places:0}, invalidMessage:'Please provide an integer value'"></div>
                     </div>
                   </div>
-
                 </div>
               </div>
-
-
-
             </div>
           </td>
           <td>
             <div class="appBox appShadow" style="height:379px; width:330px">
               <div class="headerrow">
-                <label class="appBoxLabel">Selected libraries</label>
+                <label class="appBoxLabel">Selected Libraries</label>
                 <div name="selected-libraries" class="infobox iconbox infobutton tooltipinfo">
-                  <i class="fa icon-question-circle fa"></i>
-                </div>
+                  <i class="fa icon-question-circle fa"></i></div>
                 <br>
                 <div class="appsublabel">Place read files here using the arrow buttons.</div>
               </div>

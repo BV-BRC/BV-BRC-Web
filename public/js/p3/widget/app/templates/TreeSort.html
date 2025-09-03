@@ -1,0 +1,428 @@
+<form dojoAttachPoint="containerNode" class="PanelForm"
+   dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+
+   <style>
+
+      .appRow.treesort--row-with-columns {
+         align-items: center;
+         display: flex;
+         flex-flow: row nowrap;
+         justify-content: flex-start;
+         margin-top: 1.0rem;
+      }
+
+      .appRowSegment.treesort--left-column {
+         margin-left: 0;
+         text-align: left;
+         width: 30%;
+      }
+
+      .appRow.checkbox-row {
+         margin-bottom: 1.0rem;
+      }
+      .appRow.checkbox-row label {
+         font-size: 1.0rem;
+         margin-left: 0.25rem;
+      }
+
+      /* Some whitespace between rows */
+      .treesort--row-separator {
+         margin-bottom: 2.5rem;
+         width: 100%;
+      }
+
+      .treesort--error-message {
+         position: absolute;
+         width: auto;
+      }
+
+      /* The container of the segment controls (checkboxes and labels) */
+      .treesort--segment-container {
+         align-items: center;
+         display: flex;
+         flex-flow: row nowrap;
+         justify-content: flex-start;
+      }
+      .treesort--segment-container label {
+         margin-right: 1.0rem;
+      }
+
+      /* The advanced options section */
+      .treesort--advanced-options-container {
+         margin-top: 1.0rem;
+      }
+      .treesort--advanced-options-control {
+         align-items: center;
+         display: flex;
+         flex-flow: row nowrap;
+         justify-content: flex-start;
+         line-height: 3.0rem;
+      }
+      .treesort--icon-container {
+         margin-right: 0.5rem;
+      }
+      .treesort--advanced-options-container .treesort--advanced-options-control i {
+         display: inline-block;
+         transform: rotate(0deg);
+         transform-origin: center center;
+         transition: transform 0.25s ease-out;
+      }
+      .treesort--advanced-options-container.visible .treesort--advanced-options-control i {
+         transform: rotate(90deg);
+      }
+      .treesort--advanced-options-container .treesort--advanced-options {
+         max-height: 0;
+         opacity: 0;
+         overflow: hidden;
+         transition: all 0.25s ease-out;
+         visibility: hidden;
+         will-change: max-height;
+      }
+      .treesort--advanced-options-container.visible .treesort--advanced-options {
+         max-height: 100%;
+         opacity: 1;
+         visibility: visible;
+      }
+   </style>
+
+   <div class="appTemplate">
+      <div class="appTitle">
+         <span class="breadcrumb">Services</span>
+         <h1 class="appHeader">TreeSort for Influenza
+            <div name="overview" class="infobox iconbox infobutton dialoginfo">
+               <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+            </div>
+            <!--<div class="infobox iconbox tutorialButton tutorialInfo">
+               <a href="${docsServiceURL}${tutorialLink}" target="_blank">
+                  <i class="fa icon-books fa-1x" title="click to open tutorial"></i>
+               </a>
+            </div>-->
+         </h1>
+         <p>${applicationDescription} Link to <a href="https://github.com/flu-crew/TreeSort" target="_blank">TreeSort</a>.</p>
+         <br/>
+         <p>For further explanation, please see the ${applicationLabel} Service
+            <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and
+            <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+         </p>
+      </div>
+
+      <div class="appBox appShadow" style="margin-top:10px">
+
+         <div class="headerrow">
+            <div style="width:85%;display:inline-block;">
+               <label class="appBoxLabel">Parameters</label>
+               <div name="parameters" class="infobox iconbox infobutton dialoginfo">
+               <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+               </div>
+            </div>
+         </div>
+
+         <div class="appRow treesort--row-with-columns">
+            <div class="appRowSegment treesort--left-column">
+
+               <!-- Input file -->
+               <label class="paramlabel">Input file</label>
+               <div name="input-file" class="infobox iconbox infobutton dialoginfo">
+                  <i class="fa icon-question-circle fa"></i>
+               </div>
+               <br/>
+               <div name="fasta_file_id"
+                  data-dojo-attach-event="onChange:handleFastaFileIdChange"
+                  data-dojo-attach-point="fastaFileIdEl"
+                  data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                  data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta', 'genome_protein_fasta', 'genome_dna_fasta', 'contigs'],multi:false,promptMessage:'Select or upload a FASTA file from your workspace.',missingMessage:'FASTA file is required.',placeHolder:'FASTA file'"
+                  required="true"
+                  style="width: 200px;"
+               ></div>
+               <div class="warning treesort--error-message" data-dojo-attach-point="fastaFileIdMessageEl"></div>
+
+            </div>
+            <div class="appRowSegment" style="text-align:left; width: 30%">
+
+               <!-- Output folder (path) -->
+               <label class="paramlabel">Output folder</label>
+               <div name="output-folder" class="infobox iconbox infobutton tooltipinfo">
+                  <i class="fa icon-question-circle fa"></i>
+               </div>
+               <br/>
+               <div name="output_path"
+                  data-dojo-attach-event="onChange:handleOutputPathChange"
+                  data-dojo-attach-point="outputPathEl"
+                  data-dojo-props="title:'Select an Output Folder', autoSelectCurrent:true, selectionText:'Destination',
+                     title:'Select an Output Folder', type:['folder'], multi:false, placeHolder:'Output Folder'"
+                  data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                  required="true",
+                  style="width: 200px"
+               ></div>
+               <div class="warning treesort--error-message" data-dojo-attach-point="outputPathMessageEl"></div>
+
+            </div>
+            <div class="appRowSegment" style="text-align:left;">
+
+               <!-- Output filename -->
+               <label class="paramlabel">Output name</label>
+               <div name="output-name" class="infobox iconbox infobutton tooltipinfo">
+                  <i class="fa icon-question-circle fa"></i>
+               </div>
+               <br/>
+               <input name="output_file"
+                  data-dojo-attach-event="onChange:handleOutputFileChange"
+                  data-dojo-attach-point="outputFileEl"
+                  data-dojo-props="intermediateChanges: false, invalidMessage:'A name must be provided for the job result', trim:true, placeholder:'Output name'"
+                  data-dojo-type="dijit/form/ValidationTextBox"
+                  required="false",
+                  style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 200px;" />
+               <div class="warning treesort--error-message" data-dojo-attach-point="outputFileMessageEl"></div>
+
+            </div>
+         </div>
+
+         <div class="appRow treesort--row-with-columns">
+            <div class="appRowSegment treesort--left-column">
+
+               <!-- Reference segment -->
+               <label class="paramlabel">Reference segment</label>
+               <div name="reference-segment" class="infobox iconbox infobutton tooltipinfo">
+                  <i class="fa icon-question-circle fa"></i>
+               </div>
+               <br/>
+               <div name="ref_segment"
+                  data-dojo-attach-event="onChange:handleSegmentChange"
+                  data-dojo-attach-point="refSegmentEl"
+                  data-dojo-props="disabled:false"
+                  data-dojo-type="dijit/form/Select"
+                  maxHeight="200"
+                  required="true"
+                  style="width: 200px"
+               ></div>
+               <div class="warning treesort--error-message" data-dojo-attach-point="refSegmentMessageEl"></div>
+
+            </div>
+            <div class="appRowSegment" style="text-align:left;">
+
+               <!-- Segments -->
+               <label class="paramlabel">Segments</label>
+               <div name="segments" class="infobox iconbox infobutton tooltipinfo">
+                  <i class="fa icon-question-circle fa"></i>
+               </div>
+               <br/>
+               <div name="segments" class="treesort--segment-container" data-dojo-attach-point="segmentsContainerEl"></div>
+               <div class="warning treesort--error-message" data-dojo-attach-point="segmentsMessageEl"></div>
+            </div>
+         </div>
+
+         <div class="treesort--advanced-options-container" data-dojo-attach-point="advancedOptionsContainerEl">
+
+            <!-- The advanced options control / label -->
+            <div class="treesort--advanced-options-control" data-dojo-attach-event="onClick:handleAdvancedOptionsClick">
+               <div class="treesort--icon-container">
+                  <i class="fa icon-caret-right"></i>
+               </div>
+               <label class="largelabel">Advanced options</label>
+            </div>
+
+            <!-- The advanced options control toggles the visibility of this section. -->
+            <div class="treesort--advanced-options">
+
+               <div class="appRow">
+                  <div class="appRowSegment treesort--left-column">
+
+                     <!-- Match type -->
+                     <label class="paramlabel">Match type</label>
+                     <div name="match-type" class="infobox iconbox infobutton tooltipinfo">
+                        <i class="fa icon-question-circle fa"></i>
+                     </div>
+                     <br/>
+                     <div name="match_type"
+                        data-dojo-attach-event="onChange:handleMatchTypeChange"
+                        data-dojo-attach-point="matchTypeEl"
+                        data-dojo-props="disabled:false"
+                        data-dojo-type="dijit/form/Select"
+                        maxHeight="200"
+                        required="true",
+                        style="width: 200px;"
+                     ></div>
+                     <div class="warning treesort--error-message" data-dojo-attach-point="matchTypeMessageEl"></div>
+
+                  </div>
+                  <div class="appRowSegment" style="text-align: left;">
+
+                     <!-- Match regex -->
+                     <div data-dojo-attach-point="matchRegexContainerEl" style="display: none">
+
+                        <label class="paramlabel">Regular expression</label>
+                        <div name="match-regex" class="infobox iconbox infobutton tooltipinfo">
+                           <i class="fa icon-question-circle fa"></i>
+                        </div>
+                        <br/>
+                        <input name="match_regex"
+                           data-dojo-attach-event="onChange:handleMatchRegexChange"
+                           data-dojo-attach-point="matchRegexEl"
+                           data-dojo-props="intermediateChanges: false, invalidMessage:'Enter a regular expression', trim:true, placeholder:'A regular expression'"
+                           data-dojo-type="dijit/form/ValidationTextBox"
+                           required="false"
+                           style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 200px;" />
+                        <div class="warning treesort--error-message" data-dojo-attach-point="matchRegexMessageEl"></div>
+
+                     </div>
+                  </div>
+               </div>
+
+               <div class="appRow treesort--row-with-columns">
+                  <div class="appRowSegment treesort--left-column">
+
+                     <!-- Inference method -->
+                     <label class="paramlabel">Inference method</label>
+                     <div name="inference-method" class="infobox iconbox infobutton tooltipinfo">
+                        <i class="fa icon-question-circle fa"></i>
+                     </div>
+                     <br/>
+                     <div name="inference_method"
+                        data-dojo-attach-point="inferenceMethodEl"
+                        data-dojo-props="disabled:false"
+                        data-dojo-type="dijit/form/Select"
+                        maxHeight="200"
+                        required="false"
+                        style="width: 200px"
+                     ></div>
+                     <div class="warning treesort--error-message" data-dojo-attach-point="inferenceMethodMessageEl"></div>
+
+                  </div>
+                  <div class="appRowSegment" style="text-align:left;">
+
+                     <!-- Reference tree inference method -->
+                     <label class="paramlabel">Reference tree inference method</label>
+                     <div name="reference-tree-inference-method" class="infobox iconbox infobutton tooltipinfo">
+                        <i class="fa icon-question-circle fa"></i>
+                     </div>
+                     <br/>
+                     <div name="ref_tree_inference"
+                        data-dojo-attach-point="refTreeInferenceEl"
+                        data-dojo-props="disabled:false"
+                        data-dojo-type="dijit/form/Select"
+                        maxHeight="200"
+                        required="true"
+                        style="width: 200px"
+                     ></div>
+                     <div class="warning treesort--error-message" data-dojo-attach-point="refTreeInferenceMessageEl"></div>
+
+                  </div>
+               </div>
+
+               <div class="appRow treesort--row-with-columns">
+                  <div class="appRowSegment" style="margin-left: 0; text-align:left;">
+
+                     <!-- Deviation -->
+                     <label class="paramlabel">Allowed deviation</label>
+                     <div name="allowed-deviation" class="infobox iconbox infobutton tooltipinfo">
+                        <i class="fa icon-question-circle fa"></i>
+                     </div>
+                     <br/>
+                     <input name="deviation"
+                        data-dojo-attach-event="onChange:handleDeviationChange"
+                        data-dojo-attach-point="deviationEl"
+                        data-dojo-props="constraints:{min:1, places:3 }, invalidMessage:'Enter a number > 1.0'"
+                        data-dojo-type="dijit/form/NumberTextBox"
+                        required="false"
+                        style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 100px;"
+                     />
+                     <div class="warning treesort--error-message" data-dojo-attach-point="deviationMessageEl"></div>
+
+                  </div>
+                  <div class="appRowSegment" style="margin-left: 1.5rem; text-align:left;">
+
+                     <!-- P-value -->
+                     <label class="paramlabel">P-value threshold</label>
+                     <div name="p-value-threshold" class="infobox iconbox infobutton tooltipinfo">
+                        <i class="fa icon-question-circle fa"></i>
+                     </div>
+                     <br/>
+                     <input name="p_value"
+                        data-dojo-attach-event="onChange:handlePValueChange"
+                        data-dojo-attach-point="pValueEl"
+                        data-dojo-props="constraints:{min:0, max:1.0, places:5},
+                           invalidMessage:'Enter a number between 0-1.0'"
+                        data-dojo-type="dijit/form/NumberTextBox"
+                        required="false"
+                        style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 100px;"
+                     />
+                     <div class="warning treesort--error-message" data-dojo-attach-point="pValueMessageEl"></div>
+
+                  </div>
+                  <div class="appRowSegment" style="margin-left: 1.5rem; text-align:left;">
+
+                     <!-- Clades path (filename) -->
+                     <label class="paramlabel">Clades filename</label>
+                     <div name="clades-filename" class="infobox iconbox infobutton tooltipinfo">
+                        <i class="fa icon-question-circle fa"></i>
+                     </div>
+                     <br/>
+                     <input name="clades_path"
+                        data-dojo-attach-point="cladesPathEl"
+                        data-dojo-props="intermediateChanges: false, trim:true, placeholder:'Optional'"
+                        data-dojo-type="dijit/form/ValidationTextBox"
+                        required="false"
+                        style="font-family: monospace; font-size: 1.0rem; height: 20px;" />
+
+                  </div>
+               </div>
+
+               <div class="treesort--row-separator"></div>
+
+               <!-- Equal rates -->
+               <div class="appRow checkbox-row">
+                  <div id="${id}_equal_rates"
+                     data-dojo-attach-point="equalRatesEl"
+                     data-dojo-type="dijit/form/CheckBox"
+                     name="equal_rates"
+                  ></div>
+                  <label for="${id}_equal_rates">Estimate molecular clock rates for different segments</label>
+                  <div name="estimate-molecular-clock-rates-for-different-segments" class="infobox iconbox infobutton tooltipinfo">
+                     <i class="fa icon-question-circle fa"></i>
+                  </div>
+               </div>
+
+               <!-- No collapse -->
+               <div class="appRow checkbox-row">
+                  <div id="${id}_no_collapse"
+                     data-dojo-attach-point="noCollapseEl"
+                     data-dojo-type="dijit/form/CheckBox"
+                  ></div>
+                  <label for="${id}_no_collapse">Collapse near-zero length branches into multifurcations</label>
+                  <div name="collapse-near-zero-length-branches-into-multifurcations" class="infobox iconbox infobutton tooltipinfo">
+                     <i class="fa icon-question-circle fa"></i>
+                  </div>
+               </div>
+
+               <div class="warning" data-dojo-attach-point="database_message"></div>
+            </div>
+
+         </div>
+
+      </div>
+   </div>
+
+   <div class="appSubmissionArea">
+      <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
+         style="margin-top:10px; text-align:center;">
+         Submitting ${applicationLabel} job
+      </div>
+      <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
+         style="margin-top:10px; text-align:center;">
+         Error submitting job
+      </div>
+      <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+         style="margin-top:10px; text-align:center;">
+         Your job has been submitted successfully. Please visit your <a
+            data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job and
+         access the results.
+      </div>
+      <div style="margin-top: 10px; text-align:center;">
+         <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel"
+            data-dojo-type="dijit/form/Button">Cancel
+         </div>
+         <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+         <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button">Submit</div>
+      </div>
+   </div>
+</form>

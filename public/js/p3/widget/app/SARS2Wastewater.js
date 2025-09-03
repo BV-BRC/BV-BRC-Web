@@ -510,10 +510,13 @@ define([
         { label: 'V1', value: 'V1' }
       ];
       var midnightOptions = [
+        { label: 'V3', value: 'V3' },
+        { label: 'V2', value: 'V2' },
         { label: 'V1', value: 'V1' }
       ];
       var qiagenOptions = [
-        { label: 'V1', value: 'V1' }
+        { label: 'V1', value: 'V1' },
+        { label: 'V1+BoosterA', value: 'V1+BoosterA' }
       ];
       var swiftOptions = [
         { label: 'V1', value: 'V1' }

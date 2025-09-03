@@ -10,19 +10,16 @@
         <div class="infobox iconbox tutorialButton tutorialInfo">
           <a href="${docsServiceURL}${tutorialLink}" target="_blank" ><i class="fa icon-books fa-1x" title="click to open tutorial"></i></a>
         </div>
-        <div class="infobox iconbox videoButton videoInfo">
-          <a href="${videoLink}" target="_blank" ><i class="fa icon-play-circle fa-1x" title="click to open the video tutorial"></i></a>
-        </div>
       </h3>
       <p>
-        ${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a>, <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a> and <a href="${videoLink}" target="_blank">Instructional Video</a>.
+        ${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
       </p>
     </div>
     <div class="formFieldsContainer">
       <div style="width:97%;" class="appBox appShadow">
         <div class="headerrow">
           <label class="appBoxLabel">Select a Genome Group</label>
-          <div name="start-with" class="infobox iconbox infobutton dialoginfo">
+          <div name="select-a-genome-group" class="infobox iconbox infobutton dialoginfo">
             <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
           </div>
         </div>
@@ -32,7 +29,7 @@
             <!-- <div style="width:78%;display:inline-block;"  -->
             <div style="width:100%;display:inline-block;" 
               data-dojo-type="p3/widget/WorkspaceObjectSelector" 
-              name="input_genome_group" required="false" 
+              name="input_genome_group" required="true" 
               data-dojo-attach-point="input_genome_group" 
               data-dojo-attach-event="click:onAddGenomeGroup"
               data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is required.', placeHolder:'Select an exisiting Genome Group'">
@@ -62,99 +59,11 @@
               required="false"
               disabled="false"
               data-dojo-props="
+                constraints: { min: 1, max: 100, places: 1 },
+                rangeMessage: 'Value must be between 1 and 100.',
                 intermediateChanges: true,
                 missingMessage: 'Define the minimum threshold of genomes a SNP must be present in to be included in the Majority SNP output files.',placeHolder:'Default 50%',
                 trim: true">
-        </div>
-                <div class="appRow" style="margin-top: 15px;">
-          <label>SNP Distance Treshold Configuration</label>
-          <br>
-                    <div style="margin-bottom: 10px;">
-            <label>Strong Linkage</label>
-          <br>
-          <input
-            type="number"
-            name="min_strong_linkage"
-            data-dojo-type="dijit/form/NumberTextBox"
-            data-dojo-attach-point="min_strong_linkage"
-            style="width: 110px"
-            required="false"
-            disabled="true"
-            data-dojo-props="
-              intermediateChanges: true,
-              placeHolder:'0',
-              trim: true"/>
-          <input
-            type="number"
-            name="max_strong_linkage"
-            data-dojo-type="dijit/form/NumberTextBox"
-            data-dojo-attach-point="max_strong_linkage"
-            data-dojo-attach-event="onChange:onChangeMaxStrongLinkage"
-            style="width: 110px"
-            required="false"
-            disabled="true"
-            data-dojo-props="
-              intermediateChanges: true,
-              placeHolder:'0',
-              trim: true"/>
-            <div style="margin-bottom: 10px;">
-            <label>Mid</label>
-            <br>
-          <input
-            type="number"
-            name="min_mid_linkage"
-            data-dojo-type="dijit/form/NumberTextBox"
-            data-dojo-attach-point="min_mid_linkage"
-            data-dojo-attach-event="onChange:onChangeMinMidLinkage"
-            style="width: 110px"
-            required="false"
-            disabled="false"
-            data-dojo-props="
-              intermediateChanges: true,
-              placeHolder:'10',
-              trim: true"/>
-          <input
-            type="number"
-            name="max_mid_linkage"
-            data-dojo-type="dijit/form/NumberTextBox"
-            data-dojo-attach-point="max_mid_linkage"
-            data-dojo-attach-event="onChange:onChangeMaxMidLinkage"
-            style="width: 110px"
-            required="false"
-            disabled="false"
-            data-dojo-props="
-              intermediateChanges: true,
-              placeHolder:'40',
-              trim: true"/>
-        <div style="margin-bottom: 10px;">
-          <label>Weak</label>
-            <br>
-          <input
-              type="number"
-              name="min_weak_linkage"
-              data-dojo-type="dijit/form/NumberTextBox"
-              data-dojo-attach-point="min_weak_linkage"
-              data-dojo-attach-event="onChange:onChangeMinWeakLinkage"
-              style="width: 110px"
-              required="false"
-              disabled="true"
-              data-dojo-props="
-                intermediateChanges: true,
-                placeHolder:'40',
-                trim: true"/>
-            <input
-              type="number"
-              name="max_weak_linkage"
-              data-dojo-type="dijit/form/NumberTextBox"
-              data-dojo-attach-point="max_weak_linkage"
-              style="width: 110px"
-              required="false"
-              disabled="true"
-              data-dojo-props="
-                intermediateChanges: true
-                ,placeHolder:'Max',
-                trim: true"/>
-        </div>
         </div>
       <div class="appRow">
         <label class="paramlabel">Output Folder</label><br>
