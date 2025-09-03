@@ -2480,6 +2480,13 @@ define([
         if (this.browserHeader) {
           this.browserHeader.set('selection', [obj]);
         }
+        var currentPathParts = this.path.split('/').filter(function(part) {
+          return part && part.length > 0;
+        });
+        var isCurrentlyRootLevel = (currentPathParts.length <= 1);
+        var isJobResult = (obj && obj.type === 'job_result');
+
+        this._setSearchDisabled(isCurrentlyRootLevel || isJobResult);
         var panelCtor;
         var params = { path: this.path, region: 'center' };
 
