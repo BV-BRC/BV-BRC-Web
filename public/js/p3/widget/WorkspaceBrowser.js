@@ -1895,6 +1895,23 @@ define([
         rerunUtility.rerun(JSON.stringify(selection[0].autoMeta.parameters), selection[0].autoMeta.app.id, window, Topic);
       }, false);
 
+      this.actionPanel.addAction('GoToFolder', 'fa icon-folder-open-o fa-2x', {
+        label: 'GO TO',
+        multiple: false,
+        validTypes: ['*'], // Applies to any selected search result
+        tooltip: 'Open the parent folder of this item in a new tab',
+        searchOnly: true // <-- THIS IS THE NEW CUSTOM FLAG
+      }, function (selection) {
+        if (!selection || selection.length === 0) { return; }
+        var item = selection[0];
+        var parentPath = item.path.split('/').slice(0, -1).join('/');
+        if (parentPath) {
+          Topic.publish('/navigate', { href: '/workspace' + parentPath, target: 'blank' });
+        }
+      }, true); // The 'enabled' flag should be true so it can be controlled by logic
+
+      
+
       // listen for opening user permisssion dialog
       Topic.subscribe('/openUserPerms', function (selection) {
         self.showPermDialog(selection);
@@ -2033,6 +2050,7 @@ define([
 
     handleSearchRequest: function (searchParams) {
       var self = this;
+      this.actionPanel.set('inSearch', true);
       if (this._searchInProgress) {
         console.log("Search already in progress, ignoring new request.");
         return; // Prevent multiple concurrent searches from this UI
@@ -2124,6 +2142,7 @@ define([
     handleClearSearchRequest: function () {
       if (this.originalPathBeforeSearch || WorkspaceManager.activeSearchFilter) {
         // If a search was in progress when cleared, reset the flag
+        this.actionPanel.set('inSearch', false);
         if(this._searchInProgress) {
             this._searchInProgress = false;
             // As above, true cancellation of the search promise is complex.
