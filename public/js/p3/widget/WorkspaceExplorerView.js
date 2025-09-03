@@ -172,20 +172,31 @@ define([
 
     renderCount: function (count, isSearchResult) {
       var breadCrumb = query('.wsBreadCrumb')[0];
-      var countEle = query('.ws-count', breadCrumb);
-      if (countEle.length) return;
+      if (!breadCrumb) { return; } // Safety check in case breadcrumb isn't ready
+
+      // Find the count element. If it doesn't exist, create it.
+      var countEle = query('.ws-count', breadCrumb)[0];
+      if (!countEle) {
+        countEle = domConstr.create('small', {
+          'class': 'PerspectiveTotalCount ws-count'
+        }, breadCrumb);
+      }
+
+      // Now, determine the message and update the element's content.
       var message = '';
       if (isSearchResult) {
-          message = count + ' item' + (count !== 1 ? 's' : '') + ' found';
+        message = count + ' item' + (count !== 1 ? 's' : '') + ' found';
       } else {
-          message = count + ' item' + (count !== 1 ? 's' : '');
+        message = count + ' item' + (count !== 1 ? 's' : '');
       }
-      domConstr.create('small', {
-        'class': 'PerspectiveTotalCount ws-count',
-        innerHTML: (count > 0 || isSearchResult) ? // Show count if >0 or if it's a search result (even if 0 found)
-          ' (' + message  + ')'
-          : ''
-      }, breadCrumb);
+
+      // Set the innerHTML. Show it if there are items or if it's a search result (even 0 found).
+      // Hide it for an empty folder that is not a search result.
+      if (count > 0 || isSearchResult) {
+        countEle.innerHTML = '<i> (' + message + ')</i>';
+      } else {
+        countEle.innerHTML = '';
+      }
     },
 
     showError: function (err) {

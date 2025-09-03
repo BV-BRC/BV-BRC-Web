@@ -2178,6 +2178,19 @@ define([
       }
     },
 
+    _setSearchDisabled: function (disabled) {
+      if (this._wsSearchInputWidget) {
+        this._wsSearchInputWidget.set('disabled', disabled);
+      }
+      if (this._wsSearchTypeSelectWidget) {
+        this._wsSearchTypeSelectWidget.set('disabled', disabled);
+      }
+      if (this._wsSearchIconNode) {
+        // For the icon, we toggle a class to change its style
+        domClass.toggle(this._wsSearchIconNode, 'disabled', disabled);
+      }
+    },
+
     showPermDialog: function (selection) {
       var self = this,
         selection = selection[0], // only allows one selection
@@ -2414,6 +2427,14 @@ define([
         uriParams = decodeURIComponent(components[1]);
       }
       // console.log("[WorkspaceBrowser] uriParams:",uriParams)
+
+      var pathParts = this.path.split('/').filter(function(part) {
+        return part && part.length > 0;
+      });
+
+      // Disable search if path depth is 1 or less (e.g., /user@name or /public)
+      var isDisabled = (pathParts.length <= 1);
+      this._setSearchDisabled(isDisabled);
 
       // If not clearing search, and the new path is different from the original path before search,
       // it implies navigation away from search context, so clear search.
