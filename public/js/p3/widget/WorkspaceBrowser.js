@@ -2086,7 +2086,10 @@ define([
       // Use the *original* path as the base for the search, or current path if not nested search
       var searchBasePath = this.originalPathBeforeSearch || this.path;
 
-      WorkspaceManager.searchObjects(searchParams.term, searchParams.type, searchBasePath, true) // true for recursive
+      //Client side
+      //WorkspaceManager.searchObjects(searchParams.term, searchParams.type, searchBasePath, true) // true for recursive
+      //Server side
+      WorkspaceManager.searchServerObjects(searchParams.term, searchParams.type, searchBasePath, true) // true for recursive
         .then(lang.hitch(this, function (results) {
           // Search successful
           if (this.activePanel && typeof this.activePanel.render === 'function') {

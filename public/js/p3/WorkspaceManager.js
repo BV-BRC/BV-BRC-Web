@@ -304,8 +304,15 @@ define([
       };
     
       // Add search term for name filtering
+      //if (searchTerm && searchTerm.length > 0) { // searchTerm.length >= 3 is handled by UI
+      //  lsParams.query.name_search = searchTerm; // Backend will interpret this
+      //}
+      // This should really be done API side, but changes are hard to deploy and test. client is now tightly coupled to the backend's database technology...
       if (searchTerm && searchTerm.length > 0) { // searchTerm.length >= 3 is handled by UI
-        lsParams.query.name_search = searchTerm; // Backend will interpret this
+        lsParams.query.name = {
+            '$regex': searchTerm,
+              '$options': 'i' 
+            };
       }
     
       // Add type for type filtering
@@ -321,8 +328,8 @@ define([
         // With backend filtering, 'results' should already be filtered.
         // The client-side filtering previously done here can be removed or simplified.
         var foundItems = [];
-        if (results && results[basePath]) { // results is a hash keyed by path
-            foundItems = results[basePath].map(function (r) {
+        if (results && results[0][basePath]) { // results is a hash keyed by path
+            foundItems = results[0][basePath].map(function (r) {
                 return _self.metaListToObj(r);
             });
             // Optional: If backend doesn't perfectly match client-side `includes` for name,
