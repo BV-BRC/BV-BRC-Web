@@ -973,6 +973,49 @@
 }
 
 /* ========================================
+   HEADER COPILOT BUTTON STYLES
+   ======================================== */
+
+/* Header Copilot Button - matches topMenuButtonIcon styling */
+.copilot-header-btn {
+  background: inherit;
+  background-image: url('/patric/images/chat-lines.svg');
+  background-size: 25px;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #efefef;
+  font-weight: 500;
+  cursor: pointer;
+  border: 0;
+  box-shadow: 0 0 0;
+  margin-left: 1px;
+  margin-top: 1px;
+  padding: 0;
+  width: 25px;
+  height: 25px;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.copilot-header-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
+.copilot-header-btn:active {
+  transform: scale(0.95);
+}
+
+.copilot-header-btn i {
+  font-size: 18px;
+}
+
+/* ========================================
    CHAT SESSION SCROLL CARD STYLES
    ======================================== */
 
