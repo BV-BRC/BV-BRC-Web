@@ -13,6 +13,12 @@ router.get('/about', function (req, res) {
   res.render('pages/about', { title: 'PATRIC', request: req, response: res });
 });
 
+/* GET brc-niaid-ai-codeathon-2025 page. */
+router.get('/brc-niaid-ai-codeathon-2025', function (req, res) {
+  req.applicationModule = 'p3/app/p3app';
+  res.render('pages/brc-niaid-ai-codeathon-2025', { title: 'brc-niaid-ai-codeathon-2025', request: req, response: res });
+});
+
 /* GET announcements page. */
 router.get('/announcements', function (req, res) {
   req.applicationModule = 'p3/app/p3app';
