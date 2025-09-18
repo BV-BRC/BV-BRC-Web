@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>BRC-NIAID AI Codeathon | BV-BRC</title>
+    <%- include('../header') %>
+  </head>
+  <body class="claro patric <% if (request.isAuthenticated && request.isAuthenticated()) { %>Authenticated<% } %>">
+    <div id="ApplicationContainer" data-dojo-type="dijit/layout/BorderContainer" class="layoutContainer" data-dojo-props="id:'ApplicationContainer',gutters:false,liveSplitters:false">
+      <%- include('../bv-brc-header') %>
+      <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding:0px;border:0px solid #ddd;background:inherit;">
+        <div id="bv-brc-page">
+          <div id="bv-brc-page-container">
+            <div class="page-content">
+              <h1 id="brc-niaid-ai-codeathon">BRC-NIAID AI Codeathon</h1>
+              <p><strong>When:</strong> November 12–14, 2025</p>
+              <p><strong>Where:</strong> Argonne National Laboratory, 9700 S Cass Ave, Lemont, IL (outside of Chicago)</p>
+              <p><a href="https://forms.gle" target="_blank" class="btn btn-primary" style="font-weight:600;">Apply Here</a></p>
+              <br>
+
+              <img src="../patric/images/bv-brc/brc-niaid-ai-codeathon_splash.png" alt="BRC-NIAID AI Codeathon" style="max-width:60%;height:auto;">
+              <br><br>
+
+              <h2 id="accelerating-fair">Accelerating FAIR Data and Tools with AI</h2>
+              <p>
+                The NIAID Bioinformatics Resource Centers (BRCs) invite researchers, data scientists, and developers to apply for a
+                three-day AI Codeathon focused on improving Findability, Accessibility, Interoperability, and Reusability (FAIR-ness) of BRC data
+                and tools using artificial intelligence (AI) and large language models (LLMs). This event will bring together participants
+                from diverse backgrounds to build prototypes that lower the learning barrier for new users, streamline data integration, and
+                accelerate infectious disease science.
+              </p>
+              <br>
+
+              <h2 id="goals">Codeathon Goals</h2>
+              <ul style="list-style-type: disc;">
+                <li>Apply AI and LLMs to improve accessibility and usability of BRC data and tools.</li>
+                <li>Enhance interoperability and reuse of BRC resources.</li>
+                <li>Foster collaboration between infectious disease researchers, AI developers, and bioinformaticians.</li>
+                <li>Deliver openly available prototypes that can serve as seeds for long-term community solutions.</li>
+              </ul>
+              <p style="font-style: italic;">
+                NOTE: This is not an AI training session with tutorials for learning AI. It is a hands-on codeathon where participants
+                are expected to work in groups to generate working prototype code and tools that employ AI technologies to advance FAIR-ness
+                and utility of BRC tools and data.
+              </p>
+              <br>
+
+              <h2 id="topics">Potential Project Topics</h2>
+              <p>Participants will form teams and select from proposed themes or pitch new ideas:</p>
+              <ul style="list-style-type: disc;">
+                <li>
+                  <strong>Virtual BRC Helpdesk.</strong>
+                  Build an AI-powered helpdesk integrated across BRC platforms to guide users in real time and lower the learning barrier.
+                </li>
+                <li>
+                  <strong>Automated Workflow Generation and Execution.</strong>
+                  Develop AI tools that generate and run workflows from user descriptions or data, connecting BRC and external resources for fast, reproducible analysis.
+                </li>
+                <li>
+                  <strong>Automated Knowledge Extraction and Curation from Literature.</strong>
+                  Apply AI to extract and curate key biological insights (e.g., PPIs, host–pathogen interactions, drug interactions, phenotypes).
+                </li>
+                <li>
+                  <strong>Assign Functions to Uncharacterized Genes.</strong>
+                  Use AI-driven approaches to predict functions for uncharacterized genes in priority and prototype pathogens.
+                </li>
+                <li>
+                  <strong>Outbreak Monitoring and Tracking.</strong>
+                  Develop an AI system to track, collect, filter, and process outbreak data from diverse sources for near real-time monitoring and reporting.
+                </li>
+                <li>
+                  <strong>Virtual AI Co‑scientist.</strong>
+                  Create a multi-agent AI system that generates, debates, and ranks hypotheses based on user-defined goals.
+                </li>
+              </ul>
+              <br>
+
+              <h2 id="outcomes">Expected Outcomes</h2>
+              <ul style="list-style-type: disc;">
+                <li>Team presentations to the group and invited stakeholders.</li>
+                <li>Public sharing of code and documentation.</li>
+                <li>Prototypes contributed for potential integration into BRC resources.</li>
+              </ul>
+              <br>
+
+              <h2 id="logistics">Logistics and Application</h2>
+              <p><strong>Who Should Apply?</strong></p>
+              <ul style="list-style-type: disc;">
+                <li>Infectious disease researchers and clinicians</li>
+                <li>Bioinformaticians and computational biologists</li>
+                <li>AI/ML researchers and engineers</li>
+                <li>Students and trainees interested in data science</li>
+              </ul>
+              <br>
+
+              <p><strong>Dates:</strong> November 12–14, 2025</p>
+              <p><strong>Format:</strong> In-person at Argonne National Laboratory, Lemont, Illinois, USA</p>
+              <p><strong>Duration:</strong> 3 days of group discussions, coding, prototyping, testing, and presentations</p>
+              <br>
+
+              <h2 id="application">Application and Registration</h2>
+              <p>Participation is free but space is limited. <strong>Apply by October 15, 2025.</strong></p>
+              <p>
+                <a href="https://forms.gle" target="_blank" class="btn btn-primary" style="font-weight:600;">Apply Here</a>
+              </p>
+            </div>
+          </div>
+        </div>
+        <%- include('../bv-brc-footer') %>
+      </div>
+    </div>
+    <%- include('../javascript') %>
+  </body>
+</html>
