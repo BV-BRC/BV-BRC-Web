@@ -52,6 +52,9 @@ define([
       var byPhenotypes = [];
 
       data.forEach(function (phenotype) {
+        if (!phenotype.value) {
+          return;
+        }
         phenotype.pivot.forEach(function (method) {
           var antibiotics = method.pivot.map(function (pv) {
             return pv.value;
