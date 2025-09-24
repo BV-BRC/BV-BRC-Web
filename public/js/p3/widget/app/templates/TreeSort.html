@@ -32,8 +32,19 @@
       }
 
       .treesort--error-message {
-         position: absolute;
-         width: auto;
+         /*position: absolute;*/
+         width: 100%;
+      }
+
+      .treesort--fasta-error {
+         margin: 0.5rem 0 0.5rem 0;
+         width: 500px;
+      }
+      .treesort--fasta-error-message {
+         margin-bottom: 0.25rem;
+      }
+      .treesort--fasta-error-message li {
+         margin-bottom: 0.25rem;
       }
 
       /* The container of the segment controls (checkboxes and labels) */
@@ -137,7 +148,10 @@
                <div class="warning treesort--error-message" data-dojo-attach-point="fastaFileIdMessageEl"></div>
 
             </div>
-            <div class="appRowSegment" style="text-align:left; width: 30%">
+         </div>
+         <div class="appRow treesort--row-with-columns">
+            <div class="appRowSegment treesort--left-column">
+            <!--<div class="appRowSegment" style="text-align:left; width: 30%">-->
 
                <!-- Output folder (path) -->
                <label class="paramlabel">Output folder</label>
