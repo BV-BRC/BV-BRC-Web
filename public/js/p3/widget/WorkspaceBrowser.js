@@ -8,7 +8,7 @@ define([
   'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor', './ServicesTooltipDialog', 'dijit/form/FilteringSelect',
   'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './RerunUtility', './viewer/JobResult',
   'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree',
-  'dijit/registry', 'dojo/keys', 'dojo/dom-style'
+  'dijit/registry', 'dojo/keys', 'dojo/dom-style', 'dojo/Stateful',  'dojo/hash', 'dojo/io-query',
 ], function (
   declare, BorderContainer, on, query,
   domClass, domConstruct, domAttr,
@@ -19,7 +19,7 @@ define([
   TextBox, WSObjectSelector, PermissionEditor, ServicesTooltipDialog, FilteringSelect,
   All, encodePath, when, request, tsvCsvFeatures, rerunUtility, JobResult,
   NodeList_traverse, Homology, GenomeAlignment, PhylogeneticTree,
-  registry, keys, domStyle
+  registry, keys, domStyle, Stateful, hash, ioQuery,
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -1900,7 +1900,7 @@ define([
         multiple: false,
         validTypes: ['*'], // Applies to any selected search result
         tooltip: 'Open the parent folder of this item in a new tab',
-        searchOnly: true // <-- THIS IS THE NEW CUSTOM FLAG
+        searchOnly: true
       }, function (selection) {
         if (!selection || selection.length === 0) { return; }
         var item = selection[0];
@@ -1933,12 +1933,39 @@ define([
       this.addChild(this.browserHeader);
 
       this.inherited(arguments);
+      Topic.subscribe("/dojo/hashchange", lang.hitch(this, this.onHashChange));
+      this.onHashChange(hash());
+
+
 
       // Hide the panel on a small screen
       if (window.innerWidth <= 768 && this.actionPanel) {
         const hideBtn = query('[rel="ToggleItemDetail"]', this.actionPanel.domNode)[0];
         hideBtn.click();
       }
+    },
+
+    onHashChange: function(newHash) {
+        var params = ioQuery.queryToObject(newHash);
+        var searchTerm = params.search_term || "";
+        var searchType = params.search_type || "all";
+
+        // If a search is defined in the URL and it's different from the current search
+        if (searchTerm && (searchTerm !== this.currentSearchTerm || searchType !== this.currentSearchType)) {
+            // Update the UI to reflect the URL state
+            if (this.searchBox) this.searchBox.set('value', searchTerm);
+            if (this.typeSelect) this.typeSelect.set('value', searchType);
+
+            // Trigger the search
+            Topic.publish('/workspace/search', {
+                term: searchTerm,
+                type: searchType
+            });
+        }
+        // If the URL hash has no search term but a search is currently active, clear it.
+        else if (!searchTerm && this.originalPathBeforeSearch) {
+            Topic.publish('/workspace/clearSearch');
+        }
     },
 
     addSearchToHeader: function(headerWidget) {
@@ -2071,6 +2098,17 @@ define([
           domStyle.set(this._wsSearchIconNode, 'display', 'none');
       }
 
+      var currentHash = hash();
+      var params = ioQuery.queryToObject(currentHash);
+      params.search_term = searchParams.term;
+      params.search_type = searchParams.type;
+      var newHash = ioQuery.objectToQuery(params);
+
+      // Update the URL hash without triggering onHashChange again if hash is already correct
+      if (newHash !== currentHash) {
+          hash(newHash, true); // The 'true' prevents adding a new history entry if we're just replacing the state
+      }
+
       // Update and show search term indicator with spinner
       var typeLabel = searchParams.type === 'all' ? 'All Types' : (WorkspaceManager.knownUploadTypes[searchParams.type] ? WorkspaceManager.knownUploadTypes[searchParams.type].label : searchParams.type);
       
@@ -2193,6 +2231,14 @@ define([
             this.activePanel.currentSearchTerm = null; // Clear search state in explorer
             this.activePanel.set('path',pathToRestore); // This should trigger its own refresh logic
             // this.activePanel.refreshWorkspace(); // Or call refresh directly if set('path') doesn't always do it
+        }
+        var currentHash = hash();
+        var params = ioQuery.queryToObject(currentHash);
+        if (params.search_term) { // Only change hash if search params are present
+            delete params.search_term;
+            delete params.search_type;
+            var newHash = ioQuery.objectToQuery(params);
+            hash(newHash, true); // Update the URL hash to remove search params
         }
       }
     },
@@ -2441,6 +2487,7 @@ define([
       var components = val.split('#');
       val = components[0];
       this.path = decodeURIComponent(val);
+      var hashParams = components[1] ? ioQuery.queryToObject(components[1]) : null;
       var uriParams = [];
       if (components[1]) {
         uriParams = decodeURIComponent(components[1]);
@@ -2466,6 +2513,14 @@ define([
         }
       }
       this.path = decodeURIComponent(val); // Set path after potential clearSearch
+
+      if (WorkspaceManager.activeSearchFilter && this.path !== this.originalPathBeforeSearch && !hashParams.search_term) {
+          if (!this._clearingSearch) { // Prevent recursion
+              this._clearingSearch = true;
+              this.handleClearSearchRequest(); // This will clear UI and flags.
+              this._clearingSearch = false;
+          }
+      }
 
       var parts = this.path.split('/').filter(function (x) {
         return x != '';
