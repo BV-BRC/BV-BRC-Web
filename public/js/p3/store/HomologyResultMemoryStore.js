@@ -191,9 +191,9 @@ define([
                 if (d.includes('accn|')) {
                   return d.replace('accn|', '');
                 } else if (d.includes('.con.')) {
-                  return d;
-                } else {
                   return d.replace(/^\d+.\d+./, '');
+                } else {
+                  // return d.replace(/^\d+.\d+./, '');
                 }
               }).filter(function (d) {
                 return d !== '';
@@ -350,9 +350,9 @@ define([
             if (target_id.includes('accn|')) {
               target_id = target_id.replace('accn|', '');
             } else if (target_id.includes('.con.')) {
-              target_id = target_id;
-            } else {
               target_id = target_id.replace(/^\d+.\d+./, '');
+            } else {
+              // target_id = target_id.replace(/^\d+.\d+./, '');
             }
             if (Object.prototype.hasOwnProperty.call(metadata, target_id)) {
               entry.genome_id = metadata[target_id].genome_id;
