@@ -3,6 +3,22 @@
 
    <style>
 
+      .treesort--bulleted-list {
+         margin: 0.25rem 0 0 1.5rem;
+      }
+      .treesort--bulleted-list .next-line {
+         margin: 0.5rem 0 0 1.3rem;
+      }
+      .treesort--fasta-header {
+         font-family: monospace;
+         background: #f5f5f5;     /* light gray background */
+         border: 1px solid #ccc;  /* thin border */
+         border-radius: 4px;      /* rounded corners */
+         /*margin-left: 1.3rem;*/
+         padding: 2px 4px;        /* some breathing room */
+         width: fit-content;
+      }
+
       .appRow.treesort--row-with-columns {
          align-items: center;
          display: flex;
@@ -109,12 +125,25 @@
                </a>
             </div>-->
          </h1>
-         <p>${applicationDescription} Link to <a href="https://github.com/flu-crew/TreeSort" target="_blank">TreeSort</a>.</p>
+         <p>${applicationDescription} TreeSort was created by the <a href="https://github.com/flu-crew/TreeSort" target="_blank">Flu-crew</a> at the National Animal Disease Center.</p>
          <br/>
          <p>For further explanation, please see the ${applicationLabel} Service
             <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and
             <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
          </p>
+         <br/>
+         <p><b>IMPORTANT</b> notes about the FASTA input file:</p>
+         <p>
+            <ul class="treesort--bulleted-list">
+               <li>This service can <b>only</b> be used with Influenza nucleotide sequences!</li>
+               <li>Segment names in the FASTA file headers are limited to PB2, PB1, PA, HA, NP, NA, MP, or NS.</li>
+               <li>The segment name <b>must</b> be surrounded by <span class="treesort--fasta-header">|</span> symbols followed by a date in the format <i>YYYY-MM-DD</i>.
+                  <div class="next-line">For example: <span class="treesort--fasta-header">>A/swine/Michigan/A02635726/2021|1B.2.1|1998B|TTTPPT|HA|2021-04-23</span></div>
+                  <div class="next-line">where the segment is <span class="treesort--fasta-header">HA</span> and the date is <span class="treesort--fasta-header">2021-04-23</span> (April 23, 2021).</div>
+               </li>
+            </ul>
+         </p>
+         <br/>
       </div>
 
       <div class="appBox appShadow" style="margin-top:10px">
