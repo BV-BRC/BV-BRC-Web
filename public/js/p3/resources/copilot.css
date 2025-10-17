@@ -6,6 +6,53 @@
    MAIN CHAT COMPONENTS
    ======================================== */
 
+/* Chat Button */
+.ChatButton {
+  position: fixed;
+  bottom: calc(40px + 3.5vh);
+  right: 1vw;
+  z-index: 9999;
+  background-color: var(--blue);
+  background-image: url('/patric/images/chat-lines.svg');
+  background-size: 30px;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.ChatButton:hover {
+  background-color: #0056b3;
+  transform: scale(1.1);
+}
+
+.ChatButton.active {
+  background-color: #0056b3;
+}
+
+/* Inverted state for when overlapping footer */
+.ChatButton.inverted {
+  background-color: white;
+  color: var(--blue);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3), 0 0 0 2px var(--blue);
+  background-image: url('/patric/images/chat-lines-blue.svg');
+}
+
+.ChatButton.inverted:hover {
+  background-color: #f8f9fa;
+  color: #0056b3;
+  transform: scale(1.1);
+}
 
 /* Chat Button Hide Text */
 .chat-button-hide-text {
@@ -92,6 +139,37 @@
   -ms-user-select: none;
 }
 
+/* Chat Button Elements */
+.ChatButton .dijitButtonNode {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+}
+
+.ChatButton .dijitButtonContents {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+}
+
+.ChatButton .dijitIcon {
+  font-size: 24px;
+  margin: 0;
+}
+
+.ChatButton .dijitButtonText {
+  font-size: 16px;
+  font-weight: bold;
+}
 
 /* Chat Header */
 .copilotChatHeader {
@@ -892,49 +970,6 @@
 .ChatSessionScrollBar .dijitContentPane > div {
   scrollbar-width: none;
   -ms-overflow-style: none;
-}
-
-/* ========================================
-   HEADER COPILOT BUTTON STYLES
-   ======================================== */
-
-/* Header Copilot Button - matches topMenuButtonIcon styling */
-.copilot-header-btn {
-  background: inherit;
-  background-image: url('/patric/images/chat-lines.svg');
-  background-size: 25px;
-  background-position: center;
-  background-repeat: no-repeat;
-  color: #efefef;
-  font-weight: 500;
-  cursor: pointer;
-  border: 0;
-  box-shadow: 0 0 0;
-  margin-left: 1px;
-  margin-top: 1px;
-  padding: 0;
-  width: 25px;
-  height: 25px;
-  margin-right: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-}
-
-.copilot-header-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  transform: scale(1.05);
-}
-
-.copilot-header-btn:active {
-  transform: scale(0.95);
-}
-
-.copilot-header-btn i {
-  font-size: 18px;
 }
 
 /* ========================================
