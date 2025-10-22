@@ -79,7 +79,7 @@ define([
         layoutPriority: 3
       });
 
-       this.addSearchToHeader(this.browserHeader);   
+       this.addSearchToHeader(this.browserHeader);
 
       this.actionPanel.addAction('ToggleItemDetail', 'fa icon-chevron-circle-right fa-2x', {
         label: 'HIDE',
@@ -1220,6 +1220,26 @@ define([
         }
       }, false);
 
+      this.browserHeader.addAction('ViewTreeSortResult', 'fa icon-eye fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['TreeSort'],
+        tooltip: 'View Result'
+      }, function (selection, container, button) {
+
+        let path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (meta_file_data) {
+          if (meta_file_data[0].includes('index.html')) {
+            path = meta_file_data[0];
+          }
+        }));
+        if (path) {
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
+        } else {
+          console.log('Error: could not find index.html output file');
+        }
+      }, false);
+
       this.browserHeader.addAction('ViewSubspeciesResult', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
@@ -1910,7 +1930,7 @@ define([
         }
       }, true); // The 'enabled' flag should be true so it can be controlled by logic
 
-      
+
 
       // listen for opening user permisssion dialog
       Topic.subscribe('/openUserPerms', function (selection) {
@@ -2111,7 +2131,7 @@ define([
 
       // Update and show search term indicator with spinner
       var typeLabel = searchParams.type === 'all' ? 'All Types' : (WorkspaceManager.knownUploadTypes[searchParams.type] ? WorkspaceManager.knownUploadTypes[searchParams.type].label : searchParams.type);
-      
+
       // Create spinner icon HTML. Add a non-breaking space before it for consistent spacing.
       var spinnerIconHTML = ' <i class="fa icon-spinner fa-spin wsSearchSpinner" style="margin-right: 5px;"></i>';
 
@@ -2549,7 +2569,7 @@ define([
       // console.log('in WorkspaceBrowser this.path', this.path);
       // console.log('in WorkspaceBrowser obj', obj);
       // Only proceed with panel updates if not in an active search state or if search is being cleared
-      if (!WorkspaceManager.activeSearchFilter || this._clearingSearch) {      
+      if (!WorkspaceManager.activeSearchFilter || this._clearingSearch) {
       Deferred.when(obj, lang.hitch(this, function (obj) {
         if (this.browserHeader) {
           this.browserHeader.set('selection', [obj]);
