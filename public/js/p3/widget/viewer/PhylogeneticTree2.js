@@ -103,7 +103,7 @@ define([
       var fileType = this.state.search.match(/fileType=..+?(?=&|$)/);
       var isClassification = this.state.search.match(/isClassification=.+?(?=&|$)/);
       var initialValue = this.state.search.match(/initialValue=.+?(?=&|$)/);
-      // console.log('fileType', fileType);
+      var showInternalLabels = this.state.search.match(/showInternalLabels=.+?(?=&|$)/);
 
       if (idType && !isNaN(idType.index)) {
         idType = idType[0].split('=')[1];
@@ -128,6 +128,11 @@ define([
       if (initialValue && !isNaN(initialValue.index)) {
         initialValue = initialValue[0].split('=')[1];
       }
+
+      if (showInternalLabels && !isNaN(showInternalLabels.index)) {
+        showInternalLabels = showInternalLabels[0].split('=')[1];
+        showInternalLabels = (showInternalLabels === 'true') || (showInternalLabels === '1');
+      } else { showInternalLabels = undefined; }
 
       var labelSearch = this.state.search.match(/labelSearch=.*/);
       if (labelSearch && !isNaN(labelSearch.index)) {
@@ -209,6 +214,13 @@ define([
                 treeDat.options.searchAinitialValue = '_#';
               }
             }
+
+            // If showInternalLabels was included in the URL, add its value as a treeDat option.
+            if (showInternalLabels !== undefined) {
+               if (!treeDat.options) { treeDat.options = {}; }
+               treeDat.options.showInternalLabels = showInternalLabels;
+            }
+
             _self.prepareTree(treeDat, idType, labelType, labelSearch, fileType);
           }
         }));

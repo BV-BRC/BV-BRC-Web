@@ -75,15 +75,17 @@
 
       /* The advanced options section */
       .treesort--advanced-options-container {
-         cursor: pointer;
          margin-top: 1.0rem;
       }
-      .treesort--advanced-options-control {
+      .treesort--advanced-options-container .treesort--advanced-options-control {
          align-items: center;
          display: flex;
          flex-flow: row nowrap;
          justify-content: flex-start;
          line-height: 3.0rem;
+      }
+      .treesort--advanced-options-container .treesort--advanced-options-control:hover {
+         cursor: pointer !important; /* TODO: Why isn't this working? */
       }
       .treesort--icon-container {
          margin-right: 0.5rem;
@@ -110,6 +112,23 @@
          opacity: 1;
          visibility: visible;
       }
+
+      /* Modify the default appearance of ULs in info dialogs. I realize this is risky since I'm
+         potentially modifying global CSS, but I confirmed that there aren't any help modals
+         with these section IDs. */
+      .helpModal section#inference-method ul,
+      .helpModal section#match-type ul,
+      .helpModal section#reference-tree-inference-method ul {
+         list-style-position: outside;
+         list-style-type: disc;
+         margin-left: 1.2rem;
+      }
+      .helpModal section#inference-method ul li,
+      .helpModal section#match-type ul li,
+      .helpModal section#reference-tree-inference-method ul li {
+         margin-bottom: 0.5rem;
+      }
+
    </style>
 
    <div class="appTemplate">
@@ -128,8 +147,8 @@
          <p>${applicationDescription} TreeSort was created by the <a href="https://github.com/flu-crew/TreeSort" target="_blank">Flu-crew</a> at the National Animal Disease Center.</p>
          <br/>
          <p>For further explanation, please see the ${applicationLabel} Service
-            <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and
-            <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+            <a href="${docsServiceURL}/${applicationHelp}" target="_blank">Quick Reference Guide</a> and
+            <a href="${docsServiceURL}/${tutorialLink}" target="_blank">Tutorial</a>.
          </p>
          <br/>
          <p><b>IMPORTANT</b> notes about the FASTA input file:</p>
@@ -163,7 +182,7 @@
                <!-- Input file -->
                <label class="paramlabel">Input file</label>
                <div name="input-file" class="infobox iconbox infobutton dialoginfo">
-                  <i class="fa icon-question-circle fa"></i>
+                  <i class="fa icon-info-circle fa"></i>
                </div>
                <br/>
                <div name="fasta_file_id"
@@ -180,7 +199,6 @@
          </div>
          <div class="appRow treesort--row-with-columns">
             <div class="appRowSegment treesort--left-column">
-            <!--<div class="appRowSegment" style="text-align:left; width: 30%">-->
 
                <!-- Output folder (path) -->
                <label class="paramlabel">Output folder</label>
@@ -272,8 +290,8 @@
 
                      <!-- Match type -->
                      <label class="paramlabel">Match type</label>
-                     <div name="match-type" class="infobox iconbox infobutton tooltipinfo">
-                        <i class="fa icon-question-circle fa"></i>
+                     <div name="match-type" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa"></i>
                      </div>
                      <br/>
                      <div name="match_type"
@@ -316,8 +334,8 @@
 
                      <!-- Inference method -->
                      <label class="paramlabel">Inference method</label>
-                     <div name="inference-method" class="infobox iconbox infobutton tooltipinfo">
-                        <i class="fa icon-question-circle fa"></i>
+                     <div name="inference-method" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa"></i>
                      </div>
                      <br/>
                      <div name="inference_method"
@@ -335,7 +353,7 @@
 
                      <!-- Reference tree inference method -->
                      <label class="paramlabel">Reference tree inference method</label>
-                     <div name="reference-tree-inference-method" class="infobox iconbox infobutton dialoginfo">
+                     <div name="reference-tree-inference-method" class="treesort--help infobox iconbox infobutton dialoginfo">
                         <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                      </div>
                      <br/>
