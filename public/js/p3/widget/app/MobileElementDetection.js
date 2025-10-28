@@ -13,8 +13,8 @@ define([
 ) {
 
   return declare([AppBase], {
-    baseClass: 'App MobileElementDetection',
-    pageTitle: 'Mobile Element Detection Service | DXKB',
+    baseClass: 'MobileElementDetection',
+    pageTitle: 'Mobile Element Detection Service | BV-BRC',
     templateString: Template,
     applicationName: 'MobileElementDetection',
     requireAuth: true,
