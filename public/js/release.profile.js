@@ -65,22 +65,38 @@ var profile = {
         'dijit/MenuSeparator',
         'p3/widget/GlobalSearch',
         'p3/widget/WorkspaceManager',
-        'p3/widget/viewer/GenomeList',
-        'p3/widget/app/Annotation',
         'p3/widget/SelectionToGroup',
         'dojo/fx/Toggler',
+        'p3/widget/JobStatus',
+        'dojo/data/util/simpleFetch',
+        'p3/widget/HierarchicalTrackList',
+        'dijit/Toolbar',
+        'dijit/ToolbarSeparator',
+	'dijit/loading',
+	'dijit/form/validate',
+        'jDataView'
+      ],
+      exclude: ["rql/js-array"]
+    },
+    'p3/layer/viewers': {
+      include: [
+	'dojox/gfx/svg',
+	'dojox/gfx/path',
+        'p3/widget/ProteinFeatureSummary',
+        'p3/widget/app/Annotation',
         'p3/widget/viewer/Taxonomy',
         'p3/widget/viewer/Genome',
         'p3/widget/viewer/GenomeList',
         'p3/widget/viewer/Feature',
         'p3/widget/viewer/FeatureList',
-        'p3/widget/JobStatus',
+      ]
+    },
+    'p3/layer/jbrowse': {
+      include: [
         'JBrowse/ConfigAdaptor/conf',
         'JBrowse/ConfigAdaptor/JB_json_v1',
         'JBrowse/Plugin',
         'JBrowse/Store/TrackMetaData',
-        'dojo/data/util/simpleFetch',
-        'p3/widget/HierarchicalTrackList',
         'JBrowse/View/TrackList/Hierarchical',
         'JBrowse/View/TrackList/_TextFilterMixin',
         'JBrowse/Store/SeqFeature/REST',
@@ -89,13 +105,24 @@ var profile = {
         'JBrowse/Model/SimpleFeature',
         'JBrowse/View/Track/HTMLFeatures',
         'JBrowse/View/Ruler',
-        'JBrowse/View/FASTA',
-        'dijit/Toolbar',
-        'dijit/ToolbarSeparator',
-        'p3/widget/ProteinFeatureSummary',
-        'jDataView'
-      ],
-      exclude: ["rql/js-array"]
+        'JBrowse/View/FASTA'
+      ]
+    },
+    'p3/layer/outbreaks': {
+      include: [
+	'p3/widget/outbreaks/Mpox/index',
+	'dojox/xml/DomParser',
+	'p3/widget/outbreaks/OutbreaksOverview',
+	'p3/widget/outbreaks/OutbreaksTab',
+	'p3/widget/outbreaks/OutbreaksTabContainer',
+	'p3/widget/outbreaks/OutbreaksPhylogenyTreeViewer',
+	'p3/widget/outbreaks/OutbreaksGeoMap',
+	'dojox/dtl/_Templated',
+	'dojox/dtl/_base',
+	'dojox/string/tokenize',
+	'dojox/string/Builder',
+	'p3/widget/outbreaks/OutbreaksGeoMapInfo'
+      ]
     },
     'p3/layer/panels': {
       include: [
