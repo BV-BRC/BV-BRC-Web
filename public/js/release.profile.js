@@ -1,10 +1,11 @@
 var profile = {
   basePath: './',
   layerOptimize: 'closure',
-  optimizeOptions: {
-    languageIn: 'ECMASCRIPT6',
-    languageOut: 'ECMASCRIPT5'
-  },
+optimizeOptions: {
+  languageIn: 'ECMASCRIPT_2018',
+  languageOut: 'ECMASCRIPT_2018',
+  compilationLevel: 'SIMPLE'
+},
   cssOptimize: 'comments.keepLines',
   releaseDir: './release',
   stripConsole: 'all',
