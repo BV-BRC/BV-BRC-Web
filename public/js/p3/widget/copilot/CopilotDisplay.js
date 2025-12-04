@@ -23,9 +23,10 @@ define([
   'dojo/_base/lang', // Language utilities like hitch
   'dojo/dom-style',
   'markdown-it/dist/markdown-it.min', // Markdown parser
-  './ChatMessage' // Custom message display widget
+  './ChatMessage', // Custom message display widget
+  './data/SuggestedQuestions' // Suggested questions data module
 ], function (
-  declare, ContentPane, domConstruct, on, topic, lang, domStyle, markdownit, ChatMessage
+  declare, ContentPane, domConstruct, on, topic, lang, domStyle, markdownit, ChatMessage, SuggestedQuestions
 ) {
 
   /**
@@ -52,17 +53,11 @@ define([
     // Default font size
     fontSize: 14,
 
-    // Suggested questions to display when chat is empty
-    suggestedQuestions: [
-      'How do I use the Genome Annotation Service?',
-      'What data types can I use with BV-BRC?',
-      'How do I navigate and search within this website?',
-      'How do I perform a BLAST search?',
-      'How do I upload data to my workspace?',
-      'How do I compare genomes?',
-      'How do I visualize phylogenetic trees?',
-      'What analysis services are available in BV-BRC?'
-    ],
+    // Number of questions to display
+    suggestedQuestionsCount: 6,
+
+    // Current suggested questions (will be randomly selected)
+    suggestedQuestions: [],
 
     // Flag to ensure styles are injected only once
     _copilotStylesInjected: false,
@@ -150,11 +145,32 @@ define([
     },
 
     /**
+     * Randomly selects a subset of questions from the full list
+     * @param {number} count - Number of questions to select
+     * @returns {Array} Array of randomly selected questions
+     */
+    _getRandomQuestions: function(count) {
+      var allQuestions = SuggestedQuestions.getAllSuggestedQuestions();
+      var questions = allQuestions.slice(); // Create a copy
+
+      // Fisher-Yates shuffle algorithm
+      for (var i = questions.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = questions[i];
+        questions[i] = questions[j];
+        questions[j] = temp;
+      }
+
+      // Return the first 'count' questions
+      return questions.slice(0, count);
+    },
+
+    /**
      * Displays empty state message when no chat messages exist
      * Implementation:
      * - Clears existing messages
      * - Shows centered empty state message
-     * - Creates clickable suggestion chips
+     * - Creates clickable suggestion chips with context-specific or randomly selected questions
      */
     showEmptyState: function() {
       domConstruct.empty(this.resultContainer);
@@ -164,8 +180,17 @@ define([
         style: 'text-align:center; margin-bottom: 12px;'
       }, this.resultContainer);
 
+      // Use context-specific suggested questions if provided, otherwise get random questions
+      if (this.suggestedQuestions && this.suggestedQuestions.length > 0) {
+        // Use the context-specific questions that were passed in
+        var questionsToShow = this.suggestedQuestions;
+      } else {
+        // Fall back to random questions if no context-specific ones provided
+        questionsToShow = this._getRandomQuestions(this.suggestedQuestionsCount);
+      }
+
       // Add suggested questions list below the empty state message
-      if (this.suggestedQuestions && this.suggestedQuestions.length) {
+      if (questionsToShow && questionsToShow.length) {
         var suggestionContainer = domConstruct.create('div', {
           class: 'copilot-suggested-container'
         }, this.resultContainer);
@@ -179,7 +204,7 @@ define([
           class: 'copilot-suggested-list'
         }, suggestionContainer);
 
-        this.suggestedQuestions.forEach(lang.hitch(this, function(q) {
+        questionsToShow.forEach(lang.hitch(this, function(q) {
           var suggestionItem = domConstruct.create('li', {
             innerHTML: q
           }, ul);
