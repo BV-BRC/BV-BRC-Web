@@ -174,30 +174,13 @@ define([
                 model: model,
                 session_id: sessionId,
                 user_id: _self.user_id,
+                system_prompt: systemPrompt || '',
                 save_chat: save_chat,
-                enhanced_prompt: enhancedPrompt
+                include_history: true,
+                auth_token: window.App.authorizationToken || null
             };
 
-            if (systemPrompt) {
-                data.system_prompt = systemPrompt;
-            } else {
-                data.system_prompt = '';
-            }
-
-            // Add RAG functionality if ragDb is provided
-            if (ragDb) {
-                data.rag_db = ragDb;
-                if (numDocs) {
-                    data.num_docs = numDocs;
-                }
-            }
-
-            // Add image functionality if image is provided
-            if (image) {
-                data.image = image;
-            }
-
-            return request.post(this.apiUrlBase + '/copilot', {
+            return request.post(this.apiUrlBase + '/copilot-agent', {
                 data: JSON.stringify(data),
                 headers: {
                     'Content-Type': 'application/json',
@@ -240,28 +223,13 @@ define([
                 model: params.model,
                 session_id: params.sessionId,
                 user_id: this.user_id,
-                stream: true,
-                save_chat: params.save_chat,
+                system_prompt: params.systemPrompt || '',
+                save_chat: params.save_chat !== undefined ? params.save_chat : true,
                 include_history: true,
-                enhanced_prompt: params.enhancedPrompt
+                auth_token: window.App.authorizationToken || null
             };
 
-            if (params.systemPrompt) {
-                data.system_prompt = params.systemPrompt;
-            }
-
-            if (params.ragDb) {
-                data.rag_db = params.ragDb;
-                if (params.numDocs) {
-                    data.num_docs = params.numDocs;
-                }
-            }
-
-            if (params.image) {
-                data.image = params.image;
-            }
-
-            fetch(this.apiUrlBase + '/copilot', {
+            fetch(this.apiUrlBase + '/copilot-agent', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -281,13 +249,18 @@ define([
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder('utf-8');
                 let buffer = '';
+                let currentEvent = null;
 
                 const processLine = (line) => {
+                    // Handle event lines
+                    if (line.startsWith('event:')) {
+                        currentEvent = line.substring(6).trim();
+                        return;
+                    }
+
+                    // Handle data lines
                     if (line.startsWith('data:')) {
-                        let content = line.substring(5);
-                        if (content.startsWith(' ')) {
-                            content = content.substring(1);
-                        }
+                        let content = line.substring(5).trim();
 
                         if (content === '[DONE]') {
                             if (onEnd) onEnd();
@@ -296,21 +269,45 @@ define([
 
                         if (content) {
                             try {
-                                const finalContent = content.replace(/\\n/g, '\n');
-                                try {
-                                    const parsed = finalContent;
-                                    if (parsed && typeof parsed === 'object' && parsed.content) {
+                                // Parse JSON data
+                                const parsed = JSON.parse(content);
+
+                                // Skip metadata objects (iteration info, tools_used, message_id, etc.)
+                                if (parsed && typeof parsed === 'object') {
+                                    // Check if this is a metadata object to skip
+                                    const isMetadata = parsed.hasOwnProperty('iteration') ||
+                                                      parsed.hasOwnProperty('iterations') ||
+                                                      parsed.hasOwnProperty('tool') ||
+                                                      parsed.hasOwnProperty('reasoning') ||
+                                                      parsed.hasOwnProperty('tools_used') ||
+                                                      parsed.hasOwnProperty('message_id');
+
+                                    if (isMetadata && !parsed.hasOwnProperty('chunk')) {
+                                        // Skip this metadata object
+                                        currentEvent = null;
+                                        return;
+                                    }
+
+                                    // Extract chunk from the parsed data
+                                    if (parsed.chunk !== undefined) {
+                                        onData(parsed.chunk);
+                                    } else if (parsed.content) {
                                         onData(parsed.content);
                                     } else {
-                                        onData(finalContent);
+                                        // Fallback to raw content if no chunk/content field
+                                        onData(content);
                                     }
-                                } catch (jsonError) {
-                                    onData(finalContent);
+                                } else {
+                                    onData(content);
                                 }
-                            } catch (e) {
-                                if (onError) onError(e);
+                            } catch (jsonError) {
+                                // If not valid JSON, treat as raw text
+                                onData(content);
                             }
                         }
+
+                        // Reset event after processing data
+                        currentEvent = null;
                     }
                 }
 
