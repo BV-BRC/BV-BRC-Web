@@ -84,6 +84,34 @@ define([
       // this.read2.set('value',"/" +  window.App.user.id +"/home/");
       // this.single_end_libs.set('value',"/" +  window.App.user.id +"/home/");
       // this.output_path.set('value',"/" +  window.App.user.id +"/home/");
+      
+      // Dynamic SNP caller filtering based on aligner selection
+      on(this.mapper, 'change', lang.hitch(this, function (selectedAligner) {
+        if (selectedAligner === "Snippy") {
+          this.caller.set("options", [{ label: "Snippy", value: "Snippy" }]);
+          this.caller.set("value", "Snippy");
+        } else {
+          const callerValue = this.caller.get("value");
+          this.caller.set("options", [
+            { label: "FreeBayes", value: "FreeBayes" },
+            { label: "BCFtools", value: "BCFtools" }
+          ]);
+          if (callerValue === "Snippy") {
+            this.caller.set("value", "FreeBayes");
+          } else {
+            this.caller.set("value", callerValue); // preserve current value if valid
+          }
+        }
+      }));
+
+      on(this.caller, 'change', lang.hitch(this, function (selectedCaller) {
+        if (selectedCaller === "Snippy" && this.mapper.get("value") !== "Snippy") {
+          this.mapper.set("value", "Snippy");
+          this.caller.set("options", [{ label: "Snippy", value: "Snippy" }]);
+          this.caller.set("value", "Snippy");
+        }
+      }));
+
       this._started = true;
       this.form_flag = false;
       try {
