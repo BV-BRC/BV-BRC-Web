@@ -66,12 +66,8 @@ define([
                 var error = new Error('The BV-BRC Copilot service is currently unavailable. Please try again later.');
                 // Publish a global error so UI components can respond accordingly
                 topic.publish('CopilotApiError', { error: error });
-                // Additionally show a dialog to the user
-                new Dialog({
-                    title: 'Service Unavailable',
-                    content: 'The BV-BRC Copilot service is currently unavailable. Please try again later.',
-                    style: 'width: 300px'
-                }).show();
+                // Publish service unavailable event for tooltip display
+                topic.publish('CopilotServiceUnavailable', 'The BV-BRC Copilot service is currently unavailable. Please try again later.');
             }
 
             console.log('CopilotAPI postCreate - API URLs initialized');
