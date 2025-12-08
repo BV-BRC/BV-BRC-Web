@@ -19,7 +19,7 @@ define([
     title: 'Measles 2025 Outbreak',
     segments: {1: 'PB2', 2: 'PB1', 3: 'PA', 4: 'HA', 5: 'NP', 6: 'NA', 7: 'M1, M2', 8: 'NS1, NEP'},
     googleNewsCount: 100,
-    googleNewsRSS: 'https://news.google.com/rss/search?q=measles+(%22www.cdc.gov%22+OR+%22news.un.org%22+OR+%22www.who.int%22+OR+%22www.reuters.com%22+OR+%22cidrap.umn.edu%22)&hl=en-US&gl=US&ceid=US:en',
+    googleNewsRSS: 'measles',
 
     onSetState: function (attr, oldVal, state) {
       if (!state) {
@@ -352,46 +352,23 @@ define([
         this.map.set('data', distinctLocations);
       })).catch(err => console.log('error', err));
 
-      xhr.get('/google/news/?url=' + encodeURIComponent(this.googleNewsRSS) + '&count=' + this.googleNewsCount,
-        {handleAs: 'xml'})
-        .then(lang.hitch(this, function (data) {
-          // TODO: move parsing to server side
-          const doc = domParser.parse(data);
-          const items = Array.from(doc.getElementsByTagName('item'));
-
-          // Filter out before 2023 and sort items by pubDate
-          const filteredItems = items
-            .reduce((acc, item) => {
-              const pubDateText = this.getNode(item, 'pubDate');
-              const pubDate = new Date(pubDateText);
-
-              // Only include items with pubDate in 2023 or later
-              if (pubDate.getFullYear() >= 2023) {
-                const link = this.getNode(item, 'link');
-                const title = this.getNode(item, 'title');
-
-                acc.push({link, title, pubDate});
-              }
-              return acc;
-            }, [])
-            .sort((a, b) => b.pubDate - a.pubDate);
-
-          // Determine the number of items to process
-          const numItems = Math.min(this.googleNewsCount, filteredItems.length);
+      xhr.get(`/google/news/?feed=${this.googleNewsRSS}&count=${this.googleNewsCount}`,
+        {handleAs: 'json'})
+        .then(lang.hitch(this, function (items) {
           const newsList = domConstruct.create('ul');
           const options = {weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC'};
-          for (let i = 0; i < numItems; ++i) {
+          items.forEach(item => {
             const li = domConstruct.create('li', {}, newsList);
-            const pubDate = filteredItems[i].pubDate.toLocaleDateString('en-US', options);
+            const pubDate = new Date(item.pubDate).toLocaleDateString('en-US', options);
             domConstruct.create('div', {
               innerHTML: pubDate
             }, li);
             domConstruct.create('a', {
-              href: filteredItems[i].link,
+              href: item.link,
               target: '_blank',
-              innerHTML: filteredItems[i].title
+              innerHTML: item.title
             }, li);
-          }
+          });
           domConstruct.place(newsList, 'newsList');
         })).catch(error => {
         console.log(error);
