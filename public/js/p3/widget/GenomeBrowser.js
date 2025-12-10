@@ -1039,7 +1039,12 @@ define([
         jbrowseConfig.stores = JSON.parse(state.hashParams.addStores);
       }
 
-      // console.log("jbrowseConfig", jbrowseConfig);
+      // update chunksize to allow larger files nb 12/09/2025
+      Object.values(jbrowseConfig.stores).forEach(store => {
+        if (store.type === "JBrowse/Store/SeqFeature/BAM") {
+          store.chunkSizeLimit = 15000000; // 15MB
+        }
+      });
 
       this.set('jbrowseConfig', jbrowseConfig);
 
