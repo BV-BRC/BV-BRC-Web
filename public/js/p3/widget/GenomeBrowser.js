@@ -1046,6 +1046,8 @@ define([
         }
       });
 
+      // console.log("jbrowseConfig", jbrowseConfig);
+
       this.set('jbrowseConfig', jbrowseConfig);
 
     },
@@ -1054,7 +1056,10 @@ define([
       if (!config) {
         return;
       }
+
+      // Store config for later if not visible yet
       if (!this.visible) {
+        this._pendingConfig = config;
         return;
       }
 
@@ -1062,6 +1067,28 @@ define([
         console.log('Browser config: ', config);
 
         this._browser = new Browser(config);
+
+        // Ensure proper layout after browser is completely initialized
+        var self = this;
+        this._browser.afterMilestone('completely initialized', function() {
+          if (self._browser && self._browser.view) {
+            // For small genomes, the initial zoom calculation may be wrong if dimensions weren't set correctly
+            // Force recalculation of dimensions and re-navigate to fix positioning
+            var currentLoc = self._browser.view.visibleRegion();
+            self._browser.view.sizeInit();
+
+            // Re-navigate to the same location with corrected dimensions
+            if (currentLoc) {
+              self._browser.navigateToLocation({
+                ref: currentLoc.ref,
+                start: currentLoc.start,
+                end: currentLoc.end
+              });
+            }
+
+            self._browser.view.showVisibleBlocks(true);
+          }
+        });
       } else {
 
         console.log('Browser Already Exists');
@@ -1084,6 +1111,13 @@ define([
       if (this.visible && !this._firstView) {
         // console.log("Trigger First View: ", this.id)
         this.onFirstView();
+        this._firstView = true;
+
+        // If we have a pending config, create the browser now that we're visible
+        if (this._pendingConfig && !this._browser) {
+          this.onSetJBrowseConfig('jbrowseConfig', null, this._pendingConfig);
+          this._pendingConfig = null;
+        }
       }
     },
 
