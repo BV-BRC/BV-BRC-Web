@@ -373,40 +373,52 @@ define([
             let sequence = variantType.sfvt_sequence;
 
             //Check if there is any insertion
-            let insertion = ''
-            const insertionStart = sequence.indexOf('[');
-            if (insertionStart !== -1) {
-              const insertionEnd = sequence.indexOf(']') + 1;
-              insertion = sequence.slice(insertionStart, insertionEnd);
-              sequence = sequence.slice(0, insertionStart) + sequence.slice(insertionEnd);
+            const insertions = {};
+            let cleanedSequence = '';
+            let baseIndex = 0;
+
+            for (let i = 0; i < sequence.length; i++) {
+              if (sequence[i] === '[') {
+                let j = i + 1;
+                while (sequence[j] !== ']' && j < sequence.length) j++;
+                const insertion = sequence.slice(i, j + 1);
+                insertions[baseIndex - 1] = (insertions[baseIndex - 1] || '') + insertion;
+                i = j; // skip the closing ']'
+              } else {
+                cleanedSequence += sequence[i];
+                baseIndex++;
+              }
             }
 
-            let vtValue = '';
-            for (let i = 0; i < sequence.length; i++) {
-              let contentValue = '';
-              const coordinateField = columns[i + 2].field;
+            console.log(`sf_name: ${variantType.sf_name}`);
+            for (let i = 0; i < cleanedSequence.length; i++) {
+              const coordinateField = columns[i + 2]?.field;
+              if (!coordinateField) continue;
 
-              if (index == 0) {
-                vtValue = sequence[i];
-                contentValue = sequence[i];
+              let vtValue = '';
+              let contentValue = '';
+              const base = cleanedSequence[i];
+
+              if (index === 0) {
+                vtValue = base;
+                contentValue = base;
                 this.referenceCoordinates[coordinateField] = vtValue;
                 findDialogContent = findDialogContent.replace(`{{field-${coordinateField}-data}}`, vtValue);
               } else if (variantType.sfvt_id === 'VT-unknown') {
                 vtValue = '?';
                 contentValue = '?';
               } else {
-                if (sequence[i] === refSequence[i]) {
+                if (base === refSequence[i]) {
                   vtValue = '<i class="fa icon-circle" style="font-size: 4px; pointer-events: none;"></i>';
                   contentValue = '.';
                 } else {
-                  vtValue = sequence[i] === '-' ? '<p style="font-weight: bold; color: red;">-</p>' : sequence[i];
-                  contentValue = sequence[i];
+                  vtValue = base === '-' ? '<p style="font-weight: bold; color: red;">-</p>' : base;
+                  contentValue = base;
                 }
 
-                // Insert to the previous base
-                if (insertionStart - 1 === i) {
-                  vtValue += insertion;
-                  contentValue += insertion;
+                if (insertions[i]) {
+                  vtValue += insertions[i];
+                  contentValue += insertions[i];
                 }
               }
 
@@ -418,7 +430,7 @@ define([
 
             data.push(seqData);
             content.push(contentData);
-            if (variantType.sfvt_id !== 'VT-unknown') {
+            if (variantType.sfvt_genome_ids && variantType.sfvt_id !== 'VT-unknown') {
               for (const id of variantType.sfvt_genome_ids) {
                 patricIds.push(id);
               }

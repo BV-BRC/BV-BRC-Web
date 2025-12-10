@@ -17,7 +17,7 @@ define([
     applicationDescription: 'The Genome Annotation Service provides annotation of genomic features using the RAST tool kit (RASTtk) for bacteria and VIGOR4 for viruses.  The service accepts a FASTA formatted contig file and an annotation recipe based on taxonomy to provide an annotated genome.',
     applicationHelp: 'quick_references/services/genome_annotation_service.html',
     tutorialLink: 'tutorial/genome_annotation/genome_annotation.html',
-    videoLink: '',
+    videoLink: 'https://youtube.com/playlist?list=PLWfOyhOW_Oav3zsNKRx_4EMJQjvY7q_U3&si=pg4jREU2MFY_-PBW',
     pageTitle: 'Genome Annotation Service | BV-BRC',
     required: true,
     genera_four: ['Acholeplasma', 'Entomoplasma', 'Hepatoplasma', 'Hodgkinia', 'Mesoplasma', 'Mycoplasma', 'Spiroplasma', 'Ureaplasma'],
@@ -77,6 +77,10 @@ define([
       this.scientific_nameWidget.set('includeViruses', false);
       if (this.recipe.getValue() == 'viral') {
         this.scientific_nameWidget.set('placeHolder', 'e.g. Bat coronavirus');
+        this.scientific_nameWidget.set('includeViruses', true);
+      }
+      else if (this.recipe.getValue() == 'viral-lowvan') {
+        this.scientific_nameWidget.set('placeHolder', 'e.g. Measles morbillivirus');
         this.scientific_nameWidget.set('includeViruses', true);
       }
       else if (this.recipe.getValue() == 'default') {

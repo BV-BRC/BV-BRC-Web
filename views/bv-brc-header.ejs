@@ -51,16 +51,16 @@
 
     var featured_virus = [
         {name: "Bacteriophages", href: "/view/GenomeList/?eq(genome_name,phage)"},
-        {name: "Dengue virus", href: "/view/Taxonomy/12637#view_tab=overview"},
-        {name: "Ebolavirus", href: "/view/Taxonomy/186536#view_tab=overview"},
-        {name: "Enterovirus", href: "/view/Taxonomy/12059#view_tab=overview"},
-        {name: "Hepacivirus", href: "/view/Taxonomy/11102#view_tab=overview"},
-        {name: "Influenza A virus", href: "/view/Taxonomy/11320#view_tab=overview"},
-        {name: "Mammarenavirus lassaense", href: "/view/Taxonomy/3052310#view_tab=overview"},
+        {name: "Dengue virus", href: "/view/Taxonomy/3052464#view_tab=overview"},
+        {name: "Ebola virus", href: "/view/GenomeList/?in(taxon_lineage_ids,(3044781,186536))"},
+        {name: "Enteroviruses", href: "/view/Taxonomy/12059#view_tab=overview"},
+        {name: "Hepatitis C virus", href: "/view/Taxonomy/3052230#view_tab=overview"},
+        {name: "Influenza A virus", href: "/view/Taxonomy/197911#view_tab=overview"},
+        {name: "Lassa virus", href: "/view/Taxonomy/3052310#view_tab=overview"},
+        {name: "Measles virus", href: "/view/Taxonomy/3052345#view_tab=overview"},
         {name: "Monkeypox virus", href: "/view/Taxonomy/10244#view_tab=overview"},
-        {name: "Morbillivirus hominis", href: "/view/Taxonomy/3052345#view_tab=overview"},
         {name: "SARS-CoV-2", href: "/view/Taxonomy/2697049#view_tab=overview"},
-        {name: "Zika virus", href: "/view/Taxonomy/64320#view_tab=overview"},
+        {name: "Zika virus", href: "/view/Taxonomy/3048459#view_tab=overview"},
     ]
 
 
@@ -205,6 +205,8 @@
                                     <div><a class="navigationLink" href="/app/PhylogeneticTree">Bacterial Genome Tree</a></div>
                                     <div><a class="navigationLink" href="/app/ViralGenomeTree">Viral Genome Tree</a></div>
                                     <div><a class="navigationLink" href="/app/GeneTree">Gene/Protein Tree</a></div>
+                                    <div><a class="navigationLink" href="/app/CoreGenomeMLST">Core Genome MLST</a></div>
+                                    <div><a class="navigationLink" href="/app/WholeGenomeSNPAnalysis">Whole Genome SNP Analysis</a></div>
                                 </div>
                                 <div class="menuHeader">Protein Tools</div>
                                 <div class="menuItems">
