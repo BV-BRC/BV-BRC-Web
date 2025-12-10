@@ -98,6 +98,14 @@ define([
       videoLink: "",
 
 
+      fastaValidation: {
+         errors: null,
+         invalidHeaders: NaN,
+         isValid: false,
+         segments: null,
+         sequenceCount: NaN
+      },
+
       // Certain controls aren't validated after resetting the form or populating from job data.
       validationContext: {
 
@@ -240,6 +248,25 @@ define([
          })
       },
 
+      // Format FASTA validation errors as HTML.
+      formatFastaErrors: function () {
+         const errors = this.fastaValidation.errors;
+
+         if (!Array.isArray(errors) || errors.length < 1) { return ""; }
+
+         let items = "";
+
+         errors.forEach((error) => {
+            items += `<li>${error}</li>`;
+         })
+
+         let s = errors.length === 1 ? "" : "s";
+         return `<div class="treesort--fasta-error">
+            <div class="treesort--fasta-error-message">Please correct the following error${s} in the FASTA input file:</div>
+            <ul>${items}</ul>
+         </div>`;
+      },
+
       // Iterate over the virus taxon's segments to create list options.
       getSegmentOptions: function () {
 
@@ -361,12 +388,36 @@ define([
       },
 
       // Handle a change to the FASTA file ID control.
-      handleFastaFileIdChange: function (value_) {
+      handleFastaFileIdChange: async function (value_) {
 
          // If we're suspending validation for this control, make it temporarily optional.
          if (this.validationContext.isSuspended) { this.fastaFileIdEl.set("required", false); }
 
-         let result = this.isFastaFileIdValid(value_);
+         // Initialize the result
+         let result = { isValid: false, errorMessage: null };
+
+         // If no value was provided, get the value directly from the control.
+         if (!value_) { value_ = this.safeTrim(this.fastaFileIdEl.get("value")); }
+         if (value_.length > 0) {
+
+            // Get the input FASTA file selected from the workspace.
+            const fastaFile = await WorkspaceManager.getObject(value_, false);
+
+            if (!fastaFile || !fastaFile.data || fastaFile.data.length < 1) {
+               result.errorMessage = "The selected FASTA file is invalid";
+            } else {
+               if (this.validateFASTA(fastaFile.data)) {
+                  result.errorMessage = "";
+                  result.isValid = true;
+               } else {
+                  result.errorMessage = this.formatFastaErrors();
+               }
+            }
+
+         } else {
+            result.errorMessage = "Select a FASTA file";
+            result.isValid = false;
+         }
 
          if (!result.isValid && !this.validationContext.isSuspended) {
             this.fastaFileIdEl.set("state", "Error");
@@ -377,7 +428,6 @@ define([
             this.fastaFileIdEl.set("required", true);
 
          } else {
-
             // Clear any existing error status.
             this.fastaFileIdEl.set("state", "");
             this.fastaFileIdEl.set("message", "");
@@ -616,22 +666,11 @@ define([
       },
 
       // Is the FASTA file ID valid?
-      isFastaFileIdValid: function (value_) {
-
-         // Initialize the result
-         let result = { isValid: true, errorMessage: null };
-
-         value_ = this.safeTrim(value_);
-
-         // If no value was provided, get the value directly from the control.
-         if (!value_) { value_ = this.safeTrim(this.fastaFileIdEl.get("value")); }
-
-         if (!value_) {
-            result.isValid = false;
-            result.errorMessage = "Select a FASTA file";
+      isFastaFileIdValid: function () {
+         return {
+            isValid: this.fastaValidation.isValid,
+            errorMessage: this.formatFastaErrors()
          }
-
-         return result;
       },
 
       // Is the match's regular expression valid?
@@ -722,6 +761,13 @@ define([
          // Get the reference segment for comparison.
          const refSegment = this.refSegmentEl.get("value");
 
+         // Was this segment found in the FASTA input file?
+         if (Array.isArray(this.fastaValidation.segments) && !this.fastaValidation.segments.includes(refSegment)) {
+            result.isValid = false;
+            result.errorMessage = `Segment ${refSegment} was not found in the FASTA input file`;
+            return result;
+         }
+
          // Make sure the segment selected as the reference segment is checked.
          this.segmentCheckboxes.forEach(checkbox_ => {
             if (!checkbox_.get("checked")) {
@@ -786,6 +832,10 @@ define([
                })
             }
          }
+
+         // Wait until the form controls have been modified to de-suspend the validation context.
+         setTimeout(() => { this.validationContext.isSuspended = false; }, 0);
+         return;
       },
 
       resubmit: function () {
@@ -827,6 +877,9 @@ define([
          this.segmentCheckboxes.forEach(checkbox_ => {
             checkbox_.set("checked", true);
          })
+
+         // Wait until the form controls have been modified to de-suspend the validation context.
+         setTimeout(() => { this.validationContext.isSuspended = false; }, 0);
 
          return;
       },
@@ -903,6 +956,27 @@ define([
          this.validationContext.unprocessed = this.validationContext.controlCount;
       },
 
+      // Update the list of selectable ref segments.
+      updateSegmentOptions: function () {
+
+         if (!Array.isArray(this.fastaValidation.segments) || this.fastaValidation.segments.length < 1) { return; }
+
+         const segments = SegmentedViruses[this.virusTaxon].segments;
+         if (!segments) { throw new Error("Invalid virus segment data"); }
+
+         // Clear all options
+         this.refSegmentEl.removeOption();
+
+         segments.forEach((segment_) => {
+            if (this.fastaValidation.segments.includes(segment_.name)) {
+               let label = segment_.name;
+               if (segment_.isDefault) { label += " (default) "; }
+
+               this.refSegmentEl.addOption({value: segment_.name, label: label});
+            }
+         })
+      },
+
       // If we're suspending validation, update the number of unprocessed controls and the "is suspended" flag.
       updateValidationContext() {
 
@@ -961,7 +1035,100 @@ define([
 
          this.submitButton.set("disabled", true);
          return false;
-      }
+      },
 
+      // Validate the format of the deflines/headers in the FASTA input file.
+      validateFASTA: function (fasta) {
+
+         // Initialize the FASTA validation details.
+         this.fastaValidation.errors = [];
+         this.fastaValidation.invalidHeaders = 0;
+         this.fastaValidation.isValid = false;
+         this.fastaValidation.segments = null;
+         this.fastaValidation.sequenceCount = 0;
+
+         // Validate the FASTA parameter.
+         fasta = this.safeTrim(fasta);
+         if (!fasta) {
+            this.fastaValidation.errors.push("The FASTA file is empty");
+            this.fastaValidation.isValid = false;
+            return false;
+         }
+
+         // Get an array of the headers/deflines.
+         const headers = fasta.match(/^>[^\n]*\r?\n/gm);
+
+         // Validate the array of FASTA headers.
+         if (!Array.isArray(headers) || headers.length < 1) {
+            this.fastaValidation.errors.push("No headers were found in the input FASTA file");
+            this.fastaValidation.isValid = false;
+            return false;
+         }
+
+         this.fastaValidation.sequenceCount = headers.length;
+
+         // TODO: Is there a minimum number of sequences required by TreeSort?
+         if (this.fastaValidation.sequenceCount < 2) {
+            this.fastaValidation.errors.push("The FASTA file must contain at least 2 sequences");
+            this.fastaValidation.isValid = false;
+            return false;
+         }
+
+         let segments = new Set();
+
+         // TODO: This could be dynamically generated in the startup.
+         const segmentRE = /\|(PB2|PB1|PA|HA|NP|NA|MP|NS)\|/i;
+
+         headers.forEach((header) => {
+
+            // Look for a properly-formatted segment in the header.
+            const match = segmentRE.exec(header);
+
+            if (Array.isArray(match) && match.length > 0) {
+               segments.add(match[1]);
+            } else {
+               this.fastaValidation.invalidHeaders += 1;
+            }
+         })
+
+         // Unique segments found in the headers.
+         this.fastaValidation.segments = [...segments];
+
+         // In the following section, we can accumulate multiple errors.
+         let isValid = true;
+
+         if (this.fastaValidation.invalidHeaders > 0) {
+            this.fastaValidation.errors.push(`${this.fastaValidation.invalidHeaders} of ${this.fastaValidation.sequenceCount} FASTA headers have an invalid format`);
+            isValid = false;
+         }
+
+         if (!Array.isArray(this.fastaValidation.segments)) {
+            this.fastaValidation.errors.push("No segments were found");
+            isValid = false;
+
+         } else if (this.fastaValidation.segments.length < 2) {
+            this.fastaValidation.errors.push(`The FASTA file must include at least 2 different segments`);
+            isValid = false;
+         }
+
+         this.fastaValidation.isValid = isValid;
+
+         // Disable checkboxes for segments not found in the FASTA file.
+         this.segmentCheckboxes.forEach(checkbox_ => {
+            const segment = checkbox_.get("name");
+            if (!this.fastaValidation.segments.includes(segment)) {
+               checkbox_.set("checked", false);
+               checkbox_.set("disabled", true);
+            }
+         })
+
+         // Update the list of selectable ref segments.
+         this.updateSegmentOptions();
+
+         // Validate the ref segment.
+         this.handleSegmentChange();
+
+         return isValid;
+      }
    });
 });

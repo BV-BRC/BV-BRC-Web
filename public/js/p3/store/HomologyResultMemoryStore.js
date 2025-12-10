@@ -191,9 +191,9 @@ define([
                 if (d.includes('accn|')) {
                   return d.replace('accn|', '');
                 } else if (d.includes('.con.')) {
-                  return d;
+                  return d.replace(/^(\d+\.\d+)\.\1\./, '$1.');
                 } else {
-                  return d.replace(/^\d+.\d+./, '');
+                  return d.replace(/^\d+\.\d+\./, '');
                 }
               }).filter(function (d) {
                 return d !== '';
@@ -202,7 +202,7 @@ define([
                 this.type = 'no_ids';
                 this.defaultLoadData(res);
               } else {
-                query.q = (resultIds.length > 0) ? 'sequence_id:(' + resultIds.join(' OR ') + ')' : {};
+                query.q = (resultIds.length > 0) ? 'accession:(' + resultIds.join(' OR ') + ')' : {};
                 query.fl = 'genome_id,genome_name,taxon_id,sequence_id,accession,sequence_type,description';
               }
             } else if (this.type == 'genome_feature') {
@@ -246,7 +246,7 @@ define([
                 var keyMap = {};
                 keys.forEach(function (f) {
                   if (this.type == 'genome_sequence') {
-                    keyMap[f.sequence_id] = f;
+                    keyMap[f.accession] = f;
                   } else {
                     if (f.annotation == 'RefSeq') {
                       keyMap[f.refseq_locus_tag] = f;
@@ -346,13 +346,13 @@ define([
             delete entry.genome_id;
             delete entry.genome_name;
           } else if (this.type === 'genome_sequence') {
-            target_id = target_id.replace('accn|', '');
+            // target_id = target_id.replace('accn|', '');
             if (target_id.includes('accn|')) {
               target_id = target_id.replace('accn|', '');
             } else if (target_id.includes('.con.')) {
-              target_id = target_id;
+              target_id = target_id.replace(/^(\d+\.\d+)\.\1\./, '$1.');
             } else {
-              target_id = target_id.replace(/^\d+.\d+./, '');
+              target_id = target_id.replace(/^\d+\.\d+\./, '');
             }
             if (Object.prototype.hasOwnProperty.call(metadata, target_id)) {
               entry.genome_id = metadata[target_id].genome_id;

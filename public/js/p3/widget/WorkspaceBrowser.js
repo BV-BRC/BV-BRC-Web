@@ -5,9 +5,10 @@ define([
   './ActionBar', 'dojo/_base/Deferred', '../WorkspaceManager', 'dojo/_base/lang', '../util/PathJoin',
   './Confirmation', './SelectionToGroup', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dijit/popup', 'dijit/form/Select', './ContainerActionBar', './GroupExplore', './PerspectiveToolTip',
-  'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor', './ServicesTooltipDialog',
+  'dijit/form/TextBox', './WorkspaceObjectSelector', './PermissionEditor', './ServicesTooltipDialog', 'dijit/form/FilteringSelect',
   'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './RerunUtility', './viewer/JobResult',
-  'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree'
+  'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree',
+  'dijit/registry', 'dojo/keys', 'dojo/dom-style', 'dojo/Stateful',  'dojo/hash', 'dojo/io-query',
 ], function (
   declare, BorderContainer, on, query,
   domClass, domConstruct, domAttr,
@@ -15,8 +16,10 @@ define([
   ActionBar, Deferred, WorkspaceManager, lang, PathJoin,
   Confirmation, SelectionToGroup, Dialog, TooltipDialog,
   popup, Select, ContainerActionBar, GroupExplore, PerspectiveToolTipDialog,
-  TextBox, WSObjectSelector, PermissionEditor, ServicesTooltipDialog,
-  All, encodePath, when, request, tsvCsvFeatures, rerunUtility, JobResult, NodeList_traverse, Homology, GenomeAlignment, PhylogeneticTree
+  TextBox, WSObjectSelector, PermissionEditor, ServicesTooltipDialog, FilteringSelect,
+  All, encodePath, when, request, tsvCsvFeatures, rerunUtility, JobResult,
+  NodeList_traverse, Homology, GenomeAlignment, PhylogeneticTree,
+  registry, keys, domStyle, Stateful, hash, ioQuery,
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -37,6 +40,10 @@ define([
     baseClass: 'WorkspaceBrowser',
     disabled: false,
     path: '/',
+    currentSearchTerm: '',
+    currentSearchType: 'all', // Default to all types
+    originalPathBeforeSearch: null,
+    searchTermIndicator: null, // DOM node for displaying current search
     gutters: false,
     navigableTypes: ['parentfolder', 'folder', 'job_result', 'experiment_group',
       'experiment', 'unspecified', 'contigs', 'reads', 'model', 'txt', 'html',
@@ -48,6 +55,9 @@ define([
     docsServiceURL: window.App.docsServiceURL,
     tutorialLink: 'quick_references/workspace_groups_upload.html',
     tsvCsvFilename: '',
+    _wsSearchInputWidget: null,
+    _wsSearchTypeSelectWidget: null,
+    _wsSearchIconNode: null, // hide/show the icon too
 
     startup: function () {
       var self = this;
@@ -68,6 +78,8 @@ define([
         path: this.path,
         layoutPriority: 3
       });
+
+       this.addSearchToHeader(this.browserHeader);
 
       this.actionPanel.addAction('ToggleItemDetail', 'fa icon-chevron-circle-right fa-2x', {
         label: 'HIDE',
@@ -1208,6 +1220,26 @@ define([
         }
       }, false);
 
+      this.browserHeader.addAction('ViewTreeSortResult', 'fa icon-eye fa-2x', {
+        label: 'VIEW',
+        multiple: false,
+        validTypes: ['TreeSort'],
+        tooltip: 'View Result'
+      }, function (selection, container, button) {
+
+        let path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (meta_file_data) {
+          if (meta_file_data[0].includes('index.html')) {
+            path = meta_file_data[0];
+          }
+        }));
+        if (path) {
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
+        } else {
+          console.log('Error: could not find index.html output file');
+        }
+      }, false);
+
       this.browserHeader.addAction('ViewSubspeciesResult', 'fa icon-eye fa-2x', {
         label: 'VIEW',
         multiple: false,
@@ -1883,10 +1915,31 @@ define([
         rerunUtility.rerun(JSON.stringify(selection[0].autoMeta.parameters), selection[0].autoMeta.app.id, window, Topic);
       }, false);
 
+      this.actionPanel.addAction('GoToFolder', 'fa icon-folder-open-o fa-2x', {
+        label: 'GO TO',
+        multiple: false,
+        validTypes: ['*'], // Applies to any selected search result
+        tooltip: 'Open the parent folder of this item in a new tab',
+        searchOnly: true
+      }, function (selection) {
+        if (!selection || selection.length === 0) { return; }
+        var item = selection[0];
+        var parentPath = item.path.split('/').slice(0, -1).join('/');
+        if (parentPath) {
+          Topic.publish('/navigate', { href: '/workspace' + parentPath, target: 'blank' });
+        }
+      }, true); // The 'enabled' flag should be true so it can be controlled by logic
+
+
+
       // listen for opening user permisssion dialog
       Topic.subscribe('/openUserPerms', function (selection) {
         self.showPermDialog(selection);
       });
+
+      // Listen for search execution and clearing
+      Topic.subscribe('/workspace/search', lang.hitch(this, this.handleSearchRequest));
+      Topic.subscribe('/workspace/clearSearch', lang.hitch(this, this.handleClearSearchRequest));
 
       this.itemDetailPanel = new ItemDetailPanel({
         region: 'right',
@@ -1900,11 +1953,326 @@ define([
       this.addChild(this.browserHeader);
 
       this.inherited(arguments);
+      Topic.subscribe("/dojo/hashchange", lang.hitch(this, this.onHashChange));
+      this.onHashChange(hash());
+
+
 
       // Hide the panel on a small screen
       if (window.innerWidth <= 768 && this.actionPanel) {
         const hideBtn = query('[rel="ToggleItemDetail"]', this.actionPanel.domNode)[0];
         hideBtn.click();
+      }
+    },
+
+    onHashChange: function(newHash) {
+        var params = ioQuery.queryToObject(newHash);
+        var searchTerm = params.search_term || "";
+        var searchType = params.search_type || "all";
+
+        // If a search is defined in the URL and it's different from the current search
+        if (searchTerm && (searchTerm !== this.currentSearchTerm || searchType !== this.currentSearchType)) {
+            // Update the UI to reflect the URL state
+            if (this.searchBox) this.searchBox.set('value', searchTerm);
+            if (this.typeSelect) this.typeSelect.set('value', searchType);
+
+            // Trigger the search
+            Topic.publish('/workspace/search', {
+                term: searchTerm,
+                type: searchType
+            });
+        }
+        // If the URL hash has no search term but a search is currently active, clear it.
+        else if (!searchTerm && this.originalPathBeforeSearch) {
+            Topic.publish('/workspace/clearSearch');
+        }
+    },
+
+    addSearchToHeader: function(headerWidget) {
+      var self = this;
+
+      // Container for all search elements
+      var searchSectionContainer = domConstruct.create('div', {
+        'class': 'wsSearchSectionContainer',
+        style: 'display: inline-flex; align-items: center; vertical-align: middle; margin-left: 15px;'
+      }, headerWidget.pathContainer, 'after'); // Place after breadcrumbs
+
+      // --- Create Type Selector Dropdown FIRST ---
+      var typeOptions = [{ label: 'All Types', value: 'all', selected: true }];
+      for (const typeKey in WorkspaceManager.knownUploadTypes) {
+        if (WorkspaceManager.knownUploadTypes.hasOwnProperty(typeKey)) {
+          typeOptions.push({
+            label: WorkspaceManager.knownUploadTypes[typeKey].label,
+            value: typeKey
+          });
+        }
+      }
+      if (typeOptions.length === 1) { // Fallback to changeableTypes
+          for (const typeKey in WorkspaceManager.changeableTypes) {
+              if (WorkspaceManager.changeableTypes.hasOwnProperty(typeKey) && typeKey !== "unspecified") {
+                  typeOptions.push({
+                      label: WorkspaceManager.changeableTypes[typeKey].label,
+                      value: typeKey
+                  });
+              }
+          }
+      }
+
+      var typeSelectWidth = '120px'; // Example: Shortened from 150px
+      var searchInputWidth = '180px'; // Example: Shortened from 220px
+
+
+      this._wsSearchTypeSelectWidget = new Select({
+        name: 'wsSearchTypeSelect',
+        options: typeOptions,
+        style: 'width: ' + typeSelectWidth + '; margin-right: -1px; border-top-right-radius: 0; border-bottom-right-radius: 0; vertical-align: middle;'
+      });
+      this._wsSearchTypeSelectWidget.placeAt(searchSectionContainer);
+
+      // --- Create Input field SECOND ---
+      this._wsSearchInputWidget = new TextBox({
+        name: 'wsSearchInput',
+        // Style to make it appear connected to the select on its left and icon potentially on its right
+        style: 'width: ' + searchInputWidth + '; border-top-left-radius: 0; border-bottom-left-radius: 0; margin-left:0px; vertical-align: middle;', // margin-left:0px to ensure no default space
+        placeHolder: 'Search Dir. (min 3 chars)'
+      });
+      this._wsSearchInputWidget.placeAt(searchSectionContainer);
+
+      // --- Create Search Icon (Font Awesome) THIRD ---
+      this._wsSearchIconNode = domConstruct.create('i', {
+        'class': 'fa fa-1x icon-search wsHeaderSearchIcon',
+        title: 'Search Workspace',
+        style: 'margin-left: 5px; margin-right: 5px; cursor: pointer; font-size: 1.1em; color: #337ab7; vertical-align: middle;'
+      }, searchSectionContainer); // Placed after searchInput
+
+      // --- Search Term Indicator (box with X to clear search) FOURTH ---
+      this.searchTermIndicator = domConstruct.create('div', {
+        'class': 'wsSearchTermIndicator',
+        style: 'display: none; margin-left: 10px; padding: 3px 6px; border: 1px solid #ccc; background-color: #e9e9e9; border-radius: 4px; cursor: pointer; vertical-align: middle; line-height: normal;'
+      }, searchSectionContainer); // Placed last in the search section
+
+      // --- Helper function to perform the search ---
+      var doSearch = lang.hitch(this, function() {
+        var searchTerm = this._wsSearchInputWidget.get('value').trim();
+        var searchType = this._wsSearchTypeSelectWidget.get('value');
+        var focusNode = this._wsSearchInputWidget.focusNode || this._wsSearchInputWidget.textbox;
+
+        if (searchTerm && searchTerm.length >= 3) {
+          Topic.publish('/workspace/search', {
+            term: searchTerm,
+            type: searchType
+          });
+        } else if (!searchTerm && this.originalPathBeforeSearch) {
+          Topic.publish('/workspace/clearSearch');
+        } else if (searchTerm && searchTerm.length < 3) {
+          if (focusNode) {
+            dijit.registry.showTooltip("Search term must be at least 3 characters.", focusNode, ['below'], !this.isLeftToRight());
+            setTimeout(function(){ dijit.registry.hideTooltip(focusNode); }, 2500);
+          }
+        }
+      });
+
+      // --- Event Handlers ---
+      on(this._wsSearchInputWidget, 'keydown', function(evt) {
+        if (evt.keyCode === keys.ENTER) {
+          evt.preventDefault();
+          doSearch();
+        }
+      });
+
+      on(this._wsSearchIconNode, 'click', function() {
+        doSearch();
+      });
+
+      on(this._wsSearchTypeSelectWidget, 'change', function(newType) {
+        var currentSearchTerm = this._wsSearchInputWidget.get('value').trim();
+        if (currentSearchTerm && currentSearchTerm.length >= 3) {
+          Topic.publish('/workspace/search', {
+            term: currentSearchTerm,
+            type: newType
+          });
+        }
+      });
+    },
+
+    handleSearchRequest: function (searchParams) {
+      var self = this;
+      this.actionPanel.set('inSearch', true);
+      if (this._searchInProgress) {
+        console.log("Search already in progress, ignoring new request.");
+        return; // Prevent multiple concurrent searches from this UI
+      }
+      this._searchInProgress = true;
+
+      if (!this.originalPathBeforeSearch) {
+        this.originalPathBeforeSearch = this.path; // Save current path if not already in a search
+      }
+      WorkspaceManager.activeSearchFilter = searchParams; // Set global search state
+
+      this.currentSearchTerm = searchParams.term;
+      this.currentSearchType = searchParams.type;
+
+      domStyle.set(this._wsSearchInputWidget.domNode, 'display', 'none');
+      domStyle.set(this._wsSearchTypeSelectWidget.domNode, 'display', 'none');
+      if (this._wsSearchIconNode) { // Also hide the search icon
+          domStyle.set(this._wsSearchIconNode, 'display', 'none');
+      }
+
+      var currentHash = hash();
+      var params = ioQuery.queryToObject(currentHash);
+      params.search_term = searchParams.term;
+      params.search_type = searchParams.type;
+      var newHash = ioQuery.objectToQuery(params);
+
+      // Update the URL hash without triggering onHashChange again if hash is already correct
+      if (newHash !== currentHash) {
+          hash(newHash, true); // The 'true' prevents adding a new history entry if we're just replacing the state
+      }
+
+      // Update and show search term indicator with spinner
+      var typeLabel = searchParams.type === 'all' ? 'All Types' : (WorkspaceManager.knownUploadTypes[searchParams.type] ? WorkspaceManager.knownUploadTypes[searchParams.type].label : searchParams.type);
+
+      // Create spinner icon HTML. Add a non-breaking space before it for consistent spacing.
+      var spinnerIconHTML = ' <i class="fa icon-spinner fa-spin wsSearchSpinner" style="margin-right: 5px;"></i>';
+
+      this.searchTermIndicator.innerHTML = searchParams.term + ' (' + typeLabel + ')' +
+        spinnerIconHTML + // Add spinner here
+        ' <span class="wsClearSearchX" style="color: #A94442; font-weight: bold; margin-left: 5px; cursor: pointer;">×</span>'; // Using × for X
+      this.searchTermIndicator.style.display = 'inline-block';
+
+      // Attach click to the X only once or ensure it's managed correctly
+      var clearButton = query('.wsClearSearchX', this.searchTermIndicator)[0];
+      if (clearButton) {
+          if (clearButton._clickHandler) { // If a handler exists, remove it first
+              clearButton._clickHandler.remove();
+          }
+          clearButton._clickHandler = on(clearButton, 'click', function(evt) {
+              evt.stopPropagation(); // Prevent event from bubbling up
+              // If a search is cleared while in progress, ensure the flag is reset
+              if(self._searchInProgress){
+                  self._searchInProgress = false;
+                  // Optionally, you might want to try and cancel the ongoing WorkspaceManager.searchObjects call
+                  // This is complex and depends on how WorkspaceManager.searchObjects is implemented (e.g., if it returns a cancelable Deferred).
+                  // For now, we just reset the UI flag.
+              }
+              Topic.publish('/workspace/clearSearch');
+          });
+      }
+
+      // Use the *original* path as the base for the search, or current path if not nested search
+      var searchBasePath = this.originalPathBeforeSearch || this.path;
+
+      //Client side
+      //WorkspaceManager.searchObjects(searchParams.term, searchParams.type, searchBasePath, true) // true for recursive
+      //Server side
+      WorkspaceManager.searchServerObjects(searchParams.term, searchParams.type, searchBasePath, true) // true for recursive
+        .then(lang.hitch(this, function (results) {
+          // Search successful
+          if (this.activePanel && typeof this.activePanel.render === 'function') {
+            this.activePanel.currentSearchTerm = searchParams.term; // Let explorer view know it's a search
+            this.activePanel.render(searchBasePath, results); // Render search results, pass searchBasePath for context
+            this.activePanel.renderCount(results.length, true); // Update count, true for isSearchResult
+          }
+        }), lang.hitch(this, function (err) {
+          // Search failed
+          console.error("Search failed:", err);
+          Topic.publish('/Notification', { message: "Search failed: " + (err.message || err), type: "error" });
+          // Still render empty results in case of error to clear previous state
+          if (this.activePanel && typeof this.activePanel.render === 'function') {
+            this.activePanel.currentSearchTerm = searchParams.term; // Keep term to indicate what failed
+            this.activePanel.render(searchBasePath, []); // Render empty
+            this.activePanel.renderCount(0, true); // Show 0 found
+          }
+        })).always(lang.hitch(this, function() {
+          // This block executes after success or failure
+          this._searchInProgress = false;
+          // Remove spinner if still part of an active search display
+          if (WorkspaceManager.activeSearchFilter && this.searchTermIndicator.style.display !== 'none') {
+            // More robustly remove the spinner by targeting its class
+            var spinnerNode = query('.wsSearchSpinner', this.searchTermIndicator)[0];
+            if (spinnerNode) {
+                domConstruct.destroy(spinnerNode);
+            }
+          }
+        }));
+    },
+
+    handleClearSearchRequest: function () {
+      if (this.originalPathBeforeSearch || WorkspaceManager.activeSearchFilter) {
+        // If a search was in progress when cleared, reset the flag
+        this.actionPanel.set('inSearch', false);
+        if(this._searchInProgress) {
+            this._searchInProgress = false;
+            // As above, true cancellation of the search promise is complex.
+        }
+
+        WorkspaceManager.activeSearchFilter = null;
+        this.currentSearchTerm = '';
+        this.currentSearchType = 'all';
+
+        domStyle.set(this.searchTermIndicator, 'display', 'none');
+        this.searchTermIndicator.innerHTML = '';
+
+        // Restore visibility of search input and type select
+        if (this._wsSearchInputWidget) {
+            domStyle.set(this._wsSearchInputWidget.domNode, 'display', ''); // Reset to default (usually inline-block for dijits)
+            this._wsSearchInputWidget.set('value', ''); // Clear the input field
+        }
+        if (this._wsSearchTypeSelectWidget) {
+            domStyle.set(this._wsSearchTypeSelectWidget.domNode, 'display', '');
+            this._wsSearchTypeSelectWidget.set('value', 'all'); // Reset select to 'All Types'
+        }
+        if (this._wsSearchIconNode) {
+            domStyle.set(this._wsSearchIconNode, 'display', ''); // Show search icon again
+        }
+        // Clear the search input widget in the header
+        //var searchInputWidgetNode = query('input[name="wsSearchInput"]', this.browserHeader.domNode)[0];
+        //if(searchInputWidgetNode){
+        //    var searchInputWidget = dijit.registry.byNode(searchInputWidgetNode.parentNode); // Get the TextBox widget // RESTORED dijit.registry
+        //    if(searchInputWidget) searchInputWidget.set('value', '');
+        //}
+        // Reset type dropdown to "All Types"
+        ///var typeSelectNode = query('select[name="wsSearchTypeSelect"]', this.browserHeader.domNode)[0];
+        //if(typeSelectNode){
+        //    var typeSelectWidget = dijit.registry.byNode(typeSelectNode.parentNode); // Get the Select widget // RESTORED dijit.registry
+        //     if(typeSelectWidget) typeSelectWidget.set('value', 'all');
+        //}
+
+        //if(this.searchTermIndicator) {
+        //    this.searchTermIndicator.style.display = 'none';
+        //    this.searchTermIndicator.innerHTML = ''; // Clear all content, including any spinner
+        //}
+
+        var pathToRestore = this.originalPathBeforeSearch;
+        this.originalPathBeforeSearch = null; // Reset before setting path to avoid loops
+
+        // Explicitly tell explorer to refresh to the restored path
+        if (this.activePanel && typeof this.activePanel.set == 'function' && typeof this.activePanel.refreshWorkspace == 'function') {
+            this.activePanel.currentSearchTerm = null; // Clear search state in explorer
+            this.activePanel.set('path',pathToRestore); // This should trigger its own refresh logic
+            // this.activePanel.refreshWorkspace(); // Or call refresh directly if set('path') doesn't always do it
+        }
+        var currentHash = hash();
+        var params = ioQuery.queryToObject(currentHash);
+        if (params.search_term) { // Only change hash if search params are present
+            delete params.search_term;
+            delete params.search_type;
+            var newHash = ioQuery.objectToQuery(params);
+            hash(newHash, true); // Update the URL hash to remove search params
+        }
+      }
+    },
+
+    _setSearchDisabled: function (disabled) {
+      if (this._wsSearchInputWidget) {
+        this._wsSearchInputWidget.set('disabled', disabled);
+      }
+      if (this._wsSearchTypeSelectWidget) {
+        this._wsSearchTypeSelectWidget.set('disabled', disabled);
+      }
+      if (this._wsSearchIconNode) {
+        // For the icon, we toggle a class to change its style
+        domClass.toggle(this._wsSearchIconNode, 'disabled', disabled);
       }
     },
 
@@ -2139,11 +2507,40 @@ define([
       var components = val.split('#');
       val = components[0];
       this.path = decodeURIComponent(val);
+      var hashParams = components[1] ? ioQuery.queryToObject(components[1]) : null;
       var uriParams = [];
       if (components[1]) {
         uriParams = decodeURIComponent(components[1]);
       }
       // console.log("[WorkspaceBrowser] uriParams:",uriParams)
+
+      var pathParts = this.path.split('/').filter(function(part) {
+        return part && part.length > 0;
+      });
+
+      // Disable search if path depth is 1 or less (e.g., /user@name or /public)
+      var isDisabled = (pathParts.length <= 1);
+      this._setSearchDisabled(isDisabled);
+
+      // If not clearing search, and the new path is different from the original path before search,
+      // it implies navigation away from search context, so clear search.
+      if (WorkspaceManager.activeSearchFilter && val !== this.originalPathBeforeSearch) {
+         // Check if handleClearSearchRequest is already in progress to avoid recursion
+        if (!this._clearingSearch) {
+            this._clearingSearch = true; // semaphore
+            this.handleClearSearchRequest();
+            this._clearingSearch = false;
+        }
+      }
+      this.path = decodeURIComponent(val); // Set path after potential clearSearch
+
+      if (WorkspaceManager.activeSearchFilter && this.path !== this.originalPathBeforeSearch && !hashParams.search_term) {
+          if (!this._clearingSearch) { // Prevent recursion
+              this._clearingSearch = true;
+              this.handleClearSearchRequest(); // This will clear UI and flags.
+              this._clearingSearch = false;
+          }
+      }
 
       var parts = this.path.split('/').filter(function (x) {
         return x != '';
@@ -2171,11 +2568,19 @@ define([
 
       // console.log('in WorkspaceBrowser this.path', this.path);
       // console.log('in WorkspaceBrowser obj', obj);
-
+      // Only proceed with panel updates if not in an active search state or if search is being cleared
+      if (!WorkspaceManager.activeSearchFilter || this._clearingSearch) {
       Deferred.when(obj, lang.hitch(this, function (obj) {
         if (this.browserHeader) {
           this.browserHeader.set('selection', [obj]);
         }
+        var currentPathParts = this.path.split('/').filter(function(part) {
+          return part && part.length > 0;
+        });
+        var isCurrentlyRootLevel = (currentPathParts.length <= 1);
+        var isJobResult = (obj && obj.type === 'job_result');
+
+        this._setSearchDisabled(isCurrentlyRootLevel || isJobResult);
         var panelCtor;
         var params = { path: this.path, region: 'center' };
 
@@ -2280,7 +2685,7 @@ define([
         }
 
         Deferred.when(panelCtor, lang.hitch(this, function (Panel) {
-          if ((!this.activePanel) || !(this.activePanel instanceof Panel) || this.activePanel instanceof JobResult) {
+          if ((!this.activePanel) || !(this.activePanel instanceof Panel)) {
             if (this.activePanel) {
               this.removeChild(this.activePanel);
             }
@@ -2374,6 +2779,10 @@ define([
         });
         d.show();
       }));
+      } else if (this.browserHeader) {
+        // If search is active, still update the browser header's path display to reflect context
+        this.browserHeader.set('path', this.path);
+      }
     },
 
     getQuery: function (obj) {

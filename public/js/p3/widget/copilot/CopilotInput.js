@@ -21,6 +21,21 @@ define([
      * @extends {dijit/layout/ContentPane}
      */
     return declare([ContentPane], {
+      //================================================================
+      // WIDGET CONFIGURATION & STATE PROPERTIES
+      //================================================================
+
+      /** Widget styling */
+      style: 'padding: 0 5px 5px 5px; border: 0; height: 20%;',
+
+      /** Size constraints for the widget */
+      minSize: 40,
+      maxSize: 200,
+
+      //================================================================
+      // COPILOT API & SESSION PROPERTIES
+      //================================================================
+
       /** Reference to the CopilotAPI instance for making backend requests */
       copilotApi: null,
 
@@ -30,8 +45,18 @@ define([
       /** Flag to prevent multiple simultaneous submissions */
       isSubmitting: false,
 
+      //================================================================
+      // PROMPT & MODEL CONFIGURATION
+      //================================================================
+
       /** Custom system prompt to prepend to queries */
       systemPrompt: null,
+
+      /** State-specific prompt context */
+      statePrompt: null,
+
+      /** Enhanced prompt for advanced query processing */
+      enhancedPrompt: null,
 
       /** Selected language model for chat completion */
       model: null,
@@ -39,22 +64,19 @@ define([
       /** Selected RAG database for enhanced responses */
       ragDb: 'bvbrc_helpdesk',
 
-      statePrompt: null,
-
       /** Number of documents to use for RAG queries */
       numDocs: 3,
 
-      // Widget styling
-      style: 'padding: 0 5px 5px 5px; border: 0; height: 20%;',
+      //================================================================
+      // UI STATE PROPERTIES
+      //================================================================
 
-      // Size constraints for the widget
-      minSize: 40,
-      maxSize: 200,
-
-      // Flag to track page content toggle state
+      /** Flag to track page content toggle state */
       pageContentEnabled: false,
 
-      enhancedPrompt: null,
+      //================================================================
+      // LIFECYCLE METHODS
+      //================================================================
 
       /**
        * Constructor that initializes the widget with provided options
@@ -131,18 +153,25 @@ define([
             label: 'Submit',
             style: 'height: 30px; margin-right: 10px;',
             onClick: lang.hitch(this, function() {
-            // Prevent multiple simultaneous submissions
-            if (this.isSubmitting) return;
-            // Handle different submission types based on configuration
-            if (this.pageContentEnabled) {
-                this._handlePageSubmit();
-            } else if (this.copilotApi && this.ragDb) {
-                this._handleRagSubmit();
-            } else if (this.copilotApi) {
-                this._handleRegularSubmit();
-            } else {
-                console.error('CopilotApi widget not initialized');
-            }
+                // If currently streaming, stop the stream
+                if (this.isSubmitting) {
+                    this._stopStream();
+                    return;
+                }
+
+                // Prevent multiple simultaneous submissions
+                if (this.isSubmitting) return;
+
+                // Handle different submission types based on configuration
+                if (this.pageContentEnabled) {
+                    this._handlePageSubmit();
+                } else if (this.copilotApi && this.ragDb) {
+                    this._handleRagSubmit();
+                } else if (this.copilotApi) {
+                    this._handleRegularSubmit();
+                } else {
+                    console.error('CopilotApi widget not initialized');
+                }
             })
         });
 
@@ -199,16 +228,43 @@ define([
         }));
       },
 
+      //================================================================
+      // SUBMISSION HANDLER METHODS
+      //================================================================
+
       /**
-       * Handles submission of RAG queries with document retrieval
-       * Implementation:
-       * - Immediately shows user message and clears text area
-       * - Disables input during submission
-       * - Shows loading indicator
-       * - Retrieves documents via RAG API
-       * - Builds system prompt with document context
-       * - Makes follow-up LLM query with enhanced context
-       * - Updates chat store with assistant/system messages only
+       * Stops the current streaming request and resets the UI
+       */
+      _stopStream: function() {
+          if (this.copilotApi && this.copilotApi.stopCurrentStream()) {
+              console.log('Stream stopped by user');
+          }
+
+          // Reset UI state
+          this.isSubmitting = false;
+          this.submitButton.set('label', 'Submit');
+          this.submitButton.set('disabled', false);
+          this.displayWidget.hideLoadingIndicator();
+      },
+
+      /**
+       * Updates the submit button to show "Stop" during streaming
+       */
+      _setButtonToStop: function() {
+          this.submitButton.set('label', 'Stop');
+          this.submitButton.set('disabled', false); // Keep enabled so user can stop
+      },
+
+      /**
+       * Updates the submit button to show "Submit" when not streaming
+       */
+      _setButtonToSubmit: function() {
+          this.submitButton.set('label', 'Submit');
+          this.submitButton.set('disabled', false);
+      },
+
+      /**
+       * Handles streaming submission of RAG queries with document retrieval
        */
       _handleRagSubmit: function() {
         console.log('this.ragDb=', this.ragDb);
@@ -272,6 +328,9 @@ define([
         }));
       },
 
+      /**
+       * Handles streaming submission of regular (non-RAG) queries
+       */
       /**
        * Handles submission of regular (non-RAG) queries
        * Implementation:
@@ -340,148 +399,6 @@ define([
           this.isSubmitting = false;
           this.submitButton.set('disabled', false);
         }));
-      },
-
-      /**
-       * Resets widget state for new chat session
-       * Clears textarea and sets new chat flag
-       */
-      startNewChat: function() {
-        this.new_chat = true;
-        this.textArea.set('value', '');
-      },
-
-      /**
-       * Updates the current session identifier
-       * @param {string} sessionId - New session ID
-       */
-      setSessionId: function(sessionId) {
-        this.sessionId = sessionId;
-      },
-
-      /**
-       * Sets system prompt from structured data
-       * Implementation:
-       * - Takes array of data objects
-       * - Builds prompt string with JSON stringified data
-       * - Sets as system prompt
-       */
-      setSystemPromptWithData: function(data) {
-        if (!data || !data.length) {
-          this.systemPrompt = '';
-          return;
-        }
-
-        let promptStr = "Use the following information to answer the user's question:\n";
-        data.forEach(function(item) {
-          promptStr += JSON.stringify(item) + '\n';
-        });
-
-        this.systemPrompt = promptStr;
-      },
-
-      /**
-       * Sets raw system prompt string
-       */
-      setSystemPrompt: function(systemPrompt) {
-        this.systemPrompt = systemPrompt;
-      },
-
-      /**
-       * Returns currently selected model
-       */
-      getModel: function() {
-        return this.model;
-      },
-
-      /**
-       * Updates selected model and UI
-       */
-      setModel: function(model) {
-        this.model = model;
-      },
-
-
-      /**
-       * Updates selected RAG database and UI
-       */
-      setRagDb: function(ragDb) {
-        if (ragDb == 'null') {
-          this.ragDb = null;
-        } else {
-          this.ragDb = ragDb;
-        }
-      },
-
-      /**
-       * Updates RAG selection UI text
-       */
-      setRagButtonLabel: function(ragDb) {
-        if (!this.ragText) {
-          return;
-        }
-        if (ragDb && ragDb !== 'null') {
-          this.ragText.innerHTML = 'RAG: ' + ragDb;
-        } else {
-          this.ragText.innerHTML = 'RAG: None';
-        }
-      },
-
-      /**
-       * Updates model selection UI text
-       */
-      setModelText: function(model) {
-        if (!this.modelText) {
-          return;
-        }
-        if (model) {
-          model = model.split('/').reverse()[0];
-          if (model.length > 30) {
-            model = model.substring(0, 30) + '...';
-          }
-          this.modelText.innerHTML = 'Model: ' + model;
-        } else {
-          this.modelText.innerHTML = 'Model: None';
-        }
-      },
-
-      /**
-       * Updates the number of documents to use for RAG queries
-       */
-      setNumDocs: function(numDocs) {
-        this.numDocs = numDocs;
-      },
-
-      setStatePrompt: function(statePrompt) {
-        this.statePrompt = statePrompt;
-      },
-
-      /**
-       * Finalizes creation of a brand-new chat after the first successful response.
-       * Adds the session to the global sessions memory store, publishes reload event,
-       * then triggers title generation.
-       * @param {boolean} generateTitleImmediately – if false, skip title generation (default true)
-       */
-      _finishNewChat: function(generateTitleImmediately = true) {
-        this.new_chat = false;
-
-        // Add to global sessions store
-        if (window && window.App && window.App.chatSessionsStore) {
-          window.App.chatSessionsStore.addSession({
-            session_id: this.sessionId,
-            title: 'New Chat',
-            created_at: Date.now()
-          });
-        }
-
-        // Reload scroll bar and highlight
-        topic.publish('reloadUserSessions', { highlightSessionId: this.sessionId });
-
-        if (generateTitleImmediately) {
-          setTimeout(function() {
-            topic.publish('generateSessionTitle');
-          }, 100);
-        }
       },
 
       /**
@@ -617,7 +534,7 @@ define([
 
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-      this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt).then(lang.hitch(this, function(response) {
+      this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt).then(lang.hitch(this, function(response) {
           // Only add assistant message and system message (if present) - user message was already added
           var messagesToAdd = [];
           if (response.systemMessage) {
@@ -650,19 +567,174 @@ define([
       }));
     },
 
-    /**
-       * @method _updateToggleButtonStyle
-       * @description Updates the toggle button's visual state based on pageContentEnabled
+      //================================================================
+      // SESSION MANAGEMENT METHODS
+      //================================================================
+
+      /**
+       * Resets widget state for new chat session
+       * Clears textarea and sets new chat flag
        */
-    _updateToggleButtonStyle: function() {
-      var buttonNode = this.pageContentToggle.domNode;
-      if (this.pageContentEnabled) {
-          buttonNode.classList.remove('pageContentToggleInactive');
-          buttonNode.classList.add('pageContentToggleActive');
-      } else {
-          buttonNode.classList.remove('pageContentToggleActive');
-          buttonNode.classList.add('pageContentToggleInactive');
+      startNewChat: function() {
+        this.new_chat = true;
+        this.textArea.set('value', '');
+      },
+
+      /**
+       * Updates the current session identifier
+       * @param {string} sessionId - New session ID
+       */
+      setSessionId: function(sessionId) {
+        this.sessionId = sessionId;
+      },
+
+      /**
+       * Finalizes creation of a brand-new chat after the first successful response.
+       * Adds the session to the global sessions memory store, publishes reload event,
+       * then triggers title generation.
+       * @param {boolean} generateTitleImmediately – if false, skip title generation (default true)
+       */
+      _finishNewChat: function(generateTitleImmediately = true) {
+        this.new_chat = false;
+
+        // Add to global sessions store
+        if (window && window.App && window.App.chatSessionsStore) {
+          window.App.chatSessionsStore.addSession({
+            session_id: this.sessionId,
+            title: 'New Chat',
+            created_at: Date.now()
+          });
+        }
+
+        // Reload scroll bar and highlight
+        topic.publish('reloadUserSessions', { highlightSessionId: this.sessionId });
+
+        if (generateTitleImmediately) {
+          setTimeout(function() {
+            topic.publish('generateSessionTitle');
+          }, 100);
+        }
+      },
+
+      //================================================================
+      // CONFIGURATION METHODS (SETTERS/GETTERS)
+      //================================================================
+
+      /**
+       * Sets system prompt from structured data
+       * Implementation:
+       * - Takes array of data objects
+       * - Builds prompt string with JSON stringified data
+       * - Sets as system prompt
+       */
+      setSystemPromptWithData: function(data) {
+        if (!data || !data.length) {
+          this.systemPrompt = '';
+          return;
+        }
+
+        let promptStr = "Use the following information to answer the user's question:\n";
+        data.forEach(function(item) {
+          promptStr += JSON.stringify(item) + '\n';
+        });
+
+        this.systemPrompt = promptStr;
+      },
+
+      /**
+       * Sets raw system prompt string
+       */
+      setSystemPrompt: function(systemPrompt) {
+        this.systemPrompt = systemPrompt;
+      },
+
+      /**
+       * Returns currently selected model
+       */
+      getModel: function() {
+        return this.model;
+      },
+
+      /**
+       * Updates selected model and UI
+       */
+      setModel: function(model) {
+        this.model = model;
+      },
+
+      /**
+       * Updates selected RAG database and UI
+       */
+      setRagDb: function(ragDb) {
+        if (ragDb == 'null') {
+          this.ragDb = null;
+        } else {
+          this.ragDb = ragDb;
+        }
+      },
+
+      /**
+       * Updates RAG selection UI text
+       */
+      setRagButtonLabel: function(ragDb) {
+        if (!this.ragText) {
+          return;
+        }
+        if (ragDb && ragDb !== 'null') {
+          this.ragText.innerHTML = 'RAG: ' + ragDb;
+        } else {
+          this.ragText.innerHTML = 'RAG: None';
+        }
+      },
+
+      /**
+       * Updates model selection UI text
+       */
+      setModelText: function(model) {
+        if (!this.modelText) {
+          return;
+        }
+        if (model) {
+          model = model.split('/').reverse()[0];
+          if (model.length > 30) {
+            model = model.substring(0, 30) + '...';
+          }
+          this.modelText.innerHTML = 'Model: ' + model;
+        } else {
+          this.modelText.innerHTML = 'Model: None';
+        }
+      },
+
+      /**
+       * Updates the number of documents to use for RAG queries
+       */
+      setNumDocs: function(numDocs) {
+        this.numDocs = numDocs;
+      },
+
+      /**
+       * Sets state-specific prompt context
+       */
+      setStatePrompt: function(statePrompt) {
+        this.statePrompt = statePrompt;
+      },
+
+      //================================================================
+      // UTILITY METHODS
+      //================================================================
+
+      /**
+       * Updates the toggle button's visual state based on pageContentEnabled
+       */
+      _updateToggleButtonStyle: function() {
+        var buttonNode = this.pageContentToggle.domNode;
+        if (this.pageContentEnabled) {
+            buttonNode.classList.remove('pageContentToggleInactive');
+            buttonNode.classList.add('pageContentToggleActive');
+        } else {
+            buttonNode.classList.remove('pageContentToggleActive');
+            buttonNode.classList.add('pageContentToggleInactive');
+        }
       }
-    }
+    });
   });
-});

@@ -12,6 +12,7 @@ define([
     baseClass: 'ActionBar',
     constructor: function () {
       this._actions = {};
+      this.inSearch = false;
     },
     selection: null,
     currentContainerType: null,
@@ -80,6 +81,10 @@ define([
       valid = valid.filter(function (an) {
         var act = this._actions[an];
         var validTypes = act.options.validTypes || [];
+
+        if (act.options.searchOnly && !this.inSearch) {
+            return false;
+        }
 
         // only allow genome sharing if all genomes are owned by user
         if (sel[0] && an === 'Share') {
