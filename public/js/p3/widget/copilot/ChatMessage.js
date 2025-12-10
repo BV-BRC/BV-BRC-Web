@@ -5,9 +5,10 @@ define([
   'dojo/topic', // Topic messaging
   'dojo/_base/lang', // Language utilities
   'markdown-it/dist/markdown-it.min', // Markdown parser and renderer
+  'markdown-it-link-attributes/dist/markdown-it-link-attributes.min', // Plugin to add attributes to links
   'dijit/Dialog' // Dialog widget
 ], function (
-  declare, domConstruct, on, topic, lang, markdownit, Dialog
+  declare, domConstruct, on, topic, lang, markdownit, linkAttributes, Dialog
 ) {
   /**
    * @class ChatMessage
@@ -20,7 +21,12 @@ define([
     message: null,
 
     /** @property {Object} md - Initialized markdown-it instance for rendering markdown content */
-    md: markdownit(),
+    md: markdownit().use(linkAttributes, {
+      attrs: {
+        target: '_blank',
+        rel: 'noopener noreferrer'
+      }
+    }),
 
     /** @property {number} fontSize - Stores the font size for the message content */
     fontSize: null,

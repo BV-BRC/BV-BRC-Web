@@ -23,10 +23,11 @@ define([
   'dojo/_base/lang', // Language utilities like hitch
   'dojo/dom-style',
   'markdown-it/dist/markdown-it.min', // Markdown parser
+  'markdown-it-link-attributes/dist/markdown-it-link-attributes.min', // Plugin to add attributes to links
   './ChatMessage', // Custom message display widget
   './data/SuggestedQuestions' // Suggested questions data module
 ], function (
-  declare, ContentPane, domConstruct, on, topic, lang, domStyle, markdownit, ChatMessage, SuggestedQuestions
+  declare, ContentPane, domConstruct, on, topic, lang, domStyle, markdownit, linkAttributes, ChatMessage, SuggestedQuestions
 ) {
 
   /**
@@ -131,8 +132,13 @@ define([
         // Show initial empty state
         this.showEmptyState();
 
-        // Initialize markdown parser
-        this.md = markdownit();
+        // Initialize markdown parser with link attributes plugin
+        this.md = markdownit().use(linkAttributes, {
+          attrs: {
+            target: '_blank',
+            rel: 'noopener noreferrer'
+          }
+        });
 
         // Subscribe to message events
         topic.subscribe('RefreshSessionDisplay', lang.hitch(this, 'showMessages'));
