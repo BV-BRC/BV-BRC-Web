@@ -38,22 +38,40 @@ define([
    */
   return declare([CopilotInput], {
 
-    // CSS class for styling
+    //================================================================
+    // WIDGET CONFIGURATION & STATE PROPERTIES
+    //================================================================
+
+    /** CSS class for styling */
     baseClass: 'CopilotInputSidePanel',
 
-    // Widget styling
+    /** Widget styling */
     style: 'padding: 0 5px 5px 5px; border: 0; height: 20%;',
 
-    // Size constraints for the widget
+    /** Size constraints for the widget */
     minSize: 40,
     maxSize: 200,
 
+    //================================================================
+    // COPILOT API & SESSION PROPERTIES
+    //================================================================
+
+    /** Current selection for job manager context */
     currentSelection: null,
 
-    // Flag to track page content toggle state
+    /** Selected RAG database for enhanced responses */
+    ragDb: null,
+
+    //================================================================
+    // UI STATE PROPERTIES
+    //================================================================
+
+    /** Flag to track page content toggle state */
     pageContentEnabled: false,
 
-    ragDb: null,
+    //================================================================
+    // LIFECYCLE METHODS
+    //================================================================
 
     /**
      * @constructor
@@ -135,8 +153,11 @@ define([
           label: 'Submit',
           style: 'height: 30px; margin-right: 10px;',
           onClick: lang.hitch(this, function() {
-            // Prevent multiple simultaneous submissions
-            if (this.isSubmitting) return;
+            // If currently streaming, stop the stream
+            if (this.isSubmitting) {
+              this._stopStream();
+              return;
+            }
 
             // Handle different submission types based on configuration
             this.ragDb = null;
@@ -204,6 +225,32 @@ define([
           }
         }));
     },
+
+    //================================================================
+    // SUBMISSION HANDLER METHODS
+    //================================================================
+
+    /**
+     * Handles submission of regular (non-RAG) queries with streaming
+     * Routes to appropriate handler based on context
+     */
+    _handleRegularSubmit: function() {
+      try {
+        if (this.context === 'grid-container') {
+          this._submitToGridContainer();
+        } else if (this.context === 'job-manager') {
+          this._submitToJobManager();
+        } else {
+          throw new Error('Unsupported context: ' + (this.context || 'undefined'));
+        }
+      } catch (error) {
+        console.error('Error in _handleRegularSubmit:', error.message);
+        topic.publish('CopilotApiError', { error: error });
+        this.isSubmitting = false;
+        this.submitButton.set('disabled', false);
+      }
+    },
+
 
     /**
      * @method _handlePageSubmit
@@ -360,30 +407,6 @@ define([
     },
 
     /**
-     * Handles submission of regular (non-RAG) queries
-     * Implementation:
-     * - Checks context to determine submission type
-     * - Routes to appropriate handler based on context
-     * - Throws error for unsupported contexts
-     */
-    _handleRegularSubmit: function() {
-      try {
-        if (this.context === 'grid-container') {
-          this._submitToGridContainer();
-        } else if (this.context === 'job-manager') {
-          this._submitToJobManager();
-        } else {
-          throw new Error('Unsupported context: ' + (this.context || 'undefined'));
-        }
-      } catch (error) {
-        console.error('Error in _handleRegularSubmit:', error.message);
-        topic.publish('CopilotApiError', { error: error });
-        this.isSubmitting = false;
-        this.submitButton.set('disabled', false);
-      }
-    },
-
-    /**
      * Handles submission for grid-container context using copilotAPI
      * Implementation:
      * - Immediately shows user message and clears text area
@@ -519,7 +542,7 @@ define([
           _self._finishNewChat();
         }
       })).catch(function(error) {
-        topic.publish('noJobDataError', error);
+        topic.publish('CopilotApiError', { error: error });
       }).finally(lang.hitch(this, function() {
         this.displayWidget.hideLoadingIndicator();
         this.isSubmitting = false;
@@ -527,40 +550,9 @@ define([
       }));
     },
 
-    /**
-     * Updates selected model and UI
-     */
-    setModel: function(model) {
-      console.log('setModel=', model);
-      this.model = model;
-    },
-
-    /**
-     * Updates selected RAG database and UI
-     */
-    setRagDb: function(ragDb) {
-      console.log('setRagDb=', ragDb);
-      if (ragDb == 'null') {
-        this.ragDb = null;
-      } else {
-        this.ragDb = ragDb;
-      }
-    },
-
-    /**
-     * @method _updateToggleButtonStyle
-     * @description Updates the toggle button's visual state based on pageContentEnabled
-     */
-    _updateToggleButtonStyle: function() {
-        var buttonNode = this.pageContentToggle.domNode;
-        if (this.pageContentEnabled) {
-            buttonNode.classList.remove('pageContentToggleInactive');
-            buttonNode.classList.add('pageContentToggleActive');
-        } else {
-            buttonNode.classList.remove('pageContentToggleActive');
-            buttonNode.classList.add('pageContentToggleInactive');
-        }
-    },
+    //================================================================
+    // SESSION MANAGEMENT METHODS
+    //================================================================
 
     /**
      * Finalizes creation of a brand-new chat, mirroring CopilotInput._finishNewChat
@@ -588,8 +580,53 @@ define([
       }
     },
 
+    //================================================================
+    // CONFIGURATION METHODS (SETTERS/GETTERS)
+    //================================================================
+
+    /**
+     * Updates selected model and UI
+     */
+    setModel: function(model) {
+      console.log('setModel=', model);
+      this.model = model;
+    },
+
+    /**
+     * Updates selected RAG database and UI
+     */
+    setRagDb: function(ragDb) {
+      console.log('setRagDb=', ragDb);
+      if (ragDb == 'null') {
+        this.ragDb = null;
+      } else {
+        this.ragDb = ragDb;
+      }
+    },
+
+    /**
+     * Sets the current selection for job manager context
+     */
     setCurrentSelection: function(selection) {
       this.currentSelection = selection;
+    },
+
+    //================================================================
+    // UTILITY METHODS
+    //================================================================
+
+    /**
+     * Updates the toggle button's visual state based on pageContentEnabled
+     */
+    _updateToggleButtonStyle: function() {
+        var buttonNode = this.pageContentToggle.domNode;
+        if (this.pageContentEnabled) {
+            buttonNode.classList.remove('pageContentToggleInactive');
+            buttonNode.classList.add('pageContentToggleActive');
+        } else {
+            buttonNode.classList.remove('pageContentToggleActive');
+            buttonNode.classList.add('pageContentToggleInactive');
+        }
     }
   });
 });

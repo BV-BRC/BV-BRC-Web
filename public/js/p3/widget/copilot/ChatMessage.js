@@ -155,9 +155,9 @@ define([
      *
      */
     createMessageActionButtons: function(buttonContainer) {
-      var copyButton = this.createButton('', 'copy-button');
-      var thumbUpButton = this.createButton('', 'thumb-up-button');
-      var thumbDownButton = this.createButton('', 'thumb-down-button');
+      var copyButton = this.createButton('', 'copy-button', 'Copy message');
+      var thumbUpButton = this.createButton('', 'thumb-up-button', 'Like response');
+      var thumbDownButton = this.createButton('', 'thumb-down-button', 'Dislike response');
 
       // Highlight buttons based on existing rating
       if (this.message.rating === 1) {
@@ -201,13 +201,16 @@ define([
      * @param {string} [additionalClass] - Optional additional CSS class
      * @returns {HTMLElement} Button element that can be added to a container
      */
-    createButton: function(text, additionalClass) {
+    createButton: function(text, additionalClass, tooltip) {
       var className = 'message-action-button' + (additionalClass ? ' ' + additionalClass : '');
-
-      return domConstruct.create('button', {
+      var buttonAttrs = {
         innerHTML: text,
         class: className
-      });
+      };
+      if (tooltip) {
+        buttonAttrs.title = tooltip;
+      }
+      return domConstruct.create('button', buttonAttrs);
     },
 
     /**
