@@ -46,6 +46,11 @@ define([
         label: 'Sequence Alignment Data',
         formats: ['.bam']
       },
+      bigwig: {
+         label: 'BigWig',
+         formats: ['.bigwig', '.bw'],
+         description: 'A binary, compressed, and indexed format for continuous genomic data (e.g. coverage tracks).'
+      },
       contigs: {
         label: 'Contigs',
         formats: ['.fa', '.fasta', '.faa', '.fna'],
@@ -206,6 +211,7 @@ define([
       aligned_protein_fasta: { label: 'aligned_protein_fasta', value: 'aligned_protein_fasta' },
       bam: { label: 'bam', value: 'bam' },
       bai: { label: 'bai', value: 'bai' },
+      bigwig: { label: 'bigwig', value: 'bigwig' },
       contigs: { label: 'contigs', value: 'contigs' },
       csv: { label: 'csv', value: 'csv' },
       diffexp_input_data: { label: 'diffexp_input_data', value: 'diffexp_input_data' },
