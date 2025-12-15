@@ -56,7 +56,8 @@ app.use(function (req, res, next) {
   req.config = config;
   req.production = config.get('production') || false;
   req.productionLayers = [
-    'p3/layer/core',
+    'p3/layer/core' ];
+  /*
     'p3/layer/viewers',
     'p3/layer/jbrowse',
     'p3/layer/panels',
@@ -64,7 +65,7 @@ app.use(function (req, res, next) {
     'p3/layer/p3user',
     'p3/layer/outbreaks',
     'p3/layer/globalWSObject'
-]
+]*/
   req.package = packageJSON;
   // var authToken = "";
   // var userProf = "";
