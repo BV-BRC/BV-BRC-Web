@@ -132,13 +132,14 @@
           <label class="paramlabel">Strategy</label><br>
           <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-attach-event="onChange:onRecipeChange">
             <option value="auto">Auto</option>
-            <option value="unicycler">Unicycler</option>
-            <option value="spades">SPAdes</option>
             <option value="canu">Canu</option>
+            <option value="flye">Flye</option>
+            <option value="meta-flye">metaFlye</option>
+            <option value="single-cell">MDA (single-cell)</option>
             <option value="meta-spades">metaSPAdes</option>
             <option value="plasmid-spades">plasmidSPAdes</option>
-            <option value="single-cell">MDA (single-cell)</option>
-            <option value="flye">flye</option>
+            <option value="spades">SPAdes</option>
+            <option value="unicycler">Unicycler</option>
           </select>
         </div>
         <div class="appRow" data-dojo-attach-point="genome_size_block" style="display:none">
