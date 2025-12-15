@@ -100,6 +100,11 @@ define([
             o.type = extension;
           }
         }
+        
+        if (extension === 'bw' || extension === 'bigwig') {
+           o.type = 'bigwig';
+        }
+        
         if (_self.streamableTypes.indexOf(o.type) >= 0 && !o.name.endsWith('.bai')) {
           var jBrowseTrackType;
           var jBrowseStoreType;
@@ -120,8 +125,8 @@ define([
               }
               break;
             case 'bigwig':
-              jBrowseTrackType = 'JBrowse/Store/BigWig';
-              jBrowseStoreType = 'JBrowse/View/Track/Wiggle/XYPlot';
+              jBrowseTrackType = 'JBrowse/View/Track/Wiggle/XYPlot';
+              jBrowseStoreType = 'JBrowse/Store/BigWig';
               record = {
                 path: o.url, keyAndLabel: o.name, store: o.id, trackType: jBrowseTrackType, storeType: jBrowseStoreType
               };
