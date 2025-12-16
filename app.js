@@ -161,7 +161,14 @@ app.use('/public/pdfs/', [
     res.redirect('https://docs.patricbrc.org/tutorial/');
   }
 ]);
-app.use('/patric/', express.static(path.join(__dirname, 'public/patric/')));
+app.use('/patric/', express.static(path.join(__dirname, 'public/patric/'), {
+  maxage: '365d',
+  setHeaders: function (res, path) {
+    var d = new Date();
+    d.setYear(d.getFullYear() + 1);
+    res.setHeader('Expires', d.toGMTString());
+  }
+}));
 app.use('/public/', express.static(path.join(__dirname, 'public/')));
 app.use('/', routes);
 // app.use('/home-prev', prevHome);
