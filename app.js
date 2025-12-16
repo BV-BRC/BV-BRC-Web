@@ -136,7 +136,18 @@ app.use('/js/' + packageJSON.version + '/', [
   express.static(path.join(__dirname, 'public/js/'),staticHeaders)
 ]);
 
-app.use('/js/', express.static(path.join(__dirname, 'public/js/')));
+app.use('/js/', express.static(path.join(__dirname, 'public/js/'), {
+  maxage: config.get('production') ? '365d' : '1h',
+  setHeaders: function (res, path) {
+    var d = new Date();
+    if (config.get('production')) {
+      d.setYear(d.getFullYear() + 1);
+    } else {
+      d.setHours(d.getHours() + 1);
+    }
+    res.setHeader('Expires', d.toGMTString());
+  }
+}));
 app.use('/patric/images', express.static(path.join(__dirname, 'public/patric/images/'), {
   maxage: '365d',
   setHeaders: function (res, path) {
