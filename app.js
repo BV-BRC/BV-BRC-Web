@@ -125,6 +125,13 @@ app.use('*jbrowse.conf', express.static(path.join(__dirname, 'public/js/jbrowse.
 const staticHeaders = {
   maxage: '356d',
   setHeaders: function (res, path) {
+    // Append 'immutable' to existing Cache-Control header set by Express
+    var existingCacheControl = res.getHeader('Cache-Control');
+    if (existingCacheControl) {
+      res.setHeader('Cache-Control', existingCacheControl + ', immutable');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=30758400, immutable');
+    }
     var d = new Date();
     d.setYear(d.getFullYear() + 1);
     res.setHeader('Expires', d.toGMTString())
@@ -151,6 +158,12 @@ app.use('/js/', express.static(path.join(__dirname, 'public/js/'), {
 app.use('/patric/images', express.static(path.join(__dirname, 'public/patric/images/'), {
   maxage: '365d',
   setHeaders: function (res, path) {
+    var existingCacheControl = res.getHeader('Cache-Control');
+    if (existingCacheControl) {
+      res.setHeader('Cache-Control', existingCacheControl + ', immutable');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
     var d = new Date();
     d.setYear(d.getFullYear() + 1);
     res.setHeader('Expires', d.toGMTString());
