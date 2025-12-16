@@ -72,8 +72,11 @@ var profile = {
         'p3/widget/HierarchicalTrackList',
         'dijit/Toolbar',
         'dijit/ToolbarSeparator',
-	'dijit/loading',
-	'dijit/form/validate',
+        "rql/query",
+        "rql/parser",
+        "rql/each",
+        'dijit/loading',
+        'dijit/form/validate',
         'jDataView'
       ],
       exclude: ["rql/js-array"]
