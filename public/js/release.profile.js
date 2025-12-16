@@ -72,19 +72,10 @@ var profile = {
         'p3/widget/HierarchicalTrackList',
         'dijit/Toolbar',
         'dijit/ToolbarSeparator',
-        "rql/query",
         "rql/parser",
-        "rql/each",
-        'dijit/loading',
-        'dijit/form/validate',
-        'jDataView'
-      ],
-      exclude: ["rql/js-array"]
-    },
-    'p3/layer/viewers': {
-      include: [
-	'dojox/gfx/svg',
-	'dojox/gfx/path',
+        'jDataView',
+        'dojox/gfx/svg',
+	      'dojox/gfx/path',
         'p3/widget/ProteinFeatureSummary',
         'p3/widget/app/Annotation',
         'p3/widget/viewer/Taxonomy',
@@ -92,10 +83,6 @@ var profile = {
         'p3/widget/viewer/GenomeList',
         'p3/widget/viewer/Feature',
         'p3/widget/viewer/FeatureList',
-      ]
-    },
-    'p3/layer/jbrowse': {
-      include: [
         'JBrowse/ConfigAdaptor/conf',
         'JBrowse/ConfigAdaptor/JB_json_v1',
         'JBrowse/Plugin',
@@ -108,63 +95,25 @@ var profile = {
         'JBrowse/Model/SimpleFeature',
         'JBrowse/View/Track/HTMLFeatures',
         'JBrowse/View/Ruler',
-        'JBrowse/View/FASTA'
-      ]
-    },
-    'p3/layer/outbreaks': {
-      include: [
-	'p3/widget/outbreaks/Mpox/index',
-	'dojox/xml/DomParser',
-	'p3/widget/outbreaks/OutbreaksOverview',
-	'p3/widget/outbreaks/OutbreaksTab',
-	'p3/widget/outbreaks/OutbreaksTabContainer',
-	'p3/widget/outbreaks/OutbreaksPhylogenyTreeViewer',
-	'p3/widget/outbreaks/OutbreaksGeoMap',
-	'dojox/dtl/_Templated',
-	'dojox/dtl/_base',
-	'dojox/string/tokenize',
-	'dojox/string/Builder',
-	'p3/widget/outbreaks/OutbreaksGeoMapInfo'
-      ]
-    },
-    'p3/layer/panels': {
-      include: [
+        'JBrowse/View/FASTA',
+        'p3/widget/outbreaks/Mpox/index',
+        'dojox/xml/DomParser',
+        'p3/widget/outbreaks/OutbreaksOverview',
+        'p3/widget/outbreaks/OutbreaksTab',
+        'p3/widget/outbreaks/OutbreaksTabContainer',
+        'p3/widget/outbreaks/OutbreaksPhylogenyTreeViewer',
+        'p3/widget/outbreaks/OutbreaksGeoMap',
+        'dojox/dtl/_Templated',
+        'dojox/dtl/_base',
+        'dojox/string/tokenize',
+        'dojox/string/Builder',
+        'p3/widget/outbreaks/OutbreaksGeoMapInfo',
         'p3/widget/CreateFolder',
         'p3/widget/CreateWorkspace',
-        'p3/widget/Uploader'
-      ],
-      exclude: [
-        'p3/layer/core',
-	'rql/js-array'
-      ]
-    },
-    'p3/layer/p3user': {
-      include: [
-        'dojo/parser',
-        'dijit/form/Form',
-        'dijit/form/TextBox',
-        'dijit/form/Button',
-        'dojox/validate/web',
-        'dijit/form/DropDownButton',
-        'dijit/_base/manager',
-        'dijit/_base',
-        'dijit/WidgetSet',
-        'dijit/selection',
-        'dijit/form/ComboButton',
-        'dijit/form/ToggleButton'
-      ],
-      exclude: ['rql/js-array']
-    },
-    'p3/layer/globalWSObject': {
-      customBase: true,
-      boot: true,
-      include: [
+        'p3/widget/Uploader',
         'p3/GlobalWorkspace'
       ],
-      exclude: ['rql/js-array'],
-      deps: [
-        'p3/GlobalWorkspace'
-      ]
+      exclude: ["rql/js-array"]
     }
   }
 };
