@@ -143,7 +143,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
   function PollJobs() {
     // leaving this here since instantiation order is unpredictable
     if (!(window.App && window.App.api && window.App.api.service)) {
-      setTimeout(PollJobs, 1000);
+      setTimeout(PollJobs, 30000);
       return;
     }
 
@@ -152,17 +152,20 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
     return When(prom,function (statusChange) {
       if (statusChange) {
         updateJobsList().then(function () {
-          setTimeout(PollJobs, TIME_OUT);
+//          setTimeout(PollJobs, TIME_OUT);
+      setTimeout(PollJobs, 30000);
         });
         return;
       }
 
-      setTimeout(PollJobs, TIME_OUT);
+      setTimeout(PollJobs, 30000);
+//      setTimeout(PollJobs, TIME_OUT);
     }, function () {
       Topic.publish('/Jobs', { status: 'failed' });
       Topic.publish('/JobStatus', 'failed'); // send 'failed' instead of usual meta object
 
-      setTimeout(PollJobs, TIME_OUT);
+      setTimeout(PollJobs, 30000);
+//      setTimeout(PollJobs, TIME_OUT);
     });
   }
 
