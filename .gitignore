@@ -6,6 +6,7 @@ dump.rdb
 npm-debug.log
 public/js/release/build-report.txt
 public/js/release/
+public/js/dist/
 .idea/
 .fleet/
 .vscode/

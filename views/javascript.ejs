@@ -9,12 +9,35 @@ dojoConfig = {
   }
 </script>
 
+<!-- External Libraries (Webpack Bundles) -->
+<!-- Consolidated into 3 bundles: core, viewers, archaeopteryx -->
+<%
+const webpack_bundles = [
+  "dist/core.bundle.js",          // cytoscape, jquery, dagre, cola, BVBRCClient, markdown-it, html2canvas
+  "dist/archaeopteryx.bundle.js"  // phylogenetic tree viewer
+]
+%>
+
+<% if (request && request.production){ %>
+  <% webpack_bundles.forEach(function(url){ %>
+    <script type="text/javascript" src="/js/<%- request.package.version %>/<%- url %>"></script>
+  <% }) %>
+  <!-- CanVG loaded separately due to AMD dependency issues -->
+  <script type="text/javascript" src="/js/<%- request.package.version %>/archaeopteryx/archaeopteryx-dependencies/canvg.js"></script>
+<% } else { %>
+  <% webpack_bundles.forEach(function(url){ %>
+    <script type="text/javascript" src="/js/<%- url %>"></script>
+  <% }) %>
+  <!-- CanVG loaded separately due to AMD dependency issues -->
+  <script type="text/javascript" src="/js/archaeopteryx/archaeopteryx-dependencies/canvg.js"></script>
+<% } %>
+
+<!-- Legacy BVBRC Client (removed - now in webpack bundle) -->
 <!-- Scripts -->
 <%
 const load_scripts = [
-  "bvbrc_js_client/dist/bvbrc_client.js",
-  "bundle/bundle.js",
-  "bundle/bundle2.js"
+  // "bvbrc_js_client/dist/bvbrc_client.js"  // Now bundled in webpack
+  // Note: bundle.js and bundle2.js have been replaced by webpack bundles above
 ]
 %>
 
