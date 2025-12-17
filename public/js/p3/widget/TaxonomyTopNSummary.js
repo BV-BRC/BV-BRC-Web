@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang',
-  'dojo/dom-class', 'dojo/when',
+  'dojo/dom-class', 'dojo/dom-construct', 'dojo/when',
   'dgrid/Grid', 'dgrid/extensions/DijitRegistry',
   '../store/TaxonomyJsonRest'
 
 ], function (
   declare, lang,
-  domClass, when,
+  domClass, domConstruct, when,
   Grid, dgridRegistry,
   Store
 ) {
@@ -34,7 +34,12 @@ define([
       label: 'Name',
       field: 'taxon_name',
       renderCell: function (obj, val, node) {
-        node.innerHTML = '<a class="navigationLink" href="/view/Taxonomy/' + obj.taxon_id + '">' + obj.taxon_name +  '</a>';
+        // Create link safely using DOM construction to prevent XSS
+        domConstruct.create('a', {
+          'class': 'navigationLink',
+          href: '/view/Taxonomy/' + obj.taxon_id,
+          textContent: obj.taxon_name
+        }, node);
       }
     }, {
       label: 'Genomes',
