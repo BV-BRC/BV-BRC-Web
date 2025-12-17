@@ -6,7 +6,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 ) {
 
   var self = this;
-  var TIME_OUT = 5000; // in ms
+  var TIME_OUT = 30000; // in ms
   // var job_callbacks = {}; // key job id to callback function
   // state model of filters applied to jobs
   self.filters = {
@@ -143,7 +143,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
   function PollJobs() {
     // leaving this here since instantiation order is unpredictable
     if (!(window.App && window.App.api && window.App.api.service)) {
-      setTimeout(PollJobs, 30000);
+      setTimeout(PollJobs, TIME_OUT);
       return;
     }
 
@@ -152,20 +152,17 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
     return When(prom,function (statusChange) {
       if (statusChange) {
         updateJobsList().then(function () {
-//          setTimeout(PollJobs, TIME_OUT);
-      setTimeout(PollJobs, 30000);
+          setTimeout(PollJobs, TIME_OUT);
         });
         return;
       }
 
-      setTimeout(PollJobs, 30000);
-//      setTimeout(PollJobs, TIME_OUT);
+      setTimeout(PollJobs, TIME_OUT);
     }, function () {
       Topic.publish('/Jobs', { status: 'failed' });
       Topic.publish('/JobStatus', 'failed'); // send 'failed' instead of usual meta object
 
-      setTimeout(PollJobs, 30000);
-//      setTimeout(PollJobs, TIME_OUT);
+      setTimeout(PollJobs, TIME_OUT);
     });
   }
 
