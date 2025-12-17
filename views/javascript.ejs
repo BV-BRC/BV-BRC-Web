@@ -207,6 +207,7 @@ const load_scripts = [
         appOpts.copilotEnablePublications = "<%= request.applicationOptions.copilotEnablePublications %>";
         appOpts.copilotEnableEnhancePrompt = "<%= request.applicationOptions.copilotEnableEnhancePrompt %>";
         appOpts.copilotEnableShowPromptDetails = "<%= request.applicationOptions.copilotEnableShowPromptDetails %>";
+        appOpts.production = <%= request.production %>;
         window.App = new App(appOpts);
       });
       <% if (request && request.production){ %>
