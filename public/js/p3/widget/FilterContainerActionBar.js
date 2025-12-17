@@ -6,7 +6,8 @@ define([
   'dojo/data/ObjectStore', 'dojo/store/Memory', 'dojox/form/CheckedMultiSelect',
   'dijit/form/DropDownButton', 'dijit/DropDownMenu',
   'dijit/Dialog', 'dijit/form/Button', 'dijit/form/Select', './AdvancedSearchRowForm',
-  'dijit/focus', '../util/PathJoin', '../util/constructMetadataName'
+  'dijit/focus', '../util/PathJoin', '../util/constructMetadataName',
+  'dojo/debounce'
 ], function (
   declare, ContainerActionBar, lang,
   domConstruct, domGeometry, domStyle, domClass,
@@ -15,7 +16,8 @@ define([
   ObjectStore, Memory, CheckedMultiSelect,
   DropDownButton, DropDownMenu,
   Dialog, Button, Select, AdvancedSearchRowForm,
-  focusUtil, PathJoin, constructMetadataName
+  focusUtil, PathJoin, constructMetadataName,
+  debounce
 ) {
 
   function sortByLabel(firstEl, secondEl) {
@@ -468,8 +470,11 @@ define([
       this.keywordSearch = Textbox({ style: 'width: 300px;' });
       this.keywordSearch.set('intermediateChanges', true);
 
-      this.keywordSearch.on('change', lang.hitch(this, function (val) {
-        if (val) {
+      const searchHandler = lang.hitch(this, function (val) {
+        if (val && val.length > 0 && val.length < 3) {
+          return;
+        }
+          if (val) {
           domClass.remove(clear, 'dijitHidden');
         } else {
           domClass.add(clear, 'dijitHidden');
@@ -480,7 +485,8 @@ define([
           category: 'keywords',
           value: val
         });
-      }));
+      });
+      this.keywordSearch.on('change', debounce(searchHandler, 750));
       domConstruct.place(this.keywordSearch.domNode, ktop, 'last');
       this.watch('state', lang.hitch(this, 'onSetState'));
 
