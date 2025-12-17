@@ -6,7 +6,7 @@ define([
   '../ActionBar', '../FilterContainerActionBar', 'phyloview/PhyloTree', '../../WorkspaceManager',
   'd3/d3', 'phyloview/TreeNavSVG', '../../util/PathJoin', 'dijit/form/Button',
   'dijit/MenuItem', 'dijit/TooltipDialog', 'dijit/popup', '../SelectionToGroup', '../PerspectiveToolTip',
-  'dijit/Dialog', '../ItemDetailPanel', 'dojo/query', 'FileSaver'
+  'dijit/Dialog', '../ItemDetailPanel', 'dojo/query', 'FileSaver', 'msa'
 ], function (
   declare, Base, on, Topic,
   domClass, ContentPane, domConstruct,
