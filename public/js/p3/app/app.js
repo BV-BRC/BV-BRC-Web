@@ -510,11 +510,19 @@ define([
       return ch[0];
     },
 
-    getConstructor: function (cls) {
+    getConstructor: function (cls,layers) {
       var def = new Deferred();
-      require([cls], function (ctor) {
-        def.resolve(ctor);
-      });
+      if (layers && layers.length > 0) {
+        require(layers, function () {
+          require([cls], function (ctor) {
+            def.resolve(ctor);
+          });
+        });
+      } else {
+        require([cls], function (ctor) {
+          def.resolve(ctor);
+        });
+      }
       return def.promise;
     },
 
@@ -531,7 +539,8 @@ define([
 
       /*  istanbul ignore else */
       if (newNavState.widgetClass) {
-        ctor = this.getConstructor(newNavState.widgetClass);
+        layers = (window.App && window.App.production && newNavState.layers)?newNavState.layers:[]
+        ctor = this.getConstructor(newNavState.widgetClass, layers);
       } else {
         ctor = ContentPane;
       }
