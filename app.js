@@ -32,7 +32,7 @@ var apiProxy = httpProxy.createProxyServer();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
+app.use(favicon(path.join(__dirname, '/public/favicon.ico'), { maxAge: '365d' }));
 app.use(logger('dev'));
 app.use(cookieParser(config.get('cookieSecret')));
 
@@ -125,6 +125,13 @@ app.use('*jbrowse.conf', express.static(path.join(__dirname, 'public/js/jbrowse.
 const staticHeaders = {
   maxage: '356d',
   setHeaders: function (res, path) {
+    // Append 'immutable' to existing Cache-Control header set by Express
+    var existingCacheControl = res.getHeader('Cache-Control');
+    if (existingCacheControl) {
+      res.setHeader('Cache-Control', existingCacheControl + ', immutable');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=30758400, immutable');
+    }
     var d = new Date();
     d.setYear(d.getFullYear() + 1);
     res.setHeader('Expires', d.toGMTString())
@@ -136,10 +143,27 @@ app.use('/js/' + packageJSON.version + '/', [
   express.static(path.join(__dirname, 'public/js/'),staticHeaders)
 ]);
 
-app.use('/js/', express.static(path.join(__dirname, 'public/js/')));
+app.use('/js/', express.static(path.join(__dirname, 'public/js/'), {
+  maxage: config.get('production') ? '365d' : '1h',
+  setHeaders: function (res, path) {
+    var d = new Date();
+    if (config.get('production')) {
+      d.setYear(d.getFullYear() + 1);
+    } else {
+      d.setHours(d.getHours() + 1);
+    }
+    res.setHeader('Expires', d.toGMTString());
+  }
+}));
 app.use('/patric/images', express.static(path.join(__dirname, 'public/patric/images/'), {
   maxage: '365d',
   setHeaders: function (res, path) {
+    var existingCacheControl = res.getHeader('Cache-Control');
+    if (existingCacheControl) {
+      res.setHeader('Cache-Control', existingCacheControl + ', immutable');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
     var d = new Date();
     d.setYear(d.getFullYear() + 1);
     res.setHeader('Expires', d.toGMTString());
@@ -150,8 +174,22 @@ app.use('/public/pdfs/', [
     res.redirect('https://docs.patricbrc.org/tutorial/');
   }
 ]);
-app.use('/patric/', express.static(path.join(__dirname, 'public/patric/')));
-app.use('/public/', express.static(path.join(__dirname, 'public/')));
+app.use('/patric/', express.static(path.join(__dirname, 'public/patric/'), {
+  maxage: '365d',
+  setHeaders: function (res, path) {
+    var d = new Date();
+    d.setYear(d.getFullYear() + 1);
+    res.setHeader('Expires', d.toGMTString());
+  }
+}));
+app.use('/public/', express.static(path.join(__dirname, 'public/'), {
+  maxage: '365d',
+  setHeaders: function (res, path) {
+    var d = new Date();
+    d.setYear(d.getFullYear() + 1);
+    res.setHeader('Expires', d.toGMTString());
+  }
+}));
 app.use('/', routes);
 // app.use('/home-prev', prevHome);
 app.post('/reportProblem', reportProblem);
