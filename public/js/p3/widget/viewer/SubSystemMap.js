@@ -182,18 +182,19 @@ define([
         this.subclass = response.response.docs[0].subclass;
         this.subsystemName = response.response.docs[0].subsystem_name;
 
-        var headerString = 'Subsystem View <br>';
+        // Build header text safely
+        var headerParts = ['Subsystem View'];
 
         if (this.superclass !== '') {
-          headerString += this.superclass + ' » ';
+          headerParts.push(this.superclass);
         }
 
         if (this.subsystemClass !== '') {
-          headerString += this.subsystemClass + ' » ';
+          headerParts.push(this.subsystemClass);
         }
 
         if (this.subclass !== '') {
-          headerString += this.subclass + ' » ';
+          headerParts.push(this.subclass);
         }
 
 
@@ -213,8 +214,18 @@ define([
           geneInfo += ' (' + self.state.genome_name + ')';
         }
 
-        $('#subsystemheatmap').append('<div id="subsystemheatmapheader"></div>');
-        $('#subsystemheatmapheader').html( headerString + '<span style="color:#76a72d;font-size: 1.1em;font-weight: bold">' + this.subsystemName + geneInfo + '</span>');
+        // Build header safely using DOM construction
+        var $header = $('<div id="subsystemheatmapheader"></div>');
+        $header.text(headerParts.join(' » '));
+        $header.append('<br>');
+        $header.append(
+          $('<span>').css({
+            'color': '#76a72d',
+            'font-size': '1.1em',
+            'font-weight': 'bold'
+          }).text(this.subsystemName + geneInfo)
+        );
+        $('#subsystemheatmap').append($header);
 
         // Todo(nc): this doesn't seem to work?  Let's remove it?
         when(self.getSubsystemDescription(self.state.subsystem_id), function (data) {
