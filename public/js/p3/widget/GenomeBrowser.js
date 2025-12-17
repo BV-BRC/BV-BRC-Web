@@ -190,7 +190,8 @@ define([
       (function () {
 
         // add a moreMatches class to our hacked-in "more options" option
-        var dropDownProto = eval(this.locationBox.dropDownClass).prototype;
+        // Use lang.getObject() instead of eval() to safely resolve the class name
+        var dropDownProto = lang.getObject(this.locationBox.dropDownClass).prototype;
         var oldCreateOption = dropDownProto._createOption;
         dropDownProto._createOption = function (item) {
           var option = oldCreateOption.apply(this, arguments);
