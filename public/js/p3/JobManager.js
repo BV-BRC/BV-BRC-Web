@@ -166,6 +166,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
     });
   }
 
+
   // kick off the polling
   setTimeout(PollJobs, 1000);
 
