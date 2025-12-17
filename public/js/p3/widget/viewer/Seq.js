@@ -186,7 +186,7 @@ define([
         };
         
         if (t.storeType === 'JBrowse/Store/BigWig') {
-          track.yScalePosition = 'right';
+          track.yScalePosition = 'left';
         }
         
         tracks.push(track);
