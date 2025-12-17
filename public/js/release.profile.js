@@ -96,7 +96,12 @@ var profile = {
         'dojox/dtl/_base',
         'dojox/string/tokenize',
         'dojox/string/Builder',
-        "p3/widget/WorkspaceObjectSelector"
+        "p3/widget/WorkspaceObjectSelector",
+        "dijit/form/FilteringSelect",
+        "p3/widget/TooltipDialog",
+        "p3/widget/GlobalSearch",
+        "dijit/form/Select",
+        "p3/widget/JobStatus"
       ],
       exclude: ["rql/js-array"]
     },
