@@ -189,11 +189,13 @@ define([
 
       this.set('query', state.search);
 
-      // for each of the facet widgets, get updated facet counts and update the content.
+      // for each of the facet widgets, clear selection
       Object.keys(this._ffWidgets).forEach(function (category) {
         this._ffWidgets[category].clearSelection();
-        this._updateFilteredCounts(category, parsedFilter ? parsedFilter.byCategory : false, parsedFilter ? parsedFilter.keywords : []);
       }, this);
+
+      // Note: facet counts are fetched via _setQueryAttr which is triggered by set('query') above
+      // No need to explicitly call _updateAllFilteredCounts here
 
       // for each of the selected items in the filter, toggle the item on in  ffWidgets
       if (parsedFilter && parsedFilter.selected) {
@@ -561,6 +563,9 @@ define([
           filter = 'false';
         }
         this.set('filter', filter);
+
+        // Refresh all facet counts based on the new filter
+        this._refreshAllFacets();
       }));
 
       // advanced search
@@ -574,7 +579,107 @@ define([
       }), true, this.containerNode);
     },
 
+    _refreshAllFacets: function () {
+      // Build the full query with current search + current filters
+      let q = [];
+
+      if (this.query) {
+        q.push((this.query && (this.query.charAt(0) == '?')) ? this.query.substr(1) : this.query);
+      }
+
+      if (this.filter && this.filter !== 'false') {
+        q.push(this.filter);
+      }
+
+      if (q.length == 0) {
+        return; // No query to fetch facets for
+      } else if (q.length == 1) {
+        q = q[0];
+      } else {
+        q = 'and(' + q.join(',') + ')';
+      }
+
+      // Fetch all facets in a single API call
+      const self = this;
+      this.getFacets('?' + q).then(function (facets) {
+        if (!facets) {
+          return;
+        }
+        // Update all facet widgets with the returned data
+        Object.keys(facets).forEach(function (category) {
+          if (self._ffWidgets[category]) {
+            self._ffWidgets[category].set('data', facets[category]);
+          }
+        });
+      }, function (err) {
+        console.error('_refreshAllFacets: error fetching facets:', err);
+      });
+    },
+
+    _updateAllFilteredCounts: function (selectionMap, keywords) {
+      selectionMap = selectionMap || {};
+
+      // Build filter query excluding all selected categories (they'll be updated from the facet response)
+      let ffilter = [];
+
+      if (keywords) {
+        keywords.forEach(function (k) {
+          ffilter.push('keyword(' + encodeURIComponent(k) + ')');
+        });
+      }
+
+      Object.keys(selectionMap).forEach(function (cat) {
+        if (selectionMap[cat]) {
+          if (selectionMap[cat].length == 1) {
+            ffilter.push('eq(' + encodeURIComponent(cat) + ',' + encodeURIComponent(selectionMap[cat][0]) + ')');
+          } else if (selectionMap[cat].length > 1) {
+            ffilter.push('or(' + selectionMap[cat].map(function (c) {
+              return 'eq(' + encodeURIComponent(cat) + ',' + encodeURIComponent(c) + ')';
+            }).join(',') + ')');
+          }
+        }
+      }, this);
+
+      if (ffilter.length < 1) {
+        ffilter = '';
+      } else if (ffilter.length == 1) {
+        ffilter = ffilter[0];
+      } else {
+        ffilter = 'and(' + ffilter.join(',') + ')';
+      }
+
+      let q = [];
+
+      if (this.query) {
+        q.push((this.query && (this.query.charAt(0) == '?')) ? this.query.substr(1) : this.query);
+      }
+      if (ffilter) {
+        q.push(ffilter);
+      }
+
+      if (q.length == 1) {
+        q = q[0];
+      } else if (q.length > 1) {
+        q = 'and(' + q.join(',') + ')';
+      }
+
+      // Fetch all facets in a single API call
+      this.getFacets('?' + q).then(lang.hitch(this, function (facets) {
+        if (!facets) {
+          return;
+        }
+        // Update all facet widgets with the returned data
+        Object.keys(facets).forEach(function (category) {
+          if (this._ffWidgets[category]) {
+            this._ffWidgets[category].set('data', facets[category]);
+          }
+        }, this);
+      }));
+    },
+
     _updateFilteredCounts: function (category, selectionMap, keywords) {
+      // Deprecated: Use _updateAllFilteredCounts instead for better performance
+      // This method is kept for backward compatibility but now calls the batch version
       selectionMap = selectionMap || {};
       const cats = Object.keys(selectionMap);
       const w = this._ffWidgets[category];
@@ -898,40 +1003,56 @@ define([
       if (!query) {
         return;
       }
-      if (query == this.query) {
+      // Allow empty query string to pass through if explicitly set
+      const queryStr = (query && query.charAt && query.charAt(0) == '?') ? query.substr(1) : (query || '');
+
+      if (queryStr == this.query) {
         return;
       }
-      this._set('query', query);
-      this.getFacets(query).then(lang.hitch(this, function (facets) {
+      this._set('query', queryStr);
+
+      const self = this;
+      this.getFacets('?' + queryStr).then(function (facets) {
         if (!facets) {
           return;
         }
 
         Object.keys(facets).forEach(function (cat) {
-          if (this._ffWidgets[cat]) {
-            const selected = this.state.selected;
-            this._ffWidgets[cat].set('data', facets[cat], selected);
+          if (self._ffWidgets[cat]) {
+            const selected = self.state.selected;
+            self._ffWidgets[cat].set('data', facets[cat], selected);
           }
-        }, this);
-
+        });
       }, function (err) {
         console.error('Error Getting Facets: ', err)
-      }));
+      });
 
     },
 
     getFacets: function (query, facetFields) {
-      if (!query || query == '?' || facetFields === undefined) {
+      // Fix: allow facetFields to be undefined and use this.facetFields as default
+      const fieldsToUse = facetFields || this.facetFields;
+
+      if (!query || query == '?') {
         const def = new Deferred();
         def.resolve(false);
         return def.promise;
       }
 
-      const facets = 'facet(' + (facetFields || this.facetFields).map((field) => {
-        return ( typeof (field) === 'string' ) ? `(field,${field})` : `(field,${field.field})`;
-      }).join(',') + ',(mincount,1),(limit,-1))';
+      if (!fieldsToUse || fieldsToUse.length === 0) {
+        const def = new Deferred();
+        def.resolve(false);
+        return def.promise;
+      }
 
-      const url = PathJoin(this.apiServer, this.dataModel, `?${query}&limit(1)&${facets}`)
+      // Remove leading '?' if present
+      const queryStr = (query && query.charAt(0) == '?') ? query.substr(1) : query;
+
+      const facets = 'facet(' + fieldsToUse.map((field) => {
+        return ( typeof (field) === 'string' ) ? `(field,${field})` : `(field,${field.field})`;
+      }).join(',') + ',(mincount,1),(limit,100))';
+
+      const url = PathJoin(this.apiServer, this.dataModel, `?${queryStr}&limit(1)&${facets}`)
       const fr = xhr(url, {
         method: 'GET',
         handleAs: 'json',
@@ -945,8 +1066,9 @@ define([
 
       return fr.then((res) => {
         if (res && res.facet_counts && res.facet_counts.facet_fields) {
-          return parseFacetCounts(res.facet_counts.facet_fields)
+          return parseFacetCounts(res.facet_counts.facet_fields);
         }
+        return null;
       }, (err) => {
         console.error(`XHR Error with Facet Request. There was an error retreiving facets from: ${url}`)
         return err
