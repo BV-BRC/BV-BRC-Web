@@ -130,7 +130,7 @@ define([
         .attr('x', this.config.width - this.config.margin.right)
         .attr('y', this.config.height - 25)
         .style('text-anchor', 'end')
-        .html(year || '')
+        .text(year || '')
         .call(this.halo, 10);
 
       var svg = this.canvas;
@@ -244,7 +244,7 @@ define([
           .attr('y', d => y(this.config.top_n + 1) + 5)
           .remove();
 
-        yearText.html(year || '');
+        yearText.text(year || '');
 
         if (year >= this.config.stopYear) {
           ticker.stop();

@@ -48,6 +48,7 @@
     "promised-io": "^0.3.6",
     "pug": "^3.0.3",
     "rql": "^0.3.3",
+    "sanitize-html": "^2.17.0",
     "serve-favicon": "^2.5.0",
     "underscore": "^1.13.6",
     "webcola": "^3.4.0"
