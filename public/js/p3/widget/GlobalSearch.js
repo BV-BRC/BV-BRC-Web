@@ -160,10 +160,6 @@ define([
 
         on.emit(this.domNode, 'dialogAction', { action: 'close', bubbles: true });
 
-        // log GA
-        if (window.gtag) {
-          gtag('event', 'GlobalSearch', { query: encodeURIComponent(query), category: searchFilter });
-        }
         // console.log("Do Search: ", searchFilter, query);
       }
     },

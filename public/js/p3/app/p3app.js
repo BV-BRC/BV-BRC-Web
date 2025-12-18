@@ -126,11 +126,6 @@ define([
         if (meta) {
           meta.content = 'BRC,' + (document.title).replace('::', ',');
         }
-        if (window.gtag) {
-          // console.log("document title changed to", document.title);
-          var pagePath = window.location.pathname + window.location.hash;
-          gtag('config', window.App.gaID, { 'page_path': pagePath });
-        }
       };
 
       // listening document.title change event
