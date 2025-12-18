@@ -257,6 +257,7 @@ define([
         newState.set = 'path';
         newState.requireAuth = false;
         newState.pageTitle = 'Registration | BV-BRC';
+        newState.layers = ['p3/layer/p3user'];
         // console.log("Navigate to ", newState);
         _self.navigate(newState);
       });
@@ -282,6 +283,7 @@ define([
         newState.widgetClass = 'p3/widget/AdvancedSearch';
         newState.requireAuth = false;
         // console.log("Navigate to ", newState);
+        newState.layers = ['p3/layer/search'];
         _self.navigate(newState);
       });
 
@@ -395,13 +397,16 @@ define([
       });
 
       Router.register('/view(/.*)', function (params, path) {
+        console.log("Register Viewer Route: ", params, path);
         var newState = getState(params, path);
         var parts = newState.pathname.split('/');
         parts.shift();
         var type = parts.shift();
 
         newState.widgetClass = 'p3/widget/viewer/' + type;
-
+        console.log("window.App:", window.App,window.App.production)
+        newState.layers = ['p3/layer/grids','p3/layer/jbrowse','p3/layer/viewers'];
+        console.log("new state)")
         _self.navigate(newState);
       });
 
@@ -412,6 +417,7 @@ define([
         var type = parts.shift();
 
         newState.widgetClass = 'p3/widget/outbreaks/' + type + '/index';
+        newState.layers = ['p3/layer/outbreaks'];
         newState.requireAuth = false;
 
         _self.navigate(newState);
@@ -438,6 +444,7 @@ define([
         const type = parts.shift();
 
         newState.widgetClass = 'p3/widget/search/' + type;
+        newState.layers = ['p3/layer/search'];
         newState.requireAuth = false;
 
         if (newState.search) {
@@ -473,6 +480,8 @@ define([
 
         // console.log("Parts:", parts, type, path)
         newState.widgetClass = 'p3/widget/app/' + type;
+        newState.layers = ['p3/layer/grids','p3/layer/viewers','p3/layer/jbrowse','p3/layer/apps'];
+
         newState.value = viewerParams;
         newState.set = 'params';
         // move requireAuth check to AppBase and its derieved class

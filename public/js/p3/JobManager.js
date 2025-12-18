@@ -6,7 +6,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 ) {
 
   var self = this;
-  var TIME_OUT = 5000; // in ms
+  var TIME_OUT = 30000; // in ms
   // var job_callbacks = {}; // key job id to callback function
   // state model of filters applied to jobs
   self.filters = {
@@ -141,7 +141,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
   function PollJobs() {
     // leaving this here since instantiation order is unpredictable
     if (!(window.App && window.App.api && window.App.api.service)) {
-      setTimeout(PollJobs, 1000);
+      setTimeout(PollJobs, TIME_OUT);
       return;
     }
 
@@ -163,6 +163,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
       setTimeout(PollJobs, TIME_OUT);
     });
   }
+
 
   // kick off the polling
   setTimeout(PollJobs, 1000);

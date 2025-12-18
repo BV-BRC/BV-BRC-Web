@@ -625,7 +625,7 @@ define([
             .duration(200)
             .style('opacity', 0.95);
 
-          tooltipLayer.html(d.label)
+          tooltipLayer.text(d.label)
             .style('left', d3.event.pageX + 'px')
             .style('top', d3.event.pageY + 'px');
         })
@@ -747,7 +747,7 @@ define([
             .duration(200)
             .style('opacity', 0.95);
 
-          tooltipLayer.html('WGS: ' + d.wgs)
+          tooltipLayer.text('WGS: ' + d.wgs)
             .style('left', d3.event.pageX + 'px')
             .style('top', d3.event.pageY + 'px');
         })
@@ -779,7 +779,7 @@ define([
             .duration(200)
             .style('opacity', 0.95);
 
-          tooltipLayer.html('Complete: ' + d.complete)
+          tooltipLayer.text('Complete: ' + d.complete)
             .style('left', d3.event.pageX + 'px')
             .style('top', d3.event.pageY + 'px');
         })
@@ -847,7 +847,7 @@ define([
             .duration(200)
             .style('opacity', 0.95);
 
-          tooltipLayer.html(d.label + ' (' + d.value + ')')
+          tooltipLayer.text(d.label + ' (' + d.value + ')')
             .style('left', d3.event.pageX + 'px')
             .style('top', d3.event.pageY + 'px');
         })
@@ -888,7 +888,7 @@ define([
             .duration(200)
             .style('opacity', 0.95);
 
-          tooltipLayer.html(d.label + ' (' + d.value + ')')
+          tooltipLayer.text(d.label + ' (' + d.value + ')')
             .style('left', d3.event.pageX + 'px')
             .style('top', d3.event.pageY + 'px');
         })
@@ -919,7 +919,7 @@ define([
               .duration(200)
               .style('opacity', 0.95);
 
-            tooltipLayer.html(d.label + ' (' + d.value + ')')
+            tooltipLayer.text(d.label + ' (' + d.value + ')')
               .style('left', d3.event.pageX + 'px')
               .style('top', d3.event.pageY + 'px');
           })

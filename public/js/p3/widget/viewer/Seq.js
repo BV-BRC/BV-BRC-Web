@@ -184,7 +184,11 @@ define([
           type: t.trackType,
           store: t.store
         };
-
+        
+        if (t.storeType === 'JBrowse/Store/BigWig') {
+          track.yScalePosition = 'left';
+        }
+        
         tracks.push(track);
         labels.push(t.keyAndLabel);
 
