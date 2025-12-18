@@ -34,8 +34,9 @@ define([
       /**
        * add header/ title
        */
+      var header;
       if (this.header) {
-        var header = domConstruct.create('b', {
+        header = domConstruct.create('b', {
           style: {
             fontSize: '1.2em',
             float: 'left',
@@ -44,14 +45,21 @@ define([
           innerHTML: this.header + '<br>'
         }, this.container);
 
-        var lastUpdated = domConstruct.create('span', {
+        this.lastUpdated = domConstruct.create('span', {
           style: {
             fontSize: '.6em',
             color: '#666'
           },
           innerHTML: self.loadingHTML
         });
-        domConstruct.place(lastUpdated, header, 'last');
+        domConstruct.place(this.lastUpdated, header, 'last');
+
+        // Set initial time after a short delay to ensure it's visible
+        setTimeout(function() {
+          if (self.lastUpdated) {
+            self.lastUpdated.innerHTML = 'Last updated: ' + getTime();
+          }
+        }, 100);
       }
 
 
@@ -92,6 +100,9 @@ define([
         ]
       }, appFilter);
 
+      // Store selector reference for filter label updates
+      this._selector = selector;
+
       this.filters = {
         app: 'all',
         status: null
@@ -101,8 +112,10 @@ define([
         Topic.publish('/JobFilter', self.filters);
       });
 
-      // initialize app filters
-      var apps = self.getFilterLabels(JobManager.getStore().data);
+      // initialize app filters - don't query during startup to avoid duplicate queries
+      // The filter labels will be updated when the grid loads its first page
+      // via the /Jobs topic subscription below
+      var apps = self.getFilterLabels([]);
       selector.set('options', apps).reset();
 
 
@@ -191,18 +204,23 @@ define([
 
       // listen for job status counts
       var loadingJobList = false;
+      var firstStatusUpdate = true;
       Topic.subscribe('/JobStatus', function (status) {
         if (status == 'failed') return;
 
-        domClass.remove(header, 'Failed');
+        if (header) {
+          domClass.remove(header, 'Failed');
+        }
 
         query('span', queuedBtn)[0].innerHTML = status.queued;
         query('span', inProgressBtn)[0].innerHTML = status.inProgress;
         query('span', completedBtn)[0].innerHTML = status.completed;
         query('span', failedBtn)[0].innerHTML = status.failed;
 
-        if (!loadingJobList) {
-          lastUpdated.innerHTML = 'Last updated: ' + getTime();
+        // Always update time on first status update, or if not loading
+        if (self.lastUpdated && (firstStatusUpdate || !loadingJobList)) {
+          self.lastUpdated.innerHTML = 'Last updated: ' + getTime();
+          firstStatusUpdate = false;
         }
       });
 
@@ -210,28 +228,43 @@ define([
        * listen for job list changes (to update job types) and for loading status
        */
       Topic.subscribe('/Jobs', function (info) {
+        if (!self.lastUpdated) return;
+
         if (info.status == 'loading') {
-          lastUpdated.innerHTML = self.loadingHTML;
+          self.lastUpdated.innerHTML = self.loadingHTML;
           loadingJobList = true;
         } else if (info.status == 'updated') {
-          var labels = self.getFilterLabels(info.jobs);
-          selector.set('options', labels).reset();
-
-          lastUpdated.innerHTML = 'Last updated: ' + getTime();
+          // Don't query the store here - it causes duplicate API calls
+          // The grid will already have loaded the first page, and filter labels
+          // will be updated when the user interacts with the grid or filters
+          self.lastUpdated.innerHTML = 'Last updated: ' + getTime();
           loadingJobList = false;
         } else if (info.status == 'filtered') {
-          var labels = self.getFilterLabels(info.jobs);
-          selector.set('options', labels);
+          // Try to get jobs from store for filter labels
+          if (info.jobs && Array.isArray(info.jobs)) {
+            var labels = self.getFilterLabels(info.jobs);
+            selector.set('options', labels);
+          }
 
-          lastUpdated.innerHTML = 'Last updated: ' + getTime();
+          self.lastUpdated.innerHTML = 'Last updated: ' + getTime();
           loadingJobList = false;
         } else if (info.status == 'failed') {
-          domClass.add(header, 'Failed');
-          lastUpdated.innerHTML = '<span class="Failed">Update failed.  Retrying...</span>';
+          if (header) {
+            domClass.add(header, 'Failed');
+          }
+          self.lastUpdated.innerHTML = '<span class="Failed">Update failed.  Retrying...</span>';
         }
       });
 
       this.inherited(arguments);
+    },
+
+    // Update filter labels from job data
+    updateFilterLabels: function (jobs) {
+      if (this._selector && jobs && jobs.length > 0) {
+        var labels = this.getFilterLabels(jobs);
+        this._selector.set('options', labels).reset();
+      }
     },
 
     // style custom btns with "active" state
