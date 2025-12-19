@@ -150,4 +150,5 @@
     border: 0;
     border-radius: 4px;
     pointer-events: none;
+    white-space: pre-line;
 }

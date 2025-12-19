@@ -18,9 +18,10 @@ define(
       selectionMode: 'single',
       allowTextSelection: false,
       deselectOnRefresh: false,
+      rowsPerPage: 200,
       minRowsPerPage: 50,
       bufferRows: 100,
-      maxRowsPerPage: 1000,
+      maxRowsPerPage: 200,
       pagingDelay: 250,
       // pagingMethod: "throttleDelayed",
       farOffRemoval: 2000,
@@ -36,11 +37,6 @@ define(
           label: 'ID',
           field: 'id'
         },
-        /*service: {
-          label: 'Service',
-          field: 'app',
-          formatter: formatter.serviceLabel
-        },*/
         app: {
           label: 'Service',
           field: 'application_name',
@@ -167,7 +163,13 @@ define(
           });
         });
 
-        this.refresh();
+        // Call refresh() once to trigger the initial query
+        // The pagination extension requires refresh() to be called to load the first page
+        // We use a flag to ensure this only happens once during startup
+        if (!this._initialRefreshCalled) {
+          this._initialRefreshCalled = true;
+          this.refresh();
+        }
 
       }
     });
