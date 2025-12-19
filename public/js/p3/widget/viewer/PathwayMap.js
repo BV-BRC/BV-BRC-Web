@@ -104,7 +104,13 @@ define([
       }), function (response) {
         var p = response[0];
 
-        self.queryNode.innerHTML = '<b>' + p.pathway_id + ' | ' + p.pathway_name + '</b>';
+        // Clear and build content safely with DOM construction
+        domConstruct.empty(self.queryNode);
+
+        // Create bold element with pathway info
+        var bold = domConstruct.create('b', {
+          textContent: p.pathway_id + ' | ' + p.pathway_name
+        }, self.queryNode, 'last');
       });
     },
 

@@ -1,10 +1,10 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang',
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/dom-construct',
   './TabViewerBase',
   '../AntibioticOverview', '../AMRPanelGridContainer', '../FeatureGridContainer', '../SpecialtyGeneGridContainer',
   '../../util/QueryToEnglish'
 ], function (
-  declare, lang,
+  declare, lang, domConstruct,
   TabViewerBase,
   AntibioticOverview, AMRPanelGridContainer, FeatureGridContainer, SpecialtyGeneGridContainer,
   QueryToEnglish
@@ -22,8 +22,8 @@ define([
       }
 
       if (!state.search) {
-        this.queryNode.innerHTML = 'Error';
-        this.totalCountNode.innerHTML = '';
+        this.queryNode.textContent = 'Error';
+        this.totalCountNode.textContent = '';
       }
 
       // bypass setting attribute and invoke tabs with state
@@ -81,8 +81,8 @@ define([
 
     buildHeaderContent: function (search) {
 
-      this.queryNode.innerHTML = QueryToEnglish(search);
-      this.totalCountNode.innerHTML = '';
+      this.queryNode.textContent = QueryToEnglish(search);
+      this.totalCountNode.textContent = '';
     },
 
     postCreate: function () {

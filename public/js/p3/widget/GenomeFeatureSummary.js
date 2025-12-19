@@ -24,13 +24,31 @@ define([
       label: 'BV-BRC',
       field: 'PATRIC',
       renderCell: function (obj, val, node) {
-        node.innerHTML = obj.PATRIC ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,PATRIC))" target="_blank">' + obj.PATRIC + '</a>') : '0';
+        if (obj.PATRIC) {
+          var link = domConstruct.create('a', {
+            href: '#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,PATRIC))',
+            target: '_blank'
+            textContent: obj.PATRIC
+          });
+          domConstruct.place(link, node, 'only');
+        } else {
+          node.textContent = '0';
+        }
       }
     }, {
       label: 'GenBank / RefSeq',
       field: 'RefSeq',
       renderCell: function (obj, val, node) {
-        node.innerHTML = obj.RefSeq ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,RefSeq))" target="_blank">' + obj.RefSeq + '</a>') : '0';
+        if (obj.RefSeq) {
+          var link = domConstruct.create('a', {
+            href: '#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,RefSeq))',
+            target: '_blank'
+            textContent: obj.RefSeq
+          });
+          domConstruct.place(link, node, 'only');
+        } else {
+          node.textContent = '0';
+        }
       }
     }],
     processData: function (data) {

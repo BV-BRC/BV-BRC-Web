@@ -19,7 +19,11 @@ define([
         label: 'Genes',
         field: 'count',
         renderCell: function (obj, val, node) {
-          return node.innerHTML = lang.replace('<a href="#view_tab=features&filter=eq(product,{1})">{0}</a>', [val, encodeURIComponent('"' + obj.label + '"')]);
+          var link = domConstruct.create('a', {
+            href: '#view_tab=features&filter=eq(product,' + encodeURIComponent('"' + obj.label + '"') + ')',
+            textContent: val
+          });
+          domConstruct.place(link, node, 'only');
         }
       }
     ],

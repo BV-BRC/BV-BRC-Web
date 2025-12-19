@@ -39,7 +39,7 @@ define([
       if (!experiment) {
         return;
       }
-      this.queryNode.innerHTML = experiment.sample_identifier + ' | ' + experiment.host_common_name + ' | ' + experiment.collection_country;
+      this.queryNode.textContent = experiment.sample_identifier + ' | ' + experiment.host_common_name + ' | ' + experiment.collection_country;
     },
 
     onSetState: function (attr, oldVal, state) {

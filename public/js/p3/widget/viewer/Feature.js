@@ -1,6 +1,6 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang',
-  'dojo/request',
+  'dojo/dom-construct', 'dojo/request',
   './TabViewerBase',
   '../FeatureOverview', '../GenomeBrowser', '../CompareRegionContainer',
   '../GeneExpressionContainer', '../CorrelatedGenesContainer', '../InteractionContainer', '../ProteinStructureGridContainer', '../ProteinFeaturesGridContainer',
@@ -8,7 +8,7 @@ define([
 
 ], function (
   declare, lang,
-  xhr,
+  domConstruct, xhr,
   TabViewerBase,
   FeatureOverview, GenomeBrowser, CompareRegionContainer,
   GeneExpressionContainer, CorrelatedGenesContainer, InteractionContainer, ProteinStructureGridContainer, ProteinFeaturesGridContainer,
@@ -158,10 +158,29 @@ define([
           return taxon_lineage_ranks.indexOf(rank);
         });
 
-        var out = visibleIndexes.map(function (idx) {
-          return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + taxon_lineage_names[idx] + '</a>';
-        });
-        this.queryNode.innerHTML = out.join(' &raquo; ') + ' &raquo; ' + lang.replace('<a href="/view/Genome/{feature.genome_id}">{feature.genome_name}</a>', { feature: feature });
+        // Clear queryNode and build breadcrumb safely with DOM construction
+        domConstruct.empty(this.queryNode);
+
+        // Add taxonomy links
+        visibleIndexes.forEach(function (idx, i) {
+          if (i > 0) {
+            domConstruct.place(document.createTextNode(' » '), this.queryNode, 'last');
+          }
+          var link = domConstruct.create('a', {
+            'class': 'navigationLink',
+            href: '/view/Taxonomy/' + taxon_lineage_ids[idx],
+            textContent: taxon_lineage_names[idx]
+          }, this.queryNode, 'last');
+        }, this);
+
+        // Add separator before genome link
+        domConstruct.place(document.createTextNode(' » '), this.queryNode, 'last');
+
+        // Add genome link
+        domConstruct.create('a', {
+          href: '/view/Genome/' + feature.genome_id,
+          textContent: feature.genome_name
+        }, this.queryNode, 'last');
 
 /*
         if (taxon_lineage_names.includes('Viruses') && this.context === 'bacteria') {

@@ -1,10 +1,10 @@
 define([
-  'dojo/_base/declare', './TabViewerBase',
+  'dojo/_base/declare', './TabViewerBase', 'dojo/dom-construct',
   '../../util/QueryToEnglish',
   '../ExperimentGridContainer', '../BiosetGridContainer',
   '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang'
 ], function (
-  declare, TabViewerBase,
+  declare, TabViewerBase, domConstruct,
   QueryToEnglish,
   ExperimentGridContainer, BiosetGridContainer,
   PathJoin, xhr, lang
@@ -63,7 +63,13 @@ define([
 
     onSetQuery: function (attr, oldVal, newVal) {
       var content = QueryToEnglish(newVal);
-      this.queryNode.innerHTML = '<span class="queryModel">Experiments: </span>  ' + content;
+      // Use DOM construction to prevent XSS from query parameter
+      this.queryNode.textContent = '';
+      domConstruct.create('span', {
+        'class': 'queryModel',
+        textContent: 'Experiments: '
+      }, this.queryNode);
+      domConstruct.place(document.createTextNode('  ' + content), this.queryNode);
     },
 
     setActivePanelState: function () {
@@ -119,7 +125,7 @@ define([
       this.setActivePanelState();
     },
     onSetTotalExperiments: function (attr, oldVal, newVal) {
-      this.totalCountNode.innerHTML = ' ( ' + newVal + ' Experiments )';
+      this.totalCountNode.textContent = ' ( ' + newVal + ' Experiments )';
     }
   });
 });
