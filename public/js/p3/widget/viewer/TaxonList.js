@@ -1,10 +1,10 @@
 define([
-  'dojo/_base/declare', './TabViewerBase', 'dojo/topic',
+  'dojo/_base/declare', './TabViewerBase', 'dojo/topic', 'dojo/dom-construct',
   'dijit/layout/ContentPane',
   '../TaxonGridContainer', '../../util/QueryToEnglish',
   '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang'
 ], function (
-  declare, TabViewerBase, Topic,
+  declare, TabViewerBase, Topic, domConstruct,
   ContentPane,
   TaxonGridContainer, QueryToEnglish,
   PathJoin, xhr, lang
@@ -63,7 +63,13 @@ define([
         this.overview.set('content', '<div style="margin:4px;">Feature List Query: ' + decodeURIComponent(newVal) + '</div>');
       }
       var content = QueryToEnglish(newVal);
-      this.queryNode.innerHTML = '<span class="queryModel">Taxa: </span>  ' + content;
+      // Use DOM construction to prevent XSS from query parameter
+      this.queryNode.textContent = '';
+      domConstruct.create('span', {
+        'class': 'queryModel',
+        textContent: 'Taxa: '
+      }, this.queryNode);
+      domConstruct.place(document.createTextNode('  ' + content), this.queryNode);
     },
 
     setActivePanelState: function () {
@@ -98,7 +104,7 @@ define([
       this.viewer.addChild(this.taxons);
     },
     onSetTotalTaxons: function (attr, oldVal, newVal) {
-      this.totalCountNode.innerHTML = ' ( ' + newVal + ' Taxa ) ';
+      this.totalCountNode.textContent = ' ( ' + newVal + ' Taxa ) ';
     },
     hideWarning: function () {
       if (this.warningPanel) {

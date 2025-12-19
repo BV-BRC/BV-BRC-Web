@@ -1,12 +1,12 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/topic',
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/topic', 'dojo/dom-construct',
   './TabViewerBase', '../../util/QueryToEnglish', '../../DataAPI',
   '../GenomeListOverview', '../GenomeGridContainer',
   '../AMRPanelGridContainer', '../SequenceGridContainer',
   '../FeatureGridContainer', '../ProteinGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFamiliesContainer',
   '../PathwayGridContainer', '../ExperimentsContainer',  '../SubsystemGridContainer'
 ], function (
-  declare, lang,Topic,
+  declare, lang, Topic, domConstruct,
   TabViewerBase, QueryToEnglish, DataAPI,
   GenomeListOverview, GenomeGridContainer,
   AMRPanelGridContainer, SequenceGridContainer,
@@ -53,10 +53,16 @@ define([
       }).join('')
 
       const content = QueryToEnglish(q);
-      this.queryNode.innerHTML = '<span class="queryModel">Genomes: </span>  ' + content;
+      // Use DOM construction to prevent XSS from query parameter
+      this.queryNode.textContent = '';
+      domConstruct.create('span', {
+        'class': 'queryModel',
+        textContent: 'Genomes: '
+      }, this.queryNode);
+      domConstruct.place(document.createTextNode('  ' + content), this.queryNode);
     },
     onSetTotalGenomes: function (attr, oldVal, newVal) {
-      this.totalCountNode.innerHTML = ' ( ' + newVal + ' Genomes ) ';
+      this.totalCountNode.textContent = ' ( ' + newVal + ' Genomes ) ';
     },
     setActivePanelState: function () {
       var active = (this.state && this.state.hashParams && this.state.hashParams.view_tab) ? this.state.hashParams.view_tab : this.defaultTab;

@@ -66,7 +66,13 @@ define([
 
     onSetQuery: function (attr, oldVal, newVal) {
       var content = QueryToEnglish(newVal);
-      this.queryNode.innerHTML = '<span class="queryModel">Serology: </span>  ' + content;
+      // Use DOM construction to prevent XSS from query parameter
+      this.queryNode.textContent = '';
+      domConstruct.create('span', {
+        'class': 'queryModel',
+        textContent: 'Serology: '
+      }, this.queryNode);
+      domConstruct.place(document.createTextNode('  ' + content), this.queryNode);
     },
 
     setActivePanelState: function () {
@@ -113,7 +119,7 @@ define([
     },
     onSetTotalSerology: function (attr, oldVal, newVal) {
       // console.log("ON SET TOTAL GENOMES: ", newVal);
-      this.totalCountNode.innerHTML = ' ( ' + newVal + '  Serology) ';
+      this.totalCountNode.textContent = ' ( ' + newVal + '  Serology) ';
     },
     hideWarning: function () {
       if (this.warningPanel) {

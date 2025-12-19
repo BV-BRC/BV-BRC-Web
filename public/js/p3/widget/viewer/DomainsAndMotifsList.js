@@ -66,7 +66,13 @@ define([
 
     onSetQuery: function (attr, oldVal, newVal) {
       var content = QueryToEnglish(newVal);
-      this.queryNode.innerHTML = '<span class="queryModel">Domains and Motifs: </span>  ' + content;
+      // Use DOM construction to prevent XSS from query parameter
+      this.queryNode.textContent = '';
+      domConstruct.create('span', {
+        'class': 'queryModel',
+        textContent: 'Domains and Motifs: '
+      }, this.queryNode);
+      domConstruct.place(document.createTextNode('  ' + content), this.queryNode);
     },
 
     setActivePanelState: function () {
@@ -113,7 +119,7 @@ define([
     },
     onSetTotalStructures: function (attr, oldVal, newVal) {
       // console.log("ON SET TOTAL GENOMES: ", newVal);
-      this.totalCountNode.innerHTML = ' ( ' + newVal + '  Records ) ';
+      this.totalCountNode.textContent = ' ( ' + newVal + '  Records ) ';
     },
     hideWarning: function () {
       if (this.warningPanel) {
