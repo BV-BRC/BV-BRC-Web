@@ -26,3 +26,11 @@ jest.config.json
 gulpfile.js
 .eslintrc.json
 /public/js/p3/widget/UserDetails.js
+VIEWER_BUNDLE_STRATEGY.md
+VIEWER_DEPENDENCIES.md
+WEBPACK_MIGRATION_STATUS.md
+webpack-stats-modules.json
+webpack-stats-modules.log
+webpack-stats-new.json
+webpack-stats.json
+docs/BUNDLE_OPTIMIZATION_SUMMARY.md

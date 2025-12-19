@@ -2,9 +2,11 @@ define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dojo/topic',
   'dojo/dom-class',
   'dojo/text!./templates/ComparativeSystems.html', './AppBase', 'dojo/dom-construct',
-  'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox',
+  'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/ready', 'dijit/form/NumberTextBox',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog', 'dojo/NodeList-traverse', '../../WorkspaceManager',
-  '../WorkspaceObjectSelector', '../../DataAPI'
+  '../WorkspaceObjectSelector', '../../DataAPI',
+  // Additional widgets used in template
+  'dijit/form/Button', 'p3/widget/GenomeNameSelector', 'p3/widget/WorkspaceFilenameValidationTextBox'
 ], function (
   declare, WidgetBase, on, Topic,
   domClass,
@@ -12,6 +14,7 @@ define([
   Deferred, aspect, lang, domReady, NumberTextBox,
   query, dom, popup, Tooltip, Dialog, TooltipDialog, children, WorkspaceManager,
   WorkspaceObjectSelector, DataAPI
+  // Template widgets don't need references in function params
 ) {
   return declare([AppBase], {
     baseClass: 'ComparativeSystems',

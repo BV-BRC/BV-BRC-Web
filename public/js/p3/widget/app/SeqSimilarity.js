@@ -2,7 +2,7 @@ define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class',
   'dojo/text!./templates/SeqSimilarity.html', './AppBase', 'dojo/dom-construct',
-  'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox',
+  'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/ready', 'dijit/form/NumberTextBox',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog', 'dijit/registry',
   'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby'
 ], function (

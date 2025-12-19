@@ -2,7 +2,9 @@ define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dojo/dom-construct',"dijit/registry",
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/UserProfileForm.html', 'dijit/form/Form', 'dojo/request',
-  'dojo/dom-form', 'dojo/_base/lang', 'dojox/validate/web','dojo/topic'
+  'dojo/dom-form', 'dojo/_base/lang', 'dojox/validate/web','dojo/topic',
+  // Ensure template widgets are available before parsing
+  'dijit/form/ValidationTextBox', 'dijit/form/Textarea', 'dijit/form/SimpleTextarea', 'dijit/form/Button'
 ], function (
   declare, WidgetBase, on, domConstruct,registry,
   domClass, Templated, WidgetsInTemplate,
@@ -14,7 +16,16 @@ define([
     templateString: Template,
 
     callbackURL: '',
-    userServiceURL: window.App.userServiceURL.replace(/\/+$/, ''),
+    userServiceURL: '',
+    constructor: function(){
+      try {
+        if (window.App && window.App.userServiceURL) {
+          this.userServiceURL = window.App.userServiceURL.replace(/\/+$/, '');
+        }
+      } catch (e) {
+        this.userServiceURL = '';
+      }
+    },
     fieldChanged: function (evt) {
       this.submitButton.set('disabled', true);
       this.udProfButton.set('disabled', true);
@@ -212,8 +223,12 @@ define([
       var vals = this.getValues();
 
       console.log('vals: ', vals)
-      this.userServiceURL = window.App.userServiceURL;
-      this.userServiceURL.replace(/\/+$/, '');
+      try {
+        var base = (window.App && window.App.userServiceURL) ? window.App.userServiceURL : this.userServiceURL;
+        this.userServiceURL = (base || '').replace(/\/+$/, '');
+      } catch (e) {
+        this.userServiceURL = this.userServiceURL || '';
+      }
       // console.log(vals);
       if (this.auth) {
         this.runPatch(vals);

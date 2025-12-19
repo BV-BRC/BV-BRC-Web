@@ -1,7 +1,7 @@
 define([
   'dojo/_base/declare', 'dojo/on', 'dojo/topic', 'dojo/dom-class',
   'dojo/text!./templates/PhylogeneticTree.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
-  'dojo/_base/lang', 'dojo/domReady!', 'dojo/query', 'dojo/dom', 'dojo/dom-style',
+  'dojo/_base/lang', 'dojo/ready', 'dojo/query', 'dojo/dom', 'dojo/dom-style',
   'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
   '../../WorkspaceManager', 'dojo/when', '../../DataAPI', '../AdvancedSearchFields'
 ], function (

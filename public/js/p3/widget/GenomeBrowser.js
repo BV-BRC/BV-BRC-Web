@@ -19,6 +19,7 @@ define([
   'JBrowse/View/FileDialog',
   'JBrowse/GenomeView',
   './DataItemFormatter',
+  './HierarchicalTrackList',
   'dijit/Dialog',
   'dojo/keys'
 ], function (
@@ -41,6 +42,7 @@ define([
   InfoDialog,
   FileDialog,
   GenomeView, DataItemFormatter,
+  HierarchicalTrackList,
   Dialog, keys
 ) {
   window.featureDialogContent = function (feature) {
@@ -54,6 +56,7 @@ define([
 
   };
   var Browser = declare([JBrowser], {
+    // No need to override constructor - let JBrowse handle container lookup via containerID
     tooltip: 'The "Browser" tab shows genome sequence and genomic features using linear genome browser',
     makeFullViewLink: function () {
       return domConstruct.create('span', {});
@@ -669,36 +672,30 @@ define([
         //     tl_class = 'JBrowse/View/TrackList/'+tl_class;
         var tl_class = 'p3/widget/HierarchicalTrackList';
 
-        // load all the classes we need
-        require(
-          [tl_class],
-          dojo.hitch(this, function (trackListClass) {
-            // instantiate the tracklist and the track metadata object
-            this.trackListView = new trackListClass(dojo.mixin(
-              dojo.clone(this.config.trackSelector) || {},
-              {
-                trackConfigs: this.config.tracks,
-                browser: this,
-                trackMetaData: this.trackMetaDataStore
-              }
-            ));
+        // instantiate the tracklist and the track metadata object
+        this.trackListView = new HierarchicalTrackList(dojo.mixin(
+          dojo.clone(this.config.trackSelector) || {},
+          {
+            trackConfigs: this.config.tracks,
+            browser: this,
+            trackMetaData: this.trackMetaDataStore
+          }
+        ));
 
-            // bind the 't' key as a global keyboard shortcut
-            this.setGlobalKeyboardShortcut('t', this.trackListView, 'toggle');
+        // bind the 't' key as a global keyboard shortcut
+        this.setGlobalKeyboardShortcut('t', this.trackListView, 'toggle');
 
-            // listen for track-visibility-changing messages from
-            // views and update our tracks cookie
-            this.subscribe('/jbrowse/v1/n/tracks/visibleChanged', dojo.hitch(this, function () {
-              this.cookie(
-                'tracks',
-                this.view.visibleTrackNames().join(','),
-                { expires: 60 }
-              );
-            }));
+        // listen for track-visibility-changing messages from
+        // views and update our tracks cookie
+        this.subscribe('/jbrowse/v1/n/tracks/visibleChanged', dojo.hitch(this, function () {
+          this.cookie(
+            'tracks',
+            this.view.visibleTrackNames().join(','),
+            { expires: 60 }
+          );
+        }));
 
-            deferred.resolve({ success: true });
-          })
-        );
+        deferred.resolve({ success: true });
       });
     },
 
@@ -842,55 +839,34 @@ define([
             deferred.resolve({ success: true });
           });
 
-        require(
-          {
-            packages: array.map(plugins, function (p) {
-              return {
-                name: p.name,
-                location: p.js
-              };
-            }, this)
-          },
-          array.map(plugins, function (p) {
-            return p.name;
-          }),
-          dojo.hitch(this, function () {
-            array.forEach(arguments, function (pluginClass, i) {
-              var plugin = plugins[i];
-              var thisPluginDone = pluginDeferreds[i];
+        var pluginModules = (window.JBrowsePlugins) || {};
 
-              if (typeof pluginClass == 'string') {
-                console.error('could not load plugin ' + plugin.name + ': ' + pluginClass);
-              } else {
-              // make the plugin's arguments out of
-              // its little obj in 'plugins', and
-              // also anything in the top-level
-              // conf under its plugin name
-                var args = dojo.mixin(
-                  dojo.clone(plugins[i]),
-                  { config: this.config[plugin.name] || {} }
-                );
-                args.browser = this;
-                args = dojo.mixin(args, { browser: this });
+        array.forEach(plugins, function (plugin, i) {
+          var thisPluginDone = pluginDeferreds[i];
+          var pluginClass = pluginModules[plugin.name];
 
-                // load its css
+          if (!pluginClass) {
+            console.warn('JBrowse plugin not bundled: ' + plugin.name);
+            thisPluginDone.resolve({ success: false });
+            return;
+          }
 
-                var cssLoaded = this._loadCSS({ url: plugin.css + '/main.css' });
-                cssLoaded.then(function () {
-                  thisPluginDone.resolve({ success: true });
-                });
+          var args = dojo.mixin(
+            dojo.clone(plugins[i]),
+            { config: this.config[plugin.name] || {} }
+          );
+          args.browser = this;
+          args = dojo.mixin(args, { browser: this });
 
-                // give the plugin access to the CSS
-                // promise so it can know when its
-                // CSS is ready
-                args.cssLoaded = cssLoaded;
+          var cssLoaded = this._loadCSS({ url: plugin.css + '/main.css' });
+          cssLoaded.then(function () {
+            thisPluginDone.resolve({ success: true });
+          });
 
-                // instantiate the plugin
-                this.plugins[plugin.name] = new pluginClass(args);
-              }
-            }, this);
-          })
-        );
+          args.cssLoaded = cssLoaded;
+
+          this.plugins[plugin.name] = new pluginClass(args);
+        }, this);
       });
     },
     fatalError: function (error) {
@@ -922,21 +898,12 @@ define([
           dojo.addClass( document.body, this.config.theme || 'tundra'); // < tundra dijit theme
 
           if ( !Util.isElectron() ) {
-            require([
-              'dojo/text!p3/widget/templates/GenomeBrowserError.html'
-            ], function (Welcome_old) {
-              container.innerHTML = Welcome_old;
-              if ( error ) {
-                var errors_div = dojo.byId('fatal_error_list');
-                dojo.create('div', { className: 'error', innerHTML: formatError(error) + '' }, errors_div );
-              }
-              // request( 'sample_data/json/volvox/successfully_run' ).then( function() {
-              //        try {
-              //            dojo.byId('volvox_data_placeholder').innerHTML = 'However, it appears you have successfully run <code>./setup.sh</code>, so you can see the <a href="?data=sample_data/json/volvox">Volvox test data here</a>.';
-              //        } catch(e) {}
-              //    });
-
-            });
+            var Welcome_old = window.JBrowse.GenomeBrowserErrorTemplate;
+            container.innerHTML = Welcome_old;
+            if ( error ) {
+              var errors_div = dojo.byId('fatal_error_list');
+              dojo.create('div', { className: 'error', innerHTML: formatError(error) + '' }, errors_div );
+            }
           }
           else {
             this.welcomeScreen( container, formatError(error) );
@@ -1053,70 +1020,116 @@ define([
     },
 
     onSetJBrowseConfig: function (attr, oldVal, config) {
+      console.log('[onSetJBrowseConfig] config:', !!config, 'visible:', this.visible, 'postCreateComplete:', this._postCreateComplete, 'browser:', !!this._browser);
       if (!config) {
         return;
       }
 
-      // Store config for later if not visible yet
-      if (!this.visible) {
-        this._pendingConfig = config;
+      // Store config
+      this._browserConfig = config;
+
+      // If we're already visible and postCreate is done, create browser now
+      if (this._postCreateComplete && this.visible && !this._browser) {
+        console.log('[onSetJBrowseConfig] Already visible, calling _createBrowser() with delay');
+        var self = this;
+        setTimeout(function() {
+          self._createBrowser();
+        }, 100);
+      } else {
+        console.log('[onSetJBrowseConfig] Not creating browser yet - will wait for visibility');
+      }
+    },
+
+    _createBrowser: function() {
+      console.log('[_createBrowser] ENTER');
+      console.log('[_createBrowser] this._browser:', this._browser);
+      console.log('[_createBrowser] this._browserConfig:', this._browserConfig);
+      console.log('[_createBrowser] this.containerNode:', this.containerNode);
+
+      if (this._browser || !this._browserConfig || !this.containerNode) {
+        console.log('[_createBrowser] Skipping - already created or missing config/container');
         return;
       }
 
-      if (!this._browser) {
-        console.log('Browser config: ', config);
+      console.log('[_createBrowser] Creating browser...');
+      console.log('[_createBrowser] containerNode details:', {
+        tag: this.containerNode.tagName,
+        id: this.containerNode.id,
+        parentNode: this.containerNode.parentNode
+      });
 
-        this._browser = new Browser(config);
+      // Use the original config with containerID - JBrowse will do dojo.byId() lookup
+      console.log('[_createBrowser] browserConfig.containerID:', this._browserConfig.containerID);
+      console.log('[_createBrowser] About to instantiate new Browser()');
+      this._browser = new Browser(this._browserConfig);
+      console.log('[_createBrowser] Browser instantiated, this._browser:', this._browser);
 
-        // Ensure proper layout after browser is completely initialized
-        var self = this;
-        this._browser.afterMilestone('completely initialized', function() {
-          if (self._browser && self._browser.view) {
-            // For small genomes, the initial zoom calculation may be wrong if dimensions weren't set correctly
-            // Force recalculation of dimensions and re-navigate to fix positioning
-            var currentLoc = self._browser.view.visibleRegion();
-            self._browser.view.sizeInit();
+      // Ensure proper layout after browser is completely initialized
+      var self = this;
+      this._browser.afterMilestone('completely initialized', function() {
+        if (self._browser && self._browser.view) {
+          // For small genomes, the initial zoom calculation may be wrong if dimensions weren't set correctly
+          // Force recalculation of dimensions and re-navigate to fix positioning
+          var currentLoc = self._browser.view.visibleRegion();
+          self._browser.view.sizeInit();
 
-            // Re-navigate to the same location with corrected dimensions
-            if (currentLoc) {
-              self._browser.navigateToLocation({
-                ref: currentLoc.ref,
-                start: currentLoc.start,
-                end: currentLoc.end
-              });
-            }
-
-            self._browser.view.showVisibleBlocks(true);
+          // Re-navigate to the same location with corrected dimensions
+          if (currentLoc) {
+            self._browser.navigateToLocation({
+              ref: currentLoc.ref,
+              start: currentLoc.start,
+              end: currentLoc.end
+            });
           }
-        });
-      } else {
 
-        console.log('Browser Already Exists');
-      }
+          self._browser.view.showVisibleBlocks(true);
+        }
+      });
     },
     postCreate: function () {
+      console.log('[GenomeBrowser postCreate] ENTER');
+      console.log('[GenomeBrowser postCreate] this.id:', this.id);
+      console.log('[GenomeBrowser postCreate] this.domNode:', this.domNode);
+      console.log('[GenomeBrowser postCreate] this.visible:', this.visible);
+      console.log('[GenomeBrowser postCreate] this._browserConfig:', this._browserConfig);
+
       this.inherited(arguments);
       this.containerNode = domConstruct.create('div', {
         id: this.id + '_browserContainer',
         style: { padding: '0px', margin: '0px', border: '0px' }
       }, this.domNode);
+
+      console.log('[GenomeBrowser postCreate] Created containerNode:', this.containerNode);
+      console.log('[GenomeBrowser postCreate] containerNode.id:', this.containerNode.id);
+
       this.watch('state', lang.hitch(this, 'onSetState'));
       this.watch('jbrowseConfig', lang.hitch(this, 'onSetJBrowseConfig'));
+
+      // Mark postCreate as complete
+      this._postCreateComplete = true;
+      console.log('[GenomeBrowser postCreate] Marked postCreate complete');
+
+      // Don't create browser in postCreate - wait for tab to become visible
+      console.log('[GenomeBrowser postCreate] Waiting for tab to become visible before creating browser');
+      console.log('[GenomeBrowser postCreate] EXIT');
     },
 
     visible: false,
     _setVisibleAttr: function (visible) {
-      // console.log("GridContainer setVisible: ", visible)
+      console.log('[_setVisibleAttr] visible:', visible, 'this._browser:', !!this._browser);
       this.visible = visible;
       if (this.visible && !this._firstView) {
-        // console.log("Trigger First View: ", this.id)
         this.onFirstView();
         this._firstView = true;
 
-        // If we have a pending config, create the browser now that we're visible
-        if (this._pendingConfig && !this._browser) {
-          this.onSetJBrowseConfig('jbrowseConfig', null, this._pendingConfig);
-          this._pendingConfig = null;
+        // Create browser now that we're visible (if config and DOM are ready)
+        if (this._postCreateComplete && this._browserConfig && !this._browser) {
+          console.log('[_setVisibleAttr] Calling _createBrowser()');
+          // Use setTimeout to ensure tab is fully rendered and sized
+          var self = this;
+          setTimeout(function() {
+            self._createBrowser();
+          }, 100);
         }
       }
     },

@@ -1,10 +1,10 @@
 /**
  * External Dependency Stubs for Dojo Build
- * 
+ *
  * This file provides stub AMD module definitions for external libraries
  * that are loaded via webpack bundles. This prevents the Dojo build tool
  * from throwing errors about missing dependencies.
- * 
+ *
  * These stubs return references to the global objects set by webpack bundles.
  */
 

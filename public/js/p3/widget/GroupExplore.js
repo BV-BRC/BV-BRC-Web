@@ -518,7 +518,7 @@ define([
     loading: false,
     data: null,
     dataMap: {},
-    apiServiceUrl: window.App.dataAPI,
+    apiServiceUrl: (window.App && window.App.dataAPI) || '',
     selection: null,
     path: null,
     type: 'folder',

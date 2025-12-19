@@ -3,19 +3,19 @@ define([
   'dojo/dom-construct', 'dojo/request',
   './TabViewerBase', 'dijit/Dialog',
   '../GenomeOverview', '../AMRPanelGridContainer', '../Phylogeny',
-  '../GenomeBrowser', '../CircularViewerContainer', '../SequenceGridContainer',
+  '../CircularViewerContainer', '../SequenceGridContainer',
   '../FeatureGridContainer', '../ProteinGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer', '../ProteinFamiliesContainer',
   '../PathwaysContainer', '../SubSystemsContainer', '../ExperimentsContainer', '../InteractionContainer',
-  '../../util/PathJoin'
+  '../../util/PathJoin', '../GenomeBrowser'
 ], function (
   declare, lang,
   domConstruct, xhr,
   TabViewerBase, Dialog,
   GenomeOverview, AMRPanelGridContainer, Phylogeny,
-  GenomeBrowser, CircularViewerContainer, SequenceGridContainer,
+  CircularViewerContainer, SequenceGridContainer,
   FeatureGridContainer, ProteinGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer, ProteinFamiliesContainer,
   PathwaysContainer, SubSystemsContainer, ExperimentsContainer, InteractionsContainer,
-  PathJoin
+  PathJoin, GenomeBrowser
 ) {
   return declare([TabViewerBase], {
     baseClass: 'GenomeGroup',

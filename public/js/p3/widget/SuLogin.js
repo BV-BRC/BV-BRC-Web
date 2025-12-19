@@ -2,7 +2,9 @@ define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/SuLogin.html', 'dijit/form/Form', 'dojo/request',
-  'dojo/dom-form', 'dojo/_base/lang', 'dojox/validate/web'
+  'dojo/dom-form', 'dojo/_base/lang', 'dojox/validate/web',
+  // Ensure widgets used in the template are preloaded
+  'dijit/form/ValidationTextBox', 'dijit/form/Button'
 ], function (
   declare, WidgetBase, on,
   domClass, Templated, WidgetsInTemplate,
@@ -44,8 +46,8 @@ define([
       vals.username = localStorage.getItem('userid');
       // console.log(vals);
 
-      var userServiceURL = window.App.userServiceURL;
-      userServiceURL.replace(/\/+$/, '');
+      var userServiceURL = (window.App && window.App.userServiceURL) ? window.App.userServiceURL : '';
+      userServiceURL = userServiceURL.replace(/\/+$/, '');
       var def = xhr.post(userServiceURL + '/authenticate/sulogin', {
         data: vals
         // data: JSON.stringify(vals),

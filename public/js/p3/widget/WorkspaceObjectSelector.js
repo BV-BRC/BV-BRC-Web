@@ -29,7 +29,7 @@ define([
     required: false,
     isSortAlpha: false,
     showUnspecified: false,
-    showHidden: window.App.showHiddenFiles,
+    showHidden: (window.App && window.App.showHiddenFiles) || false,
     missingMessage: 'A valid workspace item is required.',
     promptMessage: 'Please choose or upload a workspace item',
     placeHolder: '',

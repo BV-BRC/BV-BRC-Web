@@ -1,19 +1,16 @@
 
 	<%
+	// Load base/theme CSS first, then app styles last to allow overrides
 	const load_css = [
-		"p3/resources/p3.css"
+		// App aggregate styles (p3.css + overrides)
+		// Note: core/viewers layer CSS files are not emitted; avoid 404s.
+		"release/styles.bundle.css"
 	]
 	%>
 
-	<% if (request && request.production){ %>
-	  <% load_css.forEach(function(url){ %>
+	<% load_css.forEach(function(url){ %>
 		<link rel='stylesheet' href="/js/<%- request.package.version %>/<%- url %>" />
-	  <% }) %>
-	<% } else { %>
-	  <% load_css.forEach(function(url){ %>
-		<link rel='stylesheet' href="/js/<%- url %>" />
-	  <% }) %>
-	<% } %>
+	<% }) %>
 
 	<%
     // Define routes with their corresponding descriptions

@@ -298,7 +298,7 @@ define([
            Topic.publish(msg.topic, msg.payload);
           }
         } catch (err){
-          console.log("Error handling window message: ", msg,err)
+          // console.log("Error handling window message: ", msg,err)
         }
       }, '*');
 
@@ -333,11 +333,15 @@ define([
           evt.preventDefault();
           evt.stopPropagation();
         }
-        var dlg = new Dialog({
-          title: 'Sign In',
-          content: "<div class=\"LoginForm\" data-dojo-type=\"p3/widget/LoginForm\" style=\"width:500px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:20px;margin-top:10px;padding:10px;\" data-dojo-props='callbackURL: \"<%- callbackURL %>\"'></div>"
+        require(['p3/widget/LoginForm'], function (LoginForm) {
+          var w = new LoginForm({ callbackURL: '<%- callbackURL %>' });
+          var dlg = new Dialog({
+            title: 'Sign In'
+          });
+          dlg.set('content', w.domNode);
+          w.startup();
+          dlg.show();
         });
-        dlg.show();
       };
 
       var showUserProfile = function (evt) {
@@ -347,17 +351,19 @@ define([
           evt.stopPropagation();
         }
         // console.log(evt);
-        var dlg = new Dialog({
-          title: 'User Profile',
-          content: "<div class=\"UserProfileForm\" data-dojo-id=\"userProfile\" data-dojo-type=\"p3/widget/UserProfileForm\" style=\"width:600px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:10px;margin-top:10px;padding:10px;\" data-dojo-props='callbackURL: \"<%- callbackURL %>\"'></div>",
-          onHide: function(){
-            console.log("Destroy User Dialog")
-            var up = registry.byId('userProfile')
-            console.log("userProfile: ", up)
-            dlg.destroyRecursive()
-          }
+        require(['p3/widget/UserProfileForm'], function (UserProfileForm) {
+          var w = new UserProfileForm({ callbackURL: '<%- callbackURL %>' });
+          var dlg = new Dialog({
+            title: 'User Profile',
+            onHide: function(){
+              try { w.destroyRecursive && w.destroyRecursive(); } catch(e){}
+              try { dlg.destroyRecursive && dlg.destroyRecursive(); } catch(e){}
+            }
+          });
+          dlg.set('content', w.domNode);
+          w.startup();
+          dlg.show();
         });
-        dlg.show();
       };
 
       var showSuLogin = function (evt) {
@@ -367,11 +373,13 @@ define([
           evt.stopPropagation();
         }
         // console.log(evt);
-        var dlg = new Dialog({
-          title: 'SU Login',
-          content: "<div class=\"SuLogin\" data-dojo-type=\"p3/widget/SuLogin\" style=\"width:600px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:10px;margin-top:10px;padding:10px;\" data-dojo-props='callbackURL: \"<%- callbackURL %>\"'></div>"
+        require(['p3/widget/SuLogin'], function (SuLogin) {
+          var w = new SuLogin({ callbackURL: '<%- callbackURL %>' });
+          var dlg = new Dialog({ title: 'SU Login' });
+          dlg.set('content', w.domNode);
+          w.startup();
+          dlg.show();
         });
-        dlg.show();
       };
 
       var showNewUser = function (evt) {
@@ -381,11 +389,13 @@ define([
           evt.stopPropagation();
         }
         // console.log(evt);
-        var dlg = new Dialog({
-          title: 'Register User',
-          content: "<div class=\"UserProfileForm\" data-dojo-type=\"p3/widget/UserProfileForm\" style=\"width:600px; margin-left:auto;margin-right:auto;font-size:1.1em;margin-bottom:10px;margin-top:10px;padding:10px;\" data-dojo-props='callbackURL: \"<%- callbackURL %>\"'></div>"
+        require(['p3/widget/UserProfileForm'], function (UserProfileForm) {
+          var w = new UserProfileForm({ callbackURL: '<%- callbackURL %>' });
+          var dlg = new Dialog({ title: 'Register User' });
+          dlg.set('content', w.domNode);
+          w.startup();
+          dlg.show();
         });
-        dlg.show();
       };
 
       // var timer;
@@ -451,7 +461,7 @@ define([
         def.resolve(w);
       } else if (p.ctor && typeof p.ctor === 'string') {
         var reqs = [];
-        if (window.App && window.App.production && p.layer) {
+        if (p.layer) {
           reqs.push(p.layer);
         }
 
@@ -510,16 +520,149 @@ define([
       return ch[0];
     },
 
+    // Layer dependencies - external scripts that must be loaded before layer bundles
+    layerDependencies: {
+      'p3/layer/outbreaks': [
+        {
+          url: 'https://maps.googleapis.com/maps/api/js?key=AIzaSyCV3IVW4r8G8kEZtEZW5v2VqfMXLBpYpCo&libraries=visualization',
+          global: 'google',
+          attribute: 'maps'
+        }
+      ]
+    },
+
     getConstructor: function (cls,layers) {
       var def = new Deferred();
+      var self = this;
       if (layers && layers.length > 0) {
-        require(layers, function () {
-          require([cls], function (ctor) {
-            def.resolve(ctor);
+        // Load all layer bundles/scripts dynamically
+        var loadedLayers = 0;
+        var totalLayers = layers.length;
+
+        function checkAllLoaded() {
+          if (loadedLayers === totalLayers) {
+            // All layers loaded, now require the constructor
+            console.log('All layers loaded, requiring:', cls);
+            require([cls], function (ctor) {
+              console.log('Loaded constructor for', cls);
+              def.resolve(ctor);
+            });
+          }
+        }
+
+        function loadExternalDependencies(layerPath, callback) {
+          var deps = self.layerDependencies[layerPath];
+          if (!deps || deps.length === 0) {
+            callback();
+            return;
+          }
+
+          var loadedDeps = 0;
+          var totalDeps = deps.length;
+
+          function checkDepsLoaded() {
+            if (loadedDeps === totalDeps) {
+              callback();
+            }
+          }
+
+          deps.forEach(function(dep) {
+            // Check if already loaded by testing global
+            var globalObj = window[dep.global];
+            if (globalObj && (!dep.attribute || globalObj[dep.attribute])) {
+              console.log('External dependency already loaded:', dep.url);
+              loadedDeps++;
+              checkDepsLoaded();
+              return;
+            }
+
+            // Check if script tag exists
+            if (document.querySelector('script[src="' + dep.url + '"]')) {
+              console.log('External dependency script tag exists:', dep.url);
+              loadedDeps++;
+              checkDepsLoaded();
+              return;
+            }
+
+            console.log('Loading external dependency:', dep.url);
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = dep.url;
+            script.onload = function() {
+              console.log('External dependency loaded:', dep.url);
+              loadedDeps++;
+              checkDepsLoaded();
+            };
+            script.onerror = function() {
+              console.error('Failed to load external dependency:', dep.url);
+              loadedDeps++;
+              checkDepsLoaded();
+            };
+            document.head.appendChild(script);
           });
-        });
+        }
+
+        function loadNextLayer(index) {
+          if (index >= layers.length) {
+            checkAllLoaded();
+            return;
+          }
+
+          var layerPath = layers[index];
+          var layerName = layerPath.split('/').pop();
+          var scriptUrl;
+          var base = (typeof window !== 'undefined' && window.WEBPACK_BUNDLE_BASE) ? window.WEBPACK_BUNDLE_BASE : '/js/release/';
+
+          // Load external dependencies first, then layer bundle
+          loadExternalDependencies(layerPath, function() {
+            if (layerPath.indexOf('p3/layer/viewer/') === 0) {
+              // Viewer layer: convert to webpack bundle name
+              // e.g., "p3/layer/viewer/Taxonomy" -> "viewer-taxonomy.bundle.js"
+              var viewerType = layerPath.split('/').pop();
+              // Convert CamelCase to kebab-case BEFORE lowercasing
+              // Example: "FeatureList" -> "feature-list"
+              var kebab = viewerType.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+              var bundleName = 'viewer-' + kebab;
+              scriptUrl = base + bundleName + '.bundle.js';
+            } else {
+              // Regular layer: load webpack bundle
+              scriptUrl = base + layerName + '.bundle.js';
+            }
+
+            // Check if script is already loaded
+            if (document.querySelector('script[src="' + scriptUrl + '"]')) {
+              console.log('Layer already loaded:', scriptUrl);
+              loadedLayers++;
+              loadNextLayer(index + 1);
+              return;
+            }
+
+            console.log('Loading layer:', scriptUrl);
+            // Load script via script tag - load layers sequentially
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = scriptUrl;
+            script.onload = function() {
+              console.log('Layer loaded:', scriptUrl);
+              loadedLayers++;
+              loadNextLayer(index + 1);
+            };
+            script.onerror = function() {
+              console.error('Failed to load layer:', scriptUrl);
+              // Continue anyway
+              loadedLayers++;
+              loadNextLayer(index + 1);
+            };
+            document.head.appendChild(script);
+          });
+        }
+
+        // Start loading layers sequentially
+        loadNextLayer(0);
       } else {
+        console.log('No layers to load, directly requiring:', cls);
         require([cls], function (ctor) {
+          console.log('Loaded constructor for', cls);
           def.resolve(ctor);
         });
       }
@@ -539,7 +682,9 @@ define([
 
       /*  istanbul ignore else */
       if (newNavState.widgetClass) {
-        layers = (window.App && window.App.production && newNavState.layers)?newNavState.layers:[]
+        // Load all layers including viewer-specific layers
+        // Each viewer gets its own webpack bundle
+        layers = Array.isArray(newNavState.layers) ? newNavState.layers : []
         ctor = this.getConstructor(newNavState.widgetClass, layers);
       } else {
         ctor = ContentPane;

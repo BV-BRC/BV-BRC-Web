@@ -2,7 +2,7 @@ define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/topic', 'dojo/on',
   'dojo/dom-class',
   'dojo/text!./templates/Variation.html', './AppBase', 'dojo/dom-construct',
-  'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox',
+  'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/ready', 'dijit/form/NumberTextBox',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog',
   'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby'
 ], function (

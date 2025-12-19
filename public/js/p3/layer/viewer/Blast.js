@@ -1,0 +1,5 @@
+// Blast viewer layer
+// Requires the viewer widget from webpack bundle
+define(['p3/widget/viewer/Blast'], function(Viewer) {
+  return Viewer;
+});

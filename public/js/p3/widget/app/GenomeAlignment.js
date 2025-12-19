@@ -2,12 +2,17 @@ define([
   'dojo/_base/declare', 'dojo/on', 'dojo/topic', 'dojo/dom-class',
   'dojo/text!./templates/GenomeAlignment.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/lang', 'dojo/query', 'dijit/Dialog', 'dojo/dom-style',
-  '../../WorkspaceManager', 'dojo/when', 'dojo/request', '../SelectedTable'
+  '../../WorkspaceManager', 'dojo/when', 'dojo/request', '../SelectedTable',
+  // Widgets used in template
+  'dijit/form/Button', 'dijit/form/HorizontalSlider', 'dijit/form/HorizontalRule',
+  'dijit/form/HorizontalRuleLabels', 'dijit/form/NumberTextBox',
+  'p3/widget/GenomeNameSelector', 'p3/widget/WorkspaceObjectSelector', 'p3/widget/WorkspaceFilenameValidationTextBox'
 ], function (
   declare, on, Topic, domClass,
   Template, AppBase, domConstruct, registry,
   lang, query, Dialog, domStyle,
   WorkspaceManager, when, request, SelectedTable
+  // Template widgets don't need references in function params
 ) {
   return declare([AppBase], {
     apiServiceUrl: window.App.dataAPI,
