@@ -1,9 +1,11 @@
 define([
   'dojo/_base/declare', 'dojo/on',
+  'dojo/dom-construct',
   'dijit/_Templated', 'dijit/_WidgetBase',
   'dojo/text!./templates/FilterValueButton.html'
 ], function (
   declare, on,
+  domConstruct,
   Templated, WidgetBase,
   template
 ) {
@@ -17,32 +19,40 @@ define([
     _setSelectedAttr: function (selected) {
       console.log('FilteredValueButton _setSelected: ', selected);
 
-      const content = [];
+      // Clean and prepare selected values
       selected = selected.map(function (s, idx) {
-        var s = s.replace(/"/g, '');
-        var co = [];
-        co.push('<div class="ValueWrapper">');
-        co.push('<span class="ValueContent">' + s + '</span>');
-        co.push('</div>');
-        content.push(co.join(''));
-        return s;
+        return s.replace(/"/g, '');
       }, this);
-      // console.log(content, selected)
-      // this._set('selected', selected);
 
       if (!this._started) {
-        // this._set('selected', selected);
         return;
       }
 
-      if (content.length == 1) {
-        this.selectedNode.innerHTML = content[0];
-      } else if (content.length == 2) {
-        this.selectedNode.innerHTML = content.join('&nbsp;or&nbsp;');
-      } else {
-        this.selectedNode.innerHTML = content.slice(0, -1).join(',&nbsp;') + '&nbsp;or&nbsp;' + content[content.length - 1];
-      }
-      // this._set('selected', selected);
+      // Clear and build content safely with DOM construction
+      domConstruct.empty(this.selectedNode);
+
+      // Build the value wrappers
+      selected.forEach(function (s, idx) {
+        // Add separator if needed
+        if (idx > 0) {
+          if (idx === selected.length - 1) {
+            domConstruct.place(document.createTextNode(' or '), this.selectedNode, 'last');
+          } else {
+            domConstruct.place(document.createTextNode(', '), this.selectedNode, 'last');
+          }
+        }
+
+        // Create value wrapper div
+        var wrapper = domConstruct.create('div', {
+          'class': 'ValueWrapper'
+        }, this.selectedNode, 'last');
+
+        // Create value content span
+        domConstruct.create('span', {
+          'class': 'ValueContent',
+          textContent: s
+        }, wrapper, 'last');
+      }, this);
 
     },
     clearAll: function () {

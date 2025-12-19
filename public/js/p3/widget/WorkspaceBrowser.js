@@ -2132,12 +2132,25 @@ define([
       // Update and show search term indicator with spinner
       var typeLabel = searchParams.type === 'all' ? 'All Types' : (WorkspaceManager.knownUploadTypes[searchParams.type] ? WorkspaceManager.knownUploadTypes[searchParams.type].label : searchParams.type);
 
-      // Create spinner icon HTML. Add a non-breaking space before it for consistent spacing.
-      var spinnerIconHTML = ' <i class="fa icon-spinner fa-spin wsSearchSpinner" style="margin-right: 5px;"></i>';
+      // Clear and build search indicator safely with DOM construction
+      domConstruct.empty(this.searchTermIndicator);
 
-      this.searchTermIndicator.innerHTML = searchParams.term + ' (' + typeLabel + ')' +
-        spinnerIconHTML + // Add spinner here
-        ' <span class="wsClearSearchX" style="color: #A94442; font-weight: bold; margin-left: 5px; cursor: pointer;">×</span>'; // Using × for X
+      // Add search term text (safe)
+      domConstruct.place(document.createTextNode(searchParams.term + ' (' + typeLabel + ') '), this.searchTermIndicator, 'last');
+
+      // Add spinner icon
+      domConstruct.create('i', {
+        'class': 'fa icon-spinner fa-spin wsSearchSpinner',
+        style: 'margin-right: 5px;'
+      }, this.searchTermIndicator, 'last');
+
+      // Add close button
+      domConstruct.create('span', {
+        'class': 'wsClearSearchX',
+        style: 'color: #A94442; font-weight: bold; margin-left: 5px; cursor: pointer;',
+        innerHTML: '×'
+      }, this.searchTermIndicator, 'last');
+
       this.searchTermIndicator.style.display = 'inline-block';
 
       // Attach click to the X only once or ensure it's managed correctly
