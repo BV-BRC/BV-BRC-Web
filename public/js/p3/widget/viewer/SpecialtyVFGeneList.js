@@ -69,7 +69,8 @@ define([
     },
 
     onSetQuery: function (attr, oldVal, newVal) {
-      this.queryNode.innerHTML = decodeURIComponent(newVal);
+      // Use textContent to prevent XSS from URL parameters
+      this.queryNode.textContent = decodeURIComponent(newVal);
     },
 
     setActivePanelState: function () {
@@ -116,7 +117,8 @@ define([
     },
     onSetTotalSpecialtyGenes: function (attr, oldVal, newVal) {
       // console.log("ON SET TOTAL GENOMES: ", newVal);
-      this.totalCountNode.innerHTML = ' ( ' + newVal + '  PATRIC_VF Genes ) ';
+      // Use textContent to prevent XSS
+      this.totalCountNode.textContent = ' ( ' + newVal + '  PATRIC_VF Genes ) ';
     },
     hideWarning: function () {
       if (this.warningPanel) {
