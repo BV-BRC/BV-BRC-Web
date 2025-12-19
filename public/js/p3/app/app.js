@@ -531,10 +531,58 @@ define([
       ]
     },
 
+    loadLayerCSS: function(layerPath) {
+      // Load CSS bundle for a layer
+      var layerName = layerPath.split('/').pop();
+      var cssUrl;
+      var base = (typeof window !== 'undefined' && window.WEBPACK_BUNDLE_BASE) ? window.WEBPACK_BUNDLE_BASE : '/js/release/';
+
+      if (layerPath.indexOf('p3/layer/viewer/') === 0) {
+        // Viewer layer: convert to webpack bundle name
+        // e.g., "p3/layer/viewer/Taxonomy" -> "viewer-taxonomy.bundle.css"
+        var viewerType = layerPath.split('/').pop();
+        // Convert CamelCase to kebab-case BEFORE lowercasing
+        // Example: "FeatureList" -> "feature-list"
+        var kebab = viewerType.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+        var bundleName = 'viewer-' + kebab;
+        cssUrl = base + bundleName + '.bundle.css';
+      } else {
+        // Regular layer: load webpack CSS bundle
+        cssUrl = base + layerName + '.bundle.css';
+      }
+
+      // Check if CSS link is already loaded
+      if (document.querySelector('link[href="' + cssUrl + '"]')) {
+        console.log('Layer CSS already loaded:', cssUrl);
+        return;
+      }
+
+      console.log('Loading layer CSS:', cssUrl);
+      // Load CSS via link tag
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = cssUrl;
+      link.onload = function() {
+        console.log('Layer CSS loaded:', cssUrl);
+      };
+      link.onerror = function() {
+        // CSS file may not exist for all layers - this is OK
+        console.log('No CSS bundle for layer:', cssUrl);
+      };
+      document.head.appendChild(link);
+    },
+
     getConstructor: function (cls,layers) {
       var def = new Deferred();
       var self = this;
       if (layers && layers.length > 0) {
+        // Load CSS for all layers first (in order)
+        // CSS must be loaded before widgets instantiate to avoid FOUC
+        layers.forEach(function(layerPath) {
+          self.loadLayerCSS(layerPath);
+        });
+
         // Load all layer bundles/scripts dynamically
         var loadedLayers = 0;
         var totalLayers = layers.length;
