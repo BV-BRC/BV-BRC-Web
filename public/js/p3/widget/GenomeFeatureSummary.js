@@ -27,7 +27,7 @@ define([
         if (obj.PATRIC) {
           var link = domConstruct.create('a', {
             href: '#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,PATRIC))',
-            target: '_blank'
+            target: '_blank',
             textContent: obj.PATRIC
           });
           domConstruct.place(link, node, 'only');
@@ -42,7 +42,7 @@ define([
         if (obj.RefSeq) {
           var link = domConstruct.create('a', {
             href: '#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,RefSeq))',
-            target: '_blank'
+            target: '_blank',
             textContent: obj.RefSeq
           });
           domConstruct.place(link, node, 'only');
