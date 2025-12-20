@@ -177,10 +177,10 @@ define(
         link = 'http://arpcard.mcmaster.ca';
       }
       else if (target.match(/DrugBank$/i)) {
-        link = 'http://www.drugbank.ca/molecules/'; // 1
+        link = 'https://go.drugbank.com/drugs/';
       }
       else if (target.match(/DrugBank_HOME/i)) {
-        link = 'http://www.drugbank.ca';
+        link = 'https://go.drugbank.com';
       }
       else if (target.match(/TTD$/i)) {
         link = 'http://bidd.nus.edu.sg/group/TTD/ZFTTDDetail.asp?ID='; // TTDS00427
