@@ -192,8 +192,14 @@ define([
         }
       }
 
-      // Determine if we should use filtered API - only for status filters
-      var useFilteredAPI = !!statusFilterString;
+      // Extract app filter from query if present
+      var appFilter = null;
+      if (query && query.app && query.app !== 'all') {
+        appFilter = query.app;
+      }
+
+      // Determine if we should use filtered API - for status or app filters
+      var useFilteredAPI = !!(statusFilterString || appFilter);
 
       // Create cache key for this page (include query in key for filtered results)
       var queryKey = query ? JSON.stringify(query) : 'noquery';
@@ -235,12 +241,16 @@ define([
       // Get total count promise for unfiltered queries
       var totalPromise = useFilteredAPI ? null : _self._getTotalCount();
 
-      // Build SimpleTaskFilter if using filtered API - only include status
+      // Build SimpleTaskFilter if using filtered API - include status and/or app
       var simpleFilter = null;
-      if (useFilteredAPI && statusFilterString) {
-        simpleFilter = {
-            status: statusFilterString
-        };
+      if (useFilteredAPI) {
+        simpleFilter = {};
+        if (statusFilterString) {
+          simpleFilter.status = statusFilterString;
+        }
+        if (appFilter) {
+          simpleFilter.app = appFilter;
+        }
       }
 
       // Make API call for this page
@@ -256,13 +266,13 @@ define([
             // Filter out deleted jobs
             jobs = jobs.filter(function (job) { return job.status !== 'deleted'; });
 
-            // Apply any remaining client-side filters (e.g., app, parameters/output_file search)
-            // Only status is handled by the filtered API, all other filters are applied client-side
+            // Apply any remaining client-side filters (e.g., parameters/output_file search)
+            // Status and app are handled by the filtered API, other filters are applied client-side
             if (query && Object.keys(query).length > 0) {
-              // Remove status from query since it's handled by API
+              // Remove status and app from query since they're handled by API
               var clientQuery = {};
               for (var key in query) {
-                if (query.hasOwnProperty(key) && key !== 'status') {
+                if (query.hasOwnProperty(key) && key !== 'status' && key !== 'app') {
                   clientQuery[key] = query[key];
                 }
               }
