@@ -351,6 +351,9 @@ define([
         }
       }));
 
+      // Track if grid has loaded for the first time
+      var gridFirstLoadComplete = false;
+
       // Update filter labels when grid loads its first page
       this.grid.on('dgrid-refresh-complete', lang.hitch(this, function (evt) {
         if (evt.results && this.containerActionBar) {
@@ -363,6 +366,16 @@ define([
           }
           if (jobs.length > 0 && this.containerActionBar.updateFilterLabels) {
             this.containerActionBar.updateFilterLabels(jobs);
+          }
+        }
+
+        // After grid has fully loaded for the first time, call query_task_summary
+        // to ensure status bar shows correct counts
+        if (!gridFirstLoadComplete) {
+          gridFirstLoadComplete = true;
+          // Call getStatus to update the status bar with current job counts
+          if (JobManager.getStatus) {
+            JobManager.getStatus();
           }
         }
       }));

@@ -189,6 +189,9 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
   });
 
   return {
+    getStatus: function () {
+      return getStatus();
+    },
     queryTaskDetail: function (id, stdout, stderr) {
       return Deferred.when(window.App.api.service('AppService.query_task_details', [id]), function (detail) {
         detail = detail[0];
