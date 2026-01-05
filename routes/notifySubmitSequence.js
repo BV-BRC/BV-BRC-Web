@@ -43,7 +43,7 @@ function mail(subject, message) {
         pass: mailconf.password
       };
     }
-    transportOpts.tls = { rejectUnauthorized: false };
+    transportOpts.tls = { rejectUnauthorized: true };
     transport = email.createTransport(smtpTransport(transportOpts));
   }
 
