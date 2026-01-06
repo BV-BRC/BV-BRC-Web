@@ -30,9 +30,11 @@
     "express": "^4.19.2",
     "express-formidable": "^1.2.0",
     "express-http-proxy": "^2.1.1",
+    "express-rate-limit": "^7.5.1",
     "feedparser": "^2.2.10",
     "flag-icons": "^7.2.1",
     "formidable": "^2.1.2",
+    "helmet": "^7.2.0",
     "html2canvas": "^1.4.1",
     "http-proxy": "^1.18.1",
     "httpntlm": "^1.8.13",
@@ -51,6 +53,7 @@
     "sanitize-html": "^2.17.0",
     "serve-favicon": "^2.5.0",
     "underscore": "^1.13.6",
+    "validator": "^13.15.26",
     "webcola": "^3.4.0"
   },
   "devDependencies": {

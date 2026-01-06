@@ -6,6 +6,7 @@ var defer = require('promised-io/promise').defer;
 const axios = require("axios");
 var formidable = require('express-formidable');
 var fs = require('fs');
+const { sanitizeEmail, sanitizeEmailHeader, sanitizeEmailSubject } = require('../lib/securityUtils');
 
 function mail(message, subject, from, files, options) {
   if (!message) {
@@ -47,7 +48,7 @@ function mail(message, subject, from, files, options) {
         pass: mailconf.password
       };
     }
-    transportOpts.tls = { rejectUnauthorized: false };
+    transportOpts.tls = { rejectUnauthorized: true };
     transport = email.createTransport(smtpTransport(transportOpts));
   }
 
@@ -88,11 +89,10 @@ function mail(message, subject, from, files, options) {
 }
 
 function buildSubject(formBody) {
-  var content = [];
-
-  // eslint-disable-next-line no-useless-concat
-  content.push('[' + formBody.jiraLabel + ']' + ' ' + formBody.subject);
-  return content.join(' ');
+  // Sanitize user inputs to prevent email header injection (CRLF attacks)
+  var safeLabel = sanitizeEmailHeader(formBody.jiraLabel || '');
+  var safeSubject = sanitizeEmailSubject(formBody.subject || '');
+  return '[' + safeLabel + '] ' + safeSubject;
 }
 function buildMessage(formBody) {
   var content = [];
@@ -128,12 +128,17 @@ module.exports = [
     if (req.headers && req.headers.authorization) {
       when(getUserDetails(req.headers.authorization, req.fields.userId), function (repl) {
 	user = repl.data;
-	if (user.first_name && user.last_name) {
-	    req.from = '"' + user.first_name + ' ' + user.last_name + '" ' + user.email;
+	// Sanitize user data to prevent email header injection
+	var safeEmail = sanitizeEmail(user.email);
+	if (user.first_name && user.last_name && safeEmail) {
+	    var safeName = sanitizeEmailHeader(user.first_name + ' ' + user.last_name);
+	    req.from = '"' + safeName + '" <' + safeEmail + '>';
+	} else if (safeEmail) {
+	  req.from = safeEmail;
 	} else {
-	  req.from = user.email;
+	  req.from = '';
 	}
-        req.fields.email = user.email;
+        req.fields.email = safeEmail;
         next();
       }, function (err) {
         console.log('Unable to retrieve user profile: ', err);
@@ -141,7 +146,8 @@ module.exports = [
       });
 
     } else if (req.fields && req.fields.email) {
-      req.from = req.fields.email;
+      // Sanitize user-provided email to prevent header injection
+      req.from = sanitizeEmail(req.fields.email);
       next();
     } else {
       next();
