@@ -381,13 +381,28 @@ define([
       // if dialog is already built, just show it
       if (this.dialog) {
         this.dialog.flip('front');
-        this.dialog.show();
+        // Safari fix: Explicitly hide back pane before showing dialog
+        this.dialog.backPane.style.display = 'none';
+        this.dialog.backpaneTitleBar.style.display = 'none';
+
+        // Use requestAnimationFrame to ensure flip completes before showing dialog
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            _self.dialog.show();
+            // Re-enable back pane after dialog is visible (for flip animation to work)
+            setTimeout(function() {
+              _self.dialog.backPane.style.display = '';
+              _self.dialog.backpaneTitleBar.style.display = '';
+            }, 50);
+          });
+        });
         return;
       }
 
       this.dialog = new Dialog({
         title: this.title,
-        draggable: true
+        draggable: true,
+        style: 'visibility: hidden;' // Hide initially to prevent flash of wrong state
       });
       var frontBC = new BorderContainer({ style: { width: '805px', height: '650px' } });
       var backBC = new BorderContainer({
@@ -590,7 +605,22 @@ define([
       }
 
       this.dialog.flip('front');
-      this.dialog.show();
+      // Safari fix: Explicitly hide back pane before showing dialog
+      _self.dialog.backPane.style.display = 'none';
+      _self.dialog.backpaneTitleBar.style.display = 'none';
+
+      // Use requestAnimationFrame to ensure flip completes before showing dialog
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          _self.dialog.domNode.style.visibility = 'visible';
+          _self.dialog.show();
+          // Re-enable back pane after dialog is visible (for flip animation to work)
+          setTimeout(function() {
+            _self.dialog.backPane.style.display = '';
+            _self.dialog.backpaneTitleBar.style.display = '';
+          }, 50);
+        });
+      });
 
     },
 

@@ -326,7 +326,7 @@ table tr.even td {
 .claro .dijitDialog .dijitDialogPaneContent,
 .dijitDialog .backpane {
     backface-visibility: hidden;
-    -webkit-backface-visiblity: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 .claro .dijitDialog .backpaneTitleBar,
@@ -348,10 +348,10 @@ table tr.even td {
 
 .claro .dijitDialog .dijitDialogTitleBar,
 .claro .dijitDialog .dijitDialogPaneContent {
-    z-index: 2;
+    z-index: 10;
     transform: rotateY(0deg);
     -webkit-transform: rotateY(0deg);
-    -webkit-backface-visiblity: hidden;
+    -webkit-backface-visibility: hidden;
     transform-style: preserve-3d;
     -webkit-transform-style: preserve-3d;
     backface-visibility: hidden;
@@ -359,13 +359,43 @@ table tr.even td {
 
 .claro .flippableDialog .backpaneTitleBar,
 .claro .dijitDialog .backpane {
-    z-index: 3;
+    z-index: 1;
     transform: rotateY(180deg);
     -webkit-transform: rotateY(180deg);
-    -webkit-backface-visiblity: hidden;
+    -webkit-backface-visibility: hidden;
     transform-style: preserve-3d;
     -webkit-transform-style: preserve-3d;
     backface-visibility: hidden;
+}
+
+/* Safari fix: explicitly hide back pane when dialog is NOT flipped */
+.claro .flippableDialog:not(.flipped) .backpaneTitleBar,
+.claro .flippableDialog:not(.flipped) .backpane {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none;
+}
+
+/* Safari fix: explicitly hide front pane when dialog IS flipped */
+.claro .flippableDialog.flipped .dijitDialogTitleBar,
+.claro .flippableDialog.flipped .dijitDialogPaneContent {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none;
+}
+
+/* Safari fix: ensure front pane is on top when NOT flipped */
+.claro .flippableDialog:not(.flipped) .dijitDialogTitleBar,
+.claro .flippableDialog:not(.flipped) .dijitDialogPaneContent {
+    z-index: 100;
+}
+
+/* Safari fix: ensure back pane is on top when flipped */
+.claro .flippableDialog.flipped .backpaneTitleBar,
+.claro .flippableDialog.flipped .backpane {
+    z-index: 100;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .ActionBar {
