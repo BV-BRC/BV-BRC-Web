@@ -59,51 +59,22 @@ app.use(logger('dev'));
 app.use(cookieParser(config.get('cookieSecret')));
 
 // Security headers with Helmet
+// CSP is disabled due to incompatibility with Dojo framework
+// Other important security headers are still applied:
+// - X-Frame-Options (prevents clickjacking)
+// - X-Content-Type-Options (prevents MIME sniffing)
+// - Strict-Transport-Security (enforces HTTPS)
+// - X-DNS-Prefetch-Control
+// - Referrer-Policy
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: [
-        "'self'",
-        "'unsafe-inline'",  // Required for inline scripts in EJS templates
-        "'unsafe-eval'",    // Required for Dojo framework
-        "https://www.bv-brc.org",
-        "https://www.linkedin.com",
-        "https://www.google-analytics.com",
-        "https://www.googletagmanager.com"
-      ],
-      styleSrc: [
-        "'self'",
-        "'unsafe-inline'",
-        "https://fonts.googleapis.com"
-      ],
-      imgSrc: [
-        "'self'",
-        "data:",
-        "https:",
-        "blob:"
-      ],
-      fontSrc: [
-        "'self'",
-        "https://fonts.gstatic.com"
-      ],
-      connectSrc: [
-        "'self'",
-        "https://www.bv-brc.org",
-        "https://*.bv-brc.org",
-        "https://api.linkedin.com",
-        "https://www.linkedin.com"
-      ],
-      frameSrc: [
-        "'self'",
-        "https://www.linkedin.com"
-      ],
-      frameAncestors: ["'self'"],
-      objectSrc: ["'none'"]
-    }
-  },
+  contentSecurityPolicy: false,  // Disabled - Dojo framework incompatible
   crossOriginEmbedderPolicy: false,  // Allow embedded content
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  hsts: {
+    maxAge: 31536000,  // 1 year in seconds
+    includeSubDomains: true,
+    preload: true
+  }
 }));
 
 // Block access to demo directories with legacy/vulnerable jQuery versions
