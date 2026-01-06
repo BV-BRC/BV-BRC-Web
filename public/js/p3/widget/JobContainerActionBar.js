@@ -108,7 +108,7 @@ define([
         status: null
       };
       on(selector, 'change', function (val) {
-        self.filters.application_name = val;
+        self.filters.app = val;
         Topic.publish('/JobFilter', self.filters);
       });
 
@@ -263,7 +263,12 @@ define([
     updateFilterLabels: function (jobs) {
       if (this._selector && jobs && jobs.length > 0) {
         var labels = this.getFilterLabels(jobs);
-        this._selector.set('options', labels).reset();
+        // Get current value before updating options
+        var currentValue = this.filters.app || 'all';
+        // Set options without reset - getFilterLabels already marks the correct option as selected
+        this._selector.set('options', labels);
+        // Restore the value without triggering change event
+        this._selector.set('value', currentValue, false);
       }
     },
 
@@ -290,7 +295,7 @@ define([
       // add 'all apps' option
       var apps = [];
       var facet = { label: 'All Services', value: 'all' };
-      if (self.filters.application_name == 'all') facet.selected = true;
+      if (self.filters.app == 'all') facet.selected = true;
       apps.push(facet);
 
       // organize options by app count
@@ -303,7 +308,7 @@ define([
             value: k,
             count: info[k]
           };
-          if (k == self.filters.application_name) facet.selected = true;
+          if (k == self.filters.app) facet.selected = true;
           apps.push(facet);
         }
       }

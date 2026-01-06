@@ -11,9 +11,9 @@ define([
   ChartTooltip, domConstruct, PathJoin, easing
 ) {
 
-  var labels = ['Hypothetical proteins', 'Proteins with functional assignments', 'Proteins with EC number assignments', 'Proteins with GO assignments', 'Proteins with Pathway assignments', 'Proteins with Subsystem assignments', 'Proteins with PATRIC genus-specific family (PLfam) assignments', 'Proteins with PATRIC cross-genus family (PGfam) assignments', 'Proteins with FIGfam assignments'];
-  var shortLabels = ['Hypothetical', 'Functional', 'EC assigned', 'GO assigned', 'Pathway assigned', 'Subsystem assigned', 'PLfam assigned', 'PGfam assigned', 'FIGfam assigned'];
-  var filters = ['eq(product,hypothetical+protein),eq(feature_type,CDS)', 'ne(product,hypothetical+protein),eq(feature_type,CDS)', 'eq(property,EC*)', 'eq(go,*)', 'eq(property,Pathway)', 'eq(property,Subsystem)', 'eq(plfam_id,PLF*)', 'eq(pgfam_id,PGF*)', 'eq(figfam_id,*)'];
+  var labels = ['Hypothetical proteins', 'Proteins with functional assignments', 'Proteins with EC number assignments', 'Proteins with Pathway assignments', 'Proteins with Subsystem assignments', 'Proteins with PATRIC genus-specific family (PLfam) assignments', 'Proteins with PATRIC cross-genus family (PGfam) assignments'];
+  var shortLabels = ['Hypothetical', 'Functional', 'EC assigned', 'Pathway assigned', 'Subsystem assigned', 'PLfam assigned', 'PGfam assigned'];
+  var filters = ['eq(product,hypothetical+protein),eq(feature_type,CDS)', 'ne(product,hypothetical+protein),eq(feature_type,CDS)', 'eq(property,EC*)', 'eq(property,Pathway)', 'eq(property,Subsystem)', 'eq(plfam_id,PLF*)', 'eq(pgfam_id,PGF*)'];
 
   return declare([SummaryWidget], {
     dataModel: 'genome_feature',
@@ -62,11 +62,6 @@ define([
           q: 'property:EC*',
           facet: { by_annotation: { type: 'terms', field: 'annotation' } }
         },
-        go_assigned: {
-          type: 'query',
-          q: 'go:*',
-          facet: { by_annotation: { type: 'terms', field: 'annotation' } }
-        },
         pathway_assigned: {
           type: 'query',
           q: 'property:Pathway',
@@ -85,11 +80,6 @@ define([
         pgfam_assigned: {
           type: 'query',
           q: 'pgfam_id:PGF*',
-          facet: { by_annotation: { type: 'terms', field: 'annotation' } }
-        },
-        figfam_assigned: {
-          type: 'query',
-          q: 'figfam_id:*',
           facet: { by_annotation: { type: 'terms', field: 'annotation' } }
         }
       });
@@ -111,9 +101,9 @@ define([
     },
     processData: function (response) {
       // OPTIMIZED: Process SOLR JSON facet response
-      var facetOrder = ['hypothetical', 'functional', 'ec_assigned', 'go_assigned',
+      var facetOrder = ['hypothetical', 'functional', 'ec_assigned',
                         'pathway_assigned', 'subsystem_assigned', 'plfam_assigned',
-                        'pgfam_assigned', 'figfam_assigned'];
+                        'pgfam_assigned'];
 
       var results = facetOrder.map(function(facetName) {
         var facetData = response.facets[facetName];

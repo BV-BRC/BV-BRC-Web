@@ -18,6 +18,10 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
   // state of status (used to detect changes)
   var StatusSummary = { init: null };
 
+  // Flag to track if this is the first poll - skip refresh on first poll
+  // since the grid is already loading its initial data
+  var isFirstPoll = true;
+
   // Use paginated store instead of MemoryStore
   var _DataStore = new PaginatedJobStore({
     idProperty: 'id',
@@ -148,6 +152,14 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
     // check for status change.  if change, update jobs list
     var prom = getStatus();
     return When(prom,function (statusChange) {
+      // Skip refresh on first poll - the grid is already loading its initial data
+      // We still want to get the status counts, just don't trigger a redundant refresh
+      if (isFirstPoll) {
+        isFirstPoll = false;
+        setTimeout(PollJobs, TIME_OUT);
+        return;
+      }
+
       if (statusChange) {
         updateJobsList().then(function () {
           setTimeout(PollJobs, TIME_OUT);
@@ -157,6 +169,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 
       setTimeout(PollJobs, TIME_OUT);
     }, function () {
+      isFirstPoll = false; // Reset flag even on error
       Topic.publish('/Jobs', { status: 'failed' });
       Topic.publish('/JobStatus', 'failed'); // send 'failed' instead of usual meta object
 
@@ -176,6 +189,9 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
   });
 
   return {
+    getStatus: function () {
+      return getStatus();
+    },
     queryTaskDetail: function (id, stdout, stderr) {
       return Deferred.when(window.App.api.service('AppService.query_task_details', [id]), function (detail) {
         detail = detail[0];

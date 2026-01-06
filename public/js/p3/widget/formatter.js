@@ -177,10 +177,10 @@ define(
         link = 'http://arpcard.mcmaster.ca';
       }
       else if (target.match(/DrugBank$/i)) {
-        link = 'http://www.drugbank.ca/molecules/'; // 1
+        link = 'https://go.drugbank.com/drugs/';
       }
       else if (target.match(/DrugBank_HOME/i)) {
-        link = 'http://www.drugbank.ca';
+        link = 'https://go.drugbank.com';
       }
       else if (target.match(/TTD$/i)) {
         link = 'http://bidd.nus.edu.sg/group/TTD/ZFTTDDetail.asp?ID='; // TTDS00427
@@ -428,7 +428,7 @@ define(
           case 'fasta':
             return '<i class="fa icon-fasta fa-1x" title="Contigs" />';
           case 'feature_group':
-            return '<i class="icon-genome-features " title="Contigs" />';
+            return '<i class="icon-genome-features " title="Feature Group" />';
           case 'genome_group':
             return '<img src="/public/js/p3/resources/images/genomegroup.svg" style="width:16px;height:16px;"  class="fa fa-2x" title="Genome Group" />';
           case 'job_result_DifferentialExpression':

@@ -955,6 +955,14 @@ div.pubmed ul li {
 	padding: 0;
 }
 
+.patric .PerspectiveQuery {
+	display: inline;
+}
+
+.patric .PerspectiveQuery > div {
+	display: inline;
+}
+
 .patric .PerspectiveQuery .current {
     font-size: 1.1em;
     font-weight: bold;
@@ -963,6 +971,8 @@ div.pubmed ul li {
 
 .patric .PerspectiveTotalCount {
 	color: #666666;
+	white-space: nowrap;
+	display: inline;
 }
 
 .patric .PerspectiveHeader .PerspectiveIcon.fa {
