@@ -515,7 +515,7 @@ define([
 
       /* istanbul ignore else */
       if (this.user && this.user.id) {
-        console.log('this.user: ', this.user)
+        console.log('this.user: ', this.user.id)
         domAttr.set('YourWorkspaceLink', 'href', '/workspace/' + this.user.id);
         var n = dom.byId('signedInAs');
         /* istanbul ignore else */

@@ -51,25 +51,31 @@ define([
       opts = opts || {}
       query = query || {};
       var _self = this;
-      if (!this.dataPath) {
-        return QueryResults([])
+
+      // Always return immediate results to prevent pagination errors
+      // If data not loaded yet, return empty results and let refresh handle updates
+      if (!this.dataPath || !this.loaded) {
+        var emptyRes = [];
+        emptyRes.total = 0;
+        var wrapped = QueryResults(emptyRes);
+        wrapped.total = 0;
+
+        // Trigger load if needed (but don't wait for it)
+        if (this.dataPath && !this.loaded) {
+          this.loadWorkspaceData();
+        }
+
+        return wrapped;
       }
 
-      if (this.loaded) {
-        return this.inherited(arguments);
+      // Data is loaded - return actual results
+      var results = this.inherited(arguments);
+      // Ensure results always have a concrete total value (not a promise or undefined)
+      // to prevent "string.substitute could not find key 'total'" errors in Pagination
+      if (!results.total && results.total !== 0) {
+        results.total = results.length || 0;
       }
-      var wsd = this.loadWorkspaceData()
-
-      return wsd.then(function () {
-        console.log('loadWorkspaceData returned.  Query: ', query)
-        return _self.query(query, opts)
-      }, function (err) {
-        console.log('Error retrieving workspace contents: ', err)
-        throw Error('Unable to retreive workspace contents: ' + err)
-      })
-        .then(function (res) {
-          return QueryResults(res);
-        })
+      return results;
     },
 
     get: function (id, opts) {
@@ -82,6 +88,11 @@ define([
       return wsd.then(function () {
         return _self.get(id, opts)
       }, function (err) {
+        // Ignore cancellation errors (they have no message and occur during reload)
+        if (err && err.dojoType === 'cancel') {
+          console.log('Load was canceled, likely due to reload');
+          return null;  // Return null for canceled get requests
+        }
         console.log('Error retrieving workspace contents: ', err)
         throw Error('Unable to retreive workspace contents: ' + err)
       })
