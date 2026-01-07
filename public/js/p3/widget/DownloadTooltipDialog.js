@@ -128,7 +128,15 @@ define([
 
     _tocsv: function (selection) {
       var out = [];
-      var keys = Object.keys(selection[0]);
+      var keys = Object.keys(selection[0]).filter(function(key) {
+        // Skip internal fields and complex objects
+        if (key.charAt(0) === '_') return false;
+        if (key === 'detail') return false;
+        var val = selection[0][key];
+        // Skip if value is an object but not an array
+        if (val !== null && typeof val === 'object' && !(val instanceof Array)) return false;
+        return true;
+      });
 
       var header = [];
       keys.forEach(function (key) {
@@ -156,13 +164,21 @@ define([
         out.push(io.join(','));
       });
 
-      return out.join('\n');
+      return out.join('\n') + '\n';
 
     },
 
     _totsv: function (selection) {
       var out = [];
-      var keys = Object.keys(selection[0]);
+      var keys = Object.keys(selection[0]).filter(function(key) {
+        // Skip internal fields and complex objects
+        if (key.charAt(0) === '_') return false;
+        if (key === 'detail') return false;
+        var val = selection[0][key];
+        // Skip if value is an object but not an array
+        if (val !== null && typeof val === 'object' && !(val instanceof Array)) return false;
+        return true;
+      });
 
       var header = [];
       keys.forEach(function (key) {
@@ -183,7 +199,7 @@ define([
         out.push(io.join('\t'));
       });
 
-      return out.join('\n');
+      return out.join('\n') + '\n';
 
     },
 
@@ -289,7 +305,8 @@ define([
         dataType: 'genome_sequence',
         pk: 'sequence_id',
         tableData: true,
-        otherData: ['dna+fasta']
+        otherData: ['dna+fasta'],
+        generateDownloadFromStore: true
       },
       sequence_feature_data: {
         label: 'Sequence Features',
@@ -302,7 +319,8 @@ define([
         dataType: 'genome_feature',
         pk: 'feature_id',
         tableData: true,
-        otherData: ['dna+fasta', 'protein+fasta']
+        otherData: ['dna+fasta', 'protein+fasta'],
+        generateDownloadFromStore: true
       },
       protein_data: {
         label: 'Proteins',
@@ -327,6 +345,18 @@ define([
         // set secondaryDataType & secondartyPK to allow download from a second table
         secondaryDataType: 'genome_feature',
         secondartyPK: 'feature_id'
+      },
+      specialty_genes: {
+        label: 'Specialty Genes',
+        pk: '_id',
+        generateDownloadFromStore: true,
+        tableData: true
+      },
+      fasta_data: {
+        label: 'FASTA Results',
+        pk: '_id',
+        generateDownloadFromStore: true,
+        tableData: true
       },
       spgene_ref_data: {
         dataType: 'sp_gene_ref',
