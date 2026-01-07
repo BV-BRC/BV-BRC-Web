@@ -31,7 +31,6 @@ define([
     },
 
     listWorkspaceContents: function (ws) {
-      console.log("ExplorerView: currentSearchTerm:", this.currentSearchTerm, "WSM.activeSearchFilter:", WorkspaceManager.activeSearchFilter);
       var _self = this;
       // If a search is globally active, this method should not fetch normal contents.
       // The WorkspaceBrowser will push search results directly via the render() method.
@@ -257,7 +256,6 @@ define([
     },
 
     refreshWorkspace: function () {
-      console.log("ExplorerView: currentSearchTerm:", this.currentSearchTerm, "WSM.activeSearchFilter:", WorkspaceManager.activeSearchFilter);
       var _self = this;
       // If a search term is active locally for this view, or globally,
       // WorkspaceBrowser will push results via render().
