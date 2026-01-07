@@ -132,7 +132,13 @@ define([
           this.viewSubHeader.set('content', this.formatFileMetaData(false));
           // Set cookie for workspace load
           this.authorize().then(lang.hitch(this, function () {
-            const docURL = window.App.workspaceDownloadAPI + "/view" + this.filepath;
+            // Encode filepath to handle special characters like #, ?, &, etc.
+            var encodedPath = this.filepath.split('/').map(function(component, index) {
+              // Keep first component (empty string before leading /) and username unencoded
+              if (index <= 1) return component;
+              return encodeURIComponent(component);
+            }).join('/');
+            const docURL = window.App.workspaceDownloadAPI + "/view" + encodedPath;
             // Create a spinner div
             const spinner = domConstruct.create("div", {
               className: "spinner",

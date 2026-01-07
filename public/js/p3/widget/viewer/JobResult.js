@@ -43,9 +43,13 @@ define([
       {
         // console.log("Rewrite data path from", data.autoMeta.parameters.output_path, "to", data.path);
 
+        // Escape special regex characters in the path to avoid "Invalid regular expression" errors
+        // when paths contain characters like ), (, [, ], etc.
+        var escapedPath = data.autoMeta.parameters.output_path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
         for (outfile of data.autoMeta.output_files)
         {
-          outfile[0] = outfile[0].replace(new RegExp('^' + data.autoMeta.parameters.output_path), data.path);
+          outfile[0] = outfile[0].replace(new RegExp('^' + escapedPath), data.path);
         }
       }
       this._hiddenPath = data.path + '.' + data.name;

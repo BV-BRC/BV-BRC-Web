@@ -170,7 +170,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/view/PathwayService' + path, target: 'blank' });
+          Topic.publish('/navigate', { href: '/view/PathwayService' + encodePath(path), target: 'blank' });
         } else {
           console.log('Error: could not find pathways data file');
         }
@@ -189,7 +189,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/view/ProteinFamiliesService' + path, target: 'blank' });
+          Topic.publish('/navigate', { href: '/view/ProteinFamiliesService' + encodePath(path), target: 'blank' });
         } else {
           console.log('Error: could not find pathways data file');
         }
@@ -208,7 +208,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/view/SubsystemService' + path, target: 'blank' });
+          Topic.publish('/navigate', { href: '/view/SubsystemService' + encodePath(path), target: 'blank' });
         } else {
           console.log('Error: could not find pathways data file');
         }
@@ -395,7 +395,7 @@ define([
       }, function (selection, button, opts) {
         var filepath = selection[0].path;
         if (filepath) {
-          Topic.publish('/navigate', { href: '/view/ProteinStructure#path=' + filepath, target: 'blank' });
+          Topic.publish('/navigate', { href: '/view/ProteinStructure#path=' + encodeURIComponent(filepath), target: 'blank' });
         } else {
           console.log('err, path does not exist');
         }
@@ -712,7 +712,7 @@ define([
       }, function (selection) {
         var sel = selection[0],
           path = sel.path + '.' + sel.name + '/TaxonomicReport.html';
-        Topic.publish('/navigate', { href: '/workspace' + path });
+        Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
       }, false);
 
       this.browserHeader.addAction('ViewGenomeAlignment', 'fa icon-eye fa-2x', {
@@ -908,7 +908,7 @@ define([
         console.log('self.actionPanel.currentContainerWidget.containerType', self.actionPanel.currentContainerWidget.containerType);
         console.log('self.browserHeader', self.browserHeader);
         var path = self.actionPanel.currentContainerWidget.getReportPath();
-        Topic.publish('/navigate', { href: '/workspace' + path });
+        Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
       }, false);
 
       this.browserHeader.addAction('ViewCGASarsFullGenomeReport', 'fa icon-eye fa-2x', {
@@ -925,7 +925,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/workspace' + path });
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
         } else {
           console.log('Error: could not find FullGenomeReport.html');
         }
@@ -950,7 +950,7 @@ define([
             })
           );
           if (path) {
-            Topic.publish("/navigate", { href: "/workspace" + path });
+            Topic.publish("/navigate", { href: "/workspace" + encodePath(path) });
           } else {
             console.log("Error: could not find DockingReport.html");
           }
@@ -1002,7 +1002,7 @@ define([
               }
             }));
             if (path) {
-              Topic.publish('/navigate', { href: '/workspace' + path });
+              Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
             } else {
               console.log('Error: could not find ', pipeline, ' report');
             }
@@ -1041,7 +1041,7 @@ define([
             }
           }));
           if (path) {
-            Topic.publish('/navigate', { href: '/workspace' + path });
+            Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
           } else {
             console.log('Error: could not find ', pipeline, ' report');
           }
@@ -1062,7 +1062,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/workspace' + path });
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
         } else {
           console.log('Error: could not find BinningReport.html');
         }
@@ -1082,7 +1082,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/workspace' + path });
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
         } else {
           console.log('Error: could not find MetagenomicReadMappingReport.html');
         }
@@ -1102,7 +1102,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/workspace' + path });
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
         } else {
           console.log('Error: could not find Primer Design report');
         }
@@ -1284,7 +1284,7 @@ define([
         tooltip: 'View HA Subtype Numbering Conversion Report'
       }, function (selection) {
         const jobPath = selection[0].path + selection[0].name;
-        Topic.publish('/navigate', { href: '/view/HASubtypeNumberingReport/&path=' + jobPath, target: 'blank' });
+        Topic.publish('/navigate', { href: '/view/HASubtypeNumberingReport/&path=' + encodeURIComponent(jobPath), target: 'blank' });
       }, false);
 
       this.browserHeader.addAction('SubmitSequenceSubmission', 'fa icon-upload fa-3x', {
@@ -1389,9 +1389,9 @@ define([
         if ((!alignType)) {
           console.log('Error: Alignment file doesnt exist or alignment alphabet could not be determined');
         } else if (exist_nwk == 1) {
-          Topic.publish('/navigate', { href: '/view/MSATree/&alignType=' + alignType + '&path=' + msa_file, target: 'blank' });
+          Topic.publish('/navigate', { href: '/view/MSATree/&alignType=' + alignType + '&path=' + encodeURIComponent(msa_file), target: 'blank' });
         } else {
-          Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + msa_file, target: 'blank' });
+          Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + encodeURIComponent(msa_file), target: 'blank' });
         }
       }, false);
 
@@ -2754,7 +2754,7 @@ define([
 
               newPanel.on('ItemDblClick', lang.hitch(this, function (evt) {
                 if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type) >= 0)) {
-                  Topic.publish('/navigate', { href: '/workspace' + evt.item_path });
+                  Topic.publish('/navigate', { href: '/workspace' + encodePath(evt.item_path) });
                   this.actionPanel.set('selection', []);
                   this.itemDetailPanel.set('selection', []);
                   if ('clearSelection' in newPanel) {
