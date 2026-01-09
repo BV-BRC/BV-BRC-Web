@@ -932,6 +932,28 @@ define([
           console.log('Error: could not find FullGenomeReport.html');
         }
       });
+
+      this.browserHeader.addAction('ViewAssemblyReport', 'fa icon-eye fa-2x', {
+        label: 'REPORT',
+        multiple: false,
+        validTypes: ['GenomeAssembly', 'GenomeAssembly2'],
+        tooltip: 'View Assembly Report'
+      }, function (selection) {
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
+          var filepath = file_data[0].split('/');
+          var filename = filepath[filepath.length - 1];
+          if (filename.endsWith('_assembly_report.html')) {
+            path = filepath.join('/');
+          }
+        }));
+        if (path) {
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
+        } else {
+          console.log('Error: could not find assembly_report.html');
+        }
+      });
+
       this.browserHeader.addAction(
         "ViewDockingReport",
         "fa icon-eye fa-2x",
