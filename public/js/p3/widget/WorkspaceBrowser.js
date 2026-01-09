@@ -9,6 +9,7 @@ define([
   'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './RerunUtility', './viewer/JobResult',
   'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree',
   'dijit/registry', 'dojo/keys', 'dojo/dom-style', 'dojo/Stateful',  'dojo/hash', 'dojo/io-query',
+  '../util/FavoriteFolders'
 ], function (
   declare, BorderContainer, on, query,
   domClass, domConstruct, domAttr,
@@ -20,6 +21,7 @@ define([
   All, encodePath, when, request, tsvCsvFeatures, rerunUtility, JobResult,
   NodeList_traverse, Homology, GenomeAlignment, PhylogeneticTree,
   registry, keys, domStyle, Stateful, hash, ioQuery,
+  FavoriteFolders
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -1883,6 +1885,22 @@ define([
         self.showPermDialog(selection);
       }, false);
 
+      this.actionPanel.addAction('ToggleFavorite', 'fa icon-star-o fa-2x', {
+        label: 'FAVORITE',
+        multiple: false,
+        validTypes: ['folder'],
+        tooltip: 'Toggle favorite status'
+      }, function (selection) {
+        if (!selection || selection.length !== 1) return;
+        var folder = selection[0];
+        var path = folder.path;
+
+        FavoriteFolders.toggle(path).then(function (isFavorite) {
+          // Update button appearance
+          self._updateFavoriteButton(isFavorite);
+        });
+      }, false);
+
       this.actionPanel.addAction('Rerun', 'fa icon-rotate-left fa-2x', {
         label: 'RERUN',
         allowMultiTypes: true,
@@ -2286,6 +2304,24 @@ define([
       if (this._wsSearchIconNode) {
         // For the icon, we toggle a class to change its style
         domClass.toggle(this._wsSearchIconNode, 'disabled', disabled);
+      }
+    },
+
+    _updateFavoriteButton: function (isFavorite) {
+      var btn = query('[rel="ToggleFavorite"]', this.actionPanel.domNode)[0];
+      if (!btn) return;
+
+      var iconNode = query('i', btn)[0] || query('.fa', btn)[0];
+      if (iconNode) {
+        if (isFavorite) {
+          domClass.remove(iconNode, 'icon-star-o');
+          domClass.add(iconNode, 'icon-star');
+          iconNode.style.color = '#f0ad4e'; // Gold color for favorite
+        } else {
+          domClass.remove(iconNode, 'icon-star');
+          domClass.add(iconNode, 'icon-star-o');
+          iconNode.style.color = ''; // Default color
+        }
       }
     },
 
@@ -2736,6 +2772,14 @@ define([
 
                 this.actionPanel.set('selection', sel);
                 this.itemDetailPanel.set('selection', sel);
+
+                // Update favorite button state when a folder is selected
+                if (sel.length === 1 && sel[0].type === 'folder') {
+                  var self = this;
+                  FavoriteFolders.isFavorite(sel[0].path).then(function (isFav) {
+                    self._updateFavoriteButton(isFav);
+                  });
+                }
               }));
 
               newPanel.on('deselect', lang.hitch(this, function (evt) {
