@@ -86,6 +86,17 @@
       <span data-dojo-attach-point="permissionsNode"></span>
     </div>
 
+    <div style="display:none;" class="ItemDetailAttribute folderStats" data-dojo-attach-point="folderStatsNode">
+      <div style="font-weight:bold;margin-bottom:5px;">Disk Usage
+        <i class="fa icon-refresh" data-dojo-attach-point="duRefreshBtn"
+           data-dojo-attach-event="click:refreshDu"
+           style="cursor:pointer;margin-left:5px;" title="Refresh disk usage"></i>
+      </div>
+      <div>Size: <span data-dojo-attach-point="duSizeNode">Calculating...</span></div>
+      <div>Files: <span data-dojo-attach-point="duFileCountNode">-</span></div>
+      <div>Folders: <span data-dojo-attach-point="duDirCountNode">-</span></div>
+    </div>
+
     <div style="display:none;" data-dojo-attach-point="idNode"></div>
   </div>
   <div style="display:none" class="specialHelp" data-dojo-attach-point="featureGroupHelp">
