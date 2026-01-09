@@ -149,6 +149,36 @@ define([
             Topic.publish('/navigate', { href: '/view/EpitopeList/?' + q });
             // clear = true;
             break;
+          case 'feature_id':
+            // Extract all fig| IDs from the query text
+            var figIds = query.match(/fig\|[0-9]+\.[0-9]+\.[^.\s]+\.[0-9]+/g) || [];
+            if (figIds.length === 1) {
+              // Single feature ID - go to feature page
+              Topic.publish('/navigate', { href: '/view/Feature/' + encodeURIComponent(figIds[0]) });
+            } else if (figIds.length > 1) {
+              // Multiple feature IDs - go to feature list with in() query
+              // Escape | as %7C for the query
+              var escapedIds = figIds.map(function(id) { return id.replace(/\|/g, '%7C'); });
+              var featureQuery = 'in(patric_id,(' + escapedIds.join(',') + '))';
+              Topic.publish('/navigate', { href: '/view/FeatureList/?' + featureQuery });
+            }
+            break;
+          case 'genome_id':
+            // Extract all genome IDs (number.number pattern) from the query text
+            var genomeIds = query.match(/\b[0-9]+\.[0-9]+\b/g) || [];
+            // Filter out duplicates
+            genomeIds = genomeIds.filter(function(id, index, self) {
+              return self.indexOf(id) === index;
+            });
+            if (genomeIds.length === 1) {
+              // Single genome ID - go to genome page
+              Topic.publish('/navigate', { href: '/view/Genome/' + genomeIds[0] });
+            } else if (genomeIds.length > 1) {
+              // Multiple genome IDs - go to genome list with in() query
+              var genomeQuery = 'in(genome_id,(' + genomeIds.join(',') + '))';
+              Topic.publish('/navigate', { href: '/view/GenomeList/?' + genomeQuery });
+            }
+            break;
           default:
             console.log('Do Search: ', searchFilter, query);
         }
@@ -224,6 +254,36 @@ define([
           break;
         case 'epitope':
           Topic.publish('/navigate', { href: '/view/EpitopeList/?' + q });
+          break;
+        case 'feature_id':
+          // Extract all fig| IDs from the query text
+          var figIds = query.match(/fig\|[0-9]+\.[0-9]+\.[^.\s]+\.[0-9]+/g) || [];
+          if (figIds.length === 1) {
+            // Single feature ID - go to feature page
+            Topic.publish('/navigate', { href: '/view/Feature/' + encodeURIComponent(figIds[0]) });
+          } else if (figIds.length > 1) {
+            // Multiple feature IDs - go to feature list with in() query
+            // Escape | as %7C for the query
+            var escapedIds = figIds.map(function(id) { return id.replace(/\|/g, '%7C'); });
+            var featureQuery = 'in(patric_id,(' + escapedIds.join(',') + '))';
+            Topic.publish('/navigate', { href: '/view/FeatureList/?' + featureQuery });
+          }
+          break;
+        case 'genome_id':
+          // Extract all genome IDs (number.number pattern) from the query text
+          var genomeIds = query.match(/\b[0-9]+\.[0-9]+\b/g) || [];
+          // Filter out duplicates
+          genomeIds = genomeIds.filter(function(id, index, self) {
+            return self.indexOf(id) === index;
+          });
+          if (genomeIds.length === 1) {
+            // Single genome ID - go to genome page
+            Topic.publish('/navigate', { href: '/view/Genome/' + genomeIds[0] });
+          } else if (genomeIds.length > 1) {
+            // Multiple genome IDs - go to genome list with in() query
+            var genomeQuery = 'in(genome_id,(' + genomeIds.join(',') + '))';
+            Topic.publish('/navigate', { href: '/view/GenomeList/?' + genomeQuery });
+          }
           break;
         default:
           Topic.publish('/navigate', { href: '/search/' + (q ? ('?' + q) : '') });
