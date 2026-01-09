@@ -437,6 +437,18 @@ define(
             return '<i class="fa icon-file-text-o fa-1x" title="' + (val || 'Unspecified Document Type') + '" />';
         }
       },
+      wsFavoriteIndicator: function (item) {
+        // Returns a star icon that can be clicked to toggle favorite status
+        // The actual state is updated dynamically by WorkspaceGrid after checking FavoriteFolders
+        if (!item || !item.path) {
+          return '';
+        }
+        // Only show for folders (not individual files or root workspaces)
+        if (item.type !== 'folder' || item.path.split('/').length <= 3) {
+          return '';
+        }
+        return '<i class="icon-star-o wsFavoriteGridStar not-favorite" data-path="' + item.path + '" title="Add to favorites"></i>';
+      },
       appLabel: function (appName) {
         return appName;
       },

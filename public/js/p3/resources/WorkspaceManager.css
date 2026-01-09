@@ -152,6 +152,36 @@ a.HelpLink:active {
 	color: #ffc107;
 }
 
+/* Favorite star in grid column */
+.wsFavoriteColumn {
+	width: 28px;
+	text-align: center;
+}
+
+.dgrid-column-favorite {
+	width: 28px !important;
+	max-width: 28px !important;
+	min-width: 28px !important;
+}
+
+.wsFavoriteGridStar {
+	cursor: pointer;
+	color: #ffc107;
+	font-size: 1.0em;
+}
+
+.wsFavoriteGridStar:hover {
+	color: #e6ac00;
+}
+
+.wsFavoriteGridStar.not-favorite {
+	color: #ccc;
+}
+
+.wsFavoriteGridStar.not-favorite:hover {
+	color: #ffc107;
+}
+
 .wsActionTooltip {
 	padding: 2px;
 }
