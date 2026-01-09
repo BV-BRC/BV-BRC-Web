@@ -548,6 +548,21 @@ define(
         return mapping[perm] || 'Invalid permission';
       },
 
+      /**
+       * Format bytes into human-readable size
+       * @param {number} bytes - The byte count to format
+       * @param {number} decimals - Number of decimal places (default: 2)
+       * @returns {string} Formatted size string (e.g., "1.5 MB")
+       */
+      formatBytes: function (bytes, decimals) {
+        if (bytes === 0 || bytes === null || bytes === undefined) return '0 Bytes';
+        decimals = decimals || 2;
+        var k = 1024;
+        var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+        var i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
+      },
+
       // takes an array of form [{label: "", value: ""} ... ]
       // or a autoLabel hash and producs a simple key/value table
       keyValueTable: function (spec) {

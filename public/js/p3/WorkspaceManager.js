@@ -1474,6 +1474,57 @@ define([
 
     },
 
+    // Cache for du results: { path: { timestamp: Date, result: DiskUsageResult } }
+    _duCache: {},
+    _duCacheTTL: 3600000, // 1 hour in milliseconds
+
+    /**
+     * Get disk usage for a path
+     * @param {string} path - The workspace path to check
+     * @param {boolean} forceRefresh - If true, bypass cache and re-query
+     * @returns {Promise} Resolves to array of DiskUsageResult tuples:
+     *   [path, total_size, file_count, directory_count, error]
+     */
+    du: function (path, forceRefresh) {
+      var self = this;
+      path = decodeURIComponent(path);
+
+      // Check cache unless force refresh
+      if (!forceRefresh && this._duCache[path]) {
+        var cached = this._duCache[path];
+        if (Date.now() - cached.timestamp < this._duCacheTTL) {
+          return Deferred.when(cached.result);
+        }
+      }
+
+      var promise = this.api('Workspace.du', [{
+        paths: [path],
+        recursive: true,
+        adminmode: false
+      }]);
+
+      // Cache the result on success
+      return Deferred.when(promise, function (result) {
+        self._duCache[path] = {
+          timestamp: Date.now(),
+          result: result
+        };
+        return result;
+      });
+    },
+
+    /**
+     * Clear the du cache
+     * @param {string} path - Optional specific path to clear. If omitted, clears entire cache.
+     */
+    clearDuCache: function (path) {
+      if (path) {
+        delete this._duCache[path];
+      } else {
+        this._duCache = {};
+      }
+    },
+
     init: function (apiUrl, token, userId) {
       this.activeSearchFilter = null; // Reset search filter on init
       if (!apiUrl || !token || !userId) {
