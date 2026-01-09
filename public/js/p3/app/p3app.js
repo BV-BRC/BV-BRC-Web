@@ -8,7 +8,7 @@ define([
   'dojo/window', '../widget/Drawer', 'dijit/layout/ContentPane',
   '../jsonrpc', '../panels', '../WorkspaceManager', '../DataAPI', 'dojo/keys',
   'dijit/ConfirmDialog', '../util/PathJoin', 'dojo/request', '../widget/WorkspaceController',
-  'p3/widget/copilot/ChatButton'
+  'p3/widget/copilot/ChatButton', '../util/RecentFolders'
 
 ], function (
   declare,
@@ -20,7 +20,7 @@ define([
   Router, Window,
   Drawer, ContentPane,
   RPC, Panels, WorkspaceManager, DataAPI, Keys,
-  ConfirmDialog, PathJoin, xhr, WorkspaceController, ChatButton
+  ConfirmDialog, PathJoin, xhr, WorkspaceController, ChatButton, RecentFolders
 ) {
   return declare([App], {
     panels: Panels,
@@ -383,6 +383,13 @@ define([
           path = ('/' + _self.user.id);  // + "/home/"
         }
 
+        // Track folder access for recent folders (only for authenticated users)
+        if (_self.user && _self.user.id && path && path !== '/' && path !== '/public' && path !== '/public/') {
+          var folderName = decodeURIComponent(path.split('/').filter(Boolean).pop() || 'home');
+          RecentFolders.add(path, folderName);
+          _self.updateRecentFoldersList();
+        }
+
         newState.widgetClass = 'p3/widget/WorkspaceManager';
         newState.value = path;
         newState.set = 'path';
@@ -528,10 +535,24 @@ define([
         } else {
           domClass.remove(document.body, 'unverified_email')
         }
+
+        // Initialize recent folders list on startup
+        this.updateRecentFoldersList();
       }
 
       Topic.subscribe('/userWorkspaces', lang.hitch(this, 'updateUserWorkspaceList'));
       Topic.subscribe('/userWorkspaces', lang.hitch(this, 'updateMyDataSection'));
+
+      // Clear recent folders on logout
+      Topic.subscribe('/logout', lang.hitch(this, function () {
+        RecentFolders.clear();
+        this.updateRecentFoldersList();
+      }));
+
+      // Refresh recent folders list on login
+      Topic.subscribe('/login', lang.hitch(this, function () {
+        this.updateRecentFoldersList();
+      }));
 
       // update "My Data" > "Completed Jobs" count on homepage
       if (this.user && this.user.id) {
@@ -847,6 +868,8 @@ define([
         localStorage.removeItem('Atokenstring');
         localStorage.removeItem('AuserProfile');
         localStorage.removeItem('Auserid');
+        // Clear recent folders on logout
+        RecentFolders.clear();
         window.location.assign('/');
         // remove the upload and jobs widget
         window.App.uploadJobsWidget('hide');
@@ -950,6 +973,53 @@ define([
           }, wsMobileNode);
         });
       }
+    },
+
+    updateRecentFoldersList: function () {
+      var desktopNode = dom.byId('RecentFoldersList');
+      var mobileNode = dom.byId('RecentFoldersList-mobile');
+      var desktopSection = dom.byId('RecentFoldersSection');
+      var mobileSection = dom.byId('RecentFoldersSection-mobile');
+
+      var folders = RecentFolders.get();
+
+      if (folders.length === 0) {
+        if (desktopSection) domStyle.set(desktopSection, 'display', 'none');
+        if (mobileSection) domStyle.set(mobileSection, 'display', 'none');
+        return;
+      }
+
+      // Show sections
+      if (desktopSection) domStyle.set(desktopSection, 'display', 'block');
+      if (mobileSection) domStyle.set(mobileSection, 'display', 'block');
+
+      // Clear existing content
+      if (desktopNode) domConstruct.empty(desktopNode);
+      if (mobileNode) domConstruct.empty(mobileNode);
+
+      // Populate lists
+      folders.forEach(function (folder) {
+        // Path is already URL-encoded, so just prepend /workspace
+        var href = '/workspace' + folder.path;
+
+        if (desktopNode) {
+          domConstruct.create('a', {
+            'class': 'navigationLink',
+            href: href,
+            innerHTML: folder.name,
+            title: folder.path
+          }, desktopNode);
+          domConstruct.create('br', {}, desktopNode);
+        }
+
+        if (mobileNode) {
+          domConstruct.create('a', {
+            href: href,
+            innerHTML: folder.name,
+            title: folder.path
+          }, mobileNode);
+        }
+      });
     }
   });
 });
