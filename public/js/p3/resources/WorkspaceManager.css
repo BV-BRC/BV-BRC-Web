@@ -129,6 +129,29 @@ a.HelpLink:active {
 	color: #333;
 }
 
+/* Favorite star in breadcrumbs */
+.wsFavoriteStar {
+	cursor: pointer;
+	color: #ffc107;
+	font-size: 1.1em;
+	margin-right: 6px;
+	vertical-align: middle;
+	position: relative;
+	top: -1px;
+}
+
+.wsFavoriteStar:hover {
+	color: #e6ac00;
+}
+
+.wsFavoriteStar.not-favorite {
+	color: #999;
+}
+
+.wsFavoriteStar.not-favorite:hover {
+	color: #ffc107;
+}
+
 .wsActionTooltip {
 	padding: 2px;
 }
