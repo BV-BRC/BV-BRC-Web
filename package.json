@@ -44,8 +44,7 @@
     "morgan": "^1.10.0",
     "MultiBigWig": "github:BV-BRC/multibigwig#master",
     "nconf": "^0.12.1",
-    "nodemailer": "^6.9.13",
-    "nodemailer-smtp-transport": "^2.7.4",
+    "nodemailer": "^7.0.11",
     "phyloxml": "^1.0.0",
     "promised-io": "^0.3.6",
     "pug": "^3.0.3",
@@ -64,5 +63,8 @@
     "minimatch": "^9.0.4",
     "stylelint": "^16.5.0",
     "stylelint-config-standard": "^36.0.0"
+  },
+  "overrides": {
+    "qs": ">=6.14.1"
   }
 }
