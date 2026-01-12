@@ -383,13 +383,6 @@ define([
           path = ('/' + _self.user.id);  // + "/home/"
         }
 
-        // Track folder access for recent folders (only for authenticated users)
-        if (_self.user && _self.user.id && path && path !== '/' && path !== '/public' && path !== '/public/') {
-          var folderName = decodeURIComponent(path.split('/').filter(Boolean).pop() || 'home');
-          RecentFolders.add(path, folderName);
-          _self.updateRecentFoldersList();
-        }
-
         newState.widgetClass = 'p3/widget/WorkspaceManager';
         newState.value = path;
         newState.set = 'path';
@@ -730,6 +723,8 @@ define([
     },
     suSwitchBack: function () {
       console.log('I clicked the switch back button');
+      // Clear favorite folders cache (in-memory) so it reloads for original user
+      FavoriteFolders.clearCache();
       localStorage.setItem('auth', localStorage.getItem('Aauth'));
       localStorage.setItem('tokenstring', localStorage.getItem('Atokenstring'));
       localStorage.setItem('userProfile', localStorage.getItem('AuserProfile'));

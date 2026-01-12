@@ -1,15 +1,24 @@
 define([], function () {
-  var STORAGE_KEY = 'bvbrc-recent-folders';
+  var STORAGE_KEY_PREFIX = 'bvbrc-recent-folders';
   var MAX_ITEMS = 10;
+
+  /**
+   * Get the storage key for the current user
+   * @returns {string} Storage key with user ID suffix, or base key if no user
+   */
+  function getStorageKey() {
+    var userId = localStorage.getItem('userid');
+    return userId ? STORAGE_KEY_PREFIX + '-' + userId : STORAGE_KEY_PREFIX;
+  }
 
   return {
     /**
-     * Get recent folders from localStorage
+     * Get recent folders from localStorage for the current user
      * @returns {Array} Array of {path, name, timestamp} objects
      */
     get: function () {
       try {
-        var stored = localStorage.getItem(STORAGE_KEY);
+        var stored = localStorage.getItem(getStorageKey());
         return stored ? JSON.parse(stored) : [];
       } catch (e) {
         console.warn('Unable to read recent folders from localStorage', e);
@@ -18,7 +27,7 @@ define([], function () {
     },
 
     /**
-     * Add a folder to recent list
+     * Add a folder to recent list for the current user
      * @param {string} path - Full workspace path
      * @param {string} name - Display name of folder
      */
@@ -43,18 +52,18 @@ define([], function () {
           folders = folders.slice(0, MAX_ITEMS);
         }
 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(folders));
+        localStorage.setItem(getStorageKey(), JSON.stringify(folders));
       } catch (e) {
         console.warn('Unable to save recent folder to localStorage', e);
       }
     },
 
     /**
-     * Clear all recent folders
+     * Clear recent folders for the current user
      */
     clear: function () {
       try {
-        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(getStorageKey());
       } catch (e) {
         console.warn('Unable to clear recent folders', e);
       }

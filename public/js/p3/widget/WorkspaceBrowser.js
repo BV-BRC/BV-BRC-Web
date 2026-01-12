@@ -9,7 +9,7 @@ define([
   'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './RerunUtility', './viewer/JobResult',
   'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree',
   'dijit/registry', 'dojo/keys', 'dojo/dom-style', 'dojo/Stateful',  'dojo/hash', 'dojo/io-query',
-  '../util/FavoriteFolders'
+  '../util/FavoriteFolders', '../util/RecentFolders'
 ], function (
   declare, BorderContainer, on, query,
   domClass, domConstruct, domAttr,
@@ -21,7 +21,7 @@ define([
   All, encodePath, when, request, tsvCsvFeatures, rerunUtility, JobResult,
   NodeList_traverse, Homology, GenomeAlignment, PhylogeneticTree,
   registry, keys, domStyle, Stateful, hash, ioQuery,
-  FavoriteFolders
+  FavoriteFolders, RecentFolders
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -2662,6 +2662,14 @@ define([
         switch (obj.type) {
           case 'folder':
             panelCtor = WorkspaceExplorerView;
+            // Track folder access for recent folders
+            if (window.App.user && window.App.user.id && this.path) {
+              var folderName = obj.name || decodeURIComponent(this.path.split('/').filter(Boolean).pop() || 'home');
+              RecentFolders.add(this.path, folderName);
+              if (window.App.updateRecentFoldersList) {
+                window.App.updateRecentFoldersList();
+              }
+            }
             break;
           case 'genome_group':
             panelCtor = window.App.getConstructor('p3/widget/viewer/WSGenomeGroup');
