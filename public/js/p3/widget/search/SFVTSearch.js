@@ -38,7 +38,7 @@ define([
     resultUrlBase: '/view/Taxonomy/{taxon_id}?',
     resultUrlHash: '#view_tab=sfvt',
     defaultTaxonId: '11320',
-    proteinOptions: ['10244', '11234', '12637'],
+    proteinOptions: ['10244', '11234', '12637', '37124'],
     segmentOptions: ['11320'],
     sfvtSequenceErrorMessage: 'There are too many Sequence Feature hits. Please refine Sequence Feature Variant Type Sequence pattern to narrow down the results.',
     sfvtMaxLimit: 300,
