@@ -266,37 +266,28 @@
                     <span>WORKSPACES</span>
 
                     <div data-dojo-type="p3/widget/TooltipDialog">
-                        <div>
-                            <div style="vertical-align: top;width:175px;display:inline-block">
-                                <div class="HideWithAuth">
-                                    Please <a class="loginLink">sign in</a> to view your workspaces.
-                                </div>
-                                <div class="ShowWithAuth">
-                                    <div><i class="fa icon-caret-down fa-1x noHoverIcon"
-                                            style="color:#333;cursor:normal;"></i>&nbsp;<a
-                                                class="navigationLink" id="YourWorkspaceLink">Workspaces</a></div>
-                                    <div id="YourWorkspaces"></div>
-                                    <div><a class="navigationLink" href="/workspace/public">Public Workspaces</a></div>
-                                    <div><a class="navigationLink" href="/workspace/public/ARWattam@patricbrc.org/BV-BRC%20Workshop">BV-BRC Workshop</a></div>
-                                    <div id="RecentFoldersSection" class="ShowWithAuth" style="display:none;margin-top:8px;border-top:1px solid #ccc;padding-top:8px;">
-                                        <div style="font-weight:bold;font-size:0.9em;color:#666;">Recent Folders</div>
-                                        <div id="RecentFoldersList" style="padding-left:12px;max-height:200px;overflow-y:auto;"></div>
-                                    </div>
-                                    <div id="FavoriteFoldersSection" class="ShowWithAuth" style="display:none;margin-top:8px;border-top:1px solid #ccc;padding-top:8px;">
-                                        <div style="font-weight:bold;font-size:0.9em;color:#666;">
-                                            <i class="fa icon-star" style="color:#f0ad4e;"></i> Favorite Folders
-                                        </div>
-                                        <div id="FavoriteFoldersList" style="padding-left:12px;max-height:200px;overflow-y:auto;"></div>
+                        <div class="HideWithAuth" style="padding: 10px;">
+                            Please <a class="loginLink">sign in</a> to view your workspaces.
+                        </div>
+                        <div class="ShowWithAuth">
+                            <div style="vertical-align: top;width:200px;margin-right:5px;display:inline-block">
+                                <div class="menuHeader">Workspaces</div>
+                                <div class="menuItems" id="WorkspacesMenuLinks"></div>
+                                <div id="FavoriteFoldersSection" style="display:inline-block;width:100%;">
+                                    <div class="menuHeader">Favorite Folders <i class="fa icon-star" style="color:#f0ad4e;"></i></div>
+                                    <div class="menuItems">
+                                        <div id="FavoriteFoldersList" style="max-height:200px;overflow-y:auto;"></div>
                                     </div>
                                 </div>
-                            </div>
-                            <div style="vertical-align:top;display:inline-block" class="ShowWithAuth">
-                                <div>
-                                    <a class="navigationLink" href="/job/">My Jobs</a>
+                                <div id="RecentFoldersSection" style="display:inline-block;width:100%;">
+                                    <div class="menuHeader">Recently Visited Folders</div>
+                                    <div class="menuItems">
+                                        <div id="RecentFoldersList" style="max-height:200px;overflow-y:auto;"></div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <a class="navigationLink" href="/view/GenomeList/?eq(public,false)">My Genomes</a>
-                                </div>
+                            </div><div style="vertical-align:top;width:200px;display:inline-block">
+                                <div class="menuHeader">Data</div>
+                                <div class="menuItems" id="DataMenuLinks"></div>
                             </div>
                         </div>
                     </div>
@@ -563,7 +554,7 @@
                             </div>
                             <div id="FavoriteFoldersSection-mobile" class="ShowWithAuth" style="display:none;margin-top:8px;border-top:1px solid #ccc;padding-top:8px;">
                                 <div style="font-weight:bold;font-size:0.9em;color:#666;">
-                                    <i class="fa icon-star" style="color:#f0ad4e;"></i> Favorite Folders
+                                    Favorite Folders <i class="fa icon-star" style="color:#f0ad4e;"></i>
                                 </div>
                                 <div id="FavoriteFoldersList-mobile" style="padding-left:16px;"></div>
                             </div>

@@ -522,8 +522,6 @@ define([
 
       /* istanbul ignore else */
       if (this.user && this.user.id) {
-        console.log('this.user: ', this.user.id)
-        domAttr.set('YourWorkspaceLink', 'href', '/workspace/' + this.user.id);
         var n = dom.byId('signedInAs');
         /* istanbul ignore else */
         if (n) {
@@ -942,17 +940,61 @@ define([
     updateUserWorkspaceList: function (data) {
       const wsNode = dom.byId('YourWorkspaces');
       const wsMobileNode = dom.byId('YourWorkspaces-mobile');
+      const workspacesMenuNode = dom.byId('WorkspacesMenuLinks');
+      const dataMenuNode = dom.byId('DataMenuLinks');
 
       // Check if Workspace DOM nodes exist; skip if not.
-      if (!wsNode && !wsMobileNode) {
+      if (!wsNode && !wsMobileNode && !workspacesMenuNode) {
         return;
       }
 
       if (wsNode) domConstruct.empty(wsNode);
       if (wsMobileNode) domConstruct.empty(wsMobileNode);
+      if (workspacesMenuNode) domConstruct.empty(workspacesMenuNode);
+      if (dataMenuNode) domConstruct.empty(dataMenuNode);
 
       const ws = data.find(d => d.name === 'home');
       if (!ws) return;
+
+      // Update the navigation links with user's workspace path
+      // ws.path is like "/mshukla@patricbrc.org/home"
+      // Extract the user root path by removing "/home" from the end
+      const userRootPath = ws.path.replace(/\/home$/, '');
+
+      // Populate Workspaces menu
+      if (workspacesMenuNode) {
+        domConstruct.create('div', {
+          innerHTML: '<a class="navigationLink" href="/workspace' + ws.path + '">Home</a>'
+        }, workspacesMenuNode);
+        domConstruct.create('div', {
+          innerHTML: '<a class="navigationLink" href="/workspace' + userRootPath + '#myWorkspaces">My Workspaces</a>'
+        }, workspacesMenuNode);
+        domConstruct.create('div', {
+          innerHTML: '<a class="navigationLink" href="/workspace' + userRootPath + '#sharedWithMe">Shared Workspaces</a>'
+        }, workspacesMenuNode);
+        domConstruct.create('div', {
+          innerHTML: '<a class="navigationLink" href="/workspace/public">Public Workspaces</a>'
+        }, workspacesMenuNode);
+        domConstruct.create('div', {
+          innerHTML: '<a class="navigationLink" href="/workspace/public/ARWattam@patricbrc.org/BV-BRC%20Workshop">BV-BRC Workshop</a>'
+        }, workspacesMenuNode);
+      }
+
+      // Populate Data menu
+      if (dataMenuNode) {
+        domConstruct.create('div', {
+          innerHTML: '<a class="navigationLink" href="/job/">My Jobs</a>'
+        }, dataMenuNode);
+        domConstruct.create('div', {
+          innerHTML: '<a class="navigationLink" href="/view/GenomeList/?eq(public,false)">My Genomes</a>'
+        }, dataMenuNode);
+        domConstruct.create('div', {
+          innerHTML: '<a class="navigationLink" href="/workspace' + ws.path + '/Genome%20Groups">My Genome Groups</a>'
+        }, dataMenuNode);
+        domConstruct.create('div', {
+          innerHTML: '<a class="navigationLink" href="/workspace' + ws.path + '/Feature%20Groups">My Feature Groups</a>'
+        }, dataMenuNode);
+      }
 
       if (wsNode) {
         const d = domConstruct.create('div', { style: { 'padding-left': '12px' } }, wsNode);
@@ -1003,7 +1045,7 @@ define([
       }
 
       // Show sections
-      if (desktopSection) domStyle.set(desktopSection, 'display', 'block');
+      if (desktopSection) domStyle.set(desktopSection, 'display', 'inline-block');
       if (mobileSection) domStyle.set(mobileSection, 'display', 'block');
 
       // Clear existing content
@@ -1049,7 +1091,7 @@ define([
         }
 
         // Show sections
-        if (desktopSection) domStyle.set(desktopSection, 'display', 'block');
+        if (desktopSection) domStyle.set(desktopSection, 'display', 'inline-block');
         if (mobileSection) domStyle.set(mobileSection, 'display', 'block');
 
         // Clear existing content
