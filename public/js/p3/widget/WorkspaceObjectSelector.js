@@ -6,7 +6,8 @@ define([
   './WorkspaceExplorerView', 'dojo/dom-construct', '../WorkspaceManager', 'dojo/store/Memory',
   './Uploader', 'dijit/layout/BorderContainer', 'dojo/dom-attr', 'dijit/TooltipDialog', 'dijit/popup',
   'dijit/form/Button', 'dojo/_base/Deferred', 'dijit/form/CheckBox', 'dojo/topic', 'dijit/Tooltip',
-  'dijit/registry', 'dgrid/editor', './formatter', 'dijit/form/FilteringSelect', 'dijit/form/Select'
+  'dijit/registry', 'dgrid/editor', './formatter', 'dijit/form/FilteringSelect', 'dijit/form/Select',
+  '../util/FavoriteFolders', '../util/RecentFolders', 'dojo/promise/all'
 ], function (
   declare, WidgetBase, on, lang, query,
   domClass, Templated, WidgetsInTemplate,
@@ -15,7 +16,8 @@ define([
   Grid, domConstr, WorkspaceManager, Memory,
   Uploader, BorderContainer, domAttr, TooltipDialog, popup,
   Button, Deferred, CheckBox, Topic, Tooltip,
-  registry, editor, formatter, FilteringSelect, Select
+  registry, editor, formatter, FilteringSelect, Select,
+  FavoriteFolders, RecentFolders, all
 ) {
 
   return declare([WidgetBase, Templated, WidgetsInTemplate], {
@@ -41,6 +43,8 @@ define([
     selectionText: 'Selection',       // the text used beside "selected" indicator
     allowUserSpaceSelection: false,   // this allows the user to select /user@patricbrc (for operations such as moving)
     disableDropdownSelector: false,   // if true, don't bother fetching data for filtering select (for operations such as moving)
+    _currentViewMode: 'browse',        // current view mode: 'browse', 'favorites', 'recent'
+    _favoritesSub: null,               // subscription handle for favorites changes
     reset: function () {
       this.searchBox.set('value', '');
     },
@@ -360,6 +364,123 @@ define([
       return wrap;
     },
 
+    loadFavorites: function () {
+      var self = this;
+      return FavoriteFolders.load().then(lang.hitch(this, function (favorites) {
+        if (!favorites || favorites.length === 0) {
+          self._showEmptyMessage('No favorites yet. Star folders to add them here.');
+          return;
+        }
+
+        // Fetch workspace objects for each favorite path
+        var promises = favorites.map(function (path) {
+          return WorkspaceManager.getObject(path).then(function (obj) {
+            // Extract metadata if object has metadata property
+            return obj.metadata || obj;
+          }, function (err) {
+            return null; // Handle deleted folders
+          });
+        });
+
+        return all(promises).then(lang.hitch(this, function (objects) {
+          // Filter to only valid objects that are folders
+          var validObjects = objects.filter(function (obj) {
+            return obj && obj.type === 'folder';
+          }).map(function (obj) {
+            // Ensure all required properties exist for grid rendering
+            if (!obj.permissions) {
+              obj.permissions = [];
+            }
+            if (!obj.user_metadata) {
+              obj.user_metadata = {};
+            }
+            return obj;
+          });
+          if (validObjects.length === 0) {
+            self._showEmptyMessage('No valid favorites found. Starred folders may have been deleted.');
+            return;
+          }
+          self._hideEmptyMessage();
+          self.grid.render('favorites', validObjects);
+        }));
+      }));
+    },
+
+    loadRecentFolders: function () {
+      var self = this;
+      var recent = RecentFolders.get();
+      console.log('[DEBUG] Recent folders from localStorage:', recent);
+
+      if (!recent || recent.length === 0) {
+        self._showEmptyMessage('No recently used folders.');
+        return Deferred.resolve([]);
+      }
+
+      // Fetch current metadata for each recent folder
+      var promises = recent.map(function (item) {
+        return WorkspaceManager.getObject(item.path).then(function (obj) {
+          console.log('[DEBUG] Loaded object for', item.path, ':', obj);
+          // Extract metadata if object has metadata property
+          return obj.metadata || obj;
+        }, function (err) {
+          console.log('[DEBUG] Failed to load', item.path, ':', err);
+          return null; // Handle deleted folders
+        });
+      });
+
+      return all(promises).then(lang.hitch(this, function (objects) {
+        console.log('[DEBUG] All objects loaded:', objects);
+        // Filter to only valid objects that are folders
+        var validObjects = objects.filter(function (obj) {
+          var isValid = obj && obj.type === 'folder';
+          if (obj && !isValid) {
+            console.log('[DEBUG] Filtering out non-folder:', obj.path, 'type:', obj.type);
+          }
+          return isValid;
+        }).map(function (obj) {
+          // Ensure all required properties exist for grid rendering
+          if (!obj.permissions) {
+            obj.permissions = [];
+          }
+          if (!obj.user_metadata) {
+            obj.user_metadata = {};
+          }
+          return obj;
+        });
+        console.log('[DEBUG] Valid folder objects:', validObjects);
+        if (validObjects.length === 0) {
+          self._showEmptyMessage('No valid recent folders found. They may have been deleted.');
+          return;
+        }
+        self._hideEmptyMessage();
+        self.grid.render('recent', validObjects);
+      }));
+    },
+
+    _showEmptyMessage: function (message) {
+      if (this.grid) {
+        this.grid.domNode.style.display = 'none';
+      }
+      if (!this.emptyMessageNode) {
+        this.emptyMessageNode = domConstr.create('div', {
+          'class': 'emptyStateMessage',
+          style: 'padding: 40px 20px; text-align: center; color: #666; font-size: 14px;'
+        });
+        domConstr.place(this.emptyMessageNode, this.grid.domNode, 'after');
+      }
+      this.emptyMessageNode.innerHTML = '<i class="icon-info-circle" style="font-size: 32px; display: block; margin-bottom: 10px;"></i><p>' + message + '</p>';
+      this.emptyMessageNode.style.display = 'block';
+    },
+
+    _hideEmptyMessage: function () {
+      if (this.emptyMessageNode) {
+        this.emptyMessageNode.style.display = 'none';
+      }
+      if (this.grid) {
+        this.grid.domNode.style.display = '';
+      }
+    },
+
     focus: function () {
       // summary:
       //  Put focus on this widget
@@ -416,7 +537,7 @@ define([
 
       var viewSelector = new Select({
         name: 'togglePublic',
-        style: { width: '125px' },
+        style: { width: '160px' },
         options: [
           {
             label: 'Home',
@@ -426,7 +547,7 @@ define([
           {
             label: 'Workspaces',
             value: 'mine',
-            selected: _self.path.split('/')[1] != 'public'
+            selected: false
           }, {
             label: 'Public Workspaces',
             value: 'public',
@@ -434,25 +555,55 @@ define([
           }, {
             label: 'BV-BRC Workshop',
             value: 'workshop',
-            selected: _self.path.split('/')[1] == 'public'
+            selected: false
+          },
+          {
+            label: '<i class="icon-star" style="color:#ffc107;"></i> Favorites',
+            value: 'favorites',
+            selected: false
+          },
+          {
+            label: '<i class="icon-history"></i> Recently Used',
+            value: 'recent',
+            selected: false
           }
         ]
       });
+      this.viewSelector = viewSelector;
 
       viewSelector.on('change', function (val) {
-        if (val == 'home') {
-          var home = '/' + window.App.user.id + '/' + 'home';
-          _self.set('path', home);
-        }
-        else if (val == 'mine') {
-          var home = '/' + window.App.user.id;
-          _self.set('path', home);
-        } else if (val == 'public') {
-          _self.set('path', '/public/');
-        } else if (val == 'workshop') {
-          _self.set('path', '/public/ARWattam@patricbrc.org/BV-BRC Workshop')
+        if (val == 'favorites') {
+          _self._currentViewMode = 'favorites';
+          _self.loadFavorites();
+        } else if (val == 'recent') {
+          _self._currentViewMode = 'recent';
+          _self.loadRecentFolders();
+        } else {
+          _self._currentViewMode = 'browse';
+          _self._hideEmptyMessage();
+          if (val == 'home') {
+            var home = '/' + window.App.user.id + '/' + 'home';
+            _self.set('path', home);
+          }
+          else if (val == 'mine') {
+            var home = '/' + window.App.user.id;
+            _self.set('path', home);
+          } else if (val == 'public') {
+            _self.set('path', '/public/');
+          } else if (val == 'workshop') {
+            _self.set('path', '/public/ARWattam@patricbrc.org/BV-BRC Workshop');
+          }
         }
       });
+
+      // Subscribe to favorites changes to update the view when favorites are added/removed
+      if (!this._favoritesSub) {
+        this._favoritesSub = Topic.subscribe('/FavoriteFolders/changed', lang.hitch(this, function () {
+          if (this._currentViewMode === 'favorites') {
+            this.loadFavorites();
+          }
+        }));
+      }
 
       domConstr.place(frontBC.domNode, this.dialog.containerNode, 'first');
 
@@ -878,6 +1029,10 @@ define([
         // to be automatically selected (autoSelectCurrent)
         if (evt.item && evt.item.type == 'folder' || evt.item.type == 'parentfolder') {
           self.set('path', evt.item.path);
+          // Add to recent folders when navigating into a folder
+          if (evt.item.type == 'folder' && evt.item.path && evt.item.name) {
+            RecentFolders.add(evt.item.path, evt.item.name);
+          }
         } else {
           self.set('value', evt.item.path);
           self.dialog.hide();
@@ -889,6 +1044,11 @@ define([
 
         self.set('selection', row.data);
         self.set('value', row.data.path);
+
+        // Add to recent folders when a folder is selected
+        if (row.data && row.data.type === 'folder' && row.data.path && row.data.name) {
+          RecentFolders.add(row.data.path, row.data.name);
+        }
       });
 
       grid.on('deselect', function (evt) {
@@ -906,6 +1066,15 @@ define([
       }
 
       return grid;
+    },
+
+    destroy: function () {
+      // Clean up the favorites subscription
+      if (this._favoritesSub) {
+        this._favoritesSub.remove();
+        this._favoritesSub = null;
+      }
+      this.inherited(arguments);
     }
   });
 });

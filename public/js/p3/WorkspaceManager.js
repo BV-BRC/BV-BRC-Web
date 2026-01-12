@@ -1474,9 +1474,10 @@ define([
 
     },
 
-    // Cache for du results: { path: { timestamp: Date, result: DiskUsageResult } }
+    // Cache for du results: { path: { timestamp: Date, result: DiskUsageResult, isTimeout: boolean } }
     _duCache: {},
     _duCacheTTL: 3600000, // 1 hour in milliseconds
+    _duTimeoutCacheTTL: 86400000, // 24 hours for timeout results (no point retrying soon)
 
     /**
      * Get disk usage for a path
@@ -1492,7 +1493,8 @@ define([
       // Check cache unless force refresh
       if (!forceRefresh && this._duCache[path]) {
         var cached = this._duCache[path];
-        if (Date.now() - cached.timestamp < this._duCacheTTL) {
+        var ttl = cached.isTimeout ? this._duTimeoutCacheTTL : this._duCacheTTL;
+        if (Date.now() - cached.timestamp < ttl) {
           return Deferred.when(cached.result);
         }
       }
@@ -1503,13 +1505,30 @@ define([
         adminmode: false
       }]);
 
-      // Cache the result on success
+      // Cache the result on success (including timeout errors in the result)
       return Deferred.when(promise, function (result) {
+        var resultStr = JSON.stringify(result) || '';
+        var isTimeout = resultStr.indexOf('timed out') !== -1;
         self._duCache[path] = {
           timestamp: Date.now(),
-          result: result
+          result: result,
+          isTimeout: isTimeout
         };
         return result;
+      }, function (err) {
+        // Also cache errors that indicate timeout
+        var errMsg = (err && (err.message || err.toString())) || '';
+        if (errMsg.indexOf('timed out') !== -1) {
+          var timeoutResult = [[[path, 0, 0, 0, errMsg]]];
+          self._duCache[path] = {
+            timestamp: Date.now(),
+            result: timeoutResult,
+            isTimeout: true
+          };
+          return timeoutResult;
+        }
+        // Re-throw other errors
+        throw err;
       });
     },
 
