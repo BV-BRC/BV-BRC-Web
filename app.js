@@ -29,6 +29,11 @@ var app = express();
 var httpProxy = require('http-proxy');
 var apiProxy = httpProxy.createProxyServer();
 
+// Trust the first proxy hop (reverse proxy like nginx/Apache)
+// This is required for express-rate-limit to correctly identify client IPs
+// when running behind a proxy that sets X-Forwarded-For
+app.set('trust proxy', 1);
+
 // Security middleware imports
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');

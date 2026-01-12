@@ -1544,6 +1544,26 @@ define([
       }
     },
 
+    /**
+     * Save content to a workspace file (create or overwrite)
+     * @param {string} path - Full file path
+     * @param {string} content - File content
+     * @param {string} type - File type (e.g., 'json')
+     * @returns {Deferred}
+     */
+    saveFile: function (path, content, type) {
+      var _self = this;
+      return Deferred.when(
+        this.api('Workspace.create', [{
+          objects: [[path, type || 'string', {}, content]],
+          overwrite: 1
+        }]),
+        function (results) {
+          return _self.metaListToObj(results[0][0]);
+        }
+      );
+    },
+
     init: function (apiUrl, token, userId) {
       this.activeSearchFilter = null; // Reset search filter on init
       if (!apiUrl || !token || !userId) {

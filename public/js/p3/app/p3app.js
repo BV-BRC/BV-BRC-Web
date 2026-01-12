@@ -8,7 +8,7 @@ define([
   'dojo/window', '../widget/Drawer', 'dijit/layout/ContentPane',
   '../jsonrpc', '../panels', '../WorkspaceManager', '../DataAPI', 'dojo/keys',
   'dijit/ConfirmDialog', '../util/PathJoin', 'dojo/request', '../widget/WorkspaceController',
-  'p3/widget/copilot/ChatButton'
+  'p3/widget/copilot/ChatButton', '../util/RecentFolders', '../util/FavoriteFolders'
 
 ], function (
   declare,
@@ -20,7 +20,7 @@ define([
   Router, Window,
   Drawer, ContentPane,
   RPC, Panels, WorkspaceManager, DataAPI, Keys,
-  ConfirmDialog, PathJoin, xhr, WorkspaceController, ChatButton
+  ConfirmDialog, PathJoin, xhr, WorkspaceController, ChatButton, RecentFolders, FavoriteFolders
 ) {
   return declare([App], {
     panels: Panels,
@@ -528,10 +528,35 @@ define([
         } else {
           domClass.remove(document.body, 'unverified_email')
         }
+
+        // Initialize recent folders list on startup
+        this.updateRecentFoldersList();
+
+        // Initialize favorite folders list on startup
+        this.updateFavoriteFoldersList();
       }
 
       Topic.subscribe('/userWorkspaces', lang.hitch(this, 'updateUserWorkspaceList'));
       Topic.subscribe('/userWorkspaces', lang.hitch(this, 'updateMyDataSection'));
+
+      // Clear recent folders on logout
+      Topic.subscribe('/logout', lang.hitch(this, function () {
+        RecentFolders.clear();
+        this.updateRecentFoldersList();
+        FavoriteFolders.clearCache();
+        this.updateFavoriteFoldersList();
+      }));
+
+      // Refresh recent folders list on login
+      Topic.subscribe('/login', lang.hitch(this, function () {
+        this.updateRecentFoldersList();
+        this.updateFavoriteFoldersList();
+      }));
+
+      // Refresh favorites list when favorites change
+      Topic.subscribe('/FavoriteFolders/changed', lang.hitch(this, function () {
+        this.updateFavoriteFoldersList();
+      }));
 
       // update "My Data" > "Completed Jobs" count on homepage
       if (this.user && this.user.id) {
@@ -698,6 +723,8 @@ define([
     },
     suSwitchBack: function () {
       console.log('I clicked the switch back button');
+      // Clear favorite folders cache (in-memory) so it reloads for original user
+      FavoriteFolders.clearCache();
       localStorage.setItem('auth', localStorage.getItem('Aauth'));
       localStorage.setItem('tokenstring', localStorage.getItem('Atokenstring'));
       localStorage.setItem('userProfile', localStorage.getItem('AuserProfile'));
@@ -847,6 +874,10 @@ define([
         localStorage.removeItem('Atokenstring');
         localStorage.removeItem('AuserProfile');
         localStorage.removeItem('Auserid');
+        // Clear recent folders on logout
+        RecentFolders.clear();
+        // Clear favorite folders cache on logout
+        FavoriteFolders.clearCache();
         window.location.assign('/');
         // remove the upload and jobs widget
         window.App.uploadJobsWidget('hide');
@@ -950,6 +981,101 @@ define([
           }, wsMobileNode);
         });
       }
+    },
+
+    updateRecentFoldersList: function () {
+      var desktopNode = dom.byId('RecentFoldersList');
+      var mobileNode = dom.byId('RecentFoldersList-mobile');
+      var desktopSection = dom.byId('RecentFoldersSection');
+      var mobileSection = dom.byId('RecentFoldersSection-mobile');
+
+      var folders = RecentFolders.get();
+
+      if (folders.length === 0) {
+        if (desktopSection) domStyle.set(desktopSection, 'display', 'none');
+        if (mobileSection) domStyle.set(mobileSection, 'display', 'none');
+        return;
+      }
+
+      // Show sections
+      if (desktopSection) domStyle.set(desktopSection, 'display', 'block');
+      if (mobileSection) domStyle.set(mobileSection, 'display', 'block');
+
+      // Clear existing content
+      if (desktopNode) domConstruct.empty(desktopNode);
+      if (mobileNode) domConstruct.empty(mobileNode);
+
+      // Populate lists
+      folders.forEach(function (folder) {
+        // Path is already URL-encoded, so just prepend /workspace
+        var href = '/workspace' + folder.path;
+
+        if (desktopNode) {
+          domConstruct.create('a', {
+            'class': 'navigationLink',
+            href: href,
+            innerHTML: folder.name,
+            title: folder.path
+          }, desktopNode);
+          domConstruct.create('br', {}, desktopNode);
+        }
+
+        if (mobileNode) {
+          domConstruct.create('a', {
+            href: href,
+            innerHTML: folder.name,
+            title: folder.path
+          }, mobileNode);
+        }
+      });
+    },
+
+    updateFavoriteFoldersList: function () {
+      var desktopNode = dom.byId('FavoriteFoldersList');
+      var mobileNode = dom.byId('FavoriteFoldersList-mobile');
+      var desktopSection = dom.byId('FavoriteFoldersSection');
+      var mobileSection = dom.byId('FavoriteFoldersSection-mobile');
+
+      FavoriteFolders.load().then(function (folders) {
+        if (folders.length === 0) {
+          if (desktopSection) domStyle.set(desktopSection, 'display', 'none');
+          if (mobileSection) domStyle.set(mobileSection, 'display', 'none');
+          return;
+        }
+
+        // Show sections
+        if (desktopSection) domStyle.set(desktopSection, 'display', 'block');
+        if (mobileSection) domStyle.set(mobileSection, 'display', 'block');
+
+        // Clear existing content
+        if (desktopNode) domConstruct.empty(desktopNode);
+        if (mobileNode) domConstruct.empty(mobileNode);
+
+        // Populate lists
+        folders.forEach(function (folderPath) {
+          // Path is already URL-encoded, extract display name
+          var name = decodeURIComponent(folderPath.split('/').filter(Boolean).pop());
+          var href = '/workspace' + folderPath;
+
+          if (desktopNode) {
+            domConstruct.create('a', {
+              'class': 'navigationLink',
+              href: href,
+              innerHTML: name,
+              title: folderPath
+            }, desktopNode);
+            domConstruct.create('br', {}, desktopNode);
+          }
+
+          if (mobileNode) {
+            domConstruct.create('a', {
+              href: href,
+              innerHTML: name,
+              title: folderPath
+            }, mobileNode);
+          }
+        });
+      });
     }
   });
 });

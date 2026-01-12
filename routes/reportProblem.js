@@ -1,6 +1,5 @@
 var config = require('../config');
 var email = require('nodemailer');
-var smtpTransport = require('nodemailer-smtp-transport');
 var when = require('promised-io/promise').when;
 var defer = require('promised-io/promise').defer;
 const axios = require("axios");
@@ -19,23 +18,6 @@ function mail(message, subject, from, files, options) {
   var mailconf = config.get('email');
   var destMail = config.get('reportProblemEmailAddress');
 
-  if (mailconf.localSendmail) {
-    // transport = email.createTransport();
-    // email.sendmail=true;
-  } else {
-    // email.sendmail=false;
-    email.SMTP = {
-      host: mailconf.host || 'localhost',
-      port: mailconf.port || 25
-    };
-  }
-
-  if (mailconf.username) {
-    email.SMTP.use_authentication = true;
-    email.SMTP.user = mailconf.username;
-    email.SMTP.pass = mailconf.password;
-  }
-
   if (!transport) {
     var transportOpts = {
       host: mailconf.host || 'localhost',
@@ -49,7 +31,7 @@ function mail(message, subject, from, files, options) {
       };
     }
     transportOpts.tls = { rejectUnauthorized: true };
-    transport = email.createTransport(smtpTransport(transportOpts));
+    transport = email.createTransport(transportOpts);
   }
 
   var mailmsg = {

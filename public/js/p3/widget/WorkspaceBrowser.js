@@ -9,6 +9,7 @@ define([
   'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './RerunUtility', './viewer/JobResult',
   'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree',
   'dijit/registry', 'dojo/keys', 'dojo/dom-style', 'dojo/Stateful',  'dojo/hash', 'dojo/io-query',
+  '../util/FavoriteFolders', '../util/RecentFolders'
 ], function (
   declare, BorderContainer, on, query,
   domClass, domConstruct, domAttr,
@@ -20,6 +21,7 @@ define([
   All, encodePath, when, request, tsvCsvFeatures, rerunUtility, JobResult,
   NodeList_traverse, Homology, GenomeAlignment, PhylogeneticTree,
   registry, keys, domStyle, Stateful, hash, ioQuery,
+  FavoriteFolders, RecentFolders
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -930,6 +932,28 @@ define([
           console.log('Error: could not find FullGenomeReport.html');
         }
       });
+
+      this.browserHeader.addAction('ViewAssemblyReport', 'fa icon-eye fa-2x', {
+        label: 'REPORT',
+        multiple: false,
+        validTypes: ['GenomeAssembly', 'GenomeAssembly2'],
+        tooltip: 'View Assembly Report'
+      }, function (selection) {
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
+          var filepath = file_data[0].split('/');
+          var filename = filepath[filepath.length - 1];
+          if (filename.endsWith('_assembly_report.html')) {
+            path = filepath.join('/');
+          }
+        }));
+        if (path) {
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
+        } else {
+          console.log('Error: could not find assembly_report.html');
+        }
+      });
+
       this.browserHeader.addAction(
         "ViewDockingReport",
         "fa icon-eye fa-2x",
@@ -1883,6 +1907,22 @@ define([
         self.showPermDialog(selection);
       }, false);
 
+      this.actionPanel.addAction('ToggleFavorite', 'fa icon-star-o fa-2x', {
+        label: 'FAVORITE',
+        multiple: false,
+        validTypes: ['folder'],
+        tooltip: 'Toggle favorite status'
+      }, function (selection) {
+        if (!selection || selection.length !== 1) return;
+        var folder = selection[0];
+        var path = folder.path;
+
+        FavoriteFolders.toggle(path).then(function (isFavorite) {
+          // Update button appearance
+          self._updateFavoriteButton(isFavorite);
+        });
+      }, false);
+
       this.actionPanel.addAction('Rerun', 'fa icon-rotate-left fa-2x', {
         label: 'RERUN',
         allowMultiTypes: true,
@@ -2289,6 +2329,24 @@ define([
       }
     },
 
+    _updateFavoriteButton: function (isFavorite) {
+      var btn = query('[rel="ToggleFavorite"]', this.actionPanel.domNode)[0];
+      if (!btn) return;
+
+      var iconNode = query('i', btn)[0] || query('.fa', btn)[0];
+      if (iconNode) {
+        if (isFavorite) {
+          domClass.remove(iconNode, 'icon-star-o');
+          domClass.add(iconNode, 'icon-star');
+          iconNode.style.color = '#f0ad4e'; // Gold color for favorite
+        } else {
+          domClass.remove(iconNode, 'icon-star');
+          domClass.add(iconNode, 'icon-star-o');
+          iconNode.style.color = ''; // Default color
+        }
+      }
+    },
+
     showPermDialog: function (selection) {
       var self = this,
         selection = selection[0], // only allows one selection
@@ -2604,6 +2662,14 @@ define([
         switch (obj.type) {
           case 'folder':
             panelCtor = WorkspaceExplorerView;
+            // Track folder access for recent folders
+            if (window.App.user && window.App.user.id && this.path) {
+              var folderName = obj.name || decodeURIComponent(this.path.split('/').filter(Boolean).pop() || 'home');
+              RecentFolders.add(this.path, folderName);
+              if (window.App.updateRecentFoldersList) {
+                window.App.updateRecentFoldersList();
+              }
+            }
             break;
           case 'genome_group':
             panelCtor = window.App.getConstructor('p3/widget/viewer/WSGenomeGroup');
@@ -2736,6 +2802,14 @@ define([
 
                 this.actionPanel.set('selection', sel);
                 this.itemDetailPanel.set('selection', sel);
+
+                // Update favorite button state when a folder is selected
+                if (sel.length === 1 && sel[0].type === 'folder') {
+                  var self = this;
+                  FavoriteFolders.isFavorite(sel[0].path).then(function (isFav) {
+                    self._updateFavoriteButton(isFav);
+                  });
+                }
               }));
 
               newPanel.on('deselect', lang.hitch(this, function (evt) {

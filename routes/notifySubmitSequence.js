@@ -1,6 +1,5 @@
 var config = require('../config');
 var email = require('nodemailer');
-var smtpTransport = require('nodemailer-smtp-transport');
 var when = require('promised-io/promise').when;
 var defer = require('promised-io/promise').defer;
 var formidable = require('express-formidable');
@@ -16,21 +15,6 @@ function mail(subject, message) {
   var mailconf = config.get('email');
   var destMail = config.get('sequenceSubmissionNotificationEmailAddress');
 
-  if (mailconf.localSendmail) {
-    //transport = email.createTransport();
-  } else {
-    email.SMTP = {
-      host: mailconf.host || 'localhost',
-      port: mailconf.port || 25
-    };
-  }
-
-  if (mailconf.username) {
-    email.SMTP.use_authentication = true;
-    email.SMTP.user = mailconf.username;
-    email.SMTP.pass = mailconf.password;
-  }
-
   if (!transport) {
     var transportOpts = {
       host: mailconf.host || 'localhost',
@@ -44,7 +28,7 @@ function mail(subject, message) {
       };
     }
     transportOpts.tls = { rejectUnauthorized: true };
-    transport = email.createTransport(smtpTransport(transportOpts));
+    transport = email.createTransport(transportOpts);
   }
 
   var mailmsg = {
