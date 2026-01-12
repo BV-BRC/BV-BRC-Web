@@ -545,8 +545,13 @@ define([
             selected: _self.path.split('/')[1] != 'public'
           },
           {
-            label: 'Workspaces',
+            label: 'My Workspaces',
             value: 'mine',
+            selected: false
+          },
+          {
+            label: 'Shared Workspaces',
+            value: 'shared',
             selected: false
           }, {
             label: 'Public Workspaces',
@@ -582,15 +587,23 @@ define([
           _self._currentViewMode = 'browse';
           _self._hideEmptyMessage();
           if (val == 'home') {
+            if (_self.grid) { _self.grid.set('workspaceFilter', null); }
             var home = '/' + window.App.user.id + '/' + 'home';
             _self.set('path', home);
           }
           else if (val == 'mine') {
+            if (_self.grid) { _self.grid.set('workspaceFilter', 'myWorkspaces'); }
+            var home = '/' + window.App.user.id;
+            _self.set('path', home);
+          } else if (val == 'shared') {
+            if (_self.grid) { _self.grid.set('workspaceFilter', 'sharedWithMe'); }
             var home = '/' + window.App.user.id;
             _self.set('path', home);
           } else if (val == 'public') {
+            if (_self.grid) { _self.grid.set('workspaceFilter', null); }
             _self.set('path', '/public/');
           } else if (val == 'workshop') {
+            if (_self.grid) { _self.grid.set('workspaceFilter', null); }
             _self.set('path', '/public/ARWattam@patricbrc.org/BV-BRC Workshop');
           }
         }

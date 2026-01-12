@@ -17,6 +17,13 @@ define([
     onlyWritable: false,      // only lists writable workspaces
     allowDragAndDrop: true,   // whether or not to allow drag and drop
     currentSearchTerm: null, // To know if we are displaying search results
+    workspaceFilter: null,   // Filter mode: null, 'myWorkspaces', or 'sharedWithMe'
+    _setWorkspaceFilterAttr: function (val) {
+      this.workspaceFilter = val;
+      if (this._started) {
+        this.refreshWorkspace();
+      }
+    },
     _setTypes: function (val) {
       if (val) {
         this.types = Array.isArray(val) ? val : [val];
@@ -62,10 +69,11 @@ define([
         ws = parts.join('/');
       }
 
-      // Check what filter to apply based on hash
+      // Check what filter to apply based on hash or workspaceFilter property
       var currentHash = window.location.hash;
-      var showOnlyShared = currentHash === '#sharedWithMe';
-      var showOnlyOwned = currentHash === '#myWorkspaces';
+      var filterMode = this.workspaceFilter || (currentHash === '#sharedWithMe' ? 'sharedWithMe' : currentHash === '#myWorkspaces' ? 'myWorkspaces' : null);
+      var showOnlyShared = filterMode === 'sharedWithMe';
+      var showOnlyOwned = filterMode === 'myWorkspaces';
 
       var filterPublic =  ws == '/';
       var prom1 = WorkspaceManager.getFolderContents(ws, window.App.showHiddenFiles, null, filterPublic);
