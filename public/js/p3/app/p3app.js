@@ -730,6 +730,8 @@ define([
     },
     suSwitchBack: function () {
       console.log('I clicked the switch back button');
+      // Clear favorite folders cache (in-memory) so it reloads for original user
+      FavoriteFolders.clearCache();
       localStorage.setItem('auth', localStorage.getItem('Aauth'));
       localStorage.setItem('tokenstring', localStorage.getItem('Atokenstring'));
       localStorage.setItem('userProfile', localStorage.getItem('AuserProfile'));
