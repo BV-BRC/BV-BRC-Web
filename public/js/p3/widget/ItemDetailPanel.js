@@ -368,7 +368,13 @@ define([
 
       Deferred.when(this._duPromise, function (result) {
         // Result structure: [[[path, total_size, file_count, dir_count, error]]]
-        if (result && result[0] && result[0][0]) {
+        // Check result and stringify for timeout detection
+        var resultStr = JSON.stringify(result) || '';
+        if (resultStr.indexOf('timed out') !== -1) {
+          self.duSizeNode.innerHTML = 'Very large';
+          self.duFileCountNode.innerHTML = '-';
+          self.duDirCountNode.innerHTML = '-';
+        } else if (result && result[0] && result[0][0]) {
           var duResult = result[0][0]; // [path, total_size, file_count, dir_count, error]
           if (duResult[4]) {
             // Error field is set
@@ -380,12 +386,23 @@ define([
             self.duFileCountNode.innerHTML = duResult[2];
             self.duDirCountNode.innerHTML = duResult[3];
           }
+        } else {
+          // Unexpected result structure
+          self.duSizeNode.innerHTML = 'Unable to calculate';
+          self.duFileCountNode.innerHTML = '-';
+          self.duDirCountNode.innerHTML = '-';
         }
       }, function (err) {
         // Request was cancelled or failed
         // Only show error if it wasn't a cancellation
         if (err && (!err.dojoType || err.dojoType !== 'cancel')) {
-          self.duSizeNode.innerHTML = 'Unable to calculate';
+          // Check for timeout in error message
+          var errMsg = err.message || err.toString() || '';
+          if (errMsg.indexOf('timed out') !== -1) {
+            self.duSizeNode.innerHTML = 'Very large';
+          } else {
+            self.duSizeNode.innerHTML = 'Unable to calculate';
+          }
           self.duFileCountNode.innerHTML = '-';
           self.duDirCountNode.innerHTML = '-';
         }
