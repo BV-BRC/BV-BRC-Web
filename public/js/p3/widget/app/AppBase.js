@@ -292,6 +292,9 @@ define([
         return;
       }
       return window.App.api.service('AppService.start_app2', [this.applicationName, values, start_params]).then(lang.hitch(this, function (results) {
+        // Immediately refresh job status and list so the new job appears in the UI
+        JobManager.refreshJobs();
+
         if (this.lookaheadJob) {
           var jobPath = `${this.output_path.value || ''}/${this.output_file.value || ''}`;
           var jobLabel = `${this.output_file.value || this.applicationName}`;

@@ -299,6 +299,13 @@ define([
 
       var _self = this;
 
+      // Clear the store cache on page load to ensure fresh data
+      // This prevents stale cached data from being displayed when navigating to the jobs page
+      var store = JobManager.getStore();
+      if (store && store.clearCache) {
+        store.clearCache();
+      }
+
       this.grid = new JobsGrid({
         region: 'center'
       });
