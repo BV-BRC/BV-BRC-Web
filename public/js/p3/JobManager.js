@@ -152,12 +152,15 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
     // check for status change.  if change, update jobs list
     var prom = getStatus();
     return When(prom,function (statusChange) {
-      // Skip refresh on first poll - the grid is already loading its initial data
-      // We still want to get the status counts, just don't trigger a redundant refresh
+      // Skip refresh on first poll ONLY if there's no status change
+      // If there is a status change (e.g., new job submitted), we must refresh
       if (isFirstPoll) {
         isFirstPoll = false;
-        setTimeout(PollJobs, TIME_OUT);
-        return;
+        if (!statusChange) {
+          // No change - skip refresh since the grid is already loading its initial data
+          setTimeout(PollJobs, TIME_OUT);
+          return;
+        }
       }
 
       if (statusChange) {
@@ -259,6 +262,23 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
         });
       });
 
+    },
+
+    /**
+     * Force an immediate refresh of job status and job list.
+     * Call this after a new job is submitted to immediately update the UI.
+     */
+    refreshJobs: function () {
+      // Clear the cache to ensure fresh data
+      if (_DataStore.clearCache) {
+        _DataStore.clearCache();
+      }
+
+      // Fetch updated status and publish to update the summary widget
+      return getStatus().then(function () {
+        // Trigger grid refresh
+        updateJobsList();
+      });
     }
   };
 });

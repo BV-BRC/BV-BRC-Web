@@ -292,7 +292,18 @@ define([
     ],
 
     startup: function () {
+      // Always clear the store cache when navigating to the jobs page
+      // This ensures fresh data is displayed even if the widget was previously started
+      var store = JobManager.getStore();
+      if (store && store.clearCache) {
+        store.clearCache();
+      }
+
       if (this._started) {
+        // Widget was already started - refresh the grid to load fresh data
+        if (this.grid && typeof this.grid.refresh === 'function') {
+          this.grid.refresh();
+        }
         return;
       }
       this.inherited(arguments);
