@@ -232,7 +232,12 @@ define([
 
       // need to ensure item is in store (for public workspaces),
       // this is more efficient than recursively grabing all public objects of a certain type
-      if (this.selection !== '*none*') {
+      if (this.selection !== '*none*' && this.selection && this.selection.path) {
+        // Ensure store exists - create if needed
+        if (!this.store) {
+          this.store = new Memory({ data: [], idProperty: 'path' });
+          this.searchBox.set('store', this.store);
+        }
         try {
           this.store.add(this.selection);
         } catch (e) {
