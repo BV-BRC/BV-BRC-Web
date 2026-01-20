@@ -531,11 +531,19 @@ define([
       ]
     },
 
+    // Bundles that have CSS - others are JavaScript-only
+    bundlesWithCSS: [
+      'core', 'viewers', 'jbrowse', 'outbreaks', 'search', 'apps', 'grids',
+      'graph-viz', 'phylogeny', 'workspace', 'graph-shared'
+      // Note: archaeopteryx, libs, and most viewer-* bundles don't have CSS
+    ],
+
     loadLayerCSS: function(layerPath) {
       // Load CSS bundle for a layer
       var layerName = layerPath.split('/').pop();
       var cssUrl;
       var base = (typeof window !== 'undefined' && window.WEBPACK_BUNDLE_BASE) ? window.WEBPACK_BUNDLE_BASE : '/js/release/';
+      var bundleName;
 
       if (layerPath.indexOf('p3/layer/viewer/') === 0) {
         // Viewer layer: convert to webpack bundle name
@@ -544,11 +552,18 @@ define([
         // Convert CamelCase to kebab-case BEFORE lowercasing
         // Example: "FeatureList" -> "feature-list"
         var kebab = viewerType.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-        var bundleName = 'viewer-' + kebab;
+        bundleName = 'viewer-' + kebab;
         cssUrl = base + bundleName + '.bundle.css';
       } else {
         // Regular layer: load webpack CSS bundle
+        bundleName = layerName;
         cssUrl = base + layerName + '.bundle.css';
+      }
+
+      // Skip CSS loading for bundles that don't have CSS
+      if (this.bundlesWithCSS.indexOf(bundleName) === -1) {
+        // console.log('Skipping CSS for JavaScript-only bundle:', bundleName);
+        return;
       }
 
       // Check if CSS link is already loaded

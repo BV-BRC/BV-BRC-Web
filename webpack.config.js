@@ -578,6 +578,29 @@ module.exports = {
         // Handle archaeopteryx UMD modules
         test: /archaeopteryx[\\/].*\.js$/,
         use: ['script-loader']
+      },
+      {
+        // Fix rql modules - they use indirect define pattern that webpack doesn't support
+        // Force them to use CommonJS mode by setting define to undefined
+        test: /[\\/]rql[\\/].*\.js$/,
+        use: [
+          {
+            loader: 'imports-loader',
+            options: {
+              wrapper: {
+                thisArg: 'window',
+                args: {
+                  define: 'undefined'
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        // lazyload.js expects to run with 'this' as window and needs access to document
+        test: /[\\/]lazyload[\\/]lazyload\.js$/,
+        use: ['script-loader']
       }
     ]
   },
