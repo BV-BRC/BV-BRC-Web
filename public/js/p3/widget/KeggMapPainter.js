@@ -72,9 +72,10 @@ define(['d3/d3'], function (d3) {
             self.tooltipLayer.transition()
               .duration(200)
               .style('opacity', 0.95);
-            self.tooltipLayer.html(d.name + '<br>' + d.description)
+            self.tooltipLayer.text(d.name + '\n' + d.description)
               .style('left', d3.event.pageX + 'px')
-              .style('top', (d3.event.pageY - 28) + 'px');
+              .style('top', (d3.event.pageY - 28) + 'px')
+              .style('white-space', 'pre-line');
           })
           .on('mouseout', function () {
             self.tooltipLayer.transition()

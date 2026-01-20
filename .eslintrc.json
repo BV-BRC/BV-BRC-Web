@@ -9,7 +9,6 @@
   },
   "globals": {
     "dojo": true,
-    "gtag": true,
     "d3": true,
     "clipboard": true,
     "cookie": true,

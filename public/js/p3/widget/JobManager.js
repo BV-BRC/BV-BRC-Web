@@ -292,7 +292,18 @@ define([
     ],
 
     startup: function () {
+      // Always clear the store cache when navigating to the jobs page
+      // This ensures fresh data is displayed even if the widget was previously started
+      var store = JobManager.getStore();
+      if (store && store.clearCache) {
+        store.clearCache();
+      }
+
       if (this._started) {
+        // Widget was already started - refresh the grid to load fresh data
+        if (this.grid && typeof this.grid.refresh === 'function') {
+          this.grid.refresh();
+        }
         return;
       }
       this.inherited(arguments);
@@ -303,9 +314,6 @@ define([
         region: 'center'
       });
 
-      this.grid.set('sort', [
-        { attribute: 'submit_time', descending: true }
-      ]);
 
       this.containerActionBar = new JobContainerActionBar({
         region: 'top',
@@ -354,6 +362,35 @@ define([
         }
       }));
 
+      // Track if grid has loaded for the first time
+      var gridFirstLoadComplete = false;
+
+      // Update filter labels when grid loads its first page
+      this.grid.on('dgrid-refresh-complete', lang.hitch(this, function (evt) {
+        if (evt.results && this.containerActionBar) {
+          // Extract jobs from the grid's current page to update filter labels
+          var jobs = [];
+          if (evt.results && typeof evt.results.forEach === 'function') {
+            evt.results.forEach(function(job) {
+              jobs.push(job);
+            });
+          }
+          if (jobs.length > 0 && this.containerActionBar.updateFilterLabels) {
+            this.containerActionBar.updateFilterLabels(jobs);
+          }
+        }
+
+        // After grid has fully loaded for the first time, call query_task_summary
+        // to ensure status bar shows correct counts
+        if (!gridFirstLoadComplete) {
+          gridFirstLoadComplete = true;
+          // Call getStatus to update the status bar with current job counts
+          if (JobManager.getStatus) {
+            JobManager.getStatus();
+          }
+        }
+      }));
+
       this.addChild(this.grid);
       this.addChild(this.containerActionBar);
       this.addChild(this.actionBar);
@@ -373,12 +410,25 @@ define([
       });
 
       // listen for new job data
-      Topic.subscribe('/Jobs', function (info) {
+      Topic.subscribe('/Jobs', lang.hitch(this, function (info) {
         if (info.status == 'updated') {
-          var store = JobManager.getStore();
-          _self.grid.set('store', store);
+          // When job status changes are detected (via polling), refresh the grid
+          // to show the updated data with a fresh API call to enumerate_tasks
+          if (this.grid && typeof this.grid.refresh === 'function') {
+            // Check if grid has been initialized - if it has a domNode, it's ready
+            if (this.grid.domNode) {
+              // Ensure cache is cleared before refresh to force a new API call
+              var store = JobManager.getStore();
+              if (store && store.clearCache) {
+                store.clearCache();
+              }
+              // Refresh will trigger gotoPage(1) which will query the store
+              // Since cache is cleared, it will make a new API call to enumerate_tasks
+              this.grid.refresh();
+            }
+          }
         }
-      });
+      }));
 
 
       // listen for filtering
@@ -393,6 +443,13 @@ define([
         } else if (filters.status === 'failed') {
           filters.status = new RegExp('failed|deleted');
         }
+
+        // Clear cache when filters change to ensure fresh data
+        var store = JobManager.getStore();
+        if (store && store.clearCache) {
+          store.clearCache();
+        }
+
         if (!this.serviceFilter) {
           this.serviceFilter = {};
         }

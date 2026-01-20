@@ -1,8 +1,8 @@
 define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
-  'dojo/promise/all', 'dojo/store/Memory','dojo/when'
+  'dojo/promise/all', 'dojo/when', './store/PaginatedJobStore'
 ], function (
   Deferred, Topic, xhr,
-  All, MemoryStore,When
+  All, When, PaginatedJobStore
 ) {
 
   var self = this;
@@ -18,39 +18,41 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
   // state of status (used to detect changes)
   var StatusSummary = { init: null };
 
-  var _DataStore = new MemoryStore({
+  // Flag to track if this is the first poll - skip refresh on first poll
+  // since the grid is already loading its initial data
+  var isFirstPoll = true;
+
+  // Use paginated store instead of MemoryStore
+  var _DataStore = new PaginatedJobStore({
     idProperty: 'id',
     data: []
   });
 
   /**
    * updates the job list (see JobsGrid.js)
+   * With paginated store, we just need to clear the cache to force refresh
    */
   function updateJobsList(cb) {
     if (!localStorage.getItem("tokenstring") || !localStorage.getItem("userid")){
-      return
+      return Deferred.when(null);
     }
     Topic.publish('/Jobs', { status: 'loading' });
 
-    var prom = window.App.api.service('AppService.enumerate_tasks', [0, 30000]);
-    return prom.then(function (res) {
-      // filter out jobs marked as deleted (includes killed jobs)
-      var jobs = res[0].filter(function (job) { return job.status !== 'deleted'; });
+    // Clear the cache so the next query will fetch fresh data
+    if (_DataStore.clearCache) {
+      _DataStore.clearCache();
+    }
 
-      _DataStore.setData(jobs);
+    // perform any callback action
+    if (cb) {
+      cb();
+    }
 
-      // perform any callback action before filtering
-      if (cb) cb();
+    // Publish update status - the grid will fetch data as needed via pagination
+    Topic.publish('/Jobs', { status: 'updated' });
 
-
-      if (self.filters.app || self.filters.status) {
-        Topic.publish('/Jobs', { status: 'filtered', jobs: _DataStore.data });
-        Topic.publish('/JobFilter', self.filters);
-        return;
-      }
-      // check job ids as finished and remove them from callback list and call the callback
-      Topic.publish('/Jobs', { status: 'updated', jobs: _DataStore.data });
-    });
+    // Return a resolved promise for compatibility
+    return Deferred.when(null);
   }
 
 
@@ -150,6 +152,17 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
     // check for status change.  if change, update jobs list
     var prom = getStatus();
     return When(prom,function (statusChange) {
+      // Skip refresh on first poll ONLY if there's no status change
+      // If there is a status change (e.g., new job submitted), we must refresh
+      if (isFirstPoll) {
+        isFirstPoll = false;
+        if (!statusChange) {
+          // No change - skip refresh since the grid is already loading its initial data
+          setTimeout(PollJobs, TIME_OUT);
+          return;
+        }
+      }
+
       if (statusChange) {
         updateJobsList().then(function () {
           setTimeout(PollJobs, TIME_OUT);
@@ -159,6 +172,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 
       setTimeout(PollJobs, TIME_OUT);
     }, function () {
+      isFirstPoll = false; // Reset flag even on error
       Topic.publish('/Jobs', { status: 'failed' });
       Topic.publish('/JobStatus', 'failed'); // send 'failed' instead of usual meta object
 
@@ -178,6 +192,9 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
   });
 
   return {
+    getStatus: function () {
+      return getStatus();
+    },
     queryTaskDetail: function (id, stdout, stderr) {
       return Deferred.when(window.App.api.service('AppService.query_task_details', [id]), function (detail) {
         detail = detail[0];
@@ -245,6 +262,23 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
         });
       });
 
+    },
+
+    /**
+     * Force an immediate refresh of job status and job list.
+     * Call this after a new job is submitted to immediately update the UI.
+     */
+    refreshJobs: function () {
+      // Clear the cache to ensure fresh data
+      if (_DataStore.clearCache) {
+        _DataStore.clearCache();
+      }
+
+      // Fetch updated status and publish to update the summary widget
+      return getStatus().then(function () {
+        // Trigger grid refresh
+        updateJobsList();
+      });
     }
   };
 });

@@ -1,9 +1,11 @@
 define([
   'dojo/_base/declare', 'dojo/_base/Deferred', 'dojo/request', 'dojo/_base/lang', 'dojo/topic',
+  'dojo/dom-construct',
   './_GenomeList', '../Phylogeny', '../../util/PathJoin', '../../store/SFVTViruses',
   '../TaxonomyTreeGridContainer', '../TaxonomyOverview', '../../util/QueryToEnglish'
 ], function (
   declare, Deferred, xhr, lang, Topic,
+  domConstruct,
   GenomeList, Phylogeny, PathJoin, SFVTViruses,
   TaxonomyTreeGrid, TaxonomyOverview, QueryToEnglish
 ) {
@@ -79,7 +81,9 @@ define([
     },
 
     onSetTaxonomy: function (attr, oldVal, taxonomy) {
-      this.queryNode.innerHTML = this.buildHeaderContent(taxonomy);
+      // Use DOM placement instead of innerHTML to prevent XSS
+      this.queryNode.textContent = '';
+      domConstruct.place(this.buildHeaderContent(taxonomy), this.queryNode);
       var taxon_header_label = 'Taxon View - ' + taxonomy.lineage.split(',').reverse()[0];
       this.perspectiveLabel = taxon_header_label;
       // customization for viruses only when the context is changed
@@ -187,14 +191,18 @@ define([
           }
           state.search = sx.join('&').replace('&&', '&');
           if (this.taxonomy) {
-            this.queryNode.innerHTML = this.buildHeaderContent(this.taxonomy);
+            // Use DOM placement instead of innerHTML to prevent XSS
+            this.queryNode.textContent = '';
+            domConstruct.place(this.buildHeaderContent(this.taxonomy), this.queryNode);
           }
 
         } else {
           state.search = s;
           this.filteredTaxon = false;
           if (this.taxonomy) {
-            this.queryNode.innerHTML = this.buildHeaderContent(this.taxonomy);
+            // Use DOM placement instead of innerHTML to prevent XSS
+            this.queryNode.textContent = '';
+            domConstruct.place(this.buildHeaderContent(this.taxonomy), this.queryNode);
           }
         }
 
@@ -233,8 +241,10 @@ define([
 
         this.setActivePanelState();
       }), lang.hitch(this, function (msg) {
-        this.queryNode.innerHTML = '<b>' + msg + '</b>';
-        this.totalCountNode.innerHTML = '';
+        // Use safe DOM construction for error messages to prevent XSS
+        this.queryNode.textContent = '';
+        domConstruct.create('b', { textContent: msg }, this.queryNode);
+        this.totalCountNode.textContent = '';
       }));
     },
     onSetGenomeIds: function (attr, oldVal, genome_ids) {
@@ -334,15 +344,27 @@ define([
         lastVisibleIndex = visibleIndexes[visibleIndexes.length - 1];
       }
 
-      var out = visibleIndexes.map(function (idx) {
-        return '<a class="navigationLink' + ((idx === lastVisibleIndex) ? ' current' : '') + '" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + taxon_lineage_names[idx] + '</a>';
+      // Build breadcrumb using safe DOM construction to prevent XSS
+      var container = domConstruct.create('div');
+
+      visibleIndexes.forEach(function (idx, i) {
+        if (i > 0) {
+          domConstruct.place(document.createTextNode(' » '), container);
+        }
+        var linkClass = 'navigationLink' + ((idx === lastVisibleIndex) ? ' current' : '');
+        domConstruct.create('a', {
+          'class': linkClass,
+          href: '/view/Taxonomy/' + taxon_lineage_ids[idx],
+          textContent: taxon_lineage_names[idx]
+        }, container);
       });
 
       if (this.filteredTaxon) {
-        out.push(this.filteredTaxon);
+        domConstruct.place(document.createTextNode(' » '), container);
+        domConstruct.place(document.createTextNode(this.filteredTaxon), container);
       }
 
-      return out.join(' &raquo; ');
+      return container;
     },
 
     createOverviewPanel: function () {

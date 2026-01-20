@@ -2,12 +2,28 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const FeedParser = require('feedparser');
+const sanitizeHtml = require('sanitize-html');
 
 const RSS_FEEDS = {
   h5n1: 'https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US%3Aen&oc=11&q=%22h5n1%22%20AND%20(site:https://www.cidrap.umn.edu/avian-influenza-bird-flu%20OR%20site%3Afda.gov%20OR%20site%3Awww.who.int%20OR%20site%3Anews.un.org%20OR%20site%3Acdc.gov%20OR%20site%3Aceirr-network.org%20OR%20site%3Awww.nature.com%2Farticles%2F)%20AND%20when%3A1y',
   measles: 'https://news.google.com/rss/search?q=measles+(%22www.cdc.gov%22+OR+%22news.un.org%22+OR+%22www.who.int%22+OR+%22www.reuters.com%22+OR+%22cidrap.umn.edu%22)&hl=en-US&gl=US&ceid=US:en',
   mpox: 'https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US%3Aen&oc=11&q=(MPOX%20OR%20monkeypox%20OR%20MPXV)%20site:www.cdc.gov%20OR%20site:news.un.org%20OR%20site:www.who.int%20OR%20site:news.un.org/en',
 };
+
+/**
+ * Validate that a URL is a safe HTTP/HTTPS URL
+ * @param {string} str - URL to validate
+ * @returns {boolean} - true if valid HTTP/HTTPS URL
+ */
+function isValidHttpUrl(str) {
+  if (!str) return false;
+  try {
+    const url = new URL(str);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Google News RSS Router
@@ -81,8 +97,14 @@ router.get('/news', async function (req, res) {
             const isValidDate = dateObj && !isNaN(dateObj.getTime());
 
             return {
-              title: i.title,
-              link: i.link,
+              // Sanitize title: strip all HTML tags to prevent XSS
+              title: sanitizeHtml(i.title || '', {
+                allowedTags: [],
+                allowedAttributes: {},
+                disallowedTagsMode: 'discard'
+              }).trim(),
+              // Validate link: only allow http/https URLs
+              link: isValidHttpUrl(i.link) ? i.link : null,
               pubDate: isValidDate ? dateObj : null,
             };
           })

@@ -43,8 +43,14 @@ define([
           handleAs: 'json'
         }), function (exp) {
 
-          self.queryNode.innerHTML = '<b>' + exp.exp_title + '</b>';
-          self.totalCountNode.innerHTML = ' ( ' + exp.biosets + ' Biosets )';
+          // Clear and build queryNode content safely with DOM construction
+          domConstruct.empty(self.queryNode);
+          domConstruct.create('b', {
+            textContent: exp.exp_title
+          }, self.queryNode, 'last');
+
+          // Set totalCountNode safely
+          self.totalCountNode.textContent = ' ( ' + exp.biosets + ' Biosets )';
         });
       }
     },

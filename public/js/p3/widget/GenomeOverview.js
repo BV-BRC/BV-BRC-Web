@@ -74,12 +74,30 @@ define([
       this.createExternalLinks(genome);
 
       // context sensitive widget update
-      const sumWidgets = (this.context === 'bacteria') ? this.bacteriSummaryWidgets : this.virusSummaryWidgets
+      // Check if it's a phage - if so, include protein features and specialty genes widgets
+      var isPhage = genome && genome.genome_name &&
+                    genome.genome_name.toLowerCase().includes('phage');
+      var sumWidgets;
+      if (this.context === 'bacteria') {
+        sumWidgets = this.bacteriSummaryWidgets;
+      } else if (this.context === 'virus' && isPhage) {
+        // For phages, include all widgets like bacteria
+        sumWidgets = this.bacteriSummaryWidgets;
+      } else {
+        sumWidgets = this.virusSummaryWidgets;
+      }
+
       sumWidgets.forEach(function (w) {
         if (this[w]) {
           this[w].set('query', 'eq(genome_id,' + this.genome.genome_id + ')');
         }
       }, this);
+
+      // Update section visibility for phages
+      if (this.context === 'virus' && isPhage) {
+        domClass.remove(this.pfSummaryWidget.domNode.parentNode, 'hidden');
+        domClass.remove(this.spgSummaryWidget.domNode.parentNode, 'hidden');
+      }
 
       // display/hide download button per public status
       if (genome['public']) {

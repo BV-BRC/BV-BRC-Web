@@ -11,13 +11,26 @@ define([
 ) {
   return declare([Dialog], {
     templateString: template,
+    postCreate: function() {
+      this.inherited(arguments);
+      // Ensure dialog always starts in 'front' state (fixes Safari flip bug)
+      domClass.remove(this.domNode, 'flipped');
+    },
     flip: function (side) {
       if (side == 'front') {
         domClass.remove(this.domNode, 'flipped');
       } else if (side == 'back') {
         domClass.add(this.domNode, 'flipped');
+        // Safari fix: Ensure back pane is visible when flipping to it
+        this.backPane.style.display = '';
+        this.backpaneTitleBar.style.display = '';
       } else {
         domClass.toggle(this.domNode, 'flipped');
+        // Safari fix: Ensure back pane is visible if we toggled to it
+        if (domClass.contains(this.domNode, 'flipped')) {
+          this.backPane.style.display = '';
+          this.backpaneTitleBar.style.display = '';
+        }
       }
     },
 

@@ -1474,6 +1474,96 @@ define([
 
     },
 
+    // Cache for du results: { path: { timestamp: Date, result: DiskUsageResult, isTimeout: boolean } }
+    _duCache: {},
+    _duCacheTTL: 3600000, // 1 hour in milliseconds
+    _duTimeoutCacheTTL: 86400000, // 24 hours for timeout results (no point retrying soon)
+
+    /**
+     * Get disk usage for a path
+     * @param {string} path - The workspace path to check
+     * @param {boolean} forceRefresh - If true, bypass cache and re-query
+     * @returns {Promise} Resolves to array of DiskUsageResult tuples:
+     *   [path, total_size, file_count, directory_count, error]
+     */
+    du: function (path, forceRefresh) {
+      var self = this;
+      path = decodeURIComponent(path);
+
+      // Check cache unless force refresh
+      if (!forceRefresh && this._duCache[path]) {
+        var cached = this._duCache[path];
+        var ttl = cached.isTimeout ? this._duTimeoutCacheTTL : this._duCacheTTL;
+        if (Date.now() - cached.timestamp < ttl) {
+          return Deferred.when(cached.result);
+        }
+      }
+
+      var promise = this.api('Workspace.du', [{
+        paths: [path],
+        recursive: true,
+        adminmode: false
+      }]);
+
+      // Cache the result on success (including timeout errors in the result)
+      return Deferred.when(promise, function (result) {
+        var resultStr = JSON.stringify(result) || '';
+        var isTimeout = resultStr.indexOf('timed out') !== -1;
+        self._duCache[path] = {
+          timestamp: Date.now(),
+          result: result,
+          isTimeout: isTimeout
+        };
+        return result;
+      }, function (err) {
+        // Also cache errors that indicate timeout
+        var errMsg = (err && (err.message || err.toString())) || '';
+        if (errMsg.indexOf('timed out') !== -1) {
+          var timeoutResult = [[[path, 0, 0, 0, errMsg]]];
+          self._duCache[path] = {
+            timestamp: Date.now(),
+            result: timeoutResult,
+            isTimeout: true
+          };
+          return timeoutResult;
+        }
+        // Re-throw other errors
+        throw err;
+      });
+    },
+
+    /**
+     * Clear the du cache
+     * @param {string} path - Optional specific path to clear. If omitted, clears entire cache.
+     */
+    clearDuCache: function (path) {
+      if (path) {
+        delete this._duCache[path];
+      } else {
+        this._duCache = {};
+      }
+    },
+
+    /**
+     * Save content to a workspace file (create or overwrite)
+     * @param {string} path - Full file path
+     * @param {string} content - File content
+     * @param {string} type - File type (e.g., 'json')
+     * @returns {Deferred}
+     */
+    saveFile: function (path, content, type) {
+      var _self = this;
+      return Deferred.when(
+        this.api('Workspace.create', [{
+          objects: [[path, type || 'string', {}, content]],
+          overwrite: 1
+        }]),
+        function (results) {
+          return _self.metaListToObj(results[0][0]);
+        }
+      );
+    },
+
     init: function (apiUrl, token, userId) {
       this.activeSearchFilter = null; // Reset search filter on init
       if (!apiUrl || !token || !userId) {

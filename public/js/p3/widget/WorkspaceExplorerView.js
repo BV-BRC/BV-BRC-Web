@@ -17,6 +17,13 @@ define([
     onlyWritable: false,      // only lists writable workspaces
     allowDragAndDrop: true,   // whether or not to allow drag and drop
     currentSearchTerm: null, // To know if we are displaying search results
+    workspaceFilter: null,   // Filter mode: null, 'myWorkspaces', or 'sharedWithMe'
+    _setWorkspaceFilterAttr: function (val) {
+      this.workspaceFilter = val;
+      if (this._started) {
+        this.refreshWorkspace();
+      }
+    },
     _setTypes: function (val) {
       if (val) {
         this.types = Array.isArray(val) ? val : [val];
@@ -31,7 +38,6 @@ define([
     },
 
     listWorkspaceContents: function (ws) {
-      console.log("ExplorerView: currentSearchTerm:", this.currentSearchTerm, "WSM.activeSearchFilter:", WorkspaceManager.activeSearchFilter);
       var _self = this;
       // If a search is globally active, this method should not fetch normal contents.
       // The WorkspaceBrowser will push search results directly via the render() method.
@@ -63,6 +69,12 @@ define([
         ws = parts.join('/');
       }
 
+      // Check what filter to apply based on hash or workspaceFilter property
+      var currentHash = window.location.hash;
+      var filterMode = this.workspaceFilter || (currentHash === '#sharedWithMe' ? 'sharedWithMe' : currentHash === '#myWorkspaces' ? 'myWorkspaces' : null);
+      var showOnlyShared = filterMode === 'sharedWithMe';
+      var showOnlyOwned = filterMode === 'myWorkspaces';
+
       var filterPublic =  ws == '/';
       var prom1 = WorkspaceManager.getFolderContents(ws, window.App.showHiddenFiles, null, filterPublic);
 
@@ -85,7 +97,22 @@ define([
 
     // join 'shared with me' data if needed
     if (isUserTopLevel && results[1] && Array.isArray(results[1])) { // Check if results[1] is an array
-       objs = objs.concat(results[1]);
+       // Filter based on what we want to show
+       if (showOnlyShared) {
+         // Only show shared workspaces
+         objs = results[1];
+       } else if (showOnlyOwned) {
+         // Show only owned workspaces (filter out shared ones)
+         objs = objs.filter(function(obj) {
+           // Keep only items that are NOT in the shared list
+           return !results[1].some(function(sharedObj) {
+             return sharedObj.path === obj.path;
+           });
+         });
+       } else {
+         // No hash or unrecognized hash - show all (owned + shared)
+         objs = objs.concat(results[1]);
+       }
     } else if (isUserTopLevel && results[1]) {
        console.warn("WorkspaceExplorerView: results[1] from listSharedWithUser was not an array:", results[1]);
     }
@@ -257,7 +284,6 @@ define([
     },
 
     refreshWorkspace: function () {
-      console.log("ExplorerView: currentSearchTerm:", this.currentSearchTerm, "WSM.activeSearchFilter:", WorkspaceManager.activeSearchFilter);
       var _self = this;
       // If a search term is active locally for this view, or globally,
       // WorkspaceBrowser will push results via render().

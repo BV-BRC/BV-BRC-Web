@@ -187,13 +187,32 @@ define([
           return taxon_lineage_ranks.indexOf(rank);
         });
 
-        var out = visibleIndexes.map(function (idx) {
-          return '<a class="navigationLink" href="/view/Taxonomy/' + taxon_lineage_ids[idx] + '">' + taxon_lineage_names[idx] + '</a>';
-        });
-        this.queryNode.innerHTML = out.join(' &raquo; ') + ' &raquo; <span class="current">' + genome.genome_name + '</span>';
+        // Clear queryNode and build breadcrumb safely with DOM construction
+        domConstruct.empty(this.queryNode);
+
+        // Add taxonomy links
+        visibleIndexes.forEach(function (idx, i) {
+          if (i > 0) {
+            domConstruct.place(document.createTextNode(' » '), this.queryNode, 'last');
+          }
+          var link = domConstruct.create('a', {
+            'class': 'navigationLink',
+            href: '/view/Taxonomy/' + taxon_lineage_ids[idx],
+            textContent: taxon_lineage_names[idx]
+          }, this.queryNode, 'last');
+        }, this);
+
+        // Add separator before current genome
+        domConstruct.place(document.createTextNode(' » '), this.queryNode, 'last');
+
+        // Add current genome name (not a link)
+        domConstruct.create('span', {
+          'class': 'current',
+          textContent: genome.genome_name
+        }, this.queryNode, 'last');
       }), (err) => {
         // on reject
-        this.queryNode.innerHTML = 'unable to load taxonomy';
+        this.queryNode.textContent = 'unable to load taxonomy';
         console.error(err.message)
       });
     },

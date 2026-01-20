@@ -154,10 +154,6 @@ define([
           _self.doSubmit(value, start_params).then(function (results) {
             console.log('Job Submission Results: ', results);
 
-            if (window.gtag) {
-              gtag('event', this.applicationName, {event_category: 'Services'});
-            }
-
             domClass.remove(_self.domNode, 'Working');
             domClass.add(_self.domNode, 'Submitted');
             _self.submitButton.set('disabled', false);

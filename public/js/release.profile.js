@@ -2,7 +2,7 @@ var profile = {
   basePath: './',
   layerOptimize: 'closure',
   optimizeOptions: {
-    languageIn: 'ECMASCRIPT_2018',
+    languageIn: 'ECMASCRIPT_2019',
     languageOut: 'ECMASCRIPT_2018',
     compilationLevel: 'SIMPLE'
   },
