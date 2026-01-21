@@ -504,7 +504,9 @@ define([
     },
 
     _setPath: function (val) {
-      this.path = val;
+      // Decode the path to normalize it - paths may come in encoded from various sources
+      // (e.g., JobResult.js uses encodePath before passing the path)
+      this.path = decodeURIComponent(val);
       // console.log("WorkspaceExplorerView setPath", val)
       // When path is set directly (e.g., by navigation),
       // any local search context for this view should be cleared.
