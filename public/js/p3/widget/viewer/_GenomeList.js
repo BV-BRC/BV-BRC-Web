@@ -107,13 +107,7 @@ define([
 
       var content = QueryToEnglish(newVal);
       this.overview.set('content', '<div style="margin:4px;"><span class="queryModel">Genomes: </span> ' + content + '</div>');
-      // Use DOM construction to prevent XSS from query parameter
-      this.queryNode.textContent = '';
-      domConstruct.create('span', {
-        'class': 'queryModel',
-        textContent: 'Genomes: '
-      }, this.queryNode);
-      domConstruct.place(document.createTextNode('  ' + content), this.queryNode);
+      this.queryNode.innerHTML = '<span class="queryModel">Genomes: </span>  ' + content;
     },
 
     setActivePanelState: function () {
