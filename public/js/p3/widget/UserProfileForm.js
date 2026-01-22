@@ -14,7 +14,7 @@ define([
     templateString: Template,
 
     callbackURL: '',
-    userServiceURL: '',
+    userServiceURL: window.App.userServiceURL.replace(/\/+$/, ''),
     fieldChanged: function (evt) {
       this.submitButton.set('disabled', true);
       this.udProfButton.set('disabled', true);
@@ -212,6 +212,8 @@ define([
       var vals = this.getValues();
 
       console.log('vals: ', vals)
+      this.userServiceURL = window.App.userServiceURL;
+      this.userServiceURL.replace(/\/+$/, '');
       // console.log(vals);
       if (this.auth) {
         this.runPatch(vals);
@@ -327,7 +329,6 @@ define([
         return;
       }
       this.inherited(arguments);
-      this.userServiceURL = window.App.userServiceURL.replace(/\/+$/, '');
       var state = this.get('state');
       if ((state == 'Incomplete') || (state == 'Error')) {
         this.submitButton.set('disabled', true);
