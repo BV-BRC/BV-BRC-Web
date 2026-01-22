@@ -81,7 +81,7 @@ define([
 
     buildHeaderContent: function (search) {
 
-      this.queryNode.textContent = QueryToEnglish(search);
+      this.queryNode.innerHTML = QueryToEnglish(search);
       this.totalCountNode.textContent = '';
     },
 
