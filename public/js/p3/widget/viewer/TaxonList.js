@@ -63,13 +63,7 @@ define([
         this.overview.set('content', '<div style="margin:4px;">Feature List Query: ' + decodeURIComponent(newVal) + '</div>');
       }
       var content = QueryToEnglish(newVal);
-      // Use DOM construction to prevent XSS from query parameter
-      this.queryNode.textContent = '';
-      domConstruct.create('span', {
-        'class': 'queryModel',
-        textContent: 'Taxa: '
-      }, this.queryNode);
-      domConstruct.place(document.createTextNode('  ' + content), this.queryNode);
+      this.queryNode.innerHTML = '<span class="queryModel">Taxa: </span>  ' + content;
     },
 
     setActivePanelState: function () {
