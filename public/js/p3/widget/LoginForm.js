@@ -40,8 +40,8 @@ define([
       domClass.remove(this.domNode, 'Error');
       this.resetPWbutton.set('disabled', true);
       var emailAddress = this.emailAddress.displayedValue;
-      var userServiceURL = (window.App && window.App.userServiceURL) ? window.App.userServiceURL : '';
-      userServiceURL = userServiceURL.replace(/\/+$/, '');
+      var userServiceURL = window.App.userServiceURL;
+      userServiceURL.replace(/\/+$/, '');
       var def = xhr.post(userServiceURL + '/reset', {
         data: { email: emailAddress },
         method: 'post',
@@ -94,8 +94,8 @@ define([
         });
       } else if (this.loginMethod == 'patric') {
         var vals = this.getValues();
-        var userServiceURL = (window.App && window.App.userServiceURL) ? window.App.userServiceURL : '';
-        userServiceURL = userServiceURL.replace(/\/+$/, '');
+        var userServiceURL = window.App.userServiceURL;
+        userServiceURL.replace(/\/+$/, '');
         var def = xhr.post(userServiceURL + '/authenticate', {
           data: vals
         });

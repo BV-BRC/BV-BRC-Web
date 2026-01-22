@@ -1,7 +1,8 @@
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dijit/_OnDijitClickMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/dom', 'dojo/dom-class', 'dijit/_TemplatedMixin', 'dojox/dtl/_Templated', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/mouse',
-  'dojo/text!./OutbreaksGeoMap.html', 'dijit/ColorPalette', '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang'
+  'dojo/text!./OutbreaksGeoMap.html', 'dijit/ColorPalette', '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang',
+  'https://maps.googleapis.com/maps/api/js?key=AIzaSyAo6Eq83tcpiWufvVpw_uuqdoRfWbFXfQ8&sensor=false&libraries=drawing'
 ], function (
   declare, WidgetBase, on, OnDijitClickMixin, _WidgetsInTemplateMixin,
   dom, domClass, Templated, DtlTemplated, domConstruct, domStyle, mouse,
