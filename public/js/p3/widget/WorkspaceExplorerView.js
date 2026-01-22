@@ -285,6 +285,7 @@ define([
 
     refreshWorkspace: function () {
       var _self = this;
+
       // If a search term is active locally for this view, or globally,
       // WorkspaceBrowser will push results via render().
       // So, refreshWorkspace should only operate for normal path browsing.
@@ -504,9 +505,9 @@ define([
     },
 
     _setPath: function (val) {
-      // Decode the path to normalize it - paths may come in encoded from various sources
-      // (e.g., JobResult.js uses encodePath before passing the path)
-      this.path = decodeURIComponent(val);
+      // Store the path directly - it should already be decoded by callers
+      // (WorkspaceBrowser decodes paths, and JobResult now passes decoded paths)
+      this.path = val;
       // console.log("WorkspaceExplorerView setPath", val)
       // When path is set directly (e.g., by navigation),
       // any local search context for this view should be cleared.
