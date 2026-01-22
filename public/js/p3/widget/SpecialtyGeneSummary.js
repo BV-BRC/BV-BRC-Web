@@ -73,13 +73,18 @@ define([
           })
           .addAxis('x', {
             vertical: true,
+            natural: true,
             majorLabels: true,
+            majorTicks: true,
+            majorTickStep: 1,
             minorTicks: false,
             minorLabels: false,
             microTicks: false,
             labels: this._chartLabels
           })
           .addAxis('y', {
+            title: 'Gene Count',
+            titleOrientation: 'away',
             minorTicks: false
           })
           .addSeries('source', this.data);
