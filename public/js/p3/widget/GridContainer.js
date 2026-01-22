@@ -608,10 +608,7 @@ define([
             console.warn('No feature ID available for this selection');
             return;
           }
-          Topic.publish('/navigate', {
-            href: '/view/Feature/' + featureId + '#view_tab=overview',
-            target: 'blank'
-          });
+          window.open('/view/Feature/' + featureId + '#view_tab=overview', '_blank');
         },
         false
       ],  [
