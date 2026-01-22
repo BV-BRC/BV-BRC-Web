@@ -73,7 +73,7 @@ define([
       var values = Object.keys(values);
 
       values.forEach(function (val, idx) {
-        this._chartLabels.push({ text: val, value: idx + 1 });
+        this._chartLabels.push({ text: val, value: idx });
       }, this);
 
       data.forEach(function (summary) {
@@ -122,7 +122,8 @@ define([
             animate: { duration: 1000, easing: easing.linear }
           })
           .addAxis('x', {
-            majorLabels: false,
+            majorLabels: true,
+            majorTicks: true,
             minorTicks: false,
             minorLabels: false,
             microTicks: false,
