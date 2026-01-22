@@ -586,10 +586,15 @@ define([
           tooltip: 'Switch to Feature View. Press and Hold for more options.',
           validContainerTypes: ['feature_data', 'protein_data', 'transcriptomics_gene_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data'],
           pressAndHold: function (selection, button, opts, evt) {
+            var featureId = selection[0].feature_id || selection[0].patric_id;
+            if (!featureId) {
+              console.warn('No feature ID available for this selection');
+              return;
+            }
             popup.open({
               popup: new PerspectiveToolTipDialog({
                 perspective: 'Feature',
-                perspectiveUrl: '/view/Feature/' + selection[0].feature_id
+                perspectiveUrl: '/view/Feature/' + featureId
               }),
               around: button,
               orient: ['below']
@@ -598,10 +603,12 @@ define([
         },
         function (selection) {
           var sel = selection[0];
-          Topic.publish('/navigate', {
-            href: '/view/Feature/' + sel.feature_id + '#view_tab=overview',
-            target: 'blank'
-          });
+          var featureId = sel.feature_id || sel.patric_id;
+          if (!featureId) {
+            console.warn('No feature ID available for this selection');
+            return;
+          }
+          window.open('/view/Feature/' + featureId + '#view_tab=overview', '_blank');
         },
         false
       ],  [
