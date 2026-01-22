@@ -83,8 +83,7 @@ define([
             labels: this._chartLabels
           })
           .addAxis('y', {
-            title: 'Gene Count',
-            titleOrientation: 'away',
+            title: '',
             minorTicks: false
           })
           .addSeries('source', this.data);
