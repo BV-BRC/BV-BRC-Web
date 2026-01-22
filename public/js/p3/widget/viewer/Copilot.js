@@ -12,12 +12,12 @@ define([
     'dojo/_base/declare', // Base class for creating Dojo classes
     'dojo/request', // AJAX request handling
     './Base', // Base viewer class
-    '../copilot/CopilotDisplay', // Main chat interface container
+    '../copilot/CopilotGridContainer', // Main chat interface container
     'dojo/dom-construct', // DOM manipulation utilities
     'dojo/on', // Event handling
     'dijit/Dialog' // Dialog component for showing error messages
   ], function (
-    declare, request, Base, CopilotDisplay, domConstruct, on, Dialog
+    declare, request, Base, GridContainer, domConstruct, on, Dialog
   ) {
     return declare([Base], {
 
@@ -101,7 +101,7 @@ define([
           }, this.domNode);
 
           // Initialize main grid container with config
-          this.gridContainer = new CopilotDisplay({
+          this.gridContainer = new GridContainer({
             gridCtor: this._getGridConstructor(),
             containerType: 'copilot',
             facetFields: [],

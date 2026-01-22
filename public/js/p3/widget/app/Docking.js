@@ -3,16 +3,12 @@ define([
   'dojo/fx/Toggler',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/Docking.html', './AppBase',
-  'dojo/_base/lang', '../../WorkspaceManager',
-  // Widgets used in template
-  'dijit/form/RadioButton', 'dijit/form/Button', 'dijit/form/Select', 'dijit/form/SimpleTextarea',
-  'p3/widget/StructureIdSelector', 'p3/widget/WorkspaceObjectSelector', 'p3/widget/WorkspaceFilenameValidationTextBox'
+  'dojo/_base/lang', '../../WorkspaceManager'
 ], function (
   declare, array, Topic, WidgetBase, on,
   Toggler,
   domClass, Templated, WidgetsInTemplate,
   Template, AppBase, lang, WorkspaceManager
-  // Template widgets don't need references in function params
 ) {
   return declare([AppBase], {
     baseClass: 'Docking',
@@ -156,11 +152,11 @@ define([
       else if (values.protein_input === "user_pdb_file")
       {
         submit_values.protein_input_type = values.protein_input
-        submit_values.user_pdb_file = Array.isArray(values.user_pdb)
-          ? values.user_pdb
+        submit_values.user_pdb_file = Array.isArray(values.user_pdb) 
+          ? values.user_pdb 
           : values.user_pdb ? [values.user_pdb] : [];
       }
-
+        
       if (values.input === 'smiles_list')
       {
         /* Parse out either smiles strings, one per line, or
@@ -237,7 +233,7 @@ define([
         this.ws_file.checked
         this.ws_file.set('value', ligand_library_type);
         this.ligand_ws_file.set('value', job_params['ligand_ws_file']);
-      }
+      } 
       else if (ligand_library_type === "smiles_list"){
         this.input_sequence.checked;
         this.input_sequence.set('value', ligand_library_type);
@@ -248,12 +244,12 @@ define([
           combined_string += subArray[0] + ' ' + subArray[1] + '\n'
         });
         this.smiles_text.set('value', combined_string);
-      }
+      } 
       else if (ligand_library_type === "named_library"){
         this.ligand_named_library.checked;
         this.ligand_named_library.set('value', ligand_library_type);
         this.smiles_dropdown_attach_point.set('value', job_params['ligand_named_library']);
-      }
+      } 
       else {
         console.log("Improper ligand library type passed.")
       }

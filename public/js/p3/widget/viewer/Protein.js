@@ -2,17 +2,17 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang',
   'dojo/request',
   './TabViewerBase',
-  '../FeatureOverview', '../CompareRegionContainer',
+  '../FeatureOverview', '../GenomeBrowser', '../CompareRegionContainer',
   '../GeneExpressionContainer', '../CorrelatedGenesContainer', '../InteractionContainer', '../ProteinStructureGridContainer', '../ProteinFeaturesGridContainer',
-  '../../util/PathJoin', '../GenomeBrowser'
+  '../../util/PathJoin'
 
 ], function (
   declare, lang,
   xhr,
   TabViewerBase,
-  FeatureOverview, CompareRegionContainer,
+  FeatureOverview, GenomeBrowser, CompareRegionContainer,
   GeneExpressionContainer, CorrelatedGenesContainer, InteractionContainer, ProteinStructureGridContainer, ProteinFeaturesGridContainer,
-  PathJoin, GenomeBrowser
+  PathJoin
 ) {
 
   return declare([TabViewerBase], {

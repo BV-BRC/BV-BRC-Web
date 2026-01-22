@@ -5,8 +5,7 @@ define([
   '../util/PathJoin', './SelectionToGroup', './GenomeFeatureSummary', './DataItemFormatter',
   './ExternalItemFormatter', './DownloadTooltipDialog', 'dijit/form/TextBox', 'dijit/form/Form', './Confirmation',
   './InputList', 'dijit/form/SimpleTextarea', 'dijit/form/DateTextBox', './MetaEditor',
-  '../DataAPI', './PermissionEditor', './ServicesTooltipDialog', 'dijit/popup',
-  './AMRPanelSummary', './ProteinFeatureSummary', './SpecialtyGeneSummary'
+  '../DataAPI', './PermissionEditor', './ServicesTooltipDialog', 'dijit/popup'
 ], function (
   declare, lang, on, xhr, Topic,
   domClass, domQuery, domStyle, Template, domConstruct,
@@ -14,8 +13,7 @@ define([
   PathJoin, SelectionToGroup, GenomeFeatureSummary, DataItemFormatter,
   ExternalItemFormatter, DownloadTooltipDialog, TextBox, Form, Confirmation,
   InputList, TextArea, DateTextBox, MetaEditor,
-  DataAPI, PermissionEditor, ServicesTooltipDialog, popup,
-  AMRPanelSummary, ProteinFeatureSummary, SpecialtyGeneSummary
+  DataAPI, PermissionEditor, ServicesTooltipDialog, popup
 ) {
 
   return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {

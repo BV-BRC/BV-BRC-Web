@@ -1,19 +1,19 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', '../../viewer/TabViewerBase',
+  'dojo/_base/declare', 'dojo/_base/lang', '../../viewer/TabViewerBase', '../../GenomeBrowser',
   '../OutbreaksOverview', '../OutbreaksPhylogenyTreeViewer', '../OutbreaksTabContainer', '../OutbreaksTab',
   './LineagesOfConcern', './variants/VariantByCountryChartContainer', './variants/VariantByLineageChartContainer',
   './variants/VariantGridContainer', './covariants/VariantLineageByCountryChartContainer',
   './covariants/VariantLineageByLineageChartContainer', './covariants/VariantLineageGridContainer',
   'dojo/text!./OverviewDetails.html', 'dojo/text!./Resources.html', 'dojo/text!./HelpDocuments.html',
-  'dojo/text!./ProteinStructure.html', '../../GenomeBrowser'
+  'dojo/text!./ProteinStructure.html'
 ], function (
-  declare, lang, TabViewerBase,
+  declare, lang, TabViewerBase, GenomeBrowser,
   OutbreaksOverview, OutbreaksPhylogenyTreeViewer, OutbreaksTabContainer, OutbreaksTab,
   LineagesOfConcern, VariantByCountryChartContainer, VariantByLineageChartContainer,
   VariantGridContainer, VariantLineageByCountryChartContainer,
   VariantLineageByLineageChartContainer, VariantLineageGridContainer,
   OverviewDetailsTemplate, ResourcesTemplate, HelpDocumentsTemplate,
-  ProteinStructureTemplate, GenomeBrowser
+  ProteinStructureTemplate
 ) {
   return declare([TabViewerBase], {
     perspectiveLabel: '',

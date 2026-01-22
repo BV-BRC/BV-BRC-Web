@@ -1,7 +1,7 @@
 define([
   'dojo/_base/declare', 'dojo/on', 'dojo/topic',
   'dojo/text!./templates/MetaCATS.html', './AppBase', 'dojo/dom-construct', 'dojo/_base/lang',
-  'dojo/store/Memory', 'dojo/ready',
+  'dojo/store/Memory', 'dojo/domReady!',
   'dojo/query', '../MetaCATSGrid', '../../store/MetaCATSStore', '../../DataAPI', '../../WorkspaceManager'
 ], function (
   declare, on, Topic,

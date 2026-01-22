@@ -16,7 +16,7 @@ define([
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
     baseClass: 'App Sleep',
     templateString: '',
-    docsServiceURL: (typeof window !== 'undefined' && window.App) ? window.App.docsServiceURL : '',
+    docsServiceURL: window.App.docsServiceURL,
     path: '',
     applicationName: 'Date',
     requireAuth: false,
@@ -50,11 +50,6 @@ define([
     output_folder: '', // location where the output_name will be placed in the user's workspace. Some services do not have this field
 
     postMixInProperties: function () {
-      // Initialize docsServiceURL from window.App if not set
-      if (!this.docsServiceURL && window.App && window.App.docsServiceURL) {
-        this.docsServiceURL = window.App.docsServiceURL;
-      }
-
       // use AppLogin.html when requireAuth & user is not logged in
       if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
 
