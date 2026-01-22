@@ -252,6 +252,7 @@ define([
         newState.set = 'path';
         newState.requireAuth = false;
         newState.pageTitle = 'Registration | BV-BRC';
+        newState.layers = ['p3/layer/p3user'];
         // console.log("Navigate to ", newState);
         _self.navigate(newState);
       });
@@ -291,7 +292,6 @@ define([
         newState.value = path;
         newState.set = 'path';
         newState.requireAuth = true;
-        newState.layers = ['p3/layer/graph-shared', 'p3/layer/workspace', 'p3/layer/grids'];
         // console.log("Navigate to ", newState);
         _self.navigate(newState);
       });
@@ -388,7 +388,6 @@ define([
         newState.set = 'path';
         newState.requireAuth = false;
         newState.pageTitle = 'Workspaces | BV-BRC';
-        newState.layers = ['p3/layer/graph-shared', 'p3/layer/workspace', 'p3/layer/grids'];
         _self.navigate(newState);
       });
 
@@ -400,41 +399,8 @@ define([
         var type = parts.shift();
 
         newState.widgetClass = 'p3/widget/viewer/' + type;
-        console.log("window.App:", window.App)
-
-        // Auto-derive viewer-specific layer from type (no need to hardcode)
-        // This will load the corresponding webpack bundle: viewer-type.bundle.js
-        var viewerLayer = 'p3/layer/viewer/' + type;
-
-        // Load shared layers in dependency order for viewer bundles:
-        //   grids -> jbrowse -> archaeopteryx (if needed) -> graph-viz -> phylogeny -> viewers -> viewer-*
-        // viewers.bundle.js dependsOn graph-viz; viewer-taxonomy dependsOn archaeopteryx/phylogeny.
-        newState.layers = ['p3/layer/graph-shared', 'p3/layer/grids', 'p3/layer/jbrowse', 'p3/layer/graph-viz'];
-
-        // Add archaeopteryx layer for viewers that need tree/graph rendering helpers
-        var archaeopteryx_viewers = ['Taxonomy', 'Genome', 'Bacteria', 'Virus', 'MSA', 'MSAView', 'MSATree', 'PhylogeneticTree', 'PhylogeneticTree2', 'PhylogeneticTreeGene'];
-        if (archaeopteryx_viewers.indexOf(type) !== -1) {
-          newState.layers.push('p3/layer/archaeopteryx');
-        }
-
-        // Add graph-viz layer for viewers that render interaction/graph content
-        // Note: viewers layer dependsOn graph-viz, so it is preloaded above; keep only one instance.
-        var graph_viz_viewers = ['Taxonomy', 'Genome', 'Bacteria', 'Virus', 'DataType', 'GenomeAlignment', 'MSA', 'MSAView', 'MSATree', 'PhylogeneticTree', 'PhylogeneticTree2', 'PhylogeneticTreeGene'];
-        if (graph_viz_viewers.indexOf(type) !== -1 && newState.layers.indexOf('p3/layer/graph-viz') === -1) {
-          newState.layers.push('p3/layer/graph-viz');
-        }
-
-        // Add phylogeny layer for viewers that embed the Phylogeny widget/trees
-        var phylogeny_viewers = ['Taxonomy', 'Genome', 'Bacteria', 'Virus', 'PhylogeneticTree', 'PhylogeneticTree2', 'PhylogeneticTreeGene'];
-        if (phylogeny_viewers.indexOf(type) !== -1) {
-          newState.layers.push('p3/layer/phylogeny');
-        }
-
-        // Load shared viewer infrastructure after dependencies
-        newState.layers.push('p3/layer/viewers');
-
-        newState.layers.push(viewerLayer);
-
+        console.log("window.App:", window.App,window.App.production)
+        newState.layers = ['p3/layer/grids','p3/layer/jbrowse','p3/layer/viewers'];
         console.log("new state)")
         _self.navigate(newState);
       });
@@ -446,7 +412,7 @@ define([
         var type = parts.shift();
 
         newState.widgetClass = 'p3/widget/outbreaks/' + type + '/index';
-        newState.layers = ['p3/layer/archaeopteryx','p3/layer/jbrowse','p3/layer/outbreaks'];
+        newState.layers = ['p3/layer/outbreaks'];
         newState.requireAuth = false;
 
         _self.navigate(newState);
@@ -509,7 +475,7 @@ define([
 
         // console.log("Parts:", parts, type, path)
         newState.widgetClass = 'p3/widget/app/' + type;
-        newState.layers = ['p3/layer/graph-shared','p3/layer/grids','p3/layer/viewers','p3/layer/jbrowse','p3/layer/apps'];
+        newState.layers = ['p3/layer/grids','p3/layer/viewers','p3/layer/jbrowse','p3/layer/apps'];
 
         newState.value = viewerParams;
         newState.set = 'params';
@@ -658,7 +624,7 @@ define([
           window.App.user = JSON.parse(localStorage.getItem('userProfile'));
           window.App.authorizationToken = localStorage.getItem('tokenstring');
           addEventListener('storage', function (evt) {
-            // console.log('p3App Storage Listener: ', evt)
+            console.log('p3App Storage Listener: ', evt)
             if (evt.key === 'userProfile') {
               var rawu = localStorage.getItem('userProfile')
               var u = JSON.parse(rawu)

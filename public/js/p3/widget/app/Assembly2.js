@@ -3,18 +3,13 @@ define([
   'dojo/on', 'dojo/request', 'dojo/dom-class', 'dojo/dom-construct',
   'dojo/text!./templates/Assembly2.html', 'dojo/NodeList-traverse', 'dojo/store/Memory',
   'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
-  './AppBase', '../../WorkspaceManager',
-  // Widgets used in template
-  'dijit/form/NumberTextBox', 'dijit/form/Select', 'dijit/form/ValidationTextBox',
-  'dijit/form/CheckBox', 'dijit/form/NumberSpinner',
-  'p3/widget/WorkspaceObjectSelector', 'p3/widget/WorkspaceFilenameValidationTextBox'
+  './AppBase', '../../WorkspaceManager'
 ], function (
   declare, WidgetBase, Topic, lang, Deferred,
   on, xhr, domClass, domConstruct,
   Template, children, Memory,
   popup, TooltipDialog, Dialog,
   AppBase, WorkspaceManager
-  // Template widgets don't need references in function params
 ) {
 
   return declare([AppBase], {

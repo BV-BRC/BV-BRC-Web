@@ -22,10 +22,6 @@ var profile = {
   plugins: {
     'xstyle/css': 'xstyle/build/amd-css'
   },
-  // Load external dependency stubs to prevent build errors
-  deps: [
-    'p3/ExternalDependencyStubs'
-  ],
   packages: [
     { name: 'dojo', location: './dojo' },
     { name: 'dijit', location: './dijit' },

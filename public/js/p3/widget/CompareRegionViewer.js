@@ -4,7 +4,7 @@ define([
   'dijit/Tooltip', 'dijit/popup', 'dijit/TooltipDialog', 'dijit/Menu', 'dijit/Dialog',
   'dojo/dom', 'dojo/on', 'dojo/dom-style', 'dojo/dom-construct', 'dojo/query', 'dojo/topic', 'dojo/request', 'dojo/Evented',
   './DataItemFormatter', '../util/PathJoin',
-  'dojo/ready'
+  'dojo/domReady!'
 ], function (
   declare, lang,
   gfx, gfx_utils,
