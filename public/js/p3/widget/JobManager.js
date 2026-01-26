@@ -58,6 +58,12 @@ define([
       if (filters.page && filters.page > 1) {
         params.page = filters.page;
       }
+      if (filters.sort) {
+        params.sort = filters.sort;
+      }
+      if (filters.sortDesc !== undefined) {
+        params.desc = filters.sortDesc ? '1' : '0';
+      }
 
       var hashString = ioQuery.objectToQuery(params);
       hash(hashString, true); // true = replace current history entry
@@ -150,6 +156,18 @@ define([
         if (this.grid) {
           this.grid.set('query', filters);
         }
+      }
+
+      // Restore sort order
+      if (params.sort && this.grid) {
+        var descending = params.desc === '1';
+        this.grid.set('sort', [{ attribute: params.sort, descending: descending }]);
+        // Store sort in serviceFilter for URL persistence
+        if (!this.serviceFilter) {
+          this.serviceFilter = {};
+        }
+        this.serviceFilter.sort = params.sort;
+        this.serviceFilter.sortDesc = descending;
       }
 
       // Store page and selection for restoration after grid renders
@@ -584,6 +602,28 @@ define([
           if (selectedIds.length === 1) {
             currentFilters.selectedJob = selectedIds[0];
           }
+          this._updateHash(currentFilters);
+        }
+      }));
+
+      // Handle sort changes - persist sort to URL
+      this.grid.on('dgrid-sort', lang.hitch(this, function (evt) {
+        var sort = evt.sort;
+        if (sort && sort.length > 0) {
+          var currentFilters = lang.mixin({}, this.serviceFilter || {});
+          currentFilters.sort = sort[0].attribute;
+          currentFilters.sortDesc = sort[0].descending;
+          // Preserve current page
+          if (this.grid._currentPage) {
+            currentFilters.page = this.grid._currentPage;
+          }
+          // Preserve current selection if any
+          var selectedIds = Object.keys(this.grid.selection || {});
+          if (selectedIds.length === 1) {
+            currentFilters.selectedJob = selectedIds[0];
+          }
+          // Update serviceFilter to keep sort state
+          this.serviceFilter = currentFilters;
           this._updateHash(currentFilters);
         }
       }));
