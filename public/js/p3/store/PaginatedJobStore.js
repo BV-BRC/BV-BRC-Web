@@ -155,7 +155,56 @@ define([
     },
 
     /**
-     * Query method that implements server-side pagination with client-side filtering
+     * Apply client-side sorting to jobs based on sort options
+     * Note: This only sorts the current page's data, not all jobs
+     */
+    _applySorting: function (jobs, sort) {
+      if (!sort || !Array.isArray(sort) || sort.length === 0) {
+        return jobs;
+      }
+
+      var sortCriteria = sort[0]; // Use first sort criterion
+      var attribute = sortCriteria.attribute;
+      var descending = sortCriteria.descending;
+
+      // Create a copy to avoid mutating the original array
+      var sortedJobs = jobs.slice();
+
+      sortedJobs.sort(function (a, b) {
+        var aVal = a[attribute];
+        var bVal = b[attribute];
+
+        // Handle special cases for nested fields
+        if (attribute === 'parameters') {
+          // Sort by output_file within parameters
+          aVal = (a.parameters && a.parameters.output_file) || '';
+          bVal = (b.parameters && b.parameters.output_file) || '';
+        }
+
+        // Handle null/undefined values
+        if (aVal === null || aVal === undefined) aVal = '';
+        if (bVal === null || bVal === undefined) bVal = '';
+
+        // Compare values
+        var result;
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
+          result = aVal.localeCompare(bVal);
+        } else if (aVal < bVal) {
+          result = -1;
+        } else if (aVal > bVal) {
+          result = 1;
+        } else {
+          result = 0;
+        }
+
+        return descending ? -result : result;
+      });
+
+      return sortedJobs;
+    },
+
+    /**
+     * Query method that implements server-side pagination with client-side filtering and sorting
      */
     query: function (query, opts) {
       if (!localStorage.getItem("tokenstring") || !localStorage.getItem("userid")) {
@@ -167,6 +216,9 @@ define([
       var count = opts.count || 10;
       var offset = start;
       var limit = count;
+
+      // Extract sort options
+      var sort = opts.sort || null;
 
       // Extract status filter from query if present
       var statusFilter = null;
@@ -201,9 +253,10 @@ define([
       // Determine if we should use filtered API - for status or app filters
       var useFilteredAPI = !!(statusFilterString || appFilter);
 
-      // Create cache key for this page (include query in key for filtered results)
+      // Create cache key for this page (include query and sort in key)
       var queryKey = query ? JSON.stringify(query) : 'noquery';
-      var cacheKey = offset + '_' + limit + '_' + queryKey;
+      var sortKey = sort ? JSON.stringify(sort) : 'nosort';
+      var cacheKey = offset + '_' + limit + '_' + queryKey + '_' + sortKey;
 
       var _self = this;
 
@@ -283,6 +336,11 @@ define([
               }
             }
 
+            // Apply client-side sorting (sorts current page only)
+            if (sort) {
+              jobs = _self._applySorting(jobs, sort);
+            }
+
             // Cache the result with the total from API
             _self._cache[cacheKey] = {
               data: jobs,
@@ -317,6 +375,11 @@ define([
             // Apply client-side filters if query is provided
             if (query && Object.keys(query).length > 0) {
               jobs = _self._applyFilters(jobs, query);
+            }
+
+            // Apply client-side sorting (sorts current page only)
+            if (sort) {
+              jobs = _self._applySorting(jobs, sort);
             }
 
             // Cache the result
