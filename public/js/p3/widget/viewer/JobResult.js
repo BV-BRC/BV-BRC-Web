@@ -220,7 +220,9 @@ define([
 
       // The viewer will be created in _processJobData after _hiddenPath is set
       // This handles both sync and async paths
-      this._viewerPlaceholder = new ContentPane({ content: 'Loading job results...', region: 'center' });
+      // Note: Don't add placeholder text here - the viewHeader already shows loading status
+      // Adding text in the center region causes overlap issues when autoMeta is missing
+      this._viewerPlaceholder = new ContentPane({ content: '', region: 'center' });
       this.addChild(this._viewerPlaceholder);
 
       this.on('i:click', function (evt) {
