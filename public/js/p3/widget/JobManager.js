@@ -52,6 +52,12 @@ define([
       if (filters.keyword) {
         params.keyword = filters.keyword;
       }
+      if (filters.selectedJob) {
+        params.selected = filters.selectedJob;
+      }
+      if (filters.page && filters.page > 1) {
+        params.page = filters.page;
+      }
 
       var hashString = ioQuery.objectToQuery(params);
       hash(hashString, true); // true = replace current history entry
@@ -145,6 +151,55 @@ define([
           this.grid.set('query', filters);
         }
       }
+
+      // Store page and selection for restoration after grid renders
+      this._pendingPage = params.page ? parseInt(params.page, 10) : null;
+      this._pendingSelection = params.selected || null;
+    },
+
+    // Restore page and selection after grid has rendered
+    _restorePageAndSelection: function () {
+      var _self = this;
+
+      // Go to the saved page first
+      if (this._pendingPage && this._pendingPage > 1 && this.grid && this.grid.gotoPage) {
+        var targetPage = this._pendingPage;
+        this._pendingPage = null; // Clear immediately to prevent loop
+        this.grid.gotoPage(targetPage).then(function () {
+          // After page is loaded, restore selection
+          _self._restoreSelection();
+        });
+      } else {
+        this._pendingPage = null; // Clear even if no page to restore
+        // No page to restore, just restore selection
+        this._restoreSelection();
+      }
+    },
+
+    // Restore selection after grid data is loaded
+    _restoreSelection: function () {
+      if (!this._pendingSelection || !this.grid) {
+        return;
+      }
+
+      var _self = this;
+      var jobId = this._pendingSelection;
+
+      // Try to find and select the row
+      // The grid uses job ID as the row identifier
+      try {
+        var row = this.grid.row(jobId);
+        if (row && row.element) {
+          this.grid.select(row);
+          // Scroll the row into view
+          row.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } catch (e) {
+        console.warn('Could not restore selection for job:', jobId, e);
+      }
+
+      // Clear pending selection
+      this._pendingSelection = null;
     },
 
     listJobs: function () {
@@ -490,6 +545,47 @@ define([
         if (this.chatPanelWrapper && this.chatPanel) {
           this.chatPanel.set('containerSelection', sel);
         }
+
+        // Update URL with selected job ID
+        if (sel.length === 1 && sel[0].id) {
+          var currentFilters = lang.mixin({}, this.serviceFilter || {});
+          currentFilters.selectedJob = sel[0].id;
+          // Get current page if available
+          if (this.grid._currentPage) {
+            currentFilters.page = this.grid._currentPage;
+          }
+          this._updateHash(currentFilters);
+        }
+      }));
+
+      // Handle deselection - remove selection from URL
+      this.grid.on('dgrid-deselect', lang.hitch(this, function (evt) {
+        // Check if there are any remaining selections
+        var remainingSelections = Object.keys(this.grid.selection || {});
+        if (remainingSelections.length === 0) {
+          var currentFilters = lang.mixin({}, this.serviceFilter || {});
+          delete currentFilters.selectedJob;
+          // Keep current page
+          if (this.grid._currentPage) {
+            currentFilters.page = this.grid._currentPage;
+          }
+          this._updateHash(currentFilters);
+        }
+      }));
+
+      // Handle page changes - persist page to URL
+      this.grid.on('dgrid-page-complete', lang.hitch(this, function (evt) {
+        // Only update URL after initial load is complete
+        if (this._pendingPage === null && this.grid._currentPage) {
+          var currentFilters = lang.mixin({}, this.serviceFilter || {});
+          currentFilters.page = this.grid._currentPage;
+          // Preserve current selection if any
+          var selectedIds = Object.keys(this.grid.selection || {});
+          if (selectedIds.length === 1) {
+            currentFilters.selectedJob = selectedIds[0];
+          }
+          this._updateHash(currentFilters);
+        }
       }));
 
       // Track if grid has loaded for the first time
@@ -517,6 +613,11 @@ define([
           // Call getStatus to update the status bar with current job counts
           if (JobManager.getStatus) {
             JobManager.getStatus();
+          }
+
+          // Restore page and selection from URL after first load
+          if (this._pendingPage || this._pendingSelection) {
+            this._restorePageAndSelection();
           }
         }
       }));
