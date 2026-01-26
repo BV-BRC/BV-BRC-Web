@@ -10,6 +10,12 @@ define([
   Grid, formatter, WorkspaceManager, lang,
   domAttr, WorkspaceExplorerView, Dialog, encodePath, topic
 ) {
+  // Types that can be navigated to (folders, job results, etc.)
+  var navigableTypes = [
+    'folder', 'job_result', 'parentfolder',
+    'genome_group', 'feature_group', 'experiment_folder',
+    'experiment_group'
+  ];
   return declare([BorderContainer], {
     baseClass: 'ExperimentViewer',
     disabled: false,
@@ -112,8 +118,26 @@ define([
         this._viewerPlaceholder.destroyRecursive();
         this._viewerPlaceholder = null;
       }
+
+      // Create viewHeader if it doesn't exist yet (async path runs before startup)
+      if (!this.viewHeader) {
+        this.viewHeader = new ContentPane({ content: 'Loading data from ' + this.data.name + ' job file.', region: 'top', style: 'width:90%;height:30%;' });
+        this.addChild(this.viewHeader);
+      }
+
       this.viewer = new WorkspaceExplorerView({ region: 'center', path: this._hiddenPath });
       this.addChild(this.viewer);
+
+      // Force a resize to ensure proper layout after adding the viewer
+      this.resize();
+
+      // Handle double-click on items to navigate to them
+      // Use on() directly on the domNode since the event bubbles up from WorkspaceGrid
+      on(this.viewer.domNode, 'ItemDblClick', lang.hitch(this, function (evt) {
+        if (evt.item && evt.item.type && navigableTypes.indexOf(evt.item.type) >= 0) {
+          topic.publish('/navigate', { href: '/workspace' + encodePath(evt.item_path) });
+        }
+      }));
 
       // Publish the job result data so Copilot and other modules can access it
       topic.publish('Copilot/JobResultReady', data);
@@ -215,15 +239,20 @@ define([
       }
 
       this.inherited(arguments);
-      this.viewHeader = new ContentPane({ content: 'Loading data from ' + this.data.name + ' job file.', region: 'top', style: 'width:90%;height:30%;' });
-      this.addChild(this.viewHeader);
 
-      // The viewer will be created in _processJobData after _hiddenPath is set
-      // This handles both sync and async paths
-      // Note: Don't add placeholder text here - the viewHeader already shows loading status
-      // Adding text in the center region causes overlap issues when autoMeta is missing
-      this._viewerPlaceholder = new ContentPane({ content: '', region: 'center' });
-      this.addChild(this._viewerPlaceholder);
+      // Only create placeholder if we haven't already processed the job data
+      // (which can happen in async path before startup is called)
+      if (!this.viewer) {
+        this.viewHeader = new ContentPane({ content: 'Loading data from ' + this.data.name + ' job file.', region: 'top', style: 'width:90%;height:30%;' });
+        this.addChild(this.viewHeader);
+
+        // The viewer will be created in _processJobData after _hiddenPath is set
+        // This handles both sync and async paths
+        // Note: Don't add placeholder text here - the viewHeader already shows loading status
+        // Adding text in the center region causes overlap issues when autoMeta is missing
+        this._viewerPlaceholder = new ContentPane({ content: '', region: 'center' });
+        this.addChild(this._viewerPlaceholder);
+      }
 
       this.on('i:click', function (evt) {
         var rel = domAttr.get(evt.target, 'rel');
