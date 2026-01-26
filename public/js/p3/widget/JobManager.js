@@ -4,19 +4,203 @@ define([
   'dojo/_base/Deferred', '../JobManager', './Confirmation', './RerunUtility',
   'dojo/topic', 'dijit/layout/BorderContainer', './ActionBar', './ItemDetailPanel', '../util/encodePath',
   './copilot/ChatSessionContainerSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel',
-  'dijit/Dialog', 'dijit/layout/ContentPane'
+  'dijit/Dialog', 'dijit/layout/ContentPane', 'dojo/hash', 'dojo/io-query'
 ], function (
   declare, on, lang, query,
   domClass, domAttr, domConstr, JobsGrid, JobContainerActionBar,
   Deferred, JobManager, Confirmation, rerunUtility,
   Topic, BorderContainer, ActionBar, ItemDetailPanel, encodePath,
   ChatSessionContainerSidePanel, CopilotAPI, ChatSessionOptionsBar,
-  Dialog, ContentPane
+  Dialog, ContentPane, hash, ioQuery
 ) {
   return declare([BorderContainer], {
     disabled: false,
     path: '/',
     serviceFilter: null,
+
+    // Parse URL hash parameters into filter state
+    _parseHashParams: function () {
+      var hashValue = hash();
+      if (!hashValue) {
+        return {};
+      }
+      return ioQuery.queryToObject(hashValue);
+    },
+
+    // Update URL hash with current filter state
+    _updateHash: function (filters) {
+      var params = {};
+      if (filters.status) {
+        // Convert RegExp back to string for URL
+        if (filters.status instanceof RegExp) {
+          if (filters.status.test('queued')) {
+            params.status = 'queued';
+          } else if (filters.status.test('failed')) {
+            params.status = 'failed';
+          } else if (filters.status.test('in-progress')) {
+            params.status = 'in-progress';
+          } else if (filters.status.test('completed')) {
+            params.status = 'completed';
+          }
+        } else {
+          params.status = filters.status;
+        }
+      }
+      if (filters.app && filters.app !== 'all') {
+        params.app = filters.app;
+      }
+      if (filters.keyword) {
+        params.keyword = filters.keyword;
+      }
+      if (filters.selectedJob) {
+        params.selected = filters.selectedJob;
+      }
+      if (filters.page && filters.page > 1) {
+        params.page = filters.page;
+      }
+
+      var hashString = ioQuery.objectToQuery(params);
+      hash(hashString, true); // true = replace current history entry
+    },
+
+    // Restore filter state from URL hash parameters
+    _restoreStateFromUrl: function () {
+      var params = this._parseHashParams();
+      if (!params || Object.keys(params).length === 0) {
+        return;
+      }
+
+      var filters = {};
+
+      // Restore status filter
+      if (params.status) {
+        filters.status = params.status;
+        // Convert string to RegExp as needed
+        if (params.status === 'queued') {
+          filters.status = new RegExp('queued|init|pending');
+        } else if (params.status === 'failed') {
+          filters.status = new RegExp('failed|deleted');
+        }
+      }
+
+      // Restore app filter
+      if (params.app) {
+        filters.app = params.app;
+      }
+
+      // Apply filters to grid if we have any
+      if (Object.keys(filters).length > 0) {
+        this.serviceFilter = filters;
+        if (this.grid) {
+          this.grid.set('query', filters);
+        }
+      }
+
+      // Restore UI state in containerActionBar
+      if (this.containerActionBar) {
+        // Restore status button active state
+        if (params.status && this.containerActionBar.statusBtns) {
+          var statusBtns = this.containerActionBar.statusBtns;
+          var allBtn = query('.JobFilter', statusBtns)[0];
+          var buttons = query('.JobFilter', statusBtns);
+
+          // Map status to button index (0=all, 1=queued, 2=running, 3=completed, 4=failed)
+          var statusToIndex = {
+            'queued': 1,
+            'in-progress': 2,
+            'completed': 3,
+            'failed': 4
+          };
+
+          var btnIndex = statusToIndex[params.status];
+          if (btnIndex !== undefined && buttons[btnIndex]) {
+            // Remove active from all, add to selected
+            buttons.forEach(function (btn) {
+              domClass.remove(btn, 'active');
+            });
+            domClass.add(buttons[btnIndex], 'active');
+            // Show the "All statuses" button
+            if (allBtn) {
+              allBtn.style.display = 'inline';
+            }
+          }
+        }
+
+        // Restore app filter in selector
+        if (params.app && this.containerActionBar._selector) {
+          this.containerActionBar.filters.app = params.app;
+          this.containerActionBar._selector.set('value', params.app, false);
+        }
+
+        // Restore status in containerActionBar filters
+        if (params.status) {
+          this.containerActionBar.filters.status = params.status;
+        }
+      }
+
+      // Restore keyword filter
+      if (params.keyword) {
+        var keyfil = new RegExp(`.*${params.keyword}.*`);
+        filters['parameters'] = {
+          test: function (entry) {
+            return keyfil.test(entry.output_file);
+          }
+        };
+        filters.keyword = params.keyword;
+        if (this.grid) {
+          this.grid.set('query', filters);
+        }
+      }
+
+      // Store page and selection for restoration after grid renders
+      this._pendingPage = params.page ? parseInt(params.page, 10) : null;
+      this._pendingSelection = params.selected || null;
+    },
+
+    // Restore page and selection after grid has rendered
+    _restorePageAndSelection: function () {
+      var _self = this;
+
+      // Go to the saved page first
+      if (this._pendingPage && this._pendingPage > 1 && this.grid && this.grid.gotoPage) {
+        var targetPage = this._pendingPage;
+        this._pendingPage = null; // Clear immediately to prevent loop
+        this.grid.gotoPage(targetPage).then(function () {
+          // After page is loaded, restore selection
+          _self._restoreSelection();
+        });
+      } else {
+        this._pendingPage = null; // Clear even if no page to restore
+        // No page to restore, just restore selection
+        this._restoreSelection();
+      }
+    },
+
+    // Restore selection after grid data is loaded
+    _restoreSelection: function () {
+      if (!this._pendingSelection || !this.grid) {
+        return;
+      }
+
+      var _self = this;
+      var jobId = this._pendingSelection;
+
+      // Try to find and select the row
+      // The grid uses job ID as the row identifier
+      try {
+        var row = this.grid.row(jobId);
+        if (row && row.element) {
+          this.grid.select(row);
+          // Scroll the row into view
+          row.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } catch (e) {
+        console.warn('Could not restore selection for job:', jobId, e);
+      }
+
+      // Clear pending selection
+      this._pendingSelection = null;
+    },
 
     listJobs: function () {
       var _self = this;
@@ -300,7 +484,8 @@ define([
       }
 
       if (this._started) {
-        // Widget was already started - refresh the grid to load fresh data
+        // Widget was already started - restore state from URL and refresh
+        this._restoreStateFromUrl();
         if (this.grid && typeof this.grid.refresh === 'function') {
           this.grid.refresh();
         }
@@ -360,6 +545,47 @@ define([
         if (this.chatPanelWrapper && this.chatPanel) {
           this.chatPanel.set('containerSelection', sel);
         }
+
+        // Update URL with selected job ID
+        if (sel.length === 1 && sel[0].id) {
+          var currentFilters = lang.mixin({}, this.serviceFilter || {});
+          currentFilters.selectedJob = sel[0].id;
+          // Get current page if available
+          if (this.grid._currentPage) {
+            currentFilters.page = this.grid._currentPage;
+          }
+          this._updateHash(currentFilters);
+        }
+      }));
+
+      // Handle deselection - remove selection from URL
+      this.grid.on('dgrid-deselect', lang.hitch(this, function (evt) {
+        // Check if there are any remaining selections
+        var remainingSelections = Object.keys(this.grid.selection || {});
+        if (remainingSelections.length === 0) {
+          var currentFilters = lang.mixin({}, this.serviceFilter || {});
+          delete currentFilters.selectedJob;
+          // Keep current page
+          if (this.grid._currentPage) {
+            currentFilters.page = this.grid._currentPage;
+          }
+          this._updateHash(currentFilters);
+        }
+      }));
+
+      // Handle page changes - persist page to URL
+      this.grid.on('dgrid-page-complete', lang.hitch(this, function (evt) {
+        // Only update URL after initial load is complete
+        if (this._pendingPage === null && this.grid._currentPage) {
+          var currentFilters = lang.mixin({}, this.serviceFilter || {});
+          currentFilters.page = this.grid._currentPage;
+          // Preserve current selection if any
+          var selectedIds = Object.keys(this.grid.selection || {});
+          if (selectedIds.length === 1) {
+            currentFilters.selectedJob = selectedIds[0];
+          }
+          this._updateHash(currentFilters);
+        }
       }));
 
       // Track if grid has loaded for the first time
@@ -388,6 +614,11 @@ define([
           if (JobManager.getStatus) {
             JobManager.getStatus();
           }
+
+          // Restore page and selection from URL after first load
+          if (this._pendingPage || this._pendingSelection) {
+            this._restorePageAndSelection();
+          }
         }
       }));
 
@@ -395,6 +626,9 @@ define([
       this.addChild(this.containerActionBar);
       this.addChild(this.actionBar);
       this.addChild(this.itemDetailPanel);
+
+      // Restore filter state from URL hash after all components are created
+      this._restoreStateFromUrl();
 
       // show / hide item detail panel event
       var hideBtn = query('[rel="ToggleItemDetail"]', this.actionBar.domNode)[0];
@@ -432,7 +666,7 @@ define([
 
 
       // listen for filtering
-      Topic.subscribe('/JobFilter', function (filters) {
+      Topic.subscribe('/JobFilter', lang.hitch(this, function (filters) {
         // remove any non-specific filter states
         if (filters.app === 'all') delete filters.app;
         if (!filters.status) delete filters.status;
@@ -454,31 +688,44 @@ define([
           this.serviceFilter = {};
         }
         this.serviceFilter = filters;
+
+        // Update URL hash with current filter state
+        this._updateHash(filters);
+
         _self.grid.set('query', filters);
-      });
+      }));
 
       // listen for filtering
-      Topic.subscribe('/KeywordFilter', function (keyword) {
+      Topic.subscribe('/KeywordFilter', lang.hitch(this, function (keyword) {
         // remove any non-specific filter states
         if (keyword.trim() === '') {
+          this._updateHash({});
           _self.grid.set('query', {});
+          return;
         }
         var filters = {};
-        // keyword = keyword.trim();
         var keyfil = new RegExp(`.*${keyword}.*`);
         filters['parameters'] = {
           test: function (entry) {
             return keyfil.test(entry.output_file);
           }
         };
+        filters.keyword = keyword; // Store keyword for URL persistence
         // filter by job output with other filters applied
         if (this.serviceFilter) {
           if (this.serviceFilter.app) {
             filters['app'] = this.serviceFilter.app;
           }
+          if (this.serviceFilter.status) {
+            filters['status'] = this.serviceFilter.status;
+          }
         }
+
+        // Update URL hash with current filter state
+        this._updateHash(filters);
+
         _self.grid.set('query', filters);
-      });
+      }));
 
       // Hide the panel on a small screen
       if (window.innerWidth <= 768 && this.actionBar) {
