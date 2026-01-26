@@ -38,8 +38,56 @@ define([
     _autoLabels: {},
     _setDataAttr: function (data) {
       this.data = data;
+      var _self = this;
+
+      // Check if autoMeta has the required job data (parameters, output_files, app)
+      // If not, we need to read the actual job_result file content
+      if (!data.autoMeta || !data.autoMeta.parameters) {
+        // autoMeta is incomplete - read the actual file content
+        var filePath = data.path + data.name;
+        WorkspaceManager.getObject(filePath, false).then(function (result) {
+          // result.data contains the JSON content of the job_result file
+          var jobData;
+          try {
+            if (typeof result.data === 'string') {
+              jobData = JSON.parse(result.data);
+            } else {
+              jobData = result.data;
+            }
+          } catch (e) {
+            console.error('Error parsing job result file:', e);
+            new Dialog({
+              content: 'Error loading job result data. The job result file may be corrupted.',
+              title: 'Error Loading Job Result',
+              style: 'width: 300px !important;'
+            }).show();
+            return;
+          }
+
+          // Merge the parsed job data into autoMeta
+          data.autoMeta = lang.mixin(data.autoMeta || {}, jobData);
+
+          // Now continue with normal processing
+          _self._processJobData(data);
+        }, function (err) {
+          console.error('Error reading job result file:', err);
+          new Dialog({
+            content: 'Error loading job result data. The job result file could not be read.',
+            title: 'Error Loading Job Result',
+            style: 'width: 300px !important;'
+          }).show();
+        });
+      } else {
+        // autoMeta has the required data, process normally
+        this._processJobData(data);
+      }
+    },
+
+    _processJobData: function (data) {
+      var _self = this;
+
       // console.log("[JobResult] data: ", data);
-      if (data.autoMeta.parameters.output_path != data.path)
+      if (data.autoMeta.parameters && data.autoMeta.parameters.output_path && data.autoMeta.parameters.output_path != data.path)
       {
         // console.log("Rewrite data path from", data.autoMeta.parameters.output_path, "to", data.path);
 
@@ -47,14 +95,25 @@ define([
         // when paths contain characters like ), (, [, ], etc.
         var escapedPath = data.autoMeta.parameters.output_path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-        for (outfile of data.autoMeta.output_files)
-        {
-          outfile[0] = outfile[0].replace(new RegExp('^' + escapedPath), data.path);
+        if (data.autoMeta.output_files) {
+          for (var outfile of data.autoMeta.output_files)
+          {
+            outfile[0] = outfile[0].replace(new RegExp('^' + escapedPath), data.path);
+          }
         }
       }
       this._hiddenPath = data.path + '.' + data.name;
       // console.log("[JobResult] Output Files: ", this.data.autoMeta.output_files);
-      var _self = this;
+
+      // Create the viewer now that _hiddenPath is set
+      // Replace the placeholder if it exists
+      if (this._viewerPlaceholder) {
+        this.removeChild(this._viewerPlaceholder);
+        this._viewerPlaceholder.destroyRecursive();
+        this._viewerPlaceholder = null;
+      }
+      this.viewer = new WorkspaceExplorerView({ region: 'center', path: this._hiddenPath });
+      this.addChild(this.viewer);
 
       // Publish the job result data so Copilot and other modules can access it
       topic.publish('Copilot/JobResultReady', data);
@@ -157,9 +216,14 @@ define([
 
       this.inherited(arguments);
       this.viewHeader = new ContentPane({ content: 'Loading data from ' + this.data.name + ' job file.', region: 'top', style: 'width:90%;height:30%;' });
-      this.viewer = new WorkspaceExplorerView({ region: 'center', path: this._hiddenPath });
       this.addChild(this.viewHeader);
-      this.addChild(this.viewer);
+
+      // The viewer will be created in _processJobData after _hiddenPath is set
+      // This handles both sync and async paths
+      // Note: Don't add placeholder text here - the viewHeader already shows loading status
+      // Adding text in the center region causes overlap issues when autoMeta is missing
+      this._viewerPlaceholder = new ContentPane({ content: '', region: 'center' });
+      this.addChild(this._viewerPlaceholder);
 
       this.on('i:click', function (evt) {
         var rel = domAttr.get(evt.target, 'rel');
