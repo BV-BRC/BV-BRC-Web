@@ -217,6 +217,7 @@ define([
   const labelMappings = [
     {key: 'genome_name', label: 'Genome Name'},
     {key: 'gene_id', label: 'Gene ID'},
+    {key: 'gene', label: 'Gene Name'},
     {key: 'genbank_accessions', label: 'Accession'},
     {key: 'species', label: 'Species'},
     {key: 'strain', label: 'Strain'},
@@ -363,6 +364,7 @@ define([
       var default_value = 'N/A';
       this.alt_labels = {
         gene_id: {},
+        gene: {},
         genome_id: {},
         genome_name: {},
         genbank_accessions: {},
@@ -385,6 +387,7 @@ define([
       var self = this;
       Object.keys(dataMap).forEach(lang.hitch(this, function (geneID) {
         self.alt_labels.gene_id[geneID] = geneID;
+        self.alt_labels.gene[geneID] = default_value;
         self.alt_labels.genome_id[geneID] = default_value;
         self.alt_labels.genome_name[geneID] = default_value;
         self.alt_labels.genbank_accessions[geneID] = default_value;
@@ -464,6 +467,15 @@ define([
             }
           }
         });
+        console.log('in setAltLabel this.featureData', this.featureData);
+       
+       this.featureData.forEach(function (feature) {
+          if (dataMap[geneID].feature_id == feature.feature_id) {
+            if (feature.gene) {
+              self.alt_labels.gene[geneID] = feature.gene;
+            }
+          }
+        });       
       }));
       console.log('in setAltLabel this.alt_labels', this.alt_labels);
     },
@@ -569,7 +581,7 @@ define([
           },
           handleAs: 'json',
           // headers: this.headers,
-          data: 'or(in(patric_id,(' +  pIDs.join(',') + ')),in(feature_id,(' + pIDs.join(',') + ')))&select(feature_id,patric_id,genome_id,genome_name,product)&limit(1000)'
+          data: 'or(in(patric_id,(' +  pIDs.join(',') + ')),in(feature_id,(' + pIDs.join(',') + ')))&select(feature_id,patric_id,genome_id,genome_name,product,gene)&limit(1000)'
         }), function (response) {
           console.log('createDataMap() in when response response', response);
           self.featureData = response.map(function (feature) {
@@ -583,22 +595,22 @@ define([
               seqIdIndex = seqIds[feature.feature_id] - 1;
             }
             self.idMap[seqIdIndex] = {
-              seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+              seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
             };
             if (ids[0].match(/^fig/)) {
               self.dataMap[feature.patric_id] = {
-                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
               };
               return {
-                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
               };
             }
             else {
               self.dataMap[feature.feature_id] = {
-                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
               };
               return {
-                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
               };
             }
           });
