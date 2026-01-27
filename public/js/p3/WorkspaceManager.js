@@ -1564,6 +1564,40 @@ define([
       );
     },
 
+    /**
+     * Check if objects exist at the given paths
+     * @param {string|string[]} paths - Path(s) to check
+     * @returns {Deferred} Resolves to an object mapping paths to their existence status:
+     *   { path: { exists: boolean, error: string|null } }
+     */
+    objectsExist: function (paths) {
+      if (!paths) {
+        throw new Error('Invalid Path(s) to check');
+      }
+      if (!(paths instanceof Array)) {
+        paths = [paths];
+      }
+      paths = paths.map(function (p) {
+        return decodeURIComponent(p);
+      });
+
+      return Deferred.when(this.api('Workspace.objects_exist', [{
+        objects: paths
+      }]), function (results) {
+        // results[0] is a list of [path, exists, error] tuples
+        var existsMap = {};
+        if (results && results[0]) {
+          results[0].forEach(function (tuple) {
+            existsMap[tuple[0]] = {
+              exists: !!tuple[1],
+              error: tuple[2] || null
+            };
+          });
+        }
+        return existsMap;
+      });
+    },
+
     init: function (apiUrl, token, userId) {
       this.activeSearchFilter = null; // Reset search filter on init
       if (!apiUrl || !token || !userId) {
