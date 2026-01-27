@@ -467,7 +467,7 @@ define([
             }
           }
         });
-        console.log('in setAltLabel this.featureData', this.featureData);
+       // console.log('in setAltLabel this.featureData', this.featureData);
        
        this.featureData.forEach(function (feature) {
           if (dataMap[geneID].feature_id == feature.feature_id) {
