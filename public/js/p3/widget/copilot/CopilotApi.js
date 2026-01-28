@@ -204,16 +204,20 @@ define([
          * @param {number} params.numDocs - The number of documents for RAG
          * @param {string} params.image - A base64 encoded image
          * @param {string} params.enhancedPrompt - An enhanced prompt
-         * @param {function} onData - Callback for each data chunk
+         * @param {function} onData - Callback for each content chunk (LLM response text)
          * @param {function} onEnd - Callback for when the stream ends
          * @param {function} onError - Callback for any errors
+         * @param {function} onProgress - Callback for progress updates (queued, started, progress events)
+         *   - Called with object: {type: 'queued'|'started'|'progress', ...eventData}
          */
-        submitCopilotQueryStream: function(params, onData, onEnd, onError) {
+        submitCopilotQueryStream: function(params, onData, onEnd, onError, onProgress) {
+
             if (!this._checkLoggedIn()) {
                 if (onError) onError(new Error('Not logged in'));
                 return;
             }
 
+            var _self = this;
             var data = {
                 query: params.inputText,
                 model: params.model,
@@ -222,8 +226,15 @@ define([
                 system_prompt: params.systemPrompt || '',
                 save_chat: params.save_chat !== undefined ? params.save_chat : true,
                 include_history: true,
-                auth_token: window.App.authorizationToken || null
+                auth_token: window.App.authorizationToken || null,
+                stream: true  // Enable SSE streaming mode
             };
+
+            // Create abort controller for this request
+            this.currentAbortController = new AbortController();
+
+            console.log('[SSE] Initiating stream request to:', this.apiUrlBase + '/copilot-agent');
+            console.log('[SSE] Request data:', data);
 
             fetch(this.apiUrlBase + '/copilot-agent', {
                 method: 'POST',
@@ -233,107 +244,154 @@ define([
                     'Accept': 'text/event-stream',
                     'Cache-Control': 'no-cache'
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify(data),
+                signal: this.currentAbortController.signal
             }).then(response => {
+                console.log('[SSE] Response received, status:', response.status, 'headers:', response.headers);
                 if (!response.ok) {
                     response.text().then(text => {
-                      const err = new Error(`HTTP error! status: ${response.status}, message: ${text}`);
-                      if (onError) onError(err);
+                        const err = new Error(`HTTP error! status: ${response.status}, message: ${text}`);
+                        if (onError) onError(err);
                     });
                     return;
                 }
+
+                console.log('[SSE] Starting to read stream...');
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder('utf-8');
                 let buffer = '';
                 let currentEvent = null;
 
                 const processLine = (line) => {
+                    console.log('[SSE] Processing line:', JSON.stringify(line));
+
+                    // Handle SSE comment lines (heartbeat)
+                    if (line.startsWith(':')) {
+                        console.log('[SSE] Heartbeat received');
+                        return;
+                    }
+
                     // Handle event lines
                     if (line.startsWith('event:')) {
                         currentEvent = line.substring(6).trim();
+                        console.log('[SSE] Event type:', currentEvent);
                         return;
                     }
 
                     // Handle data lines
                     if (line.startsWith('data:')) {
-                        let content = line.substring(5).trim();
+                        const content = line.substring(5).trim();
+                        console.log('[SSE] Data line content:', content);
 
-                        if (content === '[DONE]') {
-                            if (onEnd) onEnd();
-                            return;
-                        }
+                        if (!content) return;
 
-                        if (content) {
-                            try {
-                                // Parse JSON data
-                                const parsed = JSON.parse(content);
+                        console.log('[SSE] Raw data received:', content.substring(0, 100) + (content.length > 100 ? '...' : ''));
 
-                                // Skip metadata objects (iteration info, tools_used, message_id, etc.)
-                                if (parsed && typeof parsed === 'object') {
-                                    // Check if this is a metadata object to skip
-                                    const isMetadata = parsed.hasOwnProperty('iteration') ||
-                                                      parsed.hasOwnProperty('iterations') ||
-                                                      parsed.hasOwnProperty('tool') ||
-                                                      parsed.hasOwnProperty('reasoning') ||
-                                                      parsed.hasOwnProperty('tools_used') ||
-                                                      parsed.hasOwnProperty('message_id');
+                        try {
+                            const parsed = JSON.parse(content);
+                            console.log('[SSE] Parsed data:', parsed);
 
-                                    if (isMetadata && !parsed.hasOwnProperty('chunk')) {
-                                        // Skip this metadata object
-                                        currentEvent = null;
-                                        return;
+                            // Handle different event types
+                            switch (currentEvent) {
+                                case 'queued':
+                                    console.log('Job queued:', parsed);
+                                    if (onProgress) {
+                                        onProgress({ type: 'queued', data: parsed });
                                     }
+                                    break;
 
-                                    // Extract chunk from the parsed data
-                                    if (parsed.chunk !== undefined) {
-                                        onData(parsed.chunk);
-                                    } else if (parsed.content) {
-                                        onData(parsed.content);
+                                case 'started':
+                                    console.log('Processing started:', parsed);
+                                    if (onProgress) {
+                                        onProgress({ type: 'started', data: parsed });
+                                    }
+                                    break;
+
+                                case 'progress':
+                                    console.log('Progress:', parsed);
+                                    if (onProgress) {
+                                        onProgress({
+                                            type: 'progress',
+                                            iteration: parsed.iteration,
+                                            max_iterations: parsed.max_iterations,
+                                            tool: parsed.tool,
+                                            percentage: parsed.percentage
+                                        });
+                                    }
+                                    break;
+
+                                case 'content':
+                                case 'final_response':
+                                    // This is the actual LLM response text
+                                    console.log('[SSE] Content event received, parsed:', parsed);
+                                    const textChunk = parsed.chunk || parsed.delta || parsed.content || '';
+                                    console.log('[SSE] Extracted text chunk:', textChunk);
+                                    if (textChunk && onData) {
+                                        console.log('[SSE] Calling onData callback with chunk');
+                                        onData(textChunk);
                                     } else {
-                                        // Fallback to raw content if no chunk/content field
-                                        onData(content);
+                                        console.log('[SSE] NOT calling onData - textChunk:', textChunk, 'onData:', !!onData);
                                     }
-                                } else {
-                                    onData(content);
-                                }
-                            } catch (jsonError) {
-                                // If not valid JSON, treat as raw text
-                                onData(content);
+                                    break;
+
+                                case 'done':
+                                    console.log('Processing complete:', parsed);
+                                    _self.currentAbortController = null;
+                                    if (onEnd) onEnd(parsed);
+                                    break;
+
+                                case 'error':
+                                    console.error('Stream error:', parsed);
+                                    _self.currentAbortController = null;
+                                    if (onError) onError(new Error(parsed.error || 'Stream error'));
+                                    break;
+
+                                default:
+                                    console.warn('Unknown event type:', currentEvent, parsed);
                             }
+                        } catch (e) {
+                            console.error('Failed to parse SSE data:', e, content);
                         }
 
                         // Reset event after processing data
                         currentEvent = null;
                     }
-                }
+                };
 
                 function pump() {
-                    return reader.read().then(({
-                        done,
-                        value
-                    }) => {
+                    return reader.read().then(({ done, value }) => {
                         if (done) {
+                            console.log('[SSE] Stream ended');
                             if (buffer.length > 0) {
-                                processLine(buffer); // Process any remaining data
+                                const lines = buffer.split('\n');
+                                lines.forEach(line => {
+                                    if (line.trim()) processLine(line.trim());
+                                });
                             }
+                            _self.currentAbortController = null;
                             if (onEnd) onEnd();
                             return;
                         }
-                        buffer += decoder.decode(value, { stream: true });
 
+                        const chunk = decoder.decode(value, { stream: true });
+                        console.log('[SSE] Chunk received, size:', chunk.length, 'bytes');
+                        buffer += chunk;
                         let eol;
                         while ((eol = buffer.indexOf('\n')) >= 0) {
                             const line = buffer.slice(0, eol).trim();
                             buffer = buffer.slice(eol + 1);
-                            if(line) processLine(line);
+                            if (line) processLine(line);
                         }
 
                         return pump();
                     });
                 }
+
                 return pump();
 
             }).catch(err => {
+                console.error('Error submitting copilot query stream:', err);
+                _self.currentAbortController = null;
                 if (onError) onError(err);
             });
         },

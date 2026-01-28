@@ -640,6 +640,7 @@ define([
       this.copilotApi.submitCopilotQueryStream(params,
           (chunk) => {
               // onData
+              console.log('chunk', chunk);
               assistantMessage.content += chunk;
               this.displayWidget.showMessages(this.chatStore.query());
           },
@@ -663,6 +664,24 @@ define([
               this.displayWidget.hideLoadingIndicator();
               this.isSubmitting = false;
               this.submitButton.set('disabled', false);
+          },
+          (progressInfo) => {
+              // onProgress - handle queue status updates
+              console.log('progressInfo', progressInfo);
+              switch(progressInfo.type) {
+                  case 'queued':
+                      console.log('Request queued...');
+                      break;
+                  case 'started':
+                      console.log('Processing started...');
+                      break;
+                  case 'progress':
+                      console.log(`Processing: ${progressInfo.percentage}% (Iteration ${progressInfo.iteration}/${progressInfo.max_iterations})`);
+                      if (progressInfo.tool) {
+                          console.log(`Using tool: ${progressInfo.tool}`);
+                      }
+                      break;
+              }
           }
       );
     },
@@ -743,11 +762,29 @@ define([
               this.displayWidget.hideLoadingIndicator();
               this.isSubmitting = false;
               this.submitButton.set('disabled', false);
+          },
+          (progressInfo) => {
+              // onProgress - handle queue status updates
+              switch(progressInfo.type) {
+                  case 'queued':
+                      console.log('Request queued...');
+                      break;
+                  case 'started':
+                      console.log('Processing started...');
+                      break;
+                  case 'progress':
+                      console.log(`Processing: ${progressInfo.percentage}% (Iteration ${progressInfo.iteration}/${progressInfo.max_iterations})`);
+                      if (progressInfo.tool) {
+                          console.log(`Using tool: ${progressInfo.tool}`);
+                      }
+                      break;
+              }
           }
       );
     },
 
     _handleRegularSubmitStream: function() {
+      console.log('[HANDLER] _handleRegularSubmitStream START');
       var inputText = this.textArea.get('value');
       var _self = this;
       if (this.state) {
@@ -795,15 +832,18 @@ define([
           model: this.model,
           save_chat: true
       };
-
+      console.log('[HANDLER] About to call submitCopilotQueryStream with params:', params);
       this.copilotApi.submitCopilotQueryStream(params,
           (chunk) => {
               // onData
+              console.log('[HANDLER] onData callback received chunk:', chunk);
               assistantMessage.content += chunk;
+              console.log('[HANDLER] Assistant message content now:', assistantMessage.content);
               this.displayWidget.showMessages(this.chatStore.query());
           },
           () => {
               // onEnd
+              console.log('[HANDLER] onEnd callback called');
               if (_self.new_chat) {
                   _self._finishNewChat();
               }
@@ -818,6 +858,23 @@ define([
               this.displayWidget.hideLoadingIndicator();
               this.isSubmitting = false;
               this.submitButton.set('disabled', false);
+          },
+          (progressInfo) => {
+              // onProgress - handle queue status updates
+              switch(progressInfo.type) {
+                  case 'queued':
+                      console.log('Request queued...');
+                      break;
+                  case 'started':
+                      console.log('Processing started...');
+                      break;
+                  case 'progress':
+                      console.log(`Processing: ${progressInfo.percentage}% (Iteration ${progressInfo.iteration}/${progressInfo.max_iterations})`);
+                      if (progressInfo.tool) {
+                          console.log(`Using tool: ${progressInfo.tool}`);
+                      }
+                      break;
+              }
           }
       );
     },
@@ -912,6 +969,23 @@ define([
                 this.displayWidget.hideLoadingIndicator();
                 this.isSubmitting = false;
                 this.submitButton.set('disabled', false);
+            },
+            (progressInfo) => {
+                // onProgress - handle queue status updates
+                switch(progressInfo.type) {
+                    case 'queued':
+                        console.log('Request queued...');
+                        break;
+                    case 'started':
+                        console.log('Processing started...');
+                        break;
+                    case 'progress':
+                        console.log(`Processing: ${progressInfo.percentage}% (Iteration ${progressInfo.iteration}/${progressInfo.max_iterations})`);
+                        if (progressInfo.tool) {
+                            console.log(`Using tool: ${progressInfo.tool}`);
+                        }
+                        break;
+                }
             }
         );
     })).catch(lang.hitch(this, function(error) {
@@ -1001,6 +1075,23 @@ define([
               this.displayWidget.hideLoadingIndicator();
               this.isSubmitting = false;
               this.submitButton.set('disabled', false);
+          },
+          (progressInfo) => {
+              // onProgress - handle queue status updates
+              switch(progressInfo.type) {
+                  case 'queued':
+                      console.log('Request queued...');
+                      break;
+                  case 'started':
+                      console.log('Processing started...');
+                      break;
+                  case 'progress':
+                      console.log(`Processing: ${progressInfo.percentage}% (Iteration ${progressInfo.iteration}/${progressInfo.max_iterations})`);
+                      if (progressInfo.tool) {
+                          console.log(`Using tool: ${progressInfo.tool}`);
+                      }
+                      break;
+              }
           }
       );
     },
