@@ -424,13 +424,11 @@ define([
                     return reader.read().then(({ done, value }) => {
                         if (done) {
                             console.log('[SSE] Stream ended');
-                            // Process any remaining data in buffer
-                            if (buffer.trim().length > 0) {
+                            if (buffer.length > 0) {
                                 const lines = buffer.split('\n');
                                 lines.forEach(line => {
                                     if (line.trim()) processLine(line.trim());
                                 });
-                                currentEvent = null;  // Reset event after processing
                             }
                             _self.currentAbortController = null;
                             if (onEnd) onEnd();
@@ -440,21 +438,11 @@ define([
                         const chunk = decoder.decode(value, { stream: true });
                         console.log('[SSE] Chunk received, size:', chunk.length, 'bytes');
                         buffer += chunk;
-
-                        // SSE events are delimited by double newlines
-                        let eventDelimiter;
-                        while ((eventDelimiter = buffer.indexOf('\n\n')) >= 0) {
-                            const event = buffer.slice(0, eventDelimiter);
-                            buffer = buffer.slice(eventDelimiter + 2);
-
-                            // Process all lines in this event
-                            const lines = event.split('\n');
-                            lines.forEach(line => {
-                                if (line.trim()) processLine(line.trim());
-                            });
-
-                            // Reset event type after processing complete event
-                            currentEvent = null;
+                        let eol;
+                        while ((eol = buffer.indexOf('\n')) >= 0) {
+                            const line = buffer.slice(0, eol).trim();
+                            buffer = buffer.slice(eol + 1);
+                            if (line) processLine(line);
                         }
 
                         return pump();
