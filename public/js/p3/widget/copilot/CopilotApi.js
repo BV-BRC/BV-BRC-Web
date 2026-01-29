@@ -17,9 +17,10 @@ define([
     'dojo/_base/lang',
     'dojo/topic',
     'dijit/Dialog',
-    './CopilotSSEEventHandler'
+    './CopilotSSEEventHandler',
+    './CopilotToolHandler'
 ], function(
-    declare, _WidgetBase, request, lang, topic, Dialog, CopilotSSEEventHandler
+    declare, _WidgetBase, request, lang, topic, Dialog, CopilotSSEEventHandler, CopilotToolHandler
 ) {
     /**
      * @class CopilotAPI
@@ -240,6 +241,9 @@ define([
             var eventHandler = new CopilotSSEEventHandler();
             eventHandler.resetState();
 
+            // Create tool handler for special tool processing
+            var toolHandler = new CopilotToolHandler();
+
             console.log('[SSE] Initiating stream request to:', this.apiUrlBase + '/copilot-agent');
             console.log('[SSE] Request data:', data);
 
@@ -340,7 +344,22 @@ define([
                                 case 'final_response':
                                     // This is the actual LLM response text
                                     console.log('[SSE] Content event received, parsed:', parsed);
-                                    const textChunk = parsed.chunk || parsed.delta || parsed.content || '';
+
+                                    // Check for special tool handling
+                                    let dataToUse = parsed;
+                                    if (currentEvent === 'final_response' && parsed.tool) {
+                                        const processed = toolHandler.processToolEvent(currentEvent, parsed.tool, parsed);
+                                        if (processed) {
+                                            dataToUse = processed;
+                                            console.log('[SSE] Tool handler processed event');
+                                        }
+                                    }
+
+                                    let textChunk = dataToUse.chunk || dataToUse.delta || dataToUse.content || '';
+                                    // If chunk is still an object (not handled by tool handler), stringify it
+                                    if (typeof textChunk === 'object' && textChunk !== null) {
+                                        textChunk = JSON.stringify(textChunk, null, 2);
+                                    }
                                     console.log('[SSE] Extracted text chunk:', textChunk);
                                     if (textChunk && onData) {
                                         console.log('[SSE] Calling onData callback with chunk');

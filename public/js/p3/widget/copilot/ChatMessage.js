@@ -6,9 +6,10 @@ define([
   'dojo/_base/lang', // Language utilities
   'markdown-it/dist/markdown-it.min', // Markdown parser and renderer
   'markdown-it-link-attributes/dist/markdown-it-link-attributes.min', // Plugin to add attributes to links
-  'dijit/Dialog' // Dialog widget
+  'dijit/Dialog', // Dialog widget
+  './CopilotToolHandler' // Tool handler for special tool processing
 ], function (
-  declare, domConstruct, on, topic, lang, markdownit, linkAttributes, Dialog
+  declare, domConstruct, on, topic, lang, markdownit, linkAttributes, Dialog, CopilotToolHandler
 ) {
   /**
    * @class ChatMessage
@@ -45,6 +46,7 @@ define([
       this.container = container;
       this.fontSize = message.fontSize || 14; // Get fontSize from message or use default
       this.copilotEnableShowPromptDetails = window.App && window.App.copilotEnableShowPromptDetails === 'true';
+      this.toolHandler = new CopilotToolHandler();
       this.renderMessage(); // Immediately render on construction
     },
 
@@ -58,6 +60,16 @@ define([
      *   3. User/Assistant messages (standard display)
      */
     renderMessage: function() {
+      // Check for source_tool field and log it if it exists
+      if (this.message.source_tool) {
+        console.log('[ChatMessage] source_tool:', this.message.source_tool);
+      }
+
+      // Process content based on source_tool using tool handler
+      if (this.message.source_tool) {
+        this.message.content = this.toolHandler.processMessageContent(this.message.content, this.message.source_tool);
+      }
+
       // Add more top margin for first message, less for subsequent
       var marginTop = this.container.children.length === 0 ? '20px' : '5px';
 
