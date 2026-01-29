@@ -638,9 +638,17 @@ define([
       };
 
       this.copilotApi.submitCopilotQueryStream(params,
-          (chunk) => {
+          (chunk, toolMetadata) => {
               // onData
               console.log('chunk', chunk);
+
+              // Add tool metadata if available (for workflow handling)
+              if (toolMetadata && !assistantMessage.source_tool) {
+                  assistantMessage.source_tool = toolMetadata.source_tool;
+                  assistantMessage.isWorkflow = toolMetadata.isWorkflow;
+                  assistantMessage.workflowData = toolMetadata.workflowData;
+              }
+
               assistantMessage.content += chunk;
               this.displayWidget.showMessages(this.chatStore.query());
           },
@@ -753,7 +761,7 @@ define([
       };
 
       this.copilotApi.submitCopilotQueryStream(params,
-          (chunk) => {
+          (chunk, toolMetadata) => {
               // onData - create assistant message on first chunk if not exists
               if (!assistantMessageCreated) {
                   // Remove status message if it exists
@@ -768,6 +776,14 @@ define([
                       message_id: 'assistant_' + Date.now(),
                       timestamp: new Date().toISOString()
                   };
+
+                  // Add tool metadata if available (for workflow handling)
+                  if (toolMetadata) {
+                      assistantMessage.source_tool = toolMetadata.source_tool;
+                      assistantMessage.isWorkflow = toolMetadata.isWorkflow;
+                      assistantMessage.workflowData = toolMetadata.workflowData;
+                  }
+
                   this.chatStore.addMessage(assistantMessage);
                   assistantMessageCreated = true;
               }
@@ -888,7 +904,7 @@ define([
       };
       console.log('[HANDLER] About to call submitCopilotQueryStream with params:', params);
       this.copilotApi.submitCopilotQueryStream(params,
-          (chunk) => {
+          (chunk, toolMetadata) => {
               // onData - create assistant message on first chunk if not exists
               console.log('[HANDLER] onData callback received chunk:', chunk);
               if (!assistantMessageCreated) {
@@ -904,6 +920,14 @@ define([
                       message_id: 'assistant_' + Date.now(),
                       timestamp: new Date().toISOString()
                   };
+
+                  // Add tool metadata if available (for workflow handling)
+                  if (toolMetadata) {
+                      assistantMessage.source_tool = toolMetadata.source_tool;
+                      assistantMessage.isWorkflow = toolMetadata.isWorkflow;
+                      assistantMessage.workflowData = toolMetadata.workflowData;
+                  }
+
                   this.chatStore.addMessage(assistantMessage);
                   assistantMessageCreated = true;
               }
@@ -1040,7 +1064,7 @@ define([
         };
 
         this.copilotApi.submitCopilotQueryStream(params,
-            (chunk) => {
+            (chunk, toolMetadata) => {
                 // onData - create assistant message on first chunk if not exists
                 if (!assistantMessageCreated) {
                     // Remove status message if it exists
@@ -1055,6 +1079,14 @@ define([
                         message_id: 'assistant_' + Date.now(),
                         timestamp: new Date().toISOString()
                     };
+
+                    // Add tool metadata if available (for workflow handling)
+                    if (toolMetadata) {
+                        assistantMessage.source_tool = toolMetadata.source_tool;
+                        assistantMessage.isWorkflow = toolMetadata.isWorkflow;
+                        assistantMessage.workflowData = toolMetadata.workflowData;
+                    }
+
                     this.chatStore.addMessage(assistantMessage);
                     assistantMessageCreated = true;
                 }
@@ -1180,7 +1212,7 @@ define([
       };
 
       this.copilotApi.submitCopilotQueryStream(params,
-          (chunk) => {
+          (chunk, toolMetadata) => {
               // onData - create assistant message on first chunk if not exists
               if (!assistantMessageCreated) {
                   // Remove status message if it exists
@@ -1195,6 +1227,13 @@ define([
                       message_id: 'assistant_' + Date.now(),
                       timestamp: new Date().toISOString()
                   };
+
+                  // Add tool metadata if available (for workflow handling)
+                  if (toolMetadata) {
+                      assistantMessage.source_tool = toolMetadata.source_tool;
+                      assistantMessage.isWorkflow = toolMetadata.isWorkflow;
+                      assistantMessage.workflowData = toolMetadata.workflowData;
+                  }
                   this.chatStore.addMessage(assistantMessage);
                   assistantMessageCreated = true;
               }

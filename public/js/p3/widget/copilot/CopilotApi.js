@@ -347,11 +347,22 @@ define([
 
                                     // Check for special tool handling
                                     let dataToUse = parsed;
+                                    let toolMetadata = null;
                                     if (currentEvent === 'final_response' && parsed.tool) {
                                         const processed = toolHandler.processToolEvent(currentEvent, parsed.tool, parsed);
                                         if (processed) {
                                             dataToUse = processed;
                                             console.log('[SSE] Tool handler processed event');
+
+                                            // Extract tool metadata for workflow handling
+                                            // TODO: I dont like this hack and need something more robust.
+                                            if (processed.isWorkflow && processed.workflowData) {
+                                                toolMetadata = {
+                                                    source_tool: parsed.tool,
+                                                    isWorkflow: processed.isWorkflow,
+                                                    workflowData: processed.workflowData
+                                                };
+                                            }
                                         }
                                     }
 
@@ -363,7 +374,7 @@ define([
                                     console.log('[SSE] Extracted text chunk:', textChunk);
                                     if (textChunk && onData) {
                                         console.log('[SSE] Calling onData callback with chunk');
-                                        onData(textChunk);
+                                        onData(textChunk, toolMetadata);
                                     } else {
                                         console.log('[SSE] NOT calling onData - textChunk:', textChunk, 'onData:', !!onData);
                                     }

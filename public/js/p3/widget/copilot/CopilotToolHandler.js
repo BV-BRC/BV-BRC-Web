@@ -32,14 +32,14 @@ define([
           tool === 'bvbrc_server.generate_workflow_manifest' &&
           parsed.chunk) {
         try {
-          // Parse the chunk as JSON
+          // Parse the chunk as JSON to validate it
           const parsedChunk = JSON.parse(parsed.chunk);
-          // Format as markdown code fence
-          const jsonString = JSON.stringify(parsedChunk, null, 2);
-          const formattedChunk = '```json\n' + jsonString + '\n```';
+          // Store the raw JSON string and mark it as a workflow
           return {
             ...parsed,
-            chunk: formattedChunk
+            chunk: parsed.chunk, // Keep unparsed JSON
+            isWorkflow: true,
+            workflowData: parsedChunk // Store parsed data for easy access
           };
         } catch (e) {
           console.error('[CopilotToolHandler] Failed to parse chunk as JSON:', e);
@@ -57,11 +57,11 @@ define([
      * Applies tool-specific transformations to the content for display in chat messages
      * @param {string} content - The message content
      * @param {string} sourceTool - The source_tool field from the message
-     * @returns {string} Processed content ready for display
+     * @returns {Object} Object with processed content and metadata
      */
     processMessageContent: function(content, sourceTool) {
       if (!sourceTool || !content) {
-        return content;
+        return { content: content };
       }
 
       // Create a parsed object similar to what processToolEvent expects
@@ -72,13 +72,17 @@ define([
       // Use processToolEvent to handle tool-specific processing
       var processed = this.processToolEvent('final_response', sourceTool, parsed);
 
-      if (processed && processed.chunk) {
-        // Return the processed chunk (already formatted by processToolEvent)
-        return processed.chunk;
+      if (processed) {
+        // Return the processed data with all metadata
+        return {
+          content: processed.chunk,
+          isWorkflow: processed.isWorkflow,
+          workflowData: processed.workflowData
+        };
       }
 
       // No special handling for this tool, return original content
-      return content;
+      return { content: content };
     }
   });
 });

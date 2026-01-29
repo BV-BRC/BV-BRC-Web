@@ -7,9 +7,10 @@ define([
   'markdown-it/dist/markdown-it.min', // Markdown parser and renderer
   'markdown-it-link-attributes/dist/markdown-it-link-attributes.min', // Plugin to add attributes to links
   'dijit/Dialog', // Dialog widget
-  './CopilotToolHandler' // Tool handler for special tool processing
+  './CopilotToolHandler', // Tool handler for special tool processing
+  './WorkflowEngine' // Workflow engine widget for displaying workflows
 ], function (
-  declare, domConstruct, on, topic, lang, markdownit, linkAttributes, Dialog, CopilotToolHandler
+  declare, domConstruct, on, topic, lang, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine
 ) {
   /**
    * @class ChatMessage
@@ -67,7 +68,10 @@ define([
 
       // Process content based on source_tool using tool handler
       if (this.message.source_tool) {
-        this.message.content = this.toolHandler.processMessageContent(this.message.content, this.message.source_tool);
+        var processedData = this.toolHandler.processMessageContent(this.message.content, this.message.source_tool);
+        this.message.content = processedData.content;
+        this.message.isWorkflow = processedData.isWorkflow;
+        this.message.workflowData = processedData.workflowData;
       }
 
       // Add more top margin for first message, less for subsequent
@@ -163,14 +167,36 @@ define([
      * Renders a standard user or assistant message
      * - Simply displays markdown content in a styled container
      * - No collapsible functionality
+     * - For workflow messages, shows a "Review Workflow" button instead
      * @param {HTMLElement} messageDiv - Container to render message into
      */
     renderUserOrAssistantMessage: function(messageDiv) {
-      domConstruct.create('div', {
-        innerHTML: this.message.content ? this.md.render(this.message.content) : '',
-        class: 'markdown-content',
-        style: 'font-size: ' + this.fontSize + 'px;'
-      }, messageDiv);
+      // Check if this is a workflow message
+      if (this.message.isWorkflow && this.message.workflowData) {
+        // Show a "Review Workflow" button instead of displaying the content
+        var workflowButtonContainer = domConstruct.create('div', {
+          class: 'workflow-button-container',
+          style: 'margin: 10px 0;'
+        }, messageDiv);
+
+        var reviewWorkflowButton = domConstruct.create('button', {
+          innerHTML: 'Review Workflow',
+          class: 'review-workflow-button',
+          style: 'padding: 8px 16px; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;'
+        }, workflowButtonContainer);
+
+        // Add click handler to show workflow dialog
+        on(reviewWorkflowButton, 'click', lang.hitch(this, function() {
+          this.showWorkflowDialog();
+        }));
+      } else {
+        // Normal message rendering
+        domConstruct.create('div', {
+          innerHTML: this.message.content ? this.md.render(this.message.content) : '',
+          class: 'markdown-content',
+          style: 'font-size: ' + this.fontSize + 'px;'
+        }, messageDiv);
+      }
 
       if (this.message.role === 'assistant') {
         // Create button container for assistant messages
@@ -355,6 +381,51 @@ define([
       }
 
       return container;
+    },
+
+    /**
+     * Shows a dialog displaying the workflow using WorkflowEngine widget
+     */
+    showWorkflowDialog: function() {
+      if (!this.message.workflowData) {
+        console.error('[ChatMessage] No workflow data available');
+        return;
+      }
+
+      // Create WorkflowEngine widget
+      var workflowEngine = new WorkflowEngine({
+        workflowData: this.message.workflowData
+      });
+
+      // Create dialog
+      var workflowDialog = new Dialog({
+        title: 'Workflow Review',
+        style: 'width: 700px; max-height: 80vh;',
+        content: workflowEngine.domNode
+      });
+
+      // Add close button
+      var buttonContainer = domConstruct.create('div', {
+        style: 'text-align: right; margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;'
+      });
+
+      var closeButton = domConstruct.create('button', {
+        innerHTML: 'Close',
+        style: 'padding: 8px 16px; background: #666; color: white; border: none; border-radius: 4px; cursor: pointer;'
+      });
+
+      closeButton.onclick = function() {
+        workflowDialog.hide();
+        workflowDialog.destroy();
+        workflowEngine.destroy();
+      };
+
+      buttonContainer.appendChild(closeButton);
+      workflowDialog.containerNode.appendChild(buttonContainer);
+
+      // Show dialog
+      workflowDialog.startup();
+      workflowDialog.show();
     }
   });
 });
