@@ -77,6 +77,8 @@ define([
         if (this.copilotEnableShowPromptDetails) {
           this.renderSystemMessage(messageDiv);
         }
+      } else if (this.message.role === 'status') {
+        this.renderStatusMessage(messageDiv);
       } else {
         this.renderUserOrAssistantMessage(messageDiv);
       }
@@ -128,6 +130,29 @@ define([
         docsDialog.startup();
         docsDialog.show();
       }.bind(this));
+    },
+
+    /**
+     * Renders a status message with distinctive styling
+     * - Shows agent/tool activity and progress
+     * - Smaller text, gray background
+     * - Left-aligned, compact layout
+     * - No action buttons
+     * @param {HTMLElement} messageDiv - Container to render status message into
+     */
+    renderStatusMessage: function(messageDiv) {
+      domConstruct.create('div', {
+        innerHTML: this.message.content ? this.md.render(this.message.content) : '',
+        class: 'markdown-content status-content',
+        style: 'font-size: ' + Math.max(11, this.fontSize - 2) + 'px; ' +
+               'background-color: #f8f9fa; ' +
+               'border-left: 3px solid #6c757d; ' +
+               'padding: 8px 12px; ' +
+               'margin: 4px 0; ' +
+               'border-radius: 4px; ' +
+               'color: #495057; ' +
+               'font-family: monospace;'
+      }, messageDiv);
     },
 
     /**

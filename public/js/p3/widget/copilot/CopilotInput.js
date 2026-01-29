@@ -682,6 +682,20 @@ define([
                       }
                       break;
               }
+          },
+          (statusMessage) => {
+              // onStatusMessage - handle status message updates
+              if (statusMessage.should_remove) {
+                  this.chatStore.removeMessage(statusMessage.message_id);
+              } else {
+                  var existingMessage = this.chatStore.getMessageById(statusMessage.message_id);
+                  if (existingMessage) {
+                      this.chatStore.updateMessage(statusMessage);
+                  } else {
+                      this.chatStore.addMessage(statusMessage);
+                  }
+              }
+              this.displayWidget.showMessages(this.chatStore.query());
           }
       );
     },
@@ -779,6 +793,28 @@ define([
                       }
                       break;
               }
+          },
+          (statusMessage) => {
+              // onStatusMessage - handle status message updates
+              console.log('[HANDLER] Status message received:', statusMessage);
+
+              if (statusMessage.should_remove) {
+                  // Remove the status message from chat store
+                  this.chatStore.removeMessage(statusMessage.message_id);
+              } else {
+                  // Add or update the status message
+                  var existingMessage = this.chatStore.getMessageById(statusMessage.message_id);
+                  if (existingMessage) {
+                      // Update existing message
+                      this.chatStore.updateMessage(statusMessage);
+                  } else {
+                      // Add new message
+                      this.chatStore.addMessage(statusMessage);
+                  }
+              }
+
+              // Refresh display
+              this.displayWidget.showMessages(this.chatStore.query());
           }
       );
     },
@@ -875,6 +911,28 @@ define([
                       }
                       break;
               }
+          },
+          (statusMessage) => {
+              // onStatusMessage - handle status message updates
+              console.log('[HANDLER] Status message received:', statusMessage);
+
+              if (statusMessage.should_remove) {
+                  // Remove the status message from chat store
+                  this.chatStore.removeMessage(statusMessage.message_id);
+              } else {
+                  // Add or update the status message
+                  var existingMessage = this.chatStore.getMessageById(statusMessage.message_id);
+                  if (existingMessage) {
+                      // Update existing message
+                      this.chatStore.updateMessage(statusMessage);
+                  } else {
+                      // Add new message
+                      this.chatStore.addMessage(statusMessage);
+                  }
+              }
+
+              // Refresh display
+              this.displayWidget.showMessages(this.chatStore.query());
           }
       );
     },
@@ -986,6 +1044,20 @@ define([
                         }
                         break;
                 }
+            },
+            (statusMessage) => {
+                // onStatusMessage - handle status message updates
+                if (statusMessage.should_remove) {
+                    this.chatStore.removeMessage(statusMessage.message_id);
+                } else {
+                    var existingMessage = this.chatStore.getMessageById(statusMessage.message_id);
+                    if (existingMessage) {
+                        this.chatStore.updateMessage(statusMessage);
+                    } else {
+                        this.chatStore.addMessage(statusMessage);
+                    }
+                }
+                this.displayWidget.showMessages(this.chatStore.query());
             }
         );
     })).catch(lang.hitch(this, function(error) {
@@ -1092,6 +1164,20 @@ define([
                       }
                       break;
               }
+          },
+          (statusMessage) => {
+              // onStatusMessage - handle status message updates
+              if (statusMessage.should_remove) {
+                  this.chatStore.removeMessage(statusMessage.message_id);
+              } else {
+                  var existingMessage = this.chatStore.getMessageById(statusMessage.message_id);
+                  if (existingMessage) {
+                      this.chatStore.updateMessage(statusMessage);
+                  } else {
+                      this.chatStore.addMessage(statusMessage);
+                  }
+              }
+              this.displayWidget.showMessages(this.chatStore.query());
           }
       );
     },

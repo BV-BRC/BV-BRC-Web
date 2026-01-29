@@ -16,9 +16,10 @@ define([
     'dojo/request',
     'dojo/_base/lang',
     'dojo/topic',
-    'dijit/Dialog'
+    'dijit/Dialog',
+    './CopilotSSEEventHandler'
 ], function(
-    declare, _WidgetBase, request, lang, topic, Dialog
+    declare, _WidgetBase, request, lang, topic, Dialog, CopilotSSEEventHandler
 ) {
     /**
      * @class CopilotAPI
@@ -209,8 +210,10 @@ define([
          * @param {function} onError - Callback for any errors
          * @param {function} onProgress - Callback for progress updates (queued, started, progress events)
          *   - Called with object: {type: 'queued'|'started'|'progress', ...eventData}
+         * @param {function} onStatusMessage - Callback for status message updates
+         *   - Called with message object when status should be displayed/updated
          */
-        submitCopilotQueryStream: function(params, onData, onEnd, onError, onProgress) {
+        submitCopilotQueryStream: function(params, onData, onEnd, onError, onProgress, onStatusMessage) {
 
             if (!this._checkLoggedIn()) {
                 if (onError) onError(new Error('Not logged in'));
@@ -232,6 +235,10 @@ define([
 
             // Create abort controller for this request
             this.currentAbortController = new AbortController();
+
+            // Create SSE event handler for this request
+            var eventHandler = new CopilotSSEEventHandler();
+            eventHandler.resetState();
 
             console.log('[SSE] Initiating stream request to:', this.apiUrlBase + '/copilot-agent');
             console.log('[SSE] Request data:', data);
@@ -291,6 +298,15 @@ define([
                             const parsed = JSON.parse(content);
                             console.log('[SSE] Parsed data:', parsed);
 
+                            // Let event handler process the event and create/update status message
+                            var statusMessage = eventHandler.handleEvent(currentEvent, parsed);
+
+                            // If a status message was created/updated, send it via callback
+                            if (statusMessage && onStatusMessage) {
+                                console.log('[SSE] Status message created/updated:', statusMessage);
+                                onStatusMessage(statusMessage);
+                            }
+
                             // Handle different event types
                             switch (currentEvent) {
                                 case 'queued':
@@ -337,6 +353,14 @@ define([
                                 case 'done':
                                     console.log('Processing complete:', parsed);
                                     _self.currentAbortController = null;
+
+                                    // Remove status message when done
+                                    if (statusMessage && statusMessage.should_remove && onStatusMessage) {
+                                        console.log('[SSE] Removing status message');
+                                        // Send removal signal by passing message with remove flag
+                                        onStatusMessage({ ...statusMessage, should_remove: true });
+                                    }
+
                                     if (onEnd) onEnd(parsed);
                                     break;
 
@@ -344,6 +368,14 @@ define([
                                     console.error('Stream error:', parsed);
                                     _self.currentAbortController = null;
                                     if (onError) onError(new Error(parsed.error || 'Stream error'));
+                                    break;
+
+                                case 'tool_selected':
+                                case 'tool_executed':
+                                case 'duplicate_detected':
+                                case 'forced_finalize':
+                                    // These are handled by the event handler above
+                                    console.log('[SSE] Agent event:', currentEvent, parsed);
                                     break;
 
                                 default:

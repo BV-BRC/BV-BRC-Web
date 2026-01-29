@@ -121,6 +121,61 @@ define([
           item.title = newTitle;
         }
       });
+    },
+
+    /**
+     * @method getMessageById
+     * @param {string} messageId - Message identifier
+     * @returns {Object|null} Message object if found, null otherwise
+     *
+     * Implementation:
+     * - Searches data array for message with matching message_id
+     * - Returns first match or null if not found
+     */
+    getMessageById: function(messageId) {
+      for (var i = 0; i < this.data.length; i++) {
+        if (this.data[i].message_id === messageId) {
+          return this.data[i];
+        }
+      }
+      return null;
+    },
+
+    /**
+     * @method updateMessage
+     * @param {Object} message - Updated message object
+     *
+     * Implementation:
+     * - Finds message with matching message_id
+     * - Replaces entire message object with updated version
+     * - Used for updating status messages
+     */
+    updateMessage: function(message) {
+      for (var i = 0; i < this.data.length; i++) {
+        if (this.data[i].message_id === message.message_id) {
+          this.data[i] = message;
+          return true;
+        }
+      }
+      return false;
+    },
+
+    /**
+     * @method removeMessage
+     * @param {string} messageId - Message identifier
+     *
+     * Implementation:
+     * - Removes message with matching message_id from data array
+     * - Used for removing temporary status messages
+     */
+    removeMessage: function(messageId) {
+      for (var i = 0; i < this.data.length; i++) {
+        if (this.data[i].message_id === messageId) {
+          this.data.splice(i, 1);
+          return true;
+        }
+      }
+      return false;
     }
   });
 });
