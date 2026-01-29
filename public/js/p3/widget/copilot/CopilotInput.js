@@ -734,13 +734,11 @@ define([
           systemPrompt += this.statePrompt;
       }
 
-      let assistantMessage = {
-          role: 'assistant',
-          content: '',
-          message_id: 'assistant_' + Date.now(),
-          timestamp: new Date().toISOString()
-      };
-      this.chatStore.addMessage(assistantMessage);
+      // Track assistant message and status message ID
+      let assistantMessage = null;
+      let statusMessageId = null;
+      let assistantMessageCreated = false;
+
       this.displayWidget.hideLoadingIndicator();
 
       const params = {
@@ -756,7 +754,24 @@ define([
 
       this.copilotApi.submitCopilotQueryStream(params,
           (chunk) => {
-              // onData
+              // onData - create assistant message on first chunk if not exists
+              if (!assistantMessageCreated) {
+                  // Remove status message if it exists
+                  if (statusMessageId) {
+                      this.chatStore.removeMessage(statusMessageId);
+                      statusMessageId = null;
+                  }
+                  // Create assistant message
+                  assistantMessage = {
+                      role: 'assistant',
+                      content: '',
+                      message_id: 'assistant_' + Date.now(),
+                      timestamp: new Date().toISOString()
+                  };
+                  this.chatStore.addMessage(assistantMessage);
+                  assistantMessageCreated = true;
+              }
+              // Append content to assistant message
               assistantMessage.content += chunk;
               this.displayWidget.showMessages(this.chatStore.query());
           },
@@ -801,7 +816,12 @@ define([
               if (statusMessage.should_remove) {
                   // Remove the status message from chat store
                   this.chatStore.removeMessage(statusMessage.message_id);
+                  if (statusMessageId === statusMessage.message_id) {
+                      statusMessageId = null;
+                  }
               } else {
+                  // Track status message ID
+                  statusMessageId = statusMessage.message_id;
                   // Add or update the status message
                   var existingMessage = this.chatStore.getMessageById(statusMessage.message_id);
                   if (existingMessage) {
@@ -852,13 +872,11 @@ define([
           systemPrompt += this.statePrompt;
       }
 
-      let assistantMessage = {
-          role: 'assistant',
-          content: '',
-          message_id: 'assistant_' + Date.now(),
-          timestamp: new Date().toISOString()
-      };
-      this.chatStore.addMessage(assistantMessage);
+      // Track assistant message and status message ID
+      let assistantMessage = null;
+      let statusMessageId = null;
+      let assistantMessageCreated = false;
+
       this.displayWidget.hideLoadingIndicator();
 
       const params = {
@@ -871,8 +889,25 @@ define([
       console.log('[HANDLER] About to call submitCopilotQueryStream with params:', params);
       this.copilotApi.submitCopilotQueryStream(params,
           (chunk) => {
-              // onData
+              // onData - create assistant message on first chunk if not exists
               console.log('[HANDLER] onData callback received chunk:', chunk);
+              if (!assistantMessageCreated) {
+                  // Remove status message if it exists
+                  if (statusMessageId) {
+                      this.chatStore.removeMessage(statusMessageId);
+                      statusMessageId = null;
+                  }
+                  // Create assistant message
+                  assistantMessage = {
+                      role: 'assistant',
+                      content: '',
+                      message_id: 'assistant_' + Date.now(),
+                      timestamp: new Date().toISOString()
+                  };
+                  this.chatStore.addMessage(assistantMessage);
+                  assistantMessageCreated = true;
+              }
+              // Append content to assistant message
               assistantMessage.content += chunk;
               console.log('[HANDLER] Assistant message content now:', assistantMessage.content);
               this.displayWidget.showMessages(this.chatStore.query());
@@ -919,7 +954,12 @@ define([
               if (statusMessage.should_remove) {
                   // Remove the status message from chat store
                   this.chatStore.removeMessage(statusMessage.message_id);
+                  if (statusMessageId === statusMessage.message_id) {
+                      statusMessageId = null;
+                  }
               } else {
+                  // Track status message ID
+                  statusMessageId = statusMessage.message_id;
                   // Add or update the status message
                   var existingMessage = this.chatStore.getMessageById(statusMessage.message_id);
                   if (existingMessage) {
@@ -980,13 +1020,11 @@ define([
 
         var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
 
-        let assistantMessage = {
-            role: 'assistant',
-            content: '',
-            message_id: 'assistant_' + Date.now(),
-            timestamp: new Date().toISOString()
-        };
-        this.chatStore.addMessage(assistantMessage);
+        // Track assistant message and status message ID
+        let assistantMessage = null;
+        let statusMessageId = null;
+        let assistantMessageCreated = false;
+
         this.displayWidget.hideLoadingIndicator();
 
         const params = {
@@ -1003,7 +1041,24 @@ define([
 
         this.copilotApi.submitCopilotQueryStream(params,
             (chunk) => {
-                // onData
+                // onData - create assistant message on first chunk if not exists
+                if (!assistantMessageCreated) {
+                    // Remove status message if it exists
+                    if (statusMessageId) {
+                        this.chatStore.removeMessage(statusMessageId);
+                        statusMessageId = null;
+                    }
+                    // Create assistant message
+                    assistantMessage = {
+                        role: 'assistant',
+                        content: '',
+                        message_id: 'assistant_' + Date.now(),
+                        timestamp: new Date().toISOString()
+                    };
+                    this.chatStore.addMessage(assistantMessage);
+                    assistantMessageCreated = true;
+                }
+                // Append content to assistant message
                 assistantMessage.content += chunk;
                 this.displayWidget.showMessages(this.chatStore.query());
             },
@@ -1049,7 +1104,12 @@ define([
                 // onStatusMessage - handle status message updates
                 if (statusMessage.should_remove) {
                     this.chatStore.removeMessage(statusMessage.message_id);
+                    if (statusMessageId === statusMessage.message_id) {
+                        statusMessageId = null;
+                    }
                 } else {
+                    // Track status message ID
+                    statusMessageId = statusMessage.message_id;
                     var existingMessage = this.chatStore.getMessageById(statusMessage.message_id);
                     if (existingMessage) {
                         this.chatStore.updateMessage(statusMessage);
@@ -1101,13 +1161,11 @@ define([
 
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-      let assistantMessage = {
-          role: 'assistant',
-          content: '',
-          message_id: 'assistant_' + Date.now(),
-          timestamp: new Date().toISOString()
-      };
-      this.chatStore.addMessage(assistantMessage);
+      // Track assistant message and status message ID
+      let assistantMessage = null;
+      let statusMessageId = null;
+      let assistantMessageCreated = false;
+
       this.displayWidget.hideLoadingIndicator();
 
       const params = {
@@ -1123,7 +1181,24 @@ define([
 
       this.copilotApi.submitCopilotQueryStream(params,
           (chunk) => {
-              // onData
+              // onData - create assistant message on first chunk if not exists
+              if (!assistantMessageCreated) {
+                  // Remove status message if it exists
+                  if (statusMessageId) {
+                      this.chatStore.removeMessage(statusMessageId);
+                      statusMessageId = null;
+                  }
+                  // Create assistant message
+                  assistantMessage = {
+                      role: 'assistant',
+                      content: '',
+                      message_id: 'assistant_' + Date.now(),
+                      timestamp: new Date().toISOString()
+                  };
+                  this.chatStore.addMessage(assistantMessage);
+                  assistantMessageCreated = true;
+              }
+              // Append content to assistant message
               assistantMessage.content += chunk;
               this.displayWidget.showMessages(this.chatStore.query());
           },
@@ -1169,7 +1244,12 @@ define([
               // onStatusMessage - handle status message updates
               if (statusMessage.should_remove) {
                   this.chatStore.removeMessage(statusMessage.message_id);
+                  if (statusMessageId === statusMessage.message_id) {
+                      statusMessageId = null;
+                  }
               } else {
+                  // Track status message ID
+                  statusMessageId = statusMessage.message_id;
                   var existingMessage = this.chatStore.getMessageById(statusMessage.message_id);
                   if (existingMessage) {
                       this.chatStore.updateMessage(statusMessage);

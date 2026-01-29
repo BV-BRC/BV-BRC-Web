@@ -143,15 +143,7 @@ define([
     renderStatusMessage: function(messageDiv) {
       domConstruct.create('div', {
         innerHTML: this.message.content ? this.md.render(this.message.content) : '',
-        class: 'markdown-content status-content',
-        style: 'font-size: ' + Math.max(11, this.fontSize - 2) + 'px; ' +
-               'background-color: #f8f9fa; ' +
-               'border-left: 3px solid #6c757d; ' +
-               'padding: 8px 12px; ' +
-               'margin: 4px 0; ' +
-               'border-radius: 4px; ' +
-               'color: #495057; ' +
-               'font-family: monospace;'
+        class: 'markdown-content status-content'
       }, messageDiv);
     },
 

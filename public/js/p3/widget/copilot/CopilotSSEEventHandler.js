@@ -138,7 +138,7 @@ define([
       if (!this.config.showQueuedStatus) return null;
 
       this.agentState.status = 'queued';
-      var content = '⏳ Request queued...';
+      var content = 'Request queued...';
 
       return this.createStatusMessage(content, 'queued');
     },
@@ -148,7 +148,7 @@ define([
      */
     format_started: function(data) {
       this.agentState.status = 'processing';
-      var content = '🔄 Processing started...';
+      var content = 'Processing started...';
 
       return this.updateStatusMessage(content, 'started');
     },
@@ -164,13 +164,13 @@ define([
       this.agentState.percentage = data.percentage || 0;
       this.agentState.currentTool = data.tool || null;
 
-      var content = '🔄 Processing: Iteration ' +
+      var content = 'Processing: Iteration ' +
                     this.agentState.currentIteration + '/' +
                     this.agentState.maxIterations +
                     ' (' + Math.round(this.agentState.percentage) + '%)';
 
       if (this.agentState.currentTool) {
-        content += '\n📊 Status: ' + data.status;
+        content += '\nStatus: ' + data.status;
       }
 
       return this.updateStatusMessage(content, 'progress');
@@ -186,15 +186,15 @@ define([
       this.agentState.currentTool = data.tool;
       this.agentState.currentToolReasoning = data.reasoning;
 
-      var content = '🔧 Tool Selected: **' + data.tool + '**\n';
-      content += '📝 Iteration: ' + data.iteration + '\n';
+      var content = 'Tool Selected: **' + data.tool + '**\n';
+      content += 'Iteration: ' + data.iteration + '\n';
 
       if (data.reasoning) {
-        content += '💭 Reasoning: ' + data.reasoning + '\n';
+        content += 'Reasoning: ' + data.reasoning + '\n';
       }
 
       if (data.parameters && Object.keys(data.parameters).length > 0) {
-        content += '⚙️ Parameters:\n';
+        content += 'Parameters:\n';
         content += '```json\n' + JSON.stringify(data.parameters, null, 2) + '\n```';
       }
 
@@ -219,8 +219,8 @@ define([
       var content = '';
 
       if (data.status === 'success') {
-        content = '✅ Tool Executed: **' + tool + '** (Success)\n';
-        content += '📝 Iteration: ' + data.iteration + '\n';
+        content = 'Tool Executed: **' + tool + '** (Success)\n';
+        content += 'Iteration: ' + data.iteration + '\n';
 
         // Show result preview if available
         if (data.result) {
@@ -233,14 +233,14 @@ define([
             resultStr = resultStr.substring(0, 200) + '...';
           }
 
-          content += '📊 Result: ' + resultStr;
+          content += 'Result: ' + resultStr;
         }
       } else {
-        content = '❌ Tool Executed: **' + tool + '** (Failed)\n';
-        content += '📝 Iteration: ' + data.iteration + '\n';
+        content = 'Tool Executed: **' + tool + '** (Failed)\n';
+        content += 'Iteration: ' + data.iteration + '\n';
 
         if (data.error) {
-          content += '⚠️ Error: ' + data.error;
+          content += 'Error: ' + data.error;
         }
       }
 
@@ -253,10 +253,10 @@ define([
     format_duplicate_detected: function(data) {
       if (!this.config.showDuplicateWarnings) return null;
 
-      var content = '⚠️ Duplicate Action Detected\n';
-      content += '📝 Current Iteration: ' + data.iteration + '\n';
-      content += '🔁 Duplicate of Iteration: ' + data.duplicateIteration + '\n';
-      content += '💬 ' + (data.message || 'Skipping duplicate action');
+      var content = 'Duplicate Action Detected\n';
+      content += 'Current Iteration: ' + data.iteration + '\n';
+      content += 'Duplicate of Iteration: ' + data.duplicateIteration + '\n';
+      content += (data.message || 'Skipping duplicate action');
 
       return this.updateStatusMessage(content, 'duplicate_detected');
     },
@@ -265,9 +265,9 @@ define([
      * Formats 'forced_finalize' event
      */
     format_forced_finalize: function(data) {
-      var content = '⚠️ Finalization Forced\n';
-      content += '📋 Reason: ' + (data.reason || 'duplicate_with_data') + '\n';
-      content += '💬 ' + (data.message || 'Agent has sufficient data to respond');
+      var content = 'Finalization Forced\n';
+      content += 'Reason: ' + (data.reason || 'duplicate_with_data') + '\n';
+      content += (data.message || 'Agent has sufficient data to respond');
 
       return this.updateStatusMessage(content, 'forced_finalize');
     },
@@ -278,8 +278,8 @@ define([
      */
     format_final_response: function(data) {
       // Update status to indicate response generation
-      var content = '💬 Generating response...\n';
-      content += '✓ Analysis complete (' + this.agentState.toolsUsed.length + ' tools used)';
+      var content = 'Generating response...\n';
+      content += 'Analysis complete (' + this.agentState.toolsUsed.length + ' tools used)';
 
       return this.updateStatusMessage(content, 'final_response');
     },
@@ -293,9 +293,9 @@ define([
       this.agentState.status = 'complete';
 
       // Create a final summary (optional, can be displayed briefly before removal)
-      var content = '✓ Complete\n';
-      content += '📊 ' + (data.iterations || this.agentState.currentIteration) + ' iterations\n';
-      content += '🔧 ' + (data.tools_used || this.agentState.toolsUsed.length) + ' tools used';
+      var content = 'Complete\n';
+      content += (data.iterations || this.agentState.currentIteration) + ' iterations\n';
+      content += (data.tools_used || this.agentState.toolsUsed.length) + ' tools used';
 
       // Return updated message, but mark for removal
       var message = this.updateStatusMessage(content, 'done');
@@ -308,15 +308,15 @@ define([
      * Formats 'error' event
      */
     format_error: function(data) {
-      var content = '❌ Error\n';
-      content += '⚠️ ' + (data.error || 'An error occurred');
+      var content = 'Error\n';
+      content += (data.error || 'An error occurred');
 
       if (data.retry_attempt) {
-        content += '\n🔄 Retry attempt: ' + data.retry_attempt;
+        content += '\nRetry attempt: ' + data.retry_attempt;
       }
 
       if (data.will_retry) {
-        content += '\n⏳ Will retry...';
+        content += '\nWill retry...';
       }
 
       return this.updateStatusMessage(content, 'error');
