@@ -58,12 +58,27 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 
   /**
    * sets status locally, publishes status for jobs ticker, and returns True if any changes
+   * Uses query_task_summary_filtered to get counts matching current filters
    */
   function getStatus() {
     if (!localStorage.getItem("tokenstring") || !localStorage.getItem("userid")){
       return
     }
-    var prom = window.App.api.service('AppService.query_task_summary', []);
+
+    // Build SimpleTaskFilter from current filters
+    var simpleFilter = {};
+    if (self.filters.app && self.filters.app !== 'all') {
+      simpleFilter.app = self.filters.app;
+    }
+    if (self.filters.includeArchived) {
+      simpleFilter.include_archived = 1;
+    }
+    if (self.filters.search) {
+      simpleFilter.search = self.filters.search;
+    }
+    // Note: We don't filter by status for the summary counts - we want all status counts
+
+    var prom = window.App.api.service('AppService.query_task_summary_filtered', [simpleFilter]);
     return prom.then(function (res) {
       var status = res[0];
 
@@ -186,9 +201,25 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 
   /**
    * listen for job filtering to store filter state locally
+   * and update status counts to match new filters
    */
   Topic.subscribe('/JobFilter', function (filter) {
     Object.assign(self.filters, filter);
+    // Update status counts to reflect new filters
+    getStatus();
+  });
+
+  /**
+   * listen for keyword/search filtering to update status counts
+   */
+  Topic.subscribe('/KeywordFilter', function (keyword) {
+    if (keyword && keyword.trim() !== '') {
+      self.filters.search = keyword.trim();
+    } else {
+      delete self.filters.search;
+    }
+    // Update status counts to reflect new search filter
+    getStatus();
   });
 
   return {
