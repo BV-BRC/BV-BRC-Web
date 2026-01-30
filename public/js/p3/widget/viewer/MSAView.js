@@ -496,7 +496,7 @@ define([
       var genomeList = [];
 
       var self = this;
-      if (ids[0].match(/^fig/) || ids[0].match(/CDS/)) {
+      if (ids.some(id => /^fig/.test(id))) {
         this.nodeType = 'feature';
         this.containerType = 'feature_data';
         var fetchedIds = when(xhr.post(PathJoin(window.App.dataAPI, 'genome_feature'), {
@@ -523,7 +523,7 @@ define([
             self.idMap[seqIdIndex] = {
               seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
             };
-            if (ids[0].match(/^fig/)) {
+            if (ids.some(id => /^fig/.test(id))) {
               self.dataMap[feature.patric_id] = {
                 seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
               };
@@ -594,7 +594,7 @@ define([
         console.log('feature fetchedIds ', fetchedIds);
         // console.log('feature genomes ', genomes);
       }
-      else if (ids[0].match(/\d+\.\d+/)) {
+      else if (ids.some(id => /\d+\.\d+/.test(id))) {
         this.nodeType = 'genome';
         this.containerType = 'genome_data';
         var genome_ids = [];
@@ -629,7 +629,7 @@ define([
             var keys = Object.keys(seqIds);
             // console.log('in when response keys', keys);
 
-            if (keys[0].match(/^\d+\.\d+$/)) {
+            if (keys.some(k => /^\d+\.\d+$/.test(k))) {
               seqIdIndex = seqIds[genome.genome_id] - 1;
             } else {
               for (var i = 0; i < keys.length; i++) {
@@ -858,12 +858,7 @@ define([
           if (s.name.match(/^\d+\.\d+$/) || s.name.match(/^fig/)) {
             s.name = label[s.name];
             // console.log('idMenu match genome id or fig s.name=', s.name);
-          } else {
-            var myid = s.name.match(/.*\|(\d+\.\d+).*/);
-            // console.log('idMenu match accn id ', myid);
-            s.name = label[myid[1]];
-            // console.log('idMenu s.name=   myid= ', s.name, myid[1]);
-          }
+          } 
         }));
         console.log('msa_models2= ', msa_models2);
 
