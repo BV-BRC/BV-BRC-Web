@@ -544,23 +544,18 @@ define([
       console.log('createDataMap() this.dataStats ', this.dataStats);
 
       var ids = this.dataStats.seqs.map(function (node) { return node.name.replaceAll(':', '|'); });
+      // console.log('createDataMap() ids= ', ids);
 
       var pIDs = [];
-      var nodeIDType = '';
+      var nodeIDType = 'unknown';
 
       ids.forEach((id) => {
         // id = id.replace(/\|$/, '');
         pIDs.push(encodeURIComponent(id))
         if (id.match(/^fig\|\d+\.(.+)\d+$/)) {
-          if (nodeIDType !== 'unknown' && nodeIDType !== 'genome_id') {
-            nodeIDType = 'feature_id';
-          }
+          nodeIDType = 'feature_id';
         } else if (id.match(/^\d+.\d+$/)) {
-          if (nodeIDType !== 'unknown' && nodeIDType !== 'feature_id') {
-            nodeIDType = 'genome_id';
-          }
-        } else {
-          nodeIDType = 'unknown';
+          nodeIDType = 'genome_id';
         }
       });
 
@@ -597,7 +592,7 @@ define([
             self.idMap[seqIdIndex] = {
               seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
             };
-            if (ids[0].match(/^fig/)) {
+            if (ids.some(id => /^fig/.test(id))) {
               self.dataMap[feature.patric_id] = {
                 seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
               };
