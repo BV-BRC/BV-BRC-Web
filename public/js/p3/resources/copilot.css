@@ -1372,3 +1372,212 @@
     gap: 4px;
   }
 }
+
+/* ========================================
+   WORKSPACE LISTING WIDGET STYLES
+   ======================================== */
+
+/* Main Container */
+.workspace-listing-container {
+  width: 100%;
+  max-height: 600px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  padding: 16px;
+}
+
+/* Path Header */
+.workspace-path-header {
+  background-color: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-left: 4px solid #0284c7;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.08);
+}
+
+.workspace-path-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  word-break: break-all;
+}
+
+/* Items Container */
+.workspace-items-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+/* Items Group */
+.workspace-items-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.workspace-group-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #4b5563;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e5e7eb;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Items List */
+.workspace-items-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+/* Item Card */
+.workspace-item-card {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 14px 16px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.workspace-item-card:hover {
+  border-color: #0284c7;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+  transform: translateY(-2px);
+}
+
+.workspace-item-card.workspace-item-folder {
+  border-left: 3px solid #fbbf24;
+}
+
+.workspace-item-card.workspace-item-file {
+  border-left: 3px solid #60a5fa;
+}
+
+/* Item Header */
+.workspace-item-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+/* Item Icon */
+.workspace-item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.workspace-icon-folder {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.workspace-icon-folder::before {
+  content: "📁";
+}
+
+.workspace-icon-file {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.workspace-icon-file::before {
+  content: "📄";
+}
+
+/* Item Name */
+.workspace-item-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Item Metadata */
+.workspace-item-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 44px;
+}
+
+.workspace-item-meta-item {
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.workspace-meta-label {
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+/* Empty and Error States */
+.workspace-empty-folder {
+  padding: 20px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
+  font-style: italic;
+  background-color: #f9fafb;
+  border: 1px dashed #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.workspace-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 16px;
+  background-color: #f9fafb;
+  border: 1px dashed #e5e7eb;
+  border-radius: 8px;
+}
+
+.workspace-error {
+  padding: 20px;
+  text-align: center;
+  color: #b91c1c;
+  font-size: 14px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .workspace-items-list {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace-path-title {
+    font-size: 14px;
+  }
+
+  .workspace-item-card {
+    padding: 12px 14px;
+  }
+}

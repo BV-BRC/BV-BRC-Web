@@ -907,6 +907,7 @@ define([
           (chunk, toolMetadata) => {
               // onData - create assistant message on first chunk if not exists
               console.log('[HANDLER] onData callback received chunk:', chunk);
+              console.log('[HANDLER] toolMetadata in onData:', toolMetadata);
               if (!assistantMessageCreated) {
                   // Remove status message if it exists
                   if (statusMessageId) {
@@ -923,9 +924,21 @@ define([
 
                   // Add tool metadata if available (for workflow handling)
                   if (toolMetadata) {
+                      console.log('[HANDLER] Adding toolMetadata to assistant message');
+                      console.log('[HANDLER] toolMetadata:', toolMetadata);
+                      console.log('[HANDLER] toolMetadata.workflowData:', toolMetadata.workflowData);
+                      console.log('[HANDLER] toolMetadata.workflowData type:', typeof toolMetadata.workflowData);
+                      if (toolMetadata.workflowData) {
+                          console.log('[HANDLER] toolMetadata.workflowData keys:', Object.keys(toolMetadata.workflowData));
+                          console.log('[HANDLER] toolMetadata.workflowData.workflow_name:', toolMetadata.workflowData.workflow_name);
+                      }
                       assistantMessage.source_tool = toolMetadata.source_tool;
                       assistantMessage.isWorkflow = toolMetadata.isWorkflow;
                       assistantMessage.workflowData = toolMetadata.workflowData;
+                      console.log('[HANDLER] ✓ Assistant message updated with toolMetadata');
+                      console.log('[HANDLER] assistantMessage.workflowData:', assistantMessage.workflowData);
+                  } else {
+                      console.log('[HANDLER] No toolMetadata provided');
                   }
 
                   this.chatStore.addMessage(assistantMessage);

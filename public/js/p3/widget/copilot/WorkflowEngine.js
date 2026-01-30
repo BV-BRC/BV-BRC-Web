@@ -33,6 +33,8 @@ define([
      * Called after widget creation
      */
     postCreate: function() {
+      console.log('[WorkflowEngine] postCreate() called');
+      console.log('[WorkflowEngine] Initial workflowData:', this.workflowData);
       this.inherited(arguments);
       this.render();
     },
@@ -41,7 +43,12 @@ define([
      * Renders the workflow data
      */
     render: function() {
+      console.log('[WorkflowEngine] render() called');
+      console.log('[WorkflowEngine] workflowData type:', typeof this.workflowData);
+      console.log('[WorkflowEngine] workflowData:', this.workflowData);
+
       if (!this.workflowData) {
+        console.error('[WorkflowEngine] ✗ No workflow data available');
         domConstruct.create('div', {
           innerHTML: '<p>No workflow data available</p>',
           class: 'workflow-empty'
@@ -52,16 +59,36 @@ define([
       // Parse JSON if it's a string
       var data = this.workflowData;
       if (typeof data === 'string') {
+        console.log('[WorkflowEngine] workflowData is a string, attempting to parse JSON');
         try {
           data = JSON.parse(data);
+          console.log('[WorkflowEngine] ✓ Successfully parsed JSON');
+          console.log('[WorkflowEngine] Parsed data type:', typeof data);
+          console.log('[WorkflowEngine] Parsed data keys:', data ? Object.keys(data) : 'null');
         } catch (e) {
-          console.error('[WorkflowEngine] Failed to parse workflow data:', e);
+          console.error('[WorkflowEngine] ✗ Failed to parse workflow data:', e);
+          console.error('[WorkflowEngine] Error details:', e.message, e.stack);
           domConstruct.create('div', {
             innerHTML: '<p>Error: Invalid workflow data</p>',
             class: 'workflow-error'
           }, this.domNode);
           return;
         }
+      } else {
+        console.log('[WorkflowEngine] workflowData is already an object');
+        console.log('[WorkflowEngine] Data keys:', data ? Object.keys(data) : 'null');
+      }
+
+      // Log workflow structure
+      if (data) {
+        console.log('[WorkflowEngine] Workflow structure:');
+        console.log('[WorkflowEngine]   - workflow_name:', data.workflow_name);
+        console.log('[WorkflowEngine]   - workflow_id:', data.workflow_id);
+        console.log('[WorkflowEngine]   - version:', data.version);
+        console.log('[WorkflowEngine]   - has steps:', data.steps ? 'yes (' + data.steps.length + ')' : 'no');
+        console.log('[WorkflowEngine]   - has base_context:', !!data.base_context);
+        console.log('[WorkflowEngine]   - has workflow_outputs:', data.workflow_outputs ? 'yes (' + data.workflow_outputs.length + ')' : 'no');
+        console.log('[WorkflowEngine] Full workflow data:', JSON.stringify(data, null, 2));
       }
 
       // Create visual workflow display
@@ -94,13 +121,25 @@ define([
      * @param {DOMNode} container - Parent container
      */
     renderWorkflowHeader: function(workflow, container) {
+      console.log('[WorkflowEngine] renderWorkflowHeader() called');
+      console.log('[WorkflowEngine] workflow.workflow_name:', workflow.workflow_name);
+      console.log('[WorkflowEngine] workflow object keys:', Object.keys(workflow));
+
       var header = domConstruct.create('div', {
         class: 'workflow-header'
       }, container);
 
+      var workflowName = workflow.workflow_name || 'Untitled Workflow';
+      if (!workflow.workflow_name) {
+        console.warn('[WorkflowEngine] ⚠ workflow_name is missing, using default "Untitled Workflow"');
+        console.warn('[WorkflowEngine] Available workflow properties:', Object.keys(workflow));
+      } else {
+        console.log('[WorkflowEngine] ✓ Using workflow_name:', workflowName);
+      }
+
       domConstruct.create('div', {
         class: 'workflow-title',
-        innerHTML: this.escapeHtml(workflow.workflow_name || 'Untitled Workflow')
+        innerHTML: this.escapeHtml(workflowName)
       }, header);
 
       var metaContainer = domConstruct.create('div', {
@@ -390,6 +429,9 @@ define([
      * @param {Object|string} newData - New workflow data
      */
     setWorkflowData: function(newData) {
+      console.log('[WorkflowEngine] setWorkflowData() called');
+      console.log('[WorkflowEngine] newData type:', typeof newData);
+      console.log('[WorkflowEngine] newData:', newData);
       this.workflowData = newData;
       // Clear existing content
       domConstruct.empty(this.domNode);

@@ -8,9 +8,10 @@ define([
   'markdown-it-link-attributes/dist/markdown-it-link-attributes.min', // Plugin to add attributes to links
   'dijit/Dialog', // Dialog widget
   './CopilotToolHandler', // Tool handler for special tool processing
-  './WorkflowEngine' // Workflow engine widget for displaying workflows
+  './WorkflowEngine', // Workflow engine widget for displaying workflows
+  './WorkspaceListingWidget' // Workspace listing widget for displaying workspace contents
 ], function (
-  declare, domConstruct, on, topic, lang, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine
+  declare, domConstruct, on, topic, lang, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, WorkspaceListingWidget
 ) {
   /**
    * @class ChatMessage
@@ -68,10 +69,31 @@ define([
 
       // Process content based on source_tool using tool handler
       if (this.message.source_tool) {
+        console.log('[ChatMessage] Processing message with source_tool:', this.message.source_tool);
+        console.log('[ChatMessage] Original content type:', typeof this.message.content);
+        console.log('[ChatMessage] Original content (first 200 chars):',
+          typeof this.message.content === 'string' ? this.message.content.substring(0, 200) : this.message.content);
+
         var processedData = this.toolHandler.processMessageContent(this.message.content, this.message.source_tool);
+
+        console.log('[ChatMessage] Processed data:', processedData);
+        console.log('[ChatMessage] processedData.isWorkflow:', processedData.isWorkflow);
+        console.log('[ChatMessage] processedData.workflowData:', processedData.workflowData);
+        console.log('[ChatMessage] processedData.workflowData type:', typeof processedData.workflowData);
+
         this.message.content = processedData.content;
         this.message.isWorkflow = processedData.isWorkflow;
         this.message.workflowData = processedData.workflowData;
+        this.message.isWorkspaceListing = processedData.isWorkspaceListing;
+        this.message.workspaceData = processedData.workspaceData;
+
+        if (processedData.workflowData) {
+          console.log('[ChatMessage] ✓ Workflow data set on message');
+          console.log('[ChatMessage] workflowData keys:', Object.keys(processedData.workflowData));
+          console.log('[ChatMessage] workflowData.workflow_name:', processedData.workflowData.workflow_name);
+        } else {
+          console.warn('[ChatMessage] ⚠ No workflowData in processed data');
+        }
       }
 
       // Add more top margin for first message, less for subsequent
@@ -172,7 +194,12 @@ define([
      */
     renderUserOrAssistantMessage: function(messageDiv) {
       // Check if this is a workflow message
+      console.log('[ChatMessage] renderUserOrAssistantMessage() - checking for workflow');
+      console.log('[ChatMessage] isWorkflow:', this.message.isWorkflow);
+      console.log('[ChatMessage] workflowData exists:', !!this.message.workflowData);
+
       if (this.message.isWorkflow && this.message.workflowData) {
+        console.log('[ChatMessage] ✓ Rendering workflow button');
         // Show a "Review Workflow" button instead of displaying the content
         var workflowButtonContainer = domConstruct.create('div', {
           class: 'workflow-button-container',
@@ -187,8 +214,15 @@ define([
 
         // Add click handler to show workflow dialog
         on(reviewWorkflowButton, 'click', lang.hitch(this, function() {
+          console.log('[ChatMessage] Review Workflow button clicked');
           this.showWorkflowDialog();
         }));
+      } else if (this.message.isWorkspaceListing && this.message.workspaceData) {
+        // Show workspace listing widget directly in the message
+        var workspaceWidget = new WorkspaceListingWidget({
+          workspaceData: this.message.workspaceData
+        });
+        domConstruct.place(workspaceWidget.domNode, messageDiv);
       } else {
         // Normal message rendering
         domConstruct.create('div', {
@@ -387,15 +421,29 @@ define([
      * Shows a dialog displaying the workflow using WorkflowEngine widget
      */
     showWorkflowDialog: function() {
+      console.log('[ChatMessage] showWorkflowDialog() called');
+      console.log('[ChatMessage] message object:', this.message);
+      console.log('[ChatMessage] message.workflowData:', this.message.workflowData);
+      console.log('[ChatMessage] message.workflowData type:', typeof this.message.workflowData);
+      console.log('[ChatMessage] message.isWorkflow:', this.message.isWorkflow);
+      console.log('[ChatMessage] message.source_tool:', this.message.source_tool);
+
       if (!this.message.workflowData) {
-        console.error('[ChatMessage] No workflow data available');
+        console.error('[ChatMessage] ✗ No workflow data available');
+        console.error('[ChatMessage] Message properties:', Object.keys(this.message));
         return;
       }
+
+      console.log('[ChatMessage] ✓ Workflow data exists, creating WorkflowEngine');
+      console.log('[ChatMessage] Workflow data content:', JSON.stringify(this.message.workflowData, null, 2));
 
       // Create WorkflowEngine widget
       var workflowEngine = new WorkflowEngine({
         workflowData: this.message.workflowData
       });
+
+      console.log('[ChatMessage] ✓ WorkflowEngine created');
+      console.log('[ChatMessage] workflowEngine.domNode:', workflowEngine.domNode);
 
       // Create dialog
       var workflowDialog = new Dialog({
@@ -403,6 +451,8 @@ define([
         style: 'width: 700px; max-height: 80vh;',
         content: workflowEngine.domNode
       });
+
+      console.log('[ChatMessage] ✓ Dialog created');
 
       // Add close button
       var buttonContainer = domConstruct.create('div', {

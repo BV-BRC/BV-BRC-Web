@@ -349,18 +349,46 @@ define([
                                     let dataToUse = parsed;
                                     let toolMetadata = null;
                                     if (currentEvent === 'final_response' && parsed.tool) {
+                                        console.log('[SSE] 🔧 Calling tool handler for tool:', parsed.tool);
+                                        console.log('[SSE] 🔧 parsed.chunk type:', typeof parsed.chunk);
+                                        console.log('[SSE] 🔧 parsed.chunk value:', parsed.chunk);
+
                                         const processed = toolHandler.processToolEvent(currentEvent, parsed.tool, parsed);
+
+                                        console.log('[SSE] 🔧 Tool handler returned:', processed ? 'data' : 'null');
                                         if (processed) {
                                             dataToUse = processed;
-                                            console.log('[SSE] Tool handler processed event');
+                                            console.log('[SSE] ✓ Tool handler processed event successfully');
+                                            console.log('[SSE] ✓ processed.isWorkflow:', processed.isWorkflow);
+                                            console.log('[SSE] ✓ processed.isWorkspaceListing:', processed.isWorkspaceListing);
 
                                             // Extract tool metadata for workflow handling
                                             // TODO: I dont like this hack and need something more robust.
                                             if (processed.isWorkflow && processed.workflowData) {
+                                                console.log('[SSE] ✓ Creating toolMetadata for workflow');
+                                                console.log('[SSE] processed.workflowData type:', typeof processed.workflowData);
+                                                console.log('[SSE] processed.workflowData keys:', processed.workflowData ? Object.keys(processed.workflowData) : 'null');
+                                                console.log('[SSE] processed.workflowData.workflow_name:', processed.workflowData ? processed.workflowData.workflow_name : 'null');
+                                                console.log('[SSE] Full processed.workflowData:', JSON.stringify(processed.workflowData, null, 2));
+
                                                 toolMetadata = {
                                                     source_tool: parsed.tool,
                                                     isWorkflow: processed.isWorkflow,
                                                     workflowData: processed.workflowData
+                                                };
+
+                                                console.log('[SSE] ✓ toolMetadata created:', toolMetadata);
+                                                console.log('[SSE] toolMetadata.workflowData:', toolMetadata.workflowData);
+                                            } else {
+                                                console.log('[SSE] ⚠ Not creating workflow toolMetadata - isWorkflow:', processed.isWorkflow, 'has workflowData:', !!processed.workflowData);
+                                            }
+
+                                            // Extract tool metadata for workspace listing handling
+                                            if (processed.isWorkspaceListing && processed.workspaceData) {
+                                                toolMetadata = {
+                                                    source_tool: parsed.tool,
+                                                    isWorkspaceListing: processed.isWorkspaceListing,
+                                                    workspaceData: processed.workspaceData
                                                 };
                                             }
                                         }
@@ -372,8 +400,13 @@ define([
                                         textChunk = JSON.stringify(textChunk, null, 2);
                                     }
                                     console.log('[SSE] Extracted text chunk:', textChunk);
+                                    console.log('[SSE] toolMetadata before onData call:', toolMetadata);
+                                    if (toolMetadata && toolMetadata.workflowData) {
+                                        console.log('[SSE] toolMetadata.workflowData before onData:', toolMetadata.workflowData);
+                                        console.log('[SSE] toolMetadata.workflowData.workflow_name:', toolMetadata.workflowData.workflow_name);
+                                    }
                                     if (textChunk && onData) {
-                                        console.log('[SSE] Calling onData callback with chunk');
+                                        console.log('[SSE] Calling onData callback with chunk and toolMetadata');
                                         onData(textChunk, toolMetadata);
                                     } else {
                                         console.log('[SSE] NOT calling onData - textChunk:', textChunk, 'onData:', !!onData);
