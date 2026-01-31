@@ -664,11 +664,56 @@ define([
       // Track if grid has loaded for the first time
       var gridFirstLoadComplete = false;
 
+      // Store current local filter text for re-application after grid refresh
+      this._localFilterText = '';
+
+      // Helper function to apply local filter to visible rows
+      var applyLocalFilter = lang.hitch(this, function() {
+        var filterText = this._localFilterText;
+        if (!this.grid || !this.grid.domNode) {
+          return;
+        }
+
+        // Get all visible rows in the grid
+        var rows = query('.dgrid-row', this.grid.domNode);
+
+        rows.forEach(lang.hitch(this, function (rowNode) {
+          var row = this.grid.row(rowNode);
+          if (!row || !row.data) {
+            return;
+          }
+
+          var job = row.data;
+          var visible = true;
+
+          if (filterText && filterText.trim() !== '') {
+            // Check if any searchable field contains the filter text
+            var searchableText = [
+              job.id || '',
+              job.application_name || '',
+              job.status || '',
+              (job.parameters && job.parameters.output_file) || ''
+            ].join(' ').toLowerCase();
+
+            visible = searchableText.indexOf(filterText.toLowerCase()) !== -1;
+          }
+
+          // Show or hide the row
+          rowNode.style.display = visible ? '' : 'none';
+        }));
+      });
+
       // Handle grid refresh completion
       this.grid.on('dgrid-refresh-complete', lang.hitch(this, function (evt) {
         // Note: App filter labels are now updated via fetchAppSummaryCounts() which
         // calls query_app_summary_filtered API for accurate totals across all pages.
         // We no longer update filter labels from the current page's jobs.
+
+        // Re-apply local filter after grid refresh
+        if (this._localFilterText) {
+          // Use setTimeout to ensure the grid rows are fully rendered
+          setTimeout(applyLocalFilter, 50);
+        }
 
         // After grid has fully loaded for the first time, call query_task_summary
         // to ensure status bar shows correct counts
@@ -693,7 +738,16 @@ define([
       // Restore filter state from URL hash BEFORE adding grid
       // This sets serviceFilter which the grid will use on first load
       // Pass true to skip grid.set('query') since grid isn't added yet
+      // Note: containerActionBar is already added above, so its _selector exists
+      // and we can restore the app filter value now
       this._restoreStateFromUrl(true);
+
+      // After restoring state, re-fetch app summary counts to show correct selection
+      // This is needed because containerActionBar.startup() already called fetchAppSummaryCounts()
+      // before we restored the URL state
+      if (this.containerActionBar && this.containerActionBar.fetchAppSummaryCounts) {
+        this.containerActionBar.fetchAppSummaryCounts();
+      }
 
       // Set grid query from restored filters BEFORE adding grid as child
       // This ensures the grid uses the correct filters when it starts loading
@@ -814,6 +868,13 @@ define([
         // triggers a refresh internally via the Pagination extension's _setQuery method.
         // Calling refresh() again causes "This deferred has already been resolved" errors.
         _self.grid.set('query', filters);
+      }));
+
+      // listen for local/page filtering (client-side, filters visible rows only)
+      Topic.subscribe('/LocalFilter', lang.hitch(this, function (filterText) {
+        // Store the filter text so it can be re-applied after grid refresh
+        this._localFilterText = filterText || '';
+        applyLocalFilter();
       }));
 
       // Hide the panel on a small screen

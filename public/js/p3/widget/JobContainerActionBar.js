@@ -445,6 +445,29 @@ define([
           // Update the selector
           if (self._selector) {
             var currentValue = self.filters.app || 'all';
+
+            // If the current filter value isn't in the options (e.g., URL had an app with 0 jobs),
+            // add it to the options so the selector can display it
+            if (currentValue !== 'all') {
+              var hasCurrentValue = apps.some(function(app) { return app.value === currentValue; });
+              if (!hasCurrentValue) {
+                // Add the missing app with 0 count
+                apps.push({
+                  label: formatter.serviceLabel(currentValue) + ' (0)',
+                  serviceLabel: formatter.serviceLabel(currentValue),
+                  value: currentValue,
+                  count: 0,
+                  selected: true
+                });
+                // Re-sort
+                apps.sort(function (a, b) {
+                  if (a.value === 'all') return -1;
+                  if (b.value === 'all') return 1;
+                  return (b.serviceLabel < a.serviceLabel) ? 1 : -1;
+                });
+              }
+            }
+
             self._selector.set('options', apps);
             self._selector.set('value', currentValue, false);
           }
@@ -456,73 +479,147 @@ define([
 
     setupKeywordSearch: function (parentNode) {
       var self = this;
-      var textBoxNode = domConstruct.create('span', {
+
+      // Container for both search boxes
+      var searchContainer = domConstruct.create('span', {
         style: {
-          display: 'inline-block'
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '1em'
         }
       }, parentNode);
 
-      // Debounce timer for search
-      var searchTimer = null;
-      var DEBOUNCE_DELAY = 500; // ms
-      var isUnloading = false;
-
-      // Track page unload to prevent firing during reload
-      var beforeUnloadHandler = function() {
-        isUnloading = true;
-        if (searchTimer) {
-          clearTimeout(searchTimer);
-          searchTimer = null;
-        }
-      };
-      window.addEventListener('beforeunload', beforeUnloadHandler);
-
-      var keywordSearch = Textbox({
+      // === Server-side search (requires Enter or button click) ===
+      var serverSearchContainer = domConstruct.create('span', {
         style: {
-          width: '200px'
+          display: 'inline-flex',
+          alignItems: 'center'
+        }
+      }, searchContainer);
+
+      var serverSearch = new Textbox({
+        style: {
+          width: '180px'
         },
-        placeHolder: 'Search by output name',
-        onChange: function () {
-          // Don't process changes during page unload
-          if (isUnloading) {
-            return;
-          }
+        placeHolder: 'Search all jobs...',
+        // Don't use intermediateChanges - only trigger on Enter or button
+        intermediateChanges: false
+      });
+      serverSearch.placeAt(serverSearchContainer);
 
-          var keywords = keywordSearch.value;
+      // Store reference for external access
+      this._serverSearchBox = serverSearch;
 
-          // Clear any pending search
-          if (searchTimer) {
-            clearTimeout(searchTimer);
-            searchTimer = null;
-          }
+      // Function to execute server search
+      var executeServerSearch = function() {
+        var keywords = serverSearch.get('value');
+        Topic.publish('/KeywordFilter', keywords ? keywords.trim() : '');
+      };
 
-          // Skip if empty or only whitespace - don't trigger API call
-          if (!keywords || keywords.trim() === '') {
-            // Immediate clear for empty search (no debounce needed)
-            Topic.publish('/KeywordFilter', '');
-            return;
-          }
+      // Handle Enter key in server search box
+      on(serverSearch.domNode, 'keypress', function(evt) {
+        if (evt.key === 'Enter' || evt.keyCode === 13) {
+          evt.preventDefault();
+          executeServerSearch();
+        }
+      });
 
-          // Debounce: wait for user to stop typing before triggering search
-          searchTimer = setTimeout(function () {
-            searchTimer = null;
-            // Double-check we're not unloading
-            if (!isUnloading) {
-              Topic.publish('/KeywordFilter', keywords);
-            }
-          }, DEBOUNCE_DELAY);
+      // Search button for server search
+      var searchBtn = domConstruct.create('button', {
+        type: 'button',
+        innerHTML: '<i class="icon-search"></i>',
+        title: 'Search all jobs (server-side)',
+        style: {
+          marginLeft: '4px',
+          padding: '4px 8px',
+          cursor: 'pointer',
+          border: '1px solid #ccc',
+          borderRadius: '3px',
+          background: '#f5f5f5'
+        }
+      }, serverSearchContainer);
+      on(searchBtn, 'click', executeServerSearch);
+
+      // Clear button for server search
+      var clearServerBtn = domConstruct.create('button', {
+        type: 'button',
+        innerHTML: '<i class="icon-cancel-circle"></i>',
+        title: 'Clear server search',
+        style: {
+          marginLeft: '2px',
+          padding: '4px 8px',
+          cursor: 'pointer',
+          border: '1px solid #ccc',
+          borderRadius: '3px',
+          background: '#f5f5f5'
+        }
+      }, serverSearchContainer);
+      on(clearServerBtn, 'click', function() {
+        serverSearch.set('value', '');
+        Topic.publish('/KeywordFilter', '');
+      });
+
+      // === Local/page filter (instant, client-side) ===
+      var localFilterContainer = domConstruct.create('span', {
+        style: {
+          display: 'inline-flex',
+          alignItems: 'center',
+          borderLeft: '1px solid #ccc',
+          paddingLeft: '1em'
+        }
+      }, searchContainer);
+
+      var localFilter = new Textbox({
+        style: {
+          width: '150px'
         },
+        placeHolder: 'Filter this page...',
         intermediateChanges: true
       });
-      keywordSearch.placeAt(textBoxNode);
+      localFilter.placeAt(localFilterContainer);
 
-      // Store reference to clear timer on destroy
-      this._clearSearchTimer = function() {
-        if (searchTimer) {
-          clearTimeout(searchTimer);
-          searchTimer = null;
+      // Store reference for external access
+      this._localFilterBox = localFilter;
+
+      // Debounce timer for local filter
+      var localFilterTimer = null;
+      var LOCAL_FILTER_DELAY = 150; // ms - fast since it's local
+
+      on(localFilter, 'change', function() {
+        if (localFilterTimer) {
+          clearTimeout(localFilterTimer);
         }
-        window.removeEventListener('beforeunload', beforeUnloadHandler);
+        localFilterTimer = setTimeout(function() {
+          localFilterTimer = null;
+          var filterText = localFilter.get('value');
+          Topic.publish('/LocalFilter', filterText ? filterText.trim().toLowerCase() : '');
+        }, LOCAL_FILTER_DELAY);
+      });
+
+      // Clear button for local filter
+      var clearLocalBtn = domConstruct.create('button', {
+        innerHTML: '<i class="icon-cancel-circle"></i>',
+        title: 'Clear page filter',
+        style: {
+          marginLeft: '4px',
+          padding: '4px 8px',
+          cursor: 'pointer',
+          border: '1px solid #ccc',
+          borderRadius: '3px',
+          background: '#f5f5f5'
+        }
+      }, localFilterContainer);
+      on(clearLocalBtn, 'click', function() {
+        localFilter.set('value', '');
+        Topic.publish('/LocalFilter', '');
+      });
+
+      // Store cleanup function
+      this._clearSearchTimer = function() {
+        if (localFilterTimer) {
+          clearTimeout(localFilterTimer);
+          localFilterTimer = null;
+        }
       };
     }
 
