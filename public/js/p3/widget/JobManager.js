@@ -196,16 +196,15 @@ define([
 
       // Restore sort order
       // When skipGridQuery is true, we don't set sort on the grid directly
-      // because that triggers a refresh. Instead, we store it in serviceFilter
-      // and the grid's queryOptions, and it will be applied on the next query.
+      // because that triggers a refresh. Instead, we store it in the grid's
+      // queryOptions, and it will be applied on the next query.
+      // NOTE: sort/sortDesc are stored separately from filters - they are NOT
+      // part of the query filter, but rather query options.
       if (params.sort) {
         var descending = params.desc === '1';
-        // Store sort in serviceFilter for URL persistence
-        if (!this.serviceFilter) {
-          this.serviceFilter = {};
-        }
-        this.serviceFilter.sort = params.sort;
-        this.serviceFilter.sortDesc = descending;
+
+        // Store sort info for URL persistence (but NOT in serviceFilter which is for query filters)
+        this._pendingSort = { attribute: params.sort, descending: descending };
 
         // Only set sort on grid directly if we're not skipping the query
         // Otherwise, setting sort triggers a refresh which causes race conditions
@@ -215,9 +214,11 @@ define([
           // Set the grid's sort property directly without triggering a refresh
           // This ensures the column header shows the correct sort indicator
           this.grid.sort = [{ attribute: params.sort, descending: descending }];
-          if (this.grid.queryOptions) {
-            this.grid.queryOptions.sort = [{ attribute: params.sort, descending: descending }];
+          // Ensure queryOptions exists before setting sort
+          if (!this.grid.queryOptions) {
+            this.grid.queryOptions = {};
           }
+          this.grid.queryOptions.sort = [{ attribute: params.sort, descending: descending }];
         }
       }
 
@@ -667,21 +668,29 @@ define([
       this.grid.on('dgrid-sort', lang.hitch(this, function (evt) {
         var sort = evt.sort;
         if (sort && sort.length > 0) {
+          // Build params for URL - start with actual filters (not sort metadata)
           var currentFilters = lang.mixin({}, this.serviceFilter || {});
-          currentFilters.sort = sort[0].attribute;
-          currentFilters.sortDesc = sort[0].descending;
+          // Remove any stale sort/sortDesc from serviceFilter
+          delete currentFilters.sort;
+          delete currentFilters.sortDesc;
+
+          // Add sort info for URL persistence only (not to serviceFilter)
+          var urlParams = lang.mixin({}, currentFilters);
+          urlParams.sort = sort[0].attribute;
+          urlParams.sortDesc = sort[0].descending;
+
           // Preserve current page
           if (this.grid._currentPage) {
-            currentFilters.page = this.grid._currentPage;
+            urlParams.page = this.grid._currentPage;
           }
           // Preserve current selection if any
           var selectedIds = Object.keys(this.grid.selection || {});
           if (selectedIds.length === 1) {
-            currentFilters.selectedJob = selectedIds[0];
+            urlParams.selectedJob = selectedIds[0];
           }
-          // Update serviceFilter to keep sort state
+          // Update serviceFilter WITHOUT sort info (keep it clean for query filters only)
           this.serviceFilter = currentFilters;
-          this._updateHash(currentFilters);
+          this._updateHash(urlParams);
         }
       }));
 
@@ -884,14 +893,19 @@ define([
         // Update serviceFilter
         this.serviceFilter = filters;
 
-        // Update URL hash with current filter state
-        this._updateHash(filters);
+        // Only update URL and trigger grid query if the grid has been added to the DOM
+        // During startup, the grid hasn't been added yet, so we just set serviceFilter
+        // and the grid will use it when it loads
+        if (this.grid && this.grid.domNode) {
+          // Update URL hash with current filter state
+          this._updateHash(filters);
 
-        // Setting the query will trigger the grid to refresh and re-fetch data
-        // Note: Do NOT call grid.refresh() after this - set('query', ...) already
-        // triggers a refresh internally via the Pagination extension's _setQuery method.
-        // Calling refresh() again causes "This deferred has already been resolved" errors.
-        _self.grid.set('query', filters);
+          // Setting the query will trigger the grid to refresh and re-fetch data
+          // Note: Do NOT call grid.refresh() after this - set('query', ...) already
+          // triggers a refresh internally via the Pagination extension's _setQuery method.
+          // Calling refresh() again causes "This deferred has already been resolved" errors.
+          _self.grid.set('query', filters);
+        }
       }));
 
       // listen for local/page filtering (client-side, filters visible rows only)
