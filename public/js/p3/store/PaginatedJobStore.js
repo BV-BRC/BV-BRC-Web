@@ -156,7 +156,9 @@ define([
 
     /**
      * Apply client-side sorting to jobs based on sort options
-     * Note: This only sorts the current page's data, not all jobs
+     * Note: This is now only used as a fallback for the unfiltered enumerate_tasks API.
+     * The filtered API (enumerate_tasks_filtered) handles sorting server-side via
+     * sort_field and sort_order parameters.
      */
     _applySorting: function (jobs, sort) {
       if (!sort || !Array.isArray(sort) || sort.length === 0) {
@@ -321,6 +323,32 @@ define([
         simpleFilter.search = searchFilter;
       }
 
+      // Add sort parameters if provided
+      // Map frontend column names to API sort_field values
+      // Valid API sort_field values: submit_time, start_time, finish_time, application_id, service_status, id, output_name
+      if (sort && sort.length > 0) {
+        var sortCriteria = sort[0];
+        var attribute = sortCriteria.attribute;
+        var descending = sortCriteria.descending;
+
+        // Map frontend column names to API field names
+        var fieldMap = {
+          'submit_time': 'submit_time',
+          'start_time': 'start_time',
+          'completed_time': 'finish_time',  // frontend uses completed_time, API uses finish_time
+          'finish_time': 'finish_time',
+          'application_name': 'application_id',
+          'app': 'application_id',
+          'status': 'service_status',
+          'id': 'id',
+          'parameters': 'output_file'  // frontend sorts by parameters.output_file
+        };
+
+        var apiSortField = fieldMap[attribute] || 'submit_time';  // default to submit_time if unknown
+        simpleFilter.sort_field = apiSortField;
+        simpleFilter.sort_order = descending ? 'desc' : 'asc';
+      }
+
       // Make API call for this page
       var apiPromise;
       if (useFilteredAPI) {
@@ -353,10 +381,8 @@ define([
               }
             }
 
-            // Apply client-side sorting (sorts current page only)
-            if (sort) {
-              jobs = _self._applySorting(jobs, sort);
-            }
+            // Note: Sorting is now handled server-side via sort_field and sort_order parameters
+            // No client-side sorting needed
 
             // Cache the result with the total from API
             _self._cache[cacheKey] = {

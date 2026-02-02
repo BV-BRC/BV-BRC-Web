@@ -163,14 +163,12 @@ define(
           });
         });
 
-        // Call refresh() once to trigger the initial query
-        // The pagination extension requires refresh() to be called to load the first page
-        // We use a flag to ensure this only happens once during startup
-        if (!this._initialRefreshCalled) {
-          this._initialRefreshCalled = true;
-          this.refresh();
-        }
-
+        // Note: We don't call refresh() here anymore.
+        // The Pagination extension automatically loads the first page when the grid is
+        // placed in the DOM. Calling refresh() here would cause a duplicate request
+        // and "deferred already resolved" errors.
+        // The inherited startup() will handle initialization.
+        this.inherited(arguments);
       }
     });
 

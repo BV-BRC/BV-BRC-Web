@@ -168,6 +168,30 @@ define([
         filters.keyword = params.keyword; // Keep for URL persistence
         // Store in serviceFilter - grid will use it on first load
         this.serviceFilter = filters;
+
+        // Restore the search text box value in the UI
+        if (this.containerActionBar && this.containerActionBar._serverSearchBox) {
+          this.containerActionBar._serverSearchBox.set('value', params.keyword);
+        }
+
+        // Also update containerActionBar filters for consistency
+        if (this.containerActionBar) {
+          this.containerActionBar.filters.search = params.keyword;
+          // Disable archive checkbox when search is active
+          if (this.containerActionBar._archiveCheckbox) {
+            this.containerActionBar._archiveCheckbox.disabled = true;
+            this.containerActionBar._archiveCheckbox.checked = false;
+            this.containerActionBar.filters.includeArchived = false;
+            if (this.containerActionBar._archiveCheckbox.parentNode) {
+              this.containerActionBar._archiveCheckbox.parentNode.style.opacity = '0.5';
+              this.containerActionBar._archiveCheckbox.parentNode.title = 'Archive search not available with keyword filter';
+            }
+          }
+        }
+
+        // Publish to /KeywordFilter topic so the JobManager service updates its filters
+        // This ensures status counts reflect the search filter
+        Topic.publish('/KeywordFilter', params.keyword);
       }
 
       // Restore sort order

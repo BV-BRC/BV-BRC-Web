@@ -135,6 +135,8 @@ define([
       on(selector, 'change', function (val) {
         self.filters.app = val;
         Topic.publish('/JobFilter', self.filters);
+        // Refresh status counts when app filter changes
+        self.fetchFilteredStatusCounts();
       });
 
       // initialize app filters - don't query during startup to avoid duplicate queries
@@ -161,6 +163,7 @@ define([
         Topic.publish('/JobFilter', self.filters);
         domStyle.set(allBtn, 'display', 'none');
         self.fetchAppSummaryCounts();
+        self.fetchFilteredStatusCounts();
       });
 
 
@@ -178,6 +181,7 @@ define([
         Topic.publish('/JobFilter', self.filters);
         domStyle.set(allBtn, 'display', 'inline');
         self.fetchAppSummaryCounts();
+        self.fetchFilteredStatusCounts();
       });
 
       var inProgressBtn = domConstruct.create('span', {
@@ -194,6 +198,7 @@ define([
         Topic.publish('/JobFilter', self.filters);
         domStyle.set(allBtn, 'display', 'inline');
         self.fetchAppSummaryCounts();
+        self.fetchFilteredStatusCounts();
       });
 
       var completedBtn = domConstruct.create('span', {
@@ -210,6 +215,7 @@ define([
         Topic.publish('/JobFilter', self.filters);
         domStyle.set(allBtn, 'display', 'inline');
         self.fetchAppSummaryCounts();
+        self.fetchFilteredStatusCounts();
       });
 
       var failedBtn = domConstruct.create('span', {
@@ -226,6 +232,7 @@ define([
         Topic.publish('/JobFilter', self.filters);
         domStyle.set(allBtn, 'display', 'inline');
         self.fetchAppSummaryCounts();
+        self.fetchFilteredStatusCounts();
       });
 
       // Include Archived toggle - compact style
@@ -256,9 +263,12 @@ define([
         Topic.publish('/JobFilter', self.filters);
         // Refresh app summary counts when archive filter changes
         self.fetchAppSummaryCounts();
+        // Refresh status counts when archive filter changes
+        self.fetchFilteredStatusCounts();
       });
 
-      // listen for job status counts
+      // listen for job status counts - this is for the global indicator (unfiltered)
+      // We don't use this for Jobs page status bar anymore - we fetch filtered counts instead
       var loadingJobList = false;
       var firstStatusUpdate = true;
       Topic.subscribe('/JobStatus', function (status) {
@@ -268,10 +278,8 @@ define([
           domClass.remove(header, 'Failed');
         }
 
-        query('span', queuedBtn)[0].innerHTML = status.queued;
-        query('span', inProgressBtn)[0].innerHTML = status.inProgress;
-        query('span', completedBtn)[0].innerHTML = status.completed;
-        query('span', failedBtn)[0].innerHTML = status.failed;
+        // Don't update the status buttons from /JobStatus - we use fetchFilteredStatusCounts() instead
+        // The /JobStatus topic now only carries unfiltered counts for the global indicator
 
         // Always update time on first status update, or if not loading
         if (self.lastUpdated && (firstStatusUpdate || !loadingJobList)) {
@@ -279,6 +287,12 @@ define([
           firstStatusUpdate = false;
         }
       });
+
+      // Store button references for filtered status updates
+      this._queuedBtn = queuedBtn;
+      this._inProgressBtn = inProgressBtn;
+      this._completedBtn = completedBtn;
+      this._failedBtn = failedBtn;
 
       /**
        * listen for job list changes (to update job types) and for loading status
@@ -311,15 +325,43 @@ define([
       // Fetch initial app summary counts
       this.fetchAppSummaryCounts();
 
+      // Note: We do NOT call fetchFilteredStatusCounts() here during startup.
+      // The URL state will be restored by JobManager.js which publishes /KeywordFilter,
+      // and that will trigger fetchFilteredStatusCounts() with the correct filters.
+      // Calling it here with empty filters causes a race condition where the unfiltered
+      // response may arrive after the filtered one and overwrite the correct values.
+
       // Subscribe to keyword filter changes to update app counts
       Topic.subscribe('/KeywordFilter', lang.hitch(this, function (keyword) {
         if (keyword && keyword.trim() !== '') {
           this.filters.search = keyword.trim();
+          // Disable archive checkbox when search is active (fulltext search of archived jobs not supported)
+          if (this._archiveCheckbox) {
+            this._archiveCheckbox.disabled = true;
+            this._archiveCheckbox.checked = false;
+            this.filters.includeArchived = false;
+            // Grey out the label
+            if (this._archiveCheckbox.parentNode) {
+              this._archiveCheckbox.parentNode.style.opacity = '0.5';
+              this._archiveCheckbox.parentNode.title = 'Archive search not available with keyword filter';
+            }
+          }
         } else {
           delete this.filters.search;
+          // Re-enable archive checkbox when search is cleared
+          if (this._archiveCheckbox) {
+            this._archiveCheckbox.disabled = false;
+            // Restore the label
+            if (this._archiveCheckbox.parentNode) {
+              this._archiveCheckbox.parentNode.style.opacity = '1';
+              this._archiveCheckbox.parentNode.title = '';
+            }
+          }
         }
         // Refresh app summary counts to reflect the new search filter
         this.fetchAppSummaryCounts();
+        // Refresh status counts to reflect the new search filter
+        this.fetchFilteredStatusCounts();
       }));
 
       this.inherited(arguments);
@@ -474,6 +516,63 @@ define([
         }), function (err) {
           console.error('Error fetching app summary counts:', err);
           // Fall back to existing behavior - counts from current page
+        });
+    },
+
+    // Fetch filtered status counts from the API and update the status buttons
+    // Uses query_task_summary_filtered to get counts that match current filters (except status)
+    // Status buttons should always show counts for all statuses so users can click to filter
+    fetchFilteredStatusCounts: function () {
+      var self = this;
+      var simpleFilter = {};
+
+      // Include app filter if set (but not 'all')
+      if (this.filters.app && this.filters.app !== 'all') {
+        simpleFilter.app = this.filters.app;
+      }
+
+      // Include archived filter if set
+      if (this.filters.includeArchived) {
+        simpleFilter.include_archived = 1;
+      }
+
+      // Include search filter if set
+      if (this.filters.search) {
+        simpleFilter.search = this.filters.search;
+      }
+
+      // NOTE: We intentionally do NOT include status filter here
+      // Status buttons should show counts for all statuses so users can see what's available to filter
+
+      // Call the filtered task summary API
+      window.App.api.service('AppService.query_task_summary_filtered', [simpleFilter])
+        .then(lang.hitch(this, function (res) {
+          if (!res || !res[0]) {
+            return;
+          }
+
+          var status = res[0];
+
+          var queued = (status.queued || 0) + (status.pending || 0) + (status.init || 0);
+          var inProgress = status['in-progress'] || 0;
+          var completed = status.completed || 0;
+          var failed = status.failed || 0;
+
+          // Update the status buttons
+          if (this._queuedBtn) {
+            query('span', this._queuedBtn)[0].innerHTML = queued;
+          }
+          if (this._inProgressBtn) {
+            query('span', this._inProgressBtn)[0].innerHTML = inProgress;
+          }
+          if (this._completedBtn) {
+            query('span', this._completedBtn)[0].innerHTML = completed;
+          }
+          if (this._failedBtn) {
+            query('span', this._failedBtn)[0].innerHTML = failed;
+          }
+        }), function (err) {
+          console.error('Error fetching filtered status counts:', err);
         });
     },
 

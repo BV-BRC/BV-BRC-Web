@@ -58,27 +58,17 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
 
   /**
    * sets status locally, publishes status for jobs ticker, and returns True if any changes
-   * Uses query_task_summary_filtered to get counts matching current filters
+   * The global job status indicator (bottom-right corner) always shows unfiltered counts
+   * for all active (non-archived) jobs.
    */
   function getStatus() {
     if (!localStorage.getItem("tokenstring") || !localStorage.getItem("userid")){
       return
     }
 
-    // Build SimpleTaskFilter from current filters
-    var simpleFilter = {};
-    if (self.filters.app && self.filters.app !== 'all') {
-      simpleFilter.app = self.filters.app;
-    }
-    if (self.filters.includeArchived) {
-      simpleFilter.include_archived = 1;
-    }
-    if (self.filters.search) {
-      simpleFilter.search = self.filters.search;
-    }
-    // Note: We don't filter by status for the summary counts - we want all status counts
-
-    var prom = window.App.api.service('AppService.query_task_summary_filtered', [simpleFilter]);
+    // Use empty filter to get counts for all active jobs (excludes archived)
+    // This is for the global site-wide job status indicator which should not be affected by filters
+    var prom = window.App.api.service('AppService.query_task_summary_filtered', [{}]);
     return prom.then(function (res) {
       var status = res[0];
 
@@ -215,8 +205,11 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
   Topic.subscribe('/KeywordFilter', function (keyword) {
     if (keyword && keyword.trim() !== '') {
       self.filters.search = keyword.trim();
+      // Disable includeArchived when search is active (fulltext search of archived jobs not supported)
+      self.filters.includeArchived = false;
     } else {
       delete self.filters.search;
+      // Note: We don't re-enable includeArchived here - that's controlled by the checkbox
     }
     // Update status counts to reflect new search filter
     getStatus();
