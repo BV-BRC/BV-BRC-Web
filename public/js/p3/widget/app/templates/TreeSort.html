@@ -51,16 +51,27 @@
          width: 100%;
       }
 
-      .treesort--fasta-error {
+      /* Errors from the FASTA input file
+      .treesort--error-panel {
          margin: 0.5rem 0 0.5rem 0;
-         width: 500px;
+         min-width: 700px;
       }
-      .treesort--fasta-error-message {
+      .treesort--error-main-problem {
+         font-size: 1.0rem;
+         margin-bottom: 1.0rem;
+      }
+      .treesort--error-heading {
+         margin-bottom: 1.0rem;
+      }
+      ul.treesort--error-list {
+         list-style-position: outside;
+         margin-left: 1.5rem;
+      }
+      .treesort--error-list li {
          margin-bottom: 0.25rem;
       }
-      .treesort--fasta-error-message li {
-         margin-bottom: 0.25rem;
-      }
+      */
+
 
       /* The container of the segment controls (checkboxes and labels) */
       .treesort--segment-container {
@@ -129,6 +140,67 @@
          margin-bottom: 0.5rem;
       }
 
+      /* Dialogs
+      .treesort--dialog {
+         width: fit-content;
+      }
+      .treesort--dialog .treesort--dialog-footer {
+         display: flex;
+         flex-flow: row nowrap;
+         justify-content: flex-end;
+         margin-top: 1.0rem;
+         width: 100%;
+      }
+      .treesort--dialog .treesort--dialog-footer .treesort--close-button {
+         font-size: 1.0rem;
+      }*/
+
+
+      /* A FASTA file validation summary. */
+      .treesort--validation-summary {
+         font-size: 0.9rem;
+         margin: 1.2rem 0 1.5rem 1.0rem;
+      }
+      .treesort--validation-title {
+         font-weight: bold;
+         margin-bottom: 0.5rem;
+      }
+      .treesort--validation-description {
+         /*font-size: 0.9rem;*/
+         margin-bottom: 0.5rem;
+      }
+      .treesort--validation-list {
+         margin-bottom: 1.0rem;
+      }
+
+      .treesort--ignored-strains {
+         margin-bottom: 1.0rem;
+      }
+
+      /* An example FASTA header with the strain name highlighted. */
+      .treesort--example-panel {
+         margin-bottom: 1.0rem; /* placeholder */
+      }
+      .treesort--example-message {
+         margin-bottom: 0.3rem;
+      }
+      .treesort--example-header {
+         border: 1px solid #ccc;
+         font-size: 0.9rem;
+         margin-bottom: 0.25rem;
+         width: fit-content;
+      }
+      .treesort--highlighted-strain {
+         background-color: #fef185;
+      }
+
+      .treesort--example-help {
+         margin-bottom: 1.0rem; /* placeholder */
+      }
+
+
+
+
    </style>
 
    <div class="appTemplate">
@@ -193,10 +265,43 @@
                   required="true"
                   style="width: 200px;"
                ></div>
-               <div class="warning treesort--error-message" data-dojo-attach-point="fastaFileIdMessageEl"></div>
+               <!--<div class="warning treesort--error-message" data-dojo-attach-point="fastaFileIdMessageEl"></div>-->
 
             </div>
+            <div class="appRowSegment" style="text-align:left;">
+
+               <!-- Match regex -->
+               <div data-dojo-attach-point="matchRegexContainerEl">
+
+                  <label class="paramlabel">Strain name regular expression</label>
+                  <div name="match-regex" class="infobox iconbox infobutton tooltipinfo">
+                     <i class="fa icon-question-circle fa"></i>
+                  </div>
+                  <br/>
+                  <input name="match_regex"
+                     data-dojo-attach-event="onChange:handleMatchRegexChange"
+                     data-dojo-attach-point="matchRegexEl"
+                     data-dojo-props="intermediateChanges: false, invalidMessage:'Enter a regular expression', trim:true, placeholder:'Optional'"
+                     data-dojo-type="dijit/form/ValidationTextBox"
+                     required="false"
+                     style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 200px;" />
+                  <div class="warning treesort--error-message" data-dojo-attach-point="matchRegexMessageEl"></div>
+
+                  <!-- A hidden field for the match type. -->
+                  <div name="match_type"
+                     data-dojo-attach-point="matchTypeEl"
+                     data-dojo-props="disabled:false"
+                     data-dojo-type="dijit/form/TextBox"
+                     style="display: none; visibility: hidden"
+                  ></div>
+
+               </div>
+            </div>
          </div>
+
+         <!-- The summary of FASTA validation will be displayed here. -->
+         <div class="treesort--fasta-validation-panel" data-dojo-attach-point="fastaValidationPanelEl"></div>
+
          <div class="appRow treesort--row-with-columns">
             <div class="appRowSegment treesort--left-column">
 
@@ -285,10 +390,11 @@
             <!-- The advanced options control toggles the visibility of this section. -->
             <div class="treesort--advanced-options">
 
+               <!--
                <div class="appRow">
                   <div class="appRowSegment treesort--left-column">
 
-                     <!-- Match type -->
+                     <-- Match type
                      <label class="paramlabel">Match type</label>
                      <div name="match-type" class="infobox iconbox infobutton dialoginfo">
                         <i class="fa icon-info-circle fa"></i>
@@ -308,7 +414,7 @@
                   </div>
                   <div class="appRowSegment" style="text-align: left;">
 
-                     <!-- Match regex -->
+                     <-- Match regex
                      <div data-dojo-attach-point="matchRegexContainerEl" style="display: none">
 
                         <label class="paramlabel">Regular expression</label>
@@ -327,7 +433,7 @@
 
                      </div>
                   </div>
-               </div>
+               </div>-->
 
                <div class="appRow treesort--row-with-columns">
                   <div class="appRowSegment treesort--left-column">
