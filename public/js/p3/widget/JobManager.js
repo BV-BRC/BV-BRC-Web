@@ -64,13 +64,18 @@ define([
       if (filters.sortDesc !== undefined) {
         params.desc = filters.sortDesc ? '1' : '0';
       }
+      if (filters.includeArchived) {
+        params.archived = '1';
+      }
 
       var hashString = ioQuery.objectToQuery(params);
       hash(hashString, true); // true = replace current history entry
     },
 
     // Restore filter state from URL hash parameters
-    _restoreStateFromUrl: function () {
+    // If skipGridQuery is true, don't call grid.set('query') - used during startup
+    // when the grid hasn't loaded yet
+    _restoreStateFromUrl: function (skipGridQuery) {
       var params = this._parseHashParams();
       if (!params || Object.keys(params).length === 0) {
         return;
@@ -94,10 +99,16 @@ define([
         filters.app = params.app;
       }
 
-      // Apply filters to grid if we have any
+      // Restore archive filter
+      if (params.archived === '1') {
+        filters.includeArchived = true;
+      }
+
+      // Store filters in serviceFilter so grid uses them on first load
       if (Object.keys(filters).length > 0) {
         this.serviceFilter = filters;
-        if (this.grid) {
+        // Only set grid query if not during startup (skipGridQuery is false/undefined)
+        if (!skipGridQuery && this.grid) {
           this.grid.set('query', filters);
         }
       }
@@ -142,32 +153,73 @@ define([
         if (params.status) {
           this.containerActionBar.filters.status = params.status;
         }
+
+        // Restore archive checkbox state
+        if (params.archived === '1' && this.containerActionBar._archiveCheckbox) {
+          this.containerActionBar._archiveCheckbox.checked = true;
+          this.containerActionBar.filters.includeArchived = true;
+        }
       }
 
-      // Restore keyword filter
+      // Restore keyword/search filter
       if (params.keyword) {
-        var keyfil = new RegExp(`.*${params.keyword}.*`);
-        filters['parameters'] = {
-          test: function (entry) {
-            return keyfil.test(entry.output_file);
-          }
-        };
-        filters.keyword = params.keyword;
-        if (this.grid) {
-          this.grid.set('query', filters);
+        // Use 'search' key for server-side filtering via SimpleTaskFilter
+        filters.search = params.keyword;
+        filters.keyword = params.keyword; // Keep for URL persistence
+        // Store in serviceFilter - grid will use it on first load
+        this.serviceFilter = filters;
+
+        // Restore the search text box value in the UI
+        if (this.containerActionBar && this.containerActionBar._serverSearchBox) {
+          this.containerActionBar._serverSearchBox.set('value', params.keyword);
         }
+
+        // Also update containerActionBar filters for consistency
+        if (this.containerActionBar) {
+          this.containerActionBar.filters.search = params.keyword;
+          // Disable archive checkbox when search is active
+          if (this.containerActionBar._archiveCheckbox) {
+            this.containerActionBar._archiveCheckbox.disabled = true;
+            this.containerActionBar._archiveCheckbox.checked = false;
+            this.containerActionBar.filters.includeArchived = false;
+            if (this.containerActionBar._archiveCheckbox.parentNode) {
+              this.containerActionBar._archiveCheckbox.parentNode.style.opacity = '0.5';
+              this.containerActionBar._archiveCheckbox.parentNode.title = 'Archive search not available with keyword filter';
+            }
+          }
+        }
+
+        // Publish to /KeywordFilter topic so the JobManager service updates its filters
+        // This ensures status counts reflect the search filter
+        Topic.publish('/KeywordFilter', params.keyword);
       }
 
       // Restore sort order
-      if (params.sort && this.grid) {
+      // When skipGridQuery is true, we don't set sort on the grid directly
+      // because that triggers a refresh. Instead, we store it in the grid's
+      // queryOptions, and it will be applied on the next query.
+      // NOTE: sort/sortDesc are stored separately from filters - they are NOT
+      // part of the query filter, but rather query options.
+      if (params.sort) {
         var descending = params.desc === '1';
-        this.grid.set('sort', [{ attribute: params.sort, descending: descending }]);
-        // Store sort in serviceFilter for URL persistence
-        if (!this.serviceFilter) {
-          this.serviceFilter = {};
+
+        // Store sort info for URL persistence (but NOT in serviceFilter which is for query filters)
+        this._pendingSort = { attribute: params.sort, descending: descending };
+
+        // Only set sort on grid directly if we're not skipping the query
+        // Otherwise, setting sort triggers a refresh which causes race conditions
+        if (!skipGridQuery && this.grid) {
+          this.grid.set('sort', [{ attribute: params.sort, descending: descending }]);
+        } else if (this.grid) {
+          // Set the grid's sort property directly without triggering a refresh
+          // This ensures the column header shows the correct sort indicator
+          this.grid.sort = [{ attribute: params.sort, descending: descending }];
+          // Ensure queryOptions exists before setting sort
+          if (!this.grid.queryOptions) {
+            this.grid.queryOptions = {};
+          }
+          this.grid.queryOptions.sort = [{ attribute: params.sort, descending: descending }];
         }
-        this.serviceFilter.sort = params.sort;
-        this.serviceFilter.sortDesc = descending;
       }
 
       // Store page and selection for restoration after grid renders
@@ -503,9 +555,15 @@ define([
 
       if (this._started) {
         // Widget was already started - restore state from URL and refresh
-        this._restoreStateFromUrl();
+        // Use skipGridQuery=true since we'll refresh manually after
+        this._restoreStateFromUrl(true);
         if (this.grid && typeof this.grid.refresh === 'function') {
-          this.grid.refresh();
+          // Apply serviceFilter to grid query before refresh
+          if (this.serviceFilter) {
+            this.grid.set('query', this.serviceFilter);
+          } else {
+            this.grid.refresh();
+          }
         }
         return;
       }
@@ -610,40 +668,84 @@ define([
       this.grid.on('dgrid-sort', lang.hitch(this, function (evt) {
         var sort = evt.sort;
         if (sort && sort.length > 0) {
+          // Build params for URL - start with actual filters (not sort metadata)
           var currentFilters = lang.mixin({}, this.serviceFilter || {});
-          currentFilters.sort = sort[0].attribute;
-          currentFilters.sortDesc = sort[0].descending;
+          // Remove any stale sort/sortDesc from serviceFilter
+          delete currentFilters.sort;
+          delete currentFilters.sortDesc;
+
+          // Add sort info for URL persistence only (not to serviceFilter)
+          var urlParams = lang.mixin({}, currentFilters);
+          urlParams.sort = sort[0].attribute;
+          urlParams.sortDesc = sort[0].descending;
+
           // Preserve current page
           if (this.grid._currentPage) {
-            currentFilters.page = this.grid._currentPage;
+            urlParams.page = this.grid._currentPage;
           }
           // Preserve current selection if any
           var selectedIds = Object.keys(this.grid.selection || {});
           if (selectedIds.length === 1) {
-            currentFilters.selectedJob = selectedIds[0];
+            urlParams.selectedJob = selectedIds[0];
           }
-          // Update serviceFilter to keep sort state
+          // Update serviceFilter WITHOUT sort info (keep it clean for query filters only)
           this.serviceFilter = currentFilters;
-          this._updateHash(currentFilters);
+          this._updateHash(urlParams);
         }
       }));
 
       // Track if grid has loaded for the first time
       var gridFirstLoadComplete = false;
 
-      // Update filter labels when grid loads its first page
+      // Store current local filter text for re-application after grid refresh
+      this._localFilterText = '';
+
+      // Helper function to apply local filter to visible rows
+      var applyLocalFilter = lang.hitch(this, function() {
+        var filterText = this._localFilterText;
+        if (!this.grid || !this.grid.domNode) {
+          return;
+        }
+
+        // Get all visible rows in the grid
+        var rows = query('.dgrid-row', this.grid.domNode);
+
+        rows.forEach(lang.hitch(this, function (rowNode) {
+          var row = this.grid.row(rowNode);
+          if (!row || !row.data) {
+            return;
+          }
+
+          var job = row.data;
+          var visible = true;
+
+          if (filterText && filterText.trim() !== '') {
+            // Check if any searchable field contains the filter text
+            var searchableText = [
+              job.id || '',
+              job.application_name || '',
+              job.status || '',
+              (job.parameters && job.parameters.output_file) || ''
+            ].join(' ').toLowerCase();
+
+            visible = searchableText.indexOf(filterText.toLowerCase()) !== -1;
+          }
+
+          // Show or hide the row
+          rowNode.style.display = visible ? '' : 'none';
+        }));
+      });
+
+      // Handle grid refresh completion
       this.grid.on('dgrid-refresh-complete', lang.hitch(this, function (evt) {
-        if (evt.results && this.containerActionBar) {
-          // Extract jobs from the grid's current page to update filter labels
-          var jobs = [];
-          if (evt.results && typeof evt.results.forEach === 'function') {
-            evt.results.forEach(function(job) {
-              jobs.push(job);
-            });
-          }
-          if (jobs.length > 0 && this.containerActionBar.updateFilterLabels) {
-            this.containerActionBar.updateFilterLabels(jobs);
-          }
+        // Note: App filter labels are now updated via fetchAppSummaryCounts() which
+        // calls query_app_summary_filtered API for accurate totals across all pages.
+        // We no longer update filter labels from the current page's jobs.
+
+        // Re-apply local filter after grid refresh
+        if (this._localFilterText) {
+          // Use setTimeout to ensure the grid rows are fully rendered
+          setTimeout(applyLocalFilter, 50);
         }
 
         // After grid has fully loaded for the first time, call query_task_summary
@@ -662,13 +764,32 @@ define([
         }
       }));
 
-      this.addChild(this.grid);
       this.addChild(this.containerActionBar);
       this.addChild(this.actionBar);
       this.addChild(this.itemDetailPanel);
 
-      // Restore filter state from URL hash after all components are created
-      this._restoreStateFromUrl();
+      // Restore filter state from URL hash BEFORE adding grid
+      // This sets serviceFilter which the grid will use on first load
+      // Pass true to skip grid.set('query') since grid isn't added yet
+      // Note: containerActionBar is already added above, so its _selector exists
+      // and we can restore the app filter value now
+      this._restoreStateFromUrl(true);
+
+      // After restoring state, re-fetch app summary counts to show correct selection
+      // This is needed because containerActionBar.startup() already called fetchAppSummaryCounts()
+      // before we restored the URL state
+      if (this.containerActionBar && this.containerActionBar.fetchAppSummaryCounts) {
+        this.containerActionBar.fetchAppSummaryCounts();
+      }
+
+      // Set grid query from restored filters BEFORE adding grid as child
+      // This ensures the grid uses the correct filters when it starts loading
+      if (this.serviceFilter && Object.keys(this.serviceFilter).length > 0) {
+        this.grid.query = this.serviceFilter;
+      }
+
+      // Now add the grid - this triggers its startup and initial data load
+      this.addChild(this.grid);
 
       // show / hide item detail panel event
       var hideBtn = query('[rel="ToggleItemDetail"]', this.actionBar.domNode)[0];
@@ -710,6 +831,7 @@ define([
         // remove any non-specific filter states
         if (filters.app === 'all') delete filters.app;
         if (!filters.status) delete filters.status;
+        if (!filters.includeArchived) delete filters.includeArchived;
 
         // need to filter on all possible AWE-defined statuses
         if (filters.status === 'queued') {
@@ -732,39 +854,65 @@ define([
         // Update URL hash with current filter state
         this._updateHash(filters);
 
+        // Setting the query will trigger the grid to refresh and re-fetch data
         _self.grid.set('query', filters);
       }));
 
-      // listen for filtering
+      // listen for keyword/search filtering
       Topic.subscribe('/KeywordFilter', lang.hitch(this, function (keyword) {
-        // remove any non-specific filter states
-        if (keyword.trim() === '') {
-          this._updateHash({});
-          _self.grid.set('query', {});
-          return;
+        // Clear cache when search changes
+        var store = JobManager.getStore();
+        if (store && store.clearCache) {
+          store.clearCache();
         }
+
+        // Start with current filters or empty object
         var filters = {};
-        var keyfil = new RegExp(`.*${keyword}.*`);
-        filters['parameters'] = {
-          test: function (entry) {
-            return keyfil.test(entry.output_file);
-          }
-        };
-        filters.keyword = keyword; // Store keyword for URL persistence
-        // filter by job output with other filters applied
         if (this.serviceFilter) {
           if (this.serviceFilter.app) {
-            filters['app'] = this.serviceFilter.app;
+            filters.app = this.serviceFilter.app;
           }
           if (this.serviceFilter.status) {
-            filters['status'] = this.serviceFilter.status;
+            filters.status = this.serviceFilter.status;
+          }
+          if (this.serviceFilter.includeArchived) {
+            filters.includeArchived = this.serviceFilter.includeArchived;
           }
         }
 
-        // Update URL hash with current filter state
-        this._updateHash(filters);
+        // Add or remove search filter
+        if (keyword.trim() === '') {
+          delete filters.search;
+          delete filters.keyword;
+        } else {
+          // Use 'search' key for server-side filtering via SimpleTaskFilter
+          filters.search = keyword.trim();
+          filters.keyword = keyword.trim(); // Keep for URL persistence
+        }
 
-        _self.grid.set('query', filters);
+        // Update serviceFilter
+        this.serviceFilter = filters;
+
+        // Only update URL and trigger grid query if the grid has been added to the DOM
+        // During startup, the grid hasn't been added yet, so we just set serviceFilter
+        // and the grid will use it when it loads
+        if (this.grid && this.grid.domNode) {
+          // Update URL hash with current filter state
+          this._updateHash(filters);
+
+          // Setting the query will trigger the grid to refresh and re-fetch data
+          // Note: Do NOT call grid.refresh() after this - set('query', ...) already
+          // triggers a refresh internally via the Pagination extension's _setQuery method.
+          // Calling refresh() again causes "This deferred has already been resolved" errors.
+          _self.grid.set('query', filters);
+        }
+      }));
+
+      // listen for local/page filtering (client-side, filters visible rows only)
+      Topic.subscribe('/LocalFilter', lang.hitch(this, function (filterText) {
+        // Store the filter text so it can be re-applied after grid refresh
+        this._localFilterText = filterText || '';
+        applyLocalFilter();
       }));
 
       // Hide the panel on a small screen
