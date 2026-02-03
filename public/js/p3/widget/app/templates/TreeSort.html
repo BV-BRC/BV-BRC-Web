@@ -4,10 +4,17 @@
    <style>
 
       .treesort--bulleted-list {
+         list-style-position: outside;
          margin: 0.25rem 0 0 1.5rem;
+      }
+      .treesort--bulleted-list li {
+         margin-bottom: 0.25rem;
       }
       .treesort--bulleted-list .next-line {
          margin: 0.5rem 0 0 1.3rem;
+      }
+      .treesort--bulleted-list ul {
+         list-style-position: outside;
       }
       .treesort--fasta-header {
          font-family: monospace;
@@ -17,6 +24,13 @@
          /*margin-left: 1.3rem;*/
          padding: 2px 4px;        /* some breathing room */
          width: fit-content;
+      }
+
+      .treesort--error {
+         color: #d46464;
+      }
+      .treesort--success {
+         color: #198754; /*#028a81;*/
       }
 
       .appRow.treesort--row-with-columns {
@@ -50,28 +64,6 @@
       .treesort--error-message {
          width: 100%;
       }
-
-      /* Errors from the FASTA input file
-      .treesort--error-panel {
-         margin: 0.5rem 0 0.5rem 0;
-         min-width: 700px;
-      }
-      .treesort--error-main-problem {
-         font-size: 1.0rem;
-         margin-bottom: 1.0rem;
-      }
-      .treesort--error-heading {
-         margin-bottom: 1.0rem;
-      }
-      ul.treesort--error-list {
-         list-style-position: outside;
-         margin-left: 1.5rem;
-      }
-      .treesort--error-list li {
-         margin-bottom: 0.25rem;
-      }
-      */
-
 
       /* The container of the segment controls (checkboxes and labels) */
       .treesort--segment-container {
@@ -159,11 +151,12 @@
       /* A FASTA file validation summary. */
       .treesort--validation-summary {
          font-size: 0.9rem;
-         margin: 1.2rem 0 1.5rem 1.0rem;
+         margin: 1.0rem 0 1.5rem 1.0rem;
       }
       .treesort--validation-title {
+         font-size: 1.0rem;
          font-weight: bold;
-         margin-bottom: 0.5rem;
+         margin-bottom: 0.25rem;
       }
       .treesort--validation-description {
          /*font-size: 0.9rem;*/
@@ -179,7 +172,7 @@
 
       /* An example FASTA header with the strain name highlighted. */
       .treesort--example-panel {
-         margin-bottom: 1.0rem; /* placeholder */
+         margin-bottom: 1.5rem;
       }
       .treesort--example-message {
          margin-bottom: 0.3rem;
@@ -188,14 +181,15 @@
          border: 1px solid #ccc;
          font-size: 0.9rem;
          margin-bottom: 0.25rem;
+         padding: 0.25rem;
          width: fit-content;
       }
-      .treesort--highlighted-strain {
+      .treesort--highlighted-text {
          background-color: #fef185;
       }
 
       .treesort--example-help {
-         margin-bottom: 1.0rem; /* placeholder */
+         margin-bottom: 1.0rem;
       }
 
 
@@ -227,10 +221,25 @@
          <p>
             <ul class="treesort--bulleted-list">
                <li>This service can <b>only</b> be used with Influenza nucleotide sequences!</li>
-               <li>Segment names in the FASTA file headers are limited to PB2, PB1, PA, HA, NP, NA, MP, or NS.</li>
-               <li>The segment name <b>must</b> be surrounded by <span class="treesort--fasta-header">|</span> symbols followed by a date in the format <i>YYYY-MM-DD</i>.
-                  <div class="next-line">For example: <span class="treesort--fasta-header">>A/swine/Michigan/A02635726/2021|1B.2.1|1998B|TTTPPT|HA|2021-04-23</span></div>
+               <li>Segment names in the FASTA file headers are limited to PB2, PB1, PA, HA, NP, NA, MP, and NS.</li>
+               <li>The segment name <b>must</b> be surrounded by <span class="treesort--fasta-header">|</span> characters and can be followed by a date in the
+                  format <i>YYYY-MM-DD</i>. <br/>For example:
+                  <div class="next-line"><pre class="treesort--fasta-header">>A/swine/Michigan/A02635726/2021|1B.2.1|1998B|TTTPPT|HA|2021-04-23</pre></div>
                   <div class="next-line">where the segment is <span class="treesort--fasta-header">HA</span> and the date is <span class="treesort--fasta-header">2021-04-23</span> (April 23, 2021).</div>
+               </li>
+               <li>TreeSort can accept 3 different strain name formats within a FASTA header:
+                  <ul>
+                     <li>The strain name is everything that remains after the segment name is removed.</li>
+                     <li>The strain name starts with "EPI_ISL_" followed by a numeric (integer) value.</li>
+                     <li>A strain name starts with A, B, C, or D followed by 3 to 5 spans of text inside <span class="treesort--fasta-header">/</span> characters.
+                        For example: <span class="treesort--fasta-header">A/swine/Iowa/A02635718/2021</span>. Note that <span class="treesort--fasta-header">|</span> characters are not allowed in the strain name.
+                     </li>
+                  </ul>
+               </li>
+               <li>After you select a FASTA input file, your file will be automatically validated to make sure TreeSort will be able to find the strain and segment names.
+                  An error message will be displayed if any errors are found.</li>
+               <li>If your FASTA file is successfully validated, a summary of the number of strains and segments will be displayed. Please confirm that the summary is
+                  consistent with the contents of your file.
                </li>
             </ul>
          </p>
@@ -265,13 +274,16 @@
                   required="true"
                   style="width: 200px;"
                ></div>
-               <!--<div class="warning treesort--error-message" data-dojo-attach-point="fastaFileIdMessageEl"></div>-->
+               <div class="warning treesort--error-message" data-dojo-attach-point="fastaFileIdMessageEl"></div>
 
             </div>
             <div class="appRowSegment" style="text-align:left;">
 
                <!-- Match regex -->
                <div data-dojo-attach-point="matchRegexContainerEl">
+
+                  <!--
+                  dmd 02/03/26: Temporarily removing the regex control.
 
                   <label class="paramlabel">Strain name regular expression</label>
                   <div name="match-regex" class="infobox iconbox infobutton tooltipinfo">
@@ -281,11 +293,12 @@
                   <input name="match_regex"
                      data-dojo-attach-event="onChange:handleMatchRegexChange"
                      data-dojo-attach-point="matchRegexEl"
-                     data-dojo-props="intermediateChanges: false, invalidMessage:'Enter a regular expression', trim:true, placeholder:'Optional'"
+                     data-dojo-props="intermediateChanges: false, invalidMessage:'Enter a regular expression', trim:true, placeholder:'A Python regex'"
                      data-dojo-type="dijit/form/ValidationTextBox"
                      required="false"
                      style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 200px;" />
                   <div class="warning treesort--error-message" data-dojo-attach-point="matchRegexMessageEl"></div>
+                  -->
 
                   <!-- A hidden field for the match type. -->
                   <div name="match_type"

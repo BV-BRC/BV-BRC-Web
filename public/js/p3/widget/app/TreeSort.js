@@ -30,6 +30,48 @@ define([
       }
    }
 
+   // The result status of FASTA validation.
+   const FastaStatus = Object.freeze({
+
+      //--------------------------------------------------------------------------------
+      // Not yet validated
+      //--------------------------------------------------------------------------------
+      NOT_VALIDATED: "NOT_VALIDATED",
+
+      //--------------------------------------------------------------------------------
+      // Successful validation states
+      //--------------------------------------------------------------------------------
+
+      // All expected strains are valid.
+      ALL_VALID_STRAINS: "ALL_VALID_STRAINS",
+
+      // Most expected strains are valid.
+      MOSTLY_VALID_STRAINS: "MOSTLY_VALID_STRAINS",
+
+      //--------------------------------------------------------------------------------
+      // Failed validation states
+      //--------------------------------------------------------------------------------
+
+      // The number of valid names were fewer than expected.
+      FEWER_STRAINS_THAN_EXPECTED: "FEWER_STRAINS_THAN_EXPECTED",
+
+      // Strain name parsing error: We used too much of the header as the strain name.
+      NOT_ENOUGH_SEGMENT_SEQUENCES: "NOT_ENOUGH_SEGMENT_SEQUENCES",
+
+      // Not enough strains for an analysis.
+      NOT_ENOUGH_STRAINS_FOR_ANALYSIS: "NOT_ENOUGH_STRAINS_FOR_ANALYSIS",
+
+      // No valid strains were found.
+      NO_VALID_STRAINS: "NO_VALID_STRAINS",
+
+      // Strain name parsing error: Many of the strains only had a sequence for a single segment, so
+      // we probably included too much text in the calculated strain name.
+      STRAIN_NAMES_WITH_ONE_SEQUENCE: "STRAIN_NAMES_WITH_ONE_SEQUENCE",
+
+      // Strain name parsing error: The calculated strain name is only part of the actual name and isn't unique.
+      TOO_MANY_SEGMENT_SEQUENCES: "TOO_MANY_SEGMENT_SEQUENCES"
+   })
+
    // An "enum" for inference methods
    const InferenceMethod = Object.freeze({
       Local: "local",
@@ -111,6 +153,10 @@ define([
          // The minimum number of strains required to run TreeSort.
          MIN_STRAIN_COUNT: 10,
 
+         // When considering edge cases after parsing the FASTA for strain names, this threshold determines
+         // whether to attribute discrepancies to (harmless) user error or a (serious) parsing error.
+         FASTA_ERROR_THRESHOLD: 0.9,
+
          //------------------------------------------------------------------------------------------------------
          // Regular expressions
          //------------------------------------------------------------------------------------------------------
@@ -148,6 +194,12 @@ define([
 
          // The number of total sequences
          sequenceCount: 0,
+
+         // The status of the FASTA validation.
+         status: FastaStatus.NOT_VALIDATED,
+
+         // The number of strains that have multiples of segments.
+         tooManySegments: 0,
 
          // The total number of names that were found (valid or invalid).
          totalNames: 0,
@@ -214,8 +266,8 @@ define([
       inferenceMethodMessageEl: null,
 
       // Match regex elements
-      matchRegexEl: null,
-      matchRegexContainerEl: null,
+      //matchRegexEl: null,
+      //matchRegexContainerEl: null,
 
       // Match type element
       matchTypeEl: null,
@@ -315,21 +367,69 @@ define([
          const results = this.validatedFASTA;
 
          let errorCount = results.errors.length;
+         let segmentCount = results.segments.length;
+         let missingSegSeqs = results.notEnoughSegments;
 
-         // Populate the title
-         if (errorCount === 1) {
-            title = "There was an error in your FASTA input file";
-         } else {
-            title = `There were ${errorCount} errors in your FASTA input file`;
+         const expectedNames = Math.floor(results.sequenceCount / segmentCount);
+
+
+         title = "Your FASTA file cannot be processed";
+
+         let message = "";
+
+         switch (this.validatedFASTA.status) {
+
+            // The number of valid names were fewer than expected.
+            case FastaStatus.FEWER_STRAINS_THAN_EXPECTED:
+               message = `Based on the number of sequences and segments found in your FASTA file, ${expectedNames} strains should've been
+               found but there were only ${results.validNames}.`
+               break;
+
+            // Strain name parsing error: We probably used too much of the header as the strain name.
+            case FastaStatus.NOT_ENOUGH_SEGMENT_SEQUENCES:
+               let percent = Math.floor(this.settings.FASTA_ERROR_THRESHOLD * 100);
+               message = `Since less than ${percent}% of the strains had sequences for all segments, there might have been a problem
+               extracting the strain names from the FASTA headers: `
+               break;
+
+            // Not enough strains for an analysis.
+            case FastaStatus.NOT_ENOUGH_STRAINS_FOR_ANALYSIS:
+               message = `TreeSort requires at least ${this.settings.MIN_STRAIN_COUNT} strains for analysis, but you provided ${this.validatedFASTA.validNames}.`
+               break;
+
+            // No valid strains were found.
+            case FastaStatus.NO_VALID_STRAINS:
+               message = "No valid strains were found."
+               break;
+
+            // Strain name parsing error: What it thinks is the strain name is only part of the actual name and isn't unique.
+            case FastaStatus.TOO_MANY_SEGMENT_SEQUENCES:
+               message = `There was a problem extracting the strain names from the FASTA headers: It appears that only part of the actual strain name
+                  was found, so sequences whose actual strain names are similar will appear to have multiple sequences for the same strain and segment.
+                  For example: If a FASTA file contains HA and NA sequences for strains "abc/123" and "abc/789" (4 sequences total), but "abc" was
+                  determined to be the strain name, the file will be interpreted as having
+                  2 HA sequences and 2 NA sequences for strain "abc".`;
+               break;
+
+            default:
+               message = "An unknown error occurred."
          }
 
+
+         let html = `<div class="treesort--validation-summary treesort--error">
+            <div class="treesort--validation-title">${title}</div>
+            <div class="treesort--validation-description">${message}</div>
+         </div>`;
+
+         return html;
+
+         /*
          //------------------------------------------------------------------------------------------------
          // Add messages to the list (item) array.
          //------------------------------------------------------------------------------------------------
 
          if (results.validNames < 1) {
             listItems.push("No strain names were found.");
-
          } else if (results.totalNames > results.validNames) {
             listItems.push(`Only ${results.validNames} out of ${results.totalNames} strain names were valid.`);
          }
@@ -344,7 +444,7 @@ define([
 
          } else {
 
-            let segmentsFound = `${results.segments.length} segments were found.`;
+            let segmentsFound = `${results.segments.length} segments were found`;
 
             let segmentList = "";
 
@@ -354,7 +454,7 @@ define([
                segmentList += segment_;
             })
 
-            if (segmentList.length > 0) { segmentsFound += ` (${segmentList})`; }
+            if (segmentList.length > 0) { segmentsFound += `: ${segmentList}`; }
 
             listItems.push(segmentsFound);
          }
@@ -369,12 +469,16 @@ define([
          }
 
          if (results.validNames > 0 && results.validNames < this.settings.MIN_STRAIN_COUNT) {
-            listItems.push(`A minimum of ${this.settings.MIN_STRAIN_COUNT} strains is required and only ${results.validNames} valid strains were found`);
+            const strainFoundText = results.validNames === 1
+               ? "strain was found"
+               : "strains were found";
+            listItems.push(`A minimum of ${this.settings.MIN_STRAIN_COUNT} strains is required and only ${results.validNames} valid ${strainFoundText}`);
          }
 
          // Format and return the summary.
-         return this.formatFastaValidationSummary(title, description, listItems);
+         return this.formatFastaValidationSummary(title, description, listItems);*/
       },
+
 
       // Create a validation summary for a successfully validated FASTA file.
       createValidFastaSummary() {
@@ -414,7 +518,7 @@ define([
          if (example && example.header && example.strain) {
 
             // Highlight the strain name in the FASTA header.
-            exampleHeader = example.header.replace(example.strain, `<span class="treesort--highlighted-strain">${example.strain}</span>`);
+            exampleHeader = example.header.replace(example.strain, `<span class="treesort--highlighted-text">${example.strain}</span>`);
 
             exampleHTML = `<div class="treesort--example-panel">
                <div class="treesort--example-message">In this example FASTA header, we found the highlighted strain name:</div>
@@ -423,39 +527,16 @@ define([
             </div>`;
          }
 
-         // Populate the parameters for the formatting method.
-         let title = "Your FASTA file was successfully validated.";
-         let description = "Please make sure the following summary is what you expected:";
-         let listItems = [
-            `${results.segments.length} segments (${segmentList})`,
-            `${results.validNames.toLocaleString()} valid strains`
-         ];
-         let moreHTML = `${ignoredStrains}${exampleHTML}`;
-
-         // Format and return the summary.
-         return this.formatFastaValidationSummary(title, description, listItems, moreHTML);
-      },
-
-      // Format the components of a FASTA validation summary.
-      formatFastaValidationSummary: function (title_, description_ = null, listItems_ = null, moreHTML_ = null) {
-
-         if (!title_) { throw new Error("Invalid title in formatValidationSummary"); }
-         if (!description_) { description_ = ""; }
-         if (!moreHTML_) { moreHTML_ = ""; }
-
-         let listHTML = "";
-         if (Array.isArray(listItems_) && listItems_.length > 0) {
-            listItems_.forEach(message_ => {
-               listHTML += `<li>${message_}</li>`;
-            })
-         }
-
-         let html = `<div class="treesort--validation-title">${title_}</div>`;
-         if (description_) { html += `<div class="treesort--validation-description">${description_}</div>`; }
-         if (listHTML) { html += `<ul class="treesort--validation-list">${listHTML}</ul>`; }
-         if (moreHTML_) { html += moreHTML_; }
-
-         return `<div class="treesort--validation-summary">${html}</div>`;
+         return `<div class="treesort--validation-summary">
+            <div class="treesort--validation-title treesort--success">Your FASTA file was successfully validated.</div>
+            <div class="treesort--validation-description">Please make sure the following summary is what you expected:</div>
+            <ul class="treesort--validation-list">
+               <li>${results.segments.length} segments: ${segmentList}</li>
+               <li>${results.validNames.toLocaleString()} valid strains</li>
+            </ul>
+            ${ignoredStrains}
+            ${exampleHTML}
+         </div>`;
       },
 
       // Iterate over the virus taxon's segments to create list options.
@@ -478,7 +559,7 @@ define([
          let equalRates = this.equalRatesEl.get("checked");
          let fastaFileId = this.fastaFileIdEl.get("value");
          let inferenceMethod = this.inferenceMethodEl.get("value");
-         let matchRegex = this.matchRegexEl.get("value");
+         //let matchRegex = this.matchRegexEl.get("value");
          let matchType = this.matchTypeEl.get("value");
          let noCollapse = this.noCollapseEl.get("checked");
          let outputPath = this.outputPathEl.get("value");
@@ -537,7 +618,7 @@ define([
                "input_fasta_file_id": fastaFileId,
                "input_fasta_group_id": null, // TODO: Use fastaGroupId in the future.
                "input_source": this.inputSource,
-               "match_regex": matchRegex,
+               "match_regex": null, //matchRegex,
                "match_type": matchType,
                "no_collapse": noCollapse,
                "output_file": outputFile,
@@ -600,6 +681,7 @@ define([
 
             if (!fastaFile || !fastaFile.data || fastaFile.data.length < 1) {
                result.errorMessage = "The selected FASTA file is invalid";
+               result.isValid = false;
 
             } else {
 
@@ -608,18 +690,17 @@ define([
 
                if (this.validatedFASTA.isValid) {
 
+                  result.isValid = true;
+
                   // Create a summary of the successfully validated FASTA file.
                   summaryHTML = this.createValidFastaSummary();
 
-                  result.isValid = true;
-
                } else {
+
+                  result.isValid = false;
 
                   // Create a summary of the errors in the FASTA file.
                   summaryHTML = this.createInvalidFastaSummary();
-
-                  // Populate the error message below the control.
-                  //result.errorMessage = this.createInvalidFastaMessage();
                }
             }
 
@@ -631,7 +712,6 @@ define([
          if (!result.isValid && !this.validationContext.isSuspended) {
             this.fastaFileIdEl.set("state", "Error");
             this.fastaFileIdEl.set("message", result.errorMessage);
-            //this.fastaFileIdMessageEl.innerHTML = result.errorMessage;
 
             // Update the control as required since it has an invalid value.
             this.fastaFileIdEl.set("required", true);
@@ -640,16 +720,13 @@ define([
             // Clear any existing error status.
             this.fastaFileIdEl.set("state", "");
             this.fastaFileIdEl.set("message", "");
-            //this.fastaFileIdMessageEl.innerHTML = "";
 
             // Make the control optional until it is assigned an invalid value.
             this.fastaFileIdEl.set("required", false);
          }
 
          // If the FASTA validation panel is valid, populate it with the validation summary.
-         if (!this.fastaValidationPanelEl) {
-            console.log("this.fastaValidationPanelEl is invalid", summaryHTML)
-         } else {
+         if (this.fastaValidationPanelEl) {
             this.fastaValidationPanelEl.innerHTML = summaryHTML;
          }
 
@@ -657,13 +734,15 @@ define([
          this.validate();
 
          // Update the validation context's "unprocessed" count.
-         if (this.validationContext.isSuspended) {
-            this.updateValidationContext();
-         }
+         if (this.validationContext.isSuspended) { this.updateValidationContext(); }
+
+         // Update the control as required.
+         this.fastaFileIdEl.set("required", true);
 
          return result.isValid;
       },
 
+      /*
       // Handle a change to the match's regular expression control.
       handleMatchRegexChange: function (value_) {
 
@@ -683,8 +762,9 @@ define([
          this.validate();
 
          return result.isValid;
-      },
+      },*/
 
+      /*
       // Handle a change to the match type control.
       handleMatchTypeChange: function () {
 
@@ -699,7 +779,7 @@ define([
          // Validate all controls
          this.validate();
          return;
-      },
+      },*/
 
       // Handle a change to the output filename control.
       handleOutputFileChange: function (value_) {
@@ -743,7 +823,7 @@ define([
          // If we're suspending validation for this control, make it temporarily optional.
          if (this.validationContext.isSuspended) { this.outputPathEl.set("required", false); }
 
-         // TEST: This is a huge hack to make the output file control required after it has been initialized.
+         // This is a huge hack to make the output FILE (not path) control required after it has been initialized.
          this.outputFileEl.set("required", true);
 
          let result = this.isOutputPathValid(value_);
@@ -773,7 +853,7 @@ define([
          // Update the validation context's "unprocessed" count.
          if (this.validationContext.isSuspended) { this.updateValidationContext(); }
 
-         // TEST: This is a huge hack to make the output file control required at a later point than when it is initialized.
+         // This is a huge hack to make the output FILE (not path) control required at a later point than when it is initialized.
          this.outputFileEl.set("required", true);
 
          return result.isValid;
@@ -889,12 +969,12 @@ define([
       isFastaFileIdValid: function () {
          return {
             isValid: this.validatedFASTA.isValid,
-            errorMessage: this.formatFastaErrors()
+            errorMessage: "" //this.formatFastaErrors()
          }
       },
 
       // Is the match's regular expression valid?
-      isMatchRegexValid: function (value_) {
+      /*isMatchRegexValid: function (value_) {
 
          // Initialize the result
          let result = { isValid: true, errorMessage: null };
@@ -910,7 +990,7 @@ define([
          }
 
          return result;
-      },
+      },*/
 
       // Is the output filename valid?
       isOutputFileValid: function (value_) {
@@ -1031,7 +1111,7 @@ define([
          if (jobData.inference_method) { this.inferenceMethodEl.set("value", jobData.inference_method); }
          if (jobData.input_fasta_file_id) { this.fastaFileIdEl.set("value", jobData.input_fasta_file_id); }
          if (jobData.input_source) { this.inputSource = jobData.input_source; }
-         if (jobData.match_regex) { this.matchRegexEl.set("value", jobData.match_regex); }
+         //if (jobData.match_regex) { this.matchRegexEl.set("value", jobData.match_regex); }
          if (jobData.match_type) { this.matchTypeEl.set("value", jobData.match_type); }
          if (jobData.no_collapse) { this.noCollapseEl.set("checked", jobData.no_collapse); }
          if (jobData.output_file) { this.outputFileEl.set("value", jobData.outputFile); }
@@ -1125,7 +1205,7 @@ define([
          this.fastaFileIdEl.set("value", "");
          this.inferenceMethodEl.set("value", InferenceMethod.Local);
          this.inputSource = InputSource.FastaFileID;
-         this.matchRegexEl.set("value", "");
+         //this.matchRegexEl.set("value", "");
          this.matchTypeEl.set("value", MatchType.Default);
          this.noCollapseEl.set("value", true);
          this.outputFileEl.set("value", "");
@@ -1225,7 +1305,7 @@ define([
          // Has this name already been added to the map?
          if (!map_.has(isolateName_)) {
 
-            // Initialize the segment counts for the unencountered default name.
+            // Create a new segment map and add the segment with a count of 1.
             segmentMap = new Map();
             segmentMap.set(segment_, 1);
 
@@ -1319,10 +1399,10 @@ define([
             result = this.isFastaFileIdValid();
             isValid = isValid && result.isValid;
 
-            if (this.matchTypeEl.get("value") == MatchType.Regex) {
+            /*if (this.matchTypeEl.get("value") == MatchType.Regex) {
                result = this.isMatchRegexValid();
                isValid = isValid && result.isValid;
-            }
+            }*/
 
             result = this.isOutputFileValid();
             isValid = isValid && result.isValid;
@@ -1349,7 +1429,7 @@ define([
       // Validate the format of the deflines/headers in the FASTA input file.
       validateFASTA: function (fasta_) {
 
-         // Re-initialize the FASTA validation data.
+         // Re-initialize the FASTA validation data that will be populated by this function.
          this.resetValidatedFASTA();
 
          // Re-inititalize the example headers and strain names for each match type.
@@ -1390,6 +1470,11 @@ define([
          const epiIslNames = new Map();
          const strainNames = new Map();
 
+
+         // TEST
+         let invalidFileError = null; // empty or no headers were found
+         let headersWithoutSegments = 0;
+
          // Iterate over all FASTA headers.
          headers.forEach(header_ => {
 
@@ -1399,7 +1484,8 @@ define([
             // Look for a properly-formatted segment in the header.
             const segmentMatch = this.settings.REGEX_SEGMENT.exec(header);
             if (!Array.isArray(segmentMatch) || segmentMatch.length < 1) {
-               errors.push(`Unable to find a segment name in >${header}`);
+               //errors.push(`Unable to find a segment name in >${header}`);
+               headersWithoutSegments += 1;
                return;
             }
 
@@ -1454,9 +1540,6 @@ define([
                   header: header,
                   strain: defaultExample
                }
-
-               console.log("just added default example ", this.matchTypeExamples[MatchType.Default], ", segment match = ", segmentMatch, " and segment = ", segment)
-
             }
             if (epiExample && !this.matchTypeExamples[MatchType.EPI].strain) {
                this.matchTypeExamples[MatchType.EPI] = {
@@ -1474,9 +1557,10 @@ define([
 
          // Validate the name maps.
          const results = [
-            this.validateNameMap(defaultNames, MatchType.Default, segments.size),
-            this.validateNameMap(epiIslNames, MatchType.EPI, segments.size),
-            this.validateNameMap(strainNames, MatchType.Strain, segments.size)
+            this.validateNameMap(defaultNames, MatchType.Default, sequenceCount, segments.size),
+            this.validateNameMap(epiIslNames, MatchType.EPI, sequenceCount, segments.size),
+            this.validateNameMap(strainNames, MatchType.Strain, sequenceCount, segments.size)
+            // TODO: Include a custom regex name map?
          ];
 
          // Sort the results in descending order by score.
@@ -1504,6 +1588,8 @@ define([
             this.validatedFASTA.errors = [...this.validatedFASTA.errors, ...errors];
          }
 
+         // TEST
+         console.log(this.matchTypeExamples)
          console.log("at the end of validateFASTA this.validatedFASTA = ", this.validatedFASTA)
 
          // Disable checkboxes for segments not found in the FASTA file.
@@ -1526,25 +1612,16 @@ define([
 
          // Set the match type.
          this.matchTypeEl.set("value", this.validatedFASTA.regexType);
-
-         //console.log("at the end of validateFASTA matchTypeExamples = ", this.matchTypeExamples)
-
-         /*
-         if (this.validatedFASTA.regexType === MatchType.Regex) {
-
-            // Display the regex control.
-            this.matchRegexContainerEl.style.display = "block";
-            this.matchRegexContainerEl.style.visibility = "visible";
-         } else {
-
-            // Hide the regex control.
-            this.matchRegexContainerEl.style.display = "none";
-            this.matchRegexContainerEl.style.visibility = "hidden";
-         }*/
       },
 
       // Validate the name map that was populated with names from the FASTA file's headers.
-      validateNameMap: function (map_, regexType_, targetSegmentCount_) {
+      validateNameMap: function (map_, regexType_, sequenceCount_, totalSegmentCount_) {
+
+         // Scores for different types of error.
+         const ErrorScore = {
+            InsufficientData: -1,
+            InvalidNames: -2
+         }
 
          // NOTE: This should have the same attributes as this.validatedFASTA!
          const result = {
@@ -1558,16 +1635,25 @@ define([
             // The number of strains that don't have a sequence for every segment.
             notEnoughSegments: 0,
 
+            // Strains that only have a single sequence and segment.
+            onlyOneSequence: 0,
+
             // The recommended type of regex to use when parsing strain names from FASTA headers (formerly "match type").
             regexType: regexType_,
 
+            // This is used to rank the results of multiple validateNameMap() calls.
             score: 0,
 
             // All segment names found in the FASTA headers.
             segments: null,
 
             // The number of total sequences
-            sequenceCount: 0,
+            sequenceCount: sequenceCount_,
+
+            status: FastaStatus.NOT_VALIDATED,
+
+            // The number of strains that have multiples of segments.
+            tooManySegments: 0,
 
             // The total number of names that were found (valid or invalid).
             totalNames: 0,
@@ -1580,8 +1666,9 @@ define([
          }
 
          if (!map_ || map_.size < 1) {
-            result.errors.push(`No strains were found`);
-            result.score = -1;
+            // No strains were found
+            result.status = FastaStatus.NO_VALID_STRAINS;
+            result.score = ErrorScore.InvalidNames;
             return result;
          }
 
@@ -1594,19 +1681,16 @@ define([
             // A count for every segment found in the strain's sequences.
             const segmentMap = map_.get(name);
             if (!segmentMap) {
-               result.errors.push(`No segments were found for strain ${name}`);
+               // A technical issue not caused by the user: The strain was added without at least one segment.
                continue;
             }
 
             const segmentCount = segmentMap === null ? 0 : segmentMap.size;
 
-            if (segmentCount < 2) {
-               result.warnings.push(`${name} has less than the minimum number of required segments (2)`);
-               result.notEnoughSegments += 1;
+            if (segmentCount === 1) {
+               result.onlyOneSequence += 1;
                continue;
-
-            } else if (segmentCount < targetSegmentCount_) {
-               result.warnings.push(`${name} doesn't have sequences for all ${targetSegmentCount_} segments`);
+            } else if (segmentCount < totalSegmentCount_) {
                result.notEnoughSegments += 1;
                continue;
             }
@@ -1615,48 +1699,84 @@ define([
             for (const segment of segmentMap.keys()) {
                const count = segmentMap.get(segment);
                if (isNaN(count) || count < 1) {
-                  result.warnings.push(`${name} has no sequences for the ${segment} segment`);
+                  // A technical issue not caused by the user: The segment is missing a count value.
                   continue;
                } else if (count > 1) {
-                  result.errors.push(`${name} has too many sequences for the ${segment} segment (${count})`);
+                  result.tooManySegments += 1;
                   continue;
                }
             }
 
-            // If we get this far, we have a valid name.
+            // If we get this far, we have a valid name with a sequence for all segments.
             result.validNames += 1;
          }
 
-         // Compare the number of valid strain names to the minimum allowable strain count.
-         if (result.validNames < this.settings.MIN_STRAIN_COUNT) {
+         // The number of names we expected based on the number of sequences and segments that were found
+         const expectedNames = sequenceCount_ / totalSegmentCount_;
 
-            if (result.validNames < 1) {
-               result.errors.push("No strains were found");
+         // If we take into account a small amount of user error (for example, including strains that don't have
+         // sequences for all segments), we can compare to these threshold values instead of the total expected.
+         const upperThreshold = Math.floor(this.settings.FASTA_ERROR_THRESHOLD * expectedNames);
+         const lowerThreshold = Math.floor((1.0 - this.settings.FASTA_ERROR_THRESHOLD) * expectedNames);
 
-            } else if (result.validNames === 1) {
-               result.errors.push(`At least 2 strains are required for analysis`);
+         if (result.validNames === 0) {
+
+            // No valid strains were found
+            result.status = FastaStatus.NO_VALID_STRAINS;
+            result.score = ErrorScore.InvalidNames;
+
+         } else if (result.validNames < this.settings.MIN_STRAIN_COUNT) {
+
+            // Not enough strains for an analysis.
+            result.status = FastaStatus.NOT_ENOUGH_STRAINS_FOR_ANALYSIS;
+            result.score = ErrorScore.InsufficientData;
+
+         } else if (result.validNames < upperThreshold) {
+
+            // Why do we have fewer than expected valid names?
+            if (result.onlyOneSequence > lowerThreshold) {
+
+               // Strain name parsing error: Many of the strains only had a sequence for a single segment, so
+               // we probably included too much text in the calculated strain name.
+               result.status = FastaStatus.STRAIN_NAMES_WITH_ONE_SEQUENCE;
+               result.score = ErrorScore.InvalidNames;
+
+            } else if (result.tooManySegments > lowerThreshold) {
+
+               // Strain name parsing error: What it thinks is the strain name is only part of the actual name and isn't unique.
+               result.status = FastaStatus.TOO_MANY_SEGMENT_SEQUENCES;
+               result.score = ErrorScore.InvalidNames;
+
+            } else if (result.notEnoughSegments > lowerThreshold) {
+
+               // Strain name parsing error: we used too much of the header as the strain name.
+               result.status = FastaStatus.NOT_ENOUGH_SEGMENT_SEQUENCES;
+               result.score = ErrorScore.InvalidNames;
 
             } else {
-               result.errors.push(`A miniumum of ${this.settings.MIN_STRAIN_COUNT} strains is required for analysis (${result.validNames} strains were found)`);
+
+               // Probably some other parsing error.
+               result.status = FastaStatus.FEWER_STRAINS_THAN_EXPECTED;
+               result.score = ErrorScore.InsufficientData;
             }
-         }
 
-         // If errors were found, the result is invalid and the score is negative with the number of errors as its value. When there are no errors,
-         // the result is valid and the score is the number of valid names.
-         if (result.errors.length > 0) {
-            result.isValid = false;
-            result.score = -1 * result.errors.length;
+         } else if (result.validNames === expectedNames) {
 
-            // TEST
-            //result.regexType = MatchType.Regex;
+            // All expected strains are valid.
+            result.status = FastaStatus.ALL_VALID_STRAINS;
+            result.score = result.validNames;
+            result.isValid = true;
 
          } else {
+
+            // At least the threshold amount of expected names.
+            result.status = FastaStatus.MOSTLY_VALID_STRAINS;
+            result.score = 1 / result.validNames;
             result.isValid = true;
-            result.score = result.validNames;
          }
 
-         //console.log(result)
-         //console.log("\n")
+         console.log(result)
+         console.log("\n")
 
          return result;
       }
