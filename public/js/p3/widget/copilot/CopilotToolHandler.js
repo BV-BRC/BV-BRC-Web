@@ -137,11 +137,15 @@ define([
         // If chunk is already a fully parsed object with items array, use it directly
         if (typeof chunk === 'object' && !chunk.content && chunk.items) {
           console.log('[CopilotToolHandler] ✓ Path A: Chunk is already parsed workspace data with .items');
+          // Preserve path if available
           return {
             ...baseData,
             chunk: JSON.stringify(chunk), // Store stringified version for display
             isWorkspaceListing: true,
-            workspaceData: chunk.items // Use the items array directly
+            workspaceData: {
+              path: chunk.path || null,
+              items: chunk.items || []
+            }
           };
         }
 
@@ -180,22 +184,42 @@ define([
           console.log('[CopilotToolHandler] ✓ Extracted content, keys:', Object.keys(parsedChunk));
         }
 
-        // Extract items array from the parsed data
+        // Extract items array and path from the parsed data
         // The parsedChunk has structure: { count: N, path: "...", source: "...", items: [...] }
-        // WorkspaceListingWidget expects just the items array
+        // WorkspaceExplorerAdapter needs both path and items
         let workspaceData = parsedChunk;
+        let workspacePath = null;
+
         if (parsedChunk && parsedChunk.items) {
           console.log('[CopilotToolHandler] ✓ Extracting .items array (length:', parsedChunk.items.length, ')');
-          workspaceData = parsedChunk.items;
+          workspacePath = parsedChunk.path || null;
+          workspaceData = {
+            path: workspacePath,
+            items: parsedChunk.items
+          };
+        } else if (parsedChunk && parsedChunk.path) {
+          // If we have a path but no items array, preserve the structure
+          workspacePath = parsedChunk.path;
+          workspaceData = {
+            path: workspacePath,
+            items: Array.isArray(parsedChunk) ? parsedChunk : []
+          };
         } else {
           console.log('[CopilotToolHandler] ⚠ No .items found, using full parsedChunk');
+          // If it's an array, treat as items with no path
+          if (Array.isArray(parsedChunk)) {
+            workspaceData = {
+              path: null,
+              items: parsedChunk
+            };
+          }
         }
 
         return {
           ...baseData,
           chunk: content,
           isWorkspaceListing: true,
-          workspaceData: workspaceData // Store just the items array
+          workspaceData: workspaceData // Store object with path and items
         };
       } catch (e) {
         console.error('[CopilotToolHandler] ✗ Failed to parse workspace listing chunk:', e.message);

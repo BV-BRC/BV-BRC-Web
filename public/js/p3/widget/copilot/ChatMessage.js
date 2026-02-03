@@ -1,6 +1,7 @@
 define([
   'dojo/_base/declare', // Base class for creating Dojo classes
   'dojo/dom-construct', // DOM manipulation utilities
+  'dojo/dom-class', // DOM class manipulation utilities
   'dojo/on', // Event handling
   'dojo/topic', // Topic messaging
   'dojo/_base/lang', // Language utilities
@@ -9,9 +10,9 @@ define([
   'dijit/Dialog', // Dialog widget
   './CopilotToolHandler', // Tool handler for special tool processing
   './WorkflowEngine', // Workflow engine widget for displaying workflows
-  './WorkspaceListingWidget' // Workspace listing widget for displaying workspace contents
+  './WorkspaceExplorerAdapter' // Workspace explorer adapter for displaying workspace contents
 ], function (
-  declare, domConstruct, on, topic, lang, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, WorkspaceListingWidget
+  declare, domConstruct, domClass, on, topic, lang, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, WorkspaceExplorerAdapter
 ) {
   /**
    * @class ChatMessage
@@ -218,11 +219,37 @@ define([
           this.showWorkflowDialog();
         }));
       } else if (this.message.isWorkspaceListing && this.message.workspaceData) {
-        // Show workspace listing widget directly in the message
-        var workspaceWidget = new WorkspaceListingWidget({
-          workspaceData: this.message.workspaceData
+        // Add a class to the message div to allow wider display for workspace listings
+        domClass.add(messageDiv, 'workspace-listing-message');
+
+        // Show workspace explorer adapter directly in the message
+        var workspaceWidget = new WorkspaceExplorerAdapter({
+          region: 'center',
+          allowDragAndDrop: false, // Disable drag-and-drop in chat context
+          onlyWritable: false
         });
-        domConstruct.place(workspaceWidget.domNode, messageDiv);
+
+        // Set the MCP data (path and items)
+        if (this.message.workspaceData && typeof this.message.workspaceData === 'object') {
+          workspaceWidget.setMcpData(this.message.workspaceData);
+        } else if (Array.isArray(this.message.workspaceData)) {
+          // Backward compatibility: if it's just an array, treat as items
+          workspaceWidget.setMcpData({ items: this.message.workspaceData });
+        }
+
+        // Create a container for the workspace widget
+        // Make it wider by using full width and overriding any parent constraints
+        // Reduced height for more compact display
+        var workspaceContainer = domConstruct.create('div', {
+          class: 'workspace-explorer-container',
+          style: 'min-height: 200px; max-height: 400px; width: 100%; max-width: 100%; overflow-x: auto; overflow-y: auto;'
+        }, messageDiv);
+
+        // Place the widget's domNode in the container
+        domConstruct.place(workspaceWidget.domNode, workspaceContainer);
+
+        // Start the widget (required for Dojo widgets)
+        workspaceWidget.startup();
       } else {
         // Normal message rendering
         domConstruct.create('div', {

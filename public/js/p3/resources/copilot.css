@@ -352,6 +352,31 @@
   margin-top: 10px;
 }
 
+/* Override max-width for workspace listing messages to make them wider */
+.message.assistant.workspace-listing-message {
+  max-width: 98%;
+  width: 98%;
+}
+
+/* Workspace explorer container - make it full width and compact height */
+.workspace-explorer-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+/* Ensure the workspace grid inside uses full width */
+.workspace-explorer-container .WorkspaceExplorerView,
+.workspace-explorer-container .dgrid {
+  width: 100% !important;
+  max-width: 100% !important;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
 .message.status {
   background-color: transparent;
   border: 0;
