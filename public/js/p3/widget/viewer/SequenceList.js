@@ -113,7 +113,7 @@ define([
     },
     onSetTotalSequences: function (attr, oldVal, newVal) {
       // console.log("ON SET TOTAL GENOMES: ", newVal);
-      this.totalCountNode.innerHTML = ' ( ' + newVal + '  Sequences ) ';
+      this.totalCountNode.textContent = ' ( ' + newVal + '  Sequences ) ';
     },
     hideWarning: function () {
       if (this.warningPanel) {

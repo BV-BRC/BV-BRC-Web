@@ -6,7 +6,7 @@ define([
   '../ActionBar', '../FilterContainerActionBar', 'phyloview/PhyloTree', '../../WorkspaceManager',
   'd3/d3', 'phyloview/TreeNavSVG', '../../util/PathJoin', 'dijit/form/Button',
   'dijit/MenuItem', 'dijit/TooltipDialog', 'dijit/popup', '../SelectionToGroup', '../PerspectiveToolTip',
-  'dijit/Dialog', '../ItemDetailPanel', 'dojo/query', 'FileSaver'
+  'dijit/Dialog', '../ItemDetailPanel', 'dojo/query', 'FileSaver', 'msa'
 ], function (
   declare, Base, on, Topic,
   domClass, ContentPane, domConstruct,
@@ -318,6 +318,7 @@ define([
       var default_value = 'N/A';
       this.alt_labels = {
         gene_id: {},
+        gene: {},
         genome_id: {},
         genome_name: {},
         genbank_accessions: {},
@@ -340,6 +341,7 @@ define([
       var self = this;
       Object.keys(dataMap).forEach(lang.hitch(this, function (geneID) {
         self.alt_labels.gene_id[geneID] = geneID;
+        self.alt_labels.gene[geneID] = default_value;
         self.alt_labels.genome_id[geneID] = default_value;
         self.alt_labels.genome_name[geneID] = default_value;
         self.alt_labels.genbank_accessions[geneID] = default_value;
@@ -419,6 +421,15 @@ define([
             }
           }
         });
+       console.log('in setAltLabel this.featureData', this.featureData);
+       
+       this.featureData.forEach(function (feature) {
+          if (dataMap[geneID].feature_id == feature.feature_id) {
+            if (feature.gene) {
+              self.alt_labels.gene[geneID] = feature.gene;
+            }
+          }
+        });               
       }));
       console.log('in setAltLabel this.alt_labels', this.alt_labels);
     },
@@ -485,7 +496,7 @@ define([
       var genomeList = [];
 
       var self = this;
-      if (ids[0].match(/^fig/) || ids[0].match(/CDS/)) {
+      if (ids.some(id => /^fig/.test(id))) {
         this.nodeType = 'feature';
         this.containerType = 'feature_data';
         var fetchedIds = when(xhr.post(PathJoin(window.App.dataAPI, 'genome_feature'), {
@@ -496,7 +507,7 @@ define([
           },
           handleAs: 'json',
           // headers: this.headers,
-          data: 'or(in(patric_id,(' +  pIDs.join(',') + ')),in(feature_id,(' + pIDs.join(',') + ')))&select(feature_id,patric_id,genome_id,genome_name,product)&limit(1000)'
+          data: 'or(in(patric_id,(' +  pIDs.join(',') + ')),in(feature_id,(' + pIDs.join(',') + ')))&select(feature_id,patric_id,genome_id,genome_name,product,gene)&limit(1000)'
         }), function (response) {
           console.log('in when response response', response);
           self.featureData = response.map(function (feature) {
@@ -510,22 +521,22 @@ define([
               seqIdIndex = seqIds[feature.feature_id] - 1;
             }
             self.idMap[seqIdIndex] = {
-              seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+              seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
             };
-            if (ids[0].match(/^fig/)) {
+            if (ids.some(id => /^fig/.test(id))) {
               self.dataMap[feature.patric_id] = {
-                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
               };
               return {
-                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
               };
             }
             else {
               self.dataMap[feature.feature_id] = {
-                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
               };
               return {
-                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
               };
             }
           });
@@ -583,7 +594,7 @@ define([
         console.log('feature fetchedIds ', fetchedIds);
         // console.log('feature genomes ', genomes);
       }
-      else if (ids[0].match(/\d+\.\d+/)) {
+      else if (ids.some(id => /\d+\.\d+/.test(id))) {
         this.nodeType = 'genome';
         this.containerType = 'genome_data';
         var genome_ids = [];
@@ -618,7 +629,7 @@ define([
             var keys = Object.keys(seqIds);
             // console.log('in when response keys', keys);
 
-            if (keys[0].match(/^\d+\.\d+$/)) {
+            if (keys.some(k => /^\d+\.\d+$/.test(k))) {
               seqIdIndex = seqIds[genome.genome_id] - 1;
             } else {
               for (var i = 0; i < keys.length; i++) {
@@ -786,6 +797,7 @@ define([
       console.log('msaDiv= ', msaDiv);
       var idMenuDivs = [];
       idMenuDivs.push('<div class="wsActionTooltip" rel="gene_id">Gene ID</div>');
+      idMenuDivs.push('<div class="wsActionTooltip" rel="gene">Gene Name</div>');
       idMenuDivs.push('<div class="wsActionTooltip" rel="genome_name">Genome Name</div>');
       idMenuDivs.push('<div class="wsActionTooltip" rel="genome_id">Genome ID</div>');
       idMenuDivs.push('<div class="wsActionTooltip" rel="genbank_accessions">Accession</div>');
@@ -846,12 +858,7 @@ define([
           if (s.name.match(/^\d+\.\d+$/) || s.name.match(/^fig/)) {
             s.name = label[s.name];
             // console.log('idMenu match genome id or fig s.name=', s.name);
-          } else {
-            var myid = s.name.match(/.*\|(\d+\.\d+).*/);
-            // console.log('idMenu match accn id ', myid);
-            s.name = label[myid[1]];
-            // console.log('idMenu s.name=   myid= ', s.name, myid[1]);
-          }
+          } 
         }));
         console.log('msa_models2= ', msa_models2);
 

@@ -31,7 +31,7 @@ define([
   return declare([SummaryWidget], {
     dataModel: 'genome_amr',
     query: '',
-    baseQuery: '&in(resistant_phenotype,(Resistant,Susceptible,Intermediate))&limit(1)&facet((pivot,(antibiotic,resistant_phenotype,genome_id)),(mincount,1),(limit,-1))&json(nl,map)',
+    baseQuery: '&in(resistant_phenotype,(Resistant,Susceptible,Intermediate))&limit(1)&facet((pivot,(antibiotic,resistant_phenotype)),(mincount,1),(limit,-1))&json(nl,map)',
     columns: [{
       label: 'Antibiotic',
       field: 'antibiotic'
@@ -47,7 +47,7 @@ define([
     }],
     processData: function (data) {
 
-      if (!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['antibiotic,resistant_phenotype,genome_id']) {
+      if (!data || !data.facet_counts || !data.facet_counts.facet_pivot || !data.facet_counts.facet_pivot['antibiotic,resistant_phenotype']) {
         console.log('INVALID SUMMARY DATA', data);
         return;
       }
@@ -60,7 +60,7 @@ define([
       domClass.remove(this.domNode.parentNode, 'hidden');
 
 
-      var antibiotic_data = data.facet_counts.facet_pivot['antibiotic,resistant_phenotype,genome_id'];
+      var antibiotic_data = data.facet_counts.facet_pivot['antibiotic,resistant_phenotype'];
 
       var chartData = [];
       var tableData = [];
@@ -95,7 +95,7 @@ define([
             label: antibiotic,
             tooltip: function (d, idx) {
 
-              return lang.replace('Antibiotic: {0}<br/>Phenotype: {1}<br/>Count: {2}', [d.label, phenotypes[idx], d.dist[idx]]);
+              return lang.replace('Antibiotic: {0}\nPhenotype: {1}\nCount: {2}', [d.label, phenotypes[idx], d.dist[idx]]);
             },
             link: function (d, idx) {
               return lang.replace(linkBase + '#view_tab=amr&filter=and(eq(antibiotic,{0}),eq(resistant_phenotype,{1}))', [antibiotic, phenotypes[idx]]);

@@ -113,7 +113,7 @@ define([
     },
     onSetTotalSerology: function (attr, oldVal, newVal) {
       // console.log("ON SET TOTAL GENOMES: ", newVal);
-      this.totalCountNode.innerHTML = ' ( ' + newVal + '  Serology) ';
+      this.totalCountNode.textContent = ' ( ' + newVal + '  Serology) ';
     },
     hideWarning: function () {
       if (this.warningPanel) {

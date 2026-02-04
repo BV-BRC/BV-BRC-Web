@@ -113,7 +113,7 @@ define([
     },
     onSetTotalSurveillance: function (attr, oldVal, newVal) {
       // console.log("ON SET TOTAL GENOMES: ", newVal);
-      this.totalCountNode.innerHTML = ' ( ' + newVal + '  Surveillance) ';
+      this.totalCountNode.textContent = ' ( ' + newVal + '  Surveillance) ';
     },
     hideWarning: function () {
       if (this.warningPanel) {

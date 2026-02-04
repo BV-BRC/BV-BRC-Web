@@ -135,7 +135,7 @@ define([
 
           var content = (d.tooltip) ? d.tooltip.apply(this, arguments) : lang.replace('{label} ({count})', self.data[i]);
 
-          self.tooltipLayer.html(content)
+          self.tooltipLayer.text(content)
             .style('left', d3.event.pageX + 'px')
             .style('top', d3.event.pageY + 'px');
         })

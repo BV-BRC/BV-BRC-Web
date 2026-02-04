@@ -1,6 +1,6 @@
 define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on', 'dojo/_base/lang', 'dojo/request',
-  'dijit/layout/ContentPane', 'dojo/topic',
+  'dijit/layout/ContentPane', 'dojo/topic', 'dojo/dom-construct',
   '../FeatureGridContainer', '../ProteinGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer',
   '../PathwayGridContainer',
   '../ExperimentsContainer', '../InteractionContainer', '../GenomeGridContainer',
@@ -8,7 +8,7 @@ define([
   '../SequenceGridContainer', '../StrainGridContainer', '../StrainGridContainer_Orthomyxoviridae', '../StrainGridContainer_Bunyavirales', '../EpitopeGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog'
 ], function (
   declare, TabViewerBase, on, lang, xhr,
-  ContentPane, Topic,
+  ContentPane, Topic, domConstruct,
   FeatureGridContainer, ProteinGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer,
   PathwayGridContainer,
   ExperimentsContainer, InteractionsContainer, GenomeGridContainer,
@@ -326,7 +326,7 @@ define([
     },
     onSetTotalGenomes: function (attr, oldVal, newVal) {
       const genomeCount = newVal
-      this.totalCountNode.innerHTML = ` ( ${genomeCount} Genomes ) `;
+      this.totalCountNode.textContent = ` ( ${genomeCount} Genomes ) `;
 
       if (genomeCount > 500) {
         // this.getReferenceAndRepresentativeGenomes(genomeCount);

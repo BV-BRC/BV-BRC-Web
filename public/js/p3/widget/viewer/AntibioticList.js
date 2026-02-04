@@ -63,7 +63,7 @@ define([
 
     onSetQuery: function (attr, oldVal, newVal) {
       var content = QueryToEnglish(newVal);
-      this.queryNode.innerHTML = '<span class="queryModel">Antibotics: </span>  ' + content;
+      this.queryNode.innerHTML = '<span class="queryModel">Antibiotics: </span>  ' + content;
     },
 
     setActivePanelState: function () {
@@ -108,7 +108,7 @@ define([
 
     },
     onSetTotalSpecialtyGenes: function (attr, oldVal, newVal) {
-      this.totalCountNode.innerHTML = ' ( ' + newVal + '  Antibiotics ) ';
+      this.totalCountNode.textContent = ' ( ' + newVal + '  Antibiotics ) ';
     },
     hideWarning: function () {
       if (this.warningPanel) {

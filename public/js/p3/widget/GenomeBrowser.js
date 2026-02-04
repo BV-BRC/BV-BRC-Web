@@ -190,7 +190,13 @@ define([
       (function () {
 
         // add a moreMatches class to our hacked-in "more options" option
-        var dropDownProto = eval(this.locationBox.dropDownClass).prototype;
+        // Use lang.getObject() instead of eval() to safely resolve the class name
+        // Ensure dropDownClass is a valid string
+        var dropDownClass = this.locationBox.dropDownClass;
+        if (typeof dropDownClass !== 'string' || !dropDownClass) {
+          dropDownClass = 'dijit.form._ComboBoxMenu';
+        }
+        var dropDownProto = lang.getObject(dropDownClass).prototype;
         var oldCreateOption = dropDownProto._createOption;
         dropDownProto._createOption = function (item) {
           var option = oldCreateOption.apply(this, arguments);

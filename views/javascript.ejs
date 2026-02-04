@@ -12,7 +12,6 @@ dojoConfig = {
 <!-- Scripts -->
 <%
 const load_scripts = [
-  "msa/dist/msa.min.js",
   "bvbrc_js_client/dist/bvbrc_client.js",
   "bundle/bundle.js",
   "bundle/bundle2.js"
@@ -72,21 +71,43 @@ const load_scripts = [
         success: function (data) {
           for (let post of data.elements) {
             if (post.id && post.id.includes('share')) {
-              $("#linkedin-slides").append(
-                      `<li class="slide" style="height: 100%;">
-                         <div class="iframe-container" style="position: relative; width: 100%; height: 100%;">
-                           <div class="iframe-placeholder"
-                                style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1; transition: opacity 0.3s ease;">
-                             <p>Loading the news...</p>
-                           </div>
-                           <iframe data-src="https://www.linkedin.com/embed/feed/update/${post.id}"
-                                   style="height: 100%; width: 100%; opacity: 0; border: none; transition: opacity 0.3s ease;"
-                                   loading="lazy"></iframe>
-                         </div>
-                       </li>`
-              );
+              // Build DOM elements safely to prevent XSS
+              var $li = $('<li>').addClass('slide').css('height', '100%');
+              var $container = $('<div>').addClass('iframe-container').css({
+                'position': 'relative',
+                'width': '100%',
+                'height': '100%'
+              });
+              var $placeholder = $('<div>').addClass('iframe-placeholder').css({
+                'position': 'absolute',
+                'top': '50%',
+                'left': '50%',
+                'transform': 'translate(-50%, -50%)',
+                'z-index': '1',
+                'transition': 'opacity 0.3s ease'
+              }).append($('<p>').text('Loading the news...'));
+
+              // Create iframe with data-src attribute safely
+              var $iframe = $('<iframe>').attr({
+                'data-src': 'https://www.linkedin.com/embed/feed/update/' + encodeURIComponent(post.id),
+                'loading': 'lazy'
+              }).css({
+                'height': '100%',
+                'width': '100%',
+                'opacity': '0',
+                'border': 'none',
+                'transition': 'opacity 0.3s ease'
+              });
+
+              $container.append($placeholder).append($iframe);
+              $li.append($container);
+              $("#linkedin-slides").append($li);
+
               $("#linkedin-dot-navigation").append(
-                      `<div class="dot" role="button" aria-selected="false"></div>`
+                $('<div>').addClass('dot').attr({
+                  'role': 'button',
+                  'aria-selected': 'false'
+                })
               );
             }
           }
@@ -101,33 +122,77 @@ const load_scripts = [
 
     // News & Announcements Carousel
     $.getJSON("https://www.bv-brc.org/docs/_static/carousel.json", function (feed) {
+      // Helper function to validate URLs - prevents javascript: and data: URL injection
+      function isValidHttpUrl(str) {
+        if (!str) return false;
+        try {
+          var url = new URL(str);
+          return url.protocol === 'http:' || url.protocol === 'https:';
+        } catch (e) {
+          return false;
+        }
+      }
+
       for (var i = 0; i < feed.length; i++) {
-        const link = feed[i].link;
-        const title = feed[i].title;
-        const desc = feed[i].desc;
-        const img = feed[i].img;
-        // Determine description to display
-        let descContent;
-        const descArr = desc.split(" ");
-        if (img !== "" && descArr.length > 30) {
-          descContent = descArr.slice(0, 30).join(" ") + " ... <a href='" + link + "'>read more</a>";
-        } else if (descArr.length > 60) {
-          descContent = descArr.slice(0, 60).join(" ") + " ... <a href='" + link + "'>read more</a>";
-        } else {
-          descContent = desc;
+        var item = feed[i];
+
+        // Validate URLs before using - only allow http/https
+        var link = isValidHttpUrl(item.link) ? item.link : '#';
+        var img = isValidHttpUrl(item.img) ? item.img : '';
+        var title = item.title || '';
+        var desc = item.desc || '';
+
+        // Determine description length based on whether there's an image
+        var descArr = desc.split(" ");
+        var maxWords = img !== "" ? 30 : 60;
+        var isTruncated = descArr.length > maxWords;
+        var descText = isTruncated ? descArr.slice(0, maxWords).join(" ") + " ..." : desc;
+
+        // Build DOM elements safely using jQuery (prevents XSS)
+        var $li = $('<li>').addClass('slide');
+
+        // Create link with title - use .text() which escapes HTML
+        var $link = $('<a>')
+          .addClass('feed-link')
+          .attr('href', link);
+
+        var $title = $('<h4>')
+          .addClass('feed-title')
+          .text(title);  // .text() safely escapes HTML entities
+
+        $link.append($title);
+        $li.append($link);
+
+        // Create description paragraph
+        var $desc = $('<p>').addClass('feed-description');
+        $desc.text(descText);  // Safe text insertion
+
+        // If truncated, add "read more" link safely
+        if (isTruncated) {
+          var $readMore = $('<a>')
+            .attr('href', link)
+            .text('read more');
+          $desc.append(' ').append($readMore);
         }
 
-        $("#announcements-slides").append(
-                `<li class="slide">
-                  <a href="${link}" class="feed-link">
-                      <h4 class="feed-title">${title}</h4>
-                  </a>
-                  <p class="feed-description">${descContent}</p>
-                  <img src="${img}" class="feed-img"  loading="lazy">
-              </li>`
-        );
+        $li.append($desc);
+
+        // Only add image if URL is valid
+        if (img) {
+          var $img = $('<img>')
+            .addClass('feed-img')
+            .attr('loading', 'lazy')
+            .attr('src', img)
+            .attr('alt', title || 'News image');
+          $li.append($img);
+        }
+
+        $("#announcements-slides").append($li);
         $("#announcements-dot-navigation").append(
-                `<div class="dot" role="button" aria-selected="false"></div>`
+          $('<div>').addClass('dot').attr({
+            'role': 'button',
+            'aria-selected': 'false'
+          })
         );
       }
 
@@ -207,23 +272,10 @@ const load_scripts = [
         appOpts.copilotEnablePublications = "<%= request.applicationOptions.copilotEnablePublications %>";
         appOpts.copilotEnableEnhancePrompt = "<%= request.applicationOptions.copilotEnableEnhancePrompt %>";
         appOpts.copilotEnableShowPromptDetails = "<%= request.applicationOptions.copilotEnableShowPromptDetails %>";
+        appOpts.production = <%= request.production %>;
         window.App = new App(appOpts);
       });
       <% if (request && request.production){ %>
       });
       <% } %>
       </script>
-      <!-- Google Analytics 4 -->
-      <% if (request && request.applicationOptions.gaID) { %>
-        <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=<%- request.applicationOptions.gaID %>"></script>
-        <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', '<%- request.applicationOptions.gaID %>', {
-          'link_attribution': true
-        });
-        </script>
-        <% } %>

@@ -52,9 +52,11 @@ define([
       }
       this.externalCheck = 'checking';
       this.externalCheckValue = val;
-      return Deferred.when(WorkspaceManager.getObject(this.path + '/' + val), lang.hitch(this, function (obj) {
-        if (obj) {
-          console.log('Found Existing Object', obj);
+      var fullPath = this.path + '/' + val;
+      return Deferred.when(WorkspaceManager.objectsExist(fullPath), lang.hitch(this, function (result) {
+        var pathResult = result[fullPath];
+        if (pathResult && pathResult.exists) {
+          console.log('Found Existing Object at', fullPath);
           this.externalCheck = 'exists';
           this.set('invalidMessage', 'A file with this name already exists in ' + this.path);
           this.validate();
@@ -62,7 +64,8 @@ define([
           this.externalCheck = 'empty';
         }
       }), lang.hitch(this, function (err) {
-        console.log('FileNot Found...good');
+        console.log('Error checking file existence:', err);
+        // On error, assume it's okay (same as before when getObject threw)
         this.externalCheck = 'empty';
       }));
     },

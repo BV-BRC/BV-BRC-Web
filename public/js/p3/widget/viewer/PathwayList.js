@@ -113,7 +113,8 @@ define([
     },
     onSetTotalPathway: function (attr, oldVal, newVal) {
       // console.log("ON SET TOTAL GENOMES: ", newVal);
-      this.totalCountNode.innerHTML = ' ( ' + newVal + '  Pathway) ';
+      // Use textContent to prevent XSS
+      this.totalCountNode.textContent = ' ( ' + newVal + '  Pathway) ';
     },
     hideWarning: function () {
       if (this.warningPanel) {

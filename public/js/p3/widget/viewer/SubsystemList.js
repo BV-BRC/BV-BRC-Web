@@ -113,7 +113,7 @@ define([
     },
     onSetTotalSubsystems: function (attr, oldVal, newVal) {
       // console.log("ON SET TOTAL GENOMES: ", newVal);
-      this.totalCountNode.innerHTML = ' ( ' + newVal + '  Subsystems) ';
+      this.totalCountNode.textContent = ' ( ' + newVal + '  Subsystems) ';
     },
     hideWarning: function () {
       if (this.warningPanel) {

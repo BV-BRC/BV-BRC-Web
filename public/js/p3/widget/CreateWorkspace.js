@@ -75,7 +75,8 @@ define([
         }, function (err) {
           domClass.remove(_self.domNode, 'Working');
           domClass.add(_self.domNode, 'Error');
-          _self.errorMessage.innerHTML = err;
+          // Use textContent to prevent XSS from server error messages
+          _self.errorMessage.textContent = err;
 
           Topic.publish('/Notification', {
             message: 'Error Creating Workspace',

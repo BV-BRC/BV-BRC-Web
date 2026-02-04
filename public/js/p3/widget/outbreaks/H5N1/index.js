@@ -504,16 +504,30 @@ define([
         .then(lang.hitch(this, function (items) {
           const newsList = domConstruct.create('ul');
           const options = {weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC'};
+
+          // Helper to validate URLs are safe HTTP/HTTPS
+          const isValidHttpUrl = (str) => {
+            try {
+              const url = new URL(str);
+              return url.protocol === 'http:' || url.protocol === 'https:';
+            } catch {
+              return false;
+            }
+          };
+
           items.forEach(item => {
             const li = domConstruct.create('li', {}, newsList);
             const pubDate = new Date(item.pubDate).toLocaleDateString('en-US', options);
             domConstruct.create('div', {
               innerHTML: pubDate
             }, li);
+
+            // Use textContent to prevent XSS, validate URL
+            const safeLink = isValidHttpUrl(item.link) ? item.link : '#';
             domConstruct.create('a', {
-              href: item.link,
+              href: safeLink,
               target: '_blank',
-              innerHTML: item.title
+              textContent: item.title
             }, li);
           });
           domConstruct.place(newsList, 'newsList');

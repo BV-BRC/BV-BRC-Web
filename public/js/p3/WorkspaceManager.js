@@ -46,6 +46,11 @@ define([
         label: 'Sequence Alignment Data',
         formats: ['.bam']
       },
+      bigwig: {
+         label: 'BigWig',
+         formats: ['.bigwig', '.bw'],
+         description: 'A binary, compressed, and indexed format for continuous genomic data (e.g. coverage tracks).'
+      },
       contigs: {
         label: 'Contigs',
         formats: ['.fa', '.fasta', '.faa', '.fna'],
@@ -206,6 +211,7 @@ define([
       aligned_protein_fasta: { label: 'aligned_protein_fasta', value: 'aligned_protein_fasta' },
       bam: { label: 'bam', value: 'bam' },
       bai: { label: 'bai', value: 'bai' },
+      bigwig: { label: 'bigwig', value: 'bigwig' },
       contigs: { label: 'contigs', value: 'contigs' },
       csv: { label: 'csv', value: 'csv' },
       diffexp_input_data: { label: 'diffexp_input_data', value: 'diffexp_input_data' },
@@ -1466,6 +1472,130 @@ define([
     // Todo(nc): generic error
     showError: function (e) {
 
+    },
+
+    // Cache for du results: { path: { timestamp: Date, result: DiskUsageResult, isTimeout: boolean } }
+    _duCache: {},
+    _duCacheTTL: 3600000, // 1 hour in milliseconds
+    _duTimeoutCacheTTL: 86400000, // 24 hours for timeout results (no point retrying soon)
+
+    /**
+     * Get disk usage for a path
+     * @param {string} path - The workspace path to check
+     * @param {boolean} forceRefresh - If true, bypass cache and re-query
+     * @returns {Promise} Resolves to array of DiskUsageResult tuples:
+     *   [path, total_size, file_count, directory_count, error]
+     */
+    du: function (path, forceRefresh) {
+      var self = this;
+      path = decodeURIComponent(path);
+
+      // Check cache unless force refresh
+      if (!forceRefresh && this._duCache[path]) {
+        var cached = this._duCache[path];
+        var ttl = cached.isTimeout ? this._duTimeoutCacheTTL : this._duCacheTTL;
+        if (Date.now() - cached.timestamp < ttl) {
+          return Deferred.when(cached.result);
+        }
+      }
+
+      var promise = this.api('Workspace.du', [{
+        paths: [path],
+        recursive: true,
+        adminmode: false
+      }]);
+
+      // Cache the result on success (including timeout errors in the result)
+      return Deferred.when(promise, function (result) {
+        var resultStr = JSON.stringify(result) || '';
+        var isTimeout = resultStr.indexOf('timed out') !== -1;
+        self._duCache[path] = {
+          timestamp: Date.now(),
+          result: result,
+          isTimeout: isTimeout
+        };
+        return result;
+      }, function (err) {
+        // Also cache errors that indicate timeout
+        var errMsg = (err && (err.message || err.toString())) || '';
+        if (errMsg.indexOf('timed out') !== -1) {
+          var timeoutResult = [[[path, 0, 0, 0, errMsg]]];
+          self._duCache[path] = {
+            timestamp: Date.now(),
+            result: timeoutResult,
+            isTimeout: true
+          };
+          return timeoutResult;
+        }
+        // Re-throw other errors
+        throw err;
+      });
+    },
+
+    /**
+     * Clear the du cache
+     * @param {string} path - Optional specific path to clear. If omitted, clears entire cache.
+     */
+    clearDuCache: function (path) {
+      if (path) {
+        delete this._duCache[path];
+      } else {
+        this._duCache = {};
+      }
+    },
+
+    /**
+     * Save content to a workspace file (create or overwrite)
+     * @param {string} path - Full file path
+     * @param {string} content - File content
+     * @param {string} type - File type (e.g., 'json')
+     * @returns {Deferred}
+     */
+    saveFile: function (path, content, type) {
+      var _self = this;
+      return Deferred.when(
+        this.api('Workspace.create', [{
+          objects: [[path, type || 'string', {}, content]],
+          overwrite: 1
+        }]),
+        function (results) {
+          return _self.metaListToObj(results[0][0]);
+        }
+      );
+    },
+
+    /**
+     * Check if objects exist at the given paths
+     * @param {string|string[]} paths - Path(s) to check
+     * @returns {Deferred} Resolves to an object mapping paths to their existence status:
+     *   { path: { exists: boolean, error: string|null } }
+     */
+    objectsExist: function (paths) {
+      if (!paths) {
+        throw new Error('Invalid Path(s) to check');
+      }
+      if (!(paths instanceof Array)) {
+        paths = [paths];
+      }
+      paths = paths.map(function (p) {
+        return decodeURIComponent(p);
+      });
+
+      return Deferred.when(this.api('Workspace.objects_exist', [{
+        objects: paths
+      }]), function (results) {
+        // results[0] is a list of [path, exists, error] tuples
+        var existsMap = {};
+        if (results && results[0]) {
+          results[0].forEach(function (tuple) {
+            existsMap[tuple[0]] = {
+              exists: !!tuple[1],
+              error: tuple[2] || null
+            };
+          });
+        }
+        return existsMap;
+      });
     },
 
     init: function (apiUrl, token, userId) {

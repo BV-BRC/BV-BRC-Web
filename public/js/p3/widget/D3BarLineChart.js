@@ -34,7 +34,7 @@ define([
           .attr('y', 24)
           .attr('x', this.config.width / 2)
           .attr('text-anchor', 'middle')
-          .html(kwArgs['title'])
+          .text(kwArgs['title'])
       }
       // tooltip
       if (d3.select('div.tooltip')[0]) {
@@ -122,7 +122,7 @@ define([
               .style('opacity', 0.95)
 
             this.tooltipLayer
-              .html(this.config.tooltip(d))
+              .text(this.config.tooltip(d))
               .style('left', d3.event.pageX + 'px')
               .style('top', d3.event.pageY + 'px')
           })

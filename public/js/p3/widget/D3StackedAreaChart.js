@@ -31,7 +31,7 @@ define([
           .attr('y', 24)
           .attr('x', this.config.width / 2)
           .attr('text-anchor', 'middle')
-          .html(kwArgs['title']);
+          .text(kwArgs['title']);
       }
 
       // tooltip
@@ -162,7 +162,7 @@ define([
           // console.log(x0, y0, d3.event)
 
           this.tooltipLayer
-            .html(coord)
+            .text(coord)
             .style('left', x0 + 'px' )
             .style('top', y0 + 'px' )
         })
@@ -210,7 +210,7 @@ define([
         .attr('x', this.config.width / 2)
         .attr('y', 60)
         .attr('text-anchor', 'middle')
-        .html('We have not enough data to render this chart')
+        .text('We have not enough data to render this chart')
     }
   })
 })

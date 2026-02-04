@@ -49,7 +49,7 @@ define([
 
       comments: { label: 'Comments', field: 'comments', hidden: true },
       date_inserted: { label: 'Date Inserted', field: 'date_inserted', hidden: true },
-      date_updated: { label: 'Date Updated', field: 'date_updated', hidden: true },
+      date_modified: { label: 'Date Modified', field: 'date_modified', hidden: true },
     },
     startup: function () {
       var _self = this;

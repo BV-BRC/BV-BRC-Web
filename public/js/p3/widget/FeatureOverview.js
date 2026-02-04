@@ -167,7 +167,12 @@ define([
               field: 'pmid',
               renderCell: function (obj, val, node) {
                 if (val) {
-                  node.innerHTML = '<a href="https://www.ncbi.nlm.nih.gov/pubmed/' + val + '">' + val + '</a>';
+                  // Create link safely to prevent XSS
+                  domConstruct.create('a', {
+                    href: 'https://www.ncbi.nlm.nih.gov/pubmed/' + val,
+                    target: '_blank',
+                    textContent: val
+                  }, node);
                 }
               }
             },
@@ -203,13 +208,14 @@ define([
 
       summary.forEach(function (row) {
         var tr = domConstruct.create('tr', {}, tbody);
-        domConstruct.create('td', { innerHTML: row.annotation }, tr);
-        domConstruct.create('td', { innerHTML: row.alt_locus_tag }, tr);
-        domConstruct.create('td', { innerHTML: row.start }, tr);
-        domConstruct.create('td', { innerHTML: row.end }, tr);
-        domConstruct.create('td', { innerHTML: row.na_length }, tr);
-        domConstruct.create('td', { innerHTML: row.aa_length || '-' }, tr);
-        domConstruct.create('td', { innerHTML: row.product || '(feature type: ' + row.feature_type + ')' }, tr);
+        // Use textContent to prevent XSS from feature data
+        domConstruct.create('td', { textContent: row.annotation }, tr);
+        domConstruct.create('td', { textContent: row.alt_locus_tag }, tr);
+        domConstruct.create('td', { textContent: row.start }, tr);
+        domConstruct.create('td', { textContent: row.end }, tr);
+        domConstruct.create('td', { textContent: row.na_length }, tr);
+        domConstruct.create('td', { textContent: row.aa_length || '-' }, tr);
+        domConstruct.create('td', { textContent: row.product || '(feature type: ' + row.feature_type + ')' }, tr);
       });
     },
     _setMappedFeatureListAttr: function (summary) {
@@ -224,13 +230,23 @@ define([
               field: 'id_value',
               renderCell: function (obj, val, node) {
                 var baseUrl = formatter.getExternalLinks(obj.id_type);
+                var href;
+
+                // Build URL safely
                 if (obj.id_type.match(/eggNOG/)) {
-                  node.innerHTML = '<a href="' + baseUrl + obj.uniprotkb_accession + '&target_nogs=' + val + '" target=_blank>' + val + '</a>';
+                  href = baseUrl + obj.uniprotkb_accession + '&target_nogs=' + val;
                 } else if (obj.id_type.match(/HOGENOM|OMA|ProtClustDB/)) {
-                  node.innerHTML = '<a href="' + baseUrl + obj.uniprotkb_accession + '" target=_blank>' + val + '</a>';
+                  href = baseUrl + obj.uniprotkb_accession;
                 } else {
-                  node.innerHTML = '<a href="' + baseUrl + val + '" target=_blank>' + val + '</a>';
+                  href = baseUrl + val;
                 }
+
+                // Create link safely to prevent XSS
+                domConstruct.create('a', {
+                  href: href,
+                  target: '_blank',
+                  textContent: val
+                }, node);
               }
             }
           ]
@@ -244,99 +260,167 @@ define([
     },
     _setFunctionalPropertiesAttr: function (feature) {
 
-      var goLink,
-        plfamLink,
-        pgfamLink,
-        figfamLink,
-        ipLink,
-        insLink;
-
-      if (Object.prototype.hasOwnProperty.call(feature, 'go')) {
-        goLink = feature.go.map(function (goStr) {
-          var go = goStr.split('|');
-          return '<a href="http://amigo.geneontology.org/cgi-bin/amigo/term_details?term=' + go[0] + '" target=_blank>' + go[0] + '</a>&nbsp;' + go[1];
-        }).join('<br>');
-      }
-
-      if (Object.prototype.hasOwnProperty.call(feature, 'plfam_id')) {
-        plfamLink = '<a href="/view/FeatureList/?eq(plfam_id,' + feature.plfam_id + ')#view_tab=features" target="_blank">' + feature.plfam_id + '</a>';
-      }
-
-      if (Object.prototype.hasOwnProperty.call(feature, 'pgfam_id')) {
-        pgfamLink = '<a href="/view/FeatureList/?eq(pgfam_id,' + feature.pgfam_id + ')#view_tab=features" target="_blank">' + feature.pgfam_id + '</a>';
-      }
-
-      if (Object.prototype.hasOwnProperty.call(feature, 'figfam_id')) {
-        figfamLink = '<a href="/view/FeatureList/?eq(figfam_id,' + feature.figfam_id + ')#view_tab=features" target="_blank">' + feature.figfam_id + '</a>';
-      }
-
-      if (Object.prototype.hasOwnProperty.call(feature, 'aa_sequence_md5')) {
-        ipLink = '<a href="/view/FeatureList/?eq(aa_sequence_md5,' + feature.aa_sequence_md5 + ')#view_tab=features" target="_blank">View (new tab)</a>';
-      }
-
-      if (Object.prototype.hasOwnProperty.call(feature, 'na_sequence_md5')) {
-        insLink = '<a href="/view/FeatureList/?eq(na_sequence_md5,' + feature.na_sequence_md5 + ')#view_tab=features" target="_blank">View (new tab)</a>';
-      }
-
       domConstruct.empty(this.functionalPropertiesNode);
 
       var table = domConstruct.create('table', { 'class': 'p3basic striped' }, this.functionalPropertiesNode);
       var tbody = domConstruct.create('tbody', {}, table);
 
-      var htr;
+      var htr, td;
 
+      // PATRIC Local Family - build link safely
       htr = domConstruct.create('tr', {}, tbody);
       domConstruct.create('th', { innerHTML: 'PATRIC Local Family', scope: 'row', style: 'width:25%' }, htr);
-      domConstruct.create('td', { innerHTML: plfamLink || '-' }, htr);
+      td = domConstruct.create('td', {}, htr);
+      if (Object.prototype.hasOwnProperty.call(feature, 'plfam_id')) {
+        domConstruct.create('a', {
+          href: '/view/FeatureList/?eq(plfam_id,' + feature.plfam_id + ')#view_tab=features',
+          target: '_blank',
+          textContent: feature.plfam_id
+        }, td);
+      } else {
+        td.textContent = '-';
+      }
 
+      // PATRIC Global Family - build link safely
       htr = domConstruct.create('tr', {}, tbody);
       domConstruct.create('th', { innerHTML: 'PATRIC Global Family', scope: 'row' }, htr);
-      domConstruct.create('td', { innerHTML: pgfamLink || '-' }, htr);
+      td = domConstruct.create('td', {}, htr);
+      if (Object.prototype.hasOwnProperty.call(feature, 'pgfam_id')) {
+        domConstruct.create('a', {
+          href: '/view/FeatureList/?eq(pgfam_id,' + feature.pgfam_id + ')#view_tab=features',
+          target: '_blank',
+          textContent: feature.pgfam_id
+        }, td);
+      } else {
+        td.textContent = '-';
+      }
 
+      // FIGfam - build link safely
       htr = domConstruct.create('tr', {}, tbody);
       domConstruct.create('th', { innerHTML: 'FIGfam', scope: 'row' }, htr);
-      domConstruct.create('td', { innerHTML: figfamLink || '-' }, htr);
+      td = domConstruct.create('td', {}, htr);
+      if (Object.prototype.hasOwnProperty.call(feature, 'figfam_id')) {
+        domConstruct.create('a', {
+          href: '/view/FeatureList/?eq(figfam_id,' + feature.figfam_id + ')#view_tab=features',
+          target: '_blank',
+          textContent: feature.figfam_id
+        }, td);
+      } else {
+        td.textContent = '-';
+      }
 
+      // Identical Proteins - build link safely
       htr = domConstruct.create('tr', {}, tbody);
       domConstruct.create('th', { innerHTML: 'Identical Proteins', scope: 'row' }, htr);
-      domConstruct.create('td', { innerHTML: ipLink || '-' }, htr);
+      td = domConstruct.create('td', {}, htr);
+      if (Object.prototype.hasOwnProperty.call(feature, 'aa_sequence_md5')) {
+        domConstruct.create('a', {
+          href: '/view/FeatureList/?eq(aa_sequence_md5,' + feature.aa_sequence_md5 + ')#view_tab=features',
+          target: '_blank',
+          textContent: 'View (new tab)'
+        }, td);
+      } else {
+        td.textContent = '-';
+      }
 
+      // Identical Genes - build link safely
       htr = domConstruct.create('tr', {}, tbody);
       domConstruct.create('th', { innerHTML: 'Identical Genes', scope: 'row' }, htr);
-      domConstruct.create('td', { innerHTML: insLink || '-' }, htr);
+      td = domConstruct.create('td', {}, htr);
+      if (Object.prototype.hasOwnProperty.call(feature, 'na_sequence_md5')) {
+        domConstruct.create('a', {
+          href: '/view/FeatureList/?eq(na_sequence_md5,' + feature.na_sequence_md5 + ')#view_tab=features',
+          target: '_blank',
+          textContent: 'View (new tab)'
+        }, td);
+      } else {
+        td.textContent = '-';
+      }
 
+      // GO Terms - build links safely
       htr = domConstruct.create('tr', {}, tbody);
       domConstruct.create('th', { innerHTML: 'GO Terms', scope: 'row' }, htr);
-      domConstruct.create('td', { innerHTML: goLink || '-' }, htr);
+      td = domConstruct.create('td', {}, htr);
+      if (Object.prototype.hasOwnProperty.call(feature, 'go') && feature.go.length > 0) {
+        feature.go.forEach(function (goStr, idx) {
+          var go = goStr.split('|');
+          if (idx > 0) {
+            domConstruct.create('br', {}, td);
+          }
+          domConstruct.create('a', {
+            href: 'http://amigo.geneontology.org/cgi-bin/amigo/term_details?term=' + go[0],
+            target: '_blank',
+            textContent: go[0]
+          }, td);
+          domConstruct.create('span', {
+            textContent: '\u00A0' + go[1]  // nbsp + description
+          }, td);
+        });
+      } else {
+        td.textContent = '-';
+      }
     },
     _setFunctionalPropertiesPathwayAttr: function (data) {
       var tbodyQuery = domQuery('table.p3basic > tbody', this.functionalPropertiesNode);
       var tbody = tbodyQuery[0];
 
-      var ecLink = '';
-      var pwLink = '';
-      if (data) {
+      var htr, td;
+
+      // EC Numbers - build links safely
+      htr = domConstruct.create('tr', {}, tbody);
+      domConstruct.create('th', { innerHTML: 'EC Numbers', scope: 'row' }, htr);
+      td = domConstruct.create('td', {}, htr);
+
+      if (data && data.length > 0) {
         var ecNums = [];
-        var pwNums = [];
-        for (var i = 0; i < data.length; i++) {
-          if (ecNums.includes(data[i].ec_number) !== true) {
-            ecNums.push(data[i].ec_number);
-            ecLink += '<a href="http://enzyme.expasy.org/EC/' + data[i].ec_number + '" target=_blank>' + data[i].ec_number + '</a>&nbsp;' + data[i].ec_description + '<br>';
+        data.forEach(function (item, idx) {
+          if (ecNums.includes(item.ec_number) !== true) {
+            ecNums.push(item.ec_number);
+            if (idx > 0) {
+              domConstruct.create('br', {}, td);
+            }
+            domConstruct.create('a', {
+              href: 'http://enzyme.expasy.org/EC/' + item.ec_number,
+              target: '_blank',
+              textContent: item.ec_number
+            }, td);
+            domConstruct.create('span', {
+              textContent: '\u00A0' + item.ec_description
+            }, td);
           }
-          if (pwNums.includes(data[i].pathway_id) !== true) {
-            pwNums.push(data[i].pathway_id);
-            pwLink += '<a href="/view/PathwayMap/?annotation=PATRIC&genome_id=' + data[i].genome_id + '&pathway_id=' + data[i].pathway_id + '&feature_id=' + data[i].feature_id + '" target="_blank">KEGG:' + data[i].pathway_id + '</a>&nbsp;' + data[i].pathway_name + '<br>';
-          }
-        }
+        });
+      } else {
+        td.textContent = '-';
       }
 
-      var htr = domConstruct.create('tr', {}, tbody);
-      domConstruct.create('th', { innerHTML: 'EC Numbers', scope: 'row' }, htr);
-      domConstruct.create('td', { innerHTML: ecLink || '-' }, htr);
-
+      // Pathways - build links safely
       htr = domConstruct.create('tr', {}, tbody);
       domConstruct.create('th', { innerHTML: 'Pathways', scope: 'row' }, htr);
-      domConstruct.create('td', { innerHTML: pwLink || '-' }, htr);
+      td = domConstruct.create('td', {}, htr);
+
+      if (data && data.length > 0) {
+        var pwNums = [];
+        var isFirst = true;
+        data.forEach(function (item) {
+          if (pwNums.includes(item.pathway_id) !== true) {
+            pwNums.push(item.pathway_id);
+            if (!isFirst) {
+              domConstruct.create('br', {}, td);
+            }
+            isFirst = false;
+            domConstruct.create('a', {
+              href: '/view/PathwayMap/?annotation=PATRIC&genome_id=' + item.genome_id + '&pathway_id=' + item.pathway_id + '&feature_id=' + item.feature_id,
+              target: '_blank',
+              textContent: 'KEGG:' + item.pathway_id
+            }, td);
+            domConstruct.create('span', {
+              textContent: '\u00A0' + item.pathway_name
+            }, td);
+          }
+        });
+      } else {
+        td.textContent = '-';
+      }
     },
     _setFunctionalPropertiesSubsystemAttr: function (data) {
       var tbodyQuery = domQuery('table.p3basic > tbody', this.functionalPropertiesNode);
