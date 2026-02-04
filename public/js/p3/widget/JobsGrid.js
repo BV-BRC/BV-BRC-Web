@@ -124,6 +124,26 @@ define(
         }
         var _self = this;
 
+        // Set up permanent suppression of "already resolved" errors that occur
+        // during request cancellation. These are harmless and expected when
+        // the user changes filters while a request is in progress.
+        require(['dojo/Deferred'], function (NewDeferred) {
+          if (NewDeferred && NewDeferred.instrumentRejected && !NewDeferred._originalInstrumentRejected) {
+            NewDeferred._originalInstrumentRejected = NewDeferred.instrumentRejected;
+            NewDeferred.instrumentRejected = function (error, handled, rejection, deferred) {
+              // Suppress "already resolved" errors - these are expected when canceling requests
+              if (error && error.message &&
+                  error.message.indexOf('already been resolved') !== -1) {
+                return; // Suppress this error
+              }
+              // Pass through other errors
+              if (NewDeferred._originalInstrumentRejected) {
+                NewDeferred._originalInstrumentRejected(error, handled, rejection, deferred);
+              }
+            };
+          }
+        });
+
         aspect.before(_self, 'renderArray', function (results) {
           Deferred.when(results.total, function (x) {
             _self.set('totalRows', x);
@@ -169,6 +189,115 @@ define(
         // and "deferred already resolved" errors.
         // The inherited startup() will handle initialization.
         this.inherited(arguments);
+      },
+
+      // Override _setQuery to prevent overlapping refreshes.
+      // When query changes rapidly (e.g., user starts search then cancels), multiple
+      // _setQuery calls can overlap, each triggering a refresh. This override cancels
+      // any in-progress request and starts the new one immediately.
+      _setQuery: function (query, queryOptions) {
+        var _self = this;
+
+        // Update loading message based on whether a search is active
+        if (query && query.search) {
+          this.loadingMessage = 'Job search in progress...';
+        } else {
+          this.loadingMessage = 'Loading...';
+        }
+
+        // If currently loading, cancel the current load and start fresh
+        if (this._isLoading) {
+          // Mark that we're canceling - this will cause the old request's
+          // callbacks to be suppressed
+          this._canceledRequestId = this._currentRequestId || 0;
+
+          // Cancel any top-level request that's in progress
+          if (this._topLevelRequest && typeof this._topLevelRequest.cancel === 'function') {
+            try {
+              this._topLevelRequest.cancel();
+            } catch (e) {
+              // Ignore cancel errors
+            }
+            delete this._topLevelRequest;
+          }
+
+          // Clear the loading state so we can start a new load
+          if (this.loadingNode) {
+            this.loadingNode.parentNode && this.loadingNode.parentNode.removeChild(this.loadingNode);
+            delete this.loadingNode;
+          }
+          if (this._oldPageNodes) {
+            delete this._oldPageNodes;
+          }
+          if (this._oldPageObserver) {
+            try {
+              this._oldPageObserver.cancel();
+              this._numObservers--;
+            } catch (e) {
+              // Ignore errors
+            }
+            delete this._oldPageObserver;
+          }
+          delete this._isLoading;
+        }
+
+        // Store the query
+        this.query = query;
+        if (queryOptions) {
+          this.queryOptions = queryOptions;
+        }
+
+        // Now call inherited which will trigger refresh
+        this.inherited(arguments);
+      },
+
+      // Override gotoPage to track request IDs and suppress errors from canceled requests
+      gotoPage: function (page) {
+        var _self = this;
+
+        // Increment request ID for this call
+        if (!this._currentRequestId) {
+          this._currentRequestId = 0;
+        }
+        this._currentRequestId++;
+        var thisRequestId = this._currentRequestId;
+
+        // Call the inherited gotoPage
+        var promise;
+        try {
+          promise = this.inherited(arguments);
+        } catch (e) {
+          // If the inherited call throws (e.g., deferred already resolved),
+          // check if this was a canceled request
+          if (thisRequestId <= (this._canceledRequestId || 0)) {
+            // This was a canceled request, return a dummy resolved promise
+            var dummyDeferred = new Deferred();
+            dummyDeferred.resolve([]);
+            return dummyDeferred.promise;
+          }
+          throw e; // Re-throw if not a canceled request
+        }
+
+        // Wrap the promise to suppress errors from canceled requests
+        var wrappedDeferred = new Deferred();
+
+        Deferred.when(promise, function (results) {
+          // Check if this request was canceled
+          if (thisRequestId <= (_self._canceledRequestId || 0)) {
+            // Silently discard - don't resolve or reject
+            return;
+          }
+          wrappedDeferred.resolve(results);
+        }, function (error) {
+          // Check if this request was canceled
+          if (thisRequestId <= (_self._canceledRequestId || 0)) {
+            // Silently discard the error
+            return;
+          }
+          wrappedDeferred.reject(error);
+        });
+
+        return wrappedDeferred.promise;
       }
     });
 

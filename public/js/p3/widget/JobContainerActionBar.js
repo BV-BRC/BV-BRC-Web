@@ -432,6 +432,14 @@ define([
       var self = this;
       var simpleFilter = {};
 
+      // Increment request ID to track this request
+      // When the response arrives, we'll check if it's still the latest request
+      if (!this._appCountsRequestId) {
+        this._appCountsRequestId = 0;
+      }
+      this._appCountsRequestId++;
+      var thisRequestId = this._appCountsRequestId;
+
       // Include status filter if set
       if (this.filters.status) {
         simpleFilter.status = this.filters.status;
@@ -450,6 +458,11 @@ define([
       // Call the filtered app summary API
       window.App.api.service('AppService.query_app_summary_filtered', [simpleFilter])
         .then(lang.hitch(this, function (res) {
+          // Ignore stale responses - only process if this is still the latest request
+          if (thisRequestId !== this._appCountsRequestId) {
+            return;
+          }
+
           if (!res || !res[0]) {
             return;
           }
@@ -526,6 +539,14 @@ define([
       var self = this;
       var simpleFilter = {};
 
+      // Increment request ID to track this request
+      // When the response arrives, we'll check if it's still the latest request
+      if (!this._statusCountsRequestId) {
+        this._statusCountsRequestId = 0;
+      }
+      this._statusCountsRequestId++;
+      var thisRequestId = this._statusCountsRequestId;
+
       // Include app filter if set (but not 'all')
       if (this.filters.app && this.filters.app !== 'all') {
         simpleFilter.app = this.filters.app;
@@ -547,6 +568,11 @@ define([
       // Call the filtered task summary API
       window.App.api.service('AppService.query_task_summary_filtered', [simpleFilter])
         .then(lang.hitch(this, function (res) {
+          // Ignore stale responses - only process if this is still the latest request
+          if (thisRequestId !== this._statusCountsRequestId) {
+            return;
+          }
+
           if (!res || !res[0]) {
             return;
           }

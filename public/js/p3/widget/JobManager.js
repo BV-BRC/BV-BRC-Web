@@ -649,6 +649,31 @@ define([
         }
       }));
 
+      // Helper to safely set grid query with debouncing to prevent overlapping queries
+      // This prevents "deferred already resolved" errors when filters change rapidly
+      var pendingQueryTimer = null;
+      var pendingQuery = null;
+      var setGridQuerySafe = lang.hitch(this, function(filters) {
+        // Store the pending query
+        pendingQuery = filters;
+
+        // Clear any existing timer
+        if (pendingQueryTimer) {
+          clearTimeout(pendingQueryTimer);
+        }
+
+        // Debounce: wait a short time before executing
+        // This coalesces rapid filter changes into a single query
+        pendingQueryTimer = setTimeout(lang.hitch(this, function() {
+          pendingQueryTimer = null;
+          if (pendingQuery !== null && this.grid && this.grid.domNode) {
+            var queryToExecute = pendingQuery;
+            pendingQuery = null;
+            this.grid.set('query', queryToExecute);
+          }
+        }), 50); // 50ms debounce
+      });
+
       // Handle page changes - persist page to URL
       this.grid.on('dgrid-page-complete', lang.hitch(this, function (evt) {
         // Only update URL after initial load is complete
@@ -855,7 +880,8 @@ define([
         this._updateHash(filters);
 
         // Setting the query will trigger the grid to refresh and re-fetch data
-        _self.grid.set('query', filters);
+        // Use debounced helper to prevent overlapping queries
+        setGridQuerySafe(filters);
       }));
 
       // listen for keyword/search filtering
@@ -901,10 +927,8 @@ define([
           this._updateHash(filters);
 
           // Setting the query will trigger the grid to refresh and re-fetch data
-          // Note: Do NOT call grid.refresh() after this - set('query', ...) already
-          // triggers a refresh internally via the Pagination extension's _setQuery method.
-          // Calling refresh() again causes "This deferred has already been resolved" errors.
-          _self.grid.set('query', filters);
+          // Use debounced helper to prevent overlapping queries
+          setGridQuerySafe(filters);
         }
       }));
 
