@@ -198,6 +198,13 @@ define(
       _setQuery: function (query, queryOptions) {
         var _self = this;
 
+        // Update loading message based on whether a search is active
+        if (query && query.search) {
+          this.loadingMessage = 'Job search in progress...';
+        } else {
+          this.loadingMessage = 'Loading...';
+        }
+
         // If currently loading, cancel the current load and start fresh
         if (this._isLoading) {
           // Mark that we're canceling - this will cause the old request's
