@@ -258,9 +258,127 @@ define([
         // Return original if parsing fails
         return parsed;
       }
+      // Handle final_response event for query collection tool
+      if (currentEvent === 'final_response' &&
+          tool === 'bvbrc_server.bvbrc_query_collection' &&
+          parsed.chunk) {
+        const processed = this._processQueryCollection(parsed.chunk, parsed);
+        if (processed) {
+          return processed;
+        }
+        // Return original if parsing fails
+        return parsed;
+      }
 
       // No special handling needed
       return null;
+    },
+
+    /**
+     * Helper function to process query collection tool data
+     * @param {string|Object} chunk - The JSON string to parse or an object with content
+     * @param {Object} baseData - Base data object to extend
+     * @returns {Object|null} Processed data or null if parsing fails
+     */
+    _processQueryCollection: function(chunk, baseData) {
+      if (!chunk) {
+        return null;
+      }
+
+      // Diagnostic logging
+      console.log('[CopilotToolHandler] _processQueryCollection called');
+      console.log('[CopilotToolHandler] chunk type:', typeof chunk);
+      if (typeof chunk === 'object') {
+        console.log('[CopilotToolHandler] chunk keys:', Object.keys(chunk));
+        console.log('[CopilotToolHandler] has .content?', 'content' in chunk);
+        console.log('[CopilotToolHandler] has .workspace?', 'workspace' in chunk);
+        console.log('[CopilotToolHandler] has .summary?', 'summary' in chunk);
+      } else if (typeof chunk === 'string') {
+        console.log('[CopilotToolHandler] chunk string (first 100 chars):', chunk.substring(0, 100));
+      }
+
+      try {
+        let content, parsedChunk;
+
+        // If chunk is already a fully parsed object with workspace and summary, use it directly
+        if (typeof chunk === 'object' && !chunk.content && (chunk.workspace || chunk.summary)) {
+          console.log('[CopilotToolHandler] ✓ Path A: Chunk is already parsed query collection data');
+          return {
+            ...baseData,
+            chunk: JSON.stringify(chunk), // Store stringified version for display
+            isQueryCollection: true,
+            queryCollectionData: {
+              workspace: chunk.workspace || null,
+              summary: chunk.summary || null,
+              fileName: chunk.fileName || null,
+              fileId: chunk.fileId || null,
+              message: chunk.message || null,
+              queryParameters: chunk.queryParameters || null
+            }
+          };
+        }
+
+        if (typeof chunk === 'object' && chunk.content) {
+          console.log('[CopilotToolHandler] ✓ Path B: Chunk is object with .content property');
+          // Handle case where chunk is already an object with content property
+          let rawContent = chunk.content;
+          // Trim whitespace before parsing if it's a string
+          let contentToParse = typeof rawContent === 'string' ? rawContent.trim() : rawContent;
+          parsedChunk = typeof contentToParse === 'string' ? JSON.parse(contentToParse) : contentToParse;
+          // Ensure content is always a string for return value
+          content = typeof rawContent === 'string' ? rawContent : JSON.stringify(rawContent);
+        } else if (typeof chunk === 'string') {
+          console.log('[CopilotToolHandler] ✓ Path C: Chunk is a string, will parse as JSON');
+          // Handle case where chunk is a JSON string
+          content = chunk.trim(); // Trim whitespace
+          parsedChunk = JSON.parse(content);
+        } else if (typeof chunk === 'object') {
+          console.log('[CopilotToolHandler] ✓ Path D: Chunk is generic object, will stringify');
+          // Chunk is already a parsed object but without .content property
+          content = JSON.stringify(chunk);
+          parsedChunk = chunk;
+        } else {
+          console.warn('[CopilotToolHandler] ✗ Unexpected chunk format:', chunk);
+          return null;
+        }
+
+        console.log('[CopilotToolHandler] parsedChunk type:', typeof parsedChunk);
+        console.log('[CopilotToolHandler] parsedChunk keys:', parsedChunk ? Object.keys(parsedChunk) : 'null');
+
+        // Handle case where parsedChunk has nested structure: {source_tool: ..., content: {workspace, summary...}}
+        // This happens when the SSE sends the full structure as a JSON string
+        if (parsedChunk && parsedChunk.source_tool && parsedChunk.content) {
+          console.log('[CopilotToolHandler] ✓ Detected nested structure with source_tool and content');
+          parsedChunk = parsedChunk.content; // Use the content object
+          console.log('[CopilotToolHandler] ✓ Extracted content, keys:', Object.keys(parsedChunk));
+        }
+
+        // Extract workspace and summary data
+        // The parsedChunk has structure: { type: "file_reference", workspace: {...}, summary: {...}, ... }
+        let queryCollectionData = {
+          workspace: parsedChunk.workspace || null,
+          summary: parsedChunk.summary || null,
+          fileName: parsedChunk.fileName || null,
+          fileId: parsedChunk.fileId || null,
+          message: parsedChunk.message || null,
+          queryParameters: parsedChunk.queryParameters || null
+        };
+
+        console.log('[CopilotToolHandler] ✓ Extracted query collection data');
+        console.log('[CopilotToolHandler] workspace:', queryCollectionData.workspace);
+        console.log('[CopilotToolHandler] summary:', queryCollectionData.summary);
+
+        return {
+          ...baseData,
+          chunk: content,
+          isQueryCollection: true,
+          queryCollectionData: queryCollectionData
+        };
+      } catch (e) {
+        console.error('[CopilotToolHandler] ✗ Failed to parse query collection chunk:', e.message);
+        console.error('[CopilotToolHandler] Error stack:', e.stack);
+        return null;
+      }
     },
 
     /**
@@ -298,6 +416,37 @@ define([
             isWorkspaceListing: processed.isWorkspaceListing,
             workspaceData: processed.workspaceData
           };
+        }
+      }
+
+      // Handle query collection tool
+      if (sourceTool === 'bvbrc_server.bvbrc_query_collection') {
+        console.log('[CopilotToolHandler] Processing query_collection tool');
+        console.log('[CopilotToolHandler] sourceTool:', sourceTool);
+        console.log('[CopilotToolHandler] content type:', typeof content);
+        console.log('[CopilotToolHandler] content value:', content);
+
+        // If content is already an object with nested structure, extract it
+        let contentToProcess = content;
+        if (typeof content === 'object' && content.content) {
+          console.log('[CopilotToolHandler] Content is object with nested .content, extracting');
+          contentToProcess = content.content;
+        }
+
+        const baseData = { chunk: contentToProcess };
+        const processed = this._processQueryCollection(contentToProcess, baseData);
+        console.log('[CopilotToolHandler] processed result:', processed);
+        console.log('[CopilotToolHandler] processed.chunk type:', processed ? typeof processed.chunk : 'null');
+        console.log('[CopilotToolHandler] processed.chunk value:', processed ? processed.chunk : 'null');
+        if (processed) {
+          var result = {
+            content: processed.chunk,
+            isQueryCollection: processed.isQueryCollection,
+            queryCollectionData: processed.queryCollectionData
+          };
+          console.log('[CopilotToolHandler] Returning result:', result);
+          console.log('[CopilotToolHandler] result.content type:', typeof result.content);
+          return result;
         }
       }
 

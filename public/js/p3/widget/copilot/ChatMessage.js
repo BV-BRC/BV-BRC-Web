@@ -68,25 +68,64 @@ define([
         console.log('[ChatMessage] source_tool:', this.message.source_tool);
       }
 
+      // Check if content is a JSON string containing source_tool (for real-time results)
+      var sourceTool = this.message.source_tool;
+      var contentToProcess = this.message.content;
+
+      if (!sourceTool && typeof this.message.content === 'string') {
+        try {
+          // Try to parse the content as JSON to see if source_tool is inside
+          var parsedContent = JSON.parse(this.message.content);
+          if (parsedContent && parsedContent.source_tool) {
+            console.log('[ChatMessage] Found source_tool inside JSON string content:', parsedContent.source_tool);
+            sourceTool = parsedContent.source_tool;
+            // Set it on the message object for consistency
+            this.message.source_tool = sourceTool;
+            // Use the parsed content for processing
+            contentToProcess = parsedContent;
+          }
+        } catch (e) {
+          // Not valid JSON, continue with normal processing
+          console.log('[ChatMessage] Content is not valid JSON, skipping source_tool extraction');
+        }
+      }
+
       // Process content based on source_tool using tool handler
-      if (this.message.source_tool) {
-        console.log('[ChatMessage] Processing message with source_tool:', this.message.source_tool);
+      if (sourceTool) {
+        console.log('[ChatMessage] Processing message with source_tool:', sourceTool);
         console.log('[ChatMessage] Original content type:', typeof this.message.content);
         console.log('[ChatMessage] Original content (first 200 chars):',
           typeof this.message.content === 'string' ? this.message.content.substring(0, 200) : this.message.content);
 
-        var processedData = this.toolHandler.processMessageContent(this.message.content, this.message.source_tool);
+        // If content is an object with nested structure, extract the actual content
+        if (typeof contentToProcess === 'object' && contentToProcess.content) {
+          console.log('[ChatMessage] Content is object with nested .content, extracting');
+          console.log('[ChatMessage] Nested content:', contentToProcess.content);
+          contentToProcess = contentToProcess.content;
+        }
+
+        var processedData = this.toolHandler.processMessageContent(contentToProcess, sourceTool);
 
         console.log('[ChatMessage] Processed data:', processedData);
+        console.log('[ChatMessage] processedData type:', typeof processedData);
+        console.log('[ChatMessage] processedData keys:', processedData ? Object.keys(processedData) : 'null');
         console.log('[ChatMessage] processedData.isWorkflow:', processedData.isWorkflow);
         console.log('[ChatMessage] processedData.workflowData:', processedData.workflowData);
         console.log('[ChatMessage] processedData.workflowData type:', typeof processedData.workflowData);
+        console.log('[ChatMessage] processedData.isWorkspaceListing:', processedData.isWorkspaceListing);
+        console.log('[ChatMessage] processedData.isQueryCollection:', processedData.isQueryCollection);
+        console.log('[ChatMessage] processedData.queryCollectionData:', processedData.queryCollectionData);
+        console.log('[ChatMessage] processedData.content type:', typeof processedData.content);
+        console.log('[ChatMessage] processedData.content value:', processedData.content);
+        console.log('[ChatMessage] processedData.content is string?', typeof processedData.content === 'string');
 
         this.message.content = processedData.content;
         this.message.isWorkflow = processedData.isWorkflow;
         this.message.workflowData = processedData.workflowData;
         this.message.isWorkspaceListing = processedData.isWorkspaceListing;
         this.message.workspaceData = processedData.workspaceData;
+        this.message.isQueryCollection = processedData.isQueryCollection;
+        this.message.queryCollectionData = processedData.queryCollectionData;
 
         if (processedData.workflowData) {
           console.log('[ChatMessage] ✓ Workflow data set on message');
@@ -94,6 +133,13 @@ define([
           console.log('[ChatMessage] workflowData.workflow_name:', processedData.workflowData.workflow_name);
         } else {
           console.warn('[ChatMessage] ⚠ No workflowData in processed data');
+        }
+
+        if (processedData.queryCollectionData) {
+          console.log('[ChatMessage] ✓ Query collection data set on message');
+          console.log('[ChatMessage] queryCollectionData keys:', Object.keys(processedData.queryCollectionData));
+          console.log('[ChatMessage] queryCollectionData.workspace:', processedData.queryCollectionData.workspace);
+          console.log('[ChatMessage] queryCollectionData.summary:', processedData.queryCollectionData.summary);
         }
       }
 
@@ -250,10 +296,37 @@ define([
 
         // Start the widget (required for Dojo widgets)
         workspaceWidget.startup();
+      } else if (this.message.isQueryCollection && this.message.queryCollectionData) {
+        // Render query collection file reference widget
+        this.renderQueryCollectionWidget(messageDiv);
       } else {
         // Normal message rendering
+        console.log('[ChatMessage] renderUserOrAssistantMessage - Normal message rendering');
+        console.log('[ChatMessage] this.message.content type:', typeof this.message.content);
+        console.log('[ChatMessage] this.message.content value:', this.message.content);
+        console.log('[ChatMessage] this.message.content is string?', typeof this.message.content === 'string');
+        console.log('[ChatMessage] this.message keys:', Object.keys(this.message));
+
+        // Ensure content is a string before rendering with markdown
+        var contentToRender = '';
+        if (this.message.content) {
+          if (typeof this.message.content === 'string') {
+            contentToRender = this.message.content;
+          } else {
+            console.warn('[ChatMessage] ⚠ Content is not a string, converting to string. Type:', typeof this.message.content);
+            console.warn('[ChatMessage] Content value:', this.message.content);
+            // Convert to string - if it's an object, stringify it
+            contentToRender = typeof this.message.content === 'object'
+              ? JSON.stringify(this.message.content, null, 2)
+              : String(this.message.content);
+          }
+        }
+
+        console.log('[ChatMessage] contentToRender type:', typeof contentToRender);
+        console.log('[ChatMessage] contentToRender (first 200 chars):', contentToRender.substring(0, 200));
+
         domConstruct.create('div', {
-          innerHTML: this.message.content ? this.md.render(this.message.content) : '',
+          innerHTML: contentToRender ? this.md.render(contentToRender) : '',
           class: 'markdown-content',
           style: 'font-size: ' + this.fontSize + 'px;'
         }, messageDiv);
@@ -442,6 +515,207 @@ define([
       }
 
       return container;
+    },
+
+    /**
+     * Renders a query collection file reference widget
+     * Displays workspace URL, workspace path, and summary metadata
+     * @param {HTMLElement} messageDiv - Container to render widget into
+     */
+    renderQueryCollectionWidget: function(messageDiv) {
+      var data = this.message.queryCollectionData;
+      if (!data) {
+        console.warn('[ChatMessage] No query collection data available');
+        return;
+      }
+
+      // Create container for the query collection widget
+      var widgetContainer = domConstruct.create('div', {
+        class: 'query-collection-container',
+        style: 'border: 1px solid #ddd; border-radius: 4px; padding: 15px; margin: 10px 0; background: #f9f9f9;'
+      }, messageDiv);
+
+      // Create header
+      var header = domConstruct.create('div', {
+        class: 'query-collection-header',
+        style: 'font-weight: bold; font-size: 16px; margin-bottom: 15px; color: #333;'
+      }, widgetContainer);
+      domConstruct.create('span', {
+        innerHTML: 'Query Collection Results',
+        style: 'display: inline-block;'
+      }, header);
+
+      // Display workspace information
+      if (data.workspace) {
+        var workspaceSection = domConstruct.create('div', {
+          class: 'query-collection-workspace',
+          style: 'margin-bottom: 15px;'
+        }, widgetContainer);
+
+        // Workspace URL (clickable link)
+        if (data.workspace.workspaceUrl) {
+          var urlLabel = domConstruct.create('div', {
+            innerHTML: '<strong>Workspace URL:</strong>',
+            style: 'margin-bottom: 5px; font-size: 14px;'
+          }, workspaceSection);
+          var urlLink = domConstruct.create('a', {
+            innerHTML: data.workspace.workspaceUrl,
+            href: data.workspace.workspaceUrl,
+            target: '_blank',
+            style: 'color: #0066cc; text-decoration: none; word-break: break-all; display: block; margin-left: 10px;'
+          }, workspaceSection);
+          urlLink.onmouseover = function() { this.style.textDecoration = 'underline'; };
+          urlLink.onmouseout = function() { this.style.textDecoration = 'none'; };
+        }
+
+        // Workspace Path
+        if (data.workspace.workspacePath) {
+          var pathLabel = domConstruct.create('div', {
+            innerHTML: '<strong>Workspace Path:</strong>',
+            style: 'margin-top: 10px; margin-bottom: 5px; font-size: 14px;'
+          }, workspaceSection);
+          var pathValue = domConstruct.create('div', {
+            innerHTML: data.workspace.workspacePath,
+            style: 'margin-left: 10px; font-family: monospace; word-break: break-all; color: #666;'
+          }, workspaceSection);
+        }
+
+        // Uploaded At
+        if (data.workspace.uploadedAt) {
+          var uploadedLabel = domConstruct.create('div', {
+            innerHTML: '<strong>Uploaded:</strong> ' + new Date(data.workspace.uploadedAt).toLocaleString(),
+            style: 'margin-top: 10px; font-size: 14px; color: #666;'
+          }, workspaceSection);
+        }
+      }
+
+      // Display summary metadata
+      if (data.summary) {
+        var summarySection = domConstruct.create('div', {
+          class: 'query-collection-summary',
+          style: 'margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;'
+        }, widgetContainer);
+
+        var summaryHeader = domConstruct.create('div', {
+          innerHTML: '<strong>Summary:</strong>',
+          style: 'font-size: 14px; margin-bottom: 10px;'
+        }, summarySection);
+
+        // Record count
+        if (data.summary.recordCount !== undefined) {
+          var recordCountDiv = domConstruct.create('div', {
+            innerHTML: '<strong>Records:</strong> ' + data.summary.recordCount.toLocaleString(),
+            style: 'margin-bottom: 5px; font-size: 14px;'
+          }, summarySection);
+        }
+
+        // Size
+        if (data.summary.sizeFormatted) {
+          var sizeDiv = domConstruct.create('div', {
+            innerHTML: '<strong>Size:</strong> ' + data.summary.sizeFormatted,
+            style: 'margin-bottom: 5px; font-size: 14px;'
+          }, summarySection);
+        }
+
+        // Data type
+        if (data.summary.dataType) {
+          var dataTypeDiv = domConstruct.create('div', {
+            innerHTML: '<strong>Data Type:</strong> ' + data.summary.dataType,
+            style: 'margin-bottom: 5px; font-size: 14px;'
+          }, summarySection);
+        }
+
+        // Fields
+        if (data.summary.fields && Array.isArray(data.summary.fields) && data.summary.fields.length > 0) {
+          var fieldsLabel = domConstruct.create('div', {
+            innerHTML: '<strong>Fields (' + data.summary.fields.length + '):</strong>',
+            style: 'margin-top: 10px; margin-bottom: 5px; font-size: 14px;'
+          }, summarySection);
+          // Show first 10 fields, then "... and X more" if there are more
+          var fieldsToShow = data.summary.fields.slice(0, 10);
+          var fieldsText = fieldsToShow.join(', ');
+          if (data.summary.fields.length > 10) {
+            fieldsText += ' ... and ' + (data.summary.fields.length - 10) + ' more';
+          }
+          var fieldsDiv = domConstruct.create('div', {
+            innerHTML: fieldsText,
+            style: 'margin-left: 10px; font-size: 13px; color: #666; font-family: monospace; word-break: break-all;'
+          }, summarySection);
+        }
+
+        // Sample record (collapsible)
+        if (data.summary.sampleRecord) {
+          var sampleHeader = domConstruct.create('button', {
+            innerHTML: '► Sample Record',
+            class: 'collapsible-header',
+            style: 'margin-top: 10px; padding: 5px 10px; background: #e9e9e9; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; font-size: 13px;'
+          }, summarySection);
+
+          var sampleContent = domConstruct.create('div', {
+            innerHTML: '<pre style="margin: 10px 0; padding: 10px; background: #fff; border: 1px solid #ddd; border-radius: 3px; overflow-x: auto; font-size: 12px; max-height: 300px; overflow-y: auto;">' +
+              JSON.stringify(data.summary.sampleRecord, null, 2) + '</pre>',
+            class: 'collapsible-content',
+            style: 'display: none;'
+          }, summarySection);
+
+          on(sampleHeader, 'click', lang.hitch(this, function() {
+            if (sampleContent.style.display === 'none') {
+              sampleContent.style.display = 'block';
+              sampleHeader.innerHTML = '▼ Sample Record';
+            } else {
+              sampleContent.style.display = 'none';
+              sampleHeader.innerHTML = '► Sample Record';
+            }
+          }));
+        }
+      }
+
+      // Display query parameters if available
+      if (data.queryParameters) {
+        var queryParamsSection = domConstruct.create('div', {
+          class: 'query-collection-query-params',
+          style: 'margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;'
+        }, widgetContainer);
+
+        var queryParamsHeader = domConstruct.create('div', {
+          innerHTML: '<strong>Query Parameters:</strong>',
+          style: 'font-size: 14px; margin-bottom: 10px;'
+        }, queryParamsSection);
+
+        // Filter out internal pagination parameters like cursorId
+        var filteredParams = {};
+        for (var key in data.queryParameters) {
+          if (data.queryParameters.hasOwnProperty(key) && key !== 'cursorId') {
+            filteredParams[key] = data.queryParameters[key];
+          }
+        }
+
+        // Display each parameter on its own line
+        for (var paramKey in filteredParams) {
+          if (filteredParams.hasOwnProperty(paramKey)) {
+            var paramValue = filteredParams[paramKey];
+            var paramLabel = domConstruct.create('div', {
+              innerHTML: '<strong>' + paramKey + ':</strong>',
+              style: 'margin-top: 5px; margin-bottom: 2px; font-size: 14px;'
+            }, queryParamsSection);
+            var paramValueDiv = domConstruct.create('div', {
+              innerHTML: typeof paramValue === 'string' ? paramValue : JSON.stringify(paramValue),
+              style: 'margin-left: 10px; margin-bottom: 8px; font-family: monospace; word-break: break-all; color: #666; font-size: 13px;'
+            }, queryParamsSection);
+          }
+        }
+      }
+
+      // Display message if available
+      if (data.message) {
+        var messageSection = domConstruct.create('div', {
+          class: 'query-collection-message',
+          style: 'margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd; font-size: 14px; color: #666;'
+        }, widgetContainer);
+        domConstruct.create('div', {
+          innerHTML: data.message
+        }, messageSection);
+      }
     },
 
     /**

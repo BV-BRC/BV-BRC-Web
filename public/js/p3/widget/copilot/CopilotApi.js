@@ -437,6 +437,7 @@ define([
                                 case 'tool_executed':
                                 case 'duplicate_detected':
                                 case 'forced_finalize':
+                                case 'query_progress':
                                     // These are handled by the event handler above
                                     console.log('[SSE] Agent event:', currentEvent, parsed);
                                     break;

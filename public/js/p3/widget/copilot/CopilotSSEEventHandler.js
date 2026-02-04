@@ -329,6 +329,26 @@ define([
     format_content: function(data) {
       // This is handled separately, return null
       return null;
+    },
+
+    /**
+     * Formats 'query_progress' event
+     * Displays real-time pagination progress for query operations
+     */
+    format_query_progress: function(data) {
+      var current = data.current || 0;
+      var total = data.total || 0;
+      var percentage = Math.round(data.percentage || 0);
+
+      var content = 'Downloading ' + current + ' of ' + total +
+                    ' results (' + percentage + '%)';
+
+      // Optionally include batch number if available
+      if (data.batchNumber) {
+        content += '\nBatch: ' + data.batchNumber;
+      }
+
+      return this.updateStatusMessage(content, 'query_progress');
     }
 
   });
