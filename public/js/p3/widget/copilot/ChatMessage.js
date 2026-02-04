@@ -315,10 +315,17 @@ define([
           } else {
             console.warn('[ChatMessage] ⚠ Content is not a string, converting to string. Type:', typeof this.message.content);
             console.warn('[ChatMessage] Content value:', this.message.content);
-            // Convert to string - if it's an object, stringify it
-            contentToRender = typeof this.message.content === 'object'
-              ? JSON.stringify(this.message.content, null, 2)
-              : String(this.message.content);
+
+            // Special handling for rag_result type - extract only the summary field
+            if (typeof this.message.content === 'object' && this.message.content.type === 'rag_result') {
+              console.log('[ChatMessage] ✓ Detected rag_result type, extracting summary');
+              contentToRender = this.message.content.summary || '';
+            } else {
+              // Convert to string - if it's an object, stringify it
+              contentToRender = typeof this.message.content === 'object'
+                ? JSON.stringify(this.message.content, null, 2)
+                : String(this.message.content);
+            }
           }
         }
 
