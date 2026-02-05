@@ -255,6 +255,9 @@ define([
       var _self = this;
       var jobId = this._pendingSelection;
 
+      // Set flag to prevent URL update during programmatic selection restoration
+      this._restoringSelection = true;
+
       // Try to find and select the row
       // The grid uses job ID as the row identifier
       try {
@@ -268,8 +271,9 @@ define([
         console.warn('Could not restore selection for job:', jobId, e);
       }
 
-      // Clear pending selection
+      // Clear pending selection and restoration flag
       this._pendingSelection = null;
+      this._restoringSelection = false;
     },
 
     listJobs: function () {
@@ -622,8 +626,8 @@ define([
           this.chatPanel.set('containerSelection', sel);
         }
 
-        // Update URL with selected job ID
-        if (sel.length === 1 && sel[0].id) {
+        // Update URL with selected job ID (skip during programmatic restoration)
+        if (!this._restoringSelection && sel.length === 1 && sel[0].id) {
           var currentFilters = lang.mixin({}, this.serviceFilter || {});
           currentFilters.selectedJob = sel[0].id;
           // Get current page if available
