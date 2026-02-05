@@ -630,6 +630,12 @@ define([
           if (this.grid._currentPage) {
             currentFilters.page = this.grid._currentPage;
           }
+          // Preserve current sort state
+          var currentSort = this.grid.get('sort');
+          if (currentSort && currentSort.length > 0) {
+            currentFilters.sort = currentSort[0].attribute;
+            currentFilters.sortDesc = currentSort[0].descending;
+          }
           this._updateHash(currentFilters);
         }
       }));
@@ -644,6 +650,12 @@ define([
           // Keep current page
           if (this.grid._currentPage) {
             currentFilters.page = this.grid._currentPage;
+          }
+          // Preserve current sort state
+          var currentSort = this.grid.get('sort');
+          if (currentSort && currentSort.length > 0) {
+            currentFilters.sort = currentSort[0].attribute;
+            currentFilters.sortDesc = currentSort[0].descending;
           }
           this._updateHash(currentFilters);
         }
@@ -684,6 +696,12 @@ define([
           var selectedIds = Object.keys(this.grid.selection || {});
           if (selectedIds.length === 1) {
             currentFilters.selectedJob = selectedIds[0];
+          }
+          // Preserve current sort state
+          var currentSort = this.grid.get('sort');
+          if (currentSort && currentSort.length > 0) {
+            currentFilters.sort = currentSort[0].attribute;
+            currentFilters.sortDesc = currentSort[0].descending;
           }
           this._updateHash(currentFilters);
         }
