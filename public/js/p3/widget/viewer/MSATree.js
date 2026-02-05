@@ -538,7 +538,8 @@ define([
         seqIds[s.name.replaceAll(':', '|')] = id_count;
       }));
       console.log('msa_models= ', msa_models);
-      console.log('seqIds= ', seqIds);
+      console.log(Object.keys(seqIds));
+      // console.log('seqIds= ', seqIds);
 
       this.dataStats.seqs = msa_models.seqs;
       console.log('createDataMap() this.dataStats ', this.dataStats);
@@ -674,7 +675,7 @@ define([
         var genome_ids = [];
         console.log('createDataMap() genome ids=', ids);
 
-        if (ids[0].match(/^\d+\.\d+$/)) {
+        if (ids.some(id => /^\d+\.\d+$/.test(id))) {
           genome_ids = ids;
         } else {
           ids.forEach((id) => {
@@ -703,7 +704,7 @@ define([
             var keys = Object.keys(seqIds);
             // console.log('in when response keys', keys);
 
-            if (keys[0].match(/^\d+\.\d+$/)) {
+           if (keys.some(k => /^\d+\.\d+$/.test(k))) {
               seqIdIndex = seqIds[genome.genome_id] - 1;
             } else {
               for (var i = 0; i < keys.length; i++) {
