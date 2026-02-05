@@ -304,9 +304,18 @@ th.dgrid-cell.wsObjIcon {
 .WorkspaceExplorerView .dgrid-cell {
 	border: 0;
 }
-.wsItemName {
+.wsItemName,
+.wsItemName * {
 /*	width: 450px;*/
 	white-space: nowrap;
+}
+
+.wsItemNameText {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif !important;
+	font-variant-ligatures: none !important;
+	font-variant-emoji: text !important;
+	-webkit-font-feature-settings: "liga" 0, "clig" 0 !important;
+	font-feature-settings: "liga" 0, "clig" 0 !important;
 }
 
 th.dgrid-cell.wsItemName,

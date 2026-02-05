@@ -182,6 +182,36 @@ define([
     },
 
     /**
+     * Validate that favorite folders still exist in the workspace
+     * @param {Array} folders - Array of folder paths to validate
+     * @returns {Deferred} Resolves to array of folders that still exist
+     */
+    _validateFolders: function (folders) {
+      var def = new Deferred();
+
+      if (!folders || folders.length === 0) {
+        def.resolve([]);
+        return def.promise;
+      }
+
+      WorkspaceManager.objectsExist(folders).then(
+        function (existsMap) {
+          var validFolders = folders.filter(function (path) {
+            return existsMap[path] && existsMap[path].exists;
+          });
+          def.resolve(validFolders);
+        },
+        function (err) {
+          // On error, return original list to avoid data loss
+          console.warn('FavoriteFolders: Failed to validate folders:', err);
+          def.resolve(folders);
+        }
+      );
+
+      return def.promise;
+    },
+
+    /**
      * Load favorites from workspace (with caching)
      * @param {boolean} forceRefresh - If true, bypass cache and fetch from workspace
      * @returns {Deferred} Resolves to array of favorite folder paths
@@ -196,29 +226,66 @@ define([
         return def.promise;
       }
 
-      // Return cached data if valid and not forcing refresh
-      if (!forceRefresh && _cache !== null && _cacheUserId === userId) {
-        def.resolve(_cache);
-        return def.promise;
-      }
-
       // Return pending load if in progress
       if (_pendingLoad) {
         return _pendingLoad;
       }
 
+      // If we have a valid cache, validate it against workspace
+      if (!forceRefresh && _cache !== null && _cacheUserId === userId) {
+        _pendingLoad = def.promise;
+
+        // Validate cached favorites still exist
+        this._validateFolders(_cache).then(function (validFolders) {
+          var removedCount = _cache.length - validFolders.length;
+          _pendingLoad = null;
+
+          if (removedCount > 0) {
+            // Some favorites were deleted - update cache and save
+            _cache = validFolders;
+            console.log('FavoriteFolders: Removed ' + removedCount + ' stale favorite(s)');
+            _self.save(validFolders).then(
+              function () {
+                Topic.publish('/FavoriteFolders/changed', {});
+              }
+            );
+          }
+
+          def.resolve(validFolders);
+        });
+
+        return def.promise;
+      }
+
       _pendingLoad = def.promise;
 
       this._fetchFromWorkspace().then(function (result) {
-        _cache = result.folders;
-        _cacheUserId = userId;
-        _lastModTime = result.modTime;
-        _pendingLoad = null;
+        var folders = result.folders;
 
-        // Start periodic refresh on first load
-        _self._startPeriodicRefresh();
+        // Validate that favorite folders still exist
+        _self._validateFolders(folders).then(function (validFolders) {
+          var removedCount = folders.length - validFolders.length;
 
-        def.resolve(_cache);
+          _cache = validFolders;
+          _cacheUserId = userId;
+          _lastModTime = result.modTime;
+          _pendingLoad = null;
+
+          // Start periodic refresh on first load
+          _self._startPeriodicRefresh();
+
+          // If stale favorites were removed, save the cleaned list
+          if (removedCount > 0) {
+            console.log('FavoriteFolders: Removed ' + removedCount + ' stale favorite(s)');
+            _self.save(validFolders).then(
+              function () {
+                Topic.publish('/FavoriteFolders/changed', {});
+              }
+            );
+          }
+
+          def.resolve(_cache);
+        });
       });
 
       return def.promise;

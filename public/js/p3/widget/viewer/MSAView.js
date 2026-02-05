@@ -600,7 +600,7 @@ define([
         var genome_ids = [];
         console.log('ids=', ids);
 
-        if (ids[0].match(/^\d+\.\d+$/)) {
+        if (ids.some(id => /^\d+\.\d+$/.test(id))) {
           genome_ids = ids;
         } else {
           ids.forEach((id) => {

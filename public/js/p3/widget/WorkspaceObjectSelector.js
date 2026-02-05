@@ -591,6 +591,11 @@ define([
         } else {
           _self._currentViewMode = 'browse';
           _self._hideEmptyMessage();
+          // Check if we should skip navigation (when just updating the dropdown after navigating from favorites/recent)
+          if (_self._suppressViewSelectorNavigation) {
+            _self._suppressViewSelectorNavigation = false;
+            return;
+          }
           if (val == 'home') {
             if (_self.grid) { _self.grid.set('workspaceFilter', null); }
             var home = '/' + window.App.user.id + '/' + 'home';
@@ -684,6 +689,22 @@ define([
 
       okButton.on('click', function (evt) {
         if (_self.selection) {
+          // If a folder is selected but we're not looking for folders, navigate into it instead of closing
+          if (_self.selection.type === 'folder' && _self.type.indexOf('folder') < 0) {
+            // Construct the full path for navigation
+            var targetPath = _self.selection.path;
+            if (_self.selection.name &&
+                !targetPath.endsWith('/' + _self.selection.name) &&
+                !targetPath.endsWith('/' + _self.selection.name + '/')) {
+              targetPath = targetPath.replace(/\/$/, '') + '/' + _self.selection.name;
+            }
+            _self.set('path', targetPath);
+            if (_self.grid && _self.grid.refreshWorkspace) {
+              _self.grid.refreshWorkspace();
+            }
+            return; // Don't close the dialog
+          }
+
           // if autoSelectCurrent we need to implicitly select current
           // ASW: it's not clear this  check actually needs to happen given the value is being set anyway
           // commenting out to remove "public annotation selection bug"
@@ -1034,7 +1055,13 @@ define([
         });
       });
       grid.allowSelect = function (row) {
+        // Allow selecting items that match the requested type
         if (row.data.type && (self.type.indexOf(row.data.type) >= 0)) {
+          return true;
+        }
+        // Also allow selecting folders for navigation purposes (familiar OS behavior)
+        // This lets users click on folders to highlight them, then double-click or click OK to navigate
+        if (row.data.type === 'folder') {
           return true;
         }
         return false;
@@ -1046,10 +1073,40 @@ define([
         // But, if we are navigating to select (output) folders, we want the value (path)
         // to be automatically selected (autoSelectCurrent)
         if (evt.item && evt.item.type == 'folder' || evt.item.type == 'parentfolder') {
-          self.set('path', evt.item.path);
+          // Construct the full path: for workspace objects, path is the parent path and name is the folder name
+          var targetPath = evt.item.path;
+          // For regular folders (not parentfolder), check if we need to append the name
+          // This is needed for favorites/recent where path is the parent path
+          if (evt.item.type == 'folder' && evt.item.name &&
+              !targetPath.endsWith('/' + evt.item.name) &&
+              !targetPath.endsWith('/' + evt.item.name + '/')) {
+            // Remove trailing slash from path if present, then append name
+            targetPath = targetPath.replace(/\/$/, '') + '/' + evt.item.name;
+          }
+          // When navigating from favorites or recent view, switch back to browse mode
+          if (self._currentViewMode === 'favorites' || self._currentViewMode === 'recent') {
+            self._currentViewMode = 'browse';
+            self._hideEmptyMessage();
+            // Update the view selector to reflect we're now browsing
+            // Set flag to prevent the selector's change handler from navigating
+            if (self.viewSelector) {
+              self._suppressViewSelectorNavigation = true;
+              if (targetPath.startsWith('/public')) {
+                self.viewSelector.set('value', 'public');
+              } else {
+                self.viewSelector.set('value', 'home');
+              }
+            }
+          }
+          self.set('path', targetPath);
+          // When coming from favorites/recent, we need to explicitly refresh the grid
+          // because the grid was showing special content, not a path-based listing
+          if (self.grid && self.grid.refreshWorkspace) {
+            self.grid.refreshWorkspace();
+          }
           // Add to recent folders when navigating into a folder
-          if (evt.item.type == 'folder' && evt.item.path && evt.item.name) {
-            RecentFolders.add(evt.item.path, evt.item.name);
+          if (evt.item.type == 'folder' && targetPath && evt.item.name) {
+            RecentFolders.add(targetPath, evt.item.name);
           }
         } else {
           self.set('value', evt.item.path);
