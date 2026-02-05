@@ -2613,10 +2613,9 @@ define([
           }
       }
 
+      // this.path is already decoded, so just split it - no need to decode again
       var parts = this.path.split('/').filter(function (x) {
         return x != '';
-      }).map(function (c) {
-        return decodeURIComponent(c);
       });
 
       var obj;
@@ -2626,15 +2625,17 @@ define([
             metadata: { type: 'folder' }, type: 'folder', path: '/', isPublic: true
           };
         } else {
-          var val = '/' + val.split('/').slice(2).join('/');
-          obj = WorkspaceManager.getObject(val, true);
+          // Use this.path (decoded) rather than val (still encoded from URL)
+          var decodedPublicPath = '/' + this.path.split('/').slice(2).join('/');
+          obj = WorkspaceManager.getObject(decodedPublicPath, true);
         }
       } else if (!parts[1]) {
         obj = {
           metadata: { type: 'folder' }, type: 'folder', path: '/' + window.App.user.id, isWorkspace: true
         };
       } else {
-        obj = WorkspaceManager.getObject(val, true);
+        // Use this.path (decoded) rather than val (still encoded from URL)
+        obj = WorkspaceManager.getObject(this.path, true);
       }
 
       // console.log('in WorkspaceBrowser this.path', this.path);
@@ -2664,7 +2665,8 @@ define([
             panelCtor = WorkspaceExplorerView;
             // Track folder access for recent folders
             if (window.App.user && window.App.user.id && this.path) {
-              var folderName = obj.name || decodeURIComponent(this.path.split('/').filter(Boolean).pop() || 'home');
+              // this.path is already decoded, no need to decode again
+              var folderName = obj.name || this.path.split('/').filter(Boolean).pop() || 'home';
               RecentFolders.add(this.path, folderName);
               if (window.App.updateRecentFoldersList) {
                 window.App.updateRecentFoldersList();

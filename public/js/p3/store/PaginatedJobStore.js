@@ -156,7 +156,9 @@ define([
 
     /**
      * Apply client-side sorting to jobs based on sort options
-     * Note: This only sorts the current page's data, not all jobs
+     * Note: This is now only used as a fallback for the unfiltered enumerate_tasks API.
+     * The filtered API (enumerate_tasks_filtered) handles sorting server-side via
+     * sort_field and sort_order parameters.
      */
     _applySorting: function (jobs, sort) {
       if (!sort || !Array.isArray(sort) || sort.length === 0) {
@@ -250,8 +252,19 @@ define([
         appFilter = query.app;
       }
 
-      // Determine if we should use filtered API - for status or app filters
-      var useFilteredAPI = !!(statusFilterString || appFilter);
+      // Extract includeArchived filter from query if present
+      var includeArchived = !!(query && query.includeArchived);
+
+      // Extract search filter from query if present
+      var searchFilter = null;
+      if (query && query.search) {
+        searchFilter = query.search;
+      }
+
+      // Always use filtered API to get consistent total counts
+      // The unfiltered enumerate_tasks doesn't return a total, and query_task_summary
+      // may include archived jobs which creates inconsistency
+      var useFilteredAPI = true;
 
       // Create cache key for this page (include query and sort in key)
       var queryKey = query ? JSON.stringify(query) : 'noquery';
@@ -294,22 +307,52 @@ define([
       // Get total count promise for unfiltered queries
       var totalPromise = useFilteredAPI ? null : _self._getTotalCount();
 
-      // Build SimpleTaskFilter if using filtered API - include status and/or app
-      var simpleFilter = null;
-      if (useFilteredAPI) {
-        simpleFilter = {};
-        if (statusFilterString) {
-          simpleFilter.status = statusFilterString;
-        }
-        if (appFilter) {
-          simpleFilter.app = appFilter;
-        }
+      // Build SimpleTaskFilter for the filtered API
+      // Always create the filter object since we always use the filtered API
+      var simpleFilter = {};
+      if (statusFilterString) {
+        simpleFilter.status = statusFilterString;
+      }
+      if (appFilter) {
+        simpleFilter.app = appFilter;
+      }
+      if (includeArchived) {
+        simpleFilter.include_archived = 1;  // Use 1 instead of true for API compatibility
+      }
+      if (searchFilter) {
+        simpleFilter.search = searchFilter;
+      }
+
+      // Add sort parameters if provided
+      // Map frontend column names to API sort_field values
+      // Valid API sort_field values: submit_time, start_time, finish_time, application_id, service_status, id, output_name
+      if (sort && sort.length > 0) {
+        var sortCriteria = sort[0];
+        var attribute = sortCriteria.attribute;
+        var descending = sortCriteria.descending;
+
+        // Map frontend column names to API field names
+        var fieldMap = {
+          'submit_time': 'submit_time',
+          'start_time': 'start_time',
+          'completed_time': 'finish_time',  // frontend uses completed_time, API uses finish_time
+          'finish_time': 'finish_time',
+          'application_name': 'application_id',
+          'app': 'application_id',
+          'status': 'service_status',
+          'id': 'id',
+          'parameters': 'output_file'  // frontend sorts by parameters.output_file
+        };
+
+        var apiSortField = fieldMap[attribute] || 'submit_time';  // default to submit_time if unknown
+        simpleFilter.sort_field = apiSortField;
+        simpleFilter.sort_order = descending ? 'desc' : 'asc';
       }
 
       // Make API call for this page
       var apiPromise;
-      if (useFilteredAPI && simpleFilter) {
-        // Use enumerate_tasks_filtered when filtering by status or app
+      if (useFilteredAPI) {
+        // Use enumerate_tasks_filtered for all queries to get consistent total counts
         apiPromise = window.App.api.service('AppService.enumerate_tasks_filtered', [offset, limit, simpleFilter])
           .then(function (res) {
             // enumerate_tasks_filtered returns [tasks, total_tasks]
@@ -320,12 +363,14 @@ define([
             jobs = jobs.filter(function (job) { return job.status !== 'deleted'; });
 
             // Apply any remaining client-side filters (e.g., parameters/output_file search)
-            // Status and app are handled by the filtered API, other filters are applied client-side
+            // Status, app, includeArchived, and search are handled by the filtered API, other filters are applied client-side
             if (query && Object.keys(query).length > 0) {
-              // Remove status and app from query since they're handled by API
+              // Remove API-handled filters from query
               var clientQuery = {};
               for (var key in query) {
-                if (query.hasOwnProperty(key) && key !== 'status' && key !== 'app') {
+                if (query.hasOwnProperty(key) &&
+                    key !== 'status' && key !== 'app' && key !== 'includeArchived' &&
+                    key !== 'search' && key !== 'keyword') {
                   clientQuery[key] = query[key];
                 }
               }
@@ -336,10 +381,8 @@ define([
               }
             }
 
-            // Apply client-side sorting (sorts current page only)
-            if (sort) {
-              jobs = _self._applySorting(jobs, sort);
-            }
+            // Note: Sorting is now handled server-side via sort_field and sort_order parameters
+            // No client-side sorting needed
 
             // Cache the result with the total from API
             _self._cache[cacheKey] = {

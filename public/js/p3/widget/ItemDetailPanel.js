@@ -353,9 +353,20 @@ define([
     _fetchDiskUsage: function (path, forceRefresh) {
       var self = this;
 
+      // Increment request ID to track this request
+      if (!this._duRequestId) {
+        this._duRequestId = 0;
+      }
+      this._duRequestId++;
+      var currentRequestId = this._duRequestId;
+
       // Cancel any existing request
       if (this._duPromise && this._duPromise.cancel) {
-        this._duPromise.cancel();
+        try {
+          this._duPromise.cancel();
+        } catch (e) {
+          // Ignore cancel errors
+        }
       }
 
       // Show loading state
@@ -367,6 +378,10 @@ define([
       this._duPromise = WorkspaceManager.du(path, forceRefresh);
 
       Deferred.when(this._duPromise, function (result) {
+        // Check if this request is still current (not superseded by a newer request)
+        if (currentRequestId !== self._duRequestId) {
+          return; // Silently discard - a newer request has been made
+        }
         // Result structure: [[[path, total_size, file_count, dir_count, error]]]
         // Check result and stringify for timeout detection
         var resultStr = JSON.stringify(result) || '';
@@ -393,6 +408,10 @@ define([
           self.duDirCountNode.innerHTML = '-';
         }
       }, function (err) {
+        // Check if this request is still current (not superseded by a newer request)
+        if (currentRequestId !== self._duRequestId) {
+          return; // Silently discard - a newer request has been made
+        }
         // Request was cancelled or failed
         // Only show error if it wasn't a cancellation
         if (err && (!err.dojoType || err.dojoType !== 'cancel')) {
