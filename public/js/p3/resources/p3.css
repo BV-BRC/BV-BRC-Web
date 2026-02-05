@@ -396,6 +396,7 @@ table tr.even td {
     z-index: 100;
     visibility: visible !important;
     opacity: 1 !important;
+    pointer-events: auto !important;
 }
 
 .ActionBar {
