@@ -55,7 +55,16 @@ define([
         autoSave: true,
         editOn: 'click',
         editor: TextBox,
-        editorArgs: { placeHolder: 'Untitled Folder', trim: true }
+        editorArgs: { placeHolder: 'Untitled Folder', trim: true },
+        renderCell: function (object, value, node) {
+          // Create a text node to safely render the name without triggering
+          // emoji or icon ligature conversions
+          var textSpan = document.createElement('span');
+          textSpan.className = 'wsItemNameText';
+          // Use textContent to ensure proper escaping and avoid emoji rendering
+          textSpan.textContent = value || '';
+          node.appendChild(textSpan);
+        }
       }),
       size: {
         label: 'Size',
