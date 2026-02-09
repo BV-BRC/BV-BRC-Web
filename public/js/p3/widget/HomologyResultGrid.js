@@ -153,7 +153,10 @@ define([
       }
       this.state = state;
       var parts = this.state.pathname.split('/');
-      var dataPath = '/' + parts.slice(2).join('/')
+      // Decode URL-encoded path components (e.g., spaces encoded as %20)
+      var dataPath = '/' + parts.slice(2).map(function (p) {
+        return decodeURIComponent(p);
+      }).join('/');
       if (!this.store) {
         this.set('store', this.createStore(dataPath));
       } else {

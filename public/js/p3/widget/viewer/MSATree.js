@@ -273,10 +273,17 @@ define([
     onSetState: function (attr, oldVal, state) {
       this.loading = true;
       var fileCheck = this.state.pathname.match(/path=([^&]+)/);
-      var objPath = fileCheck ? decodeURIComponent(fileCheck[1]) : null;
+      if (!fileCheck) {
+        this.showError('No path specified in URL');
+        return;
+      }
+      var objPath = decodeURIComponent(fileCheck[1]);
+      // Normalize path: remove duplicate slashes
+      objPath = objPath.replace(/\/+/g, '/');
       var objPathNwk = objPath.replace('.afa', '_fasttree.nwk');
 
       this.path = objPath;
+      console.log('WorkspaceManager objPath', objPath);
       console.log('WorkspaceManager objPathNwk', objPathNwk);
       console.log('state.path', state.path);
 
@@ -284,21 +291,35 @@ define([
       if (typeCheck && typeCheck[0].split('=')[1].includes('dna')) {
         this.alignType = 'dna';
       }
+      var self = this;
       WorkspaceManager.getObjects([objPath]).then(lang.hitch(this, function (objs) {
         console.log('WorkspaceManager alignment', objs);
+        if (!objs || !objs[0] || !objs[0].data) {
+          self.showError('Could not load alignment file: ' + objPath);
+          return;
+        }
         this.data = objs[0].data;
         console.log('WorkspaceManager  this.data', this.data);
-        var self = this;
         WorkspaceManager.getObjects([objPathNwk]).then(lang.hitch(self, function (objs) {
           console.log('WorkspaceManager tree', objs);
+          if (!objs || !objs[0] || !objs[0].data) {
+            self.showError('Could not load tree file: ' + objPathNwk);
+            return;
+          }
           self.treeData = objs[0].data;
           console.log('WorkspaceManager  this.data', self.data);
           console.log('WorkspaceManager  this.treeData', self.treeData);
           self.createDataMap();
           console.log('onSetState tree labels: this.alt_labels', self.alt_labels);
           console.log('onSetState this.dataMap', self.dataMap);
-        }));
-      }));
+        }), function (err) {
+          console.error('Error loading tree file:', err);
+          self.showError('Error loading tree file: ' + objPathNwk);
+        });
+      }), function (err) {
+        console.error('Error loading alignment file:', err);
+        self.showError('Error loading alignment file: ' + objPath);
+      });
 
       console.log('onSetState this.dataStats ', this.dataStats);
     },
@@ -682,7 +703,12 @@ define([
             var myid = id.match(/.*\|(\d+\.\d+).*/);
             console.log('ids=', ids);
             // console.log('myid=', myid);
-            genome_ids.push(myid[1]) });
+            if (myid && myid[1]) {
+              genome_ids.push(myid[1]);
+            } else {
+              console.warn('createDataMap: Could not extract genome_id from:', id);
+            }
+          });
         }
         console.log('createDataMap() genome_ids=', genome_ids);
         var q = 'in(genome_id,(' + genome_ids.join(',') + '))&select(genome_id,genome_name,genbank_accessions,species,strain,geographic_group,isolation_country,host_group,host_common_name,collection_year,subtype,lineage,clade,h1_clade_global,h1_clade_us,h3_clade,h5_clade)&limit(25000)';
@@ -710,9 +736,10 @@ define([
               for (var i = 0; i < keys.length; i++) {
                 var mykey = keys[i].match(/.*\|(\d+\.\d+).*/);
                 // console.log('in when response genome.genome_id, keys, mykey', genome.genome_id, keys[i], mykey);
-                if (genome.genome_id == mykey[1]) {
+                if (mykey && mykey[1] && genome.genome_id == mykey[1]) {
                   // console.log('in when response mykey', mykey[1]);
                   seqIdIndex = seqIds[keys[i]] - 1;
+                  break;
                 }
               }
             }
@@ -1343,8 +1370,14 @@ define([
 
     postCreate: function () {
       this.inherited(arguments);
-      var fileCheck = this.state.pathname.match(/path=..+?(?=&|$)/);
-      var objPath = fileCheck[0].split('=')[1];
+      var fileCheck = this.state.pathname.match(/path=([^&]+)/);
+      if (!fileCheck) {
+        console.error('postCreate: No path specified in URL');
+        return;
+      }
+      var objPath = decodeURIComponent(fileCheck[1]);
+      // Normalize path: remove duplicate slashes
+      objPath = objPath.replace(/\/+/g, '/');
       var folder = objPath.split('/').slice(0, -1).join('/');
       // console.log('postCreate: objPath', objPath);
       console.log('postCreate: this.state.pathname', this.state.pathname);
