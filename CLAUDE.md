@@ -2,95 +2,100 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Build and Run Commands
+## Project Overview
+
+BV-BRC-Web is the web frontend for the Bacterial and Viral Bioinformatics Resource Center. It's built with Express.js backend and Dojo/Dijit frontend using AMD modules.
+
+**Tech Stack:**
+- Backend: Express.js 4.x, EJS/Pug templates, Node.js 14+
+- Frontend: Dojo Toolkit (AMD modules), Dijit widgets, D3.js, Cytoscape.js
+- Genome Browser: JBrowse integration
+- Build: Dojo build tools (not Webpack)
+
+## Development Commands
 
 ```bash
-# Install dependencies (first time setup)
+# Setup
 npm install
 git submodule update --init
+cp p3-web.conf.sample p3-web.conf  # Edit with service URLs
 
-# Run development server (http://localhost:3000)
+# Start development server (http://localhost:3000)
 npm start
 
-# Run tests (includes ESLint + Jest)
+# Linting
+npm run eslint:test                              # Lint all
+./node_modules/.bin/eslint public/js/p3/widget/SomeWidget.js --fix  # Single file
+
+# Build production JavaScript (outputs to public/js/release/)
+./buildClient.sh
+
+# Tests (uses Intern.js)
 npm test
-
-# Run ESLint only
-eslint .
 ```
 
-Configuration: Copy `p3-web.conf.sample` to `p3-web.conf` and configure service URLs. Server restart required after config changes.
+## Architecture
 
-## Architecture Overview
+### Server Side
+- `bin/p3-web` - Entry point (HTTP/HTTPS server)
+- `app.js` - Express app configuration and middleware
+- `config.js` - nconf-based configuration loader
+- `routes/` - Express route handlers (17+ files)
+- `views/` - EJS/Pug templates
 
-### Stack
-- **Backend**: Express.js server (`app.js`) with EJS templates (`views/`)
-- **Frontend**: Dojo Toolkit with AMD module loading pattern
-- **Entry Point**: `bin/p3-web` (creates HTTP/HTTPS server on port 3000)
+### Client Side (`public/js/p3/`)
+- `app/` - Main application modules (p3app.js entry point)
+- `widget/` - 274 Dijit-based UI components
+- `store/` - Data stores extending Dojo's JsonRest pattern
+- `router.js` - Client-side routing
 
-### Frontend Module Pattern (Dojo AMD)
-All frontend JavaScript uses the AMD `define()` pattern:
+### Widget Pattern
+Widgets extend `dijit/_WidgetBase` using AMD format:
 ```javascript
-define(['dojo/_base/declare', 'dojo/topic', './SomeWidget'],
-  function(declare, Topic, SomeWidget) {
-    return declare([BaseClass], { /* implementation */ });
-  });
+define([
+  'dojo/_base/declare',
+  'dijit/_WidgetBase',
+  './SomeOtherWidget'
+], function (declare, WidgetBase, SomeOtherWidget) {
+  return declare([WidgetBase], {
+    // Widget implementation
+  })
+})
 ```
 
-Key Dojo components: `dijit/` (widgets), `dojo/store/` (data), `dojo/topic` (pub/sub), `dijit/layout/BorderContainer` (layouts).
+### Data Store Pattern
+Custom stores in `public/js/p3/store/` extend Dojo stores with REST API integration using RQL (Resource Query Language).
 
-### Directory Structure
+## Configuration
 
-```
-public/js/p3/           # Main Dojo application
-├── app/                # Application shells (p3app.js, app.js)
-├── widget/             # UI components (274 dijit widgets)
-├── store/              # Data stores (57 stores)
-├── util/               # Helper modules
-├── JobManager.js       # Job polling service
-├── WorkspaceManager.js # Workspace service
-└── router.js           # Client-side routing
+Runtime config in `p3-web.conf` (created from sample):
+- Service URLs: workspaceServiceURL, appServiceURL, dataServiceURL, homologyServiceURL
+- Proxy routes for external services
+- Session and authentication settings
+- Copilot AI integration settings
 
-routes/                 # Express route handlers
-views/                  # EJS templates
-lib/                    # Backend utilities
-```
+## Git Submodules
 
-### Data Flow Pattern
-```
-Backend API (AppService, DataAPI)
-    ↓
-Store (public/js/p3/store/*.js)
-    ↓
-Widget (public/js/p3/widget/*.js)
-    ↓
-UI Rendering
-```
+The project uses 23+ submodules for frontend libraries in `public/js/`:
+- Core: dojo, dijit, dojox, dgrid, rql
+- Visualization: d3, cytoscape plugins, msa, phyloview, archaeopteryx, circulus, mauve_viewer
+- Utilities: FileSaver, lazyload, json-schema
 
-### Key Services
-- **JobManager** (`public/js/p3/JobManager.js`): Polls job status, publishes updates via `/Jobs` topic
-- **WorkspaceManager**: Manages user workspace and file operations
-- **DataAPI**: Queries biological data (genomes, features, etc.)
+Always run `git submodule update --init` after cloning.
 
-### Pub/Sub Communication
-Widgets communicate via `dojo/topic`:
-- `/Jobs` - Job status updates
-- `/showChatButton`, `/hideChatButton` - Copilot visibility
-- `/refreshWorkspace` - Workspace updates
+## Code Style
 
-### Route Structure
-```
-/           → Home and static pages
-/app/*      → Application forms
-/job/*      → Job management
-/workspace  → User workspace
-/view/*     → Data viewers
-/search     → Search interface
-/p/:proxy   → API proxy to backend services
-```
+ESLint with `airbnb-base/legacy` (lenient for legacy code):
+- No semicolon requirement
+- AMD globals allowed: dojo, dijit, d3, cytoscape, BVBRCClient
+- Most strict rules disabled
 
-## Production Build
+Pre-commit hook available - see `docs/pre-commit-linting.md`.
 
-Development loads modules directly from `/js/p3/`. Production uses versioned bundles:
-- Version determined by `package.json` version field
-- Bundles: `/js/[version]/release/`, `/js/[version]/bundle/bundle.js`
+## Key Domains
+
+- **Search**: Advanced RQL-based queries across genomes, features, sequences
+- **Visualization**: Circular genome viewer, pathway maps, phylogenetic trees, MSA viewer, heatmaps
+- **Workspace**: File management, uploads, job submission
+- **JBrowse**: Embedded genome browser with custom tracks
+- **Copilot**: AI chat integration (`public/js/p3/widget/copilot/`)
