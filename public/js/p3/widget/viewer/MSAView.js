@@ -233,9 +233,9 @@ define([
 
     onSetState: function (attr, oldVal, state) {
       this.loading = true;
-      var fileCheck = this.state.pathname.match(/path=..+?(?=&|$)/);
-      var objPath = fileCheck[0].split('=')[1];
-      var typeCheck = this.state.pathname.match(/alignType=..+?(?=&|$)/);
+      var fileCheck = this.state.pathname.match(/path=([^&]+)/);
+      var objPath = fileCheck ? decodeURIComponent(fileCheck[1]) : null;
+      var typeCheck = this.state.pathname.match(/alignType=([^&]+)/);
       if (typeCheck && typeCheck[0].split('=')[1].includes('dna')) {
         this.alignType = 'dna';
       }

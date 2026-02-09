@@ -272,15 +272,15 @@ define([
 
     onSetState: function (attr, oldVal, state) {
       this.loading = true;
-      var fileCheck = this.state.pathname.match(/path=..+?(?=&|$)/);
-      var objPath = fileCheck[0].split('=')[1];
+      var fileCheck = this.state.pathname.match(/path=([^&]+)/);
+      var objPath = fileCheck ? decodeURIComponent(fileCheck[1]) : null;
       var objPathNwk = objPath.replace('.afa', '_fasttree.nwk');
 
       this.path = objPath;
       console.log('WorkspaceManager objPathNwk', objPathNwk);
       console.log('state.path', state.path);
 
-      var typeCheck = this.state.pathname.match(/alignType=..+?(?=&|$)/);
+      var typeCheck = this.state.pathname.match(/alignType=([^&]+)/);
       if (typeCheck && typeCheck[0].split('=')[1].includes('dna')) {
         this.alignType = 'dna';
       }
