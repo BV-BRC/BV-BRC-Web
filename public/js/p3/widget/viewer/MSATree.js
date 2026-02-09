@@ -703,7 +703,12 @@ define([
             var myid = id.match(/.*\|(\d+\.\d+).*/);
             console.log('ids=', ids);
             // console.log('myid=', myid);
-            genome_ids.push(myid[1]) });
+            if (myid && myid[1]) {
+              genome_ids.push(myid[1]);
+            } else {
+              console.warn('createDataMap: Could not extract genome_id from:', id);
+            }
+          });
         }
         console.log('createDataMap() genome_ids=', genome_ids);
         var q = 'in(genome_id,(' + genome_ids.join(',') + '))&select(genome_id,genome_name,genbank_accessions,species,strain,geographic_group,isolation_country,host_group,host_common_name,collection_year,subtype,lineage,clade,h1_clade_global,h1_clade_us,h3_clade,h5_clade)&limit(25000)';
@@ -731,9 +736,10 @@ define([
               for (var i = 0; i < keys.length; i++) {
                 var mykey = keys[i].match(/.*\|(\d+\.\d+).*/);
                 // console.log('in when response genome.genome_id, keys, mykey', genome.genome_id, keys[i], mykey);
-                if (genome.genome_id == mykey[1]) {
+                if (mykey && mykey[1] && genome.genome_id == mykey[1]) {
                   // console.log('in when response mykey', mykey[1]);
                   seqIdIndex = seqIds[keys[i]] - 1;
+                  break;
                 }
               }
             }
