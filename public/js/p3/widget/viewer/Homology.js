@@ -19,8 +19,11 @@ define([
     data: null,
 
     _setStateAttr: function (state) {
-      var parts = state.pathname.split('/')
-      state.path = '/' + parts.slice(2).join('/')
+      var parts = state.pathname.split('/');
+      // Decode URL-encoded path components (e.g., spaces encoded as %20)
+      state.path = '/' + parts.slice(2).map(function (p) {
+        return decodeURIComponent(p);
+      }).join('/');
       this._set('state', state);
     },
 
