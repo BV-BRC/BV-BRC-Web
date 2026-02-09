@@ -273,10 +273,17 @@ define([
     onSetState: function (attr, oldVal, state) {
       this.loading = true;
       var fileCheck = this.state.pathname.match(/path=([^&]+)/);
-      var objPath = fileCheck ? decodeURIComponent(fileCheck[1]) : null;
+      if (!fileCheck) {
+        this.showError('No path specified in URL');
+        return;
+      }
+      var objPath = decodeURIComponent(fileCheck[1]);
+      // Normalize path: remove duplicate slashes
+      objPath = objPath.replace(/\/+/g, '/');
       var objPathNwk = objPath.replace('.afa', '_fasttree.nwk');
 
       this.path = objPath;
+      console.log('WorkspaceManager objPath', objPath);
       console.log('WorkspaceManager objPathNwk', objPathNwk);
       console.log('state.path', state.path);
 
@@ -284,21 +291,35 @@ define([
       if (typeCheck && typeCheck[0].split('=')[1].includes('dna')) {
         this.alignType = 'dna';
       }
+      var self = this;
       WorkspaceManager.getObjects([objPath]).then(lang.hitch(this, function (objs) {
         console.log('WorkspaceManager alignment', objs);
+        if (!objs || !objs[0] || !objs[0].data) {
+          self.showError('Could not load alignment file: ' + objPath);
+          return;
+        }
         this.data = objs[0].data;
         console.log('WorkspaceManager  this.data', this.data);
-        var self = this;
         WorkspaceManager.getObjects([objPathNwk]).then(lang.hitch(self, function (objs) {
           console.log('WorkspaceManager tree', objs);
+          if (!objs || !objs[0] || !objs[0].data) {
+            self.showError('Could not load tree file: ' + objPathNwk);
+            return;
+          }
           self.treeData = objs[0].data;
           console.log('WorkspaceManager  this.data', self.data);
           console.log('WorkspaceManager  this.treeData', self.treeData);
           self.createDataMap();
           console.log('onSetState tree labels: this.alt_labels', self.alt_labels);
           console.log('onSetState this.dataMap', self.dataMap);
-        }));
-      }));
+        }), function (err) {
+          console.error('Error loading tree file:', err);
+          self.showError('Error loading tree file: ' + objPathNwk);
+        });
+      }), function (err) {
+        console.error('Error loading alignment file:', err);
+        self.showError('Error loading alignment file: ' + objPath);
+      });
 
       console.log('onSetState this.dataStats ', this.dataStats);
     },
@@ -1343,8 +1364,14 @@ define([
 
     postCreate: function () {
       this.inherited(arguments);
-      var fileCheck = this.state.pathname.match(/path=..+?(?=&|$)/);
-      var objPath = fileCheck[0].split('=')[1];
+      var fileCheck = this.state.pathname.match(/path=([^&]+)/);
+      if (!fileCheck) {
+        console.error('postCreate: No path specified in URL');
+        return;
+      }
+      var objPath = decodeURIComponent(fileCheck[1]);
+      // Normalize path: remove duplicate slashes
+      objPath = objPath.replace(/\/+/g, '/');
       var folder = objPath.split('/').slice(0, -1).join('/');
       // console.log('postCreate: objPath', objPath);
       console.log('postCreate: this.state.pathname', this.state.pathname);
