@@ -405,6 +405,8 @@ table tr.even td {
     overflow: hidden;
     padding-top: 6px;
     margin-right: -4px;
+    position: relative;
+    z-index: 1;
 }
 
 .ActionBar .fa {
