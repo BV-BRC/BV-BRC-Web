@@ -132,6 +132,9 @@ define([
         this.groupTypeSelect.set('options', this.conversionTypes[this.inputType]);
         this.groupTypeSelect.set('value', this.conversionTypes[this.inputType][0].value);
         this.groupTypeSelect.set('displayedValue', this.conversionTypes[this.inputType][0].label);
+        // Update the type to match the selected conversion type
+        // This ensures workspaceObjectSelector shows the correct groups
+        this.set('type', this.conversionTypes[this.inputType][0].value);
       }
     },
 
