@@ -359,21 +359,18 @@ define([
       // Create a validation summary for a FASTA file with errors.
       createInvalidFastaSummary: function () {
 
-         let title = "";
-         let description = "";
-         let listItems = [];
-
          // An alias for convenience.
          const results = this.validatedFASTA;
 
-         let errorCount = results.errors.length;
+         // The number of segments
          let segmentCount = results.segments.length;
-         let missingSegSeqs = results.notEnoughSegments;
 
+         // The number of strain names we expect to find based on the segments we found and the total number of sequences.
+         // (Assuming every strain has a sequence for all segments referenced in the FASTA file.)
          const expectedNames = Math.floor(results.sequenceCount / segmentCount);
 
-
-         title = "Your FASTA file cannot be processed";
+         // The summary's title
+         const title = "Your FASTA file cannot be processed";
 
          let message = "";
 
@@ -422,63 +419,7 @@ define([
          </div>`;
 
          return html;
-
-         /*
-         //------------------------------------------------------------------------------------------------
-         // Add messages to the list (item) array.
-         //------------------------------------------------------------------------------------------------
-
-         if (results.validNames < 1) {
-            listItems.push("No strain names were found.");
-         } else if (results.totalNames > results.validNames) {
-            listItems.push(`Only ${results.validNames} out of ${results.totalNames} strain names were valid.`);
-         }
-
-         const segmentCount = results.segments.length;
-
-         if (segmentCount < 1) {
-            listItems.push("No segment names were found.");
-
-         } else if (segmentCount === 1) {
-            listItems.push("TreeSort requires at least 2 segments for analysis, but only one was found.");
-
-         } else {
-
-            let segmentsFound = `${results.segments.length} segments were found`;
-
-            let segmentList = "";
-
-            // Format the segments as a delimited list.
-            results.segments.forEach(segment_ => {
-               if (segmentList) { segmentList += ", "; }
-               segmentList += segment_;
-            })
-
-            if (segmentList.length > 0) { segmentsFound += `: ${segmentList}`; }
-
-            listItems.push(segmentsFound);
-         }
-
-         if (results.notEnoughSegments > 0 && segmentCount > 1 && results.validNames.length > 0) {
-
-            const strainText = results.notEnoughSegments === 1
-               ? "1 strain"
-               : `${results.notEnoughSegments} strains`
-
-            listItems.push(`${strainText} didn't have sequences for all ${segmentCount} segments and will not be included in the analysis.`);
-         }
-
-         if (results.validNames > 0 && results.validNames < this.settings.MIN_STRAIN_COUNT) {
-            const strainFoundText = results.validNames === 1
-               ? "strain was found"
-               : "strains were found";
-            listItems.push(`A minimum of ${this.settings.MIN_STRAIN_COUNT} strains is required and only ${results.validNames} valid ${strainFoundText}`);
-         }
-
-         // Format and return the summary.
-         return this.formatFastaValidationSummary(title, description, listItems);*/
       },
-
 
       // Create a validation summary for a successfully validated FASTA file.
       createValidFastaSummary() {
@@ -1432,7 +1373,7 @@ define([
          // Re-initialize the FASTA validation data that will be populated by this function.
          this.resetValidatedFASTA();
 
-         // Re-inititalize the example headers and strain names for each match type.
+         // Re-inititalize the example header and strain name for each match type.
          this.resetMatchTypeExamples();
 
          // Validate the FASTA parameter.
@@ -1470,9 +1411,7 @@ define([
          const epiIslNames = new Map();
          const strainNames = new Map();
 
-
-         // TEST
-         let invalidFileError = null; // empty or no headers were found
+         // The number of headers where we couldn't find a segment.
          let headersWithoutSegments = 0;
 
          // Iterate over all FASTA headers.
@@ -1484,7 +1423,6 @@ define([
             // Look for a properly-formatted segment in the header.
             const segmentMatch = this.settings.REGEX_SEGMENT.exec(header);
             if (!Array.isArray(segmentMatch) || segmentMatch.length < 1) {
-               //errors.push(`Unable to find a segment name in >${header}`);
                headersWithoutSegments += 1;
                return;
             }
@@ -1492,12 +1430,6 @@ define([
             // Get the segment and add it to the result's set of unique segment names.
             let segment = segmentMatch[1].trim();
             segments.add(segment);
-
-            // Remove the sequence description
-            const spaceIndex = header.indexOf(" ");
-            if (spaceIndex > 0) {
-               header = header.substring(0, spaceIndex);
-            }
 
             // Remove the segment from the header.
             header = header.replace(`|${segment}|`, "|").trim();
