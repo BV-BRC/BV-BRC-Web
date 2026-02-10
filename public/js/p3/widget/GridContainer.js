@@ -1514,7 +1514,7 @@ define([
           requireAuth: true,
           max: 10000,
           tooltip: 'Add selection to a new or existing group',
-          validContainerTypes: ['genome_data', 'feature_data', 'protein_data', 'transcriptomics_experiment_data', 'transcriptomics_gene_data', 'spgene_data']
+          validContainerTypes: ['genome_data', 'sequence_data', 'feature_data', 'protein_data', 'transcriptomics_experiment_data', 'transcriptomics_gene_data', 'spgene_data']
         },
         function (selection, containerWidget) {
           var dlg = new Dialog({ title: 'Add selected items to group' });
@@ -1524,7 +1524,7 @@ define([
             return;
           }
 
-          if (containerWidget.containerType == 'genome_data') {
+          if (containerWidget.containerType == 'genome_data' || containerWidget.containerType == 'sequence_data') {
             type = 'genome_group';
           } else if (containerWidget.containerType == 'feature_data' || containerWidget.containerType == 'protein_data' || containerWidget.containerType == 'transcriptomics_gene_data' || containerWidget.containerType == 'spgene_data') {
             type = 'feature_group';

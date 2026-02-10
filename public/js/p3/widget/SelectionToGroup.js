@@ -120,6 +120,12 @@ define([
       }
       this.inherited(arguments);
 
+      // Ensure the workspaceObjectSelector has the correct type
+      // (overrides the hardcoded 'genome_group' from the template)
+      if (this.workspaceObjectSelector && this.type) {
+        this.workspaceObjectSelector.set('type', [this.type]);
+      }
+
       if (this.inputType in this.conversionTypes) {
         this.selectType = true;
         domClass.remove(this.groupTypeBox, 'dijitHidden');

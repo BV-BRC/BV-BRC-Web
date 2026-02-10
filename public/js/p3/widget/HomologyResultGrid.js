@@ -89,7 +89,7 @@ define([
         }
       },
       'specialty_genes': {
-        container_type: 'specialty_genes',
+        container_type: 'spgene_data',
         columns: {
           'Selection Checkboxes': selector({ label: '', sortable: false, unhidable: true }),
           expand: {
