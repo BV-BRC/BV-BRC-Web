@@ -195,7 +195,15 @@ define([
     },
 
     _setTypeAttr: function (type) {
-      this.type = Array.isArray(type) ? type : [type];
+      var newType = Array.isArray(type) ? type : [type];
+
+      // Skip if type hasn't changed
+      if (this.type && this.type.length === newType.length &&
+          this.type.every(function(t, i) { return t === newType[i]; })) {
+        return;
+      }
+
+      this.type = newType;
 
       if (this.grid) {
         this.grid.set('types', (['folder'].concat(this.type)));
@@ -818,6 +826,8 @@ define([
       if (this._refreshing) {
         delete this._refreshing;
       }
+      // Increment counter to invalidate any in-flight requests
+      this._refreshCounter = (this._refreshCounter || 0) + 1;
     },
 
     refreshWorkspaceItems: function (target_path) {
@@ -836,9 +846,17 @@ define([
         }
         return 0;
       }
+      // Capture the current counter value to detect stale responses
+      var currentCounter = this._refreshCounter || 0;
+      var self = this;
       this._refreshing = WorkspaceManager.getObjectsByType(this.type, target_path)
         .then(lang.hitch(this, function (items) {
           delete this._refreshing;
+
+          // If counter changed, this response is stale - ignore it
+          if ((self._refreshCounter || 0) !== currentCounter) {
+            return;
+          }
 
           // sort by most recent
           items.sort(function (a, b) {
