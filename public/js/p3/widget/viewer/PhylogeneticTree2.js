@@ -157,6 +157,8 @@ define([
         objName = '.' + objName;
         objPathParts.push(objName);
         var objPath = decodeURIComponent(objPathParts.join('/'));
+        // Normalize path: remove duplicate slashes
+        objPath = objPath.replace(/\/+/g, '/');
         if (objPath.substring(0, 7) == '/public') {
           objPath = objPath.substring(7);  // remove '/public' if needed
         }
@@ -196,7 +198,9 @@ define([
           });
       }
       else if (fileCheck && !isNaN(fileCheck.index)) {
-        var objPath = fileCheck[0].split('=')[1];
+        var objPath = decodeURIComponent(fileCheck[0].split('=')[1]);
+        // Normalize path: remove duplicate slashes
+        objPath = objPath.replace(/\/+/g, '/');
         WorkspaceManager.getObjects([objPath]).then(lang.hitch(this, function (objs) {
           var obj = objs[0];
           var treeDat = {};
