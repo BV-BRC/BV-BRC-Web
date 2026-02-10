@@ -158,7 +158,7 @@ define([
           this.type = 'genome_sequence'
         }
 
-        WorkspaceManager.getFolderContents([this.hiddenPath], false, false, false).then(lang.hitch(this, function (paths) {
+        WorkspaceManager.getFolderContents(this.hiddenPath, false, false, false).then(lang.hitch(this, function (paths) {
 
           var filtered = paths.filter(function (f) {
             if ('path' in f && f.path.match('blast_out.json')) {
@@ -271,9 +271,10 @@ define([
                 this.defaultLoadData(res);
               }));
             }
-          }), function (err) {
+          }), lang.hitch(this, function (err) {
+            console.warn('HomologyResultMemoryStore: getFolderContents error:', err);
             this.emptySetData();
-          });
+          }));
         }), lang.hitch(this, function (err) {
           this.emptySetData();
         }));

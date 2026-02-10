@@ -21,7 +21,10 @@ define([
       var self = this;
 
       var parts = state.pathname.split('/');
-      var path = '/' + parts.slice(2).join('/');
+      // Decode URL-encoded path components (e.g., spaces encoded as %20)
+      var path = '/' + parts.slice(2).map(function (p) {
+        return decodeURIComponent(p);
+      }).join('/');
 
       // reset/override global and jbrowse styling
       domConstruct.create('style', {
