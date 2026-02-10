@@ -555,6 +555,19 @@ th.dgrid-cell.wsItemMembers {
 	color: #34698e;
 }
 
+.ItemDetailPanel .ActionButtonWrapper:hover {
+	border: 1px solid #34698e;
+	color: #34698e;
+}
+
+.ItemDetailPanel .ActionButtonWrapper .ActionButton.fa {
+	color: #76a72d;
+}
+
+.ItemDetailPanel .ActionButtonWrapper:hover .ActionButton.fa {
+	color: #34698e;
+}
+
 .BrowserHeader .ActionButtonWrapper {
         margin-top: -3px;
         margin-left: 8px;
