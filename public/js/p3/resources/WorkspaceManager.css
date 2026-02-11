@@ -14,7 +14,15 @@
 	vertical-align: bottom;
 }
 
+/* WSBrowserHeader specific layout to prevent icon overlap */
+.WSBrowserHeader {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: center;
+}
+
 .WSBrowserHeader .wsSearchSectionContainer {
+    flex: 0 0 auto;  /* Don't grow or shrink */
     /* display: inline-flex; align-items: center; vertical-align: middle; */ /* Now applied inline in JS */
     /* margin-left: 15px; */ /* Now applied inline in JS - for space after breadcrumbs */
     /* This container holds search input, icon, type select, and term indicator */
@@ -105,6 +113,10 @@ a.HelpLink:active {
 .wsBreadCrumbContainer {
 	display: inline-block;
 	margin: 12px 0 12px 8px;
+	flex: 1 1 auto;
+	min-width: 0;  /* Allow text truncation if needed */
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .wsBreadCrumb {
@@ -496,8 +508,9 @@ th.dgrid-cell.wsItemMembers {
 }
 
 .wsActionContainer {
-	float: right;
+	flex: 0 0 auto;  /* Don't grow or shrink, use natural size */
 	white-space: nowrap;  /* don't wrap icons */
+	margin-left: auto;  /* Push to right in flex container */
 }
 
 .ActionButtonWrapper .ActionButton.fa {
