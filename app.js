@@ -29,12 +29,63 @@ var app = express();
 var httpProxy = require('http-proxy');
 var apiProxy = httpProxy.createProxyServer();
 
+// Trust the first proxy hop (reverse proxy like nginx/Apache)
+// This is required for express-rate-limit to correctly identify client IPs
+// when running behind a proxy that sets X-Forwarded-For
+app.set('trust proxy', 1);
+
+// Security middleware imports
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { sanitizeUrlPath } = require('./lib/securityUtils');
+
+// Rate limiters for different route types
+const problemReportLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 requests per window per IP
+  message: { error: 'Too many problem reports submitted. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+const feedLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 30, // 30 requests per minute per IP
+  message: { error: 'Too many feed requests. Please slow down.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
+app.use(favicon(path.join(__dirname, '/public/favicon.ico'), { maxAge: '365d' }));
 app.use(logger('dev'));
 app.use(cookieParser(config.get('cookieSecret')));
+
+// Security headers with Helmet
+// CSP is disabled due to incompatibility with Dojo framework
+// Other important security headers are still applied:
+// - X-Frame-Options (prevents clickjacking)
+// - X-Content-Type-Options (prevents MIME sniffing)
+// - Strict-Transport-Security (enforces HTTPS)
+// - X-DNS-Prefetch-Control
+// - Referrer-Policy
+app.use(helmet({
+  contentSecurityPolicy: false,  // Disabled - Dojo framework incompatible
+  crossOriginEmbedderPolicy: false,  // Allow embedded content
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  hsts: {
+    maxAge: 31536000,  // 1 year in seconds
+    includeSubDomains: true,
+    preload: true
+  }
+}));
+
+// Block access to demo directories with legacy/vulnerable jQuery versions
+app.use(['/js/jDataView/demo', '/js/phyloview/testTree.html'], function(req, res) {
+  res.status(404).send('Not Found');
+});
 
 const proxyConfig = config.get('proxyConfig');
 if (proxyConfig) {
@@ -57,8 +108,12 @@ app.use(function (req, res, next) {
   req.production = config.get('production') || false;
   req.productionLayers = [
     'p3/layer/core'
-]
+  ];
   req.package = packageJSON;
+
+  // Sanitize originalUrl for safe use in templates (prevents XSS in canonical URLs)
+  req.safeOriginalUrl = sanitizeUrlPath(req.originalUrl || '');
+
   // var authToken = "";
   // var userProf = "";
   req.applicationOptions = {
@@ -117,6 +172,13 @@ app.use('*jbrowse.conf', express.static(path.join(__dirname, 'public/js/jbrowse.
 const staticHeaders = {
   maxage: '356d',
   setHeaders: function (res, path) {
+    // Append 'immutable' to existing Cache-Control header set by Express
+    var existingCacheControl = res.getHeader('Cache-Control');
+    if (existingCacheControl) {
+      res.setHeader('Cache-Control', existingCacheControl + ', immutable');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=30758400, immutable');
+    }
     var d = new Date();
     d.setYear(d.getFullYear() + 1);
     res.setHeader('Expires', d.toGMTString())
@@ -128,10 +190,27 @@ app.use('/js/' + packageJSON.version + '/', [
   express.static(path.join(__dirname, 'public/js/'),staticHeaders)
 ]);
 
-app.use('/js/', express.static(path.join(__dirname, 'public/js/')));
+app.use('/js/', express.static(path.join(__dirname, 'public/js/'), {
+  maxage: config.get('production') ? '365d' : '1h',
+  setHeaders: function (res, path) {
+    var d = new Date();
+    if (config.get('production')) {
+      d.setYear(d.getFullYear() + 1);
+    } else {
+      d.setHours(d.getHours() + 1);
+    }
+    res.setHeader('Expires', d.toGMTString());
+  }
+}));
 app.use('/patric/images', express.static(path.join(__dirname, 'public/patric/images/'), {
   maxage: '365d',
   setHeaders: function (res, path) {
+    var existingCacheControl = res.getHeader('Cache-Control');
+    if (existingCacheControl) {
+      res.setHeader('Cache-Control', existingCacheControl + ', immutable');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
     var d = new Date();
     d.setYear(d.getFullYear() + 1);
     res.setHeader('Expires', d.toGMTString());
@@ -142,14 +221,28 @@ app.use('/public/pdfs/', [
     res.redirect('https://docs.patricbrc.org/tutorial/');
   }
 ]);
-app.use('/patric/', express.static(path.join(__dirname, 'public/patric/')));
-app.use('/public/', express.static(path.join(__dirname, 'public/')));
+app.use('/patric/', express.static(path.join(__dirname, 'public/patric/'), {
+  maxage: '365d',
+  setHeaders: function (res, path) {
+    var d = new Date();
+    d.setYear(d.getFullYear() + 1);
+    res.setHeader('Expires', d.toGMTString());
+  }
+}));
+app.use('/public/', express.static(path.join(__dirname, 'public/'), {
+  maxage: '365d',
+  setHeaders: function (res, path) {
+    var d = new Date();
+    d.setYear(d.getFullYear() + 1);
+    res.setHeader('Expires', d.toGMTString());
+  }
+}));
 app.use('/', routes);
 // app.use('/home-prev', prevHome);
-app.post('/reportProblem', reportProblem);
-app.post('/notifySubmitSequence', notifySubmitSequence);
-app.use('/linkedin', linkedin);
-app.use('/google', google);
+app.post('/reportProblem', problemReportLimiter, reportProblem);
+app.post('/notifySubmitSequence', problemReportLimiter, notifySubmitSequence);
+app.use('/linkedin', feedLimiter, linkedin);
+app.use('/google', feedLimiter, google);
 app.use('/workspace', workspace);
 app.use('/content', contentViewer);
 app.use('/webpage', contentViewer);
@@ -188,13 +281,16 @@ app.use(function (req, res, next) {
 // error handlers
 
 // development error handler
-// will print stacktrace
+// will print stacktrace only in true development environment
 if (app.get('env') === 'development') {
   app.use(function (err, req, res, next) {
+    // Log full error for debugging
+    console.error('Development error:', err);
     res.status(err.status || 500);
     res.render('error', {
       message: err.message,
-      error: err
+      // Double-check NODE_ENV to prevent accidental exposure
+      error: process.env.NODE_ENV === 'development' ? err : {}
     });
   });
 }

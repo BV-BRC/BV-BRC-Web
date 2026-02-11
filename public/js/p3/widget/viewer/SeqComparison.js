@@ -26,72 +26,107 @@ define([
     _appLabel: '',
     _resultMetaTypes: {},
     _autoLabels: {},
+
     getComparisonId: function () {
       return (this.data.path + this.data.name);
     },
+
     isSummaryView: function () {
       return true;
     },
-    get_object_metadata: async function(paths) {
+
+    get_object_metadata: async function (paths) {
       var objs = [];
-      for (path of paths)
-      {
-	try {
-	  var obj = await WorkspaceManager.getObject([path], true);
-	  objs.push(obj);
-	} catch (e) {
-	}
+      for (let path of paths) {
+        try {
+          var obj = await WorkspaceManager.getObject(path, true);
+          objs.push(obj);
+        } catch (e) {
+          console.warn("Failed to load:", path, e);
+        }
       }
       return objs;
     },
+
     _setDataAttr: function (data) {
       this.data = data;
 
-      if (data.autoMeta.parameters.output_path != data.path)
-      {
-	// console.log("Rewrite data path from", data.autoMeta.parameters.output_path, "to", data.path);
-	  
-	for (outfile of data.autoMeta.output_files)
-	{
-	  outfile[0] = outfile[0].replace(new RegExp('^' + data.autoMeta.parameters.output_path), data.path);
-	}
+      if (data.autoMeta &&
+          data.autoMeta.parameters &&
+          data.autoMeta.parameters.output_path &&
+          data.autoMeta.parameters.output_path !== data.path) {
+
+        for (let outfile of data.autoMeta.output_files || []) {
+          outfile[0] = outfile[0].replace(
+            new RegExp('^' + data.autoMeta.parameters.output_path),
+            data.path
+          );
+        }
       }
 
-      // console.log("job result viewer data: ", data);
+      let decodedParts = data.path
+        .split('/')
+        .filter(Boolean)
+        .map(p => decodeURIComponent(p));
+
+      let decodedPath = '/' + decodedParts.join('/');
+
+      let basePath = decodedPath.replace(/\/$/, '') + '/.' + decodeURIComponent(data.name);
 
       //
-      // Retrieve info on all our supported output files
+      // Expected output files
       //
       var files = ['circos_final.html', 'circos.svg', 'genome_comparison.json'];
-      var paths = files.map(function(f) { return data.path + "/." + data.name + "/" + f });
-      this.get_object_metadata(paths).then(lang.hitch(this, function(objs) {
-        this._resultObjects = objs;
-        console.log("got objects: ", objs);
+
+      var paths = files.map(function (f) {
+        return basePath + '/' + f;
+      });
+
+      console.log("SeqComparison decoded paths:", paths);
+
+      this.get_object_metadata(paths).then(lang.hitch(this, function (objs) {
+        this._resultObjects = objs.filter(Boolean);
+        console.log("got objects:", this._resultObjects);
         this.refresh();
       }));
+    },
 
-    },
     refresh: function () {
-      if (this.data) {
-        // console.log("view resultsObjects:  ", this._resultObjects);
-        this._resultObjects.some(function (obj) {
-          if (obj.name == 'circos_final.html') {
-            WorkspaceManager.getObject(obj.path + obj.name).then(lang.hitch(this, function (obj) {
-              // console.log("Circos HTML Object: ", obj);
-              this.viewer.set('content', obj.data);
-            }));
-          }
-        }, this);
-      }
+      if (!this._resultObjects || !this._resultObjects.length) return;
+
+      this._resultObjects.some(function (obj) {
+        if (obj && obj.name === 'circos_final.html') {
+
+          const fullPath = obj.path.replace(/\/$/, '') + '/' + obj.name;
+
+          console.log("Fetching full HTML from:", fullPath);
+
+          // IMPORTANT: use "false" to get file content
+          WorkspaceManager.getObject(fullPath, false)
+            .then(lang.hitch(this, function (file) {
+              console.log("HTML file object:", file);
+              this.viewer.set('content', file.data);
+            }))
+            .catch(function (err) {
+              console.error("Failed to fetch HTML:", err);
+            });
+
+          return true;
+        }
+        return false;
+      }, this);
     },
+
     startup: function () {
-      if (this._started) {
-        return;
-      }
+      if (this._started) return;
+
       this.inherited(arguments);
-      this.viewer = new ContentPane({ content: 'Loading Job Results...', region: 'center' });
-      // this.viewer= new ContentPane({content: "", region: "center"});
-      // this.addChild(this.viewHeader);
+
+      this.viewer = new ContentPane({
+        content: 'Loading Job Results...',
+        region: 'center'
+      });
+
       this.addChild(this.viewer);
 
       this.on('i:click', function (evt) {
@@ -99,7 +134,7 @@ define([
         if (rel) {
           WorkspaceManager.downloadFile(rel);
         } else {
-          console.warn('link not found: ', rel);
+          console.warn('link not found:', rel);
         }
       });
     }

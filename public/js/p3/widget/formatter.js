@@ -177,10 +177,10 @@ define(
         link = 'http://arpcard.mcmaster.ca';
       }
       else if (target.match(/DrugBank$/i)) {
-        link = 'http://www.drugbank.ca/molecules/'; // 1
+        link = 'https://go.drugbank.com/drugs/';
       }
       else if (target.match(/DrugBank_HOME/i)) {
-        link = 'http://www.drugbank.ca';
+        link = 'https://go.drugbank.com';
       }
       else if (target.match(/TTD$/i)) {
         link = 'http://bidd.nus.edu.sg/group/TTD/ZFTTDDetail.asp?ID='; // TTDS00427
@@ -428,7 +428,7 @@ define(
           case 'fasta':
             return '<i class="fa icon-fasta fa-1x" title="Contigs" />';
           case 'feature_group':
-            return '<i class="icon-genome-features " title="Contigs" />';
+            return '<i class="icon-genome-features " title="Feature Group" />';
           case 'genome_group':
             return '<img src="/public/js/p3/resources/images/genomegroup.svg" style="width:16px;height:16px;"  class="fa fa-2x" title="Genome Group" />';
           case 'job_result_DifferentialExpression':
@@ -436,6 +436,18 @@ define(
           default:
             return '<i class="fa icon-file-text-o fa-1x" title="' + (val || 'Unspecified Document Type') + '" />';
         }
+      },
+      wsFavoriteIndicator: function (item) {
+        // Returns a star icon that can be clicked to toggle favorite status
+        // The actual state is updated dynamically by WorkspaceGrid after checking FavoriteFolders
+        if (!item || !item.path) {
+          return '';
+        }
+        // Only show for folders (not individual files or root workspaces)
+        if (item.type !== 'folder' || item.path.split('/').length <= 3) {
+          return '';
+        }
+        return '<i class="icon-star-o wsFavoriteGridStar not-favorite" data-path="' + item.path + '" title="Add to favorites"></i>';
       },
       appLabel: function (appName) {
         return appName;
@@ -546,6 +558,21 @@ define(
           a: 'Admin'
         };
         return mapping[perm] || 'Invalid permission';
+      },
+
+      /**
+       * Format bytes into human-readable size
+       * @param {number} bytes - The byte count to format
+       * @param {number} decimals - Number of decimal places (default: 2)
+       * @returns {string} Formatted size string (e.g., "1.5 MB")
+       */
+      formatBytes: function (bytes, decimals) {
+        if (bytes === 0 || bytes === null || bytes === undefined) return '0 Bytes';
+        decimals = decimals || 2;
+        var k = 1024;
+        var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+        var i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
       },
 
       // takes an array of form [{label: "", value: ""} ... ]

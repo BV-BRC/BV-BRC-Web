@@ -10,6 +10,12 @@ define([
   Grid, formatter, WorkspaceManager, lang,
   domAttr, WorkspaceExplorerView, Dialog, encodePath, topic
 ) {
+  // Types that can be navigated to (folders, job results, etc.)
+  var navigableTypes = [
+    'folder', 'job_result', 'parentfolder',
+    'genome_group', 'feature_group', 'experiment_folder',
+    'experiment_group'
+  ];
   return declare([BorderContainer], {
     baseClass: 'ExperimentViewer',
     disabled: false,
@@ -38,19 +44,100 @@ define([
     _autoLabels: {},
     _setDataAttr: function (data) {
       this.data = data;
+      var _self = this;
+
+      // Check if autoMeta has the required job data (parameters, output_files, app)
+      // If not, we need to read the actual job_result file content
+      if (!data.autoMeta || !data.autoMeta.parameters) {
+        // autoMeta is incomplete - read the actual file content
+        var filePath = data.path + data.name;
+        WorkspaceManager.getObject(filePath, false).then(function (result) {
+          // result.data contains the JSON content of the job_result file
+          var jobData;
+          try {
+            if (typeof result.data === 'string') {
+              jobData = JSON.parse(result.data);
+            } else {
+              jobData = result.data;
+            }
+          } catch (e) {
+            console.error('Error parsing job result file:', e);
+            new Dialog({
+              content: 'Error loading job result data. The job result file may be corrupted.',
+              title: 'Error Loading Job Result',
+              style: 'width: 300px !important;'
+            }).show();
+            return;
+          }
+
+          // Merge the parsed job data into autoMeta
+          data.autoMeta = lang.mixin(data.autoMeta || {}, jobData);
+
+          // Now continue with normal processing
+          _self._processJobData(data);
+        }, function (err) {
+          console.error('Error reading job result file:', err);
+          new Dialog({
+            content: 'Error loading job result data. The job result file could not be read.',
+            title: 'Error Loading Job Result',
+            style: 'width: 300px !important;'
+          }).show();
+        });
+      } else {
+        // autoMeta has the required data, process normally
+        this._processJobData(data);
+      }
+    },
+
+    _processJobData: function (data) {
+      var _self = this;
+
       // console.log("[JobResult] data: ", data);
-      if (data.autoMeta.parameters.output_path != data.path)
+      if (data.autoMeta.parameters && data.autoMeta.parameters.output_path && data.autoMeta.parameters.output_path != data.path)
       {
         // console.log("Rewrite data path from", data.autoMeta.parameters.output_path, "to", data.path);
 
-        for (outfile of data.autoMeta.output_files)
-        {
-          outfile[0] = outfile[0].replace(new RegExp('^' + data.autoMeta.parameters.output_path), data.path);
+        // Escape special regex characters in the path to avoid "Invalid regular expression" errors
+        // when paths contain characters like ), (, [, ], etc.
+        var escapedPath = data.autoMeta.parameters.output_path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        if (data.autoMeta.output_files) {
+          for (var outfile of data.autoMeta.output_files)
+          {
+            outfile[0] = outfile[0].replace(new RegExp('^' + escapedPath), data.path);
+          }
         }
       }
       this._hiddenPath = data.path + '.' + data.name;
       // console.log("[JobResult] Output Files: ", this.data.autoMeta.output_files);
-      var _self = this;
+
+      // Create the viewer now that _hiddenPath is set
+      // Replace the placeholder if it exists
+      if (this._viewerPlaceholder) {
+        this.removeChild(this._viewerPlaceholder);
+        this._viewerPlaceholder.destroyRecursive();
+        this._viewerPlaceholder = null;
+      }
+
+      // Create viewHeader if it doesn't exist yet (async path runs before startup)
+      if (!this.viewHeader) {
+        this.viewHeader = new ContentPane({ content: 'Loading data from ' + this.data.name + ' job file.', region: 'top' });
+        this.addChild(this.viewHeader);
+      }
+
+      this.viewer = new WorkspaceExplorerView({ region: 'center', path: this._hiddenPath });
+      this.addChild(this.viewer);
+
+      // Force a resize to ensure proper layout after adding the viewer
+      this.resize();
+
+      // Handle double-click on items to navigate to them
+      // Use on() directly on the domNode since the event bubbles up from WorkspaceGrid
+      on(this.viewer.domNode, 'ItemDblClick', lang.hitch(this, function (evt) {
+        if (evt.item && evt.item.type && navigableTypes.indexOf(evt.item.type) >= 0) {
+          topic.publish('/navigate', { href: '/workspace' + encodePath(evt.item_path) });
+        }
+      }));
 
       // Publish the job result data so Copilot and other modules can access it
       topic.publish('Copilot/JobResultReady', data);
@@ -105,7 +192,7 @@ define([
         // this.viewer.set('content',jobHeader);
 
         var output = [];
-        output.push(jobHeader + '<table style="width:90%" class="p3basic striped far2x" id="data-table"><tbody>');
+        output.push(jobHeader + '<table style="width:800px;table-layout:fixed;" class="p3basic striped far2x" id="data-table"><tbody>');
         var job_output = [];
 
         // add extra metadata header lines
@@ -127,7 +214,7 @@ define([
             if (prop == 'parameters') {
               job_output.push('<tr class="alt"><td class="last" colspan=2><div data-dojo-type="dijit/TitlePane" data-dojo-props="title: \'Parameters\', open:false">' + tableValue + '</div></td></tr>');
             } else {
-              job_output.push('<tr class="alt"><th scope="row" style="width:20%"><b>' + this._jobOut[prop].label + '</b></th><td class="last">' + tableValue + '</td></tr>');
+              job_output.push('<tr class="alt"><th scope="row" style="width:100px;min-width:100px;"><b>' + this._jobOut[prop].label + '</b></th><td class="last">' + tableValue + '</td></tr>');
             }
           }
         }, this);
@@ -152,10 +239,20 @@ define([
       }
 
       this.inherited(arguments);
-      this.viewHeader = new ContentPane({ content: 'Loading data from ' + this.data.name + ' job file.', region: 'top', style: 'width:90%;height:30%;' });
-      this.viewer = new WorkspaceExplorerView({ region: 'center', path: encodePath(this._hiddenPath) });
-      this.addChild(this.viewHeader);
-      this.addChild(this.viewer);
+
+      // Only create placeholder if we haven't already processed the job data
+      // (which can happen in async path before startup is called)
+      if (!this.viewer) {
+        this.viewHeader = new ContentPane({ content: 'Loading data from ' + this.data.name + ' job file.', region: 'top' });
+        this.addChild(this.viewHeader);
+
+        // The viewer will be created in _processJobData after _hiddenPath is set
+        // This handles both sync and async paths
+        // Note: Don't add placeholder text here - the viewHeader already shows loading status
+        // Adding text in the center region causes overlap issues when autoMeta is missing
+        this._viewerPlaceholder = new ContentPane({ content: '', region: 'center' });
+        this.addChild(this._viewerPlaceholder);
+      }
 
       this.on('i:click', function (evt) {
         var rel = domAttr.get(evt.target, 'rel');

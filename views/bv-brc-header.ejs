@@ -50,7 +50,7 @@
     ]
 
     var featured_virus = [
-        {name: "Bacteriophages", href: "/view/GenomeList/?eq(genome_name,phage)"},
+        {name: "Bacteriophages", href: "/view/GenomeList/?and(eq(genome_name,phage),eq(superkingdom,Viruses))"},
         {name: "Dengue virus", href: "/view/Taxonomy/3052464#view_tab=overview"},
         {name: "Ebola virus", href: "/view/GenomeList/?in(taxon_lineage_ids,(3044781,186536))"},
         {name: "Enteroviruses", href: "/view/Taxonomy/12059#view_tab=overview"},
@@ -204,14 +204,14 @@
                                 <div class="menuItems">
                                     <div><a class="navigationLink" href="/app/PhylogeneticTree">Bacterial Genome Tree</a></div>
                                     <div><a class="navigationLink" href="/app/ViralGenomeTree">Viral Genome Tree</a></div>
-                                    <div><a class="navigationLink" href="/app/GeneTree">Gene/Protein Tree</a></div>
                                     <div><a class="navigationLink" href="/app/CoreGenomeMLST">Core Genome MLST</a></div>
                                     <div><a class="navigationLink" href="/app/WholeGenomeSNPAnalysis">Whole Genome SNP Analysis</a></div>
                                 </div>
-                                <div class="menuHeader">Protein Tools</div>
+                                <div class="menuHeader">Gene / Protein Tools</div>
                                 <div class="menuItems">
                                     <div><a class="navigationLink" href="/app/MSA">MSA and SNP Analysis</a></div>
                                     <div><a class="navigationLink" href="/app/MetaCATS">Meta-CATS</a></div>
+                                    <div><a class="navigationLink" href="/app/GeneTree">Gene/Protein Tree</a></div>
                                     <div><a class="navigationLink" href="/app/SeqComparison">Proteome Comparison</a></div>
                                     <div><a class="navigationLink" href="/app/ComparativeSystems">Protein Family Sorter</a></div>
                                     <div><a class="navigationLink" href="/app/ComparativeSystems">Comparative Systems</a></div>
@@ -245,7 +245,7 @@
                                 <div><a class="navigationLink" href="/app/SARS2Wastewater">SARS-CoV-2 Wastewater Analysis</a></div>
                                 <div><a class="navigationLink" href="/app/SequenceSubmission">Influenza Sequence Submission</a></div>
                                 <div><a class="navigationLink" href="/app/HASubtypeNumberingConversion">Influenza HA Subtype Conversion</a></div>
-                                <!--<div><a class="navigationLink" href="/app/TreeSort">Influenza Reassortment Analysis</a></div>-->
+                                <div><a class="navigationLink" href="/app/TreeSort">Influenza Reassortment Analysis</a></div>
                                 <div><a class="navigationLink" href="/app/SubspeciesClassification">Subspecies Classification</a></div>
                                 <div><a class="navigationLink" href="/app/ViralAssembly">Viral Assembly</a></div>
                               </div>
@@ -266,27 +266,28 @@
                     <span>WORKSPACES</span>
 
                     <div data-dojo-type="p3/widget/TooltipDialog">
-                        <div>
-                            <div style="vertical-align: top;width:175px;display:inline-block">
-                                <div class="HideWithAuth">
-                                    Please <a class="loginLink">sign in</a> to view your workspaces.
+                        <div class="HideWithAuth" style="padding: 10px;">
+                            Please <a class="loginLink">sign in</a> to view your workspaces.
+                        </div>
+                        <div class="ShowWithAuth">
+                            <div style="vertical-align: top;width:200px;margin-right:5px;display:inline-block">
+                                <div class="menuHeader">Workspaces</div>
+                                <div class="menuItems" id="WorkspacesMenuLinks"></div>
+                                <div id="FavoriteFoldersSection" style="display:inline-block;width:100%;">
+                                    <div class="menuHeader">Favorite Folders <i class="fa icon-star" style="color:#f0ad4e;"></i></div>
+                                    <div class="menuItems">
+                                        <div id="FavoriteFoldersList" style="max-height:200px;overflow-y:auto;"></div>
+                                    </div>
                                 </div>
-                                <div class="ShowWithAuth">
-                                    <div><i class="fa icon-caret-down fa-1x noHoverIcon"
-                                            style="color:#333;cursor:normal;"></i>&nbsp;<a
-                                                class="navigationLink" id="YourWorkspaceLink">Workspaces</a></div>
-                                    <div id="YourWorkspaces"></div>
-                                    <div><a class="navigationLink" href="/workspace/public">Public Workspaces</a></div>
-                                    <div><a class="navigationLink" href="/workspace/public/ARWattam@patricbrc.org/BV-BRC%20Workshop">BV-BRC Workshop</a></div>
+                                <div id="RecentFoldersSection" style="display:inline-block;width:100%;">
+                                    <div class="menuHeader">Recently Visited Folders</div>
+                                    <div class="menuItems">
+                                        <div id="RecentFoldersList" style="max-height:200px;overflow-y:auto;"></div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div style="vertical-align:top;display:inline-block" class="ShowWithAuth">
-                                <div>
-                                    <a class="navigationLink" href="/job/">My Jobs</a>
-                                </div>
-                                <div>
-                                    <a class="navigationLink" href="/view/GenomeList/?eq(public,false)">My Genomes</a>
-                                </div>
+                            </div><div style="vertical-align:top;width:200px;display:inline-block">
+                                <div class="menuHeader">Data</div>
+                                <div class="menuItems" id="DataMenuLinks"></div>
                             </div>
                         </div>
                     </div>
@@ -487,10 +488,10 @@
                             <div class="sub-menu">
                                 <div><a href="/app/PhylogeneticTree">Bacterial Genome Tree</a></div>
                                 <div><a href="/app/ViralGenomeTree">Viral Genome Tree</a></div>
-                                <div><a href="/app/GeneTree">Gene/Protein Tree</a></div>
                             </div>
-                            <div class="menuHeader">Protein Tools</div>
+                            <div class="menuHeader">Gene / Protein Tools</div>
                             <div class="sub-menu">
+                                <div><a href="/app/GeneTree">Gene/Protein Tree</a></div>
                                 <div><a href="/app/MSA">MSA and SNP Analysis</a></div>
                                 <div><a href="/app/MetaCATS">Meta-CATS</a></div>
                                 <div><a href="/app/SeqComparison">Proteome Comparison</a></div>
@@ -521,7 +522,7 @@
                                 <div><a href="/app/SARS2Wastewater">SARS-CoV-2 Wastewater Analysis</a></div>
                                 <div><a href="/app/SequenceSubmission">Influenza Sequence Submission</a></div>
                                 <div><a href="/app/HASubtypeNumberingConversion">Influenza HA Subtype Conversion</a></div>
-                                <!--<div><a href="/app/TreeSort">Influenza Reassortment Analysis</a></div>-->
+                                <div><a href="/app/TreeSort">Influenza Reassortment Analysis</a></div>
                                 <div><a href="/app/SubspeciesClassification">Subspecies Classification</a></div>
                                 <div><a href="/app/ViralAssembly">Viral Assembly</a></div>
                             </div>
@@ -547,6 +548,16 @@
                             <div id="YourWorkspaces-mobile"></div>
                             <div><a href="/workspace/public">Public Workspaces</a></div>
                             <div><a href="/workspace/public/ARWattam@patricbrc.org/BV-BRC%20Workshop">BV-BRC Workshop</a></div>
+                            <div id="RecentFoldersSection-mobile" class="ShowWithAuth" style="display:none;margin-top:8px;border-top:1px solid #ccc;padding-top:8px;">
+                                <div style="font-weight:bold;font-size:0.9em;color:#666;">Recent Folders</div>
+                                <div id="RecentFoldersList-mobile" style="padding-left:16px;"></div>
+                            </div>
+                            <div id="FavoriteFoldersSection-mobile" class="ShowWithAuth" style="display:none;margin-top:8px;border-top:1px solid #ccc;padding-top:8px;">
+                                <div style="font-weight:bold;font-size:0.9em;color:#666;">
+                                    Favorite Folders <i class="fa icon-star" style="color:#f0ad4e;"></i>
+                                </div>
+                                <div id="FavoriteFoldersList-mobile" style="padding-left:16px;"></div>
+                            </div>
                             <div><a href="/job/">My Jobs</a></div>
                             <div><a href="/view/GenomeList/?eq(public,false)">My Genomes</a></div>
                         </div>

@@ -129,6 +129,59 @@ a.HelpLink:active {
 	color: #333;
 }
 
+/* Favorite star in breadcrumbs */
+.wsFavoriteStar {
+	cursor: pointer;
+	color: #ffc107;
+	font-size: 1.1em;
+	margin-right: 6px;
+	vertical-align: middle;
+	position: relative;
+	top: -1px;
+}
+
+.wsFavoriteStar:hover {
+	color: #e6ac00;
+}
+
+.wsFavoriteStar.not-favorite {
+	color: #999;
+}
+
+.wsFavoriteStar.not-favorite:hover {
+	color: #ffc107;
+}
+
+/* Favorite star in grid column */
+.wsFavoriteColumn {
+	width: 28px;
+	text-align: center;
+}
+
+.dgrid-column-favorite {
+	width: 28px !important;
+	max-width: 28px !important;
+	min-width: 28px !important;
+}
+
+.wsFavoriteGridStar {
+	cursor: pointer;
+	color: #ffc107;
+	font-size: 1.0em;
+}
+
+.wsFavoriteGridStar:hover {
+	color: #e6ac00;
+}
+
+.wsFavoriteGridStar.not-favorite {
+	color: #ccc;
+}
+
+.wsFavoriteGridStar.not-favorite:hover {
+	color: #ffc107;
+}
+
 .wsActionTooltip {
 	padding: 2px;
 }
@@ -251,9 +304,18 @@ th.dgrid-cell.wsObjIcon {
 .WorkspaceExplorerView .dgrid-cell {
 	border: 0;
 }
-.wsItemName {
+.wsItemName,
+.wsItemName * {
 /*	width: 450px;*/
 	white-space: nowrap;
+}
+
+.wsItemNameText {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif !important;
+	font-variant-ligatures: none !important;
+	font-variant-emoji: text !important;
+	-webkit-font-feature-settings: "liga" 0, "clig" 0 !important;
+	font-feature-settings: "liga" 0, "clig" 0 !important;
 }
 
 th.dgrid-cell.wsItemName,
@@ -493,9 +555,22 @@ th.dgrid-cell.wsItemMembers {
 	color: #34698e;
 }
 
+.ItemDetailPanel .ActionButtonWrapper:hover {
+	border: 1px solid #34698e;
+	color: #34698e;
+}
+
+.ItemDetailPanel .ActionButtonWrapper .ActionButton.fa {
+	color: #76a72d;
+}
+
+.ItemDetailPanel .ActionButtonWrapper:hover .ActionButton.fa {
+	color: #34698e;
+}
+
 .BrowserHeader .ActionButtonWrapper {
         margin-top: -3px;
-        margin-left: 2px;
+        margin-left: 8px;
 	color: #34698e;
 	border: 1px solid #fff;
 	width: 58px;

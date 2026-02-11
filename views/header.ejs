@@ -1,8 +1,7 @@
 
 	<%
 	const load_css = [
-		"p3/resources/p3.css",
-		"heatmap/dist/hotmap.css"
+		"p3/resources/p3.css"
 	]
 	%>
 
@@ -535,7 +534,7 @@
 	var featuredVirus = [
 		{
 			name: "Bacteriophages",
-			href: "/view/GenomeList/?eq(genome_name,phage)",
+			href: "/view/GenomeList/?and(eq(genome_name,phage),eq(superkingdom,Viruses))",
 			title: "Bacteriophages - Viruses Infecting Bacteria",
 			description: "Explore bacteriophages, viruses that infect and replicate within bacteria.",
 			robots: "index,dontfollow",
@@ -999,6 +998,6 @@
 	<link rel="icon" sizes="16x16 32x32" href="/favicon.ico"/>
 	<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet"/>
 
-	<% if (!request.originalUrl || !request.originalUrl.includes('workspace')) { %>
-		<link rel="canonical" href="<%= request.originalUrl ? 'https://bv-brc.org' + request.originalUrl : 'https://bv-brc.org' %>"/>
+	<% if (!request.safeOriginalUrl || !request.safeOriginalUrl.includes('workspace')) { %>
+		<link rel="canonical" href="<%= request.safeOriginalUrl ? 'https://bv-brc.org' + request.safeOriginalUrl : 'https://bv-brc.org' %>"/>
 	<% } %>

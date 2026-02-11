@@ -4,6 +4,19 @@ define([
   RQLParser
 ) {
 
+  // HTML escape function to prevent XSS
+  function escapeHtml(str) {
+    if (typeof str !== 'string') {
+      str = String(str);
+    }
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   var parseQuery = function (filter) {
     try {
       var _parsed = RQLParser.parse(filter);
@@ -36,7 +49,7 @@ define([
           }
           break;
         case 'in':
-          var f = decodeURIComponent(term.args[0]).replace(/_/g, ' ');
+          var f = escapeHtml(decodeURIComponent(term.args[0]).replace(/_/g, ' '));
           var v = term.args[1];
           // console.log('V: ', v);
           var vals;
@@ -58,43 +71,43 @@ define([
           // parsed.selected.push({field: f, value: v});
           break;
         case 'ne':
-          var f = decodeURIComponent(term.args[0]);
-          var v = decodeURIComponent(term.args[1]);
+          var f = escapeHtml(decodeURIComponent(term.args[0]));
+          var v = escapeHtml(decodeURIComponent(term.args[1]));
           out =  f + '<span class="searchOperator"> is not </span>' + v;
           break;
         case 'eq':
-          var f = decodeURIComponent(term.args[0]).replace(/_/g, ' ');
-          var v = decodeURIComponent(term.args[1]);
+          var f = escapeHtml(decodeURIComponent(term.args[0]).replace(/_/g, ' '));
+          var v = escapeHtml(decodeURIComponent(term.args[1]));
           out =  '<span class="searchField">' + f  + ' </span><span class="searchOperator"> is </span><span class="searchValue">' + v + '</span>';
           break;
         case 'keyword':
-          out = '<span class="searchValue"> '  + decodeURIComponent(term.args[0]) + '</span>';
+          out = '<span class="searchValue"> '  + escapeHtml(decodeURIComponent(term.args[0])) + '</span>';
           break;
         case 'not':
           out = '<span class="searchOperator"> NOT </span>' + walk(term.args[0]);
           break;
         case 'between':
-          out = `<span class="searchField">${term.args[0]}</span> is between ${term.args[1]} and ${term.args[2]}`
+          out = '<span class="searchField">' + escapeHtml(term.args[0]) + '</span> is between ' + escapeHtml(term.args[1]) + ' and ' + escapeHtml(term.args[2]);
           break;
         case 'lt':
-          out = `<span class="searchField">${term.args[0]}</span> &lt;= ${term.args[1]}`
+          out = '<span class="searchField">' + escapeHtml(term.args[0]) + '</span> &lt;= ' + escapeHtml(term.args[1]);
           break;
         case 'gt':
-          out = `<span class="searchField">${term.args[0]}</span> &gt;= ${term.args[1]}`
+          out = '<span class="searchField">' + escapeHtml(term.args[0]) + '</span> &gt;= ' + escapeHtml(term.args[1]);
           break;
         case 'GenomeGroup':
           var groupParts = decodeURIComponent(term.args[0]).split('/');
-          var groupName = groupParts[groupParts.length - 1];
+          var groupName = escapeHtml(groupParts[groupParts.length - 1]);
           out = 'Genome Group <span class="searchValue">' + groupName + '</span>';
           break;
         case 'FeatureGroup':
           var groupParts = decodeURIComponent(term.args[0]).split('/');
-          var groupName = groupParts[groupParts.length - 1];
+          var groupName = escapeHtml(groupParts[groupParts.length - 1]);
           out = 'Feature Group <span class="searchValue">' + groupName + '</span>';
           break;
         default:
           if (typeof term == 'string' || typeof term == 'number') {
-            return '<span class="searchValue">'  + decodeURIComponent(term) + '</span>';
+            return '<span class="searchValue">'  + escapeHtml(decodeURIComponent(term)) + '</span>';
           }
           // console.log("Skipping Unused term: ", term.name, term.args);
       }

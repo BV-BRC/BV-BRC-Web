@@ -1,10 +1,10 @@
 define([
-  'dojo/_base/declare', './TabViewerBase',
+  'dojo/_base/declare', './TabViewerBase', 'dojo/dom-construct',
   '../../util/QueryToEnglish',
   '../ExperimentGridContainer', '../BiosetGridContainer',
   '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang'
 ], function (
-  declare, TabViewerBase,
+  declare, TabViewerBase, domConstruct,
   QueryToEnglish,
   ExperimentGridContainer, BiosetGridContainer,
   PathJoin, xhr, lang
@@ -119,7 +119,7 @@ define([
       this.setActivePanelState();
     },
     onSetTotalExperiments: function (attr, oldVal, newVal) {
-      this.totalCountNode.innerHTML = ' ( ' + newVal + ' Experiments )';
+      this.totalCountNode.textContent = ' ( ' + newVal + ' Experiments )';
     }
   });
 });

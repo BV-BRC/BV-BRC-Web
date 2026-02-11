@@ -7,7 +7,7 @@ define([
   'dojo/request', 'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog',
   'dijit/Dialog', 'dijit/popup', 'dijit/form/Select', 'dijit/form/Button', './ContainerActionBar',
   './HeatmapContainerNew', './SelectionToGroup', '../util/PathJoin', 'FileSaver',
-  'heatmap/dist/hotmap',  'dojo/query', './Confirmation'
+  'heatmap/dist/hotmap',  'dojo/query', './Confirmation', 'xstyle/css!heatmap/dist/hotmap.css'
 
 ], function (
   declare, lang, on, when, Topic, domConstruct,

@@ -1,6 +1,6 @@
 {
   "name": "p3-web",
-  "version": "3.55.17",
+  "version": "3.56.62",
   "private": true,
   "scripts": {
     "start": "node ./bin/p3-web",
@@ -30,9 +30,11 @@
     "express": "^4.19.2",
     "express-formidable": "^1.2.0",
     "express-http-proxy": "^2.1.1",
+    "express-rate-limit": "^7.5.1",
     "feedparser": "^2.2.10",
     "flag-icons": "^7.2.1",
     "formidable": "^2.1.2",
+    "helmet": "^7.2.0",
     "html2canvas": "^1.4.1",
     "http-proxy": "^1.18.1",
     "httpntlm": "^1.8.13",
@@ -42,14 +44,15 @@
     "morgan": "^1.10.0",
     "MultiBigWig": "github:BV-BRC/multibigwig#master",
     "nconf": "^0.12.1",
-    "nodemailer": "^6.9.13",
-    "nodemailer-smtp-transport": "^2.7.4",
+    "nodemailer": "^7.0.11",
     "phyloxml": "^1.0.0",
     "promised-io": "^0.3.6",
     "pug": "^3.0.3",
     "rql": "^0.3.3",
+    "sanitize-html": "^2.17.0",
     "serve-favicon": "^2.5.0",
     "underscore": "^1.13.6",
+    "validator": "^13.15.26",
     "webcola": "^3.4.0"
   },
   "devDependencies": {
@@ -60,5 +63,8 @@
     "minimatch": "^9.0.4",
     "stylelint": "^16.5.0",
     "stylelint-config-standard": "^36.0.0"
+  },
+  "overrides": {
+    "qs": ">=6.14.1"
   }
 }

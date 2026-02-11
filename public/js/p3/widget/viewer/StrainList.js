@@ -113,7 +113,7 @@ define([
     },
     onSetTotalStrains: function (attr, oldVal, newVal) {
       // console.log("ON SET TOTAL GENOMES: ", newVal);
-      this.totalCountNode.innerHTML = ' ( ' + newVal + '  Strains) ';
+      this.totalCountNode.textContent = ' ( ' + newVal + '  Strains) ';
     },
     hideWarning: function () {
       if (this.warningPanel) {

@@ -9,6 +9,7 @@ define([
   'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './RerunUtility', './viewer/JobResult',
   'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree',
   'dijit/registry', 'dojo/keys', 'dojo/dom-style', 'dojo/Stateful',  'dojo/hash', 'dojo/io-query',
+  '../util/FavoriteFolders', '../util/RecentFolders'
 ], function (
   declare, BorderContainer, on, query,
   domClass, domConstruct, domAttr,
@@ -20,6 +21,7 @@ define([
   All, encodePath, when, request, tsvCsvFeatures, rerunUtility, JobResult,
   NodeList_traverse, Homology, GenomeAlignment, PhylogeneticTree,
   registry, keys, domStyle, Stateful, hash, ioQuery,
+  FavoriteFolders, RecentFolders
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -170,7 +172,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/view/PathwayService' + path, target: 'blank' });
+          Topic.publish('/navigate', { href: '/view/PathwayService' + encodePath(path), target: 'blank' });
         } else {
           console.log('Error: could not find pathways data file');
         }
@@ -189,7 +191,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/view/ProteinFamiliesService' + path, target: 'blank' });
+          Topic.publish('/navigate', { href: '/view/ProteinFamiliesService' + encodePath(path), target: 'blank' });
         } else {
           console.log('Error: could not find pathways data file');
         }
@@ -208,7 +210,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/view/SubsystemService' + path, target: 'blank' });
+          Topic.publish('/navigate', { href: '/view/SubsystemService' + encodePath(path), target: 'blank' });
         } else {
           console.log('Error: could not find pathways data file');
         }
@@ -395,7 +397,7 @@ define([
       }, function (selection, button, opts) {
         var filepath = selection[0].path;
         if (filepath) {
-          Topic.publish('/navigate', { href: '/view/ProteinStructure#path=' + filepath, target: 'blank' });
+          Topic.publish('/navigate', { href: '/view/ProteinStructure#path=' + encodeURIComponent(filepath), target: 'blank' });
         } else {
           console.log('err, path does not exist');
         }
@@ -712,7 +714,7 @@ define([
       }, function (selection) {
         var sel = selection[0],
           path = sel.path + '.' + sel.name + '/TaxonomicReport.html';
-        Topic.publish('/navigate', { href: '/workspace' + path });
+        Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
       }, false);
 
       this.browserHeader.addAction('ViewGenomeAlignment', 'fa icon-eye fa-2x', {
@@ -908,7 +910,7 @@ define([
         console.log('self.actionPanel.currentContainerWidget.containerType', self.actionPanel.currentContainerWidget.containerType);
         console.log('self.browserHeader', self.browserHeader);
         var path = self.actionPanel.currentContainerWidget.getReportPath();
-        Topic.publish('/navigate', { href: '/workspace' + path });
+        Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
       }, false);
 
       this.browserHeader.addAction('ViewCGASarsFullGenomeReport', 'fa icon-eye fa-2x', {
@@ -925,11 +927,33 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/workspace' + path });
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
         } else {
           console.log('Error: could not find FullGenomeReport.html');
         }
       });
+
+      this.browserHeader.addAction('ViewAssemblyReport', 'fa icon-eye fa-2x', {
+        label: 'REPORT',
+        multiple: false,
+        validTypes: ['GenomeAssembly', 'GenomeAssembly2'],
+        tooltip: 'View Assembly Report'
+      }, function (selection) {
+        var path;
+        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (file_data) {
+          var filepath = file_data[0].split('/');
+          var filename = filepath[filepath.length - 1];
+          if (filename.endsWith('_assembly_report.html')) {
+            path = filepath.join('/');
+          }
+        }));
+        if (path) {
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
+        } else {
+          console.log('Error: could not find assembly_report.html');
+        }
+      });
+
       this.browserHeader.addAction(
         "ViewDockingReport",
         "fa icon-eye fa-2x",
@@ -950,7 +974,7 @@ define([
             })
           );
           if (path) {
-            Topic.publish("/navigate", { href: "/workspace" + path });
+            Topic.publish("/navigate", { href: "/workspace" + encodePath(path) });
           } else {
             console.log("Error: could not find DockingReport.html");
           }
@@ -1002,7 +1026,7 @@ define([
               }
             }));
             if (path) {
-              Topic.publish('/navigate', { href: '/workspace' + path });
+              Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
             } else {
               console.log('Error: could not find ', pipeline, ' report');
             }
@@ -1041,7 +1065,7 @@ define([
             }
           }));
           if (path) {
-            Topic.publish('/navigate', { href: '/workspace' + path });
+            Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
           } else {
             console.log('Error: could not find ', pipeline, ' report');
           }
@@ -1062,7 +1086,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/workspace' + path });
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
         } else {
           console.log('Error: could not find BinningReport.html');
         }
@@ -1082,7 +1106,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/workspace' + path });
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
         } else {
           console.log('Error: could not find MetagenomicReadMappingReport.html');
         }
@@ -1102,7 +1126,7 @@ define([
           }
         }));
         if (path) {
-          Topic.publish('/navigate', { href: '/workspace' + path });
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(path) });
         } else {
           console.log('Error: could not find Primer Design report');
         }
@@ -1284,7 +1308,7 @@ define([
         tooltip: 'View HA Subtype Numbering Conversion Report'
       }, function (selection) {
         const jobPath = selection[0].path + selection[0].name;
-        Topic.publish('/navigate', { href: '/view/HASubtypeNumberingReport/&path=' + jobPath, target: 'blank' });
+        Topic.publish('/navigate', { href: '/view/HASubtypeNumberingReport/&path=' + encodeURIComponent(jobPath), target: 'blank' });
       }, false);
 
       this.browserHeader.addAction('SubmitSequenceSubmission', 'fa icon-upload fa-3x', {
@@ -1389,9 +1413,9 @@ define([
         if ((!alignType)) {
           console.log('Error: Alignment file doesnt exist or alignment alphabet could not be determined');
         } else if (exist_nwk == 1) {
-          Topic.publish('/navigate', { href: '/view/MSATree/&alignType=' + alignType + '&path=' + msa_file, target: 'blank' });
+          Topic.publish('/navigate', { href: '/view/MSATree/&alignType=' + alignType + '&path=' + encodeURIComponent(msa_file), target: 'blank' });
         } else {
-          Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + msa_file, target: 'blank' });
+          Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + encodeURIComponent(msa_file), target: 'blank' });
         }
       }, false);
 
@@ -1883,6 +1907,22 @@ define([
         self.showPermDialog(selection);
       }, false);
 
+      this.actionPanel.addAction('ToggleFavorite', 'fa icon-star-o fa-2x', {
+        label: 'FAVORITE',
+        multiple: false,
+        validTypes: ['folder'],
+        tooltip: 'Toggle favorite status'
+      }, function (selection) {
+        if (!selection || selection.length !== 1) return;
+        var folder = selection[0];
+        var path = folder.path;
+
+        FavoriteFolders.toggle(path).then(function (isFavorite) {
+          // Update button appearance
+          self._updateFavoriteButton(isFavorite);
+        });
+      }, false);
+
       this.actionPanel.addAction('Rerun', 'fa icon-rotate-left fa-2x', {
         label: 'RERUN',
         allowMultiTypes: true,
@@ -2132,12 +2172,25 @@ define([
       // Update and show search term indicator with spinner
       var typeLabel = searchParams.type === 'all' ? 'All Types' : (WorkspaceManager.knownUploadTypes[searchParams.type] ? WorkspaceManager.knownUploadTypes[searchParams.type].label : searchParams.type);
 
-      // Create spinner icon HTML. Add a non-breaking space before it for consistent spacing.
-      var spinnerIconHTML = ' <i class="fa icon-spinner fa-spin wsSearchSpinner" style="margin-right: 5px;"></i>';
+      // Clear and build search indicator safely with DOM construction
+      domConstruct.empty(this.searchTermIndicator);
 
-      this.searchTermIndicator.innerHTML = searchParams.term + ' (' + typeLabel + ')' +
-        spinnerIconHTML + // Add spinner here
-        ' <span class="wsClearSearchX" style="color: #A94442; font-weight: bold; margin-left: 5px; cursor: pointer;">×</span>'; // Using × for X
+      // Add search term text (safe)
+      domConstruct.place(document.createTextNode(searchParams.term + ' (' + typeLabel + ') '), this.searchTermIndicator, 'last');
+
+      // Add spinner icon
+      domConstruct.create('i', {
+        'class': 'fa icon-spinner fa-spin wsSearchSpinner',
+        style: 'margin-right: 5px;'
+      }, this.searchTermIndicator, 'last');
+
+      // Add close button
+      domConstruct.create('span', {
+        'class': 'wsClearSearchX',
+        style: 'color: #A94442; font-weight: bold; margin-left: 5px; cursor: pointer;',
+        innerHTML: '×'
+      }, this.searchTermIndicator, 'last');
+
       this.searchTermIndicator.style.display = 'inline-block';
 
       // Attach click to the X only once or ensure it's managed correctly
@@ -2273,6 +2326,24 @@ define([
       if (this._wsSearchIconNode) {
         // For the icon, we toggle a class to change its style
         domClass.toggle(this._wsSearchIconNode, 'disabled', disabled);
+      }
+    },
+
+    _updateFavoriteButton: function (isFavorite) {
+      var btn = query('[rel="ToggleFavorite"]', this.actionPanel.domNode)[0];
+      if (!btn) return;
+
+      var iconNode = query('i', btn)[0] || query('.fa', btn)[0];
+      if (iconNode) {
+        if (isFavorite) {
+          domClass.remove(iconNode, 'icon-star-o');
+          domClass.add(iconNode, 'icon-star');
+          iconNode.style.color = '#f0ad4e'; // Gold color for favorite
+        } else {
+          domClass.remove(iconNode, 'icon-star');
+          domClass.add(iconNode, 'icon-star-o');
+          iconNode.style.color = ''; // Default color
+        }
       }
     },
 
@@ -2542,10 +2613,9 @@ define([
           }
       }
 
+      // this.path is already decoded, so just split it - no need to decode again
       var parts = this.path.split('/').filter(function (x) {
         return x != '';
-      }).map(function (c) {
-        return decodeURIComponent(c);
       });
 
       var obj;
@@ -2555,15 +2625,17 @@ define([
             metadata: { type: 'folder' }, type: 'folder', path: '/', isPublic: true
           };
         } else {
-          var val = '/' + val.split('/').slice(2).join('/');
-          obj = WorkspaceManager.getObject(val, true);
+          // Use this.path (decoded) rather than val (still encoded from URL)
+          var decodedPublicPath = '/' + this.path.split('/').slice(2).join('/');
+          obj = WorkspaceManager.getObject(decodedPublicPath, true);
         }
       } else if (!parts[1]) {
         obj = {
           metadata: { type: 'folder' }, type: 'folder', path: '/' + window.App.user.id, isWorkspace: true
         };
       } else {
-        obj = WorkspaceManager.getObject(val, true);
+        // Use this.path (decoded) rather than val (still encoded from URL)
+        obj = WorkspaceManager.getObject(this.path, true);
       }
 
       // console.log('in WorkspaceBrowser this.path', this.path);
@@ -2591,6 +2663,15 @@ define([
         switch (obj.type) {
           case 'folder':
             panelCtor = WorkspaceExplorerView;
+            // Track folder access for recent folders
+            if (window.App.user && window.App.user.id && this.path) {
+              // this.path is already decoded, no need to decode again
+              var folderName = obj.name || this.path.split('/').filter(Boolean).pop() || 'home';
+              RecentFolders.add(this.path, folderName);
+              if (window.App.updateRecentFoldersList) {
+                window.App.updateRecentFoldersList();
+              }
+            }
             break;
           case 'genome_group':
             panelCtor = window.App.getConstructor('p3/widget/viewer/WSGenomeGroup');
@@ -2723,6 +2804,14 @@ define([
 
                 this.actionPanel.set('selection', sel);
                 this.itemDetailPanel.set('selection', sel);
+
+                // Update favorite button state when a folder is selected
+                if (sel.length === 1 && sel[0].type === 'folder') {
+                  var self = this;
+                  FavoriteFolders.isFavorite(sel[0].path).then(function (isFav) {
+                    self._updateFavoriteButton(isFav);
+                  });
+                }
               }));
 
               newPanel.on('deselect', lang.hitch(this, function (evt) {
@@ -2741,7 +2830,7 @@ define([
 
               newPanel.on('ItemDblClick', lang.hitch(this, function (evt) {
                 if (evt.item && evt.item.type && (this.navigableTypes.indexOf(evt.item.type) >= 0)) {
-                  Topic.publish('/navigate', { href: '/workspace' + evt.item_path });
+                  Topic.publish('/navigate', { href: '/workspace' + encodePath(evt.item_path) });
                   this.actionPanel.set('selection', []);
                   this.itemDetailPanel.set('selection', []);
                   if ('clearSelection' in newPanel) {
