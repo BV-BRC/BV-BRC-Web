@@ -129,7 +129,11 @@ define([
       this.addChild(this.viewer);
 
       // Force a resize to ensure proper layout after adding the viewer
-      this.resize();
+      // Use setTimeout to ensure DOM has been updated
+      var _self = this;
+      setTimeout(function() {
+        _self.resize();
+      }, 0);
 
       // Handle double-click on items to navigate to them
       // Use on() directly on the domNode since the event bubbles up from WorkspaceGrid
@@ -229,9 +233,13 @@ define([
       //   }, this);
       // }
 
-      output.push('</div>');
+          output.push('</div>');
       this.viewHeader.set('content', output.join(''));
-      this.resize();
+      // Use setTimeout to ensure DOM has been updated before resizing
+      var _self = this;
+      setTimeout(function() {
+        _self.resize();
+      }, 0);
     },
     startup: function () {
       if (this._started) {
