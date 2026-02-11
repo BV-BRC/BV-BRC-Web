@@ -23,12 +23,13 @@ define([
   'dojo/_base/lang', // Language utilities like hitch
   'dojo/dom-class',
   'dojo/dom-style',
+  'dojo/request', // HTTP request utilities
   'markdown-it/dist/markdown-it.min', // Markdown parser
   'markdown-it-link-attributes/dist/markdown-it-link-attributes.min', // Plugin to add attributes to links
   './ChatMessage', // Custom message display widget
   './data/SuggestedQuestions' // Suggested questions data module
 ], function (
-  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, markdownit, linkAttributes, ChatMessage, SuggestedQuestions
+  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, request, markdownit, linkAttributes, ChatMessage, SuggestedQuestions
 ) {
 
   /**
@@ -80,6 +81,9 @@ define([
     sessionFilesLoading: false,
     sessionFilesError: null,
     onLoadMoreFiles: null,
+
+    // Session workflows panel state
+    sessionWorkflows: [],
 
     /**
      * @constructor
@@ -135,6 +139,12 @@ define([
           style: 'display:none;'
         }, this.panelContainer);
 
+        // Create workflows panel container
+        this.workflowsContainer = domConstruct.create('div', {
+          class: 'copilot-workflows-container',
+          style: 'display:none;'
+        }, this.panelContainer);
+
         // Apply initial responsive padding
         this._updateResponsivePadding();
 
@@ -156,6 +166,7 @@ define([
         // Show initial empty state
         this.showEmptyState();
         this._renderFilesPanel();
+        this._renderWorkflowsPanel();
 
         // Apply saved tab visibility preference (default: visible)
         try {
@@ -205,12 +216,22 @@ define([
         class: 'copilot-panel-tab'
       }, this.tabContainer);
 
+      this.workflowsTabButton = domConstruct.create('button', {
+        type: 'button',
+        innerHTML: 'Workflows',
+        class: 'copilot-panel-tab'
+      }, this.tabContainer);
+
       on(this.messagesTabButton, 'click', lang.hitch(this, function() {
         this.setActivePanel('messages');
       }));
 
       on(this.filesTabButton, 'click', lang.hitch(this, function() {
         this.setActivePanel('files');
+      }));
+
+      on(this.workflowsTabButton, 'click', lang.hitch(this, function() {
+        this.setActivePanel('workflows');
       }));
     },
 
@@ -225,12 +246,21 @@ define([
     },
 
     setActivePanel: function(panel) {
-      this.activePanel = panel === 'files' ? 'files' : 'messages';
+      if (panel === 'files') {
+        this.activePanel = 'files';
+      } else if (panel === 'workflows') {
+        this.activePanel = 'workflows';
+      } else {
+        this.activePanel = 'messages';
+      }
+
       domStyle.set(this.resultContainer, 'display', this.activePanel === 'messages' ? 'block' : 'none');
       domStyle.set(this.filesContainer, 'display', this.activePanel === 'files' ? 'block' : 'none');
+      domStyle.set(this.workflowsContainer, 'display', this.activePanel === 'workflows' ? 'block' : 'none');
 
       domClass.toggle(this.messagesTabButton, 'copilot-panel-tab-active', this.activePanel === 'messages');
       domClass.toggle(this.filesTabButton, 'copilot-panel-tab-active', this.activePanel === 'files');
+      domClass.toggle(this.workflowsTabButton, 'copilot-panel-tab-active', this.activePanel === 'workflows');
     },
 
     /**
@@ -619,6 +649,7 @@ define([
     startNewChat: function() {
       this.clearMessages();
       this.resetSessionFiles();
+      this.resetSessionWorkflows();
     },
 
     /**
@@ -701,6 +732,289 @@ define([
       resize: function() {
           this.inherited(arguments);
           this._updateResponsivePadding();
+      },
+
+    /**
+     * Resets workflows panel state
+     */
+    resetSessionWorkflows: function() {
+      this.sessionWorkflows = [];
+      this._renderWorkflowsPanel();
+    },
+
+    /**
+     * Sets workflow data from session metadata
+     * @param {Array} workflowIds - Array of workflow IDs from session metadata
+     */
+    setSessionWorkflows: function(workflowIds) {
+      this.sessionWorkflows = Array.isArray(workflowIds) ? workflowIds : [];
+      this._renderWorkflowsPanel();
+    },
+
+    /**
+     * Renders the workflows panel
+     */
+    _renderWorkflowsPanel: function() {
+      if (!this.workflowsContainer) return;
+      domConstruct.empty(this.workflowsContainer);
+
+      if (!this.sessionWorkflows || this.sessionWorkflows.length === 0) {
+        domConstruct.create('div', {
+          class: 'copilot-workflows-empty',
+          innerHTML: 'No workflows yet'
+        }, this.workflowsContainer);
+        return;
       }
+
+      var listNode = domConstruct.create('div', {
+        class: 'copilot-workflows-list'
+      }, this.workflowsContainer);
+
+      this.sessionWorkflows.forEach(lang.hitch(this, function(workflowId) {
+        this._renderWorkflowCard(workflowId, listNode);
+      }));
+    },
+
+    /**
+     * Renders a single workflow card with metadata
+     * @param {string} workflowId - The workflow ID to fetch and display
+     * @param {DOMNode} container - The container to add the card to
+     */
+    _renderWorkflowCard: function(workflowId, container) {
+      var card = domConstruct.create('div', {
+        class: 'copilot-workflow-card'
+      }, container);
+
+      // Show loading state
+      var loadingDiv = domConstruct.create('div', {
+        class: 'copilot-workflow-loading',
+        innerHTML: '<div style="padding: 10px;">Loading workflow data...</div>'
+      }, card);
+
+      // Fetch workflow data from API
+      var workflowUrl = window.App.workflow_url || 'https://dev-7.bv-brc.org/api/v1';
+      var url = workflowUrl + '/workflows/' + encodeURIComponent(workflowId);
+
+      request.get(url, {
+        headers: {
+          'Accept': 'application/json'
+        },
+        handleAs: 'json'
+      }).then(lang.hitch(this, function(workflowData) {
+        // Remove loading indicator
+        domConstruct.empty(card);
+
+        // Render workflow metadata
+        this._renderWorkflowMetadata(workflowData, card);
+      }), lang.hitch(this, function(error) {
+        // Remove loading indicator and show error
+        domConstruct.empty(card);
+
+        domConstruct.create('div', {
+          class: 'copilot-workflow-error',
+          innerHTML: '<div style="padding: 10px; color: #d32f2f;">' +
+                    '<strong>Error loading workflow:</strong> ' + workflowId + '<br>' +
+                    '<small>' + (error.message || 'Unable to fetch workflow data') + '</small>' +
+                    '</div>'
+        }, card);
+      }));
+    },
+
+    /**
+     * Renders workflow metadata in the card
+     * @param {Object} workflow - The workflow data object
+     * @param {DOMNode} card - The card DOM node
+     */
+    _renderWorkflowMetadata: function(workflow, card) {
+      // Create header section
+      var header = domConstruct.create('div', {
+        class: 'copilot-workflow-header',
+        style: 'padding: 12px; border-bottom: 1px solid #e0e0e0; background: #f5f5f5;'
+      }, card);
+
+      // Workflow name and status
+      var titleRow = domConstruct.create('div', {
+        style: 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;'
+      }, header);
+
+      domConstruct.create('div', {
+        innerHTML: '<strong>' + (workflow.workflow_name || 'Unnamed Workflow') + '</strong>',
+        style: 'font-size: 14px; color: #333;'
+      }, titleRow);
+
+      var statusColor = this._getStatusColor(workflow.status);
+      domConstruct.create('span', {
+        innerHTML: workflow.status || 'unknown',
+        style: 'padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; ' +
+               'background: ' + statusColor.bg + '; color: ' + statusColor.text + ';'
+      }, titleRow);
+
+      // Workflow ID
+      domConstruct.create('div', {
+        innerHTML: '<small style="color: #666;">ID: ' + workflow.workflow_id + '</small>',
+        style: 'margin-top: 4px;'
+      }, header);
+
+      // Create body section with execution metadata
+      var body = domConstruct.create('div', {
+        class: 'copilot-workflow-body',
+        style: 'padding: 12px;'
+      }, card);
+
+      // Execution metadata
+      if (workflow.execution_metadata) {
+        var meta = workflow.execution_metadata;
+        var metaSection = domConstruct.create('div', {
+          style: 'display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;'
+        }, body);
+
+        this._addMetadataItem('Total Steps', meta.total_steps, metaSection);
+        this._addMetadataItem('Completed', meta.completed_steps, metaSection);
+        this._addMetadataItem('Running', meta.running_steps, metaSection);
+        this._addMetadataItem('Failed', meta.failed_steps, metaSection);
+      }
+
+      // Timing information
+      if (workflow.created_at || workflow.completed_at) {
+        var timingSection = domConstruct.create('div', {
+          style: 'padding-top: 8px; border-top: 1px solid #e0e0e0; margin-top: 8px;'
+        }, body);
+
+        if (workflow.created_at) {
+          var createdDate = new Date(workflow.created_at);
+          domConstruct.create('div', {
+            innerHTML: '<small style="color: #666;"><strong>Created:</strong> ' +
+                      createdDate.toLocaleString() + '</small>',
+            style: 'margin-bottom: 4px;'
+          }, timingSection);
+        }
+
+        if (workflow.completed_at) {
+          var completedDate = new Date(workflow.completed_at);
+          domConstruct.create('div', {
+            innerHTML: '<small style="color: #666;"><strong>Completed:</strong> ' +
+                      completedDate.toLocaleString() + '</small>',
+            style: 'margin-bottom: 4px;'
+          }, timingSection);
+        }
+
+        // Calculate and show duration
+        if (workflow.started_at && workflow.completed_at) {
+          var startTime = new Date(workflow.started_at);
+          var endTime = new Date(workflow.completed_at);
+          var duration = this._formatDuration(endTime - startTime);
+
+          domConstruct.create('div', {
+            innerHTML: '<small style="color: #666;"><strong>Duration:</strong> ' + duration + '</small>'
+          }, timingSection);
+        }
+      }
+
+      // Steps summary (if available)
+      if (workflow.steps && workflow.steps.length > 0) {
+        var stepsSection = domConstruct.create('div', {
+          style: 'padding-top: 8px; border-top: 1px solid #e0e0e0; margin-top: 8px;'
+        }, body);
+
+        domConstruct.create('div', {
+          innerHTML: '<strong style="font-size: 13px;">Steps:</strong>',
+          style: 'margin-bottom: 8px;'
+        }, stepsSection);
+
+        workflow.steps.forEach(lang.hitch(this, function(step, index) {
+          this._renderStepItem(step, index + 1, stepsSection);
+        }));
+      }
+    },
+
+    /**
+     * Adds a metadata item to the container
+     * @param {string} label - The label for the metadata
+     * @param {string|number} value - The value to display
+     * @param {DOMNode} container - The container to add to
+     */
+    _addMetadataItem: function(label, value, container) {
+      domConstruct.create('div', {
+        innerHTML: '<small style="color: #666;">' + label + ':</small> ' +
+                  '<strong style="color: #333;">' + value + '</strong>',
+        style: 'padding: 6px; background: #fafafa; border-radius: 4px; font-size: 12px;'
+      }, container);
+    },
+
+    /**
+     * Renders a single step item
+     * @param {Object} step - The step data
+     * @param {number} stepNum - The step number
+     * @param {DOMNode} container - The container to add to
+     */
+    _renderStepItem: function(step, stepNum, container) {
+      var stepDiv = domConstruct.create('div', {
+        style: 'padding: 8px; margin-bottom: 6px; background: #fafafa; border-left: 3px solid ' +
+               this._getStatusColor(step.status).bg + '; border-radius: 3px;'
+      }, container);
+
+      var stepHeader = domConstruct.create('div', {
+        style: 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;'
+      }, stepDiv);
+
+      domConstruct.create('span', {
+        innerHTML: '<strong style="font-size: 12px;">' + stepNum + '. ' +
+                  (step.step_name || step.app || 'Unnamed Step') + '</strong>',
+        style: 'color: #333;'
+      }, stepHeader);
+
+      var statusColor = this._getStatusColor(step.status);
+      domConstruct.create('span', {
+        innerHTML: step.status || 'unknown',
+        style: 'padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; ' +
+               'background: ' + statusColor.bg + '; color: ' + statusColor.text + ';'
+      }, stepHeader);
+
+      if (step.elapsed_time) {
+        domConstruct.create('div', {
+          innerHTML: '<small style="color: #666;">Duration: ' + step.elapsed_time + '</small>',
+          style: 'font-size: 11px;'
+        }, stepDiv);
+      }
+    },
+
+    /**
+     * Gets the color scheme for a status
+     * @param {string} status - The status string
+     * @returns {Object} Object with bg and text color properties
+     */
+    _getStatusColor: function(status) {
+      var colors = {
+        'succeeded': { bg: '#4caf50', text: '#ffffff' },
+        'running': { bg: '#2196f3', text: '#ffffff' },
+        'pending': { bg: '#ff9800', text: '#ffffff' },
+        'failed': { bg: '#f44336', text: '#ffffff' },
+        'cancelled': { bg: '#9e9e9e', text: '#ffffff' },
+        'queued': { bg: '#ffc107', text: '#000000' }
+      };
+      return colors[status] || { bg: '#9e9e9e', text: '#ffffff' };
+    },
+
+    /**
+     * Formats a duration in milliseconds to a readable string
+     * @param {number} ms - Duration in milliseconds
+     * @returns {string} Formatted duration string
+     */
+    _formatDuration: function(ms) {
+      var seconds = Math.floor(ms / 1000);
+      var minutes = Math.floor(seconds / 60);
+      var hours = Math.floor(minutes / 60);
+
+      seconds = seconds % 60;
+      minutes = minutes % 60;
+
+      if (hours > 0) {
+        return hours + 'h ' + minutes + 'm ' + seconds + 's';
+      } else if (minutes > 0) {
+        return minutes + 'm ' + seconds + 's';
+      } else {
+        return seconds + 's';
+      }
+    }
   });
 });

@@ -170,20 +170,40 @@ define([
 
             topic.subscribe('RefreshSession', lang.hitch(this, function(sessionId, scrollToBottom = true) {
                 this.copilotApi.getSessionMessages(sessionId).then(lang.hitch(this, function(res) {
+                    console.log('[DEBUG] RefreshSession - Full response:', res);
+                    console.log('[DEBUG] RefreshSession - res.workflow_ids:', res.workflow_ids);
                     if (res.messages.length > 0) {
                         const messages = res.messages[0].messages;
                         this.chatStore.setData(messages);
                         this.displayWidget.showMessages(messages, scrollToBottom);
                     }
+                // Extract workflow_ids from session object (top level)
+                console.log('[DEBUG] RefreshSession - Checking res.workflow_ids:', res.workflow_ids);
+                if (res.workflow_ids && Array.isArray(res.workflow_ids)) {
+                    console.log('[DEBUG] RefreshSession - Setting workflows:', res.workflow_ids);
+                    this.displayWidget.setSessionWorkflows(res.workflow_ids);
+                } else {
+                    console.log('[DEBUG] RefreshSession - No workflow_ids found or not an array');
+                }
                 }));
             }));
 
             // Handle selecting existing chat sessions
             topic.subscribe('ChatSession:Selected', lang.hitch(this, function(data) {
+                console.log('[DEBUG] ChatSession:Selected - Full data:', data);
+                console.log('[DEBUG] ChatSession:Selected - data.workflow_ids:', data.workflow_ids);
                 this.changeSessionId(data.sessionId);
                 this.chatStore.addMessages(data.messages);
                 this.displayWidget.showMessages(data.messages);
                 this.inputWidget.new_chat = false;
+                // Extract workflow_ids from session object (top level)
+                console.log('[DEBUG] ChatSession:Selected - Checking data.workflow_ids:', data.workflow_ids);
+                if (data.workflow_ids && Array.isArray(data.workflow_ids)) {
+                    console.log('[DEBUG] ChatSession:Selected - Setting workflows:', data.workflow_ids);
+                    this.displayWidget.setSessionWorkflows(data.workflow_ids);
+                } else {
+                    console.log('[DEBUG] ChatSession:Selected - No workflow_ids found or not an array');
+                }
             }));
 
             // Handle chat title changes
@@ -401,6 +421,8 @@ define([
             this.titleWidget.setSessionId(sessionId);
             this._resetSessionFilesState(sessionId);
             this._fetchSessionFiles(false);
+            // Reset workflows when changing session
+            this.displayWidget.resetSessionWorkflows();
 
             // Removed reloadUserSessions publish: the scroll bar will react to
             // ChatSession:Selected and other dedicated events, so a full reload

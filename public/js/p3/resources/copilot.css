@@ -297,6 +297,15 @@
   box-sizing: border-box;
 }
 
+.copilot-workflows-container {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 16px 14px 16px;
+  box-sizing: border-box;
+}
+
 .copilot-files-summary {
   margin-bottom: 10px;
   font-size: 12px;
@@ -387,6 +396,63 @@
 .copilot-files-load-more:disabled {
   cursor: not-allowed;
   opacity: 0.7;
+}
+
+.copilot-workflows-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.copilot-workflow-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.copilot-workflow-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #cbd5e1;
+}
+
+.copilot-workflow-loading {
+  padding: 12px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.copilot-workflow-error {
+  padding: 12px;
+  background-color: #fef2f2;
+  border-left: 3px solid #ef4444;
+  color: #991b1b;
+  font-size: 13px;
+}
+
+.copilot-workflow-header {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f8fafc;
+}
+
+.copilot-workflow-body {
+  padding: 12px;
+}
+
+.copilot-workflow-id {
+  font-weight: 600;
+  color: #111827;
+  overflow-wrap: anywhere;
+}
+
+.copilot-workflows-empty {
+  text-align: center;
+  color: #6b7280;
+  padding: 18px 10px;
 }
 
 /* State Containers */

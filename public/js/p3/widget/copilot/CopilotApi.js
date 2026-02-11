@@ -636,6 +636,8 @@ define([
                 handleAs: 'json'
             }).then(function(response) {
                 console.log('Session messages retrieved:', response);
+                console.log('[DEBUG] getSessionMessages - Full response structure:', JSON.stringify(response, null, 2));
+                console.log('[DEBUG] getSessionMessages - response.workflow_ids:', response.workflow_ids);
                 return response;
             }).catch(function(error) {
                 console.error('Error getting session messages:', error);
