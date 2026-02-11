@@ -265,6 +265,130 @@
     word-wrap: break-word;     /* Force word breaks if needed */
   }
 
+.copilot-panel-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px 4px 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.copilot-panel-tab {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: #f8fafc;
+  color: #334155;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.copilot-panel-tab.copilot-panel-tab-active {
+  background-color: #dbeafe;
+  border-color: #60a5fa;
+  color: #1e3a8a;
+}
+
+.copilot-files-container {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 16px 14px 16px;
+  box-sizing: border-box;
+}
+
+.copilot-files-summary {
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.copilot-files-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.copilot-file-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background-color: #ffffff;
+}
+
+.copilot-file-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.copilot-file-name {
+  font-weight: 600;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copilot-file-meta {
+  font-size: 12px;
+  color: #4b5563;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+
+.copilot-file-badge-error {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  white-space: nowrap;
+}
+
+.copilot-file-workspace-link {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #1d4ed8;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+
+.copilot-files-empty,
+.copilot-files-loading {
+  text-align: center;
+  color: #6b7280;
+  padding: 18px 10px;
+}
+
+.copilot-files-error {
+  text-align: center;
+  color: #b91c1c;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.copilot-files-load-more {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background-color: #f8fafc;
+  color: #334155;
+  cursor: pointer;
+}
+
+.copilot-files-load-more:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 /* State Containers */
 .copilot-empty-state {
   color: #666;

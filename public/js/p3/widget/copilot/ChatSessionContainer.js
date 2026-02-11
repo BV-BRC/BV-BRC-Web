@@ -29,7 +29,8 @@ define([
     'dojo/Deferred',
     'dojo/dom-class',
     'dojo/dom-style',
-    './CopilotStateManager'
+    './CopilotStateManager',
+    './SessionFilesStore'
 ], function (
     declare,
     BorderContainer,
@@ -45,7 +46,8 @@ define([
     Deferred,
     domClass,
     domStyle,
-    CopilotStateManager
+    CopilotStateManager,
+    SessionFilesStore
 ) {
     /**
      * @class ChatSessionContainer
@@ -86,6 +88,10 @@ define([
             } else {
                 this.sessionsStore = new ChatSessionsMemoryStore();
             }
+
+            this.sessionFilesPageSize = 20;
+            this._sessionFilesRequestToken = 0;
+            this._sessionFilesState = SessionFilesStore.createInitialState(this.sessionId, this.sessionFilesPageSize);
         },
 
         /**
@@ -216,6 +222,7 @@ define([
             topic.subscribe('openReportIssueDialog', lang.hitch(this, this._handleOpenReportIssueDialog));
             topic.subscribe('chatTextSizeChanged', lang.hitch(this, this._handleChatTextSizeChanged));
             topic.subscribe('setStatePrompt', lang.hitch(this, this._handleSetStatePrompt));
+            topic.subscribe('CopilotSessionFileCreated', lang.hitch(this, this._handleSessionFileCreated));
 
             // Start path monitoring
             this._startPathMonitoring();
@@ -365,6 +372,7 @@ define([
                 copilotApi: this.copilotApi,
                 chatStore: this.chatStore,
                 sessionId: this.sessionId,
+                onLoadMoreFiles: lang.hitch(this, this._loadMoreSessionFiles),
                 context: 'main-chat'  // Mark this as main chat context
             });
             this.addChild(this.displayWidget);
@@ -391,6 +399,8 @@ define([
             this.inputWidget.setSessionId(sessionId);
             this.displayWidget.setSessionId(sessionId);
             this.titleWidget.setSessionId(sessionId);
+            this._resetSessionFilesState(sessionId);
+            this._fetchSessionFiles(false);
 
             // Removed reloadUserSessions publish: the scroll bar will react to
             // ChatSession:Selected and other dedicated events, so a full reload
@@ -523,6 +533,79 @@ define([
             if (this.statePrompt) {
                 this.inputWidget.setStatePrompt(this.statePrompt);
             }
+        },
+
+        _resetSessionFilesState: function(sessionId) {
+            if (!this._sessionFilesState) {
+                this._sessionFilesState = SessionFilesStore.createInitialState(sessionId, this.sessionFilesPageSize);
+            } else {
+                SessionFilesStore.resetForSession(this._sessionFilesState, sessionId);
+            }
+            this._sessionFilesRequestToken += 1;
+            if (this.displayWidget && this.displayWidget.resetSessionFiles) {
+                this.displayWidget.resetSessionFiles();
+            }
+        },
+
+        _syncFilesToDisplay: function() {
+            if (!this.displayWidget) return;
+            this.displayWidget.setSessionFilesLoading(Boolean(this._sessionFilesState.loading));
+            this.displayWidget.setSessionFilesData(
+                this._sessionFilesState.files,
+                this._sessionFilesState.pagination,
+                this._sessionFilesState.summary
+            );
+            if (this._sessionFilesState.error) {
+                this.displayWidget.setSessionFilesError(this._sessionFilesState.error);
+            }
+        },
+
+        _fetchSessionFiles: function(append) {
+            if (!this.sessionId || !this.copilotApi || !this.copilotApi.getSessionFiles) return;
+            var targetSessionId = this.sessionId;
+            var requestToken = this._sessionFilesRequestToken;
+            var offset = append ? SessionFilesStore.getNextOffset(this._sessionFilesState) : 0;
+
+            SessionFilesStore.setError(this._sessionFilesState, null);
+            SessionFilesStore.setLoading(this._sessionFilesState, true);
+            this._syncFilesToDisplay();
+
+            this.copilotApi.getSessionFiles(targetSessionId, this.sessionFilesPageSize, offset)
+                .then(lang.hitch(this, function(response) {
+                    if (requestToken !== this._sessionFilesRequestToken || targetSessionId !== this.sessionId) {
+                        return;
+                    }
+                    SessionFilesStore.applyFetchResponse(this._sessionFilesState, response, append);
+                    this._syncFilesToDisplay();
+                }))
+                .catch(lang.hitch(this, function(error) {
+                    if (requestToken !== this._sessionFilesRequestToken || targetSessionId !== this.sessionId) {
+                        return;
+                    }
+                    SessionFilesStore.setError(this._sessionFilesState, error);
+                    this._syncFilesToDisplay();
+                }))
+                .finally(lang.hitch(this, function() {
+                    if (requestToken !== this._sessionFilesRequestToken || targetSessionId !== this.sessionId) {
+                        return;
+                    }
+                    SessionFilesStore.setLoading(this._sessionFilesState, false);
+                    this._syncFilesToDisplay();
+                }));
+        },
+
+        _loadMoreSessionFiles: function() {
+            if (!this._sessionFilesState || this._sessionFilesState.loading) return;
+            if (!this._sessionFilesState.pagination || !this._sessionFilesState.pagination.has_more) return;
+            this._fetchSessionFiles(true);
+        },
+
+        _handleSessionFileCreated: function(eventPayload) {
+            if (!eventPayload || eventPayload.session_id !== this.sessionId) {
+                return;
+            }
+            SessionFilesStore.insertRealtimeFile(this._sessionFilesState, eventPayload);
+            this._syncFilesToDisplay();
         },
 
         /**

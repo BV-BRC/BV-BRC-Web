@@ -138,6 +138,7 @@ define([
                 copilotApi: this.copilotApi,
                 chatStore: this.chatStore,
                 sessionId: this.sessionId,
+                onLoadMoreFiles: lang.hitch(this, this._loadMoreSessionFiles),
                 context: 'side-panel'  // Mark this as side panel context
             };
 

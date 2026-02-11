@@ -21,13 +21,14 @@ define([
   'dojo/on', // Event handling
   'dojo/topic', // Pub/sub messaging
   'dojo/_base/lang', // Language utilities like hitch
+  'dojo/dom-class',
   'dojo/dom-style',
   'markdown-it/dist/markdown-it.min', // Markdown parser
   'markdown-it-link-attributes/dist/markdown-it-link-attributes.min', // Plugin to add attributes to links
   './ChatMessage', // Custom message display widget
   './data/SuggestedQuestions' // Suggested questions data module
 ], function (
-  declare, ContentPane, domConstruct, on, topic, lang, domStyle, markdownit, linkAttributes, ChatMessage, SuggestedQuestions
+  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, markdownit, linkAttributes, ChatMessage, SuggestedQuestions
 ) {
 
   /**
@@ -70,6 +71,16 @@ define([
     _userIsScrolling: false,
     _scrollTimeout: null,
 
+    // Session files panel state
+    activePanel: 'messages',
+    showPanelTabs: true,
+    sessionFiles: [],
+    sessionFilesPagination: null,
+    sessionFileSummary: null,
+    sessionFilesLoading: false,
+    sessionFilesError: null,
+    onLoadMoreFiles: null,
+
     /**
      * @constructor
      * Initializes the widget with provided options
@@ -105,11 +116,24 @@ define([
           }, document.head || document.getElementsByTagName('head')[0]);
           this._copilotStylesInjected = true;
         }
+        this._createPanelTabs();
+
+        this.panelContainer = domConstruct.create('div', {
+          class: 'copilot-panel-container',
+          style: 'height: calc(100% - 42px);'
+        }, this.containerNode);
+
         // Create scrollable container for messages
         this.resultContainer = domConstruct.create('div', {
           class: 'copilot-result-container',
           style: 'padding-right: 10px;padding-left: 10px;'
-        }, this.containerNode);
+        }, this.panelContainer);
+
+        // Create files panel container
+        this.filesContainer = domConstruct.create('div', {
+          class: 'copilot-files-container',
+          style: 'display:none;'
+        }, this.panelContainer);
 
         // Apply initial responsive padding
         this._updateResponsivePadding();
@@ -131,6 +155,17 @@ define([
 
         // Show initial empty state
         this.showEmptyState();
+        this._renderFilesPanel();
+
+        // Apply saved tab visibility preference (default: visible)
+        try {
+          var savedTabVisibility = localStorage.getItem('copilot-show-panel-tabs');
+          if (savedTabVisibility !== null) {
+            this.setTabsVisible(savedTabVisibility === 'true');
+          }
+        } catch (e) {
+          // Ignore storage failures and keep default visibility.
+        }
 
         // Initialize markdown parser with link attributes plugin
         this.md = markdownit().use(linkAttributes, {
@@ -144,10 +179,58 @@ define([
         topic.subscribe('RefreshSessionDisplay', lang.hitch(this, 'showMessages'));
         topic.subscribe('CopilotApiError', lang.hitch(this, 'onQueryError'));
         topic.subscribe('chatTextSizeChanged', lang.hitch(this, 'setFontSize'));
+        topic.subscribe('copilotPanelTabsVisibilityChanged', lang.hitch(this, function(isVisible) {
+          this.setTabsVisible(isVisible);
+        }));
         topic.subscribe('noJobDataError', lang.hitch(this, function(error) {
             error.message = 'No job data found.\n\n' + error.message;
             this.onQueryError(error);
         }));
+    },
+
+    _createPanelTabs: function() {
+      this.tabContainer = domConstruct.create('div', {
+        class: 'copilot-panel-tabs'
+      }, this.containerNode);
+
+      this.messagesTabButton = domConstruct.create('button', {
+        type: 'button',
+        innerHTML: 'Messages',
+        class: 'copilot-panel-tab copilot-panel-tab-active'
+      }, this.tabContainer);
+
+      this.filesTabButton = domConstruct.create('button', {
+        type: 'button',
+        innerHTML: 'Files',
+        class: 'copilot-panel-tab'
+      }, this.tabContainer);
+
+      on(this.messagesTabButton, 'click', lang.hitch(this, function() {
+        this.setActivePanel('messages');
+      }));
+
+      on(this.filesTabButton, 'click', lang.hitch(this, function() {
+        this.setActivePanel('files');
+      }));
+    },
+
+    setTabsVisible: function(isVisible) {
+      this.showPanelTabs = Boolean(isVisible);
+      if (this.tabContainer) {
+        domStyle.set(this.tabContainer, 'display', this.showPanelTabs ? 'flex' : 'none');
+      }
+      if (this.panelContainer) {
+        domStyle.set(this.panelContainer, 'height', this.showPanelTabs ? 'calc(100% - 42px)' : 'calc(100% - 8px)');
+      }
+    },
+
+    setActivePanel: function(panel) {
+      this.activePanel = panel === 'files' ? 'files' : 'messages';
+      domStyle.set(this.resultContainer, 'display', this.activePanel === 'messages' ? 'block' : 'none');
+      domStyle.set(this.filesContainer, 'display', this.activePanel === 'files' ? 'block' : 'none');
+
+      domClass.toggle(this.messagesTabButton, 'copilot-panel-tab-active', this.activePanel === 'messages');
+      domClass.toggle(this.filesTabButton, 'copilot-panel-tab-active', this.activePanel === 'files');
     },
 
     /**
@@ -287,6 +370,199 @@ define([
       }
     },
 
+    resetSessionFiles: function() {
+      this.sessionFiles = [];
+      this.sessionFilesPagination = {
+        has_more: false,
+        total: 0,
+        limit: 20,
+        offset: 0
+      };
+      this.sessionFileSummary = {
+        total_files: 0,
+        total_size_bytes: 0
+      };
+      this.sessionFilesLoading = false;
+      this.sessionFilesError = null;
+      this._renderFilesPanel();
+    },
+
+    setSessionFilesData: function(files, pagination, summary) {
+      this.sessionFiles = Array.isArray(files) ? files : [];
+      this.sessionFilesPagination = pagination || this.sessionFilesPagination || { has_more: false };
+      this.sessionFileSummary = summary || this.sessionFileSummary || null;
+      this.sessionFilesError = null;
+      this._renderFilesPanel();
+    },
+
+    setSessionFilesLoading: function(isLoading) {
+      this.sessionFilesLoading = Boolean(isLoading);
+      this._renderFilesPanel();
+    },
+
+    setSessionFilesError: function(error) {
+      this.sessionFilesError = error || null;
+      this.sessionFilesLoading = false;
+      this._renderFilesPanel();
+    },
+
+    _formatTimestamp: function(value) {
+      if (!value) return 'Unknown';
+      var date = new Date(value);
+      if (isNaN(date.getTime())) return value;
+      return date.toLocaleString();
+    },
+
+    _formatSize: function(file) {
+      if (file && file.size_formatted) {
+        return file.size_formatted;
+      }
+      if (file && typeof file.size_bytes === 'number') {
+        return file.size_bytes.toLocaleString() + ' bytes';
+      }
+      return 'Unknown';
+    },
+
+    _renderFilesPanel: function() {
+      if (!this.filesContainer) return;
+      domConstruct.empty(this.filesContainer);
+
+      if (this.sessionFilesError) {
+        domConstruct.create('div', {
+          class: 'copilot-files-error',
+          innerHTML: this.sessionFilesError.message || 'Unable to load files for this session.'
+        }, this.filesContainer);
+        return;
+      }
+
+      if (this.sessionFilesLoading && (!this.sessionFiles || this.sessionFiles.length === 0)) {
+        domConstruct.create('div', {
+          class: 'copilot-files-loading',
+          innerHTML: 'Loading files...'
+        }, this.filesContainer);
+        return;
+      }
+
+      if (!this.sessionFiles || this.sessionFiles.length === 0) {
+        domConstruct.create('div', {
+          class: 'copilot-files-empty',
+          innerHTML: 'No files yet'
+        }, this.filesContainer);
+        return;
+      }
+
+      if (this.sessionFileSummary) {
+        var summaryBits = [];
+        if (typeof this.sessionFileSummary.total_files === 'number') {
+          summaryBits.push('Files: ' + this.sessionFileSummary.total_files);
+        }
+        if (typeof this.sessionFileSummary.total_size_bytes === 'number') {
+          summaryBits.push('Total size: ' + this.sessionFileSummary.total_size_bytes.toLocaleString() + ' bytes');
+        }
+
+        if (summaryBits.length) {
+          domConstruct.create('div', {
+            class: 'copilot-files-summary',
+            innerHTML: summaryBits.join(' | ')
+          }, this.filesContainer);
+        }
+      }
+
+      var listNode = domConstruct.create('div', {
+        class: 'copilot-files-list'
+      }, this.filesContainer);
+
+      this.sessionFiles.forEach(lang.hitch(this, function(file) {
+        var card = domConstruct.create('div', {
+          class: 'copilot-file-card'
+        }, listNode);
+
+        var header = domConstruct.create('div', {
+          class: 'copilot-file-card-header'
+        }, card);
+
+        domConstruct.create('div', {
+          class: 'copilot-file-name',
+          innerHTML: file.file_name || 'Untitled file'
+        }, header);
+
+        if (file.is_error) {
+          domConstruct.create('span', {
+            class: 'copilot-file-badge-error',
+            innerHTML: 'Error output'
+          }, header);
+        }
+
+        var toolLabel = file.tool_id || 'Unknown';
+        domConstruct.create('div', {
+          class: 'copilot-file-meta',
+          innerHTML: 'Tool: ' + toolLabel
+        }, card);
+
+        domConstruct.create('div', {
+          class: 'copilot-file-meta',
+          innerHTML: 'Created: ' + this._formatTimestamp(file.created_at)
+        }, card);
+
+        domConstruct.create('div', {
+          class: 'copilot-file-meta',
+          innerHTML: 'Size: ' + this._formatSize(file)
+        }, card);
+
+        if (typeof file.record_count === 'number') {
+          domConstruct.create('div', {
+            class: 'copilot-file-meta',
+            innerHTML: 'Records: ' + file.record_count.toLocaleString()
+          }, card);
+        }
+
+        if (file.data_type) {
+          domConstruct.create('div', {
+            class: 'copilot-file-meta',
+            innerHTML: 'Type: ' + file.data_type
+          }, card);
+        }
+
+        if (file.workspace_url) {
+          var link = domConstruct.create('a', {
+            class: 'copilot-file-workspace-link',
+            href: file.workspace_url,
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            innerHTML: file.workspace_path || file.workspace_url
+          }, card);
+          if (!link.textContent || !link.textContent.trim()) {
+            link.textContent = file.workspace_url;
+          }
+        } else if (file.workspace_path) {
+          domConstruct.create('div', {
+            class: 'copilot-file-meta',
+            innerHTML: 'Workspace: ' + file.workspace_path
+          }, card);
+        }
+      }));
+
+      var hasMore = Boolean(this.sessionFilesPagination && this.sessionFilesPagination.has_more);
+      if (hasMore) {
+        var loadMoreButton = domConstruct.create('button', {
+          type: 'button',
+          class: 'copilot-files-load-more',
+          innerHTML: this.sessionFilesLoading ? 'Loading...' : 'Load more'
+        }, this.filesContainer);
+
+        if (this.sessionFilesLoading) {
+          loadMoreButton.disabled = true;
+        }
+
+        on(loadMoreButton, 'click', lang.hitch(this, function() {
+          if (this.sessionFilesLoading) return;
+          if (typeof this.onLoadMoreFiles === 'function') {
+            this.onLoadMoreFiles();
+          }
+        }));
+      }
+    },
+
     /**
      * Adds a single message to the display
      * Implementation:
@@ -315,7 +591,6 @@ define([
      * - Shows red error message
      */
     onQueryError: function(error = null) {
-      debugger;
       console.log('onQueryError', error);
       domConstruct.empty(this.resultContainer);
       var errorMessage = error ? error.message : 'An error occurred while processing your request. Please try again later.';
@@ -343,6 +618,7 @@ define([
      */
     startNewChat: function() {
       this.clearMessages();
+      this.resetSessionFiles();
     },
 
     /**

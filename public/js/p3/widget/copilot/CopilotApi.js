@@ -395,6 +395,12 @@ define([
                                     // These are handled by the event handler above
                                     break;
 
+                                case 'session_file_created':
+                                    // File creation metadata is handled as a dedicated SSE event.
+                                    // Consumers can update the session Files panel immediately.
+                                    topic.publish('CopilotSessionFileCreated', parsed);
+                                    break;
+
                                 default:
                                     console.warn('Unknown event type:', currentEvent, parsed);
                             }
@@ -605,10 +611,25 @@ define([
          * - Returns full message history
          * - Includes detailed error logging
          */
-        getSessionMessages: function(sessionId) {
+        getSessionMessages: function(sessionId, options) {
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-            return request.get(this.apiUrlBase + `/get-session-messages?session_id=${encodeURIComponent(sessionId)}`, {
+            var opts = options || {};
+            var queryParams = [
+                `session_id=${encodeURIComponent(sessionId)}`
+            ];
+
+            if (opts.includeFiles) {
+                queryParams.push('include_files=true');
+                queryParams.push(`user_id=${encodeURIComponent(this.user_id)}`);
+                if (typeof opts.limit === 'number') {
+                    queryParams.push(`limit=${opts.limit}`);
+                }
+                if (typeof opts.offset === 'number') {
+                    queryParams.push(`offset=${opts.offset}`);
+                }
+            }
+
+            return request.get(this.apiUrlBase + `/get-session-messages?${queryParams.join('&')}`, {
                 headers: {
                     Authorization: (window.App.authorizationToken || '')
                 },
@@ -618,6 +639,31 @@ define([
                 return response;
             }).catch(function(error) {
                 console.error('Error getting session messages:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Retrieves session file metadata for a session.
+         * Supports pagination and always includes user_id for authorization.
+         */
+        getSessionFiles: function(sessionId, limit = 20, offset = 0) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var queryParams = [
+                `session_id=${encodeURIComponent(sessionId)}`,
+                `user_id=${encodeURIComponent(this.user_id)}`,
+                `limit=${limit}`,
+                `offset=${offset}`
+            ];
+            return request.get(this.apiUrlBase + `/get-session-files?${queryParams.join('&')}`, {
+                headers: {
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('Error getting session files:', error);
                 throw error;
             });
         },

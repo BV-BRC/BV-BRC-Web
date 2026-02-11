@@ -354,6 +354,30 @@ define([
                 }, 100);
             }
 
+            // Add Show Tabs on/off control
+            var tabsVisibilityContainer = domConstruct.create('div', {
+                style: 'display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px; border-top: 1px solid #e5e7eb;'
+            }, advancedOptionsDialog.containerNode);
+
+            domConstruct.create('span', {
+                innerHTML: 'Show Tabs:',
+                style: 'white-space: nowrap; font-size: 14px;'
+            }, tabsVisibilityContainer);
+
+            var savedShowTabs = localStorage.getItem('copilot-show-panel-tabs');
+            var initialShowTabs = savedShowTabs !== null ? savedShowTabs === 'true' : true;
+
+            var showTabsInput = domConstruct.create('input', {
+                type: 'checkbox',
+                checked: initialShowTabs
+            }, tabsVisibilityContainer);
+
+            on(showTabsInput, 'change', function(evt) {
+                var isVisible = Boolean(evt.target.checked);
+                localStorage.setItem('copilot-show-panel-tabs', isVisible ? 'true' : 'false');
+                topic.publish('copilotPanelTabsVisibilityChanged', isVisible);
+            });
+
             return advancedOptionsDialog;
         },
 
@@ -795,6 +819,15 @@ define([
             // Force resize of panel after placement
             setTimeout(lang.hitch(this, function() {
                 this.layoutContainer.resize();
+                try {
+                    var savedTabs = localStorage.getItem('copilot-show-panel-tabs');
+                    var showTabs = savedTabs !== null ? savedTabs === 'true' : true;
+                    if (this.controllerPanel && this.controllerPanel.displayWidget && this.controllerPanel.displayWidget.setTabsVisible) {
+                        this.controllerPanel.displayWidget.setTabsVisible(showTabs);
+                    }
+                } catch (e) {
+                    // Ignore storage failures.
+                }
                 if (options.onResize) {
                     options.onResize(this.controllerPanel.getSessionId());
                 }
