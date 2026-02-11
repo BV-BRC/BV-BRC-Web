@@ -409,6 +409,16 @@ table tr.even td {
     z-index: 1;
 }
 
+/* Fix for Chrome stacking context issue in job result pages */
+.ExperimentViewer {
+    position: relative;
+}
+
+.ExperimentViewer > .dijitContentPane {
+    position: relative;
+    z-index: 1;
+}
+
 .ActionBar .fa {
     margin-bottom: 6px;
     margin-top: 4px;
