@@ -121,7 +121,7 @@ define([
 
       // Create viewHeader if it doesn't exist yet (async path runs before startup)
       if (!this.viewHeader) {
-        this.viewHeader = new ContentPane({ content: 'Loading data from ' + this.data.name + ' job file.', region: 'top', style: 'width:90%;height:30%;' });
+        this.viewHeader = new ContentPane({ content: 'Loading data from ' + this.data.name + ' job file.', region: 'top' });
         this.addChild(this.viewHeader);
       }
 
@@ -192,7 +192,7 @@ define([
         // this.viewer.set('content',jobHeader);
 
         var output = [];
-        output.push(jobHeader + '<table style="width:90%" class="p3basic striped far2x" id="data-table"><tbody>');
+        output.push(jobHeader + '<table style="width:800px;table-layout:fixed;" class="p3basic striped far2x" id="data-table"><tbody>');
         var job_output = [];
 
         // add extra metadata header lines
@@ -214,7 +214,7 @@ define([
             if (prop == 'parameters') {
               job_output.push('<tr class="alt"><td class="last" colspan=2><div data-dojo-type="dijit/TitlePane" data-dojo-props="title: \'Parameters\', open:false">' + tableValue + '</div></td></tr>');
             } else {
-              job_output.push('<tr class="alt"><th scope="row" style="width:20%"><b>' + this._jobOut[prop].label + '</b></th><td class="last">' + tableValue + '</td></tr>');
+              job_output.push('<tr class="alt"><th scope="row" style="width:100px;min-width:100px;"><b>' + this._jobOut[prop].label + '</b></th><td class="last">' + tableValue + '</td></tr>');
             }
           }
         }, this);
@@ -243,7 +243,7 @@ define([
       // Only create placeholder if we haven't already processed the job data
       // (which can happen in async path before startup is called)
       if (!this.viewer) {
-        this.viewHeader = new ContentPane({ content: 'Loading data from ' + this.data.name + ' job file.', region: 'top', style: 'width:90%;height:30%;' });
+        this.viewHeader = new ContentPane({ content: 'Loading data from ' + this.data.name + ' job file.', region: 'top' });
         this.addChild(this.viewHeader);
 
         // The viewer will be created in _processJobData after _hiddenPath is set
