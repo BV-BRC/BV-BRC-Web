@@ -306,6 +306,15 @@
   box-sizing: border-box;
 }
 
+.copilot-workspace-container {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 16px 14px 16px;
+  box-sizing: border-box;
+}
+
 .copilot-files-summary {
   margin-bottom: 10px;
   font-size: 12px;
@@ -455,6 +464,33 @@
   padding: 18px 10px;
 }
 
+.copilot-workspace-empty {
+  text-align: center;
+  color: #6b7280;
+  padding: 18px 10px;
+}
+
+.copilot-workspace-summary {
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.copilot-workspace-grid-container {
+  width: 100%;
+  min-height: 220px;
+  max-height: 520px;
+  overflow: auto;
+}
+
+.copilot-workspace-grid-container .WorkspaceExplorerView,
+.copilot-workspace-grid-container .dgrid {
+  width: 100% !important;
+  max-width: 100% !important;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
 /* State Containers */
 .copilot-empty-state {
   color: #666;
@@ -565,6 +601,119 @@
   max-width: 100% !important;
   max-height: 380px;
   overflow-y: auto;
+}
+
+.workspace-summary-card {
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background-color: #f8fbff;
+  padding: 10px 12px;
+  display: inline-block;
+  min-width: 260px;
+}
+
+.workspace-summary-text {
+  font-weight: 600;
+  color: #1e3a8a;
+  margin-bottom: 4px;
+}
+
+.workspace-summary-path {
+  font-size: 12px;
+  color: #334155;
+  margin-bottom: 10px;
+  overflow-wrap: anywhere;
+}
+
+.workspace-summary-open-button {
+  padding: 6px 12px;
+  border: 1px solid #60a5fa;
+  border-radius: 6px;
+  background-color: #dbeafe;
+  color: #1e3a8a;
+  cursor: pointer;
+}
+
+.workspace-summary-open-button:hover {
+  background-color: #bfdbfe;
+}
+
+/* File metadata card styling */
+.file-metadata-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #f9fafb;
+  margin: 8px 0;
+}
+
+.file-metadata-header {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.file-metadata-type,
+.file-metadata-path {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 4px 0;
+}
+
+.file-metadata-download {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.file-metadata-download a {
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.file-metadata-download a:hover {
+  text-decoration: underline;
+}
+
+.file-preview-container {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.file-preview-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.file-preview-content {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  max-height: 300px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.file-preview-loading,
+.file-preview-error {
+  font-size: 13px;
+  color: #6b7280;
+  font-style: italic;
+  padding: 8px;
+}
+
+.file-preview-error {
+  color: #dc2626;
 }
 
 .message.status {

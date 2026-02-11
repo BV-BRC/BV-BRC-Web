@@ -156,122 +156,223 @@ define([
       }
     },
 
+    _parseToolChunk: function(chunk) {
+      let content;
+      let parsedChunk;
+
+      if (typeof chunk === 'object' && chunk && chunk.content) {
+        let rawContent = chunk.content;
+        let contentToParse = typeof rawContent === 'string' ? rawContent.trim() : rawContent;
+        parsedChunk = typeof contentToParse === 'string' ? JSON.parse(contentToParse) : contentToParse;
+        content = typeof rawContent === 'string' ? rawContent : JSON.stringify(rawContent);
+      } else if (typeof chunk === 'string') {
+        content = chunk.trim();
+        parsedChunk = JSON.parse(content);
+      } else if (typeof chunk === 'object' && chunk) {
+        content = JSON.stringify(chunk);
+        parsedChunk = chunk;
+      } else {
+        throw new Error('Unexpected chunk format');
+      }
+
+      // Handle nested structure: {source_tool: "...", content: {...}}
+      if (parsedChunk && parsedChunk.source_tool && parsedChunk.content) {
+        parsedChunk = parsedChunk.content;
+      }
+
+      return {
+        content: content,
+        parsedChunk: parsedChunk
+      };
+    },
+
+    _normalizeWorkspaceBrowsePayload: function(parsedChunk) {
+      var normalized = {
+        tool_name: parsedChunk && parsedChunk.tool_name ? parsedChunk.tool_name : 'workspace_browse_tool',
+        result_type: parsedChunk && parsedChunk.result_type ? parsedChunk.result_type : 'list_result',
+        count: parsedChunk && typeof parsedChunk.count === 'number' ? parsedChunk.count : null,
+        path: parsedChunk && parsedChunk.path ? parsedChunk.path : null,
+        source: parsedChunk && parsedChunk.source ? parsedChunk.source : null,
+        items: [],
+        raw: parsedChunk
+      };
+
+      if (parsedChunk && Array.isArray(parsedChunk.items)) {
+        normalized.items = parsedChunk.items;
+      } else if (Array.isArray(parsedChunk)) {
+        normalized.items = parsedChunk;
+      }
+
+      if (typeof normalized.count !== 'number') {
+        normalized.count = normalized.items.length;
+      }
+
+      return normalized;
+    },
+
+    _flattenWorkspaceBrowseItems: function(items) {
+      if (!Array.isArray(items)) {
+        return [];
+      }
+
+      var flattened = [];
+      for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+
+        if (Array.isArray(item)) {
+          flattened.push(item);
+          continue;
+        }
+
+        // Handle nested structure: [{ "/path": [row1, row2, ...] }]
+        if (item && typeof item === 'object') {
+          for (var key in item) {
+            if (item.hasOwnProperty(key) && Array.isArray(item[key])) {
+              flattened = flattened.concat(item[key]);
+            }
+          }
+        }
+      }
+
+      return flattened;
+    },
+
+    _countWorkspaceBrowseItems: function(payload) {
+      if (!payload || !Array.isArray(payload.items)) {
+        return 0;
+      }
+      return this._flattenWorkspaceBrowseItems(payload.items).length;
+    },
+
+    _formatWorkspaceBrowseSummary: function(payload) {
+      var inferredCount = this._countWorkspaceBrowseItems(payload);
+      var count = typeof payload.count === 'number' ? payload.count : inferredCount;
+
+      // For search results, count should reflect matching rows, not grouped path entries.
+      if (payload && payload.result_type === 'search_result') {
+        count = inferredCount;
+      }
+
+      var resultLabel = count === 1 ? 'result' : 'results';
+      var pathText = payload.path || 'unknown path';
+      return 'Found ' + count + ' ' + resultLabel + ' in ' + pathText;
+    },
+
+    _createWorkspaceBrowseResultHandlers: function() {
+      return {
+        list_result: lang.hitch(this, function(payload) {
+          return {
+            isWorkspaceListing: true,
+            workspaceData: {
+              path: payload.path || null,
+              items: Array.isArray(payload.items) ? payload.items : []
+            },
+            chatSummary: this._formatWorkspaceBrowseSummary(payload),
+            uiPayload: {
+              tool_name: payload.tool_name,
+              result_type: payload.result_type,
+              count: payload.count,
+              path: payload.path,
+              source: payload.source,
+              items: payload.items
+            },
+            uiAction: 'open_workspace_tab'
+          };
+        }),
+        search_result: lang.hitch(this, function(payload) {
+          return {
+            isWorkspaceListing: true,
+            workspaceData: {
+              path: payload.path || null,
+              items: Array.isArray(payload.items) ? payload.items : []
+            },
+            chatSummary: this._formatWorkspaceBrowseSummary(payload),
+            uiPayload: {
+              tool_name: payload.tool_name,
+              result_type: payload.result_type,
+              count: this._countWorkspaceBrowseItems(payload),
+              path: payload.path,
+              source: payload.source,
+              items: payload.items
+            },
+            uiAction: 'open_workspace_tab'
+          };
+        }),
+        metadata_result: lang.hitch(this, function(payload) {
+          var metadata = (payload.raw && payload.raw.metadata) || {};
+          var fileName = metadata.name || payload.path.split('/').pop() || 'Unknown file';
+          var fileType = metadata.type || 'unknown';
+
+          return {
+            isWorkspaceListing: false,
+            workspaceData: null,
+            chatSummary: 'File: ' + fileName + ' (' + fileType + ')',
+            uiPayload: {
+              tool_name: payload.tool_name,
+              result_type: payload.result_type,
+              path: payload.path,
+              source: payload.source,
+              metadata: metadata,
+              raw: payload.raw
+            },
+            uiAction: 'show_file_metadata'
+          };
+        })
+      };
+    },
+
+    _processWorkspaceBrowseResultType: function(payload) {
+      var handlers = this._createWorkspaceBrowseResultHandlers();
+      var handler = handlers[payload.result_type];
+
+      if (handler) {
+        return handler(payload);
+      }
+
+      // Debug breakpoint for unsupported result types
+      debugger;
+      return {
+        isWorkspaceListing: false,
+        workspaceData: null,
+        chatSummary: 'Workspace browse result type "' + payload.result_type + '" is not yet supported in a dedicated view.',
+        uiPayload: {
+          tool_name: payload.tool_name,
+          result_type: payload.result_type,
+          count: payload.count,
+          path: payload.path,
+          source: payload.source,
+          items: payload.items
+        },
+        uiAction: null
+      };
+    },
+
     /**
-     * Helper function to process workspace listing tool data
+     * Helper function to process workspace browse tool data
      * @param {string|Object} chunk - The JSON string to parse or an object with content
      * @param {Object} baseData - Base data object to extend
      * @returns {Object|null} Processed data or null if parsing fails
      */
-    _processWorkspaceListing: function(chunk, baseData) {
+    _processWorkspaceBrowse: function(chunk, baseData) {
       if (!chunk) {
         return null;
       }
 
-      // Diagnostic logging
-      console.log('[CopilotToolHandler] _processWorkspaceListing called');
-      console.log('[CopilotToolHandler] chunk type:', typeof chunk);
-      if (typeof chunk === 'object') {
-        console.log('[CopilotToolHandler] chunk keys:', Object.keys(chunk));
-        console.log('[CopilotToolHandler] has .content?', 'content' in chunk);
-        console.log('[CopilotToolHandler] has .items?', 'items' in chunk);
-        if (chunk.content) {
-          console.log('[CopilotToolHandler] .content type:', typeof chunk.content);
-          console.log('[CopilotToolHandler] .content value (first 100 chars):',
-            typeof chunk.content === 'string' ? chunk.content.substring(0, 100) : chunk.content);
-        }
-      } else if (typeof chunk === 'string') {
-        console.log('[CopilotToolHandler] chunk string (first 100 chars):', chunk.substring(0, 100));
-      }
-
       try {
-        let content, parsedChunk;
-
-        // If chunk is already a fully parsed object with items array, use it directly
-        if (typeof chunk === 'object' && !chunk.content && chunk.items) {
-          console.log('[CopilotToolHandler] ✓ Path A: Chunk is already parsed workspace data with .items');
-          // Preserve path if available
-          return {
-            ...baseData,
-            chunk: JSON.stringify(chunk), // Store stringified version for display
-            isWorkspaceListing: true,
-            workspaceData: {
-              path: chunk.path || null,
-              items: chunk.items || []
-            }
-          };
-        }
-
-        if (typeof chunk === 'object' && chunk.content) {
-          console.log('[CopilotToolHandler] ✓ Path B: Chunk is object with .content property');
-          // Handle case where chunk is already an object with content property
-          let rawContent = chunk.content;
-          // Trim whitespace before parsing if it's a string
-          let contentToParse = typeof rawContent === 'string' ? rawContent.trim() : rawContent;
-          parsedChunk = typeof contentToParse === 'string' ? JSON.parse(contentToParse) : contentToParse;
-          // Ensure content is always a string for return value
-          content = typeof rawContent === 'string' ? rawContent : JSON.stringify(rawContent);
-        } else if (typeof chunk === 'string') {
-          console.log('[CopilotToolHandler] ✓ Path C: Chunk is a string, will parse as JSON');
-          // Handle case where chunk is a JSON string
-          content = chunk.trim(); // Trim whitespace
-          parsedChunk = JSON.parse(content);
-        } else if (typeof chunk === 'object') {
-          console.log('[CopilotToolHandler] ✓ Path D: Chunk is generic object, will stringify');
-          // Chunk is already a parsed object but without .content property
-          content = JSON.stringify(chunk);
-          parsedChunk = chunk;
-        } else {
-          console.warn('[CopilotToolHandler] ✗ Unexpected chunk format:', chunk);
-          return null;
-        }
-
-        console.log('[CopilotToolHandler] parsedChunk type:', typeof parsedChunk);
-        console.log('[CopilotToolHandler] parsedChunk keys:', parsedChunk ? Object.keys(parsedChunk) : 'null');
-
-        // Handle case where parsedChunk has nested structure: {source_tool: ..., content: {items: [...]}}
-        // This happens when the SSE sends the full structure as a JSON string
-        if (parsedChunk && parsedChunk.source_tool && parsedChunk.content) {
-          console.log('[CopilotToolHandler] ✓ Detected nested structure with source_tool and content');
-          parsedChunk = parsedChunk.content; // Use the content object
-          console.log('[CopilotToolHandler] ✓ Extracted content, keys:', Object.keys(parsedChunk));
-        }
-
-        // Extract items array and path from the parsed data
-        // The parsedChunk has structure: { count: N, path: "...", source: "...", items: [...] }
-        // WorkspaceExplorerAdapter needs both path and items
-        let workspaceData = parsedChunk;
-        let workspacePath = null;
-
-        if (parsedChunk && parsedChunk.items) {
-          console.log('[CopilotToolHandler] ✓ Extracting .items array (length:', parsedChunk.items.length, ')');
-          workspacePath = parsedChunk.path || null;
-          workspaceData = {
-            path: workspacePath,
-            items: parsedChunk.items
-          };
-        } else if (parsedChunk && parsedChunk.path) {
-          // If we have a path but no items array, preserve the structure
-          workspacePath = parsedChunk.path;
-          workspaceData = {
-            path: workspacePath,
-            items: Array.isArray(parsedChunk) ? parsedChunk : []
-          };
-        } else {
-          console.log('[CopilotToolHandler] ⚠ No .items found, using full parsedChunk');
-          // If it's an array, treat as items with no path
-          if (Array.isArray(parsedChunk)) {
-            workspaceData = {
-              path: null,
-              items: parsedChunk
-            };
-          }
-        }
+        var parsed = this._parseToolChunk(chunk);
+        var normalized = this._normalizeWorkspaceBrowsePayload(parsed.parsedChunk);
+        var resultTypeOutput = this._processWorkspaceBrowseResultType(normalized);
 
         return {
           ...baseData,
-          chunk: content,
-          isWorkspaceListing: true,
-          workspaceData: workspaceData // Store object with path and items
+          chunk: resultTypeOutput.chatSummary || parsed.content,
+          isWorkspaceBrowse: true,
+          workspaceBrowseResult: normalized,
+          chatSummary: resultTypeOutput.chatSummary,
+          uiPayload: resultTypeOutput.uiPayload,
+          uiAction: resultTypeOutput.uiAction,
+          isWorkspaceListing: resultTypeOutput.isWorkspaceListing,
+          workspaceData: resultTypeOutput.workspaceData
         };
       } catch (e) {
         console.error('[CopilotToolHandler] ✗ Failed to parse workspace listing chunk:', e.message);
@@ -299,11 +400,11 @@ define([
         // Return original if parsing fails
         return parsed;
       }
-      // Handle final_response event for workspace listing tool
+      // Handle final_response event for workspace browse tool
       if (currentEvent === 'final_response' &&
-          tool === 'bvbrc_server.workspace_ls_tool' &&
+          tool === 'bvbrc_server.workspace_browse_tool' &&
           parsed.chunk) {
-        const processed = this._processWorkspaceListing(parsed.chunk, parsed);
+        const processed = this._processWorkspaceBrowse(parsed.chunk, parsed);
         if (processed) {
           return processed;
         }
@@ -444,7 +545,6 @@ define([
       if (!sourceTool || !content) {
         return { content: content };
       }
-
       // Handle workflow tool
       if (sourceTool === 'bvbrc_server.create_and_execute_workflow') {
         const baseData = { chunk: content };
@@ -458,13 +558,34 @@ define([
         }
       }
 
-      // Handle workspace listing tool
-      if (sourceTool === 'bvbrc_server.workspace_ls_tool') {
-        const baseData = { chunk: content };
-        const processed = this._processWorkspaceListing(content, baseData);
+      // Handle workspace browse tool
+      if (sourceTool === 'bvbrc_server.workspace_browse_tool') {
+        console.log('[CopilotToolHandler] Processing workspace_browse_tool');
+        console.log('[CopilotToolHandler] sourceTool:', sourceTool);
+        console.log('[CopilotToolHandler] content type:', typeof content);
+        console.log('[CopilotToolHandler] content value:', content);
+
+        // If content is already an object with nested structure, extract it
+        let contentToProcess = content;
+        if (typeof content === 'object' && content.content) {
+          console.log('[CopilotToolHandler] Content is object with nested .content, extracting');
+          console.log('[CopilotToolHandler] Nested content keys:', Object.keys(content.content));
+          console.log('[CopilotToolHandler] Nested content.items:', content.content.items);
+          console.log('[CopilotToolHandler] Nested content.path:', content.content.path);
+          contentToProcess = content.content;
+        }
+
+        const baseData = { chunk: contentToProcess };
+        const processed = this._processWorkspaceBrowse(contentToProcess, baseData);
+        console.log('[CopilotToolHandler] processed result:', processed);
         if (processed) {
           return {
             content: processed.chunk,
+            isWorkspaceBrowse: processed.isWorkspaceBrowse,
+            workspaceBrowseResult: processed.workspaceBrowseResult,
+            chatSummary: processed.chatSummary,
+            uiPayload: processed.uiPayload,
+            uiAction: processed.uiAction,
             isWorkspaceListing: processed.isWorkspaceListing,
             workspaceData: processed.workspaceData
           };

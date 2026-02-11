@@ -1,7 +1,6 @@
 define([
   'dojo/_base/declare', // Base class for creating Dojo classes
   'dojo/dom-construct', // DOM manipulation utilities
-  'dojo/dom-class', // DOM class manipulation utilities
   'dojo/on', // Event handling
   'dojo/topic', // Topic messaging
   'dojo/_base/lang', // Language utilities
@@ -10,9 +9,9 @@ define([
   'dijit/Dialog', // Dialog widget
   './CopilotToolHandler', // Tool handler for special tool processing
   './WorkflowEngine', // Workflow engine widget for displaying workflows
-  './WorkspaceExplorerAdapter' // Workspace explorer adapter for displaying workspace contents
+  '../../WorkspaceManager' // Workspace manager for file operations
 ], function (
-  declare, domConstruct, domClass, on, topic, lang, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, WorkspaceExplorerAdapter
+  declare, domConstruct, on, topic, lang, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, WorkspaceManager
 ) {
   /**
    * @class ChatMessage
@@ -51,6 +50,69 @@ define([
       this.copilotEnableShowPromptDetails = window.App && window.App.copilotEnableShowPromptDetails === 'true';
       this.toolHandler = new CopilotToolHandler();
       this.renderMessage(); // Immediately render on construction
+    },
+
+    /**
+     * Escapes HTML special characters to prevent XSS attacks
+     * @param {string} text - Text to escape
+     * @returns {string} Escaped text safe for innerHTML
+     */
+    escapeHtml: function(text) {
+      if (typeof text !== 'string') {
+        return text;
+      }
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    },
+
+    _flattenWorkspaceBrowseItems: function(items) {
+      if (!Array.isArray(items)) {
+        return [];
+      }
+
+      var flattened = [];
+      for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        if (Array.isArray(item)) {
+          flattened.push(item);
+          continue;
+        }
+
+        if (item && typeof item === 'object') {
+          for (var key in item) {
+            if (item.hasOwnProperty(key) && Array.isArray(item[key])) {
+              flattened = flattened.concat(item[key]);
+            }
+          }
+        }
+      }
+
+      return flattened;
+    },
+
+    _getWorkspaceBrowseCount: function(payload) {
+      if (!payload) {
+        return 0;
+      }
+
+      if (payload.result_type === 'search_result') {
+        return this._flattenWorkspaceBrowseItems(payload.items).length;
+      }
+
+      if (typeof payload.count === 'number') {
+        return payload.count;
+      }
+
+      return this._flattenWorkspaceBrowseItems(payload.items).length;
+    },
+
+    _buildWorkspaceBrowserUrl: function(path) {
+      if (!path || typeof path !== 'string') {
+        return null;
+      }
+      var normalizedPath = path.charAt(0) === '/' ? path : '/' + path;
+      return '/workspace' + normalizedPath;
     },
 
     /**
@@ -120,12 +182,17 @@ define([
         console.log('[ChatMessage] processedData.content is string?', typeof processedData.content === 'string');
 
         this.message.content = processedData.content;
-        this.message.isWorkflow = processedData.isWorkflow;
-        this.message.workflowData = processedData.workflowData;
-        this.message.isWorkspaceListing = processedData.isWorkspaceListing;
-        this.message.workspaceData = processedData.workspaceData;
-        this.message.isQueryCollection = processedData.isQueryCollection;
-        this.message.queryCollectionData = processedData.queryCollectionData;
+        this.message.isWorkflow = typeof processedData.isWorkflow !== 'undefined' ? processedData.isWorkflow : this.message.isWorkflow;
+        this.message.workflowData = typeof processedData.workflowData !== 'undefined' ? processedData.workflowData : this.message.workflowData;
+        this.message.isWorkspaceBrowse = typeof processedData.isWorkspaceBrowse !== 'undefined' ? processedData.isWorkspaceBrowse : this.message.isWorkspaceBrowse;
+        this.message.workspaceBrowseResult = typeof processedData.workspaceBrowseResult !== 'undefined' ? processedData.workspaceBrowseResult : this.message.workspaceBrowseResult;
+        this.message.chatSummary = typeof processedData.chatSummary !== 'undefined' ? processedData.chatSummary : this.message.chatSummary;
+        this.message.uiPayload = typeof processedData.uiPayload !== 'undefined' ? processedData.uiPayload : this.message.uiPayload;
+        this.message.uiAction = typeof processedData.uiAction !== 'undefined' ? processedData.uiAction : this.message.uiAction;
+        this.message.isWorkspaceListing = typeof processedData.isWorkspaceListing !== 'undefined' ? processedData.isWorkspaceListing : this.message.isWorkspaceListing;
+        this.message.workspaceData = typeof processedData.workspaceData !== 'undefined' ? processedData.workspaceData : this.message.workspaceData;
+        this.message.isQueryCollection = typeof processedData.isQueryCollection !== 'undefined' ? processedData.isQueryCollection : this.message.isQueryCollection;
+        this.message.queryCollectionData = typeof processedData.queryCollectionData !== 'undefined' ? processedData.queryCollectionData : this.message.queryCollectionData;
 
         if (processedData.workflowData) {
           console.log('[ChatMessage] ✓ Workflow data set on message');
@@ -264,38 +331,16 @@ define([
           console.log('[ChatMessage] Review Workflow button clicked');
           this.showWorkflowDialog();
         }));
-      } else if (this.message.isWorkspaceListing && this.message.workspaceData) {
-        // Add a class to the message div to allow wider display for workspace listings
-        domClass.add(messageDiv, 'workspace-listing-message');
-
-        // Show workspace explorer adapter directly in the message
-        var workspaceWidget = new WorkspaceExplorerAdapter({
-          region: 'center',
-          allowDragAndDrop: false, // Disable drag-and-drop in chat context
-          onlyWritable: false
-        });
-
-        // Set the MCP data (path and items)
-        if (this.message.workspaceData && typeof this.message.workspaceData === 'object') {
-          workspaceWidget.setMcpData(this.message.workspaceData);
-        } else if (Array.isArray(this.message.workspaceData)) {
-          // Backward compatibility: if it's just an array, treat as items
-          workspaceWidget.setMcpData({ items: this.message.workspaceData });
-        }
-
-        // Create a container for the workspace widget
-        // Make it wider by using full width and overriding any parent constraints
-        // Reduced height for more compact display
-        var workspaceContainer = domConstruct.create('div', {
-          class: 'workspace-explorer-container',
-          style: 'min-height: 200px; max-height: 400px; width: 100%; max-width: 100%; overflow-x: auto; overflow-y: auto;'
-        }, messageDiv);
-
-        // Place the widget's domNode in the container
-        domConstruct.place(workspaceWidget.domNode, workspaceContainer);
-
-        // Start the widget (required for Dojo widgets)
-        workspaceWidget.startup();
+      } else if (
+        this.message.uiAction === 'show_file_metadata' &&
+        this.message.uiPayload
+      ) {
+        this.renderFileMetadataWidget(messageDiv);
+      } else if (
+        (this.message.isWorkspaceBrowse && this.message.uiPayload) ||
+        (this.message.isWorkspaceListing && this.message.workspaceData)
+      ) {
+        this.renderWorkspaceBrowseSummaryWidget(messageDiv);
       } else if (this.message.isQueryCollection && this.message.queryCollectionData) {
         // Render query collection file reference widget
         this.renderQueryCollectionWidget(messageDiv);
@@ -348,6 +393,169 @@ define([
         // Add copy text button
         this.createMessageActionButtons(buttonContainer);
       }
+    },
+
+    /**
+     * Renders a compact workspace browse summary with an action button.
+     * @param {HTMLElement} messageDiv - Container to render widget into
+     */
+    renderWorkspaceBrowseSummaryWidget: function(messageDiv) {
+      var payload = this.message.uiPayload || {
+        path: this.message.workspaceData && this.message.workspaceData.path ? this.message.workspaceData.path : null,
+        items: this.message.workspaceData && Array.isArray(this.message.workspaceData.items) ? this.message.workspaceData.items : [],
+        count: this.message.workspaceData && Array.isArray(this.message.workspaceData.items) ? this.message.workspaceData.items.length : 0,
+        result_type: 'list_result'
+      };
+
+      var countValue = this._getWorkspaceBrowseCount(payload);
+      var pathValue = payload.path || 'unknown path';
+      var summaryText = this.message.chatSummary || ('Found ' + countValue + ' ' + (countValue === 1 ? 'result' : 'results') + ' in ' + pathValue);
+      var workspaceBrowserUrl = this._buildWorkspaceBrowserUrl(payload.path);
+
+      var container = domConstruct.create('div', {
+        class: 'workspace-summary-card'
+      }, messageDiv);
+
+      domConstruct.create('div', {
+        class: 'workspace-summary-text',
+        innerHTML: this.escapeHtml(summaryText)
+      }, container);
+
+      domConstruct.create('div', {
+        class: 'workspace-summary-path',
+        innerHTML: 'Path: ' + this.escapeHtml(pathValue)
+      }, container);
+
+      if (workspaceBrowserUrl) {
+        domConstruct.create('a', {
+          class: 'workspace-summary-link',
+          href: workspaceBrowserUrl,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+          innerHTML: 'Open in Workspace Browser'
+        }, container);
+      }
+
+      var openButton = domConstruct.create('button', {
+        type: 'button',
+        class: 'workspace-summary-open-button',
+        innerHTML: 'Open Workspace Tab'
+      }, container);
+
+      on(openButton, 'click', lang.hitch(this, function() {
+        topic.publish('CopilotWorkspaceBrowseOpen', {
+          uiPayload: payload,
+          chatSummary: summaryText,
+          uiAction: this.message.uiAction || 'open_workspace_tab'
+        });
+      }));
+    },
+
+    /**
+     * Renders a file metadata widget with preview
+     * @param {HTMLElement} messageDiv - Container to render widget into
+     */
+    renderFileMetadataWidget: function(messageDiv) {
+      var payload = this.message.uiPayload;
+      var metadata = payload.metadata || {};
+      var filePath = payload.path || 'unknown';
+      var fileName = metadata.name || filePath.split('/').pop() || 'Unknown file';
+      var fileType = metadata.type || 'unknown';
+
+      var container = domConstruct.create('div', {
+        class: 'file-metadata-card'
+      }, messageDiv);
+
+      // File info header - show immediately (non-blocking)
+      domConstruct.create('div', {
+        class: 'file-metadata-header',
+        innerHTML: '<strong>' + this.escapeHtml(fileName) + '</strong>'
+      }, container);
+
+      domConstruct.create('div', {
+        class: 'file-metadata-type',
+        innerHTML: 'Type: ' + this.escapeHtml(fileType)
+      }, container);
+
+      domConstruct.create('div', {
+        class: 'file-metadata-path',
+        innerHTML: 'Path: ' + this.escapeHtml(filePath)
+      }, container);
+
+      // Download link container - will be populated async
+      var downloadContainer = domConstruct.create('div', {
+        class: 'file-metadata-download'
+      }, container);
+
+      // Preview container - will be populated async
+      var previewContainer = domConstruct.create('div', {
+        class: 'file-preview-container'
+      }, container);
+
+      domConstruct.create('div', {
+        class: 'file-preview-loading',
+        innerHTML: 'Loading preview...'
+      }, previewContainer);
+
+      // Non-blocking async fetch of download URL and preview
+      setTimeout(lang.hitch(this, function() {
+        WorkspaceManager.getDownloadUrls([filePath]).then(lang.hitch(this, function(urls) {
+          if (urls && urls.length > 0) {
+            var downloadUrl = urls[0];
+
+            // Add download link
+            domConstruct.empty(downloadContainer);
+            domConstruct.create('a', {
+              href: downloadUrl,
+              target: '_blank',
+              download: fileName,
+              innerHTML: '<i class="fa icon-download"></i> Download file'
+            }, downloadContainer);
+
+            // Fetch preview with byte-range request (first 2KB)
+            fetch(downloadUrl, {
+              headers: {
+                'Range': 'bytes=0-2047'
+              }
+            }).then(function(response) {
+              if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+              }
+              return response.text();
+            }).then(lang.hitch(this, function(previewText) {
+              domConstruct.empty(previewContainer);
+
+              domConstruct.create('div', {
+                class: 'file-preview-label',
+                innerHTML: 'Preview (first 2KB):'
+              }, previewContainer);
+
+              domConstruct.create('pre', {
+                class: 'file-preview-content',
+                innerHTML: this.escapeHtml(previewText)
+              }, previewContainer);
+            })).catch(lang.hitch(this, function() {
+              domConstruct.empty(previewContainer);
+              domConstruct.create('div', {
+                class: 'file-preview-error',
+                innerHTML: 'There was an issue previewing this file'
+              }, previewContainer);
+            }));
+          } else {
+            domConstruct.empty(previewContainer);
+            domConstruct.create('div', {
+              class: 'file-preview-error',
+              innerHTML: 'There was an issue previewing this file'
+            }, previewContainer);
+          }
+        })).catch(lang.hitch(this, function() {
+          domConstruct.empty(previewContainer);
+          domConstruct.create('div', {
+            class: 'file-preview-error',
+            innerHTML: 'There was an issue previewing this file'
+          }, previewContainer);
+        }));
+      }), 0);
     },
 
     /**

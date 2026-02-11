@@ -647,6 +647,13 @@ define([
                   assistantMessage.source_tool = toolMetadata.source_tool;
                   assistantMessage.isWorkflow = toolMetadata.isWorkflow;
                   assistantMessage.workflowData = toolMetadata.workflowData;
+                  assistantMessage.isWorkspaceListing = toolMetadata.isWorkspaceListing;
+                  assistantMessage.workspaceData = toolMetadata.workspaceData;
+                  assistantMessage.isWorkspaceBrowse = toolMetadata.isWorkspaceBrowse;
+                  assistantMessage.workspaceBrowseResult = toolMetadata.workspaceBrowseResult;
+                  assistantMessage.chatSummary = toolMetadata.chatSummary;
+                  assistantMessage.uiPayload = toolMetadata.uiPayload;
+                  assistantMessage.uiAction = toolMetadata.uiAction;
               }
 
               assistantMessage.content += chunk;
@@ -782,6 +789,13 @@ define([
                       assistantMessage.source_tool = toolMetadata.source_tool;
                       assistantMessage.isWorkflow = toolMetadata.isWorkflow;
                       assistantMessage.workflowData = toolMetadata.workflowData;
+                      assistantMessage.isWorkspaceListing = toolMetadata.isWorkspaceListing;
+                      assistantMessage.workspaceData = toolMetadata.workspaceData;
+                      assistantMessage.isWorkspaceBrowse = toolMetadata.isWorkspaceBrowse;
+                      assistantMessage.workspaceBrowseResult = toolMetadata.workspaceBrowseResult;
+                      assistantMessage.chatSummary = toolMetadata.chatSummary;
+                      assistantMessage.uiPayload = toolMetadata.uiPayload;
+                      assistantMessage.uiAction = toolMetadata.uiAction;
                   }
 
                   this.chatStore.addMessage(assistantMessage);
@@ -935,6 +949,13 @@ define([
                       assistantMessage.source_tool = toolMetadata.source_tool;
                       assistantMessage.isWorkflow = toolMetadata.isWorkflow;
                       assistantMessage.workflowData = toolMetadata.workflowData;
+                      assistantMessage.isWorkspaceListing = toolMetadata.isWorkspaceListing;
+                      assistantMessage.workspaceData = toolMetadata.workspaceData;
+                      assistantMessage.isWorkspaceBrowse = toolMetadata.isWorkspaceBrowse;
+                      assistantMessage.workspaceBrowseResult = toolMetadata.workspaceBrowseResult;
+                      assistantMessage.chatSummary = toolMetadata.chatSummary;
+                      assistantMessage.uiPayload = toolMetadata.uiPayload;
+                      assistantMessage.uiAction = toolMetadata.uiAction;
                       console.log('[HANDLER] ✓ Assistant message updated with toolMetadata');
                       console.log('[HANDLER] assistantMessage.workflowData:', assistantMessage.workflowData);
                   } else {
@@ -1098,6 +1119,13 @@ define([
                         assistantMessage.source_tool = toolMetadata.source_tool;
                         assistantMessage.isWorkflow = toolMetadata.isWorkflow;
                         assistantMessage.workflowData = toolMetadata.workflowData;
+                        assistantMessage.isWorkspaceListing = toolMetadata.isWorkspaceListing;
+                        assistantMessage.workspaceData = toolMetadata.workspaceData;
+                        assistantMessage.isWorkspaceBrowse = toolMetadata.isWorkspaceBrowse;
+                        assistantMessage.workspaceBrowseResult = toolMetadata.workspaceBrowseResult;
+                        assistantMessage.chatSummary = toolMetadata.chatSummary;
+                        assistantMessage.uiPayload = toolMetadata.uiPayload;
+                        assistantMessage.uiAction = toolMetadata.uiAction;
                     }
 
                     this.chatStore.addMessage(assistantMessage);
@@ -1246,6 +1274,13 @@ define([
                       assistantMessage.source_tool = toolMetadata.source_tool;
                       assistantMessage.isWorkflow = toolMetadata.isWorkflow;
                       assistantMessage.workflowData = toolMetadata.workflowData;
+                      assistantMessage.isWorkspaceListing = toolMetadata.isWorkspaceListing;
+                      assistantMessage.workspaceData = toolMetadata.workspaceData;
+                      assistantMessage.isWorkspaceBrowse = toolMetadata.isWorkspaceBrowse;
+                      assistantMessage.workspaceBrowseResult = toolMetadata.workspaceBrowseResult;
+                      assistantMessage.chatSummary = toolMetadata.chatSummary;
+                      assistantMessage.uiPayload = toolMetadata.uiPayload;
+                      assistantMessage.uiAction = toolMetadata.uiAction;
                   }
                   this.chatStore.addMessage(assistantMessage);
                   assistantMessageCreated = true;

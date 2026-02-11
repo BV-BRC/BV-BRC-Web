@@ -423,6 +423,7 @@ define([
             this._fetchSessionFiles(false);
             // Reset workflows when changing session
             this.displayWidget.resetSessionWorkflows();
+            this.displayWidget.resetSessionWorkspaceBrowse();
 
             // Removed reloadUserSessions publish: the scroll bar will react to
             // ChatSession:Selected and other dedicated events, so a full reload

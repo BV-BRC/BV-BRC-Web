@@ -27,9 +27,10 @@ define([
   'markdown-it/dist/markdown-it.min', // Markdown parser
   'markdown-it-link-attributes/dist/markdown-it-link-attributes.min', // Plugin to add attributes to links
   './ChatMessage', // Custom message display widget
-  './data/SuggestedQuestions' // Suggested questions data module
+  './data/SuggestedQuestions', // Suggested questions data module
+  './WorkspaceExplorerAdapter'
 ], function (
-  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, request, markdownit, linkAttributes, ChatMessage, SuggestedQuestions
+  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, request, markdownit, linkAttributes, ChatMessage, SuggestedQuestions, WorkspaceExplorerAdapter
 ) {
 
   /**
@@ -84,6 +85,8 @@ define([
 
     // Session workflows panel state
     sessionWorkflows: [],
+    sessionWorkspaceBrowse: null,
+    workspaceExplorerWidget: null,
 
     /**
      * @constructor
@@ -145,6 +148,12 @@ define([
           style: 'display:none;'
         }, this.panelContainer);
 
+        // Create workspace panel container
+        this.workspaceContainer = domConstruct.create('div', {
+          class: 'copilot-workspace-container',
+          style: 'display:none;'
+        }, this.panelContainer);
+
         // Apply initial responsive padding
         this._updateResponsivePadding();
 
@@ -167,6 +176,7 @@ define([
         this.showEmptyState();
         this._renderFilesPanel();
         this._renderWorkflowsPanel();
+        this._renderWorkspacePanel();
 
         // Apply saved tab visibility preference (default: visible)
         try {
@@ -192,6 +202,10 @@ define([
         topic.subscribe('chatTextSizeChanged', lang.hitch(this, 'setFontSize'));
         topic.subscribe('copilotPanelTabsVisibilityChanged', lang.hitch(this, function(isVisible) {
           this.setTabsVisible(isVisible);
+        }));
+        topic.subscribe('CopilotWorkspaceBrowseOpen', lang.hitch(this, function(data) {
+          this.setActivePanel('workspace');
+          this.setSessionWorkspaceBrowseData(data || null);
         }));
         topic.subscribe('noJobDataError', lang.hitch(this, function(error) {
             error.message = 'No job data found.\n\n' + error.message;
@@ -222,6 +236,12 @@ define([
         class: 'copilot-panel-tab'
       }, this.tabContainer);
 
+      this.workspaceTabButton = domConstruct.create('button', {
+        type: 'button',
+        innerHTML: 'Workspace',
+        class: 'copilot-panel-tab'
+      }, this.tabContainer);
+
       on(this.messagesTabButton, 'click', lang.hitch(this, function() {
         this.setActivePanel('messages');
       }));
@@ -232,6 +252,10 @@ define([
 
       on(this.workflowsTabButton, 'click', lang.hitch(this, function() {
         this.setActivePanel('workflows');
+      }));
+
+      on(this.workspaceTabButton, 'click', lang.hitch(this, function() {
+        this.setActivePanel('workspace');
       }));
     },
 
@@ -250,6 +274,8 @@ define([
         this.activePanel = 'files';
       } else if (panel === 'workflows') {
         this.activePanel = 'workflows';
+      } else if (panel === 'workspace') {
+        this.activePanel = 'workspace';
       } else {
         this.activePanel = 'messages';
       }
@@ -257,10 +283,18 @@ define([
       domStyle.set(this.resultContainer, 'display', this.activePanel === 'messages' ? 'block' : 'none');
       domStyle.set(this.filesContainer, 'display', this.activePanel === 'files' ? 'block' : 'none');
       domStyle.set(this.workflowsContainer, 'display', this.activePanel === 'workflows' ? 'block' : 'none');
+      domStyle.set(this.workspaceContainer, 'display', this.activePanel === 'workspace' ? 'block' : 'none');
 
       domClass.toggle(this.messagesTabButton, 'copilot-panel-tab-active', this.activePanel === 'messages');
       domClass.toggle(this.filesTabButton, 'copilot-panel-tab-active', this.activePanel === 'files');
       domClass.toggle(this.workflowsTabButton, 'copilot-panel-tab-active', this.activePanel === 'workflows');
+      domClass.toggle(this.workspaceTabButton, 'copilot-panel-tab-active', this.activePanel === 'workspace');
+
+      // dgrid can mis-measure header/body when created while hidden.
+      // Ensure workspace grid recalculates layout when tab becomes visible.
+      if (this.activePanel === 'workspace' && this.workspaceExplorerWidget && typeof this.workspaceExplorerWidget.resize === 'function') {
+        this.workspaceExplorerWidget.resize();
+      }
     },
 
     /**
@@ -650,6 +684,7 @@ define([
       this.clearMessages();
       this.resetSessionFiles();
       this.resetSessionWorkflows();
+      this.resetSessionWorkspaceBrowse();
     },
 
     /**
@@ -742,6 +777,16 @@ define([
       this._renderWorkflowsPanel();
     },
 
+    resetSessionWorkspaceBrowse: function() {
+      this.sessionWorkspaceBrowse = null;
+      this._renderWorkspacePanel();
+    },
+
+    setSessionWorkspaceBrowseData: function(workspaceBrowseData) {
+      this.sessionWorkspaceBrowse = workspaceBrowseData || null;
+      this._renderWorkspacePanel();
+    },
+
     /**
      * Sets workflow data from session metadata
      * @param {Array} workflowIds - Array of workflow IDs from session metadata
@@ -773,6 +818,88 @@ define([
       this.sessionWorkflows.forEach(lang.hitch(this, function(workflowId) {
         this._renderWorkflowCard(workflowId, listNode);
       }));
+    },
+
+    _renderWorkspacePanel: function() {
+      if (!this.workspaceContainer) return;
+      domConstruct.empty(this.workspaceContainer);
+
+      if (this.workspaceExplorerWidget) {
+        this.workspaceExplorerWidget.destroyRecursive();
+        this.workspaceExplorerWidget = null;
+      }
+
+      if (!this.sessionWorkspaceBrowse || !this.sessionWorkspaceBrowse.uiPayload) {
+        domConstruct.create('div', {
+          class: 'copilot-workspace-empty',
+          innerHTML: 'No workspace browse results yet'
+        }, this.workspaceContainer);
+        return;
+      }
+
+      var payload = this.sessionWorkspaceBrowse.uiPayload;
+      var flattenedCount = 0;
+      if (Array.isArray(payload.items)) {
+        payload.items.forEach(function(item) {
+          if (Array.isArray(item)) {
+            flattenedCount += 1;
+          } else if (item && typeof item === 'object') {
+            for (var key in item) {
+              if (item.hasOwnProperty(key) && Array.isArray(item[key])) {
+                flattenedCount += item[key].length;
+              }
+            }
+          }
+        });
+      }
+      var countValue = payload.result_type === 'search_result'
+        ? flattenedCount
+        : (typeof payload.count === 'number' ? payload.count : flattenedCount);
+
+      var summaryBits = [];
+      summaryBits.push('Results: ' + countValue);
+      if (payload.path) {
+        summaryBits.push('Path: ' + payload.path);
+      }
+      if (payload.result_type) {
+        summaryBits.push('Type: ' + payload.result_type);
+      }
+
+      domConstruct.create('div', {
+        class: 'copilot-workspace-summary',
+        innerHTML: summaryBits.join(' | ')
+      }, this.workspaceContainer);
+
+      if (payload.path) {
+        domConstruct.create('a', {
+          class: 'copilot-file-workspace-link',
+          href: '/workspace' + (payload.path.charAt(0) === '/' ? payload.path : ('/' + payload.path)),
+          target: '_blank',
+          rel: 'noopener noreferrer',
+          innerHTML: 'Open in Workspace Browser'
+        }, this.workspaceContainer);
+      }
+
+      var gridContainer = domConstruct.create('div', {
+        class: 'copilot-workspace-grid-container'
+      }, this.workspaceContainer);
+
+      this.workspaceExplorerWidget = new WorkspaceExplorerAdapter({
+        region: 'center',
+        allowDragAndDrop: false,
+        onlyWritable: false
+      });
+
+      this.workspaceExplorerWidget.setMcpData({
+        path: payload.path || null,
+        items: Array.isArray(payload.items) ? payload.items : []
+      });
+
+      domConstruct.place(this.workspaceExplorerWidget.domNode, gridContainer);
+      this.workspaceExplorerWidget.startup();
+      if (typeof this.workspaceExplorerWidget.resize === 'function') {
+        this.workspaceExplorerWidget.resize();
+      }
     },
 
     /**

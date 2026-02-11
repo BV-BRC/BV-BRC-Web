@@ -337,24 +337,26 @@ define([
 
                                         if (processed) {
                                             dataToUse = processed;
+                                            toolMetadata = {
+                                                source_tool: parsed.tool
+                                            };
 
-                                            // Extract tool metadata for workflow handling
-                                            // TODO: I dont like this hack and need something more robust.
-                                            if (processed.isWorkflow && processed.workflowData) {
-                                                toolMetadata = {
-                                                    source_tool: parsed.tool,
-                                                    isWorkflow: processed.isWorkflow,
-                                                    workflowData: processed.workflowData
-                                                };
+                                            if (processed.isWorkflow) {
+                                                toolMetadata.isWorkflow = processed.isWorkflow;
+                                                toolMetadata.workflowData = processed.workflowData;
                                             }
 
-                                            // Extract tool metadata for workspace listing handling
-                                            if (processed.isWorkspaceListing && processed.workspaceData) {
-                                                toolMetadata = {
-                                                    source_tool: parsed.tool,
-                                                    isWorkspaceListing: processed.isWorkspaceListing,
-                                                    workspaceData: processed.workspaceData
-                                                };
+                                            if (processed.isWorkspaceListing) {
+                                                toolMetadata.isWorkspaceListing = processed.isWorkspaceListing;
+                                                toolMetadata.workspaceData = processed.workspaceData;
+                                            }
+
+                                            if (processed.isWorkspaceBrowse) {
+                                                toolMetadata.isWorkspaceBrowse = processed.isWorkspaceBrowse;
+                                                toolMetadata.workspaceBrowseResult = processed.workspaceBrowseResult;
+                                                toolMetadata.chatSummary = processed.chatSummary;
+                                                toolMetadata.uiPayload = processed.uiPayload;
+                                                toolMetadata.uiAction = processed.uiAction;
                                             }
                                         }
                                     }
