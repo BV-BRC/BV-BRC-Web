@@ -37,6 +37,7 @@ define([
         console.log('[CopilotToolHandler] chunk keys:', Object.keys(chunk));
         console.log('[CopilotToolHandler] has .content?', 'content' in chunk);
         console.log('[CopilotToolHandler] has .workflow_id?', 'workflow_id' in chunk);
+        console.log('[CopilotToolHandler] has .workflow_json?', 'workflow_json' in chunk);
         console.log('[CopilotToolHandler] has .steps?', 'steps' in chunk);
       } else if (typeof chunk === 'string') {
         console.log('[CopilotToolHandler] chunk string (first 100 chars):', chunk.substring(0, 100));
@@ -46,14 +47,41 @@ define([
         let content, parsedChunk;
 
         // If chunk is already a fully parsed workflow object, use it directly
-        if (typeof chunk === 'object' && !chunk.content && (chunk.workflow_id || chunk.steps)) {
-          console.log('[CopilotToolHandler] ✓ Path A: Chunk is already parsed workflow data');
-          return {
-            ...baseData,
-            chunk: JSON.stringify(chunk), // Store stringified version for display
-            isWorkflow: true,
-            workflowData: chunk // Use directly
-          };
+        // Check for old format (direct workflow) or new format (with workflow_json)
+        if (typeof chunk === 'object' && !chunk.content) {
+          // New format: {workflow_id, status, workflow_json: {...}, ...}
+          if (chunk.workflow_json) {
+            console.log('[CopilotToolHandler] ✓ Path A1: Chunk is new format with workflow_json');
+            // Extract workflow_json and merge with top-level metadata
+            let workflowData = {
+              ...chunk.workflow_json,
+              // Add execution metadata to workflow data
+              execution_metadata: {
+                workflow_id: chunk.workflow_id,
+                status: chunk.status,
+                submitted_at: chunk.submitted_at,
+                message: chunk.message,
+                status_url: chunk.status_url,
+                source: chunk.source
+              }
+            };
+            return {
+              ...baseData,
+              chunk: JSON.stringify(chunk), // Store full response for display
+              isWorkflow: true,
+              workflowData: workflowData // Store workflow_json with metadata
+            };
+          }
+          // Old format: direct workflow object
+          if (chunk.workflow_id || chunk.steps) {
+            console.log('[CopilotToolHandler] ✓ Path A2: Chunk is old format (direct workflow data)');
+            return {
+              ...baseData,
+              chunk: JSON.stringify(chunk), // Store stringified version for display
+              isWorkflow: true,
+              workflowData: chunk // Use directly
+            };
+          }
         }
 
         if (typeof chunk === 'object' && chunk.content) {
@@ -89,6 +117,30 @@ define([
           console.log('[CopilotToolHandler] ✓ Detected nested structure with source_tool and content');
           parsedChunk = parsedChunk.content; // Use the content object
           console.log('[CopilotToolHandler] ✓ Extracted content, keys:', Object.keys(parsedChunk));
+        }
+
+        // Handle new format: check if parsedChunk has workflow_json
+        if (parsedChunk && parsedChunk.workflow_json) {
+          console.log('[CopilotToolHandler] ✓ Detected new format with workflow_json');
+          // Extract workflow_json and merge with top-level metadata
+          let workflowData = {
+            ...parsedChunk.workflow_json,
+            // Add execution metadata to workflow data
+            execution_metadata: {
+              workflow_id: parsedChunk.workflow_id,
+              status: parsedChunk.status,
+              submitted_at: parsedChunk.submitted_at,
+              message: parsedChunk.message,
+              status_url: parsedChunk.status_url,
+              source: parsedChunk.source
+            }
+          };
+          return {
+            ...baseData,
+            chunk: content,
+            isWorkflow: true,
+            workflowData: workflowData // Store workflow_json with metadata
+          };
         }
 
         return {
@@ -236,9 +288,9 @@ define([
      * @returns {Object|null} Processed data or null if no special handling
      */
     processToolEvent: function(currentEvent, tool, parsed) {
-      // Handle final_response event for workflow manifest tool
+      // Handle final_response event for workflow tool
       if (currentEvent === 'final_response' &&
-          tool === 'bvbrc_server.generate_workflow_manifest' &&
+          tool === 'bvbrc_server.create_and_execute_workflow' &&
           parsed.chunk) {
         const processed = this._processWorkflowManifest(parsed.chunk, parsed);
         if (processed) {
@@ -393,8 +445,8 @@ define([
         return { content: content };
       }
 
-      // Handle workflow manifest tool
-      if (sourceTool === 'bvbrc_server.generate_workflow_manifest') {
+      // Handle workflow tool
+      if (sourceTool === 'bvbrc_server.create_and_execute_workflow') {
         const baseData = { chunk: content };
         const processed = this._processWorkflowManifest(content, baseData);
         if (processed) {

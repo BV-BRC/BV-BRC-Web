@@ -146,6 +146,53 @@ define([
         class: 'workflow-metadata'
       }, header);
 
+      // Display execution metadata if available (from bvbrc_server.create_and_execute_workflow tool)
+      if (workflow.execution_metadata) {
+        var execMeta = workflow.execution_metadata;
+        if (execMeta.workflow_id) {
+          domConstruct.create('div', {
+            class: 'workflow-execution-id',
+            innerHTML: '<strong>Workflow ID:</strong> ' + this.escapeHtml(execMeta.workflow_id)
+          }, metaContainer);
+        }
+        if (execMeta.status) {
+          var statusClass = 'workflow-status workflow-status-' + execMeta.status.toLowerCase();
+          domConstruct.create('div', {
+            class: statusClass,
+            innerHTML: '<strong>Status:</strong> <span class="status-value">' + this.escapeHtml(execMeta.status) + '</span>'
+          }, metaContainer);
+        }
+        if (execMeta.submitted_at) {
+          var submittedDate = new Date(execMeta.submitted_at);
+          domConstruct.create('div', {
+            class: 'workflow-submitted-at',
+            innerHTML: '<strong>Submitted:</strong> ' + this.escapeHtml(submittedDate.toLocaleString())
+          }, metaContainer);
+        }
+        if (execMeta.status_url) {
+          var statusLink = domConstruct.create('a', {
+            href: execMeta.status_url,
+            target: '_blank',
+            innerHTML: 'View Status',
+            class: 'workflow-status-link',
+            style: 'color: #0066cc; text-decoration: none; margin-left: 10px;'
+          });
+          statusLink.onmouseover = function() { this.style.textDecoration = 'underline'; };
+          statusLink.onmouseout = function() { this.style.textDecoration = 'none'; };
+          domConstruct.create('div', {
+            class: 'workflow-status-url',
+            style: 'margin-top: 5px;'
+          }, metaContainer).appendChild(statusLink);
+        }
+        if (execMeta.message) {
+          domConstruct.create('div', {
+            class: 'workflow-message',
+            innerHTML: '<strong>Message:</strong> ' + this.escapeHtml(execMeta.message),
+            style: 'margin-top: 5px; color: #666;'
+          }, metaContainer);
+        }
+      }
+
       if (workflow.version) {
         domConstruct.create('span', {
           class: 'workflow-version',

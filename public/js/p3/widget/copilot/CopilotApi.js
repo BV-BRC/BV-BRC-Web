@@ -167,6 +167,7 @@ define([
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             console.log('query');
+            console.log('Session ID:', sessionId);
             var data = {
                 query: inputText,
                 model: model,
@@ -221,6 +222,7 @@ define([
                 return;
             }
 
+            console.log('Session ID:', params.sessionId);
             var _self = this;
             var data = {
                 query: params.inputText,
@@ -244,9 +246,6 @@ define([
             // Create tool handler for special tool processing
             var toolHandler = new CopilotToolHandler();
 
-            console.log('[SSE] Initiating stream request to:', this.apiUrlBase + '/copilot-agent');
-            console.log('[SSE] Request data:', data);
-
             fetch(this.apiUrlBase + '/copilot-agent', {
                 method: 'POST',
                 headers: {
@@ -258,7 +257,6 @@ define([
                 body: JSON.stringify(data),
                 signal: this.currentAbortController.signal
             }).then(response => {
-                console.log('[SSE] Response received, status:', response.status, 'headers:', response.headers);
                 if (!response.ok) {
                     response.text().then(text => {
                         const err = new Error(`HTTP error! status: ${response.status}, message: ${text}`);
@@ -267,68 +265,56 @@ define([
                     return;
                 }
 
-                console.log('[SSE] Starting to read stream...');
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder('utf-8');
                 let buffer = '';
                 let currentEvent = null;
 
                 const processLine = (line) => {
-                    console.log('[SSE] Processing line:', JSON.stringify(line));
-
                     // Handle SSE comment lines (heartbeat)
                     if (line.startsWith(':')) {
-                        console.log('[SSE] Heartbeat received');
                         return;
                     }
 
                     // Handle event lines
                     if (line.startsWith('event:')) {
                         currentEvent = line.substring(6).trim();
-                        console.log('[SSE] Event type:', currentEvent);
                         return;
                     }
 
                     // Handle data lines
                     if (line.startsWith('data:')) {
                         const content = line.substring(5).trim();
-                        console.log('[SSE] Data line content:', content);
 
                         if (!content) return;
 
-                        console.log('[SSE] Raw data received:', content.substring(0, 100) + (content.length > 100 ? '...' : ''));
-
                         try {
                             const parsed = JSON.parse(content);
-                            console.log('[SSE] Parsed data:', parsed);
+                            console.log('[SSE] Event:', currentEvent);
 
                             // Let event handler process the event and create/update status message
                             var statusMessage = eventHandler.handleEvent(currentEvent, parsed);
 
                             // If a status message was created/updated, send it via callback
                             if (statusMessage && onStatusMessage) {
-                                console.log('[SSE] Status message created/updated:', statusMessage);
                                 onStatusMessage(statusMessage);
                             }
 
                             // Handle different event types
                             switch (currentEvent) {
                                 case 'queued':
-                                    console.log('Job queued:', parsed);
                                     if (onProgress) {
                                         onProgress({ type: 'queued', data: parsed });
                                     }
                                     break;
 
                                 case 'started':
-                                    console.log('Processing started:', parsed);
                                     if (onProgress) {
                                         onProgress({ type: 'started', data: parsed });
                                     }
                                     break;
 
                                 case 'progress':
-                                    console.log('Progress:', parsed);
                                     if (onProgress) {
                                         onProgress({
                                             type: 'progress',
@@ -343,44 +329,23 @@ define([
                                 case 'content':
                                 case 'final_response':
                                     // This is the actual LLM response text
-                                    console.log('[SSE] Content event received, parsed:', parsed);
-
                                     // Check for special tool handling
                                     let dataToUse = parsed;
                                     let toolMetadata = null;
                                     if (currentEvent === 'final_response' && parsed.tool) {
-                                        console.log('[SSE] 🔧 Calling tool handler for tool:', parsed.tool);
-                                        console.log('[SSE] 🔧 parsed.chunk type:', typeof parsed.chunk);
-                                        console.log('[SSE] 🔧 parsed.chunk value:', parsed.chunk);
-
                                         const processed = toolHandler.processToolEvent(currentEvent, parsed.tool, parsed);
 
-                                        console.log('[SSE] 🔧 Tool handler returned:', processed ? 'data' : 'null');
                                         if (processed) {
                                             dataToUse = processed;
-                                            console.log('[SSE] ✓ Tool handler processed event successfully');
-                                            console.log('[SSE] ✓ processed.isWorkflow:', processed.isWorkflow);
-                                            console.log('[SSE] ✓ processed.isWorkspaceListing:', processed.isWorkspaceListing);
 
                                             // Extract tool metadata for workflow handling
                                             // TODO: I dont like this hack and need something more robust.
                                             if (processed.isWorkflow && processed.workflowData) {
-                                                console.log('[SSE] ✓ Creating toolMetadata for workflow');
-                                                console.log('[SSE] processed.workflowData type:', typeof processed.workflowData);
-                                                console.log('[SSE] processed.workflowData keys:', processed.workflowData ? Object.keys(processed.workflowData) : 'null');
-                                                console.log('[SSE] processed.workflowData.workflow_name:', processed.workflowData ? processed.workflowData.workflow_name : 'null');
-                                                console.log('[SSE] Full processed.workflowData:', JSON.stringify(processed.workflowData, null, 2));
-
                                                 toolMetadata = {
                                                     source_tool: parsed.tool,
                                                     isWorkflow: processed.isWorkflow,
                                                     workflowData: processed.workflowData
                                                 };
-
-                                                console.log('[SSE] ✓ toolMetadata created:', toolMetadata);
-                                                console.log('[SSE] toolMetadata.workflowData:', toolMetadata.workflowData);
-                                            } else {
-                                                console.log('[SSE] ⚠ Not creating workflow toolMetadata - isWorkflow:', processed.isWorkflow, 'has workflowData:', !!processed.workflowData);
                                             }
 
                                             // Extract tool metadata for workspace listing handling
@@ -399,27 +364,16 @@ define([
                                     if (typeof textChunk === 'object' && textChunk !== null) {
                                         textChunk = JSON.stringify(textChunk, null, 2);
                                     }
-                                    console.log('[SSE] Extracted text chunk:', textChunk);
-                                    console.log('[SSE] toolMetadata before onData call:', toolMetadata);
-                                    if (toolMetadata && toolMetadata.workflowData) {
-                                        console.log('[SSE] toolMetadata.workflowData before onData:', toolMetadata.workflowData);
-                                        console.log('[SSE] toolMetadata.workflowData.workflow_name:', toolMetadata.workflowData.workflow_name);
-                                    }
                                     if (textChunk && onData) {
-                                        console.log('[SSE] Calling onData callback with chunk and toolMetadata');
                                         onData(textChunk, toolMetadata);
-                                    } else {
-                                        console.log('[SSE] NOT calling onData - textChunk:', textChunk, 'onData:', !!onData);
                                     }
                                     break;
 
                                 case 'done':
-                                    console.log('Processing complete:', parsed);
                                     _self.currentAbortController = null;
 
                                     // Remove status message when done
                                     if (statusMessage && statusMessage.should_remove && onStatusMessage) {
-                                        console.log('[SSE] Removing status message');
                                         // Send removal signal by passing message with remove flag
                                         onStatusMessage({ ...statusMessage, should_remove: true });
                                     }
@@ -439,7 +393,6 @@ define([
                                 case 'forced_finalize':
                                 case 'query_progress':
                                     // These are handled by the event handler above
-                                    console.log('[SSE] Agent event:', currentEvent, parsed);
                                     break;
 
                                 default:
@@ -457,7 +410,6 @@ define([
                 function pump() {
                     return reader.read().then(({ done, value }) => {
                         if (done) {
-                            console.log('[SSE] Stream ended');
                             if (buffer.length > 0) {
                                 const lines = buffer.split('\n');
                                 lines.forEach(line => {
@@ -470,7 +422,6 @@ define([
                         }
 
                         const chunk = decoder.decode(value, { stream: true });
-                        console.log('[SSE] Chunk received, size:', chunk.length, 'bytes');
                         buffer += chunk;
                         let eol;
                         while ((eol = buffer.indexOf('\n')) >= 0) {
@@ -506,6 +457,7 @@ define([
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             console.log('query');
+            console.log('Session ID:', sessionId);
             var data = {
                 query: inputText,
                 model: model,
@@ -547,6 +499,7 @@ define([
         submitRagQuery: function(inputQuery, ragDb, numDocs, sessionId, model) {
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
+            console.log('Session ID:', sessionId);
 
             var data = {
                 query: inputQuery,
@@ -591,6 +544,7 @@ define([
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             console.log('query');
+            console.log('Session ID: N/A (chat-only query)');
             var data = {
                 query: inputText,
                 model: model,
@@ -620,6 +574,7 @@ define([
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             console.log('query');
+            console.log('Session ID:', sessionId);
             var data = {
                 query: inputText,
                 model: model,
