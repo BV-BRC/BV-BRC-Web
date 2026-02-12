@@ -67,12 +67,25 @@ define([
       }
 
       this.activeWorkspace = this.activeWorkspace || window.App.activeWorkspace;
-      this.activeWorkspacePath = this.activeWorkspacePath || window.App.activeWorkspacePath;
+      // Guard: Don't use activeWorkspacePath if it contains 'undefined'
+      var appPath = window.App.activeWorkspacePath;
+      if (appPath && appPath.indexOf && appPath.indexOf('undefined') !== -1) {
+        appPath = '';
+      }
+      this.activeWorkspacePath = this.activeWorkspacePath || appPath;
       this.inherited(arguments);
     },
 
     _setValueAttr: function (val) {
-      this.value = val || window.App.activeWorkspacePath;
+      // Guard: Don't use paths containing 'undefined'
+      var fallback = window.App.activeWorkspacePath;
+      if (fallback && fallback.indexOf && fallback.indexOf('undefined') !== -1) {
+        fallback = '';
+      }
+      if (val && val.indexOf && val.indexOf('undefined') !== -1) {
+        val = '';
+      }
+      this.value = val || fallback;
     },
 
     gethelp: function () {
