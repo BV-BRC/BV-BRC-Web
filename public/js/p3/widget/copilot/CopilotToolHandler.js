@@ -49,22 +49,46 @@ define([
         // If chunk is already a fully parsed workflow object, use it directly
         // Check for old format (direct workflow) or new format (with workflow_json)
         if (typeof chunk === 'object' && !chunk.content) {
-          // New format: {workflow_id, status, workflow_json: {...}, ...}
-          if (chunk.workflow_json) {
-            console.log('[CopilotToolHandler] ✓ Path A1: Chunk is new format with workflow_json');
-            // Extract workflow_json and merge with top-level metadata
-            let workflowData = {
-              ...chunk.workflow_json,
-              // Add execution metadata to workflow data
-              execution_metadata: {
-                workflow_id: chunk.workflow_id,
-                status: chunk.status,
-                submitted_at: chunk.submitted_at,
-                message: chunk.message,
-                status_url: chunk.status_url,
-                source: chunk.source
-              }
-            };
+          // New format from plan_workflow or submit_workflow: {workflow_json: {...}, message: "...", ...}
+          // Also detect plan_workflow by presence of prompt_payload
+          if (chunk.workflow_json || chunk.prompt_payload) {
+            console.log('[CopilotToolHandler] ✓ Path A1: Chunk is new format with workflow_json or prompt_payload');
+
+            // For plan_workflow, the workflow_json contains the actual workflow
+            // For submit_workflow, it has execution metadata too
+            let workflowData;
+
+            if (chunk.workflow_json) {
+              // Extract workflow_json and merge with top-level metadata
+              workflowData = {
+                ...chunk.workflow_json,
+                // Add execution metadata to workflow data (some fields may be undefined for plan_workflow)
+                execution_metadata: {
+                  workflow_id: chunk.workflow_id,
+                  status: chunk.status,
+                  submitted_at: chunk.submitted_at,
+                  message: chunk.message,
+                  status_url: chunk.status_url,
+                  source: chunk.source,
+                  // Distinguish between planned and submitted workflows
+                  is_planned: !chunk.status || chunk.status === 'planned',
+                  is_submitted: !!(chunk.status && chunk.status !== 'planned')
+                }
+              };
+            } else {
+              // If only prompt_payload exists, this is likely a plan_workflow response
+              // Create a minimal workflow data structure
+              workflowData = {
+                workflow_name: 'Planned Workflow',
+                message: chunk.message || 'Workflow planned',
+                execution_metadata: {
+                  message: chunk.message,
+                  is_planned: true,
+                  is_submitted: false
+                }
+              };
+            }
+
             return {
               ...baseData,
               chunk: JSON.stringify(chunk), // Store full response for display
@@ -119,22 +143,45 @@ define([
           console.log('[CopilotToolHandler] ✓ Extracted content, keys:', Object.keys(parsedChunk));
         }
 
-        // Handle new format: check if parsedChunk has workflow_json
-        if (parsedChunk && parsedChunk.workflow_json) {
-          console.log('[CopilotToolHandler] ✓ Detected new format with workflow_json');
-          // Extract workflow_json and merge with top-level metadata
-          let workflowData = {
-            ...parsedChunk.workflow_json,
-            // Add execution metadata to workflow data
-            execution_metadata: {
-              workflow_id: parsedChunk.workflow_id,
-              status: parsedChunk.status,
-              submitted_at: parsedChunk.submitted_at,
-              message: parsedChunk.message,
-              status_url: parsedChunk.status_url,
-              source: parsedChunk.source
-            }
-          };
+        // Handle new format: check if parsedChunk has workflow_json or prompt_payload
+        if (parsedChunk && (parsedChunk.workflow_json || parsedChunk.prompt_payload)) {
+          console.log('[CopilotToolHandler] ✓ Detected new format with workflow_json or prompt_payload');
+
+          // For plan_workflow, the workflow_json contains the actual workflow
+          // For submit_workflow, it has execution metadata too
+          let workflowData;
+
+          if (parsedChunk.workflow_json) {
+            // Extract workflow_json and merge with top-level metadata
+            workflowData = {
+              ...parsedChunk.workflow_json,
+              // Add execution metadata to workflow data (some fields may be undefined for plan_workflow)
+              execution_metadata: {
+                workflow_id: parsedChunk.workflow_id,
+                status: parsedChunk.status,
+                submitted_at: parsedChunk.submitted_at,
+                message: parsedChunk.message,
+                status_url: parsedChunk.status_url,
+                source: parsedChunk.source,
+                // Distinguish between planned and submitted workflows
+                is_planned: !parsedChunk.status || parsedChunk.status === 'planned',
+                is_submitted: !!(parsedChunk.status && parsedChunk.status !== 'planned')
+              }
+            };
+          } else {
+            // If only prompt_payload exists, this is likely a plan_workflow response
+            // Create a minimal workflow data structure
+            workflowData = {
+              workflow_name: 'Planned Workflow',
+              message: parsedChunk.message || 'Workflow planned',
+              execution_metadata: {
+                message: parsedChunk.message,
+                is_planned: true,
+                is_submitted: false
+              }
+            };
+          }
+
           return {
             ...baseData,
             chunk: content,
@@ -389,9 +436,10 @@ define([
      * @returns {Object|null} Processed data or null if no special handling
      */
     processToolEvent: function(currentEvent, tool, parsed) {
-      // Handle final_response event for workflow tool
+      // Handle final_response event for workflow tools (plan_workflow and submit_workflow)
       if (currentEvent === 'final_response' &&
-          tool === 'bvbrc_server.create_and_execute_workflow' &&
+          (tool === 'bvbrc_server.plan_workflow' ||
+           tool === 'bvbrc_server.submit_workflow') &&
           parsed.chunk) {
         const processed = this._processWorkflowManifest(parsed.chunk, parsed);
         if (processed) {
@@ -545,8 +593,9 @@ define([
       if (!sourceTool || !content) {
         return { content: content };
       }
-      // Handle workflow tool
-      if (sourceTool === 'bvbrc_server.create_and_execute_workflow') {
+      // Handle workflow tools (plan_workflow and submit_workflow)
+      if (sourceTool === 'bvbrc_server.plan_workflow' ||
+          sourceTool === 'bvbrc_server.submit_workflow') {
         const baseData = { chunk: content };
         const processed = this._processWorkflowManifest(content, baseData);
         if (processed) {

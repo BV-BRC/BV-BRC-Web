@@ -146,7 +146,7 @@ define([
         class: 'workflow-metadata'
       }, header);
 
-      // Display execution metadata if available (from bvbrc_server.create_and_execute_workflow tool)
+      // Display execution metadata if available (from plan_workflow or submit_workflow tools)
       if (workflow.execution_metadata) {
         var execMeta = workflow.execution_metadata;
         if (execMeta.workflow_id) {
