@@ -86,7 +86,10 @@ define([
     // Session workflows panel state
     sessionWorkflows: [],
     sessionWorkspaceBrowse: null,
+    sessionWorkspaceSelectionItems: [],
     workspaceExplorerWidget: null,
+    onWorkspaceSelectionChanged: null,
+    _workspaceSelectionHandles: null,
 
     /**
      * @constructor
@@ -688,6 +691,7 @@ define([
       this.resetSessionFiles();
       this.resetSessionWorkflows();
       this.resetSessionWorkspaceBrowse();
+      this.setSessionWorkspaceSelectionData([]);
     },
 
     /**
@@ -790,6 +794,50 @@ define([
       this._renderWorkspacePanel();
     },
 
+    setSessionWorkspaceSelectionData: function(selectedItems) {
+      this.sessionWorkspaceSelectionItems = Array.isArray(selectedItems) ? selectedItems.slice() : [];
+      if (this.workspaceExplorerWidget && typeof this.workspaceExplorerWidget.setSelectedWorkspaceItems === 'function') {
+        this.workspaceExplorerWidget.setSelectedWorkspaceItems(this.sessionWorkspaceSelectionItems);
+      }
+    },
+
+    _clearWorkspaceSelectionHandles: function() {
+      if (!this._workspaceSelectionHandles) {
+        return;
+      }
+      this._workspaceSelectionHandles.forEach(function(handle) {
+        if (handle && typeof handle.remove === 'function') {
+          handle.remove();
+        }
+      });
+      this._workspaceSelectionHandles = [];
+    },
+
+    _publishWorkspaceSelectionChange: function() {
+      if (typeof this.onWorkspaceSelectionChanged !== 'function' || !this.workspaceExplorerWidget) {
+        return;
+      }
+      var selectedItems = [];
+      if (typeof this.workspaceExplorerWidget.getSelectedWorkspaceItems === 'function') {
+        selectedItems = this.workspaceExplorerWidget.getSelectedWorkspaceItems();
+      }
+      this.onWorkspaceSelectionChanged({
+        sessionId: this.sessionId,
+        items: selectedItems
+      });
+    },
+
+    _bindWorkspaceSelectionEvents: function() {
+      this._clearWorkspaceSelectionHandles();
+      if (!this.workspaceExplorerWidget) {
+        return;
+      }
+      this._workspaceSelectionHandles = [
+        on(this.workspaceExplorerWidget.domNode, 'select', lang.hitch(this, this._publishWorkspaceSelectionChange)),
+        on(this.workspaceExplorerWidget.domNode, 'deselect', lang.hitch(this, this._publishWorkspaceSelectionChange))
+      ];
+    },
+
     /**
      * Sets workflow data from session metadata
      * @param {Array} workflowIds - Array of workflow IDs from session metadata
@@ -828,6 +876,7 @@ define([
       domConstruct.empty(this.workspaceContainer);
 
       if (this.workspaceExplorerWidget) {
+        this._clearWorkspaceSelectionHandles();
         this.workspaceExplorerWidget.destroyRecursive();
         this.workspaceExplorerWidget = null;
       }
@@ -900,6 +949,10 @@ define([
 
       domConstruct.place(this.workspaceExplorerWidget.domNode, gridContainer);
       this.workspaceExplorerWidget.startup();
+      this._bindWorkspaceSelectionEvents();
+      if (typeof this.workspaceExplorerWidget.setSelectedWorkspaceItems === 'function') {
+        this.workspaceExplorerWidget.setSelectedWorkspaceItems(this.sessionWorkspaceSelectionItems);
+      }
       if (typeof this.workspaceExplorerWidget.resize === 'function') {
         this.workspaceExplorerWidget.resize();
       }

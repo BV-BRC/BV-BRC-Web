@@ -163,7 +163,7 @@ define([
          * - Makes POST request to copilot endpoint
          * - Handles errors with detailed logging
          */
-        submitCopilotQuery: function(inputText, sessionId, systemPrompt, model, save_chat = true, ragDb, numDocs, image, enhancedPrompt = null) {
+        submitCopilotQuery: function(inputText, sessionId, systemPrompt, model, save_chat = true, ragDb, numDocs, image, enhancedPrompt = null, extraPayload) {
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             console.log('query');
@@ -178,6 +178,10 @@ define([
                 include_history: true,
                 auth_token: window.App.authorizationToken || null
             };
+
+            if (extraPayload && Array.isArray(extraPayload.selected_workspace_items) && extraPayload.selected_workspace_items.length > 0) {
+                data.selected_workspace_items = extraPayload.selected_workspace_items;
+            }
 
             return request.post(this.apiUrlBase + '/copilot-agent', {
                 data: JSON.stringify(data),
@@ -235,6 +239,10 @@ define([
                 auth_token: window.App.authorizationToken || null,
                 stream: true  // Enable SSE streaming mode
             };
+
+            if (Array.isArray(params.selected_workspace_items) && params.selected_workspace_items.length > 0) {
+                data.workspace_items = params.selected_workspace_items;
+            }
 
             // Create abort controller for this request
             this.currentAbortController = new AbortController();

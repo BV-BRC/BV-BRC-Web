@@ -377,7 +377,7 @@ define([
       }
 
       // Debug breakpoint for unsupported result types
-      debugger;
+
       return {
         isWorkspaceListing: false,
         workspaceData: null,
@@ -405,6 +405,17 @@ define([
         return null;
       }
 
+      // If chunk is already a plain text summary (e.g., "Found 1 result in..."),
+      // just pass it through without trying to parse as JSON
+      if (typeof chunk === 'string' && !chunk.trim().startsWith('{') && !chunk.trim().startsWith('[')) {
+        console.log('[CopilotToolHandler] Chunk appears to be pre-formatted summary, passing through');
+        return {
+          ...baseData,
+          chunk: chunk,
+          isWorkspaceBrowse: false
+        };
+      }
+
       try {
         var parsed = this._parseToolChunk(chunk);
         var normalized = this._normalizeWorkspaceBrowsePayload(parsed.parsedChunk);
@@ -424,7 +435,12 @@ define([
       } catch (e) {
         console.error('[CopilotToolHandler] ✗ Failed to parse workspace listing chunk:', e.message);
         console.error('[CopilotToolHandler] Error stack:', e.stack);
-        return null;
+        // If parsing fails, treat it as plain text
+        return {
+          ...baseData,
+          chunk: typeof chunk === 'string' ? chunk : JSON.stringify(chunk),
+          isWorkspaceBrowse: false
+        };
       }
     },
 

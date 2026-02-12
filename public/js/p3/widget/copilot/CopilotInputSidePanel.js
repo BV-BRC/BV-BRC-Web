@@ -248,7 +248,9 @@ define([
             }
             var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
 
-            this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, null, null, base64Image)
+            this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, null, null, base64Image, null, {
+                selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
+            })
                 .then(lang.hitch(this, function(response) {
                     // Only add assistant message and system message (if present) - user message was already added
                     var messagesToAdd = [];
@@ -326,7 +328,9 @@ define([
 
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, this.model).then(lang.hitch(this, function(response) {
+        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, this.model, true, null, null, null, null, {
+            selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
+        }).then(lang.hitch(this, function(response) {
             // Only add assistant message and system message (if present) - user message was already added
             var messagesToAdd = [];
             if (response.systemMessage) {
@@ -417,7 +421,9 @@ define([
       this.submitButton.set('disabled', true);
 
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
-      this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model).then(lang.hitch(this, function(response) {
+      this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, null, null, null, null, {
+        selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
+      }).then(lang.hitch(this, function(response) {
         // Only add assistant message and system message (if present) - user message was already added
         var messagesToAdd = [];
         if (response.systemMessage) {
@@ -498,7 +504,9 @@ define([
         var jobSystemPrompt = 'Job stdout:\n' + stdout + '\n\nJob stderr:\n' + stderr;
 
         // Submit query with job details as system prompt
-        return _self.copilotApi.submitCopilotQuery(inputText, _self.sessionId, jobSystemPrompt, _self.model);
+        return _self.copilotApi.submitCopilotQuery(inputText, _self.sessionId, jobSystemPrompt, _self.model, true, null, null, null, null, {
+          selected_workspace_items: _self._getSelectedWorkspaceItemsForRequest()
+        });
       }).then(lang.hitch(this, function(response) {
         // Only add assistant message and system message (if present) - user message was already added
         var messagesToAdd = [];

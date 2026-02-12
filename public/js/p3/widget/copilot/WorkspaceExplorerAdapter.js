@@ -2,10 +2,12 @@ define([
   'dojo/_base/declare',
   'dojo/_base/lang',
   'dojo/_base/Deferred',
+  'dojo/store/Memory',
+  'dgrid/selector',
   '../WorkspaceExplorerView',
   '../../WorkspaceManager'
 ], function (
-  declare, lang, Deferred, WorkspaceExplorerView, WorkspaceManager
+  declare, lang, Deferred, Memory, selector, WorkspaceExplorerView, WorkspaceManager
 ) {
   /**
    * @class WorkspaceExplorerAdapter
@@ -13,11 +15,14 @@ define([
    * Instead of fetching data from WorkspaceManager, it uses pre-fetched data from MCP responses
    */
   return declare([WorkspaceExplorerView], {
+    _copilotSelectionColumnKey: '__copilotRowSelect',
+
     /** @property {Array} mcpItems - The MCP workspace items data */
     mcpItems: null,
 
     /** @property {string} mcpPath - The path from the MCP response */
     mcpPath: null,
+    _pendingSelectedItems: null,
 
     /**
      * Normalizes a workspace path to the format expected by WorkspaceManager
@@ -279,6 +284,85 @@ define([
       }
     },
 
+    _ensureCheckboxSelectionColumn: function() {
+      if (this.columns && this.columns[this._copilotSelectionColumnKey]) {
+        return;
+      }
+
+      this.selectionMode = 'none';
+      this.allowSelectAll = false;
+
+      var nextColumns = {};
+      nextColumns[this._copilotSelectionColumnKey] = selector({
+        selectorType: 'checkbox',
+        label: '',
+        sortable: false,
+        unhidable: true
+      });
+
+      var existingColumns = this.columns || {};
+      for (var key in existingColumns) {
+        if (existingColumns.hasOwnProperty(key)) {
+          nextColumns[key] = existingColumns[key];
+        }
+      }
+
+      this.columns = nextColumns;
+      this.set('columns', nextColumns);
+    },
+
+    _itemIdentity: function(item) {
+      if (item && item.id) {
+        return 'id:' + item.id;
+      }
+      var path = item && item.path ? item.path : '';
+      var name = item && item.name ? item.name : '';
+      var type = item && item.type ? item.type : '';
+      return 'fallback:' + path + '|' + name + '|' + type;
+    },
+
+    getSelectedWorkspaceItems: function() {
+      var selected = [];
+      var selectionMap = this.selection || {};
+      for (var rowId in selectionMap) {
+        if (!selectionMap.hasOwnProperty(rowId) || !selectionMap[rowId]) {
+          continue;
+        }
+        var row = this.row(rowId);
+        if (row && row.data && row.data.type !== 'parentfolder') {
+          selected.push(row.data);
+        }
+      }
+      return selected;
+    },
+
+    _applyWorkspaceSelection: function(selectedItems) {
+      var identityMap = {};
+      selectedItems.forEach(lang.hitch(this, function(item) {
+        identityMap[this._itemIdentity(item)] = true;
+      }));
+
+      if (typeof this.clearSelection === 'function') {
+        this.clearSelection();
+      }
+
+      var currentItems = Array.isArray(this._items) ? this._items : [];
+      currentItems.forEach(lang.hitch(this, function(item) {
+        if (item && item.type !== 'parentfolder' && identityMap[this._itemIdentity(item)]) {
+          this.select(item.id);
+        }
+      }));
+    },
+
+    setSelectedWorkspaceItems: function(items) {
+      var selectedItems = Array.isArray(items) ? items : [];
+      this._pendingSelectedItems = selectedItems.slice();
+      if (!this._items || !this._items.length) {
+        return;
+      }
+      this._applyWorkspaceSelection(selectedItems);
+    },
+
     /**
      * Override startup to handle MCP data initialization
      */
@@ -287,12 +371,34 @@ define([
         return;
       }
 
+      // Initialize a Memory store for the grid so selector can track row identity
+      if (!this.store) {
+        this.set('store', new Memory({
+          idProperty: 'id',
+          data: []
+        }));
+      }
+
       // Set path from MCP data if available
       if (this.mcpPath && !this.path) {
         this.path = this.mcpPath;
       }
 
+      this._ensureCheckboxSelectionColumn();
       this.inherited(arguments);
+    },
+
+    render: function(val, items) {
+      // Update the store with new data before rendering
+      if (this.store && Array.isArray(items)) {
+        this.store.setData(items);
+      }
+
+      this.inherited(arguments);
+
+      if (Array.isArray(this._pendingSelectedItems) && this._pendingSelectedItems.length > 0) {
+        this._applyWorkspaceSelection(this._pendingSelectedItems);
+      }
     }
   });
 });

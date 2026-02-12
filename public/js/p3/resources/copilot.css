@@ -1211,6 +1211,34 @@
     background-color: rgba(33, 150, 243, 0.2) !important;
 }
 
+/* Workspace Selection Indicator */
+.workspaceSelectionIndicator {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: 30px;
+    padding: 0 8px;
+    margin-right: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    background-color: #f9fafb;
+    color: #374151;
+    font-size: 11px;
+    line-height: 1;
+    cursor: default;
+    overflow: visible;
+    z-index: 40;
+}
+
+.workspaceSelectionIndicator.hasSelection {
+    border-color: #93c5fd;
+    background-color: #eff6ff;
+}
+
+.workspaceSelectionCount {
+    white-space: nowrap;
+}
+
 /* ========================================
    SYSTEM DIALOG STYLES
    ======================================== */

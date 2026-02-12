@@ -55,6 +55,7 @@ define([
       pageContentEnabled: false,
 
       enhancedPrompt: null,
+      selectedWorkspaceItems: [],
 
       /**
        * Constructor that initializes the widget with provided options
@@ -62,6 +63,36 @@ define([
        */
       constructor: function(args) {
         declare.safeMixin(this, args);
+      },
+
+      _getSelectedWorkspaceItemsForRequest: function() {
+        if (!Array.isArray(this.selectedWorkspaceItems) || this.selectedWorkspaceItems.length === 0) {
+          return [];
+        }
+        // Extract only path and type from items
+        return this.selectedWorkspaceItems.map(function(item) {
+          if (!item || !item.path) {
+            return null;
+          }
+          return {
+            path: item.path,
+            type: item.type || null
+          };
+        }).filter(function(item) {
+          return item !== null && typeof item.path === 'string' && item.path.length > 0;
+        });
+      },
+
+      _appendWorkspaceSelectionToStreamParams: function(params) {
+        var selectedItems = this._getSelectedWorkspaceItemsForRequest();
+        if (selectedItems.length > 0) {
+          params.selected_workspace_items = selectedItems;
+        }
+      },
+
+      setSelectedWorkspaceItems: function(items) {
+        this.selectedWorkspaceItems = Array.isArray(items) ? items.slice() : [];
+        this._renderWorkspaceSelectionIndicator();
       },
 
       /**
@@ -149,6 +180,16 @@ define([
         // Add button to container
         this.submitButton.placeAt(inputContainer);
 
+        // Small selection indicator showing current workspace item selection count
+        this.workspaceSelectionIndicator = domConstruct.create('div', {
+            className: 'workspaceSelectionIndicator',
+            title: 'Selected workspace files'
+        }, inputContainer);
+
+        this.workspaceSelectionCountNode = domConstruct.create('span', {
+            className: 'workspaceSelectionCount'
+        }, this.workspaceSelectionIndicator);
+
         // Subscribe to page content toggle changes from ChatSessionOptionsBar
         topic.subscribe('pageContentToggleChanged', lang.hitch(this, function(checked) {
             this.pageContentEnabled = checked;
@@ -197,6 +238,29 @@ define([
             }
           }
         }));
+
+        this._renderWorkspaceSelectionIndicator();
+      },
+
+      _renderWorkspaceSelectionIndicator: function() {
+        if (!this.workspaceSelectionIndicator || !this.workspaceSelectionCountNode) {
+          return;
+        }
+
+        var selectedItems = Array.isArray(this.selectedWorkspaceItems) ? this.selectedWorkspaceItems : [];
+        var count = selectedItems.length;
+        var label = count === 1 ? '1 selected' : count + ' selected';
+        var selectedItemLabels = selectedItems.map(function(item) {
+          return item && item.path ? item.path : (item && item.name ? item.name : 'Unknown item');
+        });
+
+        this.workspaceSelectionCountNode.textContent = label;
+        this.workspaceSelectionIndicator.title = count > 0
+          ? ('Selected workspace files (' + count + ')' +
+            (selectedItemLabels.length > 0 ? '\n' + selectedItemLabels.join('\n') : ''))
+          : 'No workspace files selected';
+        this.workspaceSelectionIndicator.classList.toggle('hasSelection', count > 0);
+        this.workspaceSelectionIndicator.style.display = count > 0 ? 'inline-flex' : 'none';
       },
 
       /**
@@ -244,7 +308,9 @@ define([
             systemPrompt += this.statePrompt;
         }
 
-        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt).then(lang.hitch(this, function(response) {
+        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt, {
+          selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
+        }).then(lang.hitch(this, function(response) {
           // Only add assistant message and system message (if present) - user message was already added
           var messagesToAdd = [];
           if (response.systemMessage) {
@@ -314,7 +380,9 @@ define([
             systemPrompt += this.statePrompt;
         }
 
-        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, null, null).then(lang.hitch(this, function(response) {
+        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, null, null, null, null, {
+          selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
+        }).then(lang.hitch(this, function(response) {
           // Only add assistant message and system message (if present) - user message was already added
           var messagesToAdd = [];
           if (response.systemMessage) {
@@ -535,7 +603,9 @@ define([
 
           var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
 
-          this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image, this.enhancedPrompt)
+          this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image, this.enhancedPrompt, {
+              selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
+          })
               .then(lang.hitch(this, function(response) {
                   // Only add assistant message and system message (if present) - user message was already added
                   var messagesToAdd = [];
@@ -636,6 +706,7 @@ define([
           numDocs: this.numDocs,
           enhancedPrompt: this.enhancedPrompt
       };
+      this._appendWorkspaceSelectionToStreamParams(params);
 
       this.copilotApi.submitCopilotQueryStream(params,
           (chunk, toolMetadata) => {
@@ -766,6 +837,7 @@ define([
         numDocs: this.numDocs,
         enhancedPrompt: this.enhancedPrompt
       };
+      this._appendWorkspaceSelectionToStreamParams(params);
 
       this.copilotApi.submitCopilotQueryStream(params,
           (chunk, toolMetadata) => {
@@ -919,6 +991,7 @@ define([
           model: this.model,
           save_chat: true
       };
+      this._appendWorkspaceSelectionToStreamParams(params);
       console.log('[HANDLER] About to call submitCopilotQueryStream with params:', params);
       this.copilotApi.submitCopilotQueryStream(params,
           (chunk, toolMetadata) => {
@@ -1102,6 +1175,7 @@ define([
             image: base64Image,
             enhancedPrompt: this.enhancedPrompt
         };
+        this._appendWorkspaceSelectionToStreamParams(params);
 
         this.copilotApi.submitCopilotQueryStream(params,
             (chunk, toolMetadata) => {
@@ -1257,6 +1331,7 @@ define([
           numDocs: this.numDocs,
           enhancedPrompt: this.enhancedPrompt
       };
+      this._appendWorkspaceSelectionToStreamParams(params);
 
       this.copilotApi.submitCopilotQueryStream(params,
           (chunk, toolMetadata) => {

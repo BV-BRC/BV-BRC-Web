@@ -30,7 +30,8 @@ define([
     'dojo/dom-class',
     'dojo/dom-style',
     './CopilotStateManager',
-    './SessionFilesStore'
+    './SessionFilesStore',
+    './SessionWorkspaceSelectionStore'
 ], function (
     declare,
     BorderContainer,
@@ -47,7 +48,8 @@ define([
     domClass,
     domStyle,
     CopilotStateManager,
-    SessionFilesStore
+    SessionFilesStore,
+    SessionWorkspaceSelectionStore
 ) {
     /**
      * @class ChatSessionContainer
@@ -92,6 +94,11 @@ define([
             this.sessionFilesPageSize = 20;
             this._sessionFilesRequestToken = 0;
             this._sessionFilesState = SessionFilesStore.createInitialState(this.sessionId, this.sessionFilesPageSize);
+            this._workspaceSelectionsBySession = {};
+            this._sessionWorkspaceSelectionState = SessionWorkspaceSelectionStore.createInitialState(this.sessionId);
+            if (this.sessionId) {
+                this._workspaceSelectionsBySession[this.sessionId] = this._sessionWorkspaceSelectionState;
+            }
         },
 
         /**
@@ -376,7 +383,8 @@ define([
                 copilotApi: this.copilotApi,
                 chatStore: this.chatStore,
                 displayWidget: this.displayWidget,
-                sessionId: this.sessionId
+                sessionId: this.sessionId,
+                selectedWorkspaceItems: this._sessionWorkspaceSelectionState.items
             });
             this.addChild(this.inputWidget);
         },
@@ -393,8 +401,10 @@ define([
                 chatStore: this.chatStore,
                 sessionId: this.sessionId,
                 onLoadMoreFiles: lang.hitch(this, this._loadMoreSessionFiles),
+                onWorkspaceSelectionChanged: lang.hitch(this, this._handleWorkspaceSelectionChanged),
                 context: 'main-chat'  // Mark this as main chat context
             });
+            this.displayWidget.setSessionWorkspaceSelectionData(this._sessionWorkspaceSelectionState.items);
             this.addChild(this.displayWidget);
         },
 
@@ -421,6 +431,8 @@ define([
             this.titleWidget.setSessionId(sessionId);
             this._resetSessionFilesState(sessionId);
             this._fetchSessionFiles(false);
+            this._resetSessionWorkspaceSelectionState(sessionId);
+            this._syncWorkspaceSelectionsToWidgets();
             // Reset workflows when changing session
             this.displayWidget.resetSessionWorkflows();
             this.displayWidget.resetSessionWorkspaceBrowse();
@@ -568,6 +580,38 @@ define([
             if (this.displayWidget && this.displayWidget.resetSessionFiles) {
                 this.displayWidget.resetSessionFiles();
             }
+        },
+
+        _resetSessionWorkspaceSelectionState: function(sessionId) {
+            if (sessionId && this._workspaceSelectionsBySession[sessionId]) {
+                this._sessionWorkspaceSelectionState = this._workspaceSelectionsBySession[sessionId];
+                this._sessionWorkspaceSelectionState.sessionId = sessionId;
+                return;
+            }
+            this._sessionWorkspaceSelectionState = SessionWorkspaceSelectionStore.createInitialState(sessionId);
+            if (sessionId) {
+                this._workspaceSelectionsBySession[sessionId] = this._sessionWorkspaceSelectionState;
+            }
+        },
+
+        _syncWorkspaceSelectionsToWidgets: function() {
+            var selectedItems = (this._sessionWorkspaceSelectionState && this._sessionWorkspaceSelectionState.items) || [];
+            if (this.displayWidget && this.displayWidget.setSessionWorkspaceSelectionData) {
+                this.displayWidget.setSessionWorkspaceSelectionData(selectedItems);
+            }
+            if (this.inputWidget && this.inputWidget.setSelectedWorkspaceItems) {
+                this.inputWidget.setSelectedWorkspaceItems(selectedItems);
+            }
+        },
+
+        _handleWorkspaceSelectionChanged: function(payload) {
+            var sessionId = this.sessionId;
+            if (!sessionId || !this._sessionWorkspaceSelectionState) {
+                return;
+            }
+            SessionWorkspaceSelectionStore.setItems(this._sessionWorkspaceSelectionState, payload && payload.items ? payload.items : []);
+            this._workspaceSelectionsBySession[sessionId] = this._sessionWorkspaceSelectionState;
+            this._syncWorkspaceSelectionsToWidgets();
         },
 
         _syncFilesToDisplay: function() {

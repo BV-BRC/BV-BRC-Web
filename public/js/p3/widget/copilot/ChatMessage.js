@@ -147,7 +147,15 @@ define([
       }
 
       // Process content based on source_tool using tool handler
-      if (sourceTool) {
+      // Skip processing if the message already has processed tool data (uiPayload/workspaceBrowseResult)
+      // This happens when SSE handler already processed the tool output
+      var alreadyProcessed = false;
+      if (sourceTool === 'bvbrc_server.workspace_browse_tool' && this.message.uiPayload && this.message.workspaceBrowseResult) {
+        console.log('[ChatMessage] Workspace browse already processed by SSE handler, skipping re-processing');
+        alreadyProcessed = true;
+      }
+
+      if (sourceTool && !alreadyProcessed) {
         // If content is an object with nested structure, extract the actual content
         if (typeof contentToProcess === 'object' && contentToProcess.content) {
           contentToProcess = contentToProcess.content;
@@ -890,40 +898,87 @@ define([
         return;
       }
 
-      // Create WorkflowEngine widget
-      var workflowEngine = new WorkflowEngine({
-        workflowData: this.message.workflowData
-      });
+      var workflowEngine = null;
+      var overlayNode = null;
+      var keyHandler = null;
 
-      // Create dialog
-      var workflowDialog = new Dialog({
-        title: 'Workflow Review',
-        style: 'width: 700px; max-height: 80vh;',
-        content: workflowEngine.domNode
-      });
+      try {
+        workflowEngine = new WorkflowEngine({
+          workflowData: this.message.workflowData
+        });
 
-      // Add close button
-      var buttonContainer = domConstruct.create('div', {
-        style: 'text-align: right; margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;'
-      });
+        overlayNode = domConstruct.create('div', {
+          class: 'workflow-modal-overlay',
+          style: 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 2147483000; display: flex; align-items: center; justify-content: center; padding: 24px;'
+        }, document.body);
 
-      var closeButton = domConstruct.create('button', {
-        innerHTML: 'Close',
-        style: 'padding: 8px 16px; background: #666; color: white; border: none; border-radius: 4px; cursor: pointer;'
-      });
+        var modalNode = domConstruct.create('div', {
+          class: 'workflow-modal-dialog',
+          style: 'background: #fff; width: min(980px, 95vw); max-height: 88vh; border-radius: 10px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; overflow: hidden;'
+        }, overlayNode);
 
-      closeButton.onclick = function() {
-        workflowDialog.hide();
-        workflowDialog.destroy();
-        workflowEngine.destroy();
-      };
+        var headerNode = domConstruct.create('div', {
+          class: 'workflow-modal-header',
+          style: 'display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid #e5e7eb;'
+        }, modalNode);
 
-      buttonContainer.appendChild(closeButton);
-      workflowDialog.containerNode.appendChild(buttonContainer);
+        domConstruct.create('div', {
+          innerHTML: 'Workflow Review',
+          style: 'font-size: 18px; font-weight: 600; color: #1f2937;'
+        }, headerNode);
 
-      // Show dialog
-      workflowDialog.startup();
-      workflowDialog.show();
+        var closeButton = domConstruct.create('button', {
+          innerHTML: 'Close',
+          style: 'padding: 8px 14px; background: #666; color: #fff; border: none; border-radius: 4px; cursor: pointer;'
+        }, headerNode);
+
+        var contentNode = domConstruct.create('div', {
+          class: 'workflow-modal-content',
+          style: 'padding: 16px; overflow-y: auto; overflow-x: hidden;'
+        }, modalNode);
+
+        domConstruct.place(workflowEngine.domNode, contentNode);
+
+        var closeModal = function() {
+          if (keyHandler) {
+            keyHandler.remove();
+            keyHandler = null;
+          }
+          if (workflowEngine) {
+            workflowEngine.destroyRecursive();
+            workflowEngine = null;
+          }
+          if (overlayNode && overlayNode.parentNode) {
+            overlayNode.parentNode.removeChild(overlayNode);
+            overlayNode = null;
+          }
+        };
+
+        on(closeButton, 'click', closeModal);
+        on(overlayNode, 'click', function(evt) {
+          if (evt.target === overlayNode) {
+            closeModal();
+          }
+        });
+        keyHandler = on(document, 'keydown', function(evt) {
+          if (evt.key === 'Escape') {
+            closeModal();
+          }
+        });
+
+        closeButton.focus();
+      } catch (e) {
+        if (keyHandler) {
+          keyHandler.remove();
+        }
+        if (workflowEngine) {
+          workflowEngine.destroyRecursive();
+        }
+        if (overlayNode && overlayNode.parentNode) {
+          overlayNode.parentNode.removeChild(overlayNode);
+        }
+        console.error('[ChatMessage] ✗ Error showing workflow dialog:', e);
+      }
     }
   });
 });

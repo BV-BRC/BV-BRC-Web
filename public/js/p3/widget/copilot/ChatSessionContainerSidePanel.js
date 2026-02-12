@@ -104,7 +104,8 @@ define([
                 sessionId: this.sessionId,
                 context: this.context,
                 model: this.model,
-                ragDb: this.ragDb
+                ragDb: this.ragDb,
+                selectedWorkspaceItems: this._sessionWorkspaceSelectionState.items
             });
             this.addChild(this.inputWidget);
         },
@@ -139,6 +140,7 @@ define([
                 chatStore: this.chatStore,
                 sessionId: this.sessionId,
                 onLoadMoreFiles: lang.hitch(this, this._loadMoreSessionFiles),
+                onWorkspaceSelectionChanged: lang.hitch(this, this._handleWorkspaceSelectionChanged),
                 context: 'side-panel'  // Mark this as side panel context
             };
 
@@ -148,6 +150,7 @@ define([
             }
 
             this.displayWidget = new CopilotDisplay(displayOpts);
+            this.displayWidget.setSessionWorkspaceSelectionData(this._sessionWorkspaceSelectionState.items);
             this.addChild(this.displayWidget);
         },
 
