@@ -627,8 +627,20 @@ define([
             if (!eventPayload || eventPayload.session_id !== this.sessionId) {
                 return;
             }
-            SessionFilesStore.insertRealtimeFile(this._sessionFilesState, eventPayload);
-            this._syncFilesToDisplay();
+
+            // Check if the SSE event has complete metadata
+            var hasCompleteMetadata = eventPayload.file &&
+                                     eventPayload.file.created_at &&
+                                     (typeof eventPayload.file.size_bytes === 'number' || eventPayload.file.size_formatted);
+
+            if (hasCompleteMetadata) {
+                // Use the SSE event data directly if it has metadata
+                SessionFilesStore.insertRealtimeFile(this._sessionFilesState, eventPayload);
+                this._syncFilesToDisplay();
+            } else {
+                // SSE event is missing metadata, refresh from API to get complete data
+                this._fetchSessionFiles(false);
+            }
         },
 
         /**

@@ -290,7 +290,6 @@ define([
 
                         try {
                             const parsed = JSON.parse(content);
-                            console.log('[SSE] Event:', currentEvent);
 
                             // Let event handler process the event and create/update status message
                             var statusMessage = eventHandler.handleEvent(currentEvent, parsed);

@@ -685,10 +685,10 @@ define([
               console.log('progressInfo', progressInfo);
               switch(progressInfo.type) {
                   case 'queued':
-                      console.log('Request queued...');
+                      // Silent - no logging for queued event
                       break;
                   case 'started':
-                      console.log('Processing started...');
+                      // Silent - no logging for started event
                       break;
                   case 'progress':
                       console.log(`Processing: ${progressInfo.percentage}% (Iteration ${progressInfo.iteration}/${progressInfo.max_iterations})`);
@@ -826,10 +826,10 @@ define([
               // onProgress - handle queue status updates
               switch(progressInfo.type) {
                   case 'queued':
-                      console.log('Request queued...');
+                      // Silent - no logging for queued event
                       break;
                   case 'started':
-                      console.log('Processing started...');
+                      // Silent - no logging for started event
                       break;
                   case 'progress':
                       console.log(`Processing: ${progressInfo.percentage}% (Iteration ${progressInfo.iteration}/${progressInfo.max_iterations})`);
@@ -841,7 +841,10 @@ define([
           },
           (statusMessage) => {
               // onStatusMessage - handle status message updates
-              console.log('[HANDLER] Status message received:', statusMessage);
+              // Only log non-temporary status messages for debugging
+              if (statusMessage && !statusMessage.is_temporary) {
+                  console.log('[HANDLER] Status message received:', statusMessage);
+              }
 
               if (statusMessage.should_remove) {
                   // Remove the status message from chat store
@@ -992,10 +995,10 @@ define([
               // onProgress - handle queue status updates
               switch(progressInfo.type) {
                   case 'queued':
-                      console.log('Request queued...');
+                      // Silent - no logging for queued event
                       break;
                   case 'started':
-                      console.log('Processing started...');
+                      // Silent - no logging for started event
                       break;
                   case 'progress':
                       console.log(`Processing: ${progressInfo.percentage}% (Iteration ${progressInfo.iteration}/${progressInfo.max_iterations})`);
@@ -1007,7 +1010,10 @@ define([
           },
           (statusMessage) => {
               // onStatusMessage - handle status message updates
-              console.log('[HANDLER] Status message received:', statusMessage);
+              // Only log non-temporary status messages for debugging
+              if (statusMessage && !statusMessage.is_temporary) {
+                  console.log('[HANDLER] Status message received:', statusMessage);
+              }
 
               if (statusMessage.should_remove) {
                   // Remove the status message from chat store
@@ -1160,10 +1166,10 @@ define([
                 // onProgress - handle queue status updates
                 switch(progressInfo.type) {
                     case 'queued':
-                        console.log('Request queued...');
+                        // Silent - no logging for queued event
                         break;
                     case 'started':
-                        console.log('Processing started...');
+                        // Silent - no logging for started event
                         break;
                     case 'progress':
                         console.log(`Processing: ${progressInfo.percentage}% (Iteration ${progressInfo.iteration}/${progressInfo.max_iterations})`);
@@ -1314,10 +1320,10 @@ define([
               // onProgress - handle queue status updates
               switch(progressInfo.type) {
                   case 'queued':
-                      console.log('Request queued...');
+                      // Silent - no logging for queued event
                       break;
                   case 'started':
-                      console.log('Processing started...');
+                      // Silent - no logging for started event
                       break;
                   case 'progress':
                       console.log(`Processing: ${progressInfo.percentage}% (Iteration ${progressInfo.iteration}/${progressInfo.max_iterations})`);

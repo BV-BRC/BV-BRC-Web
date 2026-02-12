@@ -563,14 +563,17 @@ define([
           innerHTML: 'Tool: ' + toolLabel
         }, card);
 
+        var formattedCreated = this._formatTimestamp(file.created_at);
+        var formattedSize = this._formatSize(file);
+
         domConstruct.create('div', {
           class: 'copilot-file-meta',
-          innerHTML: 'Created: ' + this._formatTimestamp(file.created_at)
+          innerHTML: 'Created: ' + formattedCreated
         }, card);
 
         domConstruct.create('div', {
           class: 'copilot-file-meta',
-          innerHTML: 'Size: ' + this._formatSize(file)
+          innerHTML: 'Size: ' + formattedSize
         }, card);
 
         if (typeof file.record_count === 'number') {

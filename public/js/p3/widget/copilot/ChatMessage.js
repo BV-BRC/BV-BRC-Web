@@ -125,11 +125,6 @@ define([
      *   3. User/Assistant messages (standard display)
      */
     renderMessage: function() {
-      // Check for source_tool field and log it if it exists
-      if (this.message.source_tool) {
-        console.log('[ChatMessage] source_tool:', this.message.source_tool);
-      }
-
       // Check if content is a JSON string containing source_tool (for real-time results)
       var sourceTool = this.message.source_tool;
       var contentToProcess = this.message.content;
@@ -139,7 +134,6 @@ define([
           // Try to parse the content as JSON to see if source_tool is inside
           var parsedContent = JSON.parse(this.message.content);
           if (parsedContent && parsedContent.source_tool) {
-            console.log('[ChatMessage] Found source_tool inside JSON string content:', parsedContent.source_tool);
             sourceTool = parsedContent.source_tool;
             // Set it on the message object for consistency
             this.message.source_tool = sourceTool;
@@ -148,38 +142,18 @@ define([
           }
         } catch (e) {
           // Not valid JSON, continue with normal processing
-          console.log('[ChatMessage] Content is not valid JSON, skipping source_tool extraction');
+          // Silently skip source_tool extraction for non-JSON content
         }
       }
 
       // Process content based on source_tool using tool handler
       if (sourceTool) {
-        console.log('[ChatMessage] Processing message with source_tool:', sourceTool);
-        console.log('[ChatMessage] Original content type:', typeof this.message.content);
-        console.log('[ChatMessage] Original content (first 200 chars):',
-          typeof this.message.content === 'string' ? this.message.content.substring(0, 200) : this.message.content);
-
         // If content is an object with nested structure, extract the actual content
         if (typeof contentToProcess === 'object' && contentToProcess.content) {
-          console.log('[ChatMessage] Content is object with nested .content, extracting');
-          console.log('[ChatMessage] Nested content:', contentToProcess.content);
           contentToProcess = contentToProcess.content;
         }
 
         var processedData = this.toolHandler.processMessageContent(contentToProcess, sourceTool);
-
-        console.log('[ChatMessage] Processed data:', processedData);
-        console.log('[ChatMessage] processedData type:', typeof processedData);
-        console.log('[ChatMessage] processedData keys:', processedData ? Object.keys(processedData) : 'null');
-        console.log('[ChatMessage] processedData.isWorkflow:', processedData.isWorkflow);
-        console.log('[ChatMessage] processedData.workflowData:', processedData.workflowData);
-        console.log('[ChatMessage] processedData.workflowData type:', typeof processedData.workflowData);
-        console.log('[ChatMessage] processedData.isWorkspaceListing:', processedData.isWorkspaceListing);
-        console.log('[ChatMessage] processedData.isQueryCollection:', processedData.isQueryCollection);
-        console.log('[ChatMessage] processedData.queryCollectionData:', processedData.queryCollectionData);
-        console.log('[ChatMessage] processedData.content type:', typeof processedData.content);
-        console.log('[ChatMessage] processedData.content value:', processedData.content);
-        console.log('[ChatMessage] processedData.content is string?', typeof processedData.content === 'string');
 
         this.message.content = processedData.content;
         this.message.isWorkflow = typeof processedData.isWorkflow !== 'undefined' ? processedData.isWorkflow : this.message.isWorkflow;
@@ -194,20 +168,7 @@ define([
         this.message.isQueryCollection = typeof processedData.isQueryCollection !== 'undefined' ? processedData.isQueryCollection : this.message.isQueryCollection;
         this.message.queryCollectionData = typeof processedData.queryCollectionData !== 'undefined' ? processedData.queryCollectionData : this.message.queryCollectionData;
 
-        if (processedData.workflowData) {
-          console.log('[ChatMessage] ✓ Workflow data set on message');
-          console.log('[ChatMessage] workflowData keys:', Object.keys(processedData.workflowData));
-          console.log('[ChatMessage] workflowData.workflow_name:', processedData.workflowData.workflow_name);
-        } else {
-          console.warn('[ChatMessage] ⚠ No workflowData in processed data');
-        }
-
-        if (processedData.queryCollectionData) {
-          console.log('[ChatMessage] ✓ Query collection data set on message');
-          console.log('[ChatMessage] queryCollectionData keys:', Object.keys(processedData.queryCollectionData));
-          console.log('[ChatMessage] queryCollectionData.workspace:', processedData.queryCollectionData.workspace);
-          console.log('[ChatMessage] queryCollectionData.summary:', processedData.queryCollectionData.summary);
-        }
+        // Workflow and query collection data are set on message object above
       }
 
       // Add more top margin for first message, less for subsequent
@@ -308,12 +269,8 @@ define([
      */
     renderUserOrAssistantMessage: function(messageDiv) {
       // Check if this is a workflow message
-      console.log('[ChatMessage] renderUserOrAssistantMessage() - checking for workflow');
-      console.log('[ChatMessage] isWorkflow:', this.message.isWorkflow);
-      console.log('[ChatMessage] workflowData exists:', !!this.message.workflowData);
 
       if (this.message.isWorkflow && this.message.workflowData) {
-        console.log('[ChatMessage] ✓ Rendering workflow button');
         // Show a "Review Workflow" button instead of displaying the content
         var workflowButtonContainer = domConstruct.create('div', {
           class: 'workflow-button-container',
@@ -328,7 +285,6 @@ define([
 
         // Add click handler to show workflow dialog
         on(reviewWorkflowButton, 'click', lang.hitch(this, function() {
-          console.log('[ChatMessage] Review Workflow button clicked');
           this.showWorkflowDialog();
         }));
       } else if (
@@ -346,11 +302,6 @@ define([
         this.renderQueryCollectionWidget(messageDiv);
       } else {
         // Normal message rendering
-        console.log('[ChatMessage] renderUserOrAssistantMessage - Normal message rendering');
-        console.log('[ChatMessage] this.message.content type:', typeof this.message.content);
-        console.log('[ChatMessage] this.message.content value:', this.message.content);
-        console.log('[ChatMessage] this.message.content is string?', typeof this.message.content === 'string');
-        console.log('[ChatMessage] this.message keys:', Object.keys(this.message));
 
         // Ensure content is a string before rendering with markdown
         var contentToRender = '';
@@ -363,7 +314,6 @@ define([
 
             // Special handling for rag_result type - extract only the summary field
             if (typeof this.message.content === 'object' && this.message.content.type === 'rag_result') {
-              console.log('[ChatMessage] ✓ Detected rag_result type, extracting summary');
               contentToRender = this.message.content.summary || '';
             } else {
               // Convert to string - if it's an object, stringify it
@@ -373,9 +323,6 @@ define([
             }
           }
         }
-
-        console.log('[ChatMessage] contentToRender type:', typeof contentToRender);
-        console.log('[ChatMessage] contentToRender (first 200 chars):', contentToRender.substring(0, 200));
 
         domConstruct.create('div', {
           innerHTML: contentToRender ? this.md.render(contentToRender) : '',
@@ -937,29 +884,16 @@ define([
      * Shows a dialog displaying the workflow using WorkflowEngine widget
      */
     showWorkflowDialog: function() {
-      console.log('[ChatMessage] showWorkflowDialog() called');
-      console.log('[ChatMessage] message object:', this.message);
-      console.log('[ChatMessage] message.workflowData:', this.message.workflowData);
-      console.log('[ChatMessage] message.workflowData type:', typeof this.message.workflowData);
-      console.log('[ChatMessage] message.isWorkflow:', this.message.isWorkflow);
-      console.log('[ChatMessage] message.source_tool:', this.message.source_tool);
-
       if (!this.message.workflowData) {
         console.error('[ChatMessage] ✗ No workflow data available');
         console.error('[ChatMessage] Message properties:', Object.keys(this.message));
         return;
       }
 
-      console.log('[ChatMessage] ✓ Workflow data exists, creating WorkflowEngine');
-      console.log('[ChatMessage] Workflow data content:', JSON.stringify(this.message.workflowData, null, 2));
-
       // Create WorkflowEngine widget
       var workflowEngine = new WorkflowEngine({
         workflowData: this.message.workflowData
       });
-
-      console.log('[ChatMessage] ✓ WorkflowEngine created');
-      console.log('[ChatMessage] workflowEngine.domNode:', workflowEngine.domNode);
 
       // Create dialog
       var workflowDialog = new Dialog({
@@ -967,8 +901,6 @@ define([
         style: 'width: 700px; max-height: 80vh;',
         content: workflowEngine.domNode
       });
-
-      console.log('[ChatMessage] ✓ Dialog created');
 
       // Add close button
       var buttonContainer = domConstruct.create('div', {
