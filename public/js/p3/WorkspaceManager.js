@@ -346,6 +346,11 @@ define([
     },
 
     getDefaultFolder: function (type) {
+      // Guard: Don't return paths with invalid userId
+      // Check for falsy userId OR the string 'undefined'
+      if (!this.userId || this.userId === 'undefined') {
+        return '';
+      }
       switch (type) {
         case 'genome_group':
           return '/' + [this.userId, 'home', 'Genome Groups'].join('/');
@@ -362,6 +367,10 @@ define([
     },
     _userWorkspacesGetter: function () {
       var _self = this;
+      // Guard: Don't make API calls with invalid userId
+      if (!this.userId || this.userId === 'undefined') {
+        return [];
+      }
       if (this.userWorkspaces && this.userWorkspaces.length > 0) {
         return this.userWorkspaces;
       }
@@ -1437,6 +1446,11 @@ define([
     },
 
     _currentWorkspaceGetter: function () {
+      // Guard: Don't return paths with invalid userId
+      // Check for falsy userId OR the string 'undefined'
+      if (!this.userId || this.userId === 'undefined') {
+        return { path: '' };
+      }
       if (!this.currentWorkspace) {
         this.currentWorkspace = Deferred.when(this.get('userWorkspaces'), lang.hitch(this, function (cws) {
           if (!cws || cws.length < 1) {
@@ -1456,6 +1470,11 @@ define([
     },
 
     _currentPathGetter: function () {
+      // Guard: Don't return paths with invalid userId
+      // Check for falsy userId OR the string 'undefined'
+      if (!this.userId || this.userId === 'undefined') {
+        return '';
+      }
       if (!this.currentPath) {
         this.currentPath = Deferred.when(this.get('currentWorkspace'), lang.hitch(this, function (cws) {
           this.currentPath = cws.path;
