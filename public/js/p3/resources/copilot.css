@@ -543,6 +543,30 @@
   overflow-x: auto;
 }
 
+/* Hide scrollbars in markdown content while keeping scroll functionality */
+.markdown-content,
+.markdown-content * {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.markdown-content::-webkit-scrollbar,
+.markdown-content *::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Hide scrollbars for pre and table elements inside messages */
+.message pre,
+.message table {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.message pre::-webkit-scrollbar,
+.message table::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
 .message p {
   margin: 0 0 10px 0;
 }
