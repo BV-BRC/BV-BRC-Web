@@ -361,7 +361,8 @@ define([
 
       if (this.filteredTaxon) {
         domConstruct.place(document.createTextNode(' » '), container);
-        domConstruct.place(document.createTextNode(this.filteredTaxon), container);
+        // filteredTaxon contains pre-escaped HTML from QueryToEnglish, render it as HTML
+        var filterSpan = domConstruct.create('span', { innerHTML: this.filteredTaxon }, container);
       }
 
       return container;
