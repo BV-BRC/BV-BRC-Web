@@ -5,7 +5,7 @@ define(['dojo/request', 'dojo/_base/Deferred'
 
     return function (method, params, options) {
       var def = new defer();
-      defer.when(xhr.post(url, {
+      var xhrPromise = xhr.post(url, {
         headers: {
           'content-type': 'application/jsonrpc+json',
           Authorization: token,
@@ -16,7 +16,9 @@ define(['dojo/request', 'dojo/_base/Deferred'
         data: JSON.stringify({
           id: idx++, method: method, params: params, jsonrpc: '2.0'
         })
-      }), function (response) {
+      });
+
+      defer.when(xhrPromise, function (response) {
         // console.log("JSON RPC RESPONSE: ", response);
         if (response.error) {
           return def.reject(response.error);
@@ -35,6 +37,13 @@ define(['dojo/request', 'dojo/_base/Deferred'
           def.reject(err.response);
         }
       });
+
+      // Attach cancel method to allow aborting the XHR request
+      def.promise.cancel = function () {
+        if (xhrPromise && xhrPromise.cancel) {
+          xhrPromise.cancel();
+        }
+      };
 
       return def.promise;
     };

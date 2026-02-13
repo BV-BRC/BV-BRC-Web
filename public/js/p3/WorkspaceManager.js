@@ -15,6 +15,7 @@ define([
     token: '',
     apiUrl: '',
     userId: '',
+    activeSearchFilter: null, // To store current search term and type
     forbiddenDownloadTypes: ['experiment_group', 'feature_group', 'genome_group', 'modelfolder'],
     // forbiddenDownloadTypes: ['experiment_group', 'feature_group', 'genome_group', 'folder', 'job_result'],
     viewableTypes: ['txt', 'html', 'json', 'csv', 'tsv', 'diffexp_experiment',
@@ -44,6 +45,11 @@ define([
       bam: {
         label: 'Sequence Alignment Data',
         formats: ['.bam']
+      },
+      bigwig: {
+         label: 'BigWig',
+         formats: ['.bigwig', '.bw'],
+         description: 'A binary, compressed, and indexed format for continuous genomic data (e.g. coverage tracks).'
       },
       contigs: {
         label: 'Contigs',
@@ -100,6 +106,11 @@ define([
         label: 'GIF Image',
         formats: ['.gif'],
         description: 'A GIF image file.'
+      },
+      graph: {
+        label: 'Graph file',
+        formats: ['.gexf'],
+        description: 'Graph files'
       },
       jpg: {
         label: 'JPEG Image',
@@ -200,6 +211,7 @@ define([
       aligned_protein_fasta: { label: 'aligned_protein_fasta', value: 'aligned_protein_fasta' },
       bam: { label: 'bam', value: 'bam' },
       bai: { label: 'bai', value: 'bai' },
+      bigwig: { label: 'bigwig', value: 'bigwig' },
       contigs: { label: 'contigs', value: 'contigs' },
       csv: { label: 'csv', value: 'csv' },
       diffexp_input_data: { label: 'diffexp_input_data', value: 'diffexp_input_data' },
@@ -212,6 +224,7 @@ define([
       genbank_file: { label: 'genbank_file', value: 'genbank_file' },
       gff: { label: 'gff', value: 'gff' },
       gif: { label: 'gif', value: 'gif' },
+      graph: { label: 'graph', value: 'graph' },
       jpg: { label: 'jpg', value: 'jpg' },
       json: { label: 'json', value: 'json' },
       nwk: { label: 'nwk', value: 'nwk' },
@@ -237,7 +250,107 @@ define([
       xml: { label: 'xml', value: 'xml' }
     },
 
+    searchObjects: function (searchTerm, searchType, basePath, recursive) {
+      var _self = this;
+      // Ensure base path ends with a slash for ls
+      if (basePath.charAt(basePath.length - 1) !== '/') {
+        basePath += '/';
+      }
+
+      var queryParams = {
+        paths: [basePath],
+        excludeDirectories: false, // We need to search within directories if recursive
+        excludeObjects: false,
+        recursive: !!recursive // Search recursively based on param
+      };
+
+      // Add type to the query if a specific type is selected
+      if (searchType && searchType !== 'all') {
+         // queryParams.query = { type: [searchType] }; // This was for backend query
+      }
+
+      return Deferred.when(this.api('Workspace.ls', [queryParams]), function (results) {
+        var foundItems = [];
+        if (results[0]) {
+            // Workspace.ls can return results for multiple paths if multiple were queried.
+            // Here, we are querying only one basePath.
+            var itemsInPath = results[0][basePath];
+            if (itemsInPath) {
+                foundItems = itemsInPath.map(function (r) {
+                    return _self.metaListToObj(r);
+                }).filter(function (obj) {
+                    // Client-side filtering for name
+                    var nameMatch = obj.name.toLowerCase().includes(searchTerm.toLowerCase());
+                    // Client-side filtering for type (if searchType is specified and not 'all')
+                    var typeMatch = (!searchType || searchType === 'all') ? true : (obj.type === searchType);
+                    
+                    // Do not include parent folder indicators in search results
+                    if (obj.name === "Parent folder" || obj.name === "Back to my workspaces") return false;
+
+                    return nameMatch && typeMatch;
+                });
+            }
+        }
+        return foundItems;
+      });
+    },
+
+    searchServerObjects: function (searchTerm, searchType, basePath, recursive) {
+      var _self = this;
+      if (basePath.charAt(basePath.length - 1) !== '/') {
+        basePath += '/';
+      }
+    
+      var lsParams = { // This is the 'input' for Workspace.ls
+        paths: [basePath],
+        recursive: !!recursive,
+        excludeDirectories: false, // You might want to make these configurable
+        excludeObjects: false,
+        query: {} // This is where we'll put our search criteria
+      };
+    
+      // Add search term for name filtering
+      //if (searchTerm && searchTerm.length > 0) { // searchTerm.length >= 3 is handled by UI
+      //  lsParams.query.name_search = searchTerm; // Backend will interpret this
+      //}
+      // This should really be done API side, but changes are hard to deploy and test. client is now tightly coupled to the backend's database technology...
+      if (searchTerm && searchTerm.length > 0) { // searchTerm.length >= 3 is handled by UI
+        lsParams.query.name = {
+            '$regex': searchTerm,
+              '$options': 'i' 
+            };
+      }
+    
+      // Add type for type filtering
+      if (searchType && searchType !== 'all') {
+        lsParams.query.type = searchType; // Backend will interpret this (can be single string or array)
+                                          // If your backend expects an array: lsParams.query.type = [searchType];
+      }
+    
+      // The 'Workspace.ls' method is called by this.api() which is RPC(apiUrl, token)
+      // The this.api('Workspace.ls', [queryParams]) maps to the perl sub ls { my ($self, $input) = @_; }
+      // So, the [queryParams] in JS becomes the $input hash in Perl.
+      return Deferred.when(this.api('Workspace.ls', [lsParams]), function (results) {
+        // With backend filtering, 'results' should already be filtered.
+        // The client-side filtering previously done here can be removed or simplified.
+        var foundItems = [];
+        if (results && results[0][basePath]) { // results is a hash keyed by path
+            foundItems = results[0][basePath].map(function (r) {
+                return _self.metaListToObj(r);
+            });
+            // Optional: If backend doesn't perfectly match client-side `includes` for name,
+            // you *could* do a secondary client-side refinement, but ideally backend does it all.
+        }
+        return foundItems;
+      });
+    },
+
     getDefaultFolder: function (type) {
+      // Guard: Don't return paths with invalid userId
+      // Check for falsy userId OR the string 'undefined'
+      if (!this.userId || this.userId === 'undefined') {
+        return '';
+      }
       switch (type) {
         case 'genome_group':
           return '/' + [this.userId, 'home', 'Genome Groups'].join('/');
@@ -254,6 +367,10 @@ define([
     },
     _userWorkspacesGetter: function () {
       var _self = this;
+      // Guard: Don't make API calls with invalid userId
+      if (!this.userId || this.userId === 'undefined') {
+        return [];
+      }
       if (this.userWorkspaces && this.userWorkspaces.length > 0) {
         return this.userWorkspaces;
       }
@@ -682,7 +799,8 @@ define([
       if (!path) {
         throw new Error('Invalid Path(s) to retrieve');
       }
-      path = decodeURIComponent(path);
+      // Note: paths should already be decoded by callers (e.g., WorkspaceBrowser._setPathAttr)
+      // Do not decode here as it would corrupt paths containing literal % characters
       return Deferred.when(this.api('Workspace.get', [{
         objects: [path],
         metadata_only: metadataOnly
@@ -994,9 +1112,8 @@ define([
       if (!(paths instanceof Array)) {
         paths = [paths];
       }
-      paths = paths.map(function (p) {
-        return decodeURIComponent(p);
-      });
+      // Note: paths should already be decoded by callers
+      // Do not decode here as it would corrupt paths containing literal % characters
       return Deferred.when(this.api('Workspace.get', [{
         objects: paths,
         metadata_only: metadataOnly
@@ -1064,7 +1181,8 @@ define([
     },
 
     getFolderContents: function (path, showHidden, recursive, filterPublic) {
-      path = decodeURIComponent(path);
+      // Note: paths should already be decoded by callers (e.g., WorkspaceBrowser._setPathAttr)
+      // Do not decode here as it would corrupt paths containing literal % characters
 
       var _self = this;
       return Deferred.when(
@@ -1126,11 +1244,12 @@ define([
           });
 
 
-          return sharedWithUser;
+          return sharedWithUser || []; // Ensure an array is always returned        
         },
 
         function (err) {
           _self.showError(err);
+          return []; // On error, resolve with an empty array
         }
       );
     },
@@ -1327,6 +1446,11 @@ define([
     },
 
     _currentWorkspaceGetter: function () {
+      // Guard: Don't return paths with invalid userId
+      // Check for falsy userId OR the string 'undefined'
+      if (!this.userId || this.userId === 'undefined') {
+        return { path: '' };
+      }
       if (!this.currentWorkspace) {
         this.currentWorkspace = Deferred.when(this.get('userWorkspaces'), lang.hitch(this, function (cws) {
           if (!cws || cws.length < 1) {
@@ -1346,6 +1470,11 @@ define([
     },
 
     _currentPathGetter: function () {
+      // Guard: Don't return paths with invalid userId
+      // Check for falsy userId OR the string 'undefined'
+      if (!this.userId || this.userId === 'undefined') {
+        return '';
+      }
       if (!this.currentPath) {
         this.currentPath = Deferred.when(this.get('currentWorkspace'), lang.hitch(this, function (cws) {
           this.currentPath = cws.path;
@@ -1365,7 +1494,132 @@ define([
 
     },
 
+    // Cache for du results: { path: { timestamp: Date, result: DiskUsageResult, isTimeout: boolean } }
+    _duCache: {},
+    _duCacheTTL: 3600000, // 1 hour in milliseconds
+    _duTimeoutCacheTTL: 86400000, // 24 hours for timeout results (no point retrying soon)
+
+    /**
+     * Get disk usage for a path
+     * @param {string} path - The workspace path to check
+     * @param {boolean} forceRefresh - If true, bypass cache and re-query
+     * @returns {Promise} Resolves to array of DiskUsageResult tuples:
+     *   [path, total_size, file_count, directory_count, error]
+     */
+    du: function (path, forceRefresh) {
+      var self = this;
+      // Note: paths should already be decoded by callers
+      // Do not decode here as it would corrupt paths containing literal % characters
+
+      // Check cache unless force refresh
+      if (!forceRefresh && this._duCache[path]) {
+        var cached = this._duCache[path];
+        var ttl = cached.isTimeout ? this._duTimeoutCacheTTL : this._duCacheTTL;
+        if (Date.now() - cached.timestamp < ttl) {
+          return Deferred.when(cached.result);
+        }
+      }
+
+      var promise = this.api('Workspace.du', [{
+        paths: [path],
+        recursive: true,
+        adminmode: false
+      }]);
+
+      // Cache the result on success (including timeout errors in the result)
+      return Deferred.when(promise, function (result) {
+        var resultStr = JSON.stringify(result) || '';
+        var isTimeout = resultStr.indexOf('timed out') !== -1;
+        self._duCache[path] = {
+          timestamp: Date.now(),
+          result: result,
+          isTimeout: isTimeout
+        };
+        return result;
+      }, function (err) {
+        // Also cache errors that indicate timeout
+        var errMsg = (err && (err.message || err.toString())) || '';
+        if (errMsg.indexOf('timed out') !== -1) {
+          var timeoutResult = [[[path, 0, 0, 0, errMsg]]];
+          self._duCache[path] = {
+            timestamp: Date.now(),
+            result: timeoutResult,
+            isTimeout: true
+          };
+          return timeoutResult;
+        }
+        // Re-throw other errors
+        throw err;
+      });
+    },
+
+    /**
+     * Clear the du cache
+     * @param {string} path - Optional specific path to clear. If omitted, clears entire cache.
+     */
+    clearDuCache: function (path) {
+      if (path) {
+        delete this._duCache[path];
+      } else {
+        this._duCache = {};
+      }
+    },
+
+    /**
+     * Save content to a workspace file (create or overwrite)
+     * @param {string} path - Full file path
+     * @param {string} content - File content
+     * @param {string} type - File type (e.g., 'json')
+     * @returns {Deferred}
+     */
+    saveFile: function (path, content, type) {
+      var _self = this;
+      return Deferred.when(
+        this.api('Workspace.create', [{
+          objects: [[path, type || 'string', {}, content]],
+          overwrite: 1
+        }]),
+        function (results) {
+          return _self.metaListToObj(results[0][0]);
+        }
+      );
+    },
+
+    /**
+     * Check if objects exist at the given paths
+     * @param {string|string[]} paths - Path(s) to check
+     * @returns {Deferred} Resolves to an object mapping paths to their existence status:
+     *   { path: { exists: boolean, error: string|null } }
+     */
+    objectsExist: function (paths) {
+      if (!paths) {
+        throw new Error('Invalid Path(s) to check');
+      }
+      if (!(paths instanceof Array)) {
+        paths = [paths];
+      }
+      // Note: paths should already be decoded by callers
+      // Do not decode here as it would corrupt paths containing literal % characters
+
+      return Deferred.when(this.api('Workspace.objects_exist', [{
+        objects: paths
+      }]), function (results) {
+        // results[0] is a list of [path, exists, error] tuples
+        var existsMap = {};
+        if (results && results[0]) {
+          results[0].forEach(function (tuple) {
+            existsMap[tuple[0]] = {
+              exists: !!tuple[1],
+              error: tuple[2] || null
+            };
+          });
+        }
+        return existsMap;
+      });
+    },
+
     init: function (apiUrl, token, userId) {
+      this.activeSearchFilter = null; // Reset search filter on init
       if (!apiUrl || !token || !userId) {
         console.log('Unable to initialize workspace manager. Args: ', arguments);
         return;

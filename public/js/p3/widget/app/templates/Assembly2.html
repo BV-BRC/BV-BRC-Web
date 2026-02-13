@@ -138,14 +138,15 @@
                 <label class="paramlabel">Assembly Strategy</label><br>
                 <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-attach-event="onChange:onRecipeChange">
                   <option value="auto">Auto</option>
-                  <option value="unicycler">Unicycler</option>
-                  <option value="spades">SPAdes</option>
                   <option value="canu">Canu</option>
+                  <option value="flye">Flye</option> 
+                  <option value="megahit">MegaHit</option>
+                  <option value="meta-flye">metaFlye</option>
                   <option value="meta-spades">metaSPAdes</option>
                   <option value="plasmid-spades">plasmidSPAdes</option>
                   <option value="single-cell">MDA (single-cell)</option>
-                  <option value="flye">Flye</option>
-                  <option value="megahit">MegaHit</option>
+                  <option value="spades">SPAdes</option>
+                  <option value="unicycler">Unicycler</option>
                 </select>
               </div>
               <div class="appRow">
@@ -189,15 +190,15 @@
                     <div style="margin-bottom:8px">
                     <!-- trying to make read procesing its own app row -->
                       <div class="appRow">
-                                <div id="${id}_normalize2" name="normalize2" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="normalize2" data-dojo-props="checked:true"></div>
+                                <div id="${id}_normalize" name="normalize" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="normalize" data-dojo-props="checked:true"></div>
                                 <label class="paramlabel">Normalize Illumina Reads</label>
                                     <br>
                       <div class="appRow">
-                              <div id="${id}_trim" name="trim" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="normalize2" data-dojo-props="checked:true"></div>
+                              <div id="${id}_trim" name="trim" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="trim" data-dojo-props="checked:true"></div>
                               <label class="paramlabel">Trim Short Reads</label>
                                     <br>
                     <div class="appRow">
-                              <div id="${id}_filt_long" name="_filt_long" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="normalize2" data-dojo-props="checked:true"></div>
+                              <div id="${id}_filt_long" name="filter" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="filter" data-dojo-props="checked:true"></div>
                               <label class="paramlabel">Filter Long Reads</label>
                                     <br>
                   <label class="appBoxLabel">Genome Parameters</label>

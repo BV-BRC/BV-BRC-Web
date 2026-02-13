@@ -19,8 +19,12 @@ define([
     _setStateAttr: function (state) {
       console.log('state = ', state);
       var parts = state.pathname.split('/');
-      state.path = '/' + parts.slice(2).reverse().slice(1).reverse().join('/');
-      state.file = parts.reverse()[0];
+      // Decode URL-encoded path components (e.g., spaces encoded as %20)
+      var decodedParts = parts.map(function (p) {
+        return decodeURIComponent(p);
+      });
+      state.path = '/' + decodedParts.slice(2).reverse().slice(1).reverse().join('/');
+      state.file = decodedParts.reverse()[0];
       state.data = {};
       if (!this.loaded) {
         WorkspaceManager.getObject(state.path + '/' + state.file, false).then(lang.hitch(this, function (response) {

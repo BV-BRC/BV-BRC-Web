@@ -11,9 +11,9 @@ define([
   ChartTooltip, domConstruct, PathJoin, easing
 ) {
 
-  var labels = ['Hypothetical proteins', 'Proteins with functional assignments', 'Proteins with EC number assignments', 'Proteins with GO assignments', 'Proteins with Pathway assignments', 'Proteins with Subsystem assignments', 'Proteins with PATRIC genus-specific family (PLfam) assignments', 'Proteins with PATRIC cross-genus family (PGfam) assignments', 'Proteins with FIGfam assignments'];
-  var shortLabels = ['Hypothetical', 'Functional', 'EC assigned', 'GO assigned', 'Pathway assigned', 'Subsystem assigned', 'PLfam assigned', 'PGfam assigned', 'FIGfam assigned'];
-  var filters = ['eq(product,hypothetical+protein),eq(feature_type,CDS)', 'ne(product,hypothetical+protein),eq(feature_type,CDS)', 'eq(property,EC*)', 'eq(go,*)', 'eq(property,Pathway)', 'eq(property,Subsystem)', 'eq(plfam_id,PLF*)', 'eq(pgfam_id,PGF*)', 'eq(figfam_id,*)'];
+  var labels = ['Hypothetical proteins', 'Proteins with functional assignments', 'Proteins with EC number assignments', 'Proteins with Pathway assignments', 'Proteins with Subsystem assignments', 'Proteins with PATRIC genus-specific family (PLfam) assignments', 'Proteins with PATRIC cross-genus family (PGfam) assignments'];
+  var shortLabels = ['Hypothetical', 'Functional', 'EC assigned', 'Pathway assigned', 'Subsystem assigned', 'PLfam assigned', 'PGfam assigned'];
+  var filters = ['eq(product,hypothetical+protein),eq(feature_type,CDS)', 'ne(product,hypothetical+protein),eq(feature_type,CDS)', 'eq(property,EC*)', 'eq(property,Pathway)', 'eq(property,Subsystem)', 'eq(plfam_id,PLF*)', 'eq(pgfam_id,PGF*)'];
 
   return declare([SummaryWidget], {
     dataModel: 'genome_feature',
@@ -40,81 +40,81 @@ define([
 
       var url = PathJoin(this.apiServiceUrl, this.dataModel) + '/';
 
-      var defHypothetical = when(xhr.post(url, {
-        handleAs: 'json',
-        headers: this.headers,
-        data: this.query + '&and(eq(product,hypothetical+protein),eq(feature_type,CDS))' + this.baseQuery
-      }), function (response) {
-        return response.facet_counts.facet_fields.annotation;
+      // OPTIMIZED: Single API call using SOLR JSON facet API (replaces 9 separate calls)
+      // The main query filters by genome_id and annotation
+      // Each facet query inherits this base filter automatically
+      var genomeId = this.query.match(/eq\(genome_id,([^)]+)\)/);
+      var genomeFilter = genomeId ? 'genome_id:' + genomeId[1] : '*:*';
+
+      var jsonFacet = JSON.stringify({
+        hypothetical: {
+          type: 'query',
+          q: 'product:hypothetical+protein AND feature_type:CDS',
+          facet: { by_annotation: { type: 'terms', field: 'annotation' } }
+        },
+        functional: {
+          type: 'query',
+          q: '(*:* NOT product:hypothetical+protein) AND feature_type:CDS',
+          facet: { by_annotation: { type: 'terms', field: 'annotation' } }
+        },
+        ec_assigned: {
+          type: 'query',
+          q: 'property:EC*',
+          facet: { by_annotation: { type: 'terms', field: 'annotation' } }
+        },
+        pathway_assigned: {
+          type: 'query',
+          q: 'property:Pathway',
+          facet: { by_annotation: { type: 'terms', field: 'annotation' } }
+        },
+        subsystem_assigned: {
+          type: 'query',
+          q: 'property:Subsystem',
+          facet: { by_annotation: { type: 'terms', field: 'annotation' } }
+        },
+        plfam_assigned: {
+          type: 'query',
+          q: 'plfam_id:PLF*',
+          facet: { by_annotation: { type: 'terms', field: 'annotation' } }
+        },
+        pgfam_assigned: {
+          type: 'query',
+          q: 'pgfam_id:PGF*',
+          facet: { by_annotation: { type: 'terms', field: 'annotation' } }
+        }
       });
 
-      var defFunctional = when(xhr.post(url, {
-        handleAs: 'json',
-        headers: this.headers,
-        data: this.query + '&and(ne(product,hypothetical+protein),eq(feature_type,CDS))' + this.baseQuery
-      }), function (response) {
-        return response.facet_counts.facet_fields.annotation;
-      });
+      // Main query filters by genome and annotation; facet queries inherit this
+      var solrMainQuery = genomeFilter + ' AND annotation:(PATRIC OR RefSeq)';
+      var solrData = 'q=' + encodeURIComponent(solrMainQuery) + '&rows=0&json.facet=' + encodeURIComponent(jsonFacet);
 
-      var defECAssigned = when(xhr.post(url, {
+      return when(xhr.post(url, {
         handleAs: 'json',
-        headers: this.headers,
-        data: this.query + '&eq(property,EC*)' + this.baseQuery
-      }), function (response) {
-        return response.facet_counts.facet_fields.annotation;
-      });
-
-      var defGOAssigned = when(xhr.post(url, {
-        handleAs: 'json',
-        headers: this.headers,
-        data: this.query + '&eq(go,*)' + this.baseQuery
-      }), function (response) {
-        return response.facet_counts.facet_fields.annotation;
-      });
-
-      var defPathwayAssigned = when(xhr.post(url, {
-        handleAs: 'json',
-        headers: this.headers,
-        data: this.query + '&eq(property,Pathway)' + this.baseQuery
-      }), function (response) {
-        return response.facet_counts.facet_fields.annotation;
-      });
-
-      var defSubsystemAssigned = when(xhr.post(url, {
-        handleAs: 'json',
-        headers: this.headers,
-        data: this.query + '&eq(property,Subsystem)' + this.baseQuery
-      }), function (response) {
-        return response.facet_counts.facet_fields.annotation;
-      });
-
-      var defPLfamAssigned = when(xhr.post(url, {
-        handleAs: 'json',
-        headers: this.headers,
-        data: this.query + '&eq(plfam_id,PLF*)' + this.baseQuery
-      }), function (response) {
-        return response.facet_counts.facet_fields.annotation;
-      });
-
-      var defPGfamAssigned = when(xhr.post(url, {
-        handleAs: 'json',
-        headers: this.headers,
-        data: this.query + '&eq(pgfam_id,PGF*)' + this.baseQuery
-      }), function (response) {
-        return response.facet_counts.facet_fields.annotation;
-      });
-
-      var defFigfamAssigned = when(xhr.post(url, {
-        handleAs: 'json',
-        headers: this.headers,
-        data: this.query + '&eq(figfam_id,*)' + this.baseQuery
-      }), function (response) {
-        return response.facet_counts.facet_fields.annotation;
-      });
-
-      return when(All([defHypothetical, defFunctional, defECAssigned, defGOAssigned, defPathwayAssigned, defSubsystemAssigned, defPLfamAssigned, defPGfamAssigned, defFigfamAssigned]), lang.hitch(this, 'processData'));
+        headers: {
+          'accept': 'application/solr+json',
+          'content-type': 'application/solrquery+x-www-form-urlencoded',
+          'X-Requested-With': null,
+          'Authorization': (window.App.authorizationToken || '')
+        },
+        data: solrData
+      }), lang.hitch(this, 'processData'));
     },
-    processData: function (results) {
+    processData: function (response) {
+      // OPTIMIZED: Process SOLR JSON facet response
+      var facetOrder = ['hypothetical', 'functional', 'ec_assigned',
+                        'pathway_assigned', 'subsystem_assigned', 'plfam_assigned',
+                        'pgfam_assigned'];
+
+      var results = facetOrder.map(function(facetName) {
+        var facetData = response.facets[facetName];
+        var result = {};
+        if (facetData && facetData.by_annotation && facetData.by_annotation.buckets) {
+          facetData.by_annotation.buckets.forEach(function(bucket) {
+            result[bucket.val] = bucket.count;
+          });
+        }
+        return result;
+      });
 
       this._tableData = results.map(function (row, idx) {
         row.label = labels[idx];

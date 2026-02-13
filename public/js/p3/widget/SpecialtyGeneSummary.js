@@ -27,7 +27,12 @@ define([
         label: 'Genes',
         field: 'y',
         renderCell: function (obj, val, node) {
-          node.innerHTML = '<a href="#view_tab=specialtyGenes&filter=and(eq(property,' + encodeURIComponent('"' + obj.category + '"') + '),eq(source,' + encodeURIComponent('"' + obj.source_x + '"') + '))" target="_blank">' + val + '</a>';
+          var link = domConstruct.create('a', {
+            href: '#view_tab=specialtyGenes&filter=and(eq(property,' + encodeURIComponent('"' + obj.category + '"') + '),eq(source,' + encodeURIComponent('"' + obj.source_x + '"') + '))',
+            target: '_blank',
+            textContent: val
+          });
+          domConstruct.place(link, node, 'only');
         }
       }
     ],
@@ -68,13 +73,18 @@ define([
           })
           .addAxis('x', {
             vertical: true,
+            natural: true,
             majorLabels: true,
+            majorTicks: true,
+            majorTickStep: 1,
             minorTicks: false,
             minorLabels: false,
             microTicks: false,
             labels: this._chartLabels
           })
           .addAxis('y', {
+            title: 'Gene Count',
+            titleOrientation: 'away',
             minorTicks: false
           })
           .addSeries('source', this.data);

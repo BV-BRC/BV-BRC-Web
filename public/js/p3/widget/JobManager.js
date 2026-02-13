@@ -4,19 +4,277 @@ define([
   'dojo/_base/Deferred', '../JobManager', './Confirmation', './RerunUtility',
   'dojo/topic', 'dijit/layout/BorderContainer', './ActionBar', './ItemDetailPanel', '../util/encodePath',
   './copilot/ChatSessionContainerSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel',
-  'dijit/Dialog', 'dijit/layout/ContentPane'
+  'dijit/Dialog', 'dijit/layout/ContentPane', 'dojo/hash', 'dojo/io-query'
 ], function (
   declare, on, lang, query,
   domClass, domAttr, domConstr, JobsGrid, JobContainerActionBar,
   Deferred, JobManager, Confirmation, rerunUtility,
   Topic, BorderContainer, ActionBar, ItemDetailPanel, encodePath,
   ChatSessionContainerSidePanel, CopilotAPI, ChatSessionOptionsBar,
-  Dialog, ContentPane
+  Dialog, ContentPane, hash, ioQuery
 ) {
   return declare([BorderContainer], {
     disabled: false,
     path: '/',
     serviceFilter: null,
+
+    // Parse URL hash parameters into filter state
+    _parseHashParams: function () {
+      var hashValue = hash();
+      if (!hashValue) {
+        return {};
+      }
+      return ioQuery.queryToObject(hashValue);
+    },
+
+    // Update URL hash with current filter state
+    _updateHash: function (filters) {
+      var params = {};
+      if (filters.status) {
+        // Convert RegExp back to string for URL
+        if (filters.status instanceof RegExp) {
+          if (filters.status.test('queued')) {
+            params.status = 'queued';
+          } else if (filters.status.test('failed')) {
+            params.status = 'failed';
+          } else if (filters.status.test('in-progress')) {
+            params.status = 'in-progress';
+          } else if (filters.status.test('completed')) {
+            params.status = 'completed';
+          }
+        } else {
+          params.status = filters.status;
+        }
+      }
+      if (filters.app && filters.app !== 'all') {
+        params.app = filters.app;
+      }
+      if (filters.keyword) {
+        params.keyword = filters.keyword;
+      }
+      if (filters.selectedJob) {
+        params.selected = filters.selectedJob;
+      }
+      if (filters.page && filters.page > 1) {
+        params.page = filters.page;
+      }
+      if (filters.sort) {
+        params.sort = filters.sort;
+      }
+      if (filters.sortDesc !== undefined) {
+        params.desc = filters.sortDesc ? '1' : '0';
+      }
+      if (filters.includeArchived) {
+        params.archived = '1';
+      }
+
+      var hashString = ioQuery.objectToQuery(params);
+      hash(hashString, true); // true = replace current history entry
+    },
+
+    // Restore filter state from URL hash parameters
+    // If skipGridQuery is true, don't call grid.set('query') - used during startup
+    // when the grid hasn't loaded yet
+    _restoreStateFromUrl: function (skipGridQuery) {
+      var params = this._parseHashParams();
+      if (!params || Object.keys(params).length === 0) {
+        return;
+      }
+
+      var filters = {};
+
+      // Restore status filter
+      if (params.status) {
+        filters.status = params.status;
+        // Convert string to RegExp as needed
+        if (params.status === 'queued') {
+          filters.status = new RegExp('queued|init|pending');
+        } else if (params.status === 'failed') {
+          filters.status = new RegExp('failed|deleted');
+        }
+      }
+
+      // Restore app filter
+      if (params.app) {
+        filters.app = params.app;
+      }
+
+      // Restore archive filter
+      if (params.archived === '1') {
+        filters.includeArchived = true;
+      }
+
+      // Store filters in serviceFilter so grid uses them on first load
+      if (Object.keys(filters).length > 0) {
+        this.serviceFilter = filters;
+        // Only set grid query if not during startup (skipGridQuery is false/undefined)
+        if (!skipGridQuery && this.grid) {
+          this.grid.set('query', filters);
+        }
+      }
+
+      // Restore UI state in containerActionBar
+      if (this.containerActionBar) {
+        // Restore status button active state
+        if (params.status && this.containerActionBar.statusBtns) {
+          var statusBtns = this.containerActionBar.statusBtns;
+          var allBtn = query('.JobFilter', statusBtns)[0];
+          var buttons = query('.JobFilter', statusBtns);
+
+          // Map status to button index (0=all, 1=queued, 2=running, 3=completed, 4=failed)
+          var statusToIndex = {
+            'queued': 1,
+            'in-progress': 2,
+            'completed': 3,
+            'failed': 4
+          };
+
+          var btnIndex = statusToIndex[params.status];
+          if (btnIndex !== undefined && buttons[btnIndex]) {
+            // Remove active from all, add to selected
+            buttons.forEach(function (btn) {
+              domClass.remove(btn, 'active');
+            });
+            domClass.add(buttons[btnIndex], 'active');
+            // Show the "All statuses" button
+            if (allBtn) {
+              allBtn.style.display = 'inline';
+            }
+          }
+        }
+
+        // Restore app filter in selector
+        if (params.app && this.containerActionBar._selector) {
+          this.containerActionBar.filters.app = params.app;
+          this.containerActionBar._selector.set('value', params.app, false);
+        }
+
+        // Restore status in containerActionBar filters
+        if (params.status) {
+          this.containerActionBar.filters.status = params.status;
+        }
+
+        // Restore archive checkbox state
+        if (params.archived === '1' && this.containerActionBar._archiveCheckbox) {
+          this.containerActionBar._archiveCheckbox.checked = true;
+          this.containerActionBar.filters.includeArchived = true;
+        }
+      }
+
+      // Restore keyword/search filter
+      if (params.keyword) {
+        // Use 'search' key for server-side filtering via SimpleTaskFilter
+        filters.search = params.keyword;
+        filters.keyword = params.keyword; // Keep for URL persistence
+        // Store in serviceFilter - grid will use it on first load
+        this.serviceFilter = filters;
+
+        // Restore the search text box value in the UI
+        if (this.containerActionBar && this.containerActionBar._serverSearchBox) {
+          this.containerActionBar._serverSearchBox.set('value', params.keyword);
+        }
+
+        // Also update containerActionBar filters for consistency
+        if (this.containerActionBar) {
+          this.containerActionBar.filters.search = params.keyword;
+          // Disable archive checkbox when search is active
+          if (this.containerActionBar._archiveCheckbox) {
+            this.containerActionBar._archiveCheckbox.disabled = true;
+            this.containerActionBar._archiveCheckbox.checked = false;
+            this.containerActionBar.filters.includeArchived = false;
+            if (this.containerActionBar._archiveCheckbox.parentNode) {
+              this.containerActionBar._archiveCheckbox.parentNode.style.opacity = '0.5';
+              this.containerActionBar._archiveCheckbox.parentNode.title = 'Archive search not available with keyword filter';
+            }
+          }
+        }
+
+        // Publish to /KeywordFilter topic so the JobManager service updates its filters
+        // This ensures status counts reflect the search filter
+        Topic.publish('/KeywordFilter', params.keyword);
+      }
+
+      // Restore sort order
+      // When skipGridQuery is true, we don't set sort on the grid directly
+      // because that triggers a refresh. Instead, we store it in the grid's
+      // queryOptions, and it will be applied on the next query.
+      // NOTE: sort/sortDesc are stored separately from filters - they are NOT
+      // part of the query filter, but rather query options.
+      if (params.sort) {
+        var descending = params.desc === '1';
+
+        // Store sort info for URL persistence (but NOT in serviceFilter which is for query filters)
+        this._pendingSort = { attribute: params.sort, descending: descending };
+
+        // Only set sort on grid directly if we're not skipping the query
+        // Otherwise, setting sort triggers a refresh which causes race conditions
+        if (!skipGridQuery && this.grid) {
+          this.grid.set('sort', [{ attribute: params.sort, descending: descending }]);
+        } else if (this.grid) {
+          // Set the grid's sort property directly without triggering a refresh
+          // This ensures the column header shows the correct sort indicator
+          this.grid.sort = [{ attribute: params.sort, descending: descending }];
+          // Ensure queryOptions exists before setting sort
+          if (!this.grid.queryOptions) {
+            this.grid.queryOptions = {};
+          }
+          this.grid.queryOptions.sort = [{ attribute: params.sort, descending: descending }];
+        }
+      }
+
+      // Store page and selection for restoration after grid renders
+      this._pendingPage = params.page ? parseInt(params.page, 10) : null;
+      this._pendingSelection = params.selected || null;
+    },
+
+    // Restore page and selection after grid has rendered
+    _restorePageAndSelection: function () {
+      var _self = this;
+
+      // Go to the saved page first
+      if (this._pendingPage && this._pendingPage > 1 && this.grid && this.grid.gotoPage) {
+        var targetPage = this._pendingPage;
+        this._pendingPage = null; // Clear immediately to prevent loop
+        this.grid.gotoPage(targetPage).then(function () {
+          // After page is loaded, restore selection
+          _self._restoreSelection();
+        });
+      } else {
+        this._pendingPage = null; // Clear even if no page to restore
+        // No page to restore, just restore selection
+        this._restoreSelection();
+      }
+    },
+
+    // Restore selection after grid data is loaded
+    _restoreSelection: function () {
+      if (!this._pendingSelection || !this.grid) {
+        return;
+      }
+
+      var _self = this;
+      var jobId = this._pendingSelection;
+
+      // Set flag to prevent URL update during programmatic selection restoration
+      this._restoringSelection = true;
+
+      // Try to find and select the row
+      // The grid uses job ID as the row identifier
+      try {
+        var row = this.grid.row(jobId);
+        if (row && row.element) {
+          this.grid.select(row);
+          // Scroll the row into view
+          row.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } catch (e) {
+        console.warn('Could not restore selection for job:', jobId, e);
+      }
+
+      // Clear pending selection and restoration flag
+      this._pendingSelection = null;
+      this._restoringSelection = false;
+    },
 
     listJobs: function () {
       var _self = this;
@@ -292,7 +550,25 @@ define([
     ],
 
     startup: function () {
+      // Always clear the store cache when navigating to the jobs page
+      // This ensures fresh data is displayed even if the widget was previously started
+      var store = JobManager.getStore();
+      if (store && store.clearCache) {
+        store.clearCache();
+      }
+
       if (this._started) {
+        // Widget was already started - restore state from URL and refresh
+        // Use skipGridQuery=true since we'll refresh manually after
+        this._restoreStateFromUrl(true);
+        if (this.grid && typeof this.grid.refresh === 'function') {
+          // Apply serviceFilter to grid query before refresh
+          if (this.serviceFilter) {
+            this.grid.set('query', this.serviceFilter);
+          } else {
+            this.grid.refresh();
+          }
+        }
         return;
       }
       this.inherited(arguments);
@@ -303,9 +579,6 @@ define([
         region: 'center'
       });
 
-      this.grid.set('sort', [
-        { attribute: 'submit_time', descending: true }
-      ]);
 
       this.containerActionBar = new JobContainerActionBar({
         region: 'top',
@@ -352,12 +625,218 @@ define([
         if (this.chatPanelWrapper && this.chatPanel) {
           this.chatPanel.set('containerSelection', sel);
         }
+
+        // Update URL with selected job ID (skip during programmatic restoration)
+        if (!this._restoringSelection && sel.length === 1 && sel[0].id) {
+          var currentFilters = lang.mixin({}, this.serviceFilter || {});
+          currentFilters.selectedJob = sel[0].id;
+          // Get current page if available
+          if (this.grid._currentPage) {
+            currentFilters.page = this.grid._currentPage;
+          }
+          // Preserve current sort state
+          var currentSort = this.grid.get('sort');
+          if (currentSort && currentSort.length > 0) {
+            currentFilters.sort = currentSort[0].attribute;
+            currentFilters.sortDesc = currentSort[0].descending;
+          }
+          this._updateHash(currentFilters);
+        }
       }));
 
-      this.addChild(this.grid);
+      // Handle deselection - remove selection from URL
+      this.grid.on('dgrid-deselect', lang.hitch(this, function (evt) {
+        // Check if there are any remaining selections
+        var remainingSelections = Object.keys(this.grid.selection || {});
+        if (remainingSelections.length === 0) {
+          var currentFilters = lang.mixin({}, this.serviceFilter || {});
+          delete currentFilters.selectedJob;
+          // Keep current page
+          if (this.grid._currentPage) {
+            currentFilters.page = this.grid._currentPage;
+          }
+          // Preserve current sort state
+          var currentSort = this.grid.get('sort');
+          if (currentSort && currentSort.length > 0) {
+            currentFilters.sort = currentSort[0].attribute;
+            currentFilters.sortDesc = currentSort[0].descending;
+          }
+          this._updateHash(currentFilters);
+        }
+      }));
+
+      // Helper to safely set grid query with debouncing to prevent overlapping queries
+      // This prevents "deferred already resolved" errors when filters change rapidly
+      var pendingQueryTimer = null;
+      var pendingQuery = null;
+      var setGridQuerySafe = lang.hitch(this, function(filters) {
+        // Store the pending query
+        pendingQuery = filters;
+
+        // Clear any existing timer
+        if (pendingQueryTimer) {
+          clearTimeout(pendingQueryTimer);
+        }
+
+        // Debounce: wait a short time before executing
+        // This coalesces rapid filter changes into a single query
+        pendingQueryTimer = setTimeout(lang.hitch(this, function() {
+          pendingQueryTimer = null;
+          if (pendingQuery !== null && this.grid && this.grid.domNode) {
+            var queryToExecute = pendingQuery;
+            pendingQuery = null;
+            this.grid.set('query', queryToExecute);
+          }
+        }), 50); // 50ms debounce
+      });
+
+      // Handle page changes - persist page to URL
+      this.grid.on('dgrid-page-complete', lang.hitch(this, function (evt) {
+        // Only update URL after initial load is complete
+        if (this._pendingPage === null && this.grid._currentPage) {
+          var currentFilters = lang.mixin({}, this.serviceFilter || {});
+          currentFilters.page = this.grid._currentPage;
+          // Preserve current selection if any
+          var selectedIds = Object.keys(this.grid.selection || {});
+          if (selectedIds.length === 1) {
+            currentFilters.selectedJob = selectedIds[0];
+          }
+          // Preserve current sort state
+          var currentSort = this.grid.get('sort');
+          if (currentSort && currentSort.length > 0) {
+            currentFilters.sort = currentSort[0].attribute;
+            currentFilters.sortDesc = currentSort[0].descending;
+          }
+          this._updateHash(currentFilters);
+        }
+      }));
+
+      // Handle sort changes - persist sort to URL
+      this.grid.on('dgrid-sort', lang.hitch(this, function (evt) {
+        var sort = evt.sort;
+        if (sort && sort.length > 0) {
+          // Build params for URL - start with actual filters (not sort metadata)
+          var currentFilters = lang.mixin({}, this.serviceFilter || {});
+          // Remove any stale sort/sortDesc from serviceFilter
+          delete currentFilters.sort;
+          delete currentFilters.sortDesc;
+
+          // Add sort info for URL persistence only (not to serviceFilter)
+          var urlParams = lang.mixin({}, currentFilters);
+          urlParams.sort = sort[0].attribute;
+          urlParams.sortDesc = sort[0].descending;
+
+          // Preserve current page
+          if (this.grid._currentPage) {
+            urlParams.page = this.grid._currentPage;
+          }
+          // Preserve current selection if any
+          var selectedIds = Object.keys(this.grid.selection || {});
+          if (selectedIds.length === 1) {
+            urlParams.selectedJob = selectedIds[0];
+          }
+          // Update serviceFilter WITHOUT sort info (keep it clean for query filters only)
+          this.serviceFilter = currentFilters;
+          this._updateHash(urlParams);
+        }
+      }));
+
+      // Track if grid has loaded for the first time
+      var gridFirstLoadComplete = false;
+
+      // Store current local filter text for re-application after grid refresh
+      this._localFilterText = '';
+
+      // Helper function to apply local filter to visible rows
+      var applyLocalFilter = lang.hitch(this, function() {
+        var filterText = this._localFilterText;
+        if (!this.grid || !this.grid.domNode) {
+          return;
+        }
+
+        // Get all visible rows in the grid
+        var rows = query('.dgrid-row', this.grid.domNode);
+
+        rows.forEach(lang.hitch(this, function (rowNode) {
+          var row = this.grid.row(rowNode);
+          if (!row || !row.data) {
+            return;
+          }
+
+          var job = row.data;
+          var visible = true;
+
+          if (filterText && filterText.trim() !== '') {
+            // Check if any searchable field contains the filter text
+            var searchableText = [
+              job.id || '',
+              job.application_name || '',
+              job.status || '',
+              (job.parameters && job.parameters.output_file) || ''
+            ].join(' ').toLowerCase();
+
+            visible = searchableText.indexOf(filterText.toLowerCase()) !== -1;
+          }
+
+          // Show or hide the row
+          rowNode.style.display = visible ? '' : 'none';
+        }));
+      });
+
+      // Handle grid refresh completion
+      this.grid.on('dgrid-refresh-complete', lang.hitch(this, function (evt) {
+        // Note: App filter labels are now updated via fetchAppSummaryCounts() which
+        // calls query_app_summary_filtered API for accurate totals across all pages.
+        // We no longer update filter labels from the current page's jobs.
+
+        // Re-apply local filter after grid refresh
+        if (this._localFilterText) {
+          // Use setTimeout to ensure the grid rows are fully rendered
+          setTimeout(applyLocalFilter, 50);
+        }
+
+        // After grid has fully loaded for the first time, call query_task_summary
+        // to ensure status bar shows correct counts
+        if (!gridFirstLoadComplete) {
+          gridFirstLoadComplete = true;
+          // Call getStatus to update the status bar with current job counts
+          if (JobManager.getStatus) {
+            JobManager.getStatus();
+          }
+
+          // Restore page and selection from URL after first load
+          if (this._pendingPage || this._pendingSelection) {
+            this._restorePageAndSelection();
+          }
+        }
+      }));
+
       this.addChild(this.containerActionBar);
       this.addChild(this.actionBar);
       this.addChild(this.itemDetailPanel);
+
+      // Restore filter state from URL hash BEFORE adding grid
+      // This sets serviceFilter which the grid will use on first load
+      // Pass true to skip grid.set('query') since grid isn't added yet
+      // Note: containerActionBar is already added above, so its _selector exists
+      // and we can restore the app filter value now
+      this._restoreStateFromUrl(true);
+
+      // After restoring state, re-fetch app summary counts to show correct selection
+      // This is needed because containerActionBar.startup() already called fetchAppSummaryCounts()
+      // before we restored the URL state
+      if (this.containerActionBar && this.containerActionBar.fetchAppSummaryCounts) {
+        this.containerActionBar.fetchAppSummaryCounts();
+      }
+
+      // Set grid query from restored filters BEFORE adding grid as child
+      // This ensures the grid uses the correct filters when it starts loading
+      if (this.serviceFilter && Object.keys(this.serviceFilter).length > 0) {
+        this.grid.query = this.serviceFilter;
+      }
+
+      // Now add the grid - this triggers its startup and initial data load
+      this.addChild(this.grid);
 
       // show / hide item detail panel event
       var hideBtn = query('[rel="ToggleItemDetail"]', this.actionBar.domNode)[0];
@@ -373,19 +852,33 @@ define([
       });
 
       // listen for new job data
-      Topic.subscribe('/Jobs', function (info) {
+      Topic.subscribe('/Jobs', lang.hitch(this, function (info) {
         if (info.status == 'updated') {
-          var store = JobManager.getStore();
-          _self.grid.set('store', store);
+          // When job status changes are detected (via polling), refresh the grid
+          // to show the updated data with a fresh API call to enumerate_tasks
+          if (this.grid && typeof this.grid.refresh === 'function') {
+            // Check if grid has been initialized - if it has a domNode, it's ready
+            if (this.grid.domNode) {
+              // Ensure cache is cleared before refresh to force a new API call
+              var store = JobManager.getStore();
+              if (store && store.clearCache) {
+                store.clearCache();
+              }
+              // Refresh will trigger gotoPage(1) which will query the store
+              // Since cache is cleared, it will make a new API call to enumerate_tasks
+              this.grid.refresh();
+            }
+          }
         }
-      });
+      }));
 
 
       // listen for filtering
-      Topic.subscribe('/JobFilter', function (filters) {
+      Topic.subscribe('/JobFilter', lang.hitch(this, function (filters) {
         // remove any non-specific filter states
         if (filters.app === 'all') delete filters.app;
         if (!filters.status) delete filters.status;
+        if (!filters.includeArchived) delete filters.includeArchived;
 
         // need to filter on all possible AWE-defined statuses
         if (filters.status === 'queued') {
@@ -393,35 +886,80 @@ define([
         } else if (filters.status === 'failed') {
           filters.status = new RegExp('failed|deleted');
         }
+
+        // Clear cache when filters change to ensure fresh data
+        var store = JobManager.getStore();
+        if (store && store.clearCache) {
+          store.clearCache();
+        }
+
         if (!this.serviceFilter) {
           this.serviceFilter = {};
         }
         this.serviceFilter = filters;
-        _self.grid.set('query', filters);
-      });
 
-      // listen for filtering
-      Topic.subscribe('/KeywordFilter', function (keyword) {
-        // remove any non-specific filter states
-        if (keyword.trim() === '') {
-          _self.grid.set('query', {});
+        // Update URL hash with current filter state
+        this._updateHash(filters);
+
+        // Setting the query will trigger the grid to refresh and re-fetch data
+        // Use debounced helper to prevent overlapping queries
+        setGridQuerySafe(filters);
+      }));
+
+      // listen for keyword/search filtering
+      Topic.subscribe('/KeywordFilter', lang.hitch(this, function (keyword) {
+        // Clear cache when search changes
+        var store = JobManager.getStore();
+        if (store && store.clearCache) {
+          store.clearCache();
         }
+
+        // Start with current filters or empty object
         var filters = {};
-        // keyword = keyword.trim();
-        var keyfil = new RegExp(`.*${keyword}.*`);
-        filters['parameters'] = {
-          test: function (entry) {
-            return keyfil.test(entry.output_file);
-          }
-        };
-        // filter by job output with other filters applied
         if (this.serviceFilter) {
           if (this.serviceFilter.app) {
-            filters['app'] = this.serviceFilter.app;
+            filters.app = this.serviceFilter.app;
+          }
+          if (this.serviceFilter.status) {
+            filters.status = this.serviceFilter.status;
+          }
+          if (this.serviceFilter.includeArchived) {
+            filters.includeArchived = this.serviceFilter.includeArchived;
           }
         }
-        _self.grid.set('query', filters);
-      });
+
+        // Add or remove search filter
+        if (keyword.trim() === '') {
+          delete filters.search;
+          delete filters.keyword;
+        } else {
+          // Use 'search' key for server-side filtering via SimpleTaskFilter
+          filters.search = keyword.trim();
+          filters.keyword = keyword.trim(); // Keep for URL persistence
+        }
+
+        // Update serviceFilter
+        this.serviceFilter = filters;
+
+        // Only update URL and trigger grid query if the grid has been added to the DOM
+        // During startup, the grid hasn't been added yet, so we just set serviceFilter
+        // and the grid will use it when it loads
+        if (this.grid && this.grid.domNode) {
+          // Update URL hash with current filter state
+          this._updateHash(filters);
+
+          // Setting the query will trigger the grid to refresh and re-fetch data
+          // Use debounced helper to prevent overlapping queries
+          setGridQuerySafe(filters);
+        }
+      }));
+
+      // listen for local/page filtering (client-side, filters visible rows only)
+      Topic.subscribe('/LocalFilter', lang.hitch(this, function (filterText) {
+        // Store the filter text so it can be re-applied after grid refresh
+        this._localFilterText = filterText || '';
+        applyLocalFilter();
+      }));
 
       // Hide the panel on a small screen
       if (window.innerWidth <= 768 && this.actionBar) {

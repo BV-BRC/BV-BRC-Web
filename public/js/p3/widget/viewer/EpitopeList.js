@@ -113,7 +113,7 @@ define([
     },
     onSetTotalEpitope: function (attr, oldVal, newVal) {
       // console.log("ON SET TOTAL GENOMES: ", newVal);
-      this.totalCountNode.innerHTML = ' ( ' + newVal + '  Epitope) ';
+      this.totalCountNode.textContent = ' ( ' + newVal + '  Epitope) ';
     },
     hideWarning: function () {
       if (this.warningPanel) {

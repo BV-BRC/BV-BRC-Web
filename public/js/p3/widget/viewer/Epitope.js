@@ -38,7 +38,7 @@ define([
         return;
       }
 
-      this.queryNode.innerHTML = epitope.epitope_id + ' | ' + epitope.epitope_sequence + ' | ' + epitope.organism;
+      this.queryNode.textContent = epitope.epitope_id + ' | ' + epitope.epitope_sequence + ' | ' + epitope.organism;
     },
 
     onSetState: function (attr, oldVal, state) {

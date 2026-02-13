@@ -26,7 +26,6 @@ define([
     var data = downloadTT.get('data');
     var headers = downloadTT.get('headers');
     var filename = 'PATRIC_blast';
-    // console.log(data, headers);
 
     var DELIMITER,
       ext;
@@ -42,7 +41,9 @@ define([
       return d.join(DELIMITER);
     });
 
-    saveAs(new Blob([headers.join(DELIMITER) + '\n' + content.join('\n')], { type: rel }), filename + '.' + ext);
+    var fileContent = headers.join(DELIMITER) + '\n' + content.join('\n');
+
+    saveAs(new Blob([fileContent], { type: rel }), filename + '.' + ext);
 
     popup.close(downloadTT);
   }));
@@ -98,37 +99,60 @@ define([
           tooltip: 'Download Table',
           tooltipDialog: downloadTT
         },
-        function () {
-
+        function (selection, button) {
           downloadTT.set('content', dfc);
 
           var data = this.grid.store.query('', {});
+
           var headers,
             content;
 
-          switch (this.type) {
+          // Determine the type - use explicit type or infer from containerType or data
+          var dataType = this.type || this.containerType;
+
+          // If still no type, try to infer from the data
+          if (!dataType && data && data.length > 0) {
+            var firstRow = data[0];
+            if (firstRow.patric_id && firstRow.refseq_locus_tag) {
+              dataType = 'genome_feature';
+            } else if (firstRow.accession && firstRow.sequence_id) {
+              dataType = 'genome_sequence';
+            } else if (firstRow.database && firstRow.source_id) {
+              dataType = 'specialty_genes';
+            }
+          }
+
+          switch (dataType) {
             case 'genome_feature':
+            case 'feature_data':  // Also handle containerType value
               headers = ['Genome', 'Genome ID', 'BRC ID', 'RefSeq Locus Tag', 'Gene', 'Product', 'Length (NT)', 'Length (AA)', 'ALN Length', 'Identity', 'Query cover', 'Subject cover', 'Hit from', 'Hit to', 'Score', 'E value'];
               content = data.map(function (row) {
                 return [row.genome_name, row.genome_id, row.patric_id, row.refseq_locus_tag, row.gene, JSON.stringify(row['function']), row.na_length, row.aa_length, row.length, row.pident, row.query_coverage, row.subject_coverage, row.hit_from, row.hit_to, row.bitscore, row.evalue];
               });
               break;
             case 'genome_sequence':
+            case 'sequence_data':  // Also handle containerType value
               headers = ['Genome', 'Genome ID', 'Accession', 'Description', 'Product', 'Identity', 'Query cover', 'Subject cover', 'Hit from', 'Hit to', 'ALN Length', 'Score', 'E value'];
               content = data.map(function (row) {
                 return [row.genome_name, row.genome_id, row.accession, JSON.stringify(row.description), JSON.stringify(row['function']), row.pident, row.query_coverage, row.subject_coverage, row.hit_from, row.hit_to, row.length, row.bitscore, row.evalue];
               });
               break;
             case 'specialty_genes':
+            case 'spgene_data':  // Also handle containerType value
               headers = ['Database', 'Source ID', 'Description', 'Organism', 'Identity', 'Query cover', 'Subject cover', 'Length', 'Score', 'E value'];
               content = data.map(function (row) {
                 return [row.database, row.source_id, JSON.stringify(row['function']), row.organism, row.pident, row.query_coverage, row.subject_coverage, row.length, row.bitscore, row.evalue];
               });
               break;
             default:
-              headers = [];
-              content = [];
-              break;
+              alert('Error: Cannot determine BLAST result type for download. Please contact support.');
+              return;  // Don't open the popup if we can't determine the type
+          }
+
+          // Validate that we have data to download
+          if (!content || content.length === 0) {
+            alert('No data available to download. The result set appears to be empty.');
+            return;
           }
 
           downloadTT.set('data', content);

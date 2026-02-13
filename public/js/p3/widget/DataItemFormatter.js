@@ -26,23 +26,41 @@ define([
   }
 
   function evaluateLink(link, value, item) {
-    return (link && value !== '-' && value !== '0') ? (
-      (typeof (link) == 'function') ?
-        link.apply(this, [item]) :
-        '<a href="' + link + value + '" target="_blank">' + String(value).split(',').join(', ') + '</a>'
-    ) : value;
+    if (link && value !== '-' && value !== '0') {
+      if (typeof (link) == 'function') {
+        return link.apply(this, [item]);
+      } else {
+        // Create link element safely instead of HTML string concatenation
+        var a = domConstruct.create('a', {
+          href: link + value,
+          target: '_blank',
+          textContent: String(value).split(',').join(', ')
+        });
+        return a.outerHTML;
+      }
+    }
+    return value;
   }
 
   function renderRow(property, value) {
     var tr = domConstruct.create('tr', {});
     domConstruct.create('td', {
       'class': 'DataItemProperty',
-      innerHTML: property
+      innerHTML: property  // Property labels are developer-controlled, safe
     }, tr);
-    domConstruct.create('td', {
-      'class': 'DataItemValue',
-      innerHTML: value
+
+    // Use innerHTML only if value contains HTML from evaluateLink, otherwise textContent
+    var valueCell = domConstruct.create('td', {
+      'class': 'DataItemValue'
     }, tr);
+
+    if (typeof value === 'string' && (value.indexOf('<a ') === 0 || value.indexOf('<') !== -1)) {
+      // Value contains HTML (from evaluateLink or formatter), use innerHTML
+      valueCell.innerHTML = value;
+    } else {
+      // Raw data value, use textContent to prevent XSS
+      valueCell.textContent = value;
+    }
 
     return tr;
   }
@@ -54,8 +72,8 @@ define([
         v = data[i].split(':')[1];
 
       var tr = domConstruct.create('tr', {}, table);
-      domConstruct.create('td', { 'class': 'DataItemProperty', innerHTML: k }, tr);
-      domConstruct.create('td', { 'class': 'DataItemValue', innerHTML: v }, tr);
+      domConstruct.create('td', { 'class': 'DataItemProperty', textContent: k }, tr);
+      domConstruct.create('td', { 'class': 'DataItemValue', textContent: v }, tr);
     }
     return table;
   }
@@ -69,10 +87,10 @@ define([
     if (typeof data == 'object') {
       for (var i = 0, len = data.length; i < len; i++) {
         var val = data[i];
-        domConstruct.create('li', { 'class': 'DataItemValue', innerHTML: val }, ul);
+        domConstruct.create('li', { 'class': 'DataItemValue', textContent: val }, ul);
       }
     } else if (typeof data == 'string') {
-      domConstruct.create('li', { 'class': 'DataItemValue', innerHTML: data }, ul);
+      domConstruct.create('li', { 'class': 'DataItemValue', textContent: data }, ul);
     }
 
     return table;
@@ -140,9 +158,19 @@ define([
     domConstruct.create('span', { 'class': iconClass }, titleDiv);
 
     // span label
-    domConstruct.create('span', {
-      innerHTML: (linkTitle) ? lang.replace('<a href="{url}">{label}</a>', { url: url, label: label }) : label
-    }, titleDiv);
+    if (linkTitle) {
+      var a = domConstruct.create('a', {
+        href: url,
+        textContent: label
+      });
+      domConstruct.create('span', {
+        innerHTML: a.outerHTML
+      }, titleDiv);
+    } else {
+      domConstruct.create('span', {
+        textContent: label
+      }, titleDiv);
+    }
   }
 
   function displayDetailBySections(item, sections, meta_data, parent, options) {
@@ -358,8 +386,8 @@ define([
 
       Object.keys(item).sort().forEach(function (key) {
         var tr = domConstruct.create('tr', {}, tbody);
-        domConstruct.create('td', { innerHTML: key }, tr);
-        domConstruct.create('td', { innerHTML: item[key] }, tr);
+        domConstruct.create('td', { textContent: key }, tr);
+        domConstruct.create('td', { textContent: item[key] }, tr);
       }, this);
 
       return table;

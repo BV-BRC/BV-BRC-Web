@@ -31,7 +31,11 @@ cd BV-BRC-Web
 npm install
 ```
 
-**Note:** After you run `npm install` you must run `git submodule update --init` as this fetches modules in the node_modules directory.
+**Note:** After you run `npm install` you must run to fetch all modules in the node_modules directory.
+
+```
+git submodule update --init
+```
 
 Make sure you must `npm install` in the BV-BRC-Web directory first though!
 

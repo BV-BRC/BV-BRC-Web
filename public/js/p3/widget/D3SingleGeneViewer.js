@@ -172,9 +172,10 @@ define([
             content.push('Feature type: ' + d.feature_type);
             content.push('Location: ' + d.start + '...' + d.end + ' (' + d.na_length + ' bp, ' + d.strand + ')');
 
-            this.tooltipLayer.html(content.join('<br/>'))
+            this.tooltipLayer.text(content.join('\n'))
               .style('left', d3.event.pageX + 'px')
-              .style('top', d3.event.pageY + 'px');
+              .style('top', d3.event.pageY + 'px')
+              .style('white-space', 'pre-line');
           }))
           .on('mouseout', lang.hitch(this, function () {
             this.tooltipLayer.transition()

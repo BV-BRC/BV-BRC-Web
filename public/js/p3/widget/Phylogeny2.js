@@ -60,6 +60,7 @@ define([
     apiServer: window.App.dataAPI,
     phylogram: true,
     containerType: 'unknown',
+    customVisualization: null,
     docsServiceURL: window.App.docsServiceURL,
     tutorialLink: 'quick_references/services/archaeopteryx.html',
     nodeSelection: null,
@@ -362,16 +363,18 @@ define([
       if (treeDat.options) {
         this.set('options', treeDat.options);
       }
+
+      // If the treeData includes any custom visualizations, save them for later use.
+      if (treeDat.custom && treeDat.custom.nodeVisualizations) {
+         this.set('customVisualization', treeDat.custom);
+      }
+
       this.set('idType', idType);
       this.set('fileType', fileType);
       this.set('newickxml', treeDat.tree);
     },
 
     processTree: function () {
-      // console.log('processTree this', this);
-      // console.log('processTree this.options', this.options);
-      // console.log('this.newickxml', this.newickxml);
-      // console.log('processTree this.fileType', this.fileType);
       this.containerPane.set('style', 'top: 40px');
 
       var options = {};
@@ -439,8 +442,6 @@ define([
         options = lang.mixin(options, this.options);
       }
 
-      // console.log('options', options);
-
       var nodeVisualizations = {};
       var specialVisualizations = {};
       var nodeLabels = {};
@@ -451,8 +452,8 @@ define([
         return;
       }
       var mytree;
+
       try {
-        // console.log('this.fileType', this.fileType);
         if (this.fileType == 'phyloxml') {
           mytree = window.archaeopteryx.parsePhyloXML(this.newickxml);
 
@@ -497,7 +498,13 @@ define([
                 showButton: true
               };
             });
-            // console.log('mytree nodeVisualizations: ', nodeVisualizations);
+          }
+
+          // Were any custom node visualizations provided in the treeDat? If so, include them here.
+          if (this.customVisualization && this.customVisualization.nodeVisualizations) {
+            for (const key of Object.keys(this.customVisualization.nodeVisualizations)) {
+               nodeVisualizations[key] = this.customVisualization.nodeVisualizations[key];
+            }
           }
         }
         else {

@@ -2,12 +2,14 @@ define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/ItemDetailPanel.html', 'dojo/_base/lang', './formatter', 'dojo/dom-style',
-  '../WorkspaceManager', 'dojo/dom-construct', 'dojo/query', './DataItemFormatter', 'dojo/topic'
+  '../WorkspaceManager', 'dojo/dom-construct', 'dojo/query', './DataItemFormatter', 'dojo/topic',
+  'dojo/_base/Deferred'
 ], function (
   declare, WidgetBase, on,
   domClass, Templated, WidgetsInTemplate,
   Template, lang, formatter, domStyle,
-  WorkspaceManager, domConstruct, query, DataItemFormatter, Topic
+  WorkspaceManager, domConstruct, query, DataItemFormatter, Topic,
+  Deferred
 ) {
   return declare([WidgetBase, Templated, WidgetsInTemplate], {
     baseClass: 'ItemDetailPanel',
@@ -16,6 +18,7 @@ define([
     selection: null,
     item: null,
     containerWidget: null,
+    _duPromise: null, // Track current disk usage request for cancellation
 
     property_aliases: {
       document_type: 'type',
@@ -60,6 +63,12 @@ define([
       }));
 
       this.watch('selection', lang.hitch(this, function (prop, oldVal, selection) {
+        // Cancel any in-progress disk usage request when selection changes
+        if (this._duPromise && this._duPromise.cancel) {
+          this._duPromise.cancel();
+          this._duPromise = null;
+        }
+
         if (!selection || selection.length < 1) {
           domClass.add(this.domNode, 'noSelection');
           domClass.remove(this.domNode, 'multipleSelection');
@@ -137,6 +146,23 @@ define([
               domClass.add(_self.typeIcon, 'fa icon-file fa-2x');
               currentIcon = 'fa icon-file fa-2x';
               break;
+          }
+
+          // Fetch disk usage for folders and job results
+          if (t === 'folder' || t === 'workspace' || t === 'sharedWorkspace' || t === 'publicWorkspace') {
+            _self._fetchDiskUsage(item.path);
+          } else if (t === 'job_result') {
+            // For job results, fetch disk usage of the hidden job directory
+            // The job directory has the same name as the job result but prefixed with .
+            // item.path is the full path including name, so we need to get parent and add .name
+            var pathParts = item.path.split('/');
+            var name = pathParts.pop(); // Remove the name from the end
+            var parentPath = pathParts.join('/');
+            var jobDirPath = parentPath + '/.' + name;
+            _self._fetchDiskUsage(jobDirPath);
+          } else {
+            // Hide disk usage section for other item types
+            domStyle.set(_self.folderStatsNode, 'display', 'none');
           }
 
           // silence all special help divs
@@ -306,6 +332,100 @@ define([
         .then(function (meta) {
           this.item = WorkspaceManager.metaListToObj(meta);
         });
+    },
+
+    /**
+     * Refresh disk usage - clears cache and re-fetches
+     * Called by click handler on refresh button in template
+     */
+    refreshDu: function () {
+      if (this.item && (this.item.type === 'folder' || this.item.path)) {
+        WorkspaceManager.clearDuCache(this.item.path);
+        this._fetchDiskUsage(this.item.path, true);
+      }
+    },
+
+    /**
+     * Fetch disk usage for a folder path
+     * @param {string} path - The folder path to check
+     * @param {boolean} forceRefresh - If true, bypass cache
+     */
+    _fetchDiskUsage: function (path, forceRefresh) {
+      var self = this;
+
+      // Increment request ID to track this request
+      if (!this._duRequestId) {
+        this._duRequestId = 0;
+      }
+      this._duRequestId++;
+      var currentRequestId = this._duRequestId;
+
+      // Cancel any existing request
+      if (this._duPromise && this._duPromise.cancel) {
+        try {
+          this._duPromise.cancel();
+        } catch (e) {
+          // Ignore cancel errors
+        }
+      }
+
+      // Show loading state
+      this.duSizeNode.innerHTML = 'Calculating...';
+      this.duFileCountNode.innerHTML = '-';
+      this.duDirCountNode.innerHTML = '-';
+      domStyle.set(this.folderStatsNode, 'display', 'block');
+
+      this._duPromise = WorkspaceManager.du(path, forceRefresh);
+
+      Deferred.when(this._duPromise, function (result) {
+        // Check if this request is still current (not superseded by a newer request)
+        if (currentRequestId !== self._duRequestId) {
+          return; // Silently discard - a newer request has been made
+        }
+        // Result structure: [[[path, total_size, file_count, dir_count, error]]]
+        // Check result and stringify for timeout detection
+        var resultStr = JSON.stringify(result) || '';
+        if (resultStr.indexOf('timed out') !== -1) {
+          self.duSizeNode.innerHTML = 'Very large';
+          self.duFileCountNode.innerHTML = '-';
+          self.duDirCountNode.innerHTML = '-';
+        } else if (result && result[0] && result[0][0]) {
+          var duResult = result[0][0]; // [path, total_size, file_count, dir_count, error]
+          if (duResult[4]) {
+            // Error field is set
+            self.duSizeNode.innerHTML = 'Error: ' + duResult[4];
+            self.duFileCountNode.innerHTML = '-';
+            self.duDirCountNode.innerHTML = '-';
+          } else {
+            self.duSizeNode.innerHTML = formatter.formatBytes(duResult[1]);
+            self.duFileCountNode.innerHTML = duResult[2];
+            self.duDirCountNode.innerHTML = duResult[3];
+          }
+        } else {
+          // Unexpected result structure
+          self.duSizeNode.innerHTML = 'Unable to calculate';
+          self.duFileCountNode.innerHTML = '-';
+          self.duDirCountNode.innerHTML = '-';
+        }
+      }, function (err) {
+        // Check if this request is still current (not superseded by a newer request)
+        if (currentRequestId !== self._duRequestId) {
+          return; // Silently discard - a newer request has been made
+        }
+        // Request was cancelled or failed
+        // Only show error if it wasn't a cancellation
+        if (err && (!err.dojoType || err.dojoType !== 'cancel')) {
+          // Check for timeout in error message
+          var errMsg = err.message || err.toString() || '';
+          if (errMsg.indexOf('timed out') !== -1) {
+            self.duSizeNode.innerHTML = 'Very large';
+          } else {
+            self.duSizeNode.innerHTML = 'Unable to calculate';
+          }
+          self.duFileCountNode.innerHTML = '-';
+          self.duDirCountNode.innerHTML = '-';
+        }
+      });
     }
   });
 });

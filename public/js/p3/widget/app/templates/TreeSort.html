@@ -3,6 +3,36 @@
 
    <style>
 
+      .treesort--bulleted-list {
+         list-style-position: outside;
+         margin: 0.25rem 0 0 1.5rem;
+      }
+      .treesort--bulleted-list li {
+         margin-bottom: 0.25rem;
+      }
+      .treesort--bulleted-list .next-line {
+         margin: 0.5rem 0 0 1.3rem;
+      }
+      .treesort--bulleted-list ul {
+         list-style-position: outside;
+      }
+      .treesort--fasta-header {
+         background: #f5f5f5;
+         border: 1px solid #ccc;
+         border-radius: 4px;
+         font-family: monospace;
+         font-size: 1.0rem;
+         padding: 2px 4px;
+         width: fit-content;
+      }
+
+      .treesort--error {
+         color: #d46464;
+      }
+      .treesort--success {
+         color: #198754;
+      }
+
       .appRow.treesort--row-with-columns {
          align-items: center;
          display: flex;
@@ -32,8 +62,7 @@
       }
 
       .treesort--error-message {
-         position: absolute;
-         width: auto;
+         width: 100%;
       }
 
       /* The container of the segment controls (checkboxes and labels) */
@@ -51,12 +80,15 @@
       .treesort--advanced-options-container {
          margin-top: 1.0rem;
       }
-      .treesort--advanced-options-control {
+      .treesort--advanced-options-container .treesort--advanced-options-control {
          align-items: center;
          display: flex;
          flex-flow: row nowrap;
          justify-content: flex-start;
          line-height: 3.0rem;
+      }
+      .treesort--advanced-options-container .treesort--advanced-options-control:hover {
+         cursor: pointer !important; /* TODO: Why isn't this working? */
       }
       .treesort--icon-container {
          margin-right: 0.5rem;
@@ -83,12 +115,92 @@
          opacity: 1;
          visibility: visible;
       }
+
+      /* Modify the default appearance of ULs in info dialogs. I realize this is risky since I'm
+         potentially modifying global CSS, but I confirmed that there aren't any help modals
+         with these section IDs. */
+      .helpModal section#inference-method ul,
+      .helpModal section#match-type ul,
+      .helpModal section#reference-tree-inference-method ul {
+         list-style-position: outside;
+         list-style-type: disc;
+         margin-left: 1.2rem;
+      }
+      .helpModal section#inference-method ul li,
+      .helpModal section#match-type ul li,
+      .helpModal section#reference-tree-inference-method ul li {
+         margin-bottom: 0.5rem;
+      }
+
+      /* Dialogs
+      .treesort--dialog {
+         width: fit-content;
+      }
+      .treesort--dialog .treesort--dialog-footer {
+         display: flex;
+         flex-flow: row nowrap;
+         justify-content: flex-end;
+         margin-top: 1.0rem;
+         width: 100%;
+      }
+      .treesort--dialog .treesort--dialog-footer .treesort--close-button {
+         font-size: 1.0rem;
+      }*/
+
+
+      /* A FASTA file validation summary. */
+      .treesort--validation-summary {
+         font-size: 0.9rem;
+         margin: 1.0rem 0 1.5rem 1.0rem;
+      }
+      .treesort--validation-title {
+         font-size: 1.0rem;
+         font-weight: bold;
+         margin-bottom: 0.25rem;
+      }
+      .treesort--validation-description {
+         /*font-size: 0.9rem;*/
+         margin-bottom: 0.5rem;
+      }
+      .treesort--validation-list {
+         margin-bottom: 1.0rem;
+      }
+
+      .treesort--ignored-strains {
+         margin-bottom: 1.0rem;
+      }
+
+      /* An example FASTA header with the strain name highlighted. */
+      .treesort--example-panel {
+         margin-bottom: 1.5rem;
+      }
+      .treesort--example-message {
+         margin-bottom: 0.3rem;
+      }
+      .treesort--example-header {
+         border: 1px solid #ccc;
+         font-size: 0.9rem;
+         margin-bottom: 0.25rem;
+         padding: 0.25rem;
+         width: fit-content;
+      }
+      .treesort--highlighted-text {
+         background-color: #fef185;
+      }
+
+      .treesort--example-help {
+         margin-bottom: 1.0rem;
+      }
+
+
+
+
    </style>
 
    <div class="appTemplate">
       <div class="appTitle">
          <span class="breadcrumb">Services</span>
-         <h1 class="appHeader">TreeSort for Influenza
+         <h1 class="appHeader">Influenza Reassortment Analysis
             <div name="overview" class="infobox iconbox infobutton dialoginfo">
                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
             </div>
@@ -98,12 +210,40 @@
                </a>
             </div>-->
          </h1>
-         <p>${applicationDescription} Link to <a href="https://github.com/flu-crew/TreeSort" target="_blank">TreeSort</a>.</p>
+         <p>${applicationDescription} TreeSort was created by the <a href="https://github.com/flu-crew/TreeSort" target="_blank">Flu-crew</a> at the National Animal Disease Center.</p>
          <br/>
          <p>For further explanation, please see the ${applicationLabel} Service
-            <a href="${docsServiceURL}${applicationHelp}" target="_blank">Quick Reference Guide</a> and
-            <a href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.
+            <a href="${docsServiceURL}/${applicationHelp}" target="_blank">Quick Reference Guide</a> and
+            <a href="${docsServiceURL}/${tutorialLink}" target="_blank">Tutorial</a>.
          </p>
+         <br/>
+         <p><b>IMPORTANT</b> notes about the FASTA input file:</p>
+         <p>
+            <ul class="treesort--bulleted-list">
+               <li>This service can <b>only</b> be used with Influenza nucleotide sequences!</li>
+               <li>Segment names in the FASTA file headers are limited to PB2, PB1, PA, HA, NP, NA, MP, and NS.</li>
+               <li>The segment name <b>must</b> be surrounded by <span class="treesort--fasta-header">|</span> characters and can be followed by a date in the
+                  format <i>YYYY-MM-DD</i>. <br/>For example:
+                  <div class="next-line"><pre class="treesort--fasta-header">>A/swine/Michigan/A02635726/2021|1B.2.1|1998B|TTTPPT|HA|2021-04-23</pre></div>
+                  <div class="next-line">where the segment is <span class="treesort--fasta-header">HA</span> and the date is <span class="treesort--fasta-header">2021-04-23</span> (April 23, 2021).</div>
+               </li>
+               <li>TreeSort can accept 3 different strain name formats within a FASTA header:
+                  <ul>
+                     <li>The strain name is everything that remains after the segment name is removed.</li>
+                     <li>The strain name starts with "EPI_ISL_" followed by a numeric (integer) value.</li>
+                     <li>A strain name starts with A, B, C, or D followed by 3 to 5 spans of text inside <span class="treesort--fasta-header">/</span> characters.
+                        For example: <span class="treesort--fasta-header">A/swine/Iowa/A02635718/2021</span>. Note that <span class="treesort--fasta-header">|</span> characters are not allowed in the strain name.
+                     </li>
+                  </ul>
+               </li>
+               <li>After you select a FASTA input file, your file will be automatically validated to make sure TreeSort will be able to find the strain and segment names.
+                  An error message will be displayed if any errors are found.</li>
+               <li>If your FASTA file is successfully validated, a summary of the number of strains and segments will be displayed. Please confirm that the summary is
+                  consistent with the contents of your file.
+               </li>
+            </ul>
+         </p>
+         <br/>
       </div>
 
       <div class="appBox appShadow" style="margin-top:10px">
@@ -123,7 +263,7 @@
                <!-- Input file -->
                <label class="paramlabel">Input file</label>
                <div name="input-file" class="infobox iconbox infobutton dialoginfo">
-                  <i class="fa icon-question-circle fa"></i>
+                  <i class="fa icon-info-circle fa"></i>
                </div>
                <br/>
                <div name="fasta_file_id"
@@ -137,7 +277,46 @@
                <div class="warning treesort--error-message" data-dojo-attach-point="fastaFileIdMessageEl"></div>
 
             </div>
-            <div class="appRowSegment" style="text-align:left; width: 30%">
+            <div class="appRowSegment" style="text-align:left;">
+
+               <!-- Match regex -->
+               <div data-dojo-attach-point="matchRegexContainerEl">
+
+                  <!--
+                  dmd 02/03/26: Temporarily removing the regex control.
+
+                  <label class="paramlabel">Strain name regular expression</label>
+                  <div name="match-regex" class="infobox iconbox infobutton tooltipinfo">
+                     <i class="fa icon-question-circle fa"></i>
+                  </div>
+                  <br/>
+                  <input name="match_regex"
+                     data-dojo-attach-event="onChange:handleMatchRegexChange"
+                     data-dojo-attach-point="matchRegexEl"
+                     data-dojo-props="intermediateChanges: false, invalidMessage:'Enter a regular expression', trim:true, placeholder:'A Python regex'"
+                     data-dojo-type="dijit/form/ValidationTextBox"
+                     required="false"
+                     style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 200px;" />
+                  <div class="warning treesort--error-message" data-dojo-attach-point="matchRegexMessageEl"></div>
+                  -->
+
+                  <!-- A hidden field for the match type. -->
+                  <div name="match_type"
+                     data-dojo-attach-point="matchTypeEl"
+                     data-dojo-props="disabled:false"
+                     data-dojo-type="dijit/form/TextBox"
+                     style="display: none; visibility: hidden"
+                  ></div>
+
+               </div>
+            </div>
+         </div>
+
+         <!-- The summary of FASTA validation will be displayed here. -->
+         <div class="treesort--fasta-validation-panel" data-dojo-attach-point="fastaValidationPanelEl"></div>
+
+         <div class="appRow treesort--row-with-columns">
+            <div class="appRowSegment treesort--left-column">
 
                <!-- Output folder (path) -->
                <label class="paramlabel">Output folder</label>
@@ -224,13 +403,14 @@
             <!-- The advanced options control toggles the visibility of this section. -->
             <div class="treesort--advanced-options">
 
+               <!--
                <div class="appRow">
                   <div class="appRowSegment treesort--left-column">
 
-                     <!-- Match type -->
+                     <-- Match type
                      <label class="paramlabel">Match type</label>
-                     <div name="match-type" class="infobox iconbox infobutton tooltipinfo">
-                        <i class="fa icon-question-circle fa"></i>
+                     <div name="match-type" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa"></i>
                      </div>
                      <br/>
                      <div name="match_type"
@@ -247,7 +427,7 @@
                   </div>
                   <div class="appRowSegment" style="text-align: left;">
 
-                     <!-- Match regex -->
+                     <-- Match regex
                      <div data-dojo-attach-point="matchRegexContainerEl" style="display: none">
 
                         <label class="paramlabel">Regular expression</label>
@@ -266,15 +446,15 @@
 
                      </div>
                   </div>
-               </div>
+               </div>-->
 
                <div class="appRow treesort--row-with-columns">
                   <div class="appRowSegment treesort--left-column">
 
                      <!-- Inference method -->
                      <label class="paramlabel">Inference method</label>
-                     <div name="inference-method" class="infobox iconbox infobutton tooltipinfo">
-                        <i class="fa icon-question-circle fa"></i>
+                     <div name="inference-method" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa"></i>
                      </div>
                      <br/>
                      <div name="inference_method"
@@ -292,8 +472,8 @@
 
                      <!-- Reference tree inference method -->
                      <label class="paramlabel">Reference tree inference method</label>
-                     <div name="reference-tree-inference-method" class="infobox iconbox infobutton tooltipinfo">
-                        <i class="fa icon-question-circle fa"></i>
+                     <div name="reference-tree-inference-method" class="treesort--help infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                      </div>
                      <br/>
                      <div name="ref_tree_inference"

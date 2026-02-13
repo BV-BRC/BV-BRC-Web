@@ -2,12 +2,12 @@ define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dojo/query',
   'dojo/dom-class', 'dojo/dom-construct', './WorkspaceGrid',
   'dojo/_base/Deferred', './Confirmation', './Uploader', 'dijit/form/Select',
-  'dojo/topic', '../WorkspaceManager', 'dojo/promise/all'
+  'dojo/topic', '../WorkspaceManager', 'dojo/promise/all', 'dojo/_base/lang'
 ], function (
   declare, WidgetBase, on, query,
   domClass, domConstr, WorkspaceGrid,
   Deferred, Confirmation, Uploader, Select,
-  Topic, WorkspaceManager, all
+  Topic, WorkspaceManager, all, lang
 ) {
   return declare([WorkspaceGrid], {
     disabled: false,
@@ -16,6 +16,14 @@ define([
     containerType: 'folder',
     onlyWritable: false,      // only lists writable workspaces
     allowDragAndDrop: true,   // whether or not to allow drag and drop
+    currentSearchTerm: null, // To know if we are displaying search results
+    workspaceFilter: null,   // Filter mode: null, 'myWorkspaces', or 'sharedWithMe'
+    _setWorkspaceFilterAttr: function (val) {
+      this.workspaceFilter = val;
+      if (this._started) {
+        this.refreshWorkspace();
+      }
+    },
     _setTypes: function (val) {
       if (val) {
         this.types = Array.isArray(val) ? val : [val];
@@ -31,6 +39,18 @@ define([
 
     listWorkspaceContents: function (ws) {
       var _self = this;
+      // If a search is globally active, this method should not fetch normal contents.
+      // The WorkspaceBrowser will push search results directly via the render() method.
+      if (WorkspaceManager.activeSearchFilter) {
+        // Display an empty list or a "searching..." message.
+        // The actual search results will be passed to this.render() by WorkspaceBrowser.
+        // So, resolve with empty to prevent normal loading.
+        _self.render(ws, []); // Render empty to clear out old items
+        _self.renderCount(0, true); // Indicate search is in progress or 0 items found
+        var def = new Deferred();
+        def.resolve([]);
+        return def.promise;
+      }
       if (ws[ws.length - 1] == '/') {
         ws = ws.substr(0, ws.length - 1);
       }
@@ -49,6 +69,12 @@ define([
         ws = parts.join('/');
       }
 
+      // Check what filter to apply based on hash or workspaceFilter property
+      var currentHash = window.location.hash;
+      var filterMode = this.workspaceFilter || (currentHash === '#sharedWithMe' ? 'sharedWithMe' : currentHash === '#myWorkspaces' ? 'myWorkspaces' : null);
+      var showOnlyShared = filterMode === 'sharedWithMe';
+      var showOnlyOwned = filterMode === 'myWorkspaces';
+
       var filterPublic =  ws == '/';
       var prom1 = WorkspaceManager.getFolderContents(ws, window.App.showHiddenFiles, null, filterPublic);
 
@@ -59,13 +85,37 @@ define([
       if (isUserTopLevel) {
         var prom2 = WorkspaceManager.listSharedWithUser(userID);
       }
+      else {
+        var deferred = new Deferred();
+        deferred.resolve([]);         // Resolve with an empty array for non-top-level or no user
+        prom2 = deferred.promise;
+      }
 
       // join permissions with objects
       return all([prom1, prom2]).then(function (results) {
-        var objs = results[0];
+        var objs = results[0] || [];
 
-        // join 'shared with me' data if needed
-        if (isUserTopLevel) objs = objs.concat(results[1]);
+    // join 'shared with me' data if needed
+    if (isUserTopLevel && results[1] && Array.isArray(results[1])) { // Check if results[1] is an array
+       // Filter based on what we want to show
+       if (showOnlyShared) {
+         // Only show shared workspaces
+         objs = results[1];
+       } else if (showOnlyOwned) {
+         // Show only owned workspaces (filter out shared ones)
+         objs = objs.filter(function(obj) {
+           // Keep only items that are NOT in the shared list
+           return !results[1].some(function(sharedObj) {
+             return sharedObj.path === obj.path;
+           });
+         });
+       } else {
+         // No hash or unrecognized hash - show all (owned + shared)
+         objs = objs.concat(results[1]);
+       }
+    } else if (isUserTopLevel && results[1]) {
+       console.warn("WorkspaceExplorerView: results[1] from listSharedWithUser was not an array:", results[1]);
+    }
 
         var paths = objs.map(function (obj) { return obj.path; });
         var prom2 = WorkspaceManager.listPermissions(paths);
@@ -73,7 +123,7 @@ define([
 
           // empty folder notice
           if (!objs.length) {
-            _self.addEmptyFolderDiv(isPublic);
+            _self.addEmptyFolderDiv(isPublic, false); //false for not a search result
           } else {
             _self.rmEmptyFolderDiv();
           }
@@ -134,29 +184,46 @@ define([
             }
             return (a[s.attribute] > b[s.attribute]) ? 1 : -1;
           });
-
-          _self.renderCount(objs.length);
+          objs = objs.filter(function(item) { return typeof item !== 'undefined'; }); // ADD THIS LINE
+          _self.renderCount(objs.length, false); //false for not a search result
 
           return objs;
         });
 
       }, function (err) {
+        console.error('ExplorerView: Error in listWorkspaceContents - all():', err); // Changed to console.error
         console.log('Error Loading Workspace:', err);
         _self.showError(err);
       });
     },
 
-    renderCount: function (count) {
+    renderCount: function (count, isSearchResult) {
       var breadCrumb = query('.wsBreadCrumb')[0];
-      var countEle = query('.ws-count', breadCrumb);
-      if (countEle.length) return;
+      if (!breadCrumb) { return; } // Safety check in case breadcrumb isn't ready
 
-      domConstr.create('small', {
-        'class': 'PerspectiveTotalCount ws-count',
-        innerHTML: count ?
-          ' (' + count + ' item' + (count > 1 ? 's' : '')  + ')'
-          : ''
-      }, breadCrumb);
+      // Find the count element. If it doesn't exist, create it.
+      var countEle = query('.ws-count', breadCrumb)[0];
+      if (!countEle) {
+        countEle = domConstr.create('small', {
+          'class': 'PerspectiveTotalCount ws-count'
+        }, breadCrumb);
+      }
+
+      // Now, determine the message and update the element's content.
+      var message = '';
+      if (isSearchResult) {
+        message = count + ' item' + (count !== 1 ? 's' : '') + ' found';
+      } else {
+        message = count + ' item' + (count !== 1 ? 's' : '');
+      }
+
+      // Set the innerHTML. Show it if there are items or if it's a search result (even 0 found).
+      // Hide it for an empty folder that is not a search result.
+      if (count > 0 || isSearchResult) {
+        countEle.innerHTML = '<i> (' + message + ')</i>';
+      } else {
+        countEle.innerHTML = '';
+      }
     },
 
     showError: function (err) {
@@ -203,10 +270,31 @@ define([
 
       // initialize drag and drop
       if (this.allowDragAndDrop && !this.dndZone) this.initDragAndDrop();
+
+      // Update empty folder message based on new items
+      if (!items || items.length === 0) {
+          var isPublicPath = this.path && this.path.startsWith('/public');
+          // Check if it's a search result by looking at currentSearchTerm or global filter
+          var searchActive = !!this.currentSearchTerm || !!WorkspaceManager.activeSearchFilter;
+          this.addEmptyFolderDiv(isPublicPath, searchActive);
+      } else {
+          this.rmEmptyFolderDiv();
+      }
+
     },
 
     refreshWorkspace: function () {
       var _self = this;
+
+      // If a search term is active locally for this view, or globally,
+      // WorkspaceBrowser will push results via render().
+      // So, refreshWorkspace should only operate for normal path browsing.
+      if (this.currentSearchTerm || WorkspaceManager.activeSearchFilter) {
+        // To prevent conflicts, do not proceed with normal content loading.
+        // Optionally, if a refresh is forced, one might re-trigger the search
+        // or clear it. For now, simply return to avoid issues.
+        return;
+      }
       this.listWorkspaceContents(this.path).then(function (contents) {
 
         var parts = _self.path.split('/').filter(function (x) {
@@ -256,20 +344,36 @@ define([
       var _self = this;
       this.inherited(arguments);
       domClass.add(this.domNode, 'WorkspaceExplorerView');
-
-      this.refreshWorkspace();
+      // Initial load: only call refreshWorkspace if not in a search state.
+      // The search state would be handled by WorkspaceBrowser pushing results.
+      if (!this.currentSearchTerm && !WorkspaceManager.activeSearchFilter) {
+          this.refreshWorkspace();
+      }
 
       // also listen for later changes
-      Topic.subscribe('/refreshWorkspace', function (msg) {
-        _self.refreshWorkspace();
-      });
+      Topic.subscribe('/refreshWorkspace', lang.hitch(this, function () {
+        // Only refresh if not in a search state that was initiated by this view or globally.
+        // This prevents stomping search results with a normal path refresh.
+        if (!this.currentSearchTerm && !WorkspaceManager.activeSearchFilter) {
+            _self.refreshWorkspace();
+        }
+      }));
+      this.refreshWorkspace();
     },
 
     // gives notice that folder is empty and user could use drag n drop.
-    addEmptyFolderDiv: function (isPublic) {
+    addEmptyFolderDiv: function (isPublic, isSearchResult) {
       // needed since listWorkspaceContents is called twice on url load
       var exists = query('.emptyFolderNotice', this.domNode)[0];
       if (exists) return;
+
+      var message;
+      if (isSearchResult) {
+          message = '<b>No items match your search criteria.</b>';
+      } else {
+          message = '<b>This folder is empty.</b>' +
+              (this.allowDragAndDrop && !isPublic ? '<br>Drag and drop files onto this window to upload.' : '');
+      }
 
       domConstr.create('div', {
         'class': 'emptyFolderNotice',
@@ -282,8 +386,7 @@ define([
           color: '#777',
           fontSize: '1.2em'
         },
-        innerHTML: '<b>This folder is empty.</b>' +
-          (this.allowDragAndDrop && !isPublic ? '<br>Drag and drop files onto this window to upload.' : '')
+        innerHTML: message
       }, this.domNode);
     },
 
@@ -402,8 +505,15 @@ define([
     },
 
     _setPath: function (val) {
+      // Store the path directly - it should already be decoded by callers
+      // (WorkspaceBrowser decodes paths, and JobResult now passes decoded paths)
       this.path = val;
       // console.log("WorkspaceExplorerView setPath", val)
+      // When path is set directly (e.g., by navigation),
+      // any local search context for this view should be cleared.
+      this.currentSearchTerm = null;
+      // The global WorkspaceManager.activeSearchFilter will be handled by WorkspaceBrowser
+      // when it processes the path change.
       if (this._started) {
         this.refreshWorkspace();
       }

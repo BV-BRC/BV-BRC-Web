@@ -51,25 +51,31 @@ define([
       opts = opts || {}
       query = query || {};
       var _self = this;
-      if (!this.dataPath) {
-        return QueryResults([])
+
+      // Always return immediate results to prevent pagination errors
+      // If data not loaded yet, return empty results and let refresh handle updates
+      if (!this.dataPath || !this.loaded) {
+        var emptyRes = [];
+        emptyRes.total = 0;
+        var wrapped = QueryResults(emptyRes);
+        wrapped.total = 0;
+
+        // Trigger load if needed (but don't wait for it)
+        if (this.dataPath && !this.loaded) {
+          this.loadWorkspaceData();
+        }
+
+        return wrapped;
       }
 
-      if (this.loaded) {
-        return this.inherited(arguments);
+      // Data is loaded - return actual results
+      var results = this.inherited(arguments);
+      // Ensure results always have a concrete total value (not a promise or undefined)
+      // to prevent "string.substitute could not find key 'total'" errors in Pagination
+      if (!results.total && results.total !== 0) {
+        results.total = results.length || 0;
       }
-      var wsd = this.loadWorkspaceData()
-
-      return wsd.then(function () {
-        console.log('loadWorkspaceData returned.  Query: ', query)
-        return _self.query(query, opts)
-      }, function (err) {
-        console.log('Error retrieving workspace contents: ', err)
-        throw Error('Unable to retreive workspace contents: ' + err)
-      })
-        .then(function (res) {
-          return QueryResults(res);
-        })
+      return results;
     },
 
     get: function (id, opts) {
@@ -82,6 +88,11 @@ define([
       return wsd.then(function () {
         return _self.get(id, opts)
       }, function (err) {
+        // Ignore cancellation errors (they have no message and occur during reload)
+        if (err && err.dojoType === 'cancel') {
+          console.log('Load was canceled, likely due to reload');
+          return null;  // Return null for canceled get requests
+        }
         console.log('Error retrieving workspace contents: ', err)
         throw Error('Unable to retreive workspace contents: ' + err)
       })
@@ -147,7 +158,7 @@ define([
           this.type = 'genome_sequence'
         }
 
-        WorkspaceManager.getFolderContents([this.hiddenPath], false, false, false).then(lang.hitch(this, function (paths) {
+        WorkspaceManager.getFolderContents(this.hiddenPath, false, false, false).then(lang.hitch(this, function (paths) {
 
           var filtered = paths.filter(function (f) {
             if ('path' in f && f.path.match('blast_out.json')) {
@@ -191,9 +202,9 @@ define([
                 if (d.includes('accn|')) {
                   return d.replace('accn|', '');
                 } else if (d.includes('.con.')) {
-                  return d;
+                  return d.replace(/^(\d+\.\d+)\.\1\./, '$1.');
                 } else {
-                  return d.replace(/^\d+.\d+./, '');
+                  return d.replace(/^\d+\.\d+\./, '');
                 }
               }).filter(function (d) {
                 return d !== '';
@@ -202,7 +213,7 @@ define([
                 this.type = 'no_ids';
                 this.defaultLoadData(res);
               } else {
-                query.q = (resultIds.length > 0) ? 'sequence_id:(' + resultIds.join(' OR ') + ')' : {};
+                query.q = (resultIds.length > 0) ? 'accession:(' + resultIds.join(' OR ') + ')' : {};
                 query.fl = 'genome_id,genome_name,taxon_id,sequence_id,accession,sequence_type,description';
               }
             } else if (this.type == 'genome_feature') {
@@ -246,7 +257,7 @@ define([
                 var keyMap = {};
                 keys.forEach(function (f) {
                   if (this.type == 'genome_sequence') {
-                    keyMap[f.sequence_id] = f;
+                    keyMap[f.accession] = f;
                   } else {
                     if (f.annotation == 'RefSeq') {
                       keyMap[f.refseq_locus_tag] = f;
@@ -260,9 +271,10 @@ define([
                 this.defaultLoadData(res);
               }));
             }
-          }), function (err) {
+          }), lang.hitch(this, function (err) {
+            console.warn('HomologyResultMemoryStore: getFolderContents error:', err);
             this.emptySetData();
-          });
+          }));
         }), lang.hitch(this, function (err) {
           this.emptySetData();
         }));
@@ -346,13 +358,13 @@ define([
             delete entry.genome_id;
             delete entry.genome_name;
           } else if (this.type === 'genome_sequence') {
-            target_id = target_id.replace('accn|', '');
+            // target_id = target_id.replace('accn|', '');
             if (target_id.includes('accn|')) {
               target_id = target_id.replace('accn|', '');
             } else if (target_id.includes('.con.')) {
-              target_id = target_id;
+              target_id = target_id.replace(/^(\d+\.\d+)\.\1\./, '$1.');
             } else {
-              target_id = target_id.replace(/^\d+.\d+./, '');
+              target_id = target_id.replace(/^\d+\.\d+\./, '');
             }
             if (Object.prototype.hasOwnProperty.call(metadata, target_id)) {
               entry.genome_id = metadata[target_id].genome_id;

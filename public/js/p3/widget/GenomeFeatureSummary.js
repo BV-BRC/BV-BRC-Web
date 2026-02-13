@@ -24,13 +24,31 @@ define([
       label: 'BV-BRC',
       field: 'PATRIC',
       renderCell: function (obj, val, node) {
-        node.innerHTML = obj.PATRIC ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,PATRIC))">' + obj.PATRIC + '</a>') : '0';
+        if (obj.PATRIC) {
+          var link = domConstruct.create('a', {
+            href: '#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,PATRIC))',
+            target: '_blank',
+            textContent: obj.PATRIC
+          });
+          domConstruct.place(link, node, 'only');
+        } else {
+          node.textContent = '0';
+        }
       }
     }, {
       label: 'GenBank / RefSeq',
       field: 'RefSeq',
       renderCell: function (obj, val, node) {
-        node.innerHTML = obj.RefSeq ? ('<a href="#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,RefSeq))">' + obj.RefSeq + '</a>') : '0';
+        if (obj.RefSeq) {
+          var link = domConstruct.create('a', {
+            href: '#view_tab=features&filter=and(eq(feature_type,' + obj.feature_type + '),eq(annotation,RefSeq))',
+            target: '_blank',
+            textContent: obj.RefSeq
+          });
+          domConstruct.place(link, node, 'only');
+        } else {
+          node.textContent = '0';
+        }
       }
     }],
     processData: function (data) {
@@ -55,7 +73,7 @@ define([
       var values = Object.keys(values);
 
       values.forEach(function (val, idx) {
-        this._chartLabels.push({ text: val, value: idx + 1 });
+        this._chartLabels.push({ text: val, value: idx });
       }, this);
 
       data.forEach(function (summary) {
@@ -104,7 +122,8 @@ define([
             animate: { duration: 1000, easing: easing.linear }
           })
           .addAxis('x', {
-            majorLabels: false,
+            majorLabels: true,
+            majorTicks: true,
             minorTicks: false,
             minorLabels: false,
             microTicks: false,
