@@ -20,6 +20,7 @@
 	flex-wrap: nowrap;
 	align-items: center;
 	min-height: 48px;  /* Ensure minimum height for the header */
+	overflow: hidden;  /* Prevent header content from overflowing */
 }
 
 .WSBrowserHeader .wsSearchSectionContainer {
@@ -114,7 +115,7 @@ a.HelpLink:active {
 .wsBreadCrumbContainer {
 	display: inline-block;
 	margin: 12px 0 12px 8px;
-	flex: 1 1 auto;
+	flex: 1 1 0;  /* Use 0 flex-basis to allow proper shrinking */
 	min-width: 0;  /* Allow text truncation if needed */
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -512,6 +513,7 @@ th.dgrid-cell.wsItemMembers {
 	flex: 0 0 auto;  /* Don't grow or shrink, use natural size */
 	white-space: nowrap;  /* don't wrap icons */
 	margin-left: auto;  /* Push to right in flex container */
+	min-width: fit-content;  /* Prevent shrinking below content width */
 }
 
 .ActionButtonWrapper .ActionButton.fa {
