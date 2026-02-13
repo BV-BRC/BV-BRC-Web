@@ -1,0 +1,55 @@
+<div class="savedSearchBrowser">
+  <div class="browserHeader">
+    <h4><i class="fa fa-bookmark"></i> Saved Searches</h4>
+    <span class="searchCount" data-dojo-attach-point="countNode">0 searches</span>
+  </div>
+
+  <div class="browserToolbar">
+    <div class="searchFilter">
+      <input type="text" class="filterInput" placeholder="Search by name..."
+             data-dojo-attach-point="searchInput">
+    </div>
+
+    <div class="typeFilter">
+      <select data-dojo-attach-point="dataTypeFilter">
+        <option value="">All Types</option>
+      </select>
+    </div>
+
+    <div class="sortControl">
+      <select data-dojo-attach-point="sortSelect">
+        <option value="updatedAt:desc">Most Recent</option>
+        <option value="updatedAt:asc">Oldest First</option>
+        <option value="name:asc">Name (A-Z)</option>
+        <option value="name:desc">Name (Z-A)</option>
+        <option value="dataType:asc">Data Type</option>
+      </select>
+    </div>
+
+    <div class="toolbarActions">
+      <button type="button" class="importButton" title="Import from workspace"
+              data-dojo-attach-event="onClick:_onImport">
+        <i class="fa fa-upload"></i> Import
+      </button>
+    </div>
+  </div>
+
+  <div class="selectAllRow">
+    <label>
+      <input type="checkbox" data-dojo-attach-point="selectAllCheckbox">
+      Select All
+    </label>
+  </div>
+
+  <div class="batchActions dijitHidden" data-dojo-attach-point="batchActionsNode">
+    <span class="selectionCount" data-dojo-attach-point="selectionCountNode">0 selected</span>
+    <button type="button" class="batchDeleteButton"
+            data-dojo-attach-event="onClick:_onBatchDelete">
+      <i class="fa fa-trash"></i> Delete Selected
+    </button>
+  </div>
+
+  <div class="searchList" data-dojo-attach-point="searchListNode">
+    <!-- Search items will be rendered here -->
+  </div>
+</div>

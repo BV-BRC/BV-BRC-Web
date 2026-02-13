@@ -1,0 +1,42 @@
+<div class="downloadWizardHeader">
+  <h2 class="downloadWizardTitle">Download Data</h2>
+  <div class="downloadWizardSteps" data-dojo-attach-point="stepIndicatorNode">
+    <!-- Step indicators will be rendered here -->
+  </div>
+</div>
+
+<div class="downloadWizardContent" data-dojo-attach-point="contentNode">
+  <!-- Step content will be placed here -->
+</div>
+
+<div class="downloadWizardFooter">
+  <div class="downloadWizardInfo" data-dojo-attach-point="infoNode">
+    <!-- Info/status messages -->
+  </div>
+  <div class="downloadWizardButtons">
+    <button data-dojo-type="dijit/form/Button"
+            data-dojo-attach-point="backButton"
+            data-dojo-attach-event="onClick:onBack"
+            class="downloadWizardButton backButton">
+      <i class="fa fa-arrow-left"></i> Back
+    </button>
+    <button data-dojo-type="dijit/form/Button"
+            data-dojo-attach-point="nextButton"
+            data-dojo-attach-event="onClick:onNext"
+            class="downloadWizardButton nextButton primary">
+      Next <i class="fa fa-arrow-right"></i>
+    </button>
+    <button data-dojo-type="dijit/form/Button"
+            data-dojo-attach-point="downloadButton"
+            data-dojo-attach-event="onClick:onDownload"
+            class="downloadWizardButton downloadButton primary dijitHidden">
+      <i class="fa fa-download"></i> Download
+    </button>
+    <button data-dojo-type="dijit/form/Button"
+            data-dojo-attach-point="cancelButton"
+            data-dojo-attach-event="onClick:onCancel"
+            class="downloadWizardButton cancelButton">
+      Cancel
+    </button>
+  </div>
+</div>
