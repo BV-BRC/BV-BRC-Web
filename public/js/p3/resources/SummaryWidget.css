@@ -23,6 +23,12 @@
     height: 175px;
 }
 
+.pfSummaryWidget div.chartNode,
+.pfSummaryWidget div.tableNode {
+    height: auto;
+    min-height: auto;
+}
+
 .SummaryWidget .actionButtons .fa {
     color: #333;
 }
@@ -139,11 +145,15 @@
     width: 20%;
     text-align: right;
 }
+.patric .spgSummaryWidget.SummaryWidget .chartNode,
+.patric .spgSummaryWidget.SummaryWidget .tableNode {
+    height: 310px;
+}
 
 /* protein feature summary widget at genome overview */
 .patric .pfSummaryWidget.SummaryWidget .chartNode,
 .patric .pfSummaryWidget.SummaryWidget .tableNode {
-    height: 275px;
+    height: 215px;
 }
 
 /* function profile summary widget at feature-list overview */

@@ -217,6 +217,7 @@ define([
   const labelMappings = [
     {key: 'genome_name', label: 'Genome Name'},
     {key: 'gene_id', label: 'Gene ID'},
+    {key: 'gene', label: 'Gene Name'},
     {key: 'genbank_accessions', label: 'Accession'},
     {key: 'species', label: 'Species'},
     {key: 'strain', label: 'Strain'},
@@ -271,33 +272,54 @@ define([
 
     onSetState: function (attr, oldVal, state) {
       this.loading = true;
-      var fileCheck = this.state.pathname.match(/path=..+?(?=&|$)/);
-      var objPath = fileCheck[0].split('=')[1];
+      var fileCheck = this.state.pathname.match(/path=([^&]+)/);
+      if (!fileCheck) {
+        this.showError('No path specified in URL');
+        return;
+      }
+      var objPath = decodeURIComponent(fileCheck[1]);
+      // Normalize path: remove duplicate slashes
+      objPath = objPath.replace(/\/+/g, '/');
       var objPathNwk = objPath.replace('.afa', '_fasttree.nwk');
 
       this.path = objPath;
+      console.log('WorkspaceManager objPath', objPath);
       console.log('WorkspaceManager objPathNwk', objPathNwk);
       console.log('state.path', state.path);
 
-      var typeCheck = this.state.pathname.match(/alignType=..+?(?=&|$)/);
+      var typeCheck = this.state.pathname.match(/alignType=([^&]+)/);
       if (typeCheck && typeCheck[0].split('=')[1].includes('dna')) {
         this.alignType = 'dna';
       }
+      var self = this;
       WorkspaceManager.getObjects([objPath]).then(lang.hitch(this, function (objs) {
         console.log('WorkspaceManager alignment', objs);
+        if (!objs || !objs[0] || !objs[0].data) {
+          self.showError('Could not load alignment file: ' + objPath);
+          return;
+        }
         this.data = objs[0].data;
         console.log('WorkspaceManager  this.data', this.data);
-        var self = this;
         WorkspaceManager.getObjects([objPathNwk]).then(lang.hitch(self, function (objs) {
           console.log('WorkspaceManager tree', objs);
+          if (!objs || !objs[0] || !objs[0].data) {
+            self.showError('Could not load tree file: ' + objPathNwk);
+            return;
+          }
           self.treeData = objs[0].data;
           console.log('WorkspaceManager  this.data', self.data);
           console.log('WorkspaceManager  this.treeData', self.treeData);
           self.createDataMap();
           console.log('onSetState tree labels: this.alt_labels', self.alt_labels);
           console.log('onSetState this.dataMap', self.dataMap);
-        }));
-      }));
+        }), function (err) {
+          console.error('Error loading tree file:', err);
+          self.showError('Error loading tree file: ' + objPathNwk);
+        });
+      }), function (err) {
+        console.error('Error loading alignment file:', err);
+        self.showError('Error loading alignment file: ' + objPath);
+      });
 
       console.log('onSetState this.dataStats ', this.dataStats);
     },
@@ -363,6 +385,7 @@ define([
       var default_value = 'N/A';
       this.alt_labels = {
         gene_id: {},
+        gene: {},
         genome_id: {},
         genome_name: {},
         genbank_accessions: {},
@@ -385,6 +408,7 @@ define([
       var self = this;
       Object.keys(dataMap).forEach(lang.hitch(this, function (geneID) {
         self.alt_labels.gene_id[geneID] = geneID;
+        self.alt_labels.gene[geneID] = default_value;
         self.alt_labels.genome_id[geneID] = default_value;
         self.alt_labels.genome_name[geneID] = default_value;
         self.alt_labels.genbank_accessions[geneID] = default_value;
@@ -464,6 +488,15 @@ define([
             }
           }
         });
+       // console.log('in setAltLabel this.featureData', this.featureData);
+       
+       this.featureData.forEach(function (feature) {
+          if (dataMap[geneID].feature_id == feature.feature_id) {
+            if (feature.gene) {
+              self.alt_labels.gene[geneID] = feature.gene;
+            }
+          }
+        });       
       }));
       console.log('in setAltLabel this.alt_labels', this.alt_labels);
     },
@@ -526,29 +559,25 @@ define([
         seqIds[s.name.replaceAll(':', '|')] = id_count;
       }));
       console.log('msa_models= ', msa_models);
-      console.log('seqIds= ', seqIds);
+      console.log(Object.keys(seqIds));
+      // console.log('seqIds= ', seqIds);
 
       this.dataStats.seqs = msa_models.seqs;
       console.log('createDataMap() this.dataStats ', this.dataStats);
 
       var ids = this.dataStats.seqs.map(function (node) { return node.name.replaceAll(':', '|'); });
+      // console.log('createDataMap() ids= ', ids);
 
       var pIDs = [];
-      var nodeIDType = '';
+      var nodeIDType = 'unknown';
 
       ids.forEach((id) => {
         // id = id.replace(/\|$/, '');
         pIDs.push(encodeURIComponent(id))
         if (id.match(/^fig\|\d+\.(.+)\d+$/)) {
-          if (nodeIDType !== 'unknown' && nodeIDType !== 'genome_id') {
-            nodeIDType = 'feature_id';
-          }
+          nodeIDType = 'feature_id';
         } else if (id.match(/^\d+.\d+$/)) {
-          if (nodeIDType !== 'unknown' && nodeIDType !== 'feature_id') {
-            nodeIDType = 'genome_id';
-          }
-        } else {
-          nodeIDType = 'unknown';
+          nodeIDType = 'genome_id';
         }
       });
 
@@ -569,7 +598,7 @@ define([
           },
           handleAs: 'json',
           // headers: this.headers,
-          data: 'or(in(patric_id,(' +  pIDs.join(',') + ')),in(feature_id,(' + pIDs.join(',') + ')))&select(feature_id,patric_id,genome_id,genome_name,product)&limit(1000)'
+          data: 'or(in(patric_id,(' +  pIDs.join(',') + ')),in(feature_id,(' + pIDs.join(',') + ')))&select(feature_id,patric_id,genome_id,genome_name,product,gene)&limit(1000)'
         }), function (response) {
           console.log('createDataMap() in when response response', response);
           self.featureData = response.map(function (feature) {
@@ -583,22 +612,22 @@ define([
               seqIdIndex = seqIds[feature.feature_id] - 1;
             }
             self.idMap[seqIdIndex] = {
-              seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+              seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
             };
-            if (ids[0].match(/^fig/)) {
+            if (ids.some(id => /^fig/.test(id))) {
               self.dataMap[feature.patric_id] = {
-                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
               };
               return {
-                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
               };
             }
             else {
               self.dataMap[feature.feature_id] = {
-                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
               };
               return {
-                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product
+                seq_id: seqIdIndex, patric_id: feature.patric_id, feature_id: feature.feature_id, genome_id: feature.genome_id, genome_name: feature.genome_name, product: feature.product, gene: feature.gene
               };
             }
           });
@@ -667,14 +696,19 @@ define([
         var genome_ids = [];
         console.log('createDataMap() genome ids=', ids);
 
-        if (ids[0].match(/^\d+\.\d+$/)) {
+        if (ids.some(id => /^\d+\.\d+$/.test(id))) {
           genome_ids = ids;
         } else {
           ids.forEach((id) => {
             var myid = id.match(/.*\|(\d+\.\d+).*/);
             console.log('ids=', ids);
             // console.log('myid=', myid);
-            genome_ids.push(myid[1]) });
+            if (myid && myid[1]) {
+              genome_ids.push(myid[1]);
+            } else {
+              console.warn('createDataMap: Could not extract genome_id from:', id);
+            }
+          });
         }
         console.log('createDataMap() genome_ids=', genome_ids);
         var q = 'in(genome_id,(' + genome_ids.join(',') + '))&select(genome_id,genome_name,genbank_accessions,species,strain,geographic_group,isolation_country,host_group,host_common_name,collection_year,subtype,lineage,clade,h1_clade_global,h1_clade_us,h3_clade,h5_clade)&limit(25000)';
@@ -696,15 +730,16 @@ define([
             var keys = Object.keys(seqIds);
             // console.log('in when response keys', keys);
 
-            if (keys[0].match(/^\d+\.\d+$/)) {
+           if (keys.some(k => /^\d+\.\d+$/.test(k))) {
               seqIdIndex = seqIds[genome.genome_id] - 1;
             } else {
               for (var i = 0; i < keys.length; i++) {
                 var mykey = keys[i].match(/.*\|(\d+\.\d+).*/);
                 // console.log('in when response genome.genome_id, keys, mykey', genome.genome_id, keys[i], mykey);
-                if (genome.genome_id == mykey[1]) {
+                if (mykey && mykey[1] && genome.genome_id == mykey[1]) {
                   // console.log('in when response mykey', mykey[1]);
                   seqIdIndex = seqIds[keys[i]] - 1;
+                  break;
                 }
               }
             }
@@ -1335,8 +1370,14 @@ define([
 
     postCreate: function () {
       this.inherited(arguments);
-      var fileCheck = this.state.pathname.match(/path=..+?(?=&|$)/);
-      var objPath = fileCheck[0].split('=')[1];
+      var fileCheck = this.state.pathname.match(/path=([^&]+)/);
+      if (!fileCheck) {
+        console.error('postCreate: No path specified in URL');
+        return;
+      }
+      var objPath = decodeURIComponent(fileCheck[1]);
+      // Normalize path: remove duplicate slashes
+      objPath = objPath.replace(/\/+/g, '/');
       var folder = objPath.split('/').slice(0, -1).join('/');
       // console.log('postCreate: objPath', objPath);
       console.log('postCreate: this.state.pathname', this.state.pathname);

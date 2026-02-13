@@ -95,7 +95,7 @@ define([
             label: antibiotic,
             tooltip: function (d, idx) {
 
-              return lang.replace('Antibiotic: {0}<br/>Phenotype: {1}<br/>Count: {2}', [d.label, phenotypes[idx], d.dist[idx]]);
+              return lang.replace('Antibiotic: {0}\nPhenotype: {1}\nCount: {2}', [d.label, phenotypes[idx], d.dist[idx]]);
             },
             link: function (d, idx) {
               return lang.replace(linkBase + '#view_tab=amr&filter=and(eq(antibiotic,{0}),eq(resistant_phenotype,{1}))', [antibiotic, phenotypes[idx]]);

@@ -120,12 +120,21 @@ define([
       }
       this.inherited(arguments);
 
+      // Ensure the workspaceObjectSelector has the correct type
+      // (overrides the hardcoded 'genome_group' from the template)
+      if (this.workspaceObjectSelector && this.type) {
+        this.workspaceObjectSelector.set('type', [this.type]);
+      }
+
       if (this.inputType in this.conversionTypes) {
         this.selectType = true;
         domClass.remove(this.groupTypeBox, 'dijitHidden');
         this.groupTypeSelect.set('options', this.conversionTypes[this.inputType]);
         this.groupTypeSelect.set('value', this.conversionTypes[this.inputType][0].value);
         this.groupTypeSelect.set('displayedValue', this.conversionTypes[this.inputType][0].label);
+        // Update the type to match the selected conversion type
+        // This ensures workspaceObjectSelector shows the correct groups
+        this.set('type', this.conversionTypes[this.inputType][0].value);
       }
     },
 

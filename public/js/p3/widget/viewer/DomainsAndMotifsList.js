@@ -113,7 +113,7 @@ define([
     },
     onSetTotalStructures: function (attr, oldVal, newVal) {
       // console.log("ON SET TOTAL GENOMES: ", newVal);
-      this.totalCountNode.innerHTML = ' ( ' + newVal + '  Records ) ';
+      this.totalCountNode.textContent = ' ( ' + newVal + '  Records ) ';
     },
     hideWarning: function () {
       if (this.warningPanel) {

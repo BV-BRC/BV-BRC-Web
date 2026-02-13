@@ -24,8 +24,12 @@ define([
       // add all files to state
       // TODO: get an xhr failure when passing in folder
       var parts = state.pathname.split('/');
-      state.path = '/' + parts.slice(2).reverse().slice(1).reverse().join('/'); // remove filename from path
-      state.file = parts.reverse()[0];
+      // Decode URL-encoded path components (e.g., spaces encoded as %20)
+      var decodedParts = parts.map(function (p) {
+        return decodeURIComponent(p);
+      });
+      state.path = '/' + decodedParts.slice(2).reverse().slice(1).reverse().join('/'); // remove filename from path
+      state.file = decodedParts.reverse()[0];
       state.data = {};
       if (!this.loaded) {
         // TODO: change parsing once the input is finalized

@@ -90,7 +90,8 @@ define([
       }).then(lang.hitch(this, function (feature) {
         // console.log("feature result ", feature);
         if (feature && feature.length == 0) {
-          this.totalCountNode.innerHTML = 'Specialty Genes > ' + this.source_id + '</a>';
+          // Build breadcrumb safely using DOM construction
+          this.totalCountNode.textContent = 'Specialty Genes > ' + this.source_id;
           var messagePane = new ContentPane({
             title: 'Result',
             region: 'top',
@@ -129,7 +130,13 @@ define([
               content: '<p>No PATRIC curation data found</p>'
             });
             this.viewer.addChild(messagePane);
-            this.totalCountNode.innerHTML = 'Specialty Genes > <a title="View feature page" href="/view/Feature/' + feature_id + '" >' + this.source_id + '</a>';
+            // Build breadcrumb with link using safe DOM construction
+            this.totalCountNode.textContent = 'Specialty Genes > ';
+            domConstruct.create('a', {
+              title: 'View feature page',
+              href: '/view/Feature/' + feature_id,
+              textContent: this.source_id
+            }, this.totalCountNode);
             return;
           }
           var node = domConstruct.create('div', { style: 'width: 50%' }, this.viewer.containerNode);
@@ -175,7 +182,28 @@ define([
               handleAs: 'json'
             }).then(lang.hitch(this, function (evidence) {
               // console.log("evidence result ", evidence);
-              this.totalCountNode.innerHTML = spgenelink + ' > ' + vflink + ' > ' + patricVFlink + ' > ' + genelink;
+              // Build breadcrumb with multiple links using safe DOM construction
+              this.totalCountNode.textContent = '';
+              domConstruct.create('a', {
+                href: '/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=false',
+                textContent: 'Specialty Genes'
+              }, this.totalCountNode);
+              domConstruct.place(document.createTextNode(' > '), this.totalCountNode);
+              domConstruct.create('a', {
+                href: '/view/SpecialtyGeneList/?keyword(*)#view_tab=specialtyGenes&filter=eq(property,%22Virulence%20Factor%22)',
+                textContent: 'Virulence Factors'
+              }, this.totalCountNode);
+              domConstruct.place(document.createTextNode(' > '), this.totalCountNode);
+              domConstruct.create('a', {
+                href: '/view/SpecialtyVFGeneList/?keyword(*)&eq(source,%22PATRIC_VF%22)#view_tab=specialtyVFGenes&filter=false',
+                textContent: 'PATRIC_VF'
+              }, this.totalCountNode);
+              domConstruct.place(document.createTextNode(' > '), this.totalCountNode);
+              domConstruct.create('a', {
+                title: 'View feature page',
+                href: '/view/Feature/' + feature_id,
+                textContent: this.source_id
+              }, this.totalCountNode);
               domConstruct.create('hr', { style: 'width: 100%' }, this.viewer.containerNode);
               domConstruct.create('div', {
                 style: 'margin-left: 10px',

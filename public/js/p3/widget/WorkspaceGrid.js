@@ -2,16 +2,31 @@ define([
   'dojo/_base/declare', 'dgrid/Grid', 'dojo/store/JsonRest', 'dgrid/extensions/DijitRegistry',
   'dgrid/Keyboard', 'dgrid/Selection', './formatter', 'dgrid/extensions/ColumnResizer', 'dgrid/extensions/ColumnHider',
   'dgrid/extensions/DnD', 'dojo/dnd/Source', 'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/dom-construct',
-  'dojo/topic', 'dgrid/editor', 'dijit/Menu', 'dijit/MenuItem', '../WorkspaceManager', 'dojo/on', 'dijit/form/TextBox'
+  'dojo/topic', 'dgrid/editor', 'dijit/Menu', 'dijit/MenuItem', '../WorkspaceManager', 'dojo/on', 'dijit/form/TextBox',
+  'dojo/dom-class', 'dojo/dom-attr', 'dojo/query', '../util/FavoriteFolders'
 ], function (
   declare, Grid, Store, DijitRegistry,
   Keyboard, Selection, formatter, ColumnResizer,
   ColumnHider, DnD, DnDSource,
   Deferred, aspect, lang, domConstruct,
-  Topic, editor, Menu, MenuItem, WorkspaceManager, on, TextBox
+  Topic, editor, Menu, MenuItem, WorkspaceManager, on, TextBox,
+  domClass, domAttr, query, FavoriteFolders
 ) {
   return declare([Grid, ColumnHider, Selection, Keyboard, ColumnResizer, DijitRegistry], {
     columns: {
+      favorite: {
+        label: 'Favorite',
+        field: 'path',
+        get: function (item) {
+          return item;
+        },
+        className: 'wsFavoriteColumn',
+        formatter: formatter.wsFavoriteIndicator,
+        hidden: true,
+        unhidable: false,
+        width: 28,
+        resizable: false
+      },
       type: {
         label: '',
         get: function (item) {
@@ -40,7 +55,16 @@ define([
         autoSave: true,
         editOn: 'click',
         editor: TextBox,
-        editorArgs: { placeHolder: 'Untitled Folder', trim: true }
+        editorArgs: { placeHolder: 'Untitled Folder', trim: true },
+        renderCell: function (object, value, node) {
+          // Create a text node to safely render the name without triggering
+          // emoji or icon ligature conversions
+          var textSpan = document.createElement('span');
+          textSpan.className = 'wsItemNameText';
+          // Use textContent to ensure proper escaping and avoid emoji rendering
+          textSpan.textContent = value || '';
+          node.appendChild(textSpan);
+        }
       }),
       size: {
         label: 'Size',
@@ -172,6 +196,12 @@ define([
         });
       });
 
+      // Update favorite stars after rows are rendered
+      aspect.after(_self, 'renderArray', function (rows) {
+        _self._updateAllFavoriteStars();
+        return rows;
+      });
+
       this.on('.dgrid-content .dgrid-row:dblclick', function (evt) {
         var row = _self.row(evt);
 
@@ -235,6 +265,23 @@ define([
 
       });
 
+      // Click handler for favorite star in grid
+      this.on('.dgrid-content .wsFavoriteGridStar:click', function (evt) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        var starPath = domAttr.get(evt.target, 'data-path');
+        if (starPath && window.App && window.App.user) {
+          FavoriteFolders.toggle(starPath).then(function (isFav) {
+            _self._setGridStarState(evt.target, isFav);
+          });
+        }
+      });
+
+      // Subscribe to favorite changes to update star icons
+      this._favoriteSubscription = Topic.subscribe('/FavoriteFolders/changed', function () {
+        _self._updateAllFavoriteStars();
+      });
+
       // see WorkspaceExplorerView.listWorkspaceContents for sorting
       _self.set('sort', [{ attribute: 'name', descending: false }] );
 
@@ -266,6 +313,43 @@ define([
       });
       // console.log("store: ", store);
       return store;
+    },
+
+    _setGridStarState: function (starNode, isFavorite) {
+      if (isFavorite) {
+        domClass.remove(starNode, 'icon-star-o');
+        domClass.add(starNode, 'icon-star');
+        domClass.remove(starNode, 'not-favorite');
+        domAttr.set(starNode, 'title', 'Remove from favorites');
+      } else {
+        domClass.remove(starNode, 'icon-star');
+        domClass.add(starNode, 'icon-star-o');
+        domClass.add(starNode, 'not-favorite');
+        domAttr.set(starNode, 'title', 'Add to favorites');
+      }
+    },
+
+    _updateAllFavoriteStars: function () {
+      var _self = this;
+      if (!window.App || !window.App.user) {
+        return;
+      }
+      var stars = query('.wsFavoriteGridStar', this.domNode);
+      stars.forEach(function (starNode) {
+        var path = domAttr.get(starNode, 'data-path');
+        if (path) {
+          FavoriteFolders.isFavorite(path).then(function (isFav) {
+            _self._setGridStarState(starNode, isFav);
+          });
+        }
+      });
+    },
+
+    destroy: function () {
+      if (this._favoriteSubscription) {
+        this._favoriteSubscription.remove();
+      }
+      this.inherited(arguments);
     }
 
     // getFilterPanel: function () {
