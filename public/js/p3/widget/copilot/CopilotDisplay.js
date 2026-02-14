@@ -126,11 +126,10 @@ define([
           }, document.head || document.getElementsByTagName('head')[0]);
           this._copilotStylesInjected = true;
         }
-        this._createPanelTabs();
 
         this.panelContainer = domConstruct.create('div', {
           class: 'copilot-panel-container',
-          style: 'height: calc(100% - 42px);'
+          style: 'height: 100%;'
         }, this.containerNode);
 
         // Create scrollable container for messages
@@ -181,16 +180,6 @@ define([
         this._renderWorkflowsPanel();
         this._renderWorkspacePanel();
 
-        // Apply saved tab visibility preference (default: visible)
-        try {
-          var savedTabVisibility = localStorage.getItem('copilot-show-panel-tabs');
-          if (savedTabVisibility !== null) {
-            this.setTabsVisible(savedTabVisibility === 'true');
-          }
-        } catch (e) {
-          // Ignore storage failures and keep default visibility.
-        }
-
         // Initialize markdown parser with link attributes plugin
         this.md = markdownit().use(linkAttributes, {
           attrs: {
@@ -203,9 +192,6 @@ define([
         topic.subscribe('RefreshSessionDisplay', lang.hitch(this, 'showMessages'));
         topic.subscribe('CopilotApiError', lang.hitch(this, 'onQueryError'));
         topic.subscribe('chatTextSizeChanged', lang.hitch(this, 'setFontSize'));
-        topic.subscribe('copilotPanelTabsVisibilityChanged', lang.hitch(this, function(isVisible) {
-          this.setTabsVisible(isVisible);
-        }));
         topic.subscribe('CopilotWorkspaceBrowseOpen', lang.hitch(this, function(data) {
           this.setActivePanel('workspace');
           this.setSessionWorkspaceBrowseData(data || null);
@@ -214,62 +200,6 @@ define([
             error.message = 'No job data found.\n\n' + error.message;
             this.onQueryError(error);
         }));
-    },
-
-    _createPanelTabs: function() {
-      this.tabContainer = domConstruct.create('div', {
-        class: 'copilot-panel-tabs'
-      }, this.containerNode);
-
-      this.messagesTabButton = domConstruct.create('button', {
-        type: 'button',
-        innerHTML: 'Messages',
-        class: 'copilot-panel-tab copilot-panel-tab-active'
-      }, this.tabContainer);
-
-      this.filesTabButton = domConstruct.create('button', {
-        type: 'button',
-        innerHTML: 'Files',
-        class: 'copilot-panel-tab'
-      }, this.tabContainer);
-
-      this.workflowsTabButton = domConstruct.create('button', {
-        type: 'button',
-        innerHTML: 'Workflows',
-        class: 'copilot-panel-tab'
-      }, this.tabContainer);
-
-      this.workspaceTabButton = domConstruct.create('button', {
-        type: 'button',
-        innerHTML: 'Workspace',
-        class: 'copilot-panel-tab'
-      }, this.tabContainer);
-
-      on(this.messagesTabButton, 'click', lang.hitch(this, function() {
-        this.setActivePanel('messages');
-      }));
-
-      on(this.filesTabButton, 'click', lang.hitch(this, function() {
-        this.setActivePanel('files');
-      }));
-
-      on(this.workflowsTabButton, 'click', lang.hitch(this, function() {
-        this.setActivePanel('workflows');
-      }));
-
-      on(this.workspaceTabButton, 'click', lang.hitch(this, function() {
-        this.setActivePanel('workspace');
-      }));
-    },
-
-    setTabsVisible: function(isVisible) {
-      this.showPanelTabs = Boolean(isVisible);
-      if (this.tabContainer) {
-        domStyle.set(this.tabContainer, 'display', this.showPanelTabs ? 'flex' : 'none');
-      }
-      if (this.panelContainer) {
-        domStyle.set(this.panelContainer, 'height', this.showPanelTabs ? 'calc(100% - 42px)' : 'calc(100% - 8px)');
-      }
     },
 
     setActivePanel: function(panel) {
@@ -287,11 +217,6 @@ define([
       domStyle.set(this.filesContainer, 'display', this.activePanel === 'files' ? 'block' : 'none');
       domStyle.set(this.workflowsContainer, 'display', this.activePanel === 'workflows' ? 'block' : 'none');
       domStyle.set(this.workspaceContainer, 'display', this.activePanel === 'workspace' ? 'block' : 'none');
-
-      domClass.toggle(this.messagesTabButton, 'copilot-panel-tab-active', this.activePanel === 'messages');
-      domClass.toggle(this.filesTabButton, 'copilot-panel-tab-active', this.activePanel === 'files');
-      domClass.toggle(this.workflowsTabButton, 'copilot-panel-tab-active', this.activePanel === 'workflows');
-      domClass.toggle(this.workspaceTabButton, 'copilot-panel-tab-active', this.activePanel === 'workspace');
 
       // dgrid can mis-measure header/body when created while hidden.
       // Ensure workspace grid recalculates layout when tab becomes visible.

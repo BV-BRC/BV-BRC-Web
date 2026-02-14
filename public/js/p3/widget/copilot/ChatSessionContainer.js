@@ -382,13 +382,92 @@ define([
          * Displays and manages chat session title
          */
         _createTitleWidget: function() {
-            this.titleWidget = new ChatSessionTitle({
+            // Create a wrapper ContentPane to hold both title and tabs on the same line
+            var ContentPane = require('dijit/layout/ContentPane');
+            var domConstruct = require('dojo/dom-construct');
+            var on = require('dojo/on');
+            var lang = require('dojo/_base/lang');
+            var topic = require('dojo/topic');
+
+            this.titleBarWrapper = new ContentPane({
                 region: 'top',
-                style: 'padding: 5px;',
+                style: 'padding: 5px; display: flex; align-items: center; justify-content: space-between;'
+            });
+            this.addChild(this.titleBarWrapper);
+
+            // Add the title widget (without region since it's inside the wrapper)
+            this.titleWidget = new ChatSessionTitle({
+                style: 'padding: 0; flex: 1;',
                 copilotApi: this.copilotApi,
                 sessionId: this.sessionId
             });
-            this.addChild(this.titleWidget);
+            this.titleBarWrapper.addChild(this.titleWidget);
+
+            // Create tabs container on the right side
+            this.tabsContainer = domConstruct.create('div', {
+                class: 'copilot-panel-tabs',
+                style: 'display: flex; gap: 8px; margin-left: auto;'
+            }, this.titleBarWrapper.containerNode);
+
+            this.messagesTabButton = domConstruct.create('button', {
+                type: 'button',
+                innerHTML: 'Messages',
+                class: 'copilot-panel-tab copilot-panel-tab-active'
+            }, this.tabsContainer);
+
+            this.filesTabButton = domConstruct.create('button', {
+                type: 'button',
+                innerHTML: 'Files',
+                class: 'copilot-panel-tab'
+            }, this.tabsContainer);
+
+            this.workflowsTabButton = domConstruct.create('button', {
+                type: 'button',
+                innerHTML: 'Workflows',
+                class: 'copilot-panel-tab'
+            }, this.tabsContainer);
+
+            this.workspaceTabButton = domConstruct.create('button', {
+                type: 'button',
+                innerHTML: 'Workspace',
+                class: 'copilot-panel-tab'
+            }, this.tabsContainer);
+
+            // Set up click handlers for tabs
+            on(this.messagesTabButton, 'click', lang.hitch(this, function() {
+                this._setActiveTab('messages');
+            }));
+
+            on(this.filesTabButton, 'click', lang.hitch(this, function() {
+                this._setActiveTab('files');
+            }));
+
+            on(this.workflowsTabButton, 'click', lang.hitch(this, function() {
+                this._setActiveTab('workflows');
+            }));
+
+            on(this.workspaceTabButton, 'click', lang.hitch(this, function() {
+                this._setActiveTab('workspace');
+            }));
+        },
+
+        /**
+         * Sets the active tab and updates the display
+         * @param {string} panel - The panel to activate
+         */
+        _setActiveTab: function(panel) {
+            var domClass = require('dojo/dom-class');
+
+            // Update tab button styles
+            domClass.toggle(this.messagesTabButton, 'copilot-panel-tab-active', panel === 'messages');
+            domClass.toggle(this.filesTabButton, 'copilot-panel-tab-active', panel === 'files');
+            domClass.toggle(this.workflowsTabButton, 'copilot-panel-tab-active', panel === 'workflows');
+            domClass.toggle(this.workspaceTabButton, 'copilot-panel-tab-active', panel === 'workspace');
+
+            // Update display widget
+            if (this.displayWidget && this.displayWidget.setActivePanel) {
+                this.displayWidget.setActivePanel(panel);
+            }
         },
 
         /**
