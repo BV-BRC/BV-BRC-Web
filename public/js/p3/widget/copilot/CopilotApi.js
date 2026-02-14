@@ -43,6 +43,12 @@ define([
         /** Indicates whether the Copilot service URLs are available */
         copilotAvailable: true,
 
+        /** Active queued/streaming job ID (for abort requests) */
+        currentJobId: null,
+
+        /** Most recent tool reported by SSE for the active stream */
+        currentActiveToolId: null,
+
         /**
          * Constructor initializes the widget with provided options
          * Mixes in any config options passed to override defaults
@@ -228,6 +234,8 @@ define([
 
             console.log('Session ID:', params.sessionId);
             var _self = this;
+            this.currentJobId = null;
+            this.currentActiveToolId = null;
             var data = {
                 query: params.inputText,
                 model: params.model,
@@ -310,18 +318,27 @@ define([
                             // Handle different event types
                             switch (currentEvent) {
                                 case 'queued':
+                                    if (parsed && parsed.job_id) {
+                                        _self.currentJobId = parsed.job_id;
+                                    }
                                     if (onProgress) {
                                         onProgress({ type: 'queued', data: parsed });
                                     }
                                     break;
 
                                 case 'started':
+                                    if (parsed && parsed.job_id) {
+                                        _self.currentJobId = parsed.job_id;
+                                    }
                                     if (onProgress) {
                                         onProgress({ type: 'started', data: parsed });
                                     }
                                     break;
 
                                 case 'progress':
+                                    if (parsed && parsed.job_id) {
+                                        _self.currentJobId = parsed.job_id;
+                                    }
                                     if (onProgress) {
                                         onProgress({
                                             type: 'progress',
@@ -380,6 +397,8 @@ define([
 
                                 case 'done':
                                     _self.currentAbortController = null;
+                                    _self.currentActiveToolId = null;
+                                    _self.currentJobId = null;
 
                                     // Remove status message when done
                                     if (statusMessage && statusMessage.should_remove && onStatusMessage) {
@@ -393,14 +412,29 @@ define([
                                 case 'error':
                                     console.error('Stream error:', parsed);
                                     _self.currentAbortController = null;
+                                    _self.currentActiveToolId = null;
+                                    _self.currentJobId = null;
                                     if (onError) onError(new Error(parsed.error || 'Stream error'));
                                     break;
 
                                 case 'tool_selected':
+                                    if (parsed && parsed.tool) {
+                                        _self.currentActiveToolId = parsed.tool;
+                                    }
+                                    break;
+
                                 case 'tool_executed':
                                 case 'duplicate_detected':
                                 case 'forced_finalize':
                                 case 'query_progress':
+                                case 'abort_requested':
+                                case 'query_aborted':
+                                    if (parsed && parsed.job_id) {
+                                        _self.currentJobId = parsed.job_id;
+                                    }
+                                    if (parsed && parsed.tool) {
+                                        _self.currentActiveToolId = parsed.tool;
+                                    }
                                     // These are handled by the event handler above
                                     break;
 
@@ -432,6 +466,8 @@ define([
                                 });
                             }
                             _self.currentAbortController = null;
+                            _self.currentActiveToolId = null;
+                            _self.currentJobId = null;
                             if (onEnd) onEnd();
                             return;
                         }
@@ -454,7 +490,48 @@ define([
             }).catch(err => {
                 console.error('Error submitting copilot query stream:', err);
                 _self.currentAbortController = null;
+                _self.currentActiveToolId = null;
+                _self.currentJobId = null;
                 if (onError) onError(err);
+            });
+        },
+
+        isQueryAbortableTool: function(toolId) {
+            if (!toolId || typeof toolId !== 'string') return false;
+            var normalized = toolId.split('.').pop();
+            return normalized === 'bvbrc_query_collection' || normalized === 'bvbrc_global_data_search';
+        },
+
+        getCurrentStreamState: function() {
+            return {
+                job_id: this.currentJobId || null,
+                tool_id: this.currentActiveToolId || null,
+                has_active_stream: !!this.currentAbortController
+            };
+        },
+
+        abortActiveQueryJob: function(opts) {
+            if (!this._checkLoggedIn()) return Promise.reject(new Error('Not logged in'));
+            opts = opts || {};
+
+            var jobId = opts.job_id || this.currentJobId;
+            if (!jobId) {
+                return Promise.reject(new Error('No active job to abort'));
+            }
+
+            var payload = {
+                user_id: opts.user_id || this.user_id,
+                scopes: Array.isArray(opts.scopes) && opts.scopes.length > 0 ? opts.scopes : ['query_tools'],
+                reason: opts.reason || 'Aborted from chat UI'
+            };
+
+            return request.post(this.apiUrlBase + '/job/' + encodeURIComponent(jobId) + '/abort', {
+                data: JSON.stringify(payload),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
             });
         },
 

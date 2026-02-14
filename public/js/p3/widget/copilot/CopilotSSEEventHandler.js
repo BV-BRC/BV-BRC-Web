@@ -349,6 +349,34 @@ define([
       }
 
       return this.updateStatusMessage(content, 'query_progress');
+    },
+
+    /**
+     * Formats 'abort_requested' event
+     */
+    format_abort_requested: function(data) {
+      var content = 'Abort requested...';
+      if (data && Array.isArray(data.scopes) && data.scopes.length > 0) {
+        content += '\nScope: ' + data.scopes.join(', ');
+      }
+      return this.updateStatusMessage(content, 'abort_requested');
+    },
+
+    /**
+     * Formats 'query_aborted' event
+     */
+    format_query_aborted: function(data) {
+      var total = data && data.expectedTotal ? data.expectedTotal : 0;
+      var current = data && data.totalResults ? data.totalResults : 0;
+      var content = 'Query aborted. Partial results were saved.';
+
+      if (total > 0) {
+        content += '\nDownloaded: ' + current + ' of ' + total;
+      } else if (current > 0) {
+        content += '\nDownloaded: ' + current;
+      }
+
+      return this.updateStatusMessage(content, 'query_aborted');
     }
 
   });

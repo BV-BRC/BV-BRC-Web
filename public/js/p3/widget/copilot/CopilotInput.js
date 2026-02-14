@@ -30,6 +30,9 @@ define([
       /** Flag to prevent multiple simultaneous submissions */
       isSubmitting: false,
 
+      /** True only when query pagination progress is active; controls abort button visibility */
+      isQueryProgressActive: false,
+
       /** Custom system prompt to prepend to queries */
       systemPrompt: null,
 
@@ -180,6 +183,16 @@ define([
         // Add button to container
         this.submitButton.placeAt(inputContainer);
 
+        this.abortButton = new Button({
+            label: 'Abort',
+            style: 'height: 30px; margin-right: 10px;',
+            disabled: true,
+            onClick: lang.hitch(this, function() {
+                this._handleAbortClick();
+            })
+        });
+        this.abortButton.placeAt(inputContainer);
+
         // Small selection indicator showing current workspace item selection count
         this.workspaceSelectionIndicator = domConstruct.create('div', {
             className: 'workspaceSelectionIndicator',
@@ -240,6 +253,77 @@ define([
         }));
 
         this._renderWorkspaceSelectionIndicator();
+        this._updateAbortButtonState();
+      },
+
+      _isAbortableQueryTool: function(toolId) {
+        if (!toolId || typeof toolId !== 'string') return false;
+        var normalized = toolId.split('.').pop();
+        return normalized === 'bvbrc_query_collection' || normalized === 'bvbrc_global_data_search';
+      },
+
+      _updateAbortButtonState: function() {
+        if (!this.abortButton) return;
+        var streamState = this.copilotApi && this.copilotApi.getCurrentStreamState
+          ? this.copilotApi.getCurrentStreamState()
+          : null;
+        var activeToolId = streamState ? streamState.tool_id : null;
+        var hasAbortableTool = !activeToolId || this._isAbortableQueryTool(activeToolId);
+        var hasJobId = !!(streamState && streamState.job_id);
+        var shouldShow = !!this.isQueryProgressActive;
+        var shouldEnable = !!this.isSubmitting && shouldShow && hasJobId && hasAbortableTool;
+
+        if (this.abortButton.domNode) {
+          this.abortButton.domNode.style.display = shouldShow ? '' : 'none';
+        }
+        this.abortButton.set('disabled', !shouldEnable);
+      },
+
+      _handleAbortStatusMessageEvent: function(statusMessage) {
+        if (!statusMessage || !statusMessage.event_type) return;
+        if (statusMessage.event_type === 'query_progress') {
+          this.isQueryProgressActive = true;
+          this._updateAbortButtonState();
+          return;
+        }
+
+        if (statusMessage.event_type === 'query_aborted' ||
+            statusMessage.event_type === 'done' ||
+            statusMessage.event_type === 'error') {
+          this.isQueryProgressActive = false;
+          this._updateAbortButtonState();
+        }
+      },
+
+      _handleAbortClick: function() {
+        if (!this.copilotApi || !this.isSubmitting) return;
+
+        var streamState = this.copilotApi.getCurrentStreamState ? this.copilotApi.getCurrentStreamState() : null;
+        var activeToolId = streamState ? streamState.tool_id : null;
+        if (activeToolId && !this._isAbortableQueryTool(activeToolId)) {
+          topic.publish('CopilotApiError', {
+            error: new Error('Abort currently supports active data query tools only.')
+          });
+          return;
+        }
+
+        this.abortButton.set('disabled', true);
+        this.abortButton.set('label', 'Aborting...');
+
+        this.copilotApi.abortActiveQueryJob({
+          user_id: this.copilotApi.user_id,
+          scopes: ['query_tools'],
+          reason: 'Aborted from copilot input button'
+        }).then(lang.hitch(this, function() {
+          // Keep disabled while backend finishes processing abort request.
+          this.abortButton.set('label', 'Abort');
+          // Keep disabled while backend finishes processing abort request.
+          this.abortButton.set('disabled', true);
+        })).catch(lang.hitch(this, function(error) {
+          this.abortButton.set('label', 'Abort');
+          this._updateAbortButtonState();
+          topic.publish('CopilotApiError', { error: error });
+        }));
       },
 
       _renderWorkspaceSelectionIndicator: function() {
@@ -746,6 +830,9 @@ define([
       };
       this._appendWorkspaceSelectionToStreamParams(params);
 
+      this.isSubmitting = true;
+      this.isQueryProgressActive = false;
+      this._updateAbortButtonState();
       this.copilotApi.submitCopilotQueryStream(params,
           (chunk, toolMetadata) => {
               // onData
@@ -774,7 +861,9 @@ define([
                   _self._finishNewChat();
               }
               this.isSubmitting = false;
+              this.isQueryProgressActive = false;
               this.submitButton.set('disabled', false);
+              this._updateAbortButtonState();
               // Deselect the pageContentToggle after submission
               this.pageContentEnabled = false;
               this._updateToggleButtonStyle();
@@ -787,7 +876,9 @@ define([
               });
               this.displayWidget.hideLoadingIndicator();
               this.isSubmitting = false;
+              this.isQueryProgressActive = false;
               this.submitButton.set('disabled', false);
+              this._updateAbortButtonState();
           },
           (progressInfo) => {
               // onProgress - handle queue status updates
@@ -809,6 +900,7 @@ define([
           },
           (statusMessage) => {
               // onStatusMessage - handle status message updates
+              this._handleAbortStatusMessageEvent(statusMessage);
               if (statusMessage.should_remove) {
                   this.chatStore.removeMessage(statusMessage.message_id);
               } else {
@@ -846,7 +938,9 @@ define([
       this.textArea.set('value', '');
 
       this.isSubmitting = true;
+      this.isQueryProgressActive = false;
       this.submitButton.set('disabled', true);
+      this._updateAbortButtonState();
 
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
@@ -921,7 +1015,9 @@ define([
                   _self._finishNewChat();
               }
               this.isSubmitting = false;
+              this.isQueryProgressActive = false;
               this.submitButton.set('disabled', false);
+              this._updateAbortButtonState();
           },
           (error) => {
               // onError
@@ -930,7 +1026,9 @@ define([
               });
               this.displayWidget.hideLoadingIndicator();
               this.isSubmitting = false;
+              this.isQueryProgressActive = false;
               this.submitButton.set('disabled', false);
+              this._updateAbortButtonState();
           },
           (progressInfo) => {
               // onProgress - handle queue status updates
@@ -951,6 +1049,7 @@ define([
           },
           (statusMessage) => {
               // onStatusMessage - handle status message updates
+              this._handleAbortStatusMessageEvent(statusMessage);
               // Only log non-temporary status messages for debugging
               if (statusMessage && !statusMessage.is_temporary) {
                   console.log('[HANDLER] Status message received:', statusMessage);
@@ -1003,7 +1102,10 @@ define([
       this.textArea.set('value', '');
 
       this.isSubmitting = true;
+      this.isQueryProgressActive = false;
       this.submitButton.set('disabled', true);
+      this._updateAbortButtonState();
+      this._updateAbortButtonState();
 
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
@@ -1091,7 +1193,9 @@ define([
                   _self._finishNewChat();
               }
               this.isSubmitting = false;
+              this.isQueryProgressActive = false;
               this.submitButton.set('disabled', false);
+              this._updateAbortButtonState();
           },
           (error) => {
               // onError
@@ -1100,7 +1204,9 @@ define([
               });
               this.displayWidget.hideLoadingIndicator();
               this.isSubmitting = false;
+              this.isQueryProgressActive = false;
               this.submitButton.set('disabled', false);
+              this._updateAbortButtonState();
           },
           (progressInfo) => {
               // onProgress - handle queue status updates
@@ -1121,6 +1227,7 @@ define([
           },
           (statusMessage) => {
               // onStatusMessage - handle status message updates
+              this._handleAbortStatusMessageEvent(statusMessage);
               // Only log non-temporary status messages for debugging
               if (statusMessage && !statusMessage.is_temporary) {
                   console.log('[HANDLER] Status message received:', statusMessage);
