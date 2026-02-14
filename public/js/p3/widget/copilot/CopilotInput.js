@@ -26,6 +26,8 @@ define([
 
       /** Flag indicating if this is a new chat session that needs initialization */
       new_chat: true,
+      /** Tracks whether the current new-chat session has already been registered in backend */
+      session_registered: false,
 
       /** Flag to prevent multiple simultaneous submissions */
       isSubmitting: false,
@@ -96,6 +98,44 @@ define([
       setSelectedWorkspaceItems: function(items) {
         this.selectedWorkspaceItems = Array.isArray(items) ? items.slice() : [];
         this._renderWorkspaceSelectionIndicator();
+      },
+
+      _registerSessionIfNeeded: function() {
+        if (!this.new_chat || this.session_registered || !this.copilotApi || !this.sessionId) {
+          return Promise.resolve(false);
+        }
+
+        return this.copilotApi.registerSession(this.sessionId, 'New Chat').then(lang.hitch(this, function() {
+          this.session_registered = true;
+
+          if (window && window.App && window.App.chatSessionsStore) {
+            window.App.chatSessionsStore.addSession({
+              session_id: this.sessionId,
+              title: 'New Chat',
+              created_at: Date.now()
+            });
+          }
+
+          topic.publish('reloadUserSessions', { highlightSessionId: this.sessionId });
+          return true;
+        }));
+      },
+
+      _submitCopilotQueryWithRegistration: function() {
+        var args = arguments;
+        return this._registerSessionIfNeeded().then(lang.hitch(this, function() {
+          return this.copilotApi.submitCopilotQuery.apply(this.copilotApi, args);
+        }));
+      },
+
+      _submitCopilotQueryStreamWithRegistration: function(params, onData, onEnd, onError, onProgress, onStatusMessage) {
+        this._registerSessionIfNeeded().then(lang.hitch(this, function() {
+          this.copilotApi.submitCopilotQueryStream(params, onData, onEnd, onError, onProgress, onStatusMessage);
+        })).catch(function(error) {
+          if (onError) {
+            onError(error);
+          }
+        });
       },
 
       /**
@@ -392,7 +432,7 @@ define([
             systemPrompt += this.statePrompt;
         }
 
-        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt, {
+        this._submitCopilotQueryWithRegistration(inputText, this.sessionId, systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt, {
           selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
         }).then(lang.hitch(this, function(response) {
           // Only add assistant message and system message (if present) - user message was already added
@@ -464,7 +504,7 @@ define([
             systemPrompt += this.statePrompt;
         }
 
-        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, systemPrompt, this.model, true, null, null, null, null, {
+        this._submitCopilotQueryWithRegistration(inputText, this.sessionId, systemPrompt, this.model, true, null, null, null, null, {
           selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
         }).then(lang.hitch(this, function(response) {
           // Only add assistant message and system message (if present) - user message was already added
@@ -500,6 +540,7 @@ define([
        */
       startNewChat: function() {
         this.new_chat = true;
+        this.session_registered = false;
         this.textArea.set('value', '');
       },
 
@@ -509,6 +550,7 @@ define([
        */
       setSessionId: function(sessionId) {
         this.sessionId = sessionId;
+        this.session_registered = false;
       },
 
       /**
@@ -648,24 +690,13 @@ define([
 
       /**
        * Finalizes creation of a brand-new chat after the first successful response.
-       * Adds the session to the global sessions memory store, publishes reload event,
-       * then triggers title generation.
+       * Session registration/list updates are handled earlier; this now marks the
+       * chat as initialized and triggers title generation.
        * @param {boolean} generateTitleImmediately – if false, skip title generation (default true)
        */
       _finishNewChat: function(generateTitleImmediately = true) {
         this.new_chat = false;
-
-        // Add to global sessions store
-        if (window && window.App && window.App.chatSessionsStore) {
-          window.App.chatSessionsStore.addSession({
-            session_id: this.sessionId,
-            title: 'New Chat',
-            created_at: Date.now()
-          });
-        }
-
-        // Reload scroll bar and highlight
-        topic.publish('reloadUserSessions', { highlightSessionId: this.sessionId });
+        this.session_registered = true;
 
         if (generateTitleImmediately) {
           setTimeout(function() {
@@ -725,7 +756,7 @@ define([
 
           var imgtxt_model = this._resolveImageModel();
 
-          this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image, this.enhancedPrompt, {
+          this._submitCopilotQueryWithRegistration(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image, this.enhancedPrompt, {
               selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
           })
               .then(lang.hitch(this, function(response) {
@@ -833,7 +864,7 @@ define([
       this.isSubmitting = true;
       this.isQueryProgressActive = false;
       this._updateAbortButtonState();
-      this.copilotApi.submitCopilotQueryStream(params,
+      this._submitCopilotQueryStreamWithRegistration(params,
           (chunk, toolMetadata) => {
               // onData
               console.log('chunk', chunk);
@@ -971,7 +1002,7 @@ define([
       };
       this._appendWorkspaceSelectionToStreamParams(params);
 
-      this.copilotApi.submitCopilotQueryStream(params,
+      this._submitCopilotQueryStreamWithRegistration(params,
           (chunk, toolMetadata) => {
               // onData - create assistant message on first chunk if not exists
               if (!assistantMessageCreated) {
@@ -1133,7 +1164,7 @@ define([
       };
       this._appendWorkspaceSelectionToStreamParams(params);
       console.log('[HANDLER] About to call submitCopilotQueryStream with params:', params);
-      this.copilotApi.submitCopilotQueryStream(params,
+      this._submitCopilotQueryStreamWithRegistration(params,
           (chunk, toolMetadata) => {
               // onData - create assistant message on first chunk if not exists
               console.log('[HANDLER] onData callback received chunk:', chunk);
@@ -1322,7 +1353,7 @@ define([
         };
         this._appendWorkspaceSelectionToStreamParams(params);
 
-        this.copilotApi.submitCopilotQueryStream(params,
+        this._submitCopilotQueryStreamWithRegistration(params,
             (chunk, toolMetadata) => {
                 // onData - create assistant message on first chunk if not exists
                 if (!assistantMessageCreated) {
@@ -1478,7 +1509,7 @@ define([
       };
       this._appendWorkspaceSelectionToStreamParams(params);
 
-      this.copilotApi.submitCopilotQueryStream(params,
+      this._submitCopilotQueryStreamWithRegistration(params,
           (chunk, toolMetadata) => {
               // onData - create assistant message on first chunk if not exists
               if (!assistantMessageCreated) {

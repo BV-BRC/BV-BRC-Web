@@ -141,6 +141,49 @@ define([
         },
 
         /**
+         * Registers a chat session in the backend idempotently.
+         * Safe to call multiple times for the same session.
+         */
+        registerSession: function(sessionId, title) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            if (!sessionId) return Promise.reject(new Error('sessionId is required'));
+
+            var data = {
+                session_id: sessionId,
+                user_id: this.user_id,
+                title: title || 'New Chat'
+            };
+
+            return request.post(this.apiUrlBase + '/register-session', {
+                data: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('Error registering session:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Creates a new session id and immediately registers it.
+         */
+        createAndRegisterSession: function(title) {
+            return this.getNewSessionId().then(lang.hitch(this, function(sessionId) {
+                return this.registerSession(sessionId, title).then(function(registration) {
+                    return {
+                        session_id: sessionId,
+                        registration: registration
+                    };
+                });
+            }));
+        },
+
+        /**
          * Checks if the user is logged in
          * Returns false if not logged in and shows dialog
          * Returns true if logged in
