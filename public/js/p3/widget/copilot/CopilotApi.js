@@ -414,7 +414,20 @@ define([
                                     _self.currentAbortController = null;
                                     _self.currentActiveToolId = null;
                                     _self.currentJobId = null;
-                                    if (onError) onError(new Error(parsed.error || 'Stream error'));
+
+                                    // Extract error message properly
+                                    var errorMessage = 'An error occurred';
+                                    if (parsed) {
+                                        if (parsed.error) {
+                                            errorMessage = parsed.error;
+                                        } else if (parsed.message) {
+                                            errorMessage = parsed.message;
+                                        } else if (typeof parsed === 'string') {
+                                            errorMessage = parsed;
+                                        }
+                                    }
+
+                                    if (onError) onError(new Error(errorMessage));
                                     break;
 
                                 case 'tool_selected':
@@ -429,6 +442,8 @@ define([
                                 case 'query_progress':
                                 case 'abort_requested':
                                 case 'query_aborted':
+                                case 'cancelled':
+                                case 'cancel_requested':
                                     if (parsed && parsed.job_id) {
                                         _self.currentJobId = parsed.job_id;
                                     }

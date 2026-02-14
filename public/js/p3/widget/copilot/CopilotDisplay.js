@@ -663,7 +663,25 @@ define([
     onQueryError: function(error = null) {
       console.log('onQueryError', error);
       domConstruct.empty(this.resultContainer);
-      var errorMessage = error ? error.message : 'An error occurred while processing your request. Please try again later.';
+
+      // Extract error message safely, handling various error formats
+      var errorMessage = 'An error occurred while processing your request. Please try again later.';
+
+      if (error) {
+        if (error.message && typeof error.message === 'string' && error.message.trim()) {
+          errorMessage = error.message;
+        } else if (typeof error === 'string' && error.trim()) {
+          errorMessage = error;
+        } else if (error.error && typeof error.error === 'string' && error.error.trim()) {
+          errorMessage = error.error;
+        } else if (error.toString && typeof error.toString === 'function') {
+          var errorStr = error.toString();
+          if (errorStr && errorStr !== '[object Object]' && errorStr.trim()) {
+            errorMessage = errorStr;
+          }
+        }
+      }
+
       domConstruct.create('div', {
         innerHTML: errorMessage,
         class: 'copilot-error'

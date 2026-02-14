@@ -377,6 +377,19 @@ define([
       }
 
       return this.updateStatusMessage(content, 'query_aborted');
+    },
+
+    /**
+     * Formats 'cancelled' event (from API)
+     */
+    format_cancelled: function(data) {
+      var content = data && data.message ? data.message : 'Job cancelled by user';
+
+      if (data && data.job_id) {
+        content += '\nJob ID: ' + data.job_id;
+      }
+
+      return this.updateStatusMessage(content, 'cancelled');
     }
 
   });
