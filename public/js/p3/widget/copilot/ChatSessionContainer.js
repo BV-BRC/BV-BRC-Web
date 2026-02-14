@@ -188,7 +188,7 @@ define([
                     topic.publish('reloadUserSessions', { highlightSessionId: sessionId });
                 })).catch(function(error) {
                     console.error('Error creating/registering new chat session:', error);
-                }));
+                });
             }));
 
             topic.subscribe('RefreshSession', lang.hitch(this, function(sessionId, scrollToBottom = true) {
