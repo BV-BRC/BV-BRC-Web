@@ -167,12 +167,27 @@ define([
 
             // Handle creating new chat sessions
             topic.subscribe('createNewChatSession', lang.hitch(this, function() {
-                this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
+                this.copilotApi.createAndRegisterSession('New Chat').then(lang.hitch(this, function(result) {
+                    var sessionId = result && result.session_id ? result.session_id : null;
+                    if (!sessionId) {
+                        throw new Error('Failed to create and register new chat session');
+                    }
                     this.inputWidget.startNewChat();
                     this.displayWidget.startNewChat();
                     this.titleWidget.startNewChat(sessionId);
                     this.changeSessionId(sessionId);
                     this.inputWidget.new_chat = true;
+                    this.inputWidget.session_registered = true;
+                    if (window && window.App && window.App.chatSessionsStore) {
+                        window.App.chatSessionsStore.addSession({
+                            session_id: sessionId,
+                            title: 'New Chat',
+                            created_at: Date.now()
+                        });
+                    }
+                    topic.publish('reloadUserSessions', { highlightSessionId: sessionId });
+                })).catch(function(error) {
+                    console.error('Error creating/registering new chat session:', error);
                 }));
             }));
 

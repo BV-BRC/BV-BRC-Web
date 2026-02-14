@@ -248,7 +248,7 @@ define([
             }
             var imgtxt_model = this._resolveImageModel();
 
-            this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, null, null, base64Image, null, {
+            this._submitCopilotQueryWithRegistration(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, null, null, base64Image, null, {
                 selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
             })
                 .then(lang.hitch(this, function(response) {
@@ -328,7 +328,7 @@ define([
 
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
-        this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, this.model, true, null, null, null, null, {
+        this._submitCopilotQueryWithRegistration(inputText, this.sessionId, imageSystemPrompt, this.model, true, null, null, null, null, {
             selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
         }).then(lang.hitch(this, function(response) {
             // Only add assistant message and system message (if present) - user message was already added
@@ -421,7 +421,7 @@ define([
       this.submitButton.set('disabled', true);
 
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
-      this.copilotApi.submitCopilotQuery(inputText, this.sessionId, this.systemPrompt, this.model, true, null, null, null, null, {
+      this._submitCopilotQueryWithRegistration(inputText, this.sessionId, this.systemPrompt, this.model, true, null, null, null, null, {
         selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
       }).then(lang.hitch(this, function(response) {
         // Only add assistant message and system message (if present) - user message was already added
@@ -504,7 +504,7 @@ define([
         var jobSystemPrompt = 'Job stdout:\n' + stdout + '\n\nJob stderr:\n' + stderr;
 
         // Submit query with job details as system prompt
-        return _self.copilotApi.submitCopilotQuery(inputText, _self.sessionId, jobSystemPrompt, _self.model, true, null, null, null, null, {
+        return _self._submitCopilotQueryWithRegistration(inputText, _self.sessionId, jobSystemPrompt, _self.model, true, null, null, null, null, {
           selected_workspace_items: _self._getSelectedWorkspaceItemsForRequest()
         });
       }).then(lang.hitch(this, function(response) {
@@ -575,22 +575,11 @@ define([
 
     /**
      * Finalizes creation of a brand-new chat, mirroring CopilotInput._finishNewChat
-     * but scoped to the side-panel input.
+     * but scoped to the side-panel input. Registration/list updates happen earlier.
      */
     _finishNewChat: function(generateTitleImmediately = true) {
       this.new_chat = false;
-
-      // Add the new session to the global sessions store
-      if (window && window.App && window.App.chatSessionsStore) {
-        window.App.chatSessionsStore.addSession({
-          session_id: this.sessionId,
-          title: 'New Chat',
-          created_at: Date.now()
-        });
-      }
-
-      // Tell the scroll-bar to reload and highlight this new session
-      topic.publish('reloadUserSessions', { highlightSessionId: this.sessionId });
+      this.session_registered = true;
 
       if (generateTitleImmediately) {
         setTimeout(function() {
