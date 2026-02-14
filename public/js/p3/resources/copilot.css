@@ -353,8 +353,8 @@
 .copilot-panel-tabs {
   display: flex;
   gap: 8px;
-  padding: 8px 12px 4px 12px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 0;
+  margin-left: auto;
 }
 
 .copilot-panel-tab {
