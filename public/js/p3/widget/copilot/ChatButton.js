@@ -61,6 +61,21 @@ define([
             lang.mixin(this, opts);
         },
 
+        _parseListPayload: function(value) {
+            if (Array.isArray(value)) {
+                return value;
+            }
+            if (typeof value === 'string') {
+                try {
+                    var parsed = JSON.parse(value);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+            return [];
+        },
+
         // Post-create lifecycle method
         postCreate: function() {
             this.inherited(arguments);
@@ -195,8 +210,13 @@ define([
             if (!this.optionsBar) {
                 // Fetch model list and RAG database list
                 this.copilotApi.getModelList().then(lang.hitch(this, function(modelsAndRag) {
-                    var modelList = JSON.parse(modelsAndRag.models);
-                    var ragList = JSON.parse(modelsAndRag.vdb_list);
+                    var modelList = this._parseListPayload(modelsAndRag.model_list || modelsAndRag.models);
+                    var ragList = this._parseListPayload(modelsAndRag.rag_list || modelsAndRag.vdb_list);
+
+                    if (window && window.App) {
+                        window.App.copilotModelList = modelList.slice();
+                        window.App.copilotRagList = ragList.slice();
+                    }
 
                     // Create options bar
                     this.optionsBar = new ChatSessionOptionsBar({

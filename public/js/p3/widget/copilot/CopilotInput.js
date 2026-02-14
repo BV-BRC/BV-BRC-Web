@@ -467,6 +467,44 @@ define([
        */
       setModel: function(model) {
         this.model = model;
+        if (window && window.App) {
+          window.App.copilotSelectedModel = model;
+        }
+      },
+
+      _getAvailableModels: function() {
+        if (window && window.App && Array.isArray(window.App.copilotModelList)) {
+          return window.App.copilotModelList;
+        }
+        return [];
+      },
+
+      _modelSupportsImage: function(modelId) {
+        var models = this._getAvailableModels();
+        var match = models.find(function(entry) {
+          return entry && entry.model === modelId;
+        });
+        return !!(match && match.supports_image === true);
+      },
+
+      _resolveImageModel: function() {
+        if (this.model && this._modelSupportsImage(this.model)) {
+          return this.model;
+        }
+        var models = this._getAvailableModels();
+        if (models.length === 0) {
+          return this.model;
+        }
+        var defaultImage = models.find(function(entry) {
+          return entry && entry.active !== false && entry.supports_image === true && entry.is_default === true;
+        });
+        if (defaultImage && defaultImage.model) {
+          return defaultImage.model;
+        }
+        var firstImage = models.find(function(entry) {
+          return entry && entry.active !== false && entry.supports_image === true && entry.model;
+        });
+        return firstImage && firstImage.model ? firstImage.model : this.model;
       },
 
 
@@ -601,7 +639,7 @@ define([
               imageSystemPrompt = imageSystemPrompt + '\n\n' + this.statePrompt;
           }
 
-          var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
+          var imgtxt_model = this._resolveImageModel();
 
           this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image, this.enhancedPrompt, {
               selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
@@ -1155,7 +1193,7 @@ define([
             imageSystemPrompt = imageSystemPrompt + '\\n\\n' + this.statePrompt;
         }
 
-        var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
+        var imgtxt_model = this._resolveImageModel();
 
         // Track assistant message and status message ID
         let assistantMessage = null;

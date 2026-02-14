@@ -246,7 +246,7 @@ define([
             if (this.systemPrompt) {
                 imageSystemPrompt += '\n' + this.systemPrompt;
             }
-            var imgtxt_model = 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16';
+            var imgtxt_model = this._resolveImageModel();
 
             this.copilotApi.submitCopilotQuery(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, null, null, base64Image, null, {
                 selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
@@ -541,6 +541,9 @@ define([
     setModel: function(model) {
       console.log('setModel=', model);
       this.model = model;
+      if (window && window.App) {
+        window.App.copilotSelectedModel = model;
+      }
     },
 
     /**

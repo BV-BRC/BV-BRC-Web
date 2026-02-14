@@ -75,6 +75,7 @@ define([
             if (opts) {
                 lang.mixin(this, opts);
             }
+            this.selectedModel = (window && window.App && window.App.copilotSelectedModel) ? window.App.copilotSelectedModel : null;
             // Initialize chat store for message persistence
             this.chatStore = new ChatMemoryStore({
                 copilotApi: this.copilotApi
@@ -227,6 +228,10 @@ define([
             // Handle various chat configuration changes
             topic.subscribe('UpdateSessionTitleError', lang.hitch(this, this._handleUpdateSessionTitleError));
             topic.subscribe('ChatModel', lang.hitch(this, function(model) {
+                this.selectedModel = model;
+                if (window && window.App) {
+                    window.App.copilotSelectedModel = model;
+                }
                 if (this.inputWidget) {
                     this.inputWidget.setModel(model);
                 }
@@ -384,6 +389,7 @@ define([
                 chatStore: this.chatStore,
                 displayWidget: this.displayWidget,
                 sessionId: this.sessionId,
+                model: this.selectedModel,
                 selectedWorkspaceItems: this._sessionWorkspaceSelectionState.items
             });
             this.addChild(this.inputWidget);

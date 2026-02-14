@@ -48,7 +48,7 @@ define([
         optionsBar: null,
 
         /** @property {string} model - Current model */
-        model: "RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16",
+        model: null,
 
         /** @property {string} ragDb - Current RAG database */
         ragDb: 'bvbrc_helpdesk',
@@ -61,6 +61,9 @@ define([
         constructor: function(opts) {
             this.inherited(arguments);
             lang.mixin(this, opts);
+            if (!this.model && window && window.App && window.App.copilotSelectedModel) {
+                this.model = window.App.copilotSelectedModel;
+            }
         },
 
         /**
@@ -94,6 +97,7 @@ define([
             if (!this.context) {
                 this.context = 'grid-container';
             }
+            var activeModel = this.model || this.selectedModel || (window && window.App ? window.App.copilotSelectedModel : null);
             this.inputWidget = new CopilotInputSidePanel({
                 region: 'bottom',
                 splitter: true,
@@ -103,7 +107,7 @@ define([
                 displayWidget: this.displayWidget,
                 sessionId: this.sessionId,
                 context: this.context,
-                model: this.model,
+                model: activeModel,
                 ragDb: this.ragDb,
                 selectedWorkspaceItems: this._sessionWorkspaceSelectionState.items
             });

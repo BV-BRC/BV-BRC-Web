@@ -105,6 +105,9 @@ define([
 
         // Advanced options dialog reference
         advancedOptionsDialog: null,
+        modelSelectorDialog: null,
+        modelSelectorDropdown: null,
+        modelSelectorButton: null,
 
         constructor: function(options) {
             this.inherited(arguments);
@@ -176,6 +179,38 @@ define([
                 domClass.add(reportIssueButton, 'active');
             }));
 
+            // Add model selector button
+            this.modelSelectorButton = domConstruct.create('div', {
+                className: 'copilotChatModelButton',
+                innerHTML: 'Model',
+                title: 'Select chat model'
+            }, leftButtonContainer);
+            this.modelSelectorDialog = this.createModelSelectorDialog();
+            this._refreshModelSelectorState();
+
+            on(this.modelSelectorButton, 'click', lang.hitch(this, function(evt) {
+                evt.stopPropagation();
+                if (!this.modelSelectorDialog) {
+                    return;
+                }
+                if (this.modelSelectorDialog.visible) {
+                    popup.close(this.modelSelectorDialog);
+                    this.modelSelectorDialog.visible = false;
+                    domClass.remove(this.modelSelectorButton, 'active');
+                    return;
+                }
+                this._refreshModelSelectorState();
+                setTimeout(lang.hitch(this, function() {
+                    popup.open({
+                        popup: this.modelSelectorDialog,
+                        around: this.modelSelectorButton,
+                        orient: ['below']
+                    });
+                    this.modelSelectorDialog.visible = true;
+                    domClass.add(this.modelSelectorButton, 'active');
+                }), 100);
+            }));
+
             // Handle clicks outside dialog to close it
             document.addEventListener('click', lang.hitch(this, function(event) {
                 if (this.advancedOptionsDialog && this.advancedOptionsDialog._rendered &&
@@ -184,6 +219,13 @@ define([
                     popup.close(this.advancedOptionsDialog);
                     this.advancedOptionsDialog.visible = false;
                     domClass.remove(advancedOptionsButton, 'active');
+                }
+                if (this.modelSelectorDialog && this.modelSelectorDialog._rendered &&
+                    !this.modelSelectorDialog.domNode.contains(event.target) &&
+                    this.modelSelectorButton && !this.modelSelectorButton.contains(event.target)) {
+                    popup.close(this.modelSelectorDialog);
+                    this.modelSelectorDialog.visible = false;
+                    domClass.remove(this.modelSelectorButton, 'active');
                 }
             }));
 
@@ -299,6 +341,157 @@ define([
 
             // Create comprehensive resize handles for all sides and corners
             this._createResizeHandles();
+        },
+
+        _parseListPayload: function(value) {
+            if (Array.isArray(value)) {
+                return value;
+            }
+            if (typeof value === 'string') {
+                try {
+                    var parsed = JSON.parse(value);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+            return [];
+        },
+
+        _getAvailableModelList: function() {
+            if (window && window.App && Array.isArray(window.App.copilotModelList) && window.App.copilotModelList.length > 0) {
+                return window.App.copilotModelList.slice();
+            }
+            if (this.optionsBar && Array.isArray(this.optionsBar.modelList) && this.optionsBar.modelList.length > 0) {
+                return this.optionsBar.modelList.slice();
+            }
+            return [];
+        },
+
+        _getDefaultModelFromList: function(modelList) {
+            if (!Array.isArray(modelList) || modelList.length === 0) {
+                return null;
+            }
+            var explicitDefault = modelList.find(function(entry) {
+                return entry && entry.is_default === true && entry.active !== false;
+            });
+            if (explicitDefault && explicitDefault.model) {
+                return explicitDefault.model;
+            }
+            var activeSorted = modelList
+                .filter(function(entry) {
+                    return entry && entry.model && entry.active !== false;
+                })
+                .sort(function(a, b) {
+                    var pa = typeof a.priority === 'number' ? a.priority : Number.MAX_SAFE_INTEGER;
+                    var pb = typeof b.priority === 'number' ? b.priority : Number.MAX_SAFE_INTEGER;
+                    return pa - pb;
+                });
+            return activeSorted.length > 0 ? activeSorted[0].model : null;
+        },
+
+        _getCurrentSelectedModel: function(modelList) {
+            var selected = window && window.App ? window.App.copilotSelectedModel : null;
+            if (!selected) {
+                selected = this._getDefaultModelFromList(modelList);
+            }
+            return selected;
+        },
+
+        _labelForModel: function(modelId) {
+            if (!modelId) {
+                return 'Model';
+            }
+            var shortName = modelId.split('/').reverse()[0] || modelId;
+            if (shortName.length > 18) {
+                shortName = shortName.substring(0, 18) + '...';
+            }
+            return shortName;
+        },
+
+        _updateModelButtonLabel: function(modelId) {
+            if (!this.modelSelectorButton) {
+                return;
+            }
+            this.modelSelectorButton.innerHTML = this._labelForModel(modelId);
+            this.modelSelectorButton.title = modelId ? ('Selected model: ' + modelId) : 'Select chat model';
+        },
+
+        _refreshModelSelectorState: function() {
+            var modelList = this._getAvailableModelList();
+            if (modelList.length === 0 && this.copilotApi && this.copilotApi.getModelList) {
+                this.copilotApi.getModelList().then(lang.hitch(this, function(modelsAndRag) {
+                    var fetchedModels = this._parseListPayload(modelsAndRag.model_list || modelsAndRag.models);
+                    if (window && window.App) {
+                        window.App.copilotModelList = fetchedModels.slice();
+                    }
+                    if (this.optionsBar) {
+                        this.optionsBar.modelList = fetchedModels.slice();
+                    }
+                    this._refreshModelSelectorState();
+                })).catch(function() {
+                    // Keep button usable even if model fetch fails.
+                });
+            }
+            if (this.modelSelectorDropdown) {
+                this.modelSelectorDropdown.innerHTML = '';
+                if (modelList.length === 0) {
+                    var noOption = document.createElement('option');
+                    noOption.value = '';
+                    noOption.text = 'No models available';
+                    this.modelSelectorDropdown.add(noOption);
+                    this.modelSelectorDropdown.disabled = true;
+                } else {
+                    this.modelSelectorDropdown.disabled = false;
+                    modelList.forEach(function(modelEntry) {
+                        if (!modelEntry || !modelEntry.model) {
+                            return;
+                        }
+                        var option = document.createElement('option');
+                        option.value = modelEntry.model;
+                        option.text = modelEntry.model.split('/').reverse()[0];
+                        this.modelSelectorDropdown.add(option);
+                    }, this);
+                }
+            }
+            var selectedModel = this._getCurrentSelectedModel(modelList);
+            if (selectedModel && window && window.App) {
+                window.App.copilotSelectedModel = selectedModel;
+            }
+            if (this.modelSelectorDropdown && selectedModel) {
+                this.modelSelectorDropdown.value = selectedModel;
+            }
+            this._updateModelButtonLabel(selectedModel);
+        },
+
+        createModelSelectorDialog: function() {
+            var modelDialog = new TooltipDialog({
+                style: 'width: 300px;',
+                content: document.createElement('div')
+            });
+            var modelLabel = document.createElement('div');
+            modelLabel.textContent = 'Model:';
+            modelLabel.style.marginBottom = '6px';
+            modelDialog.containerNode.appendChild(modelLabel);
+
+            var selectElement = document.createElement('select');
+            selectElement.className = 'copilotSelectElement';
+            selectElement.style.width = '100%';
+            selectElement.addEventListener('change', lang.hitch(this, function(evt) {
+                var selectedModel = evt.target.value;
+                if (!selectedModel) {
+                    return;
+                }
+                if (window && window.App) {
+                    window.App.copilotSelectedModel = selectedModel;
+                }
+                this._updateModelButtonLabel(selectedModel);
+                topic.publish('ChatModel', selectedModel);
+            }));
+            modelDialog.containerNode.appendChild(selectElement);
+            this.modelSelectorDropdown = selectElement;
+
+            return modelDialog;
         },
 
         /**
