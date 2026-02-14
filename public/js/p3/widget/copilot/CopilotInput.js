@@ -1449,14 +1449,14 @@ define([
                 this.displayWidget.showMessages(this.chatStore.query());
             }
         );
-    })).catch(lang.hitch(this, function(error) {
+      })).catch(lang.hitch(this, function(error) {
         console.error('Error capturing or processing screenshot:', error);
         topic.publish('showChatPanel'); // Ensure panel is shown even on error
 
         // Fall back to HTML content if screenshot fails
         console.log('Falling back to HTML content');
         this._handlePageContentSubmitStream();
-    }));
+      }));
     },
 
     _handlePageContentSubmitStream: function() {
