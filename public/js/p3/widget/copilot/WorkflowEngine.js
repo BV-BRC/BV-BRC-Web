@@ -29,6 +29,15 @@ define([
     /** @property {Object|string} workflowData - The workflow JSON data to display */
     workflowData: null,
 
+    /** @property {Object} selectedStep - Currently selected step for detail panel */
+    selectedStep: null,
+
+    /** @property {number} selectedStepIndex - Index of currently selected step */
+    selectedStepIndex: -1,
+
+    /** @property {DOMNode} detailPanel - Reference to the detail panel DOM node */
+    detailPanel: null,
+
     /**
      * Called after widget creation
      */
@@ -100,10 +109,15 @@ define([
      * @param {Object} workflow - Parsed workflow data
      */
     renderWorkflowView: function(workflow) {
+      // Create main wrapper with content area and detail panel
+      var wrapper = domConstruct.create('div', {
+        class: 'workflow-wrapper'
+      }, this.domNode);
+
       // Create main container
       var container = domConstruct.create('div', {
         class: 'workflow-visual-container'
-      }, this.domNode);
+      }, wrapper);
 
       // Render workflow header
       this.renderWorkflowHeader(workflow, container);
@@ -113,6 +127,9 @@ define([
 
       // Render workflow outputs
       this.renderWorkflowOutputs(workflow, container);
+
+      // Create detail panel (initially hidden)
+      this.renderDetailPanel(wrapper);
     },
 
     /**
@@ -228,17 +245,12 @@ define([
       }, stepsContainer);
 
       var pipelineContainer = domConstruct.create('div', {
-        class: 'workflow-pipeline'
+        class: 'workflow-pipeline-grid'
       }, stepsContainer);
 
-      // Render each step
+      // Render each step as a card
       workflow.steps.forEach(lang.hitch(this, function(step, index) {
         this.renderStep(step, index, pipelineContainer);
-
-        // Add connector arrow if not the last step
-        if (index < workflow.steps.length - 1) {
-          this.renderStepConnector(pipelineContainer);
-        }
       }));
     },
 
@@ -250,88 +262,64 @@ define([
      */
     renderStep: function(step, index, container) {
       var stepCard = domConstruct.create('div', {
-        class: 'workflow-step-card'
+        class: 'workflow-step-card',
+        tabindex: 0,
+        role: 'button'
       }, container);
 
-      // Step header
-      var stepHeader = domConstruct.create('div', {
-        class: 'workflow-step-header'
-      }, stepCard);
+      // Add click handler to open detail panel
+      stepCard.onclick = lang.hitch(this, function() {
+        this.showStepDetails(step, index);
+      });
 
+      // Add keyboard support
+      stepCard.onkeypress = lang.hitch(this, function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.showStepDetails(step, index);
+        }
+      });
+
+      // Step number badge
       domConstruct.create('div', {
         class: 'workflow-step-number',
         innerHTML: (index + 1)
-      }, stepHeader);
+      }, stepCard);
 
+      // Step name
       domConstruct.create('div', {
         class: 'workflow-step-name',
         innerHTML: this.escapeHtml(step.step_name || 'Step ' + (index + 1))
-      }, stepHeader);
+      }, stepCard);
 
       // App name
       domConstruct.create('div', {
         class: 'workflow-step-app',
-        innerHTML: '<strong>App:</strong> ' + this.escapeHtml(step.app)
+        innerHTML: this.escapeHtml(step.app)
       }, stepCard);
 
-      // Parameters
-      if (step.params && Object.keys(step.params).length > 0) {
-        var paramsSection = domConstruct.create('div', {
-          class: 'workflow-step-section'
-        }, stepCard);
-
+      // Status (if available from execution metadata)
+      if (step.status) {
         domConstruct.create('div', {
-          class: 'workflow-section-label',
-          innerHTML: 'Parameters:'
-        }, paramsSection);
-
-        var paramsList = domConstruct.create('div', {
-          class: 'workflow-params-list'
-        }, paramsSection);
-
-        for (var key in step.params) {
-          if (step.params.hasOwnProperty(key)) {
-            this.renderParameter(key, step.params[key], paramsList);
-          }
-        }
-      }
-
-      // Outputs
-      if (step.outputs && Object.keys(step.outputs).length > 0) {
-        var outputsSection = domConstruct.create('div', {
-          class: 'workflow-step-section'
+          class: 'workflow-step-status workflow-step-status-' + step.status.toLowerCase(),
+          innerHTML: '<strong>Status:</strong> ' + this.escapeHtml(step.status)
         }, stepCard);
-
-        domConstruct.create('div', {
-          class: 'workflow-section-label',
-          innerHTML: 'Outputs:'
-        }, outputsSection);
-
-        var outputsList = domConstruct.create('div', {
-          class: 'workflow-outputs-list'
-        }, outputsSection);
-
-        for (var outputKey in step.outputs) {
-          if (step.outputs.hasOwnProperty(outputKey)) {
-            this.renderOutput(outputKey, step.outputs[outputKey], outputsList);
-          }
-        }
       }
 
       // Dependencies
       if (step.depends_on && step.depends_on.length > 0) {
-        var depsSection = domConstruct.create('div', {
-          class: 'workflow-step-section workflow-dependencies-section'
+        var depsContainer = domConstruct.create('div', {
+          class: 'workflow-step-dependencies'
         }, stepCard);
 
         domConstruct.create('div', {
-          class: 'workflow-section-label',
+          class: 'workflow-step-dependencies-label',
           innerHTML: 'Depends on:'
-        }, depsSection);
+        }, depsContainer);
 
         var depsList = domConstruct.create('div', {
           class: 'workflow-dependencies-list'
-        }, depsSection);
+        }, depsContainer);
 
         step.depends_on.forEach(lang.hitch(this, function(dep) {
           domConstruct.create('span', {
@@ -430,6 +418,285 @@ define([
           innerHTML: this.escapeHtml(this.formatValue(output))
         }, outputsList);
       }));
+    },
+
+    /**
+     * Renders the detail panel (initially hidden)
+     * @param {DOMNode} wrapper - Parent wrapper
+     */
+    renderDetailPanel: function(wrapper) {
+      this.detailPanel = domConstruct.create('div', {
+        class: 'workflow-detail-panel'
+      }, wrapper);
+
+      // Panel header
+      var header = domConstruct.create('div', {
+        class: 'workflow-detail-header'
+      }, this.detailPanel);
+
+      // Close button
+      var closeBtn = domConstruct.create('button', {
+        class: 'workflow-detail-close',
+        innerHTML: '&times;',
+        title: 'Close'
+      }, header);
+
+      closeBtn.onclick = lang.hitch(this, function() {
+        this.hideStepDetails();
+      });
+
+      // Title
+      domConstruct.create('h3', {
+        class: 'workflow-detail-title',
+        id: 'workflow-detail-title'
+      }, header);
+
+      // Navigation buttons
+      var navContainer = domConstruct.create('div', {
+        class: 'workflow-detail-nav'
+      }, header);
+
+      var prevBtn = domConstruct.create('button', {
+        class: 'workflow-detail-nav-btn workflow-detail-prev',
+        innerHTML: '← Previous',
+        title: 'Previous step',
+        id: 'workflow-detail-prev-btn'
+      }, navContainer);
+
+      prevBtn.onclick = lang.hitch(this, function() {
+        this.navigateStep(-1);
+      });
+
+      var nextBtn = domConstruct.create('button', {
+        class: 'workflow-detail-nav-btn workflow-detail-next',
+        innerHTML: 'Next →',
+        title: 'Next step',
+        id: 'workflow-detail-next-btn'
+      }, navContainer);
+
+      nextBtn.onclick = lang.hitch(this, function() {
+        this.navigateStep(1);
+      });
+
+      // Panel content
+      domConstruct.create('div', {
+        class: 'workflow-detail-content',
+        id: 'workflow-detail-content'
+      }, this.detailPanel);
+    },
+
+    /**
+     * Shows the detail panel for a specific step
+     * @param {Object} step - Step data
+     * @param {number} index - Step index
+     */
+    showStepDetails: function(step, index) {
+      this.selectedStep = step;
+      this.selectedStepIndex = index;
+
+      // Update panel title
+      var title = document.getElementById('workflow-detail-title');
+      if (title) {
+        title.innerHTML = 'Step ' + (index + 1) + ': ' + this.escapeHtml(step.step_name || 'Untitled');
+      }
+
+      // Update navigation buttons
+      var prevBtn = document.getElementById('workflow-detail-prev-btn');
+      var nextBtn = document.getElementById('workflow-detail-next-btn');
+
+      if (prevBtn) {
+        prevBtn.disabled = (index === 0);
+      }
+
+      if (nextBtn) {
+        var totalSteps = this.getParsedWorkflowData().steps.length;
+        nextBtn.disabled = (index >= totalSteps - 1);
+      }
+
+      // Populate content
+      this.populateDetailContent(step, index);
+
+      // Show panel
+      if (this.detailPanel) {
+        this.detailPanel.classList.add('workflow-detail-panel-open');
+      }
+    },
+
+    /**
+     * Hides the detail panel
+     */
+    hideStepDetails: function() {
+      if (this.detailPanel) {
+        this.detailPanel.classList.remove('workflow-detail-panel-open');
+      }
+      this.selectedStep = null;
+      this.selectedStepIndex = -1;
+    },
+
+    /**
+     * Navigates to the previous or next step
+     * @param {number} direction - -1 for previous, 1 for next
+     */
+    navigateStep: function(direction) {
+      var workflow = this.getParsedWorkflowData();
+      var newIndex = this.selectedStepIndex + direction;
+
+      if (newIndex >= 0 && newIndex < workflow.steps.length) {
+        this.showStepDetails(workflow.steps[newIndex], newIndex);
+      }
+    },
+
+    /**
+     * Populates the detail panel content
+     * @param {Object} step - Step data
+     * @param {number} index - Step index
+     */
+    populateDetailContent: function(step, index) {
+      var content = document.getElementById('workflow-detail-content');
+      if (!content) return;
+
+      // Clear existing content
+      domConstruct.empty(content);
+
+      // Step number and app
+      var metaSection = domConstruct.create('div', {
+        class: 'workflow-detail-section'
+      }, content);
+
+      domConstruct.create('div', {
+        class: 'workflow-detail-meta-item',
+        innerHTML: '<strong>Step Number:</strong> ' + (index + 1)
+      }, metaSection);
+
+      domConstruct.create('div', {
+        class: 'workflow-detail-meta-item',
+        innerHTML: '<strong>Application:</strong> ' + this.escapeHtml(step.app)
+      }, metaSection);
+
+      if (step.step_name) {
+        domConstruct.create('div', {
+          class: 'workflow-detail-meta-item',
+          innerHTML: '<strong>Name:</strong> ' + this.escapeHtml(step.step_name)
+        }, metaSection);
+      }
+
+      // Status
+      if (step.status) {
+        domConstruct.create('div', {
+          class: 'workflow-detail-meta-item workflow-detail-status workflow-detail-status-' + step.status.toLowerCase(),
+          innerHTML: '<strong>Status:</strong> ' + this.escapeHtml(step.status)
+        }, metaSection);
+      }
+
+      // Dependencies
+      if (step.depends_on && step.depends_on.length > 0) {
+        var depsSection = domConstruct.create('div', {
+          class: 'workflow-detail-section'
+        }, content);
+
+        domConstruct.create('h4', {
+          class: 'workflow-detail-section-title',
+          innerHTML: 'Dependencies'
+        }, depsSection);
+
+        var depsList = domConstruct.create('div', {
+          class: 'workflow-detail-deps-list'
+        }, depsSection);
+
+        step.depends_on.forEach(lang.hitch(this, function(dep) {
+          domConstruct.create('div', {
+            class: 'workflow-detail-dep-item',
+            innerHTML: this.escapeHtml(dep)
+          }, depsList);
+        }));
+      }
+
+      // Parameters
+      if (step.params && Object.keys(step.params).length > 0) {
+        var paramsSection = domConstruct.create('div', {
+          class: 'workflow-detail-section'
+        }, content);
+
+        domConstruct.create('h4', {
+          class: 'workflow-detail-section-title',
+          innerHTML: 'Parameters'
+        }, paramsSection);
+
+        var paramsList = domConstruct.create('div', {
+          class: 'workflow-detail-params-list'
+        }, paramsSection);
+
+        for (var key in step.params) {
+          if (step.params.hasOwnProperty(key)) {
+            var paramItem = domConstruct.create('div', {
+              class: 'workflow-detail-param-item'
+            }, paramsList);
+
+            domConstruct.create('div', {
+              class: 'workflow-detail-param-key',
+              innerHTML: this.escapeHtml(key)
+            }, paramItem);
+
+            var valueStr = this.formatValue(step.params[key]);
+            var isVariable = this.isVariableReference(valueStr);
+
+            domConstruct.create('div', {
+              class: 'workflow-detail-param-value' + (isVariable ? ' workflow-variable-ref' : ''),
+              innerHTML: this.escapeHtml(valueStr)
+            }, paramItem);
+          }
+        }
+      }
+
+      // Outputs
+      if (step.outputs && Object.keys(step.outputs).length > 0) {
+        var outputsSection = domConstruct.create('div', {
+          class: 'workflow-detail-section'
+        }, content);
+
+        domConstruct.create('h4', {
+          class: 'workflow-detail-section-title',
+          innerHTML: 'Outputs'
+        }, outputsSection);
+
+        var outputsList = domConstruct.create('div', {
+          class: 'workflow-detail-outputs-list'
+        }, outputsSection);
+
+        for (var outputKey in step.outputs) {
+          if (step.outputs.hasOwnProperty(outputKey)) {
+            var outputItem = domConstruct.create('div', {
+              class: 'workflow-detail-output-item'
+            }, outputsList);
+
+            domConstruct.create('div', {
+              class: 'workflow-detail-output-key',
+              innerHTML: this.escapeHtml(outputKey)
+            }, outputItem);
+
+            domConstruct.create('div', {
+              class: 'workflow-detail-output-value',
+              innerHTML: this.escapeHtml(this.formatValue(step.outputs[outputKey]))
+            }, outputItem);
+          }
+        }
+      }
+    },
+
+    /**
+     * Gets the parsed workflow data
+     * @returns {Object} Parsed workflow data
+     */
+    getParsedWorkflowData: function() {
+      var data = this.workflowData;
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch (e) {
+          return { steps: [] };
+        }
+      }
+      return data || { steps: [] };
     },
 
     /**
