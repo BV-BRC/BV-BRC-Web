@@ -380,6 +380,22 @@ define([
     },
 
     /**
+     * Formats 'image_context' event
+     * Used to notify users when image analysis is integrated or skipped.
+     */
+    format_image_context: function(data) {
+      var message = data && data.message
+        ? data.message
+        : 'Image context status updated.';
+
+      if (data && data.skipped === true) {
+        message = 'Image note: ' + message;
+      }
+
+      return this.updateStatusMessage(message, 'image_context');
+    },
+
+    /**
      * Formats 'cancelled' event (from API)
      */
     format_cancelled: function(data) {

@@ -348,7 +348,9 @@ define([
         messages.forEach(lang.hitch(this, function(message) {
           new ChatMessage({
             ...message,
-            fontSize: this.fontSize
+            fontSize: this.fontSize,
+            copilotApi: this.copilotApi,
+            sessionId: this.sessionId
           }, this.resultContainer);
         }));
 
@@ -565,7 +567,11 @@ define([
      * - Appends to container
      */
     addMessage: function(message) {
-      new ChatMessage(message, this.resultContainer);
+      new ChatMessage({
+        ...message,
+        copilotApi: this.copilotApi,
+        sessionId: this.sessionId
+      }, this.resultContainer);
     },
 
     /**

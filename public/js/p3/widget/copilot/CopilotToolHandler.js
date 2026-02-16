@@ -57,11 +57,13 @@ define([
             // For plan_workflow, the workflow_json contains the actual workflow
             // For submit_workflow, it has execution metadata too
             let workflowData;
+            var workflowDescription = chunk.workflow_description || null;
 
             if (chunk.workflow_json) {
               // Extract workflow_json and merge with top-level metadata
               workflowData = {
                 ...chunk.workflow_json,
+                workflow_description: workflowDescription || chunk.workflow_json.workflow_description || null,
                 // Add execution metadata to workflow data (some fields may be undefined for plan_workflow)
                 execution_metadata: {
                   workflow_id: chunk.workflow_id,
@@ -70,6 +72,7 @@ define([
                   message: chunk.message,
                   status_url: chunk.status_url,
                   source: chunk.source,
+                  workflow_description: workflowDescription,
                   // Distinguish between planned and submitted workflows
                   is_planned: !chunk.status || chunk.status === 'planned',
                   is_submitted: !!(chunk.status && chunk.status !== 'planned')
@@ -80,15 +83,16 @@ define([
               // Create a minimal workflow data structure
               workflowData = {
                 workflow_name: 'Planned Workflow',
+                workflow_description: workflowDescription,
                 message: chunk.message || 'Workflow planned',
                 execution_metadata: {
                   message: chunk.message,
+                  workflow_description: workflowDescription,
                   is_planned: true,
                   is_submitted: false
                 }
               };
             }
-
             return {
               ...baseData,
               chunk: JSON.stringify(chunk), // Store full response for display
@@ -150,11 +154,13 @@ define([
           // For plan_workflow, the workflow_json contains the actual workflow
           // For submit_workflow, it has execution metadata too
           let workflowData;
+          var parsedWorkflowDescription = parsedChunk.workflow_description || null;
 
           if (parsedChunk.workflow_json) {
             // Extract workflow_json and merge with top-level metadata
             workflowData = {
               ...parsedChunk.workflow_json,
+              workflow_description: parsedWorkflowDescription || parsedChunk.workflow_json.workflow_description || null,
               // Add execution metadata to workflow data (some fields may be undefined for plan_workflow)
               execution_metadata: {
                 workflow_id: parsedChunk.workflow_id,
@@ -163,6 +169,7 @@ define([
                 message: parsedChunk.message,
                 status_url: parsedChunk.status_url,
                 source: parsedChunk.source,
+                workflow_description: parsedWorkflowDescription,
                 // Distinguish between planned and submitted workflows
                 is_planned: !parsedChunk.status || parsedChunk.status === 'planned',
                 is_submitted: !!(parsedChunk.status && parsedChunk.status !== 'planned')
@@ -173,15 +180,16 @@ define([
             // Create a minimal workflow data structure
             workflowData = {
               workflow_name: 'Planned Workflow',
+              workflow_description: parsedWorkflowDescription,
               message: parsedChunk.message || 'Workflow planned',
               execution_metadata: {
                 message: parsedChunk.message,
+                workflow_description: parsedWorkflowDescription,
                 is_planned: true,
                 is_submitted: false
               }
             };
           }
-
           return {
             ...baseData,
             chunk: content,

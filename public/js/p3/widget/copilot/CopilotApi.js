@@ -212,7 +212,7 @@ define([
          * - Makes POST request to copilot endpoint
          * - Handles errors with detailed logging
          */
-        submitCopilotQuery: function(inputText, sessionId, systemPrompt, model, save_chat = true, ragDb, numDocs, image, enhancedPrompt = null, extraPayload) {
+        submitCopilotQuery: function(inputText, sessionId, systemPrompt, model, save_chat = true, ragDb, numDocs, images, enhancedPrompt = null, extraPayload) {
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             console.log('query');
@@ -230,6 +230,13 @@ define([
 
             if (extraPayload && Array.isArray(extraPayload.selected_workspace_items) && extraPayload.selected_workspace_items.length > 0) {
                 data.selected_workspace_items = extraPayload.selected_workspace_items;
+            }
+
+            if (Array.isArray(images) && images.length > 0) {
+                data.images = images;
+            }
+            if (extraPayload && Array.isArray(extraPayload.images) && extraPayload.images.length > 0) {
+                data.images = extraPayload.images;
             }
 
             return request.post(this.apiUrlBase + '/copilot-agent', {
@@ -258,7 +265,7 @@ define([
          * @param {boolean} params.save_chat - Whether to save the chat
          * @param {string} params.ragDb - The RAG database to use
          * @param {number} params.numDocs - The number of documents for RAG
-         * @param {string} params.image - A base64 encoded image
+         * @param {string[]} params.images - A list of base64 encoded images
          * @param {string} params.enhancedPrompt - An enhanced prompt
          * @param {function} onData - Callback for each content chunk (LLM response text)
          * @param {function} onEnd - Callback for when the stream ends
@@ -293,6 +300,10 @@ define([
 
             if (Array.isArray(params.selected_workspace_items) && params.selected_workspace_items.length > 0) {
                 data.workspace_items = params.selected_workspace_items;
+            }
+
+            if (Array.isArray(params.images) && params.images.length > 0) {
+                data.images = params.images;
             }
 
             // Create abort controller for this request
@@ -1046,6 +1057,100 @@ define([
             }).catch(function(error) {
                 console.error('Error setting conversation rating:', error);
                 throw error;
+            });
+        },
+
+        /**
+         * Submits a workflow for execution directly to the workflow engine API
+         * Bypasses the MCP layer and talks directly to the workflow engine REST endpoint
+         * @param {Object} workflowJson - Complete workflow manifest to submit
+         * @returns {Promise} Promise that resolves with submission response
+         */
+        submitWorkflowForExecution: function(workflowJson) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+
+            console.log('[CopilotApi] submitWorkflowForExecution called');
+            console.log('[CopilotApi] Workflow JSON:', workflowJson);
+
+            // Get workflow engine URL from config
+            var workflowEngineUrl = window.App.workflow_url || 'https://dev-7.bv-brc.org/api/v1';
+            var submitUrl = workflowEngineUrl + '/workflows/submit';
+
+            console.log('[CopilotApi] Submitting directly to workflow engine:', submitUrl);
+
+            // Clean the workflow before submission - remove fields that workflow engine assigns
+            var workflowForSubmission = JSON.parse(JSON.stringify(workflowJson));
+
+            // Remove workflow_id (including placeholder values like "<scheduler_generated_id>")
+            // Always remove it - the engine will assign a real one
+            delete workflowForSubmission.workflow_id;
+            delete workflowForSubmission.status;       // Engine assigns this
+            delete workflowForSubmission.created_at;   // Engine assigns this
+            delete workflowForSubmission.updated_at;   // Engine assigns this
+            delete workflowForSubmission.execution_metadata; // Frontend metadata, not for engine
+
+            // Clean steps - remove execution metadata
+            if (workflowForSubmission.steps) {
+                workflowForSubmission.steps.forEach(function(step) {
+                    delete step.step_id;    // Engine assigns this
+                    delete step.status;     // Execution metadata
+                    delete step.task_id;    // Execution metadata
+                });
+            }
+
+            console.log('[CopilotApi] Cleaned workflow for submission:', workflowForSubmission);
+
+            return request.post(submitUrl, {
+                data: JSON.stringify(workflowForSubmission),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                console.log('[CopilotApi] Workflow submission response:', response);
+                // Response format from workflow engine:
+                // {
+                //   "workflow_id": "wf_123...",
+                //   "status": "pending",
+                //   "message": "Workflow submitted for execution"
+                // }
+                return response;
+            }).catch(function(error) {
+                console.error('[CopilotApi] Error submitting workflow:', error);
+                console.error('[CopilotApi] Error object keys:', Object.keys(error));
+
+                // Extract error message from dojo/request error
+                var errorMsg = 'Failed to submit workflow';
+
+                // dojo/request error structure - check response.data first (parsed JSON)
+                if (error.response) {
+                    if (error.response.data) {
+                        // Already parsed JSON error response
+                        var errorData = error.response.data;
+                        if (typeof errorData === 'object') {
+                            errorMsg = errorData.detail || errorData.message || errorData.error || JSON.stringify(errorData);
+                        } else {
+                            errorMsg = errorData;
+                        }
+                    } else if (typeof error.response === 'string') {
+                        // Response is a string
+                        errorMsg = error.response;
+                        try {
+                            var errorJson = JSON.parse(errorMsg);
+                            errorMsg = errorJson.detail || errorJson.message || errorJson.error || errorMsg;
+                        } catch (e) {
+                            // Keep as-is
+                        }
+                    } else if (error.message) {
+                        errorMsg = error.message;
+                    }
+                } else if (error.message) {
+                    errorMsg = error.message;
+                }
+
+                console.error('[CopilotApi] Extracted error message:', errorMsg);
+                throw new Error(errorMsg);
             });
         },
 

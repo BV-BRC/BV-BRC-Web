@@ -37,6 +37,12 @@ define([
     /** @property {boolean} copilotEnableShowPromptDetails - Stores the value of the copilotEnableShowPromptDetails flag */
     copilotEnableShowPromptDetails: false,
 
+    /** @property {Object} copilotApi - Reference to CopilotAPI instance for workflow submission */
+    copilotApi: null,
+
+    /** @property {string} sessionId - Current session ID for workflow submission context */
+    sessionId: null,
+
     /**
      * @constructor
      * Creates a new ChatMessage instance
@@ -47,6 +53,8 @@ define([
       this.message = message;
       this.container = container;
       this.fontSize = message.fontSize || 14; // Get fontSize from message or use default
+      this.copilotApi = message.copilotApi || null; // Get copilotApi from message if provided
+      this.sessionId = message.sessionId || null; // Get sessionId from message if provided
       this.copilotEnableShowPromptDetails = window.App && window.App.copilotEnableShowPromptDetails === 'true';
       this.toolHandler = new CopilotToolHandler();
       this.renderMessage(); // Immediately render on construction
@@ -279,22 +287,8 @@ define([
       // Check if this is a workflow message
 
       if (this.message.isWorkflow && this.message.workflowData) {
-        // Show a "Review Workflow" button instead of displaying the content
-        var workflowButtonContainer = domConstruct.create('div', {
-          class: 'workflow-button-container',
-          style: 'margin: 10px 0;'
-        }, messageDiv);
-
-        var reviewWorkflowButton = domConstruct.create('button', {
-          innerHTML: 'Review Workflow',
-          class: 'review-workflow-button',
-          style: 'padding: 8px 16px; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;'
-        }, workflowButtonContainer);
-
-        // Add click handler to show workflow dialog
-        on(reviewWorkflowButton, 'click', lang.hitch(this, function() {
-          this.showWorkflowDialog();
-        }));
+        // Render workflow manifest card with details
+        this.renderWorkflowManifestCard(messageDiv);
       } else if (
         this.message.uiAction === 'show_file_metadata' &&
         this.message.uiPayload
@@ -348,6 +342,29 @@ define([
         // Add copy text button
         this.createMessageActionButtons(buttonContainer);
       }
+
+      this.renderAttachments(messageDiv);
+    },
+
+    renderAttachments: function(messageDiv) {
+      if (!Array.isArray(this.message.attachments) || this.message.attachments.length === 0) {
+        return;
+      }
+
+      var container = domConstruct.create('div', {
+        class: 'message-attachments'
+      }, messageDiv);
+
+      this.message.attachments.forEach(lang.hitch(this, function(attachment) {
+        if (!attachment || attachment.type !== 'image') {
+          return;
+        }
+        var label = attachment.name || (attachment.source === 'screenshot' ? 'Page screenshot' : 'Attached image');
+        domConstruct.create('div', {
+          class: 'message-attachment-chip',
+          innerHTML: '<i class="fa icon-image"></i> ' + this.escapeHtml(label)
+        }, container);
+      }));
     },
 
     /**
@@ -889,6 +906,110 @@ define([
     },
 
     /**
+     * Renders a workflow manifest card with workflow details
+     * Displays workflow name, step count, output folder, and a Review & Submit button
+     * @param {HTMLElement} messageDiv - Container to render widget into
+     */
+    renderWorkflowManifestCard: function(messageDiv) {
+      var workflow = this.message.workflowData;
+
+      // Extract workflow information
+      var workflowName = workflow.workflow_name || 'Unnamed Workflow';
+      var workflowDescription = workflow.workflow_description ||
+        (workflow.execution_metadata && workflow.execution_metadata.workflow_description) ||
+        '';
+      var stepCount = 0;
+      var outputFolder = '';
+
+      // Count steps
+      if (workflow.steps && Array.isArray(workflow.steps)) {
+        stepCount = workflow.steps.length;
+      }
+
+      // Get output folder
+      if (workflow.base_context && workflow.base_context.workspace_output_folder) {
+        outputFolder = workflow.base_context.workspace_output_folder;
+      }
+
+      // Get status from execution metadata
+      var isSubmitted = workflow.execution_metadata && workflow.execution_metadata.is_submitted;
+      var isPlanned = workflow.execution_metadata && workflow.execution_metadata.is_planned;
+
+      if (workflowDescription) {
+        domConstruct.create('div', {
+          innerHTML: this.escapeHtml(workflowDescription),
+          style: 'margin: 0 0 8px 0; color: #4b5563; font-size: 13px; line-height: 1.35;'
+        }, messageDiv);
+      }
+
+      // Create card container
+      var card = domConstruct.create('div', {
+        class: 'workflow-manifest-card',
+        style: 'border: 1px solid #d1d5db; border-radius: 4px; padding: 10px; margin: 8px 0; background: #f9fafb;'
+      }, messageDiv);
+
+      // Workflow name header
+      domConstruct.create('div', {
+        innerHTML: '<strong style="color: #1f2937; font-size: 15px;">' + this.escapeHtml(workflowName) + '</strong>',
+        style: 'margin-bottom: 8px;'
+      }, card);
+
+      // Details section
+      var detailsContainer = domConstruct.create('div', {
+        style: 'display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;'
+      }, card);
+
+      // Step count
+      if (stepCount > 0) {
+        domConstruct.create('div', {
+          innerHTML: '<span style="color: #6b7280; font-size: 13px;">Steps:</span> <span style="color: #374151; font-size: 13px; font-weight: 500;">' + stepCount + '</span>',
+          style: 'display: flex; gap: 4px;'
+        }, detailsContainer);
+      }
+
+      // Output folder
+      if (outputFolder) {
+        domConstruct.create('div', {
+          innerHTML: '<span style="color: #6b7280; font-size: 13px;">Output:</span> <span style="color: #374151; font-size: 13px; font-family: monospace;">' + this.escapeHtml(outputFolder) + '</span>',
+          style: 'display: flex; gap: 4px;'
+        }, detailsContainer);
+      }
+
+      // Status indicator (if workflow is already submitted)
+      if (isSubmitted) {
+        domConstruct.create('div', {
+          innerHTML: '<span style="padding: 2px 6px; background: #10b981; color: white; font-size: 11px; border-radius: 3px; font-weight: 500;">SUBMITTED</span>',
+          style: 'margin-top: 2px;'
+        }, detailsContainer);
+      }
+
+      // Button container
+      var buttonContainer = domConstruct.create('div', {
+        style: 'display: flex; justify-content: flex-end; margin-top: 6px; padding-top: 8px; border-top: 1px solid #e5e7eb;'
+      }, card);
+
+      // Review & Submit button
+      var reviewButton = domConstruct.create('button', {
+        innerHTML: (isSubmitted ? 'View Workflow' : 'Review &amp; Submit'),
+        class: 'workflow-review-button',
+        style: 'padding: 4px 10px; background: #2563eb; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.2s;'
+      }, buttonContainer);
+
+      // Hover effect
+      on(reviewButton, 'mouseenter', function() {
+        reviewButton.style.background = '#1d4ed8';
+      });
+      on(reviewButton, 'mouseleave', function() {
+        reviewButton.style.background = '#2563eb';
+      });
+
+      // Add click handler to show workflow dialog
+      on(reviewButton, 'click', lang.hitch(this, function() {
+        this.showWorkflowDialog();
+      }));
+    },
+
+    /**
      * Shows a dialog displaying the workflow using WorkflowEngine widget
      */
     showWorkflowDialog: function() {
@@ -904,7 +1025,9 @@ define([
 
       try {
         workflowEngine = new WorkflowEngine({
-          workflowData: this.message.workflowData
+          workflowData: this.message.workflowData,
+          copilotApi: this.copilotApi,
+          sessionId: this.sessionId
         });
 
         overlayNode = domConstruct.create('div', {

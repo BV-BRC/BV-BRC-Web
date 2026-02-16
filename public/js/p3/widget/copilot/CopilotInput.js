@@ -61,6 +61,11 @@ define([
 
       enhancedPrompt: null,
       selectedWorkspaceItems: [],
+      attachedImages: [],
+      imageUploadInput: null,
+      imageActionNode: null,
+      imageActionMenuNode: null,
+      imageActionOutsideClickHandle: null,
 
       /**
        * Constructor that initializes the widget with provided options
@@ -68,6 +73,15 @@ define([
        */
       constructor: function(args) {
         declare.safeMixin(this, args);
+      },
+
+      _escapeHtml: function(text) {
+        if (typeof text !== 'string') {
+          return text;
+        }
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
       },
 
       _getSelectedWorkspaceItemsForRequest: function() {
@@ -158,33 +172,74 @@ define([
             style: 'display: flex; justify-content: center; align-items: flex-start; width: 100%;'
         }, wrapperDiv);
 
-        // Add container for the toggle switch and label on the left side
+        // Add container for the split image button on the left side
         var toggleContainer = domConstruct.create('div', {
-            style: 'width: auto; height: 35px; display: flex; flex-direction: column; align-items: center; margin-right: 15px;'
+            style: 'width: auto; height: 60px; display: flex; flex-direction: row; align-items: center; margin-right: 15px; position: relative; gap: 8px;'
         }, inputContainer);
 
-        // Create screenshot div above the toggle button
-        var screenshotDiv = domConstruct.create('div', {
-            'class': 'screenshotDivAboveToggle',
-            innerHTML: 'Include<br>Screenshot'
-        });
+        // Image attachment counter (similar to workspace selection indicator) - positioned to the left
+        this.imageAttachmentCounter = domConstruct.create('div', {
+            className: 'imageAttachmentCounter',
+            title: 'Attached images'
+        }, toggleContainer);
+        this.imageAttachmentCountNode = domConstruct.create('span', {
+            className: 'imageAttachmentCount'
+        }, this.imageAttachmentCounter);
 
-        // Create the page content toggle using the screenshot div
+        // Create split button container
+        var splitButtonContainer = domConstruct.create('div', {
+            className: 'imageSplitButtonContainer'
+        }, toggleContainer);
+
+        // Top half - Screenshot
+        var screenshotHalf = domConstruct.create('button', {
+            type: 'button',
+            className: 'imageSplitButtonTop pageContentToggleInactive',
+            innerHTML: 'Screenshot'
+        }, splitButtonContainer);
+        this.screenshotToggleNode = screenshotHalf;
+
+        // Bottom half - Upload
+        var uploadHalf = domConstruct.create('button', {
+            type: 'button',
+            className: 'imageSplitButtonBottom',
+            innerHTML: 'Upload'
+        }, splitButtonContainer);
+        this.uploadImageNode = uploadHalf;
+
+        this.imageUploadInput = domConstruct.create('input', {
+            type: 'file',
+            accept: 'image/png,image/jpeg,image/jpg',
+            multiple: true,
+            style: 'display: none;'
+        }, wrapperDiv);
+
         this.pageContentToggle = {
-            domNode: screenshotDiv,
-            placeAt: function(container) {
-                container.appendChild(screenshotDiv);
-            }
+            domNode: screenshotHalf
         };
 
-        // Add click handler and properties to screenshot div
-        screenshotDiv.title = 'Sends a screenshot of the current BV-BRC page to help answer your question.';
-        screenshotDiv.style.cursor = 'pointer';
-        on(screenshotDiv, 'click', lang.hitch(this, function() {
+        screenshotHalf.title = 'Include a screenshot of the current page with your next message.';
+        uploadHalf.title = 'Attach one or more images from your computer.';
+
+        on(screenshotHalf, 'click', lang.hitch(this, function(evt) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            if (!this._modelSupportsImage(this.model)) {
+                return;
+            }
             topic.publish('pageContentToggleChanged', !this.pageContentEnabled);
         }));
 
-        this.pageContentToggle.placeAt(toggleContainer);
+        on(uploadHalf, 'click', lang.hitch(this, function(evt) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            if (!this._modelSupportsImage(this.model) || !this.imageUploadInput) {
+                return;
+            }
+            this.imageUploadInput.click();
+        }));
+
+        on(this.imageUploadInput, 'change', lang.hitch(this, this._handleImageUploadChange));
 
         // Initialize button style
         this._updateToggleButtonStyle();
@@ -245,9 +300,29 @@ define([
 
         // Subscribe to page content toggle changes from ChatSessionOptionsBar
         topic.subscribe('pageContentToggleChanged', lang.hitch(this, function(checked) {
+            if (!this._modelSupportsImage(this.model)) {
+                this.pageContentEnabled = false;
+                this._updateToggleButtonStyle();
+                return;
+            }
             this.pageContentEnabled = checked;
             this._updateToggleButtonStyle();
             console.log('Page content toggle changed to:', checked);
+        }));
+
+        // Subscribe to session changes to reset state
+        topic.subscribe('ChatSession:Selected', lang.hitch(this, function(data) {
+            // Reset screenshot toggle state
+            this.pageContentEnabled = false;
+            this._updateToggleButtonStyle();
+            topic.publish('pageContentToggleChanged', false);
+
+            // Clear attached images
+            this._clearAttachedImage();
+
+            // Clear selected workspace items
+            this.selectedWorkspaceItems = [];
+            this._renderWorkspaceSelectionIndicator();
         }));
 
         // Maximum height for textarea before scrolling
@@ -293,6 +368,7 @@ define([
         }));
 
         this._renderWorkspaceSelectionIndicator();
+        this._updateImageCapabilityUI();
         this._updateAbortButtonState();
       },
 
@@ -402,18 +478,19 @@ define([
         console.log('this.ragDb=', this.ragDb);
         var inputText = this.textArea.get('value');
         var _self = this;
+        var uploadedImagePayload = this._getUploadedImagePayload();
+        var hasUploadedImage = !!(uploadedImagePayload && Array.isArray(uploadedImagePayload.images) && uploadedImagePayload.images.length > 0 && this._modelSupportsImage(this.model));
+        var submitModel = hasUploadedImage ? this._resolveImageModel() : this.model;
 
         if (this.state) {
           console.log('state', this.state);
         }
 
         // Immediately show user message and clear text area
-        var userMessage = {
-          role: 'user',
-          content: inputText,
-          message_id: 'user_' + Date.now(),
-          timestamp: new Date().toISOString()
-        };
+        var userMessage = this._buildUserMessageForSubmit(
+          inputText,
+          hasUploadedImage ? uploadedImagePayload.attachments : null
+        );
 
         this.chatStore.addMessage(userMessage);
         this.displayWidget.showMessages(this.chatStore.query());
@@ -431,10 +508,15 @@ define([
         if (this.statePrompt) {
             systemPrompt += this.statePrompt;
         }
+        if (hasUploadedImage) {
+            systemPrompt += '\n\nThe user attached an image. Use it as additional context.';
+        }
 
-        this._submitCopilotQueryWithRegistration(inputText, this.sessionId, systemPrompt, this.model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt, {
+        this._submitCopilotQueryWithRegistration(inputText, this.sessionId, systemPrompt, submitModel, true, this.ragDb, this.numDocs, null, this.enhancedPrompt, lang.mixin({
+          images: hasUploadedImage ? uploadedImagePayload.images : null
+        }, {
           selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
-        }).then(lang.hitch(this, function(response) {
+        })).then(lang.hitch(this, function(response) {
           // Only add assistant message and system message (if present) - user message was already added
           var messagesToAdd = [];
           if (response.systemMessage) {
@@ -475,17 +557,18 @@ define([
       _handleRegularSubmit: function() {
         var inputText = this.textArea.get('value');
         var _self = this;
+        var uploadedImagePayload = this._getUploadedImagePayload();
+        var hasUploadedImage = !!(uploadedImagePayload && Array.isArray(uploadedImagePayload.images) && uploadedImagePayload.images.length > 0 && this._modelSupportsImage(this.model));
+        var submitModel = hasUploadedImage ? this._resolveImageModel() : this.model;
         if (this.state) {
           console.log('state', this.state);
         }
 
         // Immediately show user message and clear text area
-        var userMessage = {
-          role: 'user',
-          content: inputText,
-          message_id: 'user_' + Date.now(),
-          timestamp: new Date().toISOString()
-        };
+        var userMessage = this._buildUserMessageForSubmit(
+          inputText,
+          hasUploadedImage ? uploadedImagePayload.attachments : null
+        );
 
         this.chatStore.addMessage(userMessage);
         this.displayWidget.showMessages(this.chatStore.query());
@@ -503,10 +586,15 @@ define([
         if (this.statePrompt) {
             systemPrompt += this.statePrompt;
         }
+        if (hasUploadedImage) {
+            systemPrompt += '\n\nThe user attached an image. Use it as additional context.';
+        }
 
-        this._submitCopilotQueryWithRegistration(inputText, this.sessionId, systemPrompt, this.model, true, null, null, null, null, {
+        this._submitCopilotQueryWithRegistration(inputText, this.sessionId, systemPrompt, submitModel, true, null, null, null, null, lang.mixin({
+          images: hasUploadedImage ? uploadedImagePayload.images : null
+        }, {
           selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
-        }).then(lang.hitch(this, function(response) {
+        })).then(lang.hitch(this, function(response) {
           // Only add assistant message and system message (if present) - user message was already added
           var messagesToAdd = [];
           if (response.systemMessage) {
@@ -542,6 +630,18 @@ define([
         this.new_chat = true;
         this.session_registered = false;
         this.textArea.set('value', '');
+
+        // Reset screenshot toggle state
+        this.pageContentEnabled = false;
+        this._updateToggleButtonStyle();
+        topic.publish('pageContentToggleChanged', false);
+
+        // Clear attached images
+        this._clearAttachedImage();
+
+        // Clear selected workspace items
+        this.selectedWorkspaceItems = [];
+        this._renderWorkspaceSelectionIndicator();
       },
 
       /**
@@ -551,6 +651,18 @@ define([
       setSessionId: function(sessionId) {
         this.sessionId = sessionId;
         this.session_registered = false;
+
+        // Reset screenshot toggle state
+        this.pageContentEnabled = false;
+        this._updateToggleButtonStyle();
+        topic.publish('pageContentToggleChanged', false);
+
+        // Clear attached images
+        this._clearAttachedImage();
+
+        // Clear selected workspace items
+        this.selectedWorkspaceItems = [];
+        this._renderWorkspaceSelectionIndicator();
       },
 
       /**
@@ -596,6 +708,7 @@ define([
         if (window && window.App) {
           window.App.copilotSelectedModel = model;
         }
+        this._updateImageCapabilityUI();
       },
 
       _getAvailableModels: function() {
@@ -605,12 +718,22 @@ define([
         return [];
       },
 
+      _supportsImageFlag: function(value) {
+        return value === true || value === 1 || value === '1' || value === 'true';
+      },
+
       _modelSupportsImage: function(modelId) {
         var models = this._getAvailableModels();
+        if (!modelId || models.length === 0) {
+          return true;
+        }
         var match = models.find(function(entry) {
           return entry && entry.model === modelId;
         });
-        return !!(match && match.supports_image === true);
+        if (!match) {
+          return true;
+        }
+        return !!(match && this._supportsImageFlag(match.supports_image));
       },
 
       _resolveImageModel: function() {
@@ -622,15 +745,170 @@ define([
           return this.model;
         }
         var defaultImage = models.find(function(entry) {
-          return entry && entry.active !== false && entry.supports_image === true && entry.is_default === true;
-        });
+          return entry && entry.active !== false && this._supportsImageFlag(entry.supports_image) && entry.is_default === true;
+        }, this);
         if (defaultImage && defaultImage.model) {
           return defaultImage.model;
         }
         var firstImage = models.find(function(entry) {
-          return entry && entry.active !== false && entry.supports_image === true && entry.model;
+          return entry && entry.active !== false && this._supportsImageFlag(entry.supports_image) && entry.model;
         });
         return firstImage && firstImage.model ? firstImage.model : this.model;
+      },
+
+      _updateImageCapabilityUI: function() {
+        var enabled = this._modelSupportsImage(this.model);
+
+        if (this.screenshotToggleNode) {
+          this.screenshotToggleNode.style.display = enabled ? 'block' : 'none';
+        }
+        if (this.uploadImageNode) {
+          this.uploadImageNode.style.display = enabled ? 'block' : 'none';
+        }
+
+        if (!enabled) {
+          this.pageContentEnabled = false;
+          this._clearAttachedImage();
+          topic.publish('pageContentToggleChanged', false);
+        } else {
+          this._renderAttachedImageIndicator();
+        }
+      },
+
+      _handleImageUploadChange: function(evt) {
+        var files = evt && evt.target && evt.target.files ? Array.prototype.slice.call(evt.target.files) : [];
+        if (!files || files.length === 0) {
+          return;
+        }
+        var maxImages = 3;
+        var maxBytes = 6 * 1024 * 1024;
+        var remainingSlots = Math.max(0, maxImages - this.attachedImages.length);
+        if (remainingSlots <= 0) {
+          topic.publish('CopilotApiError', { error: new Error('You can attach up to 3 images per message.') });
+          this.imageUploadInput.value = '';
+          return;
+        }
+
+        var acceptedFiles = files.slice(0, remainingSlots);
+        if (files.length > remainingSlots) {
+          topic.publish('CopilotApiError', { error: new Error('Only the first ' + remainingSlots + ' image(s) were attached. Maximum is 3 images.') });
+        }
+
+        var readPromises = acceptedFiles.map(lang.hitch(this, function(file) {
+          return new Promise(lang.hitch(this, function(resolve, reject) {
+            if (!/^image\/(png|jpeg|jpg)$/i.test(file.type || '')) {
+              reject(new Error('Unsupported image format for "' + (file.name || 'image') + '". Only PNG and JPEG/JPG images are supported.'));
+              return;
+            }
+            if (file.size > maxBytes) {
+              reject(new Error('Image "' + (file.name || 'image') + '" is larger than 6 MB.'));
+              return;
+            }
+
+            var reader = new FileReader();
+            reader.onload = function(loadEvt) {
+              resolve({
+                image: loadEvt && loadEvt.target ? loadEvt.target.result : null,
+                attachment: {
+                  type: 'image',
+                  source: 'upload',
+                  name: file.name || 'Uploaded image'
+                }
+              });
+            };
+            reader.onerror = function() {
+              reject(new Error('Unable to read selected image file "' + (file.name || 'image') + '".'));
+            };
+            reader.readAsDataURL(file);
+          }));
+        }));
+
+        Promise.all(readPromises).then(lang.hitch(this, function(results) {
+          results.forEach(lang.hitch(this, function(entry) {
+            if (entry && entry.image && this.attachedImages.length < maxImages) {
+              this.attachedImages.push(entry);
+            }
+          }));
+          this._renderAttachedImageIndicator();
+        })).catch(function(error) {
+          topic.publish('CopilotApiError', { error: error });
+        }).finally(lang.hitch(this, function() {
+          this.imageUploadInput.value = '';
+        }));
+      },
+
+      _clearAttachedImage: function() {
+        this.attachedImages = [];
+        if (this.imageUploadInput) {
+          this.imageUploadInput.value = '';
+        }
+        this._renderAttachedImageIndicator();
+      },
+
+      _renderAttachedImageIndicator: function() {
+        if (!this.imageAttachmentCounter || !this.imageAttachmentCountNode) {
+          return;
+        }
+        if (!Array.isArray(this.attachedImages) || this.attachedImages.length === 0) {
+          this.imageAttachmentCounter.style.display = 'none';
+          this.imageAttachmentCountNode.textContent = '';
+          return;
+        }
+        var count = this.attachedImages.length;
+        var label = count === 1 ? '1 image' : count + ' images';
+        var imageNames = this.attachedImages.map(function(entry) {
+          return entry && entry.attachment && entry.attachment.name ? entry.attachment.name : 'Image';
+        });
+        this.imageAttachmentCountNode.textContent = label;
+        this.imageAttachmentCounter.title = count > 0
+          ? ('Attached images (' + count + ')' +
+            (imageNames.length > 0 ? '\n' + imageNames.join('\n') : ''))
+          : 'No images attached';
+        this.imageAttachmentCounter.classList.toggle('hasImages', count > 0);
+        this.imageAttachmentCounter.style.display = count > 0 ? 'inline-flex' : 'none';
+      },
+
+      _buildUserMessageForSubmit: function(inputText, attachmentMeta) {
+        var userMessage = {
+          role: 'user',
+          content: inputText,
+          message_id: 'user_' + Date.now(),
+          timestamp: new Date().toISOString()
+        };
+        if (attachmentMeta) {
+          if (Array.isArray(attachmentMeta) && attachmentMeta.length > 0) {
+            userMessage.attachments = attachmentMeta;
+          } else if (!Array.isArray(attachmentMeta)) {
+            userMessage.attachments = [attachmentMeta];
+          }
+        }
+        return userMessage;
+      },
+
+      _getUploadedImagePayload: function() {
+        if (!Array.isArray(this.attachedImages) || this.attachedImages.length === 0) {
+          return null;
+        }
+        var maxImages = 3;
+        var normalized = this.attachedImages
+          .filter(function(entry) {
+            return entry && typeof entry.image === 'string' && entry.image.length > 0;
+          })
+          .slice(0, maxImages);
+        if (normalized.length === 0) {
+          return null;
+        }
+        return {
+          images: normalized.map(function(entry) { return entry.image; }),
+          attachments: normalized.map(function(entry) {
+            var attachment = entry.attachment || {};
+            return {
+              type: 'image',
+              source: attachment.source || 'upload',
+              name: attachment.name || 'Uploaded image'
+            };
+          })
+        };
       },
 
 
@@ -722,12 +1000,11 @@ define([
         }
 
         // Immediately show user message and clear text area
-        var userMessage = {
-          role: 'user',
-          content: inputText,
-          message_id: 'user_' + Date.now(),
-          timestamp: new Date().toISOString()
-        };
+        var userMessage = this._buildUserMessageForSubmit(inputText, {
+          type: 'image',
+          source: 'screenshot',
+          name: 'Page screenshot'
+        });
 
         this.chatStore.addMessage(userMessage);
         this.displayWidget.showMessages(this.chatStore.query());
@@ -756,7 +1033,8 @@ define([
 
           var imgtxt_model = this._resolveImageModel();
 
-          this._submitCopilotQueryWithRegistration(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, base64Image, this.enhancedPrompt, {
+          this._submitCopilotQueryWithRegistration(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt, {
+              images: [base64Image],
               selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
           })
               .then(lang.hitch(this, function(response) {
@@ -951,18 +1229,19 @@ define([
       console.log('this.ragDb=', this.ragDb);
       var inputText = this.textArea.get('value');
       var _self = this;
+      var uploadedImagePayload = this._getUploadedImagePayload();
+      var hasUploadedImage = !!(uploadedImagePayload && Array.isArray(uploadedImagePayload.images) && uploadedImagePayload.images.length > 0 && this._modelSupportsImage(this.model));
+      var submitModel = hasUploadedImage ? this._resolveImageModel() : this.model;
 
       if (this.state) {
         console.log('state', this.state);
       }
 
       // Immediately show user message and clear text area
-      var userMessage = {
-        role: 'user',
-        content: inputText,
-        message_id: 'user_' + Date.now(),
-        timestamp: new Date().toISOString()
-      };
+      var userMessage = this._buildUserMessageForSubmit(
+        inputText,
+        hasUploadedImage ? uploadedImagePayload.attachments : null
+      );
 
       this.chatStore.addMessage(userMessage);
       this.displayWidget.showMessages(this.chatStore.query());
@@ -982,6 +1261,9 @@ define([
       if (this.statePrompt) {
           systemPrompt += this.statePrompt;
       }
+      if (hasUploadedImage) {
+          systemPrompt += '\\n\\nThe user attached an image. Use it as additional context.';
+      }
 
       // Track assistant message and status message ID
       let assistantMessage = null;
@@ -994,12 +1276,15 @@ define([
         inputText: inputText,
         sessionId: this.sessionId,
         systemPrompt: systemPrompt,
-        model: this.model,
+        model: submitModel,
         save_chat: true,
         ragDb: this.ragDb,
         numDocs: this.numDocs,
         enhancedPrompt: this.enhancedPrompt
       };
+      if (hasUploadedImage) {
+        params.images = uploadedImagePayload.images;
+      }
       this._appendWorkspaceSelectionToStreamParams(params);
 
       this._submitCopilotQueryStreamWithRegistration(params,
@@ -1116,17 +1401,18 @@ define([
       console.log('[HANDLER] _handleRegularSubmitStream START');
       var inputText = this.textArea.get('value');
       var _self = this;
+      var uploadedImagePayload = this._getUploadedImagePayload();
+      var hasUploadedImage = !!(uploadedImagePayload && Array.isArray(uploadedImagePayload.images) && uploadedImagePayload.images.length > 0 && this._modelSupportsImage(this.model));
+      var submitModel = hasUploadedImage ? this._resolveImageModel() : this.model;
       if (this.state) {
         console.log('state', this.state);
       }
 
       // Immediately show user message and clear text area
-      var userMessage = {
-        role: 'user',
-        content: inputText,
-        message_id: 'user_' + Date.now(),
-        timestamp: new Date().toISOString()
-      };
+      var userMessage = this._buildUserMessageForSubmit(
+          inputText,
+          hasUploadedImage ? uploadedImagePayload.attachments : null
+      );
 
       this.chatStore.addMessage(userMessage);
       this.displayWidget.showMessages(this.chatStore.query());
@@ -1147,6 +1433,9 @@ define([
       if (this.statePrompt) {
           systemPrompt += this.statePrompt;
       }
+      if (hasUploadedImage) {
+          systemPrompt += '\\n\\nThe user attached an image. Use it as additional context.';
+      }
 
       // Track assistant message and status message ID
       let assistantMessage = null;
@@ -1159,9 +1448,12 @@ define([
           inputText: inputText,
           sessionId: this.sessionId,
           systemPrompt: systemPrompt,
-          model: this.model,
+          model: submitModel,
           save_chat: true
       };
+      if (hasUploadedImage) {
+        params.images = uploadedImagePayload.images;
+      }
       this._appendWorkspaceSelectionToStreamParams(params);
       console.log('[HANDLER] About to call submitCopilotQueryStream with params:', params);
       this._submitCopilotQueryStreamWithRegistration(params,
@@ -1299,12 +1591,11 @@ define([
       }
 
       // Immediately show user message and clear text area
-      var userMessage = {
-        role: 'user',
-        content: inputText,
-        message_id: 'user_' + Date.now(),
-        timestamp: new Date().toISOString()
-      };
+      var userMessage = this._buildUserMessageForSubmit(inputText, {
+        type: 'image',
+        source: 'screenshot',
+        name: 'Page screenshot'
+      });
 
       this.chatStore.addMessage(userMessage);
       this.displayWidget.showMessages(this.chatStore.query());
@@ -1348,7 +1639,7 @@ define([
             save_chat: true,
             ragDb: this.ragDb,
             numDocs: this.numDocs,
-            image: base64Image,
+            images: [base64Image],
             enhancedPrompt: this.enhancedPrompt
         };
         this._appendWorkspaceSelectionToStreamParams(params);
@@ -1611,6 +1902,9 @@ define([
        * @description Updates the toggle button's visual state based on pageContentEnabled
        */
     _updateToggleButtonStyle: function() {
+      if (!this.pageContentToggle || !this.pageContentToggle.domNode) {
+          return;
+      }
       var buttonNode = this.pageContentToggle.domNode;
       if (this.pageContentEnabled) {
           buttonNode.classList.remove('pageContentToggleInactive');
@@ -1619,6 +1913,10 @@ define([
           buttonNode.classList.remove('pageContentToggleActive');
           buttonNode.classList.add('pageContentToggleInactive');
       }
+    },
+
+    destroy: function() {
+      this.inherited(arguments);
     }
   });
 });
