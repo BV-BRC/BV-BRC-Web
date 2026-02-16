@@ -140,6 +140,7 @@ app.use(function (req, res, next) {
     userServiceURL: config.get('userServiceURL'),
     copilotApiURL: config.get('copilotApiURL') || false,
     copilotDbURL: config.get('copilotDbURL') || false,
+    workflow_url: config.get('workflow_url') || false,
     copilotEnablePublications: config.get('copilotEnablePublications') || false,
     copilotEnableEnhancePrompt: config.get('copilotEnableEnhancePrompt') || false,
     copilotEnableShowPromptDetails: config.get('copilotEnableShowPromptDetails') || false,
