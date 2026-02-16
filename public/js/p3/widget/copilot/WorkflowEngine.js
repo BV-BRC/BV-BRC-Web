@@ -165,6 +165,9 @@ define([
       }, container);
 
       var workflowName = workflow.workflow_name || 'Untitled Workflow';
+      var workflowDescription = workflow.workflow_description ||
+        (workflow.execution_metadata && workflow.execution_metadata.workflow_description) ||
+        '';
       if (!workflow.workflow_name) {
         console.warn('[WorkflowEngine] ⚠ workflow_name is missing, using default "Untitled Workflow"');
         console.warn('[WorkflowEngine] Available workflow properties:', Object.keys(workflow));
@@ -176,6 +179,14 @@ define([
         class: 'workflow-title',
         innerHTML: this.escapeHtml(workflowName)
       }, header);
+
+      if (workflowDescription) {
+        domConstruct.create('div', {
+          class: 'workflow-description',
+          innerHTML: this.escapeHtml(workflowDescription),
+          style: 'margin-top: 6px; color: #4b5563; font-size: 13px; line-height: 1.35;'
+        }, header);
+      }
 
       var metaContainer = domConstruct.create('div', {
         class: 'workflow-metadata'

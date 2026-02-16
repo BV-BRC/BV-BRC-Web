@@ -270,6 +270,9 @@ define([
             topic.subscribe('chatTextSizeChanged', lang.hitch(this, this._handleChatTextSizeChanged));
             topic.subscribe('setStatePrompt', lang.hitch(this, this._handleSetStatePrompt));
             topic.subscribe('CopilotSessionFileCreated', lang.hitch(this, this._handleSessionFileCreated));
+            topic.subscribe('CopilotWorkspaceBrowseOpen', lang.hitch(this, function() {
+                this._setActiveTab('workspace');
+            }));
 
             // Start path monitoring
             this._startPathMonitoring();
