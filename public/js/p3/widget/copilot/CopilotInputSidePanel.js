@@ -296,7 +296,8 @@ define([
 
             this._submitCopilotQueryWithRegistration(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, null, null, null, null, {
                 images: [base64Image],
-                selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
+                selected_workspace_items: this._getSelectedWorkspaceItemsForRequest(),
+                selected_jobs: this._getSelectedJobsForRequest()
             })
                 .then(lang.hitch(this, function(response) {
                     // Only add assistant message and system message (if present) - user message was already added
@@ -376,7 +377,8 @@ define([
         this.displayWidget.showLoadingIndicator(this.chatStore.query());
 
         this._submitCopilotQueryWithRegistration(inputText, this.sessionId, imageSystemPrompt, this.model, true, null, null, null, null, {
-            selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
+            selected_workspace_items: this._getSelectedWorkspaceItemsForRequest(),
+            selected_jobs: this._getSelectedJobsForRequest()
         }).then(lang.hitch(this, function(response) {
             // Only add assistant message and system message (if present) - user message was already added
             var messagesToAdd = [];
@@ -477,7 +479,8 @@ define([
       this._submitCopilotQueryWithRegistration(inputText, this.sessionId, systemPrompt, submitModel, true, null, null, null, null, lang.mixin({
         images: hasUploadedImage ? uploadedImagePayload.images : null
       }, {
-        selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
+        selected_workspace_items: this._getSelectedWorkspaceItemsForRequest(),
+        selected_jobs: this._getSelectedJobsForRequest()
       })).then(lang.hitch(this, function(response) {
         // Only add assistant message and system message (if present) - user message was already added
         var messagesToAdd = [];
@@ -566,7 +569,8 @@ define([
         return _self._submitCopilotQueryWithRegistration(inputText, _self.sessionId, jobSystemPrompt, submitModel, true, null, null, null, null, lang.mixin({
           images: hasUploadedImage ? uploadedImagePayload.images : null
         }, {
-          selected_workspace_items: _self._getSelectedWorkspaceItemsForRequest()
+          selected_workspace_items: _self._getSelectedWorkspaceItemsForRequest(),
+          selected_jobs: _self._getSelectedJobsForRequest()
         }));
       }).then(lang.hitch(this, function(response) {
         // Only add assistant message and system message (if present) - user message was already added

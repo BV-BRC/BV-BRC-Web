@@ -28,9 +28,10 @@ define([
   'markdown-it-link-attributes/dist/markdown-it-link-attributes.min', // Plugin to add attributes to links
   './ChatMessage', // Custom message display widget
   './data/SuggestedQuestions', // Suggested questions data module
-  './WorkspaceExplorerAdapter'
+  './WorkspaceExplorerAdapter',
+  './JobsExplorerAdapter'
 ], function (
-  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, request, markdownit, linkAttributes, ChatMessage, SuggestedQuestions, WorkspaceExplorerAdapter
+  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, request, markdownit, linkAttributes, ChatMessage, SuggestedQuestions, WorkspaceExplorerAdapter, JobsExplorerAdapter
 ) {
 
   /**
@@ -88,8 +89,13 @@ define([
     sessionWorkspaceBrowse: null,
     sessionWorkspaceSelectionItems: [],
     workspaceExplorerWidget: null,
+    sessionJobsBrowse: null,
+    sessionJobsSelectionItems: [],
+    jobsExplorerWidget: null,
     onWorkspaceSelectionChanged: null,
+    onJobsSelectionChanged: null,
     _workspaceSelectionHandles: null,
+    _jobsSelectionHandles: null,
 
     /**
      * @constructor
@@ -156,6 +162,11 @@ define([
           style: 'display:none;'
         }, this.panelContainer);
 
+        this.jobsContainer = domConstruct.create('div', {
+          class: 'copilot-jobs-container',
+          style: 'display:none;'
+        }, this.panelContainer);
+
         // Apply initial responsive padding
         this._updateResponsivePadding();
 
@@ -179,6 +190,7 @@ define([
         this._renderFilesPanel();
         this._renderWorkflowsPanel();
         this._renderWorkspacePanel();
+        this._renderJobsPanel();
 
         // Initialize markdown parser with link attributes plugin
         this.md = markdownit().use(linkAttributes, {
@@ -196,6 +208,10 @@ define([
           this.setActivePanel('workspace');
           this.setSessionWorkspaceBrowseData(data || null);
         }));
+        topic.subscribe('CopilotJobsBrowseOpen', lang.hitch(this, function(data) {
+          this.setActivePanel('jobs');
+          this.setSessionJobsBrowseData(data || null);
+        }));
         topic.subscribe('noJobDataError', lang.hitch(this, function(error) {
             error.message = 'No job data found.\n\n' + error.message;
             this.onQueryError(error);
@@ -209,6 +225,8 @@ define([
         this.activePanel = 'workflows';
       } else if (panel === 'workspace') {
         this.activePanel = 'workspace';
+      } else if (panel === 'jobs') {
+        this.activePanel = 'jobs';
       } else {
         this.activePanel = 'messages';
       }
@@ -217,11 +235,15 @@ define([
       domStyle.set(this.filesContainer, 'display', this.activePanel === 'files' ? 'block' : 'none');
       domStyle.set(this.workflowsContainer, 'display', this.activePanel === 'workflows' ? 'block' : 'none');
       domStyle.set(this.workspaceContainer, 'display', this.activePanel === 'workspace' ? 'block' : 'none');
+      domStyle.set(this.jobsContainer, 'display', this.activePanel === 'jobs' ? 'block' : 'none');
 
       // dgrid can mis-measure header/body when created while hidden.
       // Ensure workspace grid recalculates layout when tab becomes visible.
       if (this.activePanel === 'workspace' && this.workspaceExplorerWidget && typeof this.workspaceExplorerWidget.resize === 'function') {
         this.workspaceExplorerWidget.resize();
+      }
+      if (this.activePanel === 'jobs' && this.jobsExplorerWidget && typeof this.jobsExplorerWidget.resize === 'function') {
+        this.jobsExplorerWidget.resize();
       }
     },
 
@@ -641,6 +663,8 @@ define([
       this.resetSessionWorkflows();
       this.resetSessionWorkspaceBrowse();
       this.setSessionWorkspaceSelectionData([]);
+      this.resetSessionJobsBrowse();
+      this.setSessionJobsSelectionData([]);
     },
 
     /**
@@ -743,10 +767,27 @@ define([
       this._renderWorkspacePanel();
     },
 
+    resetSessionJobsBrowse: function() {
+      this.sessionJobsBrowse = null;
+      this._renderJobsPanel();
+    },
+
+    setSessionJobsBrowseData: function(jobsBrowseData) {
+      this.sessionJobsBrowse = jobsBrowseData || null;
+      this._renderJobsPanel();
+    },
+
     setSessionWorkspaceSelectionData: function(selectedItems) {
       this.sessionWorkspaceSelectionItems = Array.isArray(selectedItems) ? selectedItems.slice() : [];
       if (this.workspaceExplorerWidget && typeof this.workspaceExplorerWidget.setSelectedWorkspaceItems === 'function') {
         this.workspaceExplorerWidget.setSelectedWorkspaceItems(this.sessionWorkspaceSelectionItems);
+      }
+    },
+
+    setSessionJobsSelectionData: function(selectedItems) {
+      this.sessionJobsSelectionItems = Array.isArray(selectedItems) ? selectedItems.slice() : [];
+      if (this.jobsExplorerWidget && typeof this.jobsExplorerWidget.setSelectedJobs === 'function') {
+        this.jobsExplorerWidget.setSelectedJobs(this.sessionJobsSelectionItems);
       }
     },
 
@@ -760,6 +801,18 @@ define([
         }
       });
       this._workspaceSelectionHandles = [];
+    },
+
+    _clearJobsSelectionHandles: function() {
+      if (!this._jobsSelectionHandles) {
+        return;
+      }
+      this._jobsSelectionHandles.forEach(function(handle) {
+        if (handle && typeof handle.remove === 'function') {
+          handle.remove();
+        }
+      });
+      this._jobsSelectionHandles = [];
     },
 
     _publishWorkspaceSelectionChange: function() {
@@ -784,6 +837,34 @@ define([
       this._workspaceSelectionHandles = [
         on(this.workspaceExplorerWidget.domNode, 'select', lang.hitch(this, this._publishWorkspaceSelectionChange)),
         on(this.workspaceExplorerWidget.domNode, 'deselect', lang.hitch(this, this._publishWorkspaceSelectionChange))
+      ];
+    },
+
+    _publishJobsSelectionChange: function() {
+      if (typeof this.onJobsSelectionChanged !== 'function' || !this.jobsExplorerWidget) {
+        return;
+      }
+      if (typeof this.jobsExplorerWidget.isApplyingSelectionSync === 'function' && this.jobsExplorerWidget.isApplyingSelectionSync()) {
+        return;
+      }
+      var selectedItems = [];
+      if (typeof this.jobsExplorerWidget.getSelectedJobs === 'function') {
+        selectedItems = this.jobsExplorerWidget.getSelectedJobs();
+      }
+      this.onJobsSelectionChanged({
+        sessionId: this.sessionId,
+        items: selectedItems
+      });
+    },
+
+    _bindJobsSelectionEvents: function() {
+      this._clearJobsSelectionHandles();
+      if (!this.jobsExplorerWidget) {
+        return;
+      }
+      this._jobsSelectionHandles = [
+        on(this.jobsExplorerWidget.domNode, 'dgrid-select', lang.hitch(this, this._publishJobsSelectionChange)),
+        on(this.jobsExplorerWidget.domNode, 'dgrid-deselect', lang.hitch(this, this._publishJobsSelectionChange))
       ];
     },
 
@@ -904,6 +985,63 @@ define([
       }
       if (typeof this.workspaceExplorerWidget.resize === 'function') {
         this.workspaceExplorerWidget.resize();
+      }
+    },
+
+    _renderJobsPanel: function() {
+      if (!this.jobsContainer) return;
+      domConstruct.empty(this.jobsContainer);
+
+      if (this.jobsExplorerWidget) {
+        this._clearJobsSelectionHandles();
+        this.jobsExplorerWidget.destroyRecursive();
+        this.jobsExplorerWidget = null;
+      }
+
+      if (!this.sessionJobsBrowse || !this.sessionJobsBrowse.uiPayload) {
+        domConstruct.create('div', {
+          class: 'copilot-jobs-empty',
+          innerHTML: 'No jobs browse results yet'
+        }, this.jobsContainer);
+        return;
+      }
+
+      var payload = this.sessionJobsBrowse.uiPayload;
+      var jobs = Array.isArray(payload.jobs) ? payload.jobs : [];
+      var summaryBits = [];
+      summaryBits.push('Results: ' + jobs.length);
+      if (payload.sort_by) {
+        summaryBits.push('Sort: ' + payload.sort_by + (payload.sort_dir ? ' (' + payload.sort_dir + ')' : ''));
+      }
+      if (payload.status) {
+        summaryBits.push('Status: ' + payload.status);
+      }
+      if (payload.service) {
+        summaryBits.push('Service: ' + payload.service);
+      }
+
+      domConstruct.create('div', {
+        class: 'copilot-jobs-summary',
+        innerHTML: summaryBits.join(' | ')
+      }, this.jobsContainer);
+
+      var gridContainer = domConstruct.create('div', {
+        class: 'copilot-jobs-grid-container'
+      }, this.jobsContainer);
+
+      this.jobsExplorerWidget = new JobsExplorerAdapter({
+        region: 'center'
+      });
+
+      this.jobsExplorerWidget.setJobsData(jobs);
+      domConstruct.place(this.jobsExplorerWidget.domNode, gridContainer);
+      this.jobsExplorerWidget.startup();
+      this._bindJobsSelectionEvents();
+      if (typeof this.jobsExplorerWidget.setSelectedJobs === 'function') {
+        this.jobsExplorerWidget.setSelectedJobs(this.sessionJobsSelectionItems);
+      }
+      if (typeof this.jobsExplorerWidget.resize === 'function') {
+        this.jobsExplorerWidget.resize();
       }
     },
 

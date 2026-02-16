@@ -31,7 +31,8 @@ define([
     'dojo/dom-style',
     './CopilotStateManager',
     './SessionFilesStore',
-    './SessionWorkspaceSelectionStore'
+    './SessionWorkspaceSelectionStore',
+    './SessionJobsSelectionStore'
 ], function (
     declare,
     BorderContainer,
@@ -49,7 +50,8 @@ define([
     domStyle,
     CopilotStateManager,
     SessionFilesStore,
-    SessionWorkspaceSelectionStore
+    SessionWorkspaceSelectionStore,
+    SessionJobsSelectionStore
 ) {
     /**
      * @class ChatSessionContainer
@@ -97,8 +99,11 @@ define([
             this._sessionFilesState = SessionFilesStore.createInitialState(this.sessionId, this.sessionFilesPageSize);
             this._workspaceSelectionsBySession = {};
             this._sessionWorkspaceSelectionState = SessionWorkspaceSelectionStore.createInitialState(this.sessionId);
+            this._jobSelectionsBySession = {};
+            this._sessionJobsSelectionState = SessionJobsSelectionStore.createInitialState(this.sessionId);
             if (this.sessionId) {
                 this._workspaceSelectionsBySession[this.sessionId] = this._sessionWorkspaceSelectionState;
+                this._jobSelectionsBySession[this.sessionId] = this._sessionJobsSelectionState;
             }
         },
 
@@ -273,6 +278,9 @@ define([
             topic.subscribe('CopilotWorkspaceBrowseOpen', lang.hitch(this, function() {
                 this._setActiveTab('workspace');
             }));
+            topic.subscribe('CopilotJobsBrowseOpen', lang.hitch(this, function() {
+                this._setActiveTab('jobs');
+            }));
 
             // Start path monitoring
             this._startPathMonitoring();
@@ -436,6 +444,12 @@ define([
                 class: 'copilot-panel-tab'
             }, this.tabsContainer);
 
+            this.jobsTabButton = domConstruct.create('button', {
+                type: 'button',
+                innerHTML: 'Jobs',
+                class: 'copilot-panel-tab'
+            }, this.tabsContainer);
+
             // Set up click handlers for tabs
             on(this.messagesTabButton, 'click', lang.hitch(this, function() {
                 this._setActiveTab('messages');
@@ -452,6 +466,10 @@ define([
             on(this.workspaceTabButton, 'click', lang.hitch(this, function() {
                 this._setActiveTab('workspace');
             }));
+
+            on(this.jobsTabButton, 'click', lang.hitch(this, function() {
+                this._setActiveTab('jobs');
+            }));
         },
 
         /**
@@ -466,6 +484,7 @@ define([
             domClass.toggle(this.filesTabButton, 'copilot-panel-tab-active', panel === 'files');
             domClass.toggle(this.workflowsTabButton, 'copilot-panel-tab-active', panel === 'workflows');
             domClass.toggle(this.workspaceTabButton, 'copilot-panel-tab-active', panel === 'workspace');
+            domClass.toggle(this.jobsTabButton, 'copilot-panel-tab-active', panel === 'jobs');
 
             // Update display widget
             if (this.displayWidget && this.displayWidget.setActivePanel) {
@@ -487,7 +506,8 @@ define([
                 displayWidget: this.displayWidget,
                 sessionId: this.sessionId,
                 model: this.selectedModel,
-                selectedWorkspaceItems: this._sessionWorkspaceSelectionState.items
+                selectedWorkspaceItems: this._sessionWorkspaceSelectionState.items,
+                selectedJobs: this._sessionJobsSelectionState.items
             });
             this.addChild(this.inputWidget);
         },
@@ -505,9 +525,11 @@ define([
                 sessionId: this.sessionId,
                 onLoadMoreFiles: lang.hitch(this, this._loadMoreSessionFiles),
                 onWorkspaceSelectionChanged: lang.hitch(this, this._handleWorkspaceSelectionChanged),
+                onJobsSelectionChanged: lang.hitch(this, this._handleJobsSelectionChanged),
                 context: 'main-chat'  // Mark this as main chat context
             });
             this.displayWidget.setSessionWorkspaceSelectionData(this._sessionWorkspaceSelectionState.items);
+            this.displayWidget.setSessionJobsSelectionData(this._sessionJobsSelectionState.items);
             this.addChild(this.displayWidget);
         },
 
@@ -535,10 +557,13 @@ define([
             this._resetSessionFilesState(sessionId);
             this._fetchSessionFiles(false);
             this._resetSessionWorkspaceSelectionState(sessionId);
+            this._resetSessionJobsSelectionState(sessionId);
             this._syncWorkspaceSelectionsToWidgets();
+            this._syncJobsSelectionsToWidgets();
             // Reset workflows when changing session
             this.displayWidget.resetSessionWorkflows();
             this.displayWidget.resetSessionWorkspaceBrowse();
+            this.displayWidget.resetSessionJobsBrowse();
 
             // Removed reloadUserSessions publish: the scroll bar will react to
             // ChatSession:Selected and other dedicated events, so a full reload
@@ -707,6 +732,28 @@ define([
             }
         },
 
+        _resetSessionJobsSelectionState: function(sessionId) {
+            if (sessionId && this._jobSelectionsBySession[sessionId]) {
+                this._sessionJobsSelectionState = this._jobSelectionsBySession[sessionId];
+                this._sessionJobsSelectionState.sessionId = sessionId;
+                return;
+            }
+            this._sessionJobsSelectionState = SessionJobsSelectionStore.createInitialState(sessionId);
+            if (sessionId) {
+                this._jobSelectionsBySession[sessionId] = this._sessionJobsSelectionState;
+            }
+        },
+
+        _syncJobsSelectionsToWidgets: function() {
+            var selectedJobs = (this._sessionJobsSelectionState && this._sessionJobsSelectionState.items) || [];
+            if (this.displayWidget && this.displayWidget.setSessionJobsSelectionData) {
+                this.displayWidget.setSessionJobsSelectionData(selectedJobs);
+            }
+            if (this.inputWidget && this.inputWidget.setSelectedJobs) {
+                this.inputWidget.setSelectedJobs(selectedJobs);
+            }
+        },
+
         _handleWorkspaceSelectionChanged: function(payload) {
             var sessionId = this.sessionId;
             if (!sessionId || !this._sessionWorkspaceSelectionState) {
@@ -715,6 +762,16 @@ define([
             SessionWorkspaceSelectionStore.setItems(this._sessionWorkspaceSelectionState, payload && payload.items ? payload.items : []);
             this._workspaceSelectionsBySession[sessionId] = this._sessionWorkspaceSelectionState;
             this._syncWorkspaceSelectionsToWidgets();
+        },
+
+        _handleJobsSelectionChanged: function(payload) {
+            var sessionId = this.sessionId;
+            if (!sessionId || !this._sessionJobsSelectionState) {
+                return;
+            }
+            SessionJobsSelectionStore.setItems(this._sessionJobsSelectionState, payload && payload.items ? payload.items : []);
+            this._jobSelectionsBySession[sessionId] = this._sessionJobsSelectionState;
+            this._syncJobsSelectionsToWidgets();
         },
 
         _syncFilesToDisplay: function() {

@@ -231,6 +231,9 @@ define([
             if (extraPayload && Array.isArray(extraPayload.selected_workspace_items) && extraPayload.selected_workspace_items.length > 0) {
                 data.selected_workspace_items = extraPayload.selected_workspace_items;
             }
+            if (extraPayload && Array.isArray(extraPayload.selected_jobs) && extraPayload.selected_jobs.length > 0) {
+                data.selected_jobs = extraPayload.selected_jobs;
+            }
 
             if (Array.isArray(images) && images.length > 0) {
                 data.images = images;
@@ -300,6 +303,9 @@ define([
 
             if (Array.isArray(params.selected_workspace_items) && params.selected_workspace_items.length > 0) {
                 data.workspace_items = params.selected_workspace_items;
+            }
+            if (Array.isArray(params.selected_jobs) && params.selected_jobs.length > 0) {
+                data.selected_jobs = params.selected_jobs;
             }
 
             if (Array.isArray(params.images) && params.images.length > 0) {
@@ -432,6 +438,13 @@ define([
                                             if (processed.isWorkspaceBrowse) {
                                                 toolMetadata.isWorkspaceBrowse = processed.isWorkspaceBrowse;
                                                 toolMetadata.workspaceBrowseResult = processed.workspaceBrowseResult;
+                                                toolMetadata.chatSummary = processed.chatSummary;
+                                                toolMetadata.uiPayload = processed.uiPayload;
+                                                toolMetadata.uiAction = processed.uiAction;
+                                            }
+                                            if (processed.isJobsBrowse) {
+                                                toolMetadata.isJobsBrowse = processed.isJobsBrowse;
+                                                toolMetadata.jobsBrowseResult = processed.jobsBrowseResult;
                                                 toolMetadata.chatSummary = processed.chatSummary;
                                                 toolMetadata.uiPayload = processed.uiPayload;
                                                 toolMetadata.uiAction = processed.uiAction;
