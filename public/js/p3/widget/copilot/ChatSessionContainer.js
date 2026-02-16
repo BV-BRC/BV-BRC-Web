@@ -101,29 +101,17 @@ define([
             this.sessionFilesPageSize = 20;
             this._sessionFilesRequestToken = 0;
             this._sessionFilesState = SessionFilesStore.createInitialState(this.sessionId, this.sessionFilesPageSize);
-            this._fileSelectionsBySession = {};
             this._sessionFilesSelectionState = SessionFilesSelectionStore.createInitialState(this.sessionId);
-            this._workflowSelectionsBySession = {};
             this._sessionWorkflowsSelectionState = SessionWorkflowsSelectionStore.createInitialState(this.sessionId);
-            this._imageContextBySession = {};
             this._sessionImageContextState = {
                 sessionId: this.sessionId || null,
                 entries: [],
                 items: []
             };
-            this._workspaceSelectionsBySession = {};
             this._sessionWorkspaceSelectionState = SessionWorkspaceSelectionStore.createInitialState(this.sessionId);
-            this._jobSelectionsBySession = {};
             this._sessionJobsSelectionState = SessionJobsSelectionStore.createInitialState(this.sessionId);
             this._activeGridPanel = 'files';
             this.contextSectionOrder = ['files', 'workflows', 'workspace', 'jobs'];
-            if (this.sessionId) {
-                this._fileSelectionsBySession[this.sessionId] = this._sessionFilesSelectionState;
-                this._workflowSelectionsBySession[this.sessionId] = this._sessionWorkflowsSelectionState;
-                this._imageContextBySession[this.sessionId] = this._sessionImageContextState;
-                this._workspaceSelectionsBySession[this.sessionId] = this._sessionWorkspaceSelectionState;
-                this._jobSelectionsBySession[this.sessionId] = this._sessionJobsSelectionState;
-            }
         },
 
         /**
@@ -224,17 +212,7 @@ define([
                         this.chatStore.setData(messages);
                         this.displayWidget.showMessages(messages, scrollToBottom);
                     }
-                // Extract workflow_ids from session object (top level)
-                console.log('[DEBUG] RefreshSession - Checking res.workflow_ids:', res.workflow_ids);
-                if (res.workflow_grid && Array.isArray(res.workflow_grid.items)) {
-                    console.log('[DEBUG] RefreshSession - Setting workflows from workflow_grid:', res.workflow_grid.items);
-                    this.displayWidget.setSessionWorkflows(res.workflow_grid.items);
-                } else if (res.workflow_ids && Array.isArray(res.workflow_ids)) {
-                    console.log('[DEBUG] RefreshSession - Setting workflows from workflow_ids:', res.workflow_ids);
-                    this.displayWidget.setSessionWorkflows(res.workflow_ids);
-                } else {
-                    console.log('[DEBUG] RefreshSession - No workflow_ids found or not an array');
-                }
+                this._applySessionWorkflowContext(res);
                 }));
             }));
 
@@ -246,17 +224,7 @@ define([
                 this.chatStore.addMessages(data.messages);
                 this.displayWidget.showMessages(data.messages);
                 this.inputWidget.new_chat = false;
-                // Extract workflow_ids from session object (top level)
-                console.log('[DEBUG] ChatSession:Selected - Checking data.workflow_ids:', data.workflow_ids);
-                if (data.workflow_grid && Array.isArray(data.workflow_grid.items)) {
-                    console.log('[DEBUG] ChatSession:Selected - Setting workflows from workflow_grid:', data.workflow_grid.items);
-                    this.displayWidget.setSessionWorkflows(data.workflow_grid.items);
-                } else if (data.workflow_ids && Array.isArray(data.workflow_ids)) {
-                    console.log('[DEBUG] ChatSession:Selected - Setting workflows from workflow_ids:', data.workflow_ids);
-                    this.displayWidget.setSessionWorkflows(data.workflow_ids);
-                } else {
-                    console.log('[DEBUG] ChatSession:Selected - No workflow_ids found or not an array');
-                }
+                this._applySessionWorkflowContext(data);
             }));
 
             // Handle chat title changes
@@ -300,6 +268,7 @@ define([
             topic.subscribe('chatTextSizeChanged', lang.hitch(this, this._handleChatTextSizeChanged));
             topic.subscribe('setStatePrompt', lang.hitch(this, this._handleSetStatePrompt));
             topic.subscribe('CopilotSessionFileCreated', lang.hitch(this, this._handleSessionFileCreated));
+            topic.subscribe('CopilotSessionWorkflowCreated', lang.hitch(this, this._handleSessionWorkflowCreated));
             topic.subscribe('CopilotWorkspaceBrowseOpen', lang.hitch(this, function() {
                 this._setActiveTab('grids', 'workspace');
             }));
@@ -584,6 +553,7 @@ define([
                 model: this.selectedModel,
                 selectedWorkspaceItems: SessionWorkspaceSelectionStore.getSelectedItems(this._sessionWorkspaceSelectionState),
                 selectedJobs: SessionJobsSelectionStore.getSelectedItems(this._sessionJobsSelectionState),
+                selectedWorkflows: SessionWorkflowsSelectionStore.getSelectedItems(this._sessionWorkflowsSelectionState),
                 onImageAttachmentsChanged: lang.hitch(this, this._handleImageAttachmentsChanged)
             });
             this.addChild(this.inputWidget);
@@ -813,27 +783,11 @@ define([
         },
 
         _resetSessionWorkspaceSelectionState: function(sessionId) {
-            if (sessionId && this._workspaceSelectionsBySession[sessionId]) {
-                this._sessionWorkspaceSelectionState = this._workspaceSelectionsBySession[sessionId];
-                this._sessionWorkspaceSelectionState.sessionId = sessionId;
-                return;
-            }
             this._sessionWorkspaceSelectionState = SessionWorkspaceSelectionStore.createInitialState(sessionId);
-            if (sessionId) {
-                this._workspaceSelectionsBySession[sessionId] = this._sessionWorkspaceSelectionState;
-            }
         },
 
         _resetSessionFilesSelectionState: function(sessionId) {
-            if (sessionId && this._fileSelectionsBySession[sessionId]) {
-                this._sessionFilesSelectionState = this._fileSelectionsBySession[sessionId];
-                this._sessionFilesSelectionState.sessionId = sessionId;
-                return;
-            }
             this._sessionFilesSelectionState = SessionFilesSelectionStore.createInitialState(sessionId);
-            if (sessionId) {
-                this._fileSelectionsBySession[sessionId] = this._sessionFilesSelectionState;
-            }
         },
 
         _syncFilesSelectionsToWidgets: function() {
@@ -845,15 +799,7 @@ define([
         },
 
         _resetSessionWorkflowsSelectionState: function(sessionId) {
-            if (sessionId && this._workflowSelectionsBySession[sessionId]) {
-                this._sessionWorkflowsSelectionState = this._workflowSelectionsBySession[sessionId];
-                this._sessionWorkflowsSelectionState.sessionId = sessionId;
-                return;
-            }
             this._sessionWorkflowsSelectionState = SessionWorkflowsSelectionStore.createInitialState(sessionId);
-            if (sessionId) {
-                this._workflowSelectionsBySession[sessionId] = this._sessionWorkflowsSelectionState;
-            }
         },
 
         _syncWorkflowsSelectionsToWidgets: function() {
@@ -861,23 +807,18 @@ define([
             if (this.displayWidget && this.displayWidget.setSessionWorkflowsSelectionData) {
                 this.displayWidget.setSessionWorkflowsSelectionData(selectedItems);
             }
+            if (this.inputWidget && this.inputWidget.setSelectedWorkflows) {
+                this.inputWidget.setSelectedWorkflows(selectedItems);
+            }
             this._renderContextTabSummary();
         },
 
         _resetSessionImageContextState: function(sessionId) {
-            if (sessionId && this._imageContextBySession[sessionId]) {
-                this._sessionImageContextState = this._imageContextBySession[sessionId];
-                this._sessionImageContextState.sessionId = sessionId;
-                return;
-            }
             this._sessionImageContextState = {
                 sessionId: sessionId || null,
                 entries: [],
                 items: []
             };
-            if (sessionId) {
-                this._imageContextBySession[sessionId] = this._sessionImageContextState;
-            }
         },
 
         _syncImageContextToWidgets: function() {
@@ -900,15 +841,7 @@ define([
         },
 
         _resetSessionJobsSelectionState: function(sessionId) {
-            if (sessionId && this._jobSelectionsBySession[sessionId]) {
-                this._sessionJobsSelectionState = this._jobSelectionsBySession[sessionId];
-                this._sessionJobsSelectionState.sessionId = sessionId;
-                return;
-            }
             this._sessionJobsSelectionState = SessionJobsSelectionStore.createInitialState(sessionId);
-            if (sessionId) {
-                this._jobSelectionsBySession[sessionId] = this._sessionJobsSelectionState;
-            }
         },
 
         _syncJobsSelectionsToWidgets: function() {
@@ -959,7 +892,6 @@ define([
                 count: Array.isArray(incomingItems) ? incomingItems.length : 0
             });
             SessionWorkspaceSelectionStore.setItems(this._sessionWorkspaceSelectionState, incomingItems);
-            this._workspaceSelectionsBySession[sessionId] = this._sessionWorkspaceSelectionState;
             this._syncWorkspaceSelectionsToWidgets();
         },
 
@@ -972,7 +904,6 @@ define([
                 count: payload && payload.items ? payload.items.length : 0
             });
             SessionJobsSelectionStore.setItems(this._sessionJobsSelectionState, payload && payload.items ? payload.items : []);
-            this._jobSelectionsBySession[sessionId] = this._sessionJobsSelectionState;
             this._syncJobsSelectionsToWidgets();
         },
 
@@ -985,7 +916,6 @@ define([
                 count: payload && payload.items ? payload.items.length : 0
             });
             SessionFilesSelectionStore.setItems(this._sessionFilesSelectionState, payload && payload.items ? payload.items : []);
-            this._fileSelectionsBySession[sessionId] = this._sessionFilesSelectionState;
             this._syncFilesSelectionsToWidgets();
         },
 
@@ -998,7 +928,6 @@ define([
                 count: payload && payload.items ? payload.items.length : 0
             });
             SessionWorkflowsSelectionStore.setItems(this._sessionWorkflowsSelectionState, payload && payload.items ? payload.items : []);
-            this._workflowSelectionsBySession[sessionId] = this._sessionWorkflowsSelectionState;
             this._syncWorkflowsSelectionsToWidgets();
         },
 
@@ -1033,8 +962,21 @@ define([
             });
             this._sessionImageContextState.entries = entries;
             this._sessionImageContextState.items = items;
-            this._imageContextBySession[sessionId] = this._sessionImageContextState;
             this._syncImageContextToWidgets();
+        },
+        _applySessionWorkflowContext: function(data) {
+            var workflowItems = [];
+            if (data && data.workflow_grid && Array.isArray(data.workflow_grid.items)) {
+                workflowItems = data.workflow_grid.items;
+            } else if (data && Array.isArray(data.workflow_ids)) {
+                workflowItems = data.workflow_ids;
+            }
+
+            SessionWorkflowsSelectionStore.setItems(this._sessionWorkflowsSelectionState, workflowItems);
+            if (this.displayWidget && this.displayWidget.setSessionWorkflows) {
+                this.displayWidget.setSessionWorkflows(workflowItems);
+            }
+            this._syncWorkflowsSelectionsToWidgets();
         },
 
         _handleImageContextSelectionChanged: function(payload) {
@@ -1237,6 +1179,29 @@ define([
                 // SSE event is missing metadata, refresh from API to get complete data
                 this._fetchSessionFiles(false);
             }
+        },
+
+        _handleSessionWorkflowCreated: function(eventPayload) {
+            if (!eventPayload || eventPayload.session_id !== this.sessionId) {
+                return;
+            }
+
+            var workflowItem = eventPayload.workflow || null;
+            if (!workflowItem) {
+                return;
+            }
+
+            // Merge with current workflow context so newly submitted workflows appear immediately.
+            var currentItems = this._sessionWorkflowsSelectionState && Array.isArray(this._sessionWorkflowsSelectionState.items)
+                ? this._sessionWorkflowsSelectionState.items
+                : [];
+            var nextItems = currentItems.concat([workflowItem]);
+            SessionWorkflowsSelectionStore.setItems(this._sessionWorkflowsSelectionState, nextItems);
+
+            if (this.displayWidget && this.displayWidget.setSessionWorkflows) {
+                this.displayWidget.setSessionWorkflows(this._sessionWorkflowsSelectionState.items);
+            }
+            this._syncWorkflowsSelectionsToWidgets();
         },
 
         /**

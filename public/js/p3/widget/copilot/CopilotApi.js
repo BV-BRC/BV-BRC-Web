@@ -234,6 +234,9 @@ define([
             if (extraPayload && Array.isArray(extraPayload.selected_jobs) && extraPayload.selected_jobs.length > 0) {
                 data.selected_jobs = extraPayload.selected_jobs;
             }
+            if (extraPayload && Array.isArray(extraPayload.selected_workflows) && extraPayload.selected_workflows.length > 0) {
+                data.selected_workflows = extraPayload.selected_workflows;
+            }
 
             if (Array.isArray(images) && images.length > 0) {
                 data.images = images;
@@ -306,6 +309,9 @@ define([
             }
             if (Array.isArray(params.selected_jobs) && params.selected_jobs.length > 0) {
                 data.selected_jobs = params.selected_jobs;
+            }
+            if (Array.isArray(params.selected_workflows) && params.selected_workflows.length > 0) {
+                data.selected_workflows = params.selected_workflows;
             }
 
             if (Array.isArray(params.images) && params.images.length > 0) {
@@ -1108,6 +1114,25 @@ define([
                     delete step.step_id;    // Engine assigns this
                     delete step.status;     // Execution metadata
                     delete step.task_id;    // Execution metadata
+                    delete step.submitted_at; // Execution metadata
+                    delete step.started_at;   // Execution metadata
+                    delete step.completed_at; // Execution metadata
+                    delete step.elapsed_time; // Execution metadata
+                    delete step.error_message; // Execution metadata
+
+                    // Drop optional list params that are null/empty.
+                    // Workflow engine expects these to be omitted when unused.
+                    if (step.params && typeof step.params === 'object') {
+                        Object.keys(step.params).forEach(function(paramKey) {
+                            var value = step.params[paramKey];
+                            var looksLikeListParam = /(_libs|_ids)$/.test(paramKey);
+                            var isNullish = value === null || typeof value === 'undefined';
+                            var isEmptyArray = Array.isArray(value) && value.length === 0;
+                            if (looksLikeListParam && (isNullish || isEmptyArray)) {
+                                delete step.params[paramKey];
+                            }
+                        });
+                    }
                 });
             }
 
@@ -1164,6 +1189,36 @@ define([
 
                 console.error('[CopilotApi] Extracted error message:', errorMsg);
                 throw new Error(errorMsg);
+            });
+        },
+
+        /**
+         * Associates a submitted workflow ID with a chat session so it appears in workflow context.
+         * @param {string} sessionId The chat session ID
+         * @param {string} workflowId The submitted workflow ID
+         * @returns {Promise} A promise that resolves when workflow is associated
+         */
+        addWorkflowToSession: function(sessionId, workflowId) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            if (!sessionId || !workflowId) return Promise.reject('sessionId and workflowId are required');
+
+            var _self = this;
+            return request.post(this.apiUrlBase + '/add-workflow-to-session', {
+                data: JSON.stringify({
+                    session_id: sessionId,
+                    workflow_id: workflowId,
+                    user_id: _self.user_id
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('Error adding workflow to session:', error);
+                throw error;
             });
         },
 
