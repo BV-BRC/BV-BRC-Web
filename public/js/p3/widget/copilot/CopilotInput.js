@@ -62,6 +62,7 @@ define([
       enhancedPrompt: null,
       selectedWorkspaceItems: [],
       selectedJobs: [],
+      selectedWorkflows: [],
       attachedImages: [],
       imageUploadInput: null,
       imageActionNode: null,
@@ -143,6 +144,10 @@ define([
         if (selectedJobs.length > 0) {
           params.selected_jobs = selectedJobs;
         }
+        var selectedWorkflows = this._getSelectedWorkflowsForRequest();
+        if (selectedWorkflows.length > 0) {
+          params.selected_workflows = selectedWorkflows;
+        }
       },
 
       _applyToolMetadataToAssistantMessage: function(assistantMessage, toolMetadata) {
@@ -189,6 +194,34 @@ define([
       setSelectedJobs: function(items) {
         this.selectedJobs = Array.isArray(items) ? items.slice() : [];
         this._renderJobsSelectionIndicator();
+      },
+
+      _getSelectedWorkflowsForRequest: function() {
+        if (!Array.isArray(this.selectedWorkflows) || this.selectedWorkflows.length === 0) {
+          return [];
+        }
+        return this.selectedWorkflows.map(function(workflow) {
+          if (!workflow || workflow.selected === false) {
+            return null;
+          }
+          var workflowId = workflow.workflow_id || workflow.id;
+          if (!workflowId) {
+            return null;
+          }
+          return {
+            workflow_id: String(workflowId),
+            workflow_name: workflow.workflow_name || null,
+            status: workflow.status || null,
+            submitted_at: workflow.submitted_at || null,
+            completed_at: workflow.completed_at || null
+          };
+        }).filter(function(workflow) {
+          return workflow !== null;
+        });
+      },
+
+      setSelectedWorkflows: function(items) {
+        this.selectedWorkflows = Array.isArray(items) ? items.slice() : [];
       },
 
       _registerSessionIfNeeded: function() {
@@ -392,6 +425,7 @@ define([
             this._renderWorkspaceSelectionIndicator();
             this.selectedJobs = [];
             this._renderJobsSelectionIndicator();
+            this.selectedWorkflows = [];
         }));
 
         // Maximum height for textarea before scrolling
@@ -607,7 +641,8 @@ define([
           images: hasUploadedImage ? uploadedImagePayload.images : null
         }, {
           selected_workspace_items: this._getSelectedWorkspaceItemsForRequest(),
-          selected_jobs: this._getSelectedJobsForRequest()
+          selected_jobs: this._getSelectedJobsForRequest(),
+          selected_workflows: this._getSelectedWorkflowsForRequest()
         })).then(lang.hitch(this, function(response) {
           // Only add assistant message and system message (if present) - user message was already added
           var messagesToAdd = [];
@@ -686,7 +721,8 @@ define([
           images: hasUploadedImage ? uploadedImagePayload.images : null
         }, {
           selected_workspace_items: this._getSelectedWorkspaceItemsForRequest(),
-          selected_jobs: this._getSelectedJobsForRequest()
+          selected_jobs: this._getSelectedJobsForRequest(),
+          selected_workflows: this._getSelectedWorkflowsForRequest()
         })).then(lang.hitch(this, function(response) {
           // Only add assistant message and system message (if present) - user message was already added
           var messagesToAdd = [];
@@ -737,6 +773,7 @@ define([
         this._renderWorkspaceSelectionIndicator();
         this.selectedJobs = [];
         this._renderJobsSelectionIndicator();
+        this.selectedWorkflows = [];
       },
 
       /**
@@ -760,6 +797,7 @@ define([
         this._renderWorkspaceSelectionIndicator();
         this.selectedJobs = [];
         this._renderJobsSelectionIndicator();
+        this.selectedWorkflows = [];
       },
 
       /**
@@ -1143,7 +1181,8 @@ define([
           this._submitCopilotQueryWithRegistration(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt, {
               images: [base64Image],
               selected_workspace_items: this._getSelectedWorkspaceItemsForRequest(),
-              selected_jobs: this._getSelectedJobsForRequest()
+              selected_jobs: this._getSelectedJobsForRequest(),
+              selected_workflows: this._getSelectedWorkflowsForRequest()
           })
               .then(lang.hitch(this, function(response) {
                   // Only add assistant message and system message (if present) - user message was already added

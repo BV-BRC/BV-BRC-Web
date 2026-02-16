@@ -234,6 +234,9 @@ define([
             if (extraPayload && Array.isArray(extraPayload.selected_jobs) && extraPayload.selected_jobs.length > 0) {
                 data.selected_jobs = extraPayload.selected_jobs;
             }
+            if (extraPayload && Array.isArray(extraPayload.selected_workflows) && extraPayload.selected_workflows.length > 0) {
+                data.selected_workflows = extraPayload.selected_workflows;
+            }
 
             if (Array.isArray(images) && images.length > 0) {
                 data.images = images;
@@ -306,6 +309,9 @@ define([
             }
             if (Array.isArray(params.selected_jobs) && params.selected_jobs.length > 0) {
                 data.selected_jobs = params.selected_jobs;
+            }
+            if (Array.isArray(params.selected_workflows) && params.selected_workflows.length > 0) {
+                data.selected_workflows = params.selected_workflows;
             }
 
             if (Array.isArray(params.images) && params.images.length > 0) {
@@ -1108,6 +1114,25 @@ define([
                     delete step.step_id;    // Engine assigns this
                     delete step.status;     // Execution metadata
                     delete step.task_id;    // Execution metadata
+                    delete step.submitted_at; // Execution metadata
+                    delete step.started_at;   // Execution metadata
+                    delete step.completed_at; // Execution metadata
+                    delete step.elapsed_time; // Execution metadata
+                    delete step.error_message; // Execution metadata
+
+                    // Drop optional list params that are null/empty.
+                    // Workflow engine expects these to be omitted when unused.
+                    if (step.params && typeof step.params === 'object') {
+                        Object.keys(step.params).forEach(function(paramKey) {
+                            var value = step.params[paramKey];
+                            var looksLikeListParam = /(_libs|_ids)$/.test(paramKey);
+                            var isNullish = value === null || typeof value === 'undefined';
+                            var isEmptyArray = Array.isArray(value) && value.length === 0;
+                            if (looksLikeListParam && (isNullish || isEmptyArray)) {
+                                delete step.params[paramKey];
+                            }
+                        });
+                    }
                 });
             }
 

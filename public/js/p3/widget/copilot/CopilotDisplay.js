@@ -1305,8 +1305,8 @@ define([
             style: 'word-break: break-word;'
           }, itemInfoNode);
 
-          if (category === 'files') {
-            // Files remain in context view; checkbox only controls inclusion.
+          if (category === 'files' || category === 'workflows') {
+            // Files and workflows remain in context view; checkbox only controls inclusion.
             domConstruct.create('div', {
               class: 'copilot-context-remove-placeholder',
               style: 'width:24px; height:24px;'

@@ -19,6 +19,11 @@
         if (!item) {
             return null;
         }
+        if (typeof item === 'string' || typeof item === 'number') {
+            item = {
+                workflow_id: String(item)
+            };
+        }
         var id = item.id || item.workflow_id;
         if (!id) {
             return null;

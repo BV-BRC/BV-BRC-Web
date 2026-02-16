@@ -958,7 +958,16 @@ define([
 
     stringifyEditableValue: function(value, type) {
       if (value === null || typeof value === 'undefined') return '';
-      if (Array.isArray(value)) return value.join('\n');
+      if (Array.isArray(value)) {
+        if (value.length === 0) return '';
+        var hasComplexItems = value.some(function(item) {
+          return typeof item === 'object' && item !== null;
+        });
+        if (hasComplexItems) {
+          return JSON.stringify(value, null, 2);
+        }
+        return value.join('\n');
+      }
       if (typeof value === 'object') return JSON.stringify(value, null, 2);
       if (type === 'checkbox') return this.toBoolean(value) ? 'true' : 'false';
       return String(value);
@@ -984,6 +993,18 @@ define([
         return isNaN(parsedNumber) ? raw : parsedNumber;
       }
       if (Array.isArray(originalValue)) {
+        if (raw.trim() === '') {
+          return [];
+        }
+        // Allow editing complex arrays (e.g. paired_end_libs) as JSON.
+        try {
+          var parsedArray = JSON.parse(raw);
+          if (Array.isArray(parsedArray)) {
+            return parsedArray;
+          }
+        } catch (err) {
+          // Fall back to simple newline/comma parsing for string arrays.
+        }
         return raw
           .split(/\n|,/)
           .map(function(item) { return item.trim(); })
@@ -1179,10 +1200,27 @@ define([
      */
     _showSubmissionSuccess: function(message) {
       var statusContainer = this._getOrCreateStatusContainer();
-      statusContainer.innerHTML = '<div class="workflow-submission-success">' +
-        '<span class="status-icon">✓</span> ' +
-        message +
-        '</div>';
+      statusContainer.innerHTML = '';
+      var successNode = domConstruct.create('div', {
+        class: 'workflow-submission-success',
+        style: 'position: relative; padding-right: 32px;'
+      }, statusContainer);
+      domConstruct.create('span', {
+        class: 'status-icon',
+        innerHTML: '✓'
+      }, successNode);
+      domConstruct.create('span', {
+        innerHTML: ' ' + message
+      }, successNode);
+      var closeButton = domConstruct.create('button', {
+        type: 'button',
+        innerHTML: '&times;',
+        title: 'Close',
+        style: 'position: absolute; top: 6px; right: 8px; border: 0; background: transparent; color: inherit; font-size: 18px; line-height: 1; cursor: pointer; padding: 0;'
+      }, successNode);
+      on(closeButton, 'click', function() {
+        domStyle.set(statusContainer, 'display', 'none');
+      });
       domStyle.set(statusContainer, 'display', 'block');
 
       // Auto-hide after 10 seconds
@@ -1197,10 +1235,27 @@ define([
      */
     _showSubmissionError: function(message) {
       var statusContainer = this._getOrCreateStatusContainer();
-      statusContainer.innerHTML = '<div class="workflow-submission-error">' +
-        '<span class="status-icon">✗</span> ' +
-        this.escapeHtml(message) +
-        '</div>';
+      statusContainer.innerHTML = '';
+      var errorNode = domConstruct.create('div', {
+        class: 'workflow-submission-error',
+        style: 'position: relative; padding-right: 32px;'
+      }, statusContainer);
+      domConstruct.create('span', {
+        class: 'status-icon',
+        innerHTML: '✗'
+      }, errorNode);
+      domConstruct.create('span', {
+        innerHTML: ' ' + this.escapeHtml(message)
+      }, errorNode);
+      var closeButton = domConstruct.create('button', {
+        type: 'button',
+        innerHTML: '&times;',
+        title: 'Close',
+        style: 'position: absolute; top: 6px; right: 8px; border: 0; background: transparent; color: inherit; font-size: 18px; line-height: 1; cursor: pointer; padding: 0;'
+      }, errorNode);
+      on(closeButton, 'click', function() {
+        domStyle.set(statusContainer, 'display', 'none');
+      });
       domStyle.set(statusContainer, 'display', 'block');
 
       // Auto-hide after 10 seconds

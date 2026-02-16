@@ -117,7 +117,8 @@ define([
                             topic.publish('ChatSession:Selected', {
                                 sessionId: _self.session.session_id,
                                 messages: messages,
-                                workflow_ids: res.workflow_ids || _self.session.workflow_ids || null
+                                workflow_ids: res.workflow_ids || _self.session.workflow_ids || null,
+                                workflow_grid: res.workflow_grid || null
                             });
                             topic.publish('ChatSessionTitleUpdated', _self.session.title);
                         }).catch(function(error) {
