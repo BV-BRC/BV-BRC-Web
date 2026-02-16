@@ -1928,6 +1928,16 @@
   outline-offset: 2px;
 }
 
+.workflow-step-has-errors {
+  border-color: #dc2626;
+  box-shadow: 0 2px 10px rgba(220, 38, 38, 0.12);
+}
+
+.workflow-step-has-warnings {
+  border-color: #d97706;
+  box-shadow: 0 2px 10px rgba(217, 119, 6, 0.10);
+}
+
 .workflow-step-number {
   position: absolute;
   top: 12px;
@@ -1997,6 +2007,19 @@
 .workflow-step-status-pending {
   background-color: #fef3c7;
   color: #92400e;
+}
+
+.workflow-step-errors {
+  padding: 6px 10px;
+  border-radius: 6px;
+  background-color: #fee2e2;
+  color: #991b1b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.workflow-step-errors-hidden {
+  display: none;
 }
 
 /* Dependencies */
@@ -2138,6 +2161,38 @@
 
 .workflow-detail-section {
   margin-bottom: 24px;
+}
+
+.workflow-detail-validation-section {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fafafa;
+}
+
+.workflow-validation-summary {
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.workflow-validation-list {
+  margin: 0 0 8px 18px;
+  padding: 0;
+  line-height: 1.35;
+}
+
+.workflow-validation-list li {
+  margin: 4px 0;
+  font-size: 12px;
+}
+
+.workflow-validation-list-errors li {
+  color: #991b1b;
+}
+
+.workflow-validation-list-warnings li {
+  color: #92400e;
 }
 
 .workflow-detail-section:last-child {

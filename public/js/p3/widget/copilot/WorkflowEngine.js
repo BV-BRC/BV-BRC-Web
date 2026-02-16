@@ -10,10 +10,12 @@ define([
   'dojo/dom-class',
   'dojo/on',
   'dojo/topic',
+  'dojo/promise/all',
   'dijit/_WidgetBase',
   'dijit/_TemplatedMixin',
   'dijit/form/Button',
-  './workflowForms/ServiceFormRegistry'
+  './workflowForms/ServiceFormRegistry',
+  '../../WorkspaceManager'
 ], function(
   declare,
   lang,
@@ -22,10 +24,12 @@ define([
   domClass,
   on,
   topic,
+  all,
   _WidgetBase,
   _TemplatedMixin,
   Button,
-  ServiceFormRegistry
+  ServiceFormRegistry,
+  WorkspaceManager
 ) {
   /**
    * @class WorkflowEngine
@@ -51,6 +55,18 @@ define([
     /** @property {Object} Tracks first and current form states per step */
     stepFormStateByIndex: null,
 
+    /** @property {Object} Tracks latest validation result per step */
+    stepValidationByIndex: null,
+
+    /** @property {Object} Tracks step card nodes for status updates */
+    stepCardNodesByIndex: null,
+
+    /** @property {Object} Debounce timers for per-step validation */
+    stepValidationTimers: null,
+
+    /** @property {dijit/form/Button|null} Reference to submit button */
+    submitWorkflowButton: null,
+
     /** @property {Object} Reference to CopilotAPI for workflow submission */
     copilotApi: null,
 
@@ -64,6 +80,10 @@ define([
       console.log('[WorkflowEngine] postCreate() called');
       console.log('[WorkflowEngine] Initial workflowData:', this.workflowData);
       this.stepFormStateByIndex = {};
+      this.stepValidationByIndex = {};
+      this.stepCardNodesByIndex = {};
+      this.stepValidationTimers = {};
+      this.submitWorkflowButton = null;
       this.inherited(arguments);
       this.render();
     },
@@ -122,6 +142,7 @@ define([
 
       // Create visual workflow display
       this.renderWorkflowView(data);
+      this.validateAllSteps({ updateUI: true });
     },
 
     /**
@@ -266,14 +287,15 @@ define([
           style: 'margin-top: 15px; text-align: left;'
         }, header);
 
-        var submitButton = new Button({
+        this.submitWorkflowButton = new Button({
           label: 'Submit',
           type: 'submit',
           onClick: lang.hitch(this, function() {
-            this.submitWorkflowForExecution(workflow);
+            this.validateWorkflowBeforeSubmit(workflow);
           })
         });
-        submitButton.placeAt(buttonContainer);
+        this.submitWorkflowButton.placeAt(buttonContainer);
+        this.submitWorkflowButton.set('disabled', true);
       }
     },
 
@@ -350,6 +372,11 @@ define([
         innerHTML: this.escapeHtml(step.app)
       }, stepCard);
 
+      var errorSummaryNode = domConstruct.create('div', {
+        class: 'workflow-step-errors workflow-step-errors-hidden',
+        innerHTML: '0 Error(s)'
+      }, stepCard);
+
       // Status (if available from execution metadata)
       if (step.status) {
         domConstruct.create('div', {
@@ -380,6 +407,11 @@ define([
           }, depsList);
         }));
       }
+
+      this.stepCardNodesByIndex[index] = {
+        card: stepCard,
+        errorSummaryNode: errorSummaryNode
+      };
     },
 
     /**
@@ -567,6 +599,7 @@ define([
 
       // Populate content
       this.populateDetailContent(step, index);
+      this.validateStep(index, { updateUI: true });
 
       // Show panel
       if (this.detailPanel) {
@@ -639,6 +672,8 @@ define([
           innerHTML: '<strong>Status:</strong> ' + this.escapeHtml(step.status)
         }, metaSection);
       }
+
+      this.renderStepValidationDetails(content, step, index);
 
       // Dependencies
       if (step.depends_on && step.depends_on.length > 0) {
@@ -1028,6 +1063,7 @@ define([
         state = this.getStepFormState(this.selectedStep || { params: {} }, stepIndex);
       }
       state.current[key] = value;
+      this.scheduleStepValidation(stepIndex);
     },
 
     applyStepEdits: function(step, stepIndex, editableParams) {
@@ -1038,6 +1074,7 @@ define([
         current: this.cloneValue(updated)
       };
       this.workflowData = this.getParsedWorkflowData();
+      this.validateStep(stepIndex, { updateUI: true });
     },
 
     resetStepEdits: function(step, stepIndex) {
@@ -1049,6 +1086,496 @@ define([
         current: this.cloneValue(original)
       };
       this.showStepDetails(step, stepIndex);
+      this.validateStep(stepIndex, { updateUI: true });
+    },
+
+    isWorkflowSubmitted: function(workflow) {
+      var wf = workflow || this.getParsedWorkflowData();
+      return !!(wf && wf.execution_metadata && wf.execution_metadata.is_submitted);
+    },
+
+    emptyValidationResult: function() {
+      return {
+        valid: true,
+        errors: [],
+        warnings: [],
+        checked_output_target: null
+      };
+    },
+
+    addValidationError: function(result, code, message, field) {
+      result.errors.push({
+        code: code || 'validation_error',
+        message: message || 'Validation error',
+        field: field || ''
+      });
+      result.valid = false;
+    },
+
+    addValidationWarning: function(result, code, message, field) {
+      result.warnings.push({
+        code: code || 'validation_warning',
+        message: message || 'Validation warning',
+        field: field || ''
+      });
+    },
+
+    isEmptyValue: function(value) {
+      if (value === null || typeof value === 'undefined') return true;
+      if (typeof value === 'string') return value.trim() === '';
+      if (Array.isArray(value)) return value.length === 0;
+      return false;
+    },
+
+    toArrayValue: function(value) {
+      if (Array.isArray(value)) return value;
+      if (this.isEmptyValue(value)) return [];
+      return [value];
+    },
+
+    parseRequiredFields: function(serviceMeta) {
+      var required = {};
+      if (!serviceMeta || !Array.isArray(serviceMeta.fields)) return required;
+      serviceMeta.fields.forEach(function(field) {
+        var help = field && field.help ? String(field.help).toLowerCase() : '';
+        if (help.indexOf('(required') !== -1) {
+          required[field.name] = true;
+        }
+      });
+      return required;
+    },
+
+    getStepValidationParams: function(step, index) {
+      var state = this.stepFormStateByIndex[index];
+      if (state && state.current) {
+        return state.current;
+      }
+      return step && step.params ? step.params : {};
+    },
+
+    scheduleStepValidation: function(stepIndex) {
+      if (this.stepValidationTimers[stepIndex]) {
+        clearTimeout(this.stepValidationTimers[stepIndex]);
+      }
+      this.stepValidationTimers[stepIndex] = setTimeout(lang.hitch(this, function() {
+        delete this.stepValidationTimers[stepIndex];
+        this.validateStep(stepIndex, { updateUI: true });
+      }), 350);
+    },
+
+    buildOutputTargetPath: function(outputPath, outputFile) {
+      var pathPart = String(outputPath || '').trim();
+      var filePart = String(outputFile || '').trim();
+      if (!pathPart || !filePart) return '';
+      if (pathPart.slice(-1) === '/') {
+        return pathPart + filePart;
+      }
+      return pathPart + '/' + filePart;
+    },
+
+    collectUnresolvedVariableWarnings: function(result, params, skipWarnings) {
+      if (skipWarnings) return;
+      var seen = {};
+
+      function walk(value, path, self) {
+        if (typeof value === 'string') {
+          var matches = value.match(/\$\{[^}]+\}/g) || [];
+          matches.forEach(function(match) {
+            var expr = match.slice(2, -1).trim();
+            var key = expr + '::' + path;
+            if (!seen[key]) {
+              seen[key] = true;
+              self.addValidationWarning(
+                result,
+                'unresolved_variable',
+                'Unresolved variable reference: ${' + expr + '}',
+                path
+              );
+            }
+          });
+          return;
+        }
+        if (Array.isArray(value)) {
+          value.forEach(function(item, idx) {
+            walk(item, path + '[' + idx + ']', self);
+          });
+          return;
+        }
+        if (value && typeof value === 'object') {
+          Object.keys(value).forEach(function(key) {
+            walk(value[key], path ? (path + '.' + key) : key, self);
+          });
+        }
+      }
+
+      walk(params, '', this);
+    },
+
+    validateLibraryObjects: function(result, fieldName, entries, requireSampleId) {
+      var list = this.toArrayValue(entries);
+      for (var i = 0; i < list.length; i++) {
+        var entry = list[i];
+        if (!entry || typeof entry !== 'object') {
+          this.addValidationError(result, 'invalid_library_entry', fieldName + '[' + i + '] must be an object', fieldName);
+          continue;
+        }
+        if (fieldName === 'paired_end_libs') {
+          if (this.isEmptyValue(entry.read1)) {
+            this.addValidationError(result, 'missing_read1', 'Missing read1 in paired_end_libs[' + i + ']', fieldName);
+          }
+          if (this.isEmptyValue(entry.read2)) {
+            this.addValidationError(result, 'missing_read2', 'Missing read2 in paired_end_libs[' + i + ']', fieldName);
+          }
+          if (!this.isEmptyValue(entry.read1) && !this.isEmptyValue(entry.read2) && String(entry.read1) === String(entry.read2)) {
+            this.addValidationError(result, 'duplicate_pair_reads', 'read1 and read2 cannot be the same in paired_end_libs[' + i + ']', fieldName);
+          }
+        } else if (fieldName === 'single_end_libs') {
+          if (this.isEmptyValue(entry.read)) {
+            this.addValidationError(result, 'missing_read', 'Missing read in single_end_libs[' + i + ']', fieldName);
+          }
+        }
+        if (requireSampleId && this.isEmptyValue(entry.sample_id)) {
+          this.addValidationError(result, 'missing_sample_id', 'Missing sample_id in ' + fieldName + '[' + i + ']', fieldName);
+        }
+      }
+    },
+
+    runGenericValidation: function(step, index, params, workflow, serviceMeta, result) {
+      var requiredFields = this.parseRequiredFields(serviceMeta);
+      Object.keys(requiredFields).forEach(lang.hitch(this, function(fieldName) {
+        if (this.isEmptyValue(params[fieldName])) {
+          this.addValidationError(result, 'required_field', 'Missing required field: ' + fieldName, fieldName);
+        }
+      }));
+
+      if (serviceMeta && Array.isArray(serviceMeta.fields)) {
+        serviceMeta.fields.forEach(lang.hitch(this, function(fieldDef) {
+          if (!fieldDef || !fieldDef.name) return;
+          var fieldName = fieldDef.name;
+          var value = params[fieldName];
+          if (this.isEmptyValue(value)) return;
+          if (fieldDef.type === 'number' && isNaN(Number(value))) {
+            this.addValidationError(result, 'invalid_number', fieldName + ' must be numeric', fieldName);
+          }
+          if (fieldDef.type === 'checkbox') {
+            var validBool = typeof value === 'boolean' ||
+              value === 'true' || value === 'false' ||
+              value === 1 || value === 0 ||
+              value === '1' || value === '0';
+            if (!validBool) {
+              this.addValidationError(result, 'invalid_boolean', fieldName + ' must be boolean', fieldName);
+            }
+          }
+        }));
+      }
+
+      this.validateLibraryObjects(result, 'paired_end_libs', params.paired_end_libs, false);
+      this.validateLibraryObjects(result, 'single_end_libs', params.single_end_libs, false);
+    },
+
+    runTaxonomicClassificationStrictValidation: function(step, index, params, workflow, result) {
+      var hasPaired = this.toArrayValue(params.paired_end_libs).length > 0;
+      var hasSingle = this.toArrayValue(params.single_end_libs).length > 0;
+      var hasSrr = this.toArrayValue(params.srr_libs).length > 0;
+      if (!hasPaired && !hasSingle && !hasSrr) {
+        this.addValidationError(result, 'missing_inputs', 'At least one input library is required (paired_end_libs, single_end_libs, or srr_libs)', 'input');
+      }
+
+      this.validateLibraryObjects(result, 'paired_end_libs', params.paired_end_libs, true);
+      this.validateLibraryObjects(result, 'single_end_libs', params.single_end_libs, true);
+
+      var invalidSampleChars = /[-:@"';\[\]{}|`]/;
+      this.toArrayValue(params.paired_end_libs).forEach(lang.hitch(this, function(entry, idx) {
+        if (entry && typeof entry === 'object' && !this.isEmptyValue(entry.sample_id) && invalidSampleChars.test(String(entry.sample_id))) {
+          this.addValidationError(result, 'invalid_sample_id_chars', 'Invalid characters in paired_end_libs[' + idx + '].sample_id', 'paired_end_libs');
+        }
+      }));
+      this.toArrayValue(params.single_end_libs).forEach(lang.hitch(this, function(entry, idx) {
+        if (entry && typeof entry === 'object' && !this.isEmptyValue(entry.sample_id) && invalidSampleChars.test(String(entry.sample_id))) {
+          this.addValidationError(result, 'invalid_sample_id_chars', 'Invalid characters in single_end_libs[' + idx + '].sample_id', 'single_end_libs');
+        }
+      }));
+      this.toArrayValue(params.srr_libs).forEach(lang.hitch(this, function(entry, idx) {
+        if (!entry || typeof entry !== 'object') {
+          this.addValidationError(result, 'invalid_srr_entry', 'srr_libs[' + idx + '] must be an object', 'srr_libs');
+          return;
+        }
+        if (this.isEmptyValue(entry.srr_accession)) {
+          this.addValidationError(result, 'missing_srr_accession', 'Missing srr_accession in srr_libs[' + idx + ']', 'srr_libs');
+        }
+        if (this.isEmptyValue(entry.sample_id)) {
+          this.addValidationError(result, 'missing_sample_id', 'Missing sample_id in srr_libs[' + idx + ']', 'srr_libs');
+        } else if (invalidSampleChars.test(String(entry.sample_id))) {
+          this.addValidationError(result, 'invalid_sample_id_chars', 'Invalid characters in srr_libs[' + idx + '].sample_id', 'srr_libs');
+        }
+      }));
+    },
+
+    runComprehensiveGenomeAnalysisStrictValidation: function(step, index, params, workflow, result) {
+      var inputType = params.input_type;
+      if (this.isEmptyValue(inputType)) {
+        this.addValidationError(result, 'missing_input_type', 'Missing required field: input_type', 'input_type');
+      }
+
+      if (this.isEmptyValue(params.scientific_name)) {
+        this.addValidationError(result, 'missing_scientific_name', 'Missing required field: scientific_name', 'scientific_name');
+      }
+      if (this.isEmptyValue(params.taxonomy_id)) {
+        this.addValidationError(result, 'missing_taxonomy_id', 'Missing required field: taxonomy_id', 'taxonomy_id');
+      }
+      if (this.isEmptyValue(params.domain)) {
+        this.addValidationError(result, 'missing_domain', 'Missing required field: domain', 'domain');
+      }
+
+      if (inputType === 'reads') {
+        var hasPaired = this.toArrayValue(params.paired_end_libs).length > 0;
+        var hasSingle = this.toArrayValue(params.single_end_libs).length > 0;
+        var hasSrr = this.toArrayValue(params.srr_ids).length > 0;
+        if (!hasPaired && !hasSingle && !hasSrr) {
+          this.addValidationError(result, 'missing_reads_input', 'input_type=reads requires paired_end_libs, single_end_libs, or srr_ids', 'input_type');
+        }
+      } else if (inputType === 'contigs') {
+        if (this.isEmptyValue(params.contigs)) {
+          this.addValidationError(result, 'missing_contigs', 'input_type=contigs requires contigs', 'contigs');
+        }
+      } else if (!this.isEmptyValue(inputType)) {
+        this.addValidationError(result, 'invalid_input_type', 'input_type must be reads or contigs', 'input_type');
+      }
+
+      this.validateLibraryObjects(result, 'paired_end_libs', params.paired_end_libs, false);
+      this.validateLibraryObjects(result, 'single_end_libs', params.single_end_libs, false);
+
+      if (String(params.recipe || '').toLowerCase() === 'canu' && this.isEmptyValue(params.genome_size)) {
+        this.addValidationError(result, 'missing_genome_size', 'recipe=canu requires genome_size', 'genome_size');
+      }
+    },
+
+    validateOutputTarget: function(params, result, suppressWarnings) {
+      var outputPath = params.output_path;
+      var outputFile = params.output_file;
+      if (this.isEmptyValue(outputPath) || this.isEmptyValue(outputFile)) {
+        return Promise.resolve();
+      }
+
+      var outputFileString = String(outputFile).trim();
+      if (/[()/:\\]/.test(outputFileString)) {
+        this.addValidationError(result, 'invalid_output_file_name', 'output_file contains invalid characters ( ) / : \\', 'output_file');
+        return Promise.resolve();
+      }
+
+      var pathString = String(outputPath).trim();
+      var unresolvedPath = pathString.match(/\$\{[^}]+\}/g) || [];
+      var unresolvedFile = outputFileString.match(/\$\{[^}]+\}/g) || [];
+      if (unresolvedPath.length > 0 || unresolvedFile.length > 0) {
+        if (!suppressWarnings) {
+          unresolvedPath.concat(unresolvedFile).forEach(lang.hitch(this, function(token) {
+            this.addValidationWarning(result, 'unresolved_output_target', 'Unable to resolve output target reference: ' + token, 'output');
+          }));
+        }
+        return Promise.resolve();
+      }
+
+      var fullPath = this.buildOutputTargetPath(pathString, outputFileString);
+      if (!fullPath) {
+        return Promise.resolve();
+      }
+      result.checked_output_target = fullPath;
+
+      if (!WorkspaceManager || typeof WorkspaceManager.objectsExist !== 'function') {
+        this.addValidationError(result, 'workspace_check_unavailable', 'Unable to verify output target in workspace', 'output');
+        return Promise.resolve();
+      }
+
+      return Promise.resolve(WorkspaceManager.objectsExist(fullPath))
+        .then(lang.hitch(this, function(existsMap) {
+          var state = existsMap && existsMap[fullPath] ? existsMap[fullPath] : null;
+          if (state && state.exists) {
+            this.addValidationError(result, 'output_exists', 'Output target already exists: ' + fullPath, 'output');
+          } else if (state && state.error) {
+            this.addValidationError(result, 'output_check_error', 'Unable to verify output target: ' + state.error, 'output');
+          }
+        }))
+        .catch(lang.hitch(this, function(err) {
+          this.addValidationError(
+            result,
+            'output_check_failed',
+            'Unable to verify output target existence' + (err && err.message ? (': ' + err.message) : ''),
+            'output'
+          );
+        }));
+    },
+
+    validateStep: function(stepIndex, options) {
+      var opts = options || {};
+      var workflow = this.getParsedWorkflowData();
+      var step = workflow && workflow.steps ? workflow.steps[stepIndex] : null;
+      if (!step) {
+        return Promise.resolve(this.emptyValidationResult());
+      }
+
+      var result = this.emptyValidationResult();
+      var params = this.getStepValidationParams(step, stepIndex) || {};
+      var serviceMeta = ServiceFormRegistry.getDefinition(step.app || '');
+      var serviceKey = serviceMeta && serviceMeta.serviceKey ? serviceMeta.serviceKey : '';
+      var skipVariableWarnings = this.isWorkflowSubmitted(workflow);
+
+      this.runGenericValidation(step, stepIndex, params, workflow, serviceMeta, result);
+
+      if (serviceKey === 'taxonomic_classification') {
+        this.runTaxonomicClassificationStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'comprehensive_genome_analysis') {
+        this.runComprehensiveGenomeAnalysisStrictValidation(step, stepIndex, params, workflow, result);
+      }
+
+      this.collectUnresolvedVariableWarnings(result, params, skipVariableWarnings);
+
+      return this.validateOutputTarget(params, result, skipVariableWarnings).then(lang.hitch(this, function() {
+        if (skipVariableWarnings) {
+          result.warnings = [];
+        }
+        result.valid = result.errors.length === 0;
+        this.stepValidationByIndex[stepIndex] = result;
+        if (opts.updateUI !== false) {
+          this.updateStepValidationUI(stepIndex);
+        }
+        return result;
+      }));
+    },
+
+    validateAllSteps: function(options) {
+      var workflow = this.getParsedWorkflowData();
+      var steps = workflow && Array.isArray(workflow.steps) ? workflow.steps : [];
+      if (steps.length === 0) {
+        this.updateSubmitButtonValidationState();
+        return Promise.resolve({ allValid: true, firstInvalidIndex: -1 });
+      }
+
+      var promises = [];
+      for (var i = 0; i < steps.length; i++) {
+        promises.push(this.validateStep(i, options || { updateUI: true }));
+      }
+
+      return all(promises).then(lang.hitch(this, function(results) {
+        var firstInvalidIndex = -1;
+        var allValid = true;
+        for (var i = 0; i < results.length; i++) {
+          if (!results[i] || results[i].errors.length > 0) {
+            allValid = false;
+            if (firstInvalidIndex === -1) {
+              firstInvalidIndex = i;
+            }
+          }
+        }
+        this.updateSubmitButtonValidationState();
+        return {
+          allValid: allValid,
+          firstInvalidIndex: firstInvalidIndex
+        };
+      }));
+    },
+
+    validateWorkflowBeforeSubmit: function(workflow) {
+      this.validateAllSteps({ updateUI: true }).then(lang.hitch(this, function(summary) {
+        if (!summary.allValid) {
+          this._showSubmissionError('Cannot submit workflow: one or more steps failed validation.');
+          if (summary.firstInvalidIndex >= 0) {
+            var parsedWorkflow = this.getParsedWorkflowData();
+            var firstStep = parsedWorkflow.steps[summary.firstInvalidIndex];
+            if (firstStep) {
+              this.showStepDetails(firstStep, summary.firstInvalidIndex);
+            }
+          }
+          return;
+        }
+        this.submitWorkflowForExecution(workflow);
+      }));
+    },
+
+    updateStepValidationUI: function(stepIndex) {
+      var cardData = this.stepCardNodesByIndex[stepIndex];
+      var validation = this.stepValidationByIndex[stepIndex] || this.emptyValidationResult();
+      if (cardData && cardData.card) {
+        domClass.toggle(cardData.card, 'workflow-step-has-errors', validation.errors.length > 0);
+        domClass.toggle(cardData.card, 'workflow-step-has-warnings', validation.errors.length === 0 && validation.warnings.length > 0);
+      }
+      if (cardData && cardData.errorSummaryNode) {
+        if (validation.errors.length > 0) {
+          cardData.errorSummaryNode.innerHTML = validation.errors.length + ' Error(s)';
+          domClass.remove(cardData.errorSummaryNode, 'workflow-step-errors-hidden');
+        } else {
+          cardData.errorSummaryNode.innerHTML = '0 Error(s)';
+          domClass.add(cardData.errorSummaryNode, 'workflow-step-errors-hidden');
+        }
+      }
+      if (this.selectedStepIndex === stepIndex && this.selectedStep) {
+        this.populateDetailContent(this.selectedStep, stepIndex);
+      }
+      this.updateSubmitButtonValidationState();
+    },
+
+    updateSubmitButtonValidationState: function() {
+      if (!this.submitWorkflowButton) return;
+      var workflow = this.getParsedWorkflowData();
+      var steps = workflow && Array.isArray(workflow.steps) ? workflow.steps : [];
+      if (steps.length === 0) {
+        this.submitWorkflowButton.set('disabled', true);
+        return;
+      }
+      var anyMissing = false;
+      var hasErrors = false;
+      for (var i = 0; i < steps.length; i++) {
+        var validation = this.stepValidationByIndex[i];
+        if (!validation) {
+          anyMissing = true;
+          continue;
+        }
+        if (validation.errors && validation.errors.length > 0) {
+          hasErrors = true;
+        }
+      }
+      this.submitWorkflowButton.set('disabled', anyMissing || hasErrors);
+    },
+
+    renderStepValidationDetails: function(contentNode, step, index) {
+      var validation = this.stepValidationByIndex[index];
+      if (!validation) {
+        return;
+      }
+      var section = domConstruct.create('div', {
+        class: 'workflow-detail-section workflow-detail-validation-section'
+      }, contentNode);
+
+      domConstruct.create('h4', {
+        class: 'workflow-detail-section-title',
+        innerHTML: 'Validation'
+      }, section);
+
+      domConstruct.create('div', {
+        class: 'workflow-validation-summary',
+        innerHTML: '<strong>' + validation.errors.length + ' error(s)</strong>, ' + validation.warnings.length + ' warning(s)'
+      }, section);
+
+      if (validation.errors.length > 0) {
+        var errorList = domConstruct.create('ul', {
+          class: 'workflow-validation-list workflow-validation-list-errors'
+        }, section);
+        validation.errors.forEach(lang.hitch(this, function(issue) {
+          domConstruct.create('li', {
+            innerHTML: this.escapeHtml(issue.message + (issue.field ? (' [' + issue.field + ']') : ''))
+          }, errorList);
+        }));
+      }
+
+      if (validation.warnings.length > 0) {
+        var warningList = domConstruct.create('ul', {
+          class: 'workflow-validation-list workflow-validation-list-warnings'
+        }, section);
+        validation.warnings.forEach(lang.hitch(this, function(issue) {
+          domConstruct.create('li', {
+            innerHTML: this.escapeHtml(issue.message + (issue.field ? (' [' + issue.field + ']') : ''))
+          }, warningList);
+        }));
+      }
     },
 
     /**
@@ -1080,6 +1607,8 @@ define([
      * @returns {string} Escaped text
      */
     escapeHtml: function(text) {
+      if (text === null || typeof text === 'undefined') return '';
+      text = String(text);
       var map = {
         '&': '&amp;',
         '<': '&lt;',
@@ -1100,6 +1629,10 @@ define([
       console.log('[WorkflowEngine] newData:', newData);
       this.workflowData = newData;
       this.stepFormStateByIndex = {};
+      this.stepValidationByIndex = {};
+      this.stepCardNodesByIndex = {};
+      this.stepValidationTimers = {};
+      this.submitWorkflowButton = null;
       // Clear existing content
       domConstruct.empty(this.domNode);
       // Re-render
