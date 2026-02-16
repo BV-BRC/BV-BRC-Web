@@ -212,7 +212,7 @@ define([
          * - Makes POST request to copilot endpoint
          * - Handles errors with detailed logging
          */
-        submitCopilotQuery: function(inputText, sessionId, systemPrompt, model, save_chat = true, ragDb, numDocs, image, enhancedPrompt = null, extraPayload) {
+        submitCopilotQuery: function(inputText, sessionId, systemPrompt, model, save_chat = true, ragDb, numDocs, images, enhancedPrompt = null, extraPayload) {
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
             console.log('query');
@@ -230,6 +230,13 @@ define([
 
             if (extraPayload && Array.isArray(extraPayload.selected_workspace_items) && extraPayload.selected_workspace_items.length > 0) {
                 data.selected_workspace_items = extraPayload.selected_workspace_items;
+            }
+
+            if (Array.isArray(images) && images.length > 0) {
+                data.images = images;
+            }
+            if (extraPayload && Array.isArray(extraPayload.images) && extraPayload.images.length > 0) {
+                data.images = extraPayload.images;
             }
 
             return request.post(this.apiUrlBase + '/copilot-agent', {
@@ -258,7 +265,7 @@ define([
          * @param {boolean} params.save_chat - Whether to save the chat
          * @param {string} params.ragDb - The RAG database to use
          * @param {number} params.numDocs - The number of documents for RAG
-         * @param {string} params.image - A base64 encoded image
+         * @param {string[]} params.images - A list of base64 encoded images
          * @param {string} params.enhancedPrompt - An enhanced prompt
          * @param {function} onData - Callback for each content chunk (LLM response text)
          * @param {function} onEnd - Callback for when the stream ends
@@ -293,6 +300,10 @@ define([
 
             if (Array.isArray(params.selected_workspace_items) && params.selected_workspace_items.length > 0) {
                 data.workspace_items = params.selected_workspace_items;
+            }
+
+            if (Array.isArray(params.images) && params.images.length > 0) {
+                data.images = params.images;
             }
 
             // Create abort controller for this request

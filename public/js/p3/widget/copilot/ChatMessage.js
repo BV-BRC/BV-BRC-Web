@@ -342,6 +342,29 @@ define([
         // Add copy text button
         this.createMessageActionButtons(buttonContainer);
       }
+
+      this.renderAttachments(messageDiv);
+    },
+
+    renderAttachments: function(messageDiv) {
+      if (!Array.isArray(this.message.attachments) || this.message.attachments.length === 0) {
+        return;
+      }
+
+      var container = domConstruct.create('div', {
+        class: 'message-attachments'
+      }, messageDiv);
+
+      this.message.attachments.forEach(lang.hitch(this, function(attachment) {
+        if (!attachment || attachment.type !== 'image') {
+          return;
+        }
+        var label = attachment.name || (attachment.source === 'screenshot' ? 'Page screenshot' : 'Attached image');
+        domConstruct.create('div', {
+          class: 'message-attachment-chip',
+          innerHTML: '<i class="fa icon-image"></i> ' + this.escapeHtml(label)
+        }, container);
+      }));
     },
 
     /**

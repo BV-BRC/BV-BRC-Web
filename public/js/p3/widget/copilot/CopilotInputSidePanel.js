@@ -88,33 +88,74 @@ define([
           style: 'display: flex; justify-content: center; align-items: flex-start; width: 100%;'
         }, wrapperDiv);
 
-        // Add container for the toggle switch and label on the left side
+        // Add container for the split image button on the left side
         var toggleContainer = domConstruct.create('div', {
-            style: 'width: auto; height: 35px; display: flex; flex-direction: column; align-items: center; margin-right: 15px;'
+            style: 'width: auto; height: 60px; display: flex; flex-direction: row; align-items: center; margin-right: 15px; position: relative; gap: 8px;'
         }, inputContainer);
 
-        // Create screenshot div above the toggle button
-        var screenshotDiv = domConstruct.create('div', {
-            'class': 'screenshotDivAboveToggle',
-            innerHTML: 'Include<br>Screenshot'
-        });
+        // Image attachment counter (similar to workspace selection indicator) - positioned to the left
+        this.imageAttachmentCounter = domConstruct.create('div', {
+          className: 'imageAttachmentCounter',
+          title: 'Attached images'
+        }, toggleContainer);
+        this.imageAttachmentCountNode = domConstruct.create('span', {
+          className: 'imageAttachmentCount'
+        }, this.imageAttachmentCounter);
 
-        // Create the page content toggle using the screenshot div
+        // Create split button container
+        var splitButtonContainer = domConstruct.create('div', {
+            className: 'imageSplitButtonContainer'
+        }, toggleContainer);
+
+        // Top half - Screenshot
+        var screenshotHalf = domConstruct.create('button', {
+            type: 'button',
+            className: 'imageSplitButtonTop pageContentToggleInactive',
+            innerHTML: 'Screenshot'
+        }, splitButtonContainer);
+        this.screenshotToggleNode = screenshotHalf;
+
+        // Bottom half - Upload
+        var uploadHalf = domConstruct.create('button', {
+            type: 'button',
+            className: 'imageSplitButtonBottom',
+            innerHTML: 'Upload'
+        }, splitButtonContainer);
+        this.uploadImageNode = uploadHalf;
+
+        this.imageUploadInput = domConstruct.create('input', {
+          type: 'file',
+          accept: 'image/png,image/jpeg,image/jpg',
+          multiple: true,
+          style: 'display: none;'
+        }, wrapperDiv);
+
         this.pageContentToggle = {
-            domNode: screenshotDiv,
-            placeAt: function(container) {
-                container.appendChild(screenshotDiv);
-            }
+            domNode: screenshotHalf
         };
 
-        // Add click handler and properties to screenshot div
-        screenshotDiv.title = 'Sends a screenshot of the current BV-BRC page to help answer your question.';
-        screenshotDiv.style.cursor = 'pointer';
-        on(screenshotDiv, 'click', lang.hitch(this, function() {
-            topic.publish('pageContentToggleChanged', !this.pageContentEnabled);
+        screenshotHalf.title = 'Include a screenshot of the current page with your next message.';
+        uploadHalf.title = 'Attach one or more images from your computer.';
+
+        on(screenshotHalf, 'click', lang.hitch(this, function(evt) {
+          evt.preventDefault();
+          evt.stopPropagation();
+          if (!this._modelSupportsImage(this.model)) {
+            return;
+          }
+          topic.publish('pageContentToggleChanged', !this.pageContentEnabled);
         }));
 
-        this.pageContentToggle.placeAt(toggleContainer);
+        on(uploadHalf, 'click', lang.hitch(this, function(evt) {
+          evt.preventDefault();
+          evt.stopPropagation();
+          if (!this._modelSupportsImage(this.model) || !this.imageUploadInput) {
+            return;
+          }
+          this.imageUploadInput.click();
+        }));
+
+        on(this.imageUploadInput, 'change', lang.hitch(this, this._handleImageUploadChange));
 
         // Initialize button style
         this._updateToggleButtonStyle();
@@ -157,6 +198,11 @@ define([
 
         // Subscribe to page content toggle changes from ChatSessionOptionsBar
         topic.subscribe('pageContentToggleChanged', lang.hitch(this, function(checked) {
+            if (!this._modelSupportsImage(this.model)) {
+                this.pageContentEnabled = false;
+                this._updateToggleButtonStyle();
+                return;
+            }
             this.pageContentEnabled = checked;
             this._updateToggleButtonStyle();
             console.log('Page content toggle changed to:', checked);
@@ -203,6 +249,7 @@ define([
             }
           }
         }));
+        this._updateImageCapabilityUI();
     },
 
     /**
@@ -222,12 +269,11 @@ define([
         }
 
         // Immediately show user message and clear text area
-        var userMessage = {
-          role: 'user',
-          content: inputText,
-          message_id: 'user_' + Date.now(),
-          timestamp: new Date().toISOString()
-        };
+        var userMessage = this._buildUserMessageForSubmit(inputText, {
+          type: 'image',
+          source: 'screenshot',
+          name: 'Page screenshot'
+        });
 
         this.chatStore.addMessage(userMessage);
         this.displayWidget.showMessages(this.chatStore.query());
@@ -248,7 +294,8 @@ define([
             }
             var imgtxt_model = this._resolveImageModel();
 
-            this._submitCopilotQueryWithRegistration(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, null, null, base64Image, null, {
+            this._submitCopilotQueryWithRegistration(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, null, null, null, null, {
+                images: [base64Image],
                 selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
             })
                 .then(lang.hitch(this, function(response) {
@@ -400,18 +447,19 @@ define([
     _submitToGridContainer: function() {
       var inputText = this.textArea.get('value');
       var _self = this;
+      var uploadedImagePayload = this._getUploadedImagePayload();
+      var hasUploadedImage = !!(uploadedImagePayload && Array.isArray(uploadedImagePayload.images) && uploadedImagePayload.images.length > 0 && this._modelSupportsImage(this.model));
+      var submitModel = hasUploadedImage ? this._resolveImageModel() : this.model;
 
       if (this.state) {
         console.log('state', this.state);
       }
 
       // Immediately show user message and clear text area
-      var userMessage = {
-        role: 'user',
-        content: inputText,
-        message_id: 'user_' + Date.now(),
-        timestamp: new Date().toISOString()
-      };
+      var userMessage = this._buildUserMessageForSubmit(
+        inputText,
+        hasUploadedImage ? uploadedImagePayload.attachments : null
+      );
 
       this.chatStore.addMessage(userMessage);
       this.displayWidget.showMessages(this.chatStore.query());
@@ -421,9 +469,16 @@ define([
       this.submitButton.set('disabled', true);
 
       this.displayWidget.showLoadingIndicator(this.chatStore.query());
-      this._submitCopilotQueryWithRegistration(inputText, this.sessionId, this.systemPrompt, this.model, true, null, null, null, null, {
+      var systemPrompt = this.systemPrompt || '';
+      if (hasUploadedImage) {
+        systemPrompt += (systemPrompt ? '\n\n' : '') + 'The user attached an image. Use it as additional context.';
+      }
+
+      this._submitCopilotQueryWithRegistration(inputText, this.sessionId, systemPrompt, submitModel, true, null, null, null, null, lang.mixin({
+        images: hasUploadedImage ? uploadedImagePayload.images : null
+      }, {
         selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
-      }).then(lang.hitch(this, function(response) {
+      })).then(lang.hitch(this, function(response) {
         // Only add assistant message and system message (if present) - user message was already added
         var messagesToAdd = [];
         if (response.systemMessage) {
@@ -465,18 +520,19 @@ define([
     _submitToJobManager: function() {
       var inputText = this.textArea.get('value');
       var _self = this;
+      var uploadedImagePayload = this._getUploadedImagePayload();
+      var hasUploadedImage = !!(uploadedImagePayload && Array.isArray(uploadedImagePayload.images) && uploadedImagePayload.images.length > 0 && this._modelSupportsImage(this.model));
+      var submitModel = hasUploadedImage ? this._resolveImageModel() : this.model;
 
       if (this.state) {
         console.log('state', this.state);
       }
 
       // Immediately show user message and clear text area
-      var userMessage = {
-        role: 'user',
-        content: inputText,
-        message_id: 'user_' + Date.now(),
-        timestamp: new Date().toISOString()
-      };
+      var userMessage = this._buildUserMessageForSubmit(
+        inputText,
+        hasUploadedImage ? uploadedImagePayload.attachments : null
+      );
 
       this.chatStore.addMessage(userMessage);
       this.displayWidget.showMessages(this.chatStore.query());
@@ -504,9 +560,14 @@ define([
         var jobSystemPrompt = 'Job stdout:\n' + stdout + '\n\nJob stderr:\n' + stderr;
 
         // Submit query with job details as system prompt
-        return _self._submitCopilotQueryWithRegistration(inputText, _self.sessionId, jobSystemPrompt, _self.model, true, null, null, null, null, {
+        if (hasUploadedImage) {
+          jobSystemPrompt += '\n\nThe user attached an image. Use it as additional context.';
+        }
+        return _self._submitCopilotQueryWithRegistration(inputText, _self.sessionId, jobSystemPrompt, submitModel, true, null, null, null, null, lang.mixin({
+          images: hasUploadedImage ? uploadedImagePayload.images : null
+        }, {
           selected_workspace_items: _self._getSelectedWorkspaceItemsForRequest()
-        });
+        }));
       }).then(lang.hitch(this, function(response) {
         // Only add assistant message and system message (if present) - user message was already added
         var messagesToAdd = [];
@@ -544,6 +605,7 @@ define([
       if (window && window.App) {
         window.App.copilotSelectedModel = model;
       }
+      this._updateImageCapabilityUI();
     },
 
     /**
@@ -563,6 +625,9 @@ define([
      * @description Updates the toggle button's visual state based on pageContentEnabled
      */
     _updateToggleButtonStyle: function() {
+        if (!this.pageContentToggle || !this.pageContentToggle.domNode) {
+            return;
+        }
         var buttonNode = this.pageContentToggle.domNode;
         if (this.pageContentEnabled) {
             buttonNode.classList.remove('pageContentToggleInactive');
