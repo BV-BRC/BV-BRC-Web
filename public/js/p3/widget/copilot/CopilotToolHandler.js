@@ -242,6 +242,7 @@ define([
     },
 
     _normalizeWorkspaceBrowsePayload: function(parsedChunk) {
+      var gridPayload = parsedChunk && parsedChunk.ui_grid ? parsedChunk.ui_grid : null;
       var normalized = {
         tool_name: parsedChunk && parsedChunk.tool_name ? parsedChunk.tool_name : 'workspace_browse_tool',
         result_type: parsedChunk && parsedChunk.result_type ? parsedChunk.result_type : 'list_result',
@@ -249,11 +250,14 @@ define([
         path: parsedChunk && parsedChunk.path ? parsedChunk.path : null,
         source: parsedChunk && parsedChunk.source ? parsedChunk.source : null,
         items: [],
+        grid: gridPayload,
         raw: parsedChunk
       };
 
       if (parsedChunk && Array.isArray(parsedChunk.items)) {
         normalized.items = parsedChunk.items;
+      } else if (gridPayload && Array.isArray(gridPayload.items)) {
+        normalized.items = gridPayload.items;
       } else if (Array.isArray(parsedChunk)) {
         normalized.items = parsedChunk;
       }
@@ -455,6 +459,9 @@ define([
     _extractJobsFromResult: function(parsedChunk) {
       if (!parsedChunk) {
         return [];
+      }
+      if (parsedChunk.ui_grid && Array.isArray(parsedChunk.ui_grid.items)) {
+        return parsedChunk.ui_grid.items;
       }
       if (Array.isArray(parsedChunk.items)) {
         return parsedChunk.items;

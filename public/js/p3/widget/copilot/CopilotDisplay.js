@@ -29,9 +29,11 @@ define([
   './ChatMessage', // Custom message display widget
   './data/SuggestedQuestions', // Suggested questions data module
   './WorkspaceExplorerAdapter',
-  './JobsExplorerAdapter'
+  './JobsExplorerAdapter',
+  './SessionFilesExplorerAdapter',
+  './WorkflowsExplorerAdapter'
 ], function (
-  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, request, markdownit, linkAttributes, ChatMessage, SuggestedQuestions, WorkspaceExplorerAdapter, JobsExplorerAdapter
+  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, request, markdownit, linkAttributes, ChatMessage, SuggestedQuestions, WorkspaceExplorerAdapter, JobsExplorerAdapter, SessionFilesExplorerAdapter, WorkflowsExplorerAdapter
 ) {
 
   /**
@@ -83,9 +85,13 @@ define([
     sessionFilesLoading: false,
     sessionFilesError: null,
     onLoadMoreFiles: null,
+    sessionFilesSelectionItems: [],
+    filesExplorerWidget: null,
 
     // Session workflows panel state
     sessionWorkflows: [],
+    sessionWorkflowsSelectionItems: [],
+    workflowsExplorerWidget: null,
     sessionWorkspaceBrowse: null,
     sessionWorkspaceSelectionItems: [],
     workspaceExplorerWidget: null,
@@ -94,6 +100,8 @@ define([
     jobsExplorerWidget: null,
     onWorkspaceSelectionChanged: null,
     onJobsSelectionChanged: null,
+    _filesSelectionHandles: null,
+    _workflowsSelectionHandles: null,
     _workspaceSelectionHandles: null,
     _jobsSelectionHandles: null,
 
@@ -244,6 +252,12 @@ define([
       }
       if (this.activePanel === 'jobs' && this.jobsExplorerWidget && typeof this.jobsExplorerWidget.resize === 'function') {
         this.jobsExplorerWidget.resize();
+      }
+      if (this.activePanel === 'files' && this.filesExplorerWidget && typeof this.filesExplorerWidget.resize === 'function') {
+        this.filesExplorerWidget.resize();
+      }
+      if (this.activePanel === 'workflows' && this.workflowsExplorerWidget && typeof this.workflowsExplorerWidget.resize === 'function') {
+        this.workflowsExplorerWidget.resize();
       }
     },
 
@@ -443,6 +457,12 @@ define([
       if (!this.filesContainer) return;
       domConstruct.empty(this.filesContainer);
 
+      if (this.filesExplorerWidget) {
+        this._clearFilesSelectionHandles();
+        this.filesExplorerWidget.destroyRecursive();
+        this.filesExplorerWidget = null;
+      }
+
       if (this.sessionFilesError) {
         domConstruct.create('div', {
           class: 'copilot-files-error',
@@ -484,82 +504,23 @@ define([
         }
       }
 
-      var listNode = domConstruct.create('div', {
-        class: 'copilot-files-list'
+      var gridContainer = domConstruct.create('div', {
+        class: 'copilot-files-grid-container'
       }, this.filesContainer);
 
-      this.sessionFiles.forEach(lang.hitch(this, function(file) {
-        var card = domConstruct.create('div', {
-          class: 'copilot-file-card'
-        }, listNode);
-
-        var header = domConstruct.create('div', {
-          class: 'copilot-file-card-header'
-        }, card);
-
-        domConstruct.create('div', {
-          class: 'copilot-file-name',
-          innerHTML: file.file_name || 'Untitled file'
-        }, header);
-
-        if (file.is_error) {
-          domConstruct.create('span', {
-            class: 'copilot-file-badge-error',
-            innerHTML: 'Error output'
-          }, header);
-        }
-
-        var toolLabel = file.tool_id || 'Unknown';
-        domConstruct.create('div', {
-          class: 'copilot-file-meta',
-          innerHTML: 'Tool: ' + toolLabel
-        }, card);
-
-        var formattedCreated = this._formatTimestamp(file.created_at);
-        var formattedSize = this._formatSize(file);
-
-        domConstruct.create('div', {
-          class: 'copilot-file-meta',
-          innerHTML: 'Created: ' + formattedCreated
-        }, card);
-
-        domConstruct.create('div', {
-          class: 'copilot-file-meta',
-          innerHTML: 'Size: ' + formattedSize
-        }, card);
-
-        if (typeof file.record_count === 'number') {
-          domConstruct.create('div', {
-            class: 'copilot-file-meta',
-            innerHTML: 'Records: ' + file.record_count.toLocaleString()
-          }, card);
-        }
-
-        if (file.data_type) {
-          domConstruct.create('div', {
-            class: 'copilot-file-meta',
-            innerHTML: 'Type: ' + file.data_type
-          }, card);
-        }
-
-        if (file.workspace_url) {
-          var link = domConstruct.create('a', {
-            class: 'copilot-file-workspace-link',
-            href: file.workspace_url,
-            target: '_blank',
-            rel: 'noopener noreferrer',
-            innerHTML: file.workspace_path || file.workspace_url
-          }, card);
-          if (!link.textContent || !link.textContent.trim()) {
-            link.textContent = file.workspace_url;
-          }
-        } else if (file.workspace_path) {
-          domConstruct.create('div', {
-            class: 'copilot-file-meta',
-            innerHTML: 'Workspace: ' + file.workspace_path
-          }, card);
-        }
-      }));
+      this.filesExplorerWidget = new SessionFilesExplorerAdapter({
+        region: 'center'
+      });
+      this.filesExplorerWidget.setFilesData(this.sessionFiles || []);
+      domConstruct.place(this.filesExplorerWidget.domNode, gridContainer);
+      this.filesExplorerWidget.startup();
+      this._bindFilesSelectionEvents();
+      if (typeof this.filesExplorerWidget.setSelectedFiles === 'function') {
+        this.filesExplorerWidget.setSelectedFiles(this.sessionFilesSelectionItems);
+      }
+      if (typeof this.filesExplorerWidget.resize === 'function') {
+        this.filesExplorerWidget.resize();
+      }
 
       var hasMore = Boolean(this.sessionFilesPagination && this.sessionFilesPagination.has_more);
       if (hasMore) {
@@ -791,6 +752,40 @@ define([
       }
     },
 
+    setSessionFilesSelectionData: function(selectedItems) {
+      this.sessionFilesSelectionItems = Array.isArray(selectedItems) ? selectedItems.slice() : [];
+      if (this.filesExplorerWidget && typeof this.filesExplorerWidget.setSelectedFiles === 'function') {
+        this.filesExplorerWidget.setSelectedFiles(this.sessionFilesSelectionItems);
+      }
+    },
+
+    setSessionWorkflowsSelectionData: function(selectedItems) {
+      this.sessionWorkflowsSelectionItems = Array.isArray(selectedItems) ? selectedItems.slice() : [];
+      if (this.workflowsExplorerWidget && typeof this.workflowsExplorerWidget.setSelectedWorkflows === 'function') {
+        this.workflowsExplorerWidget.setSelectedWorkflows(this.sessionWorkflowsSelectionItems);
+      }
+    },
+
+    _clearFilesSelectionHandles: function() {
+      if (!this._filesSelectionHandles) return;
+      this._filesSelectionHandles.forEach(function(handle) {
+        if (handle && typeof handle.remove === 'function') {
+          handle.remove();
+        }
+      });
+      this._filesSelectionHandles = [];
+    },
+
+    _clearWorkflowsSelectionHandles: function() {
+      if (!this._workflowsSelectionHandles) return;
+      this._workflowsSelectionHandles.forEach(function(handle) {
+        if (handle && typeof handle.remove === 'function') {
+          handle.remove();
+        }
+      });
+      this._workflowsSelectionHandles = [];
+    },
+
     _clearWorkspaceSelectionHandles: function() {
       if (!this._workspaceSelectionHandles) {
         return;
@@ -857,6 +852,56 @@ define([
       });
     },
 
+    _publishFilesSelectionChange: function() {
+      if (!this.filesExplorerWidget) {
+        return;
+      }
+      if (typeof this.filesExplorerWidget.isApplyingSelectionSync === 'function' && this.filesExplorerWidget.isApplyingSelectionSync()) {
+        return;
+      }
+      if (typeof this.filesExplorerWidget.getSelectedFiles === 'function') {
+        this.sessionFilesSelectionItems = this.filesExplorerWidget.getSelectedFiles();
+      } else {
+        this.sessionFilesSelectionItems = [];
+      }
+    },
+
+    _bindFilesSelectionEvents: function() {
+      this._clearFilesSelectionHandles();
+      if (!this.filesExplorerWidget) {
+        return;
+      }
+      this._filesSelectionHandles = [
+        on(this.filesExplorerWidget.domNode, 'dgrid-select', lang.hitch(this, this._publishFilesSelectionChange)),
+        on(this.filesExplorerWidget.domNode, 'dgrid-deselect', lang.hitch(this, this._publishFilesSelectionChange))
+      ];
+    },
+
+    _publishWorkflowsSelectionChange: function() {
+      if (!this.workflowsExplorerWidget) {
+        return;
+      }
+      if (typeof this.workflowsExplorerWidget.isApplyingSelectionSync === 'function' && this.workflowsExplorerWidget.isApplyingSelectionSync()) {
+        return;
+      }
+      if (typeof this.workflowsExplorerWidget.getSelectedWorkflows === 'function') {
+        this.sessionWorkflowsSelectionItems = this.workflowsExplorerWidget.getSelectedWorkflows();
+      } else {
+        this.sessionWorkflowsSelectionItems = [];
+      }
+    },
+
+    _bindWorkflowsSelectionEvents: function() {
+      this._clearWorkflowsSelectionHandles();
+      if (!this.workflowsExplorerWidget) {
+        return;
+      }
+      this._workflowsSelectionHandles = [
+        on(this.workflowsExplorerWidget.domNode, 'dgrid-select', lang.hitch(this, this._publishWorkflowsSelectionChange)),
+        on(this.workflowsExplorerWidget.domNode, 'dgrid-deselect', lang.hitch(this, this._publishWorkflowsSelectionChange))
+      ];
+    },
+
     _bindJobsSelectionEvents: function() {
       this._clearJobsSelectionHandles();
       if (!this.jobsExplorerWidget) {
@@ -884,6 +929,12 @@ define([
       if (!this.workflowsContainer) return;
       domConstruct.empty(this.workflowsContainer);
 
+      if (this.workflowsExplorerWidget) {
+        this._clearWorkflowsSelectionHandles();
+        this.workflowsExplorerWidget.destroyRecursive();
+        this.workflowsExplorerWidget = null;
+      }
+
       if (!this.sessionWorkflows || this.sessionWorkflows.length === 0) {
         domConstruct.create('div', {
           class: 'copilot-workflows-empty',
@@ -892,13 +943,37 @@ define([
         return;
       }
 
-      var listNode = domConstruct.create('div', {
-        class: 'copilot-workflows-list'
+      domConstruct.create('div', {
+        class: 'copilot-workflows-summary',
+        innerHTML: 'Results: ' + this.sessionWorkflows.length
       }, this.workflowsContainer);
 
-      this.sessionWorkflows.forEach(lang.hitch(this, function(workflowId) {
-        this._renderWorkflowCard(workflowId, listNode);
-      }));
+      var gridContainer = domConstruct.create('div', {
+        class: 'copilot-workflows-grid-container'
+      }, this.workflowsContainer);
+
+      this.workflowsExplorerWidget = new WorkflowsExplorerAdapter({
+        region: 'center'
+      });
+      domConstruct.place(this.workflowsExplorerWidget.domNode, gridContainer);
+      this.workflowsExplorerWidget.startup();
+      this._bindWorkflowsSelectionEvents();
+      if (typeof this.workflowsExplorerWidget.setSelectedWorkflows === 'function') {
+        this.workflowsExplorerWidget.setSelectedWorkflows(this.sessionWorkflowsSelectionItems);
+      }
+
+      // Support either legacy array of IDs or pre-shaped workflow rows.
+      var hasWorkflowObjects = Array.isArray(this.sessionWorkflows) && this.sessionWorkflows.some(function(item) {
+        return item && typeof item === 'object' && (item.workflow_id || item.id);
+      });
+      if (hasWorkflowObjects) {
+        this.workflowsExplorerWidget.setWorkflowData(this.sessionWorkflows);
+      } else {
+        this.workflowsExplorerWidget.setWorkflowIds(this.sessionWorkflows);
+      }
+      if (typeof this.workflowsExplorerWidget.resize === 'function') {
+        this.workflowsExplorerWidget.resize();
+      }
     },
 
     _renderWorkspacePanel: function() {

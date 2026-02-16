@@ -582,6 +582,12 @@
   color: #64748b;
 }
 
+.copilot-workflows-summary {
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: #64748b;
+}
+
 .copilot-workspace-grid-container {
   width: 100%;
   min-height: 220px;
@@ -589,6 +595,8 @@
   overflow: auto;
 }
 
+.copilot-files-grid-container,
+.copilot-workflows-grid-container,
 .copilot-jobs-grid-container {
   width: 100%;
   min-height: 220px;
@@ -611,12 +619,36 @@
   overflow-y: auto;
 }
 
+.copilot-files-grid-container .dgrid,
+.copilot-workflows-grid-container .dgrid {
+  width: 100% !important;
+  max-width: 100% !important;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
 /* Jobs Grid Column Alignment */
 /* Checkbox column - center aligned */
 .copilot-jobs-grid-container .dgrid-cell.jobs-grid-checkbox-col,
 .copilot-jobs-grid-container .dgrid-header-row .dgrid-cell.jobs-grid-checkbox-col,
 .copilot-jobs-grid-container .dgrid-cell.field-__copilotRowSelect,
 .copilot-jobs-grid-container .dgrid-header-row .dgrid-cell.field-__copilotRowSelect {
+  text-align: center;
+  width: 32px;
+  min-width: 32px;
+  max-width: 32px;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.copilot-files-grid-container .dgrid-cell.files-grid-checkbox-col,
+.copilot-files-grid-container .dgrid-header-row .dgrid-cell.files-grid-checkbox-col,
+.copilot-files-grid-container .dgrid-cell.field-__copilotRowSelect,
+.copilot-files-grid-container .dgrid-header-row .dgrid-cell.field-__copilotRowSelect,
+.copilot-workflows-grid-container .dgrid-cell.workflows-grid-checkbox-col,
+.copilot-workflows-grid-container .dgrid-header-row .dgrid-cell.workflows-grid-checkbox-col,
+.copilot-workflows-grid-container .dgrid-cell.field-__copilotRowSelect,
+.copilot-workflows-grid-container .dgrid-header-row .dgrid-cell.field-__copilotRowSelect {
   text-align: center;
   width: 32px;
   min-width: 32px;

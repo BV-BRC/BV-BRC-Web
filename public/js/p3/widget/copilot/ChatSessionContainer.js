@@ -207,8 +207,11 @@ define([
                     }
                 // Extract workflow_ids from session object (top level)
                 console.log('[DEBUG] RefreshSession - Checking res.workflow_ids:', res.workflow_ids);
-                if (res.workflow_ids && Array.isArray(res.workflow_ids)) {
-                    console.log('[DEBUG] RefreshSession - Setting workflows:', res.workflow_ids);
+                if (res.workflow_grid && Array.isArray(res.workflow_grid.items)) {
+                    console.log('[DEBUG] RefreshSession - Setting workflows from workflow_grid:', res.workflow_grid.items);
+                    this.displayWidget.setSessionWorkflows(res.workflow_grid.items);
+                } else if (res.workflow_ids && Array.isArray(res.workflow_ids)) {
+                    console.log('[DEBUG] RefreshSession - Setting workflows from workflow_ids:', res.workflow_ids);
                     this.displayWidget.setSessionWorkflows(res.workflow_ids);
                 } else {
                     console.log('[DEBUG] RefreshSession - No workflow_ids found or not an array');
@@ -226,8 +229,11 @@ define([
                 this.inputWidget.new_chat = false;
                 // Extract workflow_ids from session object (top level)
                 console.log('[DEBUG] ChatSession:Selected - Checking data.workflow_ids:', data.workflow_ids);
-                if (data.workflow_ids && Array.isArray(data.workflow_ids)) {
-                    console.log('[DEBUG] ChatSession:Selected - Setting workflows:', data.workflow_ids);
+                if (data.workflow_grid && Array.isArray(data.workflow_grid.items)) {
+                    console.log('[DEBUG] ChatSession:Selected - Setting workflows from workflow_grid:', data.workflow_grid.items);
+                    this.displayWidget.setSessionWorkflows(data.workflow_grid.items);
+                } else if (data.workflow_ids && Array.isArray(data.workflow_ids)) {
+                    console.log('[DEBUG] ChatSession:Selected - Setting workflows from workflow_ids:', data.workflow_ids);
                     this.displayWidget.setSessionWorkflows(data.workflow_ids);
                 } else {
                     console.log('[DEBUG] ChatSession:Selected - No workflow_ids found or not an array');
