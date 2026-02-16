@@ -4,7 +4,7 @@
     } else if (typeof module === 'object' && module.exports) {
         module.exports = factory();
     } else {
-        root.CopilotSessionJobsSelectionStore = factory();
+        root.CopilotSessionWorkflowsSelectionStore = factory();
     }
 }(this, function() {
     function createInitialState(sessionId) {
@@ -15,24 +15,22 @@
         };
     }
 
-    function normalizeJob(item) {
+    function normalizeWorkflow(item) {
         if (!item) {
             return null;
         }
-
-        var id = item.id || item.job_id || item.task_id;
-        if (id === null || id === undefined || id === '') {
+        var id = item.id || item.workflow_id;
+        if (!id) {
             return null;
         }
         id = String(id);
-
         return {
             id: id,
+            workflow_id: id,
+            workflow_name: item.workflow_name || 'Workflow',
             status: item.status || null,
-            application_name: item.application_name || item.app || item.service || null,
-            submit_time: item.submit_time || null,
-            start_time: item.start_time || null,
-            completed_time: item.completed_time || null,
+            submitted_at: item.submitted_at || null,
+            completed_at: item.completed_at || null,
             selected: item.selected !== false
         };
     }
@@ -43,7 +41,7 @@
         state.itemIds = {};
 
         nextItems.forEach(function(item) {
-            var normalized = normalizeJob(item);
+            var normalized = normalizeWorkflow(item);
             if (normalized && !state.itemIds[normalized.id]) {
                 state.itemIds[normalized.id] = true;
                 state.items.push(normalized);
@@ -71,21 +69,13 @@
         });
     }
 
-    function getIds(state) {
-        return getSelectedItems(state).map(function(item) {
-            return item.id;
-        });
-    }
-
     return {
         createInitialState: createInitialState,
-        normalizeJob: normalizeJob,
+        normalizeWorkflow: normalizeWorkflow,
         setItems: setItems,
         resetForSession: resetForSession,
         getItems: getItems,
-        getSelectedItems: getSelectedItems,
-        getIds: getIds
+        getSelectedItems: getSelectedItems
     };
 }));
-
 

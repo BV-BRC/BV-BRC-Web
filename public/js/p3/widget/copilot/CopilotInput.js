@@ -67,6 +67,8 @@ define([
       imageActionNode: null,
       imageActionMenuNode: null,
       imageActionOutsideClickHandle: null,
+      onImageAttachmentsChanged: null,
+      _nextImageAttachmentId: 0,
 
       /**
        * Constructor that initializes the widget with provided options
@@ -74,6 +76,35 @@ define([
        */
       constructor: function(args) {
         declare.safeMixin(this, args);
+        this._nextImageAttachmentId = 0;
+      },
+
+      _toContextImageItems: function(entries) {
+        if (!Array.isArray(entries)) {
+          return [];
+        }
+        return entries.map(function(entry, index) {
+          var attachment = entry && entry.attachment ? entry.attachment : {};
+          var id = entry && entry.id ? entry.id : ('img-' + index);
+          return {
+            id: id,
+            name: attachment.name || 'Uploaded image',
+            source: attachment.source || 'upload',
+            thumbnail: entry && typeof entry.image === 'string' ? entry.image : null
+          };
+        });
+      },
+
+      _emitImageAttachmentsChanged: function() {
+        if (typeof this.onImageAttachmentsChanged !== 'function') {
+          return;
+        }
+        var entries = Array.isArray(this.attachedImages) ? this.attachedImages.slice() : [];
+        this.onImageAttachmentsChanged({
+          sessionId: this.sessionId,
+          entries: entries,
+          items: this._toContextImageItems(entries)
+        });
       },
 
       _escapeHtml: function(text) {
@@ -91,7 +122,7 @@ define([
         }
         // Extract only path and type from items
         return this.selectedWorkspaceItems.map(function(item) {
-          if (!item || !item.path) {
+          if (!item || item.selected === false || !item.path) {
             return null;
           }
           return {
@@ -142,7 +173,7 @@ define([
           return [];
         }
         return this.selectedJobs.map(function(job) {
-          if (!job || job.id === null || job.id === undefined || job.id === '') {
+          if (!job || job.selected === false || job.id === null || job.id === undefined || job.id === '') {
             return null;
           }
           return {
@@ -333,25 +364,6 @@ define([
             })
         });
         this.abortButton.placeAt(inputContainer);
-
-        // Small selection indicator showing current workspace item selection count
-        this.workspaceSelectionIndicator = domConstruct.create('div', {
-            className: 'workspaceSelectionIndicator',
-            title: 'Selected workspace files'
-        }, inputContainer);
-
-        this.workspaceSelectionCountNode = domConstruct.create('span', {
-            className: 'workspaceSelectionCount'
-        }, this.workspaceSelectionIndicator);
-
-        this.jobsSelectionIndicator = domConstruct.create('div', {
-            className: 'workspaceSelectionIndicator',
-            title: 'Selected jobs'
-        }, inputContainer);
-
-        this.jobsSelectionCountNode = domConstruct.create('span', {
-            className: 'workspaceSelectionCount'
-        }, this.jobsSelectionIndicator);
 
         // Subscribe to page content toggle changes from ChatSessionOptionsBar
         topic.subscribe('pageContentToggleChanged', lang.hitch(this, function(checked) {
@@ -892,7 +904,9 @@ define([
 
             var reader = new FileReader();
             reader.onload = function(loadEvt) {
+              var nextId = 'img-' + Date.now() + '-' + Math.floor(Math.random() * 1000000);
               resolve({
+                id: nextId,
                 image: loadEvt && loadEvt.target ? loadEvt.target.result : null,
                 attachment: {
                   type: 'image',
@@ -915,6 +929,7 @@ define([
             }
           }));
           this._renderAttachedImageIndicator();
+          this._emitImageAttachmentsChanged();
         })).catch(function(error) {
           topic.publish('CopilotApiError', { error: error });
         }).finally(lang.hitch(this, function() {
@@ -928,6 +943,13 @@ define([
           this.imageUploadInput.value = '';
         }
         this._renderAttachedImageIndicator();
+        this._emitImageAttachmentsChanged();
+      },
+
+      setAttachedImages: function(entries) {
+        this.attachedImages = Array.isArray(entries) ? entries.slice() : [];
+        this._renderAttachedImageIndicator();
+        this._emitImageAttachmentsChanged();
       },
 
       _renderAttachedImageIndicator: function() {
@@ -1323,6 +1345,9 @@ define([
       this.chatStore.addMessage(userMessage);
       this.displayWidget.showMessages(this.chatStore.query());
       this.textArea.set('value', '');
+      if (hasUploadedImage) {
+        this._clearAttachedImage();
+      }
 
       this.isSubmitting = true;
       this.isQueryProgressActive = false;
@@ -1488,6 +1513,9 @@ define([
       this.chatStore.addMessage(userMessage);
       this.displayWidget.showMessages(this.chatStore.query());
       this.textArea.set('value', '');
+      if (hasUploadedImage) {
+        this._clearAttachedImage();
+      }
 
       this.isSubmitting = true;
       this.isQueryProgressActive = false;

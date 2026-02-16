@@ -39,7 +39,8 @@
             id: id,
             path: path,
             type: type || null,
-            name: name || null
+            name: name || null,
+            selected: item.selected !== false
         };
     }
 
@@ -71,13 +72,19 @@
         return state.items;
     }
 
+    function getSelectedItems(state) {
+        return (state.items || []).filter(function(item) {
+            return item && item.selected !== false;
+        });
+    }
+
     /**
      * Gets only the paths from stored items (for API payload)
      * @param {Object} state - The store state
      * @returns {Array<string>} Array of path strings
      */
     function getPaths(state) {
-        return state.items.map(function(item) {
+        return getSelectedItems(state).map(function(item) {
             return item.path;
         });
     }
@@ -88,6 +95,7 @@
         setItems: setItems,
         resetForSession: resetForSession,
         getItems: getItems,
+        getSelectedItems: getSelectedItems,
         getPaths: getPaths
     };
 }));
