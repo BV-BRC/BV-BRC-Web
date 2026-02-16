@@ -268,6 +268,7 @@ define([
             topic.subscribe('chatTextSizeChanged', lang.hitch(this, this._handleChatTextSizeChanged));
             topic.subscribe('setStatePrompt', lang.hitch(this, this._handleSetStatePrompt));
             topic.subscribe('CopilotSessionFileCreated', lang.hitch(this, this._handleSessionFileCreated));
+            topic.subscribe('CopilotSessionWorkflowCreated', lang.hitch(this, this._handleSessionWorkflowCreated));
             topic.subscribe('CopilotWorkspaceBrowseOpen', lang.hitch(this, function() {
                 this._setActiveTab('grids', 'workspace');
             }));
@@ -1178,6 +1179,29 @@ define([
                 // SSE event is missing metadata, refresh from API to get complete data
                 this._fetchSessionFiles(false);
             }
+        },
+
+        _handleSessionWorkflowCreated: function(eventPayload) {
+            if (!eventPayload || eventPayload.session_id !== this.sessionId) {
+                return;
+            }
+
+            var workflowItem = eventPayload.workflow || null;
+            if (!workflowItem) {
+                return;
+            }
+
+            // Merge with current workflow context so newly submitted workflows appear immediately.
+            var currentItems = this._sessionWorkflowsSelectionState && Array.isArray(this._sessionWorkflowsSelectionState.items)
+                ? this._sessionWorkflowsSelectionState.items
+                : [];
+            var nextItems = currentItems.concat([workflowItem]);
+            SessionWorkflowsSelectionStore.setItems(this._sessionWorkflowsSelectionState, nextItems);
+
+            if (this.displayWidget && this.displayWidget.setSessionWorkflows) {
+                this.displayWidget.setSessionWorkflows(this._sessionWorkflowsSelectionState.items);
+            }
+            this._syncWorkflowsSelectionsToWidgets();
         },
 
         /**

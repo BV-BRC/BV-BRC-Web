@@ -9,6 +9,7 @@ define([
   'dojo/dom-style',
   'dojo/dom-class',
   'dojo/on',
+  'dojo/topic',
   'dijit/_WidgetBase',
   'dijit/_TemplatedMixin',
   'dijit/form/Button',
@@ -20,6 +21,7 @@ define([
   domStyle,
   domClass,
   on,
+  topic,
   _WidgetBase,
   _TemplatedMixin,
   Button,
@@ -1169,6 +1171,31 @@ define([
             var successMsg = 'Workflow submitted successfully!<br>Workflow ID: ' + _self.escapeHtml(workflowId);
             successMsg += '<br><a href="' + statusUrl + '" target="_blank" style="color: white; text-decoration: underline;">View Status</a>';
             _self._showSubmissionSuccess(successMsg);
+
+            // Associate the workflow with the active chat session so it appears in Context > Workflows.
+            if (_self.sessionId && _self.copilotApi && typeof _self.copilotApi.addWorkflowToSession === 'function') {
+              _self.copilotApi.addWorkflowToSession(_self.sessionId, workflowId)
+                .then(function() {
+                  topic.publish('CopilotSessionWorkflowCreated', {
+                    session_id: _self.sessionId,
+                    workflow: {
+                      id: workflowId,
+                      workflow_id: workflowId,
+                      workflow_name: _self.workflowData && _self.workflowData.workflow_name ? _self.workflowData.workflow_name : 'Workflow',
+                      status: status,
+                      submitted_at: _self.workflowData &&
+                        _self.workflowData.execution_metadata &&
+                        _self.workflowData.execution_metadata.submitted_at
+                        ? _self.workflowData.execution_metadata.submitted_at
+                        : new Date().toISOString(),
+                      selected: true
+                    }
+                  });
+                })
+                .catch(function(associationError) {
+                  console.error('[WorkflowEngine] Failed to associate workflow with session:', associationError);
+                });
+            }
           } else {
             // No workflow_id in response, but no error either
             _self._showSubmissionSuccess(_self.escapeHtml(message));

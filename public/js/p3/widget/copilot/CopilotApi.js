@@ -1193,6 +1193,36 @@ define([
         },
 
         /**
+         * Associates a submitted workflow ID with a chat session so it appears in workflow context.
+         * @param {string} sessionId The chat session ID
+         * @param {string} workflowId The submitted workflow ID
+         * @returns {Promise} A promise that resolves when workflow is associated
+         */
+        addWorkflowToSession: function(sessionId, workflowId) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            if (!sessionId || !workflowId) return Promise.reject('sessionId and workflowId are required');
+
+            var _self = this;
+            return request.post(this.apiUrlBase + '/add-workflow-to-session', {
+                data: JSON.stringify({
+                    session_id: sessionId,
+                    workflow_id: workflowId,
+                    user_id: _self.user_id
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('Error adding workflow to session:', error);
+                throw error;
+            });
+        },
+
+        /**
          * Rates a message
          * @param {string} messageId The ID of the message to rate
          * @param {number} rating The rating to set (1 or -1)
