@@ -4,42 +4,34 @@
     } else if (typeof module === 'object' && module.exports) {
         module.exports = factory();
     } else {
-        root.CopilotSessionWorkspaceSelectionStore = factory();
+        root.CopilotSessionFilesSelectionStore = factory();
     }
 }(this, function() {
     function createInitialState(sessionId) {
         return {
             sessionId: sessionId || null,
-            items: [], // Array of objects with id, path, type, and name
-            itemIds: {} // For quick lookup by id
+            items: [],
+            itemIds: {}
         };
     }
 
-    /**
-     * Normalizes an item to minimal selection format with id, path, type, and name
-     * @param {Object} item - Item object with id, path, type, and name properties
-     * @returns {Object|null} Object with id, path, type, and name, or null if invalid
-     */
-    function normalizeItem(item) {
+    function normalizeFile(item) {
         if (!item) {
             return null;
         }
-
-        var id = item.id;
-        var path = item.path;
-        var type = item.type;
-        var name = item.name;
-
-        // Both id and path are required
-        if (!id || !path) {
+        var id = item.id || item.file_id;
+        if (id === null || id === undefined || id === '') {
             return null;
         }
-
+        id = String(id);
         return {
             id: id,
-            path: path,
-            type: type || null,
-            name: name || null,
+            file_id: item.file_id || null,
+            file_name: item.file_name || 'Untitled file',
+            tool_id: item.tool_id || null,
+            created_at: item.created_at || null,
+            workspace_path: item.workspace_path || null,
+            data_type: item.data_type || null,
             selected: item.selected !== false
         };
     }
@@ -50,7 +42,7 @@
         state.itemIds = {};
 
         nextItems.forEach(function(item) {
-            var normalized = normalizeItem(item);
+            var normalized = normalizeFile(item);
             if (normalized && !state.itemIds[normalized.id]) {
                 state.itemIds[normalized.id] = true;
                 state.items.push(normalized);
@@ -78,25 +70,13 @@
         });
     }
 
-    /**
-     * Gets only the paths from stored items (for API payload)
-     * @param {Object} state - The store state
-     * @returns {Array<string>} Array of path strings
-     */
-    function getPaths(state) {
-        return getSelectedItems(state).map(function(item) {
-            return item.path;
-        });
-    }
-
     return {
         createInitialState: createInitialState,
-        normalizeItem: normalizeItem,
+        normalizeFile: normalizeFile,
         setItems: setItems,
         resetForSession: resetForSession,
         getItems: getItems,
-        getSelectedItems: getSelectedItems,
-        getPaths: getPaths
+        getSelectedItems: getSelectedItems
     };
 }));
 

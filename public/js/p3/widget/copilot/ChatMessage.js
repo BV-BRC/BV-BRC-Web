@@ -162,6 +162,15 @@ define([
         console.log('[ChatMessage] Workspace browse already processed by SSE handler, skipping re-processing');
         alreadyProcessed = true;
       }
+      if (
+        sourceTool &&
+        (sourceTool.indexOf('list_jobs') !== -1 || sourceTool.indexOf('get_recent_jobs') !== -1) &&
+        this.message.uiPayload &&
+        this.message.jobsBrowseResult
+      ) {
+        console.log('[ChatMessage] Jobs browse already processed by SSE handler, skipping re-processing');
+        alreadyProcessed = true;
+      }
 
       if (sourceTool && !alreadyProcessed) {
         // If content is an object with nested structure, extract the actual content
@@ -174,8 +183,12 @@ define([
         this.message.content = processedData.content;
         this.message.isWorkflow = typeof processedData.isWorkflow !== 'undefined' ? processedData.isWorkflow : this.message.isWorkflow;
         this.message.workflowData = typeof processedData.workflowData !== 'undefined' ? processedData.workflowData : this.message.workflowData;
-        this.message.isWorkspaceBrowse = typeof processedData.isWorkspaceBrowse !== 'undefined' ? processedData.isWorkspaceBrowse : this.message.isWorkspaceBrowse;
-        this.message.workspaceBrowseResult = typeof processedData.workspaceBrowseResult !== 'undefined' ? processedData.workspaceBrowseResult : this.message.workspaceBrowseResult;
+        this.message.isWorkspaceBrowse = typeof processedData.isWorkspaceBrowse !== 'undefined'
+          ? (processedData.isWorkspaceBrowse || this.message.isWorkspaceBrowse)
+          : this.message.isWorkspaceBrowse;
+        this.message.workspaceBrowseResult = typeof processedData.workspaceBrowseResult !== 'undefined'
+          ? (processedData.workspaceBrowseResult || this.message.workspaceBrowseResult)
+          : this.message.workspaceBrowseResult;
         this.message.chatSummary = typeof processedData.chatSummary !== 'undefined' ? processedData.chatSummary : this.message.chatSummary;
         this.message.uiPayload = typeof processedData.uiPayload !== 'undefined' ? processedData.uiPayload : this.message.uiPayload;
         this.message.uiAction = typeof processedData.uiAction !== 'undefined' ? processedData.uiAction : this.message.uiAction;
@@ -183,6 +196,12 @@ define([
         this.message.workspaceData = typeof processedData.workspaceData !== 'undefined' ? processedData.workspaceData : this.message.workspaceData;
         this.message.isQueryCollection = typeof processedData.isQueryCollection !== 'undefined' ? processedData.isQueryCollection : this.message.isQueryCollection;
         this.message.queryCollectionData = typeof processedData.queryCollectionData !== 'undefined' ? processedData.queryCollectionData : this.message.queryCollectionData;
+        this.message.isJobsBrowse = typeof processedData.isJobsBrowse !== 'undefined'
+          ? (processedData.isJobsBrowse || this.message.isJobsBrowse)
+          : this.message.isJobsBrowse;
+        this.message.jobsBrowseResult = typeof processedData.jobsBrowseResult !== 'undefined'
+          ? (processedData.jobsBrowseResult || this.message.jobsBrowseResult)
+          : this.message.jobsBrowseResult;
 
         // Workflow and query collection data are set on message object above
       }
@@ -299,6 +318,8 @@ define([
         (this.message.isWorkspaceListing && this.message.workspaceData)
       ) {
         this.renderWorkspaceBrowseSummaryWidget(messageDiv);
+      } else if (this.message.isJobsBrowse && this.message.uiPayload) {
+        this.renderJobsBrowseSummaryWidget(messageDiv);
       } else if (this.message.isQueryCollection && this.message.queryCollectionData) {
         // Render query collection file reference widget
         this.renderQueryCollectionWidget(messageDiv);
@@ -419,6 +440,53 @@ define([
           uiPayload: payload,
           chatSummary: summaryText,
           uiAction: this.message.uiAction || 'open_workspace_tab'
+        });
+      }));
+    },
+
+    renderJobsBrowseSummaryWidget: function(messageDiv) {
+      var payload = this.message.uiPayload || {};
+      var jobs = Array.isArray(payload.jobs) ? payload.jobs : [];
+      var countValue = jobs.length;
+      var summaryText = this.message.chatSummary || ('Found ' + countValue + ' ' + (countValue === 1 ? 'job' : 'jobs'));
+
+      var container = domConstruct.create('div', {
+        class: 'workspace-summary-card'
+      }, messageDiv);
+
+      domConstruct.create('div', {
+        class: 'workspace-summary-text',
+        innerHTML: this.escapeHtml(summaryText)
+      }, container);
+
+      if (payload.sort_by || payload.sort_dir || payload.status || payload.service) {
+        var details = [];
+        if (payload.sort_by) {
+          details.push('Sort: ' + payload.sort_by + (payload.sort_dir ? ' (' + payload.sort_dir + ')' : ''));
+        }
+        if (payload.status) {
+          details.push('Status: ' + payload.status);
+        }
+        if (payload.service) {
+          details.push('Service: ' + payload.service);
+        }
+        domConstruct.create('div', {
+          class: 'workspace-summary-path',
+          innerHTML: this.escapeHtml(details.join(' | '))
+        }, container);
+      }
+
+      var openButton = domConstruct.create('button', {
+        type: 'button',
+        class: 'workspace-summary-open-button',
+        innerHTML: 'Open Jobs Tab'
+      }, container);
+
+      on(openButton, 'click', lang.hitch(this, function() {
+        topic.publish('CopilotJobsBrowseOpen', {
+          uiPayload: payload,
+          chatSummary: summaryText,
+          uiAction: this.message.uiAction || 'open_jobs_tab'
         });
       }));
     },

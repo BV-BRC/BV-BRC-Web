@@ -242,6 +242,7 @@ define([
     },
 
     _normalizeWorkspaceBrowsePayload: function(parsedChunk) {
+      var gridPayload = parsedChunk && parsedChunk.ui_grid ? parsedChunk.ui_grid : null;
       var normalized = {
         tool_name: parsedChunk && parsedChunk.tool_name ? parsedChunk.tool_name : 'workspace_browse_tool',
         result_type: parsedChunk && parsedChunk.result_type ? parsedChunk.result_type : 'list_result',
@@ -249,11 +250,14 @@ define([
         path: parsedChunk && parsedChunk.path ? parsedChunk.path : null,
         source: parsedChunk && parsedChunk.source ? parsedChunk.source : null,
         items: [],
+        grid: gridPayload,
         raw: parsedChunk
       };
 
       if (parsedChunk && Array.isArray(parsedChunk.items)) {
         normalized.items = parsedChunk.items;
+      } else if (gridPayload && Array.isArray(gridPayload.items)) {
+        normalized.items = gridPayload.items;
       } else if (Array.isArray(parsedChunk)) {
         normalized.items = parsedChunk;
       }
@@ -452,6 +456,118 @@ define([
       }
     },
 
+    _extractJobsFromResult: function(parsedChunk) {
+      if (!parsedChunk) {
+        return [];
+      }
+      if (parsedChunk.ui_grid && Array.isArray(parsedChunk.ui_grid.items)) {
+        return parsedChunk.ui_grid.items;
+      }
+      if (Array.isArray(parsedChunk.items)) {
+        return parsedChunk.items;
+      }
+      if (Array.isArray(parsedChunk.jobs)) {
+        return parsedChunk.jobs;
+      }
+      if (Array.isArray(parsedChunk.results)) {
+        return parsedChunk.results;
+      }
+      if (Array.isArray(parsedChunk.tasks)) {
+        return parsedChunk.tasks;
+      }
+      if (parsedChunk.data && Array.isArray(parsedChunk.data.items)) {
+        return parsedChunk.data.items;
+      }
+      if (parsedChunk.data && Array.isArray(parsedChunk.data.jobs)) {
+        return parsedChunk.data.jobs;
+      }
+      if (Array.isArray(parsedChunk)) {
+        return parsedChunk;
+      }
+      return [];
+    },
+
+    _normalizeJobsPayload: function(parsedChunk) {
+      var jobs = this._extractJobsFromResult(parsedChunk).map(function(job) {
+        if (!job) {
+          return null;
+        }
+        var id = job.id || job.job_id || job.task_id;
+        if (id === null || id === undefined || id === '') {
+          return null;
+        }
+        return {
+          id: String(id),
+          status: job.status || null,
+          application_name: job.application_name || job.app || job.service || null,
+          submit_time: job.submit_time || null,
+          start_time: job.start_time || null,
+          completed_time: job.completed_time || null,
+          parameters: job.parameters || null,
+          raw: job
+        };
+      }).filter(function(job) { return job !== null; });
+
+      var payload = {
+        jobs: jobs,
+        count: (parsedChunk && typeof parsedChunk.count === 'number') ? parsedChunk.count : jobs.length,
+        total: (parsedChunk && typeof parsedChunk.total === 'number') ? parsedChunk.total : jobs.length,
+        sort_by: parsedChunk && (parsedChunk.sort_by || parsedChunk.sortBy || null),
+        sort_dir: parsedChunk && (parsedChunk.sort_dir || parsedChunk.sortDir || null),
+        status: parsedChunk && parsedChunk.status ? parsedChunk.status : null,
+        service: parsedChunk && (parsedChunk.service || parsedChunk.application_name || null)
+      };
+      return payload;
+    },
+
+    _formatJobsSummary: function(payload) {
+      var count = payload && typeof payload.count === 'number' ? payload.count : 0;
+      var label = count === 1 ? 'job' : 'jobs';
+      var bits = ['Found ' + count + ' ' + label];
+      if (payload && payload.sort_by) {
+        bits.push('sorted by ' + payload.sort_by + (payload.sort_dir ? ' (' + payload.sort_dir + ')' : ''));
+      }
+      if (payload && payload.status) {
+        bits.push('status: ' + payload.status);
+      }
+      return bits.join(', ');
+    },
+
+    _processListJobs: function(chunk, baseData) {
+      if (!chunk) {
+        return null;
+      }
+      try {
+        var parsed = this._parseToolChunk(chunk);
+        var payload = this._normalizeJobsPayload(parsed.parsedChunk);
+        var summary = this._formatJobsSummary(payload);
+        return {
+          ...baseData,
+          chunk: summary,
+          isJobsBrowse: true,
+          jobsBrowseResult: payload,
+          chatSummary: summary,
+          uiPayload: payload,
+          uiAction: 'open_jobs_tab'
+        };
+      } catch (e) {
+        return {
+          ...baseData,
+          chunk: typeof chunk === 'string' ? chunk : JSON.stringify(chunk),
+          isJobsBrowse: false
+        };
+      }
+    },
+
+    _isListJobsTool: function(toolId) {
+      if (!toolId || typeof toolId !== 'string') {
+        return false;
+      }
+      return toolId === 'bvbrc_server.list_jobs' ||
+             toolId === 'bvbrc_server.get_recent_jobs' ||
+             toolId.indexOf('list_jobs') !== -1;
+    },
+
     /**
      * Processes a tool-specific event
      * @param {string} currentEvent - The current SSE event type
@@ -492,6 +608,15 @@ define([
           return processed;
         }
         // Return original if parsing fails
+        return parsed;
+      }
+      if (currentEvent === 'final_response' &&
+          this._isListJobsTool(tool) &&
+          parsed.chunk) {
+        const processed = this._processListJobs(parsed.chunk, parsed);
+        if (processed) {
+          return processed;
+        }
         return parsed;
       }
 
@@ -693,6 +818,21 @@ define([
           console.log('[CopilotToolHandler] Returning result:', result);
           console.log('[CopilotToolHandler] result.content type:', typeof result.content);
           return result;
+        }
+      }
+
+      if (this._isListJobsTool(sourceTool)) {
+        const baseData = { chunk: content };
+        const processed = this._processListJobs(content, baseData);
+        if (processed) {
+          return {
+            content: processed.chunk,
+            isJobsBrowse: processed.isJobsBrowse,
+            jobsBrowseResult: processed.jobsBrowseResult,
+            chatSummary: processed.chatSummary,
+            uiPayload: processed.uiPayload,
+            uiAction: processed.uiAction
+          };
         }
       }
 

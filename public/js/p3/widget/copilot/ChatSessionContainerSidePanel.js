@@ -109,7 +109,8 @@ define([
                 context: this.context,
                 model: activeModel,
                 ragDb: this.ragDb,
-                selectedWorkspaceItems: this._sessionWorkspaceSelectionState.items
+                selectedWorkspaceItems: this._sessionWorkspaceSelectionState.items,
+                selectedJobs: this._sessionJobsSelectionState.items
             });
             this.addChild(this.inputWidget);
         },
@@ -145,6 +146,7 @@ define([
                 sessionId: this.sessionId,
                 onLoadMoreFiles: lang.hitch(this, this._loadMoreSessionFiles),
                 onWorkspaceSelectionChanged: lang.hitch(this, this._handleWorkspaceSelectionChanged),
+                onJobsSelectionChanged: lang.hitch(this, this._handleJobsSelectionChanged),
                 context: 'side-panel'  // Mark this as side panel context
             };
 
@@ -155,6 +157,7 @@ define([
 
             this.displayWidget = new CopilotDisplay(displayOpts);
             this.displayWidget.setSessionWorkspaceSelectionData(this._sessionWorkspaceSelectionState.items);
+            this.displayWidget.setSessionJobsSelectionData(this._sessionJobsSelectionState.items);
             this.addChild(this.displayWidget);
         },
 

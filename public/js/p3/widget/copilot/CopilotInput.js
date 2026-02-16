@@ -61,11 +61,14 @@ define([
 
       enhancedPrompt: null,
       selectedWorkspaceItems: [],
+      selectedJobs: [],
       attachedImages: [],
       imageUploadInput: null,
       imageActionNode: null,
       imageActionMenuNode: null,
       imageActionOutsideClickHandle: null,
+      onImageAttachmentsChanged: null,
+      _nextImageAttachmentId: 0,
 
       /**
        * Constructor that initializes the widget with provided options
@@ -73,6 +76,35 @@ define([
        */
       constructor: function(args) {
         declare.safeMixin(this, args);
+        this._nextImageAttachmentId = 0;
+      },
+
+      _toContextImageItems: function(entries) {
+        if (!Array.isArray(entries)) {
+          return [];
+        }
+        return entries.map(function(entry, index) {
+          var attachment = entry && entry.attachment ? entry.attachment : {};
+          var id = entry && entry.id ? entry.id : ('img-' + index);
+          return {
+            id: id,
+            name: attachment.name || 'Uploaded image',
+            source: attachment.source || 'upload',
+            thumbnail: entry && typeof entry.image === 'string' ? entry.image : null
+          };
+        });
+      },
+
+      _emitImageAttachmentsChanged: function() {
+        if (typeof this.onImageAttachmentsChanged !== 'function') {
+          return;
+        }
+        var entries = Array.isArray(this.attachedImages) ? this.attachedImages.slice() : [];
+        this.onImageAttachmentsChanged({
+          sessionId: this.sessionId,
+          entries: entries,
+          items: this._toContextImageItems(entries)
+        });
       },
 
       _escapeHtml: function(text) {
@@ -90,7 +122,7 @@ define([
         }
         // Extract only path and type from items
         return this.selectedWorkspaceItems.map(function(item) {
-          if (!item || !item.path) {
+          if (!item || item.selected === false || !item.path) {
             return null;
           }
           return {
@@ -107,11 +139,56 @@ define([
         if (selectedItems.length > 0) {
           params.selected_workspace_items = selectedItems;
         }
+        var selectedJobs = this._getSelectedJobsForRequest();
+        if (selectedJobs.length > 0) {
+          params.selected_jobs = selectedJobs;
+        }
+      },
+
+      _applyToolMetadataToAssistantMessage: function(assistantMessage, toolMetadata) {
+        if (!assistantMessage || !toolMetadata) {
+          return;
+        }
+        assistantMessage.source_tool = toolMetadata.source_tool || assistantMessage.source_tool;
+        assistantMessage.isWorkflow = toolMetadata.isWorkflow;
+        assistantMessage.workflowData = toolMetadata.workflowData;
+        assistantMessage.isWorkspaceListing = toolMetadata.isWorkspaceListing;
+        assistantMessage.workspaceData = toolMetadata.workspaceData;
+        assistantMessage.isWorkspaceBrowse = toolMetadata.isWorkspaceBrowse;
+        assistantMessage.workspaceBrowseResult = toolMetadata.workspaceBrowseResult;
+        assistantMessage.isJobsBrowse = toolMetadata.isJobsBrowse;
+        assistantMessage.jobsBrowseResult = toolMetadata.jobsBrowseResult;
+        assistantMessage.chatSummary = toolMetadata.chatSummary;
+        assistantMessage.uiPayload = toolMetadata.uiPayload;
+        assistantMessage.uiAction = toolMetadata.uiAction;
       },
 
       setSelectedWorkspaceItems: function(items) {
         this.selectedWorkspaceItems = Array.isArray(items) ? items.slice() : [];
         this._renderWorkspaceSelectionIndicator();
+      },
+
+      _getSelectedJobsForRequest: function() {
+        if (!Array.isArray(this.selectedJobs) || this.selectedJobs.length === 0) {
+          return [];
+        }
+        return this.selectedJobs.map(function(job) {
+          if (!job || job.selected === false || job.id === null || job.id === undefined || job.id === '') {
+            return null;
+          }
+          return {
+            id: String(job.id),
+            status: job.status || null,
+            application_name: job.application_name || job.app || null
+          };
+        }).filter(function(job) {
+          return job !== null;
+        });
+      },
+
+      setSelectedJobs: function(items) {
+        this.selectedJobs = Array.isArray(items) ? items.slice() : [];
+        this._renderJobsSelectionIndicator();
       },
 
       _registerSessionIfNeeded: function() {
@@ -288,16 +365,6 @@ define([
         });
         this.abortButton.placeAt(inputContainer);
 
-        // Small selection indicator showing current workspace item selection count
-        this.workspaceSelectionIndicator = domConstruct.create('div', {
-            className: 'workspaceSelectionIndicator',
-            title: 'Selected workspace files'
-        }, inputContainer);
-
-        this.workspaceSelectionCountNode = domConstruct.create('span', {
-            className: 'workspaceSelectionCount'
-        }, this.workspaceSelectionIndicator);
-
         // Subscribe to page content toggle changes from ChatSessionOptionsBar
         topic.subscribe('pageContentToggleChanged', lang.hitch(this, function(checked) {
             if (!this._modelSupportsImage(this.model)) {
@@ -323,6 +390,8 @@ define([
             // Clear selected workspace items
             this.selectedWorkspaceItems = [];
             this._renderWorkspaceSelectionIndicator();
+            this.selectedJobs = [];
+            this._renderJobsSelectionIndicator();
         }));
 
         // Maximum height for textarea before scrolling
@@ -368,6 +437,7 @@ define([
         }));
 
         this._renderWorkspaceSelectionIndicator();
+        this._renderJobsSelectionIndicator();
         this._updateImageCapabilityUI();
         this._updateAbortButtonState();
       },
@@ -463,6 +533,27 @@ define([
         this.workspaceSelectionIndicator.style.display = count > 0 ? 'inline-flex' : 'none';
       },
 
+      _renderJobsSelectionIndicator: function() {
+        if (!this.jobsSelectionIndicator || !this.jobsSelectionCountNode) {
+          return;
+        }
+        var selectedItems = Array.isArray(this.selectedJobs) ? this.selectedJobs : [];
+        var count = selectedItems.length;
+        var label = count === 1 ? '1 job' : count + ' jobs';
+        var selectedJobLabels = selectedItems.map(function(item) {
+          var id = item && item.id ? item.id : 'Unknown job';
+          var app = item && (item.application_name || item.app) ? (' (' + (item.application_name || item.app) + ')') : '';
+          return id + app;
+        });
+        this.jobsSelectionCountNode.textContent = label;
+        this.jobsSelectionIndicator.title = count > 0
+          ? ('Selected jobs (' + count + ')' +
+            (selectedJobLabels.length > 0 ? '\n' + selectedJobLabels.join('\n') : ''))
+          : 'No jobs selected';
+        this.jobsSelectionIndicator.classList.toggle('hasSelection', count > 0);
+        this.jobsSelectionIndicator.style.display = count > 0 ? 'inline-flex' : 'none';
+      },
+
       /**
        * Handles submission of RAG queries with document retrieval
        * Implementation:
@@ -515,7 +606,8 @@ define([
         this._submitCopilotQueryWithRegistration(inputText, this.sessionId, systemPrompt, submitModel, true, this.ragDb, this.numDocs, null, this.enhancedPrompt, lang.mixin({
           images: hasUploadedImage ? uploadedImagePayload.images : null
         }, {
-          selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
+          selected_workspace_items: this._getSelectedWorkspaceItemsForRequest(),
+          selected_jobs: this._getSelectedJobsForRequest()
         })).then(lang.hitch(this, function(response) {
           // Only add assistant message and system message (if present) - user message was already added
           var messagesToAdd = [];
@@ -593,7 +685,8 @@ define([
         this._submitCopilotQueryWithRegistration(inputText, this.sessionId, systemPrompt, submitModel, true, null, null, null, null, lang.mixin({
           images: hasUploadedImage ? uploadedImagePayload.images : null
         }, {
-          selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
+          selected_workspace_items: this._getSelectedWorkspaceItemsForRequest(),
+          selected_jobs: this._getSelectedJobsForRequest()
         })).then(lang.hitch(this, function(response) {
           // Only add assistant message and system message (if present) - user message was already added
           var messagesToAdd = [];
@@ -642,6 +735,8 @@ define([
         // Clear selected workspace items
         this.selectedWorkspaceItems = [];
         this._renderWorkspaceSelectionIndicator();
+        this.selectedJobs = [];
+        this._renderJobsSelectionIndicator();
       },
 
       /**
@@ -663,6 +758,8 @@ define([
         // Clear selected workspace items
         this.selectedWorkspaceItems = [];
         this._renderWorkspaceSelectionIndicator();
+        this.selectedJobs = [];
+        this._renderJobsSelectionIndicator();
       },
 
       /**
@@ -807,7 +904,9 @@ define([
 
             var reader = new FileReader();
             reader.onload = function(loadEvt) {
+              var nextId = 'img-' + Date.now() + '-' + Math.floor(Math.random() * 1000000);
               resolve({
+                id: nextId,
                 image: loadEvt && loadEvt.target ? loadEvt.target.result : null,
                 attachment: {
                   type: 'image',
@@ -830,6 +929,7 @@ define([
             }
           }));
           this._renderAttachedImageIndicator();
+          this._emitImageAttachmentsChanged();
         })).catch(function(error) {
           topic.publish('CopilotApiError', { error: error });
         }).finally(lang.hitch(this, function() {
@@ -843,6 +943,13 @@ define([
           this.imageUploadInput.value = '';
         }
         this._renderAttachedImageIndicator();
+        this._emitImageAttachmentsChanged();
+      },
+
+      setAttachedImages: function(entries) {
+        this.attachedImages = Array.isArray(entries) ? entries.slice() : [];
+        this._renderAttachedImageIndicator();
+        this._emitImageAttachmentsChanged();
       },
 
       _renderAttachedImageIndicator: function() {
@@ -1035,7 +1142,8 @@ define([
 
           this._submitCopilotQueryWithRegistration(inputText, this.sessionId, imageSystemPrompt, imgtxt_model, true, this.ragDb, this.numDocs, null, this.enhancedPrompt, {
               images: [base64Image],
-              selected_workspace_items: this._getSelectedWorkspaceItemsForRequest()
+              selected_workspace_items: this._getSelectedWorkspaceItemsForRequest(),
+              selected_jobs: this._getSelectedJobsForRequest()
           })
               .then(lang.hitch(this, function(response) {
                   // Only add assistant message and system message (if present) - user message was already added
@@ -1148,17 +1256,8 @@ define([
               console.log('chunk', chunk);
 
               // Add tool metadata if available (for workflow handling)
-              if (toolMetadata && !assistantMessage.source_tool) {
-                  assistantMessage.source_tool = toolMetadata.source_tool;
-                  assistantMessage.isWorkflow = toolMetadata.isWorkflow;
-                  assistantMessage.workflowData = toolMetadata.workflowData;
-                  assistantMessage.isWorkspaceListing = toolMetadata.isWorkspaceListing;
-                  assistantMessage.workspaceData = toolMetadata.workspaceData;
-                  assistantMessage.isWorkspaceBrowse = toolMetadata.isWorkspaceBrowse;
-                  assistantMessage.workspaceBrowseResult = toolMetadata.workspaceBrowseResult;
-                  assistantMessage.chatSummary = toolMetadata.chatSummary;
-                  assistantMessage.uiPayload = toolMetadata.uiPayload;
-                  assistantMessage.uiAction = toolMetadata.uiAction;
+              if (toolMetadata) {
+                  this._applyToolMetadataToAssistantMessage(assistantMessage, toolMetadata);
               }
 
               assistantMessage.content += chunk;
@@ -1246,6 +1345,9 @@ define([
       this.chatStore.addMessage(userMessage);
       this.displayWidget.showMessages(this.chatStore.query());
       this.textArea.set('value', '');
+      if (hasUploadedImage) {
+        this._clearAttachedImage();
+      }
 
       this.isSubmitting = true;
       this.isQueryProgressActive = false;
@@ -1306,20 +1408,14 @@ define([
 
                   // Add tool metadata if available (for workflow handling)
                   if (toolMetadata) {
-                      assistantMessage.source_tool = toolMetadata.source_tool;
-                      assistantMessage.isWorkflow = toolMetadata.isWorkflow;
-                      assistantMessage.workflowData = toolMetadata.workflowData;
-                      assistantMessage.isWorkspaceListing = toolMetadata.isWorkspaceListing;
-                      assistantMessage.workspaceData = toolMetadata.workspaceData;
-                      assistantMessage.isWorkspaceBrowse = toolMetadata.isWorkspaceBrowse;
-                      assistantMessage.workspaceBrowseResult = toolMetadata.workspaceBrowseResult;
-                      assistantMessage.chatSummary = toolMetadata.chatSummary;
-                      assistantMessage.uiPayload = toolMetadata.uiPayload;
-                      assistantMessage.uiAction = toolMetadata.uiAction;
+                      this._applyToolMetadataToAssistantMessage(assistantMessage, toolMetadata);
                   }
 
                   this.chatStore.addMessage(assistantMessage);
                   assistantMessageCreated = true;
+              }
+              if (toolMetadata) {
+                  this._applyToolMetadataToAssistantMessage(assistantMessage, toolMetadata);
               }
               // Append content to assistant message
               assistantMessage.content += chunk;
@@ -1417,6 +1513,9 @@ define([
       this.chatStore.addMessage(userMessage);
       this.displayWidget.showMessages(this.chatStore.query());
       this.textArea.set('value', '');
+      if (hasUploadedImage) {
+        this._clearAttachedImage();
+      }
 
       this.isSubmitting = true;
       this.isQueryProgressActive = false;
@@ -1485,16 +1584,7 @@ define([
                           console.log('[HANDLER] toolMetadata.workflowData keys:', Object.keys(toolMetadata.workflowData));
                           console.log('[HANDLER] toolMetadata.workflowData.workflow_name:', toolMetadata.workflowData.workflow_name);
                       }
-                      assistantMessage.source_tool = toolMetadata.source_tool;
-                      assistantMessage.isWorkflow = toolMetadata.isWorkflow;
-                      assistantMessage.workflowData = toolMetadata.workflowData;
-                      assistantMessage.isWorkspaceListing = toolMetadata.isWorkspaceListing;
-                      assistantMessage.workspaceData = toolMetadata.workspaceData;
-                      assistantMessage.isWorkspaceBrowse = toolMetadata.isWorkspaceBrowse;
-                      assistantMessage.workspaceBrowseResult = toolMetadata.workspaceBrowseResult;
-                      assistantMessage.chatSummary = toolMetadata.chatSummary;
-                      assistantMessage.uiPayload = toolMetadata.uiPayload;
-                      assistantMessage.uiAction = toolMetadata.uiAction;
+                      this._applyToolMetadataToAssistantMessage(assistantMessage, toolMetadata);
                       console.log('[HANDLER] ✓ Assistant message updated with toolMetadata');
                       console.log('[HANDLER] assistantMessage.workflowData:', assistantMessage.workflowData);
                   } else {
@@ -1503,6 +1593,9 @@ define([
 
                   this.chatStore.addMessage(assistantMessage);
                   assistantMessageCreated = true;
+              }
+              if (toolMetadata) {
+                  this._applyToolMetadataToAssistantMessage(assistantMessage, toolMetadata);
               }
               // Append content to assistant message
               assistantMessage.content += chunk;
@@ -1663,20 +1756,14 @@ define([
 
                     // Add tool metadata if available (for workflow handling)
                     if (toolMetadata) {
-                        assistantMessage.source_tool = toolMetadata.source_tool;
-                        assistantMessage.isWorkflow = toolMetadata.isWorkflow;
-                        assistantMessage.workflowData = toolMetadata.workflowData;
-                        assistantMessage.isWorkspaceListing = toolMetadata.isWorkspaceListing;
-                        assistantMessage.workspaceData = toolMetadata.workspaceData;
-                        assistantMessage.isWorkspaceBrowse = toolMetadata.isWorkspaceBrowse;
-                        assistantMessage.workspaceBrowseResult = toolMetadata.workspaceBrowseResult;
-                        assistantMessage.chatSummary = toolMetadata.chatSummary;
-                        assistantMessage.uiPayload = toolMetadata.uiPayload;
-                        assistantMessage.uiAction = toolMetadata.uiAction;
+                        this._applyToolMetadataToAssistantMessage(assistantMessage, toolMetadata);
                     }
 
                     this.chatStore.addMessage(assistantMessage);
                     assistantMessageCreated = true;
+                }
+                if (toolMetadata) {
+                    this._applyToolMetadataToAssistantMessage(assistantMessage, toolMetadata);
                 }
                 // Append content to assistant message
                 assistantMessage.content += chunk;
@@ -1819,19 +1906,13 @@ define([
 
                   // Add tool metadata if available (for workflow handling)
                   if (toolMetadata) {
-                      assistantMessage.source_tool = toolMetadata.source_tool;
-                      assistantMessage.isWorkflow = toolMetadata.isWorkflow;
-                      assistantMessage.workflowData = toolMetadata.workflowData;
-                      assistantMessage.isWorkspaceListing = toolMetadata.isWorkspaceListing;
-                      assistantMessage.workspaceData = toolMetadata.workspaceData;
-                      assistantMessage.isWorkspaceBrowse = toolMetadata.isWorkspaceBrowse;
-                      assistantMessage.workspaceBrowseResult = toolMetadata.workspaceBrowseResult;
-                      assistantMessage.chatSummary = toolMetadata.chatSummary;
-                      assistantMessage.uiPayload = toolMetadata.uiPayload;
-                      assistantMessage.uiAction = toolMetadata.uiAction;
+                      this._applyToolMetadataToAssistantMessage(assistantMessage, toolMetadata);
                   }
                   this.chatStore.addMessage(assistantMessage);
                   assistantMessageCreated = true;
+              }
+              if (toolMetadata) {
+                  this._applyToolMetadataToAssistantMessage(assistantMessage, toolMetadata);
               }
               // Append content to assistant message
               assistantMessage.content += chunk;
