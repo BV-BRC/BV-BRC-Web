@@ -7,15 +7,23 @@ define([
   'dojo/_base/lang',
   'dojo/dom-construct',
   'dojo/dom-style',
+  'dojo/dom-class',
+  'dojo/on',
   'dijit/_WidgetBase',
-  'dijit/_TemplatedMixin'
+  'dijit/_TemplatedMixin',
+  'dijit/form/Button',
+  './workflowForms/ServiceFormRegistry'
 ], function(
   declare,
   lang,
   domConstruct,
   domStyle,
+  domClass,
+  on,
   _WidgetBase,
-  _TemplatedMixin
+  _TemplatedMixin,
+  Button,
+  ServiceFormRegistry
 ) {
   /**
    * @class WorkflowEngine
@@ -38,12 +46,22 @@ define([
     /** @property {DOMNode} detailPanel - Reference to the detail panel DOM node */
     detailPanel: null,
 
+    /** @property {Object} Tracks first and current form states per step */
+    stepFormStateByIndex: null,
+
+    /** @property {Object} Reference to CopilotAPI for workflow submission */
+    copilotApi: null,
+
+    /** @property {string} Session ID for workflow submission context */
+    sessionId: null,
+
     /**
      * Called after widget creation
      */
     postCreate: function() {
       console.log('[WorkflowEngine] postCreate() called');
       console.log('[WorkflowEngine] Initial workflowData:', this.workflowData);
+      this.stepFormStateByIndex = {};
       this.inherited(arguments);
       this.render();
     },
@@ -222,6 +240,27 @@ define([
           class: 'workflow-output-folder',
           innerHTML: '<strong>Output Folder:</strong> ' + this.escapeHtml(workflow.base_context.workspace_output_folder)
         }, metaContainer);
+      }
+
+      // Add submit button if workflow is not yet submitted
+      var isSubmitted = workflow.execution_metadata &&
+                       workflow.execution_metadata.is_submitted;
+      var isPlanned = workflow.execution_metadata &&
+                     workflow.execution_metadata.is_planned;
+
+      if (!isSubmitted || isPlanned) {
+        var buttonContainer = domConstruct.create('div', {
+          style: 'margin-top: 15px; text-align: left;'
+        }, header);
+
+        var submitButton = new Button({
+          label: 'Submit',
+          type: 'submit',
+          onClick: lang.hitch(this, function() {
+            this.submitWorkflowForExecution(workflow);
+          })
+        });
+        submitButton.placeAt(buttonContainer);
       }
     },
 
@@ -621,31 +660,7 @@ define([
           class: 'workflow-detail-section-title',
           innerHTML: 'Parameters'
         }, paramsSection);
-
-        var paramsList = domConstruct.create('div', {
-          class: 'workflow-detail-params-list'
-        }, paramsSection);
-
-        for (var key in step.params) {
-          if (step.params.hasOwnProperty(key)) {
-            var paramItem = domConstruct.create('div', {
-              class: 'workflow-detail-param-item'
-            }, paramsList);
-
-            domConstruct.create('div', {
-              class: 'workflow-detail-param-key',
-              innerHTML: this.escapeHtml(key)
-            }, paramItem);
-
-            var valueStr = this.formatValue(step.params[key]);
-            var isVariable = this.isVariableReference(valueStr);
-
-            domConstruct.create('div', {
-              class: 'workflow-detail-param-value' + (isVariable ? ' workflow-variable-ref' : ''),
-              innerHTML: this.escapeHtml(valueStr)
-            }, paramItem);
-          }
-        }
+        this.renderEditableParams(step, index, paramsSection);
       }
 
       // Outputs
@@ -699,6 +714,309 @@ define([
       return data || { steps: [] };
     },
 
+    cloneValue: function(value) {
+      try {
+        return JSON.parse(JSON.stringify(value));
+      } catch (err) {
+        return value;
+      }
+    },
+
+    getStepFormState: function(step, index) {
+      if (!this.stepFormStateByIndex.hasOwnProperty(index)) {
+        var initialParams = this.cloneValue(step.params || {});
+        this.stepFormStateByIndex[index] = {
+          original: this.cloneValue(initialParams),
+          current: this.cloneValue(initialParams)
+        };
+      }
+      return this.stepFormStateByIndex[index];
+    },
+
+    renderEditableParams: function(step, index, paramsSection) {
+      var state = this.getStepFormState(step, index);
+      var editableParams = state.current;
+      var serviceMeta = ServiceFormRegistry.getDefinition(step.app || '');
+      var supported = serviceMeta && serviceMeta.isSupported;
+
+      var subtitle = supported
+        ? ('Using custom form: ' + this.escapeHtml(serviceMeta.displayName))
+        : 'Using generic parameter editor';
+      domConstruct.create('div', {
+        class: 'workflow-form-subtitle',
+        innerHTML: subtitle
+      }, paramsSection);
+
+      var actionRow = domConstruct.create('div', {
+        class: 'workflow-form-actions'
+      }, paramsSection);
+
+      var applyBtn = domConstruct.create('button', {
+        type: 'button',
+        class: 'workflow-form-action-btn',
+        innerHTML: 'Apply Edits'
+      }, actionRow);
+
+      var resetBtn = domConstruct.create('button', {
+        type: 'button',
+        class: 'workflow-form-action-btn workflow-form-action-btn-secondary',
+        innerHTML: 'Reset Step'
+      }, actionRow);
+
+      applyBtn.onclick = lang.hitch(this, function() {
+        this.applyStepEdits(step, index, editableParams);
+      });
+
+      resetBtn.onclick = lang.hitch(this, function() {
+        this.resetStepEdits(step, index);
+      });
+      this.renderGroupedFields(serviceMeta, editableParams, step.params || {}, paramsSection, index, supported);
+    },
+
+    renderGroupedFields: function(serviceMeta, editableParams, originalParams, paramsSection, stepIndex, supported) {
+      var seen = {};
+      var groups = supported ? (serviceMeta.groups || []) : [];
+
+      if (!supported || groups.length === 0) {
+        groups = [{
+          key: 'parameters',
+          label: 'Parameters',
+          fields: []
+        }];
+      }
+
+      groups.forEach(lang.hitch(this, function(group) {
+        var sectionNode = domConstruct.create('div', {
+          class: 'workflow-form-group'
+        }, paramsSection);
+
+        var headerNode = domConstruct.create('div', {
+          class: 'workflow-form-group-header' + (group.collapsible ? ' workflow-form-group-header-collapsible' : ''),
+          innerHTML: this.escapeHtml(group.label || 'Parameters')
+        }, sectionNode);
+
+        var bodyNode = domConstruct.create('div', {
+          class: 'workflow-form-group-body' + (group.collapsible && group.collapsed ? ' workflow-form-group-collapsed' : '')
+        }, sectionNode);
+
+        if (group.collapsible) {
+          var toggle = domConstruct.create('span', {
+            class: 'workflow-form-group-toggle',
+            innerHTML: group.collapsed ? 'Show' : 'Hide'
+          }, headerNode);
+          headerNode.onclick = function() {
+            var collapsed = bodyNode.classList.toggle('workflow-form-group-collapsed');
+            toggle.innerHTML = collapsed ? 'Show' : 'Hide';
+          };
+        }
+
+        var fieldsGrid = domConstruct.create('div', {
+          class: 'workflow-detail-params-list workflow-form-compact-grid'
+        }, bodyNode);
+
+        (group.fields || []).forEach(lang.hitch(this, function(fieldDef) {
+          seen[fieldDef.name] = true;
+          this.renderEditableField(fieldDef, editableParams, originalParams, fieldsGrid, stepIndex);
+        }));
+      }));
+
+      // Always include unmapped params under an "Additional Parameters" compact group.
+      var remaining = [];
+      for (var key in editableParams) {
+        if (!editableParams.hasOwnProperty(key) || seen[key]) continue;
+        remaining.push({
+          name: key,
+          label: key.replace(/_/g, ' ').replace(/\b\w/g, function(ch) { return ch.toUpperCase(); }),
+          type: this.inferFieldType(originalParams[key], key),
+          help: 'Additional workflow parameter',
+          options: []
+        });
+      }
+      if (remaining.length > 0) {
+        var additionalSection = domConstruct.create('div', {
+          class: 'workflow-form-group'
+        }, paramsSection);
+        domConstruct.create('div', {
+          class: 'workflow-form-group-header',
+          innerHTML: 'Additional Parameters'
+        }, additionalSection);
+        var additionalGrid = domConstruct.create('div', {
+          class: 'workflow-detail-params-list workflow-form-compact-grid'
+        }, additionalSection);
+        remaining.forEach(lang.hitch(this, function(fieldDef) {
+          this.renderEditableField(fieldDef, editableParams, originalParams, additionalGrid, stepIndex);
+        }));
+      }
+    },
+
+    inferFieldType: function(value, key) {
+      if (typeof value === 'boolean') return 'checkbox';
+      if (typeof value === 'number') return 'number';
+      if (Array.isArray(value) || (typeof key === 'string' && (key.indexOf('_libs') !== -1 || key.indexOf('_ids') !== -1))) {
+        return 'textarea';
+      }
+      if (typeof value === 'object' && value !== null) return 'textarea';
+      return 'text';
+    },
+
+    renderEditableField: function(fieldDef, editableParams, originalParams, paramsList, stepIndex) {
+      var paramItem = domConstruct.create('div', {
+        class: 'workflow-detail-param-item workflow-form-field'
+      }, paramsList);
+
+      var label = fieldDef.label || fieldDef.name;
+      domConstruct.create('label', {
+        class: 'workflow-detail-param-key workflow-form-label',
+        innerHTML: this.escapeHtml(label)
+      }, paramItem);
+
+      var currentValue = editableParams.hasOwnProperty(fieldDef.name)
+        ? editableParams[fieldDef.name]
+        : '';
+      var originalValue = originalParams.hasOwnProperty(fieldDef.name)
+        ? originalParams[fieldDef.name]
+        : undefined;
+
+      var type = fieldDef.type || this.inferFieldType(originalValue, fieldDef.name);
+      var inputNode;
+      if (type === 'checkbox') {
+        inputNode = domConstruct.create('input', {
+          class: 'workflow-form-input workflow-form-checkbox',
+          type: 'checkbox'
+        }, paramItem);
+        inputNode.checked = this.toBoolean(currentValue);
+        inputNode.onchange = lang.hitch(this, function(evt) {
+          this.onFieldChanged(stepIndex, fieldDef.name, evt.target.checked);
+        });
+      } else if (type === 'textarea') {
+        inputNode = domConstruct.create('textarea', {
+          class: 'workflow-form-input workflow-form-textarea'
+        }, paramItem);
+        inputNode.value = this.stringifyEditableValue(currentValue, type);
+        inputNode.oninput = lang.hitch(this, function(evt) {
+          var newValue = this.coerceInputValue(evt.target.value, originalValue, type);
+          this.onFieldChanged(stepIndex, fieldDef.name, newValue);
+        });
+      } else if (type === 'select' && fieldDef.options && fieldDef.options.length > 0) {
+        inputNode = domConstruct.create('select', {
+          class: 'workflow-form-input workflow-form-select'
+        }, paramItem);
+        fieldDef.options.forEach(function(optValue) {
+          domConstruct.create('option', {
+            value: optValue,
+            innerHTML: optValue
+          }, inputNode);
+        });
+        if (currentValue !== undefined && currentValue !== null && String(currentValue) !== '') {
+          inputNode.value = String(currentValue);
+          if (inputNode.value !== String(currentValue)) {
+            domConstruct.create('option', {
+              value: String(currentValue),
+              innerHTML: String(currentValue)
+            }, inputNode);
+            inputNode.value = String(currentValue);
+          }
+        }
+        inputNode.onchange = lang.hitch(this, function(evt) {
+          var newSelectValue = this.coerceInputValue(evt.target.value, originalValue, type);
+          this.onFieldChanged(stepIndex, fieldDef.name, newSelectValue);
+        });
+      } else {
+        inputNode = domConstruct.create('input', {
+          class: 'workflow-form-input',
+          type: type === 'number' ? 'number' : 'text'
+        }, paramItem);
+        inputNode.value = this.stringifyEditableValue(currentValue, type);
+        inputNode.oninput = lang.hitch(this, function(evt) {
+          var inputValue = this.coerceInputValue(evt.target.value, originalValue, type);
+          this.onFieldChanged(stepIndex, fieldDef.name, inputValue);
+        });
+      }
+
+      if (this.isVariableReference(this.stringifyEditableValue(currentValue, type))) {
+        inputNode.className += ' workflow-variable-ref';
+      }
+
+      if (fieldDef.help) {
+        domConstruct.create('div', {
+          class: 'workflow-form-help',
+          innerHTML: this.escapeHtml(fieldDef.help)
+        }, paramItem);
+      }
+    },
+
+    stringifyEditableValue: function(value, type) {
+      if (value === null || typeof value === 'undefined') return '';
+      if (Array.isArray(value)) return value.join('\n');
+      if (typeof value === 'object') return JSON.stringify(value, null, 2);
+      if (type === 'checkbox') return this.toBoolean(value) ? 'true' : 'false';
+      return String(value);
+    },
+
+    toBoolean: function(value) {
+      if (typeof value === 'boolean') return value;
+      if (typeof value === 'number') return value !== 0;
+      if (typeof value === 'string') {
+        var normalized = value.trim().toLowerCase();
+        return normalized === 'true' || normalized === '1' || normalized === 'yes';
+      }
+      return Boolean(value);
+    },
+
+    coerceInputValue: function(raw, originalValue, type) {
+      if (type === 'checkbox') {
+        return this.toBoolean(raw);
+      }
+      if (type === 'number') {
+        if (raw === '') return raw;
+        var parsedNumber = Number(raw);
+        return isNaN(parsedNumber) ? raw : parsedNumber;
+      }
+      if (Array.isArray(originalValue)) {
+        return raw
+          .split(/\n|,/)
+          .map(function(item) { return item.trim(); })
+          .filter(function(item) { return item.length > 0; });
+      }
+      if (typeof originalValue === 'object' && originalValue !== null) {
+        try {
+          return JSON.parse(raw);
+        } catch (err) {
+          return raw;
+        }
+      }
+      return raw;
+    },
+
+    onFieldChanged: function(stepIndex, key, value) {
+      var state = this.stepFormStateByIndex[stepIndex];
+      if (!state) {
+        state = this.getStepFormState(this.selectedStep || { params: {} }, stepIndex);
+      }
+      state.current[key] = value;
+    },
+
+    applyStepEdits: function(step, stepIndex, editableParams) {
+      var updated = this.cloneValue(editableParams || {});
+      step.params = updated;
+      this.stepFormStateByIndex[stepIndex] = {
+        original: this.cloneValue(updated),
+        current: this.cloneValue(updated)
+      };
+      this.workflowData = this.getParsedWorkflowData();
+    },
+
+    resetStepEdits: function(step, stepIndex) {
+      var state = this.stepFormStateByIndex[stepIndex];
+      var original = state ? this.cloneValue(state.original) : {};
+      step.params = this.cloneValue(original);
+      this.stepFormStateByIndex[stepIndex] = {
+        original: this.cloneValue(original),
+        current: this.cloneValue(original)
+      };
+      this.showStepDetails(step, stepIndex);
+    },
+
     /**
      * Formats a value for display
      * @param {*} value - Value to format
@@ -747,10 +1065,157 @@ define([
       console.log('[WorkflowEngine] newData type:', typeof newData);
       console.log('[WorkflowEngine] newData:', newData);
       this.workflowData = newData;
+      this.stepFormStateByIndex = {};
       // Clear existing content
       domConstruct.empty(this.domNode);
       // Re-render
       this.render();
+    },
+
+    /**
+     * Submits the workflow for execution directly to the workflow engine API
+     * @param {Object} workflow - The workflow data to submit
+     */
+    submitWorkflowForExecution: function(workflow) {
+      console.log('[WorkflowEngine] submitWorkflowForExecution() called');
+      console.log('[WorkflowEngine] Workflow to submit:', workflow);
+
+      // Validate that copilotApi is available
+      if (!this.copilotApi) {
+        console.error('[WorkflowEngine] No copilotApi reference available');
+        this._showSubmissionError('Cannot submit workflow: Copilot API not available');
+        return;
+      }
+
+      // Prepare the workflow JSON for submission
+      // Remove execution metadata that was added by plan_workflow
+      var workflowToSubmit = this.cloneValue(workflow);
+      delete workflowToSubmit.execution_metadata;
+
+      // Show submission status
+      this._showSubmissionStatus('Submitting workflow to workflow engine...');
+
+      console.log('[WorkflowEngine] Calling copilotApi.submitWorkflowForExecution');
+
+      // Submit directly to workflow engine API via copilotApi
+      var _self = this;
+      this.copilotApi.submitWorkflowForExecution(workflowToSubmit)
+        .then(function(response) {
+          console.log('[WorkflowEngine] Submit workflow response:', response);
+
+          if (response.error) {
+            _self._showSubmissionError('Submission failed: ' + response.error);
+            return;
+          }
+
+          // Response from workflow engine should contain:
+          // { workflow_id, status, message }
+          var workflowId = response.workflow_id;
+          var status = response.status || 'pending';
+          var message = response.message || 'Workflow submitted successfully';
+
+          if (workflowId) {
+            // Construct status URL
+            var workflowEngineUrl = window.App.workflow_url || 'https://dev-7.bv-brc.org/api/v1';
+            var statusUrl = workflowEngineUrl + '/workflows/' + workflowId + '/status';
+
+            // Update the workflow data with the submission response
+            _self.workflowData.execution_metadata = {
+              workflow_id: workflowId,
+              status: status,
+              submitted_at: new Date().toISOString(),
+              message: message,
+              status_url: statusUrl,
+              is_submitted: true,
+              is_planned: false
+            };
+
+            // Re-render to show updated status and hide submit button
+            domConstruct.empty(_self.domNode);
+            _self.render();
+
+            var successMsg = 'Workflow submitted successfully!<br>Workflow ID: ' + _self.escapeHtml(workflowId);
+            successMsg += '<br><a href="' + statusUrl + '" target="_blank" style="color: white; text-decoration: underline;">View Status</a>';
+            _self._showSubmissionSuccess(successMsg);
+          } else {
+            // No workflow_id in response, but no error either
+            _self._showSubmissionSuccess(_self.escapeHtml(message));
+          }
+        })
+        .catch(function(error) {
+          console.error('[WorkflowEngine] Error submitting workflow:', error);
+          _self._showSubmissionError('Submission error: ' + _self.escapeHtml(error.message || error));
+        });
+    },
+
+    /**
+     * Shows submission status message
+     * @param {string} message - Status message to display
+     */
+    _showSubmissionStatus: function(message) {
+      // Find or create status container
+      var statusContainer = this._getOrCreateStatusContainer();
+      statusContainer.innerHTML = '<div class="workflow-submission-status">' +
+        '<span class="status-spinner">⏳</span> ' +
+        this.escapeHtml(message) +
+        '</div>';
+      domStyle.set(statusContainer, 'display', 'block');
+    },
+
+    /**
+     * Shows submission success message
+     * @param {string} message - Success message to display
+     */
+    _showSubmissionSuccess: function(message) {
+      var statusContainer = this._getOrCreateStatusContainer();
+      statusContainer.innerHTML = '<div class="workflow-submission-success">' +
+        '<span class="status-icon">✓</span> ' +
+        message +
+        '</div>';
+      domStyle.set(statusContainer, 'display', 'block');
+
+      // Auto-hide after 10 seconds
+      setTimeout(function() {
+        domStyle.set(statusContainer, 'display', 'none');
+      }, 10000);
+    },
+
+    /**
+     * Shows submission error message
+     * @param {string} message - Error message to display
+     */
+    _showSubmissionError: function(message) {
+      var statusContainer = this._getOrCreateStatusContainer();
+      statusContainer.innerHTML = '<div class="workflow-submission-error">' +
+        '<span class="status-icon">✗</span> ' +
+        this.escapeHtml(message) +
+        '</div>';
+      domStyle.set(statusContainer, 'display', 'block');
+
+      // Auto-hide after 10 seconds
+      setTimeout(function() {
+        domStyle.set(statusContainer, 'display', 'none');
+      }, 10000);
+    },
+
+    /**
+     * Gets or creates the status message container
+     * @returns {DOMNode} Status container element
+     */
+    _getOrCreateStatusContainer: function() {
+      var existing = this.domNode.querySelector('.workflow-submission-status-container');
+      if (existing) {
+        return existing;
+      }
+
+      var container = domConstruct.create('div', {
+        class: 'workflow-submission-status-container',
+        style: 'position: fixed; top: 20px; right: 20px; z-index: 10000; max-width: 400px;'
+      });
+
+      // Insert at the beginning of the workflow engine container
+      domConstruct.place(container, this.domNode, 'first');
+      return container;
     }
   });
 });

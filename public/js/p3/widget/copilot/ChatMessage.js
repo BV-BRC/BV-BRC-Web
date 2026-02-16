@@ -37,6 +37,12 @@ define([
     /** @property {boolean} copilotEnableShowPromptDetails - Stores the value of the copilotEnableShowPromptDetails flag */
     copilotEnableShowPromptDetails: false,
 
+    /** @property {Object} copilotApi - Reference to CopilotAPI instance for workflow submission */
+    copilotApi: null,
+
+    /** @property {string} sessionId - Current session ID for workflow submission context */
+    sessionId: null,
+
     /**
      * @constructor
      * Creates a new ChatMessage instance
@@ -47,6 +53,8 @@ define([
       this.message = message;
       this.container = container;
       this.fontSize = message.fontSize || 14; // Get fontSize from message or use default
+      this.copilotApi = message.copilotApi || null; // Get copilotApi from message if provided
+      this.sessionId = message.sessionId || null; // Get sessionId from message if provided
       this.copilotEnableShowPromptDetails = window.App && window.App.copilotEnableShowPromptDetails === 'true';
       this.toolHandler = new CopilotToolHandler();
       this.renderMessage(); // Immediately render on construction
@@ -904,7 +912,9 @@ define([
 
       try {
         workflowEngine = new WorkflowEngine({
-          workflowData: this.message.workflowData
+          workflowData: this.message.workflowData,
+          copilotApi: this.copilotApi,
+          sessionId: this.sessionId
         });
 
         overlayNode = domConstruct.create('div', {

@@ -1937,6 +1937,143 @@
   gap: 10px;
 }
 
+.workflow-form-subtitle {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.workflow-form-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.workflow-form-action-btn {
+  border: 1px solid #93c5fd;
+  background-color: #dbeafe;
+  color: #1e3a8a;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.workflow-form-action-btn:hover {
+  background-color: #bfdbfe;
+}
+
+.workflow-form-action-btn-secondary {
+  border-color: #d1d5db;
+  background-color: #f8fafc;
+  color: #334155;
+}
+
+.workflow-form-field {
+  border-left: 3px solid #60a5fa;
+  padding: 8px;
+}
+
+.workflow-form-label {
+  margin-bottom: 6px;
+}
+
+.workflow-form-input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: #1f2937;
+  background-color: #ffffff;
+}
+
+.workflow-form-input:focus {
+  outline: 2px solid #93c5fd;
+  outline-offset: 1px;
+  border-color: #60a5fa;
+}
+
+.workflow-form-textarea {
+  min-height: 76px;
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.workflow-form-select {
+  cursor: pointer;
+}
+
+.workflow-form-checkbox {
+  width: auto;
+  transform: scale(1.1);
+  margin: 4px 0 2px;
+}
+
+.workflow-form-help {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #6b7280;
+  line-height: 1.35;
+}
+
+.workflow-form-group {
+  margin-bottom: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.workflow-form-group-header {
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+.workflow-form-group-header-collapsible {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.workflow-form-group-toggle {
+  font-weight: 500;
+  color: #2563eb;
+}
+
+.workflow-form-group-body {
+  padding: 8px;
+}
+
+.workflow-form-group-collapsed {
+  display: none;
+}
+
+.workflow-form-compact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.workflow-form-compact-grid .workflow-form-field {
+  margin: 0;
+}
+
+.workflow-form-compact-grid .workflow-form-field textarea {
+  min-height: 60px;
+}
+
+@media (max-width: 768px) {
+  .workflow-form-compact-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .workflow-detail-param-item {
   background-color: #f8fafc;
   border: 1px solid #e5e7eb;
@@ -2358,3 +2495,77 @@
     padding: 12px 14px;
   }
 }
+
+/* ========== Workflow Submission Status Messages ========== */
+.workflow-submission-status-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  max-width: 400px;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.workflow-submission-status,
+.workflow-submission-success,
+.workflow-submission-error {
+  padding: 15px 20px;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.workflow-submission-status {
+  background-color: #f0f8ff;
+  border-left: 4px solid #0066cc;
+  color: #333;
+}
+
+.workflow-submission-success {
+  background-color: #e8f5e9;
+  border-left: 4px solid #4caf50;
+  color: #1b5e20;
+}
+
+.workflow-submission-error {
+  background-color: #ffebee;
+  border-left: 4px solid #f44336;
+  color: #b71c1c;
+}
+
+.workflow-submission-status .status-spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  font-size: 16px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.workflow-submission-success .status-icon,
+.workflow-submission-error .status-icon {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.workflow-submission-success a,
+.workflow-submission-error a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+/* ========== End Workflow Submission Styles ========== */
