@@ -31,9 +31,10 @@ define([
   './WorkspaceExplorerAdapter',
   './JobsExplorerAdapter',
   './SessionFilesExplorerAdapter',
-  './WorkflowsExplorerAdapter'
+  './WorkflowsExplorerAdapter',
+  './WorkflowEngine'
 ], function (
-  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, request, markdownit, linkAttributes, ChatMessage, SuggestedQuestions, WorkspaceExplorerAdapter, JobsExplorerAdapter, SessionFilesExplorerAdapter, WorkflowsExplorerAdapter
+  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, request, markdownit, linkAttributes, ChatMessage, SuggestedQuestions, WorkspaceExplorerAdapter, JobsExplorerAdapter, SessionFilesExplorerAdapter, WorkflowsExplorerAdapter, WorkflowEngine
 ) {
 
   /**
@@ -992,11 +993,163 @@ define([
 
     _itemLabelByCategory: function(category, item) {
       if (category === 'files') return item.file_name || item.id || 'File';
-      if (category === 'workflows') return item.workflow_name || item.workflow_id || item.id || 'Workflow';
+      if (category === 'workflows') return item.workflow_name || 'Unnamed Workflow';
       if (category === 'workspace') return item.path || item.name || item.id || 'Workspace item';
       if (category === 'jobs') return item.id || item.application_name || 'Job';
       if (category === 'images') return item.name || 'Image';
       return '';
+    },
+
+    _workflowStatusByItem: function(item) {
+      if (!item) {
+        return '';
+      }
+      return item.status ||
+        (item.execution_metadata && item.execution_metadata.status) ||
+        '';
+    },
+
+    _workflowStatusStyleByValue: function(statusValue) {
+      var status = statusValue ? String(statusValue).toLowerCase() : '';
+      if (status === 'succeeded' || status === 'completed') {
+        return 'background: #10b981; color: #fff;';
+      }
+      if (status === 'failed' || status === 'error') {
+        return 'background: #ef4444; color: #fff;';
+      }
+      if (status === 'cancelled') {
+        return 'background: #6b7280; color: #fff;';
+      }
+      if (status === 'running') {
+        return 'background: #2563eb; color: #fff;';
+      }
+      if (status === 'queued' || status === 'pending') {
+        return 'background: #f59e0b; color: #111827;';
+      }
+      if (status === 'submitted') {
+        return 'background: #14b8a6; color: #fff;';
+      }
+      if (status === 'planned') {
+        return 'background: #6366f1; color: #fff;';
+      }
+      return 'background: #9ca3af; color: #fff;';
+    },
+
+    _resolveWorkflowIdFromItem: function(item) {
+      if (!item) {
+        return '';
+      }
+      var workflowId = item.workflow_id || item.id || (item.raw && (item.raw.workflow_id || item.raw.id));
+      return workflowId ? String(workflowId) : '';
+    },
+
+    _openWorkflowFromContext: function(item) {
+      var workflowId = this._resolveWorkflowIdFromItem(item);
+      if (!workflowId) {
+        return;
+      }
+
+      var workflowUrl = (window && window.App && window.App.workflow_url) ? window.App.workflow_url : 'https://dev-7.bv-brc.org/api/v1';
+      var headers = { 'Accept': 'application/json' };
+      if (window && window.App && window.App.authorizationToken) {
+        headers.Authorization = window.App.authorizationToken;
+      }
+
+      request.get(workflowUrl + '/workflows/' + encodeURIComponent(workflowId), {
+        headers: headers,
+        handleAs: 'json'
+      }).then(lang.hitch(this, function(workflowData) {
+        if (!workflowData || typeof workflowData !== 'object') {
+          return;
+        }
+        this._showWorkflowDialog(workflowData);
+      })).catch(function(error) {
+        console.error('[CopilotDisplay] Failed to open workflow from context:', error);
+      });
+    },
+
+    _showWorkflowDialog: function(workflowData) {
+      var workflowEngine = null;
+      var overlayNode = null;
+      var keyHandler = null;
+
+      try {
+        workflowEngine = new WorkflowEngine({
+          workflowData: workflowData,
+          copilotApi: this.copilotApi,
+          sessionId: this.sessionId
+        });
+
+        overlayNode = domConstruct.create('div', {
+          class: 'workflow-modal-overlay',
+          style: 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 2147483000; display: flex; align-items: center; justify-content: center; padding: 24px;'
+        }, document.body);
+
+        var modalNode = domConstruct.create('div', {
+          class: 'workflow-modal-dialog',
+          style: 'background: #fff; width: min(980px, 95vw); max-height: 88vh; border-radius: 10px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; overflow: hidden;'
+        }, overlayNode);
+
+        var headerNode = domConstruct.create('div', {
+          class: 'workflow-modal-header',
+          style: 'display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid #e5e7eb;'
+        }, modalNode);
+
+        domConstruct.create('div', {
+          innerHTML: 'Workflow Review',
+          style: 'font-size: 18px; font-weight: 600; color: #1f2937;'
+        }, headerNode);
+
+        var closeButton = domConstruct.create('button', {
+          innerHTML: 'Close',
+          style: 'padding: 8px 14px; background: #666; color: #fff; border: none; border-radius: 4px; cursor: pointer;'
+        }, headerNode);
+
+        var contentNode = domConstruct.create('div', {
+          class: 'workflow-modal-content',
+          style: 'padding: 16px; overflow-y: auto; overflow-x: hidden;'
+        }, modalNode);
+
+        domConstruct.place(workflowEngine.domNode, contentNode);
+
+        var closeModal = function() {
+          if (keyHandler) {
+            keyHandler.remove();
+            keyHandler = null;
+          }
+          if (workflowEngine) {
+            workflowEngine.destroyRecursive();
+            workflowEngine = null;
+          }
+          if (overlayNode && overlayNode.parentNode) {
+            overlayNode.parentNode.removeChild(overlayNode);
+            overlayNode = null;
+          }
+        };
+
+        on(closeButton, 'click', closeModal);
+        on(overlayNode, 'click', function(evt) {
+          if (evt.target === overlayNode) {
+            closeModal();
+          }
+        });
+
+        keyHandler = on(document, 'keydown', function(evt) {
+          if (evt.key === 'Escape') {
+            closeModal();
+          }
+        });
+
+        workflowEngine.startup();
+      } catch (err) {
+        console.error('[CopilotDisplay] Failed to show workflow dialog:', err);
+        if (workflowEngine && typeof workflowEngine.destroyRecursive === 'function') {
+          workflowEngine.destroyRecursive();
+        }
+        if (overlayNode && overlayNode.parentNode) {
+          overlayNode.parentNode.removeChild(overlayNode);
+        }
+      }
     },
 
     _toggleItemSelectionFromContext: function(category, item, shouldSelect) {
@@ -1299,14 +1452,46 @@ define([
           if (!isAvailable && category !== 'images') {
             labelText += ' (not in current grid results)';
           }
-          domConstruct.create('div', {
+          var labelNode = domConstruct.create('div', {
             class: 'copilot-context-item-label',
             innerHTML: labelText,
             style: 'word-break: break-word;'
           }, itemInfoNode);
 
-          if (category === 'files' || category === 'workflows') {
-            // Files and workflows remain in context view; checkbox only controls inclusion.
+          if (category === 'workflows') {
+            labelNode.style.fontWeight = '600';
+            var workflowStatus = this._workflowStatusByItem(item);
+            if (workflowStatus) {
+              domConstruct.create('span', {
+                innerHTML: String(workflowStatus).toUpperCase(),
+                style: 'display:inline-block; margin-top:4px; padding:2px 6px; font-size:11px; border-radius:3px; font-weight:500; ' + this._workflowStatusStyleByValue(workflowStatus)
+              }, itemInfoNode);
+            }
+          }
+
+          if (category === 'workflows') {
+            var openWorkflowWrap = domConstruct.create('div', {
+              class: 'copilot-context-workflow-open-wrap',
+              style: 'display:flex; justify-content:flex-end;'
+            }, itemNode);
+            var openWorkflowButton = domConstruct.create('button', {
+              type: 'button',
+              class: 'copilot-context-open-workflow',
+              innerHTML: 'Open Workflow',
+              title: 'Open workflow details',
+              style: 'padding: 4px 10px; background: #2563eb; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; font-weight: 500; white-space: nowrap;'
+            }, openWorkflowWrap);
+            on(openWorkflowButton, 'mouseenter', function() {
+              openWorkflowButton.style.background = '#1d4ed8';
+            });
+            on(openWorkflowButton, 'mouseleave', function() {
+              openWorkflowButton.style.background = '#2563eb';
+            });
+            on(openWorkflowButton, 'click', lang.hitch(this, function() {
+              this._openWorkflowFromContext(item);
+            }));
+          } else if (category === 'files') {
+            // Files remain in context view; checkbox only controls inclusion.
             domConstruct.create('div', {
               class: 'copilot-context-remove-placeholder',
               style: 'width:24px; height:24px;'

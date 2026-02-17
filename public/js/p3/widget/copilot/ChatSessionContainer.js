@@ -269,6 +269,7 @@ define([
             topic.subscribe('setStatePrompt', lang.hitch(this, this._handleSetStatePrompt));
             topic.subscribe('CopilotSessionFileCreated', lang.hitch(this, this._handleSessionFileCreated));
             topic.subscribe('CopilotSessionWorkflowCreated', lang.hitch(this, this._handleSessionWorkflowCreated));
+            topic.subscribe('CopilotWorkflowCardStatusUpdated', lang.hitch(this, this._handleWorkflowCardStatusUpdated));
             topic.subscribe('CopilotWorkspaceBrowseOpen', lang.hitch(this, function() {
                 this._setActiveTab('grids', 'workspace');
             }));
@@ -1198,6 +1199,84 @@ define([
             var nextItems = currentItems.concat([workflowItem]);
             SessionWorkflowsSelectionStore.setItems(this._sessionWorkflowsSelectionState, nextItems);
 
+            if (this.displayWidget && this.displayWidget.setSessionWorkflows) {
+                this.displayWidget.setSessionWorkflows(this._sessionWorkflowsSelectionState.items);
+            }
+            this._syncWorkflowsSelectionsToWidgets();
+        },
+
+        _handleWorkflowCardStatusUpdated: function(eventPayload) {
+            if (!eventPayload) {
+                return;
+            }
+            if (eventPayload.session_id && eventPayload.session_id !== this.sessionId) {
+                return;
+            }
+
+            var updatedWorkflow = eventPayload.workflow || null;
+            if (!updatedWorkflow) {
+                return;
+            }
+
+            var workflowId = updatedWorkflow.workflow_id ||
+                (updatedWorkflow.execution_metadata && updatedWorkflow.execution_metadata.workflow_id) ||
+                null;
+            if (!workflowId) {
+                return;
+            }
+            workflowId = String(workflowId);
+
+            // Keep message card data in sync so re-renders show latest status.
+            var messageId = eventPayload.message_id || null;
+            if (messageId) {
+                var message = this.chatStore.getMessageById(messageId);
+                if (message) {
+                    message.workflowData = updatedWorkflow;
+                    this.chatStore.updateMessage(message);
+                    if (this.displayWidget && this.displayWidget.showMessages) {
+                        this.displayWidget.showMessages(this.chatStore.query(), false);
+                    }
+                }
+            }
+
+            // Keep Workflows tab row in sync with the updated status.
+            var currentItems = this._sessionWorkflowsSelectionState && Array.isArray(this._sessionWorkflowsSelectionState.items)
+                ? this._sessionWorkflowsSelectionState.items
+                : [];
+            var nextItems = [];
+            var replaced = false;
+
+            for (var i = 0; i < currentItems.length; i++) {
+                var item = currentItems[i] || {};
+                var itemId = item.workflow_id ? String(item.workflow_id) : null;
+                if (itemId === workflowId) {
+                    nextItems.push(lang.mixin({}, item, {
+                        workflow_id: workflowId,
+                        id: workflowId,
+                        workflow_name: updatedWorkflow.workflow_name || item.workflow_name || 'Workflow',
+                        status: (updatedWorkflow.execution_metadata && updatedWorkflow.execution_metadata.status) || updatedWorkflow.status || item.status || null,
+                        submitted_at: updatedWorkflow.submitted_at || item.submitted_at || null,
+                        completed_at: updatedWorkflow.completed_at || item.completed_at || null
+                    }));
+                    replaced = true;
+                } else {
+                    nextItems.push(item);
+                }
+            }
+
+            if (!replaced) {
+                nextItems.push({
+                    id: workflowId,
+                    workflow_id: workflowId,
+                    workflow_name: updatedWorkflow.workflow_name || 'Workflow',
+                    status: (updatedWorkflow.execution_metadata && updatedWorkflow.execution_metadata.status) || updatedWorkflow.status || null,
+                    submitted_at: updatedWorkflow.submitted_at || null,
+                    completed_at: updatedWorkflow.completed_at || null,
+                    selected: true
+                });
+            }
+
+            SessionWorkflowsSelectionStore.setItems(this._sessionWorkflowsSelectionState, nextItems);
             if (this.displayWidget && this.displayWidget.setSessionWorkflows) {
                 this.displayWidget.setSessionWorkflows(this._sessionWorkflowsSelectionState.items);
             }

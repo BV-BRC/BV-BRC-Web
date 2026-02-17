@@ -1193,6 +1193,32 @@ define([
         },
 
         /**
+         * Retrieves the latest workflow status from workflow engine.
+         * @param {string} workflowId Workflow identifier
+         * @returns {Promise} Promise resolving to workflow status payload
+         */
+        getWorkflowStatus: function(workflowId) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            if (!workflowId) return Promise.reject(new Error('workflowId is required'));
+
+            var workflowEngineUrl = window.App.workflow_url || 'https://dev-7.bv-brc.org/api/v1';
+            var statusUrl = workflowEngineUrl + '/workflows/' + encodeURIComponent(workflowId) + '/status';
+
+            return request.get(statusUrl, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('[CopilotApi] Error fetching workflow status:', error);
+                throw error;
+            });
+        },
+
+        /**
          * Associates a submitted workflow ID with a chat session so it appears in workflow context.
          * @param {string} sessionId The chat session ID
          * @param {string} workflowId The submitted workflow ID

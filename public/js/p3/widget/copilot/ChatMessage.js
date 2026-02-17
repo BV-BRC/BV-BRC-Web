@@ -1002,6 +1002,61 @@ define([
       // Get status from execution metadata
       var isSubmitted = workflow.execution_metadata && workflow.execution_metadata.is_submitted;
       var isPlanned = workflow.execution_metadata && workflow.execution_metadata.is_planned;
+      var statusUrl = (workflow.execution_metadata && workflow.execution_metadata.status_url) || workflow.status_url || null;
+
+      var extractWorkflowIdFromStatusUrl = function(urlValue) {
+        if (!urlValue || typeof urlValue !== 'string') {
+          return null;
+        }
+        var match = urlValue.match(/\/workflows\/([^\/\?]+)(?:\/status)?(?:\?.*)?$/i);
+        return match && match[1] ? decodeURIComponent(match[1]) : null;
+      };
+
+      var workflowId = workflow.workflow_id ||
+        workflow.id ||
+        (workflow.execution_metadata && (workflow.execution_metadata.workflow_id || workflow.execution_metadata.id)) ||
+        this.message.workflow_id ||
+        extractWorkflowIdFromStatusUrl(statusUrl) ||
+        null;
+
+      var normalizeStatus = function(rawStatus) {
+        if (!rawStatus && rawStatus !== 0) return '';
+        return String(rawStatus).toLowerCase();
+      };
+
+      var getStatusStyle = function(statusValue) {
+        var status = normalizeStatus(statusValue);
+        if (status === 'succeeded' || status === 'completed') {
+          return 'background: #10b981; color: #fff;';
+        }
+        if (status === 'failed' || status === 'error') {
+          return 'background: #ef4444; color: #fff;';
+        }
+        if (status === 'cancelled') {
+          return 'background: #6b7280; color: #fff;';
+        }
+        if (status === 'running') {
+          return 'background: #2563eb; color: #fff;';
+        }
+        if (status === 'queued' || status === 'pending') {
+          return 'background: #f59e0b; color: #111827;';
+        }
+        if (status === 'submitted') {
+          return 'background: #14b8a6; color: #fff;';
+        }
+        if (status === 'planned') {
+          return 'background: #6366f1; color: #fff;';
+        }
+        return 'background: #9ca3af; color: #fff;';
+      };
+
+      var deriveStatus = function() {
+        return (workflow.execution_metadata && workflow.execution_metadata.status) ||
+          workflow.status ||
+          (isSubmitted ? 'submitted' : '') ||
+          (isPlanned ? 'planned' : '') ||
+          '';
+      };
 
       if (workflowDescription) {
         domConstruct.create('div', {
@@ -1043,25 +1098,130 @@ define([
         }, detailsContainer);
       }
 
-      // Status indicator (if workflow is already submitted)
-      if (isSubmitted) {
-        domConstruct.create('div', {
-          innerHTML: '<span style="padding: 2px 6px; background: #10b981; color: white; font-size: 11px; border-radius: 3px; font-weight: 500;">SUBMITTED</span>',
+      // Status indicator
+      var statusValue = deriveStatus();
+      var statusBadgeLabel = statusValue ? this.escapeHtml(String(statusValue).toUpperCase()) : '';
+      var statusContainer = null;
+      if (statusBadgeLabel) {
+        statusContainer = domConstruct.create('div', {
           style: 'margin-top: 2px;'
         }, detailsContainer);
+        domConstruct.create('span', {
+          innerHTML: statusBadgeLabel,
+          style: 'padding: 2px 6px; font-size: 11px; border-radius: 3px; font-weight: 500; ' + getStatusStyle(statusValue)
+        }, statusContainer);
       }
 
       // Button container
       var buttonContainer = domConstruct.create('div', {
-        style: 'display: flex; justify-content: flex-end; margin-top: 6px; padding-top: 8px; border-top: 1px solid #e5e7eb;'
+        style: 'display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 8px; border-top: 1px solid #e5e7eb;'
       }, card);
+
+      var leftActions = domConstruct.create('div', {
+        style: 'display: flex; align-items: center; gap: 8px;'
+      }, buttonContainer);
+
+      var rightActions = domConstruct.create('div', {
+        style: 'display: flex; align-items: center; gap: 8px;'
+      }, buttonContainer);
+
+      var checkStatusButton = null;
+      if ((workflowId || statusUrl) && this.copilotApi && typeof this.copilotApi.getWorkflowStatus === 'function') {
+        checkStatusButton = domConstruct.create('button', {
+          innerHTML: 'Check Status',
+          class: 'workflow-check-status-button',
+          style: 'padding: 4px 10px; background: #ffffff; color: #374151; border: 1px solid #d1d5db; border-radius: 3px; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.2s, border-color 0.2s;'
+        }, leftActions);
+
+        on(checkStatusButton, 'mouseenter', function() {
+          if (!checkStatusButton.disabled) {
+            checkStatusButton.style.background = '#f3f4f6';
+            checkStatusButton.style.borderColor = '#9ca3af';
+          }
+        });
+        on(checkStatusButton, 'mouseleave', function() {
+          checkStatusButton.style.background = '#ffffff';
+          checkStatusButton.style.borderColor = '#d1d5db';
+        });
+
+        on(checkStatusButton, 'click', lang.hitch(this, function() {
+          // Non-blocking status refresh: update button state while request runs.
+          checkStatusButton.disabled = true;
+          checkStatusButton.style.cursor = 'default';
+          checkStatusButton.innerHTML = 'Checking...';
+
+          var resolvedWorkflowId = workflowId || extractWorkflowIdFromStatusUrl(statusUrl);
+          if (!resolvedWorkflowId) {
+            console.warn('[ChatMessage] Unable to determine workflow ID for status check');
+            checkStatusButton.disabled = false;
+            checkStatusButton.style.cursor = 'pointer';
+            checkStatusButton.innerHTML = 'Check Status';
+            return;
+          }
+
+          this.copilotApi.getWorkflowStatus(resolvedWorkflowId).then(lang.hitch(this, function(statusResponse) {
+            var nextStatus = statusResponse && statusResponse.status ? statusResponse.status : null;
+            var nextUpdatedAt = statusResponse && statusResponse.updated_at ? statusResponse.updated_at : null;
+            var nextWorkflowName = statusResponse && statusResponse.workflow_name ? statusResponse.workflow_name : null;
+
+            if (!workflow.execution_metadata) {
+              workflow.execution_metadata = {};
+            }
+            if (nextStatus) {
+              workflow.execution_metadata.status = nextStatus;
+              workflow.status = nextStatus;
+              workflow.execution_metadata.is_submitted = true;
+              workflow.execution_metadata.is_planned = false;
+            }
+            if (!workflow.execution_metadata.workflow_id) {
+              workflow.execution_metadata.workflow_id = resolvedWorkflowId;
+            }
+            if (!workflow.workflow_id) {
+              workflow.workflow_id = resolvedWorkflowId;
+            }
+            if (nextUpdatedAt) {
+              workflow.updated_at = nextUpdatedAt;
+            }
+            if (nextWorkflowName && !workflow.workflow_name) {
+              workflow.workflow_name = nextWorkflowName;
+            }
+
+            var updatedStatus = nextStatus || deriveStatus();
+            if (updatedStatus) {
+              if (!statusContainer) {
+                statusContainer = domConstruct.create('div', {
+                  style: 'margin-top: 2px;'
+                }, detailsContainer);
+              } else {
+                domConstruct.empty(statusContainer);
+              }
+              domConstruct.create('span', {
+                innerHTML: this.escapeHtml(String(updatedStatus).toUpperCase()),
+                style: 'padding: 2px 6px; font-size: 11px; border-radius: 3px; font-weight: 500; ' + getStatusStyle(updatedStatus)
+              }, statusContainer);
+            }
+
+            topic.publish('CopilotWorkflowCardStatusUpdated', {
+              session_id: this.sessionId || null,
+              message_id: this.message && this.message.message_id ? this.message.message_id : null,
+              workflow: workflow
+            });
+          })).catch(function(error) {
+            console.error('[ChatMessage] Failed to fetch workflow status:', error);
+          }).then(function() {
+            checkStatusButton.disabled = false;
+            checkStatusButton.style.cursor = 'pointer';
+            checkStatusButton.innerHTML = 'Check Status';
+          });
+        }));
+      }
 
       // Review & Submit button
       var reviewButton = domConstruct.create('button', {
         innerHTML: (isSubmitted ? 'View Workflow' : 'Review &amp; Submit'),
         class: 'workflow-review-button',
         style: 'padding: 4px 10px; background: #2563eb; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.2s;'
-      }, buttonContainer);
+      }, rightActions);
 
       // Hover effect
       on(reviewButton, 'mouseenter', function() {
