@@ -322,12 +322,34 @@ define([
      * - At least one genome source (genome_ids or genome_groups)
      */
     runBacterialGenomeTreeStrictValidation: function(step, index, params, workflow, result, helpers) {
+      console.log('[BacterialGenomeTree Validation] params:', params);
+      console.log('[BacterialGenomeTree Validation] genome_ids:', params.genome_ids);
+      console.log('[BacterialGenomeTree Validation] genome_groups:', params.genome_groups);
+
       // At least one genome source is required
-      var hasGenomeIds = helpers.toArrayValue(params.genome_ids).length > 0;
-      var hasGenomeGroups = helpers.toArrayValue(params.genome_groups).length > 0;
+      var genomeIdsArray = helpers.toArrayValue(params.genome_ids);
+      var genomeGroupsArray = helpers.toArrayValue(params.genome_groups);
+
+      console.log('[BacterialGenomeTree Validation] genomeIdsArray:', genomeIdsArray);
+      console.log('[BacterialGenomeTree Validation] genomeGroupsArray:', genomeGroupsArray);
+
+      // Filter out empty strings from arrays
+      var hasGenomeIds = genomeIdsArray.filter(function(id) {
+        return !helpers.isEmptyValue(id);
+      }).length > 0;
+
+      var hasGenomeGroups = genomeGroupsArray.filter(function(group) {
+        return !helpers.isEmptyValue(group);
+      }).length > 0;
+
+      console.log('[BacterialGenomeTree Validation] hasGenomeIds:', hasGenomeIds);
+      console.log('[BacterialGenomeTree Validation] hasGenomeGroups:', hasGenomeGroups);
 
       if (!hasGenomeIds && !hasGenomeGroups) {
-        helpers.addValidationError(result, 'missing_genome_source', 'At least one genome source is required (genome_ids or genome_groups)', 'input');
+        console.log('[BacterialGenomeTree Validation] ADDING ERROR - both sources empty');
+        helpers.addValidationError(result, 'missing_genome_source', 'At least one genome source is required (genome_ids or genome_groups)', 'genome_ids');
+      } else {
+        console.log('[BacterialGenomeTree Validation] Validation passed');
       }
     },
 
