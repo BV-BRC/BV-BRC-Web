@@ -15,6 +15,7 @@ define([
   'dijit/_TemplatedMixin',
   'dijit/form/Button',
   './workflowForms/ServiceFormRegistry',
+  './ServiceValidationRules',
   '../../WorkspaceManager'
 ], function(
   declare,
@@ -29,6 +30,7 @@ define([
   _TemplatedMixin,
   Button,
   ServiceFormRegistry,
+  ServiceValidationRules,
   WorkspaceManager
 ) {
   /**
@@ -1273,81 +1275,133 @@ define([
       this.validateLibraryObjects(result, 'single_end_libs', params.single_end_libs, false);
     },
 
+    /**
+     * Creates a helpers object with validation utility functions.
+     * These helpers are passed to service-specific validation rules.
+     */
+    getValidationHelpers: function() {
+      return {
+        toArrayValue: lang.hitch(this, this.toArrayValue),
+        isEmptyValue: lang.hitch(this, this.isEmptyValue),
+        addValidationError: lang.hitch(this, this.addValidationError),
+        addValidationWarning: lang.hitch(this, this.addValidationWarning),
+        validateLibraryObjects: lang.hitch(this, this.validateLibraryObjects)
+      };
+    },
+
     runTaxonomicClassificationStrictValidation: function(step, index, params, workflow, result) {
-      var hasPaired = this.toArrayValue(params.paired_end_libs).length > 0;
-      var hasSingle = this.toArrayValue(params.single_end_libs).length > 0;
-      var hasSrr = this.toArrayValue(params.srr_libs).length > 0;
-      if (!hasPaired && !hasSingle && !hasSrr) {
-        this.addValidationError(result, 'missing_inputs', 'At least one input library is required (paired_end_libs, single_end_libs, or srr_libs)', 'input');
-      }
-
-      this.validateLibraryObjects(result, 'paired_end_libs', params.paired_end_libs, true);
-      this.validateLibraryObjects(result, 'single_end_libs', params.single_end_libs, true);
-
-      var invalidSampleChars = /[-:@"';\[\]{}|`]/;
-      this.toArrayValue(params.paired_end_libs).forEach(lang.hitch(this, function(entry, idx) {
-        if (entry && typeof entry === 'object' && !this.isEmptyValue(entry.sample_id) && invalidSampleChars.test(String(entry.sample_id))) {
-          this.addValidationError(result, 'invalid_sample_id_chars', 'Invalid characters in paired_end_libs[' + idx + '].sample_id', 'paired_end_libs');
-        }
-      }));
-      this.toArrayValue(params.single_end_libs).forEach(lang.hitch(this, function(entry, idx) {
-        if (entry && typeof entry === 'object' && !this.isEmptyValue(entry.sample_id) && invalidSampleChars.test(String(entry.sample_id))) {
-          this.addValidationError(result, 'invalid_sample_id_chars', 'Invalid characters in single_end_libs[' + idx + '].sample_id', 'single_end_libs');
-        }
-      }));
-      this.toArrayValue(params.srr_libs).forEach(lang.hitch(this, function(entry, idx) {
-        if (!entry || typeof entry !== 'object') {
-          this.addValidationError(result, 'invalid_srr_entry', 'srr_libs[' + idx + '] must be an object', 'srr_libs');
-          return;
-        }
-        if (this.isEmptyValue(entry.srr_accession)) {
-          this.addValidationError(result, 'missing_srr_accession', 'Missing srr_accession in srr_libs[' + idx + ']', 'srr_libs');
-        }
-        if (this.isEmptyValue(entry.sample_id)) {
-          this.addValidationError(result, 'missing_sample_id', 'Missing sample_id in srr_libs[' + idx + ']', 'srr_libs');
-        } else if (invalidSampleChars.test(String(entry.sample_id))) {
-          this.addValidationError(result, 'invalid_sample_id_chars', 'Invalid characters in srr_libs[' + idx + '].sample_id', 'srr_libs');
-        }
-      }));
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runTaxonomicClassificationStrictValidation(step, index, params, workflow, result, helpers);
     },
 
     runComprehensiveGenomeAnalysisStrictValidation: function(step, index, params, workflow, result) {
-      var inputType = params.input_type;
-      if (this.isEmptyValue(inputType)) {
-        this.addValidationError(result, 'missing_input_type', 'Missing required field: input_type', 'input_type');
-      }
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runComprehensiveGenomeAnalysisStrictValidation(step, index, params, workflow, result, helpers);
+    },
 
-      if (this.isEmptyValue(params.scientific_name)) {
-        this.addValidationError(result, 'missing_scientific_name', 'Missing required field: scientific_name', 'scientific_name');
-      }
-      if (this.isEmptyValue(params.taxonomy_id)) {
-        this.addValidationError(result, 'missing_taxonomy_id', 'Missing required field: taxonomy_id', 'taxonomy_id');
-      }
-      if (this.isEmptyValue(params.domain)) {
-        this.addValidationError(result, 'missing_domain', 'Missing required field: domain', 'domain');
-      }
+    runGenomeAssemblyStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runGenomeAssemblyStrictValidation(step, index, params, workflow, result, helpers);
+    },
 
-      if (inputType === 'reads') {
-        var hasPaired = this.toArrayValue(params.paired_end_libs).length > 0;
-        var hasSingle = this.toArrayValue(params.single_end_libs).length > 0;
-        var hasSrr = this.toArrayValue(params.srr_ids).length > 0;
-        if (!hasPaired && !hasSingle && !hasSrr) {
-          this.addValidationError(result, 'missing_reads_input', 'input_type=reads requires paired_end_libs, single_end_libs, or srr_ids', 'input_type');
-        }
-      } else if (inputType === 'contigs') {
-        if (this.isEmptyValue(params.contigs)) {
-          this.addValidationError(result, 'missing_contigs', 'input_type=contigs requires contigs', 'contigs');
-        }
-      } else if (!this.isEmptyValue(inputType)) {
-        this.addValidationError(result, 'invalid_input_type', 'input_type must be reads or contigs', 'input_type');
-      }
+    runGenomeAnnotationStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runGenomeAnnotationStrictValidation(step, index, params, workflow, result, helpers);
+    },
 
-      this.validateLibraryObjects(result, 'paired_end_libs', params.paired_end_libs, false);
-      this.validateLibraryObjects(result, 'single_end_libs', params.single_end_libs, false);
+    runBlastStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runBlastStrictValidation(step, index, params, workflow, result, helpers);
+    },
 
-      if (String(params.recipe || '').toLowerCase() === 'canu' && this.isEmptyValue(params.genome_size)) {
-        this.addValidationError(result, 'missing_genome_size', 'recipe=canu requires genome_size', 'genome_size');
-      }
+    runPrimerDesignStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runPrimerDesignStrictValidation(step, index, params, workflow, result, helpers);
+    },
+
+    runVariationStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runVariationStrictValidation(step, index, params, workflow, result, helpers);
+    },
+
+    runTnSeqStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runTnSeqStrictValidation(step, index, params, workflow, result, helpers);
+    },
+
+    runBacterialGenomeTreeStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runBacterialGenomeTreeStrictValidation(step, index, params, workflow, result, helpers);
+    },
+
+    runCoreGenomeMLSTStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runCoreGenomeMLSTStrictValidation(step, index, params, workflow, result, helpers);
+    },
+
+    runWholeGenomeSNPStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runWholeGenomeSNPStrictValidation(step, index, params, workflow, result, helpers);
+    },
+
+    runMSAandSNPAnalysisStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runMSAandSNPAnalysisStrictValidation(step, index, params, workflow, result, helpers);
+    },
+
+    runMetaCATSStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runMetaCATSStrictValidation(step, index, params, workflow, result, helpers);
+    },
+
+    runGeneTreeStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runGeneTreeStrictValidation(step, index, params, workflow, result, helpers);
+    },
+
+    runProteomeComparisonStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runProteomeComparisonStrictValidation(step, index, params, workflow, result, helpers);
+    },
+
+    runComparativeSystemsStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runComparativeSystemsStrictValidation(step, index, params, workflow, result, helpers);
+    },
+
+    runDockingStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runDockingStrictValidation(step, index, params, workflow, result, helpers);
+    },
+
+    runMetagenomicBinningStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runMetagenomicBinningStrictValidation(step, index, params, workflow, result, helpers);
+    },
+
+    runMetagenomicReadMappingStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runMetagenomicReadMappingStrictValidation(step, index, params, workflow, result, helpers);
+    },
+
+    runRNASeqStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runRNASeqStrictValidation(step, index, params, workflow, result, helpers);
+    },
+
+    runSARSGenomeAnalysisStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runSARSGenomeAnalysisStrictValidation(step, index, params, workflow, result, helpers);
+    },
+
+    runSARSWastewaterAnalysisStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runSARSWastewaterAnalysisStrictValidation(step, index, params, workflow, result, helpers);
+    },
+
+    runViralAssemblyStrictValidation: function(step, index, params, workflow, result) {
+      var helpers = this.getValidationHelpers();
+      ServiceValidationRules.runViralAssemblyStrictValidation(step, index, params, workflow, result, helpers);
     },
 
     validateOutputTarget: function(params, result, suppressWarnings) {
@@ -1425,6 +1479,48 @@ define([
         this.runTaxonomicClassificationStrictValidation(step, stepIndex, params, workflow, result);
       } else if (serviceKey === 'comprehensive_genome_analysis') {
         this.runComprehensiveGenomeAnalysisStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'genome_assembly') {
+        this.runGenomeAssemblyStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'genome_annotation') {
+        this.runGenomeAnnotationStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'blast') {
+        this.runBlastStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'primer_design') {
+        this.runPrimerDesignStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'variation') {
+        this.runVariationStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'tnseq') {
+        this.runTnSeqStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'bacterial_genome_tree') {
+        this.runBacterialGenomeTreeStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'core_genome_mlst') {
+        this.runCoreGenomeMLSTStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'whole_genome_snp') {
+        this.runWholeGenomeSNPStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'msa_snp_analysis') {
+        this.runMSAandSNPAnalysisStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'metacats') {
+        this.runMetaCATSStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'gene_tree') {
+        this.runGeneTreeStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'proteome_comparison') {
+        this.runProteomeComparisonStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'comparative_systems') {
+        this.runComparativeSystemsStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'docking') {
+        this.runDockingStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'metagenomic_binning') {
+        this.runMetagenomicBinningStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'metagenomic_read_mapping') {
+        this.runMetagenomicReadMappingStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'rnaseq') {
+        this.runRNASeqStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'sars_genome_analysis') {
+        this.runSARSGenomeAnalysisStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'sars_wastewater_analysis') {
+        this.runSARSWastewaterAnalysisStrictValidation(step, stepIndex, params, workflow, result);
+      } else if (serviceKey === 'viral_assembly') {
+        this.runViralAssemblyStrictValidation(step, stepIndex, params, workflow, result);
       }
 
       this.collectUnresolvedVariableWarnings(result, params, skipVariableWarnings);
