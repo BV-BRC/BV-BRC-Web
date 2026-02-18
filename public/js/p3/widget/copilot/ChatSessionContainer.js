@@ -277,6 +277,11 @@ define([
                 this._setActiveTab('grids', 'jobs');
             }));
 
+            // Subscribe to message submission to switch back to Messages tab
+            topic.subscribe('ChatMessageSubmitted', lang.hitch(this, function() {
+                this._setActiveTab('messages');
+            }));
+
             // Start path monitoring
             this._startPathMonitoring();
         },

@@ -1375,6 +1375,9 @@ define([
         console.log('state', this.state);
       }
 
+      // Switch to Messages tab when message is sent
+      topic.publish('ChatMessageSubmitted');
+
       // Immediately show user message and clear text area
       var userMessage = this._buildUserMessageForSubmit(
         inputText,
@@ -1542,6 +1545,9 @@ define([
       if (this.state) {
         console.log('state', this.state);
       }
+
+      // Switch to Messages tab when message is sent
+      topic.publish('ChatMessageSubmitted');
 
       // Immediately show user message and clear text area
       var userMessage = this._buildUserMessageForSubmit(
@@ -1721,6 +1727,9 @@ define([
       if (this.state) {
           console.log('state', this.state);
       }
+
+      // Switch to Messages tab when message is sent
+      topic.publish('ChatMessageSubmitted');
 
       // Immediately show user message and clear text area
       var userMessage = this._buildUserMessageForSubmit(inputText, {
