@@ -157,6 +157,7 @@ define([
         assistantMessage.source_tool = toolMetadata.source_tool || assistantMessage.source_tool;
         assistantMessage.isWorkflow = toolMetadata.isWorkflow;
         assistantMessage.workflowData = toolMetadata.workflowData;
+        assistantMessage.workflow_id = toolMetadata.workflow_id || assistantMessage.workflow_id;
         assistantMessage.isWorkspaceListing = toolMetadata.isWorkspaceListing;
         assistantMessage.workspaceData = toolMetadata.workspaceData;
         assistantMessage.isWorkspaceBrowse = toolMetadata.isWorkspaceBrowse;
@@ -166,6 +167,7 @@ define([
         assistantMessage.chatSummary = toolMetadata.chatSummary;
         assistantMessage.uiPayload = toolMetadata.uiPayload;
         assistantMessage.uiAction = toolMetadata.uiAction;
+        assistantMessage.tool_call = toolMetadata.tool_call || assistantMessage.tool_call;
       },
 
       setSelectedWorkspaceItems: function(items) {
@@ -1375,6 +1377,9 @@ define([
         console.log('state', this.state);
       }
 
+      // Switch to Messages tab when message is sent
+      topic.publish('ChatMessageSubmitted');
+
       // Immediately show user message and clear text area
       var userMessage = this._buildUserMessageForSubmit(
         inputText,
@@ -1542,6 +1547,9 @@ define([
       if (this.state) {
         console.log('state', this.state);
       }
+
+      // Switch to Messages tab when message is sent
+      topic.publish('ChatMessageSubmitted');
 
       // Immediately show user message and clear text area
       var userMessage = this._buildUserMessageForSubmit(
@@ -1721,6 +1729,9 @@ define([
       if (this.state) {
           console.log('state', this.state);
       }
+
+      // Switch to Messages tab when message is sent
+      topic.publish('ChatMessageSubmitted');
 
       // Immediately show user message and clear text area
       var userMessage = this._buildUserMessageForSubmit(inputText, {

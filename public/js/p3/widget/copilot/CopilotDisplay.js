@@ -237,16 +237,127 @@ define([
         topic.subscribe('chatTextSizeChanged', lang.hitch(this, 'setFontSize'));
         topic.subscribe('CopilotWorkspaceBrowseOpen', lang.hitch(this, function(data) {
           this.setActivePanel('workspace');
-          this.setSessionWorkspaceBrowseData(data || null);
+          this._openWorkspaceBrowseData(data || null);
         }));
         topic.subscribe('CopilotJobsBrowseOpen', lang.hitch(this, function(data) {
           this.setActivePanel('jobs');
-          this.setSessionJobsBrowseData(data || null);
+          this._openJobsBrowseData(data || null);
         }));
         topic.subscribe('noJobDataError', lang.hitch(this, function(error) {
             error.message = 'No job data found.\n\n' + error.message;
             this.onQueryError(error);
         }));
+    },
+
+    _unwrapReplayResultPayload: function(replayResponse) {
+      if (!replayResponse || typeof replayResponse !== 'object') {
+        return null;
+      }
+      var topResult = replayResponse.result;
+      if (!topResult || typeof topResult !== 'object') {
+        return null;
+      }
+      if (topResult.result && typeof topResult.result === 'object' && !Array.isArray(topResult.result)) {
+        return topResult.result;
+      }
+      return topResult;
+    },
+
+    _openWorkspaceBrowseData: function(data) {
+      var payload = data && data.uiPayload ? data.uiPayload : null;
+      if (payload && Array.isArray(payload.items)) {
+        this.setSessionWorkspaceBrowseData(data);
+        return;
+      }
+
+      var toolCall = data && data.tool_call && typeof data.tool_call === 'object' ? data.tool_call : null;
+      if (!toolCall || !this.copilotApi || typeof this.copilotApi.replayToolCall !== 'function') {
+        this.setSessionWorkspaceBrowseData(data || null);
+        return;
+      }
+
+      this.setSessionWorkspaceBrowseData({
+        chatSummary: data && data.chatSummary ? data.chatSummary : 'Loading workspace results...',
+        uiAction: data && data.uiAction ? data.uiAction : 'open_workspace_tab',
+        tool_call: toolCall
+      });
+
+      this.copilotApi.replayToolCall(toolCall, this.sessionId).then(lang.hitch(this, function(replayResponse) {
+        var replayPayload = this._unwrapReplayResultPayload(replayResponse) || {};
+        var items = Array.isArray(replayPayload.items)
+          ? replayPayload.items
+          : (replayPayload.ui_grid && Array.isArray(replayPayload.ui_grid.items) ? replayPayload.ui_grid.items : []);
+        var resultType = replayPayload.result_type || 'list_result';
+        var countValue = typeof replayPayload.count === 'number'
+          ? replayPayload.count
+          : items.length;
+        var uiPayload = {
+          tool_name: replayPayload.tool_name || 'workspace_browse_tool',
+          result_type: resultType,
+          count: countValue,
+          path: replayPayload.path || null,
+          source: replayPayload.source || null,
+          items: items
+        };
+        this.setSessionWorkspaceBrowseData({
+          uiPayload: uiPayload,
+          tool_call: (replayResponse && replayResponse.call) ? replayResponse.call : toolCall,
+          chatSummary: data && data.chatSummary ? data.chatSummary : ('Found ' + countValue + ' ' + (countValue === 1 ? 'result' : 'results') + ' in ' + (uiPayload.path || 'unknown path')),
+          uiAction: data && data.uiAction ? data.uiAction : 'open_workspace_tab'
+        });
+      })).catch(lang.hitch(this, function(error) {
+        this.onQueryError({
+          message: 'Failed to load workspace tab data',
+          details: error && error.message ? error.message : String(error)
+        });
+      }));
+    },
+
+    _openJobsBrowseData: function(data) {
+      var payload = data && data.uiPayload ? data.uiPayload : null;
+      if (payload && Array.isArray(payload.jobs)) {
+        this.setSessionJobsBrowseData(data);
+        return;
+      }
+
+      var toolCall = data && data.tool_call && typeof data.tool_call === 'object' ? data.tool_call : null;
+      if (!toolCall || !this.copilotApi || typeof this.copilotApi.replayToolCall !== 'function') {
+        this.setSessionJobsBrowseData(data || null);
+        return;
+      }
+
+      this.setSessionJobsBrowseData({
+        chatSummary: data && data.chatSummary ? data.chatSummary : 'Loading job results...',
+        uiAction: data && data.uiAction ? data.uiAction : 'open_jobs_tab',
+        tool_call: toolCall
+      });
+
+      this.copilotApi.replayToolCall(toolCall, this.sessionId).then(lang.hitch(this, function(replayResponse) {
+        var replayPayload = this._unwrapReplayResultPayload(replayResponse) || {};
+        var jobs = Array.isArray(replayPayload.items)
+          ? replayPayload.items
+          : (replayPayload.ui_grid && Array.isArray(replayPayload.ui_grid.items) ? replayPayload.ui_grid.items : []);
+        var uiPayload = {
+          jobs: jobs,
+          count: typeof replayPayload.count === 'number' ? replayPayload.count : jobs.length,
+          total: typeof replayPayload.total === 'number' ? replayPayload.total : jobs.length,
+          sort_by: replayPayload.sort_by || null,
+          sort_dir: replayPayload.sort_dir || null,
+          status: replayPayload.status || null,
+          service: replayPayload.service || replayPayload.application_name || null
+        };
+        this.setSessionJobsBrowseData({
+          uiPayload: uiPayload,
+          tool_call: (replayResponse && replayResponse.call) ? replayResponse.call : toolCall,
+          chatSummary: data && data.chatSummary ? data.chatSummary : ('Found ' + uiPayload.count + ' ' + (uiPayload.count === 1 ? 'job' : 'jobs')),
+          uiAction: data && data.uiAction ? data.uiAction : 'open_jobs_tab'
+        });
+      })).catch(lang.hitch(this, function(error) {
+        this.onQueryError({
+          message: 'Failed to load jobs tab data',
+          details: error && error.message ? error.message : String(error)
+        });
+      }));
     },
 
     setActivePanel: function(panel) {
