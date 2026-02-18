@@ -405,11 +405,14 @@ define([
       }
 
       if (contentToRender) {
-        domConstruct.create('div', {
+        var markdownContainer = domConstruct.create('div', {
           innerHTML: this.md.render(contentToRender),
           class: 'markdown-content',
           style: 'font-size: ' + this.fontSize + 'px;'
         }, messageDiv);
+
+        // Process code blocks to make large ones collapsible
+        this.makeLargeCodeBlocksCollapsible(markdownContainer);
       }
 
       // Tool-specific widgets are appended under the message text when available.
@@ -477,6 +480,92 @@ define([
           innerHTML: '<i class="fa icon-image"></i> ' + this.escapeHtml(label)
         }, container);
       }));
+    },
+
+    /**
+     * Makes large code blocks collapsible, showing only the first 8 lines by default
+     * @param {HTMLElement} markdownContainer - Container with rendered markdown content
+     */
+    makeLargeCodeBlocksCollapsible: function(markdownContainer) {
+      var preElements = markdownContainer.querySelectorAll('pre');
+      var self = this;
+
+      preElements.forEach(function(preElement) {
+        var codeElement = preElement.querySelector('code');
+        if (!codeElement) {
+          return;
+        }
+
+        // Count lines in the code block
+        var textContent = codeElement.textContent || codeElement.innerText || '';
+        var lines = textContent.split('\n');
+        var lineCount = lines.length;
+
+        // Only make collapsible if more than 8 lines
+        if (lineCount <= 8) {
+          return;
+        }
+
+        // Get the full HTML content (preserving any syntax highlighting)
+        var fullHtml = codeElement.innerHTML;
+        var first8LinesText = lines.slice(0, 8).join('\n');
+
+        // Create wrapper container
+        var wrapper = domConstruct.create('div', {
+          class: 'collapsible-code-block'
+        });
+
+        // Create toggle button
+        var toggleButton = domConstruct.create('button', {
+          class: 'code-block-toggle',
+          innerHTML: '▼ Show more (' + (lineCount - 8) + ' more lines)',
+          style: 'display: block; width: 100%; padding: 6px 10px; margin-bottom: 4px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer; font-size: 12px; color: #374151; text-align: left;'
+        });
+
+        // Create collapsed view (first 8 lines)
+        // Try to preserve syntax highlighting by extracting first 8 lines from HTML
+        var collapsedPre = preElement.cloneNode(false);
+        collapsedPre.className = preElement.className || '';
+        collapsedPre.style.margin = '0';
+        var collapsedCode = codeElement.cloneNode(false);
+
+        // For collapsed view, we'll use plain text for the first 8 lines
+        // to avoid complex HTML parsing
+        collapsedCode.textContent = first8LinesText;
+        collapsedPre.appendChild(collapsedCode);
+
+        // Create expanded view (full content) - clone the original
+        var expandedPre = preElement.cloneNode(true);
+        expandedPre.style.margin = '0';
+        expandedPre.style.display = 'none';
+
+        // Add elements to wrapper
+        wrapper.appendChild(toggleButton);
+        wrapper.appendChild(collapsedPre);
+        wrapper.appendChild(expandedPre);
+
+        // Track expanded state
+        var isExpanded = false;
+
+        // Toggle functionality
+        on(toggleButton, 'click', function() {
+          isExpanded = !isExpanded;
+          if (isExpanded) {
+            collapsedPre.style.display = 'none';
+            expandedPre.style.display = 'block';
+            toggleButton.innerHTML = '▲ Show less';
+          } else {
+            collapsedPre.style.display = 'block';
+            expandedPre.style.display = 'none';
+            toggleButton.innerHTML = '▼ Show more (' + (lineCount - 8) + ' more lines)';
+          }
+        });
+
+        // Replace the original pre element with the wrapper
+        if (preElement.parentNode) {
+          preElement.parentNode.replaceChild(wrapper, preElement);
+        }
+      });
     },
 
     /**

@@ -51,8 +51,20 @@ define([
     /** @property {number} selectedStepIndex - Index of currently selected step */
     selectedStepIndex: -1,
 
-    /** @property {DOMNode} detailPanel - Reference to the detail panel DOM node */
+    /** @property {DOMNode} detailPanel - Reference to the inline detail panel DOM node */
     detailPanel: null,
+
+    /** @property {DOMNode|null} Inline detail title node */
+    detailTitleNode: null,
+
+    /** @property {DOMNode|null} Inline detail content node */
+    detailContentNode: null,
+
+    /** @property {DOMNode|null} Inline detail previous button */
+    detailPrevBtn: null,
+
+    /** @property {DOMNode|null} Inline detail next button */
+    detailNextBtn: null,
 
     /** @property {Object} Tracks first and current form states per step */
     stepFormStateByIndex: null,
@@ -86,6 +98,11 @@ define([
       this.stepCardNodesByIndex = {};
       this.stepValidationTimers = {};
       this.submitWorkflowButton = null;
+      this.detailPanel = null;
+      this.detailTitleNode = null;
+      this.detailContentNode = null;
+      this.detailPrevBtn = null;
+      this.detailNextBtn = null;
       this.inherited(arguments);
       this.render();
     },
@@ -152,7 +169,7 @@ define([
      * @param {Object} workflow - Parsed workflow data
      */
     renderWorkflowView: function(workflow) {
-      // Create main wrapper with content area and detail panel
+      // Create main wrapper with content area
       var wrapper = domConstruct.create('div', {
         class: 'workflow-wrapper'
       }, this.domNode);
@@ -170,9 +187,6 @@ define([
 
       // Render workflow outputs
       this.renderWorkflowOutputs(workflow, container);
-
-      // Create detail panel (initially hidden)
-      this.renderDetailPanel(wrapper);
     },
 
     /**
@@ -343,16 +357,34 @@ define([
         role: 'button'
       }, container);
 
-      // Add click handler to open detail panel
-      stepCard.onclick = lang.hitch(this, function() {
+      // Add click handler to toggle inline detail panel.
+      stepCard.onclick = lang.hitch(this, function(evt) {
+        var node = evt && evt.target;
+        while (node) {
+          if (node.classList && node.classList.contains('workflow-step-inline-detail')) {
+            return;
+          }
+          node = node.parentNode;
+        }
+        if (this.selectedStepIndex === index) {
+          this.hideStepDetails();
+          return;
+        }
         this.showStepDetails(step, index);
       });
 
       // Add keyboard support
       stepCard.onkeypress = lang.hitch(this, function(e) {
+        if (e.target !== stepCard) {
+          return;
+        }
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          this.showStepDetails(step, index);
+          if (this.selectedStepIndex === index) {
+            this.hideStepDetails();
+          } else {
+            this.showStepDetails(step, index);
+          }
         }
       });
 
@@ -410,9 +442,14 @@ define([
         }));
       }
 
+      var inlineDetailHost = domConstruct.create('div', {
+        class: 'workflow-step-inline-detail workflow-step-inline-detail-hidden'
+      }, stepCard);
+
       this.stepCardNodesByIndex[index] = {
         card: stepCard,
-        errorSummaryNode: errorSummaryNode
+        errorSummaryNode: errorSummaryNode,
+        inlineDetailHost: inlineDetailHost
       };
     },
 
@@ -506,14 +543,13 @@ define([
       }));
     },
 
-    /**
-     * Renders the detail panel (initially hidden)
-     * @param {DOMNode} wrapper - Parent wrapper
-     */
-    renderDetailPanel: function(wrapper) {
+    createDetailPanel: function() {
+      if (this.detailPanel) {
+        return this.detailPanel;
+      }
       this.detailPanel = domConstruct.create('div', {
-        class: 'workflow-detail-panel'
-      }, wrapper);
+        class: 'workflow-detail-panel workflow-detail-panel-inline'
+      });
 
       // Panel header
       var header = domConstruct.create('div', {
@@ -532,9 +568,8 @@ define([
       });
 
       // Title
-      domConstruct.create('h3', {
-        class: 'workflow-detail-title',
-        id: 'workflow-detail-title'
+      this.detailTitleNode = domConstruct.create('h3', {
+        class: 'workflow-detail-title'
       }, header);
 
       // Navigation buttons
@@ -542,33 +577,31 @@ define([
         class: 'workflow-detail-nav'
       }, header);
 
-      var prevBtn = domConstruct.create('button', {
+      this.detailPrevBtn = domConstruct.create('button', {
         class: 'workflow-detail-nav-btn workflow-detail-prev',
         innerHTML: '← Previous',
-        title: 'Previous step',
-        id: 'workflow-detail-prev-btn'
+        title: 'Previous step'
       }, navContainer);
 
-      prevBtn.onclick = lang.hitch(this, function() {
+      this.detailPrevBtn.onclick = lang.hitch(this, function() {
         this.navigateStep(-1);
       });
 
-      var nextBtn = domConstruct.create('button', {
+      this.detailNextBtn = domConstruct.create('button', {
         class: 'workflow-detail-nav-btn workflow-detail-next',
         innerHTML: 'Next →',
-        title: 'Next step',
-        id: 'workflow-detail-next-btn'
+        title: 'Next step'
       }, navContainer);
 
-      nextBtn.onclick = lang.hitch(this, function() {
+      this.detailNextBtn.onclick = lang.hitch(this, function() {
         this.navigateStep(1);
       });
 
       // Panel content
-      domConstruct.create('div', {
-        class: 'workflow-detail-content',
-        id: 'workflow-detail-content'
+      this.detailContentNode = domConstruct.create('div', {
+        class: 'workflow-detail-content'
       }, this.detailPanel);
+      return this.detailPanel;
     },
 
     /**
@@ -577,44 +610,60 @@ define([
      * @param {number} index - Step index
      */
     showStepDetails: function(step, index) {
+      var cardData = this.stepCardNodesByIndex[index];
+      if (!cardData || !cardData.card || !cardData.inlineDetailHost) {
+        return;
+      }
+
+      if (this.selectedStepIndex !== -1 && this.selectedStepIndex !== index) {
+        this.hideStepDetails();
+      }
+
       this.selectedStep = step;
       this.selectedStepIndex = index;
 
+      this.createDetailPanel();
+      domConstruct.place(this.detailPanel, cardData.inlineDetailHost, 'only');
+
       // Update panel title
-      var title = document.getElementById('workflow-detail-title');
-      if (title) {
-        title.innerHTML = 'Step ' + (index + 1) + ': ' + this.escapeHtml(step.step_name || 'Untitled');
+      if (this.detailTitleNode) {
+        this.detailTitleNode.innerHTML = 'Step ' + (index + 1) + ': ' + this.escapeHtml(step.step_name || 'Untitled');
       }
 
       // Update navigation buttons
-      var prevBtn = document.getElementById('workflow-detail-prev-btn');
-      var nextBtn = document.getElementById('workflow-detail-next-btn');
-
-      if (prevBtn) {
-        prevBtn.disabled = (index === 0);
+      if (this.detailPrevBtn) {
+        this.detailPrevBtn.disabled = (index === 0);
       }
 
-      if (nextBtn) {
+      if (this.detailNextBtn) {
         var totalSteps = this.getParsedWorkflowData().steps.length;
-        nextBtn.disabled = (index >= totalSteps - 1);
+        this.detailNextBtn.disabled = (index >= totalSteps - 1);
       }
 
       // Populate content
       this.populateDetailContent(step, index);
       this.validateStep(index, { updateUI: true });
 
-      // Show panel
-      if (this.detailPanel) {
-        this.detailPanel.classList.add('workflow-detail-panel-open');
-      }
+      domClass.add(cardData.card, 'workflow-step-card-expanded');
+      domClass.remove(cardData.inlineDetailHost, 'workflow-step-inline-detail-hidden');
     },
 
     /**
      * Hides the detail panel
      */
     hideStepDetails: function() {
-      if (this.detailPanel) {
-        this.detailPanel.classList.remove('workflow-detail-panel-open');
+      var currentIndex = this.selectedStepIndex;
+      if (currentIndex >= 0) {
+        var cardData = this.stepCardNodesByIndex[currentIndex];
+        if (cardData && cardData.card) {
+          domClass.remove(cardData.card, 'workflow-step-card-expanded');
+        }
+        if (cardData && cardData.inlineDetailHost) {
+          domClass.add(cardData.inlineDetailHost, 'workflow-step-inline-detail-hidden');
+          if (this.detailPanel && this.detailPanel.parentNode === cardData.inlineDetailHost) {
+            domConstruct.empty(cardData.inlineDetailHost);
+          }
+        }
       }
       this.selectedStep = null;
       this.selectedStepIndex = -1;
@@ -639,7 +688,7 @@ define([
      * @param {number} index - Step index
      */
     populateDetailContent: function(step, index) {
-      var content = document.getElementById('workflow-detail-content');
+      var content = this.detailContentNode;
       if (!content) return;
 
       // Clear existing content
@@ -1729,6 +1778,11 @@ define([
       this.stepCardNodesByIndex = {};
       this.stepValidationTimers = {};
       this.submitWorkflowButton = null;
+      this.detailPanel = null;
+      this.detailTitleNode = null;
+      this.detailContentNode = null;
+      this.detailPrevBtn = null;
+      this.detailNextBtn = null;
       // Clear existing content
       domConstruct.empty(this.domNode);
       // Re-render
