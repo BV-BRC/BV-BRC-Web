@@ -136,6 +136,9 @@ define([
       // Check if content is a JSON string containing source_tool (for real-time results)
       var sourceTool = this.message.source_tool;
       var contentToProcess = this.message.content;
+      var messageToolCall = this.message && this.message.tool_call && typeof this.message.tool_call === 'object'
+        ? this.message.tool_call
+        : null;
 
       if (!sourceTool && typeof this.message.content === 'string') {
         try {
@@ -154,6 +157,56 @@ define([
         }
       }
 
+      // Reloaded session messages may carry canonical tool_call without source_tool.
+      // Use it as fallback so tool-specific UI rendering still activates.
+      if (!sourceTool && messageToolCall && typeof messageToolCall.tool === 'string') {
+        sourceTool = messageToolCall.tool;
+        this.message.source_tool = sourceTool;
+      }
+
+      var contentLooksLikeJson = false;
+      if (typeof contentToProcess === 'string') {
+        var trimmedContent = contentToProcess.trim();
+        contentLooksLikeJson = trimmedContent.indexOf('{') === 0 || trimmedContent.indexOf('[') === 0;
+      }
+
+      // Infer lightweight tool-card metadata from persisted tool identity.
+      if (sourceTool && sourceTool.indexOf('workspace_browse_tool') !== -1) {
+        this.message.isWorkspaceBrowse = true;
+        if (!this.message.uiAction) {
+          this.message.uiAction = 'open_workspace_tab';
+        }
+      }
+      if (sourceTool && (sourceTool.indexOf('list_jobs') !== -1 || sourceTool.indexOf('get_recent_jobs') !== -1)) {
+        this.message.isJobsBrowse = true;
+        if (!this.message.uiAction) {
+          this.message.uiAction = 'open_jobs_tab';
+        }
+      }
+      if (sourceTool && (sourceTool.indexOf('plan_workflow') !== -1 || sourceTool.indexOf('submit_workflow') !== -1)) {
+        var toolCallArgs = messageToolCall && messageToolCall.arguments_executed && typeof messageToolCall.arguments_executed === 'object'
+          ? messageToolCall.arguments_executed
+          : {};
+        var inferredWorkflowId = this.message.workflow_id ||
+          toolCallArgs.workflow_id ||
+          (messageToolCall && messageToolCall.workflow_id) ||
+          null;
+        if (inferredWorkflowId) {
+          this.message.isWorkflow = true;
+          this.message.workflow_id = inferredWorkflowId;
+          if (!this.message.workflowData || typeof this.message.workflowData !== 'object') {
+            this.message.workflowData = { workflow_id: inferredWorkflowId };
+          } else if (!this.message.workflowData.workflow_id) {
+            this.message.workflowData.workflow_id = inferredWorkflowId;
+          }
+        }
+      }
+
+      // Ensure persisted tool_call survives downstream processing.
+      if (messageToolCall && !this.message.tool_call) {
+        this.message.tool_call = messageToolCall;
+      }
+
       // Process content based on source_tool using tool handler
       // Skip processing if the message already has processed tool data (uiPayload/workspaceBrowseResult)
       // This happens when SSE handler already processed the tool output
@@ -169,6 +222,30 @@ define([
         this.message.jobsBrowseResult
       ) {
         console.log('[ChatMessage] Jobs browse already processed by SSE handler, skipping re-processing');
+        alreadyProcessed = true;
+      }
+      if (
+        sourceTool &&
+        (sourceTool.indexOf('plan_workflow') !== -1 || sourceTool.indexOf('submit_workflow') !== -1) &&
+        (this.message.workflowData || this.message.workflow_id || this.message.isWorkflow)
+      ) {
+        console.log('[ChatMessage] Workflow message already has persisted workflow metadata, skipping re-processing');
+        alreadyProcessed = true;
+      }
+      if (
+        sourceTool &&
+        sourceTool.indexOf('workspace_browse_tool') !== -1 &&
+        messageToolCall &&
+        !contentLooksLikeJson
+      ) {
+        alreadyProcessed = true;
+      }
+      if (
+        sourceTool &&
+        (sourceTool.indexOf('list_jobs') !== -1 || sourceTool.indexOf('get_recent_jobs') !== -1) &&
+        messageToolCall &&
+        !contentLooksLikeJson
+      ) {
         alreadyProcessed = true;
       }
 
@@ -202,6 +279,9 @@ define([
         this.message.jobsBrowseResult = typeof processedData.jobsBrowseResult !== 'undefined'
           ? (processedData.jobsBrowseResult || this.message.jobsBrowseResult)
           : this.message.jobsBrowseResult;
+        this.message.tool_call = (typeof processedData.tool_call !== 'undefined' && processedData.tool_call)
+          ? processedData.tool_call
+          : this.message.tool_call;
 
         // Workflow and query collection data are set on message object above
       }
@@ -303,10 +383,47 @@ define([
      * @param {HTMLElement} messageDiv - Container to render message into
      */
     renderUserOrAssistantMessage: function(messageDiv) {
-      // Check if this is a workflow message
+      // Always render assistant/user text first, then append any tool UI widgets below.
+      var contentToRender = '';
+      if (this.message.content) {
+        if (typeof this.message.content === 'string') {
+          contentToRender = this.message.content;
+        } else {
+          console.warn('[ChatMessage] ⚠ Content is not a string, converting to string. Type:', typeof this.message.content);
+          console.warn('[ChatMessage] Content value:', this.message.content);
 
-      if (this.message.isWorkflow && this.message.workflowData) {
-        // Render workflow manifest card with details
+          // Special handling for rag_result type - extract only the summary field
+          if (typeof this.message.content === 'object' && this.message.content.type === 'rag_result') {
+            contentToRender = this.message.content.summary || '';
+          } else {
+            // Convert to string - if it's an object, stringify it
+            contentToRender = typeof this.message.content === 'object'
+              ? JSON.stringify(this.message.content, null, 2)
+              : String(this.message.content);
+          }
+        }
+      }
+
+      if (contentToRender) {
+        domConstruct.create('div', {
+          innerHTML: this.md.render(contentToRender),
+          class: 'markdown-content',
+          style: 'font-size: ' + this.fontSize + 'px;'
+        }, messageDiv);
+      }
+
+      // Tool-specific widgets are appended under the message text when available.
+      var renderSourceTool = this.message.source_tool || (this.message.tool_call && this.message.tool_call.tool) || '';
+      var hasWorkflowIdentity = !!(
+        this.message.workflow_id ||
+        (this.message.workflowData && this.message.workflowData.workflow_id) ||
+        (this.message.workflowData && this.message.workflowData.execution_metadata && this.message.workflowData.execution_metadata.workflow_id)
+      );
+
+      if ((this.message.isWorkflow && this.message.workflowData) ||
+          (renderSourceTool.indexOf('plan_workflow') !== -1 && hasWorkflowIdentity) ||
+          (renderSourceTool.indexOf('submit_workflow') !== -1 && hasWorkflowIdentity)) {
+        // debugger; // Debug assistant message when loading planned workflow UI
         this.renderWorkflowManifestCard(messageDiv);
       } else if (
         this.message.uiAction === 'show_file_metadata' &&
@@ -315,43 +432,17 @@ define([
         this.renderFileMetadataWidget(messageDiv);
       } else if (
         (this.message.isWorkspaceBrowse && this.message.uiPayload) ||
-        (this.message.isWorkspaceListing && this.message.workspaceData)
+        (this.message.isWorkspaceListing && this.message.workspaceData) ||
+        (renderSourceTool.indexOf('workspace_browse_tool') !== -1 && this.message.tool_call)
       ) {
         this.renderWorkspaceBrowseSummaryWidget(messageDiv);
-      } else if (this.message.isJobsBrowse && this.message.uiPayload) {
+      } else if (
+        (this.message.isJobsBrowse && this.message.uiPayload) ||
+        ((renderSourceTool.indexOf('list_jobs') !== -1 || renderSourceTool.indexOf('get_recent_jobs') !== -1) && this.message.tool_call)
+      ) {
         this.renderJobsBrowseSummaryWidget(messageDiv);
       } else if (this.message.isQueryCollection && this.message.queryCollectionData) {
-        // Render query collection file reference widget
         this.renderQueryCollectionWidget(messageDiv);
-      } else {
-        // Normal message rendering
-
-        // Ensure content is a string before rendering with markdown
-        var contentToRender = '';
-        if (this.message.content) {
-          if (typeof this.message.content === 'string') {
-            contentToRender = this.message.content;
-          } else {
-            console.warn('[ChatMessage] ⚠ Content is not a string, converting to string. Type:', typeof this.message.content);
-            console.warn('[ChatMessage] Content value:', this.message.content);
-
-            // Special handling for rag_result type - extract only the summary field
-            if (typeof this.message.content === 'object' && this.message.content.type === 'rag_result') {
-              contentToRender = this.message.content.summary || '';
-            } else {
-              // Convert to string - if it's an object, stringify it
-              contentToRender = typeof this.message.content === 'object'
-                ? JSON.stringify(this.message.content, null, 2)
-                : String(this.message.content);
-            }
-          }
-        }
-
-        domConstruct.create('div', {
-          innerHTML: contentToRender ? this.md.render(contentToRender) : '',
-          class: 'markdown-content',
-          style: 'font-size: ' + this.fontSize + 'px;'
-        }, messageDiv);
       }
 
       if (this.message.role === 'assistant') {
@@ -438,6 +529,7 @@ define([
       on(openButton, 'click', lang.hitch(this, function() {
         topic.publish('CopilotWorkspaceBrowseOpen', {
           uiPayload: payload,
+          tool_call: this.message.tool_call || payload.call || null,
           chatSummary: summaryText,
           uiAction: this.message.uiAction || 'open_workspace_tab'
         });
@@ -485,6 +577,7 @@ define([
       on(openButton, 'click', lang.hitch(this, function() {
         topic.publish('CopilotJobsBrowseOpen', {
           uiPayload: payload,
+          tool_call: this.message.tool_call || payload.call || null,
           chatSummary: summaryText,
           uiAction: this.message.uiAction || 'open_jobs_tab'
         });
@@ -979,10 +1072,16 @@ define([
      * @param {HTMLElement} messageDiv - Container to render widget into
      */
     renderWorkflowManifestCard: function(messageDiv) {
-      var workflow = this.message.workflowData;
+      var workflow = this.message.workflowData || {};
+      var messageToolCall = this.message && this.message.tool_call && typeof this.message.tool_call === 'object'
+        ? this.message.tool_call
+        : null;
+      var toolCallArgs = messageToolCall && messageToolCall.arguments_executed && typeof messageToolCall.arguments_executed === 'object'
+        ? messageToolCall.arguments_executed
+        : {};
 
       // Extract workflow information
-      var workflowName = workflow.workflow_name || 'Unnamed Workflow';
+      var workflowName = workflow.workflow_name || this.message.workflow_name || 'Workflow';
       var workflowDescription = workflow.workflow_description ||
         (workflow.execution_metadata && workflow.execution_metadata.workflow_description) ||
         '';
@@ -1015,6 +1114,8 @@ define([
       var workflowId = workflow.workflow_id ||
         workflow.id ||
         (workflow.execution_metadata && (workflow.execution_metadata.workflow_id || workflow.execution_metadata.id)) ||
+        toolCallArgs.workflow_id ||
+        (messageToolCall && messageToolCall.workflow_id) ||
         this.message.workflow_id ||
         extractWorkflowIdFromStatusUrl(statusUrl) ||
         null;
@@ -1241,9 +1342,44 @@ define([
      * Shows a dialog displaying the workflow using WorkflowEngine widget
      */
     showWorkflowDialog: function() {
-      if (!this.message.workflowData) {
-        console.error('[ChatMessage] ✗ No workflow data available');
-        console.error('[ChatMessage] Message properties:', Object.keys(this.message));
+      var localWorkflowData = this.message.workflowData || {};
+      var messageToolCall = this.message && this.message.tool_call && typeof this.message.tool_call === 'object'
+        ? this.message.tool_call
+        : null;
+      var toolCallArgs = messageToolCall && messageToolCall.arguments_executed && typeof messageToolCall.arguments_executed === 'object'
+        ? messageToolCall.arguments_executed
+        : {};
+      var workflowId = localWorkflowData.workflow_id ||
+        (localWorkflowData.execution_metadata && localWorkflowData.execution_metadata.workflow_id) ||
+        toolCallArgs.workflow_id ||
+        (messageToolCall && messageToolCall.workflow_id) ||
+        this.message.workflow_id ||
+        null;
+
+      if ((!localWorkflowData || Object.keys(localWorkflowData).length === 0) && workflowId) {
+        localWorkflowData = { workflow_id: workflowId };
+      }
+      if (!workflowId && (!localWorkflowData || Object.keys(localWorkflowData).length === 0)) {
+        console.error('[ChatMessage] ✗ No workflow identity available');
+        return;
+      }
+      var hasWorkflowSteps = Array.isArray(localWorkflowData.steps) && localWorkflowData.steps.length > 0;
+      var canHydrateById = !!(
+        workflowId &&
+        !hasWorkflowSteps &&
+        this.copilotApi &&
+        typeof this.copilotApi.getWorkflowById === 'function'
+      );
+
+      if (canHydrateById) {
+        this.copilotApi.getWorkflowById(workflowId).then(lang.hitch(this, function(fullWorkflow) {
+          if (fullWorkflow && typeof fullWorkflow === 'object') {
+            this.message.workflowData = fullWorkflow;
+          }
+          this.showWorkflowDialog();
+        })).catch(function(error) {
+          console.error('[ChatMessage] Failed to hydrate workflow by id:', error);
+        });
         return;
       }
 

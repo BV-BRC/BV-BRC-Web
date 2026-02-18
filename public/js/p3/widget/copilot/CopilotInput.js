@@ -157,6 +157,7 @@ define([
         assistantMessage.source_tool = toolMetadata.source_tool || assistantMessage.source_tool;
         assistantMessage.isWorkflow = toolMetadata.isWorkflow;
         assistantMessage.workflowData = toolMetadata.workflowData;
+        assistantMessage.workflow_id = toolMetadata.workflow_id || assistantMessage.workflow_id;
         assistantMessage.isWorkspaceListing = toolMetadata.isWorkspaceListing;
         assistantMessage.workspaceData = toolMetadata.workspaceData;
         assistantMessage.isWorkspaceBrowse = toolMetadata.isWorkspaceBrowse;
@@ -166,6 +167,7 @@ define([
         assistantMessage.chatSummary = toolMetadata.chatSummary;
         assistantMessage.uiPayload = toolMetadata.uiPayload;
         assistantMessage.uiAction = toolMetadata.uiAction;
+        assistantMessage.tool_call = toolMetadata.tool_call || assistantMessage.tool_call;
       },
 
       setSelectedWorkspaceItems: function(items) {

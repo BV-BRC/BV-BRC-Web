@@ -30,64 +30,78 @@ define([
         return null;
       }
 
+      // Finalized workflow responses are often markdown text. If this is clearly
+      // not JSON, keep content as-is and let any persisted workflowData/tool_call
+      // metadata drive UI rendering.
+      if (typeof chunk === 'string') {
+        var trimmedChunk = chunk.trim();
+        if (!(trimmedChunk.startsWith('{') || trimmedChunk.startsWith('['))) {
+          return {
+            ...baseData,
+            chunk: chunk
+          };
+        }
+      }
+
       // Diagnostic logging
       console.log('[CopilotToolHandler] _processWorkflowManifest called');
       console.log('[CopilotToolHandler] chunk type:', typeof chunk);
-      if (typeof chunk === 'object') {
-        console.log('[CopilotToolHandler] chunk keys:', Object.keys(chunk));
-        console.log('[CopilotToolHandler] has .content?', 'content' in chunk);
-        console.log('[CopilotToolHandler] has .workflow_id?', 'workflow_id' in chunk);
-        console.log('[CopilotToolHandler] has .workflow_json?', 'workflow_json' in chunk);
-        console.log('[CopilotToolHandler] has .steps?', 'steps' in chunk);
-      } else if (typeof chunk === 'string') {
-        console.log('[CopilotToolHandler] chunk string (first 100 chars):', chunk.substring(0, 100));
-      }
 
       try {
         let content, parsedChunk;
 
-        // If chunk is already a fully parsed workflow object, use it directly
-        // Check for old format (direct workflow) or new format (with workflow_json)
+        // If chunk is already a parsed object, normalize wrappers first.
         if (typeof chunk === 'object' && !chunk.content) {
-          // New format from plan_workflow or submit_workflow: {workflow_json: {...}, message: "...", ...}
-          // Also detect plan_workflow by presence of prompt_payload
-          if (chunk.workflow_json || chunk.prompt_payload) {
+          var topLevel = chunk || {};
+          var payloadSource = (topLevel.result && typeof topLevel.result === 'object' && !Array.isArray(topLevel.result))
+            ? topLevel.result
+            : topLevel;
+          var callInfo = (topLevel.call && typeof topLevel.call === 'object') ? topLevel.call : null;
+
+          // New format from plan_workflow or submit_workflow: {workflow_json: {...}, ...}
+          // Also detect plan_workflow payloads by presence of prompt_payload.
+          if (payloadSource.workflow_json || payloadSource.prompt_payload) {
             console.log('[CopilotToolHandler] ✓ Path A1: Chunk is new format with workflow_json or prompt_payload');
 
             // For plan_workflow, the workflow_json contains the actual workflow
             // For submit_workflow, it has execution metadata too
             let workflowData;
-            var workflowDescription = chunk.workflow_description || null;
+            var workflowDescription = payloadSource.workflow_description || null;
 
-            if (chunk.workflow_json) {
+            if (payloadSource.workflow_json) {
               // Extract workflow_json and merge with top-level metadata
               workflowData = {
-                ...chunk.workflow_json,
-                workflow_description: workflowDescription || chunk.workflow_json.workflow_description || null,
+                ...payloadSource.workflow_json,
+                workflow_description: workflowDescription || payloadSource.workflow_json.workflow_description || null,
                 // Add execution metadata to workflow data (some fields may be undefined for plan_workflow)
                 execution_metadata: {
-                  workflow_id: chunk.workflow_id,
-                  status: chunk.status,
-                  submitted_at: chunk.submitted_at,
-                  message: chunk.message,
-                  status_url: chunk.status_url,
-                  source: chunk.source,
+                  workflow_id: payloadSource.workflow_id,
+                  status: payloadSource.status,
+                  submitted_at: payloadSource.submitted_at,
+                  message: payloadSource.message,
+                  status_url: payloadSource.status_url,
+                  source: payloadSource.source,
                   workflow_description: workflowDescription,
                   // Distinguish between planned and submitted workflows
-                  is_planned: !chunk.status || chunk.status === 'planned',
-                  is_submitted: !!(chunk.status && chunk.status !== 'planned')
+                  is_planned: !payloadSource.status || payloadSource.status === 'planned',
+                  is_submitted: !!(payloadSource.status && payloadSource.status !== 'planned')
                 }
               };
             } else {
-              // If only prompt_payload exists, this is likely a plan_workflow response
-              // Create a minimal workflow data structure
+              // If only prompt_payload exists (or lightweight payload), preserve workflow identity fields.
               workflowData = {
-                workflow_name: 'Planned Workflow',
+                workflow_id: payloadSource.workflow_id || null,
+                workflow_name: payloadSource.workflow_name || 'Planned Workflow',
+                status: payloadSource.status || 'planned',
+                step_count: payloadSource.step_count || null,
                 workflow_description: workflowDescription,
-                message: chunk.message || 'Workflow planned',
+                message: payloadSource.message || 'Workflow planned',
                 execution_metadata: {
-                  message: chunk.message,
+                  workflow_id: payloadSource.workflow_id || null,
+                  status: payloadSource.status || 'planned',
+                  message: payloadSource.message,
                   workflow_description: workflowDescription,
+                  status_url: payloadSource.status_url || null,
                   is_planned: true,
                   is_submitted: false
                 }
@@ -97,17 +111,19 @@ define([
               ...baseData,
               chunk: JSON.stringify(chunk), // Store full response for display
               isWorkflow: true,
-              workflowData: workflowData // Store workflow_json with metadata
+              workflowData: workflowData, // Store workflow_json with metadata
+              tool_call: callInfo
             };
           }
           // Old format: direct workflow object
-          if (chunk.workflow_id || chunk.steps) {
+          if (payloadSource.workflow_id || payloadSource.steps) {
             console.log('[CopilotToolHandler] ✓ Path A2: Chunk is old format (direct workflow data)');
             return {
               ...baseData,
               chunk: JSON.stringify(chunk), // Store stringified version for display
               isWorkflow: true,
-              workflowData: chunk // Use directly
+              workflowData: payloadSource, // Use normalized payload
+              tool_call: callInfo
             };
           }
         }
@@ -147,44 +163,55 @@ define([
           console.log('[CopilotToolHandler] ✓ Extracted content, keys:', Object.keys(parsedChunk));
         }
 
+        var parsedTopLevel = (parsedChunk && typeof parsedChunk === 'object') ? parsedChunk : {};
+        var parsedPayload = (parsedTopLevel.result && typeof parsedTopLevel.result === 'object' && !Array.isArray(parsedTopLevel.result))
+          ? parsedTopLevel.result
+          : parsedTopLevel;
+        var parsedCallInfo = (parsedTopLevel.call && typeof parsedTopLevel.call === 'object') ? parsedTopLevel.call : null;
+
         // Handle new format: check if parsedChunk has workflow_json or prompt_payload
-        if (parsedChunk && (parsedChunk.workflow_json || parsedChunk.prompt_payload)) {
+        if (parsedPayload && (parsedPayload.workflow_json || parsedPayload.prompt_payload)) {
           console.log('[CopilotToolHandler] ✓ Detected new format with workflow_json or prompt_payload');
 
           // For plan_workflow, the workflow_json contains the actual workflow
           // For submit_workflow, it has execution metadata too
           let workflowData;
-          var parsedWorkflowDescription = parsedChunk.workflow_description || null;
+          var parsedWorkflowDescription = parsedPayload.workflow_description || null;
 
-          if (parsedChunk.workflow_json) {
+          if (parsedPayload.workflow_json) {
             // Extract workflow_json and merge with top-level metadata
             workflowData = {
-              ...parsedChunk.workflow_json,
-              workflow_description: parsedWorkflowDescription || parsedChunk.workflow_json.workflow_description || null,
+              ...parsedPayload.workflow_json,
+              workflow_description: parsedWorkflowDescription || parsedPayload.workflow_json.workflow_description || null,
               // Add execution metadata to workflow data (some fields may be undefined for plan_workflow)
               execution_metadata: {
-                workflow_id: parsedChunk.workflow_id,
-                status: parsedChunk.status,
-                submitted_at: parsedChunk.submitted_at,
-                message: parsedChunk.message,
-                status_url: parsedChunk.status_url,
-                source: parsedChunk.source,
+                workflow_id: parsedPayload.workflow_id,
+                status: parsedPayload.status,
+                submitted_at: parsedPayload.submitted_at,
+                message: parsedPayload.message,
+                status_url: parsedPayload.status_url,
+                source: parsedPayload.source,
                 workflow_description: parsedWorkflowDescription,
                 // Distinguish between planned and submitted workflows
-                is_planned: !parsedChunk.status || parsedChunk.status === 'planned',
-                is_submitted: !!(parsedChunk.status && parsedChunk.status !== 'planned')
+                is_planned: !parsedPayload.status || parsedPayload.status === 'planned',
+                is_submitted: !!(parsedPayload.status && parsedPayload.status !== 'planned')
               }
             };
           } else {
-            // If only prompt_payload exists, this is likely a plan_workflow response
-            // Create a minimal workflow data structure
+            // If only prompt_payload/light payload exists, preserve workflow identity fields.
             workflowData = {
-              workflow_name: 'Planned Workflow',
+              workflow_id: parsedPayload.workflow_id || null,
+              workflow_name: parsedPayload.workflow_name || 'Planned Workflow',
+              status: parsedPayload.status || 'planned',
+              step_count: parsedPayload.step_count || null,
               workflow_description: parsedWorkflowDescription,
-              message: parsedChunk.message || 'Workflow planned',
+              message: parsedPayload.message || 'Workflow planned',
               execution_metadata: {
-                message: parsedChunk.message,
+                workflow_id: parsedPayload.workflow_id || null,
+                status: parsedPayload.status || 'planned',
+                message: parsedPayload.message,
                 workflow_description: parsedWorkflowDescription,
+                status_url: parsedPayload.status_url || null,
                 is_planned: true,
                 is_submitted: false
               }
@@ -194,7 +221,8 @@ define([
             ...baseData,
             chunk: content,
             isWorkflow: true,
-            workflowData: workflowData // Store workflow_json with metadata
+            workflowData: workflowData, // Store workflow_json with metadata
+            tool_call: parsedCallInfo
           };
         }
 
@@ -202,7 +230,8 @@ define([
           ...baseData,
           chunk: content,
           isWorkflow: true,
-          workflowData: parsedChunk // Store parsed data for easy access
+          workflowData: parsedPayload, // Store parsed data for easy access
+          tool_call: parsedCallInfo
         };
       } catch (e) {
         console.error('[CopilotToolHandler] ✗ Failed to parse workflow chunk:', e.message);
@@ -242,24 +271,29 @@ define([
     },
 
     _normalizeWorkspaceBrowsePayload: function(parsedChunk) {
-      var gridPayload = parsedChunk && parsedChunk.ui_grid ? parsedChunk.ui_grid : null;
+      var topLevel = (parsedChunk && typeof parsedChunk === 'object') ? parsedChunk : {};
+      var payloadSource = (topLevel.result && typeof topLevel.result === 'object' && !Array.isArray(topLevel.result))
+        ? topLevel.result
+        : topLevel;
+      var gridPayload = payloadSource && payloadSource.ui_grid ? payloadSource.ui_grid : null;
       var normalized = {
-        tool_name: parsedChunk && parsedChunk.tool_name ? parsedChunk.tool_name : 'workspace_browse_tool',
-        result_type: parsedChunk && parsedChunk.result_type ? parsedChunk.result_type : 'list_result',
-        count: parsedChunk && typeof parsedChunk.count === 'number' ? parsedChunk.count : null,
-        path: parsedChunk && parsedChunk.path ? parsedChunk.path : null,
-        source: parsedChunk && parsedChunk.source ? parsedChunk.source : null,
+        tool_name: payloadSource && payloadSource.tool_name ? payloadSource.tool_name : 'workspace_browse_tool',
+        result_type: payloadSource && payloadSource.result_type ? payloadSource.result_type : 'list_result',
+        count: payloadSource && typeof payloadSource.count === 'number' ? payloadSource.count : null,
+        path: payloadSource && payloadSource.path ? payloadSource.path : null,
+        source: payloadSource && payloadSource.source ? payloadSource.source : null,
         items: [],
         grid: gridPayload,
-        raw: parsedChunk
+        raw: payloadSource,
+        call: topLevel && typeof topLevel.call === 'object' ? topLevel.call : null
       };
 
-      if (parsedChunk && Array.isArray(parsedChunk.items)) {
-        normalized.items = parsedChunk.items;
+      if (payloadSource && Array.isArray(payloadSource.items)) {
+        normalized.items = payloadSource.items;
       } else if (gridPayload && Array.isArray(gridPayload.items)) {
         normalized.items = gridPayload.items;
-      } else if (Array.isArray(parsedChunk)) {
-        normalized.items = parsedChunk;
+      } else if (Array.isArray(payloadSource)) {
+        normalized.items = payloadSource;
       }
 
       if (typeof normalized.count !== 'number') {
@@ -333,7 +367,8 @@ define([
               count: payload.count,
               path: payload.path,
               source: payload.source,
-              items: payload.items
+              items: payload.items,
+              call: payload.call || null
             },
             uiAction: 'open_workspace_tab'
           };
@@ -352,7 +387,8 @@ define([
               count: this._countWorkspaceBrowseItems(payload),
               path: payload.path,
               source: payload.source,
-              items: payload.items
+              items: payload.items,
+              call: payload.call || null
             },
             uiAction: 'open_workspace_tab'
           };
@@ -372,7 +408,8 @@ define([
               path: payload.path,
               source: payload.source,
               metadata: metadata,
-              raw: payload.raw
+              raw: payload.raw,
+              call: payload.call || null
             },
             uiAction: 'show_file_metadata'
           };
@@ -400,7 +437,8 @@ define([
           count: payload.count,
           path: payload.path,
           source: payload.source,
-          items: payload.items
+          items: payload.items,
+          call: payload.call || null
         },
         uiAction: null
       };
@@ -438,6 +476,7 @@ define([
           chunk: resultTypeOutput.chatSummary || parsed.content,
           isWorkspaceBrowse: true,
           workspaceBrowseResult: normalized,
+          tool_call: normalized.call || null,
           chatSummary: resultTypeOutput.chatSummary,
           uiPayload: resultTypeOutput.uiPayload,
           uiAction: resultTypeOutput.uiAction,
@@ -488,7 +527,11 @@ define([
     },
 
     _normalizeJobsPayload: function(parsedChunk) {
-      var jobs = this._extractJobsFromResult(parsedChunk).map(function(job) {
+      var topLevel = (parsedChunk && typeof parsedChunk === 'object') ? parsedChunk : {};
+      var payloadSource = (topLevel.result && typeof topLevel.result === 'object' && !Array.isArray(topLevel.result))
+        ? topLevel.result
+        : topLevel;
+      var jobs = this._extractJobsFromResult(payloadSource).map(function(job) {
         if (!job) {
           return null;
         }
@@ -510,12 +553,13 @@ define([
 
       var payload = {
         jobs: jobs,
-        count: (parsedChunk && typeof parsedChunk.count === 'number') ? parsedChunk.count : jobs.length,
-        total: (parsedChunk && typeof parsedChunk.total === 'number') ? parsedChunk.total : jobs.length,
-        sort_by: parsedChunk && (parsedChunk.sort_by || parsedChunk.sortBy || null),
-        sort_dir: parsedChunk && (parsedChunk.sort_dir || parsedChunk.sortDir || null),
-        status: parsedChunk && parsedChunk.status ? parsedChunk.status : null,
-        service: parsedChunk && (parsedChunk.service || parsedChunk.application_name || null)
+        count: (payloadSource && typeof payloadSource.count === 'number') ? payloadSource.count : jobs.length,
+        total: (payloadSource && typeof payloadSource.total === 'number') ? payloadSource.total : jobs.length,
+        sort_by: payloadSource && (payloadSource.sort_by || payloadSource.sortBy || null),
+        sort_dir: payloadSource && (payloadSource.sort_dir || payloadSource.sortDir || null),
+        status: payloadSource && payloadSource.status ? payloadSource.status : null,
+        service: payloadSource && (payloadSource.service || payloadSource.application_name || null),
+        call: topLevel && typeof topLevel.call === 'object' ? topLevel.call : null
       };
       return payload;
     },
@@ -546,6 +590,7 @@ define([
           chunk: summary,
           isJobsBrowse: true,
           jobsBrowseResult: payload,
+          tool_call: payload.call || null,
           chatSummary: summary,
           uiPayload: payload,
           uiAction: 'open_jobs_tab'

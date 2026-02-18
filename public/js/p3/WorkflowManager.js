@@ -29,7 +29,7 @@ define([
 
   function normalizeStatus(rawStatus) {
     var value = (rawStatus || '').toLowerCase();
-    if (value === 'queued' || value === 'init' || value === 'pending') {
+    if (value === 'planned' || value === 'queued' || value === 'init' || value === 'pending') {
       return 'pending';
     }
     if (value === 'in-progress' || value === 'running') {

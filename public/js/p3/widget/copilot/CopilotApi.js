@@ -327,6 +327,45 @@ define([
 
             // Create tool handler for special tool processing
             var toolHandler = new CopilotToolHandler();
+            var latestToolExecutionByTool = {};
+
+            var buildToolMetadata = function(sourceTool, processed) {
+                if (!processed) {
+                    return null;
+                }
+                var toolMetadata = {
+                    source_tool: sourceTool
+                };
+                if (processed.isWorkflow) {
+                    toolMetadata.isWorkflow = processed.isWorkflow;
+                    toolMetadata.workflowData = processed.workflowData;
+                    if (processed.workflowData && processed.workflowData.workflow_id) {
+                        toolMetadata.workflow_id = processed.workflowData.workflow_id;
+                    }
+                }
+                if (processed.isWorkspaceListing) {
+                    toolMetadata.isWorkspaceListing = processed.isWorkspaceListing;
+                    toolMetadata.workspaceData = processed.workspaceData;
+                }
+                if (processed.isWorkspaceBrowse) {
+                    toolMetadata.isWorkspaceBrowse = processed.isWorkspaceBrowse;
+                    toolMetadata.workspaceBrowseResult = processed.workspaceBrowseResult;
+                    toolMetadata.chatSummary = processed.chatSummary;
+                    toolMetadata.uiPayload = processed.uiPayload;
+                    toolMetadata.uiAction = processed.uiAction;
+                }
+                if (processed.isJobsBrowse) {
+                    toolMetadata.isJobsBrowse = processed.isJobsBrowse;
+                    toolMetadata.jobsBrowseResult = processed.jobsBrowseResult;
+                    toolMetadata.chatSummary = processed.chatSummary;
+                    toolMetadata.uiPayload = processed.uiPayload;
+                    toolMetadata.uiAction = processed.uiAction;
+                }
+                if (processed.tool_call) {
+                    toolMetadata.tool_call = processed.tool_call;
+                }
+                return toolMetadata;
+            };
 
             fetch(this.apiUrlBase + '/copilot-agent', {
                 method: 'POST',
@@ -427,33 +466,21 @@ define([
 
                                         if (processed) {
                                             dataToUse = processed;
-                                            toolMetadata = {
-                                                source_tool: parsed.tool
-                                            };
+                                            toolMetadata = buildToolMetadata(parsed.tool, processed);
+                                        }
 
-                                            if (processed.isWorkflow) {
-                                                toolMetadata.isWorkflow = processed.isWorkflow;
-                                                toolMetadata.workflowData = processed.workflowData;
-                                            }
-
-                                            if (processed.isWorkspaceListing) {
-                                                toolMetadata.isWorkspaceListing = processed.isWorkspaceListing;
-                                                toolMetadata.workspaceData = processed.workspaceData;
-                                            }
-
-                                            if (processed.isWorkspaceBrowse) {
-                                                toolMetadata.isWorkspaceBrowse = processed.isWorkspaceBrowse;
-                                                toolMetadata.workspaceBrowseResult = processed.workspaceBrowseResult;
-                                                toolMetadata.chatSummary = processed.chatSummary;
-                                                toolMetadata.uiPayload = processed.uiPayload;
-                                                toolMetadata.uiAction = processed.uiAction;
-                                            }
-                                            if (processed.isJobsBrowse) {
-                                                toolMetadata.isJobsBrowse = processed.isJobsBrowse;
-                                                toolMetadata.jobsBrowseResult = processed.jobsBrowseResult;
-                                                toolMetadata.chatSummary = processed.chatSummary;
-                                                toolMetadata.uiPayload = processed.uiPayload;
-                                                toolMetadata.uiAction = processed.uiAction;
+                                        // Final responses may be natural-language only. Rehydrate UI metadata
+                                        // from the last successful tool_executed payload for that tool.
+                                        if ((!toolMetadata || (!toolMetadata.uiPayload && !toolMetadata.workflowData)) &&
+                                            Object.prototype.hasOwnProperty.call(latestToolExecutionByTool, parsed.tool)) {
+                                            const cachedResult = latestToolExecutionByTool[parsed.tool];
+                                            const replayProcessed = toolHandler.processToolEvent(
+                                                'final_response',
+                                                parsed.tool,
+                                                { chunk: cachedResult, tool: parsed.tool }
+                                            );
+                                            if (replayProcessed) {
+                                                toolMetadata = buildToolMetadata(parsed.tool, replayProcessed);
                                             }
                                         }
                                     }
@@ -510,6 +537,17 @@ define([
                                     break;
 
                                 case 'tool_executed':
+                                    if (parsed && parsed.tool && parsed.status === 'success' &&
+                                        Object.prototype.hasOwnProperty.call(parsed, 'result')) {
+                                        latestToolExecutionByTool[parsed.tool] = parsed.result;
+                                    }
+                                    if (parsed && parsed.tool) {
+                                        _self.currentActiveToolId = parsed.tool;
+                                    }
+                                    if (parsed && parsed.job_id) {
+                                        _self.currentJobId = parsed.job_id;
+                                    }
+                                    break;
                                 case 'duplicate_detected':
                                 case 'forced_finalize':
                                 case 'query_progress':
@@ -1093,59 +1131,83 @@ define([
 
             // Get workflow engine URL from config
             var workflowEngineUrl = window.App.workflow_url || 'https://dev-7.bv-brc.org/api/v1';
-            var submitUrl = workflowEngineUrl + '/workflows/submit';
+            var normalizedInput = workflowJson || {};
+            var workflowId = normalizedInput.workflow_id ||
+                (normalizedInput.execution_metadata && normalizedInput.execution_metadata.workflow_id) ||
+                null;
+            var workflowStatus = (normalizedInput.execution_metadata && normalizedInput.execution_metadata.status) ||
+                normalizedInput.status ||
+                null;
+            var shouldSubmitById = !!(workflowId && String(workflowStatus || '').toLowerCase() === 'planned');
 
-            console.log('[CopilotApi] Submitting directly to workflow engine:', submitUrl);
+            var submitPromise;
 
-            // Clean the workflow before submission - remove fields that workflow engine assigns
-            var workflowForSubmission = JSON.parse(JSON.stringify(workflowJson));
+            if (shouldSubmitById) {
+                var submitByIdUrl = workflowEngineUrl + '/workflows/' + encodeURIComponent(workflowId) + '/submit';
+                console.log('[CopilotApi] Submitting planned workflow by ID:', submitByIdUrl);
+                submitPromise = request.post(submitByIdUrl, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': (window.App.authorizationToken || '')
+                    },
+                    handleAs: 'json'
+                });
+            } else {
+                var submitUrl = workflowEngineUrl + '/workflows/submit';
+                console.log('[CopilotApi] Submitting workflow manifest directly:', submitUrl);
 
-            // Remove workflow_id (including placeholder values like "<scheduler_generated_id>")
-            // Always remove it - the engine will assign a real one
-            delete workflowForSubmission.workflow_id;
-            delete workflowForSubmission.status;       // Engine assigns this
-            delete workflowForSubmission.created_at;   // Engine assigns this
-            delete workflowForSubmission.updated_at;   // Engine assigns this
-            delete workflowForSubmission.execution_metadata; // Frontend metadata, not for engine
+                // Clean the workflow before submission - remove fields that workflow engine assigns
+                var workflowForSubmission = JSON.parse(JSON.stringify(normalizedInput));
 
-            // Clean steps - remove execution metadata
-            if (workflowForSubmission.steps) {
-                workflowForSubmission.steps.forEach(function(step) {
-                    delete step.step_id;    // Engine assigns this
-                    delete step.status;     // Execution metadata
-                    delete step.task_id;    // Execution metadata
-                    delete step.submitted_at; // Execution metadata
-                    delete step.started_at;   // Execution metadata
-                    delete step.completed_at; // Execution metadata
-                    delete step.elapsed_time; // Execution metadata
-                    delete step.error_message; // Execution metadata
+                // Remove workflow_id (including placeholder values like "<scheduler_generated_id>")
+                // Always remove it - the engine will assign a real one
+                delete workflowForSubmission.workflow_id;
+                delete workflowForSubmission.status;       // Engine assigns this
+                delete workflowForSubmission.created_at;   // Engine assigns this
+                delete workflowForSubmission.updated_at;   // Engine assigns this
+                delete workflowForSubmission.execution_metadata; // Frontend metadata, not for engine
 
-                    // Drop optional list params that are null/empty.
-                    // Workflow engine expects these to be omitted when unused.
-                    if (step.params && typeof step.params === 'object') {
-                        Object.keys(step.params).forEach(function(paramKey) {
-                            var value = step.params[paramKey];
-                            var looksLikeListParam = /(_libs|_ids)$/.test(paramKey);
-                            var isNullish = value === null || typeof value === 'undefined';
-                            var isEmptyArray = Array.isArray(value) && value.length === 0;
-                            if (looksLikeListParam && (isNullish || isEmptyArray)) {
-                                delete step.params[paramKey];
-                            }
-                        });
-                    }
+                // Clean steps - remove execution metadata
+                if (workflowForSubmission.steps) {
+                    workflowForSubmission.steps.forEach(function(step) {
+                        delete step.step_id;    // Engine assigns this
+                        delete step.status;     // Execution metadata
+                        delete step.task_id;    // Execution metadata
+                        delete step.submitted_at; // Execution metadata
+                        delete step.started_at;   // Execution metadata
+                        delete step.completed_at; // Execution metadata
+                        delete step.elapsed_time; // Execution metadata
+                        delete step.error_message; // Execution metadata
+
+                        // Drop optional list params that are null/empty.
+                        // Workflow engine expects these to be omitted when unused.
+                        if (step.params && typeof step.params === 'object') {
+                            Object.keys(step.params).forEach(function(paramKey) {
+                                var value = step.params[paramKey];
+                                var looksLikeListParam = /(_libs|_ids)$/.test(paramKey);
+                                var isNullish = value === null || typeof value === 'undefined';
+                                var isEmptyArray = Array.isArray(value) && value.length === 0;
+                                if (looksLikeListParam && (isNullish || isEmptyArray)) {
+                                    delete step.params[paramKey];
+                                }
+                            });
+                        }
+                    });
+                }
+
+                console.log('[CopilotApi] Cleaned workflow for submission:', workflowForSubmission);
+
+                submitPromise = request.post(submitUrl, {
+                    data: JSON.stringify(workflowForSubmission),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': (window.App.authorizationToken || '')
+                    },
+                    handleAs: 'json'
                 });
             }
 
-            console.log('[CopilotApi] Cleaned workflow for submission:', workflowForSubmission);
-
-            return request.post(submitUrl, {
-                data: JSON.stringify(workflowForSubmission),
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': (window.App.authorizationToken || '')
-                },
-                handleAs: 'json'
-            }).then(function(response) {
+            return submitPromise.then(function(response) {
                 console.log('[CopilotApi] Workflow submission response:', response);
                 // Response format from workflow engine:
                 // {
@@ -1193,6 +1255,32 @@ define([
         },
 
         /**
+         * Retrieves the full workflow definition by ID from workflow engine.
+         * @param {string} workflowId Workflow identifier
+         * @returns {Promise} Promise resolving to workflow definition payload
+         */
+        getWorkflowById: function(workflowId) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            if (!workflowId) return Promise.reject(new Error('workflowId is required'));
+
+            var workflowEngineUrl = window.App.workflow_url || 'https://dev-7.bv-brc.org/api/v1';
+            var workflowUrl = workflowEngineUrl + '/workflows/' + encodeURIComponent(workflowId);
+
+            return request.get(workflowUrl, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('[CopilotApi] Error fetching workflow by id:', error);
+                throw error;
+            });
+        },
+
+        /**
          * Retrieves the latest workflow status from workflow engine.
          * @param {string} workflowId Workflow identifier
          * @returns {Promise} Promise resolving to workflow status payload
@@ -1214,6 +1302,47 @@ define([
                 return response;
             }).catch(function(error) {
                 console.error('[CopilotApi] Error fetching workflow status:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Replays a previously executed MCP tool call through the orchestrator API.
+         * Used by tool cards loaded from session history where result payloads are not persisted.
+         * @param {Object} toolCall Canonical tool call envelope
+         * @param {string|null} sessionId Optional session id for execution context
+         * @returns {Promise<Object>} Replay response payload
+         */
+        replayToolCall: function(toolCall, sessionId) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            if (!toolCall || typeof toolCall !== 'object') {
+                return Promise.reject(new Error('toolCall is required'));
+            }
+            var toolId = toolCall.tool || toolCall.tool_id;
+            if (!toolId || typeof toolId !== 'string') {
+                return Promise.reject(new Error('toolCall.tool is required'));
+            }
+            var args = toolCall.arguments_executed;
+            if (!args || typeof args !== 'object' || Array.isArray(args)) {
+                args = {};
+            }
+
+            return request.post(this.apiUrlBase + '/mcp/replay-tool-call', {
+                data: JSON.stringify({
+                    tool_id: toolId,
+                    parameters: args,
+                    tool_call: toolCall,
+                    session_id: sessionId || null
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('[CopilotApi] Error replaying MCP tool call:', error);
                 throw error;
             });
         },
