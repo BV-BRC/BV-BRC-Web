@@ -608,6 +608,22 @@ define([
                         }
 
                         return pump();
+                    }).catch(err => {
+                        // Handle stream disconnection gracefully
+                        console.warn('Stream disconnected:', err.name);
+                        _self.currentAbortController = null;
+                        _self.currentActiveToolId = null;
+                        _self.currentJobId = null;
+
+                        // Only call onError if it's not a user abort
+                        if (err.name !== 'AbortError') {
+                            var disconnectError = new Error('Connection interrupted. Please reload the session.');
+                            disconnectError.isStreamDisconnect = true;
+                            if (onError) onError(disconnectError);
+                        } else if (onEnd) {
+                            // User aborted, just end gracefully
+                            onEnd();
+                        }
                     });
                 }
 
@@ -618,7 +634,24 @@ define([
                 _self.currentAbortController = null;
                 _self.currentActiveToolId = null;
                 _self.currentJobId = null;
-                if (onError) onError(err);
+
+                // Provide a more user-friendly error message for common issues
+                if (err.name === 'AbortError') {
+                    // User cancelled, don't show error
+                    return;
+                }
+
+                var errorToShow = err;
+                if (!err.isStreamDisconnect) {
+                    // Enhance error message for better user understanding
+                    if (err.message && err.message.includes('Failed to fetch')) {
+                        errorToShow = new Error('Network error. Please check your connection and reload.');
+                    } else if (err.message && err.message.includes('HTTP error')) {
+                        errorToShow = err; // Keep detailed HTTP errors
+                    }
+                }
+
+                if (onError) onError(errorToShow);
             });
         },
 
