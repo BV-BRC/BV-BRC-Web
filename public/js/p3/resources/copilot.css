@@ -894,49 +894,24 @@
   margin-bottom: 0;
 }
 
-/* Markdown lists - display short items in grid format */
+/* Markdown lists - display in single column */
 .markdown-content ul,
 .markdown-content ol {
   margin-top: 12px;
   margin-bottom: 12px;
-  padding-left: 0;
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 6px 12px;
+  padding-left: 20px;
+  list-style: disc;
 }
 
-/* Restore list markers for list items */
+/* List items */
 .markdown-content ul li,
 .markdown-content ol li {
-  position: relative;
-  padding-left: 18px;
   word-break: break-word;
-}
-
-.markdown-content ul li::before {
-  content: "•";
-  position: absolute;
-  left: 0;
-  color: #6b7280;
-  font-weight: bold;
+  margin-bottom: 4px;
 }
 
 .markdown-content ol {
-  counter-reset: list-counter;
-}
-
-.markdown-content ol li {
-  counter-increment: list-counter;
-  padding-left: 22px;
-}
-
-.markdown-content ol li::before {
-  content: counter(list-counter) ".";
-  position: absolute;
-  left: 0;
-  color: #6b7280;
-  font-weight: 500;
+  list-style: decimal;
 }
 
 /* Allow nested lists to display normally (single column) */
@@ -944,11 +919,9 @@
 .markdown-content ol ol,
 .markdown-content ul ol,
 .markdown-content ol ul {
-  display: block;
   margin-top: 4px;
   margin-bottom: 4px;
   padding-left: 20px;
-  grid-template-columns: 1fr;
 }
 
 .markdown-content ul ul li,
@@ -960,8 +933,7 @@
 @media (min-width: 1200px) {
   .markdown-content ul,
   .markdown-content ol {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 8px 16px;
+    /* Lists display in single column at all screen sizes */
   }
 }
 
