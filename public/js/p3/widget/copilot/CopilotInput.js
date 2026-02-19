@@ -481,7 +481,7 @@ define([
       _isAbortableQueryTool: function(toolId) {
         if (!toolId || typeof toolId !== 'string') return false;
         var normalized = toolId.split('.').pop();
-        return normalized === 'bvbrc_query_collection' || normalized === 'bvbrc_global_data_search';
+        return normalized === 'bvbrc_query_collection' || normalized === 'bvbrc_global_data_search' || normalized === 'bvbrc_search_data';
       },
 
       _updateAbortButtonState: function() {
