@@ -547,6 +547,8 @@ define([
 
       // Refresh recent folders list on login
       Topic.subscribe('/login', lang.hitch(this, function () {
+        // Clear favorites cache on login to handle sudo login correctly
+        FavoriteFolders.clearCache();
         this.updateRecentFoldersList();
         this.updateFavoriteFoldersList();
       }));
