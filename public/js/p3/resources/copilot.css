@@ -707,9 +707,46 @@
   text-align: center;
 }
 
-.copilot-error {
-  color: red;
-  padding: 10px;
+.copilot-error-container {
+  background-color: #fff5f5;
+  border: 1px solid #feb2b2;
+  border-radius: 6px;
+  padding: 16px;
+  margin: 20px;
+  max-width: 600px;
+}
+
+.copilot-error-message {
+  color: #c53030;
+  font-size: 14px;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.copilot-error-details {
+  color: #718096;
+  font-size: 12px;
+  margin-bottom: 12px;
+  font-family: monospace;
+}
+
+.copilot-error-reload-button {
+  background-color: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.copilot-error-reload-button:hover {
+  background-color: #3182ce;
+}
+
+.copilot-error-reload-button:active {
+  background-color: #2c5282;
 }
 
 /* ========================================

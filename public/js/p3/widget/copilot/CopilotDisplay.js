@@ -711,16 +711,20 @@ define([
      * Displays error message when API request fails
      * Implementation:
      * - Clears existing messages
-     * - Shows red error message
+     * - Shows error message with reload button
      */
     onQueryError: function(error = null) {
       console.log('onQueryError', error);
       domConstruct.empty(this.resultContainer);
 
       // Extract error message safely, handling various error formats
-      var errorMessage = 'An error occurred while processing your request. Please try again later.';
+      var errorMessage = 'An error occurred while processing your request.';
+      var errorDetails = null;
+      var isStreamDisconnect = false;
 
       if (error) {
+        isStreamDisconnect = error.isStreamDisconnect || false;
+
         if (error.message && typeof error.message === 'string' && error.message.trim()) {
           errorMessage = error.message;
         } else if (typeof error === 'string' && error.trim()) {
@@ -733,12 +737,52 @@ define([
             errorMessage = errorStr;
           }
         }
+
+        // Capture additional error details for display (only for non-disconnect errors)
+        if (!isStreamDisconnect && (error.response || error.status || error.statusText || error.stack)) {
+          errorDetails = {
+            status: error.status || error.response?.status,
+            statusText: error.statusText || error.response?.statusText,
+            stack: error.stack
+          };
+        }
       }
+
+      var errorContainer = domConstruct.create('div', {
+        class: 'copilot-error-container'
+      }, this.resultContainer);
 
       domConstruct.create('div', {
         innerHTML: errorMessage,
-        class: 'copilot-error'
-      }, this.resultContainer);
+        class: 'copilot-error-message'
+      }, errorContainer);
+
+      // Show additional error details if available
+      if (errorDetails && (errorDetails.status || errorDetails.statusText)) {
+        var detailsText = [];
+        if (errorDetails.status) {
+          detailsText.push('Status: ' + errorDetails.status);
+        }
+        if (errorDetails.statusText) {
+          detailsText.push(errorDetails.statusText);
+        }
+
+        domConstruct.create('div', {
+          innerHTML: detailsText.join(' - '),
+          class: 'copilot-error-details'
+        }, errorContainer);
+      }
+
+      var reloadButton = domConstruct.create('button', {
+        innerHTML: 'Reload Session',
+        class: 'copilot-error-reload-button'
+      }, errorContainer);
+
+      on(reloadButton, 'click', lang.hitch(this, function() {
+        this.startNewChat();
+        // Optionally trigger a page reload if needed
+        // window.location.reload();
+      }));
     },
 
     /**
