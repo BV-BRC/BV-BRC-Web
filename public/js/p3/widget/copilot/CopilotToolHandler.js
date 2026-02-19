@@ -577,12 +577,47 @@ define([
       return bits.join(', ');
     },
 
+    _isNumericOnlyChunk: function(chunk) {
+      if (typeof chunk === 'number') {
+        return isFinite(chunk);
+      }
+      if (typeof chunk !== 'string') {
+        return false;
+      }
+      var trimmed = chunk.trim();
+      if (!trimmed) {
+        return false;
+      }
+      return /^-?\d+(\.\d+)?$/.test(trimmed);
+    },
+
     _processListJobs: function(chunk, baseData) {
       if (!chunk) {
         return null;
       }
+
+      // A plain numeric chunk (e.g. "0", "2025") can arrive as normal text.
+      // Treat it as text, not as jobs payload, to avoid false "Found 0 jobs".
+      if (this._isNumericOnlyChunk(chunk)) {
+        return {
+          ...baseData,
+          chunk: typeof chunk === 'string' ? chunk : String(chunk),
+          isJobsBrowse: false
+        };
+      }
+
       try {
         var parsed = this._parseToolChunk(chunk);
+        if (
+          typeof parsed.parsedChunk !== 'object' ||
+          parsed.parsedChunk === null
+        ) {
+          return {
+            ...baseData,
+            chunk: parsed.content,
+            isJobsBrowse: false
+          };
+        }
         var payload = this._normalizeJobsPayload(parsed.parsedChunk);
         var summary = this._formatJobsSummary(payload);
         return {
