@@ -2003,6 +2003,13 @@ define([
         const hideBtn = query('[rel="ToggleItemDetail"]', this.actionPanel.domNode)[0];
         hideBtn.click();
       }
+
+      // Force resize after startup to ensure proper layout calculation
+      // This handles cases where header content affects layout
+      var _self = this;
+      setTimeout(function() {
+        _self.resize();
+      }, 100);
     },
 
     onHashChange: function(newHash) {
@@ -2645,6 +2652,12 @@ define([
       Deferred.when(obj, lang.hitch(this, function (obj) {
         if (this.browserHeader) {
           this.browserHeader.set('selection', [obj]);
+          // Trigger resize after selection changes to ensure proper layout
+          // when action buttons become visible/hidden
+          var _self = this;
+          setTimeout(function() {
+            _self.resize();
+          }, 0);
         }
         var currentPathParts = this.path.split('/').filter(function(part) {
           return part && part.length > 0;
