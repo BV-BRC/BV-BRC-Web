@@ -93,7 +93,7 @@ define([
         // ( { sessions, total, has_more } ) so callers can decide what to do.
         // Default page size is 20 and offset 0.
         getUserSessions: function(limit = 20, offset = 0) {
-            if (!this._loggedIn) return Promise.reject('Not logged in');
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
 
             // Build query string with pagination params
@@ -123,7 +123,7 @@ define([
          * - Publishes error events on failure
          */
         getNewSessionId: function() {
-            if (!this._loggedIn) return Promise.reject('Not logged in');
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             return request.get(this.apiUrlBase + '/start-chat', {
                 headers: {
                     Authorization: (window.App.authorizationToken || '')
