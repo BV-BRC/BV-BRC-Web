@@ -75,14 +75,16 @@
           </div>
         </div>
         <div class="headerrow">
-          <label class="appBoxLabel">Collection Year</label>
+          <label class="appBoxLabel">Collection Date</label>
         </div>
         <div class="appRow">
           <div class="appFieldLong">
             <label>From</label>
-            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'YYYY'" data-dojo-attach-point="collectionYearFromNode" name="collection_year_from" style="width:80px"></div>
-            <label>To</label>
-            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'YYYY'" data-dojo-attach-point="collectionYearToNode" name="collection_year_to" style="width:80px"></div>
+            <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeHolder:'YYYY or YYYY-MM or YYYY-MM-DD', regExp:'\\d{4}(-\\d{2}(-\\d{2})?)?', invalidMessage:'Enter YYYY, YYYY-MM, or YYYY-MM-DD'" data-dojo-attach-point="collectionDateFromNode" name="collection_date_from" style="width:200px"></div>
+            <span data-dojo-attach-point="collectionDateFromCalendarIcon" class="icon-calendar" style="cursor:pointer;margin-left:4px;font-size:16px;" title="Pick date"></span>
+            <label style="margin-left:8px;">To</label>
+            <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeHolder:'YYYY or YYYY-MM or YYYY-MM-DD', regExp:'\\d{4}(-\\d{2}(-\\d{2})?)?', invalidMessage:'Enter YYYY, YYYY-MM, or YYYY-MM-DD'" data-dojo-attach-point="collectionDateToNode" name="collection_date_to" style="width:200px"></div>
+            <span data-dojo-attach-point="collectionDateToCalendarIcon" class="icon-calendar" style="cursor:pointer;margin-left:4px;font-size:16px;" title="Pick date"></span>
           </div>
         </div>
         <div class="headerrow">
