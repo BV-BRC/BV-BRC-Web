@@ -633,6 +633,7 @@ define([
         baseArgs.query_url ||
         (rqlReplay && rqlReplay.data_api_url) ||
         null;
+      debugger;
       var inferredCollectionFromUrl = this._extractCollectionFromRqlUrl(rqlQueryUrl);
 
       var replayArgs = this._buildDataReplayParameters(baseArgs, '*', 100, toolCall);
@@ -1148,9 +1149,37 @@ define([
       }, errorContainer);
 
       on(reloadButton, 'click', lang.hitch(this, function() {
-        this.startNewChat();
-        // Optionally trigger a page reload if needed
-        // window.location.reload();
+        // If we have a session ID, reload it; otherwise start new chat
+        if (this.sessionId) {
+          // Clear the error display
+          domConstruct.empty(this.resultContainer);
+
+          // Show loading state
+          domConstruct.create('div', {
+            innerHTML: 'Reloading session...',
+            class: 'copilot-empty-state'
+          }, this.resultContainer);
+
+          // Reload session messages
+          this.copilotApi.getSessionMessages(this.sessionId).then(lang.hitch(this, function(res) {
+            var messages = [];
+            if (res && Array.isArray(res.messages)) {
+              if (res.messages.length > 0 && Array.isArray(res.messages[0] && res.messages[0].messages)) {
+                messages = res.messages[0].messages; // Legacy nested API shape
+              } else {
+                messages = res.messages; // Current flat API shape
+              }
+            }
+            this.messages = messages;
+            this.showMessages(messages);
+          })).catch(lang.hitch(this, function(error) {
+            console.error('Error reloading session:', error);
+            this.showError(error);
+          }));
+        } else {
+          // No session ID available, start new chat
+          this.startNewChat();
+        }
       }));
     },
 
