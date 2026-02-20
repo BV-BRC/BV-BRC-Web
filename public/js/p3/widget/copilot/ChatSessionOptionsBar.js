@@ -65,12 +65,6 @@ define([
         /** @property {boolean} cepiSelected - Tracks if CEPI button is selected */
         cepiSelected: false,
 
-        /** @property {boolean} publicationsSelected - Tracks if Publications button is selected */
-        publicationsSelected: false,
-
-        /** @property {boolean} showPublicationsButton - Flag to control publications button visibility */
-        showPublicationsButton: false,
-
         /** @property {boolean} showEnhancePromptButton - Flag to control enhance prompt button visibility */
         showEnhancePromptButton: false,
 
@@ -85,9 +79,6 @@ define([
             }
 
             // Set button visibility based on configuration
-            if (window.App && window.App.copilotEnablePublications !== undefined) {
-                this.showPublicationsButton = window.App.copilotEnablePublications === 'true';
-            }
             if (window.App && window.App.copilotEnableEnhancePrompt !== undefined) {
                 this.showEnhancePromptButton = window.App.copilotEnableEnhancePrompt === 'true';
             }
@@ -198,6 +189,10 @@ define([
             if (this.ragList) {
                 var check_names = [];
                 this.ragList.forEach(lang.hitch(this, function(ragdb) {
+                    // Filter out bvbrc_helpdesk
+                    if (ragdb.name === 'bvbrc_helpdesk') {
+                        return;
+                    }
                     var option = document.createElement('option');
                     option.value = ragdb.name;
                     option.text = ragdb.name.split('/').reverse()[0];
@@ -269,7 +264,7 @@ define([
             numDocsInput.type = 'number';
             numDocsInput.min = '1';
             numDocsInput.max = '10';
-            numDocsInput.value = '3';
+            numDocsInput.value = '10';
             numDocsInput.style.width = '60px';
             numDocsInput.addEventListener('change', lang.hitch(this, function(evt) {
                 var numDocs = evt.target.value;
@@ -392,9 +387,6 @@ define([
 
             // Set CSS height based on number of additional features enabled
             var additionalFeatures = 0;
-            if (this.showPublicationsButton) {
-                additionalFeatures++;
-            }
             if (this.showEnhancePromptButton) {
                 additionalFeatures++;
             }
@@ -431,21 +423,6 @@ define([
                     }
                 })
             }, buttonsContainer);
-
-            // Conditionally add Publications button between New Chat and advanced options
-            if (this.showPublicationsButton) {
-                this.publicationsButton = domConstruct.create('div', {
-                    innerHTML: 'Publications',
-                    className: 'chat-window-options-button',
-                    onclick: lang.hitch(this, function() {
-                        this.publicationsSelected = !this.publicationsSelected;
-                        domClass.toggle(this.publicationsButton, 'selected', this.publicationsSelected);
-
-                        // Publish the RAG database change
-                        topic.publish('ChatRagDb', this.publicationsSelected ? 'cepi_journals' : 'null');
-                    })
-                }, buttonsContainer);
-            }
 
             // Create container for model and RAG text elements
             this.advancedOptionsContainer = domConstruct.create('div', {

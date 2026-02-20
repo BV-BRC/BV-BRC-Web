@@ -42,12 +42,12 @@ define([
       model: null,
 
       /** Selected RAG database for enhanced responses */
-      ragDb: 'bvbrc_helpdesk',
+      ragDb: null,
 
       statePrompt: null,
 
       /** Number of documents to use for RAG queries */
-      numDocs: 3,
+      numDocs: 10,
 
       // Widget styling
       style: 'padding: 0 5px 5px 5px; border: 0; height: 20%;',
@@ -481,7 +481,7 @@ define([
       _isAbortableQueryTool: function(toolId) {
         if (!toolId || typeof toolId !== 'string') return false;
         var normalized = toolId.split('.').pop();
-        return normalized === 'bvbrc_query_collection' || normalized === 'bvbrc_global_data_search';
+        return normalized === 'bvbrc_query_collection' || normalized === 'bvbrc_global_data_search' || normalized === 'bvbrc_search_data';
       },
 
       _updateAbortButtonState: function() {
@@ -1447,7 +1447,14 @@ define([
                       role: 'assistant',
                       content: '',
                       message_id: 'assistant_' + Date.now(),
-                      timestamp: new Date().toISOString()
+                      timestamp: new Date().toISOString(),
+                      // Restrict RAG chunk card rendering to rag/stream submissions only.
+                      isRagStreamQuery: true,
+                      ragChunkSearchFilters: {
+                          session_id: this.sessionId || null,
+                          user_id: this.copilotApi && this.copilotApi.user_id ? this.copilotApi.user_id : null,
+                          rag_db: this.ragDb || null
+                      }
                   };
 
                   // Add tool metadata if available (for workflow handling)

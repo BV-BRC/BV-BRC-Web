@@ -123,6 +123,43 @@ define([
       return '/workspace' + normalizedPath;
     },
 
+    _extractRagSummaryText: function() {
+      if (typeof this.message.content === 'object' && this.message.content && this.message.content.type === 'rag_result') {
+        return this.message.content.summary || '';
+      }
+      if (typeof this.message.content === 'string') {
+        return this.message.content;
+      }
+      return '';
+    },
+
+    _buildRagChunkSearchFilters: function() {
+      var seededFilters = this.message && this.message.ragChunkSearchFilters && typeof this.message.ragChunkSearchFilters === 'object'
+        ? this.message.ragChunkSearchFilters
+        : {};
+      var messageToolCall = this.message && this.message.tool_call && typeof this.message.tool_call === 'object'
+        ? this.message.tool_call
+        : null;
+      var toolArgs = messageToolCall && messageToolCall.arguments_executed && typeof messageToolCall.arguments_executed === 'object'
+        ? messageToolCall.arguments_executed
+        : {};
+      var messageId = this.message && this.message.message_id ? this.message.message_id : null;
+      if (typeof messageId === 'string' && messageId.indexOf('assistant_') === 0) {
+        messageId = null;
+      }
+      return {
+        message_id: seededFilters.message_id || messageId || null,
+        session_id: seededFilters.session_id || this.sessionId || null,
+        user_id: seededFilters.user_id || (this.copilotApi && this.copilotApi.user_id ? this.copilotApi.user_id : null),
+        rag_db: seededFilters.rag_db || toolArgs.rag_db || toolArgs.database_name || toolArgs.config_name || null,
+        rag_api_name: seededFilters.rag_api_name || toolArgs.rag_api_name || null,
+        doc_id: seededFilters.doc_id || toolArgs.doc_id || toolArgs.document_id || null,
+        source_id: seededFilters.source_id || toolArgs.source_id || null,
+        include_content: true,
+        limit: 100
+      };
+    },
+
     /**
      * Renders a chat message in the container
      * - Adds appropriate spacing based on if it's the first message
@@ -201,7 +238,6 @@ define([
           }
         }
       }
-
       // Ensure persisted tool_call survives downstream processing.
       if (messageToolCall && !this.message.tool_call) {
         this.message.tool_call = messageToolCall;
@@ -444,6 +480,10 @@ define([
         ((renderSourceTool.indexOf('list_jobs') !== -1 || renderSourceTool.indexOf('get_recent_jobs') !== -1) && this.message.tool_call)
       ) {
         this.renderJobsBrowseSummaryWidget(messageDiv);
+      } else if (
+        this.message.isRagStreamQuery === true
+      ) {
+        this.renderRagResultWidget(messageDiv);
       } else if (this.message.isQueryCollection && this.message.queryCollectionData) {
         this.renderQueryCollectionWidget(messageDiv);
       }
@@ -671,6 +711,120 @@ define([
           uiAction: this.message.uiAction || 'open_jobs_tab'
         });
       }));
+    },
+
+    renderRagResultWidget: function(messageDiv) {
+      var summaryText = this._extractRagSummaryText();
+      var cardText = summaryText || 'RAG results are available.';
+      var container = domConstruct.create('div', {
+        class: 'workspace-summary-card'
+      }, messageDiv);
+
+      domConstruct.create('div', {
+        class: 'workspace-summary-text',
+        innerHTML: this.escapeHtml(cardText)
+      }, container);
+
+      var openButton = domConstruct.create('button', {
+        type: 'button',
+        class: 'workspace-summary-open-button',
+        innerHTML: 'View Retrieved Chunks'
+      }, container);
+
+      on(openButton, 'click', lang.hitch(this, function() {
+        this.showRagChunksDialog(openButton);
+      }));
+    },
+
+    showRagChunksDialog: function(triggerButton) {
+      if (!this.copilotApi || typeof this.copilotApi.searchRagChunkReferences !== 'function') {
+        console.warn('[ChatMessage] Copilot API does not support rag chunk search');
+        return;
+      }
+
+      var filters = this._buildRagChunkSearchFilters();
+      var dialogBody = domConstruct.create('div', {
+        style: 'max-height: 60vh; overflow-y: auto;'
+      });
+
+      var statusNode = domConstruct.create('div', {
+        innerHTML: 'Loading retrieved chunks...',
+        style: 'color: #4b5563; margin-bottom: 10px;'
+      }, dialogBody);
+
+      var chunksContainer = domConstruct.create('div', {}, dialogBody);
+
+      var chunksDialog = new Dialog({
+        title: 'Retrieved RAG Chunks',
+        style: 'width: 900px; max-width: 95vw;',
+        content: dialogBody
+      });
+
+      chunksDialog.startup();
+      chunksDialog.show();
+
+      if (triggerButton) {
+        triggerButton.disabled = true;
+        triggerButton.innerHTML = 'Loading...';
+      }
+
+      this.copilotApi.searchRagChunkReferences(filters).then(lang.hitch(this, function(response) {
+        domConstruct.empty(chunksContainer);
+        var items = response && Array.isArray(response.items) ? response.items : [];
+        var total = response && typeof response.total === 'number' ? response.total : items.length;
+        statusNode.innerHTML = 'Showing ' + items.length + ' of ' + total + ' chunk references';
+
+        if (!items.length) {
+          domConstruct.create('div', {
+            innerHTML: 'No chunks were found for this response.',
+            style: 'color: #6b7280;'
+          }, chunksContainer);
+          return;
+        }
+
+        items.forEach(lang.hitch(this, function(item, index) {
+          var chunkCard = domConstruct.create('div', {
+            style: 'border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px; margin-bottom: 10px; background: #f9fafb;'
+          }, chunksContainer);
+
+          var titleParts = [];
+          titleParts.push('Chunk ' + (index + 1));
+          if (item.chunk_id) {
+            titleParts.push('ID: ' + item.chunk_id);
+          }
+          domConstruct.create('div', {
+            innerHTML: this.escapeHtml(titleParts.join(' | ')),
+            style: 'font-weight: 600; margin-bottom: 6px; color: #1f2937;'
+          }, chunkCard);
+
+          var metaParts = [];
+          if (item.doc_id) metaParts.push('Doc: ' + item.doc_id);
+          if (item.source_id) metaParts.push('Source: ' + item.source_id);
+          if (item.rag_db) metaParts.push('DB: ' + item.rag_db);
+          if (typeof item.score === 'number') metaParts.push('Score: ' + item.score);
+          if (item.message_timestamp) metaParts.push('Time: ' + new Date(item.message_timestamp).toLocaleString());
+          if (metaParts.length) {
+            domConstruct.create('div', {
+              innerHTML: this.escapeHtml(metaParts.join(' | ')),
+              style: 'font-size: 12px; color: #4b5563; margin-bottom: 8px;'
+            }, chunkCard);
+          }
+
+          if (item.content) {
+            domConstruct.create('pre', {
+              innerHTML: this.escapeHtml(item.content),
+              style: 'margin: 0; white-space: pre-wrap; word-break: break-word; max-height: 260px; overflow-y: auto; background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; padding: 8px; font-size: 12px;'
+            }, chunkCard);
+          }
+        }));
+      })).catch(lang.hitch(this, function(error) {
+        statusNode.innerHTML = 'Failed to load chunks: ' + this.escapeHtml(error && error.message ? error.message : String(error));
+      })).then(function() {
+        if (triggerButton) {
+          triggerButton.disabled = false;
+          triggerButton.innerHTML = 'View Retrieved Chunks';
+        }
+      });
     },
 
     /**
