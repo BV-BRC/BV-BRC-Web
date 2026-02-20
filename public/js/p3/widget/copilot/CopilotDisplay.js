@@ -406,25 +406,56 @@ define([
       return [];
     },
 
-    _loadDataRowsFromRqlReplay: function(rqlReplay, requestArgs) {
-      if (!rqlReplay || typeof rqlReplay !== 'object' || !rqlReplay.data_api_url || !rqlReplay.rql_query) {
-        return Promise.reject(new Error('Missing rql_replay metadata'));
+    _loadDataRowsFromRqlReplay: function(rqlReplay, rqlQueryUrl, requestArgs) {
+      var hasReplayQuery = !!(
+        rqlReplay &&
+        typeof rqlReplay === 'object' &&
+        rqlReplay.data_api_url &&
+        typeof rqlReplay.rql_query === 'string' &&
+        rqlReplay.rql_query.trim().length > 0
+      );
+      var resolvedQueryUrl = rqlQueryUrl ||
+        (rqlReplay && typeof rqlReplay === 'object' ? rqlReplay.data_api_url : null) ||
+        null;
+      if (!hasReplayQuery && !resolvedQueryUrl) {
+        return Promise.reject(new Error('Missing query metadata for data tab load'));
       }
 
-      var headers = lang.mixin({}, rqlReplay.headers || {});
+      var headers = lang.mixin({}, (rqlReplay && rqlReplay.headers) || {});
       if (!headers.Accept) {
-        headers.Accept = 'application/json';
+        headers.Accept = 'application/solr+json';
+      }
+      if (!headers['Content-Type']) {
+        headers['Content-Type'] = 'application/rqlquery+x-www-form-urlencoded';
+      }
+      if (!headers['X-Requested-With']) {
+        headers['X-Requested-With'] = null;
       }
       if (window.App && window.App.authorizationToken && !headers.Authorization) {
         headers.Authorization = window.App.authorizationToken;
       }
 
-      return request.post(rqlReplay.data_api_url, {
-        data: rqlReplay.rql_query,
-        headers: headers,
-        handleAs: 'json'
-      }).then(lang.hitch(this, function(rawResponse) {
-        var collection = (requestArgs && requestArgs.collection) || this._extractCollectionFromRqlUrl(rqlReplay.data_api_url) || null;
+      var maxRows = (requestArgs && typeof requestArgs.limit === 'number' && requestArgs.limit > 0)
+        ? requestArgs.limit
+        : 100;
+      var ensureLimitedQuery = function(queryText) {
+        if (typeof queryText !== 'string') {
+          return '';
+        }
+        var trimmed = queryText.trim();
+        if (!trimmed) {
+          return '';
+        }
+        if (/(^|&)limit\(/i.test(trimmed)) {
+          return trimmed;
+        }
+        return trimmed + '&limit(' + maxRows + ')';
+      };
+
+      var normalizePayload = lang.hitch(this, function(rawResponse) {
+        var collection = (requestArgs && requestArgs.collection) ||
+          this._extractCollectionFromRqlUrl(resolvedQueryUrl) ||
+          null;
         var rows = this._resolveDataRows(rawResponse);
         var responseObj = (rawResponse && rawResponse.response && typeof rawResponse.response === 'object')
           ? rawResponse.response
@@ -441,10 +472,35 @@ define([
           nextCursorId: null,
           collection: collection,
           queryParameters: requestArgs || null,
-          rqlQueryUrl: rqlReplay.data_api_url,
-          rqlReplay: rqlReplay
+          rqlQueryUrl: resolvedQueryUrl,
+          rqlReplay: rqlReplay || null
         };
-      }));
+      });
+
+      var buildRqlGetUrl = function(baseUrl, queryText) {
+        if (!baseUrl || typeof baseUrl !== 'string') {
+          return null;
+        }
+        var trimmedBase = baseUrl.trim();
+        if (!trimmedBase) {
+          return null;
+        }
+        if (!queryText || typeof queryText !== 'string' || !queryText.trim()) {
+          return trimmedBase;
+        }
+        var baseWithoutQuery = trimmedBase.split('?')[0];
+        var encodedQuery = encodeURI(queryText.trim());
+        return baseWithoutQuery + '?' + encodedQuery;
+      };
+
+      var requestUrl = hasReplayQuery
+        ? buildRqlGetUrl((rqlReplay && rqlReplay.data_api_url) || resolvedQueryUrl, ensureLimitedQuery(rqlReplay.rql_query))
+        : resolvedQueryUrl;
+
+      return request.get(requestUrl, {
+        headers: headers,
+        handleAs: 'json'
+      }).then(normalizePayload);
     },
 
     _parseTsvRows: function(tsvText) {
@@ -563,11 +619,6 @@ define([
       }
 
       var toolCall = data && data.tool_call && typeof data.tool_call === 'object' ? data.tool_call : null;
-      if (!toolCall || !this.copilotApi || typeof this.copilotApi.replayToolCall !== 'function') {
-        this.setSessionDataBrowseData(data || null);
-        return;
-      }
-
       var baseArgs = (toolCall.arguments_executed && typeof toolCall.arguments_executed === 'object')
         ? toolCall.arguments_executed
         : {};
@@ -588,7 +639,6 @@ define([
       if (!replayArgs.collection && inferredCollectionFromUrl) {
         replayArgs.collection = inferredCollectionFromUrl;
       }
-      var replayCall = this._cloneToolCallWithArgs(toolCall, replayArgs);
 
       this.setSessionDataBrowseData({
         chatSummary: data && data.chatSummary ? data.chatSummary : 'Loading data rows...',
@@ -607,49 +657,14 @@ define([
         }
       });
 
-      var finishWithReplay = lang.hitch(this, function() {
-        var replaySessionId = this._isBvbrcSearchDataTool(toolCall.tool || toolCall.tool_id) ? null : this.sessionId;
-        return this.copilotApi.replayToolCall(replayCall, replaySessionId).then(lang.hitch(this, function(replayResponse) {
-          var replayPayload = this._unwrapReplayResultPayload(replayResponse) || {};
-          var nextUiPayload = this._buildDataBrowseUiPayload(replayPayload, replayArgs);
-          // Preserve rql_replay if not in replay response
-          if (!nextUiPayload.rqlReplay && rqlReplay) {
-            nextUiPayload.rqlReplay = rqlReplay;
-          }
-          if (!nextUiPayload.rqlQueryUrl && rqlQueryUrl) {
-            nextUiPayload.rqlQueryUrl = rqlQueryUrl;
-          }
-          this.setSessionDataBrowseData({
-            uiPayload: nextUiPayload,
-            tool_call: toolCall,
-            chatSummary: data && data.chatSummary ? data.chatSummary : ('Loaded ' + nextUiPayload.rows.length + ' rows'),
-            uiAction: data && data.uiAction ? data.uiAction : 'open_data_tab'
-          });
-        }));
-      });
-
-      var canLoadFromRqlReplay = this._isBvbrcSearchDataTool(toolCall.tool || toolCall.tool_id) &&
-        rqlReplay &&
-        typeof rqlReplay === 'object' &&
-        !!rqlReplay.data_api_url &&
-        !!rqlReplay.rql_query;
-
-      if (canLoadFromRqlReplay) {
-        this._loadDataRowsFromRqlReplay(rqlReplay, replayArgs).then(lang.hitch(this, function(nextUiPayload) {
-          this.setSessionDataBrowseData({
-            uiPayload: nextUiPayload,
-            tool_call: toolCall,
-            chatSummary: data && data.chatSummary ? data.chatSummary : ('Loaded ' + nextUiPayload.rows.length + ' rows'),
-            uiAction: data && data.uiAction ? data.uiAction : 'open_data_tab'
-          });
-        })).catch(lang.hitch(this, function() {
-          // Fallback to replay path if direct RQL fetch fails for any reason.
-          return finishWithReplay();
-        }));
-        return;
-      }
-
-      finishWithReplay().catch(lang.hitch(this, function(error) {
+      this._loadDataRowsFromRqlReplay(rqlReplay, rqlQueryUrl, replayArgs).then(lang.hitch(this, function(nextUiPayload) {
+        this.setSessionDataBrowseData({
+          uiPayload: nextUiPayload,
+          tool_call: toolCall,
+          chatSummary: data && data.chatSummary ? data.chatSummary : ('Loaded ' + nextUiPayload.rows.length + ' rows'),
+          uiAction: data && data.uiAction ? data.uiAction : 'open_data_tab'
+        });
+      })).catch(lang.hitch(this, function(error) {
         this.onQueryError({
           message: 'Failed to load data tab rows',
           details: error && error.message ? error.message : String(error)
