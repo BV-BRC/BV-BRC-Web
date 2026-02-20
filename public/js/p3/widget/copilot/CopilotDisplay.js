@@ -380,6 +380,9 @@ define([
       if (Array.isArray(payload.results)) {
         return payload.results;
       }
+      if (typeof payload.tsv === 'string' && payload.tsv.trim().length > 0) {
+        return this._parseTsvRows(payload.tsv);
+      }
       if (Array.isArray(payload.items)) {
         return payload.items;
       }
@@ -389,12 +392,58 @@ define([
       return [];
     },
 
-    _buildDataReplayParameters: function(baseArgs, cursorId, maxRows) {
+    _parseTsvRows: function(tsvText) {
+      if (typeof tsvText !== 'string' || tsvText.trim().length === 0) {
+        return [];
+      }
+      var lines = tsvText.split(/\r?\n/).filter(function(line) {
+        return line && line.trim().length > 0;
+      });
+      if (!lines.length) {
+        return [];
+      }
+      var headers = lines[0].split('\t');
+      if (!headers.length) {
+        return [];
+      }
+      return lines.slice(1).map(function(line) {
+        var cells = line.split('\t');
+        var row = {};
+        headers.forEach(function(header, idx) {
+          row[header] = idx < cells.length ? cells[idx] : '';
+        });
+        return row;
+      });
+    },
+
+    _isBvbrcSearchDataTool: function(toolId) {
+      if (!toolId || typeof toolId !== 'string') {
+        return false;
+      }
+      return toolId === 'bvbrc_server.bvbrc_search_data' || toolId.indexOf('bvbrc_search_data') !== -1;
+    },
+
+    _buildDataReplayParameters: function(baseArgs, cursorId, maxRows, toolCall) {
       var args = lang.mixin({}, (baseArgs && typeof baseArgs === 'object') ? baseArgs : {});
+      var toolId = toolCall && typeof toolCall === 'object' ? (toolCall.tool || toolCall.tool_id) : null;
+
       args.countOnly = false;
-      args.cursorId = cursorId || '*';
-      args.batchSize = maxRows;
-      args.num_results = maxRows;
+
+      // Keep replay arguments aligned with the tool schema:
+      // bvbrc_search_data supports limit but not cursorId/batchSize/num_results.
+      if (this._isBvbrcSearchDataTool(toolId)) {
+        if (typeof maxRows === 'number' && maxRows > 0) {
+          args.limit = maxRows;
+        }
+        delete args.cursorId;
+        delete args.batchSize;
+        delete args.num_results;
+      } else {
+        args.cursorId = cursorId || '*';
+        args.batchSize = maxRows;
+        args.num_results = maxRows;
+      }
+
       return args;
     },
 
@@ -440,7 +489,7 @@ define([
       var baseArgs = (toolCall.arguments_executed && typeof toolCall.arguments_executed === 'object')
         ? toolCall.arguments_executed
         : {};
-      var replayArgs = this._buildDataReplayParameters(baseArgs, '*', 100);
+      var replayArgs = this._buildDataReplayParameters(baseArgs, '*', 100, toolCall);
       var replayCall = this._cloneToolCallWithArgs(toolCall, replayArgs);
 
       this.setSessionDataBrowseData({
@@ -459,7 +508,8 @@ define([
         }
       });
 
-      this.copilotApi.replayToolCall(replayCall, this.sessionId).then(lang.hitch(this, function(replayResponse) {
+      var replaySessionId = this._isBvbrcSearchDataTool(toolCall.tool || toolCall.tool_id) ? null : this.sessionId;
+      this.copilotApi.replayToolCall(replayCall, replaySessionId).then(lang.hitch(this, function(replayResponse) {
         var replayPayload = this._unwrapReplayResultPayload(replayResponse) || {};
         var nextUiPayload = this._buildDataBrowseUiPayload(replayPayload, replayArgs);
         this.setSessionDataBrowseData({
@@ -494,7 +544,12 @@ define([
       var baseArgs = (toolCall.arguments_executed && typeof toolCall.arguments_executed === 'object')
         ? toolCall.arguments_executed
         : {};
-      var replayArgs = this._buildDataReplayParameters(baseArgs, nextCursor, 100);
+      if (this._isBvbrcSearchDataTool(toolCall.tool || toolCall.tool_id)) {
+        payload.isLoadingMore = false;
+        this._renderDataPanel();
+        return;
+      }
+      var replayArgs = this._buildDataReplayParameters(baseArgs, nextCursor, 100, toolCall);
       var replayCall = this._cloneToolCallWithArgs(toolCall, replayArgs);
       this.copilotApi.replayToolCall(replayCall, this.sessionId).then(lang.hitch(this, function(replayResponse) {
         var replayPayload = this._unwrapReplayResultPayload(replayResponse) || {};
