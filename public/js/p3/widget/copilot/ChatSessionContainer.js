@@ -207,12 +207,17 @@ define([
                 this.copilotApi.getSessionMessages(sessionId).then(lang.hitch(this, function(res) {
                     console.log('[DEBUG] RefreshSession - Full response:', res);
                     console.log('[DEBUG] RefreshSession - res.workflow_ids:', res.workflow_ids);
-                    if (res.messages.length > 0) {
-                        const messages = res.messages[0].messages;
-                        this.chatStore.setData(messages);
-                        this.displayWidget.showMessages(messages, scrollToBottom);
+                    var messages = [];
+                    if (Array.isArray(res.messages)) {
+                        if (res.messages.length > 0 && Array.isArray(res.messages[0] && res.messages[0].messages)) {
+                            messages = res.messages[0].messages; // Legacy nested API shape
+                        } else {
+                            messages = res.messages; // Current flat API shape
+                        }
                     }
-                this._applySessionWorkflowContext(res);
+                    this.chatStore.setData(messages);
+                    this.displayWidget.showMessages(messages, scrollToBottom);
+                    this._applySessionWorkflowContext(res);
                 }));
             }));
 
@@ -275,6 +280,9 @@ define([
             }));
             topic.subscribe('CopilotJobsBrowseOpen', lang.hitch(this, function() {
                 this._setActiveTab('grids', 'jobs');
+            }));
+            topic.subscribe('CopilotDataBrowseOpen', lang.hitch(this, function() {
+                this._setActiveTab('grids', 'data');
             }));
 
             // Subscribe to message submission to switch back to Messages tab
@@ -512,7 +520,8 @@ define([
                 files: true,
                 workflows: true,
                 workspace: true,
-                jobs: true
+                jobs: true,
+                data: true
             };
 
             if (legacyGridPanels[panel]) {

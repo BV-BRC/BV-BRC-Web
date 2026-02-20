@@ -350,6 +350,27 @@ define([
             // Create tool handler for special tool processing
             var toolHandler = new CopilotToolHandler();
             var latestToolExecutionByTool = {};
+            var latestRenderableToolMetadata = null;
+
+            var hasRenderableToolMetadata = function(toolMetadata) {
+                if (!toolMetadata || typeof toolMetadata !== 'object') {
+                    return false;
+                }
+                return !!(
+                    toolMetadata.isWorkflow ||
+                    toolMetadata.isWorkspaceListing ||
+                    toolMetadata.isWorkspaceBrowse ||
+                    toolMetadata.isJobsBrowse ||
+                    toolMetadata.isQueryCollection
+                );
+            };
+
+            var resolveToolId = function(parsed) {
+                if (!parsed || typeof parsed !== 'object') {
+                    return null;
+                }
+                return parsed.tool || parsed.source_tool || parsed.tool_id || null;
+            };
 
             var buildToolMetadata = function(sourceTool, processed) {
                 if (!processed) {
@@ -382,6 +403,13 @@ define([
                     toolMetadata.chatSummary = processed.chatSummary;
                     toolMetadata.uiPayload = processed.uiPayload;
                     toolMetadata.uiAction = processed.uiAction;
+                }
+                if (processed.isQueryCollection) {
+                    toolMetadata.isQueryCollection = processed.isQueryCollection;
+                    toolMetadata.queryCollectionData = processed.queryCollectionData;
+                    toolMetadata.chatSummary = processed.chatSummary || toolMetadata.chatSummary;
+                    toolMetadata.uiPayload = processed.queryCollectionData || toolMetadata.uiPayload;
+                    toolMetadata.uiAction = processed.uiAction || 'open_data_tab';
                 }
                 if (processed.tool_call) {
                     toolMetadata.tool_call = processed.tool_call;
@@ -484,28 +512,37 @@ define([
                                     // Check for special tool handling
                                     let dataToUse = parsed;
                                     let toolMetadata = null;
-                                    if (currentEvent === 'final_response' && parsed.tool) {
-                                        const processed = toolHandler.processToolEvent(currentEvent, parsed.tool, parsed);
+                                    if (currentEvent === 'final_response') {
+                                        var responseToolId = resolveToolId(parsed);
+                                        if (responseToolId) {
+                                            const processed = toolHandler.processToolEvent(currentEvent, responseToolId, parsed);
 
-                                        if (processed) {
-                                            dataToUse = processed;
-                                            toolMetadata = buildToolMetadata(parsed.tool, processed);
-                                        }
+                                            if (processed) {
+                                                dataToUse = processed;
+                                                toolMetadata = buildToolMetadata(responseToolId, processed);
+                                            }
 
-                                        // Final responses may be natural-language only. Rehydrate UI metadata
-                                        // from the last successful tool_executed payload for that tool.
-                                        if ((!toolMetadata || (!toolMetadata.uiPayload && !toolMetadata.workflowData)) &&
-                                            Object.prototype.hasOwnProperty.call(latestToolExecutionByTool, parsed.tool)) {
-                                            const cachedResult = latestToolExecutionByTool[parsed.tool];
-                                            const replayProcessed = toolHandler.processToolEvent(
-                                                'final_response',
-                                                parsed.tool,
-                                                { chunk: cachedResult, tool: parsed.tool }
-                                            );
-                                            if (replayProcessed) {
-                                                toolMetadata = buildToolMetadata(parsed.tool, replayProcessed);
+                                            // Final responses may be natural-language only. Rehydrate UI metadata
+                                            // from the last successful tool_executed payload for this tool.
+                                            if ((!toolMetadata || !hasRenderableToolMetadata(toolMetadata)) &&
+                                                Object.prototype.hasOwnProperty.call(latestToolExecutionByTool, responseToolId)) {
+                                                const cachedResult = latestToolExecutionByTool[responseToolId];
+                                                const replayProcessed = toolHandler.processToolEvent(
+                                                    'final_response',
+                                                    responseToolId,
+                                                    { chunk: cachedResult, tool: responseToolId }
+                                                );
+                                                if (replayProcessed) {
+                                                    toolMetadata = buildToolMetadata(responseToolId, replayProcessed);
+                                                }
                                             }
                                         }
+                                    }
+
+                                    // If finalization moved to a different tool, still preserve the most recent
+                                    // renderable tool metadata so UI cards remain available.
+                                    if ((!toolMetadata || !hasRenderableToolMetadata(toolMetadata)) && latestRenderableToolMetadata) {
+                                        toolMetadata = lang.mixin({}, latestRenderableToolMetadata);
                                     }
 
                                     let textChunk = dataToUse.chunk || dataToUse.delta || dataToUse.content || '';
@@ -513,7 +550,7 @@ define([
                                     if (typeof textChunk === 'object' && textChunk !== null) {
                                         textChunk = JSON.stringify(textChunk, null, 2);
                                     }
-                                    if (textChunk && onData) {
+                                    if ((textChunk || toolMetadata) && onData) {
                                         onData(textChunk, toolMetadata);
                                     }
                                     break;
@@ -563,6 +600,17 @@ define([
                                     if (parsed && parsed.tool && parsed.status === 'success' &&
                                         Object.prototype.hasOwnProperty.call(parsed, 'result')) {
                                         latestToolExecutionByTool[parsed.tool] = parsed.result;
+                                        const replayProcessed = toolHandler.processToolEvent(
+                                            'final_response',
+                                            parsed.tool,
+                                            { chunk: parsed.result, tool: parsed.tool, call: parsed.call || null }
+                                        );
+                                        if (replayProcessed) {
+                                            const replayMetadata = buildToolMetadata(parsed.tool, replayProcessed);
+                                            if (hasRenderableToolMetadata(replayMetadata)) {
+                                                latestRenderableToolMetadata = replayMetadata;
+                                            }
+                                        }
                                     }
                                     if (parsed && parsed.tool) {
                                         _self.currentActiveToolId = parsed.tool;
@@ -681,7 +729,10 @@ define([
         isQueryAbortableTool: function(toolId) {
             if (!toolId || typeof toolId !== 'string') return false;
             var normalized = toolId.split('.').pop();
-            return normalized === 'bvbrc_query_collection' || normalized === 'bvbrc_global_data_search' || normalized === 'bvbrc_search_data';
+            return normalized === 'bvbrc_query_collection' ||
+                normalized === 'query_collection' ||
+                normalized === 'bvbrc_global_data_search' ||
+                normalized === 'bvbrc_search_data';
         },
 
         getCurrentStreamState: function() {

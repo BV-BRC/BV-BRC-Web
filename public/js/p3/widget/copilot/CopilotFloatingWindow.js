@@ -1143,12 +1143,17 @@ define([
                             this.controllerPanel.changeSessionId(options.currentSessionId);
                         }
                         console.log('get session messages', options.currentSessionId);
-                        options.copilotApi.getSessionMessages(options.currentSessionId).then(lang.hitch(this, function(messages) {
-                            if (messages.messages && messages.messages.length > 0 && messages.messages[0].messages) {
-                                var messages = messages.messages[0].messages;
-                                this.controllerPanel.chatStore.addMessages(messages);
-                                this.controllerPanel.displayWidget.showMessages(messages);
+                        options.copilotApi.getSessionMessages(options.currentSessionId).then(lang.hitch(this, function(res) {
+                            var messages = [];
+                            if (res && Array.isArray(res.messages)) {
+                                if (res.messages.length > 0 && Array.isArray(res.messages[0] && res.messages[0].messages)) {
+                                    messages = res.messages[0].messages; // Legacy nested API shape
+                                } else {
+                                    messages = res.messages; // Current flat API shape
+                                }
                             }
+                            this.controllerPanel.chatStore.addMessages(messages);
+                            this.controllerPanel.displayWidget.showMessages(messages);
                         }));
 
                         // Set the title if available

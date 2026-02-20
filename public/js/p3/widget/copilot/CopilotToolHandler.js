@@ -648,6 +648,18 @@ define([
              toolId.indexOf('list_jobs') !== -1;
     },
 
+    _isQueryCollectionTool: function(toolId) {
+      if (!toolId || typeof toolId !== 'string') {
+        return false;
+      }
+      return toolId === 'bvbrc_server.bvbrc_search_data' ||
+             toolId === 'bvbrc_server.bvbrc_query_collection' ||
+             toolId === 'bvbrc_server.query_collection' ||
+             toolId.indexOf('bvbrc_search_data') !== -1 ||
+             toolId.indexOf('bvbrc_query_collection') !== -1 ||
+             toolId.indexOf('query_collection') !== -1;
+    },
+
     /**
      * Processes a tool-specific event
      * @param {string} currentEvent - The current SSE event type
@@ -681,7 +693,7 @@ define([
       }
       // Handle final_response event for query collection tool
       if (currentEvent === 'final_response' &&
-          tool === 'bvbrc_server.bvbrc_query_collection' &&
+          this._isQueryCollectionTool(tool) &&
           parsed.chunk) {
         const processed = this._processQueryCollection(parsed.chunk, parsed);
         if (processed) {
@@ -733,6 +745,9 @@ define([
         // If chunk is already a fully parsed object with workspace and summary, use it directly
         if (typeof chunk === 'object' && !chunk.content && (chunk.workspace || chunk.summary)) {
           console.log('[CopilotToolHandler] ✓ Path A: Chunk is already parsed query collection data');
+          var directCallInfo = (baseData && baseData.call && typeof baseData.call === 'object')
+            ? baseData.call
+            : ((baseData && baseData.tool_call && typeof baseData.tool_call === 'object') ? baseData.tool_call : null);
           return {
             ...baseData,
             chunk: JSON.stringify(chunk), // Store stringified version for display
@@ -743,8 +758,13 @@ define([
               fileName: chunk.fileName || null,
               fileId: chunk.fileId || null,
               message: chunk.message || null,
-              queryParameters: chunk.queryParameters || null
-            }
+              queryParameters: chunk.queryParameters || null,
+              rqlQueryUrl: chunk.rqlQueryUrl || chunk.rql_query_url || chunk.queryUrl || chunk.query_url || null,
+              nextCursorId: chunk.nextCursorId || null,
+              collection: chunk.collection || (chunk.queryParameters && chunk.queryParameters.collection) || null,
+              resultRows: Array.isArray(chunk.results) ? chunk.results : []
+            },
+            tool_call: directCallInfo
           };
         }
 
@@ -777,6 +797,13 @@ define([
 
         // Handle case where parsedChunk has nested structure: {source_tool: ..., content: {workspace, summary...}}
         // This happens when the SSE sends the full structure as a JSON string
+        var parsedTopLevel = (parsedChunk && typeof parsedChunk === 'object') ? parsedChunk : {};
+        var parsedCallInfo = (parsedTopLevel.call && typeof parsedTopLevel.call === 'object')
+          ? parsedTopLevel.call
+          : ((baseData && baseData.call && typeof baseData.call === 'object')
+            ? baseData.call
+            : ((baseData && baseData.tool_call && typeof baseData.tool_call === 'object') ? baseData.tool_call : null));
+
         if (parsedChunk && parsedChunk.source_tool && parsedChunk.content) {
           console.log('[CopilotToolHandler] ✓ Detected nested structure with source_tool and content');
           parsedChunk = parsedChunk.content; // Use the content object
@@ -785,13 +812,21 @@ define([
 
         // Extract workspace and summary data
         // The parsedChunk has structure: { type: "file_reference", workspace: {...}, summary: {...}, ... }
+        var resolvedPayload = (parsedChunk && parsedChunk.result && typeof parsedChunk.result === 'object' && !Array.isArray(parsedChunk.result))
+          ? parsedChunk.result
+          : parsedChunk;
+
         let queryCollectionData = {
-          workspace: parsedChunk.workspace || null,
-          summary: parsedChunk.summary || null,
-          fileName: parsedChunk.fileName || null,
-          fileId: parsedChunk.fileId || null,
-          message: parsedChunk.message || null,
-          queryParameters: parsedChunk.queryParameters || null
+          workspace: resolvedPayload.workspace || null,
+          summary: resolvedPayload.summary || null,
+          fileName: resolvedPayload.fileName || null,
+          fileId: resolvedPayload.fileId || null,
+          message: resolvedPayload.message || null,
+          queryParameters: resolvedPayload.queryParameters || null,
+          rqlQueryUrl: resolvedPayload.rqlQueryUrl || resolvedPayload.rql_query_url || resolvedPayload.queryUrl || resolvedPayload.query_url || null,
+          nextCursorId: resolvedPayload.nextCursorId || null,
+          collection: resolvedPayload.collection || (resolvedPayload.queryParameters && resolvedPayload.queryParameters.collection) || null,
+          resultRows: Array.isArray(resolvedPayload.results) ? resolvedPayload.results : []
         };
 
         console.log('[CopilotToolHandler] ✓ Extracted query collection data');
@@ -802,7 +837,8 @@ define([
           ...baseData,
           chunk: content,
           isQueryCollection: true,
-          queryCollectionData: queryCollectionData
+          queryCollectionData: queryCollectionData,
+          tool_call: parsedCallInfo
         };
       } catch (e) {
         console.error('[CopilotToolHandler] ✗ Failed to parse query collection chunk:', e.message);
@@ -871,7 +907,7 @@ define([
       }
 
       // Handle query collection tool
-      if (sourceTool === 'bvbrc_server.bvbrc_query_collection') {
+      if (this._isQueryCollectionTool(sourceTool)) {
         console.log('[CopilotToolHandler] Processing query_collection tool');
         console.log('[CopilotToolHandler] sourceTool:', sourceTool);
         console.log('[CopilotToolHandler] content type:', typeof content);
@@ -893,7 +929,8 @@ define([
           var result = {
             content: processed.chunk,
             isQueryCollection: processed.isQueryCollection,
-            queryCollectionData: processed.queryCollectionData
+            queryCollectionData: processed.queryCollectionData,
+            tool_call: processed.tool_call
           };
           console.log('[CopilotToolHandler] Returning result:', result);
           console.log('[CopilotToolHandler] result.content type:', typeof result.content);

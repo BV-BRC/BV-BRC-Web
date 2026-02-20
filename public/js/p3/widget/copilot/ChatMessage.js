@@ -206,6 +206,9 @@ define([
         var trimmedContent = contentToProcess.trim();
         contentLooksLikeJson = trimmedContent.indexOf('{') === 0 || trimmedContent.indexOf('[') === 0;
       }
+      var toolCallArgs = messageToolCall && messageToolCall.arguments_executed && typeof messageToolCall.arguments_executed === 'object'
+        ? messageToolCall.arguments_executed
+        : {};
 
       // Infer lightweight tool-card metadata from persisted tool identity.
       if (sourceTool && sourceTool.indexOf('workspace_browse_tool') !== -1) {
@@ -221,9 +224,6 @@ define([
         }
       }
       if (sourceTool && (sourceTool.indexOf('plan_workflow') !== -1 || sourceTool.indexOf('submit_workflow') !== -1)) {
-        var toolCallArgs = messageToolCall && messageToolCall.arguments_executed && typeof messageToolCall.arguments_executed === 'object'
-          ? messageToolCall.arguments_executed
-          : {};
         var inferredWorkflowId = this.message.workflow_id ||
           toolCallArgs.workflow_id ||
           (messageToolCall && messageToolCall.workflow_id) ||
@@ -236,6 +236,24 @@ define([
           } else if (!this.message.workflowData.workflow_id) {
             this.message.workflowData.workflow_id = inferredWorkflowId;
           }
+        }
+      }
+      if (
+        sourceTool &&
+        (
+          sourceTool.indexOf('bvbrc_search_data') !== -1 ||
+          sourceTool.indexOf('query_collection') !== -1 ||
+          sourceTool.indexOf('bvbrc_query_collection') !== -1
+        )
+      ) {
+        this.message.isQueryCollection = true;
+        if (!this.message.queryCollectionData) {
+          this.message.queryCollectionData = {
+            queryParameters: toolCallArgs,
+            collection: toolCallArgs.collection || null,
+            rqlQueryUrl: toolCallArgs.rqlQueryUrl || toolCallArgs.rql_query_url || toolCallArgs.query_url || null,
+            resultRows: []
+          };
         }
       }
       // Ensure persisted tool_call survives downstream processing.
@@ -1108,205 +1126,82 @@ define([
       return container;
     },
 
-    /**
-     * Renders a query collection file reference widget
-     * Displays workspace URL, workspace path, and summary metadata
-     * @param {HTMLElement} messageDiv - Container to render widget into
-     */
     renderQueryCollectionWidget: function(messageDiv) {
-      var data = this.message.queryCollectionData;
-      if (!data) {
-        console.warn('[ChatMessage] No query collection data available');
-        return;
-      }
+      var data = this.message.queryCollectionData || {};
+      var summary = data.summary || {};
+      var params = data.queryParameters || {};
+      var toolCall = (this.message && this.message.tool_call && typeof this.message.tool_call === 'object')
+        ? this.message.tool_call
+        : null;
+      var toolArgs = (toolCall && toolCall.arguments_executed && typeof toolCall.arguments_executed === 'object')
+        ? toolCall.arguments_executed
+        : {};
+      var collection = params.collection || toolArgs.collection || data.collection || 'query_collection';
+      var recordCount = typeof summary.recordCount === 'number'
+        ? summary.recordCount
+        : (Array.isArray(data.resultRows) ? data.resultRows.length : null);
+      var summaryText = this.message.chatSummary ||
+        ('Data query ready' + (recordCount !== null ? ': ' + recordCount + ' records' : '') + '.');
+      var rqlQueryUrl = data.rqlQueryUrl || toolArgs.rqlQueryUrl || toolArgs.rql_query_url || toolArgs.query_url || null;
 
-      // Create container for the query collection widget
-      var widgetContainer = domConstruct.create('div', {
-        class: 'query-collection-container',
-        style: 'border: 1px solid #ddd; border-radius: 4px; padding: 15px; margin: 10px 0; background: #f9f9f9;'
+      var payload = {
+        queryParameters: params,
+        collection: collection,
+        rqlQueryUrl: rqlQueryUrl,
+        summary: summary,
+        rows: Array.isArray(data.resultRows) ? data.resultRows : []
+      };
+
+      var container = domConstruct.create('div', {
+        class: 'workspace-summary-card'
       }, messageDiv);
 
-      // Create header
-      var header = domConstruct.create('div', {
-        class: 'query-collection-header',
-        style: 'font-weight: bold; font-size: 16px; margin-bottom: 15px; color: #333;'
-      }, widgetContainer);
-      domConstruct.create('span', {
-        innerHTML: 'Query Collection Results',
-        style: 'display: inline-block;'
-      }, header);
+      domConstruct.create('div', {
+        class: 'workspace-summary-text',
+        innerHTML: this.escapeHtml(summaryText)
+      }, container);
 
-      // Display workspace information
-      if (data.workspace) {
-        var workspaceSection = domConstruct.create('div', {
-          class: 'query-collection-workspace',
-          style: 'margin-bottom: 15px;'
-        }, widgetContainer);
-
-        // Workspace URL (clickable link)
-        if (data.workspace.workspaceUrl) {
-          var urlLabel = domConstruct.create('div', {
-            innerHTML: '<strong>Workspace URL:</strong>',
-            style: 'margin-bottom: 5px; font-size: 14px;'
-          }, workspaceSection);
-          var urlLink = domConstruct.create('a', {
-            innerHTML: data.workspace.workspaceUrl,
-            href: data.workspace.workspaceUrl,
-            target: '_blank',
-            style: 'color: #0066cc; text-decoration: none; word-break: break-all; display: block; margin-left: 10px;'
-          }, workspaceSection);
-          urlLink.onmouseover = function() { this.style.textDecoration = 'underline'; };
-          urlLink.onmouseout = function() { this.style.textDecoration = 'none'; };
-        }
-
-        // Workspace Path
-        if (data.workspace.workspacePath) {
-          var pathLabel = domConstruct.create('div', {
-            innerHTML: '<strong>Workspace Path:</strong>',
-            style: 'margin-top: 10px; margin-bottom: 5px; font-size: 14px;'
-          }, workspaceSection);
-          var pathValue = domConstruct.create('div', {
-            innerHTML: data.workspace.workspacePath,
-            style: 'margin-left: 10px; font-family: monospace; word-break: break-all; color: #666;'
-          }, workspaceSection);
-        }
-
-        // Uploaded At
-        if (data.workspace.uploadedAt) {
-          var uploadedLabel = domConstruct.create('div', {
-            innerHTML: '<strong>Uploaded:</strong> ' + new Date(data.workspace.uploadedAt).toLocaleString(),
-            style: 'margin-top: 10px; font-size: 14px; color: #666;'
-          }, workspaceSection);
-        }
+      var detailBits = [];
+      if (collection) {
+        detailBits.push('Collection: ' + collection);
       }
-
-      // Display summary metadata
-      if (data.summary) {
-        var summarySection = domConstruct.create('div', {
-          class: 'query-collection-summary',
-          style: 'margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;'
-        }, widgetContainer);
-
-        var summaryHeader = domConstruct.create('div', {
-          innerHTML: '<strong>Summary:</strong>',
-          style: 'font-size: 14px; margin-bottom: 10px;'
-        }, summarySection);
-
-        // Record count
-        if (data.summary.recordCount !== undefined) {
-          var recordCountDiv = domConstruct.create('div', {
-            innerHTML: '<strong>Records:</strong> ' + data.summary.recordCount.toLocaleString(),
-            style: 'margin-bottom: 5px; font-size: 14px;'
-          }, summarySection);
-        }
-
-        // Size
-        if (data.summary.sizeFormatted) {
-          var sizeDiv = domConstruct.create('div', {
-            innerHTML: '<strong>Size:</strong> ' + data.summary.sizeFormatted,
-            style: 'margin-bottom: 5px; font-size: 14px;'
-          }, summarySection);
-        }
-
-        // Data type
-        if (data.summary.dataType) {
-          var dataTypeDiv = domConstruct.create('div', {
-            innerHTML: '<strong>Data Type:</strong> ' + data.summary.dataType,
-            style: 'margin-bottom: 5px; font-size: 14px;'
-          }, summarySection);
-        }
-
-        // Fields
-        if (data.summary.fields && Array.isArray(data.summary.fields) && data.summary.fields.length > 0) {
-          var fieldsLabel = domConstruct.create('div', {
-            innerHTML: '<strong>Fields (' + data.summary.fields.length + '):</strong>',
-            style: 'margin-top: 10px; margin-bottom: 5px; font-size: 14px;'
-          }, summarySection);
-          // Show first 10 fields, then "... and X more" if there are more
-          var fieldsToShow = data.summary.fields.slice(0, 10);
-          var fieldsText = fieldsToShow.join(', ');
-          if (data.summary.fields.length > 10) {
-            fieldsText += ' ... and ' + (data.summary.fields.length - 10) + ' more';
-          }
-          var fieldsDiv = domConstruct.create('div', {
-            innerHTML: fieldsText,
-            style: 'margin-left: 10px; font-size: 13px; color: #666; font-family: monospace; word-break: break-all;'
-          }, summarySection);
-        }
-
-        // Sample record (collapsible)
-        if (data.summary.sampleRecord) {
-          var sampleHeader = domConstruct.create('button', {
-            innerHTML: '► Sample Record',
-            class: 'collapsible-header',
-            style: 'margin-top: 10px; padding: 5px 10px; background: #e9e9e9; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; font-size: 13px;'
-          }, summarySection);
-
-          var sampleContent = domConstruct.create('div', {
-            innerHTML: '<pre style="margin: 10px 0; padding: 10px; background: #fff; border: 1px solid #ddd; border-radius: 3px; overflow-x: auto; font-size: 12px; max-height: 300px; overflow-y: auto;">' +
-              JSON.stringify(data.summary.sampleRecord, null, 2) + '</pre>',
-            class: 'collapsible-content',
-            style: 'display: none;'
-          }, summarySection);
-
-          on(sampleHeader, 'click', lang.hitch(this, function() {
-            if (sampleContent.style.display === 'none') {
-              sampleContent.style.display = 'block';
-              sampleHeader.innerHTML = '▼ Sample Record';
-            } else {
-              sampleContent.style.display = 'none';
-              sampleHeader.innerHTML = '► Sample Record';
-            }
-          }));
-        }
+      if (summary.dataType) {
+        detailBits.push('Type: ' + summary.dataType);
       }
-
-      // Display query parameters if available
-      if (data.queryParameters) {
-        var queryParamsSection = domConstruct.create('div', {
-          class: 'query-collection-query-params',
-          style: 'margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;'
-        }, widgetContainer);
-
-        var queryParamsHeader = domConstruct.create('div', {
-          innerHTML: '<strong>Query Parameters:</strong>',
-          style: 'font-size: 14px; margin-bottom: 10px;'
-        }, queryParamsSection);
-
-        // Filter out internal pagination parameters like cursorId
-        var filteredParams = {};
-        for (var key in data.queryParameters) {
-          if (data.queryParameters.hasOwnProperty(key) && key !== 'cursorId') {
-            filteredParams[key] = data.queryParameters[key];
-          }
-        }
-
-        // Display each parameter on its own line
-        for (var paramKey in filteredParams) {
-          if (filteredParams.hasOwnProperty(paramKey)) {
-            var paramValue = filteredParams[paramKey];
-            var paramLabel = domConstruct.create('div', {
-              innerHTML: '<strong>' + paramKey + ':</strong>',
-              style: 'margin-top: 5px; margin-bottom: 2px; font-size: 14px;'
-            }, queryParamsSection);
-            var paramValueDiv = domConstruct.create('div', {
-              innerHTML: typeof paramValue === 'string' ? paramValue : JSON.stringify(paramValue),
-              style: 'margin-left: 10px; margin-bottom: 8px; font-family: monospace; word-break: break-all; color: #666; font-size: 13px;'
-            }, queryParamsSection);
-          }
-        }
+      if (summary.sizeFormatted) {
+        detailBits.push('Size: ' + summary.sizeFormatted);
       }
-
-      // Display message if available
-      if (data.message) {
-        var messageSection = domConstruct.create('div', {
-          class: 'query-collection-message',
-          style: 'margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd; font-size: 14px; color: #666;'
-        }, widgetContainer);
+      if (detailBits.length) {
         domConstruct.create('div', {
-          innerHTML: data.message
-        }, messageSection);
+          class: 'workspace-summary-path',
+          innerHTML: this.escapeHtml(detailBits.join(' | '))
+        }, container);
       }
+
+      if (rqlQueryUrl) {
+        domConstruct.create('a', {
+          class: 'workspace-summary-link',
+          href: rqlQueryUrl,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+          innerHTML: 'Open RQL Query URL'
+        }, container);
+      }
+
+      var openButton = domConstruct.create('button', {
+        type: 'button',
+        class: 'workspace-summary-open-button',
+        innerHTML: 'Open Data Tab'
+      }, container);
+
+      on(openButton, 'click', lang.hitch(this, function() {
+        topic.publish('CopilotDataBrowseOpen', {
+          uiPayload: payload,
+          tool_call: toolCall,
+          chatSummary: summaryText,
+          uiAction: 'open_data_tab'
+        });
+      }));
     },
 
     /**

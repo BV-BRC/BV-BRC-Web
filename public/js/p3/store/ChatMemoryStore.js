@@ -49,7 +49,7 @@ define([
      * - Used for bulk loading/resetting of message history
      */
     setData: function(messages) {
-      this.data = messages;
+      this.data = Array.isArray(messages) ? messages : [];
     },
 
     /**
@@ -61,6 +61,9 @@ define([
      * - Used for adding individual new messages
      */
     addMessage: function(message) {
+      if (!Array.isArray(this.data)) {
+        this.data = [];
+      }
       this.data.push(message);
     },
 
@@ -74,7 +77,12 @@ define([
      * - Maintains message order from input array
      */
     addMessages: function(messages) {
-      this.data.push(...messages);
+      if (!Array.isArray(this.data)) {
+        this.data = [];
+      }
+      if (Array.isArray(messages) && messages.length) {
+        this.data.push(...messages);
+      }
     },
 
     /**
@@ -100,7 +108,7 @@ define([
      * - Could be extended to support filtering in future
      */
     query: function(query) {
-      return this.data;
+      return Array.isArray(this.data) ? this.data : [];
     },
 
     // No session list helpers in message store

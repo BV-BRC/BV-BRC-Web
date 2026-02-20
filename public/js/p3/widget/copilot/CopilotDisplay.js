@@ -30,11 +30,12 @@ define([
   './data/SuggestedQuestions', // Suggested questions data module
   './WorkspaceExplorerAdapter',
   './JobsExplorerAdapter',
+  './DataExplorerAdapter',
   './SessionFilesExplorerAdapter',
   './WorkflowsExplorerAdapter',
   './WorkflowEngine'
 ], function (
-  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, request, markdownit, linkAttributes, ChatMessage, SuggestedQuestions, WorkspaceExplorerAdapter, JobsExplorerAdapter, SessionFilesExplorerAdapter, WorkflowsExplorerAdapter, WorkflowEngine
+  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, request, markdownit, linkAttributes, ChatMessage, SuggestedQuestions, WorkspaceExplorerAdapter, JobsExplorerAdapter, DataExplorerAdapter, SessionFilesExplorerAdapter, WorkflowsExplorerAdapter, WorkflowEngine
 ) {
 
   /**
@@ -101,6 +102,8 @@ define([
     sessionJobsBrowse: null,
     sessionJobsSelectionItems: [],
     jobsExplorerWidget: null,
+    sessionDataBrowse: null,
+    dataExplorerWidget: null,
     onWorkspaceSelectionChanged: null,
     onJobsSelectionChanged: null,
     onImageContextChanged: null,
@@ -197,6 +200,11 @@ define([
           style: 'display:none;'
         }, this.panelContainer);
 
+        this.dataContainer = domConstruct.create('div', {
+          class: 'copilot-data-container',
+          style: 'display:none;'
+        }, this.panelContainer);
+
         // Apply initial responsive padding
         this._updateResponsivePadding();
 
@@ -222,6 +230,7 @@ define([
         this._renderWorkflowsPanel();
         this._renderWorkspacePanel();
         this._renderJobsPanel();
+        this._renderDataPanel();
 
         // Initialize markdown parser with link attributes plugin
         this.md = markdownit().use(linkAttributes, {
@@ -242,6 +251,10 @@ define([
         topic.subscribe('CopilotJobsBrowseOpen', lang.hitch(this, function(data) {
           this.setActivePanel('jobs');
           this._openJobsBrowseData(data || null);
+        }));
+        topic.subscribe('CopilotDataBrowseOpen', lang.hitch(this, function(data) {
+          this.setActivePanel('data');
+          this._openDataBrowseData(data || null);
         }));
         topic.subscribe('noJobDataError', lang.hitch(this, function(error) {
             error.message = 'No job data found.\n\n' + error.message;
@@ -360,6 +373,152 @@ define([
       }));
     },
 
+    _resolveDataRows: function(payload) {
+      if (!payload || typeof payload !== 'object') {
+        return [];
+      }
+      if (Array.isArray(payload.results)) {
+        return payload.results;
+      }
+      if (Array.isArray(payload.items)) {
+        return payload.items;
+      }
+      if (payload.ui_grid && Array.isArray(payload.ui_grid.items)) {
+        return payload.ui_grid.items;
+      }
+      return [];
+    },
+
+    _buildDataReplayParameters: function(baseArgs, cursorId, maxRows) {
+      var args = lang.mixin({}, (baseArgs && typeof baseArgs === 'object') ? baseArgs : {});
+      args.countOnly = false;
+      args.cursorId = cursorId || '*';
+      args.batchSize = maxRows;
+      args.num_results = maxRows;
+      return args;
+    },
+
+    _cloneToolCallWithArgs: function(toolCall, args) {
+      if (!toolCall || typeof toolCall !== 'object') {
+        return null;
+      }
+      var cloned = lang.mixin({}, toolCall);
+      cloned.arguments_executed = lang.mixin({}, args || {});
+      return cloned;
+    },
+
+    _buildDataBrowseUiPayload: function(replayPayload, requestArgs) {
+      var sourcePayload = replayPayload && typeof replayPayload === 'object' ? replayPayload : {};
+      var sourceArgs = requestArgs && typeof requestArgs === 'object' ? requestArgs : {};
+      var rows = this._resolveDataRows(sourcePayload);
+      return {
+        rows: rows,
+        count: typeof sourcePayload.count === 'number' ? sourcePayload.count : rows.length,
+        total: typeof sourcePayload.numFound === 'number'
+          ? sourcePayload.numFound
+          : (typeof sourcePayload.total === 'number' ? sourcePayload.total : rows.length),
+        nextCursorId: sourcePayload.nextCursorId || null,
+        collection: sourcePayload.collection || sourceArgs.collection || null,
+        queryParameters: sourcePayload.queryParameters || sourcePayload.plan || sourceArgs || null,
+        rqlQueryUrl: sourcePayload.rqlQueryUrl || sourcePayload.rql_query_url || sourcePayload.query_url || sourceArgs.rqlQueryUrl || sourceArgs.rql_query_url || sourceArgs.query_url || null
+      };
+    },
+
+    _openDataBrowseData: function(data) {
+      var payload = data && data.uiPayload ? data.uiPayload : null;
+      if (payload && Array.isArray(payload.rows) && payload.rows.length > 0) {
+        this.setSessionDataBrowseData(data);
+        return;
+      }
+
+      var toolCall = data && data.tool_call && typeof data.tool_call === 'object' ? data.tool_call : null;
+      if (!toolCall || !this.copilotApi || typeof this.copilotApi.replayToolCall !== 'function') {
+        this.setSessionDataBrowseData(data || null);
+        return;
+      }
+
+      var baseArgs = (toolCall.arguments_executed && typeof toolCall.arguments_executed === 'object')
+        ? toolCall.arguments_executed
+        : {};
+      var replayArgs = this._buildDataReplayParameters(baseArgs, '*', 100);
+      var replayCall = this._cloneToolCallWithArgs(toolCall, replayArgs);
+
+      this.setSessionDataBrowseData({
+        chatSummary: data && data.chatSummary ? data.chatSummary : 'Loading data rows...',
+        uiAction: data && data.uiAction ? data.uiAction : 'open_data_tab',
+        tool_call: toolCall,
+        uiPayload: {
+          rows: [],
+          collection: replayArgs.collection || null,
+          queryParameters: replayArgs,
+          rqlQueryUrl: replayArgs.rqlQueryUrl || replayArgs.rql_query_url || replayArgs.query_url || null,
+          count: 0,
+          total: 0,
+          nextCursorId: null,
+          isLoadingMore: true
+        }
+      });
+
+      this.copilotApi.replayToolCall(replayCall, this.sessionId).then(lang.hitch(this, function(replayResponse) {
+        var replayPayload = this._unwrapReplayResultPayload(replayResponse) || {};
+        var nextUiPayload = this._buildDataBrowseUiPayload(replayPayload, replayArgs);
+        this.setSessionDataBrowseData({
+          uiPayload: nextUiPayload,
+          tool_call: toolCall,
+          chatSummary: data && data.chatSummary ? data.chatSummary : ('Loaded ' + nextUiPayload.rows.length + ' rows'),
+          uiAction: data && data.uiAction ? data.uiAction : 'open_data_tab'
+        });
+      })).catch(lang.hitch(this, function(error) {
+        this.onQueryError({
+          message: 'Failed to load data tab rows',
+          details: error && error.message ? error.message : String(error)
+        });
+      }));
+    },
+
+    _loadMoreDataBrowseRows: function() {
+      if (!this.sessionDataBrowse || !this.sessionDataBrowse.uiPayload) {
+        return;
+      }
+      var current = this.sessionDataBrowse;
+      var payload = current.uiPayload;
+      var nextCursor = payload.nextCursorId;
+      var toolCall = current.tool_call;
+      if (!nextCursor || !toolCall || !this.copilotApi || typeof this.copilotApi.replayToolCall !== 'function') {
+        return;
+      }
+
+      payload.isLoadingMore = true;
+      this._renderDataPanel();
+
+      var baseArgs = (toolCall.arguments_executed && typeof toolCall.arguments_executed === 'object')
+        ? toolCall.arguments_executed
+        : {};
+      var replayArgs = this._buildDataReplayParameters(baseArgs, nextCursor, 100);
+      var replayCall = this._cloneToolCallWithArgs(toolCall, replayArgs);
+      this.copilotApi.replayToolCall(replayCall, this.sessionId).then(lang.hitch(this, function(replayResponse) {
+        var replayPayload = this._unwrapReplayResultPayload(replayResponse) || {};
+        var nextUiPayload = this._buildDataBrowseUiPayload(replayPayload, replayArgs);
+        var appendedRows = (payload.rows || []).concat(nextUiPayload.rows || []);
+        this.setSessionDataBrowseData({
+          uiPayload: lang.mixin({}, payload, nextUiPayload, {
+            rows: appendedRows,
+            isLoadingMore: false
+          }),
+          tool_call: toolCall,
+          chatSummary: current.chatSummary || ('Loaded ' + appendedRows.length + ' rows'),
+          uiAction: current.uiAction || 'open_data_tab'
+        });
+      })).catch(lang.hitch(this, function(error) {
+        payload.isLoadingMore = false;
+        this._renderDataPanel();
+        this.onQueryError({
+          message: 'Failed to load more data rows',
+          details: error && error.message ? error.message : String(error)
+        });
+      }));
+    },
+
     setActivePanel: function(panel) {
       if (panel === 'files') {
         this.activePanel = 'files';
@@ -371,6 +530,8 @@ define([
         this.activePanel = 'workspace';
       } else if (panel === 'jobs') {
         this.activePanel = 'jobs';
+      } else if (panel === 'data') {
+        this.activePanel = 'data';
       } else {
         this.activePanel = 'messages';
       }
@@ -381,6 +542,7 @@ define([
       domStyle.set(this.workflowsContainer, 'display', this.activePanel === 'workflows' ? 'block' : 'none');
       domStyle.set(this.workspaceContainer, 'display', this.activePanel === 'workspace' ? 'block' : 'none');
       domStyle.set(this.jobsContainer, 'display', this.activePanel === 'jobs' ? 'block' : 'none');
+      domStyle.set(this.dataContainer, 'display', this.activePanel === 'data' ? 'block' : 'none');
 
       // dgrid can mis-measure header/body when created while hidden.
       // Ensure workspace grid recalculates layout when tab becomes visible.
@@ -395,6 +557,9 @@ define([
       }
       if (this.activePanel === 'workflows' && this.workflowsExplorerWidget && typeof this.workflowsExplorerWidget.resize === 'function') {
         this.workflowsExplorerWidget.resize();
+      }
+      if (this.activePanel === 'data' && this.dataExplorerWidget && typeof this.dataExplorerWidget.resize === 'function') {
+        this.dataExplorerWidget.resize();
       }
     },
 
@@ -510,6 +675,9 @@ define([
      * - Shows empty state if no messages
      */
     showMessages: function(messages, scrollToBottom = false) {
+      if (!Array.isArray(messages)) {
+        messages = [];
+      }
       if (messages.length) {
         this.messages = messages; // Store messages for redrawing
 
@@ -813,6 +981,7 @@ define([
       this.setSessionWorkspaceSelectionData([]);
       this.resetSessionJobsBrowse();
       this.setSessionJobsSelectionData([]);
+      this.resetSessionDataBrowse();
     },
 
     /**
@@ -1738,6 +1907,16 @@ define([
       this._renderContextPanel();
     },
 
+    resetSessionDataBrowse: function() {
+      this.sessionDataBrowse = null;
+      this._renderDataPanel();
+    },
+
+    setSessionDataBrowseData: function(dataBrowseData) {
+      this.sessionDataBrowse = dataBrowseData || null;
+      this._renderDataPanel();
+    },
+
     setSessionWorkspaceSelectionData: function(selectedItems) {
       this.sessionWorkspaceSelectionItems = this._dedupeItemsByCategory('workspace', selectedItems);
       this._mergeContextEntriesByCategory('workspace', this.sessionWorkspaceSelectionItems);
@@ -2147,6 +2326,78 @@ define([
       }
       if (typeof this.jobsExplorerWidget.resize === 'function') {
         this.jobsExplorerWidget.resize();
+      }
+    },
+
+    _renderDataPanel: function() {
+      if (!this.dataContainer) return;
+      domConstruct.empty(this.dataContainer);
+
+      if (this.dataExplorerWidget) {
+        this.dataExplorerWidget.destroyRecursive();
+        this.dataExplorerWidget = null;
+      }
+
+      if (!this.sessionDataBrowse || !this.sessionDataBrowse.uiPayload) {
+        domConstruct.create('div', {
+          class: 'copilot-data-empty',
+          innerHTML: 'No grids loaded yet'
+        }, this.dataContainer);
+        return;
+      }
+
+      var payload = this.sessionDataBrowse.uiPayload;
+      var rows = Array.isArray(payload.rows) ? payload.rows : [];
+      var summaryBits = [];
+      summaryBits.push('Rows: ' + rows.length);
+      if (payload.total !== undefined && payload.total !== null) {
+        summaryBits.push('Total: ' + payload.total);
+      }
+      if (payload.collection) {
+        summaryBits.push('Collection: ' + payload.collection);
+      }
+
+      domConstruct.create('div', {
+        class: 'copilot-data-summary',
+        innerHTML: summaryBits.join(' | ')
+      }, this.dataContainer);
+
+      if (payload.rqlQueryUrl) {
+        domConstruct.create('a', {
+          class: 'copilot-file-workspace-link',
+          href: payload.rqlQueryUrl,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+          innerHTML: 'Open RQL Query URL'
+        }, this.dataContainer);
+      }
+
+      var gridContainer = domConstruct.create('div', {
+        class: 'copilot-data-grid-container'
+      }, this.dataContainer);
+
+      this.dataExplorerWidget = new DataExplorerAdapter({
+        region: 'center'
+      });
+      this.dataExplorerWidget.setRows(rows);
+      domConstruct.place(this.dataExplorerWidget.domNode, gridContainer);
+      this.dataExplorerWidget.startup();
+
+      if (typeof this.dataExplorerWidget.resize === 'function') {
+        this.dataExplorerWidget.resize();
+      }
+
+      if (payload.nextCursorId) {
+        var actionsNode = domConstruct.create('div', {
+          style: 'margin-top: 10px;'
+        }, this.dataContainer);
+        var loadMoreButton = domConstruct.create('button', {
+          type: 'button',
+          innerHTML: payload.isLoadingMore ? 'Loading...' : 'Load Next 100 Rows',
+          class: 'workspace-summary-open-button',
+          disabled: !!payload.isLoadingMore
+        }, actionsNode);
+        on(loadMoreButton, 'click', lang.hitch(this, this._loadMoreDataBrowseRows));
       }
     },
 

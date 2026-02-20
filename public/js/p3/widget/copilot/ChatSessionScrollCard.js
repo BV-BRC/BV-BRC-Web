@@ -113,7 +113,14 @@ define([
                         this.copilotApi.getSessionMessages(_self.session.session_id).then(function(res) {
                             console.log('[DEBUG] ChatSessionScrollCard - Full response:', res);
                             console.log('[DEBUG] ChatSessionScrollCard - res.workflow_ids:', res.workflow_ids);
-                            var messages = res.messages.length > 0 ? res.messages[0].messages : [];
+                            var messages = [];
+                            if (Array.isArray(res.messages)) {
+                                if (res.messages.length > 0 && Array.isArray(res.messages[0] && res.messages[0].messages)) {
+                                    messages = res.messages[0].messages; // Legacy nested API shape
+                                } else {
+                                    messages = res.messages; // Current flat API shape
+                                }
+                            }
                             topic.publish('ChatSession:Selected', {
                                 sessionId: _self.session.session_id,
                                 messages: messages,
