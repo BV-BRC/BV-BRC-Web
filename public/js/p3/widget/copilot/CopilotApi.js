@@ -244,8 +244,19 @@ define([
             if (extraPayload && Array.isArray(extraPayload.images) && extraPayload.images.length > 0) {
                 data.images = extraPayload.images;
             }
+            if (enhancedPrompt) {
+                data.enhanced_prompt = enhancedPrompt;
+            }
+            var hasRagSelection = !!(ragDb && ragDb !== 'null' && ragDb !== 'none');
+            if (hasRagSelection) {
+                data.rag_db = ragDb;
+                if (numDocs !== null && numDocs !== undefined && numDocs !== '') {
+                    data.num_docs = numDocs;
+                }
+            }
 
-            return request.post(this.apiUrlBase + '/copilot-agent', {
+            var submitEndpoint = hasRagSelection ? (this.apiUrlBase + '/rag') : (this.apiUrlBase + '/copilot-agent');
+            return request.post(submitEndpoint, {
                 data: JSON.stringify(data),
                 headers: {
                     'Content-Type': 'application/json',
@@ -317,6 +328,17 @@ define([
             if (Array.isArray(params.images) && params.images.length > 0) {
                 data.images = params.images;
             }
+            if (params.enhancedPrompt) {
+                data.enhanced_prompt = params.enhancedPrompt;
+            }
+            var hasRagSelection = !!(params.ragDb && params.ragDb !== 'null' && params.ragDb !== 'none');
+            if (hasRagSelection) {
+                data.rag_db = params.ragDb;
+                if (params.numDocs !== null && params.numDocs !== undefined && params.numDocs !== '') {
+                    data.num_docs = params.numDocs;
+                }
+            }
+            var streamEndpoint = hasRagSelection ? (this.apiUrlBase + '/rag/stream') : (this.apiUrlBase + '/copilot-agent');
 
             // Create abort controller for this request
             this.currentAbortController = new AbortController();
@@ -367,7 +389,7 @@ define([
                 return toolMetadata;
             };
 
-            fetch(this.apiUrlBase + '/copilot-agent', {
+            fetch(streamEndpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -392,6 +414,7 @@ define([
                 let currentEvent = null;
 
                 const processLine = (line) => {
+                    console.log('***************** [CopilotApi] Processing line:', line);
                     // Handle SSE comment lines (heartbeat)
                     if (line.startsWith(':')) {
                         return;
@@ -1376,6 +1399,47 @@ define([
                 return response;
             }).catch(function(error) {
                 console.error('[CopilotApi] Error replaying MCP tool call:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Searches stored RAG chunk references for a message/session scope.
+         * @param {Object} filters Query filters (message_id/session_id/user_id/rag_db/etc.)
+         * @returns {Promise<Object>} Paginated chunk search response
+         */
+        searchRagChunkReferences: function(filters) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var safeFilters = (filters && typeof filters === 'object') ? filters : {};
+            var queryParts = [];
+
+            var appendQuery = function(key, value) {
+                if (value === undefined || value === null) return;
+                if (typeof value === 'string' && value.trim() === '') return;
+                queryParts.push(encodeURIComponent(key) + '=' + encodeURIComponent(String(value)));
+            };
+
+            appendQuery('chunk_id', safeFilters.chunk_id);
+            appendQuery('rag_db', safeFilters.rag_db);
+            appendQuery('rag_api_name', safeFilters.rag_api_name);
+            appendQuery('doc_id', safeFilters.doc_id);
+            appendQuery('source_id', safeFilters.source_id);
+            appendQuery('session_id', safeFilters.session_id);
+            appendQuery('user_id', safeFilters.user_id);
+            appendQuery('message_id', safeFilters.message_id);
+            appendQuery('limit', safeFilters.limit);
+            appendQuery('offset', safeFilters.offset);
+            appendQuery('include_content', typeof safeFilters.include_content === 'boolean' ? String(safeFilters.include_content) : 'true');
+
+            return request.get(this.apiUrlBase + '/rag-chunk-search?' + queryParts.join('&'), {
+                headers: {
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('[CopilotApi] Error searching RAG chunk references:', error);
                 throw error;
             });
         },

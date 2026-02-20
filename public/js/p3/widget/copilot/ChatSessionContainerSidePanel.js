@@ -51,7 +51,7 @@ define([
         model: null,
 
         /** @property {string} ragDb - Current RAG database */
-        ragDb: 'bvbrc_helpdesk',
+        ragDb: null,
 
         /**
          * @constructor
