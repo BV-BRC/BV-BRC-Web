@@ -603,7 +603,11 @@ define([
                                         const replayProcessed = toolHandler.processToolEvent(
                                             'final_response',
                                             parsed.tool,
-                                            { chunk: parsed.result, tool: parsed.tool, call: parsed.call || null }
+                                            {
+                                                chunk: parsed.result,
+                                                tool: parsed.tool,
+                                                call: parsed.call || (parsed.result && parsed.result.call) || null
+                                            }
                                         );
                                         if (replayProcessed) {
                                             const replayMetadata = buildToolMetadata(parsed.tool, replayProcessed);

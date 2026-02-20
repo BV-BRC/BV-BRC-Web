@@ -270,6 +270,26 @@ define([
       };
     },
 
+    _isLikelyJsonString: function(value) {
+      if (typeof value !== 'string') {
+        return false;
+      }
+      var trimmed = value.trim();
+      return trimmed.startsWith('{') || trimmed.startsWith('[');
+    },
+
+    _previewForLog: function(value, maxLength) {
+      var limit = typeof maxLength === 'number' ? maxLength : 180;
+      if (value === null || value === undefined) {
+        return String(value);
+      }
+      var stringValue = typeof value === 'string' ? value : JSON.stringify(value);
+      if (stringValue.length <= limit) {
+        return stringValue;
+      }
+      return stringValue.substring(0, limit) + '... [truncated ' + stringValue.length + ' chars total]';
+    },
+
     _normalizeWorkspaceBrowsePayload: function(parsedChunk) {
       var topLevel = (parsedChunk && typeof parsedChunk === 'object') ? parsedChunk : {};
       var payloadSource = (topLevel.result && typeof topLevel.result === 'object' && !Array.isArray(topLevel.result))
@@ -668,6 +688,13 @@ define([
      * @returns {Object|null} Processed data or null if no special handling
      */
     processToolEvent: function(currentEvent, tool, parsed) {
+      if (this._isQueryCollectionTool(tool)) {
+        var eventChunk = parsed ? parsed.chunk : null;
+        console.log('[CopilotToolHandler][QueryCollection][processToolEvent] event=' + currentEvent + ', hasChunk=' + !!eventChunk + ', chunkType=' + typeof eventChunk + ', likelyJson=' + this._isLikelyJsonString(eventChunk));
+        if (parsed && parsed.call && typeof parsed.call === 'object') {
+          console.log('[CopilotToolHandler][QueryCollection][processToolEvent] call.id=' + (parsed.call.id || 'n/a') + ', call.tool=' + (parsed.call.tool || parsed.call.tool_name || 'n/a'));
+        }
+      }
       // Handle final_response event for workflow tools (plan_workflow and submit_workflow)
       if (currentEvent === 'final_response' &&
           (tool === 'bvbrc_server.plan_workflow' ||
@@ -730,13 +757,36 @@ define([
       // Diagnostic logging
       console.log('[CopilotToolHandler] _processQueryCollection called');
       console.log('[CopilotToolHandler] chunk type:', typeof chunk);
+      console.log('[CopilotToolHandler] baseData keys:', baseData ? Object.keys(baseData) : []);
+      if (baseData && baseData.call && typeof baseData.call === 'object') {
+        console.log('[CopilotToolHandler] baseData.call.id:', baseData.call.id || 'n/a');
+        console.log('[CopilotToolHandler] baseData.call.tool:', baseData.call.tool || baseData.call.tool_name || 'n/a');
+      }
       if (typeof chunk === 'object') {
         console.log('[CopilotToolHandler] chunk keys:', Object.keys(chunk));
         console.log('[CopilotToolHandler] has .content?', 'content' in chunk);
         console.log('[CopilotToolHandler] has .workspace?', 'workspace' in chunk);
         console.log('[CopilotToolHandler] has .summary?', 'summary' in chunk);
       } else if (typeof chunk === 'string') {
-        console.log('[CopilotToolHandler] chunk string (first 100 chars):', chunk.substring(0, 100));
+        console.log('[CopilotToolHandler] chunk preview:', this._previewForLog(chunk));
+      }
+
+      // Some query_collection final responses are LLM-authored markdown summaries.
+      // These are not tool JSON payloads, so keep text as-is and log enough context
+      // to diagnose routing upstream.
+      if (typeof chunk === 'string' && !this._isLikelyJsonString(chunk)) {
+        console.warn('[CopilotToolHandler] Query collection chunk is non-JSON text; skipping JSON.parse');
+        console.warn('[CopilotToolHandler] Query collection text preview:', this._previewForLog(chunk, 260));
+        var textModeCallInfo = (baseData && baseData.call && typeof baseData.call === 'object')
+          ? baseData.call
+          : ((baseData && baseData.tool_call && typeof baseData.tool_call === 'object') ? baseData.tool_call : null);
+        return {
+          ...baseData,
+          chunk: chunk,
+          isQueryCollection: false,
+          queryCollectionData: null,
+          tool_call: textModeCallInfo
+        };
       }
 
       try {
@@ -745,9 +795,11 @@ define([
         // If chunk is already a fully parsed object with workspace and summary, use it directly
         if (typeof chunk === 'object' && !chunk.content && (chunk.workspace || chunk.summary)) {
           console.log('[CopilotToolHandler] ✓ Path A: Chunk is already parsed query collection data');
-          var directCallInfo = (baseData && baseData.call && typeof baseData.call === 'object')
+          var directCallInfo = (chunk.call && typeof chunk.call === 'object')
+            ? chunk.call
+            : ((baseData && baseData.call && typeof baseData.call === 'object')
             ? baseData.call
-            : ((baseData && baseData.tool_call && typeof baseData.tool_call === 'object') ? baseData.tool_call : null);
+            : ((baseData && baseData.tool_call && typeof baseData.tool_call === 'object') ? baseData.tool_call : null));
           return {
             ...baseData,
             chunk: JSON.stringify(chunk), // Store stringified version for display
@@ -911,13 +963,16 @@ define([
         console.log('[CopilotToolHandler] Processing query_collection tool');
         console.log('[CopilotToolHandler] sourceTool:', sourceTool);
         console.log('[CopilotToolHandler] content type:', typeof content);
-        console.log('[CopilotToolHandler] content value:', content);
+        console.log('[CopilotToolHandler] content preview:', this._previewForLog(content, 260));
+        console.log('[CopilotToolHandler] content likelyJson?:', this._isLikelyJsonString(content));
 
         // If content is already an object with nested structure, extract it
         let contentToProcess = content;
         if (typeof content === 'object' && content.content) {
           console.log('[CopilotToolHandler] Content is object with nested .content, extracting');
           contentToProcess = content.content;
+          console.log('[CopilotToolHandler] Nested content type:', typeof contentToProcess);
+          console.log('[CopilotToolHandler] Nested content likelyJson?:', this._isLikelyJsonString(contentToProcess));
         }
 
         const baseData = { chunk: contentToProcess };
