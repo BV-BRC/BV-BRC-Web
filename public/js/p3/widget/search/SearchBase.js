@@ -2,12 +2,14 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang',
   'dijit/_WidgetBase', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/on', 'dojo/dom-construct', 'dojo/topic',
+  'dijit/popup',
   './TextInputEncoder',
   '../AdvancedSearchFields', '../AdvancedSearchRowForm'
 ], function (
   declare, lang,
   WidgetBase, Templated, WidgetsInTemplate,
   on, domConstruct, Topic,
+  popup,
   TextInputEncoder,
   AdvancedSearchFields, AdvancedSearchRowForm
 ) {
@@ -100,21 +102,40 @@ define([
             q = `not(${q})`
           }
         } else if (condition.type === 'date') {
-          const encode = (date) => {
-            if (!date) {
-              return '';
+          // Supports partial dates: YYYY, YYYY-MM, or YYYY-MM-DD
+          const encodeDateBound = (dateStr, isUpperBound) => {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-').map(Number);
+            const year = parts[0];
+            let month, day, hour, min, sec;
+            if (isUpperBound) {
+              if (parts.length === 1) {
+                // YYYY -> Dec 31 end of day
+                month = 11; day = 31;
+              } else if (parts.length === 2) {
+                // YYYY-MM -> last day of that month
+                month = parts[1] - 1;
+                day = new Date(Date.UTC(year, parts[1], 0)).getUTCDate();
+              } else {
+                month = parts[1] - 1; day = parts[2];
+              }
+              hour = 23; min = 59; sec = 59;
+            } else {
+              if (parts.length === 1) {
+                month = 0; day = 1;
+              } else if (parts.length === 2) {
+                month = parts[1] - 1; day = 1;
+              } else {
+                month = parts[1] - 1; day = parts[2];
+              }
+              hour = 0; min = 0; sec = 0;
             }
-
-            const parsedDate = new Date(date);
-            const utcDate = new Date(Date.UTC(
-              parsedDate.getUTCFullYear(),
-              parsedDate.getUTCMonth(),
-              parsedDate.getUTCDate()
-            ));
-            return encodeURIComponent(utcDate.toISOString());
+            return encodeURIComponent(
+              new Date(Date.UTC(year, month, day, hour, min, sec)).toISOString()
+            );
           };
-          const lowerBound = encode(condition.from);
-          const upperBound = encode(condition.to);
+          const lowerBound = encodeDateBound(condition.from, false);
+          const upperBound = encodeDateBound(condition.to, true);
 
           if (lowerBound && upperBound) {
             q = `between(${condition.column},${lowerBound},${upperBound})`;
@@ -143,6 +164,19 @@ define([
     onSubmit: async function (evt) {
       evt.preventDefault();
       evt.stopPropagation();
+
+      // Close any open calendar popups
+      Object.keys(this._Searches).forEach(lang.hitch(this, function (idx) {
+        var row = this._Searches[idx];
+        if (row._dateFromDialog) {
+          popup.close(row._dateFromDialog);
+          row._dateFromOpen = false;
+        }
+        if (row._dateToDialog) {
+          popup.close(row._dateToDialog);
+          row._dateToOpen = false;
+        }
+      }));
 
       const query = this.buildQuery();
       const filter = await this.buildFilter();
