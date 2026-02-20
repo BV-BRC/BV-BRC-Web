@@ -66,13 +66,23 @@ define([
       return Object.keys(keysMap);
     },
 
-    _buildColumns: function(columnKeys) {
+    _buildColumns: function(columnKeys, visibleColumns) {
       var columns = {};
       var keys = Array.isArray(columnKeys) ? columnKeys : [];
+      var hasVisibleWhitelist = Array.isArray(visibleColumns) && visibleColumns.length > 0;
+      var visibleMap = {};
+      if (hasVisibleWhitelist) {
+        visibleColumns.forEach(function(key) {
+          if (typeof key === 'string' && key) {
+            visibleMap[key] = true;
+          }
+        });
+      }
       keys.forEach(lang.hitch(this, function(key) {
         columns[key] = {
           label: key,
           field: key,
+          hidden: hasVisibleWhitelist && !visibleMap[key],
           formatter: lang.hitch(this, function(value) {
             return this._toDisplayValue(value);
           })
@@ -111,7 +121,7 @@ define([
         this.rowsData = normalized;
       }
 
-      this.columns = this._buildColumns(this._collectColumnKeys(this.rowsData));
+      this.columns = this._buildColumns(this._collectColumnKeys(this.rowsData), options.visibleColumns);
       this.set('columns', this.columns);
       this.store.setData(this.rowsData);
 

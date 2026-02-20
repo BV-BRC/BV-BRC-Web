@@ -137,9 +137,7 @@ define([
       var seededFilters = this.message && this.message.ragChunkSearchFilters && typeof this.message.ragChunkSearchFilters === 'object'
         ? this.message.ragChunkSearchFilters
         : {};
-      var messageToolCall = this.message && this.message.tool_call && typeof this.message.tool_call === 'object'
-        ? this.message.tool_call
-        : null;
+      var messageToolCall = this._resolveMessageToolCall();
       var toolArgs = messageToolCall && messageToolCall.arguments_executed && typeof messageToolCall.arguments_executed === 'object'
         ? messageToolCall.arguments_executed
         : {};
@@ -160,6 +158,39 @@ define([
       };
     },
 
+    _resolveMessageToolCall: function() {
+      if (!this.message || typeof this.message !== 'object') {
+        return null;
+      }
+      var candidate = null;
+      if (this.message.tool_call !== undefined) {
+        candidate = this.message.tool_call;
+      } else if (this.message.toolCall !== undefined) {
+        candidate = this.message.toolCall;
+      } else if (
+        this.message.metadata &&
+        typeof this.message.metadata === 'object' &&
+        this.message.metadata.tool_call !== undefined
+      ) {
+        candidate = this.message.metadata.tool_call;
+      }
+
+      if (!candidate) {
+        return null;
+      }
+      if (typeof candidate === 'string') {
+        try {
+          candidate = JSON.parse(candidate);
+        } catch (e) {
+          return null;
+        }
+      }
+      if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
+        return null;
+      }
+      return candidate;
+    },
+
     /**
      * Renders a chat message in the container
      * - Adds appropriate spacing based on if it's the first message
@@ -173,9 +204,10 @@ define([
       // Check if content is a JSON string containing source_tool (for real-time results)
       var sourceTool = this.message.source_tool;
       var contentToProcess = this.message.content;
-      var messageToolCall = this.message && this.message.tool_call && typeof this.message.tool_call === 'object'
-        ? this.message.tool_call
-        : null;
+      var messageToolCall = this._resolveMessageToolCall();
+      if (messageToolCall && !this.message.tool_call) {
+        this.message.tool_call = messageToolCall;
+      }
 
       if (!sourceTool && typeof this.message.content === 'string') {
         try {
@@ -196,8 +228,8 @@ define([
 
       // Reloaded session messages may carry canonical tool_call without source_tool.
       // Use it as fallback so tool-specific UI rendering still activates.
-      if (!sourceTool && messageToolCall && typeof messageToolCall.tool === 'string') {
-        sourceTool = messageToolCall.tool;
+      if (!sourceTool && messageToolCall && typeof (messageToolCall.tool || messageToolCall.tool_id) === 'string') {
+        sourceTool = messageToolCall.tool || messageToolCall.tool_id;
         this.message.source_tool = sourceTool;
       }
 
@@ -300,6 +332,20 @@ define([
         messageToolCall &&
         !contentLooksLikeJson
       ) {
+        alreadyProcessed = true;
+      }
+      if (
+        sourceTool &&
+        (
+          sourceTool.indexOf('bvbrc_search_data') !== -1 ||
+          sourceTool.indexOf('query_collection') !== -1 ||
+          sourceTool.indexOf('bvbrc_query_collection') !== -1
+        ) &&
+        messageToolCall &&
+        !contentLooksLikeJson
+      ) {
+        // Persisted session messages are often markdown summaries with tool_call metadata.
+        // Skip re-processing so we don't erase query-card flags inferred above.
         alreadyProcessed = true;
       }
 
@@ -1126,6 +1172,38 @@ define([
       return container;
     },
 
+    _buildQueryLinkOpenPlan: function(opts) {
+      var options = (opts && typeof opts === 'object') ? opts : {};
+      var rqlReplay = (options.rqlReplay && typeof options.rqlReplay === 'object') ? options.rqlReplay : null;
+      var queryUrl = options.rqlQueryUrl || (rqlReplay && rqlReplay.data_api_url) || null;
+      var queryText = rqlReplay && typeof rqlReplay.rql_query === 'string' ? rqlReplay.rql_query : null;
+      var collection = options.collection || null;
+
+      // Simple special handling: for genome, open GenomeList with query appended directly
+      if (collection && collection.toLowerCase() === 'genome' && queryText) {
+        var baseGenomeUrl = 'https://www.bv-brc.org/view/GenomeList/?';
+        return {
+          url: baseGenomeUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+
+      return {
+        url: queryUrl,
+        collection: collection,
+        sourceTool: options.sourceTool || null
+      };
+    },
+
+    _openQueryLink: function(opts) {
+      var openPlan = this._buildQueryLinkOpenPlan(opts);
+      if (!openPlan || !openPlan.url) {
+        return;
+      }
+      window.open(openPlan.url, '_blank', 'noopener,noreferrer');
+    },
+
     renderQueryCollectionWidget: function(messageDiv) {
       var data = this.message.queryCollectionData || {};
       var summary = data.summary || {};
@@ -1136,18 +1214,35 @@ define([
       var toolArgs = (toolCall && toolCall.arguments_executed && typeof toolCall.arguments_executed === 'object')
         ? toolCall.arguments_executed
         : {};
-      var collection = params.collection || toolArgs.collection || data.collection || 'query_collection';
-      var recordCount = typeof summary.recordCount === 'number'
-        ? summary.recordCount
-        : (Array.isArray(data.resultRows) ? data.resultRows.length : null);
-      var summaryText = this.message.chatSummary ||
-        ('Data query ready' + (recordCount !== null ? ': ' + recordCount + ' records' : '') + '.');
-      var rqlQueryUrl = data.rqlQueryUrl || toolArgs.rqlQueryUrl || toolArgs.rql_query_url || toolArgs.query_url || null;
+      var rqlReplay = (toolCall && toolCall.rql_replay && typeof toolCall.rql_replay === 'object')
+        ? toolCall.rql_replay
+        : null;
+      var summaryText = this.message.chatSummary || 'Data query ready.';
+
+      // Extract RQL query URL from multiple possible locations
+      var rqlQueryUrl = data.rqlQueryUrl ||
+        toolArgs.rqlQueryUrl ||
+        toolArgs.rql_query_url ||
+        toolArgs.query_url ||
+        (rqlReplay && rqlReplay.data_api_url) ||
+        null;
+      var inferCollectionFromUrl = function(rqlUrl) {
+        if (!rqlUrl || typeof rqlUrl !== 'string') return null;
+        var withoutQuery = rqlUrl.split('?')[0];
+        var parts = withoutQuery.split('/').filter(function(part) { return !!part; });
+        return parts.length ? parts[parts.length - 1] : null;
+      };
+      var collection = params.collection ||
+        toolArgs.collection ||
+        data.collection ||
+        inferCollectionFromUrl(rqlQueryUrl) ||
+        'query_collection';
 
       var payload = {
         queryParameters: params,
         collection: collection,
         rqlQueryUrl: rqlQueryUrl,
+        rqlReplay: rqlReplay,  // Include full rql_replay object
         summary: summary,
         rows: Array.isArray(data.resultRows) ? data.resultRows : []
       };
@@ -1179,13 +1274,20 @@ define([
       }
 
       if (rqlQueryUrl) {
-        domConstruct.create('a', {
+        var queryLink = domConstruct.create('a', {
           class: 'workspace-summary-link',
-          href: rqlQueryUrl,
-          target: '_blank',
-          rel: 'noopener noreferrer',
-          innerHTML: 'Open RQL Query URL'
+          href: '#',
+          innerHTML: 'Open Query Link'
         }, container);
+        on(queryLink, 'click', lang.hitch(this, function(evt) {
+          evt.preventDefault();
+          this._openQueryLink({
+            rqlQueryUrl: rqlQueryUrl,
+            rqlReplay: rqlReplay,
+            collection: collection,
+            sourceTool: this.message && this.message.source_tool ? this.message.source_tool : null
+          });
+        }));
       }
 
       var openButton = domConstruct.create('button', {

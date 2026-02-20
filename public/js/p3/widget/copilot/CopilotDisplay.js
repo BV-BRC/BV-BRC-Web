@@ -104,6 +104,11 @@ define([
     jobsExplorerWidget: null,
     sessionDataBrowse: null,
     dataExplorerWidget: null,
+    // Per-collection column allowlist for Data tab grid rendering.
+    // Adjust this map to control visible columns by collection.
+    dataCollectionColumnWhitelist: {
+      genome: ['genome_id', 'genome_length']
+    },
     onWorkspaceSelectionChanged: null,
     onJobsSelectionChanged: null,
     onImageContextChanged: null,
@@ -374,8 +379,17 @@ define([
     },
 
     _resolveDataRows: function(payload) {
+      if (Array.isArray(payload)) {
+        return payload;
+      }
       if (!payload || typeof payload !== 'object') {
         return [];
+      }
+      if (payload.response && Array.isArray(payload.response.docs)) {
+        return payload.response.docs;
+      }
+      if (Array.isArray(payload.docs)) {
+        return payload.docs;
       }
       if (Array.isArray(payload.results)) {
         return payload.results;
@@ -390,6 +404,47 @@ define([
         return payload.ui_grid.items;
       }
       return [];
+    },
+
+    _loadDataRowsFromRqlReplay: function(rqlReplay, requestArgs) {
+      if (!rqlReplay || typeof rqlReplay !== 'object' || !rqlReplay.data_api_url || !rqlReplay.rql_query) {
+        return Promise.reject(new Error('Missing rql_replay metadata'));
+      }
+
+      var headers = lang.mixin({}, rqlReplay.headers || {});
+      if (!headers.Accept) {
+        headers.Accept = 'application/json';
+      }
+      if (window.App && window.App.authorizationToken && !headers.Authorization) {
+        headers.Authorization = window.App.authorizationToken;
+      }
+
+      return request.post(rqlReplay.data_api_url, {
+        data: rqlReplay.rql_query,
+        headers: headers,
+        handleAs: 'json'
+      }).then(lang.hitch(this, function(rawResponse) {
+        var collection = (requestArgs && requestArgs.collection) || this._extractCollectionFromRqlUrl(rqlReplay.data_api_url) || null;
+        var rows = this._resolveDataRows(rawResponse);
+        var responseObj = (rawResponse && rawResponse.response && typeof rawResponse.response === 'object')
+          ? rawResponse.response
+          : {};
+        var total = typeof rawResponse.numFound === 'number'
+          ? rawResponse.numFound
+          : (typeof rawResponse.total === 'number'
+            ? rawResponse.total
+            : (typeof responseObj.numFound === 'number' ? responseObj.numFound : rows.length));
+        return {
+          rows: rows,
+          count: rows.length,
+          total: total,
+          nextCursorId: null,
+          collection: collection,
+          queryParameters: requestArgs || null,
+          rqlQueryUrl: rqlReplay.data_api_url,
+          rqlReplay: rqlReplay
+        };
+      }));
     },
 
     _parseTsvRows: function(tsvText) {
@@ -421,6 +476,32 @@ define([
         return false;
       }
       return toolId === 'bvbrc_server.bvbrc_search_data' || toolId.indexOf('bvbrc_search_data') !== -1;
+    },
+
+    _extractCollectionFromRqlUrl: function(rqlUrl) {
+      if (!rqlUrl || typeof rqlUrl !== 'string') {
+        return null;
+      }
+      var trimmed = rqlUrl.trim();
+      if (!trimmed) {
+        return null;
+      }
+      var withoutQuery = trimmed.split('?')[0];
+      var parts = withoutQuery.split('/').filter(function(part) { return !!part; });
+      if (!parts.length) {
+        return null;
+      }
+      return parts[parts.length - 1] || null;
+    },
+
+    _getCollectionColumnWhitelist: function(collection) {
+      if (!collection || typeof collection !== 'string') {
+        return null;
+      }
+      var normalizedCollection = collection.toLowerCase();
+      var map = this.dataCollectionColumnWhitelist || {};
+      var columns = map[normalizedCollection];
+      return Array.isArray(columns) && columns.length > 0 ? columns : null;
     },
 
     _buildDataReplayParameters: function(baseArgs, cursorId, maxRows, toolCall) {
@@ -459,6 +540,7 @@ define([
     _buildDataBrowseUiPayload: function(replayPayload, requestArgs) {
       var sourcePayload = replayPayload && typeof replayPayload === 'object' ? replayPayload : {};
       var sourceArgs = requestArgs && typeof requestArgs === 'object' ? requestArgs : {};
+      var inferredCollection = sourcePayload.collection || sourceArgs.collection || null;
       var rows = this._resolveDataRows(sourcePayload);
       return {
         rows: rows,
@@ -467,7 +549,7 @@ define([
           ? sourcePayload.numFound
           : (typeof sourcePayload.total === 'number' ? sourcePayload.total : rows.length),
         nextCursorId: sourcePayload.nextCursorId || null,
-        collection: sourcePayload.collection || sourceArgs.collection || null,
+        collection: inferredCollection,
         queryParameters: sourcePayload.queryParameters || sourcePayload.plan || sourceArgs || null,
         rqlQueryUrl: sourcePayload.rqlQueryUrl || sourcePayload.rql_query_url || sourcePayload.query_url || sourceArgs.rqlQueryUrl || sourceArgs.rql_query_url || sourceArgs.query_url || null
       };
@@ -489,7 +571,23 @@ define([
       var baseArgs = (toolCall.arguments_executed && typeof toolCall.arguments_executed === 'object')
         ? toolCall.arguments_executed
         : {};
+
+      // Extract rql_replay data if available
+      var rqlReplay = (toolCall.rql_replay && typeof toolCall.rql_replay === 'object')
+        ? toolCall.rql_replay
+        : null;
+      var rqlQueryUrl = (payload && payload.rqlQueryUrl) ||
+        baseArgs.rqlQueryUrl ||
+        baseArgs.rql_query_url ||
+        baseArgs.query_url ||
+        (rqlReplay && rqlReplay.data_api_url) ||
+        null;
+      var inferredCollectionFromUrl = this._extractCollectionFromRqlUrl(rqlQueryUrl);
+
       var replayArgs = this._buildDataReplayParameters(baseArgs, '*', 100, toolCall);
+      if (!replayArgs.collection && inferredCollectionFromUrl) {
+        replayArgs.collection = inferredCollectionFromUrl;
+      }
       var replayCall = this._cloneToolCallWithArgs(toolCall, replayArgs);
 
       this.setSessionDataBrowseData({
@@ -498,9 +596,10 @@ define([
         tool_call: toolCall,
         uiPayload: {
           rows: [],
-          collection: replayArgs.collection || null,
+          collection: replayArgs.collection || inferredCollectionFromUrl || null,
           queryParameters: replayArgs,
-          rqlQueryUrl: replayArgs.rqlQueryUrl || replayArgs.rql_query_url || replayArgs.query_url || null,
+          rqlQueryUrl: rqlQueryUrl,
+          rqlReplay: rqlReplay,
           count: 0,
           total: 0,
           nextCursorId: null,
@@ -508,17 +607,49 @@ define([
         }
       });
 
-      var replaySessionId = this._isBvbrcSearchDataTool(toolCall.tool || toolCall.tool_id) ? null : this.sessionId;
-      this.copilotApi.replayToolCall(replayCall, replaySessionId).then(lang.hitch(this, function(replayResponse) {
-        var replayPayload = this._unwrapReplayResultPayload(replayResponse) || {};
-        var nextUiPayload = this._buildDataBrowseUiPayload(replayPayload, replayArgs);
-        this.setSessionDataBrowseData({
-          uiPayload: nextUiPayload,
-          tool_call: toolCall,
-          chatSummary: data && data.chatSummary ? data.chatSummary : ('Loaded ' + nextUiPayload.rows.length + ' rows'),
-          uiAction: data && data.uiAction ? data.uiAction : 'open_data_tab'
-        });
-      })).catch(lang.hitch(this, function(error) {
+      var finishWithReplay = lang.hitch(this, function() {
+        var replaySessionId = this._isBvbrcSearchDataTool(toolCall.tool || toolCall.tool_id) ? null : this.sessionId;
+        return this.copilotApi.replayToolCall(replayCall, replaySessionId).then(lang.hitch(this, function(replayResponse) {
+          var replayPayload = this._unwrapReplayResultPayload(replayResponse) || {};
+          var nextUiPayload = this._buildDataBrowseUiPayload(replayPayload, replayArgs);
+          // Preserve rql_replay if not in replay response
+          if (!nextUiPayload.rqlReplay && rqlReplay) {
+            nextUiPayload.rqlReplay = rqlReplay;
+          }
+          if (!nextUiPayload.rqlQueryUrl && rqlQueryUrl) {
+            nextUiPayload.rqlQueryUrl = rqlQueryUrl;
+          }
+          this.setSessionDataBrowseData({
+            uiPayload: nextUiPayload,
+            tool_call: toolCall,
+            chatSummary: data && data.chatSummary ? data.chatSummary : ('Loaded ' + nextUiPayload.rows.length + ' rows'),
+            uiAction: data && data.uiAction ? data.uiAction : 'open_data_tab'
+          });
+        }));
+      });
+
+      var canLoadFromRqlReplay = this._isBvbrcSearchDataTool(toolCall.tool || toolCall.tool_id) &&
+        rqlReplay &&
+        typeof rqlReplay === 'object' &&
+        !!rqlReplay.data_api_url &&
+        !!rqlReplay.rql_query;
+
+      if (canLoadFromRqlReplay) {
+        this._loadDataRowsFromRqlReplay(rqlReplay, replayArgs).then(lang.hitch(this, function(nextUiPayload) {
+          this.setSessionDataBrowseData({
+            uiPayload: nextUiPayload,
+            tool_call: toolCall,
+            chatSummary: data && data.chatSummary ? data.chatSummary : ('Loaded ' + nextUiPayload.rows.length + ' rows'),
+            uiAction: data && data.uiAction ? data.uiAction : 'open_data_tab'
+          });
+        })).catch(lang.hitch(this, function() {
+          // Fallback to replay path if direct RQL fetch fails for any reason.
+          return finishWithReplay();
+        }));
+        return;
+      }
+
+      finishWithReplay().catch(lang.hitch(this, function(error) {
         this.onQueryError({
           message: 'Failed to load data tab rows',
           details: error && error.message ? error.message : String(error)
@@ -2417,16 +2548,6 @@ define([
         innerHTML: summaryBits.join(' | ')
       }, this.dataContainer);
 
-      if (payload.rqlQueryUrl) {
-        domConstruct.create('a', {
-          class: 'copilot-file-workspace-link',
-          href: payload.rqlQueryUrl,
-          target: '_blank',
-          rel: 'noopener noreferrer',
-          innerHTML: 'Open RQL Query URL'
-        }, this.dataContainer);
-      }
-
       var gridContainer = domConstruct.create('div', {
         class: 'copilot-data-grid-container'
       }, this.dataContainer);
@@ -2434,7 +2555,9 @@ define([
       this.dataExplorerWidget = new DataExplorerAdapter({
         region: 'center'
       });
-      this.dataExplorerWidget.setRows(rows);
+      this.dataExplorerWidget.setRows(rows, {
+        visibleColumns: this._getCollectionColumnWhitelist(payload.collection)
+      });
       domConstruct.place(this.dataExplorerWidget.domNode, gridContainer);
       this.dataExplorerWidget.startup();
 

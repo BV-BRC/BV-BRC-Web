@@ -780,6 +780,42 @@ define([
         var textModeCallInfo = (baseData && baseData.call && typeof baseData.call === 'object')
           ? baseData.call
           : ((baseData && baseData.tool_call && typeof baseData.tool_call === 'object') ? baseData.tool_call : null);
+        var textModeCallArgs = (textModeCallInfo &&
+          textModeCallInfo.arguments_executed &&
+          typeof textModeCallInfo.arguments_executed === 'object')
+          ? textModeCallInfo.arguments_executed
+          : {};
+        var textModeRqlReplay = (textModeCallInfo &&
+          textModeCallInfo.rql_replay &&
+          typeof textModeCallInfo.rql_replay === 'object')
+          ? textModeCallInfo.rql_replay
+          : null;
+        var hasReplayMetadata = !!(
+          textModeRqlReplay ||
+          textModeCallArgs.rqlQueryUrl ||
+          textModeCallArgs.rql_query_url ||
+          textModeCallArgs.query_url
+        );
+
+        if (hasReplayMetadata) {
+          return {
+            ...baseData,
+            chunk: chunk,
+            isQueryCollection: true,
+            queryCollectionData: {
+              queryParameters: textModeCallArgs,
+              collection: textModeCallArgs.collection || null,
+              rqlQueryUrl: textModeCallArgs.rqlQueryUrl ||
+                textModeCallArgs.rql_query_url ||
+                textModeCallArgs.query_url ||
+                (textModeRqlReplay && textModeRqlReplay.data_api_url) ||
+                null,
+              rqlReplay: textModeRqlReplay,
+              resultRows: []
+            },
+            tool_call: textModeCallInfo
+          };
+        }
         return {
           ...baseData,
           chunk: chunk,

@@ -417,6 +417,50 @@ define([
                 return toolMetadata;
             };
 
+            var isQueryCollectionToolId = function(toolId) {
+                if (!toolId || typeof toolId !== 'string') {
+                    return false;
+                }
+                return toolId === 'bvbrc_server.bvbrc_search_data' ||
+                    toolId === 'bvbrc_server.bvbrc_query_collection' ||
+                    toolId === 'bvbrc_server.query_collection' ||
+                    toolId.indexOf('bvbrc_search_data') !== -1 ||
+                    toolId.indexOf('bvbrc_query_collection') !== -1 ||
+                    toolId.indexOf('query_collection') !== -1;
+            };
+
+            // Some query-tool final responses are plain text. Keep query-card metadata alive
+            // using persisted call envelopes so the UI can still render the Data tab card.
+            var buildFallbackQueryToolMetadata = function(sourceTool, callInfo) {
+                if (!isQueryCollectionToolId(sourceTool)) {
+                    return null;
+                }
+                var normalizedCall = (callInfo && typeof callInfo === 'object') ? callInfo : null;
+                var args = normalizedCall && normalizedCall.arguments_executed && typeof normalizedCall.arguments_executed === 'object'
+                    ? normalizedCall.arguments_executed
+                    : {};
+                var rqlQueryUrl = args.rqlQueryUrl || args.rql_query_url || args.query_url || null;
+                return {
+                    source_tool: sourceTool,
+                    isQueryCollection: true,
+                    queryCollectionData: {
+                        queryParameters: args,
+                        collection: args.collection || null,
+                        rqlQueryUrl: rqlQueryUrl,
+                        resultRows: []
+                    },
+                    chatSummary: 'Data query ready.',
+                    uiPayload: {
+                        queryParameters: args,
+                        collection: args.collection || null,
+                        rqlQueryUrl: rqlQueryUrl,
+                        resultRows: []
+                    },
+                    uiAction: 'open_data_tab',
+                    tool_call: normalizedCall
+                };
+            };
+
             fetch(streamEndpoint, {
                 method: 'POST',
                 headers: {
@@ -536,6 +580,11 @@ define([
                                                     toolMetadata = buildToolMetadata(responseToolId, replayProcessed);
                                                 }
                                             }
+
+                                            if ((!toolMetadata || !hasRenderableToolMetadata(toolMetadata)) &&
+                                                parsed && parsed.call && typeof parsed.call === 'object') {
+                                                toolMetadata = buildFallbackQueryToolMetadata(responseToolId, parsed.call);
+                                            }
                                         }
                                     }
 
@@ -613,6 +662,13 @@ define([
                                             const replayMetadata = buildToolMetadata(parsed.tool, replayProcessed);
                                             if (hasRenderableToolMetadata(replayMetadata)) {
                                                 latestRenderableToolMetadata = replayMetadata;
+                                            }
+                                        }
+                                        if ((!latestRenderableToolMetadata || !hasRenderableToolMetadata(latestRenderableToolMetadata)) &&
+                                            parsed.call && typeof parsed.call === 'object') {
+                                            var fallbackMetadata = buildFallbackQueryToolMetadata(parsed.tool, parsed.call);
+                                            if (fallbackMetadata && hasRenderableToolMetadata(fallbackMetadata)) {
+                                                latestRenderableToolMetadata = fallbackMetadata;
                                             }
                                         }
                                     }
@@ -961,6 +1017,19 @@ define([
                 console.log('Session messages retrieved:', response);
                 console.log('[DEBUG] getSessionMessages - Full response structure:', JSON.stringify(response, null, 2));
                 console.log('[DEBUG] getSessionMessages - response.workflow_ids:', response.workflow_ids);
+
+                // Direct logging of messages
+                console.log('[DIRECT LOG] Retrieved messages array:');
+                if (response && response.messages) {
+                    console.log('[DIRECT LOG] Total messages:', response.messages.length);
+                    response.messages.forEach(function(message, index) {
+                        console.log(`[DIRECT LOG] Message ${index}:`, message);
+                        console.log(`[DIRECT LOG] Message ${index} stringified:`, JSON.stringify(message, null, 2));
+                    });
+                } else {
+                    console.log('[DIRECT LOG] No messages found in response');
+                }
+
                 return response;
             }).catch(function(error) {
                 console.error('Error getting session messages:', error);
