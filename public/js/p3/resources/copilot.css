@@ -971,6 +971,23 @@
   max-width: 60%;
   display: inline-block;
   margin-top: 10px;
+  position: relative; /* For absolute positioning of button */
+}
+
+/* User message button container - positioned in bottom right corner */
+.user-message-button-container {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* Show button when hovering over user message */
+.message.user:hover .user-message-button-container {
+  opacity: 1;
 }
 
 .message.assistant {

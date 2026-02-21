@@ -562,6 +562,16 @@ define([
         this.createMessageActionButtons(buttonContainer);
       }
 
+      if (this.message.role === 'user') {
+        // Create button container for user messages - positioned in bottom right
+        var buttonContainer = domConstruct.create('div', {
+          class: 'user-message-button-container'
+        }, messageDiv);
+
+        // Add copy button for user messages
+        this.createUserMessageCopyButton(buttonContainer);
+      }
+
       this.renderAttachments(messageDiv);
     },
 
@@ -1046,6 +1056,21 @@ define([
     },
 
     /**
+     * Creates copy button for user messages
+     */
+    createUserMessageCopyButton: function(buttonContainer) {
+      var copyButton = this.createButton('', 'copy-button', 'Copy message');
+
+      // Add click handler for copy button
+      on(copyButton, 'click', lang.hitch(this, function(event) {
+        topic.publish('copy-message', this.message.content);
+        event.stopPropagation();
+      }));
+
+      domConstruct.place(copyButton, buttonContainer);
+    },
+
+    /**
      * Creates a button element with standard styling
      * @param {string} text - The text to display on the button
      * @param {string} [additionalClass] - Optional additional CSS class
@@ -1184,6 +1209,16 @@ define([
         var baseGenomeUrl = 'https://www.bv-brc.org/view/GenomeList/?';
         return {
           url: baseGenomeUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+
+      // Simple special handling: for taxonomy, open TaxonList with query appended directly
+      if (collection && collection.toLowerCase() === 'taxonomy' && queryText) {
+        var baseTaxonomyUrl = 'https://www.bv-brc.org/view/TaxonList/?';
+        return {
+          url: baseTaxonomyUrl + queryText,
           collection: collection,
           sourceTool: options.sourceTool || null
         };

@@ -107,7 +107,8 @@ define([
     // Per-collection column allowlist for Data tab grid rendering.
     // Adjust this map to control visible columns by collection.
     dataCollectionColumnWhitelist: {
-      genome: ['genome_id', 'genome_length']
+      genome: ['genome_id', 'genome_length', 'genome_name'],
+      taxonomy: ['taxon_rank', 'taxon_id', 'taxon_name']
     },
     onWorkspaceSelectionChanged: null,
     onJobsSelectionChanged: null,
@@ -633,7 +634,6 @@ define([
         baseArgs.query_url ||
         (rqlReplay && rqlReplay.data_api_url) ||
         null;
-      debugger;
       var inferredCollectionFromUrl = this._extractCollectionFromRqlUrl(rqlQueryUrl);
 
       var replayArgs = this._buildDataReplayParameters(baseArgs, '*', 100, toolCall);
