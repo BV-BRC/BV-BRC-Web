@@ -165,6 +165,8 @@ define([
       var candidate = null;
       if (this.message.tool_call !== undefined) {
         candidate = this.message.tool_call;
+      } else if (this.message.ui_tool_call !== undefined) {
+        candidate = this.message.ui_tool_call;
       } else if (this.message.toolCall !== undefined) {
         candidate = this.message.toolCall;
       } else if (
@@ -173,6 +175,12 @@ define([
         this.message.metadata.tool_call !== undefined
       ) {
         candidate = this.message.metadata.tool_call;
+      } else if (
+        this.message.metadata &&
+        typeof this.message.metadata === 'object' &&
+        this.message.metadata.ui_tool_call !== undefined
+      ) {
+        candidate = this.message.metadata.ui_tool_call;
       }
 
       if (!candidate) {
@@ -202,7 +210,7 @@ define([
      */
     renderMessage: function() {
       // Check if content is a JSON string containing source_tool (for real-time results)
-      var sourceTool = this.message.source_tool;
+      var sourceTool = this.message.ui_source_tool || this.message.source_tool;
       var contentToProcess = this.message.content;
       var messageToolCall = this._resolveMessageToolCall();
       if (messageToolCall && !this.message.tool_call) {
@@ -228,8 +236,19 @@ define([
 
       // Reloaded session messages may carry canonical tool_call without source_tool.
       // Use it as fallback so tool-specific UI rendering still activates.
-      if (!sourceTool && messageToolCall && typeof (messageToolCall.tool || messageToolCall.tool_id) === 'string') {
-        sourceTool = messageToolCall.tool || messageToolCall.tool_id;
+      if (messageToolCall && typeof (messageToolCall.tool || messageToolCall.tool_id) === 'string') {
+        var toolCallId = messageToolCall.tool || messageToolCall.tool_id;
+        var sourceToolLooksLikeTransport =
+          typeof sourceTool === 'string' &&
+          (
+            sourceTool.indexOf('read_file_bytes_tool') !== -1 ||
+            sourceTool.indexOf('read_file_tool') !== -1
+          );
+        if (!sourceTool || sourceToolLooksLikeTransport) {
+          sourceTool = toolCallId;
+        }
+      }
+      if (sourceTool) {
         this.message.source_tool = sourceTool;
       }
 
@@ -379,8 +398,8 @@ define([
         this.message.jobsBrowseResult = typeof processedData.jobsBrowseResult !== 'undefined'
           ? (processedData.jobsBrowseResult || this.message.jobsBrowseResult)
           : this.message.jobsBrowseResult;
-        this.message.tool_call = (typeof processedData.tool_call !== 'undefined' && processedData.tool_call)
-          ? processedData.tool_call
+        this.message.tool_call = (typeof processedData.ui_tool_call !== 'undefined' && processedData.ui_tool_call)
+          ? processedData.ui_tool_call
           : this.message.tool_call;
 
         // Workflow and query collection data are set on message object above
@@ -516,7 +535,10 @@ define([
       }
 
       // Tool-specific widgets are appended under the message text when available.
-      var renderSourceTool = this.message.source_tool || (this.message.tool_call && this.message.tool_call.tool) || '';
+      var renderSourceTool = this.message.ui_source_tool ||
+        this.message.source_tool ||
+        (this.message.tool_call && this.message.tool_call.tool) ||
+        '';
       var hasWorkflowIdentity = !!(
         this.message.workflow_id ||
         (this.message.workflowData && this.message.workflowData.workflow_id) ||
@@ -1219,6 +1241,16 @@ define([
         var baseTaxonomyUrl = 'https://www.bv-brc.org/view/TaxonList/?';
         return {
           url: baseTaxonomyUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+
+      // Simple special handling: for genome_feature, open FeatureList with query appended directly
+      if (collection && collection.toLowerCase() === 'genome_feature' && queryText) {
+        var baseFeatureUrl = 'https://www.bv-brc.org/view/FeatureList/?';
+        return {
+          url: baseFeatureUrl + queryText,
           collection: collection,
           sourceTool: options.sourceTool || null
         };

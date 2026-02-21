@@ -634,6 +634,7 @@ define([
         baseArgs.query_url ||
         (rqlReplay && rqlReplay.data_api_url) ||
         null;
+
       var inferredCollectionFromUrl = this._extractCollectionFromRqlUrl(rqlQueryUrl);
 
       var replayArgs = this._buildDataReplayParameters(baseArgs, '*', 100, toolCall);
