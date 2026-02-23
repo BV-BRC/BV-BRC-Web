@@ -45,6 +45,64 @@ define([
     disableDropdownSelector: false,   // if true, don't bother fetching data for filtering select (for operations such as moving)
     _currentViewMode: 'browse',        // current view mode: 'browse', 'favorites', 'recent'
     _favoritesSub: null,               // subscription handle for favorites changes
+
+    postMixInProperties: function () {
+      this.inherited(arguments);
+      // Sanitize initial value and path before template is processed
+      // This prevents invalid values containing 'undefined' from being set
+      if (this.value && this.value.indexOf && this.value.indexOf('undefined') !== -1) {
+        this.value = '';
+      }
+      if (this.path && this.path.indexOf && this.path.indexOf('undefined') !== -1) {
+        this.path = '';
+      }
+    },
+
+    postCreate: function () {
+      this.inherited(arguments);
+
+      // CRITICAL: Clear any invalid value that may have been set on the searchBox
+      // during widget initialization. The FilteringSelect's textbox may already contain
+      // an invalid value like '/home/undefined' that was set before we could intercept it.
+      if (this.searchBox) {
+        // Check if searchBox already has an invalid value in its textbox
+        var currentDisplayed = this.searchBox.get('displayedValue') || '';
+        var currentValue = this.searchBox.get('value') || '';
+        if ((currentDisplayed && currentDisplayed.indexOf('undefined') !== -1) ||
+            (currentValue && currentValue.indexOf('undefined') !== -1)) {
+          // Clear the invalid value from the FilteringSelect
+          this.searchBox.textbox.value = '';
+          this.searchBox._set('displayedValue', '');
+          this.searchBox._set('value', '');
+        }
+      }
+
+      // Also clear this.value if it's invalid
+      if (this.value && this.value.indexOf && this.value.indexOf('undefined') !== -1) {
+        this.value = '';
+      }
+
+      // Set the initial value programmatically only if it's valid
+      if (this.searchBox && this.value) {
+        // Only set value if it doesn't contain 'undefined'
+        if (this.value.indexOf && this.value.indexOf('undefined') === -1) {
+          this.searchBox.set('value', this.value);
+        }
+      }
+
+      // Intercept any future value sets on the searchBox to prevent invalid values
+      var originalSet = this.searchBox.set;
+      this.searchBox.set = function(name, value) {
+        if (name === 'value' || name === 'displayedValue') {
+          if (value && value.indexOf && value.indexOf('undefined') !== -1) {
+            // Block invalid values
+            return;
+          }
+        }
+        return originalSet.apply(this, arguments);
+      };
+    },
+
     reset: function () {
       this.searchBox.set('value', '');
     },
@@ -112,6 +170,11 @@ define([
     // JSP: Need to check if the workspace changes to change the dropbox memory store.
     _setPathAttr: function (val) {
       if (!val) return; // for group selection (hacky)
+
+      // Don't set paths containing 'undefined' (invalid user session)
+      if (val.indexOf && val.indexOf('undefined') !== -1) {
+        return;
+      }
 
       var self = this;
 
@@ -215,8 +278,15 @@ define([
 
     // sets value of object selector dropdown
     _setValueAttr: function (value, refresh) {
+      // Don't set values containing 'undefined' (invalid user session)
+      if (value && value.indexOf && value.indexOf('undefined') !== -1) {
+        return;
+      }
       this.value = value;
-      this.searchBox.set('value', this.value);
+      // Only set on searchBox if it exists (may not during construction)
+      if (this.searchBox) {
+        this.searchBox.set('value', this.value);
+      }
 
       // if (this._started) {
       //   if (refresh) {
@@ -240,17 +310,27 @@ define([
 
       // need to ensure item is in store (for public workspaces),
       // this is more efficient than recursively grabing all public objects of a certain type
-      if (this.selection !== '*none*' && this.selection && this.selection.path) {
-        // Ensure store exists - create if needed
-        if (!this.store) {
-          this.store = new Memory({ data: [], idProperty: 'path' });
-          this.searchBox.set('store', this.store);
-        }
-        try {
-          this.store.add(this.selection);
-        } catch (e) {
-          // ignore error about duplicates
-          // console.log('error adding ' + this.selection + ' to data store:', e);
+      // Also skip adding to store if path contains 'undefined' (invalid user session)
+      // Also skip paths that are too short (e.g., /user/home with no subfolder)
+      if (this.selection !== '*none*' && this.selection && this.selection.path &&
+          this.selection.path.indexOf('undefined') === -1) {
+        // Check that path has at least 4 parts (e.g., /user/home/folder)
+        var pathParts = this.selection.path.split('/');
+        if (pathParts.length < 4) {
+          // Path is too high-level, don't add to store
+          // But still update the selection state
+        } else {
+          // Ensure store exists - create if needed
+          if (!this.store) {
+            this.store = new Memory({ data: [], idProperty: 'path' });
+            this.searchBox.set('store', this.store);
+          }
+          try {
+            this.store.add(this.selection);
+          } catch (e) {
+            // ignore error about duplicates
+            // console.log('error adding ' + this.selection + ' to data store:', e);
+          }
         }
       }
 
@@ -284,7 +364,10 @@ define([
 
     postMixinProperties: function () {
       if (!this.value && this.workspace) {
-        this.value = this.workspace;
+        // Guard: Don't use workspace if it contains 'undefined'
+        if (!this.workspace.indexOf || this.workspace.indexOf('undefined') === -1) {
+          this.value = this.workspace;
+        }
       }
       this.inherited(arguments);
     },
@@ -422,7 +505,6 @@ define([
     loadRecentFolders: function () {
       var self = this;
       var recent = RecentFolders.get();
-      console.log('[DEBUG] Recent folders from localStorage:', recent);
 
       if (!recent || recent.length === 0) {
         self._showEmptyMessage('No recently used folders.');
@@ -432,24 +514,17 @@ define([
       // Fetch current metadata for each recent folder
       var promises = recent.map(function (item) {
         return WorkspaceManager.getObject(item.path).then(function (obj) {
-          console.log('[DEBUG] Loaded object for', item.path, ':', obj);
           // Extract metadata if object has metadata property
           return obj.metadata || obj;
         }, function (err) {
-          console.log('[DEBUG] Failed to load', item.path, ':', err);
           return null; // Handle deleted folders
         });
       });
 
       return all(promises).then(lang.hitch(this, function (objects) {
-        console.log('[DEBUG] All objects loaded:', objects);
         // Filter to only valid objects that are folders
         var validObjects = objects.filter(function (obj) {
-          var isValid = obj && obj.type === 'folder';
-          if (obj && !isValid) {
-            console.log('[DEBUG] Filtering out non-folder:', obj.path, 'type:', obj.type);
-          }
-          return isValid;
+          return obj && obj.type === 'folder';
         }).map(function (obj) {
           // Ensure all required properties exist for grid rendering
           if (!obj.permissions) {
@@ -460,7 +535,6 @@ define([
           }
           return obj;
         });
-        console.log('[DEBUG] Valid folder objects:', validObjects);
         if (validObjects.length === 0) {
           self._showEmptyMessage('No valid recent folders found. They may have been deleted.');
           return;
@@ -604,19 +678,27 @@ define([
             _self._suppressViewSelectorNavigation = false;
             return;
           }
+          // Guard: Don't set paths with user ID if user is not logged in
+          var userId = window.App && window.App.user && window.App.user.id;
           if (val == 'home') {
             if (_self.grid) { _self.grid.set('workspaceFilter', null); }
-            var home = '/' + window.App.user.id + '/' + 'home';
-            _self.set('path', home);
+            if (userId) {
+              var home = '/' + userId + '/' + 'home';
+              _self.set('path', home);
+            }
           }
           else if (val == 'mine') {
             if (_self.grid) { _self.grid.set('workspaceFilter', 'myWorkspaces'); }
-            var home = '/' + window.App.user.id;
-            _self.set('path', home);
+            if (userId) {
+              var home = '/' + userId;
+              _self.set('path', home);
+            }
           } else if (val == 'shared') {
             if (_self.grid) { _self.grid.set('workspaceFilter', 'sharedWithMe'); }
-            var home = '/' + window.App.user.id;
-            _self.set('path', home);
+            if (userId) {
+              var home = '/' + userId;
+              _self.set('path', home);
+            }
           } else if (val == 'public') {
             if (_self.grid) { _self.grid.set('workspaceFilter', null); }
             _self.set('path', '/public/');
@@ -831,10 +913,16 @@ define([
     },
 
     refreshWorkspaceItems: function (target_path) {
+      // Don't refresh if dropdown is disabled, already refreshing, or empty path
       if (this.disableDropdownSelector || this._refreshing || target_path === '') {
         return;
       }
+      // Don't refresh if target_path is an object (invalid call)
       if (typeof target_path === 'object' && target_path !== undefined) {
+        return;
+      }
+      // Don't refresh if user is not logged in (prevents /undefined/home paths)
+      if (!window.App || !window.App.user || !window.App.user.id) {
         return;
       }
       function compare(a, b) {
@@ -852,6 +940,7 @@ define([
       this._refreshing = WorkspaceManager.getObjectsByType(this.type, target_path)
         .then(lang.hitch(this, function (items) {
           delete this._refreshing;
+          this._isLoadingDropdown = false;
 
           // If counter changed, this response is stale - ignore it
           if ((self._refreshCounter || 0) !== currentCounter) {
@@ -872,12 +961,62 @@ define([
           }
           this.searchBox.set('store', this.store);
           if (this.value) {
+            // If value is set but not in the store (e.g., cross-workspace path from rerun),
+            // inject a synthetic item so FilteringSelect can resolve and display it
+            try {
+              if (!this.store.get(this.value)) {
+                var name = this.value.replace(/\/+$/, '').split('/').pop();
+                this.store.add({ path: this.value, name: name });
+              }
+            } catch (e) { /* ignore */ }
             this.searchBox.set('value', this.value);
+          }
+          // If the dropdown is currently open, refresh its display
+          // Force a re-search to update the dropdown contents
+          try {
+            var isOpen = false;
+            // Check various ways to detect if dropdown is open
+            if (this.searchBox._opened) {
+              isOpen = true;
+            } else if (this.searchBox.dropDown && this.searchBox.dropDown.domNode) {
+              var display = this.searchBox.dropDown.domNode.style.display;
+              if (display !== 'none' && display !== '') {
+                isOpen = true;
+              }
+            }
+
+            if (isOpen) {
+              // Try to trigger a re-search by calling the internal search method
+              if (this.searchBox._startSearch) {
+                this.searchBox._startSearch('');
+              } else if (this.searchBox.loadDropDown) {
+                this.searchBox.loadDropDown();
+              } else {
+                // Fallback: close and reopen
+                this.searchBox.closeDropDown();
+                var _searchBox = this.searchBox;
+                setTimeout(function() {
+                  _searchBox.openDropDown();
+                }, 50);
+              }
+            }
+          } catch (e) {
+            // Ignore errors during dropdown refresh
           }
         }));
     },
 
     onSearchChange: function (value) {
+      // Don't accept the loading placeholder as a valid selection
+      if (value === '__loading__') {
+        this.searchBox.set('value', '');
+        return;
+      }
+      // Don't accept values containing 'undefined' (invalid user session)
+      if (value && value.indexOf && value.indexOf('undefined') !== -1) {
+        this.searchBox.set('value', '');
+        return;
+      }
       this.set('value', value);
       this.onChange(value);
       this.validate(true);
@@ -912,15 +1051,46 @@ define([
       }
       this.inherited(arguments);
       var _self = this;
+
+      // BACKUP CHECK: Clear any invalid values that may have slipped through
+      // This runs after all child widgets (including searchBox) are fully initialized
+      if (this.searchBox && this.searchBox.textbox) {
+        var textValue = this.searchBox.textbox.value || '';
+        var displayValue = this.searchBox.get('displayedValue') || '';
+        if (textValue.indexOf('undefined') !== -1 || displayValue.indexOf('undefined') !== -1) {
+          this.searchBox.textbox.value = '';
+          this.searchBox._set('displayedValue', '');
+          this.searchBox._set('value', '');
+          this.value = '';
+        }
+      }
+
+      // Only populate dropdown if user is logged in (has valid user ID)
+      // This prevents showing invalid paths like /undefined/home
+      var hasValidUser = window.App && window.App.user && window.App.user.id;
+
+      // Initialize with a loading placeholder to prevent showing invalid entries
+      // The placeholder is non-selectable and will be replaced when data loads
+      this._isLoadingDropdown = true;
+      var loadingStore = new Memory({
+        data: [{ path: '__loading__', name: 'Loading folders...' }],
+        idProperty: 'path'
+      });
+      this.store = loadingStore;
+      this.searchBox.set('store', loadingStore);
+
       if (!this.path) {
         Deferred.when(WorkspaceManager.get('currentPath'), function (path) {
           _self.set('path', path);
-          // _self.refreshWorkspaceItems();
+          // Populate the dropdown after path is set, only if user is valid
+          if (hasValidUser) {
+            _self.refreshWorkspaceItems();
+          }
         });
+      } else if (hasValidUser) {
+        // Populate the dropdown on startup if path is already set and user is valid
+        this.refreshWorkspaceItems();
       }
-      // else {
-      // this.refreshWorkspaceItems();
-      // }
       Topic.subscribe('/refreshWorkspace', lang.hitch(this, 'refreshWorkspaceItems'));
       this.searchBox.set('disabled', this.disabled);
       this.searchBox.set('required', this.required);
@@ -930,10 +1100,33 @@ define([
     },
 
     labelFunc: function (item, store) {
+      // Handle loading placeholder
+      if (item.path === '__loading__') {
+        return '<div style="font-size:1em; color:#666; padding:8px;">Loading folders...</div>';
+      }
+
+      // Filter out invalid items containing 'undefined' in the path
+      if (item.path && item.path.indexOf('undefined') !== -1) {
+        return '<div style="display:none;"></div>';
+      }
+
       var label = '<div style="font-size:1em; border-bottom:1px solid grey;">/';
       var pathParts = item.path.split('/');
+
+      // Skip items that are too high-level (e.g., /user/home with no subfolder)
+      // These have only 3 parts: ['', 'user', 'home']
+      if (pathParts.length < 4) {
+        return '<div style="display:none;"></div>';
+      }
+
       var workspace = pathParts[2]; // home
       var firstDir = pathParts[3]; // first level under home or file name
+
+      // Safety check: if firstDir is undefined or empty, hide this item
+      if (!firstDir) {
+        return '<div style="display:none;"></div>';
+      }
+
       var title = pathParts.filter(function (p, idx) { return idx > 1 && idx !== (pathParts.length - 1); }).map(function (p) { return p.replace(/^\./, ''); }).join('/');
       var labelParts = [workspace];
       if (firstDir !== pathParts[pathParts.length - 1]) {
@@ -1149,7 +1342,8 @@ define([
         self.set('selection', '');
       });
 
-      if (this.autoSelectCurrent) {
+      // Only auto-select if path is valid (not empty and doesn't contain 'undefined')
+      if (this.autoSelectCurrent && self.path && self.path.indexOf('undefined') === -1) {
         var sel = self.sanitizeSelection(self.path);
 
         self.set('selection', {

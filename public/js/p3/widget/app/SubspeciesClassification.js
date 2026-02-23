@@ -264,15 +264,16 @@ define([
       if (s === 'fasta_data') {
         this.input_sequence.set('checked', true);
         this.input_fasta.set('checked', false);
+        this.onInputChange();
         this.sequence.set('value', job_data['input_fasta_data']);
       }
       else if (s === 'fasta_file') {
         this.input_fasta.set('checked', true);
         this.input_sequence.set('checked', false);
+        this.onInputChange();
         this.query_fasta.set('value', job_data['input_fasta_file']);
       }
 
-      this.output_path.set('value', job_data['output_path']);
       this.virus_type.set('value', job_data['virus_type']);
     }
   });
