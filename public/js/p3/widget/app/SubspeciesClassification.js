@@ -33,6 +33,7 @@ define([
     { value: 'ZIKA', label: 'Flaviviridae - Zika virus [complete genome, genomic RNA]' },
     { type: 'separator' },
     { value: 'INFLUENZAH5', label: 'Orthomyxoviridae - Influenza A H5 [Hemagglutinin gene, genomic RNA]' },
+    { value: 'INFLUENZAH3N2', label: 'Orthomyxoviridae - Influenza A H3N2 [Hemagglutinin gene, genomic RNA]' },
     { value: 'SWINEH1', label: 'Orthomyxoviridae - Swine influenza H1 (global classification) [Hemagglutinin gene, genomic RNA]' },
     { value: 'SWINEH1US', label: 'Orthomyxoviridae – Swine influenza H1 (US classification) [Hemagglutinin gene, genomic RNA]' },
     { value: 'SWINEH3', label: 'Orthomyxoviridae - Swine influenza H3 (global classification, beta version) [Hemagglutinin gene, genomic RNA]' },
