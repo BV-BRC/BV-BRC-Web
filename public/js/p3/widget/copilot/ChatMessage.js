@@ -1291,6 +1291,9 @@ define([
         ? toolCall.replay.rql_replay_query
         : null;
       var summaryText = this.message.chatSummary || 'Data query ready.';
+      if (rqlReplay == null) {
+        return;
+      }
       // Extract RQL query URL from multiple possible locations
       // debugger;
       var rqlQueryUrl = toolArgs.data_api_base_url ? toolArgs.data_api_base_url : "https://www.bv-brc.org/api-bulk";
