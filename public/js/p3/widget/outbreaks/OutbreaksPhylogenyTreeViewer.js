@@ -81,6 +81,9 @@ define([
     },
 
     loadOnce: function () {
+      // show overlay
+      this._setLoading('Downloading tree…', true);
+
       const options = {...this.defaultOptions, ...this.options};
       const settings = {
         ...this.defaultSettings, ...this.settings, ...{
@@ -91,22 +94,91 @@ define([
       const nodeVisualizations = this.nodeVisualizations || {};
       const specialVisualizations = this.specialVisualizations || {};
 
-      xhr.get(this.phyloxmlTreeURL, {headers: {'Cache-Control': 'max-age=1800'}}) // Set cache to 1 hour
-        .then((data) => {
-          let tree;
-          try {
-            tree = window.archaeopteryx.parsePhyloXML(data);
-          } catch (e) {
-            alert('Error while parsing tree: ' + e);
-          }
-          if (tree) {
-            try {
-              window.archaeopteryx.launch('#phylogramOutbreak-' + this.id, tree, options, settings, nodeVisualizations, specialVisualizations);
-            } catch (e) {
-              alert('Error while launching archaeopteryx: ' + e);
-            }
-          }
-        });
-    }
+      // Yield so overlay paints
+      this.afterPaint(() => {
+        xhr.get(this.phyloxmlTreeURL, { headers: { 'Cache-Control': 'max-age=1800' } }) // Set cache to 1 hour
+          .then((data) => {
+            this._setLoading('Parsing tree…', true);
+
+            // Yield again before parse
+            this.afterPaint(() => {
+              let tree;
+              try {
+                tree = window.archaeopteryx.parsePhyloXML(data);
+              } catch (e) {
+                this._setLoading("", false);
+                alert('Error while parsing tree: ' + e);
+                return;
+              }
+
+              this._setLoading('Rendering tree…', true);
+
+              if (tree) {
+                // Yield again before launch
+                this.afterPaint(() => {
+                  try {
+                    window.archaeopteryx.launch('#phylogramOutbreak-' + this.id, tree, options, settings, nodeVisualizations, specialVisualizations);
+
+                    const loading = document.querySelector('.phyloLoading');
+                    const widgets = document.querySelectorAll('.phylogram-outbreak-controls');
+
+                    // Adjust widgets top value based on loading div
+                    if (loading && widgets.length) {
+                      const loadingHeight = loading.offsetHeight;
+
+                      for (let widget of widgets) {
+                        const currentTop = parseFloat(widget.style.top) || 0;
+                        widget.style.top = (currentTop - loadingHeight) + 'px';
+                        widget.style.display = 'block';
+                      }
+                    }
+                  } catch (e) {
+                    alert('Error while launching archaeopteryx: ' + e);
+                  } finally {
+                    this._setLoading("", false);
+                  }
+                });
+              }
+            });
+          });
+      });
+    },
+
+    // Helper: let browser paint UI updates before heavy work
+    afterPaint: function (fn) {
+      requestAnimationFrame(function () {
+        setTimeout(fn, 0);
+      });
+    },
+
+    _setLoading: function (text, show) {
+      if (!this.loadingNode) return;
+      this.loadingNode.style.display = show ? '' : 'none';
+      const box = this.loadingNode.querySelector('.phyloLoadingBox');
+      if (box && text) box.textContent = text;
+    },
+
+    // #TODO: Combine loadTree and loadOnce by introducing cache or reuse mode
+    loadTree: function (phyloxmlTreeURL) {
+      // No need to reload if the same tree is requested
+      if (!phyloxmlTreeURL || this.phyloxmlTreeURL === phyloxmlTreeURL) {
+        return;
+      }
+
+      this.phyloxmlTreeURL = phyloxmlTreeURL;
+
+      // Clear old viewer contents
+      if (this.phylogramNode) {
+        this.phylogramNode.innerHTML = "";
+      }
+
+      // Clear control panels
+      const c0 = document.getElementById('controls-' + this.id + '-0');
+      const c1 = document.getElementById('controls-' + this.id + '-1');
+      if (c0) c0.innerHTML = '';
+      if (c1) c1.innerHTML = '';
+
+      this.loadOnce();
+    },
   });
 });
