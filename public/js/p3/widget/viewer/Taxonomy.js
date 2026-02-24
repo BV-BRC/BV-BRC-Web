@@ -290,8 +290,13 @@ define([
           activeTab.set('state', lang.mixin({}, this.state));
           break;
         case 'sfvt':
+          // Temporary remap: Influenza A virus taxon fix
+          const taxon_id =
+            this.state.taxon_id === 2955291
+              ? 11320
+              : this.state.taxon_id;
           activeTab.set('state', lang.mixin({}, this.state, {
-            search: 'eq(taxon_id,' + this.state.taxon_id + ')'
+            search: 'eq(taxon_id,' + taxon_id + ')'
           }));
           break;
         case 'structures':

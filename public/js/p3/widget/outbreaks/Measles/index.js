@@ -244,7 +244,7 @@ define([
       });
 
       this.phylogenetics = new OutbreaksTabContainer({
-        title: 'Phylogenetics',
+        title: 'Phylogeny',
         id: this.viewer.id + '_phylogenetics',
         tabContainers: [this[phylogenyCompleteMeasles], this[phylogenyNGeneMeasles]]
       });
