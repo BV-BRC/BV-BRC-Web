@@ -163,6 +163,7 @@ define([
         return null;
       }
       var candidate = null;
+
       if (this.message.tool_call !== undefined) {
         candidate = this.message.tool_call;
       } else if (this.message.ui_tool_call !== undefined) {
@@ -251,7 +252,7 @@ define([
       if (sourceTool) {
         this.message.source_tool = sourceTool;
       }
-
+      // debugger;
       var contentLooksLikeJson = false;
       if (typeof contentToProcess === 'string') {
         var trimmedContent = contentToProcess.trim();
@@ -302,7 +303,7 @@ define([
           this.message.queryCollectionData = {
             queryParameters: toolCallArgs,
             collection: toolCallArgs.collection || null,
-            rqlQueryUrl: toolCallArgs.rqlQueryUrl || toolCallArgs.rql_query_url || toolCallArgs.query_url || null,
+            rqlQueryUrl: toolCallArgs.data_api_base_url ? toolCallArgs.data_api_base_url : "https://www.bv-brc.org/api-bulk",
             resultRows: []
           };
         }
@@ -368,6 +369,7 @@ define([
         alreadyProcessed = true;
       }
 
+      // debugger;
       if (sourceTool && !alreadyProcessed) {
         // If content is an object with nested structure, extract the actual content
         if (typeof contentToProcess === 'object' && contentToProcess.content) {
@@ -709,17 +711,23 @@ define([
      * @param {HTMLElement} messageDiv - Container to render widget into
      */
     renderWorkspaceBrowseSummaryWidget: function(messageDiv) {
-      var payload = this.message.uiPayload || {
-        path: this.message.workspaceData && this.message.workspaceData.path ? this.message.workspaceData.path : null,
-        items: this.message.workspaceData && Array.isArray(this.message.workspaceData.items) ? this.message.workspaceData.items : [],
-        count: this.message.workspaceData && Array.isArray(this.message.workspaceData.items) ? this.message.workspaceData.items.length : 0,
-        result_type: 'list_result'
+      if (!this.message.tool_call || !this.message.tool_call.replay) {
+        return;
+      }
+      var toolCall = this.message.tool_call || this.message.ui_tool_call;
+      var toolArgs = toolCall.replay ? toolCall.replay : null;
+
+      var payload = {
+        arguments_executed: toolArgs ? toolArgs : null,
+        tool: toolCall.tool || null
       };
 
-      var countValue = this._getWorkspaceBrowseCount(payload);
-      var pathValue = payload.path || 'unknown path';
+      var isSearch = toolArgs && toolArgs.name_contains && toolArgs.name_contains.length > 0 ? true : false;
+
+      var countValue = toolArgs.num_results ? toolArgs.num_results : 0;
+      var pathValue = toolCall.replay.path ? toolCall.replay.path : 'unknown path';
       var summaryText = this.message.chatSummary || ('Found ' + countValue + ' ' + (countValue === 1 ? 'result' : 'results') + ' in ' + pathValue);
-      var workspaceBrowserUrl = this._buildWorkspaceBrowserUrl(payload.path);
+      var workspaceBrowserUrl = this._buildWorkspaceBrowserUrl(toolCall.replay.path);
 
       var container = domConstruct.create('div', {
         class: 'workspace-summary-card'
@@ -735,7 +743,8 @@ define([
         innerHTML: 'Path: ' + this.escapeHtml(pathValue)
       }, container);
 
-      if (workspaceBrowserUrl) {
+      // "Open in Workspace Browser" links to a directory path - hide when search=true (search results have no single browsable path)
+      if (workspaceBrowserUrl && !isSearch) {
         domConstruct.create('a', {
           class: 'workspace-summary-link',
           href: workspaceBrowserUrl,
@@ -1221,23 +1230,19 @@ define([
 
     _buildQueryLinkOpenPlan: function(opts) {
       var options = (opts && typeof opts === 'object') ? opts : {};
-      var rqlReplay = (options.rqlReplay && typeof options.rqlReplay === 'object') ? options.rqlReplay : null;
-      var queryUrl = options.rqlQueryUrl || (rqlReplay && rqlReplay.data_api_url) || null;
-      var queryText = rqlReplay && typeof rqlReplay.rql_query === 'string' ? rqlReplay.rql_query : null;
+      var queryText = options.rqlReplay || null;
       var collection = options.collection || null;
-
       // Simple special handling: for genome, open GenomeList with query appended directly
       if (collection && collection.toLowerCase() === 'genome' && queryText) {
-        var baseGenomeUrl = 'https://www.bv-brc.org/view/GenomeList/?';
+        var baseGenomeUrl = 'https://www.bv-brc.org/view/GenomeList/';
         return {
           url: baseGenomeUrl + queryText,
           collection: collection,
           sourceTool: options.sourceTool || null
         };
       }
-
       // Simple special handling: for taxonomy, open TaxonList with query appended directly
-      if (collection && collection.toLowerCase() === 'taxonomy' && queryText) {
+      else if (collection && collection.toLowerCase() === 'taxonomy' && queryText) {
         var baseTaxonomyUrl = 'https://www.bv-brc.org/view/TaxonList/?';
         return {
           url: baseTaxonomyUrl + queryText,
@@ -1245,9 +1250,8 @@ define([
           sourceTool: options.sourceTool || null
         };
       }
-
       // Simple special handling: for genome_feature, open FeatureList with query appended directly
-      if (collection && collection.toLowerCase() === 'genome_feature' && queryText) {
+      else if (collection && collection.toLowerCase() === 'genome_feature' && queryText) {
         var baseFeatureUrl = 'https://www.bv-brc.org/view/FeatureList/?';
         return {
           url: baseFeatureUrl + queryText,
@@ -1255,12 +1259,14 @@ define([
           sourceTool: options.sourceTool || null
         };
       }
-
-      return {
-        url: queryUrl,
-        collection: collection,
-        sourceTool: options.sourceTool || null
-      };
+      else {
+        var baseUrl = 'https://www.bv-brc.org/search/';
+        return {
+          url: baseUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
     },
 
     _openQueryLink: function(opts) {
@@ -1281,18 +1287,19 @@ define([
       var toolArgs = (toolCall && toolCall.arguments_executed && typeof toolCall.arguments_executed === 'object')
         ? toolCall.arguments_executed
         : {};
-      var rqlReplay = (toolCall && toolCall.rql_replay && typeof toolCall.rql_replay === 'object')
-        ? toolCall.rql_replay
+      var rqlReplay = (toolCall && toolCall.replay && toolCall.replay.rql_replay_query)
+        ? toolCall.replay.rql_replay_query
         : null;
       var summaryText = this.message.chatSummary || 'Data query ready.';
-
       // Extract RQL query URL from multiple possible locations
-      var rqlQueryUrl = data.rqlQueryUrl ||
-        toolArgs.rqlQueryUrl ||
-        toolArgs.rql_query_url ||
-        toolArgs.query_url ||
-        (rqlReplay && rqlReplay.data_api_url) ||
-        null;
+      // debugger;
+      var rqlQueryUrl = toolArgs.data_api_base_url ? toolArgs.data_api_base_url : "https://www.bv-brc.org/api-bulk";
+      rqlQueryUrl = rqlQueryUrl + '/' + toolArgs.collection + '/';
+      if (rqlReplay[0] === '?') {
+        rqlQueryUrl = rqlQueryUrl + rqlReplay;
+      } else {
+        rqlQueryUrl = rqlQueryUrl + "?" + rqlReplay;
+      }
       var inferCollectionFromUrl = function(rqlUrl) {
         if (!rqlUrl || typeof rqlUrl !== 'string') return null;
         var withoutQuery = rqlUrl.split('?')[0];
@@ -1357,20 +1364,23 @@ define([
         }));
       }
 
-      var openButton = domConstruct.create('button', {
-        type: 'button',
-        class: 'workspace-summary-open-button',
-        innerHTML: 'Open Data Tab'
-      }, container);
+      var data_tab_list = ['genome', 'taxonomy', 'genome_feature'];
+      if (toolArgs.collection && data_tab_list.includes(toolArgs.collection.toLowerCase())) {
+        var dataTabButton = domConstruct.create('button', {
+          type: 'button',
+          class: 'workspace-summary-open-button',
+          innerHTML: 'Open Data Tab'
+        }, container);
+        on(dataTabButton, 'click', lang.hitch(this, function() {
+          topic.publish('CopilotDataBrowseOpen', {
+            uiPayload: payload,
+            tool_call: toolCall,
+            chatSummary: summaryText,
+            uiAction: 'open_data_tab'
+          });
+        }));
+      }
 
-      on(openButton, 'click', lang.hitch(this, function() {
-        topic.publish('CopilotDataBrowseOpen', {
-          uiPayload: payload,
-          tool_call: toolCall,
-          chatSummary: summaryText,
-          uiAction: 'open_data_tab'
-        });
-      }));
     },
 
     /**

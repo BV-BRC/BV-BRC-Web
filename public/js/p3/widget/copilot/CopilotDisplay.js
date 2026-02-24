@@ -284,24 +284,14 @@ define([
 
     _openWorkspaceBrowseData: function(data) {
       var payload = data && data.uiPayload ? data.uiPayload : null;
-      if (payload && Array.isArray(payload.items)) {
-        this.setSessionWorkspaceBrowseData(data);
-        return;
-      }
-
-      var toolCall = data && data.tool_call && typeof data.tool_call === 'object' ? data.tool_call : null;
-      if (!toolCall || !this.copilotApi || typeof this.copilotApi.replayToolCall !== 'function') {
-        this.setSessionWorkspaceBrowseData(data || null);
-        return;
-      }
 
       this.setSessionWorkspaceBrowseData({
         chatSummary: data && data.chatSummary ? data.chatSummary : 'Loading workspace results...',
         uiAction: data && data.uiAction ? data.uiAction : 'open_workspace_tab',
-        tool_call: toolCall
+        tool_call: payload
       });
 
-      this.copilotApi.replayToolCall(toolCall, this.sessionId).then(lang.hitch(this, function(replayResponse) {
+      this.copilotApi.replayToolCall(payload, this.sessionId).then(lang.hitch(this, function(replayResponse) {
         var replayPayload = this._unwrapReplayResultPayload(replayResponse) || {};
         var items = Array.isArray(replayPayload.items)
           ? replayPayload.items
@@ -2467,7 +2457,7 @@ define([
         innerHTML: summaryBits.join(' | ')
       }, this.workspaceContainer);
 
-      if (payload.path) {
+      if (payload.path && !payload.search && payload.result_type !== 'search_result') {
         domConstruct.create('a', {
           class: 'copilot-file-workspace-link',
           href: '/workspace' + (payload.path.charAt(0) === '/' ? payload.path : ('/' + payload.path)),
