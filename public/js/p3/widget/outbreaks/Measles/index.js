@@ -277,7 +277,7 @@ define([
       this.viewer.addChild(this.clt);
 
       // Fetch geomap data
-      xhr.get(PathJoin(this.apiServiceUrl, 'genome') + '/?eq(taxon_lineage_ids,11234)&eq(collection_year,"2025")&in(genome_status,("Complete","Partial"))&select(genome_name,subclade,isolation_country,state_province)&limit(100000)', {
+      xhr.get(PathJoin(this.apiServiceUrl, 'genome') + '/?eq(taxon_lineage_ids,11234)&in(collection_year,("2025","2026"))&in(genome_status,("Complete","Partial"))&select(genome_name,subclade,isolation_country,state_province)&limit(100000)', {
         headers: {
           accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
@@ -430,7 +430,7 @@ define([
         } else {
           let td = domConstruct.create('td', {}, tr);
           domConstruct.create('a', {
-            href: `/view/Taxonomy/11234#view_tab=genomes&filter=and(or(eq(genome_status,"Complete"),eq(genome_status,"Partial")),eq(collection_year,"2025")${locationFilter},eq(subclade,"${encodeURIComponent(subclade)}"))&defaultColumns=-cds,subclade,collection_date&defaultSort=genome_name,subclade`,
+            href: `/view/Taxonomy/11234#view_tab=genomes&filter=and(or(eq(genome_status,"Complete"),eq(genome_status,"Partial")),in(collection_year,("2025","2026"))${locationFilter},eq(subclade,"${encodeURIComponent(subclade)}"))&defaultColumns=-cds,subclade,collection_date&defaultSort=genome_name,subclade`,
             target: '_blank',
             innerHTML: subclade
           }, td);
