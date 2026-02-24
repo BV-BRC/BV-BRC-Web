@@ -86,7 +86,8 @@ define([
 
    // An "enum" for input sources
    const InputSource = Object.freeze({
-      FastaFileID: "fasta_file_id"
+      FastaFileID: "fasta_file_id",
+      GenomeGroup: "genome_group"
       // TODO: Other sources will be added in a future release.
    })
 
@@ -498,7 +499,6 @@ define([
          let cladesPath = this.cladesPathEl.get("value");
          let deviation = this.deviationEl.get("value");
          let equalRates = this.equalRatesEl.get("checked");
-         let fastaFileId = this.fastaFileIdEl.get("value");
          let inferenceMethod = this.inferenceMethodEl.get("value");
          //let matchRegex = this.matchRegexEl.get("value");
          let matchType = this.matchTypeEl.get("value");
@@ -556,8 +556,6 @@ define([
                "inference_method": inferenceMethod,
                "input_fasta_data": null, // TODO: Use fastaData in the future.
                "input_fasta_existing_dataset": null, // TODO: Use fastaExistingDataset in the future.
-               "input_fasta_file_id": fastaFileId,
-               "input_fasta_group_id": null, // TODO: Use fastaGroupId in the future.
                "input_source": this.inputSource,
                "match_regex": null, //matchRegex,
                "match_type": matchType,
@@ -569,6 +567,12 @@ define([
                "ref_tree_inference": refTreeInference,
                "segments": segments
             };
+
+            if (this.inputSource === InputSource.FastaFileID) {
+               jobDescription["input_fasta_file_id"] =  this.fastaFileIdEl.get("value");
+            } else {
+               jobDescription["input_fasta_group_id"] = this.genomeGroup.get("value");
+            }
          }
 
          if (this.validate()) { return jobDescription; }
@@ -1711,6 +1715,23 @@ define([
          console.log("\n")
 
          return result;
+      },
+
+      onInputChange: function (event_) {
+         this.fastaFileIdEl.set('required', false);
+         this.genomeGroup.set('required', false);
+         if (this.input_fasta.checked == true) {
+            this.inputSource = InputSource.FastaFileID;
+            this.fasta_table.style.display = 'table';
+            this.genome_group_table.style.display = 'none';
+            this.fastaFileIdEl.set('required', true);
+         } else if (this.input_genome_group.checked == true) {
+            this.inputSource = InputSource.GenomeGroup;
+            this.fasta_table.style.display = 'none';
+            this.genome_group_table.style.display = 'table';
+            this.genomeGroup.set('required', true);
+         }
+
       }
 
    });
