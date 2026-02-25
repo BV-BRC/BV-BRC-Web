@@ -105,6 +105,12 @@ define([
 
         // Advanced options dialog reference
         advancedOptionsDialog: null,
+        modelSelectorDialog: null,
+        modelSelectorDropdown: null,
+        modelSelectorButton: null,
+        ragSelectorDialog: null,
+        ragSelectorDropdown: null,
+        ragSelectorButton: null,
 
         constructor: function(options) {
             this.inherited(arguments);
@@ -176,6 +182,70 @@ define([
                 domClass.add(reportIssueButton, 'active');
             }));
 
+            // Add model selector button
+            this.modelSelectorButton = domConstruct.create('div', {
+                className: 'copilotChatModelButton',
+                innerHTML: 'Model',
+                title: 'Select chat model'
+            }, leftButtonContainer);
+            this.modelSelectorDialog = this.createModelSelectorDialog();
+            this._refreshModelSelectorState();
+
+            on(this.modelSelectorButton, 'click', lang.hitch(this, function(evt) {
+                evt.stopPropagation();
+                if (!this.modelSelectorDialog) {
+                    return;
+                }
+                if (this.modelSelectorDialog.visible) {
+                    popup.close(this.modelSelectorDialog);
+                    this.modelSelectorDialog.visible = false;
+                    domClass.remove(this.modelSelectorButton, 'active');
+                    return;
+                }
+                this._refreshModelSelectorState();
+                setTimeout(lang.hitch(this, function() {
+                    popup.open({
+                        popup: this.modelSelectorDialog,
+                        around: this.modelSelectorButton,
+                        orient: ['below']
+                    });
+                    this.modelSelectorDialog.visible = true;
+                    domClass.add(this.modelSelectorButton, 'active');
+                }), 100);
+            }));
+
+            // Add RAG selector button
+            this.ragSelectorButton = domConstruct.create('div', {
+                className: 'copilotChatRagButton',
+                innerHTML: 'RAG',
+                title: 'Select RAG database'
+            }, leftButtonContainer);
+            this.ragSelectorDialog = this.createRagSelectorDialog();
+            this._refreshRagSelectorState();
+
+            on(this.ragSelectorButton, 'click', lang.hitch(this, function(evt) {
+                evt.stopPropagation();
+                if (!this.ragSelectorDialog) {
+                    return;
+                }
+                if (this.ragSelectorDialog.visible) {
+                    popup.close(this.ragSelectorDialog);
+                    this.ragSelectorDialog.visible = false;
+                    domClass.remove(this.ragSelectorButton, 'active');
+                    return;
+                }
+                this._refreshRagSelectorState();
+                setTimeout(lang.hitch(this, function() {
+                    popup.open({
+                        popup: this.ragSelectorDialog,
+                        around: this.ragSelectorButton,
+                        orient: ['below']
+                    });
+                    this.ragSelectorDialog.visible = true;
+                    domClass.add(this.ragSelectorButton, 'active');
+                }), 100);
+            }));
+
             // Handle clicks outside dialog to close it
             document.addEventListener('click', lang.hitch(this, function(event) {
                 if (this.advancedOptionsDialog && this.advancedOptionsDialog._rendered &&
@@ -184,6 +254,20 @@ define([
                     popup.close(this.advancedOptionsDialog);
                     this.advancedOptionsDialog.visible = false;
                     domClass.remove(advancedOptionsButton, 'active');
+                }
+                if (this.modelSelectorDialog && this.modelSelectorDialog._rendered &&
+                    !this.modelSelectorDialog.domNode.contains(event.target) &&
+                    this.modelSelectorButton && !this.modelSelectorButton.contains(event.target)) {
+                    popup.close(this.modelSelectorDialog);
+                    this.modelSelectorDialog.visible = false;
+                    domClass.remove(this.modelSelectorButton, 'active');
+                }
+                if (this.ragSelectorDialog && this.ragSelectorDialog._rendered &&
+                    !this.ragSelectorDialog.domNode.contains(event.target) &&
+                    this.ragSelectorButton && !this.ragSelectorButton.contains(event.target)) {
+                    popup.close(this.ragSelectorDialog);
+                    this.ragSelectorDialog.visible = false;
+                    domClass.remove(this.ragSelectorButton, 'active');
                 }
             }));
 
@@ -301,6 +385,285 @@ define([
             this._createResizeHandles();
         },
 
+        _parseListPayload: function(value) {
+            if (Array.isArray(value)) {
+                return value;
+            }
+            if (typeof value === 'string') {
+                try {
+                    var parsed = JSON.parse(value);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+            return [];
+        },
+
+        _getAvailableModelList: function() {
+            if (window && window.App && Array.isArray(window.App.copilotModelList) && window.App.copilotModelList.length > 0) {
+                return window.App.copilotModelList.slice();
+            }
+            if (this.optionsBar && Array.isArray(this.optionsBar.modelList) && this.optionsBar.modelList.length > 0) {
+                return this.optionsBar.modelList.slice();
+            }
+            return [];
+        },
+
+        _getAvailableRagList: function() {
+            if (window && window.App && Array.isArray(window.App.copilotRagList) && window.App.copilotRagList.length > 0) {
+                return window.App.copilotRagList.slice();
+            }
+            if (this.optionsBar && Array.isArray(this.optionsBar.ragList) && this.optionsBar.ragList.length > 0) {
+                return this.optionsBar.ragList.slice();
+            }
+            return [];
+        },
+
+        _getDefaultModelFromList: function(modelList) {
+            if (!Array.isArray(modelList) || modelList.length === 0) {
+                return null;
+            }
+            var explicitDefault = modelList.find(function(entry) {
+                return entry && entry.is_default === true && entry.active !== false;
+            });
+            if (explicitDefault && explicitDefault.model) {
+                return explicitDefault.model;
+            }
+            var activeSorted = modelList
+                .filter(function(entry) {
+                    return entry && entry.model && entry.active !== false;
+                })
+                .sort(function(a, b) {
+                    var pa = typeof a.priority === 'number' ? a.priority : Number.MAX_SAFE_INTEGER;
+                    var pb = typeof b.priority === 'number' ? b.priority : Number.MAX_SAFE_INTEGER;
+                    return pa - pb;
+                });
+            return activeSorted.length > 0 ? activeSorted[0].model : null;
+        },
+
+        _getCurrentSelectedModel: function(modelList) {
+            var selected = window && window.App ? window.App.copilotSelectedModel : null;
+            if (!selected) {
+                selected = this._getDefaultModelFromList(modelList);
+            }
+            return selected;
+        },
+
+        _labelForModel: function(modelId) {
+            if (!modelId) {
+                return 'Model';
+            }
+            var shortName = modelId.split('/').reverse()[0] || modelId;
+            if (shortName.length > 18) {
+                shortName = shortName.substring(0, 18) + '...';
+            }
+            return shortName;
+        },
+
+        _updateModelButtonLabel: function(modelId) {
+            if (!this.modelSelectorButton) {
+                return;
+            }
+            this.modelSelectorButton.innerHTML = this._labelForModel(modelId);
+            this.modelSelectorButton.title = modelId ? ('Selected model: ' + modelId) : 'Select chat model';
+        },
+
+        _sanitizeRagSelection: function(ragDb) {
+            if (!ragDb || ragDb === 'null' || ragDb === 'none' || ragDb === 'bvbrc_helpdesk') {
+                return null;
+            }
+            return ragDb;
+        },
+
+        _labelForRag: function(ragDb) {
+            if (!ragDb) {
+                return 'RAG';
+            }
+            var shortName = ragDb.split('/').reverse()[0] || ragDb;
+            if (shortName.length > 18) {
+                shortName = shortName.substring(0, 18) + '...';
+            }
+            return shortName;
+        },
+
+        _updateRagButtonLabel: function(ragDb) {
+            if (!this.ragSelectorButton) {
+                return;
+            }
+            var sanitized = this._sanitizeRagSelection(ragDb);
+            this.ragSelectorButton.innerHTML = this._labelForRag(sanitized);
+            this.ragSelectorButton.title = sanitized ? ('Selected RAG DB: ' + sanitized) : 'Select RAG database';
+        },
+
+        _refreshModelSelectorState: function() {
+            var modelList = this._getAvailableModelList();
+            if (modelList.length === 0 && this.copilotApi && this.copilotApi.getModelList) {
+                this.copilotApi.getModelList().then(lang.hitch(this, function(modelsAndRag) {
+                    var fetchedModels = this._parseListPayload(modelsAndRag.model_list || modelsAndRag.models);
+                    var fetchedRags = this._parseListPayload(modelsAndRag.rag_list || modelsAndRag.vdb_list);
+                    if (window && window.App) {
+                        window.App.copilotModelList = fetchedModels.slice();
+                        window.App.copilotRagList = fetchedRags.slice();
+                    }
+                    if (this.optionsBar) {
+                        this.optionsBar.modelList = fetchedModels.slice();
+                        this.optionsBar.ragList = fetchedRags.slice();
+                    }
+                    this._refreshModelSelectorState();
+                    this._refreshRagSelectorState();
+                })).catch(function() {
+                    // Keep button usable even if model fetch fails.
+                });
+            }
+            if (this.modelSelectorDropdown) {
+                this.modelSelectorDropdown.innerHTML = '';
+                if (modelList.length === 0) {
+                    var noOption = document.createElement('option');
+                    noOption.value = '';
+                    noOption.text = 'No models available';
+                    this.modelSelectorDropdown.add(noOption);
+                    this.modelSelectorDropdown.disabled = true;
+                } else {
+                    this.modelSelectorDropdown.disabled = false;
+                    modelList.forEach(function(modelEntry) {
+                        if (!modelEntry || !modelEntry.model) {
+                            return;
+                        }
+                        var option = document.createElement('option');
+                        option.value = modelEntry.model;
+                        option.text = modelEntry.model.split('/').reverse()[0];
+                        this.modelSelectorDropdown.add(option);
+                    }, this);
+                }
+            }
+            var selectedModel = this._getCurrentSelectedModel(modelList);
+            if (selectedModel && window && window.App) {
+                window.App.copilotSelectedModel = selectedModel;
+            }
+            if (this.modelSelectorDropdown && selectedModel) {
+                this.modelSelectorDropdown.value = selectedModel;
+            }
+            this._updateModelButtonLabel(selectedModel);
+        },
+
+        _refreshRagSelectorState: function() {
+            var ragList = this._getAvailableRagList();
+            if (ragList.length === 0 && this.copilotApi && this.copilotApi.getModelList) {
+                this.copilotApi.getModelList().then(lang.hitch(this, function(modelsAndRag) {
+                    var fetchedModels = this._parseListPayload(modelsAndRag.model_list || modelsAndRag.models);
+                    var fetchedRags = this._parseListPayload(modelsAndRag.rag_list || modelsAndRag.vdb_list);
+                    if (window && window.App) {
+                        window.App.copilotModelList = fetchedModels.slice();
+                        window.App.copilotRagList = fetchedRags.slice();
+                    }
+                    if (this.optionsBar) {
+                        this.optionsBar.modelList = fetchedModels.slice();
+                        this.optionsBar.ragList = fetchedRags.slice();
+                    }
+                    this._refreshRagSelectorState();
+                })).catch(function() {
+                    // Keep button usable even if RAG fetch fails.
+                });
+            }
+
+            if (this.ragSelectorDropdown) {
+                this.ragSelectorDropdown.innerHTML = '';
+                var noneOption = document.createElement('option');
+                noneOption.value = 'null';
+                noneOption.text = 'None';
+                this.ragSelectorDropdown.add(noneOption);
+
+                var seenNames = {};
+                ragList.forEach(function(ragEntry) {
+                    if (!ragEntry || !ragEntry.name) {
+                        return;
+                    }
+                    var ragName = ragEntry.name;
+                    // Filter out bvbrc_helpdesk
+                    if (ragName === 'bvbrc_helpdesk') {
+                        return;
+                    }
+                    if (seenNames[ragName]) {
+                        return;
+                    }
+                    seenNames[ragName] = true;
+                    var option = document.createElement('option');
+                    option.value = ragName;
+                    option.text = ragName.split('/').reverse()[0];
+                    this.ragSelectorDropdown.add(option);
+                }, this);
+                this.ragSelectorDropdown.disabled = false;
+            }
+
+            var selectedRagDb = this._sanitizeRagSelection(window && window.App ? window.App.copilotSelectedRagDb : null);
+            if (this.ragSelectorDropdown) {
+                this.ragSelectorDropdown.value = selectedRagDb || 'null';
+            }
+            if (window && window.App) {
+                window.App.copilotSelectedRagDb = selectedRagDb;
+            }
+            this._updateRagButtonLabel(selectedRagDb);
+        },
+
+        createModelSelectorDialog: function() {
+            var modelDialog = new TooltipDialog({
+                style: 'width: 300px;',
+                content: document.createElement('div')
+            });
+            var modelLabel = document.createElement('div');
+            modelLabel.textContent = 'Model:';
+            modelLabel.style.marginBottom = '6px';
+            modelDialog.containerNode.appendChild(modelLabel);
+
+            var selectElement = document.createElement('select');
+            selectElement.className = 'copilotSelectElement';
+            selectElement.style.width = '100%';
+            selectElement.addEventListener('change', lang.hitch(this, function(evt) {
+                var selectedModel = evt.target.value;
+                if (!selectedModel) {
+                    return;
+                }
+                if (window && window.App) {
+                    window.App.copilotSelectedModel = selectedModel;
+                }
+                this._updateModelButtonLabel(selectedModel);
+                topic.publish('ChatModel', selectedModel);
+            }));
+            modelDialog.containerNode.appendChild(selectElement);
+            this.modelSelectorDropdown = selectElement;
+
+            return modelDialog;
+        },
+
+        createRagSelectorDialog: function() {
+            var ragDialog = new TooltipDialog({
+                style: 'width: 300px;',
+                content: document.createElement('div')
+            });
+            var ragLabel = document.createElement('div');
+            ragLabel.textContent = 'RAG Database:';
+            ragLabel.style.marginBottom = '6px';
+            ragDialog.containerNode.appendChild(ragLabel);
+
+            var selectElement = document.createElement('select');
+            selectElement.className = 'copilotSelectElement';
+            selectElement.style.width = '100%';
+            selectElement.addEventListener('change', lang.hitch(this, function(evt) {
+                var rawSelected = evt.target.value;
+                var selectedRagDb = this._sanitizeRagSelection(rawSelected);
+                if (window && window.App) {
+                    window.App.copilotSelectedRagDb = selectedRagDb;
+                }
+                this._updateRagButtonLabel(selectedRagDb);
+                topic.publish('ChatRagDb', selectedRagDb || 'null');
+            }));
+            ragDialog.containerNode.appendChild(selectElement);
+            this.ragSelectorDropdown = selectElement;
+
+            return ragDialog;
+        },
+
         /**
          * Creates the advanced options dialog with text size functionality
          */
@@ -353,6 +716,30 @@ define([
                     topic.publish('chatTextSizeChanged', initialTextSize);
                 }, 100);
             }
+
+            // Add Show Tabs on/off control
+            var tabsVisibilityContainer = domConstruct.create('div', {
+                style: 'display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px; border-top: 1px solid #e5e7eb;'
+            }, advancedOptionsDialog.containerNode);
+
+            domConstruct.create('span', {
+                innerHTML: 'Show Tabs:',
+                style: 'white-space: nowrap; font-size: 14px;'
+            }, tabsVisibilityContainer);
+
+            var savedShowTabs = localStorage.getItem('copilot-show-panel-tabs');
+            var initialShowTabs = savedShowTabs !== null ? savedShowTabs === 'true' : true;
+
+            var showTabsInput = domConstruct.create('input', {
+                type: 'checkbox',
+                checked: initialShowTabs
+            }, tabsVisibilityContainer);
+
+            on(showTabsInput, 'change', function(evt) {
+                var isVisible = Boolean(evt.target.checked);
+                localStorage.setItem('copilot-show-panel-tabs', isVisible ? 'true' : 'false');
+                topic.publish('copilotPanelTabsVisibilityChanged', isVisible);
+            });
 
             return advancedOptionsDialog;
         },
@@ -756,12 +1143,17 @@ define([
                             this.controllerPanel.changeSessionId(options.currentSessionId);
                         }
                         console.log('get session messages', options.currentSessionId);
-                        options.copilotApi.getSessionMessages(options.currentSessionId).then(lang.hitch(this, function(messages) {
-                            if (messages.messages && messages.messages.length > 0 && messages.messages[0].messages) {
-                                var messages = messages.messages[0].messages;
-                                this.controllerPanel.chatStore.addMessages(messages);
-                                this.controllerPanel.displayWidget.showMessages(messages);
+                        options.copilotApi.getSessionMessages(options.currentSessionId).then(lang.hitch(this, function(res) {
+                            var messages = [];
+                            if (res && Array.isArray(res.messages)) {
+                                if (res.messages.length > 0 && Array.isArray(res.messages[0] && res.messages[0].messages)) {
+                                    messages = res.messages[0].messages; // Legacy nested API shape
+                                } else {
+                                    messages = res.messages; // Current flat API shape
+                                }
                             }
+                            this.controllerPanel.chatStore.addMessages(messages);
+                            this.controllerPanel.displayWidget.showMessages(messages);
                         }));
 
                         // Set the title if available
@@ -795,6 +1187,15 @@ define([
             // Force resize of panel after placement
             setTimeout(lang.hitch(this, function() {
                 this.layoutContainer.resize();
+                try {
+                    var savedTabs = localStorage.getItem('copilot-show-panel-tabs');
+                    var showTabs = savedTabs !== null ? savedTabs === 'true' : true;
+                    if (this.controllerPanel && this.controllerPanel.displayWidget && this.controllerPanel.displayWidget.setTabsVisible) {
+                        this.controllerPanel.displayWidget.setTabsVisible(showTabs);
+                    }
+                } catch (e) {
+                    // Ignore storage failures.
+                }
                 if (options.onResize) {
                     options.onResize(this.controllerPanel.getSessionId());
                 }
