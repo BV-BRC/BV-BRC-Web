@@ -734,7 +734,7 @@ define([
       }, messageDiv);
 
       domConstruct.create('div', {
-        class: 'workspace-summary-text',
+        class: 'tool-card-status-row workspace-summary-text',
         innerHTML: this.escapeHtml(summaryText)
       }, container);
 
@@ -743,7 +743,20 @@ define([
         innerHTML: 'Path: ' + this.escapeHtml(pathValue)
       }, container);
 
-      // "Open in Workspace Browser" links to a directory path - hide when search=true (search results have no single browsable path)
+      var openButton = domConstruct.create('button', {
+        type: 'button',
+        class: 'workspace-summary-open-button',
+        innerHTML: 'Open Workspace Tab'
+      }, container);
+      on(openButton, 'click', lang.hitch(this, function() {
+        topic.publish('CopilotWorkspaceBrowseOpen', {
+          uiPayload: payload,
+          tool_call: this.message.tool_call || payload.call || null,
+          chatSummary: summaryText,
+          uiAction: this.message.uiAction || 'open_workspace_tab'
+        });
+      }));
+
       if (workspaceBrowserUrl && !isSearch) {
         domConstruct.create('a', {
           class: 'workspace-summary-link',
@@ -753,21 +766,6 @@ define([
           innerHTML: 'Open in Workspace Browser'
         }, container);
       }
-
-      var openButton = domConstruct.create('button', {
-        type: 'button',
-        class: 'workspace-summary-open-button',
-        innerHTML: 'Open Workspace Tab'
-      }, container);
-
-      on(openButton, 'click', lang.hitch(this, function() {
-        topic.publish('CopilotWorkspaceBrowseOpen', {
-          uiPayload: payload,
-          tool_call: this.message.tool_call || payload.call || null,
-          chatSummary: summaryText,
-          uiAction: this.message.uiAction || 'open_workspace_tab'
-        });
-      }));
     },
 
     renderJobsBrowseSummaryWidget: function(messageDiv) {
@@ -781,24 +779,26 @@ define([
       }, messageDiv);
 
       domConstruct.create('div', {
-        class: 'workspace-summary-text',
+        class: 'tool-card-status-row workspace-summary-text',
         innerHTML: this.escapeHtml(summaryText)
       }, container);
 
+      var detailParts = [];
       if (payload.sort_by || payload.sort_dir || payload.status || payload.service) {
-        var details = [];
         if (payload.sort_by) {
-          details.push('Sort: ' + payload.sort_by + (payload.sort_dir ? ' (' + payload.sort_dir + ')' : ''));
+          detailParts.push('Sort: ' + payload.sort_by + (payload.sort_dir ? ' (' + payload.sort_dir + ')' : ''));
         }
         if (payload.status) {
-          details.push('Status: ' + payload.status);
+          detailParts.push('Status: ' + payload.status);
         }
         if (payload.service) {
-          details.push('Service: ' + payload.service);
+          detailParts.push('Service: ' + payload.service);
         }
+      }
+      if (detailParts.length) {
         domConstruct.create('div', {
           class: 'workspace-summary-path',
-          innerHTML: this.escapeHtml(details.join(' | '))
+          innerHTML: this.escapeHtml(detailParts.join(' • '))
         }, container);
       }
 
@@ -807,7 +807,6 @@ define([
         class: 'workspace-summary-open-button',
         innerHTML: 'Open Jobs Tab'
       }, container);
-
       on(openButton, 'click', lang.hitch(this, function() {
         topic.publish('CopilotJobsBrowseOpen', {
           uiPayload: payload,
@@ -826,7 +825,12 @@ define([
       }, messageDiv);
 
       domConstruct.create('div', {
-        class: 'workspace-summary-text',
+        class: 'tool-card-status-row workspace-summary-text',
+        innerHTML: 'RAG results ready'
+      }, container);
+
+      domConstruct.create('div', {
+        class: 'workspace-summary-path',
         innerHTML: this.escapeHtml(cardText)
       }, container);
 
@@ -835,7 +839,6 @@ define([
         class: 'workspace-summary-open-button',
         innerHTML: 'View Retrieved Chunks'
       }, container);
-
       on(openButton, 'click', lang.hitch(this, function() {
         this.showRagChunksDialog(openButton);
       }));
@@ -944,29 +947,35 @@ define([
       var fileType = metadata.type || 'unknown';
 
       var container = domConstruct.create('div', {
-        class: 'file-metadata-card'
+        class: 'workspace-summary-card file-metadata-card'
       }, messageDiv);
 
-      // File info header - show immediately (non-blocking)
       domConstruct.create('div', {
-        class: 'file-metadata-header',
-        innerHTML: '<strong>' + this.escapeHtml(fileName) + '</strong>'
+        class: 'tool-card-status-row workspace-summary-text',
+        innerHTML: this.escapeHtml(fileName)
       }, container);
 
       domConstruct.create('div', {
-        class: 'file-metadata-type',
-        innerHTML: 'Type: ' + this.escapeHtml(fileType)
-      }, container);
-
-      domConstruct.create('div', {
-        class: 'file-metadata-path',
-        innerHTML: 'Path: ' + this.escapeHtml(filePath)
+        class: 'workspace-summary-path',
+        innerHTML: this.escapeHtml(fileType + ' • ' + filePath)
       }, container);
 
       // Download link container - will be populated async
       var downloadContainer = domConstruct.create('div', {
         class: 'file-metadata-download'
       }, container);
+
+      var parentPath = filePath.split('/').slice(0, -1).join('/') || '/';
+      var workspaceDirUrl = this._buildWorkspaceBrowserUrl(parentPath);
+      if (workspaceDirUrl) {
+        domConstruct.create('a', {
+          class: 'workspace-summary-link',
+          href: workspaceDirUrl,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+          innerHTML: 'Open in Workspace Browser'
+        }, container);
+      }
 
       // Preview container - will be populated async
       var previewContainer = domConstruct.create('div', {
@@ -984,9 +993,10 @@ define([
           if (urls && urls.length > 0) {
             var downloadUrl = urls[0];
 
-            // Add download link
+            // Add download link (primary CTA)
             domConstruct.empty(downloadContainer);
             domConstruct.create('a', {
+              class: 'workspace-summary-link',
               href: downloadUrl,
               target: '_blank',
               download: fileName,
@@ -1294,8 +1304,6 @@ define([
       if (rqlReplay == null) {
         return;
       }
-      // Extract RQL query URL from multiple possible locations
-      // debugger;
       var rqlQueryUrl = toolArgs.data_api_base_url ? toolArgs.data_api_base_url : "https://www.bv-brc.org/api-bulk";
       rqlQueryUrl = rqlQueryUrl + '/' + toolArgs.collection + '/';
       if (rqlReplay[0] === '?') {
@@ -1315,13 +1323,20 @@ define([
         inferCollectionFromUrl(rqlQueryUrl) ||
         'query_collection';
 
+      var rows = Array.isArray(data.resultRows) ? data.resultRows : [];
+      var rowCount = summary.total !== undefined && summary.total !== null
+        ? summary.total
+        : rows.length;
+      var collectionLabel = (collection || '').replace(/_/g, ' ');
+      var detailLine = collectionLabel;
+
       var payload = {
         queryParameters: params,
         collection: collection,
         rqlQueryUrl: rqlQueryUrl,
-        rqlReplay: rqlReplay,  // Include full rql_replay object
+        rqlReplay: rqlReplay,
         summary: summary,
-        rows: Array.isArray(data.resultRows) ? data.resultRows : []
+        rows: rows
       };
 
       var container = domConstruct.create('div', {
@@ -1329,32 +1344,37 @@ define([
       }, messageDiv);
 
       domConstruct.create('div', {
-        class: 'workspace-summary-text',
-        innerHTML: this.escapeHtml(summaryText)
+        class: 'tool-card-status-row workspace-summary-text',
+        innerHTML: 'Review your results'
       }, container);
 
-      var detailBits = [];
-      if (collection) {
-        detailBits.push('Collection: ' + collection);
-      }
-      if (summary.dataType) {
-        detailBits.push('Type: ' + summary.dataType);
-      }
-      if (summary.sizeFormatted) {
-        detailBits.push('Size: ' + summary.sizeFormatted);
-      }
-      if (detailBits.length) {
-        domConstruct.create('div', {
-          class: 'workspace-summary-path',
-          innerHTML: this.escapeHtml(detailBits.join(' | '))
+      domConstruct.create('div', {
+        class: 'workspace-summary-path',
+        innerHTML: this.escapeHtml(detailLine)
+      }, container);
+
+      var data_tab_list = ['genome', 'taxonomy', 'genome_feature'];
+      if (toolArgs.collection && data_tab_list.includes(toolArgs.collection.toLowerCase())) {
+        var dataTabButton = domConstruct.create('button', {
+          type: 'button',
+          class: 'workspace-summary-open-button',
+          innerHTML: 'Open in Chat'
         }, container);
+        on(dataTabButton, 'click', lang.hitch(this, function() {
+          topic.publish('CopilotDataBrowseOpen', {
+            uiPayload: payload,
+            tool_call: toolCall,
+            chatSummary: summaryText,
+            uiAction: 'open_data_tab'
+          });
+        }));
       }
 
       if (rqlQueryUrl) {
         var queryLink = domConstruct.create('a', {
           class: 'workspace-summary-link',
           href: '#',
-          innerHTML: 'Open Query Link'
+          innerHTML: 'Open in Website'
         }, container);
         on(queryLink, 'click', lang.hitch(this, function(evt) {
           evt.preventDefault();
@@ -1367,23 +1387,27 @@ define([
         }));
       }
 
-      var data_tab_list = ['genome', 'taxonomy', 'genome_feature'];
-      if (toolArgs.collection && data_tab_list.includes(toolArgs.collection.toLowerCase())) {
-        var dataTabButton = domConstruct.create('button', {
-          type: 'button',
-          class: 'workspace-summary-open-button',
-          innerHTML: 'Open Data Tab'
-        }, container);
-        on(dataTabButton, 'click', lang.hitch(this, function() {
-          topic.publish('CopilotDataBrowseOpen', {
-            uiPayload: payload,
-            tool_call: toolCall,
-            chatSummary: summaryText,
-            uiAction: 'open_data_tab'
-          });
-        }));
+      if (collection && collection.toLowerCase() === 'genome_feature' && rqlQueryUrl) {
+        var authParam = (window.App && window.App.authorizationToken)
+          ? '&http_authorization=' + encodeURIComponent(window.App.authorizationToken)
+          : '';
+        var sep = rqlQueryUrl.indexOf('?') >= 0 ? '&' : '?';
+        ['Download DNA Fasta', 'Download Protein Fasta'].forEach(function(linkLabel, idx) {
+          var acceptType = idx === 0 ? 'application/dna+fasta' : 'application/protein+fasta';
+          var fastaLink = domConstruct.create('a', {
+            class: 'workspace-summary-link',
+            href: '#',
+            innerHTML: linkLabel
+          }, container);
+          on(fastaLink, 'click', lang.hitch(this, function(evt) {
+            evt.preventDefault();
+            var downloadUrl = rqlQueryUrl + sep + 'http_accept=' + encodeURIComponent(acceptType) + '&http_download=true';
+            downloadUrl = downloadUrl + "&limit(100000)&sort(+patric_id)";
+            downloadUrl = downloadUrl + authParam;
+            window.open(downloadUrl, '_blank', 'noopener,noreferrer');
+          }));
+        });
       }
-
     },
 
     /**

@@ -1029,6 +1029,7 @@
   overflow-y: auto;
 }
 
+/* Tool card: original style with row/data/link layout */
 .workspace-summary-card {
   border: 1px solid #dbeafe;
   border-radius: 8px;
@@ -1038,10 +1039,14 @@
   min-width: 260px;
 }
 
+.workspace-summary-card .tool-card-status-row {
+  margin-bottom: 4px;
+}
+
 .workspace-summary-text {
   font-weight: 600;
   color: #1e3a8a;
-  margin-bottom: 4px;
+  margin: 0;
 }
 
 .workspace-summary-path {
@@ -1051,56 +1056,49 @@
   overflow-wrap: anywhere;
 }
 
+.workspace-summary-link {
+  display: block;
+  color: #1e3a8a;
+  text-decoration: none;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.workspace-summary-link:hover {
+  text-decoration: underline;
+}
+
 .workspace-summary-open-button {
+  display: block;
   padding: 6px 12px;
   border: 1px solid #60a5fa;
   border-radius: 6px;
   background-color: #dbeafe;
   color: #1e3a8a;
   cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 500;
+  text-align: left;
+  margin-bottom: 6px;
+  text-decoration: none;
 }
 
 .workspace-summary-open-button:hover {
   background-color: #bfdbfe;
 }
 
-/* File metadata card styling */
-.file-metadata-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 16px;
-  background-color: #f9fafb;
-  margin: 8px 0;
-}
-
-.file-metadata-header {
-  font-size: 16px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 8px;
-}
-
-.file-metadata-type,
-.file-metadata-path {
-  font-size: 13px;
-  color: #6b7280;
-  margin: 4px 0;
-}
-
+/* File metadata card - extends workspace-summary-card layout */
 .file-metadata-download {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #e5e7eb;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  margin-bottom: 6px;
 }
 
 .file-metadata-download a {
-  color: #2563eb;
-  text-decoration: none;
-  font-size: 14px;
-}
-
-.file-metadata-download a:hover {
-  text-decoration: underline;
+  color: inherit;
+  font-size: inherit;
 }
 
 .file-preview-container {
