@@ -4,19 +4,10 @@
         padding: 14px 16px;
       }
 
-      .cardGrid {
-        column-gap: 14px;
-        column-count: 1;
-      }
-
-      @media (min-width: 900px) {
-        .cardGrid { column-count: 2; }
-      }
-
       .treeGroup {
         display: inline-block;
         width: 100%;
-        margin: 0 0 18px;
+        margin: 0 0 28px;
 
         break-inside: avoid;
         -webkit-column-break-inside: avoid;
@@ -64,6 +55,13 @@
         .treeList { grid-template-columns: repeat(4, minmax(240px, 1fr)); }
       }
 
+      @media (min-width: 1400px) {
+        .treeList {
+          grid-template-columns: repeat(5, minmax(240px, 1fr));
+          max-width: 1400px;
+        }
+      }
+
       .treeCard {
         display: block;
         border: 1px solid #d1d5db;
@@ -73,11 +71,11 @@
       }
 
       .treeCardHeader {
-        padding: 10px 12px;
+        padding: 8px 12px;
         font-weight: 700;
-        font-size: 15px;
+        font-size: 14px;
         line-height: 1.2;
-        background: #e7f0ef;
+        background: #eaf3f2;
         border-bottom: 1px solid #d1d5db;
       }
 
