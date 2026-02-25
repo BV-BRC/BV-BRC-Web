@@ -1102,8 +1102,8 @@ define([
         // Capture additional error details for display (only for non-disconnect errors)
         if (!isStreamDisconnect && (error.response || error.status || error.statusText || error.stack)) {
           errorDetails = {
-            status: error.status || error.response?.status,
-            statusText: error.statusText || error.response?.statusText,
+            status: error.status || (error.response && error.response.status),
+            statusText: error.statusText || (error.response && error.response.statusText),
             stack: error.stack
           };
         }
