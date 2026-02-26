@@ -272,6 +272,19 @@ define([
         _self.navigate(newState);
       });
 
+      function workflowRouteHandler(params) {
+        var newState = populateState(params);
+        var path = params.params[0] || '/';
+        newState.widgetClass = 'p3/widget/workflow/WorkflowManager';
+        newState.value = path;
+        newState.set = 'path';
+        newState.requireAuth = true;
+        newState.pageTitle = 'Workflows | BV-BRC';
+        _self.navigate(newState);
+      }
+      Router.register('/workflows(/.*)', workflowRouteHandler);
+      Router.register('/app/workflows(/.*)', workflowRouteHandler);
+
       Router.register('/search/(.*)', function (params, oldPath, newPath, state) {
         // console.log("Search Route: ", arguments);
         var newState = getState(params, oldPath);
