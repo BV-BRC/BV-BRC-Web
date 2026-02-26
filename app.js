@@ -143,6 +143,8 @@ app.use(function (req, res, next) {
     workflow_url: config.get('workflow_url') || false,
     copilotEnablePublications: config.get('copilotEnablePublications') || false,
     copilotEnableEnhancePrompt: config.get('copilotEnableEnhancePrompt') || false,
+    copilotEnableModelSelector: config.get('copilotEnableModelSelector') || false,
+    copilotEnableRagSelector: config.get('copilotEnableRagSelector') || false,
     copilotEnableShowPromptDetails: config.get('copilotEnableShowPromptDetails') || false,
     localStorageCheckInterval: config.get('localStorageCheckInterval')
   };
