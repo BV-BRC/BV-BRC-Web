@@ -27,6 +27,8 @@ const defaults = {
   'copilotEnablePublications': false,
   'copilotEnableEnhancePrompt': false,
   'copilotEnableShowPromptDetails': false,
+  'copilotEnableModelSelector': false,
+  'copilotEnableRagSelector': false,
   localStorageCheckInterval: 86400,
   enableDevTools: false,
   reportProblemEmailAddress: 'help@bv-brc.org',

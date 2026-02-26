@@ -111,11 +111,19 @@ define([
         ragSelectorDialog: null,
         ragSelectorDropdown: null,
         ragSelectorButton: null,
+        showModelSelector: false,
+        showRagSelector: false,
 
         constructor: function(options) {
             this.inherited(arguments);
             if (options) {
                 lang.mixin(this, options);
+            }
+            if (window.App && window.App.copilotEnableModelSelector !== undefined) {
+                this.showModelSelector = window.App.copilotEnableModelSelector === 'true';
+            }
+            if (window.App && window.App.copilotEnableRagSelector !== undefined) {
+                this.showRagSelector = window.App.copilotEnableRagSelector === 'true';
             }
         },
 
@@ -182,69 +190,73 @@ define([
                 domClass.add(reportIssueButton, 'active');
             }));
 
-            // Add model selector button
-            this.modelSelectorButton = domConstruct.create('div', {
-                className: 'copilotChatModelButton',
-                innerHTML: 'Model',
-                title: 'Select chat model'
-            }, leftButtonContainer);
-            this.modelSelectorDialog = this.createModelSelectorDialog();
-            this._refreshModelSelectorState();
-
-            on(this.modelSelectorButton, 'click', lang.hitch(this, function(evt) {
-                evt.stopPropagation();
-                if (!this.modelSelectorDialog) {
-                    return;
-                }
-                if (this.modelSelectorDialog.visible) {
-                    popup.close(this.modelSelectorDialog);
-                    this.modelSelectorDialog.visible = false;
-                    domClass.remove(this.modelSelectorButton, 'active');
-                    return;
-                }
+            if (this.showModelSelector) {
+                // Add model selector button
+                this.modelSelectorButton = domConstruct.create('div', {
+                    className: 'copilotChatModelButton',
+                    innerHTML: 'Model',
+                    title: 'Select chat model'
+                }, leftButtonContainer);
+                this.modelSelectorDialog = this.createModelSelectorDialog();
                 this._refreshModelSelectorState();
-                setTimeout(lang.hitch(this, function() {
-                    popup.open({
-                        popup: this.modelSelectorDialog,
-                        around: this.modelSelectorButton,
-                        orient: ['below']
-                    });
-                    this.modelSelectorDialog.visible = true;
-                    domClass.add(this.modelSelectorButton, 'active');
-                }), 100);
-            }));
 
-            // Add RAG selector button
-            this.ragSelectorButton = domConstruct.create('div', {
-                className: 'copilotChatRagButton',
-                innerHTML: 'RAG',
-                title: 'Select RAG database'
-            }, leftButtonContainer);
-            this.ragSelectorDialog = this.createRagSelectorDialog();
-            this._refreshRagSelectorState();
+                on(this.modelSelectorButton, 'click', lang.hitch(this, function(evt) {
+                    evt.stopPropagation();
+                    if (!this.modelSelectorDialog) {
+                        return;
+                    }
+                    if (this.modelSelectorDialog.visible) {
+                        popup.close(this.modelSelectorDialog);
+                        this.modelSelectorDialog.visible = false;
+                        domClass.remove(this.modelSelectorButton, 'active');
+                        return;
+                    }
+                    this._refreshModelSelectorState();
+                    setTimeout(lang.hitch(this, function() {
+                        popup.open({
+                            popup: this.modelSelectorDialog,
+                            around: this.modelSelectorButton,
+                            orient: ['below']
+                        });
+                        this.modelSelectorDialog.visible = true;
+                        domClass.add(this.modelSelectorButton, 'active');
+                    }), 100);
+                }));
+            }
 
-            on(this.ragSelectorButton, 'click', lang.hitch(this, function(evt) {
-                evt.stopPropagation();
-                if (!this.ragSelectorDialog) {
-                    return;
-                }
-                if (this.ragSelectorDialog.visible) {
-                    popup.close(this.ragSelectorDialog);
-                    this.ragSelectorDialog.visible = false;
-                    domClass.remove(this.ragSelectorButton, 'active');
-                    return;
-                }
+            if (this.showRagSelector) {
+                // Add RAG selector button
+                this.ragSelectorButton = domConstruct.create('div', {
+                    className: 'copilotChatRagButton',
+                    innerHTML: 'RAG',
+                    title: 'Select RAG database'
+                }, leftButtonContainer);
+                this.ragSelectorDialog = this.createRagSelectorDialog();
                 this._refreshRagSelectorState();
-                setTimeout(lang.hitch(this, function() {
-                    popup.open({
-                        popup: this.ragSelectorDialog,
-                        around: this.ragSelectorButton,
-                        orient: ['below']
-                    });
-                    this.ragSelectorDialog.visible = true;
-                    domClass.add(this.ragSelectorButton, 'active');
-                }), 100);
-            }));
+
+                on(this.ragSelectorButton, 'click', lang.hitch(this, function(evt) {
+                    evt.stopPropagation();
+                    if (!this.ragSelectorDialog) {
+                        return;
+                    }
+                    if (this.ragSelectorDialog.visible) {
+                        popup.close(this.ragSelectorDialog);
+                        this.ragSelectorDialog.visible = false;
+                        domClass.remove(this.ragSelectorButton, 'active');
+                        return;
+                    }
+                    this._refreshRagSelectorState();
+                    setTimeout(lang.hitch(this, function() {
+                        popup.open({
+                            popup: this.ragSelectorDialog,
+                            around: this.ragSelectorButton,
+                            orient: ['below']
+                        });
+                        this.ragSelectorDialog.visible = true;
+                        domClass.add(this.ragSelectorButton, 'active');
+                    }), 100);
+                }));
+            }
 
             // Handle clicks outside dialog to close it
             document.addEventListener('click', lang.hitch(this, function(event) {
@@ -255,16 +267,16 @@ define([
                     this.advancedOptionsDialog.visible = false;
                     domClass.remove(advancedOptionsButton, 'active');
                 }
-                if (this.modelSelectorDialog && this.modelSelectorDialog._rendered &&
+                if (this.modelSelectorButton && this.modelSelectorDialog && this.modelSelectorDialog._rendered &&
                     !this.modelSelectorDialog.domNode.contains(event.target) &&
-                    this.modelSelectorButton && !this.modelSelectorButton.contains(event.target)) {
+                    !this.modelSelectorButton.contains(event.target)) {
                     popup.close(this.modelSelectorDialog);
                     this.modelSelectorDialog.visible = false;
                     domClass.remove(this.modelSelectorButton, 'active');
                 }
-                if (this.ragSelectorDialog && this.ragSelectorDialog._rendered &&
+                if (this.ragSelectorButton && this.ragSelectorDialog && this.ragSelectorDialog._rendered &&
                     !this.ragSelectorDialog.domNode.contains(event.target) &&
-                    this.ragSelectorButton && !this.ragSelectorButton.contains(event.target)) {
+                    !this.ragSelectorButton.contains(event.target)) {
                     popup.close(this.ragSelectorDialog);
                     this.ragSelectorDialog.visible = false;
                     domClass.remove(this.ragSelectorButton, 'active');
@@ -497,6 +509,9 @@ define([
         },
 
         _refreshModelSelectorState: function() {
+            if (!this.modelSelectorButton) {
+                return;
+            }
             var modelList = this._getAvailableModelList();
             if (modelList.length === 0 && this.copilotApi && this.copilotApi.getModelList) {
                 this.copilotApi.getModelList().then(lang.hitch(this, function(modelsAndRag) {
@@ -510,8 +525,12 @@ define([
                         this.optionsBar.modelList = fetchedModels.slice();
                         this.optionsBar.ragList = fetchedRags.slice();
                     }
-                    this._refreshModelSelectorState();
-                    this._refreshRagSelectorState();
+                    if (this.modelSelectorButton) {
+                        this._refreshModelSelectorState();
+                    }
+                    if (this.ragSelectorButton) {
+                        this._refreshRagSelectorState();
+                    }
                 })).catch(function() {
                     // Keep button usable even if model fetch fails.
                 });
@@ -548,6 +567,9 @@ define([
         },
 
         _refreshRagSelectorState: function() {
+            if (!this.ragSelectorButton) {
+                return;
+            }
             var ragList = this._getAvailableRagList();
             if (ragList.length === 0 && this.copilotApi && this.copilotApi.getModelList) {
                 this.copilotApi.getModelList().then(lang.hitch(this, function(modelsAndRag) {
@@ -561,7 +583,9 @@ define([
                         this.optionsBar.modelList = fetchedModels.slice();
                         this.optionsBar.ragList = fetchedRags.slice();
                     }
-                    this._refreshRagSelectorState();
+                    if (this.ragSelectorButton) {
+                        this._refreshRagSelectorState();
+                    }
                 })).catch(function() {
                     // Keep button usable even if RAG fetch fails.
                 });
