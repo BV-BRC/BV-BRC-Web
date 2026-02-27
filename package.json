@@ -1,6 +1,6 @@
 {
   "name": "p3-web",
-  "version": "3.56.67",
+  "version": "3.57.10",
   "private": true,
   "scripts": {
     "start": "node ./bin/p3-web",
@@ -41,6 +41,7 @@
     "jbrowse": "github:GMOD/jbrowse#759433708fe59e2c0a09e781cf93dc7ec4670461",
     "jquery": "^3.7.1",
     "markdown-it": "^14.1.0",
+    "markdown-it-link-attributes": "^4.0.1",
     "morgan": "^1.10.0",
     "MultiBigWig": "github:BV-BRC/multibigwig#master",
     "nconf": "^0.12.1",

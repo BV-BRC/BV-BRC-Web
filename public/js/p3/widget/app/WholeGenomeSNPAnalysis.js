@@ -60,18 +60,18 @@ define([
 
     onAddGenomeGroup: function () {
       console.log("Fetching genome group path...");
-      
+
       var path = this.input_genome_group;
       if (!path) {
         console.warn("No genome group path provided.");
         return;
       }
-    
+
       when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
         if (typeof res.data === "string") {
           res.data = JSON.parse(res.data);
         }
-    
+
         // rewritten to not use chaining; crashed the optimizer
         if (res && res.data && res.data.id_list && res.data.id_list.genome_id) {
           var newGenomeIds = res.data.id_list.genome_id;
@@ -79,7 +79,7 @@ define([
         }
       }));
     },
-    
+
 
         // function is from phylogenetic tree
         //  TO DO update to check genome
@@ -144,12 +144,21 @@ define([
           var sessionStorage = window.sessionStorage;
           if (sessionStorage.hasOwnProperty(rerun_key)) {
             var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-            this.setStatusFormFill(job_data);
-            this.setAlphabetFormFill(job_data);
-            this.setUnalignedInputFormFill(job_data);
-            this.setReferenceFormFill(job_data);
-            // this.addSequenceFilesFormFill(job_data);
-            this.setAlignerFormFill(job_data);
+
+            // Populate genome group selector
+            if (job_data.input_genome_group) {
+              var genome_group = job_data.input_genome_group;
+              if (Array.isArray(genome_group)) {
+                genome_group = genome_group[0];
+              }
+              this.input_genome_group.set('value', genome_group);
+            }
+
+            // Populate majority SNP threshold
+            if (job_data['majority-threshold']) {
+              this['majority-threshold'].set('value', job_data['majority-threshold']);
+            }
+
             this.form_flag = true;
           }
         } catch (error) {

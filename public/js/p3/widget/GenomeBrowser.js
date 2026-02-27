@@ -716,7 +716,13 @@ define([
         var thisB = this;
 
         console.log('refSeqs url: ', this.config.refSeqs.url);
-        request(this.config.refSeqs.url, { handleAs: 'text' })
+        request(this.config.refSeqs.url, {
+          handleAs: 'text',
+          headers: {
+            'X-Requested-With': null,
+            Authorization: (window.App.authorizationToken || '')
+          }
+        })
           .then(
             lang.hitch(this, function (o) {
               var refseqConfig = dojo.fromJson(o);

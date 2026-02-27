@@ -1,0 +1,2626 @@
+{
+  "bacterial_genome_tree": [
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    },
+    {
+      "name": "genome_ids",
+      "label": "Genome Ids",
+      "type": "textarea",
+      "help": "Main genomes for analysis (optional)",
+      "options": []
+    },
+    {
+      "name": "genome_groups",
+      "label": "Genome Groups",
+      "type": "text",
+      "help": "Main genome groups (optional)",
+      "options": []
+    },
+    {
+      "name": "optional_genome_ids",
+      "label": "Optional Genome Ids",
+      "type": "textarea",
+      "help": "Optional genomes (not penalized for missing genes) (optional)",
+      "options": []
+    },
+    {
+      "name": "genome_metadata_fields",
+      "label": "Genome Metadata Fields",
+      "type": "text",
+      "help": "Genome metadata fields to retrieve (optional)",
+      "options": []
+    },
+    {
+      "name": "number_of_genes",
+      "label": "Number Of Genes",
+      "type": "number",
+      "help": "Desired number of genes for analysis (default: 20)",
+      "options": []
+    },
+    {
+      "name": "bootstraps",
+      "label": "Bootstraps",
+      "type": "number",
+      "help": "Number of bootstrap replicates (default: 100)",
+      "options": []
+    },
+    {
+      "name": "max_genomes_missing",
+      "label": "Max Genomes Missing",
+      "type": "number",
+      "help": "Max main genomes missing from any PGFam (default: 0)",
+      "options": []
+    },
+    {
+      "name": "max_allowed_dups",
+      "label": "Max Allowed Dups",
+      "type": "number",
+      "help": "Max duplications allowed for main genomes (default: 0)",
+      "options": []
+    }
+  ],
+  "blast": [
+    {
+      "name": "input_type",
+      "label": "Input Type",
+      "type": "text",
+      "help": "Input sequence type - dna/aa (required)",
+      "options": []
+    },
+    {
+      "name": "input_source",
+      "label": "Input Source",
+      "type": "text",
+      "help": "Input source type (required)",
+      "options": []
+    },
+    {
+      "name": "input_fasta_data",
+      "label": "Input Fasta Data",
+      "type": "text",
+      "help": "Input sequences in FASTA format (optional)",
+      "options": []
+    },
+    {
+      "name": "input_id_list",
+      "label": "Input Id List",
+      "type": "textarea",
+      "help": "Input sequence identifiers (DEPRICATED)",
+      "options": []
+    },
+    {
+      "name": "input_fasta_file",
+      "label": "Input Fasta File",
+      "type": "text",
+      "help": "Input FASTA file (optional)",
+      "options": []
+    },
+    {
+      "name": "input_feature_group",
+      "label": "Input Feature Group",
+      "type": "text",
+      "help": "Input feature group (optional)",
+      "options": []
+    },
+    {
+      "name": "input_genome_group",
+      "label": "Input Genome Group",
+      "type": "text",
+      "help": "Input genome group (optional)",
+      "options": []
+    },
+    {
+      "name": "db_type",
+      "label": "Db Type",
+      "type": "text",
+      "help": "Database type - faa/ffn/frn/fna (required)",
+      "options": []
+    },
+    {
+      "name": "db_source",
+      "label": "Db Source",
+      "type": "text",
+      "help": "Database source type (required)",
+      "options": []
+    },
+    {
+      "name": "db_fasta_data",
+      "label": "Db Fasta Data",
+      "type": "text",
+      "help": "Database sequences in FASTA format (DEPRICATED)",
+      "options": []
+    },
+    {
+      "name": "db_fasta_file",
+      "label": "Db Fasta File",
+      "type": "text",
+      "help": "Database FASTA file (optional)",
+      "options": []
+    },
+    {
+      "name": "db_id_list",
+      "label": "Db Id List",
+      "type": "textarea",
+      "help": "Database sequence identifiers (DEPRICATED)",
+      "options": []
+    },
+    {
+      "name": "db_feature_group",
+      "label": "Db Feature Group",
+      "type": "text",
+      "help": "Database feature group (optional)",
+      "options": []
+    },
+    {
+      "name": "db_genome_group",
+      "label": "Db Genome Group",
+      "type": "text",
+      "help": "Database genome group (optional)",
+      "options": []
+    },
+    {
+      "name": "db_genome_list",
+      "label": "Db Genome List",
+      "type": "textarea",
+      "help": "Database genome list (optional)",
+      "options": []
+    },
+    {
+      "name": "db_taxon_list",
+      "label": "Db Taxon List",
+      "type": "textarea",
+      "help": "Database taxon list (optional)",
+      "options": []
+    },
+    {
+      "name": "db_precomputed_database",
+      "label": "Db Precomputed Database",
+      "type": "text",
+      "help": "Precomputed database name (optional)",
+      "options": []
+    },
+    {
+      "name": "blast_program",
+      "label": "Blast Program",
+      "type": "text",
+      "help": "BLAST program to use (optional)",
+      "options": []
+    },
+    {
+      "name": "blast_evalue_cutoff",
+      "label": "Blast Evalue Cutoff",
+      "type": "number",
+      "help": "E-value cutoff (default: 1e-5)",
+      "options": []
+    },
+    {
+      "name": "blast_max_hits",
+      "label": "Blast Max Hits",
+      "type": "number",
+      "help": "Maximum hits to return (default: 300)",
+      "options": []
+    },
+    {
+      "name": "blast_min_coverage",
+      "label": "Blast Min Coverage",
+      "type": "text",
+      "help": "Minimum coverage percentage (DEPRICATED)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "comparative_systems": [
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    },
+    {
+      "name": "genome_ids",
+      "label": "Genome Ids",
+      "type": "textarea",
+      "help": "Genome IDs for comparison (optional)",
+      "options": []
+    },
+    {
+      "name": "genome_groups",
+      "label": "Genome Groups",
+      "type": "text",
+      "help": "Genome groups for comparison (optional)",
+      "options": []
+    }
+  ],
+  "comprehensive_genome_analysis": [
+    {
+      "name": "input_type",
+      "label": "Input Type",
+      "type": "text",
+      "help": "Input type - reads/contigs (required)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    },
+    {
+      "name": "paired_end_libs",
+      "label": "Paired End Libs",
+      "type": "textarea",
+      "help": "Paired-end read libraries (optional)",
+      "options": []
+    },
+    {
+      "name": "single_end_libs",
+      "label": "Single End Libs",
+      "type": "textarea",
+      "help": "Single-end read libraries (optional)",
+      "options": []
+    },
+    {
+      "name": "srr_ids",
+      "label": "Srr Ids",
+      "type": "text",
+      "help": "SRA Run IDs - array of strings (optional)",
+      "options": []
+    },
+    {
+      "name": "recipe",
+      "label": "Recipe",
+      "type": "text",
+      "help": "Assembly algorithm (auto, unicycler, flye, meta-flye, canu, spades, meta-spades, plasmid-spades, single-cell, megahit)",
+      "options": []
+    },
+    {
+      "name": "scientific_name",
+      "label": "Scientific Name",
+      "type": "text",
+      "help": "Scientific name of organism (required)",
+      "options": []
+    },
+    {
+      "name": "taxonomy_id",
+      "label": "Taxonomy Id",
+      "type": "text",
+      "help": "NCBI Taxonomy ID (required)",
+      "options": []
+    },
+    {
+      "name": "domain",
+      "label": "Domain",
+      "type": "text",
+      "help": "Organism domain - Bacteria/Archaea/Viruses/auto (required)",
+      "options": []
+    },
+    {
+      "name": "my_label",
+      "label": "My Label",
+      "type": "text",
+      "help": "User-defined label for the job (optional)",
+      "options": []
+    },
+    {
+      "name": "genome_size",
+      "label": "Genome Size",
+      "type": "text",
+      "help": "Expected genome size in base pairs (optional)",
+      "options": []
+    },
+    {
+      "name": "expected_genome_size",
+      "label": "Expected Genome Size",
+      "type": "text",
+      "help": "Expected genome size with units (optional)",
+      "options": []
+    },
+    {
+      "name": "genome_size_units",
+      "label": "Genome Size Units",
+      "type": "text",
+      "help": "Units for genome size - K/M/G (optional)",
+      "options": []
+    },
+    {
+      "name": "normalize",
+      "label": "Normalize",
+      "type": "checkbox",
+      "help": "Normalize read coverage (optional, boolean)",
+      "options": []
+    },
+    {
+      "name": "trim",
+      "label": "Trim",
+      "type": "checkbox",
+      "help": "Trim reads (optional, boolean)",
+      "options": []
+    },
+    {
+      "name": "coverage",
+      "label": "Coverage",
+      "type": "text",
+      "help": "Target coverage depth (optional, integer)",
+      "options": []
+    },
+    {
+      "name": "racon_iter",
+      "label": "Racon Iter",
+      "type": "text",
+      "help": "Number of Racon polishing iterations (optional, integer)",
+      "options": []
+    },
+    {
+      "name": "pilon_iter",
+      "label": "Pilon Iter",
+      "type": "text",
+      "help": "Number of Pilon polishing iterations (optional, integer)",
+      "options": []
+    },
+    {
+      "name": "min_contig_len",
+      "label": "Min Contig Len",
+      "type": "text",
+      "help": "Minimum contig length to retain (optional, integer)",
+      "options": []
+    },
+    {
+      "name": "min_contig_cov",
+      "label": "Min Contig Cov",
+      "type": "text",
+      "help": "Minimum contig coverage to retain (optional, integer)",
+      "options": []
+    },
+    {
+      "name": "filtlong",
+      "label": "Filtlong",
+      "type": "checkbox",
+      "help": "Use Filtlong for read filtering (optional, boolean)",
+      "options": []
+    },
+    {
+      "name": "target_depth",
+      "label": "Target Depth",
+      "type": "text",
+      "help": "Target read depth for subsampling (optional, integer)",
+      "options": []
+    }
+  ],
+  "core_genome_mlst": [
+    {
+      "name": "input_genome_type",
+      "label": "Input Genome Type",
+      "type": "text",
+      "help": "Input type - genome_group/genome_fasta (required, default: genome_group)",
+      "options": []
+    },
+    {
+      "name": "analysis_type",
+      "label": "Analysis Type",
+      "type": "text",
+      "help": "Analysis type - chewbbaca (required, default: chewbbaca)",
+      "options": []
+    },
+    {
+      "name": "input_genome_group",
+      "label": "Input Genome Group",
+      "type": "text",
+      "help": "Genome group name (optional)",
+      "options": []
+    },
+    {
+      "name": "input_genome_fasta",
+      "label": "Input Genome Fasta",
+      "type": "text",
+      "help": "Genome FASTA data (optional)",
+      "options": []
+    },
+    {
+      "name": "schema_location",
+      "label": "Schema Location",
+      "type": "text",
+      "help": "Path to schema directory (optional)",
+      "options": []
+    },
+    {
+      "name": "input_schema_selection",
+      "label": "Input Schema Selection",
+      "type": "text",
+      "help": "Schema species selection (required)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "date": [
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "The path for the output files (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "The name of the output file (required)",
+      "options": []
+    }
+  ],
+  "docking": [
+    {
+      "name": "protein_input_type",
+      "label": "Protein Input Type",
+      "type": "text",
+      "help": "Protein input type (required)",
+      "options": []
+    },
+    {
+      "name": "input_pdb",
+      "label": "Input Pdb",
+      "type": "text",
+      "help": "PDB structure IDs (optional)",
+      "options": []
+    },
+    {
+      "name": "user_pdb_file",
+      "label": "User Pdb File",
+      "type": "text",
+      "help": "User-provided PDB files (optional)",
+      "options": []
+    },
+    {
+      "name": "ligand_library_type",
+      "label": "Ligand Library Type",
+      "type": "text",
+      "help": "Ligand library type (required)",
+      "options": []
+    },
+    {
+      "name": "ligand_named_library",
+      "label": "Ligand Named Library",
+      "type": "text",
+      "help": "Named ligand library (optional)",
+      "options": []
+    },
+    {
+      "name": "ligand_smiles_list",
+      "label": "Ligand Smiles List",
+      "type": "textarea",
+      "help": "SMILES string list (optional)",
+      "options": []
+    },
+    {
+      "name": "ligand_ws_file",
+      "label": "Ligand Ws File",
+      "type": "text",
+      "help": "Workspace ligand file (optional)",
+      "options": []
+    },
+    {
+      "name": "top_n",
+      "label": "Top N",
+      "type": "text",
+      "help": "Number of top results to return (optional)",
+      "options": []
+    },
+    {
+      "name": "batch_size",
+      "label": "Batch Size",
+      "type": "number",
+      "help": "Batch processing size (default: 10)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "expression_import": [
+    {
+      "name": "xfile",
+      "label": "Xfile",
+      "type": "text",
+      "help": "Experiment data file with comparison values (required)",
+      "options": []
+    },
+    {
+      "name": "mfile",
+      "label": "Mfile",
+      "type": "text",
+      "help": "Metadata template file (optional)",
+      "options": []
+    },
+    {
+      "name": "ustring",
+      "label": "Ustring",
+      "type": "text",
+      "help": "User information JSON string (required)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (optional)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (optional)",
+      "options": []
+    }
+  ],
+  "fastqutils": [
+    {
+      "name": "reference_genome_id",
+      "label": "Reference Genome Id",
+      "type": "text",
+      "help": "Reference genome ID for QC (optional)",
+      "options": []
+    },
+    {
+      "name": "paired_end_libs",
+      "label": "Paired End Libs",
+      "type": "textarea",
+      "help": "Paired-end read libraries (optional)",
+      "options": []
+    },
+    {
+      "name": "single_end_libs",
+      "label": "Single End Libs",
+      "type": "textarea",
+      "help": "Single-end read libraries (optional)",
+      "options": []
+    },
+    {
+      "name": "srr_libs",
+      "label": "Srr Libs",
+      "type": "textarea",
+      "help": "SRA datasets (optional)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    },
+    {
+      "name": "recipe",
+      "label": "Recipe",
+      "type": "text",
+      "help": "QC recipe options (optional)",
+      "options": []
+    }
+  ],
+  "gene_tree": [
+    {
+      "name": "sequences",
+      "label": "Sequences",
+      "type": "text",
+      "help": "Sequence data inputs (required)",
+      "options": []
+    },
+    {
+      "name": "alignment_program",
+      "label": "Alignment Program",
+      "type": "text",
+      "help": "Alignment program - muscle/mafft (optional)",
+      "options": []
+    },
+    {
+      "name": "trim_threshold",
+      "label": "Trim Threshold",
+      "type": "text",
+      "help": "Alignment end-trimming threshold (optional)",
+      "options": []
+    },
+    {
+      "name": "gap_threshold",
+      "label": "Gap Threshold",
+      "type": "text",
+      "help": "Delete gappy sequences threshold (optional)",
+      "options": []
+    },
+    {
+      "name": "alphabet",
+      "label": "Alphabet",
+      "type": "text",
+      "help": "Sequence alphabet - DNA/Protein (required)",
+      "options": []
+    },
+    {
+      "name": "substitution_model",
+      "label": "Substitution Model",
+      "type": "text",
+      "help": "Substitution model (optional)",
+      "options": []
+    },
+    {
+      "name": "bootstrap",
+      "label": "Bootstrap",
+      "type": "text",
+      "help": "Number of bootstrap replicates (optional)",
+      "options": []
+    },
+    {
+      "name": "recipe",
+      "label": "Recipe",
+      "type": "text",
+      "help": "Tree construction recipe - RAxML/PhyML/FastTree (default: RAxML)",
+      "options": []
+    },
+    {
+      "name": "tree_type",
+      "label": "Tree Type",
+      "type": "text",
+      "help": "Type of tree - viral_genome/gene (optional)",
+      "options": []
+    },
+    {
+      "name": "feature_metadata_fields",
+      "label": "Feature Metadata Fields",
+      "type": "text",
+      "help": "Gene metadata fields (optional)",
+      "options": []
+    },
+    {
+      "name": "genome_metadata_fields",
+      "label": "Genome Metadata Fields",
+      "type": "text",
+      "help": "Genome metadata fields (optional)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "genome_alignment": [
+    {
+      "name": "genome_ids",
+      "label": "Genome Ids",
+      "type": "textarea",
+      "help": "Genome IDs for alignment (required)",
+      "options": []
+    },
+    {
+      "name": "recipe",
+      "label": "Recipe",
+      "type": "text",
+      "help": "Alignment algorithm - progressiveMauve (default: progressiveMauve)",
+      "options": []
+    },
+    {
+      "name": "seedWeight",
+      "label": "Seedweight",
+      "type": "text",
+      "help": "Seed weight for alignment (optional)",
+      "options": []
+    },
+    {
+      "name": "maxGappedAlignerLength",
+      "label": "Maxgappedalignerlength",
+      "type": "text",
+      "help": "Maximum gapped aligner length (optional)",
+      "options": []
+    },
+    {
+      "name": "maxBreakpointDistanceScale",
+      "label": "Maxbreakpointdistancescale",
+      "type": "text",
+      "help": "Maximum breakpoint distance scale (optional)",
+      "options": []
+    },
+    {
+      "name": "conservationDistanceScale",
+      "label": "Conservationdistancescale",
+      "type": "text",
+      "help": "Conservation distance scale (optional)",
+      "options": []
+    },
+    {
+      "name": "weight",
+      "label": "Weight",
+      "type": "text",
+      "help": "Alignment weight (optional)",
+      "options": []
+    },
+    {
+      "name": "minScaledPenalty",
+      "label": "Minscaledpenalty",
+      "type": "text",
+      "help": "Minimum scaled penalty (optional)",
+      "options": []
+    },
+    {
+      "name": "hmmPGoHomologous",
+      "label": "Hmmpgohomologous",
+      "type": "text",
+      "help": "HMM probability for homologous regions (optional)",
+      "options": []
+    },
+    {
+      "name": "hmmPGoUnrelated",
+      "label": "Hmmpgounrelated",
+      "type": "text",
+      "help": "HMM probability for unrelated regions (optional)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "genome_annotation": [
+    {
+      "name": "contigs",
+      "label": "Contigs",
+      "type": "text",
+      "help": "Input contig file (required)",
+      "options": []
+    },
+    {
+      "name": "scientific_name",
+      "label": "Scientific Name",
+      "type": "text",
+      "help": "Scientific name of organism (required)",
+      "options": []
+    },
+    {
+      "name": "recipie",
+      "label": "Recipie",
+      "type": "text",
+      "help": "Specifies a non-default annotation recipe (optional)",
+      "options": []
+    },
+    {
+      "name": "taxonomy_id",
+      "label": "Taxonomy Id",
+      "type": "text",
+      "help": "NCBI Taxonomy ID (optional)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "genome_assembly": [
+    {
+      "name": "paired_end_libs",
+      "label": "Paired End Libs",
+      "type": "textarea",
+      "help": "Paired-end read libraries (optional)",
+      "options": []
+    },
+    {
+      "name": "single_end_libs",
+      "label": "Single End Libs",
+      "type": "textarea",
+      "help": "Single-end read libraries (optional)",
+      "options": []
+    },
+    {
+      "name": "srr_ids",
+      "label": "Srr Ids",
+      "type": "text",
+      "help": "SRA Run IDs (optional)",
+      "options": []
+    },
+    {
+      "name": "recipe",
+      "label": "Recipe",
+      "type": "text",
+      "help": "Assembly algorithm (default: 'auto')",
+      "options": []
+    },
+    {
+      "name": "options",
+      "label": "Options",
+      "type": "text",
+      "help": "auto, unicycler, flye, meta-flye, canu, spades, meta-spades, plasmid-spades, single-cell, megahit",
+      "options": []
+    },
+    {
+      "name": "trim",
+      "label": "Trim",
+      "type": "checkbox",
+      "help": "Trim reads before assembly (default: False)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "influenza_ha_subtype_conversion": [
+    {
+      "name": "input_source",
+      "label": "Input Source",
+      "type": "text",
+      "help": "Input source type - feature_list/fasta_data/fasta_file/feature_group (required)",
+      "options": []
+    },
+    {
+      "name": "input_fasta_data",
+      "label": "Input Fasta Data",
+      "type": "text",
+      "help": "Input sequences in FASTA format (optional)",
+      "options": []
+    },
+    {
+      "name": "input_fasta_file",
+      "label": "Input Fasta File",
+      "type": "text",
+      "help": "Input FASTA file (optional)",
+      "options": []
+    },
+    {
+      "name": "input_feature_group",
+      "label": "Input Feature Group",
+      "type": "text",
+      "help": "Input feature group (optional)",
+      "options": []
+    },
+    {
+      "name": "input_feature_list",
+      "label": "Input Feature List",
+      "type": "textarea",
+      "help": "Input feature ID list (optional)",
+      "options": []
+    },
+    {
+      "name": "types",
+      "label": "Types",
+      "type": "text",
+      "help": "Selected types in the submission (required)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "metacats": [
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    },
+    {
+      "name": "p_value",
+      "label": "P Value",
+      "type": "number",
+      "help": "P-value threshold for significance (default: 0.05)",
+      "options": []
+    },
+    {
+      "name": "year_ranges",
+      "label": "Year Ranges",
+      "type": "text",
+      "help": "Year range filters (optional)",
+      "options": []
+    },
+    {
+      "name": "metadata_group",
+      "label": "Metadata Group",
+      "type": "text",
+      "help": "Metadata group for analysis (optional)",
+      "options": []
+    },
+    {
+      "name": "input_type",
+      "label": "Input Type",
+      "type": "text",
+      "help": "Input data type (optional)",
+      "options": []
+    },
+    {
+      "name": "alphabet",
+      "label": "Alphabet",
+      "type": "text",
+      "help": "Sequence alphabet - na (default: na)",
+      "options": []
+    },
+    {
+      "name": "groups",
+      "label": "Groups",
+      "type": "text",
+      "help": "Analysis groups (optional)",
+      "options": []
+    },
+    {
+      "name": "alignment_file",
+      "label": "Alignment File",
+      "type": "text",
+      "help": "Input alignment file (optional)",
+      "options": []
+    },
+    {
+      "name": "group_file",
+      "label": "Group File",
+      "type": "text",
+      "help": "Group definition file (optional)",
+      "options": []
+    },
+    {
+      "name": "alignment_type",
+      "label": "Alignment Type",
+      "type": "text",
+      "help": "Alignment type (optional)",
+      "options": []
+    },
+    {
+      "name": "auto_groups",
+      "label": "Auto Groups",
+      "type": "text",
+      "help": "Automatic group detection (optional)",
+      "options": []
+    }
+  ],
+  "metagenomic_binning": [
+    {
+      "name": "paired_end_libs",
+      "label": "Paired End Libs",
+      "type": "textarea",
+      "help": "Paired-end read libraries (optional)",
+      "options": []
+    },
+    {
+      "name": "Example",
+      "label": "Example",
+      "type": "text",
+      "help": "[{\"read1\": \"/path/to/read1.fastq.gz\", \"read2\": \"/path/to/read2.fastq.gz\"}]",
+      "options": []
+    },
+    {
+      "name": "single_end_libs",
+      "label": "Single End Libs",
+      "type": "textarea",
+      "help": "Single-end read libraries (optional)",
+      "options": []
+    },
+    {
+      "name": "Example",
+      "label": "Example",
+      "type": "text",
+      "help": "[{\"read\": \"/path/to/read.fastq.gz\"}]",
+      "options": []
+    },
+    {
+      "name": "srr_ids",
+      "label": "Srr Ids",
+      "type": "text",
+      "help": "List of SRA Run IDs (optional)",
+      "options": []
+    },
+    {
+      "name": "contigs",
+      "label": "Contigs",
+      "type": "text",
+      "help": "Input contig file (optional)",
+      "options": []
+    },
+    {
+      "name": "genome_group",
+      "label": "Genome Group",
+      "type": "text",
+      "help": "Output genome group name (optional)",
+      "options": []
+    },
+    {
+      "name": "skip_indexing",
+      "label": "Skip Indexing",
+      "type": "checkbox",
+      "help": "Don't index bins in Solr (default: False)",
+      "options": []
+    },
+    {
+      "name": "recipe",
+      "label": "Recipe",
+      "type": "text",
+      "help": "Custom annotation recipe (optional)",
+      "options": []
+    },
+    {
+      "name": "viral_recipe",
+      "label": "Viral Recipe",
+      "type": "text",
+      "help": "Custom viral annotation recipe (optional)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    },
+    {
+      "name": "force_local_assembly",
+      "label": "Force Local Assembly",
+      "type": "checkbox",
+      "help": "Force local assembly (required, default: False)",
+      "options": []
+    },
+    {
+      "name": "force_inline_annotation",
+      "label": "Force Inline Annotation",
+      "type": "checkbox",
+      "help": "Force inline annotation (default: True)",
+      "options": []
+    },
+    {
+      "name": "perform_bacterial_binning",
+      "label": "Perform Bacterial Binning",
+      "type": "checkbox",
+      "help": "Perform bacterial binning (default: True)",
+      "options": []
+    },
+    {
+      "name": "perform_viral_binning",
+      "label": "Perform Viral Binning",
+      "type": "checkbox",
+      "help": "Perform viral binning (default: False)",
+      "options": []
+    },
+    {
+      "name": "perform_viral_annotation",
+      "label": "Perform Viral Annotation",
+      "type": "checkbox",
+      "help": "Perform viral annotation (default: False)",
+      "options": []
+    },
+    {
+      "name": "perform_bacterial_annotation",
+      "label": "Perform Bacterial Annotation",
+      "type": "checkbox",
+      "help": "Perform bacterial annotation (default: True)",
+      "options": []
+    },
+    {
+      "name": "assembler",
+      "label": "Assembler",
+      "type": "text",
+      "help": "Assembler to use (optional)",
+      "options": []
+    },
+    {
+      "name": "danglen",
+      "label": "Danglen",
+      "type": "number",
+      "help": "Dangling element length (default: 50)",
+      "options": []
+    },
+    {
+      "name": "min_contig_len",
+      "label": "Min Contig Len",
+      "type": "number",
+      "help": "Minimum contig length (default: 400)",
+      "options": []
+    },
+    {
+      "name": "min_contig_cov",
+      "label": "Min Contig Cov",
+      "type": "number",
+      "help": "Minimum contig coverage (default: 4.0)",
+      "options": []
+    }
+  ],
+  "metagenomic_read_mapping": [
+    {
+      "name": "gene_set_type",
+      "label": "Gene Set Type",
+      "type": "text",
+      "help": "Input type - predefined_list/fasta_file/feature_group (required)",
+      "options": []
+    },
+    {
+      "name": "gene_set_name",
+      "label": "Gene Set Name",
+      "type": "text",
+      "help": "Predefined gene set - VFDB/CARD/feature_group/fasta_file (optional)",
+      "options": []
+    },
+    {
+      "name": "gene_set_fasta",
+      "label": "Gene Set Fasta",
+      "type": "text",
+      "help": "Gene set FASTA data (optional)",
+      "options": []
+    },
+    {
+      "name": "gene_set_feature_group",
+      "label": "Gene Set Feature Group",
+      "type": "text",
+      "help": "Gene set feature group name (optional)",
+      "options": []
+    },
+    {
+      "name": "paired_end_libs",
+      "label": "Paired End Libs",
+      "type": "textarea",
+      "help": "Paired-end read libraries (optional)",
+      "options": []
+    },
+    {
+      "name": "Example",
+      "label": "Example",
+      "type": "text",
+      "help": "[{\"read1\": \"/path/to/read1.fastq.gz\", \"read2\": \"/path/to/read2.fastq.gz\"}]",
+      "options": []
+    },
+    {
+      "name": "single_end_libs",
+      "label": "Single End Libs",
+      "type": "textarea",
+      "help": "Single-end read libraries (optional)",
+      "options": []
+    },
+    {
+      "name": "Example",
+      "label": "Example",
+      "type": "text",
+      "help": "[{\"read\": \"/path/to/read.fastq.gz\"}]",
+      "options": []
+    },
+    {
+      "name": "srr_ids",
+      "label": "Srr Ids",
+      "type": "text",
+      "help": "List of SRA Run IDs (optional)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "msa_snp_analysis": [
+    {
+      "name": "input_status",
+      "label": "Input Status",
+      "type": "text",
+      "help": "Input alignment status - unaligned/aligned (default: unaligned)",
+      "options": []
+    },
+    {
+      "name": "input_type",
+      "label": "Input Type",
+      "type": "text",
+      "help": "Input type - input_group (default: input_group)",
+      "options": []
+    },
+    {
+      "name": "fasta_files",
+      "label": "Fasta Files",
+      "type": "text",
+      "help": "FASTA file inputs (optional)",
+      "options": []
+    },
+    {
+      "name": "select_genomegroup",
+      "label": "Select Genomegroup",
+      "type": "text",
+      "help": "Genome group selection (optional)",
+      "options": []
+    },
+    {
+      "name": "feature_groups",
+      "label": "Feature Groups",
+      "type": "text",
+      "help": "Feature group selection (optional) - **MUST be a list of workspace paths** (e.g., [\"/USERNAME/home/Feature Groups/group_name1\", \"/USERNAME/home/Feature Groups/group_name2\"])",
+      "options": []
+    },
+    {
+      "name": "feature_list",
+      "label": "Feature List",
+      "type": "textarea",
+      "help": "Feature list selection (optional)",
+      "options": []
+    },
+    {
+      "name": "genome_list",
+      "label": "Genome List",
+      "type": "textarea",
+      "help": "Genome list selection (optional)",
+      "options": []
+    },
+    {
+      "name": "aligner",
+      "label": "Aligner",
+      "type": "text",
+      "help": "Alignment program - Muscle/MAFFT/ClustalW (default: Muscle)",
+      "options": []
+    },
+    {
+      "name": "alphabet",
+      "label": "Alphabet",
+      "type": "text",
+      "help": "Sequence alphabet - dna/aa (default: dna)",
+      "options": []
+    },
+    {
+      "name": "fasta_keyboard_input",
+      "label": "Fasta Keyboard Input",
+      "type": "text",
+      "help": "Direct FASTA input (optional)",
+      "options": []
+    },
+    {
+      "name": "ref_type",
+      "label": "Ref Type",
+      "type": "text",
+      "help": "Reference type - none (default: none)",
+      "options": []
+    },
+    {
+      "name": "strategy",
+      "label": "Strategy",
+      "type": "text",
+      "help": "Analysis strategy - auto (default: auto)",
+      "options": []
+    },
+    {
+      "name": "ref_string",
+      "label": "Ref String",
+      "type": "text",
+      "help": "Reference sequence string (optional)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "primer_design": [
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "input_type",
+      "label": "Input Type",
+      "type": "text",
+      "help": "Input format - sequence_text/workplace_fasta/database_id (required)",
+      "options": []
+    },
+    {
+      "name": "sequence_input",
+      "label": "Sequence Input",
+      "type": "text",
+      "help": "DNA sequence data (required)",
+      "options": []
+    },
+    {
+      "name": "SEQUENCE_ID",
+      "label": "Sequence Id",
+      "type": "text",
+      "help": "Sequence identifier (optional)",
+      "options": []
+    },
+    {
+      "name": "SEQUENCE_TARGET",
+      "label": "Sequence Target",
+      "type": "text",
+      "help": "Amplification target region (optional)",
+      "options": []
+    },
+    {
+      "name": "SEQUENCE_INCLUDED_REGION",
+      "label": "Sequence Included Region",
+      "type": "text",
+      "help": "Region where primers can be picked (optional)",
+      "options": []
+    },
+    {
+      "name": "SEQUENCE_EXCLUDED_REGION",
+      "label": "Sequence Excluded Region",
+      "type": "text",
+      "help": "Region where primers cannot overlap (optional)",
+      "options": []
+    },
+    {
+      "name": "SEQUENCE_OVERLAP_JUNCTION_LIST",
+      "label": "Sequence Overlap Junction List",
+      "type": "text",
+      "help": "Junction regions primers must flank (optional)",
+      "options": []
+    },
+    {
+      "name": "PRIMER_PICK_INTERNAL_OLIGO",
+      "label": "Primer Pick Internal Oligo",
+      "type": "text",
+      "help": "Pick internal oligo/probe (optional)",
+      "options": []
+    },
+    {
+      "name": "PRIMER_PRODUCT_SIZE_RANGE",
+      "label": "Primer Product Size Range",
+      "type": "text",
+      "help": "Min/max product size (optional)",
+      "options": []
+    },
+    {
+      "name": "PRIMER_NUM_RETURN",
+      "label": "Primer Num Return",
+      "type": "text",
+      "help": "Max number of primer pairs to report (optional)",
+      "options": []
+    },
+    {
+      "name": "PRIMER_MIN_SIZE",
+      "label": "Primer Min Size",
+      "type": "text",
+      "help": "Minimum primer length (optional)",
+      "options": []
+    },
+    {
+      "name": "PRIMER_OPT_SIZE",
+      "label": "Primer Opt Size",
+      "type": "text",
+      "help": "Optimal primer length (optional)",
+      "options": []
+    },
+    {
+      "name": "PRIMER_MAX_SIZE",
+      "label": "Primer Max Size",
+      "type": "text",
+      "help": "Maximum primer length (optional)",
+      "options": []
+    },
+    {
+      "name": "PRIMER_MAX_TM",
+      "label": "Primer Max Tm",
+      "type": "text",
+      "help": "Maximum primer melting temperature (optional)",
+      "options": []
+    },
+    {
+      "name": "PRIMER_MIN_TM",
+      "label": "Primer Min Tm",
+      "type": "text",
+      "help": "Minimum primer melting temperature (optional)",
+      "options": []
+    },
+    {
+      "name": "PRIMER_OPT_TM",
+      "label": "Primer Opt Tm",
+      "type": "text",
+      "help": "Optimal primer melting temperature (optional)",
+      "options": []
+    },
+    {
+      "name": "PRIMER_PAIR_MAX_DIFF_TM",
+      "label": "Primer Pair Max Diff Tm",
+      "type": "text",
+      "help": "Max Tm difference of paired primers (optional)",
+      "options": []
+    },
+    {
+      "name": "PRIMER_MAX_GC",
+      "label": "Primer Max Gc",
+      "type": "text",
+      "help": "Maximum primer GC percentage (optional)",
+      "options": []
+    },
+    {
+      "name": "PRIMER_MIN_GC",
+      "label": "Primer Min Gc",
+      "type": "text",
+      "help": "Minimum primer GC percentage (optional)",
+      "options": []
+    },
+    {
+      "name": "PRIMER_OPT_GC",
+      "label": "Primer Opt Gc",
+      "type": "text",
+      "help": "Optimal primer GC percentage (optional)",
+      "options": []
+    },
+    {
+      "name": "PRIMER_SALT_MONOVALENT",
+      "label": "Primer Salt Monovalent",
+      "type": "text",
+      "help": "Monovalent cation concentration (mM) (optional)",
+      "options": []
+    },
+    {
+      "name": "PRIMER_SALT_DIVALENT",
+      "label": "Primer Salt Divalent",
+      "type": "text",
+      "help": "Divalent cation concentration (mM) (optional)",
+      "options": []
+    },
+    {
+      "name": "PRIMER_DNA_CONC",
+      "label": "Primer Dna Conc",
+      "type": "text",
+      "help": "Annealing oligo concentration (nM) (optional)",
+      "options": []
+    },
+    {
+      "name": "PRIMER_DNTP_CONC",
+      "label": "Primer Dntp Conc",
+      "type": "text",
+      "help": "dNTP concentration (mM) (optional)",
+      "options": []
+    }
+  ],
+  "proteome_comparison": [
+    {
+      "name": "genome_ids",
+      "label": "Genome Ids",
+      "type": "textarea",
+      "help": "Reference genome IDs (optional)",
+      "options": []
+    },
+    {
+      "name": "user_genomes",
+      "label": "User Genomes",
+      "type": "text",
+      "help": "User-provided genome IDs (optional)",
+      "options": []
+    },
+    {
+      "name": "user_feature_groups",
+      "label": "User Feature Groups",
+      "type": "text",
+      "help": "User-provided feature groups (optional)",
+      "options": []
+    },
+    {
+      "name": "reference_genome_index",
+      "label": "Reference Genome Index",
+      "type": "number",
+      "help": "Index of reference genome (default: 1)",
+      "options": []
+    },
+    {
+      "name": "min_seq_cov",
+      "label": "Min Seq Cov",
+      "type": "number",
+      "help": "Minimum sequence coverage (default: 0.30)",
+      "options": []
+    },
+    {
+      "name": "max_e_val",
+      "label": "Max E Val",
+      "type": "number",
+      "help": "Maximum E-value threshold (default: 1e-5)",
+      "options": []
+    },
+    {
+      "name": "min_ident",
+      "label": "Min Ident",
+      "type": "number",
+      "help": "Minimum identity threshold (default: 0.1)",
+      "options": []
+    },
+    {
+      "name": "min_positives",
+      "label": "Min Positives",
+      "type": "number",
+      "help": "Minimum positives threshold (default: 0.2)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "rnaseq": [
+    {
+      "name": "experimental_conditions",
+      "label": "Experimental Conditions",
+      "type": "textarea",
+      "help": "Experimental conditions for analysis (optional)",
+      "options": []
+    },
+    {
+      "name": "contrasts",
+      "label": "Contrasts",
+      "type": "textarea",
+      "help": "Statistical contrasts for comparison (optional)",
+      "options": []
+    },
+    {
+      "name": "strand_specific",
+      "label": "Strand Specific",
+      "type": "checkbox",
+      "help": "Strand-specific reads (default: True)",
+      "options": []
+    },
+    {
+      "name": "paired_end_libs",
+      "label": "Paired End Libs",
+      "type": "textarea",
+      "help": "Paired-end read libraries with sample IDs (optional)",
+      "options": []
+    },
+    {
+      "name": "single_end_libs",
+      "label": "Single End Libs",
+      "type": "textarea",
+      "help": "Single-end read libraries with sample IDs (optional)",
+      "options": []
+    },
+    {
+      "name": "srr_libs",
+      "label": "Srr Libs",
+      "type": "textarea",
+      "help": "SRA datasets with sample IDs (optional)",
+      "options": []
+    },
+    {
+      "name": "reference_genome_id",
+      "label": "Reference Genome Id",
+      "type": "text",
+      "help": "Reference genome ID (required)",
+      "options": []
+    },
+    {
+      "name": "genome_type",
+      "label": "Genome Type",
+      "type": "text",
+      "help": "Genome type - bacteria/host (required)",
+      "options": []
+    },
+    {
+      "name": "recipe",
+      "label": "Recipe",
+      "type": "text",
+      "help": "Analysis recipe - HTSeq-DESeq/cufflinks/Host (required, default: HTSeq-DESeq)",
+      "options": []
+    },
+    {
+      "name": "host_ftp",
+      "label": "Host Ftp",
+      "type": "text",
+      "help": "Host FTP prefix for file access (optional)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    },
+    {
+      "name": "trimming",
+      "label": "Trimming",
+      "type": "checkbox",
+      "help": "Run TrimGalore on reads (default: False)",
+      "options": []
+    },
+    {
+      "name": "unit_test",
+      "label": "Unit Test",
+      "type": "text",
+      "help": "Unit test JSON file path (optional)",
+      "options": []
+    },
+    {
+      "name": "skip_sampling",
+      "label": "Skip Sampling",
+      "type": "text",
+      "help": "Skip sampling step in alignment (optional)",
+      "options": []
+    }
+  ],
+  "sars_genome_analysis": [
+    {
+      "name": "paired_end_libs",
+      "label": "Paired End Libs",
+      "type": "textarea",
+      "help": "Paired-end read libraries (optional)",
+      "options": []
+    },
+    {
+      "name": "single_end_libs",
+      "label": "Single End Libs",
+      "type": "textarea",
+      "help": "Single-end read libraries (optional)",
+      "options": []
+    },
+    {
+      "name": "srr_ids",
+      "label": "Srr Ids",
+      "type": "text",
+      "help": "SRA Run IDs (optional)",
+      "options": []
+    },
+    {
+      "name": "recipe",
+      "label": "Recipe",
+      "type": "text",
+      "help": "Assembly recipe - auto (default: auto)",
+      "options": []
+    },
+    {
+      "name": "primers",
+      "label": "Primers",
+      "type": "text",
+      "help": "Primer set - ARTIC/midnight/qiagen/swift/varskip/varskip-long (required, default: ARTIC)",
+      "options": []
+    },
+    {
+      "name": "primer_version",
+      "label": "Primer Version",
+      "type": "text",
+      "help": "Primer version number (optional)",
+      "options": []
+    },
+    {
+      "name": "min_depth",
+      "label": "Min Depth",
+      "type": "number",
+      "help": "Minimum depth for consensus (default: 100)",
+      "options": []
+    },
+    {
+      "name": "max_depth",
+      "label": "Max Depth",
+      "type": "number",
+      "help": "Maximum depth for consensus (default: 8000)",
+      "options": []
+    },
+    {
+      "name": "keep_intermediates",
+      "label": "Keep Intermediates",
+      "type": "number",
+      "help": "Keep intermediate outputs (default: 0)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "sars_wastewater_analysis": [
+    {
+      "name": "paired_end_libs",
+      "label": "Paired End Libs",
+      "type": "textarea",
+      "help": "Paired-end read libraries with sample metadata (optional)",
+      "options": []
+    },
+    {
+      "name": "single_end_libs",
+      "label": "Single End Libs",
+      "type": "textarea",
+      "help": "Single-end read libraries with sample metadata (optional)",
+      "options": []
+    },
+    {
+      "name": "srr_libs",
+      "label": "Srr Libs",
+      "type": "textarea",
+      "help": "SRA datasets with sample metadata (optional)",
+      "options": []
+    },
+    {
+      "name": "recipe",
+      "label": "Recipe",
+      "type": "text",
+      "help": "Assembly recipe - onecodex (default: auto)",
+      "options": []
+    },
+    {
+      "name": "primers",
+      "label": "Primers",
+      "type": "text",
+      "help": "Primer set - ARTIC/midnight/qiagen/swift/varskip/varskip-long (required, default: ARTIC)",
+      "options": []
+    },
+    {
+      "name": "minimum_base_quality_score",
+      "label": "Minimum Base Quality Score",
+      "type": "number",
+      "help": "Minimum base quality score (default: 20)",
+      "options": []
+    },
+    {
+      "name": "minimum_genome_coverage",
+      "label": "Minimum Genome Coverage",
+      "type": "number",
+      "help": "Minimum genome coverage (default: 60)",
+      "options": []
+    },
+    {
+      "name": "agg_minimum_lineage_abundance",
+      "label": "Agg Minimum Lineage Abundance",
+      "type": "number",
+      "help": "Minimum lineage abundance for plots (default: 0.01)",
+      "options": []
+    },
+    {
+      "name": "minimum_coverage_depth",
+      "label": "Minimum Coverage Depth",
+      "type": "number",
+      "help": "Minimum coverage depth (default: 0)",
+      "options": []
+    },
+    {
+      "name": "confirmedonly",
+      "label": "Confirmedonly",
+      "type": "checkbox",
+      "help": "Exclude unconfirmed lineages (default: False)",
+      "options": []
+    },
+    {
+      "name": "minimum_lineage_abundance",
+      "label": "Minimum Lineage Abundance",
+      "type": "number",
+      "help": "Minimum lineage abundance (default: 0.001)",
+      "options": []
+    },
+    {
+      "name": "coverage_estimate",
+      "label": "Coverage Estimate",
+      "type": "number",
+      "help": "Coverage estimate value (default: 10)",
+      "options": []
+    },
+    {
+      "name": "timeseries_plot_interval",
+      "label": "Timeseries Plot Interval",
+      "type": "number",
+      "help": "Timeseries plot interval (default: 0)",
+      "options": []
+    },
+    {
+      "name": "primer_version",
+      "label": "Primer Version",
+      "type": "text",
+      "help": "Primer version number (optional)",
+      "options": []
+    },
+    {
+      "name": "barcode_csv",
+      "label": "Barcode Csv",
+      "type": "text",
+      "help": "Custom barcode path (optional)",
+      "options": []
+    },
+    {
+      "name": "sample_metadata_csv",
+      "label": "Sample Metadata Csv",
+      "type": "text",
+      "help": "Sample metadata CSV (optional)",
+      "options": []
+    },
+    {
+      "name": "keep_intermediates",
+      "label": "Keep Intermediates",
+      "type": "checkbox",
+      "help": "Keep intermediate outputs (default: True)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "sequence_submission": [
+    {
+      "name": "input_source",
+      "label": "Input Source",
+      "type": "text",
+      "help": "Input source type - id_list/fasta_data/fasta_file/genome_group (required)",
+      "options": []
+    },
+    {
+      "name": "input_fasta_data",
+      "label": "Input Fasta Data",
+      "type": "text",
+      "help": "Input sequences in FASTA format (optional)",
+      "options": []
+    },
+    {
+      "name": "input_fasta_file",
+      "label": "Input Fasta File",
+      "type": "text",
+      "help": "Input FASTA file (optional)",
+      "options": []
+    },
+    {
+      "name": "input_genome_group",
+      "label": "Input Genome Group",
+      "type": "text",
+      "help": "Input genome group (optional)",
+      "options": []
+    },
+    {
+      "name": "metadata",
+      "label": "Metadata",
+      "type": "text",
+      "help": "Metadata CSV file (required)",
+      "options": []
+    },
+    {
+      "name": "affiliation",
+      "label": "Affiliation",
+      "type": "text",
+      "help": "Submitter affiliation (optional)",
+      "options": []
+    },
+    {
+      "name": "first_name",
+      "label": "First Name",
+      "type": "text",
+      "help": "Submitter first name (required)",
+      "options": []
+    },
+    {
+      "name": "last_name",
+      "label": "Last Name",
+      "type": "text",
+      "help": "Submitter last name (required)",
+      "options": []
+    },
+    {
+      "name": "email",
+      "label": "Email",
+      "type": "text",
+      "help": "Submitter email (required)",
+      "options": []
+    },
+    {
+      "name": "consortium",
+      "label": "Consortium",
+      "type": "text",
+      "help": "Submitter consortium (optional)",
+      "options": []
+    },
+    {
+      "name": "country",
+      "label": "Country",
+      "type": "text",
+      "help": "Submitter country (optional)",
+      "options": []
+    },
+    {
+      "name": "phoneNumber",
+      "label": "Phonenumber",
+      "type": "text",
+      "help": "Submitter phone number (optional)",
+      "options": []
+    },
+    {
+      "name": "street",
+      "label": "Street",
+      "type": "text",
+      "help": "Submitter street address (optional)",
+      "options": []
+    },
+    {
+      "name": "postal_code",
+      "label": "Postal Code",
+      "type": "text",
+      "help": "Submitter postal code (optional)",
+      "options": []
+    },
+    {
+      "name": "city",
+      "label": "City",
+      "type": "text",
+      "help": "Submitter city (optional)",
+      "options": []
+    },
+    {
+      "name": "state",
+      "label": "State",
+      "type": "text",
+      "help": "Submitter state (optional)",
+      "options": []
+    },
+    {
+      "name": "numberOfSequences",
+      "label": "Numberofsequences",
+      "type": "text",
+      "help": "Number of sequences in submission (optional)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "similar_genome_finder": [
+    {
+      "name": "selectedGenomeId",
+      "label": "Selectedgenomeid",
+      "type": "text",
+      "help": "Reference genome ID (optional)",
+      "options": []
+    },
+    {
+      "name": "fasta_file",
+      "label": "Fasta File",
+      "type": "text",
+      "help": "FASTA file input (optional)",
+      "options": []
+    },
+    {
+      "name": "max_pvalue",
+      "label": "Max Pvalue",
+      "type": "text",
+      "help": "Maximum p-value threshold (optional)",
+      "options": []
+    },
+    {
+      "name": "max_distance",
+      "label": "Max Distance",
+      "type": "text",
+      "help": "Maximum distance threshold (optional)",
+      "options": []
+    },
+    {
+      "name": "max_hits",
+      "label": "Max Hits",
+      "type": "text",
+      "help": "Maximum number of hits (optional)",
+      "options": []
+    },
+    {
+      "name": "include_reference",
+      "label": "Include Reference",
+      "type": "text",
+      "help": "Include reference genomes (optional)",
+      "options": []
+    },
+    {
+      "name": "include_representative",
+      "label": "Include Representative",
+      "type": "text",
+      "help": "Include representative genomes (optional)",
+      "options": []
+    },
+    {
+      "name": "include_bacterial",
+      "label": "Include Bacterial",
+      "type": "text",
+      "help": "Include bacterial genomes (optional)",
+      "options": []
+    },
+    {
+      "name": "include_viral",
+      "label": "Include Viral",
+      "type": "text",
+      "help": "Include viral genomes (optional)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "subspecies_classification": [
+    {
+      "name": "input_source",
+      "label": "Input Source",
+      "type": "text",
+      "help": "Input source type - id_list/fasta_data/fasta_file/genome_group (required)",
+      "options": []
+    },
+    {
+      "name": "input_fasta_data",
+      "label": "Input Fasta Data",
+      "type": "text",
+      "help": "Input sequences in FASTA format (optional)",
+      "options": []
+    },
+    {
+      "name": "input_fasta_file",
+      "label": "Input Fasta File",
+      "type": "text",
+      "help": "Input FASTA file (optional)",
+      "options": []
+    },
+    {
+      "name": "input_genome_group",
+      "label": "Input Genome Group",
+      "type": "text",
+      "help": "Input genome group (optional)",
+      "options": []
+    },
+    {
+      "name": "ref_msa_fasta",
+      "label": "Ref Msa Fasta",
+      "type": "text",
+      "help": "Reference multiple sequence alignment (optional)",
+      "options": []
+    },
+    {
+      "name": "virus_type",
+      "label": "Virus Type",
+      "type": "text",
+      "help": "Virus type for classification (required)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "taxonomic_classification": [
+    {
+      "name": "host_genome",
+      "label": "Host Genome",
+      "type": "text",
+      "help": "Host genome for filtering (required, default: \"no_host\")",
+      "options": []
+    },
+    {
+      "name": "analysis_type",
+      "label": "Analysis Type",
+      "type": "text",
+      "help": "Analysis type - pathogen/microbiome/16S (required, default: \"16S\")",
+      "options": []
+    },
+    {
+      "name": "database",
+      "label": "Database",
+      "type": "text",
+      "help": "Reference database - bvbrc/greengenes/silva/standard (required, default: \"SILVA\")",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    },
+    {
+      "name": "paired_end_libs",
+      "label": "Paired End Libs",
+      "type": "textarea",
+      "help": "Paired-end read libraries with sample IDs (optional)",
+      "options": []
+    },
+    {
+      "name": "single_end_libs",
+      "label": "Single End Libs",
+      "type": "textarea",
+      "help": "Single-end read libraries with sample IDs (optional)",
+      "options": []
+    },
+    {
+      "name": "srr_libs",
+      "label": "Srr Libs",
+      "type": "textarea",
+      "help": "SRA datasets with sample IDs (optional).",
+      "options": []
+    },
+    {
+      "name": "save_classified_sequences",
+      "label": "Save Classified Sequences",
+      "type": "checkbox",
+      "help": "Save classified sequences (optional, default: false)",
+      "options": []
+    },
+    {
+      "name": "save_unclassified_sequences",
+      "label": "Save Unclassified Sequences",
+      "type": "checkbox",
+      "help": "Save unclassified sequences (optional, default: false)",
+      "options": []
+    },
+    {
+      "name": "confidence_interval",
+      "label": "Confidence Interval",
+      "type": "number",
+      "help": "Classification confidence threshold (optional, default: 0.1)",
+      "options": []
+    },
+    {
+      "name": "Example",
+      "label": "Example",
+      "type": "text",
+      "help": "`[{\"title\": \"...\", \"srr_accession\": \"SRR12345678\", \"sample_id\": \"...\"}]`",
+      "options": []
+    },
+    {
+      "name": "Use",
+      "label": "Use",
+      "type": "text",
+      "help": "`\"${params.output_path}/.${params.output_file}/Taxonomic-Classification-Service-BVBRC_multiqc_report.html\"`",
+      "options": []
+    }
+  ],
+  "tnseq": [
+    {
+      "name": "experimental_conditions",
+      "label": "Experimental Conditions",
+      "type": "textarea",
+      "help": "Experimental conditions for analysis (optional)",
+      "options": []
+    },
+    {
+      "name": "contrasts",
+      "label": "Contrasts",
+      "type": "textarea",
+      "help": "Statistical contrasts for comparison (optional)",
+      "options": []
+    },
+    {
+      "name": "read_files",
+      "label": "Read Files",
+      "type": "text",
+      "help": "Read file groups (optional)",
+      "options": []
+    },
+    {
+      "name": "reference_genome_id",
+      "label": "Reference Genome Id",
+      "type": "text",
+      "help": "Reference genome ID (required)",
+      "options": []
+    },
+    {
+      "name": "recipe",
+      "label": "Recipe",
+      "type": "text",
+      "help": "TnSeq analysis recipe - gumbel/griffin/tn5gaps/rankproduct/hmm/binomial/resampling (default: gumbel)",
+      "options": []
+    },
+    {
+      "name": "protocol",
+      "label": "Protocol",
+      "type": "text",
+      "help": "TnSeq protocol - sassetti/tn5/mme1 (default: sassetti)",
+      "options": []
+    },
+    {
+      "name": "primer",
+      "label": "Primer",
+      "type": "text",
+      "help": "Primer DNA string for read trimming (optional)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "variation": [
+    {
+      "name": "reference_genome_id",
+      "label": "Reference Genome Id",
+      "type": "text",
+      "help": "Reference genome ID (required)",
+      "options": []
+    },
+    {
+      "name": "paired_end_libs",
+      "label": "Paired End Libs",
+      "type": "textarea",
+      "help": "Paired-end read libraries (optional)",
+      "options": []
+    },
+    {
+      "name": "single_end_libs",
+      "label": "Single End Libs",
+      "type": "textarea",
+      "help": "Single-end read libraries (optional)",
+      "options": []
+    },
+    {
+      "name": "srr_ids",
+      "label": "Srr Ids",
+      "type": "text",
+      "help": "SRA Run IDs (optional)",
+      "options": []
+    },
+    {
+      "name": "mapper",
+      "label": "Mapper",
+      "type": "text",
+      "help": "Short read mapper - BWA-mem/BWA-mem-strict/Bowtie2/MOSAIK/LAST/minimap2 (default: BWA-mem)",
+      "options": []
+    },
+    {
+      "name": "caller",
+      "label": "Caller",
+      "type": "text",
+      "help": "SNP caller - FreeBayes/BCFtools (default: FreeBayes)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "viral_assembly": [
+    {
+      "name": "paired_end_lib",
+      "label": "Paired End Lib",
+      "type": "text",
+      "help": "Paired-end read library (optional)",
+      "options": []
+    },
+    {
+      "name": "single_end_lib",
+      "label": "Single End Lib",
+      "type": "text",
+      "help": "Single-end read library (optional)",
+      "options": []
+    },
+    {
+      "name": "srr_id",
+      "label": "Srr Id",
+      "type": "text",
+      "help": "SRA Run ID (optional)",
+      "options": []
+    },
+    {
+      "name": "recipe",
+      "label": "Recipe",
+      "type": "text",
+      "help": "Assembly strategy - auto/irma (default: auto)",
+      "options": []
+    },
+    {
+      "name": "module",
+      "label": "Module",
+      "type": "text",
+      "help": "Virus module - FLU/CoV/RSV/EBOLA/FLU_AD (optional)",
+      "options": []
+    },
+    {
+      "name": "viral_size",
+      "label": "Viral Size",
+      "type": "number",
+      "help": "Estimated viral genome size (default: 5M)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ],
+  "whole_genome_snp": [
+    {
+      "name": "input_genome_type",
+      "label": "Input Genome Type",
+      "type": "text",
+      "help": "Input type - genome_group/genome_fasta (required)",
+      "options": []
+    },
+    {
+      "name": "majority_threshold",
+      "label": "Majority Threshold",
+      "type": "number",
+      "help": "Majority fraction for SNP inclusion (default: 0.5)",
+      "options": []
+    },
+    {
+      "name": "min_mid_linkage",
+      "label": "Min Mid Linkage",
+      "type": "number",
+      "help": "Minimum value for mid linkage (default: 10)",
+      "options": []
+    },
+    {
+      "name": "max_mid_linkage",
+      "label": "Max Mid Linkage",
+      "type": "number",
+      "help": "Maximum value for mid linkage (default: 40)",
+      "options": []
+    },
+    {
+      "name": "analysis_type",
+      "label": "Analysis Type",
+      "type": "text",
+      "help": "Analysis type - Whole Genome SNP Analysis (required)",
+      "options": []
+    },
+    {
+      "name": "input_genome_group",
+      "label": "Input Genome Group",
+      "type": "text",
+      "help": "Genome group name (optional)",
+      "options": []
+    },
+    {
+      "name": "input_genome_fasta",
+      "label": "Input Genome Fasta",
+      "type": "text",
+      "help": "Genome FASTA data (optional)",
+      "options": []
+    },
+    {
+      "name": "output_path",
+      "label": "Output Path",
+      "type": "text",
+      "help": "Output directory (required)",
+      "options": []
+    },
+    {
+      "name": "output_file",
+      "label": "Output File",
+      "type": "text",
+      "help": "Output basename (required)",
+      "options": []
+    }
+  ]
+}
