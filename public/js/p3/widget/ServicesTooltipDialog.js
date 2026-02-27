@@ -398,7 +398,7 @@ define([
           console.log('temporary group folder already created');
         }));
       };
-      var hidden_group_path = WorkspaceManager.getDefaultFolder() + '/home/._tmp_groups';
+      var hidden_group_path = '/' + window.App.user.id + '/home/._tmp_groups';
       var group_name;
       var group_type;
       var group_id;
