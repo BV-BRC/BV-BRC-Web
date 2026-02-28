@@ -1253,7 +1253,7 @@ define([
       }
       // Simple special handling: for taxonomy, open TaxonList with query appended directly
       else if (collection && collection.toLowerCase() === 'taxonomy' && queryText) {
-        var baseTaxonomyUrl = 'https://www.bv-brc.org/view/TaxonList/?';
+        var baseTaxonomyUrl = 'https://www.bv-brc.org/view/TaxonList/';
         return {
           url: baseTaxonomyUrl + queryText,
           collection: collection,
@@ -1262,9 +1262,89 @@ define([
       }
       // Simple special handling: for genome_feature, open FeatureList with query appended directly
       else if (collection && collection.toLowerCase() === 'genome_feature' && queryText) {
-        var baseFeatureUrl = 'https://www.bv-brc.org/view/FeatureList/?';
+        var baseFeatureUrl = 'https://www.bv-brc.org/view/FeatureList/';
         return {
           url: baseFeatureUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'pathway' && queryText) {
+        var basePathwayUrl = 'https://www.bv-brc.org/view/PathwayList/';
+        return {
+          url: basePathwayUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'protein_structure' && queryText) {
+        var baseProteinStructureUrl = 'https://www.bv-brc.org/view/ProteinStructureList/';
+        return {
+          url: baseProteinStructureUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'strain' && queryText) {
+        var baseStrainUrl = 'https://www.bv-brc.org/view/StrainList/';
+        return {
+          url: baseStrainUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'surveillance' && queryText) {
+        var baseSurveillanceUrl = 'https://www.bv-brc.org/view/SurveillanceList/';
+        return {
+          url: baseSurveillanceUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'subsystem' && queryText) {
+        var baseSubsystemUrl = 'https://www.bv-brc.org/view/SubsystemList/';
+        return {
+          url: baseSubsystemUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'serology' && queryText) {
+        var baseSerologyUrl = 'https://www.bv-brc.org/view/SerologyList/';
+        return {
+          url: baseSerologyUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'epitope' && queryText) {
+        var baseEpitopeUrl = 'https://www.bv-brc.org/view/EpitopeList/';
+        return {
+          url: baseEpitopeUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'sp_gene' && queryText) {
+        var baseSpGeneUrl = 'https://www.bv-brc.org/view/SpecialtyGeneList/';
+        return {
+          url: baseSpGeneUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'sp_gene_ref' && queryText) {
+        var baseSpGeneRefUrl = 'https://www.bv-brc.org/view/SpecialtyVFGeneList/';
+        return {
+          url: baseSpGeneRefUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'protein_feature' && queryText) {
+        var baseDomainsMotifsUrl = 'https://www.bv-brc.org/view/DomainsAndMotifsList/';
+        return {
+          url: baseDomainsMotifsUrl + queryText,
           collection: collection,
           sourceTool: options.sourceTool || null
         };
