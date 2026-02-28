@@ -1107,6 +1107,10 @@
   border-top: 1px solid #e5e7eb;
 }
 
+.file-preview-toggle-button {
+  margin-top: 0;
+}
+
 .file-preview-label {
   font-size: 13px;
   font-weight: 600;

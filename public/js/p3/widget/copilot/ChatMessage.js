@@ -977,33 +977,47 @@ define([
         }, container);
       }
 
-      // Preview container - will be populated async
+      // Preview container - Show Preview button reveals content on click
       var previewContainer = domConstruct.create('div', {
         class: 'file-preview-container'
       }, container);
 
-      domConstruct.create('div', {
-        class: 'file-preview-loading',
-        innerHTML: 'Loading preview...'
+      var previewToggleButton = domConstruct.create('button', {
+        type: 'button',
+        class: 'workspace-summary-open-button file-preview-toggle-button',
+        innerHTML: 'Show Preview'
       }, previewContainer);
 
-      // Non-blocking async fetch of download URL and preview
-      setTimeout(lang.hitch(this, function() {
+      var previewContentArea = domConstruct.create('div', {
+        class: 'file-preview-content-area'
+      }, previewContainer);
+      previewContentArea.style.display = 'none';
+
+      var showPreview = function() {
+        previewContainer.classList.add('file-preview-expanded');
+        previewToggleButton.style.display = 'none';
+        previewContentArea.style.display = '';
+      };
+
+      on(previewToggleButton, 'click', lang.hitch(this, function() {
+        if (previewContentArea.getAttribute('data-loaded') === '1') {
+          showPreview();
+          return;
+        }
+        if (previewContentArea.getAttribute('data-loading') === '1') {
+          return;
+        }
+        previewContentArea.setAttribute('data-loading', '1');
+        domConstruct.empty(previewContentArea);
+        domConstruct.create('div', {
+          class: 'file-preview-loading',
+          innerHTML: 'Loading preview...'
+        }, previewContentArea);
+        showPreview();
+
         WorkspaceManager.getDownloadUrls([filePath]).then(lang.hitch(this, function(urls) {
           if (urls && urls.length > 0) {
             var downloadUrl = urls[0];
-
-            // Add download link (primary CTA)
-            domConstruct.empty(downloadContainer);
-            domConstruct.create('a', {
-              class: 'workspace-summary-link',
-              href: downloadUrl,
-              target: '_blank',
-              download: fileName,
-              innerHTML: '<i class="fa icon-download"></i> Download file'
-            }, downloadContainer);
-
-            // Fetch preview with byte-range request (first 2KB)
             fetch(downloadUrl, {
               headers: {
                 'Range': 'bytes=0-2047'
@@ -1014,37 +1028,57 @@ define([
               }
               return response.text();
             }).then(lang.hitch(this, function(previewText) {
-              domConstruct.empty(previewContainer);
-
+              domConstruct.empty(previewContentArea);
               domConstruct.create('div', {
                 class: 'file-preview-label',
                 innerHTML: 'Preview (first 2KB):'
-              }, previewContainer);
-
+              }, previewContentArea);
               domConstruct.create('pre', {
                 class: 'file-preview-content',
                 innerHTML: this.escapeHtml(previewText)
-              }, previewContainer);
+              }, previewContentArea);
+              previewContentArea.setAttribute('data-loaded', '1');
+              previewContentArea.removeAttribute('data-loading');
             })).catch(lang.hitch(this, function() {
-              domConstruct.empty(previewContainer);
+              domConstruct.empty(previewContentArea);
               domConstruct.create('div', {
                 class: 'file-preview-error',
                 innerHTML: 'There was an issue previewing this file'
-              }, previewContainer);
+              }, previewContentArea);
+              previewContentArea.removeAttribute('data-loading');
             }));
           } else {
-            domConstruct.empty(previewContainer);
+            domConstruct.empty(previewContentArea);
             domConstruct.create('div', {
               class: 'file-preview-error',
               innerHTML: 'There was an issue previewing this file'
-            }, previewContainer);
+            }, previewContentArea);
+            previewContentArea.removeAttribute('data-loading');
           }
         })).catch(lang.hitch(this, function() {
-          domConstruct.empty(previewContainer);
+          domConstruct.empty(previewContentArea);
           domConstruct.create('div', {
             class: 'file-preview-error',
             innerHTML: 'There was an issue previewing this file'
-          }, previewContainer);
+          }, previewContentArea);
+          previewContentArea.removeAttribute('data-loading');
+        }));
+      }));
+
+      // Download link - fetch URL async (non-blocking)
+      setTimeout(lang.hitch(this, function() {
+        WorkspaceManager.getDownloadUrls([filePath]).then(lang.hitch(this, function(urls) {
+          if (urls && urls.length > 0) {
+            var downloadUrl = urls[0];
+            domConstruct.empty(downloadContainer);
+            domConstruct.create('a', {
+              class: 'workspace-summary-link',
+              href: downloadUrl,
+              target: '_blank',
+              download: fileName,
+              innerHTML: '<i class="fa icon-download"></i> Download file'
+            }, downloadContainer);
+          }
         }));
       }), 0);
     },
@@ -1253,7 +1287,7 @@ define([
       }
       // Simple special handling: for taxonomy, open TaxonList with query appended directly
       else if (collection && collection.toLowerCase() === 'taxonomy' && queryText) {
-        var baseTaxonomyUrl = 'https://www.bv-brc.org/view/TaxonList/?';
+        var baseTaxonomyUrl = 'https://www.bv-brc.org/view/TaxonList/';
         return {
           url: baseTaxonomyUrl + queryText,
           collection: collection,
@@ -1262,9 +1296,89 @@ define([
       }
       // Simple special handling: for genome_feature, open FeatureList with query appended directly
       else if (collection && collection.toLowerCase() === 'genome_feature' && queryText) {
-        var baseFeatureUrl = 'https://www.bv-brc.org/view/FeatureList/?';
+        var baseFeatureUrl = 'https://www.bv-brc.org/view/FeatureList/';
         return {
           url: baseFeatureUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'pathway' && queryText) {
+        var basePathwayUrl = 'https://www.bv-brc.org/view/PathwayList/';
+        return {
+          url: basePathwayUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'protein_structure' && queryText) {
+        var baseProteinStructureUrl = 'https://www.bv-brc.org/view/ProteinStructureList/';
+        return {
+          url: baseProteinStructureUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'strain' && queryText) {
+        var baseStrainUrl = 'https://www.bv-brc.org/view/StrainList/';
+        return {
+          url: baseStrainUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'surveillance' && queryText) {
+        var baseSurveillanceUrl = 'https://www.bv-brc.org/view/SurveillanceList/';
+        return {
+          url: baseSurveillanceUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'subsystem' && queryText) {
+        var baseSubsystemUrl = 'https://www.bv-brc.org/view/SubsystemList/';
+        return {
+          url: baseSubsystemUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'serology' && queryText) {
+        var baseSerologyUrl = 'https://www.bv-brc.org/view/SerologyList/';
+        return {
+          url: baseSerologyUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'epitope' && queryText) {
+        var baseEpitopeUrl = 'https://www.bv-brc.org/view/EpitopeList/';
+        return {
+          url: baseEpitopeUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'sp_gene' && queryText) {
+        var baseSpGeneUrl = 'https://www.bv-brc.org/view/SpecialtyGeneList/';
+        return {
+          url: baseSpGeneUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'sp_gene_ref' && queryText) {
+        var baseSpGeneRefUrl = 'https://www.bv-brc.org/view/SpecialtyVFGeneList/';
+        return {
+          url: baseSpGeneRefUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'protein_feature' && queryText) {
+        var baseDomainsMotifsUrl = 'https://www.bv-brc.org/view/DomainsAndMotifsList/';
+        return {
+          url: baseDomainsMotifsUrl + queryText,
           collection: collection,
           sourceTool: options.sourceTool || null
         };
