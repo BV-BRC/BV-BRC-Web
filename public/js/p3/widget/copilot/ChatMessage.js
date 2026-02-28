@@ -977,33 +977,47 @@ define([
         }, container);
       }
 
-      // Preview container - will be populated async
+      // Preview container - Show Preview button reveals content on click
       var previewContainer = domConstruct.create('div', {
         class: 'file-preview-container'
       }, container);
 
-      domConstruct.create('div', {
-        class: 'file-preview-loading',
-        innerHTML: 'Loading preview...'
+      var previewToggleButton = domConstruct.create('button', {
+        type: 'button',
+        class: 'workspace-summary-open-button file-preview-toggle-button',
+        innerHTML: 'Show Preview'
       }, previewContainer);
 
-      // Non-blocking async fetch of download URL and preview
-      setTimeout(lang.hitch(this, function() {
+      var previewContentArea = domConstruct.create('div', {
+        class: 'file-preview-content-area'
+      }, previewContainer);
+      previewContentArea.style.display = 'none';
+
+      var showPreview = function() {
+        previewContainer.classList.add('file-preview-expanded');
+        previewToggleButton.style.display = 'none';
+        previewContentArea.style.display = '';
+      };
+
+      on(previewToggleButton, 'click', lang.hitch(this, function() {
+        if (previewContentArea.getAttribute('data-loaded') === '1') {
+          showPreview();
+          return;
+        }
+        if (previewContentArea.getAttribute('data-loading') === '1') {
+          return;
+        }
+        previewContentArea.setAttribute('data-loading', '1');
+        domConstruct.empty(previewContentArea);
+        domConstruct.create('div', {
+          class: 'file-preview-loading',
+          innerHTML: 'Loading preview...'
+        }, previewContentArea);
+        showPreview();
+
         WorkspaceManager.getDownloadUrls([filePath]).then(lang.hitch(this, function(urls) {
           if (urls && urls.length > 0) {
             var downloadUrl = urls[0];
-
-            // Add download link (primary CTA)
-            domConstruct.empty(downloadContainer);
-            domConstruct.create('a', {
-              class: 'workspace-summary-link',
-              href: downloadUrl,
-              target: '_blank',
-              download: fileName,
-              innerHTML: '<i class="fa icon-download"></i> Download file'
-            }, downloadContainer);
-
-            // Fetch preview with byte-range request (first 2KB)
             fetch(downloadUrl, {
               headers: {
                 'Range': 'bytes=0-2047'
@@ -1014,37 +1028,57 @@ define([
               }
               return response.text();
             }).then(lang.hitch(this, function(previewText) {
-              domConstruct.empty(previewContainer);
-
+              domConstruct.empty(previewContentArea);
               domConstruct.create('div', {
                 class: 'file-preview-label',
                 innerHTML: 'Preview (first 2KB):'
-              }, previewContainer);
-
+              }, previewContentArea);
               domConstruct.create('pre', {
                 class: 'file-preview-content',
                 innerHTML: this.escapeHtml(previewText)
-              }, previewContainer);
+              }, previewContentArea);
+              previewContentArea.setAttribute('data-loaded', '1');
+              previewContentArea.removeAttribute('data-loading');
             })).catch(lang.hitch(this, function() {
-              domConstruct.empty(previewContainer);
+              domConstruct.empty(previewContentArea);
               domConstruct.create('div', {
                 class: 'file-preview-error',
                 innerHTML: 'There was an issue previewing this file'
-              }, previewContainer);
+              }, previewContentArea);
+              previewContentArea.removeAttribute('data-loading');
             }));
           } else {
-            domConstruct.empty(previewContainer);
+            domConstruct.empty(previewContentArea);
             domConstruct.create('div', {
               class: 'file-preview-error',
               innerHTML: 'There was an issue previewing this file'
-            }, previewContainer);
+            }, previewContentArea);
+            previewContentArea.removeAttribute('data-loading');
           }
         })).catch(lang.hitch(this, function() {
-          domConstruct.empty(previewContainer);
+          domConstruct.empty(previewContentArea);
           domConstruct.create('div', {
             class: 'file-preview-error',
             innerHTML: 'There was an issue previewing this file'
-          }, previewContainer);
+          }, previewContentArea);
+          previewContentArea.removeAttribute('data-loading');
+        }));
+      }));
+
+      // Download link - fetch URL async (non-blocking)
+      setTimeout(lang.hitch(this, function() {
+        WorkspaceManager.getDownloadUrls([filePath]).then(lang.hitch(this, function(urls) {
+          if (urls && urls.length > 0) {
+            var downloadUrl = urls[0];
+            domConstruct.empty(downloadContainer);
+            domConstruct.create('a', {
+              class: 'workspace-summary-link',
+              href: downloadUrl,
+              target: '_blank',
+              download: fileName,
+              innerHTML: '<i class="fa icon-download"></i> Download file'
+            }, downloadContainer);
+          }
         }));
       }), 0);
     },
