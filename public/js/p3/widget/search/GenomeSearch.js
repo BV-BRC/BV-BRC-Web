@@ -6,7 +6,12 @@ define([
   './TextInputEncoder',
   './FacetStoreBuilder',
   './PathogenGroups',
-  './HostGroups'
+  './HostGroups',
+  'dijit/Calendar',
+  'dijit/TooltipDialog',
+  'dijit/popup',
+  'dojo/on',
+  'dojo/dom'
 ], function (
   declare,
   lang,
@@ -15,7 +20,12 @@ define([
   TextInputEncoder,
   storeBuilder,
   pathogenGroupStore,
-  hostGroupStore
+  hostGroupStore,
+  Calendar,
+  TooltipDialog,
+  popup,
+  on,
+  dom
 ) {
 
   function sanitizeInput(str) {
@@ -66,6 +76,33 @@ define([
       storeBuilder('genome', 'lineage').then(lang.hitch(this, (store) => {
         this.lineageNode.store = store
       }))
+
+      // Setup calendar popups for Collection Date
+      var self = this
+      function setupCalendarPopup(iconNode, textBoxNode) {
+        var calendar = new Calendar({
+          onValueSelected: function (date) {
+            var y = date.getFullYear()
+            var m = ('0' + (date.getMonth() + 1)).slice(-2)
+            var d = ('0' + date.getDate()).slice(-2)
+            textBoxNode.set('value', y + '-' + m + '-' + d)
+            popup.close(tooltipDialog)
+          }
+        })
+        var tooltipDialog = new TooltipDialog({ content: calendar })
+        on(iconNode, 'click', function (e) {
+          e.stopPropagation()
+          popup.open({ popup: tooltipDialog, around: iconNode })
+          var closeHandle = on(document, 'click', function (evt) {
+            if (!dom.isDescendant(evt.target, tooltipDialog.domNode) && evt.target !== iconNode) {
+              popup.close(tooltipDialog)
+              closeHandle.remove()
+            }
+          })
+        })
+      }
+      setupCalendarPopup(this.collectionDateFromCalendarIcon, this.collectionDateFromNode)
+      setupCalendarPopup(this.collectionDateToCalendarIcon, this.collectionDateToNode)
     },
     onPathogenGroupChange: function () {
       if (this.pathogenGroupNode.get('value') === '11320') {
@@ -144,17 +181,30 @@ define([
         queryArr.push(`eq(state_province,${sanitizeInput(stateProvinceValue)})`)
       }
 
-      const collectionYearFromValue = parseInt(this.collectionYearFromNode.get('value'))
-      const collectionYearToValue = parseInt(this.collectionYearToNode.get('value'))
-      if (!isNaN(collectionYearFromValue) && !isNaN(collectionYearToValue)) {
-        // between
-        queryArr.push(`between(collection_year,${collectionYearFromValue},${collectionYearToValue})`)
-      } else if (!isNaN(collectionYearFromValue)) {
-        // gt
-        queryArr.push(`gt(collection_year,${collectionYearFromValue})`)
-      } else if (!isNaN(collectionYearToValue)) {
-        // lt
-        queryArr.push(`lt(collection_year,${collectionYearToValue})`)
+      const collectionDateFromStr = this.collectionDateFromNode.get('value').trim()
+      const collectionDateToStr = this.collectionDateToNode.get('value').trim()
+      function toSolrDateLower(dateStr) {
+        var parts = dateStr.split('-')
+        if (parts.length === 1) return parts[0] + '-01-01T00:00:00Z'
+        if (parts.length === 2) return parts[0] + '-' + parts[1] + '-01T00:00:00Z'
+        return parts[0] + '-' + parts[1] + '-' + parts[2] + 'T00:00:00Z'
+      }
+      function toSolrDateUpper(dateStr) {
+        var parts = dateStr.split('-')
+        if (parts.length === 1) return parts[0] + '-12-31T23:59:59Z'
+        if (parts.length === 2) {
+          var y = parseInt(parts[0]), m = parseInt(parts[1])
+          var lastDay = new Date(y, m, 0).getDate()
+          return parts[0] + '-' + parts[1] + '-' + ('0' + lastDay).slice(-2) + 'T23:59:59Z'
+        }
+        return parts[0] + '-' + parts[1] + '-' + parts[2] + 'T23:59:59Z'
+      }
+      if (collectionDateFromStr && collectionDateToStr) {
+        queryArr.push('between(collection_date_dr,' + encodeURIComponent(toSolrDateLower(collectionDateFromStr)) + ',' + encodeURIComponent(toSolrDateUpper(collectionDateToStr)) + ')')
+      } else if (collectionDateFromStr) {
+        queryArr.push('gt(collection_date_dr,' + encodeURIComponent(toSolrDateLower(collectionDateFromStr)) + ')')
+      } else if (collectionDateToStr) {
+        queryArr.push('lt(collection_date_dr,' + encodeURIComponent(toSolrDateUpper(collectionDateToStr)) + ')')
       }
 
       const genomeLengthFromValue = parseInt(this.genomeLengthFromNode.get('value'))

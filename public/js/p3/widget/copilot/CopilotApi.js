@@ -16,9 +16,11 @@ define([
     'dojo/request',
     'dojo/_base/lang',
     'dojo/topic',
-    'dijit/Dialog'
+    'dijit/Dialog',
+    './CopilotSSEEventHandler',
+    './CopilotToolHandler'
 ], function(
-    declare, _WidgetBase, request, lang, topic, Dialog
+    declare, _WidgetBase, request, lang, topic, Dialog, CopilotSSEEventHandler, CopilotToolHandler
 ) {
     /**
      * @class CopilotAPI
@@ -28,10 +30,6 @@ define([
      * Provides methods for chat sessions, queries, and message management.
      */
     return declare([_WidgetBase], {
-
-        // ========================================
-        // PROPERTIES
-        // ========================================
 
         /** Base URL for main Copilot API endpoints */
         apiUrlBase: null,
@@ -45,9 +43,11 @@ define([
         /** Indicates whether the Copilot service URLs are available */
         copilotAvailable: true,
 
-        // ========================================
-        // LIFECYCLE METHODS
-        // ========================================
+        /** Active queued/streaming job ID (for abort requests) */
+        currentJobId: null,
+
+        /** Most recent tool reported by SSE for the active stream */
+        currentActiveToolId: null,
 
         /**
          * Constructor initializes the widget with provided options
@@ -74,43 +74,12 @@ define([
                 var error = new Error('The BV-BRC Copilot service is currently unavailable. Please try again later.');
                 // Publish a global error so UI components can respond accordingly
                 topic.publish('CopilotApiError', { error: error });
-                // Additionally show a dialog to the user
-                new Dialog({
-                    title: 'Service Unavailable',
-                    content: 'The BV-BRC Copilot service is currently unavailable. Please try again later.',
-                    style: 'width: 300px'
-                }).show();
+                // Publish service unavailable event for tooltip display
+                topic.publish('CopilotServiceUnavailable', 'The BV-BRC Copilot service is currently unavailable. Please try again later.');
             }
 
             console.log('CopilotAPI postCreate - API URLs initialized');
         },
-
-        // ========================================
-        // AUTHENTICATION & UTILITY METHODS
-        // ========================================
-
-        /**
-         * Checks if the user is logged in
-         * Returns false if not logged in and shows dialog
-         * Returns true if logged in
-         */
-        _checkLoggedIn: function() {
-            if (!window.App || !window.App.authorizationToken) {
-                new Dialog({
-                    title: "Not Logged In",
-                    content: "You must be logged in to use the Copilot chat.",
-                    style: "width: 300px"
-                }).show();
-                this._loggedIn = false;
-                return false;
-            }
-            this._loggedIn = true;
-            return true;
-        },
-
-        // ========================================
-        // SESSION MANAGEMENT METHODS
-        // ========================================
 
         /**
          * Fetches all chat sessions for current user
@@ -124,7 +93,7 @@ define([
         // ( { sessions, total, has_more } ) so callers can decide what to do.
         // Default page size is 20 and offset 0.
         getUserSessions: function(limit = 20, offset = 0) {
-            if (!this._loggedIn) return Promise.reject('Not logged in');
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
 
             // Build query string with pagination params
@@ -154,7 +123,7 @@ define([
          * - Publishes error events on failure
          */
         getNewSessionId: function() {
-            if (!this._loggedIn) return Promise.reject('Not logged in');
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             return request.get(this.apiUrlBase + '/start-chat', {
                 headers: {
                     Authorization: (window.App.authorizationToken || '')
@@ -172,25 +141,923 @@ define([
         },
 
         /**
+         * Registers a chat session in the backend idempotently.
+         * Safe to call multiple times for the same session.
+         */
+        registerSession: function(sessionId, title) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            if (!sessionId) return Promise.reject(new Error('sessionId is required'));
+
+            var data = {
+                session_id: sessionId,
+                user_id: this.user_id,
+                title: title || 'New Chat'
+            };
+
+            return request.post(this.apiUrlBase + '/register-session', {
+                data: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('Error registering session:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Creates a new session id and immediately registers it.
+         */
+        createAndRegisterSession: function(title) {
+            return this.getNewSessionId().then(lang.hitch(this, function(sessionId) {
+                return this.registerSession(sessionId, title).then(function(registration) {
+                    return {
+                        session_id: sessionId,
+                        registration: registration
+                    };
+                });
+            }));
+        },
+
+        /**
+         * Checks if the user is logged in
+         * Returns false if not logged in and shows dialog
+         * Returns true if logged in
+         */
+        _checkLoggedIn: function() {
+            if (!window.App || !window.App.authorizationToken) {
+                new Dialog({
+                    title: "Not Logged In",
+                    content: "You must be logged in to use the Copilot chat.",
+                    style: "width: 300px"
+                }).show();
+                this._loggedIn = false;
+                return false;
+            }
+            this._loggedIn = true;
+            return true;
+        },
+
+        /**
+         * Submits a copilot query with combined functionality
+         * Implementation:
+         * - Builds query data object with text, model, session
+         * - Optionally includes system prompt if provided
+         * - Optionally includes RAG functionality (rag_db, num_docs)
+         * - Optionally includes image if provided
+         * - Makes POST request to copilot endpoint
+         * - Handles errors with detailed logging
+         */
+        submitCopilotQuery: function(inputText, sessionId, systemPrompt, model, save_chat = true, ragDb, numDocs, images, enhancedPrompt = null, extraPayload) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            console.log('query');
+            console.log('Session ID:', sessionId);
+            var data = {
+                query: inputText,
+                model: model,
+                session_id: sessionId,
+                user_id: _self.user_id,
+                system_prompt: systemPrompt || '',
+                save_chat: save_chat,
+                include_history: true,
+                auth_token: window.App.authorizationToken || null
+            };
+
+            if (extraPayload && Array.isArray(extraPayload.selected_workspace_items) && extraPayload.selected_workspace_items.length > 0) {
+                data.selected_workspace_items = extraPayload.selected_workspace_items;
+            }
+            if (extraPayload && Array.isArray(extraPayload.selected_jobs) && extraPayload.selected_jobs.length > 0) {
+                data.selected_jobs = extraPayload.selected_jobs;
+            }
+            if (extraPayload && Array.isArray(extraPayload.selected_workflows) && extraPayload.selected_workflows.length > 0) {
+                data.selected_workflows = extraPayload.selected_workflows;
+            }
+
+            if (Array.isArray(images) && images.length > 0) {
+                data.images = images;
+            }
+            if (extraPayload && Array.isArray(extraPayload.images) && extraPayload.images.length > 0) {
+                data.images = extraPayload.images;
+            }
+            if (enhancedPrompt) {
+                data.enhanced_prompt = enhancedPrompt;
+            }
+            var hasRagSelection = !!(ragDb && ragDb !== 'null' && ragDb !== 'none');
+            if (hasRagSelection) {
+                data.rag_db = ragDb;
+                if (numDocs !== null && numDocs !== undefined && numDocs !== '') {
+                    data.num_docs = numDocs;
+                }
+            }
+
+            var submitEndpoint = hasRagSelection ? (this.apiUrlBase + '/rag') : (this.apiUrlBase + '/copilot-agent');
+            return request.post(submitEndpoint, {
+                data: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                _self.storedResult = response.response || response;
+                return response;
+            }).catch(function(error) {
+                console.error('Error submitting copilot query:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Submits a copilot query with streaming
+         * @param {object} params - The parameters for the query
+         * @param {string} params.inputText - The user's input text
+         * @param {string} params.sessionId - The current session ID
+         * @param {string} params.systemPrompt - The system prompt
+         * @param {string} params.model - The model to use
+         * @param {boolean} params.save_chat - Whether to save the chat
+         * @param {string} params.ragDb - The RAG database to use
+         * @param {number} params.numDocs - The number of documents for RAG
+         * @param {string[]} params.images - A list of base64 encoded images
+         * @param {string} params.enhancedPrompt - An enhanced prompt
+         * @param {function} onData - Callback for each content chunk (LLM response text)
+         * @param {function} onEnd - Callback for when the stream ends
+         * @param {function} onError - Callback for any errors
+         * @param {function} onProgress - Callback for progress updates (queued, started, progress events)
+         *   - Called with object: {type: 'queued'|'started'|'progress', ...eventData}
+         * @param {function} onStatusMessage - Callback for status message updates
+         *   - Called with message object when status should be displayed/updated
+         */
+        submitCopilotQueryStream: function(params, onData, onEnd, onError, onProgress, onStatusMessage) {
+
+            if (!this._checkLoggedIn()) {
+                if (onError) onError(new Error('Not logged in'));
+                return;
+            }
+
+            console.log('Session ID:', params.sessionId);
+            var _self = this;
+            this.currentJobId = null;
+            this.currentActiveToolId = null;
+            var data = {
+                query: params.inputText,
+                model: params.model,
+                session_id: params.sessionId,
+                user_id: this.user_id,
+                system_prompt: params.systemPrompt || '',
+                save_chat: params.save_chat !== undefined ? params.save_chat : true,
+                include_history: true,
+                auth_token: window.App.authorizationToken || null,
+                stream: true  // Enable SSE streaming mode
+            };
+
+            if (Array.isArray(params.selected_workspace_items) && params.selected_workspace_items.length > 0) {
+                data.workspace_items = params.selected_workspace_items;
+            }
+            if (Array.isArray(params.selected_jobs) && params.selected_jobs.length > 0) {
+                data.selected_jobs = params.selected_jobs;
+            }
+            if (Array.isArray(params.selected_workflows) && params.selected_workflows.length > 0) {
+                data.selected_workflows = params.selected_workflows;
+            }
+
+            if (Array.isArray(params.images) && params.images.length > 0) {
+                data.images = params.images;
+            }
+            if (params.enhancedPrompt) {
+                data.enhanced_prompt = params.enhancedPrompt;
+            }
+            var hasRagSelection = !!(params.ragDb && params.ragDb !== 'null' && params.ragDb !== 'none');
+            if (hasRagSelection) {
+                data.rag_db = params.ragDb;
+                if (params.numDocs !== null && params.numDocs !== undefined && params.numDocs !== '') {
+                    data.num_docs = params.numDocs;
+                }
+            }
+            var streamEndpoint = hasRagSelection ? (this.apiUrlBase + '/rag/stream') : (this.apiUrlBase + '/copilot-agent');
+
+            // Create abort controller for this request
+            this.currentAbortController = new AbortController();
+
+            // Create SSE event handler for this request
+            var eventHandler = new CopilotSSEEventHandler();
+            eventHandler.resetState();
+
+            // Create tool handler for special tool processing
+            var toolHandler = new CopilotToolHandler();
+            var latestToolExecutionByTool = {};
+            var latestRenderableToolMetadata = null;
+
+            var hasRenderableToolMetadata = function(toolMetadata) {
+                if (!toolMetadata || typeof toolMetadata !== 'object') {
+                    return false;
+                }
+                return !!(
+                    toolMetadata.isWorkflow ||
+                    toolMetadata.isWorkspaceListing ||
+                    toolMetadata.isWorkspaceBrowse ||
+                    toolMetadata.isJobsBrowse ||
+                    toolMetadata.isQueryCollection
+                );
+            };
+
+            var resolveToolId = function(parsed) {
+                if (!parsed || typeof parsed !== 'object') {
+                    return null;
+                }
+                return parsed.tool || parsed.source_tool || parsed.tool_id || null;
+            };
+
+            var buildToolMetadata = function(sourceTool, processed) {
+                if (!processed) {
+                    return null;
+                }
+                var toolMetadata = {
+                    source_tool: sourceTool
+                };
+                if (processed.isWorkflow) {
+                    toolMetadata.isWorkflow = processed.isWorkflow;
+                    toolMetadata.workflowData = processed.workflowData;
+                    if (processed.workflowData && processed.workflowData.workflow_id) {
+                        toolMetadata.workflow_id = processed.workflowData.workflow_id;
+                    }
+                }
+                if (processed.isWorkspaceListing) {
+                    toolMetadata.isWorkspaceListing = processed.isWorkspaceListing;
+                    toolMetadata.workspaceData = processed.workspaceData;
+                }
+                if (processed.isWorkspaceBrowse) {
+                    toolMetadata.isWorkspaceBrowse = processed.isWorkspaceBrowse;
+                    toolMetadata.workspaceBrowseResult = processed.workspaceBrowseResult;
+                    toolMetadata.chatSummary = processed.chatSummary;
+                    toolMetadata.uiPayload = processed.uiPayload;
+                    toolMetadata.uiAction = processed.uiAction;
+                }
+                if (processed.isJobsBrowse) {
+                    toolMetadata.isJobsBrowse = processed.isJobsBrowse;
+                    toolMetadata.jobsBrowseResult = processed.jobsBrowseResult;
+                    toolMetadata.chatSummary = processed.chatSummary;
+                    toolMetadata.uiPayload = processed.uiPayload;
+                    toolMetadata.uiAction = processed.uiAction;
+                }
+                if (processed.isQueryCollection) {
+                    toolMetadata.isQueryCollection = processed.isQueryCollection;
+                    toolMetadata.queryCollectionData = processed.queryCollectionData;
+                    toolMetadata.chatSummary = processed.chatSummary || toolMetadata.chatSummary;
+                    toolMetadata.uiPayload = processed.queryCollectionData || toolMetadata.uiPayload;
+                    toolMetadata.uiAction = processed.uiAction || 'open_data_tab';
+                }
+                if (processed.tool_call) {
+                    toolMetadata.tool_call = processed.tool_call;
+                }
+                return toolMetadata;
+            };
+
+            var isQueryCollectionToolId = function(toolId) {
+                if (!toolId || typeof toolId !== 'string') {
+                    return false;
+                }
+                return toolId === 'bvbrc_server.bvbrc_search_data' ||
+                    toolId === 'bvbrc_server.bvbrc_query_collection' ||
+                    toolId === 'bvbrc_server.query_collection' ||
+                    toolId.indexOf('bvbrc_search_data') !== -1 ||
+                    toolId.indexOf('bvbrc_query_collection') !== -1 ||
+                    toolId.indexOf('query_collection') !== -1;
+            };
+
+            // Some query-tool final responses are plain text. Keep query-card metadata alive
+            // using persisted call envelopes so the UI can still render the Data tab card.
+            var buildFallbackQueryToolMetadata = function(sourceTool, callInfo) {
+                if (!isQueryCollectionToolId(sourceTool)) {
+                    return null;
+                }
+                var normalizedCall = (callInfo && typeof callInfo === 'object') ? callInfo : null;
+                var args = normalizedCall && normalizedCall.arguments_executed && typeof normalizedCall.arguments_executed === 'object'
+                    ? normalizedCall.arguments_executed
+                    : {};
+                var rqlQueryUrl = args.rqlQueryUrl || args.rql_query_url || args.query_url || null;
+                return {
+                    source_tool: sourceTool,
+                    isQueryCollection: true,
+                    queryCollectionData: {
+                        queryParameters: args,
+                        collection: args.collection || null,
+                        rqlQueryUrl: rqlQueryUrl,
+                        resultRows: []
+                    },
+                    chatSummary: 'Data query ready.',
+                    uiPayload: {
+                        queryParameters: args,
+                        collection: args.collection || null,
+                        rqlQueryUrl: rqlQueryUrl,
+                        resultRows: []
+                    },
+                    uiAction: 'open_data_tab',
+                    tool_call: normalizedCall
+                };
+            };
+
+            fetch(streamEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': (window.App.authorizationToken || ''),
+                    'Accept': 'text/event-stream',
+                    'Cache-Control': 'no-cache'
+                },
+                body: JSON.stringify(data),
+                signal: this.currentAbortController.signal
+            }).then(response => {
+                if (!response.ok) {
+                    response.text().then(text => {
+                        const err = new Error(`HTTP error! status: ${response.status}, message: ${text}`);
+                        if (onError) onError(err);
+                    });
+                    return;
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let buffer = '';
+                let currentEvent = null;
+
+                const processLine = (line) => {
+                    console.log('***************** [CopilotApi] Processing line:', line);
+                    // Handle SSE comment lines (heartbeat)
+                    if (line.startsWith(':')) {
+                        return;
+                    }
+
+                    // Handle event lines
+                    if (line.startsWith('event:')) {
+                        currentEvent = line.substring(6).trim();
+                        return;
+                    }
+
+                    // Handle data lines
+                    if (line.startsWith('data:')) {
+                        const content = line.substring(5).trim();
+
+                        if (!content) return;
+
+                        try {
+                            const parsed = JSON.parse(content);
+
+                            // Let event handler process the event and create/update status message
+                            var statusMessage = eventHandler.handleEvent(currentEvent, parsed);
+
+                            // If a status message was created/updated, send it via callback
+                            if (statusMessage && onStatusMessage) {
+                                onStatusMessage(statusMessage);
+                            }
+
+                            // Handle different event types
+                            switch (currentEvent) {
+                                case 'queued':
+                                    if (parsed && parsed.job_id) {
+                                        _self.currentJobId = parsed.job_id;
+                                    }
+                                    if (onProgress) {
+                                        onProgress({ type: 'queued', data: parsed });
+                                    }
+                                    break;
+
+                                case 'started':
+                                    if (parsed && parsed.job_id) {
+                                        _self.currentJobId = parsed.job_id;
+                                    }
+                                    if (onProgress) {
+                                        onProgress({ type: 'started', data: parsed });
+                                    }
+                                    break;
+
+                                case 'progress':
+                                    if (parsed && parsed.job_id) {
+                                        _self.currentJobId = parsed.job_id;
+                                    }
+                                    if (onProgress) {
+                                        onProgress({
+                                            type: 'progress',
+                                            iteration: parsed.iteration,
+                                            max_iterations: parsed.max_iterations,
+                                            tool: parsed.tool,
+                                            percentage: parsed.percentage
+                                        });
+                                    }
+                                    break;
+
+                                case 'content':
+                                case 'final_response':
+                                    // This is the actual LLM response text
+                                    // Check for special tool handling
+                                    let dataToUse = parsed;
+                                    let toolMetadata = null;
+                                    if (currentEvent === 'final_response') {
+                                        var responseToolId = resolveToolId(parsed);
+                                        if (responseToolId) {
+                                            const processed = toolHandler.processToolEvent(currentEvent, responseToolId, parsed);
+
+                                            if (processed) {
+                                                dataToUse = processed;
+                                                toolMetadata = buildToolMetadata(responseToolId, processed);
+                                            }
+
+                                            // Final responses may be natural-language only. Rehydrate UI metadata
+                                            // from the last successful tool_executed payload for this tool.
+                                            if ((!toolMetadata || !hasRenderableToolMetadata(toolMetadata)) &&
+                                                Object.prototype.hasOwnProperty.call(latestToolExecutionByTool, responseToolId)) {
+                                                const cachedResult = latestToolExecutionByTool[responseToolId];
+                                                const replayProcessed = toolHandler.processToolEvent(
+                                                    'final_response',
+                                                    responseToolId,
+                                                    { chunk: cachedResult, tool: responseToolId }
+                                                );
+                                                if (replayProcessed) {
+                                                    toolMetadata = buildToolMetadata(responseToolId, replayProcessed);
+                                                }
+                                            }
+
+                                            if ((!toolMetadata || !hasRenderableToolMetadata(toolMetadata)) &&
+                                                parsed && parsed.call && typeof parsed.call === 'object') {
+                                                toolMetadata = buildFallbackQueryToolMetadata(responseToolId, parsed.call);
+                                            }
+                                        }
+                                    }
+
+                                    // If finalization moved to a different tool, still preserve the most recent
+                                    // renderable tool metadata so UI cards remain available.
+                                    if ((!toolMetadata || !hasRenderableToolMetadata(toolMetadata)) && latestRenderableToolMetadata) {
+                                        toolMetadata = lang.mixin({}, latestRenderableToolMetadata);
+                                    }
+
+                                    let textChunk = dataToUse.chunk || dataToUse.delta || dataToUse.content || '';
+                                    // If chunk is still an object (not handled by tool handler), stringify it
+                                    if (typeof textChunk === 'object' && textChunk !== null) {
+                                        textChunk = JSON.stringify(textChunk, null, 2);
+                                    }
+                                    if ((textChunk || toolMetadata) && onData) {
+                                        onData(textChunk, toolMetadata);
+                                    }
+                                    break;
+
+                                case 'done':
+                                    _self.currentAbortController = null;
+                                    _self.currentActiveToolId = null;
+                                    _self.currentJobId = null;
+
+                                    // Remove status message when done
+                                    if (statusMessage && statusMessage.should_remove && onStatusMessage) {
+                                        // Send removal signal by passing message with remove flag
+                                        onStatusMessage({ ...statusMessage, should_remove: true });
+                                    }
+
+                                    if (onEnd) onEnd(parsed);
+                                    break;
+
+                                case 'error':
+                                    console.error('Stream error:', parsed);
+                                    _self.currentAbortController = null;
+                                    _self.currentActiveToolId = null;
+                                    _self.currentJobId = null;
+
+                                    // Extract error message properly
+                                    var errorMessage = 'An error occurred';
+                                    if (parsed) {
+                                        if (parsed.error) {
+                                            errorMessage = parsed.error;
+                                        } else if (parsed.message) {
+                                            errorMessage = parsed.message;
+                                        } else if (typeof parsed === 'string') {
+                                            errorMessage = parsed;
+                                        }
+                                    }
+
+                                    if (onError) onError(new Error(errorMessage));
+                                    break;
+
+                                case 'tool_selected':
+                                    if (parsed && parsed.tool) {
+                                        _self.currentActiveToolId = parsed.tool;
+                                    }
+                                    break;
+
+                                case 'tool_executed':
+                                    if (parsed && parsed.tool && parsed.status === 'success' &&
+                                        Object.prototype.hasOwnProperty.call(parsed, 'result')) {
+                                        latestToolExecutionByTool[parsed.tool] = parsed.result;
+                                        const replayProcessed = toolHandler.processToolEvent(
+                                            'final_response',
+                                            parsed.tool,
+                                            {
+                                                chunk: parsed.result,
+                                                tool: parsed.tool,
+                                                call: parsed.call || (parsed.result && parsed.result.call) || null
+                                            }
+                                        );
+                                        if (replayProcessed) {
+                                            const replayMetadata = buildToolMetadata(parsed.tool, replayProcessed);
+                                            if (hasRenderableToolMetadata(replayMetadata)) {
+                                                latestRenderableToolMetadata = replayMetadata;
+                                            }
+                                        }
+                                        if ((!latestRenderableToolMetadata || !hasRenderableToolMetadata(latestRenderableToolMetadata)) &&
+                                            parsed.call && typeof parsed.call === 'object') {
+                                            var fallbackMetadata = buildFallbackQueryToolMetadata(parsed.tool, parsed.call);
+                                            if (fallbackMetadata && hasRenderableToolMetadata(fallbackMetadata)) {
+                                                latestRenderableToolMetadata = fallbackMetadata;
+                                            }
+                                        }
+                                    }
+                                    if (parsed && parsed.tool) {
+                                        _self.currentActiveToolId = parsed.tool;
+                                    }
+                                    if (parsed && parsed.job_id) {
+                                        _self.currentJobId = parsed.job_id;
+                                    }
+                                    break;
+                                case 'duplicate_detected':
+                                case 'forced_finalize':
+                                case 'query_progress':
+                                case 'abort_requested':
+                                case 'query_aborted':
+                                case 'cancelled':
+                                case 'cancel_requested':
+                                    if (parsed && parsed.job_id) {
+                                        _self.currentJobId = parsed.job_id;
+                                    }
+                                    if (parsed && parsed.tool) {
+                                        _self.currentActiveToolId = parsed.tool;
+                                    }
+                                    // These are handled by the event handler above
+                                    break;
+
+                                case 'session_file_created':
+                                    // File creation metadata is handled as a dedicated SSE event.
+                                    // Consumers can update the session Files panel immediately.
+                                    topic.publish('CopilotSessionFileCreated', parsed);
+                                    break;
+
+                                default:
+                                    console.warn('Unknown event type:', currentEvent, parsed);
+                            }
+                        } catch (e) {
+                            console.error('Failed to parse SSE data:', e, content);
+                        }
+
+                        // Reset event after processing data
+                        currentEvent = null;
+                    }
+                };
+
+                function pump() {
+                    return reader.read().then(({ done, value }) => {
+                        if (done) {
+                            if (buffer.length > 0) {
+                                const lines = buffer.split('\n');
+                                lines.forEach(line => {
+                                    if (line.trim()) processLine(line.trim());
+                                });
+                            }
+                            _self.currentAbortController = null;
+                            _self.currentActiveToolId = null;
+                            _self.currentJobId = null;
+                            if (onEnd) onEnd();
+                            return;
+                        }
+
+                        const chunk = decoder.decode(value, { stream: true });
+                        buffer += chunk;
+                        let eol;
+                        while ((eol = buffer.indexOf('\n')) >= 0) {
+                            const line = buffer.slice(0, eol).trim();
+                            buffer = buffer.slice(eol + 1);
+                            if (line) processLine(line);
+                        }
+
+                        return pump();
+                    }).catch(err => {
+                        // Handle stream disconnection gracefully
+                        console.warn('Stream disconnected:', err.name);
+                        _self.currentAbortController = null;
+                        _self.currentActiveToolId = null;
+                        _self.currentJobId = null;
+
+                        // Only call onError if it's not a user abort
+                        if (err.name !== 'AbortError') {
+                            var disconnectError = new Error('Connection interrupted. Please reload the session.');
+                            disconnectError.isStreamDisconnect = true;
+                            if (onError) onError(disconnectError);
+                        } else if (onEnd) {
+                            // User aborted, just end gracefully
+                            onEnd();
+                        }
+                    });
+                }
+
+                return pump();
+
+            }).catch(err => {
+                console.error('Error submitting copilot query stream:', err);
+                _self.currentAbortController = null;
+                _self.currentActiveToolId = null;
+                _self.currentJobId = null;
+
+                // Provide a more user-friendly error message for common issues
+                if (err.name === 'AbortError') {
+                    // User cancelled, don't show error
+                    return;
+                }
+
+                var errorToShow = err;
+                if (!err.isStreamDisconnect) {
+                    // Enhance error message for better user understanding
+                    if (err.message && err.message.includes('Failed to fetch')) {
+                        errorToShow = new Error('Network error. Please check your connection and reload.');
+                    } else if (err.message && err.message.includes('HTTP error')) {
+                        errorToShow = err; // Keep detailed HTTP errors
+                    }
+                }
+
+                if (onError) onError(errorToShow);
+            });
+        },
+
+        isQueryAbortableTool: function(toolId) {
+            if (!toolId || typeof toolId !== 'string') return false;
+            var normalized = toolId.split('.').pop();
+            return normalized === 'bvbrc_query_collection' ||
+                normalized === 'query_collection' ||
+                normalized === 'bvbrc_global_data_search' ||
+                normalized === 'bvbrc_search_data';
+        },
+
+        getCurrentStreamState: function() {
+            return {
+                job_id: this.currentJobId || null,
+                tool_id: this.currentActiveToolId || null,
+                has_active_stream: !!this.currentAbortController
+            };
+        },
+
+        abortActiveQueryJob: function(opts) {
+            if (!this._checkLoggedIn()) return Promise.reject(new Error('Not logged in'));
+            opts = opts || {};
+
+            var jobId = opts.job_id || this.currentJobId;
+            if (!jobId) {
+                return Promise.reject(new Error('No active job to abort'));
+            }
+
+            var payload = {
+                user_id: opts.user_id || this.user_id,
+                scopes: Array.isArray(opts.scopes) && opts.scopes.length > 0 ? opts.scopes : ['query_tools'],
+                reason: opts.reason || 'Aborted from chat UI'
+            };
+
+            return request.post(this.apiUrlBase + '/job/' + encodeURIComponent(jobId) + '/abort', {
+                data: JSON.stringify(payload),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            });
+        },
+
+
+        /**
+         * Submits a regular chat query
+         * Implementation:
+         * - Builds query data object with text, model, session
+         * - Optionally includes system prompt if provided
+         * - Makes POST request to chat endpoint
+         * - Caches response in storedResult
+         * - Handles errors with detailed logging
+         */
+        submitQuery: function(inputText, sessionId, systemPrompt, model, save_chat = true) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            console.log('query');
+            console.log('Session ID:', sessionId);
+            var data = {
+                query: inputText,
+                model: model,
+                session_id: sessionId,
+                user_id: _self.user_id,
+                save_chat: save_chat
+            };
+
+            if (systemPrompt) {
+                data.system_prompt = systemPrompt;
+            } else {
+                data.system_prompt = '';
+            }
+            console.log('submitting query to', this.apiUrlBase + '/chat');
+            return request.post(this.apiUrlBase + '/chat', {
+                data: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                _self.storedResult = response.response;
+                return response;
+            }).catch(function(error) {
+                console.error('Error submitting query:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Submits a RAG-enhanced query
+         * Implementation:
+         * - Similar to submitQuery but uses RAG endpoint
+         * - Includes RAG database selection in query
+         * - Validates success message in response
+         * - Throws error if response indicates failure
+         */
+        submitRagQuery: function(inputQuery, ragDb, numDocs, sessionId, model) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            console.log('Session ID:', sessionId);
+
+            var data = {
+                query: inputQuery,
+                rag_db: ragDb,
+                user_id: _self.user_id,
+                model: model,
+                num_docs: numDocs,
+                session_id: sessionId
+            };
+            var rag_endpoint = this.apiUrlBase + '/rag';
+            console.log('submitting rag query to', rag_endpoint);
+            return request.post(rag_endpoint, {
+                data: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(lang.hitch(this, function(response) {
+                if (response['message'] == 'success') {
+                    _self.storedResult = response;
+                    return response;
+                } else {
+                    throw new Error(response['message']);
+                }
+            })).catch(function(error) {
+                console.error('Error submitting query:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Submits a regular chat query
+         * Implementation:
+         * - Builds query data object with text, model, session
+         * - Optionally includes system prompt if provided
+         * - Makes POST request to chat endpoint
+         * - Caches response in storedResult
+         * - Handles errors with detailed logging
+         */
+        submitQueryChatOnly: function(inputText, systemPrompt, model) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            console.log('query');
+            console.log('Session ID: N/A (chat-only query)');
+            var data = {
+                query: inputText,
+                model: model,
+                user_id: _self.user_id,
+            };
+
+            if (systemPrompt) {
+                data.system_prompt = systemPrompt;
+            }
+            console.log('submitting query to', this.apiUrlBase + '/chat-only');
+            return request.post(this.apiUrlBase + '/chat-only', {
+                data: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('Error submitting query:', error);
+                throw error;
+            });
+        },
+
+        submitQueryWithImage: function(inputText, sessionId, systemPrompt, model, image) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            console.log('query');
+            console.log('Session ID:', sessionId);
+            var data = {
+                query: inputText,
+                model: model,
+                session_id: sessionId,
+                user_id: _self.user_id,
+                image: image
+            };
+            console.log('submitting query to', this.apiUrlBase + '/chat-image');
+            return request.post(this.apiUrlBase + '/chat-image', {
+                data: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('Error submitting query:', error);
+                throw error;
+            });
+        },
+
+        /**
          * Retrieves all messages for a session
          * Implementation:
          * - Makes GET request with session ID
          * - Returns full message history
          * - Includes detailed error logging
          */
-        getSessionMessages: function(sessionId) {
+        getSessionMessages: function(sessionId, options) {
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-            return request.get(this.apiUrlBase + `/get-session-messages?session_id=${encodeURIComponent(sessionId)}`, {
+            var opts = options || {};
+            var queryParams = [
+                `session_id=${encodeURIComponent(sessionId)}`
+            ];
+
+            if (opts.includeFiles) {
+                queryParams.push('include_files=true');
+                queryParams.push(`user_id=${encodeURIComponent(this.user_id)}`);
+                if (typeof opts.limit === 'number') {
+                    queryParams.push(`limit=${opts.limit}`);
+                }
+                if (typeof opts.offset === 'number') {
+                    queryParams.push(`offset=${opts.offset}`);
+                }
+            }
+
+            return request.get(this.apiUrlBase + `/get-session-messages?${queryParams.join('&')}`, {
                 headers: {
                     Authorization: (window.App.authorizationToken || '')
                 },
                 handleAs: 'json'
             }).then(function(response) {
                 console.log('Session messages retrieved:', response);
+                console.log('[DEBUG] getSessionMessages - Full response structure:', JSON.stringify(response, null, 2));
+                console.log('[DEBUG] getSessionMessages - response.workflow_ids:', response.workflow_ids);
+
+                // Direct logging of messages
+                console.log('[DIRECT LOG] Retrieved messages array:');
+                if (response && response.messages) {
+                    console.log('[DIRECT LOG] Total messages:', response.messages.length);
+                    response.messages.forEach(function(message, index) {
+                        console.log(`[DIRECT LOG] Message ${index}:`, message);
+                        console.log(`[DIRECT LOG] Message ${index} stringified:`, JSON.stringify(message, null, 2));
+                    });
+                } else {
+                    console.log('[DIRECT LOG] No messages found in response');
+                }
+
                 return response;
             }).catch(function(error) {
                 console.error('Error getting session messages:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Retrieves session file metadata for a session.
+         * Supports pagination and always includes user_id for authorization.
+         */
+        getSessionFiles: function(sessionId, limit = 20, offset = 0) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var queryParams = [
+                `session_id=${encodeURIComponent(sessionId)}`,
+                `user_id=${encodeURIComponent(this.user_id)}`,
+                `limit=${limit}`,
+                `offset=${offset}`
+            ];
+            return request.get(this.apiUrlBase + `/get-session-files?${queryParams.join('&')}`, {
+                headers: {
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('Error getting session files:', error);
                 throw error;
             });
         },
@@ -212,6 +1079,36 @@ define([
                 handleAs: 'json'
             }).then(function(response) {
                 return response;
+            }).catch(function(error) {
+                console.error('Error getting session title:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Generates a title from chat messages
+         * Implementation:
+         * - Posts messages to title generation endpoint
+         * - Uses specified model for generation
+         * - Returns generated title string
+         */
+        generateTitleFromMessages: function(messages, model) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            return request.post(this.apiUrlBase + '/generate-title-from-messages', {
+                data: JSON.stringify({
+                    messages: messages,
+                    user_id: _self.user_id,
+                    model: model
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                const title = response.response;
+                return title;
             }).catch(function(error) {
                 console.error('Error getting session title:', error);
                 throw error;
@@ -247,294 +1144,6 @@ define([
                 throw error;
             });
         },
-
-        /**
-         * Deletes a chat session
-         * Implementation:
-         * - Posts session ID to delete endpoint
-         * - Returns response on success
-         * - Throws error on failure
-         */
-        deleteSession: function(sessionId) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-            return request.post(this.apiUrlBase + '/delete-session', {
-                data: JSON.stringify({
-                    session_id: sessionId,
-                    user_id: _self.user_id
-                }),
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                console.log('Session deleted:', response);
-                return response;
-            }).catch(function(error) {
-                console.error('Error deleting session:', error);
-                throw error;
-            });
-        },
-
-        // ========================================
-        // QUERY SUBMISSION METHODS
-        // ========================================
-
-        /**
-         * Submits a copilot query with combined functionality
-         * Implementation:
-         * - Builds query data object with text, model, session
-         * - Optionally includes system prompt if provided
-         * - Optionally includes RAG functionality (rag_db, num_docs)
-         * - Optionally includes image if provided
-         * - Makes POST request to copilot endpoint
-         * - Handles errors with detailed logging
-         */
-        submitCopilotQuery: function(inputText, sessionId, systemPrompt, model, save_chat = true, ragDb, numDocs, image, enhancedPrompt = null) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-            console.log('query');
-            var data = {
-                query: inputText,
-                model: model,
-                session_id: sessionId,
-                user_id: _self.user_id,
-                save_chat: save_chat,
-                enhanced_prompt: enhancedPrompt
-            };
-
-            if (systemPrompt) {
-                data.system_prompt = systemPrompt;
-            } else {
-                data.system_prompt = '';
-            }
-
-            // Add RAG functionality if ragDb is provided
-            if (ragDb) {
-                data.rag_db = ragDb;
-                if (numDocs) {
-                    data.num_docs = numDocs;
-                }
-            }
-
-            // Add image functionality if image is provided
-            if (image) {
-                data.image = image;
-            }
-
-            return request.post(this.apiUrlBase + '/copilot', {
-                data: JSON.stringify(data),
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                _self.storedResult = response.response || response;
-                return response;
-            }).catch(function(error) {
-                console.error('Error submitting copilot query:', error);
-                throw error;
-            });
-        },
-
-
-        /**
-         * Submits a regular chat query
-         * Implementation:
-         * - Builds query data object with text, model, session
-         * - Optionally includes system prompt if provided
-         * - Makes POST request to chat endpoint
-         * - Caches response in storedResult
-         * - Handles errors with detailed logging
-         */
-        submitQuery: function(inputText, sessionId, systemPrompt, model, save_chat = true) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-            console.log('query');
-            var data = {
-                query: inputText,
-                model: model,
-                session_id: sessionId,
-                user_id: _self.user_id,
-                save_chat: save_chat
-            };
-
-            if (systemPrompt) {
-                data.system_prompt = systemPrompt;
-            } else {
-                data.system_prompt = '';
-            }
-            console.log('submitting query to', this.apiUrlBase + '/chat');
-            return request.post(this.apiUrlBase + '/chat', {
-                data: JSON.stringify(data),
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                _self.storedResult = response.response;
-                return response;
-            }).catch(function(error) {
-                console.error('Error submitting query:', error);
-                throw error;
-            });
-        },
-
-        /**
-         * Submits a regular chat query without session management
-         * Implementation:
-         * - Builds query data object with text, model
-         * - Optionally includes system prompt if provided
-         * - Makes POST request to chat-only endpoint
-         * - Returns response directly without caching
-         * - Handles errors with detailed logging
-         */
-        submitQueryChatOnly: function(inputText, systemPrompt, model) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-            console.log('query');
-            var data = {
-                query: inputText,
-                model: model,
-                user_id: _self.user_id,
-            };
-
-            if (systemPrompt) {
-                data.system_prompt = systemPrompt;
-            }
-            console.log('submitting query to', this.apiUrlBase + '/chat-only');
-            return request.post(this.apiUrlBase + '/chat-only', {
-                data: JSON.stringify(data),
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                return response;
-            }).catch(function(error) {
-                console.error('Error submitting query:', error);
-                throw error;
-            });
-        },
-
-        /**
-         * Submits a query with image support
-         * Implementation:
-         * - Builds query data object with text, model, session, image
-         * - Makes POST request to chat-image endpoint
-         * - Returns response directly
-         * - Handles errors with detailed logging
-         */
-        submitQueryWithImage: function(inputText, sessionId, systemPrompt, model, image) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-            console.log('query');
-            var data = {
-                query: inputText,
-                model: model,
-                session_id: sessionId,
-                user_id: _self.user_id,
-                image: image
-            };
-            console.log('submitting query to', this.apiUrlBase + '/chat-image');
-            return request.post(this.apiUrlBase + '/chat-image', {
-                data: JSON.stringify(data),
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                return response;
-            }).catch(function(error) {
-                console.error('Error submitting query:', error);
-                throw error;
-            });
-        },
-
-        /**
-         * Submits a RAG-enhanced query
-         * Implementation:
-         * - Similar to submitQuery but uses RAG endpoint
-         * - Includes RAG database selection in query
-         * - Validates success message in response
-         * - Throws error if response indicates failure
-         */
-        submitRagQuery: function(inputQuery, ragDb, numDocs, sessionId, model) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-
-            var data = {
-                query: inputQuery,
-                rag_db: ragDb,
-                user_id: _self.user_id,
-                model: model,
-                num_docs: numDocs,
-                session_id: sessionId
-            };
-            var rag_endpoint = this.apiUrlBase + '/rag';
-            console.log('submitting rag query to', rag_endpoint);
-            return request.post(rag_endpoint, {
-                data: JSON.stringify(data),
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
-                },
-                handleAs: 'json'
-            }).then(lang.hitch(this, function(response) {
-                if (response['message'] == 'success') {
-                    _self.storedResult = response;
-                    return response;
-                } else {
-                    throw new Error(response['message']);
-                }
-            })).catch(function(error) {
-                console.error('Error submitting query:', error);
-                throw error;
-            });
-        },
-
-        // ========================================
-        // TITLE MANAGEMENT METHODS
-        // ========================================
-
-        /**
-         * Generates a title from chat messages
-         * Implementation:
-         * - Posts messages to title generation endpoint
-         * - Uses specified model for generation
-         * - Returns generated title string
-         */
-        generateTitleFromMessages: function(messages, model) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-            return request.post(this.apiUrlBase + '/generate-title-from-messages', {
-                data: JSON.stringify({
-                    messages: messages,
-                    user_id: _self.user_id,
-                    model: model
-                }),
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                const title = response.response;
-                return title;
-            }).catch(function(error) {
-                console.error('Error getting session title:', error);
-                throw error;
-            });
-        },
-
-        // ========================================
-        // PROMPT MANAGEMENT METHODS
-        // ========================================
 
         /**
          * Retrieves saved prompts for user
@@ -597,23 +1206,19 @@ define([
             });
         },
 
-        // ========================================
-        // RATING METHODS
-        // ========================================
-
         /**
-         * Sets the rating for a conversation
-         * @param {string} sessionId The ID of the session to rate
-         * @param {number} rating The rating to set (1-5)
-         * @returns {Promise} A promise that resolves when the rating is set
+         * Deletes a chat session
+         * Implementation:
+         * - Posts session ID to delete endpoint
+         * - Returns response on success
+         * - Throws error on failure
          */
-        setConversationRating: function(sessionId, rating) {
+        deleteSession: function(sessionId) {
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             var _self = this;
-            return request.post(this.apiUrlBase + '/rate-conversation', {
+            return request.post(this.apiUrlBase + '/delete-session', {
                 data: JSON.stringify({
                     session_id: sessionId,
-                    rating: rating,
                     user_id: _self.user_id
                 }),
                 headers: {
@@ -622,44 +1227,13 @@ define([
                 },
                 handleAs: 'json'
             }).then(function(response) {
+                console.log('Session deleted:', response);
                 return response;
             }).catch(function(error) {
-                console.error('Error setting conversation rating:', error);
+                console.error('Error deleting session:', error);
                 throw error;
             });
         },
-
-        /**
-         * Rates a message
-         * @param {string} messageId The ID of the message to rate
-         * @param {number} rating The rating to set (1 or -1)
-         * @returns {Promise} A promise that resolves when the rating is set
-         */
-        rateMessage: function(messageId, rating) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-            return request.post(this.apiUrlBase + '/rate-message', {
-                data: JSON.stringify({
-                    message_id: messageId,
-                    rating: rating,
-                    user_id: _self.user_id
-                }),
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                return response;
-            }).catch(function(error) {
-                console.error('Error rating message:', error);
-                throw error;
-            });
-        },
-
-        // ========================================
-        // MODEL & CONFIGURATION METHODS
-        // ========================================
 
         /**
          * Gets list of available models
@@ -695,26 +1269,362 @@ define([
             });
         },
 
-        // ========================================
-        // STREAM CONTROL METHODS
-        // ========================================
-
         /**
-         * Stops the current streaming request
-         * @returns {boolean} True if a request was stopped, false if no request was active
+         * Sets the rating for a conversation
+         * @param {string} sessionId The ID of the session to rate
+         * @param {number} rating The rating to set (1-5)
+         * @returns {Promise} A promise that resolves when the rating is set
          */
-        stopCurrentStream: function() {
-            if (this.currentAbortController) {
-                this.currentAbortController.abort();
-                this.currentAbortController = null;
-                return true;
-            }
-            return false;
+        setConversationRating: function(sessionId, rating) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            return request.post(this.apiUrlBase + '/rate-conversation', {
+                data: JSON.stringify({
+                    session_id: sessionId,
+                    rating: rating,
+                    user_id: _self.user_id
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('Error setting conversation rating:', error);
+                throw error;
+            });
         },
 
-        // ========================================
-        // PATH STATE METHODS
-        // ========================================
+        /**
+         * Submits a workflow for execution directly to the workflow engine API
+         * Bypasses the MCP layer and talks directly to the workflow engine REST endpoint
+         * @param {Object} workflowJson - Complete workflow manifest to submit
+         * @returns {Promise} Promise that resolves with submission response
+         */
+        submitWorkflowForExecution: function(workflowJson) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+
+            console.log('[CopilotApi] submitWorkflowForExecution called');
+            console.log('[CopilotApi] Workflow JSON:', workflowJson);
+
+            // Get workflow engine URL from config
+            var workflowEngineUrl = window.App.workflow_url || 'https://dev-7.bv-brc.org/api/v1';
+            var normalizedInput = workflowJson || {};
+            var workflowId = normalizedInput.workflow_id ||
+                (normalizedInput.execution_metadata && normalizedInput.execution_metadata.workflow_id) ||
+                null;
+            var workflowStatus = (normalizedInput.execution_metadata && normalizedInput.execution_metadata.status) ||
+                normalizedInput.status ||
+                null;
+            var shouldSubmitById = !!(workflowId && String(workflowStatus || '').toLowerCase() === 'planned');
+
+            var submitPromise;
+
+            if (shouldSubmitById) {
+                var submitByIdUrl = workflowEngineUrl + '/workflows/' + encodeURIComponent(workflowId) + '/submit';
+                console.log('[CopilotApi] Submitting planned workflow by ID:', submitByIdUrl);
+                submitPromise = request.post(submitByIdUrl, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': (window.App.authorizationToken || '')
+                    },
+                    handleAs: 'json'
+                });
+            } else {
+                var submitUrl = workflowEngineUrl + '/workflows/submit';
+                console.log('[CopilotApi] Submitting workflow manifest directly:', submitUrl);
+
+                // Clean the workflow before submission - remove fields that workflow engine assigns
+                var workflowForSubmission = JSON.parse(JSON.stringify(normalizedInput));
+
+                // Remove workflow_id (including placeholder values like "<scheduler_generated_id>")
+                // Always remove it - the engine will assign a real one
+                delete workflowForSubmission.workflow_id;
+                delete workflowForSubmission.status;       // Engine assigns this
+                delete workflowForSubmission.created_at;   // Engine assigns this
+                delete workflowForSubmission.updated_at;   // Engine assigns this
+                delete workflowForSubmission.execution_metadata; // Frontend metadata, not for engine
+
+                // Clean steps - remove execution metadata
+                if (workflowForSubmission.steps) {
+                    workflowForSubmission.steps.forEach(function(step) {
+                        delete step.step_id;    // Engine assigns this
+                        delete step.status;     // Execution metadata
+                        delete step.task_id;    // Execution metadata
+                        delete step.submitted_at; // Execution metadata
+                        delete step.started_at;   // Execution metadata
+                        delete step.completed_at; // Execution metadata
+                        delete step.elapsed_time; // Execution metadata
+                        delete step.error_message; // Execution metadata
+
+                        // Drop optional list params that are null/empty.
+                        // Workflow engine expects these to be omitted when unused.
+                        if (step.params && typeof step.params === 'object') {
+                            Object.keys(step.params).forEach(function(paramKey) {
+                                var value = step.params[paramKey];
+                                var looksLikeListParam = /(_libs|_ids)$/.test(paramKey);
+                                var isNullish = value === null || typeof value === 'undefined';
+                                var isEmptyArray = Array.isArray(value) && value.length === 0;
+                                if (looksLikeListParam && (isNullish || isEmptyArray)) {
+                                    delete step.params[paramKey];
+                                }
+                            });
+                        }
+                    });
+                }
+
+                console.log('[CopilotApi] Cleaned workflow for submission:', workflowForSubmission);
+
+                submitPromise = request.post(submitUrl, {
+                    data: JSON.stringify(workflowForSubmission),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': (window.App.authorizationToken || '')
+                    },
+                    handleAs: 'json'
+                });
+            }
+
+            return submitPromise.then(function(response) {
+                console.log('[CopilotApi] Workflow submission response:', response);
+                // Response format from workflow engine:
+                // {
+                //   "workflow_id": "wf_123...",
+                //   "status": "pending",
+                //   "message": "Workflow submitted for execution"
+                // }
+                return response;
+            }).catch(function(error) {
+                console.error('[CopilotApi] Error submitting workflow:', error);
+                console.error('[CopilotApi] Error object keys:', Object.keys(error));
+
+                // Extract error message from dojo/request error
+                var errorMsg = 'Failed to submit workflow';
+
+                // dojo/request error structure - check response.data first (parsed JSON)
+                if (error.response) {
+                    if (error.response.data) {
+                        // Already parsed JSON error response
+                        var errorData = error.response.data;
+                        if (typeof errorData === 'object') {
+                            errorMsg = errorData.detail || errorData.message || errorData.error || JSON.stringify(errorData);
+                        } else {
+                            errorMsg = errorData;
+                        }
+                    } else if (typeof error.response === 'string') {
+                        // Response is a string
+                        errorMsg = error.response;
+                        try {
+                            var errorJson = JSON.parse(errorMsg);
+                            errorMsg = errorJson.detail || errorJson.message || errorJson.error || errorMsg;
+                        } catch (e) {
+                            // Keep as-is
+                        }
+                    } else if (error.message) {
+                        errorMsg = error.message;
+                    }
+                } else if (error.message) {
+                    errorMsg = error.message;
+                }
+
+                console.error('[CopilotApi] Extracted error message:', errorMsg);
+                throw new Error(errorMsg);
+            });
+        },
+
+        /**
+         * Retrieves the full workflow definition by ID from workflow engine.
+         * @param {string} workflowId Workflow identifier
+         * @returns {Promise} Promise resolving to workflow definition payload
+         */
+        getWorkflowById: function(workflowId) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            if (!workflowId) return Promise.reject(new Error('workflowId is required'));
+
+            var workflowEngineUrl = window.App.workflow_url || 'https://dev-7.bv-brc.org/api/v1';
+            var workflowUrl = workflowEngineUrl + '/workflows/' + encodeURIComponent(workflowId);
+
+            return request.get(workflowUrl, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('[CopilotApi] Error fetching workflow by id:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Retrieves the latest workflow status from workflow engine.
+         * @param {string} workflowId Workflow identifier
+         * @returns {Promise} Promise resolving to workflow status payload
+         */
+        getWorkflowStatus: function(workflowId) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            if (!workflowId) return Promise.reject(new Error('workflowId is required'));
+
+            var workflowEngineUrl = window.App.workflow_url || 'https://dev-7.bv-brc.org/api/v1';
+            var statusUrl = workflowEngineUrl + '/workflows/' + encodeURIComponent(workflowId) + '/status';
+
+            return request.get(statusUrl, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('[CopilotApi] Error fetching workflow status:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Replays a previously executed MCP tool call through the orchestrator API.
+         * Used by tool cards loaded from session history where result payloads are not persisted.
+         * @param {Object} toolCall Canonical tool call envelope
+         * @param {string|null} sessionId Optional session id for execution context
+         * @returns {Promise<Object>} Replay response payload
+         */
+        replayToolCall: function(toolCall, sessionId) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            if (!toolCall || typeof toolCall !== 'object') {
+                return Promise.reject(new Error('toolCall is required'));
+            }
+            var toolId = toolCall.tool || toolCall.tool_id;
+            if (!toolId || typeof toolId !== 'string') {
+                return Promise.reject(new Error('toolCall.tool is required'));
+            }
+            var args = toolCall.arguments_executed;
+            if (!args || typeof args !== 'object' || Array.isArray(args)) {
+                args = {};
+            }
+
+            return request.post(this.apiUrlBase + '/mcp/replay-tool-call', {
+                data: JSON.stringify({
+                    tool_id: toolId,
+                    parameters: args,
+                    tool_call: toolCall,
+                    session_id: sessionId || null
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('[CopilotApi] Error replaying MCP tool call:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Searches stored RAG chunk references for a message/session scope.
+         * @param {Object} filters Query filters (message_id/session_id/user_id/rag_db/etc.)
+         * @returns {Promise<Object>} Paginated chunk search response
+         */
+        searchRagChunkReferences: function(filters) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var safeFilters = (filters && typeof filters === 'object') ? filters : {};
+            var queryParts = [];
+
+            var appendQuery = function(key, value) {
+                if (value === undefined || value === null) return;
+                if (typeof value === 'string' && value.trim() === '') return;
+                queryParts.push(encodeURIComponent(key) + '=' + encodeURIComponent(String(value)));
+            };
+
+            appendQuery('chunk_id', safeFilters.chunk_id);
+            appendQuery('rag_db', safeFilters.rag_db);
+            appendQuery('rag_api_name', safeFilters.rag_api_name);
+            appendQuery('doc_id', safeFilters.doc_id);
+            appendQuery('source_id', safeFilters.source_id);
+            appendQuery('session_id', safeFilters.session_id);
+            appendQuery('user_id', safeFilters.user_id);
+            appendQuery('message_id', safeFilters.message_id);
+            appendQuery('limit', safeFilters.limit);
+            appendQuery('offset', safeFilters.offset);
+            appendQuery('include_content', typeof safeFilters.include_content === 'boolean' ? String(safeFilters.include_content) : 'true');
+
+            return request.get(this.apiUrlBase + '/rag-chunk-search?' + queryParts.join('&'), {
+                headers: {
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('[CopilotApi] Error searching RAG chunk references:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Associates a submitted workflow ID with a chat session so it appears in workflow context.
+         * @param {string} sessionId The chat session ID
+         * @param {string} workflowId The submitted workflow ID
+         * @returns {Promise} A promise that resolves when workflow is associated
+         */
+        addWorkflowToSession: function(sessionId, workflowId) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            if (!sessionId || !workflowId) return Promise.reject('sessionId and workflowId are required');
+
+            var _self = this;
+            return request.post(this.apiUrlBase + '/add-workflow-to-session', {
+                data: JSON.stringify({
+                    session_id: sessionId,
+                    workflow_id: workflowId,
+                    user_id: _self.user_id
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('Error adding workflow to session:', error);
+                throw error;
+            });
+        },
+
+        /**
+         * Rates a message
+         * @param {string} messageId The ID of the message to rate
+         * @param {number} rating The rating to set (1 or -1)
+         * @returns {Promise} A promise that resolves when the rating is set
+         */
+        rateMessage: function(messageId, rating) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            return request.post(this.apiUrlBase + '/rate-message', {
+                data: JSON.stringify({
+                    message_id: messageId,
+                    rating: rating,
+                    user_id: _self.user_id
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(function(response) {
+                return response;
+            }).catch(function(error) {
+                console.error('Error rating message:', error);
+                throw error;
+            });
+        },
 
         /**
          * Gets the path state

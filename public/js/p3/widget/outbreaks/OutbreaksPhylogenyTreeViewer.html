@@ -33,11 +33,28 @@
             height: 100%;
             width: 100%;
         }
-    </style>
 
+        .phyloLoading {
+          top: 10px;
+          left: 10px;
+          z-index: 9999;
+
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+
+          padding: 6px 10px;
+          border: 1px solid rgba(0,0,0,0.15);
+          border-radius: 8px;
+        }
+    </style>
+    <div class="phyloLoading" data-dojo-attach-point="loadingNode" style="display:none;">
+        <i class="fa icon-spinner fa-spin"></i>
+        <div class="phyloLoadingBox">Loading tree…</div>
+    </div>
     <div class="size archaeopteryxClass">
-        <div id='phylogramOutbreak-${id}'></div>
-        <div id="controls-${id}-0" class="ui-widget-content"></div>
-        <div id="controls-${id}-1" class="ui-widget-content"></div>
+        <div id='phylogramOutbreak-${id}' data-dojo-attach-point="phylogramNode"></div>
+        <div id="controls-${id}-0" class="ui-widget-content phylogram-outbreak-controls" style="display:none;"></div>
+        <div id="controls-${id}-1" class="ui-widget-content phylogram-outbreak-controls" style="display:none;"></div>
     </div>
 </div>

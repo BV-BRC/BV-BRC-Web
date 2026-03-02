@@ -65,12 +65,6 @@ define([
         /** @property {boolean} cepiSelected - Tracks if CEPI button is selected */
         cepiSelected: false,
 
-        /** @property {boolean} publicationsSelected - Tracks if Publications button is selected */
-        publicationsSelected: false,
-
-        /** @property {boolean} showPublicationsButton - Flag to control publications button visibility */
-        showPublicationsButton: false,
-
         /** @property {boolean} showEnhancePromptButton - Flag to control enhance prompt button visibility */
         showEnhancePromptButton: false,
 
@@ -85,12 +79,54 @@ define([
             }
 
             // Set button visibility based on configuration
-            if (window.App && window.App.copilotEnablePublications !== undefined) {
-                this.showPublicationsButton = window.App.copilotEnablePublications === 'true';
-            }
             if (window.App && window.App.copilotEnableEnhancePrompt !== undefined) {
                 this.showEnhancePromptButton = window.App.copilotEnableEnhancePrompt === 'true';
             }
+        },
+
+        _parseListPayload: function(value) {
+            if (Array.isArray(value)) {
+                return value;
+            }
+            if (typeof value === 'string') {
+                try {
+                    var parsed = JSON.parse(value);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+            return [];
+        },
+
+        _resolveDefaultModel: function(modelList) {
+            if (!Array.isArray(modelList) || modelList.length === 0) {
+                return null;
+            }
+            var explicitDefault = modelList.find(function(entry) {
+                return entry && entry.is_default === true && entry.active !== false;
+            });
+            if (explicitDefault && explicitDefault.model) {
+                return explicitDefault.model;
+            }
+            var activeSorted = modelList
+                .filter(function(entry) {
+                    return entry && entry.model && entry.active !== false;
+                })
+                .sort(function(a, b) {
+                    var pa = typeof a.priority === 'number' ? a.priority : Number.MAX_SAFE_INTEGER;
+                    var pb = typeof b.priority === 'number' ? b.priority : Number.MAX_SAFE_INTEGER;
+                    return pa - pb;
+                });
+            return activeSorted.length > 0 ? activeSorted[0].model : null;
+        },
+
+        _syncGlobalModelCatalog: function() {
+            if (!window || !window.App) {
+                return;
+            }
+            window.App.copilotModelList = Array.isArray(this.modelList) ? this.modelList.slice() : [];
+            window.App.copilotRagList = Array.isArray(this.ragList) ? this.ragList.slice() : [];
         },
 
         /**
@@ -153,6 +189,10 @@ define([
             if (this.ragList) {
                 var check_names = [];
                 this.ragList.forEach(lang.hitch(this, function(ragdb) {
+                    // Filter out bvbrc_helpdesk
+                    if (ragdb.name === 'bvbrc_helpdesk') {
+                        return;
+                    }
                     var option = document.createElement('option');
                     option.value = ragdb.name;
                     option.text = ragdb.name.split('/').reverse()[0];
@@ -224,7 +264,7 @@ define([
             numDocsInput.type = 'number';
             numDocsInput.min = '1';
             numDocsInput.max = '10';
-            numDocsInput.value = '3';
+            numDocsInput.value = '10';
             numDocsInput.style.width = '60px';
             numDocsInput.addEventListener('change', lang.hitch(this, function(evt) {
                 var numDocs = evt.target.value;
@@ -333,6 +373,12 @@ define([
                     user_id: window.App.user ? window.App.user.l_id : null
                 });
             }
+            if ((!this.modelList || this.modelList.length === 0) && window.App && Array.isArray(window.App.copilotModelList)) {
+                this.modelList = window.App.copilotModelList.slice();
+            }
+            if ((!this.ragList || this.ragList.length === 0) && window.App && Array.isArray(window.App.copilotRagList)) {
+                this.ragList = window.App.copilotRagList.slice();
+            }
 
             this.name_map = {
                 "Llama-4-Scout-17B-16E-Instruct-quantized.w4a16": "Llama-4-Scout",
@@ -341,9 +387,6 @@ define([
 
             // Set CSS height based on number of additional features enabled
             var additionalFeatures = 0;
-            if (this.showPublicationsButton) {
-                additionalFeatures++;
-            }
             if (this.showEnhancePromptButton) {
                 additionalFeatures++;
             }
@@ -380,21 +423,6 @@ define([
                     }
                 })
             }, buttonsContainer);
-
-            // Conditionally add Publications button between New Chat and advanced options
-            if (this.showPublicationsButton) {
-                this.publicationsButton = domConstruct.create('div', {
-                    innerHTML: 'Publications',
-                    className: 'chat-window-options-button',
-                    onclick: lang.hitch(this, function() {
-                        this.publicationsSelected = !this.publicationsSelected;
-                        domClass.toggle(this.publicationsButton, 'selected', this.publicationsSelected);
-
-                        // Publish the RAG database change
-                        topic.publish('ChatRagDb', this.publicationsSelected ? 'cepi_journals' : 'null');
-                    })
-                }, buttonsContainer);
-            }
 
             // Create container for model and RAG text elements
             this.advancedOptionsContainer = domConstruct.create('div', {
@@ -619,9 +647,21 @@ define([
                 topic.publish('return_rag_list', this.ragList);
             }));
 
-            // Set initial model after a brief delay to ensure all subscribers are in place
+            this._syncGlobalModelCatalog();
+
+            // Set initial model after a brief delay to ensure all subscribers are in place.
+            // Priority: previously selected model -> is_default model -> first active model by priority.
             setTimeout(lang.hitch(this, function() {
-                topic.publish('ChatModel', 'RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16');
+                var selectedModel = window && window.App ? window.App.copilotSelectedModel : null;
+                if (!selectedModel) {
+                    selectedModel = this._resolveDefaultModel(this.modelList);
+                }
+                if (selectedModel) {
+                    if (window && window.App) {
+                        window.App.copilotSelectedModel = selectedModel;
+                    }
+                    topic.publish('ChatModel', selectedModel);
+                }
             }), 100);
 
             // Fetch model and RAG lists from API
@@ -638,8 +678,9 @@ define([
                 this.copilotApi.getModelList().then(lang.hitch(this, function(modelsAndRag) {
                     try {
                         // Parse the response
-                        this.modelList = JSON.parse(modelsAndRag.models);
-                        this.ragList = JSON.parse(modelsAndRag.vdb_list);
+                        this.modelList = this._parseListPayload(modelsAndRag.model_list || modelsAndRag.models);
+                        this.ragList = this._parseListPayload(modelsAndRag.rag_list || modelsAndRag.vdb_list);
+                        this._syncGlobalModelCatalog();
 
                         // COMMENTED OUT: Update displays with first available options or "None" if empty
                         // var defaultModel = this.modelList && this.modelList.length > 0 ? this.modelList[0] : 'None';

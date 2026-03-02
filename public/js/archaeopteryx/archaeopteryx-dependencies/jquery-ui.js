@@ -6574,7 +6574,7 @@ $.widget( "ui.checkboxradio", [ $.ui.formResetMixin, {
 		// If there are multiple labels, use the last one
 		this.label = $( labels[ labels.length - 1 ] );
 		if ( !this.label.length ) {
-			$.error( "No label found for checkboxradio widget" );
+			console.log( "No label found for checkboxradio widget" );
 		}
 
 		this.originalLabel = "";

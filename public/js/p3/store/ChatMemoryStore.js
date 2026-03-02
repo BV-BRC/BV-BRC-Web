@@ -49,7 +49,7 @@ define([
      * - Used for bulk loading/resetting of message history
      */
     setData: function(messages) {
-      this.data = messages;
+      this.data = Array.isArray(messages) ? messages : [];
     },
 
     /**
@@ -61,6 +61,9 @@ define([
      * - Used for adding individual new messages
      */
     addMessage: function(message) {
+      if (!Array.isArray(this.data)) {
+        this.data = [];
+      }
       this.data.push(message);
     },
 
@@ -74,7 +77,12 @@ define([
      * - Maintains message order from input array
      */
     addMessages: function(messages) {
-      this.data.push(...messages);
+      if (!Array.isArray(this.data)) {
+        this.data = [];
+      }
+      if (Array.isArray(messages) && messages.length) {
+        this.data.push(...messages);
+      }
     },
 
     /**
@@ -100,7 +108,7 @@ define([
      * - Could be extended to support filtering in future
      */
     query: function(query) {
-      return this.data;
+      return Array.isArray(this.data) ? this.data : [];
     },
 
     // No session list helpers in message store
@@ -121,6 +129,61 @@ define([
           item.title = newTitle;
         }
       });
+    },
+
+    /**
+     * @method getMessageById
+     * @param {string} messageId - Message identifier
+     * @returns {Object|null} Message object if found, null otherwise
+     *
+     * Implementation:
+     * - Searches data array for message with matching message_id
+     * - Returns first match or null if not found
+     */
+    getMessageById: function(messageId) {
+      for (var i = 0; i < this.data.length; i++) {
+        if (this.data[i].message_id === messageId) {
+          return this.data[i];
+        }
+      }
+      return null;
+    },
+
+    /**
+     * @method updateMessage
+     * @param {Object} message - Updated message object
+     *
+     * Implementation:
+     * - Finds message with matching message_id
+     * - Replaces entire message object with updated version
+     * - Used for updating status messages
+     */
+    updateMessage: function(message) {
+      for (var i = 0; i < this.data.length; i++) {
+        if (this.data[i].message_id === message.message_id) {
+          this.data[i] = message;
+          return true;
+        }
+      }
+      return false;
+    },
+
+    /**
+     * @method removeMessage
+     * @param {string} messageId - Message identifier
+     *
+     * Implementation:
+     * - Removes message with matching message_id from data array
+     * - Used for removing temporary status messages
+     */
+    removeMessage: function(messageId) {
+      for (var i = 0; i < this.data.length; i++) {
+        if (this.data[i].message_id === messageId) {
+          this.data.splice(i, 1);
+          return true;
+        }
+      }
+      return false;
     }
   });
 });

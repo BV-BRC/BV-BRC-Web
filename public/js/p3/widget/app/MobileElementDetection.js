@@ -752,6 +752,24 @@ define([
             AppBase.prototype.intakeRerunFormBase.call(this, param_dict);
             var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
             job_data = this.formatRerunJson(job_data);
+
+            // Switch input type radio button based on job data
+            if (job_data.input_type === 'reads') {
+              this.inputTypeReads.set('checked', true);
+              this.inputTypeContigs.set('checked', false);
+              this.onInputTypeChange();
+            } else {
+              // contigs mode (default)
+              this.inputTypeContigs.set('checked', true);
+              this.inputTypeReads.set('checked', false);
+              this.onInputTypeChange();
+            }
+
+            // Populate input_file for contigs mode
+            if (job_data.input_file) {
+              this.input_file.set('value', job_data.input_file);
+            }
+
             this.setRecipe(job_data['recipe']);
             AppBase.prototype.loadLibrary.call(this, job_data, param_dict);
             this.form_flag = true;

@@ -423,13 +423,15 @@ define([
         });
        console.log('in setAltLabel this.featureData', this.featureData);
        
-       this.featureData.forEach(function (feature) {
-          if (dataMap[geneID].feature_id == feature.feature_id) {
-            if (feature.gene) {
-              self.alt_labels.gene[geneID] = feature.gene;
+        if (Array.isArray(this.featureData) && this.featureData.length > 0) {
+          this.featureData.forEach(function (feature) {
+            if (dataMap[geneID].feature_id == feature.feature_id) {
+              if (feature.gene) {
+                self.alt_labels.gene[geneID] = feature.gene;
+              }
             }
-          }
-        });               
+          });
+        }               
       }));
       console.log('in setAltLabel this.alt_labels', this.alt_labels);
     },

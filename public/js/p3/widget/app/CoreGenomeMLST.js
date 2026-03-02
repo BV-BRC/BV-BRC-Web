@@ -39,36 +39,27 @@ define([
     startup: function () {
       var _self = this;
 
-      this.inherited(arguments);
       if (this._started) {
         return;
       }
-
-
-      // Call the startup of the base class explicitly
-      this.constructor.superclass.startup.apply(this, arguments);
-      this.inherited(arguments);
-
       if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {
         return;
       }
 
-      // Ensure FilteringSelect is preloaded
-        require(["dijit/form/FilteringSelect"], function(FilteringSelect) {
-        _self.inherited(arguments);
-        _self._started = true;
-        _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
-        _self.output_path.set('value', _self.defaultPath);
+      this.inherited(arguments);
+      _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
+      _self.output_path.set('value', _self.defaultPath);
 
-        // Initialize FilteringSelect manually
-        _self.initFilteringSelect();
+      // Initialize FilteringSelect manually
+      _self.initFilteringSelect();
 
-        try {
-          _self.intakeRerunForm();
-        } catch (error) {
-          console.error(error);
-        }
-      });
+      this._started = true;
+      this.form_flag = false;
+      try {
+        this.intakeRerunForm();
+      } catch (error) {
+        console.error(error);
+      }
     },
 
     initFilteringSelect(storeData) {
@@ -225,12 +216,25 @@ define([
           var sessionStorage = window.sessionStorage;
           if (sessionStorage.hasOwnProperty(rerun_key)) {
             var job_data = JSON.parse(sessionStorage.getItem(rerun_key));
-            this.setStatusFormFill(job_data);
-            this.setAlphabetFormFill(job_data);
-            this.setUnalignedInputFormFill(job_data);
-            this.setReferenceFormFill(job_data);
-            // this.addSequenceFilesFormFill(job_data);
-            this.setAlignerFormFill(job_data);
+
+            // Populate genome group selector
+            if (job_data.input_genome_group) {
+              var genome_group = job_data.input_genome_group;
+              if (Array.isArray(genome_group)) {
+                genome_group = genome_group[0];
+              }
+              this.input_genome_group.set('value', genome_group);
+            }
+
+            // Populate reference schema selector
+            if (job_data.input_schema_selection) {
+              this.onSelectSchema();
+              var filteringSelect_ = registry.byId('input_schema_selection');
+              if (filteringSelect_) {
+                filteringSelect_.set('value', job_data.input_schema_selection);
+              }
+            }
+
             this.form_flag = true;
           }
         } catch (error) {

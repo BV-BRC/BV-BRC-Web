@@ -1,5 +1,5 @@
-<form dojoAttachPoint="containerNode" class="PanelForm"
-   dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
+      dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
 
    <style>
 
@@ -246,68 +246,95 @@
          <br/>
       </div>
 
+      <div class="formFieldsContainer">
+         <div class="appBox appShadow" style="margin-top:10px">
+            <div class="headerrow">
+               <label class="appBoxLabel">Input sequence</label>
+               <div name="input-file" class="infobox iconbox infobutton dialoginfo">
+                  <i class="fa icon-info-circle fa"></i>
+               </div>
+            </div>
+            <div style="width:97%;">
+               <div class="appRow">
+                  <input id="${id}_input_fasta" type="radio" data-dojo-type="dijit/form/RadioButton"
+                         data-dojo-attach-point="input_fasta" name="input" value="input_fasta"
+                         data-dojo-attach-event="onChange:onInputChange" checked/>
+                  <label for="${id}_input_fasta">Select FASTA file</label>
+                  <input id="${id}_input_genome_group" type="radio" data-dojo-type="dijit/form/RadioButton"
+                         data-dojo-attach-point="input_genome_group" name="input" value="input_group"
+                         data-dojo-attach-event="onChange:onInputChange"/>
+                  <label for="${id}_input_genome_group">Genome group</label>
+               </div>
+               <table data-dojo-attach-point="fasta_table">
+                  <tr>
+                     <td>
+                        <div name="fasta_file_id"
+                             data-dojo-attach-event="onChange:handleFastaFileIdChange"
+                             data-dojo-attach-point="fastaFileIdEl"
+                             data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                             data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta', 'genome_protein_fasta', 'genome_dna_fasta', 'contigs'],multi:false,promptMessage:'Select or upload a FASTA file from your workspace.',missingMessage:'FASTA file is required.',placeHolder:'FASTA file'"
+                             required="true"
+                             style="padding: 0; width: 85%; display: inline-block;"
+                        ></div>
+                        <div class="warning treesort--error-message" data-dojo-attach-point="fastaFileIdMessageEl"></div>
+                     </td>
+                  </tr>
+               </table>
+               <table data-dojo-attach-point="genome_group_table" style="display:none">
+                  <tr>
+                     <td>
+                        <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="genomeGroup"
+                             required="false" data-dojo-attach-point="genomeGroup"
+                             data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace.',missingMessage:'Genome group is required.',placeHolder:'Genome group'"
+                             style="padding: 0; width: 85%; display: inline-block;">
+                        </div>
+                     </td>
+                  </tr>
+               </table>
+               <div class="appRowSegment" style="text-align:left; display: none;">
+
+                  <!-- Match regex -->
+                  <div data-dojo-attach-point="matchRegexContainerEl">
+
+                     <!--
+                     dmd 02/03/26: Temporarily removing the regex control.
+
+                     <label class="paramlabel">Strain name regular expression</label>
+                     <div name="match-regex" class="infobox iconbox infobutton tooltipinfo">
+                        <i class="fa icon-question-circle fa"></i>
+                     </div>
+                     <br/>
+                     <input name="match_regex"
+                        data-dojo-attach-event="onChange:handleMatchRegexChange"
+                        data-dojo-attach-point="matchRegexEl"
+                        data-dojo-props="intermediateChanges: false, invalidMessage:'Enter a regular expression', trim:true, placeholder:'A Python regex'"
+                        data-dojo-type="dijit/form/ValidationTextBox"
+                        required="false"
+                        style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 200px;" />
+                     <div class="warning treesort--error-message" data-dojo-attach-point="matchRegexMessageEl"></div>
+                     -->
+
+                     <!-- A hidden field for the match type. -->
+                     <div name="match_type"
+                          data-dojo-attach-point="matchTypeEl"
+                          data-dojo-props="disabled:false"
+                          data-dojo-type="dijit/form/TextBox"
+                          style="display: none; visibility: hidden"
+                     ></div>
+
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
       <div class="appBox appShadow" style="margin-top:10px">
 
          <div class="headerrow">
             <div style="width:85%;display:inline-block;">
                <label class="appBoxLabel">Parameters</label>
                <div name="parameters" class="infobox iconbox infobutton dialoginfo">
-               <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-               </div>
-            </div>
-         </div>
-
-         <div class="appRow treesort--row-with-columns">
-            <div class="appRowSegment treesort--left-column">
-
-               <!-- Input file -->
-               <label class="paramlabel">Input file</label>
-               <div name="input-file" class="infobox iconbox infobutton dialoginfo">
-                  <i class="fa icon-info-circle fa"></i>
-               </div>
-               <br/>
-               <div name="fasta_file_id"
-                  data-dojo-attach-event="onChange:handleFastaFileIdChange"
-                  data-dojo-attach-point="fastaFileIdEl"
-                  data-dojo-type="p3/widget/WorkspaceObjectSelector"
-                  data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta', 'genome_protein_fasta', 'genome_dna_fasta', 'contigs'],multi:false,promptMessage:'Select or upload a FASTA file from your workspace.',missingMessage:'FASTA file is required.',placeHolder:'FASTA file'"
-                  required="true"
-                  style="width: 200px;"
-               ></div>
-               <div class="warning treesort--error-message" data-dojo-attach-point="fastaFileIdMessageEl"></div>
-
-            </div>
-            <div class="appRowSegment" style="text-align:left;">
-
-               <!-- Match regex -->
-               <div data-dojo-attach-point="matchRegexContainerEl">
-
-                  <!--
-                  dmd 02/03/26: Temporarily removing the regex control.
-
-                  <label class="paramlabel">Strain name regular expression</label>
-                  <div name="match-regex" class="infobox iconbox infobutton tooltipinfo">
-                     <i class="fa icon-question-circle fa"></i>
-                  </div>
-                  <br/>
-                  <input name="match_regex"
-                     data-dojo-attach-event="onChange:handleMatchRegexChange"
-                     data-dojo-attach-point="matchRegexEl"
-                     data-dojo-props="intermediateChanges: false, invalidMessage:'Enter a regular expression', trim:true, placeholder:'A Python regex'"
-                     data-dojo-type="dijit/form/ValidationTextBox"
-                     required="false"
-                     style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 200px;" />
-                  <div class="warning treesort--error-message" data-dojo-attach-point="matchRegexMessageEl"></div>
-                  -->
-
-                  <!-- A hidden field for the match type. -->
-                  <div name="match_type"
-                     data-dojo-attach-point="matchTypeEl"
-                     data-dojo-props="disabled:false"
-                     data-dojo-type="dijit/form/TextBox"
-                     style="display: none; visibility: hidden"
-                  ></div>
-
+                  <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                </div>
             </div>
          </div>

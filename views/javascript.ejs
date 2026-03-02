@@ -251,6 +251,7 @@ const load_scripts = [
 <script type="text/javascript" src="/js/cytoscape-cose-bilkent/cytoscape-cose-bilkent.js"></script>
 -->
 
+
 <% if (request && request.production){ %>
   <script src="/js/<%- request.package.version %>/dojo/dojo.js"></script>
   <script>
@@ -273,6 +274,8 @@ const load_scripts = [
         appOpts.copilotEnablePublications = "<%= request.applicationOptions.copilotEnablePublications %>";
         appOpts.copilotEnableEnhancePrompt = "<%= request.applicationOptions.copilotEnableEnhancePrompt %>";
         appOpts.copilotEnableShowPromptDetails = "<%= request.applicationOptions.copilotEnableShowPromptDetails %>";
+        appOpts.copilotEnableModelSelector = "<%= request.applicationOptions.copilotEnableModelSelector %>";
+        appOpts.copilotEnableRagSelector = "<%= request.applicationOptions.copilotEnableRagSelector %>";
         appOpts.production = <%= request.production %>;
         window.App = new App(appOpts);
       });

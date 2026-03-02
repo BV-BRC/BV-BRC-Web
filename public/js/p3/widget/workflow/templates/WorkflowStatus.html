@@ -1,0 +1,25 @@
+<div class="WorkflowStatusButton" data-dojo-attach-event="onclick:openWorkflows">
+  <span>Workflows</span>
+  <span class="WorkflowStatusCounts" data-dojo-attach-point="workflowStatusTicker">
+
+    <i class="icon-tasks Queued"></i>
+    <span data-dojo-attach-point="workflowsPendingNode"></span>
+
+    <span class="divider"></span>
+
+    <i class="icon-play22 Running"></i>
+    <span data-dojo-attach-point="workflowsRunningNode"></span>
+
+    <span class="divider"></span>
+
+    <i class="icon-checkmark2 Completed"></i>
+    <span data-dojo-attach-point="workflowsCompleteNode"></span>
+
+  </span>
+
+  <span data-dojo-attach-point="workflowsStatusFailed" class="WorkflowStatusCounts Failed" style="display: none; font-weight: bold;">
+    &nbsp;N/A&nbsp;
+  </span>
+
+</div>
+

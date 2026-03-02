@@ -1,0 +1,15 @@
+<div class="phylogenyVirus">
+    <div class="section" style="padding: 0 5px;">
+        <div data-dojo-attach-point="cardsHostNode" class="cardsHost"></div>
+
+        <div data-dojo-attach-point="viewerPaneNode" style="display:none;">
+            <div id="viewerHeader" style="display: flex; align-items: center; gap: 12px; margin: 5px 0 5px 0;">
+                <div data-dojo-type="dijit/form/Button" data-dojo-attach-event="onClick:_showCards">← Back to trees</div>
+                <div class="section-title close" style="margin-bottom: 12px;">
+                    <span data-dojo-attach-point="viewerTitleNode" class="wrap"></span>
+                </div>
+            </div>
+            <div data-dojo-attach-point="viewerHostNode"></div>
+        </div>
+    </div>
+</div>

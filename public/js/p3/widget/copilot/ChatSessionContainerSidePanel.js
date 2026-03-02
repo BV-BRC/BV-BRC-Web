@@ -48,10 +48,10 @@ define([
         optionsBar: null,
 
         /** @property {string} model - Current model */
-        model: "RedHatAI/Llama-4-Scout-17B-16E-Instruct-quantized.w4a16",
+        model: null,
 
         /** @property {string} ragDb - Current RAG database */
-        ragDb: 'bvbrc_helpdesk',
+        ragDb: null,
 
         /**
          * @constructor
@@ -61,6 +61,9 @@ define([
         constructor: function(opts) {
             this.inherited(arguments);
             lang.mixin(this, opts);
+            if (!this.model && window && window.App && window.App.copilotSelectedModel) {
+                this.model = window.App.copilotSelectedModel;
+            }
         },
 
         /**
@@ -94,6 +97,7 @@ define([
             if (!this.context) {
                 this.context = 'grid-container';
             }
+            var activeModel = this.model || this.selectedModel || (window && window.App ? window.App.copilotSelectedModel : null);
             this.inputWidget = new CopilotInputSidePanel({
                 region: 'bottom',
                 splitter: true,
@@ -103,8 +107,10 @@ define([
                 displayWidget: this.displayWidget,
                 sessionId: this.sessionId,
                 context: this.context,
-                model: this.model,
-                ragDb: this.ragDb
+                model: activeModel,
+                ragDb: this.ragDb,
+                selectedWorkspaceItems: this._sessionWorkspaceSelectionState.items,
+                selectedJobs: this._sessionJobsSelectionState.items
             });
             this.addChild(this.inputWidget);
         },
@@ -138,6 +144,9 @@ define([
                 copilotApi: this.copilotApi,
                 chatStore: this.chatStore,
                 sessionId: this.sessionId,
+                onLoadMoreFiles: lang.hitch(this, this._loadMoreSessionFiles),
+                onWorkspaceSelectionChanged: lang.hitch(this, this._handleWorkspaceSelectionChanged),
+                onJobsSelectionChanged: lang.hitch(this, this._handleJobsSelectionChanged),
                 context: 'side-panel'  // Mark this as side panel context
             };
 
@@ -147,6 +156,8 @@ define([
             }
 
             this.displayWidget = new CopilotDisplay(displayOpts);
+            this.displayWidget.setSessionWorkspaceSelectionData(this._sessionWorkspaceSelectionState.items);
+            this.displayWidget.setSessionJobsSelectionData(this._sessionJobsSelectionState.items);
             this.addChild(this.displayWidget);
         },
 

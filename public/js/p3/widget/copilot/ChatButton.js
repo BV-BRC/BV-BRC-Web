@@ -4,7 +4,6 @@ define([
     'dojo/dom-class',
     'dojo/on',
     'dojo/topic',
-    'dijit/Dialog',
     'dijit/layout/ContentPane',
     'dojo/dom-construct',
     'dojo/_base/lang',
@@ -22,7 +21,6 @@ define([
     domClass,
     on,
     topic,
-    Dialog,
     ContentPane,
     domConstruct,
     lang,
@@ -54,13 +52,28 @@ define([
         // one chat window is open
         chatOpen: false,
 
-        // localStorage key for button visibility state
-        _visibilityStorageKey: 'copilot-chat-button-visible',
+        // Tooltip element reference
+        errorTooltip: null,
 
         // Constructor
         constructor: function(opts) {
             // Add any initialization logic here
             lang.mixin(this, opts);
+        },
+
+        _parseListPayload: function(value) {
+            if (Array.isArray(value)) {
+                return value;
+            }
+            if (typeof value === 'string') {
+                try {
+                    var parsed = JSON.parse(value);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+            return [];
         },
 
         // Post-create lifecycle method
@@ -71,9 +84,6 @@ define([
             this.set('label', '<i class="fa fa-comments"></i>');
             domClass.add(this.domNode, 'ChatButton');
 
-            // Create and add the hide text element
-            this._createHideText();
-
             topic.subscribe('hideChatPanel', lang.hitch(this, function(checked) {
                 this._hideControllerPanel();
             }));
@@ -82,97 +92,13 @@ define([
                 this._showControllerPanel();
             }));
 
-            // Initialize button visibility from localStorage
-            this._initializeVisibilityFromStorage();
+            // Subscribe to copilot service unavailable errors
+            topic.subscribe('CopilotServiceUnavailable', lang.hitch(this, function(message) {
+                this.showErrorTooltip(message || 'The BV-BRC Copilot service is currently unavailable. Please try again later.');
+            }));
 
             // Initialize footer overlap detection
             this._initFooterOverlapDetection();
-
-            topic.subscribe('showChatButton', lang.hitch(this, function(checked) {
-                this.show();
-            }));
-
-            topic.subscribe('hideChatButton', lang.hitch(this, function(checked) {
-                this.hide();
-            }));
-        },
-
-        _createHideText: function() {
-            // Create the hide text element
-            this.hideText = domConstruct.create('span', {
-                innerHTML: 'hide',
-                className: 'chat-button-hide-text'
-            });
-
-            // Add the hide text to the button's container
-            domConstruct.place(this.hideText, this.domNode, 'first');
-
-            // Set up hover event handlers
-            this._setupHoverEvents();
-
-            // Add click handler to the hide text
-            on(this.hideText, 'click', lang.hitch(this, function(evt) {
-                topic.publish('hideChatButton', true);
-            }));
-        },
-
-                _setupHoverEvents: function() {
-            var self = this;
-
-            // Initialize timer variables
-            this._showTimer = null;
-            this._hideTimer = null;
-
-            // Show hide text on button hover (with 1 second delay)
-            on(this.domNode, 'mouseenter', function(evt) {
-                // Clear any existing hide timer
-                if (self._hideTimer) {
-                    clearTimeout(self._hideTimer);
-                    self._hideTimer = null;
-                }
-
-                // Set show timer for 1 second delay
-                self._showTimer = setTimeout(function() {
-                    domStyle.set(self.hideText, 'display', 'block');
-                    self._showTimer = null;
-                }, 1000);
-            });
-
-            // Hide hide text when leaving button area (with 1 second delay)
-            on(this.domNode, 'mouseleave', function(evt) {
-                // Clear any existing show timer
-                if (self._showTimer) {
-                    clearTimeout(self._showTimer);
-                    self._showTimer = null;
-                }
-
-                // Only set hide timer if text is currently visible
-                if (domStyle.get(self.hideText, 'display') === 'block') {
-                    self._hideTimer = setTimeout(function() {
-                        domStyle.set(self.hideText, 'display', 'none');
-                        self._hideTimer = null;
-                    }, 1000);
-                }
-            });
-
-            // Keep hide text visible when hovering over it
-            on(this.hideText, 'mouseenter', function(evt) {
-                // Clear any existing hide timer
-                if (self._hideTimer) {
-                    clearTimeout(self._hideTimer);
-                    self._hideTimer = null;
-                }
-                // Ensure text stays visible
-                domStyle.set(self.hideText, 'display', 'block');
-            });
-
-            // Start hide timer when leaving hide text
-            on(this.hideText, 'mouseleave', function(evt) {
-                self._hideTimer = setTimeout(function() {
-                    domStyle.set(self.hideText, 'display', 'none');
-                    self._hideTimer = null;
-                }, 1000);
-            });
         },
 
         _initFooterOverlapDetection: function() {
@@ -284,8 +210,13 @@ define([
             if (!this.optionsBar) {
                 // Fetch model list and RAG database list
                 this.copilotApi.getModelList().then(lang.hitch(this, function(modelsAndRag) {
-                    var modelList = JSON.parse(modelsAndRag.models);
-                    var ragList = JSON.parse(modelsAndRag.vdb_list);
+                    var modelList = this._parseListPayload(modelsAndRag.model_list || modelsAndRag.models);
+                    var ragList = this._parseListPayload(modelsAndRag.rag_list || modelsAndRag.vdb_list);
+
+                    if (window && window.App) {
+                        window.App.copilotModelList = modelList.slice();
+                        window.App.copilotRagList = ragList.slice();
+                    }
 
                     // Create options bar
                     this.optionsBar = new ChatSessionOptionsBar({
@@ -300,11 +231,7 @@ define([
                     this._initializeSmallWindowContainer();
 
                 })).catch(lang.hitch(this, function(err) {
-                    new Dialog({
-                        title: "Service Unavailable",
-                        content: "The BV-BRC Copilot service is currently unavailable. Please try again later.",
-                        style: "width: 300px"
-                    }).show();
+                    this.showErrorTooltip('The BV-BRC Copilot service is currently unavailable. Please try again later.');
                     console.error('Error setting up chat panel:', err);
                 }));
             } else {
@@ -367,81 +294,131 @@ define([
             domClass.toggle(this.domNode, 'active', isOpen);
         },
 
-        // Initialize button visibility from localStorage
-        _initializeVisibilityFromStorage: function() {
-            try {
-                var isVisible = this._getVisibilityFromStorage();
-                if (isVisible !== null) {
-                    if (isVisible) {
-                        this.show();
-                    } else {
-                        this.hide();
-                    }
+        /**
+         * Shows a non-modal tooltip above the chat button
+         * @param {string} message - The error message to display
+         */
+        showErrorTooltip: function(message) {
+            // Hide any existing tooltip first
+            this.hideErrorTooltip();
+
+            // Create tooltip element
+            this.errorTooltip = domConstruct.create('div', {
+                class: 'copilot-error-tooltip',
+                innerHTML: message,
+                style: {
+                    position: 'fixed',
+                    backgroundColor: '#fff',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                    padding: '12px 16px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                    zIndex: '10000',
+                    maxWidth: '300px',
+                    fontSize: '14px',
+                    color: '#333',
+                    pointerEvents: 'auto'
                 }
-                // If no stored preference, default to visible (no action needed)
-            } catch (e) {
-                console.warn('Unable to access localStorage for chat button visibility', e);
-            }
-        },
+            }, document.body);
 
-        // Get visibility state from localStorage
-        _getVisibilityFromStorage: function() {
-            try {
-                if (window && window.localStorage) {
-                    var stored = localStorage.getItem(this._visibilityStorageKey);
-                    return stored !== null ? (stored === 'true') : null;
+            // Position tooltip above the chat button
+            this._positionTooltip();
+
+            // Reposition tooltip on window resize or scroll
+            var self = this;
+            this._tooltipResizeHandler = on(window, 'resize', function() {
+                if (self.errorTooltip) {
+                    self._positionTooltip();
                 }
-            } catch (e) {
-                console.warn('Unable to read chat button visibility from localStorage', e);
-            }
-            return null;
-        },
-
-        // Save visibility state to localStorage
-        _saveVisibilityToStorage: function(isVisible) {
-            try {
-                if (window && window.localStorage) {
-                    localStorage.setItem(this._visibilityStorageKey, isVisible.toString());
+            });
+            this._tooltipScrollHandler = on(window, 'scroll', function() {
+                if (self.errorTooltip) {
+                    self._positionTooltip();
                 }
-            } catch (e) {
-                console.warn('Unable to save chat button visibility to localStorage', e);
+            }, true);
+
+            // Auto-hide after 5 seconds
+            this._tooltipTimeout = setTimeout(function() {
+                self.hideErrorTooltip();
+            }, 5000);
+
+            // Hide tooltip when clicking anywhere
+            this._tooltipClickHandler = on(document, 'click', function(evt) {
+                if (self.errorTooltip && !self.errorTooltip.contains(evt.target) && evt.target !== self.domNode) {
+                    self.hideErrorTooltip();
+                }
+            });
+        },
+
+        /**
+         * Positions the tooltip above the chat button
+         * @private
+         */
+        _positionTooltip: function() {
+            if (!this.errorTooltip || !this.domNode) return;
+
+            var buttonRect = this.domNode.getBoundingClientRect();
+            var tooltipRect = this.errorTooltip.getBoundingClientRect();
+
+            // Position above the button, centered horizontally
+            var left = buttonRect.left + (buttonRect.width / 2) - (tooltipRect.width / 2);
+            var top = buttonRect.top - tooltipRect.height - 10; // 10px gap above button
+
+            // Ensure tooltip doesn't go off-screen
+            if (left < 10) left = 10;
+            if (left + tooltipRect.width > window.innerWidth - 10) {
+                left = window.innerWidth - tooltipRect.width - 10;
             }
+            if (top < 10) {
+                // If not enough space above, show below button instead
+                top = buttonRect.bottom + 10;
+            }
+
+            domStyle.set(this.errorTooltip, {
+                left: left + 'px',
+                top: top + 'px'
+            });
         },
 
-        // Hide the chat button
-        hide: function() {
-            domStyle.set(this.domNode, 'display', 'none');
-            this._saveVisibilityToStorage(false);
-        },
+        /**
+         * Hides and removes the error tooltip
+         */
+        hideErrorTooltip: function() {
+            if (this._tooltipTimeout) {
+                clearTimeout(this._tooltipTimeout);
+                this._tooltipTimeout = null;
+            }
 
-        // Show the chat button
-        show: function() {
-            domStyle.set(this.domNode, 'display', 'block');
-            this._saveVisibilityToStorage(true);
+            if (this._tooltipClickHandler) {
+                this._tooltipClickHandler.remove();
+                this._tooltipClickHandler = null;
+            }
+
+            if (this._tooltipResizeHandler) {
+                this._tooltipResizeHandler.remove();
+                this._tooltipResizeHandler = null;
+            }
+
+            if (this._tooltipScrollHandler) {
+                this._tooltipScrollHandler.remove();
+                this._tooltipScrollHandler = null;
+            }
+
+            if (this.errorTooltip) {
+                domConstruct.destroy(this.errorTooltip);
+                this.errorTooltip = null;
+            }
         },
 
         // Cleanup method
         destroy: function() {
+            // Hide and clean up tooltip
+            this.hideErrorTooltip();
+
             // Clean up intersection observer
             if (this._intersectionObserver) {
                 this._intersectionObserver.disconnect();
                 this._intersectionObserver = null;
-            }
-
-            // Clean up hide text timers
-            if (this._showTimer) {
-                clearTimeout(this._showTimer);
-                this._showTimer = null;
-            }
-            if (this._hideTimer) {
-                clearTimeout(this._hideTimer);
-                this._hideTimer = null;
-            }
-
-            // Clean up hide text element
-            if (this.hideText) {
-                domConstruct.destroy(this.hideText);
-                this.hideText = null;
             }
 
             // Clean up scroll handlers would be handled by dojo's on.remove if we stored the handles

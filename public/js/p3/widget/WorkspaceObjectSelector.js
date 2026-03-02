@@ -961,6 +961,14 @@ define([
           }
           this.searchBox.set('store', this.store);
           if (this.value) {
+            // If value is set but not in the store (e.g., cross-workspace path from rerun),
+            // inject a synthetic item so FilteringSelect can resolve and display it
+            try {
+              if (!this.store.get(this.value)) {
+                var name = this.value.replace(/\/+$/, '').split('/').pop();
+                this.store.add({ path: this.value, name: name });
+              }
+            } catch (e) { /* ignore */ }
             this.searchBox.set('value', this.value);
           }
           // If the dropdown is currently open, refresh its display

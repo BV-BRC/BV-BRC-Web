@@ -53,13 +53,12 @@ define([
           const dataType = _self.dataModel
           const primaryKey = _self.primaryKey
           const currentQuery = _self.grid.get('query')
-          const authToken = (window.App.authorizationToken) ? `&http_authorization=${encodeURIComponent(window.App.authorizationToken)}` : ''
           const query = `${currentQuery}&sort(${primaryKey})&limit(${totalRows})`
 
           on(downloadTT.domNode, 'div:click', function (evt) {
             const typeAccept = evt.target.attributes.rel.value
 
-            const baseUrl = `${PathJoin(window.App.dataServiceURL, dataType)}/?${authToken}&http_accept=${typeAccept}&http_download=true`
+            const baseUrl = `${PathJoin(window.App.dataServiceURL, dataType)}/?http_accept=${typeAccept}&http_download=true`
 
             const form = domConstruct.create('form', {
               style: 'display: none;',
@@ -74,6 +73,14 @@ define([
               value: encodeURIComponent(query),
               name: 'rql'
             }, form);
+            // Add authorization as form field for POST requests
+            if (window.App.authorizationToken) {
+              domConstruct.create('input', {
+                type: 'hidden',
+                value: window.App.authorizationToken,
+                name: 'http_authorization'
+              }, form);
+            }
             form.submit();
 
             popup.close(downloadTT);
