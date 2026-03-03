@@ -362,7 +362,8 @@ define([
           return '/' + [this.userId, 'home', 'Experiment Groups'].join('/');
 
         default:
-          return '/' + this.userId;
+          // Return user's home folder as a valid default output location
+          return '/' + this.userId + '/home';
       }
     },
     _userWorkspacesGetter: function () {

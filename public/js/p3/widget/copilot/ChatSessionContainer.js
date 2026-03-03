@@ -285,9 +285,19 @@ define([
                 this._setActiveTab('grids', 'data');
             }));
 
-            // Subscribe to message submission to switch back to Messages tab
+            // Subscribe to message submission to switch back to Messages tab and close file previews
             topic.subscribe('ChatMessageSubmitted', lang.hitch(this, function() {
                 this._setActiveTab('messages');
+                // Close any expanded file previews so they don't appear during agent SSE updates
+                var expanded = document.querySelectorAll('.file-preview-expanded');
+                for (var i = 0; i < expanded.length; i++) {
+                    var container = expanded[i];
+                    container.classList.remove('file-preview-expanded');
+                    var toggle = container.querySelector('.file-preview-toggle-button');
+                    var content = container.querySelector('.file-preview-content-area');
+                    if (toggle) { toggle.style.display = ''; }
+                    if (content) { content.style.display = 'none'; }
+                }
             }));
 
             // Start path monitoring
