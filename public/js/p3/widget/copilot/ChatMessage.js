@@ -1667,24 +1667,31 @@ define([
     },
 
     /**
-     * Map of collection names to their sort key field for cursor pagination.
-     * Matches the server-side _COLLECTION_KEY_FIELD in data_tools.py.
+     * Map of collection names to their Solr uniqueKey field for cursor pagination.
+     * Cursor-based pagination requires sort on the collection's unique key.
+     * Values sourced from bvbrc-python-api/bvbrc_solr_api/resources/*.py stream_all_solr() defaults.
      * @private
      */
-    _collectionKeyField: {
+    _collectionSolrUniqueKey: {
       genome: 'genome_id',
-      genome_feature: 'patric_id',
+      genome_feature: 'feature_id',
       taxonomy: 'taxon_id',
       genome_amr: 'id',
       genome_sequence: 'sequence_id',
-      sp_gene: 'patric_id',
-      pathway: 'pathway_id',
+      sp_gene: 'id',
+      pathway: 'id',
       subsystem: 'id',
       protein_family_ref: 'family_id',
-      specialty_gene_ref: 'id',
-      antibiotics: 'antibiotic_name',
+      sp_gene_ref: 'id',
+      antibiotics: 'pubchem_cid',
       enzyme_class_ref: 'ec_number',
-      gene_ontology_ref: 'go_id'
+      gene_ontology_ref: 'go_id',
+      protein_structure: 'pdb_id',
+      protein_feature: 'id',
+      epitope: 'epitope_id',
+      serology: 'id',
+      strain: 'id',
+      surveillance: 'id'
     },
 
     /**
@@ -1792,8 +1799,8 @@ define([
         return dfd.promise;
       }
 
-      // Determine sort field for cursor pagination (must sort on unique key)
-      var sortField = self._collectionKeyField[collection] || 'id';
+      // Determine sort field for cursor pagination (must sort on Solr unique key)
+      var sortField = self._collectionSolrUniqueKey[collection] || 'id';
 
       // Only request the fields we need
       var selectFields = [idField];
