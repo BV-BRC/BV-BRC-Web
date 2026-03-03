@@ -744,13 +744,28 @@ define([
         tool: toolCall.tool || null
       };
 
+      var toolName = toolCall.tool || '';
+      var isGroupListTool = toolName.indexOf('list_genome_groups') !== -1 ||
+        toolName.indexOf('list_feature_groups') !== -1;
       var isSearch = toolArgs && toolArgs.name_contains && toolArgs.name_contains.length > 0 ? true : false;
-      var isSearchResult = (this.message.uiPayload && this.message.uiPayload.result_type === 'search_result') ||
+      var isSearchResult = isGroupListTool ||
+        (this.message.uiPayload && this.message.uiPayload.result_type === 'search_result') ||
         (toolArgs && toolArgs.result_type === 'search_result');
 
-      var countValue = toolArgs.num_results ? toolArgs.num_results : 0;
+      // Derive count: prefer uiPayload.count, then toolArgs.num_results, then chatSummary
+      var countValue = (this.message.uiPayload && typeof this.message.uiPayload.count === 'number')
+        ? this.message.uiPayload.count
+        : (toolArgs && toolArgs.num_results ? toolArgs.num_results : null);
       var pathValue = toolCall.replay.path ? toolCall.replay.path : 'unknown path';
-      var summaryText = this.message.chatSummary || ('Found ' + countValue + ' ' + (countValue === 1 ? 'result' : 'results') + ' in ' + pathValue);
+
+      var summaryText;
+      if (this.message.chatSummary) {
+        summaryText = this.message.chatSummary;
+      } else if (countValue !== null) {
+        summaryText = 'Found ' + countValue + ' ' + (countValue === 1 ? 'result' : 'results') + ' in ' + pathValue;
+      } else {
+        summaryText = 'Workspace results are available. Open Workspace Tab to load.';
+      }
       var workspaceBrowserUrl = this._buildWorkspaceBrowserUrl(toolCall.replay.path);
 
       var container = domConstruct.create('div', {
