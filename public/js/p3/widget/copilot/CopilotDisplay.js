@@ -876,8 +876,12 @@ define([
         // Check if user was near bottom before re-rendering
         var wasNearBottom = this._isNearBottom();
 
+        // Clean up any body-appended selection hover popovers from previous renders
+        var stalePopovers = document.querySelectorAll('body > .tool-card-selection-hover');
+        for (var pi = 0; pi < stalePopovers.length; pi++) {
+          stalePopovers[pi].parentNode.removeChild(stalePopovers[pi]);
+        }
         domConstruct.empty(this.resultContainer);
-        // console.log('show messages', messages);
         messages.forEach(lang.hitch(this, function(message) {
           new ChatMessage({
             ...message,

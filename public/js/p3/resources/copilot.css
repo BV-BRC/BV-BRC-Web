@@ -3206,7 +3206,7 @@
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid #e5e7eb;
-  position: relative;
+  cursor: pointer;
 }
 
 .tool-card-selection-count {
@@ -3234,9 +3234,7 @@
 }
 
 .tool-card-selection-hover {
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 0;
+  position: fixed;
   min-width: 220px;
   max-width: 380px;
   max-height: 240px;
@@ -3246,7 +3244,7 @@
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   padding: 8px 10px;
-  z-index: 1000;
+  z-index: 10000;
 }
 
 .tool-card-selection-hover-item {

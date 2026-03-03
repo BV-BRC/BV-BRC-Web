@@ -50,6 +50,9 @@ define([
     /** @property {Array} _selectionIndicators - Tracked indicator nodes for reactive updates */
     _selectionIndicators: null,
 
+    /** @property {Array} _bodyPopovers - Popover nodes appended to document.body for cleanup */
+    _bodyPopovers: null,
+
     /**
      * @constructor
      * Creates a new ChatMessage instance
@@ -239,10 +242,22 @@ define([
       var hoverPopover = domConstruct.create('div', {
         class: 'tool-card-selection-hover',
         style: 'display:none;'
-      }, indicatorRow);
+      }, document.body);
+
+      // Track body-appended popover for cleanup
+      if (!this._bodyPopovers) { this._bodyPopovers = []; }
+      this._bodyPopovers.push(hoverPopover);
 
       var hideTimer = null;
       var maxDisplay = 20;
+
+      var positionPopover = function() {
+        var rect = indicatorRow.getBoundingClientRect();
+        hoverPopover.style.left = rect.left + 'px';
+        // Position above the indicator row with a 6px gap
+        hoverPopover.style.top = 'auto';
+        hoverPopover.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
+      };
 
       var hidePopover = function() {
         if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
@@ -254,11 +269,12 @@ define([
       };
       var showPopover = function() {
         if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+        positionPopover();
         hoverPopover.style.display = 'block';
       };
 
-      on(infoIcon, 'mouseenter', showPopover);
-      on(infoIcon, 'mouseleave', scheduleHide);
+      on(indicatorRow, 'mouseenter', showPopover);
+      on(indicatorRow, 'mouseleave', scheduleHide);
       on(hoverPopover, 'mouseenter', function() {
         if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
       });
