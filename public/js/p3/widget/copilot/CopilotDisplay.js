@@ -2136,7 +2136,11 @@ define([
         }, actionsNode);
         on(tsvLink, 'click', function(evt) {
           evt.preventDefault();
-          window.open(downloadUrl, '_blank', 'noopener,noreferrer');
+          var tsvDownloadUrl = downloadUrl;
+          if (window.App && window.App.authorizationToken) {
+            tsvDownloadUrl += '&http_authorization=' + encodeURIComponent(window.App.authorizationToken);
+          }
+          window.open(tsvDownloadUrl, '_blank', 'noopener,noreferrer');
         });
       } else if (payload.nextCursorId) {
         // Legacy cursor-based pagination (non-snapshot mode)

@@ -468,11 +468,32 @@ define([
       ) {
         this.message.isQueryCollection = true;
         if (!this.message.queryCollectionData) {
+          // Reconstruct snapshot metadata from persisted tool_call.replay
+          var replayMeta = (messageToolCall && messageToolCall.replay && typeof messageToolCall.replay === 'object')
+            ? messageToolCall.replay
+            : {};
+          var restoredDownloadUrl = replayMeta.download_url || null;
+          // If a download_url exists, this was a snapshot result
+          var restoredIsSnapshot = !!restoredDownloadUrl;
+          // Extract numFound from download URL limit(N) parameter
+          var restoredNumFound = null;
+          if (restoredDownloadUrl) {
+            var limitMatch = restoredDownloadUrl.match(/[&?]limit\((\d+)\)/);
+            if (limitMatch) {
+              restoredNumFound = parseInt(limitMatch[1], 10);
+            }
+          }
+
           this.message.queryCollectionData = {
             queryParameters: toolCallArgs,
             collection: toolCallArgs.collection || null,
             rqlQueryUrl: toolCallArgs.data_api_base_url ? toolCallArgs.data_api_base_url : "https://www.bv-brc.org/api-bulk",
-            resultRows: []
+            resultRows: [],
+            // Snapshot metadata restored from tool_call.replay
+            download_url: restoredDownloadUrl,
+            is_snapshot: restoredIsSnapshot,
+            numFound: restoredNumFound,
+            snapshot_limit: null
           };
         }
       }
@@ -1708,9 +1729,7 @@ define([
 
       // Build count-aware status text
       var statusText;
-      if (isSnapshot && numFound !== null) {
-        statusText = 'Found ' + numFound.toLocaleString() + ' total results (showing first ' + displayCount.toLocaleString() + ')';
-      } else if (numFound !== null) {
+      if (numFound !== null) {
         statusText = 'Found ' + numFound.toLocaleString() + ' results';
       } else {
         statusText = 'Review your results';
@@ -1798,7 +1817,11 @@ define([
         }, container);
         on(tsvLink, 'click', function(evt) {
           evt.preventDefault();
-          window.open(downloadUrl, '_blank', 'noopener,noreferrer');
+          var tsvDownloadUrl = downloadUrl;
+          if (window.App && window.App.authorizationToken) {
+            tsvDownloadUrl += '&http_authorization=' + encodeURIComponent(window.App.authorizationToken);
+          }
+          window.open(tsvDownloadUrl, '_blank', 'noopener,noreferrer');
         });
       }
 
