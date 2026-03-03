@@ -2143,21 +2143,24 @@ define([
           ? '&http_authorization=' + encodeURIComponent(window.App.authorizationToken)
           : '';
         var sep = rqlQueryUrl.indexOf('?') >= 0 ? '&' : '?';
-        ['Download DNA Fasta', 'Download Protein Fasta'].forEach(function(linkLabel, idx) {
-          var acceptType = idx === 0 ? 'application/dna+fasta' : 'application/protein+fasta';
+
+        var createFastaLink = lang.hitch(this, function(linkLabel, acceptType) {
           var fastaLink = domConstruct.create('a', {
             class: 'workspace-summary-link',
             href: '#',
             innerHTML: linkLabel
           }, container);
-          on(fastaLink, 'click', lang.hitch(this, function(evt) {
+          on(fastaLink, 'click', function(evt) {
             evt.preventDefault();
-            var downloadUrl = rqlQueryUrl + sep + 'http_accept=' + encodeURIComponent(acceptType) + '&http_download=true';
-            downloadUrl = downloadUrl + "&limit(100000)&sort(+patric_id)";
-            downloadUrl = downloadUrl + authParam;
-            window.open(downloadUrl, '_blank', 'noopener,noreferrer');
-          }));
+            var fastaUrl = rqlQueryUrl + sep + 'http_accept=' + encodeURIComponent(acceptType) + '&http_download=true';
+            fastaUrl = fastaUrl + '&limit(100000)&sort(+patric_id)';
+            fastaUrl = fastaUrl + authParam;
+            window.open(fastaUrl, '_blank', 'noopener,noreferrer');
+          });
         });
+
+        createFastaLink('Download DNA Fasta', 'application/dna+fasta');
+        createFastaLink('Download Protein Fasta', 'application/protein+fasta');
       }
 
       // Download Full Dataset (TSV) link - shown when snapshot has a download URL
