@@ -4,15 +4,17 @@ define([
   'dojo/on', // Event handling
   'dojo/topic', // Topic messaging
   'dojo/_base/lang', // Language utilities
+  'dojo/request', // HTTP request utilities
   'markdown-it/dist/markdown-it.min', // Markdown parser and renderer
   'markdown-it-link-attributes/dist/markdown-it-link-attributes.min', // Plugin to add attributes to links
   'dijit/Dialog', // Dialog widget
   './CopilotToolHandler', // Tool handler for special tool processing
   './WorkflowEngine', // Workflow engine widget for displaying workflows
   './workflowForms/CopilotServiceFormAdapter', // Dojo form wrappers for single-step direct form modal
-  '../../WorkspaceManager' // Workspace manager for file operations
+  '../../WorkspaceManager', // Workspace manager for file operations
+  '../SelectionToGroup' // Group creation dialog widget
 ], function (
-  declare, domConstruct, on, topic, lang, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, CopilotServiceFormAdapter, WorkspaceManager
+  declare, domConstruct, on, topic, lang, request, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, CopilotServiceFormAdapter, WorkspaceManager, SelectionToGroup
 ) {
   /**
    * @class ChatMessage
@@ -1664,6 +1666,319 @@ define([
       window.open(openPlan.url, '_blank', 'noopener,noreferrer');
     },
 
+    /**
+     * Map of collection names to their sort key field for cursor pagination.
+     * Matches the server-side _COLLECTION_KEY_FIELD in data_tools.py.
+     * @private
+     */
+    _collectionKeyField: {
+      genome: 'genome_id',
+      genome_feature: 'patric_id',
+      taxonomy: 'taxon_id',
+      genome_amr: 'id',
+      genome_sequence: 'sequence_id',
+      sp_gene: 'patric_id',
+      pathway: 'pathway_id',
+      subsystem: 'id',
+      protein_family_ref: 'family_id',
+      specialty_gene_ref: 'id',
+      antibiotics: 'antibiotic_name',
+      enzyme_class_ref: 'ec_number',
+      gene_ontology_ref: 'go_id'
+    },
+
+    /**
+     * Shows a progress overlay dialog for group creation data download.
+     * Displays a progress bar, status text, and a cancel button.
+     * @param {Object} opts - Options
+     * @param {number} opts.total - Total number of records (from numFound), or null if unknown
+     * @param {Function} opts.onCancel - Callback when user clicks Cancel
+     * @returns {Object} Handle with update(fetched), close(), and isCancelled() methods
+     * @private
+     */
+    _showGroupProgressDialog: function(opts) {
+      var total = (opts && typeof opts.total === 'number') ? opts.total : null;
+      var onCancel = (opts && typeof opts.onCancel === 'function') ? opts.onCancel : function() {};
+      var cancelled = false;
+
+      // Build progress dialog content
+      var contentDiv = domConstruct.create('div', {
+        style: 'padding: 16px; min-width: 320px; font-family: inherit;'
+      });
+      var statusText = domConstruct.create('div', {
+        innerHTML: 'Downloading data for group creation...',
+        style: 'margin-bottom: 12px; font-size: 13px; color: #333;'
+      }, contentDiv);
+      var progressBarOuter = domConstruct.create('div', {
+        style: 'width: 100%; height: 20px; background: #e0e0e0; border-radius: 4px; overflow: hidden; margin-bottom: 12px;'
+      }, contentDiv);
+      var progressBarInner = domConstruct.create('div', {
+        style: 'width: 0%; height: 100%; background: #2196F3; border-radius: 4px; transition: width 0.3s ease;'
+      }, progressBarOuter);
+      var countText = domConstruct.create('div', {
+        innerHTML: total !== null ? '0 of ' + total.toLocaleString() + ' records' : '0 records fetched...',
+        style: 'margin-bottom: 16px; font-size: 12px; color: #666; text-align: center;'
+      }, contentDiv);
+      var cancelBtn = domConstruct.create('button', {
+        type: 'button',
+        innerHTML: 'Cancel',
+        class: 'workspace-summary-open-button',
+        style: 'display: block; margin: 0 auto;'
+      }, contentDiv);
+
+      var dlg = new Dialog({
+        title: 'Downloading Data',
+        content: contentDiv,
+        closable: false,
+        style: 'z-index: 10000;'
+      });
+
+      on(cancelBtn, 'click', function() {
+        cancelled = true;
+        onCancel();
+        dlg.hide();
+        setTimeout(function() { dlg.destroyRecursive(); }, 300);
+      });
+
+      dlg.show();
+
+      return {
+        update: function(fetched) {
+          if (total !== null) {
+            var pct = Math.min(100, Math.round((fetched / total) * 100));
+            progressBarInner.style.width = pct + '%';
+            countText.innerHTML = fetched.toLocaleString() + ' of ' + total.toLocaleString() + ' records (' + pct + '%)';
+          } else {
+            countText.innerHTML = fetched.toLocaleString() + ' records fetched...';
+          }
+          statusText.innerHTML = 'Downloading data for group creation...';
+        },
+        close: function() {
+          dlg.hide();
+          setTimeout(function() { dlg.destroyRecursive(); }, 300);
+        },
+        isCancelled: function() {
+          return cancelled;
+        }
+      };
+    },
+
+    /**
+     * Fetches all rows for group creation using cursor-based pagination against
+     * the BV-BRC data API. Requests application/solr+json which returns
+     * { response: { docs, numFound }, nextCursorMark } enabling cursor pagination.
+     *
+     * @param {Object} payload - The query collection payload from renderQueryCollectionWidget
+     * @param {string} payload.rqlQueryUrl - Full RQL query URL (base + collection + query)
+     * @param {string} payload.collection - Collection name (e.g. 'genome', 'genome_feature')
+     * @param {number|null} payload.numFound - Total result count if known
+     * @param {string} idField - The ID field to extract (e.g. 'genome_id', 'feature_id')
+     * @returns {Promise<Array>} Promise resolving to array of row objects containing at least the idField
+     * @private
+     */
+    _fetchAllRowsForGroup: function(payload, idField) {
+      var self = this;
+      var collection = payload.collection || '';
+      var numFound = typeof payload.numFound === 'number' ? payload.numFound : null;
+
+      // Build the base query URL without any existing limit/sort/cursorMark/http_accept params
+      var baseUrl = payload.rqlQueryUrl || '';
+      if (!baseUrl) {
+        return Promise.reject(new Error('No query URL available'));
+      }
+
+      // Strip existing limit(), sort(), cursorMark, and http_accept from the query
+      var urlParts = baseUrl.split('?');
+      var urlBase = urlParts[0];
+      var queryStr = urlParts.length > 1 ? urlParts[1] : '';
+
+      // Remove existing limit(), sort(), cursorMark, and http_accept parameters
+      queryStr = queryStr
+        .replace(/&?limit\([^)]*\)/gi, '')
+        .replace(/&?sort\([^)]*\)/gi, '')
+        .replace(/&?cursorMark=[^&]*/gi, '')
+        .replace(/&?http_accept=[^&]*/gi, '')
+        .replace(/^&+/, '');
+
+      // Determine sort field for cursor pagination (must sort on unique key)
+      var sortField = self._collectionKeyField[collection] || 'id';
+
+      // Only request the fields we need: the idField, plus genome_id if creating genome group from features
+      var selectFields = [idField];
+      if (idField !== 'genome_id' && idField !== sortField) {
+        selectFields.push(sortField);
+      }
+      if (idField === 'feature_id') {
+        // Also include genome_id in case user wants genome group from feature data
+        selectFields.push('genome_id');
+      }
+
+      // Build pagination parameters
+      var pageSize = 100;
+      var paginationParams = 'limit(' + pageSize + ')&sort(%2B' + sortField + ')&select(' + selectFields.join(',') + ')';
+      var fetchQuery = queryStr ? queryStr + '&' + paginationParams : paginationParams;
+
+      // Show progress dialog
+      var progressHandle = self._showGroupProgressDialog({
+        total: numFound,
+        onCancel: function() { /* cancellation is checked via isCancelled() */ }
+      });
+
+      var allRows = [];
+
+      var fetchPage = function(cursorMark) {
+        if (progressHandle.isCancelled()) {
+          return Promise.reject(new Error('cancelled'));
+        }
+
+        var pageQuery = fetchQuery + '&cursorMark=' + encodeURIComponent(cursorMark);
+        var requestUrl = urlBase + '?' + pageQuery;
+
+        var headers = {
+          'Accept': 'application/solr+json',
+          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+          'X-Requested-With': null
+        };
+        if (window.App && window.App.authorizationToken) {
+          headers['Authorization'] = window.App.authorizationToken;
+        }
+
+        return request.get(requestUrl, {
+          headers: headers,
+          handleAs: 'json'
+        }).then(function(result) {
+          if (progressHandle.isCancelled()) {
+            return Promise.reject(new Error('cancelled'));
+          }
+
+          var response = (result && result.response) ? result.response : {};
+          var docs = Array.isArray(response.docs) ? response.docs : [];
+          var nextCursor = result.nextCursorMark || null;
+
+          // Update numFound from first response if we didn't have it
+          if (numFound === null && typeof response.numFound === 'number') {
+            numFound = response.numFound;
+          }
+
+          allRows = allRows.concat(docs);
+          progressHandle.update(allRows.length);
+
+          // Check if we're done: no next cursor, cursor unchanged, or we have all rows
+          var done = !nextCursor ||
+            nextCursor === cursorMark ||
+            (numFound !== null && allRows.length >= numFound);
+
+          if (done) {
+            progressHandle.close();
+            return allRows;
+          }
+
+          // Fetch next page
+          return fetchPage(nextCursor);
+        });
+      };
+
+      // Start pagination from cursor "*"
+      return fetchPage('*').then(function(rows) {
+        return rows;
+      }).catch(function(err) {
+        progressHandle.close();
+        if (err && err.message === 'cancelled') {
+          return Promise.reject(new Error('Group creation cancelled'));
+        }
+        return Promise.reject(err);
+      });
+    },
+
+    /**
+     * Opens the SelectionToGroup dialog to create a genome or feature group
+     * from the provided row data.
+     *
+     * @param {Array} rows - Array of data objects containing the relevant ID field
+     * @param {string} groupType - 'genome_group' or 'feature_group'
+     * @param {string} idField - 'genome_id' or 'feature_id'
+     * @private
+     */
+    _openCreateGroupDialog: function(rows, groupType, idField) {
+      // Filter to only rows that have the required ID field
+      var validRows = rows.filter(function(row) {
+        return row && idField in row && row[idField] !== null && row[idField] !== undefined && row[idField] !== '';
+      });
+
+      if (validRows.length === 0) {
+        var errorDlg = new Dialog({
+          title: 'Cannot Create Group',
+          content: '<div style="padding: 16px;">No valid ' + idField.replace(/_/g, ' ') + ' values found in the results.</div>'
+        });
+        errorDlg.show();
+        return;
+      }
+
+      var defaultPath = WorkspaceManager.getDefaultFolder(groupType);
+      var displayType = groupType === 'genome_group' ? 'Genome Group' : 'Feature Group';
+
+      var stg = new SelectionToGroup({
+        selection: validRows,
+        type: groupType,
+        idType: idField,
+        path: defaultPath
+      });
+
+      var dlg = new Dialog({
+        title: 'Create ' + displayType + ' (' + validRows.length.toLocaleString() + ' items)',
+        content: stg
+      });
+
+      on(dlg.domNode, 'dialogAction', function() {
+        dlg.hide();
+        setTimeout(function() { dlg.destroyRecursive(); }, 300);
+      });
+
+      stg.startup();
+      dlg.show();
+    },
+
+    /**
+     * Handles a group creation button click: fetches all data rows via cursor
+     * pagination, then opens the SelectionToGroup dialog.
+     *
+     * @param {Object} payload - The query collection payload
+     * @param {string} groupType - 'genome_group' or 'feature_group'
+     * @param {string} idField - 'genome_id' or 'feature_id'
+     * @private
+     */
+    _handleCreateGroupClick: function(payload, groupType, idField) {
+      var self = this;
+
+      // Check if rows are already fully available in the payload
+      var existingRows = Array.isArray(payload.rows) ? payload.rows : [];
+      var numFound = typeof payload.numFound === 'number' ? payload.numFound : null;
+      var hasAllRows = existingRows.length > 0 && numFound !== null && existingRows.length >= numFound;
+
+      if (hasAllRows) {
+        // All rows already loaded, skip fetch
+        self._openCreateGroupDialog(existingRows, groupType, idField);
+        return;
+      }
+
+      // Fetch all rows via cursor pagination
+      self._fetchAllRowsForGroup(payload, idField).then(function(allRows) {
+        self._openCreateGroupDialog(allRows, groupType, idField);
+      }).catch(function(err) {
+        if (err && err.message && err.message.indexOf('cancelled') !== -1) {
+          // User cancelled, do nothing
+          return;
+        }
+        console.error('[ChatMessage] Error fetching data for group creation:', err);
+        var errDlg = new Dialog({
+          title: 'Error',
+          content: '<div style="padding: 16px;">Failed to download data for group creation: ' +
+            (err && err.message ? err.message : 'Unknown error') + '</div>'
+        });
+        errDlg.show();
+      });
+    },
+
     renderQueryCollectionWidget: function(messageDiv) {
       var data = this.message.queryCollectionData || {};
       var summary = data.summary || {};
@@ -1823,6 +2138,43 @@ define([
           }
           window.open(tsvDownloadUrl, '_blank', 'noopener,noreferrer');
         });
+      }
+
+      // Group creation buttons - shown for genome and genome_feature collections
+      // when the user is authenticated
+      if (window.App && window.App.user) {
+        var normalizedCollection = collection ? collection.toLowerCase() : '';
+        var showGenomeGroup = (normalizedCollection === 'genome' || normalizedCollection === 'genome_feature');
+        var showFeatureGroup = (normalizedCollection === 'genome_feature');
+
+        if (showGenomeGroup || showFeatureGroup) {
+          var groupActionsDiv = domConstruct.create('div', {
+            style: 'margin-top: 6px; padding-top: 6px; border-top: 1px solid #e0e0e0;'
+          }, container);
+
+          if (showFeatureGroup) {
+            var featureGroupBtn = domConstruct.create('button', {
+              type: 'button',
+              class: 'workspace-summary-open-button',
+              innerHTML: '<i class="fa icon-object-group" style="margin-right: 4px;"></i>Create Feature Group',
+              style: 'margin-right: 8px;'
+            }, groupActionsDiv);
+            on(featureGroupBtn, 'click', lang.hitch(this, function() {
+              this._handleCreateGroupClick(payload, 'feature_group', 'feature_id');
+            }));
+          }
+
+          if (showGenomeGroup) {
+            var genomeGroupBtn = domConstruct.create('button', {
+              type: 'button',
+              class: 'workspace-summary-open-button',
+              innerHTML: '<i class="fa icon-object-group" style="margin-right: 4px;"></i>Create Genome Group'
+            }, groupActionsDiv);
+            on(genomeGroupBtn, 'click', lang.hitch(this, function() {
+              this._handleCreateGroupClick(payload, 'genome_group', 'genome_id');
+            }));
+          }
+        }
       }
 
       // Selection indicator for files (query results become session files)
