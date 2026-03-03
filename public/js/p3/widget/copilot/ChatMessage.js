@@ -2350,13 +2350,11 @@ define([
       }, card);
 
       var reviewButton = domConstruct.create('button', {
-        innerHTML: (isSubmitted ? 'View Results' : 'Review &amp; Submit'),
-        class: 'workflow-review-button',
-        style: 'padding: 6px 12px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500;'
+        innerHTML: (isSubmitted ? 'View Results' : 'Review'),
+        class: 'workflow-review-btn',
+        title: 'Review and edit service parameters'
       }, actionsRow);
 
-      on(reviewButton, 'mouseenter', function() { reviewButton.style.background = '#1d4ed8'; });
-      on(reviewButton, 'mouseleave', function() { reviewButton.style.background = '#2563eb'; });
       on(reviewButton, 'click', lang.hitch(this, function() {
         this.showWorkflowDialog();
       }));
@@ -2375,7 +2373,7 @@ define([
 
     /**
      * Renders a workflow manifest card with workflow details
-     * Displays workflow name, step count, output folder, and a Review & Submit button
+     * Displays workflow name, step count, output folder, and a Review button
      * For single-step workflows, renders a simplified service card instead.
      * @param {HTMLElement} messageDiv - Container to render widget into
      */
@@ -2655,22 +2653,13 @@ define([
         }));
       }
 
-      // Review & Submit button
+      // Review button — opens the workflow dialog for review/editing
       var reviewButton = domConstruct.create('button', {
-        innerHTML: (isSubmitted ? 'View Workflow' : 'Review &amp; Submit'),
-        class: 'workflow-review-button',
-        style: 'padding: 4px 10px; background: #2563eb; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.2s;'
+        innerHTML: (isSubmitted ? 'View Workflow' : 'Review'),
+        class: 'workflow-review-btn',
+        title: 'Review and edit service parameters'
       }, rightActions);
 
-      // Hover effect
-      on(reviewButton, 'mouseenter', function() {
-        reviewButton.style.background = '#1d4ed8';
-      });
-      on(reviewButton, 'mouseleave', function() {
-        reviewButton.style.background = '#2563eb';
-      });
-
-      // Add click handler to show workflow dialog
       on(reviewButton, 'click', lang.hitch(this, function() {
         this.showWorkflowDialog();
       }));
@@ -2756,6 +2745,16 @@ define([
         class: 'copilot-direct-form-modal-footer'
       }, modalNode);
 
+      // Review button — toggles form visibility
+      var formVisible = false;
+      var reviewToggleBtn = domConstruct.create('button', {
+        innerHTML: 'Review',
+        type: 'button',
+        class: 'workflow-review-btn',
+        title: 'Review and edit service parameters'
+      }, footerNode);
+
+      // Submit button — separate from Review, disabled until form is loaded
       var submitBtn = domConstruct.create('button', {
         innerHTML: 'Submit',
         type: 'button',
@@ -2771,7 +2770,8 @@ define([
       }, footerNode);
 
       var formContainer = domConstruct.create('div', {
-        class: 'copilot-dojo-form-container'
+        class: 'copilot-dojo-form-container',
+        style: 'display: none;'
       }, contentNode);
 
       var loadingNode = domConstruct.create('div', {
@@ -2779,8 +2779,36 @@ define([
         class: 'workflow-form-loading'
       }, contentNode);
 
+      // Helper: apply form edits to step params
+      var applyFormEdits = function() {
+        if (!formWidget) return;
+        var updatedParams = formWidget.toManifest();
+        if (updatedParams) {
+          step.params = lang.mixin({}, step.params, updatedParams);
+        }
+      };
+
+      // Review toggle — show/hide form, auto-apply on close
+      reviewToggleBtn.onclick = function() {
+        if (formVisible) {
+          // Closing review — auto-apply edits
+          applyFormEdits();
+          formContainer.style.display = 'none';
+          formVisible = false;
+          reviewToggleBtn.innerHTML = 'Review';
+        } else {
+          formContainer.style.display = '';
+          formVisible = true;
+          reviewToggleBtn.innerHTML = 'Close Review';
+        }
+      };
+
       var keyHandler = null;
       var closeModal = function() {
+        // Auto-apply form edits when closing with form visible
+        if (formVisible) {
+          applyFormEdits();
+        }
         if (keyHandler) {
           keyHandler.remove();
           keyHandler = null;
@@ -2817,9 +2845,8 @@ define([
         domConstruct.destroy(loadingNode);
         domConstruct.place(formWidget.domNode, formContainer);
         formWidget.startup();
-        setTimeout(function() {
-          formWidget.setFromManifest(step.params || {});
-        }, 100);
+        // setFromManifest handles its own startup-readiness polling
+        formWidget.setFromManifest(step.params || {});
       }, function(err) {
         domConstruct.destroy(loadingNode);
         domConstruct.create('div', {
@@ -2833,6 +2860,10 @@ define([
 
       submitBtn.onclick = function() {
         if (!formWidget || !self.copilotApi || submitBtn.disabled) return;
+        // Auto-apply form edits before submitting if form is visible
+        if (formVisible) {
+          applyFormEdits();
+        }
         if (typeof formWidget.validate === 'function' && !formWidget.validate()) {
           topic.publish('/Notification', { message: 'Please correct form errors before submitting.', type: 'error' });
           return;
