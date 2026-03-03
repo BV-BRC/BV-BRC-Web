@@ -1924,8 +1924,9 @@ define([
       var displayType = groupType === 'genome_group' ? 'Genome Group' : 'Feature Group';
 
       // Lazy-load SelectionToGroup to avoid loading WorkspaceObjectSelector
-      // (and its window.App dependency) at module definition time
-      require(['../SelectionToGroup'], function(SelectionToGroup) {
+      // (and its window.App dependency) at module definition time.
+      // Must use full AMD path since dynamic require() doesn't resolve relative paths.
+      require(['p3/widget/SelectionToGroup'], function(SelectionToGroup) {
         var stg = new SelectionToGroup({
           selection: validRows,
           type: groupType,
