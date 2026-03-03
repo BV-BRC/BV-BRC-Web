@@ -11,10 +11,9 @@ define([
   './CopilotToolHandler', // Tool handler for special tool processing
   './WorkflowEngine', // Workflow engine widget for displaying workflows
   './workflowForms/CopilotServiceFormAdapter', // Dojo form wrappers for single-step direct form modal
-  '../../WorkspaceManager', // Workspace manager for file operations
-  '../SelectionToGroup' // Group creation dialog widget
+  '../../WorkspaceManager' // Workspace manager for file operations
 ], function (
-  declare, domConstruct, on, topic, lang, request, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, CopilotServiceFormAdapter, WorkspaceManager, SelectionToGroup
+  declare, domConstruct, on, topic, lang, request, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, CopilotServiceFormAdapter, WorkspaceManager
 ) {
   /**
    * @class ChatMessage
@@ -1917,25 +1916,29 @@ define([
       var defaultPath = WorkspaceManager.getDefaultFolder(groupType);
       var displayType = groupType === 'genome_group' ? 'Genome Group' : 'Feature Group';
 
-      var stg = new SelectionToGroup({
-        selection: validRows,
-        type: groupType,
-        idType: idField,
-        path: defaultPath
-      });
+      // Lazy-load SelectionToGroup to avoid loading WorkspaceObjectSelector
+      // (and its window.App dependency) at module definition time
+      require(['../SelectionToGroup'], function(SelectionToGroup) {
+        var stg = new SelectionToGroup({
+          selection: validRows,
+          type: groupType,
+          idType: idField,
+          path: defaultPath
+        });
 
-      var dlg = new Dialog({
-        title: 'Create ' + displayType + ' (' + validRows.length.toLocaleString() + ' items)',
-        content: stg
-      });
+        var dlg = new Dialog({
+          title: 'Create ' + displayType + ' (' + validRows.length.toLocaleString() + ' items)',
+          content: stg
+        });
 
-      on(dlg.domNode, 'dialogAction', function() {
-        dlg.hide();
-        setTimeout(function() { dlg.destroyRecursive(); }, 300);
-      });
+        on(dlg.domNode, 'dialogAction', function() {
+          dlg.hide();
+          setTimeout(function() { dlg.destroyRecursive(); }, 300);
+        });
 
-      stg.startup();
-      dlg.show();
+        stg.startup();
+        dlg.show();
+      });
     },
 
     /**
