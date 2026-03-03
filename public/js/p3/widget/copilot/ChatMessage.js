@@ -745,6 +745,8 @@ define([
       };
 
       var isSearch = toolArgs && toolArgs.name_contains && toolArgs.name_contains.length > 0 ? true : false;
+      var isSearchResult = (this.message.uiPayload && this.message.uiPayload.result_type === 'search_result') ||
+        (toolArgs && toolArgs.result_type === 'search_result');
 
       var countValue = toolArgs.num_results ? toolArgs.num_results : 0;
       var pathValue = toolCall.replay.path ? toolCall.replay.path : 'unknown path';
@@ -779,7 +781,7 @@ define([
         });
       }));
 
-      if (workspaceBrowserUrl && !isSearch) {
+      if (workspaceBrowserUrl && !isSearch && !isSearchResult) {
         domConstruct.create('a', {
           class: 'workspace-summary-link',
           href: workspaceBrowserUrl,
