@@ -4,6 +4,7 @@ define([
   'dojo/on', // Event handling
   'dojo/topic', // Topic messaging
   'dojo/_base/lang', // Language utilities
+  'dojo/Deferred', // Deferred/Promise utilities
   'dojo/request', // HTTP request utilities
   'markdown-it/dist/markdown-it.min', // Markdown parser and renderer
   'markdown-it-link-attributes/dist/markdown-it-link-attributes.min', // Plugin to add attributes to links
@@ -13,7 +14,7 @@ define([
   './workflowForms/CopilotServiceFormAdapter', // Dojo form wrappers for single-step direct form modal
   '../../WorkspaceManager' // Workspace manager for file operations
 ], function (
-  declare, domConstruct, on, topic, lang, request, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, CopilotServiceFormAdapter, WorkspaceManager
+  declare, domConstruct, on, topic, lang, Deferred, request, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, CopilotServiceFormAdapter, WorkspaceManager
 ) {
   /**
    * @class ChatMessage
@@ -1786,7 +1787,9 @@ define([
       var solrUrl = baseApiUrl + '/' + collection + '/';
 
       if (!collection) {
-        return Promise.reject(new Error('No collection specified'));
+        var dfd = new Deferred();
+        dfd.reject(new Error('No collection specified'));
+        return dfd.promise;
       }
 
       // Determine sort field for cursor pagination (must sort on unique key)
@@ -1816,10 +1819,17 @@ define([
       });
 
       var allRows = [];
+      var cancelled = false;
+
+      // Use a master Deferred that we resolve/reject manually to avoid
+      // issues mixing native Promises with Dojo Deferreds.
+      var masterDfd = new Deferred();
 
       var fetchPage = function(cursorMark) {
-        if (progressHandle.isCancelled()) {
-          return Promise.reject(new Error('cancelled'));
+        if (progressHandle.isCancelled() || cancelled) {
+          progressHandle.close();
+          masterDfd.reject(new Error('cancelled'));
+          return;
         }
 
         // Build Solr form-urlencoded POST body
@@ -1848,52 +1858,57 @@ define([
           headers['Authorization'] = window.App.authorizationToken;
         }
 
-        return request.post(solrUrl, {
+        request.post(solrUrl, {
           data: formBody,
           headers: headers,
           handleAs: 'json'
-        }).then(function(result) {
-          if (progressHandle.isCancelled()) {
-            return Promise.reject(new Error('cancelled'));
-          }
+        }).then(
+          function(result) {
+            if (progressHandle.isCancelled() || cancelled) {
+              progressHandle.close();
+              masterDfd.reject(new Error('cancelled'));
+              return;
+            }
 
-          var response = (result && result.response) ? result.response : {};
-          var docs = Array.isArray(response.docs) ? response.docs : [];
-          var nextCursor = result.nextCursorMark || null;
+            var response = (result && result.response) ? result.response : {};
+            var docs = Array.isArray(response.docs) ? response.docs : [];
+            var nextCursor = result.nextCursorMark || null;
 
-          // Update numFound from first response if we didn't have it
-          if (numFound === null && typeof response.numFound === 'number') {
-            numFound = response.numFound;
-          }
+            // Update numFound from first response if we didn't have it
+            if (numFound === null && typeof response.numFound === 'number') {
+              numFound = response.numFound;
+            }
 
-          allRows = allRows.concat(docs);
-          progressHandle.update(allRows.length);
+            allRows = allRows.concat(docs);
+            progressHandle.update(allRows.length);
 
-          // Check if we're done: no next cursor, cursor unchanged, or we have all rows
-          var done = !nextCursor ||
-            nextCursor === cursorMark ||
-            (numFound !== null && allRows.length >= numFound);
+            console.log('[ChatMessage] Group fetch page: got', docs.length, 'docs, total so far:', allRows.length, 'of', numFound || '?');
 
-          if (done) {
+            // Check if we're done: no next cursor, cursor unchanged, or we have all rows
+            var done = !nextCursor ||
+              nextCursor === cursorMark ||
+              (numFound !== null && allRows.length >= numFound);
+
+            if (done) {
+              progressHandle.close();
+              masterDfd.resolve(allRows);
+              return;
+            }
+
+            // Fetch next page
+            fetchPage(nextCursor);
+          },
+          function(err) {
             progressHandle.close();
-            return allRows;
+            masterDfd.reject(err);
           }
-
-          // Fetch next page
-          return fetchPage(nextCursor);
-        });
+        );
       };
 
       // Start pagination from cursor "*"
-      return fetchPage('*').then(function(rows) {
-        return rows;
-      }).catch(function(err) {
-        progressHandle.close();
-        if (err && err.message === 'cancelled') {
-          return Promise.reject(new Error('Group creation cancelled'));
-        }
-        return Promise.reject(err);
-      });
+      fetchPage('*');
+
+      return masterDfd.promise;
     },
 
     /**
@@ -1973,21 +1988,25 @@ define([
       }
 
       // Fetch all rows via cursor pagination
-      self._fetchAllRowsForGroup(payload, idField).then(function(allRows) {
-        self._openCreateGroupDialog(allRows, groupType, idField);
-      }).catch(function(err) {
-        if (err && err.message && err.message.indexOf('cancelled') !== -1) {
-          // User cancelled, do nothing
-          return;
+      self._fetchAllRowsForGroup(payload, idField).then(
+        function(allRows) {
+          console.log('[ChatMessage] Group data fetch complete, rows:', allRows.length, 'opening dialog for', groupType);
+          self._openCreateGroupDialog(allRows, groupType, idField);
+        },
+        function(err) {
+          if (err && err.message && err.message.indexOf('cancelled') !== -1) {
+            // User cancelled, do nothing
+            return;
+          }
+          console.error('[ChatMessage] Error fetching data for group creation:', err);
+          var errDlg = new Dialog({
+            title: 'Error',
+            content: '<div style="padding: 16px;">Failed to download data for group creation: ' +
+              (err && err.message ? err.message : 'Unknown error') + '</div>'
+          });
+          errDlg.show();
         }
-        console.error('[ChatMessage] Error fetching data for group creation:', err);
-        var errDlg = new Dialog({
-          title: 'Error',
-          content: '<div style="padding: 16px;">Failed to download data for group creation: ' +
-            (err && err.message ? err.message : 'Unknown error') + '</div>'
-        });
-        errDlg.show();
-      });
+      );
     },
 
     renderQueryCollectionWidget: function(messageDiv) {
