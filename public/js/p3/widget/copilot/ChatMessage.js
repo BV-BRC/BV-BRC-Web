@@ -2145,18 +2145,16 @@ define([
         var sep = rqlQueryUrl.indexOf('?') >= 0 ? '&' : '?';
 
         var createFastaLink = lang.hitch(this, function(linkLabel, acceptType) {
-          var fastaLink = domConstruct.create('a', {
+          var fastaUrl = rqlQueryUrl + sep + 'http_accept=' + encodeURIComponent(acceptType) + '&http_download=true';
+          fastaUrl = fastaUrl + '&limit(100000)&sort(+patric_id)';
+          fastaUrl = fastaUrl + authParam;
+          domConstruct.create('a', {
             class: 'workspace-summary-link',
-            href: '#',
+            href: fastaUrl,
+            target: '_blank',
+            rel: 'noopener noreferrer',
             innerHTML: linkLabel
           }, container);
-          on(fastaLink, 'click', function(evt) {
-            evt.preventDefault();
-            var fastaUrl = rqlQueryUrl + sep + 'http_accept=' + encodeURIComponent(acceptType) + '&http_download=true';
-            fastaUrl = fastaUrl + '&limit(100000)&sort(+patric_id)';
-            fastaUrl = fastaUrl + authParam;
-            window.open(fastaUrl, '_blank', 'noopener,noreferrer');
-          });
         });
 
         createFastaLink('Download DNA Fasta', 'application/dna+fasta');
