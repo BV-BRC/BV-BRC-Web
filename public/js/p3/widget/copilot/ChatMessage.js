@@ -275,10 +275,16 @@ define([
           this.message.uiAction = 'open_jobs_tab';
         }
       }
-      if (sourceTool && (sourceTool.indexOf('plan_workflow') !== -1 || sourceTool.indexOf('submit_workflow') !== -1)) {
+      if (sourceTool && (sourceTool.indexOf('plan_workflow') !== -1 ||
+          sourceTool.indexOf('submit_workflow') !== -1 ||
+          sourceTool.indexOf('plan_genome_assembly') !== -1 ||
+          sourceTool.indexOf('plan_genome_annotation') !== -1 ||
+          sourceTool.indexOf('plan_comparative_systems') !== -1)) {
         var inferredWorkflowId = this.message.workflow_id ||
           toolCallArgs.workflow_id ||
           (messageToolCall && messageToolCall.workflow_id) ||
+          (this.message.workflowData && this.message.workflowData.workflow_id) ||
+          (this.message.workflowData && this.message.workflowData.execution_metadata && this.message.workflowData.execution_metadata.workflow_id) ||
           null;
         if (inferredWorkflowId) {
           this.message.isWorkflow = true;
@@ -332,7 +338,11 @@ define([
       }
       if (
         sourceTool &&
-        (sourceTool.indexOf('plan_workflow') !== -1 || sourceTool.indexOf('submit_workflow') !== -1) &&
+        (sourceTool.indexOf('plan_workflow') !== -1 ||
+          sourceTool.indexOf('submit_workflow') !== -1 ||
+          sourceTool.indexOf('plan_genome_assembly') !== -1 ||
+          sourceTool.indexOf('plan_genome_annotation') !== -1 ||
+          sourceTool.indexOf('plan_comparative_systems') !== -1) &&
         (this.message.workflowData || this.message.workflow_id || this.message.isWorkflow)
       ) {
         console.log('[ChatMessage] Workflow message already has persisted workflow metadata, skipping re-processing');
@@ -549,7 +559,10 @@ define([
 
       if ((this.message.isWorkflow && this.message.workflowData) ||
           (renderSourceTool.indexOf('plan_workflow') !== -1 && hasWorkflowIdentity) ||
-          (renderSourceTool.indexOf('submit_workflow') !== -1 && hasWorkflowIdentity)) {
+          (renderSourceTool.indexOf('submit_workflow') !== -1 && hasWorkflowIdentity) ||
+          (renderSourceTool.indexOf('plan_genome_assembly') !== -1 && hasWorkflowIdentity) ||
+          (renderSourceTool.indexOf('plan_genome_annotation') !== -1 && hasWorkflowIdentity) ||
+          (renderSourceTool.indexOf('plan_comparative_systems') !== -1 && hasWorkflowIdentity)) {
         // debugger; // Debug assistant message when loading planned workflow UI
         this.renderWorkflowManifestCard(messageDiv);
       } else if (
@@ -1641,6 +1654,18 @@ define([
         style: 'display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;'
       }, card);
 
+      // Service name (from service-specific tools: plan_genome_assembly, plan_genome_annotation, plan_comparative_systems)
+      var serviceApp = null;
+      if (workflow.steps && workflow.steps.length === 1 && workflow.steps[0].app) {
+        serviceApp = workflow.steps[0].app;
+      }
+      if (serviceApp) {
+        domConstruct.create('div', {
+          innerHTML: '<span style="color: #6b7280; font-size: 13px;">Service:</span> <span style="color: #374151; font-size: 13px; font-weight: 500;">' + this.escapeHtml(serviceApp) + '</span>',
+          style: 'display: flex; gap: 4px;'
+        }, detailsContainer);
+      }
+
       // Step count
       if (stepCount > 0) {
         domConstruct.create('div', {
@@ -1654,6 +1679,18 @@ define([
         domConstruct.create('div', {
           innerHTML: '<span style="color: #6b7280; font-size: 13px;">Output:</span> <span style="color: #374151; font-size: 13px; font-family: monospace;">' + this.escapeHtml(outputFolder) + '</span>',
           style: 'display: flex; gap: 4px;'
+        }, detailsContainer);
+      }
+
+      // Auto corrections (from service plan tools)
+      var autoCorrections = workflow.auto_corrections;
+      if (Array.isArray(autoCorrections) && autoCorrections.length > 0) {
+        var correctionsText = autoCorrections.map(function(c) {
+          return typeof c === 'string' ? c : (c && typeof c === 'object' && c.message ? c.message : String(c));
+        }).join(', ');
+        domConstruct.create('div', {
+          innerHTML: '<span style="color: #6b7280; font-size: 12px;">Auto-corrected:</span> <span style="color: #4b5563; font-size: 12px;">' + this.escapeHtml(correctionsText) + '</span>',
+          style: 'display: flex; gap: 4px; margin-top: 2px;'
         }, detailsContainer);
       }
 
