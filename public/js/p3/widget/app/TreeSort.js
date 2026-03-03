@@ -191,7 +191,7 @@ define([
          score: 0,
 
          // All segment names found in the FASTA headers (default to all Influenza segments).
-         segments: this.FluSegments,
+         segments: FluSegments,
 
          // The number of total sequences
          sequenceCount: 0,
@@ -620,6 +620,16 @@ define([
          let summaryHTML = "";
 
          if (value_.length > 0) {
+            if (this.fastaValidationPanelEl) {
+               this.fastaValidationPanelEl.innerHTML = `
+            <div class="treesort--validation-summary treesort--validating">
+               <div class="treesort--validation-title">
+                  <i class="fa icon-spinner fa-spin" style="display:inline-block;"></i>
+                  Validating FASTA file...
+               </div>
+            </div>`;
+            }
+            this.submitButton.set("disabled", true);
 
             // Get the input FASTA file selected from the workspace.
             const fastaFile = await WorkspaceManager.getObject(value_, false);
@@ -829,6 +839,8 @@ define([
 
       // Handle a change to the reference segment or the segment checkboxes.
       handleSegmentChange: function () {
+         // Nothing to validate if we're not using a FASTA file
+         if (this.inputSource !== InputSource.FastaFileID) { return; }
 
          // Validate the reference segment.
          const result = this.isRefSegmentValid();
@@ -1001,6 +1013,9 @@ define([
          // Initialize the result
          let result = { isValid: true, errorMessage: null };
 
+         // Segment validation is only relevant for FASTA input
+         if (this.inputSource !== InputSource.FastaFileID) { return result; }
+
          if (!this.segmentCheckboxes) { throw new Error("Invalid segment checkboxes"); }
 
          // Get the reference segment for comparison.
@@ -1050,32 +1065,48 @@ define([
          // Suspend/skip validation on controls that are required but default to an empty value.
          this.suspendValidation();
 
-         if (jobData.cladesPath) { this.cladesPathEl.set("value", jobData.cladesPath); }
+         if (jobData.clades_path) { this.cladesPathEl.set("value", jobData.clades_path); }
          if (jobData.deviation) { this.deviationEl.set("value", jobData.deviation); }
          if (jobData.equal_rates) { this.equalRatesEl.set("checked", jobData.equal_rates); }
          if (jobData.inference_method) { this.inferenceMethodEl.set("value", jobData.inference_method); }
-         if (jobData.input_fasta_file_id) { this.fastaFileIdEl.set("value", jobData.input_fasta_file_id); }
-         if (jobData.input_source) { this.inputSource = jobData.input_source; }
          //if (jobData.match_regex) { this.matchRegexEl.set("value", jobData.match_regex); }
          if (jobData.match_type) { this.matchTypeEl.set("value", jobData.match_type); }
          if (jobData.no_collapse) { this.noCollapseEl.set("checked", jobData.no_collapse); }
-         if (jobData.output_file) { this.outputFileEl.set("value", jobData.outputFile); }
+         if (jobData.output_file) { this.outputFileEl.set("value", jobData.output_file); }
          if (jobData.output_path) { this.outputPathEl.set("value", jobData.output_path); }
          if (jobData.p_value) { this.pValueEl.set("value", jobData.p_value); }
          if (jobData.ref_segment) { this.refSegmentEl.set("value", jobData.ref_segment); }
          if (jobData.ref_tree_inference) { this.refTreeInferenceEl.set("value", jobData.ref_tree_inference); }
 
-         if (jobData.segments) {
-            const segmentArray = jobData.segments.split(",");
-            if (segmentArray && this.segmentCheckboxes) {
+         // Restore input source and trigger show/hide logic
+         if (jobData.input_source) {
+            this.inputSource = jobData.input_source;
 
-               // Iterate over all segment checkboxes.
-               this.segmentCheckboxes.forEach(checkbox_ => {
-
-                  // If the segment array contains the checkbox name, checked = true.
-                  checkbox_.set("checked", segmentArray.includes(checkbox_.get("name")));
-               })
+            if (jobData.input_source === InputSource.FastaFileID) {
+               this.input_fasta.checked = true;
+               if (jobData.input_fasta_file_id) {
+                  this.fastaFileIdEl.set("value", jobData.input_fasta_file_id);
+               }
+            } else {
+               this.input_genome_group.checked = true;
+               if (jobData.input_fasta_group_id) {
+                  this.genomeGroup.set("value", jobData.input_fasta_group_id);
+               }
             }
+
+            // Apply show/hide without triggering re-validation mid-population
+            this.onInputChange(null);
+         }
+
+         if (jobData.input_source === InputSource.FastaFileID && jobData.segments) {
+            const segmentArray = jobData.segments.split(",");
+
+            // Iterate over all segment checkboxes.
+            this.segmentCheckboxes.forEach(checkbox_ => {
+
+               // If the segment array contains the checkbox name, checked = true.
+               checkbox_.set("checked", segmentArray.includes(checkbox_.get("name")));
+            });
          }
 
          // Wait until the form controls have been modified to de-suspend the validation context.
@@ -1116,7 +1147,7 @@ define([
             notEnoughSegments: 0,
             regexType: null,
             score: 0,
-            segments: this.FluSegments,
+            segments: FluSegments,
             sequenceCount: 0,
             totalNames: 0,
             validNames: 0,
@@ -1149,7 +1180,6 @@ define([
          this.equalRatesEl.set("value", false);
          this.fastaFileIdEl.set("value", "");
          this.inferenceMethodEl.set("value", InferenceMethod.Local);
-         this.inputSource = InputSource.FastaFileID;
          //this.matchRegexEl.set("value", "");
          this.matchTypeEl.set("value", MatchType.Default);
          this.noCollapseEl.set("value", true);
@@ -1159,10 +1189,31 @@ define([
          this.refSegmentEl.set("value", this.defaultRefSegment);
          this.refTreeInferenceEl.set("value", RefTreeInference.FastTree);
 
+         // Reset input source back to FASTA
+         this.inputSource = InputSource.FastaFileID;
+         this.input_fasta.checked = true;
+         this.input_genome_group.checked = false;
+
+         // Re-apply show/hide state consistent with FASTA mode
+         this.fasta_table.style.display = "table";
+         this.fastaValidationPanelEl.style.display = "block";
+         this.fastaValidationPanelEl.innerHTML = "";
+         this.genome_group_table.style.display = "none";
+         this.segmentsContainerEl.style.display = "flex";
+         this.segmentsMessageEl.style.display = "block";
+
+         // Reset required fields
+         this.fastaFileIdEl.set("required", true);
+         this.genomeGroup.set("required", false);
+
+         // Reset FASTA validation state
+         this.resetValidatedFASTA();
+
          // Select all segment checkboxes.
          this.segmentCheckboxes.forEach(checkbox_ => {
             checkbox_.set("checked", true);
-         })
+            checkbox_.set("disabled", false);
+         });
 
          // Wait until the form controls have been modified to de-suspend the validation context.
          setTimeout(() => { this.validationContext.isSuspended = false; }, 0);
@@ -1332,17 +1383,21 @@ define([
             return true;
          }
 
-         let result;
-
          if (this.inherited(arguments)) {
 
             let isValid = true;
 
-            result = this.isDeviationValid();
+            let result = this.isDeviationValid();
             isValid = isValid && result.isValid;
 
-            result = this.isFastaFileIdValid();
-            isValid = isValid && result.isValid;
+            if (this.inputSource === InputSource.FastaFileID) {
+               // FASTA-only validations
+               result = this.isFastaFileIdValid();
+               isValid = isValid && result.isValid;
+
+               result = this.isRefSegmentValid();
+               isValid = isValid && result.isValid;
+            }
 
             /*if (this.matchTypeEl.get("value") == MatchType.Regex) {
                result = this.isMatchRegexValid();
@@ -1356,9 +1411,6 @@ define([
             isValid = isValid && result.isValid;
 
             result = this.isPValueValid();
-            isValid = isValid && result.isValid;
-
-            result = this.isRefSegmentValid();
             isValid = isValid && result.isValid;
 
             if (isValid) {
@@ -1718,20 +1770,85 @@ define([
       },
 
       onInputChange: function (event_) {
-         this.fastaFileIdEl.set('required', false);
-         this.genomeGroup.set('required', false);
+         // Reset required state on both inputs before re-applying
+         this.fastaFileIdEl.set("required", false);
+         this.genomeGroup.set("required", false);
+
          if (this.input_fasta.checked == true) {
             this.inputSource = InputSource.FastaFileID;
-            this.fasta_table.style.display = 'table';
-            this.genome_group_table.style.display = 'none';
-            this.fastaFileIdEl.set('required', true);
+
+            // Show FASTA controls
+            this.fasta_table.style.display = "table";
+            this.fastaValidationPanelEl.style.display = "block";
+
+            // Hide genome group controls
+            this.genome_group_table.style.display = "none";
+
+            // Only FASTA input is required
+            this.fastaFileIdEl.set("required", true);
+
+            // Re-enable segment checkboxes and validation panel
+            this.segmentsContainerEl.style.display = "flex";
+            this.segmentsMessageEl.style.display = "block";
+
+            // Restore segment checkbox state based on whether we have a previously validated FASTA file.
+            if (this.validatedFASTA.isValid) {
+               // Valid file — restore segments to match what was in the file
+               this.segmentCheckboxes.forEach(checkbox_ => {
+                  const segment = checkbox_.get("name");
+                  const inFile = this.validatedFASTA.segments.includes(segment);
+                  checkbox_.set("checked", inFile);
+                  checkbox_.set("disabled", !inFile);
+               });
+
+               this.updateSegmentOptions();
+               this.handleSegmentChange();
+            } else {
+               // Invalid file or no file — reset segments to clean state
+               // Summary HTML is either already showing the error, or empty — either way leave it alone
+               this.segmentCheckboxes.forEach(checkbox_ => {
+                  checkbox_.set("checked", true);
+                  checkbox_.set("disabled", true);
+               });
+
+               this.refSegmentEl.set("options", this.getSegmentOptions());
+               this.refSegmentEl.set("value", this.defaultRefSegment);
+               this.segmentsMessageEl.innerHTML = "";
+               this.refSegmentEl.set("state", "");
+               this.refSegmentEl.set("message", "");
+            }
          } else if (this.input_genome_group.checked == true) {
             this.inputSource = InputSource.GenomeGroup;
-            this.fasta_table.style.display = 'none';
-            this.genome_group_table.style.display = 'table';
-            this.genomeGroup.set('required', true);
+
+            // Hide FASTA controls
+            this.fasta_table.style.display = "none";
+            this.fastaValidationPanelEl.style.display = "none";
+
+            // Show genome group controls
+            this.genome_group_table.style.display = "table";
+            // Only genome group input is required
+            this.genomeGroup.set("required", true);
+
+            // Segments panel is irrelevant for genome group — hide it
+            this.segmentsContainerEl.style.display = "flex";
+            this.segmentsMessageEl.style.display = "block";
+
+            this.segmentCheckboxes.forEach(checkbox_ => {
+               checkbox_.set("checked", true);
+               checkbox_.set("disabled", false);
+            });
+
+            // Reset ref segment dropdown to full list and clear any error state from FASTA mode
+            this.refSegmentEl.set("options", this.getSegmentOptions());
+            this.refSegmentEl.set("value", this.defaultRefSegment);
+            this.segmentsMessageEl.innerHTML = "";
+            this.refSegmentEl.set("state", "");
+            this.refSegmentEl.set("message", "");
          }
 
+         if (!event_) {
+            this.validate();
+         }
       }
 
    });
