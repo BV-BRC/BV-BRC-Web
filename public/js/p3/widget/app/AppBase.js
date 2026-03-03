@@ -68,8 +68,9 @@ define([
 
       this.activeWorkspace = this.activeWorkspace || window.App.activeWorkspace;
       // Guard: Don't use activeWorkspacePath if it contains 'undefined'
+›      // or is just the root path '/' (not a valid output folder)
       var appPath = window.App.activeWorkspacePath;
-      if (appPath && appPath.indexOf && appPath.indexOf('undefined') !== -1) {
+      if (!appPath || appPath === '/' || (appPath.indexOf && appPath.indexOf('undefined') !== -1)) {
         appPath = '';
       }
       this.activeWorkspacePath = this.activeWorkspacePath || appPath;

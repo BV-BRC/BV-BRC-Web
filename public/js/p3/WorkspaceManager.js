@@ -283,7 +283,7 @@ define([
                     var nameMatch = obj.name.toLowerCase().includes(searchTerm.toLowerCase());
                     // Client-side filtering for type (if searchType is specified and not 'all')
                     var typeMatch = (!searchType || searchType === 'all') ? true : (obj.type === searchType);
-                    
+
                     // Do not include parent folder indicators in search results
                     if (obj.name === "Parent folder" || obj.name === "Back to my workspaces") return false;
 
@@ -300,7 +300,7 @@ define([
       if (basePath.charAt(basePath.length - 1) !== '/') {
         basePath += '/';
       }
-    
+
       var lsParams = { // This is the 'input' for Workspace.ls
         paths: [basePath],
         recursive: !!recursive,
@@ -308,7 +308,7 @@ define([
         excludeObjects: false,
         query: {} // This is where we'll put our search criteria
       };
-    
+
       // Add search term for name filtering
       //if (searchTerm && searchTerm.length > 0) { // searchTerm.length >= 3 is handled by UI
       //  lsParams.query.name_search = searchTerm; // Backend will interpret this
@@ -317,16 +317,16 @@ define([
       if (searchTerm && searchTerm.length > 0) { // searchTerm.length >= 3 is handled by UI
         lsParams.query.name = {
             '$regex': searchTerm,
-              '$options': 'i' 
+              '$options': 'i'
             };
       }
-    
+
       // Add type for type filtering
       if (searchType && searchType !== 'all') {
         lsParams.query.type = searchType; // Backend will interpret this (can be single string or array)
                                           // If your backend expects an array: lsParams.query.type = [searchType];
       }
-    
+
       // The 'Workspace.ls' method is called by this.api() which is RPC(apiUrl, token)
       // The this.api('Workspace.ls', [queryParams]) maps to the perl sub ls { my ($self, $input) = @_; }
       // So, the [queryParams] in JS becomes the $input hash in Perl.
@@ -362,7 +362,7 @@ define([
           return '/' + [this.userId, 'home', 'Experiment Groups'].join('/');
 
         default:
-          return '/' + this.userId;
+          return '';
       }
     },
     _userWorkspacesGetter: function () {
@@ -1244,7 +1244,7 @@ define([
           });
 
 
-          return sharedWithUser || []; // Ensure an array is always returned        
+          return sharedWithUser || []; // Ensure an array is always returned
         },
 
         function (err) {
