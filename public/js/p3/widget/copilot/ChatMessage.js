@@ -1763,13 +1763,15 @@ define([
     },
 
     /**
-     * Fetches all rows for group creation using cursor-based pagination against
-     * the BV-BRC data API. Requests application/solr+json which returns
-     * { response: { docs, numFound }, nextCursorMark } enabling cursor pagination.
+     * Fetches all rows for group creation using Solr-style cursor-based pagination.
+     * Sends POST requests to the BV-BRC data API with application/solrquery+x-www-form-urlencoded
+     * content type, which supports cursorMark for efficient deep pagination without
+     * burdening the backend.
      *
      * @param {Object} payload - The query collection payload from renderQueryCollectionWidget
-     * @param {string} payload.rqlQueryUrl - Full RQL query URL (base + collection + query)
      * @param {string} payload.collection - Collection name (e.g. 'genome', 'genome_feature')
+     * @param {string} payload.solrQuery - Solr q expression from tool_call.arguments_executed.q
+     * @param {string|null} payload.dataApiBaseUrl - Base API URL override
      * @param {number|null} payload.numFound - Total result count if known
      * @param {string} idField - The ID field to extract (e.g. 'genome_id', 'feature_id')
      * @returns {Promise<Array>} Promise resolving to array of row objects containing at least the idField
@@ -1779,43 +1781,33 @@ define([
       var self = this;
       var collection = payload.collection || '';
       var numFound = typeof payload.numFound === 'number' ? payload.numFound : null;
+      var solrQuery = payload.solrQuery || '*:*';
+      var baseApiUrl = (payload.dataApiBaseUrl || 'https://www.bv-brc.org/api-bulk').replace(/\/+$/, '');
+      var solrUrl = baseApiUrl + '/' + collection + '/';
 
-      // Build the base query URL without any existing limit/sort/cursorMark/http_accept params
-      var baseUrl = payload.rqlQueryUrl || '';
-      if (!baseUrl) {
-        return Promise.reject(new Error('No query URL available'));
+      if (!collection) {
+        return Promise.reject(new Error('No collection specified'));
       }
-
-      // Strip existing limit(), sort(), cursorMark, and http_accept from the query
-      var urlParts = baseUrl.split('?');
-      var urlBase = urlParts[0];
-      var queryStr = urlParts.length > 1 ? urlParts[1] : '';
-
-      // Remove existing limit(), sort(), cursorMark, and http_accept parameters
-      queryStr = queryStr
-        .replace(/&?limit\([^)]*\)/gi, '')
-        .replace(/&?sort\([^)]*\)/gi, '')
-        .replace(/&?cursorMark=[^&]*/gi, '')
-        .replace(/&?http_accept=[^&]*/gi, '')
-        .replace(/^&+/, '');
 
       // Determine sort field for cursor pagination (must sort on unique key)
       var sortField = self._collectionKeyField[collection] || 'id';
 
-      // Only request the fields we need: the idField, plus genome_id if creating genome group from features
+      // Only request the fields we need
       var selectFields = [idField];
-      if (idField !== 'genome_id' && idField !== sortField) {
+      if (idField !== sortField) {
         selectFields.push(sortField);
       }
       if (idField === 'feature_id') {
-        // Also include genome_id in case user wants genome group from feature data
+        // Also include genome_id for genome group creation from feature data
         selectFields.push('genome_id');
       }
+      // Deduplicate
+      var uniqueFields = [];
+      selectFields.forEach(function(f) {
+        if (uniqueFields.indexOf(f) === -1) uniqueFields.push(f);
+      });
 
-      // Build pagination parameters
       var pageSize = 100;
-      var paginationParams = 'limit(' + pageSize + ')&sort(%2B' + sortField + ')&select(' + selectFields.join(',') + ')';
-      var fetchQuery = queryStr ? queryStr + '&' + paginationParams : paginationParams;
 
       // Show progress dialog
       var progressHandle = self._showGroupProgressDialog({
@@ -1830,19 +1822,34 @@ define([
           return Promise.reject(new Error('cancelled'));
         }
 
-        var pageQuery = fetchQuery + '&cursorMark=' + encodeURIComponent(cursorMark);
-        var requestUrl = urlBase + '?' + pageQuery;
+        // Build Solr form-urlencoded POST body
+        var formParams = {
+          q: solrQuery,
+          rows: pageSize,
+          sort: sortField + ' asc',
+          fl: uniqueFields.join(','),
+          cursorMark: cursorMark,
+          wt: 'json'
+        };
+
+        // Encode as form data string
+        var formParts = [];
+        Object.keys(formParams).forEach(function(key) {
+          formParts.push(encodeURIComponent(key) + '=' + encodeURIComponent(formParams[key]));
+        });
+        var formBody = formParts.join('&');
 
         var headers = {
           'Accept': 'application/solr+json',
-          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
+          'Content-Type': 'application/solrquery+x-www-form-urlencoded',
           'X-Requested-With': null
         };
         if (window.App && window.App.authorizationToken) {
           headers['Authorization'] = window.App.authorizationToken;
         }
 
-        return request.get(requestUrl, {
+        return request.post(solrUrl, {
+          data: formBody,
           headers: headers,
           handleAs: 'json'
         }).then(function(result) {
@@ -2042,7 +2049,10 @@ define([
         numFound: numFound,
         is_snapshot: isSnapshot,
         snapshot_limit: snapshotLimit,
-        download_url: downloadUrl
+        download_url: downloadUrl,
+        // Solr query metadata for cursor-based group creation fetch
+        solrQuery: toolArgs.q || null,
+        dataApiBaseUrl: toolArgs.data_api_base_url || null
       };
 
       // Build count-aware status text
