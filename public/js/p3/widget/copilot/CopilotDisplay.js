@@ -597,7 +597,12 @@ define([
         nextCursorId: sourcePayload.nextCursorId || null,
         collection: inferredCollection,
         queryParameters: sourcePayload.queryParameters || sourcePayload.plan || sourceArgs || null,
-        rqlQueryUrl: sourcePayload.rqlQueryUrl || sourcePayload.rql_query_url || sourcePayload.query_url || sourceArgs.rqlQueryUrl || sourceArgs.rql_query_url || sourceArgs.query_url || null
+        rqlQueryUrl: sourcePayload.rqlQueryUrl || sourcePayload.rql_query_url || sourcePayload.query_url || sourceArgs.rqlQueryUrl || sourceArgs.rql_query_url || sourceArgs.query_url || null,
+        // Snapshot metadata passthrough
+        numFound: typeof sourcePayload.numFound === 'number' ? sourcePayload.numFound : null,
+        is_snapshot: sourcePayload.is_snapshot === true,
+        snapshot_limit: typeof sourcePayload.snapshot_limit === 'number' ? sourcePayload.snapshot_limit : null,
+        download_url: sourcePayload.download_url || null
       };
     },
 
@@ -648,7 +653,24 @@ define([
         }
       });
 
+      // Preserve snapshot metadata from the original chat card payload so the
+      // data panel can display total counts and download links after replay.
+      var originalSnapshotMeta = {};
+      if (payload) {
+        if (typeof payload.numFound === 'number') originalSnapshotMeta.numFound = payload.numFound;
+        if (payload.is_snapshot === true) originalSnapshotMeta.is_snapshot = true;
+        if (typeof payload.snapshot_limit === 'number') originalSnapshotMeta.snapshot_limit = payload.snapshot_limit;
+        if (payload.download_url) originalSnapshotMeta.download_url = payload.download_url;
+      }
+
       this._loadDataRowsFromRqlReplay(rqlReplay, rqlQueryUrl, replayArgs).then(lang.hitch(this, function(nextUiPayload) {
+        // Merge snapshot metadata onto the replay-loaded payload
+        if (originalSnapshotMeta.is_snapshot) {
+          nextUiPayload.numFound = originalSnapshotMeta.numFound || nextUiPayload.total;
+          nextUiPayload.is_snapshot = true;
+          nextUiPayload.snapshot_limit = originalSnapshotMeta.snapshot_limit || null;
+          nextUiPayload.download_url = originalSnapshotMeta.download_url || null;
+        }
         this.setSessionDataBrowseData({
           uiPayload: nextUiPayload,
           tool_call: toolCall,
@@ -2058,10 +2080,18 @@ define([
 
       var payload = this.sessionDataBrowse.uiPayload;
       var rows = Array.isArray(payload.rows) ? payload.rows : [];
+      var isSnapshot = payload.is_snapshot === true;
+      var numFound = typeof payload.numFound === 'number' ? payload.numFound : null;
+      var downloadUrl = payload.download_url || null;
+
       var summaryBits = [];
-      summaryBits.push('Rows: ' + rows.length);
-      if (payload.total !== undefined && payload.total !== null) {
-        summaryBits.push('Total: ' + payload.total);
+      if (isSnapshot && numFound !== null) {
+        summaryBits.push('Rows: ' + rows.length.toLocaleString() + ' of ' + numFound.toLocaleString() + ' total');
+      } else {
+        summaryBits.push('Rows: ' + rows.length.toLocaleString());
+        if (payload.total !== undefined && payload.total !== null) {
+          summaryBits.push('Total: ' + payload.total.toLocaleString());
+        }
       }
       if (payload.collection) {
         summaryBits.push('Collection: ' + payload.collection);
@@ -2089,10 +2119,27 @@ define([
         this.dataExplorerWidget.resize();
       }
 
-      if (payload.nextCursorId) {
-        var actionsNode = domConstruct.create('div', {
-          style: 'margin-top: 10px;'
-        }, this.dataContainer);
+      var actionsNode = domConstruct.create('div', {
+        style: 'margin-top: 10px;'
+      }, this.dataContainer);
+
+      // In snapshot mode, show download link instead of "Load Next 100 Rows"
+      if (isSnapshot && downloadUrl) {
+        var tsvLabel = numFound !== null
+          ? 'Download all ' + numFound.toLocaleString() + ' results as TSV'
+          : 'Download Full Dataset (TSV)';
+        var tsvLink = domConstruct.create('a', {
+          class: 'workspace-summary-link',
+          href: '#',
+          innerHTML: tsvLabel,
+          style: 'display: inline-block;'
+        }, actionsNode);
+        on(tsvLink, 'click', function(evt) {
+          evt.preventDefault();
+          window.open(downloadUrl, '_blank', 'noopener,noreferrer');
+        });
+      } else if (payload.nextCursorId) {
+        // Legacy cursor-based pagination (non-snapshot mode)
         var loadMoreButton = domConstruct.create('button', {
           type: 'button',
           innerHTML: payload.isLoadingMore ? 'Loading...' : 'Load Next 100 Rows',

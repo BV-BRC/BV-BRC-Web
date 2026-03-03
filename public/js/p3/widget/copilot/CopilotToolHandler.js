@@ -933,11 +933,14 @@ define([
         // If chunk is already a fully parsed object with workspace and summary, use it directly
         if (typeof chunk === 'object' && !chunk.content && (chunk.workspace || chunk.summary)) {
           console.log('[CopilotToolHandler] ✓ Path A: Chunk is already parsed query collection data');
-          var directCallInfo = (chunk.call && typeof chunk.call === 'object')
+           var directCallInfo = (chunk.call && typeof chunk.call === 'object')
             ? chunk.call
             : ((baseData && baseData.call && typeof baseData.call === 'object')
             ? baseData.call
             : ((baseData && baseData.tool_call && typeof baseData.tool_call === 'object') ? baseData.tool_call : null));
+          var directDownloadUrl = (directCallInfo && directCallInfo.replay && directCallInfo.replay.download_url)
+            ? directCallInfo.replay.download_url
+            : null;
           return {
             ...baseData,
             chunk: JSON.stringify(chunk), // Store stringified version for display
@@ -952,7 +955,12 @@ define([
               rqlQueryUrl: chunk.rqlQueryUrl || chunk.rql_query_url || chunk.queryUrl || chunk.query_url || null,
               nextCursorId: chunk.nextCursorId || null,
               collection: chunk.collection || (chunk.queryParameters && chunk.queryParameters.collection) || null,
-              resultRows: Array.isArray(chunk.results) ? chunk.results : []
+              resultRows: Array.isArray(chunk.results) ? chunk.results : [],
+              // Snapshot metadata
+              numFound: typeof chunk.numFound === 'number' ? chunk.numFound : null,
+              is_snapshot: typeof chunk.is_snapshot === 'boolean' ? chunk.is_snapshot : false,
+              snapshot_limit: typeof chunk.snapshot_limit === 'number' ? chunk.snapshot_limit : null,
+              download_url: directDownloadUrl
             },
             tool_call: directCallInfo
           };
@@ -1006,6 +1014,11 @@ define([
           ? parsedChunk.result
           : parsedChunk;
 
+        // Extract download_url from call.replay if available
+        var snapshotDownloadUrl = (parsedCallInfo && parsedCallInfo.replay && parsedCallInfo.replay.download_url)
+          ? parsedCallInfo.replay.download_url
+          : null;
+
         let queryCollectionData = {
           workspace: resolvedPayload.workspace || null,
           summary: resolvedPayload.summary || null,
@@ -1016,7 +1029,12 @@ define([
           rqlQueryUrl: resolvedPayload.rqlQueryUrl || resolvedPayload.rql_query_url || resolvedPayload.queryUrl || resolvedPayload.query_url || null,
           nextCursorId: resolvedPayload.nextCursorId || null,
           collection: resolvedPayload.collection || (resolvedPayload.queryParameters && resolvedPayload.queryParameters.collection) || null,
-          resultRows: Array.isArray(resolvedPayload.results) ? resolvedPayload.results : []
+          resultRows: Array.isArray(resolvedPayload.results) ? resolvedPayload.results : [],
+          // Snapshot metadata from bvbrc_search_data
+          numFound: typeof resolvedPayload.numFound === 'number' ? resolvedPayload.numFound : null,
+          is_snapshot: typeof resolvedPayload.is_snapshot === 'boolean' ? resolvedPayload.is_snapshot : false,
+          snapshot_limit: typeof resolvedPayload.snapshot_limit === 'number' ? resolvedPayload.snapshot_limit : null,
+          download_url: snapshotDownloadUrl
         };
 
         console.log('[CopilotToolHandler] ✓ Extracted query collection data');

@@ -1686,14 +1686,35 @@ define([
       var collectionLabel = (collection || '').replace(/_/g, ' ');
       var detailLine = collectionLabel;
 
+      // Snapshot metadata
+      var numFound = typeof data.numFound === 'number' ? data.numFound : null;
+      var isSnapshot = data.is_snapshot === true;
+      var snapshotLimit = typeof data.snapshot_limit === 'number' ? data.snapshot_limit : null;
+      var downloadUrl = data.download_url || null;
+      var displayCount = rows.length || rowCount;
+
       var payload = {
         queryParameters: params,
         collection: collection,
         rqlQueryUrl: rqlQueryUrl,
         rqlReplay: rqlReplay,
         summary: summary,
-        rows: rows
+        rows: rows,
+        numFound: numFound,
+        is_snapshot: isSnapshot,
+        snapshot_limit: snapshotLimit,
+        download_url: downloadUrl
       };
+
+      // Build count-aware status text
+      var statusText;
+      if (isSnapshot && numFound !== null) {
+        statusText = 'Found ' + numFound.toLocaleString() + ' total results (showing first ' + displayCount.toLocaleString() + ')';
+      } else if (numFound !== null) {
+        statusText = 'Found ' + numFound.toLocaleString() + ' results';
+      } else {
+        statusText = 'Review your results';
+      }
 
       var container = domConstruct.create('div', {
         class: 'workspace-summary-card'
@@ -1701,7 +1722,7 @@ define([
 
       domConstruct.create('div', {
         class: 'tool-card-status-row workspace-summary-text',
-        innerHTML: 'Review your results'
+        innerHTML: statusText
       }, container);
 
       domConstruct.create('div', {
@@ -1762,6 +1783,22 @@ define([
             downloadUrl = downloadUrl + authParam;
             window.open(downloadUrl, '_blank', 'noopener,noreferrer');
           }));
+        });
+      }
+
+      // Download Full Dataset (TSV) link - shown when snapshot has a download URL
+      if (downloadUrl && isSnapshot) {
+        var tsvLabel = numFound !== null
+          ? 'Download all ' + numFound.toLocaleString() + ' results as TSV'
+          : 'Download Full Dataset (TSV)';
+        var tsvLink = domConstruct.create('a', {
+          class: 'workspace-summary-link',
+          href: '#',
+          innerHTML: tsvLabel
+        }, container);
+        on(tsvLink, 'click', function(evt) {
+          evt.preventDefault();
+          window.open(downloadUrl, '_blank', 'noopener,noreferrer');
         });
       }
 
