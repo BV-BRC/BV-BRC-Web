@@ -2431,10 +2431,17 @@ define([
           if (Array.isArray(item)) {
             flattenedCount += 1;
           } else if (item && typeof item === 'object') {
-            for (var key in item) {
-              if (item.hasOwnProperty(key) && Array.isArray(item[key])) {
-                flattenedCount += item[key].length;
+            var firstKey = Object.keys(item)[0];
+            if (firstKey && firstKey.charAt(0) === '/') {
+              // Path-keyed nested structure: { "/path": [row1, row2, ...] }
+              for (var key in item) {
+                if (item.hasOwnProperty(key) && Array.isArray(item[key])) {
+                  flattenedCount += item[key].length;
+                }
               }
+            } else {
+              // Regular data object (e.g. from group list tools)
+              flattenedCount += 1;
             }
           }
         });

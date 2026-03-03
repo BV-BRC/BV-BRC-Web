@@ -369,11 +369,19 @@ define([
         }
 
         // Handle nested structure: [{ "/path": [row1, row2, ...] }]
+        // vs regular data objects: [{ name: "...", type: "...", ... }]
         if (item && typeof item === 'object') {
-          for (var key in item) {
-            if (item.hasOwnProperty(key) && Array.isArray(item[key])) {
-              flattened = flattened.concat(item[key]);
+          var firstKey = Object.keys(item)[0];
+          if (firstKey && firstKey.charAt(0) === '/') {
+            // Path-keyed nested structure
+            for (var key in item) {
+              if (item.hasOwnProperty(key) && Array.isArray(item[key])) {
+                flattened = flattened.concat(item[key]);
+              }
             }
+          } else {
+            // Regular data object (e.g. from group list tools)
+            flattened.push(item);
           }
         }
       }
