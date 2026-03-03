@@ -2359,6 +2359,66 @@ define([
         this.showWorkflowDialog();
       }));
 
+      if (!isSubmitted) {
+        var self = this;
+        var submitButton = domConstruct.create('button', {
+          innerHTML: 'Submit',
+          type: 'button',
+          style: 'padding: 8px 16px; background: #2563eb; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;'
+        }, actionsRow);
+
+        on(submitButton, 'click', lang.hitch(this, function() {
+          if (!self.copilotApi || submitButton.disabled) return;
+          var workflowToSubmit = {};
+          try {
+            workflowToSubmit = JSON.parse(JSON.stringify(workflow));
+          } catch (e) {
+            workflowToSubmit = workflow;
+          }
+          delete workflowToSubmit.execution_metadata;
+
+          submitButton.disabled = true;
+          submitButton.innerHTML = 'Submitting...';
+
+          self.copilotApi.submitWorkflowForExecution(workflowToSubmit).then(function(response) {
+            if (response && response.error) {
+              submitButton.disabled = false;
+              submitButton.innerHTML = 'Submit';
+              topic.publish('/Notification', { message: 'Submission failed: ' + response.error, type: 'error' });
+              return;
+            }
+            var wfId = response && response.workflow_id;
+            var status = (response && response.status) || 'submitted';
+            var statusUrl = wfId && (window.App.workflow_url || 'https://dev-7.bv-brc.org/api/v1') + '/workflows/' + wfId + '/status';
+
+            if (!workflow.execution_metadata) workflow.execution_metadata = {};
+            workflow.execution_metadata.workflow_id = wfId;
+            workflow.execution_metadata.status = status;
+            workflow.execution_metadata.is_submitted = true;
+            workflow.execution_metadata.is_planned = false;
+            workflow.execution_metadata.status_url = statusUrl;
+            workflow.execution_metadata.submitted_at = new Date().toISOString();
+
+            topic.publish('CopilotWorkflowCardStatusUpdated', {
+              session_id: self.sessionId || null,
+              message_id: self.message && self.message.message_id ? self.message.message_id : null,
+              workflow: workflow
+            });
+
+            submitButton.innerHTML = 'Submitted';
+            topic.publish('/Notification', { message: 'Workflow submitted successfully.', type: 'message' });
+
+            if (self.sessionId && self.copilotApi && typeof self.copilotApi.addWorkflowToSession === 'function') {
+              self.copilotApi.addWorkflowToSession(self.sessionId, wfId).catch(function() {});
+            }
+          }, function(err) {
+            submitButton.disabled = false;
+            submitButton.innerHTML = 'Submit';
+            topic.publish('/Notification', { message: 'Submission failed: ' + (err && err.message ? err.message : err), type: 'error' });
+          });
+        }));
+      }
+
       // Selection indicator for workflows
       this._renderSelectionIndicator(card, {
         category: 'workflows',
@@ -2745,33 +2805,16 @@ define([
         class: 'copilot-direct-form-modal-footer'
       }, modalNode);
 
-      // Review button — toggles form visibility
-      var formVisible = false;
-      var reviewToggleBtn = domConstruct.create('button', {
-        innerHTML: 'Review',
+      // Back button — closes the form modal and returns to the card
+      var backBtn = domConstruct.create('button', {
+        innerHTML: 'Back',
         type: 'button',
         class: 'workflow-review-btn',
-        title: 'Review and edit service parameters'
-      }, footerNode);
-
-      // Submit button — separate from Review, disabled until form is loaded
-      var submitBtn = domConstruct.create('button', {
-        innerHTML: 'Submit',
-        type: 'button',
-        style: 'padding: 8px 16px; background: #2563eb; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;'
-      }, footerNode);
-      submitBtn.disabled = isSubmitted;
-
-      var resetBtn = domConstruct.create('button', {
-        innerHTML: 'Reset',
-        type: 'button',
-        class: 'workflow-form-action-btn-secondary',
-        style: 'padding: 8px 16px; background: #e5e7eb; color: #374151; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer; font-weight: 500;'
+        title: 'Return to the service card'
       }, footerNode);
 
       var formContainer = domConstruct.create('div', {
-        class: 'copilot-dojo-form-container',
-        style: 'display: none;'
+        class: 'copilot-dojo-form-container'
       }, contentNode);
 
       var loadingNode = domConstruct.create('div', {
@@ -2788,27 +2831,10 @@ define([
         }
       };
 
-      // Review toggle — show/hide form, auto-apply on close
-      reviewToggleBtn.onclick = function() {
-        if (formVisible) {
-          // Closing review — auto-apply edits
-          applyFormEdits();
-          formContainer.style.display = 'none';
-          formVisible = false;
-          reviewToggleBtn.innerHTML = 'Review';
-        } else {
-          formContainer.style.display = '';
-          formVisible = true;
-          reviewToggleBtn.innerHTML = 'Close Review';
-        }
-      };
-
       var keyHandler = null;
       var closeModal = function() {
-        // Auto-apply form edits when closing with form visible
-        if (formVisible) {
-          applyFormEdits();
-        }
+        // Auto-apply form edits when closing
+        applyFormEdits();
         if (keyHandler) {
           keyHandler.remove();
           keyHandler = null;
@@ -2826,6 +2852,7 @@ define([
         }
       };
 
+      backBtn.onclick = closeModal;
       closeBtn.onclick = closeModal;
       on(overlayNode, 'click', function(evt) {
         if (evt.target === overlayNode) closeModal();
@@ -2833,12 +2860,6 @@ define([
       keyHandler = on(document, 'keydown', function(evt) {
         if (evt.key === 'Escape') closeModal();
       });
-
-      resetBtn.onclick = function() {
-        if (formWidget) {
-          formWidget.setFromManifest(step.params || {});
-        }
-      };
 
       CopilotServiceFormAdapter.createForm(appName).then(function(widget) {
         formWidget = widget;
@@ -2857,71 +2878,6 @@ define([
         closeModal();
         self.showWorkflowDialog();
       });
-
-      submitBtn.onclick = function() {
-        if (!formWidget || !self.copilotApi || submitBtn.disabled) return;
-        // Auto-apply form edits before submitting if form is visible
-        if (formVisible) {
-          applyFormEdits();
-        }
-        if (typeof formWidget.validate === 'function' && !formWidget.validate()) {
-          topic.publish('/Notification', { message: 'Please correct form errors before submitting.', type: 'error' });
-          return;
-        }
-        var updatedParams = formWidget.toManifest();
-        if (!updatedParams) {
-          topic.publish('/Notification', { message: 'Unable to read form values.', type: 'error' });
-          return;
-        }
-        step.params = lang.mixin({}, step.params, updatedParams);
-        var workflowToSubmit = {};
-        try {
-          workflowToSubmit = JSON.parse(JSON.stringify(workflow));
-        } catch (e) {
-          workflowToSubmit = workflow;
-        }
-        delete workflowToSubmit.execution_metadata;
-
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = 'Submitting...';
-
-        self.copilotApi.submitWorkflowForExecution(workflowToSubmit).then(function(response) {
-          if (response && response.error) {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = 'Submit';
-            topic.publish('/Notification', { message: 'Submission failed: ' + response.error, type: 'error' });
-            return;
-          }
-          var wfId = response && response.workflow_id;
-          var status = (response && response.status) || 'submitted';
-          var statusUrl = wfId && (window.App.workflow_url || 'https://dev-7.bv-brc.org/api/v1') + '/workflows/' + wfId + '/status';
-
-          if (!workflow.execution_metadata) workflow.execution_metadata = {};
-          workflow.execution_metadata.workflow_id = wfId;
-          workflow.execution_metadata.status = status;
-          workflow.execution_metadata.is_submitted = true;
-          workflow.execution_metadata.is_planned = false;
-          workflow.execution_metadata.status_url = statusUrl;
-          workflow.execution_metadata.submitted_at = new Date().toISOString();
-
-          topic.publish('CopilotWorkflowCardStatusUpdated', {
-            session_id: self.sessionId || null,
-            message_id: self.message && self.message.message_id ? self.message.message_id : null,
-            workflow: workflow
-          });
-
-          submitBtn.innerHTML = 'Submitted';
-          topic.publish('/Notification', { message: 'Workflow submitted successfully.', type: 'message' });
-
-          if (self.sessionId && self.copilotApi && typeof self.copilotApi.addWorkflowToSession === 'function') {
-            self.copilotApi.addWorkflowToSession(self.sessionId, wfId).catch(function() {});
-          }
-        }, function(err) {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = 'Submit';
-          topic.publish('/Notification', { message: 'Submission failed: ' + (err && err.message ? err.message : err), type: 'error' });
-        });
-      };
     },
 
     /**
