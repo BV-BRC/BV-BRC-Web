@@ -9,9 +9,10 @@ define([
   'dijit/Dialog', // Dialog widget
   './CopilotToolHandler', // Tool handler for special tool processing
   './WorkflowEngine', // Workflow engine widget for displaying workflows
+  './workflowForms/CopilotServiceFormAdapter', // Dojo form wrappers for single-step direct form modal
   '../../WorkspaceManager' // Workspace manager for file operations
 ], function (
-  declare, domConstruct, on, topic, lang, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, WorkspaceManager
+  declare, domConstruct, on, topic, lang, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, CopilotServiceFormAdapter, WorkspaceManager
 ) {
   /**
    * @class ChatMessage
@@ -1538,8 +1539,92 @@ define([
     },
 
     /**
+     * Maps app names to human-readable service display names
+     * @param {string} appName - Application identifier (e.g., GenomeAssembly2)
+     * @returns {string} Display name
+     */
+    _getServiceDisplayName: function(appName) {
+      var map = {
+        'GenomeAssembly2': 'Genome Assembly',
+        'GenomeAnnotation': 'Genome Annotation',
+        'ComparativeSystems': 'Comparative Systems'
+      };
+      return map[appName] || appName;
+    },
+
+    /**
+     * Renders a simplified service card for single-step workflows
+     * @param {HTMLElement} messageDiv - Container to render into
+     * @param {Object} workflow - Workflow data with steps[0]
+     */
+    renderSimplifiedServiceCard: function(messageDiv, workflow) {
+      var step = workflow.steps && workflow.steps[0];
+      debugger;
+      var serviceName = step ? this._getServiceDisplayName(step.app) : (workflow.workflow_name || 'Workflow');
+      if (!serviceName && step && step.step_name) {
+        serviceName = step.step_name;
+      }
+      var isSubmitted = workflow.execution_metadata && workflow.execution_metadata.is_submitted;
+      var statusValue = (workflow.execution_metadata && workflow.execution_metadata.status) ||
+        workflow.status || (isSubmitted ? 'submitted' : '') || 'planned';
+      var normalizeStatus = function(s) {
+        return (!s && s !== 0) ? '' : String(s).toLowerCase();
+      };
+      var getStatusStyle = function(s) {
+        var st = normalizeStatus(s);
+        if (st === 'succeeded' || st === 'completed') return 'background: #10b981; color: #fff;';
+        if (st === 'failed' || st === 'error') return 'background: #ef4444; color: #fff;';
+        if (st === 'cancelled') return 'background: #6b7280; color: #fff;';
+        if (st === 'running') return 'background: #2563eb; color: #fff;';
+        if (st === 'queued' || st === 'pending') return 'background: #f59e0b; color: #111827;';
+        if (st === 'submitted') return 'background: #14b8a6; color: #fff;';
+        if (st === 'planned') return 'background: #6366f1; color: #fff;';
+        return 'background: #9ca3af; color: #fff;';
+      };
+      var statusBadgeLabel = statusValue ? this.escapeHtml(String(statusValue).toUpperCase()) : '';
+
+      var card = domConstruct.create('div', {
+        class: 'copilot-service-card workflow-manifest-card'
+      }, messageDiv);
+
+      var titleRow = domConstruct.create('div', {
+        class: 'copilot-service-card-actions',
+        style: 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 0; padding-top: 0; border-top: none;'
+      }, card);
+
+      domConstruct.create('div', {
+        class: 'copilot-service-card-title',
+        innerHTML: this.escapeHtml(serviceName)
+      }, titleRow);
+
+      if (statusBadgeLabel) {
+        domConstruct.create('span', {
+          innerHTML: statusBadgeLabel,
+          style: 'padding: 2px 6px; font-size: 11px; border-radius: 3px; font-weight: 500; ' + getStatusStyle(statusValue)
+        }, titleRow);
+      }
+
+      var actionsRow = domConstruct.create('div', {
+        class: 'copilot-service-card-actions'
+      }, card);
+
+      var reviewButton = domConstruct.create('button', {
+        innerHTML: (isSubmitted ? 'View Results' : 'Review &amp; Submit'),
+        class: 'workflow-review-button',
+        style: 'padding: 6px 12px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500;'
+      }, actionsRow);
+
+      on(reviewButton, 'mouseenter', function() { reviewButton.style.background = '#1d4ed8'; });
+      on(reviewButton, 'mouseleave', function() { reviewButton.style.background = '#2563eb'; });
+      on(reviewButton, 'click', lang.hitch(this, function() {
+        this.showWorkflowDialog();
+      }));
+    },
+
+    /**
      * Renders a workflow manifest card with workflow details
      * Displays workflow name, step count, output folder, and a Review & Submit button
+     * For single-step workflows, renders a simplified service card instead.
      * @param {HTMLElement} messageDiv - Container to render widget into
      */
     renderWorkflowManifestCard: function(messageDiv) {
@@ -1562,6 +1647,12 @@ define([
       // Count steps
       if (workflow.steps && Array.isArray(workflow.steps)) {
         stepCount = workflow.steps.length;
+      }
+
+      var isSingleStep = workflow && workflow.steps && workflow.steps.length === 1;
+      if (isSingleStep) {
+        this.renderSimplifiedServiceCard(messageDiv, workflow);
+        return;
       }
 
       // Get output folder
@@ -1834,6 +1925,212 @@ define([
     },
 
     /**
+     * Shows a direct form modal for single-step workflows with Dojo form wrappers.
+     * Bypasses the pipeline grid and displays the service form directly.
+     * @param {Object} workflow - Full workflow data
+     * @param {Object} step - workflow.steps[0]
+     * @param {string} appName - Step app identifier
+     */
+    _showDirectFormModal: function(workflow, step, appName) {
+      var self = this;
+      var serviceName = this._getServiceDisplayName(appName);
+      var isSubmitted = workflow.execution_metadata && workflow.execution_metadata.is_submitted;
+      var statusValue = (workflow.execution_metadata && workflow.execution_metadata.status) ||
+        workflow.status || (isSubmitted ? 'submitted' : '') || 'planned';
+      var getStatusStyle = function(s) {
+        var st = (!s && s !== 0) ? '' : String(s).toLowerCase();
+        if (st === 'succeeded' || st === 'completed') return 'background: #10b981; color: #fff;';
+        if (st === 'failed' || st === 'error') return 'background: #ef4444; color: #fff;';
+        if (st === 'cancelled') return 'background: #6b7280; color: #fff;';
+        if (st === 'running') return 'background: #2563eb; color: #fff;';
+        if (st === 'queued' || st === 'pending') return 'background: #f59e0b; color: #111827;';
+        if (st === 'submitted') return 'background: #14b8a6; color: #fff;';
+        if (st === 'planned') return 'background: #6366f1; color: #fff;';
+        return 'background: #9ca3af; color: #fff;';
+      };
+
+      var formWidget = null;
+      var overlayNode = domConstruct.create('div', {
+        class: 'workflow-modal-overlay copilot-direct-form-overlay',
+        style: 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 900; display: flex; align-items: center; justify-content: center; padding: 24px;'
+      }, document.body);
+
+      var modalNode = domConstruct.create('div', {
+        class: 'workflow-modal-dialog copilot-direct-form-modal',
+        style: 'background: #fff; width: min(980px, 95vw); max-height: 88vh; border-radius: 10px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; overflow: hidden;'
+      }, overlayNode);
+
+      var headerNode = domConstruct.create('div', {
+        class: 'copilot-direct-form-modal-header'
+      }, modalNode);
+
+      var headerLeft = domConstruct.create('div', {
+        style: 'display: flex; align-items: center; gap: 12px;'
+      }, headerNode);
+
+      domConstruct.create('div', {
+        class: 'copilot-direct-form-modal-title',
+        innerHTML: this.escapeHtml(serviceName)
+      }, headerLeft);
+
+      if (statusValue) {
+        domConstruct.create('span', {
+          innerHTML: this.escapeHtml(String(statusValue).toUpperCase()),
+          style: 'padding: 2px 8px; font-size: 11px; border-radius: 4px; font-weight: 500; ' + getStatusStyle(statusValue)
+        }, headerLeft);
+      }
+
+      var closeBtn = domConstruct.create('button', {
+        innerHTML: '&times;',
+        style: 'padding: 4px 10px; background: transparent; border: none; font-size: 20px; cursor: pointer; color: #6b7280; line-height: 1;'
+      }, headerNode);
+
+      var contentNode = domConstruct.create('div', {
+        class: 'copilot-direct-form-modal-content'
+      }, modalNode);
+
+      var footerNode = domConstruct.create('div', {
+        class: 'copilot-direct-form-modal-footer'
+      }, modalNode);
+
+      var submitBtn = domConstruct.create('button', {
+        innerHTML: 'Submit',
+        type: 'button',
+        style: 'padding: 8px 16px; background: #2563eb; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;'
+      }, footerNode);
+      submitBtn.disabled = isSubmitted;
+
+      var resetBtn = domConstruct.create('button', {
+        innerHTML: 'Reset',
+        type: 'button',
+        class: 'workflow-form-action-btn-secondary',
+        style: 'padding: 8px 16px; background: #e5e7eb; color: #374151; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer; font-weight: 500;'
+      }, footerNode);
+
+      var formContainer = domConstruct.create('div', {
+        class: 'copilot-dojo-form-container'
+      }, contentNode);
+
+      var loadingNode = domConstruct.create('div', {
+        innerHTML: 'Loading service form...',
+        class: 'workflow-form-loading'
+      }, contentNode);
+
+      var keyHandler = null;
+      var closeModal = function() {
+        if (keyHandler) {
+          keyHandler.remove();
+          keyHandler = null;
+        }
+        if (formWidget && typeof formWidget.destroyRecursive === 'function') {
+          try {
+            formWidget.destroyRecursive();
+          } catch (e) {
+            console.warn('[ChatMessage] Error destroying form:', e);
+          }
+          formWidget = null;
+        }
+        if (overlayNode && overlayNode.parentNode) {
+          overlayNode.parentNode.removeChild(overlayNode);
+        }
+      };
+
+      closeBtn.onclick = closeModal;
+      on(overlayNode, 'click', function(evt) {
+        if (evt.target === overlayNode) closeModal();
+      });
+      keyHandler = on(document, 'keydown', function(evt) {
+        if (evt.key === 'Escape') closeModal();
+      });
+
+      resetBtn.onclick = function() {
+        if (formWidget) {
+          formWidget.setFromManifest(step.params || {});
+        }
+      };
+
+      CopilotServiceFormAdapter.createForm(appName).then(function(widget) {
+        formWidget = widget;
+        domConstruct.destroy(loadingNode);
+        domConstruct.place(formWidget.domNode, formContainer);
+        formWidget.startup();
+        setTimeout(function() {
+          formWidget.setFromManifest(step.params || {});
+        }, 100);
+      }, function(err) {
+        domConstruct.destroy(loadingNode);
+        domConstruct.create('div', {
+          innerHTML: 'Failed to load service form: ' + (err.message || err),
+          style: 'color: #991b1b; padding: 16px;'
+        }, contentNode);
+        topic.publish('/Notification', { message: 'Service form unavailable. Opening full workflow view.', type: 'message' });
+        closeModal();
+        self.showWorkflowDialog();
+      });
+
+      submitBtn.onclick = function() {
+        if (!formWidget || !self.copilotApi || submitBtn.disabled) return;
+        if (typeof formWidget.validate === 'function' && !formWidget.validate()) {
+          topic.publish('/Notification', { message: 'Please correct form errors before submitting.', type: 'error' });
+          return;
+        }
+        var updatedParams = formWidget.toManifest();
+        if (!updatedParams) {
+          topic.publish('/Notification', { message: 'Unable to read form values.', type: 'error' });
+          return;
+        }
+        step.params = lang.mixin({}, step.params, updatedParams);
+        var workflowToSubmit = {};
+        try {
+          workflowToSubmit = JSON.parse(JSON.stringify(workflow));
+        } catch (e) {
+          workflowToSubmit = workflow;
+        }
+        delete workflowToSubmit.execution_metadata;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Submitting...';
+
+        self.copilotApi.submitWorkflowForExecution(workflowToSubmit).then(function(response) {
+          if (response && response.error) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Submit';
+            topic.publish('/Notification', { message: 'Submission failed: ' + response.error, type: 'error' });
+            return;
+          }
+          var wfId = response && response.workflow_id;
+          var status = (response && response.status) || 'submitted';
+          var statusUrl = wfId && (window.App.workflow_url || 'https://dev-7.bv-brc.org/api/v1') + '/workflows/' + wfId + '/status';
+
+          if (!workflow.execution_metadata) workflow.execution_metadata = {};
+          workflow.execution_metadata.workflow_id = wfId;
+          workflow.execution_metadata.status = status;
+          workflow.execution_metadata.is_submitted = true;
+          workflow.execution_metadata.is_planned = false;
+          workflow.execution_metadata.status_url = statusUrl;
+          workflow.execution_metadata.submitted_at = new Date().toISOString();
+
+          topic.publish('CopilotWorkflowCardStatusUpdated', {
+            session_id: self.sessionId || null,
+            message_id: self.message && self.message.message_id ? self.message.message_id : null,
+            workflow: workflow
+          });
+
+          submitBtn.innerHTML = 'Submitted';
+          topic.publish('/Notification', { message: 'Workflow submitted successfully.', type: 'message' });
+
+          if (self.sessionId && self.copilotApi && typeof self.copilotApi.addWorkflowToSession === 'function') {
+            self.copilotApi.addWorkflowToSession(self.sessionId, wfId).catch(function() {});
+          }
+        }, function(err) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Submit';
+          topic.publish('/Notification', { message: 'Submission failed: ' + (err && err.message ? err.message : err), type: 'error' });
+        });
+      };
+    },
+
+    /**
      * Shows a dialog displaying the workflow using WorkflowEngine widget
      */
     showWorkflowDialog: function() {
@@ -1878,6 +2175,17 @@ define([
         return;
       }
 
+      var workflow = this.message.workflowData;
+      var isSingleStep = workflow && workflow.steps && workflow.steps.length === 1;
+      var step = isSingleStep && workflow.steps ? workflow.steps[0] : null;
+      var appName = step ? step.app : '';
+      var hasDojoForm = isSingleStep && CopilotServiceFormAdapter.hasDojoForm(appName);
+
+      if (hasDojoForm) {
+        this._showDirectFormModal(workflow, step, appName);
+        return;
+      }
+
       var workflowEngine = null;
       var overlayNode = null;
       var keyHandler = null;
@@ -1891,7 +2199,7 @@ define([
 
         overlayNode = domConstruct.create('div', {
           class: 'workflow-modal-overlay',
-          style: 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 2147483000; display: flex; align-items: center; justify-content: center; padding: 24px;'
+          style: 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 900; display: flex; align-items: center; justify-content: center; padding: 24px;'
         }, document.body);
 
         var modalNode = domConstruct.create('div', {

@@ -1627,7 +1627,7 @@ define([
 
         overlayNode = domConstruct.create('div', {
           class: 'workflow-modal-overlay',
-          style: 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 2147483000; display: flex; align-items: center; justify-content: center; padding: 24px;'
+          style: 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 900; display: flex; align-items: center; justify-content: center; padding: 24px;'
         }, document.body);
 
         var modalNode = domConstruct.create('div', {

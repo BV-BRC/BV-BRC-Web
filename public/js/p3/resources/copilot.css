@@ -3123,3 +3123,111 @@
 }
 
 /* ========== End Workflow Submission Styles ========== */
+
+/* ========================================
+   COPILOT EMBEDDED SERVICE FORMS
+   ======================================== */
+/* Container for the embedded Dojo form */
+.copilot-dojo-form-container {
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0;
+}
+/* Override the full-page form styles when embedded */
+.copilot-embedded-form.PanelForm {
+  padding: 0;
+  margin: 0;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+.copilot-embedded-form .appTemplate {
+  padding: 0;
+  margin: 0;
+}
+.copilot-embedded-form .formFieldsContainer {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0;
+}
+/* Constrain the assembly two-column table layout */
+.copilot-embedded-form table.assemblyblocks {
+  width: 100% !important;
+}
+/* Ensure appBox sections fit within the panel */
+.copilot-embedded-form .appBox {
+  width: auto !important;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+/* Ensure WorkspaceObjectSelector inputs don't overflow */
+.copilot-embedded-form .appBox .dijitTextBox,
+.copilot-embedded-form .appBox .dijitSelect,
+.copilot-embedded-form .appBox .dijitValidationTextBox {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+/* Loading state */
+.workflow-form-loading {
+  padding: 20px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/* ========================================
+   SIMPLIFIED SERVICE CARD (single-step)
+   ======================================== */
+.copilot-service-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  background: #f9fafb;
+  margin: 8px 0;
+}
+.copilot-service-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+.copilot-service-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* ========================================
+   DIRECT FORM MODAL (single-step bypass)
+   ======================================== */
+.copilot-direct-form-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f8fafc;
+}
+.copilot-direct-form-modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+.copilot-direct-form-modal-content {
+  padding: 0;
+  overflow-y: auto;
+  max-height: calc(88vh - 140px);
+}
+.copilot-direct-form-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid #e5e7eb;
+  background: #f8fafc;
+}
