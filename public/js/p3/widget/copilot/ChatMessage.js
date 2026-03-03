@@ -2030,12 +2030,7 @@ define([
         ? toolCall.replay.rql_replay_query
         : null;
       var summaryText = this.message.chatSummary || 'Data query ready.';
-      console.log('[DEBUG renderQueryCollectionWidget] toolCall:', JSON.stringify(toolCall, null, 2));
-      console.log('[DEBUG renderQueryCollectionWidget] rqlReplay:', rqlReplay);
-      console.log('[DEBUG renderQueryCollectionWidget] data:', JSON.stringify(data, null, 2));
-      console.log('[DEBUG renderQueryCollectionWidget] toolArgs:', JSON.stringify(toolArgs, null, 2));
       if (rqlReplay == null) {
-        console.warn('[DEBUG renderQueryCollectionWidget] rqlReplay is null — returning early, no links will render');
         return;
       }
       var rqlQueryUrl = toolArgs.data_api_base_url ? toolArgs.data_api_base_url : "https://www.bv-brc.org/api-bulk";
@@ -2144,13 +2139,32 @@ define([
       }
 
       if (collection && collection.toLowerCase() === 'genome_feature' && rqlQueryUrl) {
-        // Extract the RQL query portion from rqlQueryUrl for form POST submission.
-        // rqlQueryUrl format: https://.../{collection}/?{rql_query}
-        var rqlQueryParts = rqlQueryUrl.split('?');
-        var fastaBaseUrl = rqlQueryParts[0];
-        var fastaRqlQuery = rqlQueryParts.length > 1 ? rqlQueryParts[1] : '';
-        // Append limit and sort to the RQL query
-        fastaRqlQuery = fastaRqlQuery + '&limit(100000)&sort(+patric_id)';
+        // Build the RQL query for FASTA downloads.
+        // rqlReplay comes from the MCP server already URL-encoded via Python's
+        // quote().  We must decode it back to a raw RQL string first so that
+        // the single encodeURIComponent() call in the form field matches the
+        // pattern used by DownloadTooltipDialog.js / FeatureGridContainer.js.
+        var rawRqlReplay = rqlReplay;
+        if (rawRqlReplay && rawRqlReplay.charAt(0) === '?') {
+          rawRqlReplay = rawRqlReplay.substring(1);
+        }
+        try {
+          rawRqlReplay = decodeURIComponent(rawRqlReplay);
+        } catch (e) {
+          // If decoding fails, use as-is
+        }
+        var fastaRqlQuery = rawRqlReplay + '&limit(100000)&sort(+feature_id)';
+
+        // Use the standard BV-BRC data service URL for FASTA downloads,
+        // matching the pattern used by the rest of the website
+        // (DownloadTooltipDialog.js, FeatureGridContainer.js, etc.).
+        var fastaDataServiceUrl = (window.App && window.App.dataServiceURL)
+          ? window.App.dataServiceURL
+          : toolArgs.data_api_base_url || 'https://www.bv-brc.org/api';
+        if (fastaDataServiceUrl.charAt(fastaDataServiceUrl.length - 1) !== '/') {
+          fastaDataServiceUrl += '/';
+        }
+        var fastaBaseUrl = fastaDataServiceUrl + 'genome_feature/';
 
         var createFastaLink = lang.hitch(this, function(linkLabel, acceptType) {
           var fastaLink = domConstruct.create('a', {
@@ -2162,11 +2176,6 @@ define([
             evt.preventDefault();
             // Use hidden form POST, same pattern as DownloadTooltipDialog.js
             var actionUrl = fastaBaseUrl + '?http_download=true&http_accept=' + encodeURIComponent(acceptType);
-            console.log('[DEBUG FASTA download] fastaBaseUrl:', fastaBaseUrl);
-            console.log('[DEBUG FASTA download] fastaRqlQuery (raw):', fastaRqlQuery);
-            console.log('[DEBUG FASTA download] fastaRqlQuery (encoded):', encodeURIComponent(fastaRqlQuery));
-            console.log('[DEBUG FASTA download] actionUrl:', actionUrl);
-            console.log('[DEBUG FASTA download] acceptType:', acceptType);
             // Remove any previous download form
             var oldForm = document.getElementById('copilotFastaDownloadForm');
             if (oldForm) { oldForm.parentNode.removeChild(oldForm); }
@@ -2207,11 +2216,9 @@ define([
         on(tsvLink, 'click', function(evt) {
           evt.preventDefault();
           var tsvDownloadUrl = downloadUrl;
-          console.log('[DEBUG TSV download] downloadUrl (original):', downloadUrl);
           if (window.App && window.App.authorizationToken) {
             tsvDownloadUrl += '&http_authorization=' + encodeURIComponent(window.App.authorizationToken);
           }
-          console.log('[DEBUG TSV download] tsvDownloadUrl (final):', tsvDownloadUrl);
           window.open(tsvDownloadUrl, '_blank', 'noopener,noreferrer');
         });
       }
