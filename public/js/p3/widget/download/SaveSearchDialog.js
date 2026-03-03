@@ -10,7 +10,9 @@ define([
   'dijit/Dialog',
   '../../util/SavedSearchManager',
   '../../util/QueryDescriptor',
-  '../../util/QueryToEnglish'
+  '../../util/QueryToEnglish',
+  '../../WorkspaceManager',
+  '../WorkspaceObjectSelector'
 ], function (
   declare,
   lang,
@@ -23,7 +25,9 @@ define([
   Dialog,
   SavedSearchManager,
   QueryDescriptor,
-  QueryToEnglish
+  QueryToEnglish,
+  WorkspaceManager,
+  WorkspaceObjectSelector
 ) {
   /**
    * SaveSearchDialog - Dialog for saving searches
@@ -56,7 +60,7 @@ define([
     tagsInput: null,
     workspaceCheckbox: null,
     workspacePathSection: null,
-    workspacePathInput: null,
+    workspacePathSelector: null,  // WorkspaceObjectSelector for folder selection
     duplicateWarning: null,
     saveButton: null,
     cancelButton: null,
@@ -79,19 +83,29 @@ define([
      * Build dialog content programmatically
      */
     _buildContent: function () {
-      var content = domConstruct.create('div', { 'class': 'saveSearchDialog' });
+      var content = domConstruct.create('div', {
+        'class': 'saveSearchDialog',
+        style: 'width: 100%; box-sizing: border-box;'
+      });
 
       // Form sections
-      var formContent = domConstruct.create('div', { 'class': 'dialogContent' }, content);
+      var formContent = domConstruct.create('div', {
+        'class': 'dialogContent',
+        style: 'width: 100%; box-sizing: border-box;'
+      }, content);
 
       // Name input section
-      var nameSection = domConstruct.create('div', { 'class': 'formSection' }, formContent);
+      var nameSection = domConstruct.create('div', {
+        'class': 'formSection',
+        style: 'width: 100%; box-sizing: border-box;'
+      }, formContent);
       domConstruct.create('label', { innerHTML: 'Search Name:', 'for': 'searchName' }, nameSection);
       this.nameInput = domConstruct.create('input', {
         type: 'text',
         id: 'searchName',
         'class': 'searchNameInput',
-        placeholder: 'Enter a name for this search'
+        placeholder: 'Enter a name for this search',
+        style: 'width: 100%; box-sizing: border-box;'
       }, nameSection);
       this.duplicateWarning = domConstruct.create('div', {
         'class': 'duplicateWarning dijitHidden',
@@ -134,13 +148,27 @@ define([
 
       // Workspace path section (hidden by default)
       this.workspacePathSection = domConstruct.create('div', { 'class': 'formSection workspacePathSection dijitHidden' }, formContent);
-      domConstruct.create('label', { innerHTML: 'Workspace Path:', 'for': 'workspacePath' }, this.workspacePathSection);
-      this.workspacePathInput = domConstruct.create('input', {
-        type: 'text',
-        id: 'workspacePath',
-        'class': 'workspacePathInput',
-        placeholder: '/username/home/saved_searches/'
+      domConstruct.create('label', { innerHTML: 'Workspace Folder:' }, this.workspacePathSection);
+
+      // Container for the WorkspaceObjectSelector
+      var wsSelectorContainer = domConstruct.create('div', {
+        'class': 'workspaceSelectorContainer',
+        style: 'width: 100%;'
       }, this.workspacePathSection);
+
+      // Create WorkspaceObjectSelector for folder selection
+      var defaultPath = WorkspaceManager.getDefaultFolder() || '';
+      this.workspacePathSelector = new WorkspaceObjectSelector({
+        title: 'Select a Folder for Saved Searches',
+        type: ['folder'],
+        multi: false,
+        autoSelectCurrent: true,
+        selectionText: 'Destination',
+        path: defaultPath,
+        style: 'width: 100%;'
+      });
+      this.workspacePathSelector.placeAt(wsSelectorContainer);
+      this.workspacePathSelector.startup();
 
       // Action buttons
       var actions = domConstruct.create('div', { 'class': 'dialogActions' }, content);
@@ -368,8 +396,8 @@ define([
       var savedDescriptor = SavedSearchManager.save(this.queryDescriptor);
 
       // Export to workspace if requested
-      if (this.saveToWorkspace && this.workspacePathInput) {
-        var wsPath = this.workspacePathInput.value.trim();
+      if (this.saveToWorkspace && this.workspacePathSelector) {
+        var wsPath = this.workspacePathSelector.get('value');
         if (wsPath) {
           when(
             SavedSearchManager.exportToWorkspace(savedDescriptor.id, wsPath),
@@ -447,7 +475,10 @@ define([
       if (this.nameInput) this.nameInput.value = '';
       if (this.tagsInput) this.tagsInput.value = '';
       if (this.workspaceCheckbox) this.workspaceCheckbox.checked = false;
-      if (this.workspacePathInput) this.workspacePathInput.value = '';
+      if (this.workspacePathSelector) {
+        var defaultPath = WorkspaceManager.getDefaultFolder() || '';
+        this.workspacePathSelector.set('value', defaultPath);
+      }
 
       domClass.add(this.duplicateWarning, 'dijitHidden');
       domClass.add(this.workspacePathSection, 'dijitHidden');

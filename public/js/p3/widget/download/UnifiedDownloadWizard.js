@@ -57,8 +57,7 @@ define([
    * ```
    */
 
-  var WizardDialog = declare([Dialog, _TemplatedMixin, _WidgetsInTemplateMixin], {
-    templateString: template,
+  var WizardDialog = declare([Dialog], {
     title: 'Download Data',
     'class': 'downloadWizardDialog',
 
@@ -94,6 +93,9 @@ define([
       this.domNode.style.width = '700px';
       this.containerNode.style.minHeight = '400px';
 
+      // Build the wizard UI inside the dialog's containerNode
+      this._buildWizardUI();
+
       // Build context from inputs
       this._buildContext();
 
@@ -105,6 +107,73 @@ define([
 
       // Initialize first step
       this._goToStep(0);
+    },
+
+    /**
+     * Build the wizard UI structure inside the dialog
+     */
+    _buildWizardUI: function () {
+      var container = this.containerNode;
+      domClass.add(container, 'unifiedDownloadWizard');
+
+      // Header with step indicators
+      var header = domConstruct.create('div', {
+        'class': 'downloadWizardHeader'
+      }, container);
+
+      this.stepIndicatorNode = domConstruct.create('div', {
+        'class': 'downloadWizardSteps'
+      }, header);
+
+      // Content area
+      this.contentNode = domConstruct.create('div', {
+        'class': 'downloadWizardContent'
+      }, container);
+
+      // Footer with buttons
+      var footer = domConstruct.create('div', {
+        'class': 'downloadWizardFooter'
+      }, container);
+
+      this.infoNode = domConstruct.create('div', {
+        'class': 'downloadWizardInfo'
+      }, footer);
+
+      var buttons = domConstruct.create('div', {
+        'class': 'downloadWizardButtons'
+      }, footer);
+
+      // Back button
+      this.backButton = domConstruct.create('button', {
+        type: 'button',
+        'class': 'downloadWizardButton backButton',
+        innerHTML: '<span class="fa icon-arrow-left"></span> Back'
+      }, buttons);
+      on(this.backButton, 'click', lang.hitch(this, 'onBack'));
+
+      // Next button
+      this.nextButton = domConstruct.create('button', {
+        type: 'button',
+        'class': 'downloadWizardButton nextButton primary',
+        innerHTML: 'Next <span class="fa icon-arrow-right"></span>'
+      }, buttons);
+      on(this.nextButton, 'click', lang.hitch(this, 'onNext'));
+
+      // Download button
+      this.downloadButton = domConstruct.create('button', {
+        type: 'button',
+        'class': 'downloadWizardButton downloadButton primary dijitHidden',
+        innerHTML: '<span class="fa icon-download"></span> Download'
+      }, buttons);
+      on(this.downloadButton, 'click', lang.hitch(this, 'onDownload'));
+
+      // Cancel button
+      this.cancelButton = domConstruct.create('button', {
+        type: 'button',
+        'class': 'downloadWizardButton cancelButton',
+        innerHTML: 'Cancel'
+      }, buttons);
+      on(this.cancelButton, 'click', lang.hitch(this, 'onCancel'));
     },
 
     /**
@@ -307,18 +376,18 @@ define([
 
       // Back button
       if (isFirstStep) {
-        domClass.add(this.backButton.domNode, 'dijitHidden');
+        domClass.add(this.backButton, 'dijitHidden');
       } else {
-        domClass.remove(this.backButton.domNode, 'dijitHidden');
+        domClass.remove(this.backButton, 'dijitHidden');
       }
 
       // Next/Download button
       if (isLastStep) {
-        domClass.add(this.nextButton.domNode, 'dijitHidden');
-        domClass.remove(this.downloadButton.domNode, 'dijitHidden');
+        domClass.add(this.nextButton, 'dijitHidden');
+        domClass.remove(this.downloadButton, 'dijitHidden');
       } else {
-        domClass.remove(this.nextButton.domNode, 'dijitHidden');
-        domClass.add(this.downloadButton.domNode, 'dijitHidden');
+        domClass.remove(this.nextButton, 'dijitHidden');
+        domClass.add(this.downloadButton, 'dijitHidden');
       }
     },
 
@@ -438,8 +507,8 @@ define([
       var self = this;
 
       // Show loading state
-      this.downloadButton.set('disabled', true);
-      this.downloadButton.set('label', '<i class="fa fa-spinner fa-spin"></i> Downloading...');
+      this.downloadButton.disabled = true;
+      this.downloadButton.innerHTML = '<span class="fa icon-spinner"></span> Downloading...';
 
       // Dynamically load and use DownloadExecutor
       require(['../../util/DownloadExecutor'], function (DownloadExecutor) {
@@ -460,8 +529,8 @@ define([
               message: 'Download failed: ' + (err.message || err),
               type: 'error'
             });
-            self.downloadButton.set('disabled', false);
-            self.downloadButton.set('label', '<i class="fa fa-download"></i> Download');
+            self.downloadButton.disabled = false;
+            self.downloadButton.innerHTML = '<span class="fa icon-download"></span> Download';
           }
         );
       });

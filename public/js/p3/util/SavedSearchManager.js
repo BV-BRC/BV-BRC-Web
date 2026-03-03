@@ -4,14 +4,16 @@ define([
   'dojo/topic',
   'dojo/Deferred',
   'dojo/when',
-  './QueryDescriptor'
+  './QueryDescriptor',
+  '../WorkspaceManager'
 ], function (
   declare,
   lang,
   Topic,
   Deferred,
   when,
-  QueryDescriptor
+  QueryDescriptor,
+  WorkspaceManager
 ) {
   /**
    * SavedSearchManager - Manages saved searches with LocalStorage and Workspace backends
@@ -26,7 +28,7 @@ define([
   var STORAGE_PREFIX = 'bvbrc_saved_searches_';
   var INDEX_KEY = 'bvbrc_saved_searches_index';
   var MAX_LOCAL_SEARCHES = 50; // Maximum searches to keep in LocalStorage
-  var WORKSPACE_FILE_TYPE = 'search'; // File type for workspace files
+  var WORKSPACE_FILE_TYPE = 'json'; // File type for workspace files (using json until server supports 'search' type)
 
   /**
    * Check if LocalStorage is available
@@ -277,37 +279,34 @@ define([
         return deferred;
       }
 
-      // Get WorkspaceManager
-      require(['../WorkspaceManager'], function (WorkspaceManager) {
-        // Determine file name
-        var name = fileName || descriptor.name.replace(/[^a-zA-Z0-9_\-\s]/g, '_');
-        if (!name.endsWith('.search')) {
-          name += '.search';
+      // Determine file name
+      var name = fileName || descriptor.name.replace(/[^a-zA-Z0-9_\-\s]/g, '_');
+      if (!name.endsWith('.search')) {
+        name += '.search';
+      }
+
+      // Ensure path ends with /
+      if (workspacePath.charAt(workspacePath.length - 1) !== '/') {
+        workspacePath += '/';
+      }
+
+      // Create the file
+      var content = QueryDescriptor.serialize(descriptor);
+
+      when(
+        WorkspaceManager.saveFile(workspacePath + name, content, WORKSPACE_FILE_TYPE),
+        function (result) {
+          Topic.publish('/SavedSearch/exported', {
+            descriptor: descriptor,
+            path: workspacePath + name
+          });
+          deferred.resolve(result);
+        },
+        function (err) {
+          console.error('SavedSearchManager.exportToWorkspace failed:', err);
+          deferred.reject(err);
         }
-
-        // Ensure path ends with /
-        if (workspacePath.charAt(workspacePath.length - 1) !== '/') {
-          workspacePath += '/';
-        }
-
-        // Create the file
-        var content = QueryDescriptor.serialize(descriptor);
-
-        when(
-          WorkspaceManager.saveFile(workspacePath + name, content, WORKSPACE_FILE_TYPE),
-          function (result) {
-            Topic.publish('/SavedSearch/exported', {
-              descriptor: descriptor,
-              path: workspacePath + name
-            });
-            deferred.resolve(result);
-          },
-          function (err) {
-            console.error('SavedSearchManager.exportToWorkspace failed:', err);
-            deferred.reject(err);
-          }
-        );
-      });
+      );
 
       return deferred;
     },
@@ -321,53 +320,51 @@ define([
       var self = this;
       var deferred = new Deferred();
 
-      require(['../WorkspaceManager'], function (WorkspaceManager) {
-        when(
-          WorkspaceManager.getObject(workspacePath),
-          function (result) {
-            if (!result || !result.data) {
-              deferred.reject(new Error('Empty or invalid search file'));
+      when(
+        WorkspaceManager.getObject(workspacePath),
+        function (result) {
+          if (!result || !result.data) {
+            deferred.reject(new Error('Empty or invalid search file'));
+            return;
+          }
+
+          var content = result.data;
+          if (typeof content === 'string') {
+            try {
+              content = JSON.parse(content);
+            } catch (e) {
+              deferred.reject(new Error('Invalid JSON in search file'));
               return;
             }
-
-            var content = result.data;
-            if (typeof content === 'string') {
-              try {
-                content = JSON.parse(content);
-              } catch (e) {
-                deferred.reject(new Error('Invalid JSON in search file'));
-                return;
-              }
-            }
-
-            // Create a new descriptor from the imported data
-            // Give it a new ID to avoid conflicts
-            var descriptor = QueryDescriptor.create({
-              dataType: content.dataType,
-              rqlQuery: content.rqlQuery,
-              name: content.name,
-              description: content.description,
-              baseQuery: content.baseQuery,
-              source: 'workspace_import',
-              downloadConfig: content.downloadConfig
-            });
-
-            // Save to LocalStorage
-            self.save(descriptor);
-
-            Topic.publish('/SavedSearch/imported', {
-              descriptor: descriptor,
-              sourcePath: workspacePath
-            });
-
-            deferred.resolve(descriptor);
-          },
-          function (err) {
-            console.error('SavedSearchManager.importFromWorkspace failed:', err);
-            deferred.reject(err);
           }
-        );
-      });
+
+          // Create a new descriptor from the imported data
+          // Give it a new ID to avoid conflicts
+          var descriptor = QueryDescriptor.create({
+            dataType: content.dataType,
+            rqlQuery: content.rqlQuery,
+            name: content.name,
+            description: content.description,
+            baseQuery: content.baseQuery,
+            source: 'workspace_import',
+            downloadConfig: content.downloadConfig
+          });
+
+          // Save to LocalStorage
+          self.save(descriptor);
+
+          Topic.publish('/SavedSearch/imported', {
+            descriptor: descriptor,
+            sourcePath: workspacePath
+          });
+
+          deferred.resolve(descriptor);
+        },
+        function (err) {
+          console.error('SavedSearchManager.importFromWorkspace failed:', err);
+          deferred.reject(err);
+        }
+      );
 
       return deferred;
     },

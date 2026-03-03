@@ -82,13 +82,30 @@ define([
     var typeName = dataTypeLabels[dataType] || dataType;
     var english = '';
 
+    // Clean up the query for display: remove wildcard conditions like eq(genome_id,*)
+    var cleanedQuery = rqlQuery;
+    try {
+      // Remove common wildcard patterns that don't add meaning
+      // Patterns: eq(field_id,*) or eq(field_id,"*") (including URL-encoded quotes)
+      cleanedQuery = rqlQuery
+        .replace(/eq\([a-z_]+_id,\*\)&?/gi, '')      // eq(genome_id,*)&
+        .replace(/eq\([a-z_]+_id,%22\*%22\)&?/gi, '') // eq(genome_id,%22*%22)&
+        .replace(/eq\([a-z_]+_id,"\*"\)&?/gi, '')    // eq(genome_id,"*")&
+        .replace(/eq\([a-z_]+,\*\)&?/gi, '')         // eq(genome_id,*) without _id suffix
+        .replace(/^&+|&+$/g, '')  // trim leading/trailing &
+        .replace(/&&+/g, '&');     // collapse multiple &
+    } catch (e) {
+      // If cleanup fails, use original
+      cleanedQuery = rqlQuery;
+    }
+
     try {
       // Use QueryToEnglish if available, with plain text output
       if (QueryToEnglish && QueryToEnglish.toPlainText) {
-        english = QueryToEnglish.toPlainText(rqlQuery);
+        english = QueryToEnglish.toPlainText(cleanedQuery);
       } else if (QueryToEnglish) {
         // Fall back to HTML version and strip tags
-        var html = QueryToEnglish(rqlQuery);
+        var html = QueryToEnglish(cleanedQuery);
         if (html) {
           english = html.replace(/<[^>]*>/g, '').trim();
         }
@@ -99,12 +116,12 @@ define([
 
     if (!english || english === 'undefined') {
       // Fall back to truncated query
-      english = rqlQuery.length > 30 ? rqlQuery.substr(0, 30) + '...' : rqlQuery;
+      english = rqlQuery.length > 50 ? rqlQuery.substr(0, 50) + '...' : rqlQuery;
     }
 
-    // Truncate if too long
-    if (english.length > 50) {
-      english = english.substr(0, 47) + '...';
+    // Truncate if too long (increased limit for better readability)
+    if (english.length > 80) {
+      english = english.substr(0, 77) + '...';
     }
 
     return typeName + ': ' + english;

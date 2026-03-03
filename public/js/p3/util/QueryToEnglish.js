@@ -63,7 +63,7 @@ define([
           }
           break;
         case 'in':
-          var f = escapeHtml(decodeURIComponent(term.args[0]).replace(/_/g, ' '));
+          var fRaw = decodeURIComponent(term.args[0]).replace(/_/g, ' ');
           var v = term.args[1];
           // console.log('V: ', v);
           var vals;
@@ -74,9 +74,9 @@ define([
           vals = v.map(walk);
 
           if (plainText) {
-            out = f + ' is ';
+            out = fRaw + ' is ';
           } else {
-            out = '<span class="searchField">' + f + ' </span><span class="searchOperator"> is </span> ';
+            out = '<span class="searchField">' + escapeHtml(fRaw) + ' </span><span class="searchOperator"> is </span> ';
           }
 
           if (vals.length == 1) {
@@ -97,21 +97,21 @@ define([
           // parsed.selected.push({field: f, value: v});
           break;
         case 'ne':
-          var f = escapeHtml(decodeURIComponent(term.args[0]));
-          var v = escapeHtml(decodeURIComponent(term.args[1]));
+          var fRaw = decodeURIComponent(term.args[0]);
+          var vRaw = decodeURIComponent(term.args[1]);
           if (plainText) {
-            out = f + ' is not ' + v;
+            out = fRaw + ' is not ' + vRaw;
           } else {
-            out = f + '<span class="searchOperator"> is not </span>' + v;
+            out = escapeHtml(fRaw) + '<span class="searchOperator"> is not </span>' + escapeHtml(vRaw);
           }
           break;
         case 'eq':
-          var f = escapeHtml(decodeURIComponent(term.args[0]).replace(/_/g, ' '));
-          var v = escapeHtml(decodeURIComponent(term.args[1]));
+          var fRaw = decodeURIComponent(term.args[0]).replace(/_/g, ' ');
+          var vRaw = decodeURIComponent(term.args[1]);
           if (plainText) {
-            out = f + ' is ' + v;
+            out = fRaw + ' is ' + vRaw;
           } else {
-            out = '<span class="searchField">' + f + ' </span><span class="searchOperator"> is </span><span class="searchValue">' + v + '</span>';
+            out = '<span class="searchField">' + escapeHtml(fRaw) + ' </span><span class="searchOperator"> is </span><span class="searchValue">' + escapeHtml(vRaw) + '</span>';
           }
           break;
         case 'keyword':
@@ -165,6 +165,25 @@ define([
             out = 'Feature Group ' + groupName;
           } else {
             out = 'Feature Group <span class="searchValue">' + groupName + '</span>';
+          }
+          break;
+        // Data type wrapper functions - recursively process inner query
+        case 'genome':
+        case 'genome_feature':
+        case 'genome_sequence':
+        case 'specialty_gene':
+        case 'pathway':
+        case 'subsystem':
+        case 'antibiotic':
+        case 'genome_amr':
+        case 'epitope':
+        case 'protein_structure':
+        case 'surveillance':
+        case 'serology':
+        case 'experiment':
+          // These are data type wrappers - just process their inner content
+          if (term.args && term.args.length > 0) {
+            out = walk(term.args[0]);
           }
           break;
         default:

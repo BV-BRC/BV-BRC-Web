@@ -34,13 +34,6 @@
     </div>
   </div>
 
-  <div class="selectAllRow">
-    <label>
-      <input type="checkbox" data-dojo-attach-point="selectAllCheckbox">
-      Select All
-    </label>
-  </div>
-
   <div class="batchActions dijitHidden" data-dojo-attach-point="batchActionsNode">
     <span class="selectionCount" data-dojo-attach-point="selectionCountNode">0 selected</span>
     <button type="button" class="batchDeleteButton"
@@ -49,7 +42,24 @@
     </button>
   </div>
 
-  <div class="searchList" data-dojo-attach-point="searchListNode">
-    <!-- Search items will be rendered here -->
+  <div class="searchTableContainer">
+    <table class="searchTable">
+      <thead>
+        <tr>
+          <th class="colCheckbox"></th>
+          <th class="colDataType">Collection</th>
+          <th class="colName">Search Name</th>
+          <th class="colQuery">Search Criteria</th>
+          <th class="colActions">Actions</th>
+        </tr>
+      </thead>
+      <tbody data-dojo-attach-point="searchListNode">
+        <!-- Search items will be rendered here as table rows -->
+      </tbody>
+    </table>
+  </div>
+
+  <div class="emptyMessageContainer dijitHidden" data-dojo-attach-point="emptyMessageNode">
+    <!-- Empty message will be shown here when no searches -->
   </div>
 </div>

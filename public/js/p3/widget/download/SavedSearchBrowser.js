@@ -226,19 +226,29 @@ define([
       domConstruct.empty(this.searchListNode);
 
       if (this.filteredSearches.length === 0) {
-        domConstruct.create('div', {
-          'class': 'emptyMessage',
-          innerHTML: this.searches.length === 0
-            ? '<i class="fa fa-info-circle"></i> No saved searches yet. Save a search from any data view.'
-            : '<i class="fa fa-search"></i> No searches match your filter.'
-        }, this.searchListNode);
+        // Show empty message
+        if (this.emptyMessageNode) {
+          domClass.remove(this.emptyMessageNode, 'dijitHidden');
+          domConstruct.empty(this.emptyMessageNode);
+          domConstruct.create('div', {
+            'class': 'emptyMessage',
+            innerHTML: this.searches.length === 0
+              ? '<i class="fa fa-info-circle"></i> No saved searches yet. Save a search from any data view.'
+              : '<i class="fa fa-search"></i> No searches match your filter.'
+          }, this.emptyMessageNode);
+        }
         return;
+      }
+
+      // Hide empty message
+      if (this.emptyMessageNode) {
+        domClass.add(this.emptyMessageNode, 'dijitHidden');
       }
 
       this.filteredSearches.forEach(function (search) {
         var isSelected = self.selectedIds.indexOf(search.id) !== -1;
-        var searchNode = self._createSearchNode(search, isSelected);
-        domConstruct.place(searchNode, self.searchListNode);
+        var searchRow = self._createSearchRow(search, isSelected);
+        domConstruct.place(searchRow, self.searchListNode);
       });
 
       // Update count
@@ -248,80 +258,69 @@ define([
     },
 
     /**
-     * Create a search list item node
+     * Create a search table row
      * @param {Object} search - Search descriptor
      * @param {boolean} isSelected - Whether selected
-     * @returns {HTMLElement} List item node
+     * @returns {HTMLElement} Table row element
      */
-    _createSearchNode: function (search, isSelected) {
+    _createSearchRow: function (search, isSelected) {
       var self = this;
 
-      var container = domConstruct.create('div', {
-        'class': 'searchItem' + (isSelected ? ' selected' : ''),
+      var row = domConstruct.create('tr', {
+        'class': 'searchRow' + (isSelected ? ' selected' : ''),
         'data-search-id': search.id
       });
 
-      // Checkbox
+      // Checkbox cell
+      var checkboxCell = domConstruct.create('td', {
+        'class': 'colCheckbox'
+      }, row);
       var checkbox = domConstruct.create('input', {
         type: 'checkbox',
         'class': 'searchCheckbox',
         checked: isSelected
-      }, container);
-
+      }, checkboxCell);
       var checkHandler = on(checkbox, 'change', function () {
         self._toggleSelection(search.id, this.checked);
       });
       this._handlers.push(checkHandler);
 
-      // Info section
-      var infoSection = domConstruct.create('div', {
-        'class': 'searchInfo'
-      }, container);
-
-      // Name
-      domConstruct.create('div', {
-        'class': 'searchName',
-        textContent: search.name || 'Unnamed Search'
-      }, infoSection);
-
-      // Details row
-      var detailsRow = domConstruct.create('div', {
-        'class': 'searchDetails'
-      }, infoSection);
-
-      domConstruct.create('span', {
-        'class': 'searchDataType',
+      // Data type cell
+      domConstruct.create('td', {
+        'class': 'colDataType',
         innerHTML: '<i class="fa fa-database"></i> ' + this._formatDataType(search.dataType)
-      }, detailsRow);
+      }, row);
 
-      if (search.updatedAt) {
-        domConstruct.create('span', {
-          'class': 'searchDate',
-          innerHTML: '<i class="fa fa-clock-o"></i> ' + this._formatDate(search.updatedAt)
-        }, detailsRow);
-      }
+      // Name cell
+      domConstruct.create('td', {
+        'class': 'colName',
+        textContent: search.name || 'Unnamed Search'
+      }, row);
 
-      // Query preview
+      // Query cell
       var queryPreview = QueryToEnglish.toPlainText(search.rqlQuery);
-      if (queryPreview && queryPreview.length > 80) {
-        queryPreview = queryPreview.substring(0, 80) + '...';
+      if (queryPreview && queryPreview.length > 100) {
+        queryPreview = queryPreview.substring(0, 100) + '...';
       }
-      domConstruct.create('div', {
-        'class': 'searchQuery',
-        textContent: queryPreview || '(all records)'
-      }, infoSection);
+      domConstruct.create('td', {
+        'class': 'colQuery',
+        textContent: queryPreview || '(all records)',
+        title: search.rqlQuery // Show full query on hover
+      }, row);
 
-      // Actions
-      var actionsSection = domConstruct.create('div', {
-        'class': 'searchActions'
-      }, container);
+      // Actions cell
+      var actionsCell = domConstruct.create('td', {
+        'class': 'colActions'
+      }, row);
 
       // Run button
       var runButton = domConstruct.create('button', {
         'class': 'actionButton runButton',
         title: 'Run this search',
-        innerHTML: '<i class="fa fa-play"></i>'
-      }, actionsSection);
+        type: 'button'
+      }, actionsCell);
+      domConstruct.create('span', { 'class': 'fa icon-play' }, runButton);
+      domConstruct.create('span', { 'class': 'btnText', textContent: ' Run' }, runButton);
       var runHandler = on(runButton, 'click', function (e) {
         e.stopPropagation();
         self._runSearch(search);
@@ -332,8 +331,10 @@ define([
       var downloadButton = domConstruct.create('button', {
         'class': 'actionButton downloadButton',
         title: 'Download results',
-        innerHTML: '<i class="fa fa-download"></i>'
-      }, actionsSection);
+        type: 'button'
+      }, actionsCell);
+      domConstruct.create('span', { 'class': 'fa icon-download' }, downloadButton);
+      domConstruct.create('span', { 'class': 'btnText', textContent: ' Download' }, downloadButton);
       var downloadHandler = on(downloadButton, 'click', function (e) {
         e.stopPropagation();
         self._downloadSearch(search);
@@ -344,15 +345,17 @@ define([
       var deleteButton = domConstruct.create('button', {
         'class': 'actionButton deleteButton',
         title: 'Delete this search',
-        innerHTML: '<i class="fa fa-trash"></i>'
-      }, actionsSection);
+        type: 'button'
+      }, actionsCell);
+      domConstruct.create('span', { 'class': 'fa icon-trash' }, deleteButton);
+      domConstruct.create('span', { 'class': 'btnText', textContent: ' Delete' }, deleteButton);
       var deleteHandler = on(deleteButton, 'click', function (e) {
         e.stopPropagation();
         self._deleteSearch(search);
       });
       this._handlers.push(deleteHandler);
 
-      return container;
+      return row;
     },
 
     /**
@@ -423,16 +426,16 @@ define([
         this.selectedIds = [];
       }
 
-      // Update checkboxes
+      // Update checkboxes in table rows
       query('.searchCheckbox', this.searchListNode).forEach(function (cb) {
         cb.checked = selected;
       });
 
-      query('.searchItem', this.searchListNode).forEach(function (node) {
+      query('.searchRow', this.searchListNode).forEach(function (row) {
         if (selected) {
-          domClass.add(node, 'selected');
+          domClass.add(row, 'selected');
         } else {
-          domClass.remove(node, 'selected');
+          domClass.remove(row, 'selected');
         }
       });
 
@@ -462,19 +465,57 @@ define([
      * Run a search - navigate to the search results
      */
     _runSearch: function (search) {
+      // Map data types to their view URLs
+      var dataTypeToView = {
+        'genome': 'GenomeList',
+        'genome_feature': 'FeatureList',
+        'genome_sequence': 'SequenceList',
+        'sp_gene': 'SpecialtyGeneList',
+        'sp_gene_ref': 'SpecialtyGeneList',
+        'pathway': 'PathwayList',
+        'subsystem': 'SubsystemList',
+        'protein_structure': 'ProteinStructureList',
+        'epitope': 'EpitopeList',
+        'surveillance': 'SurveillanceList',
+        'serology': 'SerologyList',
+        'transcriptomics_experiment': 'ExperimentList',
+        'transcriptomics_sample': 'TranscriptomicsSampleList',
+        'transcriptomics_gene': 'TranscriptomicsGeneList',
+        'experiment': 'ExperimentList',
+        'bioset': 'BiosetList',
+        'ppi': 'InteractionList',
+        'genome_amr': 'AMRPanelList',
+        'protein_feature': 'ProteinFeatureList',
+        'sequence_feature': 'SequenceFeatureList'
+      };
+
       // Build URL based on data type
-      var url = '/view/DataType/' + search.dataType;
+      var viewName = dataTypeToView[search.dataType] || 'GenomeList';
+      var url = '/view/' + viewName + '/';
 
-      if (search.rqlQuery) {
-        url += '?' + search.rqlQuery;
+      // Clean up the RQL query:
+      // 1. Remove wildcard conditions like eq(genome_id,*)
+      // 2. Extract inner query from data type wrappers like genome(...)
+      var rqlQuery = search.rqlQuery || '';
+
+      // Remove wildcard patterns
+      rqlQuery = rqlQuery
+        .replace(/eq\([a-z_]+_id,\*\)&?/gi, '')
+        .replace(/^&+|&+$/g, '')
+        .replace(/&&+/g, '&');
+
+      // Extract inner query from data type wrappers (e.g., genome(and(...)))
+      var wrapperMatch = rqlQuery.match(/^(genome|genome_feature|genome_sequence|sp_gene|pathway|subsystem)\((.+)\)$/i);
+      if (wrapperMatch) {
+        rqlQuery = wrapperMatch[2];
       }
 
-      // Navigate
-      if (window.App && window.App.navigate) {
-        window.App.navigate(url);
-      } else {
-        window.location.href = url;
+      if (rqlQuery) {
+        url += '?' + rqlQuery;
       }
+
+      // Navigate using direct location change
+      window.location.href = url;
 
       // Callback
       if (this.onSearchRun) {
