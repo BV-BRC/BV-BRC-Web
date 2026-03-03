@@ -2141,9 +2141,10 @@ define([
       if (collection && collection.toLowerCase() === 'genome_feature' && rqlQueryUrl) {
         // Build the RQL query for FASTA downloads.
         // rqlReplay comes from the MCP server already URL-encoded via Python's
-        // quote().  We must decode it back to a raw RQL string first so that
-        // the single encodeURIComponent() call in the form field matches the
-        // pattern used by DownloadTooltipDialog.js / FeatureGridContainer.js.
+        // quote().  We decode it to raw RQL, then strip double quotes from
+        // keyword() values because the BV-BRC POST RQL parser rejects literal
+        // '"' as an illegal character.  (The GET-based TSV download works with
+        // %22 in the URL, but the POST-based FASTA download does not.)
         var rawRqlReplay = rqlReplay;
         if (rawRqlReplay && rawRqlReplay.charAt(0) === '?') {
           rawRqlReplay = rawRqlReplay.substring(1);
@@ -2153,6 +2154,9 @@ define([
         } catch (e) {
           // If decoding fails, use as-is
         }
+        // Remove double quotes inside keyword() — the BV-BRC POST parser
+        // cannot handle them.  keyword(value) works identically without quotes.
+        rawRqlReplay = rawRqlReplay.replace(/keyword\("([^"]*)"\)/g, 'keyword($1)');
         var fastaRqlQuery = rawRqlReplay + '&limit(100000)&sort(+feature_id)';
 
         // Use the standard BV-BRC data service URL for FASTA downloads,
@@ -2187,7 +2191,11 @@ define([
               method: 'post',
               action: actionUrl
             }, document.body);
-            domConstruct.create('input', { type: 'hidden', value: encodeURIComponent(fastaRqlQuery), name: 'rql' }, form);
+            // Set the raw RQL as the value — the browser's form encoding
+            // (application/x-www-form-urlencoded) will URL-encode it
+            // automatically before sending.  Do NOT use encodeURIComponent()
+            // here; that would double-encode the value.
+            domConstruct.create('input', { type: 'hidden', value: fastaRqlQuery, name: 'rql' }, form);
             if (window.App && window.App.authorizationToken) {
               domConstruct.create('input', { type: 'hidden', value: window.App.authorizationToken, name: 'http_authorization' }, form);
             }
