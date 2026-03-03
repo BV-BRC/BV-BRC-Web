@@ -44,6 +44,12 @@ define([
     /** @property {string} sessionId - Current session ID for workflow submission context */
     sessionId: null,
 
+    /** @property {Array} _selectionSubscriptions - Topic subscriptions for cleanup */
+    _selectionSubscriptions: null,
+
+    /** @property {Array} _selectionIndicators - Tracked indicator nodes for reactive updates */
+    _selectionIndicators: null,
+
     /**
      * @constructor
      * Creates a new ChatMessage instance
@@ -199,6 +205,143 @@ define([
         return null;
       }
       return candidate;
+    },
+
+    /**
+     * Renders a selection indicator on a tool card showing count and hover list.
+     * @param {HTMLElement} containerNode - The tool card to append the indicator to
+     * @param {Object} opts - Options: { category, toolCallId, getSelectedItems }
+     *   category: 'files'|'workflows'|'workspace'|'jobs'
+     *   toolCallId: unique identifier for this tool call (for scoping)
+     *   getSelectedItems: function returning array of {label, id} for current selections
+     */
+    _renderSelectionIndicator: function(containerNode, opts) {
+      if (!containerNode || !opts) return;
+      var category = opts.category || '';
+      var getSelectedItems = opts.getSelectedItems;
+      if (typeof getSelectedItems !== 'function') return;
+
+      var indicatorRow = domConstruct.create('div', {
+        class: 'tool-card-selection-indicator',
+        style: 'display:none;'
+      }, containerNode);
+
+      var countLabel = domConstruct.create('span', {
+        class: 'tool-card-selection-count'
+      }, indicatorRow);
+
+      var infoIcon = domConstruct.create('span', {
+        class: 'tool-card-selection-info-icon',
+        innerHTML: '<i class="fa fa-info-circle"></i>',
+        title: 'View selected items'
+      }, indicatorRow);
+
+      var hoverPopover = domConstruct.create('div', {
+        class: 'tool-card-selection-hover',
+        style: 'display:none;'
+      }, indicatorRow);
+
+      var hideTimer = null;
+      var maxDisplay = 20;
+
+      var hidePopover = function() {
+        if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+        hoverPopover.style.display = 'none';
+      };
+      var scheduleHide = function() {
+        if (hideTimer) { clearTimeout(hideTimer); }
+        hideTimer = setTimeout(hidePopover, 160);
+      };
+      var showPopover = function() {
+        if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+        hoverPopover.style.display = 'block';
+      };
+
+      on(infoIcon, 'mouseenter', showPopover);
+      on(infoIcon, 'mouseleave', scheduleHide);
+      on(hoverPopover, 'mouseenter', function() {
+        if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+      });
+      on(hoverPopover, 'mouseleave', scheduleHide);
+
+      var updateIndicator = function() {
+        var items = getSelectedItems();
+        var count = Array.isArray(items) ? items.length : 0;
+        if (count === 0) {
+          indicatorRow.style.display = 'none';
+          return;
+        }
+        indicatorRow.style.display = '';
+        countLabel.textContent = count + ' selected';
+
+        // Rebuild popover content
+        hoverPopover.innerHTML = '';
+        items.slice(0, maxDisplay).forEach(function(item) {
+          var itemNode = document.createElement('div');
+          itemNode.className = 'tool-card-selection-hover-item';
+          itemNode.textContent = (item && item.label) ? item.label : String(item);
+          hoverPopover.appendChild(itemNode);
+        });
+        if (items.length > maxDisplay) {
+          var moreNode = document.createElement('div');
+          moreNode.className = 'tool-card-selection-hover-more';
+          moreNode.textContent = '+ ' + (items.length - maxDisplay) + ' more';
+          hoverPopover.appendChild(moreNode);
+        }
+      };
+
+      // Initial render
+      updateIndicator();
+
+      // Track for reactive updates
+      if (!this._selectionIndicators) {
+        this._selectionIndicators = [];
+      }
+      this._selectionIndicators.push({
+        category: category,
+        update: updateIndicator
+      });
+
+      // Subscribe to selection changes if not already subscribed
+      this._ensureSelectionSubscription();
+    },
+
+    /**
+     * Subscribes to CopilotSelectionChanged topic for reactive tool card updates.
+     * Only subscribes once per ChatMessage instance.
+     */
+    _ensureSelectionSubscription: function() {
+      if (this._selectionSubscriptions) return;
+      this._selectionSubscriptions = [];
+      if (!this._selectionDataByCategory) {
+        this._selectionDataByCategory = {};
+      }
+      this._selectionSubscriptions.push(
+        topic.subscribe('CopilotSelectionChanged', lang.hitch(this, function(payload) {
+          if (!payload || !payload.category) return;
+          // Cache the latest selection data per category
+          this._selectionDataByCategory[payload.category] = Array.isArray(payload.items) ? payload.items : [];
+          if (!this._selectionIndicators) return;
+          var changedCategory = payload.category;
+          this._selectionIndicators.forEach(function(indicator) {
+            if (!changedCategory || indicator.category === changedCategory) {
+              indicator.update();
+            }
+          });
+        }))
+      );
+    },
+
+    /**
+     * Returns the cached selection items for a given category.
+     * @param {string} category - The selection category
+     * @returns {Array} Current selected items
+     */
+    _getSelectionItemsForCategory: function(category) {
+      if (!this._selectionDataByCategory) {
+        this._selectionDataByCategory = {};
+      }
+      return this._selectionDataByCategory[category] || [];
     },
 
     /**
@@ -805,6 +948,17 @@ define([
           innerHTML: 'Open in Workspace Browser'
         }, container);
       }
+
+      // Selection indicator for workspace items
+      this._renderSelectionIndicator(container, {
+        category: 'workspace',
+        getSelectedItems: lang.hitch(this, function() {
+          var items = this._getSelectionItemsForCategory('workspace');
+          return items.map(function(item) {
+            return { label: item.path || item.name || item.id || 'Workspace item', id: item.id || item.path };
+          });
+        })
+      });
     },
 
     renderJobsBrowseSummaryWidget: function(messageDiv) {
@@ -854,6 +1008,17 @@ define([
           uiAction: this.message.uiAction || 'open_jobs_tab'
         });
       }));
+
+      // Selection indicator for jobs
+      this._renderSelectionIndicator(container, {
+        category: 'jobs',
+        getSelectedItems: lang.hitch(this, function() {
+          var items = this._getSelectionItemsForCategory('jobs');
+          return items.map(function(item) {
+            return { label: item.id || item.application_name || 'Job', id: item.id || item.job_id };
+          });
+        })
+      });
     },
 
     renderRagResultWidget: function(messageDiv) {
@@ -881,6 +1046,17 @@ define([
       on(openButton, 'click', lang.hitch(this, function() {
         this.showRagChunksDialog(openButton);
       }));
+
+      // Selection indicator for files (RAG results may create files)
+      this._renderSelectionIndicator(container, {
+        category: 'files',
+        getSelectedItems: lang.hitch(this, function() {
+          var items = this._getSelectionItemsForCategory('files');
+          return items.map(function(item) {
+            return { label: item.file_name || item.id || 'File', id: item.id || item.file_id };
+          });
+        })
+      });
     },
 
     showRagChunksDialog: function(triggerButton) {
@@ -1120,6 +1296,17 @@ define([
           }
         }));
       }), 0);
+
+      // Selection indicator for files
+      this._renderSelectionIndicator(container, {
+        category: 'files',
+        getSelectedItems: lang.hitch(this, function() {
+          var items = this._getSelectionItemsForCategory('files');
+          return items.map(function(item) {
+            return { label: item.file_name || item.id || 'File', id: item.id || item.file_id };
+          });
+        })
+      });
     },
 
     /**
@@ -1561,6 +1748,17 @@ define([
           }));
         });
       }
+
+      // Selection indicator for files (query results become session files)
+      this._renderSelectionIndicator(container, {
+        category: 'files',
+        getSelectedItems: lang.hitch(this, function() {
+          var items = this._getSelectionItemsForCategory('files');
+          return items.map(function(item) {
+            return { label: item.file_name || item.id || 'File', id: item.id || item.file_id };
+          });
+        })
+      });
     },
 
     /**
@@ -1643,6 +1841,17 @@ define([
       on(reviewButton, 'click', lang.hitch(this, function() {
         this.showWorkflowDialog();
       }));
+
+      // Selection indicator for workflows
+      this._renderSelectionIndicator(card, {
+        category: 'workflows',
+        getSelectedItems: lang.hitch(this, function() {
+          var items = this._getSelectionItemsForCategory('workflows');
+          return items.map(function(item) {
+            return { label: item.workflow_name || item.workflow_id || item.id || 'Workflow', id: item.workflow_id || item.id };
+          });
+        })
+      });
     },
 
     /**
@@ -1946,6 +2155,17 @@ define([
       on(reviewButton, 'click', lang.hitch(this, function() {
         this.showWorkflowDialog();
       }));
+
+      // Selection indicator for workflows
+      this._renderSelectionIndicator(card, {
+        category: 'workflows',
+        getSelectedItems: lang.hitch(this, function() {
+          var items = this._getSelectionItemsForCategory('workflows');
+          return items.map(function(item) {
+            return { label: item.workflow_name || item.workflow_id || item.id || 'Workflow', id: item.workflow_id || item.id };
+          });
+        })
+      });
     },
 
     /**

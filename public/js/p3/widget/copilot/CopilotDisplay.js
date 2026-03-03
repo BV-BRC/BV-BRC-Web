@@ -114,7 +114,6 @@ define([
     onJobsSelectionChanged: null,
     onImageContextChanged: null,
     onContextClearAll: null,
-    contextSectionOrder: ['files', 'workflows', 'workspace', 'jobs'],
     sessionImageContextItems: [],
     _contextEntriesByCategory: null,
     _contextHiddenIdsByCategory: null,
@@ -184,8 +183,8 @@ define([
           style: 'display:none;'
         }, this.panelContainer);
 
-        this.contextContainer = domConstruct.create('div', {
-          class: 'copilot-context-container',
+        this.imagesContainer = domConstruct.create('div', {
+          class: 'copilot-images-container',
           style: 'display:none;'
         }, this.panelContainer);
 
@@ -232,7 +231,7 @@ define([
         // Show initial empty state
         this.showEmptyState();
         this._renderFilesPanel();
-        this._renderContextPanel();
+        this._renderImagesPanel();
         this._renderWorkflowsPanel();
         this._renderWorkspacePanel();
         this._renderJobsPanel();
@@ -715,8 +714,8 @@ define([
     setActivePanel: function(panel) {
       if (panel === 'files') {
         this.activePanel = 'files';
-      } else if (panel === 'context') {
-        this.activePanel = 'context';
+      } else if (panel === 'images') {
+        this.activePanel = 'images';
       } else if (panel === 'workflows') {
         this.activePanel = 'workflows';
       } else if (panel === 'workspace') {
@@ -731,7 +730,7 @@ define([
 
       domStyle.set(this.resultContainer, 'display', this.activePanel === 'messages' ? 'block' : 'none');
       domStyle.set(this.filesContainer, 'display', this.activePanel === 'files' ? 'block' : 'none');
-      domStyle.set(this.contextContainer, 'display', this.activePanel === 'context' ? 'block' : 'none');
+      domStyle.set(this.imagesContainer, 'display', this.activePanel === 'images' ? 'block' : 'none');
       domStyle.set(this.workflowsContainer, 'display', this.activePanel === 'workflows' ? 'block' : 'none');
       domStyle.set(this.workspaceContainer, 'display', this.activePanel === 'workspace' ? 'block' : 'none');
       domStyle.set(this.jobsContainer, 'display', this.activePanel === 'jobs' ? 'block' : 'none');
@@ -921,7 +920,6 @@ define([
       this.sessionFileSummary = summary || this.sessionFileSummary || null;
       this.sessionFilesError = null;
       this._renderFilesPanel();
-      this._renderContextPanel();
     },
 
     setSessionFilesLoading: function(isLoading) {
@@ -933,7 +931,6 @@ define([
       this.sessionFilesError = error || null;
       this.sessionFilesLoading = false;
       this._renderFilesPanel();
-      this._renderContextPanel();
     },
 
     _formatTimestamp: function(value) {
@@ -1289,51 +1286,6 @@ define([
           this._updateResponsivePadding();
       },
 
-    _getContextSectionLabels: function() {
-      return {
-        files: 'Files',
-        workflows: 'Workflows',
-        workspace: 'Workspace',
-        jobs: 'Jobs',
-        images: 'Images'
-      };
-    },
-
-    _normalizeContextSectionOrder: function() {
-      var labels = this._getContextSectionLabels();
-      var allowed = {};
-      for (var key in labels) {
-        if (labels.hasOwnProperty(key)) {
-          allowed[key] = true;
-        }
-      }
-
-      var order = [];
-      var configured = Array.isArray(this.contextSectionOrder) ? this.contextSectionOrder : [];
-      configured.forEach(function(item) {
-        var key = String(item || '').toLowerCase();
-        if (key === 'images') {
-          return;
-        }
-        if (allowed[key] && order.indexOf(key) === -1) {
-          order.push(key);
-        }
-      });
-
-      ['files', 'workflows', 'workspace', 'jobs'].forEach(function(defaultKey) {
-        if (allowed[defaultKey] && order.indexOf(defaultKey) === -1) {
-          order.push(defaultKey);
-        }
-      });
-
-      // Keep Images as the final section regardless of configured order.
-      if (allowed.images) {
-        order.push('images');
-      }
-
-      return order;
-    },
-
     _filesIdentity: function(item) {
       if (item && item.id !== undefined && item.id !== null && item.id !== '') {
         return String(item.id);
@@ -1372,73 +1324,6 @@ define([
       return id !== undefined && id !== null && id !== '' ? String(id) : '';
     },
 
-    _getAvailableContextItemsByCategory: function(category) {
-      if (category === 'files') {
-        return Array.isArray(this.sessionFiles) ? this.sessionFiles.slice() : [];
-      }
-      if (category === 'workflows') {
-        return Array.isArray(this.sessionWorkflows) ? this.sessionWorkflows.slice() : [];
-      }
-      if (category === 'workspace') {
-        var workspaceItems = [];
-        if (this.workspaceExplorerWidget && Array.isArray(this.workspaceExplorerWidget._items)) {
-          workspaceItems = this.workspaceExplorerWidget._items.slice();
-        } else if (this.sessionWorkspaceBrowse && this.sessionWorkspaceBrowse.uiPayload &&
-                   Array.isArray(this.sessionWorkspaceBrowse.uiPayload.items)) {
-          this.sessionWorkspaceBrowse.uiPayload.items.forEach(function(row) {
-            if (Array.isArray(row)) {
-              workspaceItems.push({
-                id: row[4] || row[0],
-                path: ((row[2] || '') + (row[0] || '')),
-                name: row[0] || '',
-                type: row[1] || ''
-              });
-              return;
-            }
-            if (row && typeof row === 'object') {
-              for (var path in row) {
-                if (!row.hasOwnProperty(path)) continue;
-                var nested = row[path];
-                if (!Array.isArray(nested)) continue;
-                nested.forEach(function(nestedItem) {
-                  if (Array.isArray(nestedItem)) {
-                    workspaceItems.push({
-                      id: nestedItem[4] || nestedItem[0],
-                      path: ((nestedItem[2] || path || '') + (nestedItem[0] || '')),
-                      name: nestedItem[0] || '',
-                      type: nestedItem[1] || ''
-                    });
-                  } else if (nestedItem && typeof nestedItem === 'object') {
-                    workspaceItems.push(nestedItem);
-                  }
-                });
-              }
-            }
-          });
-        }
-        return workspaceItems;
-      }
-      if (category === 'jobs') {
-        var jobsPayload = this.sessionJobsBrowse && this.sessionJobsBrowse.uiPayload ? this.sessionJobsBrowse.uiPayload : null;
-        var jobs = jobsPayload && Array.isArray(jobsPayload.jobs) ? jobsPayload.jobs : [];
-        return jobs.slice();
-      }
-      if (category === 'images') {
-        return Array.isArray(this.sessionImageContextItems) ? this.sessionImageContextItems.slice() : [];
-      }
-      return [];
-    },
-
-    _buildAvailabilityMap: function(category) {
-      var map = {};
-      this._getAvailableContextItemsByCategory(category).forEach(lang.hitch(this, function(item) {
-        var key = this._itemIdentityByCategory(category, item);
-        if (key) map[key] = true;
-      }));
-
-      return map;
-    },
-
     _getContextItemsByCategory: function(category) {
       if (category === 'files') return this.sessionFilesSelectionItems || [];
       if (category === 'workflows') return this.sessionWorkflowsSelectionItems || [];
@@ -1472,15 +1357,6 @@ define([
           images: []
         };
       }
-    },
-
-    _getContextEntriesByCategory: function(category) {
-      if (category === 'files') {
-        return this._dedupeItemsByCategory(category, this.sessionFiles);
-      }
-      this._ensureContextEntryState();
-      var entries = this._contextEntriesByCategory[category];
-      return this._dedupeItemsByCategory(category, entries);
     },
 
     _mergeContextEntriesByCategory: function(category, items) {
@@ -1536,206 +1412,6 @@ define([
       return '';
     },
 
-    _itemLabelByCategory: function(category, item) {
-      if (category === 'files') return item.file_name || item.id || 'File';
-      if (category === 'workflows') return item.workflow_name || 'Unnamed Workflow';
-      if (category === 'workspace') return item.path || item.name || item.id || 'Workspace item';
-      if (category === 'jobs') return item.id || item.application_name || 'Job';
-      if (category === 'images') return item.name || 'Image';
-      return '';
-    },
-
-    _workflowStatusByItem: function(item) {
-      if (!item) {
-        return '';
-      }
-      return item.status ||
-        (item.execution_metadata && item.execution_metadata.status) ||
-        '';
-    },
-
-    _workflowStatusStyleByValue: function(statusValue) {
-      var status = statusValue ? String(statusValue).toLowerCase() : '';
-      if (status === 'succeeded' || status === 'completed') {
-        return 'background: #10b981; color: #fff;';
-      }
-      if (status === 'failed' || status === 'error') {
-        return 'background: #ef4444; color: #fff;';
-      }
-      if (status === 'cancelled') {
-        return 'background: #6b7280; color: #fff;';
-      }
-      if (status === 'running') {
-        return 'background: #2563eb; color: #fff;';
-      }
-      if (status === 'queued' || status === 'pending') {
-        return 'background: #f59e0b; color: #111827;';
-      }
-      if (status === 'submitted') {
-        return 'background: #14b8a6; color: #fff;';
-      }
-      if (status === 'planned') {
-        return 'background: #6366f1; color: #fff;';
-      }
-      return 'background: #9ca3af; color: #fff;';
-    },
-
-    _resolveWorkflowIdFromItem: function(item) {
-      if (!item) {
-        return '';
-      }
-      var workflowId = item.workflow_id || item.id || (item.raw && (item.raw.workflow_id || item.raw.id));
-      return workflowId ? String(workflowId) : '';
-    },
-
-    _openWorkflowFromContext: function(item) {
-      var workflowId = this._resolveWorkflowIdFromItem(item);
-      if (!workflowId) {
-        return;
-      }
-
-      var workflowUrl = (window && window.App && window.App.workflow_url) ? window.App.workflow_url : 'https://dev-7.bv-brc.org/api/v1';
-      var headers = { 'Accept': 'application/json' };
-      if (window && window.App && window.App.authorizationToken) {
-        headers.Authorization = window.App.authorizationToken;
-      }
-
-      request.get(workflowUrl + '/workflows/' + encodeURIComponent(workflowId), {
-        headers: headers,
-        handleAs: 'json'
-      }).then(lang.hitch(this, function(workflowData) {
-        if (!workflowData || typeof workflowData !== 'object') {
-          return;
-        }
-        this._showWorkflowDialog(workflowData);
-      })).catch(function(error) {
-        console.error('[CopilotDisplay] Failed to open workflow from context:', error);
-      });
-    },
-
-    _showWorkflowDialog: function(workflowData) {
-      var workflowEngine = null;
-      var overlayNode = null;
-      var keyHandler = null;
-
-      try {
-        workflowEngine = new WorkflowEngine({
-          workflowData: workflowData,
-          copilotApi: this.copilotApi,
-          sessionId: this.sessionId
-        });
-
-        overlayNode = domConstruct.create('div', {
-          class: 'workflow-modal-overlay',
-          style: 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 900; display: flex; align-items: center; justify-content: center; padding: 24px;'
-        }, document.body);
-
-        var modalNode = domConstruct.create('div', {
-          class: 'workflow-modal-dialog',
-          style: 'background: #fff; width: min(980px, 95vw); max-height: 88vh; border-radius: 10px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; overflow: hidden;'
-        }, overlayNode);
-
-        var headerNode = domConstruct.create('div', {
-          class: 'workflow-modal-header',
-          style: 'display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid #e5e7eb;'
-        }, modalNode);
-
-        domConstruct.create('div', {
-          innerHTML: 'Workflow Review',
-          style: 'font-size: 18px; font-weight: 600; color: #1f2937;'
-        }, headerNode);
-
-        var closeButton = domConstruct.create('button', {
-          innerHTML: 'Close',
-          style: 'padding: 8px 14px; background: #666; color: #fff; border: none; border-radius: 4px; cursor: pointer;'
-        }, headerNode);
-
-        var contentNode = domConstruct.create('div', {
-          class: 'workflow-modal-content',
-          style: 'padding: 16px; overflow-y: auto; overflow-x: hidden;'
-        }, modalNode);
-
-        domConstruct.place(workflowEngine.domNode, contentNode);
-
-        var closeModal = function() {
-          if (keyHandler) {
-            keyHandler.remove();
-            keyHandler = null;
-          }
-          if (workflowEngine) {
-            workflowEngine.destroyRecursive();
-            workflowEngine = null;
-          }
-          if (overlayNode && overlayNode.parentNode) {
-            overlayNode.parentNode.removeChild(overlayNode);
-            overlayNode = null;
-          }
-        };
-
-        on(closeButton, 'click', closeModal);
-        on(overlayNode, 'click', function(evt) {
-          if (evt.target === overlayNode) {
-            closeModal();
-          }
-        });
-
-        keyHandler = on(document, 'keydown', function(evt) {
-          if (evt.key === 'Escape') {
-            closeModal();
-          }
-        });
-
-        workflowEngine.startup();
-      } catch (err) {
-        console.error('[CopilotDisplay] Failed to show workflow dialog:', err);
-        if (workflowEngine && typeof workflowEngine.destroyRecursive === 'function') {
-          workflowEngine.destroyRecursive();
-        }
-        if (overlayNode && overlayNode.parentNode) {
-          overlayNode.parentNode.removeChild(overlayNode);
-        }
-      }
-    },
-
-    _toggleItemSelectionFromContext: function(category, item, shouldSelect) {
-      var targetIdentity = this._itemIdentityByCategory(category, item);
-      if (!targetIdentity) {
-        return;
-      }
-
-      var selectedItems = this._dedupeItemsByCategory(category, this._getContextItemsByCategory(category));
-      var nextItems = [];
-      var exists = false;
-
-      selectedItems.forEach(lang.hitch(this, function(candidate) {
-        var identity = this._itemIdentityByCategory(category, candidate);
-        if (identity === targetIdentity) {
-          exists = true;
-          if (shouldSelect) {
-            nextItems.push(candidate);
-          }
-          return;
-        }
-        nextItems.push(candidate);
-      }));
-
-      if (shouldSelect && !exists) {
-        nextItems.push(item);
-      }
-      if (shouldSelect) {
-        this._mergeContextEntriesByCategory(category, [item]);
-      }
-
-      this._debugContextEvent('item selection toggled', {
-        category: category,
-        targetIdentity: targetIdentity,
-        shouldSelect: shouldSelect,
-        beforeCount: selectedItems.length,
-        afterCount: nextItems.length
-      });
-      this._emitCategorySelection(category, this._dedupeItemsByCategory(category, nextItems));
-    },
-
     _removeItemFromContextView: function(category, item) {
       var targetIdentity = this._itemIdentityByCategory(category, item);
       if (!targetIdentity) {
@@ -1780,7 +1456,9 @@ define([
           afterCount: nextItems.length
         });
         this._emitCategorySelection(category, nextItems);
-        this._renderContextPanel();
+        if (category === 'images') {
+          this._renderImagesPanel();
+        }
       }
     },
 
@@ -1837,261 +1515,75 @@ define([
     setSessionImageContextData: function(selectedItems) {
       this.sessionImageContextItems = this._dedupeItemsByCategory('images', selectedItems);
       this._mergeContextEntriesByCategory('images', this.sessionImageContextItems);
-      this._renderContextPanel();
+      this._renderImagesPanel();
     },
 
-    _renderContextPanel: function() {
-      if (!this.contextContainer) {
+    _renderImagesPanel: function() {
+      if (!this.imagesContainer) {
         return;
       }
-      domConstruct.empty(this.contextContainer);
+      domConstruct.empty(this.imagesContainer);
 
-      var order = this._normalizeContextSectionOrder();
-      var labels = this._getContextSectionLabels();
-      var sectionCount = 0;
-
-      order.forEach(lang.hitch(this, function(category) {
-        var selectedItems = this._dedupeItemsByCategory(category, this._getContextItemsByCategory(category));
-        var availableItems = this._getContextEntriesByCategory(category);
-        if (!availableItems.length && selectedItems.length) {
-          availableItems = selectedItems.slice();
-        }
-        if (!Array.isArray(availableItems) || availableItems.length === 0) {
-          return;
-        }
-        var selectedMap = {};
-        (Array.isArray(selectedItems) ? selectedItems : []).forEach(lang.hitch(this, function(selectedItem) {
-          var selectedIdentity = this._itemIdentityByCategory(category, selectedItem);
-          if (selectedIdentity) {
-            selectedMap[selectedIdentity] = true;
-          }
-        }));
-        sectionCount += 1;
-
-        var sectionNode = domConstruct.create('div', {
-          class: 'copilot-context-section',
-          style: 'border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 12px; overflow: hidden;'
-        }, this.contextContainer);
-
-        var headerNode = domConstruct.create('div', {
-          class: 'copilot-context-section-header',
-          style: 'display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:8px 12px; border-bottom:1px solid #e5e7eb;'
-        }, sectionNode);
-
+      var imageItems = Array.isArray(this.sessionImageContextItems) ? this.sessionImageContextItems : [];
+      if (!imageItems.length) {
         domConstruct.create('div', {
-          class: 'copilot-context-section-title',
-          innerHTML: labels[category] + ' (' + (selectedItems.length || 0) + '/' + availableItems.length + ')',
-          style: 'font-weight: 600;'
-        }, headerNode);
+          class: 'copilot-images-empty',
+          innerHTML: 'No images attached.',
+          style: 'text-align:center; color:#6b7280; padding:18px 10px;'
+        }, this.imagesContainer);
+        return;
+      }
 
-        var clearButton = domConstruct.create('button', {
-          type: 'button',
-          class: 'copilot-context-clear-section',
-          innerHTML: 'Clear',
-          style: 'border: 1px solid #d1d5db; background: #ffffff; border-radius: 4px; padding: 4px 8px; cursor: pointer;'
-        }, headerNode);
-        on(clearButton, 'click', lang.hitch(this, function() {
-          this._debugContextEvent('section clear clicked', {
-            category: category,
-            beforeCount: selectedItems.length
-          });
-          this._emitCategorySelection(category, []);
-        }));
+      var headerNode = domConstruct.create('div', {
+        style: 'display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-bottom:1px solid #e5e7eb; background:#f8fafc; border-radius:8px 8px 0 0;'
+      }, this.imagesContainer);
 
-        var listNode = domConstruct.create('div', {
-          class: 'copilot-context-section-list',
-          style: 'padding: 0;'
-        }, sectionNode);
+      domConstruct.create('div', {
+        innerHTML: 'Images (' + imageItems.length + ')',
+        style: 'font-weight: 600;'
+      }, headerNode);
 
-        var availableMap = this._buildAvailabilityMap(category);
-        var displayItems = this._dedupeItemsByCategory(category, availableItems);
-        if (category === 'files') {
-          // Keep selected files visible even if they are not in the currently loaded file grid page.
-          (Array.isArray(selectedItems) ? selectedItems : []).forEach(lang.hitch(this, function(selectedItem) {
-            var selectedIdentity = this._itemIdentityByCategory(category, selectedItem);
-            var existsInDisplay = false;
-            for (var i = 0; i < displayItems.length; i++) {
-              if (this._itemIdentityByCategory(category, displayItems[i]) === selectedIdentity) {
-                existsInDisplay = true;
-                break;
-              }
-            }
-            if (!existsInDisplay) {
-              displayItems.push(selectedItem);
-            }
-          }));
-        }
-
-        var hiddenMap = (this._contextHiddenIdsByCategory && this._contextHiddenIdsByCategory[category]) || null;
-        if (hiddenMap) {
-          displayItems = displayItems.filter(lang.hitch(this, function(candidate) {
-            var candidateId = this._itemIdentityByCategory(category, candidate);
-            return !(candidateId && hiddenMap[candidateId]);
-          }));
-        }
-
-        displayItems.forEach(lang.hitch(this, function(item) {
-          var identity = this._itemIdentityByCategory(category, item);
-          var isAvailable = Boolean(identity && availableMap[identity]);
-          var isSelected = Boolean(identity && selectedMap[identity]);
-
-          // For files, add extra column for link button
-          var gridColumns = category === 'files' ? '34px 34px minmax(0, 1fr) 34px' : '34px minmax(0, 1fr) 34px';
-
-          var itemNode = domConstruct.create('div', {
-            class: 'copilot-context-item' + (isAvailable ? '' : ' copilot-context-item-muted'),
-            style: 'display:grid; grid-template-columns: ' + gridColumns + '; gap: 8px; align-items:center; padding: 8px 12px; border-bottom:1px solid #f1f5f9; opacity:' + (isAvailable ? '1' : '0.55') + ';'
-          }, listNode);
-
-          var selectWrap = domConstruct.create('div', {
-            class: 'copilot-context-item-select',
-            style: 'display:flex; justify-content:center;'
-          }, itemNode);
-          var selectCheckbox = domConstruct.create('input', {
-            type: 'checkbox',
-            'aria-label': 'Select context item'
-          }, selectWrap);
-          // Set checked as a DOM property (not an HTML attribute string) to avoid
-          // false positives where unchecked rows render as checked.
-          selectCheckbox.checked = !!isSelected;
-          on(selectCheckbox, 'change', lang.hitch(this, function(evt) {
-            this._toggleItemSelectionFromContext(category, item, Boolean(evt && evt.target && evt.target.checked));
-          }));
-
-          // Add link button for files
-          if (category === 'files' && item.workspace_path) {
-            var linkWrap = domConstruct.create('div', {
-              class: 'copilot-context-item-link',
-              style: 'display:flex; justify-content:center;'
-            }, itemNode);
-            var linkButton = domConstruct.create('a', {
-              href: '/workspace' + (item.workspace_path.charAt(0) === '/' ? item.workspace_path : ('/' + item.workspace_path)),
-              target: '_blank',
-              rel: 'noopener noreferrer',
-              title: 'Open in Workspace Browser',
-              innerHTML: '&#x1F517;', // Link emoji
-              style: 'text-decoration: none; font-size: 16px; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 1px solid #d1d5db; background: #ffffff; border-radius: 4px; cursor: pointer;'
-            }, linkWrap);
-          } else if (category === 'files') {
-            // Placeholder for files without workspace_path
-            domConstruct.create('div', {
-              style: 'width: 24px; height: 24px;'
-            }, itemNode);
-          }
-
-          var itemInfoNode = domConstruct.create('div', {
-            class: 'copilot-context-item-info',
-            style: 'display:flex; align-items:center; gap:8px; min-width:0;'
-          }, itemNode);
-
-          if (category === 'images' && item && item.thumbnail) {
-            domConstruct.create('img', {
-              class: 'copilot-context-image-thumb',
-              src: item.thumbnail,
-              alt: item.name || 'Image thumbnail',
-              style: 'width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #d1d5db; flex-shrink:0;'
-            }, itemInfoNode);
-          }
-
-          var labelText = this._itemLabelByCategory(category, item);
-          if (!isAvailable && category !== 'images') {
-            labelText += ' (not in current grid results)';
-          }
-          var labelNode = domConstruct.create('div', {
-            class: 'copilot-context-item-label',
-            innerHTML: labelText,
-            style: 'word-break: break-word;'
-          }, itemInfoNode);
-
-          if (category === 'workflows') {
-            labelNode.style.fontWeight = '600';
-            var workflowStatus = this._workflowStatusByItem(item);
-            if (workflowStatus) {
-              domConstruct.create('span', {
-                innerHTML: String(workflowStatus).toUpperCase(),
-                style: 'display:inline-block; margin-top:4px; padding:2px 6px; font-size:11px; border-radius:3px; font-weight:500; ' + this._workflowStatusStyleByValue(workflowStatus)
-              }, itemInfoNode);
-            }
-          }
-
-          if (category === 'workflows') {
-            var openWorkflowWrap = domConstruct.create('div', {
-              class: 'copilot-context-workflow-open-wrap',
-              style: 'display:flex; justify-content:flex-end;'
-            }, itemNode);
-            var openWorkflowButton = domConstruct.create('button', {
-              type: 'button',
-              class: 'copilot-context-open-workflow',
-              innerHTML: 'Open Workflow',
-              title: 'Open workflow details',
-              style: 'padding: 4px 10px; background: #2563eb; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; font-weight: 500; white-space: nowrap;'
-            }, openWorkflowWrap);
-            on(openWorkflowButton, 'mouseenter', function() {
-              openWorkflowButton.style.background = '#1d4ed8';
-            });
-            on(openWorkflowButton, 'mouseleave', function() {
-              openWorkflowButton.style.background = '#2563eb';
-            });
-            on(openWorkflowButton, 'click', lang.hitch(this, function() {
-              this._openWorkflowFromContext(item);
-            }));
-          } else if (category === 'files') {
-            // Files remain in context view; checkbox only controls inclusion.
-            domConstruct.create('div', {
-              class: 'copilot-context-remove-placeholder',
-              style: 'width:24px; height:24px;'
-            }, itemNode);
-          } else {
-            var removeButton = domConstruct.create('button', {
-              type: 'button',
-              class: 'copilot-context-remove-item',
-              innerHTML: '&times;',
-              title: 'Remove from context view',
-              style: 'border: 1px solid #d1d5db; background: #ffffff; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; line-height: 20px; text-align:center; padding:0; font-size:16px;'
-            }, itemNode);
-            on(removeButton, 'click', lang.hitch(this, function() {
-              this._removeItemFromContextView(category, item);
-            }));
-          }
-        }));
+      var clearButton = domConstruct.create('button', {
+        type: 'button',
+        innerHTML: 'Clear All',
+        style: 'border: 1px solid #d1d5db; background: #ffffff; border-radius: 4px; padding: 4px 8px; cursor: pointer;'
+      }, headerNode);
+      on(clearButton, 'click', lang.hitch(this, function() {
+        this._emitCategorySelection('images', []);
       }));
 
-      if (!sectionCount) {
-        domConstruct.create('div', {
-          class: 'copilot-context-empty',
-          innerHTML: 'No selected items in context yet.'
-        }, this.contextContainer);
-        return;
-      }
+      var listNode = domConstruct.create('div', {
+        style: 'padding: 0;'
+      }, this.imagesContainer);
 
-      var clearAllContainer = domConstruct.create('div', {
-        class: 'copilot-context-clear-all-wrap',
-        style: 'display:flex; justify-content:flex-end; margin-top: 8px;'
-      }, this.contextContainer);
-      var clearAllButton = domConstruct.create('button', {
-        type: 'button',
-        class: 'copilot-context-clear-all',
-        innerHTML: 'Clear All Context',
-        style: 'border: 1px solid #d1d5db; background: #ffffff; border-radius: 4px; padding: 6px 10px; cursor: pointer;'
-      }, clearAllContainer);
-      on(clearAllButton, 'click', lang.hitch(this, function() {
-        this._debugContextEvent('clear all clicked', {
-          files: (this.sessionFilesSelectionItems || []).length,
-          workflows: (this.sessionWorkflowsSelectionItems || []).length,
-          workspace: (this.sessionWorkspaceSelectionItems || []).length,
-          jobs: (this.sessionJobsSelectionItems || []).length,
-          images: (this.sessionImageContextItems || []).length
-        });
-        if (typeof this.onContextClearAll === 'function') {
-          this.onContextClearAll({ sessionId: this.sessionId });
-          return;
+      imageItems.forEach(lang.hitch(this, function(item) {
+        var itemNode = domConstruct.create('div', {
+          style: 'display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:1px solid #f1f5f9;'
+        }, listNode);
+
+        if (item && item.thumbnail) {
+          domConstruct.create('img', {
+            src: item.thumbnail,
+            alt: item.name || 'Image thumbnail',
+            style: 'width:48px; height:48px; object-fit:cover; border-radius:4px; border:1px solid #d1d5db; flex-shrink:0;'
+          }, itemNode);
         }
-        // Fallback local clear if host callback is not wired.
-        this.setSessionFilesSelectionData([]);
-        this.setSessionWorkflowsSelectionData([]);
-        this.setSessionWorkspaceSelectionData([]);
-        this.setSessionJobsSelectionData([]);
-        this.setSessionImageContextData([]);
+
+        var labelText = item && item.name ? item.name : 'Image';
+        domConstruct.create('div', {
+          innerHTML: labelText,
+          style: 'word-break: break-word; flex:1; min-width:0;'
+        }, itemNode);
+
+        var removeButton = domConstruct.create('button', {
+          type: 'button',
+          innerHTML: '&times;',
+          title: 'Remove image',
+          style: 'border: 1px solid #d1d5db; background: #ffffff; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; line-height: 20px; text-align:center; padding:0; font-size:16px; flex-shrink:0;'
+        }, itemNode);
+        on(removeButton, 'click', lang.hitch(this, function() {
+          this._removeItemFromContextView('images', item);
+        }));
       }));
     },
 
@@ -2101,31 +1593,26 @@ define([
     resetSessionWorkflows: function() {
       this.sessionWorkflows = [];
       this._renderWorkflowsPanel();
-      this._renderContextPanel();
     },
 
     resetSessionWorkspaceBrowse: function() {
       this.sessionWorkspaceBrowse = null;
       this._renderWorkspacePanel();
-      this._renderContextPanel();
     },
 
     setSessionWorkspaceBrowseData: function(workspaceBrowseData) {
       this.sessionWorkspaceBrowse = workspaceBrowseData || null;
       this._renderWorkspacePanel();
-      this._renderContextPanel();
     },
 
     resetSessionJobsBrowse: function() {
       this.sessionJobsBrowse = null;
       this._renderJobsPanel();
-      this._renderContextPanel();
     },
 
     setSessionJobsBrowseData: function(jobsBrowseData) {
       this.sessionJobsBrowse = jobsBrowseData || null;
       this._renderJobsPanel();
-      this._renderContextPanel();
     },
 
     resetSessionDataBrowse: function() {
@@ -2144,7 +1631,6 @@ define([
       if (this.workspaceExplorerWidget && typeof this.workspaceExplorerWidget.setSelectedWorkspaceItems === 'function') {
         this.workspaceExplorerWidget.setSelectedWorkspaceItems(this.sessionWorkspaceSelectionItems);
       }
-      this._renderContextPanel();
     },
 
     setSessionJobsSelectionData: function(selectedItems) {
@@ -2153,7 +1639,6 @@ define([
       if (this.jobsExplorerWidget && typeof this.jobsExplorerWidget.setSelectedJobs === 'function') {
         this.jobsExplorerWidget.setSelectedJobs(this.sessionJobsSelectionItems);
       }
-      this._renderContextPanel();
     },
 
     setSessionFilesSelectionData: function(selectedItems) {
@@ -2161,7 +1646,6 @@ define([
       if (this.filesExplorerWidget && typeof this.filesExplorerWidget.setSelectedFiles === 'function') {
         this.filesExplorerWidget.setSelectedFiles(this.sessionFilesSelectionItems);
       }
-      this._renderContextPanel();
     },
 
     setSessionWorkflowsSelectionData: function(selectedItems) {
@@ -2170,7 +1654,6 @@ define([
       if (this.workflowsExplorerWidget && typeof this.workflowsExplorerWidget.setSelectedWorkflows === 'function') {
         this.workflowsExplorerWidget.setSelectedWorkflows(this.sessionWorkflowsSelectionItems);
       }
-      this._renderContextPanel();
     },
 
     _clearFilesSelectionHandles: function() {
@@ -2229,7 +1712,6 @@ define([
         sessionId: this.sessionId,
         items: selectedItems
       });
-      this._renderContextPanel();
     },
 
     _bindWorkspaceSelectionEvents: function() {
@@ -2264,7 +1746,6 @@ define([
         sessionId: this.sessionId,
         items: selectedItems
       });
-      this._renderContextPanel();
     },
 
     _publishFilesSelectionChange: function() {
@@ -2285,7 +1766,6 @@ define([
           items: this.sessionFilesSelectionItems
         });
       }
-      this._renderContextPanel();
     },
 
     _bindFilesSelectionEvents: function() {
@@ -2317,7 +1797,6 @@ define([
           items: this.sessionWorkflowsSelectionItems
         });
       }
-      this._renderContextPanel();
     },
 
     _bindWorkflowsSelectionEvents: function() {
@@ -2349,7 +1828,6 @@ define([
     setSessionWorkflows: function(workflowIds) {
       this.sessionWorkflows = Array.isArray(workflowIds) ? workflowIds : [];
       this._renderWorkflowsPanel();
-      this._renderContextPanel();
     },
 
     /**
