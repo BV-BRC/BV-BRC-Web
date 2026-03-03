@@ -2139,22 +2139,45 @@ define([
       }
 
       if (collection && collection.toLowerCase() === 'genome_feature' && rqlQueryUrl) {
-        var authParam = (window.App && window.App.authorizationToken)
-          ? '&http_authorization=' + encodeURIComponent(window.App.authorizationToken)
-          : '';
-        var sep = rqlQueryUrl.indexOf('?') >= 0 ? '&' : '?';
+        // Extract the RQL query portion from rqlQueryUrl for form POST submission.
+        // rqlQueryUrl format: https://.../{collection}/?{rql_query}
+        var rqlQueryParts = rqlQueryUrl.split('?');
+        var fastaBaseUrl = rqlQueryParts[0];
+        var fastaRqlQuery = rqlQueryParts.length > 1 ? rqlQueryParts[1] : '';
+        // Append limit and sort to the RQL query
+        fastaRqlQuery = fastaRqlQuery + '&limit(100000)&sort(+patric_id)';
 
         var createFastaLink = lang.hitch(this, function(linkLabel, acceptType) {
-          var fastaUrl = rqlQueryUrl + sep + 'http_accept=' + encodeURIComponent(acceptType) + '&http_download=true';
-          fastaUrl = fastaUrl + '&limit(100000)&sort(+patric_id)';
-          fastaUrl = fastaUrl + authParam;
-          domConstruct.create('a', {
+          var fastaLink = domConstruct.create('a', {
             class: 'workspace-summary-link',
-            href: fastaUrl,
-            target: '_blank',
-            rel: 'noopener noreferrer',
+            href: '#',
             innerHTML: linkLabel
           }, container);
+          on(fastaLink, 'click', lang.hitch(this, function(evt) {
+            evt.preventDefault();
+            // Use hidden form POST, same pattern as DownloadTooltipDialog.js
+            var actionUrl = fastaBaseUrl + '?http_download=true&http_accept=' + encodeURIComponent(acceptType);
+            // Remove any previous download form
+            var oldForm = document.getElementById('copilotFastaDownloadForm');
+            if (oldForm) { oldForm.parentNode.removeChild(oldForm); }
+            var form = domConstruct.create('form', {
+              style: 'display: none;',
+              id: 'copilotFastaDownloadForm',
+              enctype: 'application/x-www-form-urlencoded',
+              name: 'copilotFastaDownloadForm',
+              method: 'post',
+              action: actionUrl
+            }, document.body);
+            domConstruct.create('input', { type: 'hidden', value: encodeURIComponent(fastaRqlQuery), name: 'rql' }, form);
+            if (window.App && window.App.authorizationToken) {
+              domConstruct.create('input', { type: 'hidden', value: window.App.authorizationToken, name: 'http_authorization' }, form);
+            }
+            form.submit();
+            // Clean up the form after a short delay
+            setTimeout(function() {
+              if (form.parentNode) { form.parentNode.removeChild(form); }
+            }, 5000);
+          }));
         });
 
         createFastaLink('Download DNA Fasta', 'application/dna+fasta');
