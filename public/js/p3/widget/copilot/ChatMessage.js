@@ -2030,7 +2030,12 @@ define([
         ? toolCall.replay.rql_replay_query
         : null;
       var summaryText = this.message.chatSummary || 'Data query ready.';
+      console.log('[DEBUG renderQueryCollectionWidget] toolCall:', JSON.stringify(toolCall, null, 2));
+      console.log('[DEBUG renderQueryCollectionWidget] rqlReplay:', rqlReplay);
+      console.log('[DEBUG renderQueryCollectionWidget] data:', JSON.stringify(data, null, 2));
+      console.log('[DEBUG renderQueryCollectionWidget] toolArgs:', JSON.stringify(toolArgs, null, 2));
       if (rqlReplay == null) {
+        console.warn('[DEBUG renderQueryCollectionWidget] rqlReplay is null — returning early, no links will render');
         return;
       }
       var rqlQueryUrl = toolArgs.data_api_base_url ? toolArgs.data_api_base_url : "https://www.bv-brc.org/api-bulk";
@@ -2157,6 +2162,11 @@ define([
             evt.preventDefault();
             // Use hidden form POST, same pattern as DownloadTooltipDialog.js
             var actionUrl = fastaBaseUrl + '?http_download=true&http_accept=' + encodeURIComponent(acceptType);
+            console.log('[DEBUG FASTA download] fastaBaseUrl:', fastaBaseUrl);
+            console.log('[DEBUG FASTA download] fastaRqlQuery (raw):', fastaRqlQuery);
+            console.log('[DEBUG FASTA download] fastaRqlQuery (encoded):', encodeURIComponent(fastaRqlQuery));
+            console.log('[DEBUG FASTA download] actionUrl:', actionUrl);
+            console.log('[DEBUG FASTA download] acceptType:', acceptType);
             // Remove any previous download form
             var oldForm = document.getElementById('copilotFastaDownloadForm');
             if (oldForm) { oldForm.parentNode.removeChild(oldForm); }
@@ -2197,9 +2207,11 @@ define([
         on(tsvLink, 'click', function(evt) {
           evt.preventDefault();
           var tsvDownloadUrl = downloadUrl;
+          console.log('[DEBUG TSV download] downloadUrl (original):', downloadUrl);
           if (window.App && window.App.authorizationToken) {
             tsvDownloadUrl += '&http_authorization=' + encodeURIComponent(window.App.authorizationToken);
           }
+          console.log('[DEBUG TSV download] tsvDownloadUrl (final):', tsvDownloadUrl);
           window.open(tsvDownloadUrl, '_blank', 'noopener,noreferrer');
         });
       }
