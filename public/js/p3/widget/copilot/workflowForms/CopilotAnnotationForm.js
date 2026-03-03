@@ -51,36 +51,59 @@ define([
 
     /**
      * Populate form from workflow step params.
+     * Defers loading until startup has completed so all widgets are initialized.
      * @param {Object} params - Step params from workflow manifest
      */
     setFromManifest: function(params) {
       if (!params) return;
 
-      if (this.contigs && params.contigs) {
-        this.contigs.set('value', params.contigs);
-      }
-      if (this.recipe) {
-        this.recipe.set('value', params.recipe || 'default');
-      }
-      if (this.tax_idWidget && params.taxonomy_id != null) {
-        this.tax_idWidget.set('value', String(params.taxonomy_id));
-        this.tax_idWidget.set('displayedValue', String(params.taxonomy_id));
-      }
-      if (this.scientific_nameWidget && params.scientific_name != null) {
-        if (typeof params.scientific_name === 'object' && params.scientific_name !== null) {
-          this.scientific_nameWidget.set('item', params.scientific_name);
-        } else {
-          this.scientific_nameWidget.set('displayedValue', String(params.scientific_name));
+      var self = this;
+
+      var applyParams = function() {
+        if (self.contigs && params.contigs) {
+          self.contigs.set('value', params.contigs);
         }
-      }
-      if (this.myLabelWidget) {
-        this.myLabelWidget.set('value', params.my_label || params.output_file || '');
-      }
-      if (this.output_path && params.output_path) {
-        this.output_path.set('value', params.output_path);
-      }
-      if (this.output_nameWidget && params.output_file) {
-        this.output_nameWidget.set('value', params.output_file);
+        if (self.recipe) {
+          self.recipe.set('value', params.recipe || 'default');
+        }
+        if (self.tax_idWidget && params.taxonomy_id != null) {
+          self.tax_idWidget.set('value', String(params.taxonomy_id));
+          self.tax_idWidget.set('displayedValue', String(params.taxonomy_id));
+        }
+        if (self.scientific_nameWidget && params.scientific_name != null) {
+          if (typeof params.scientific_name === 'object' && params.scientific_name !== null) {
+            self.scientific_nameWidget.set('item', params.scientific_name);
+          } else {
+            self.scientific_nameWidget.set('displayedValue', String(params.scientific_name));
+          }
+        }
+        if (self.myLabelWidget) {
+          self.myLabelWidget.set('value', params.my_label || params.output_file || '');
+        }
+        if (self.output_path && params.output_path) {
+          self.output_path.set('value', params.output_path);
+        }
+        if (self.output_nameWidget && params.output_file) {
+          self.output_nameWidget.set('value', params.output_file);
+        }
+      };
+
+      if (this._started) {
+        applyParams();
+      } else {
+        var attempts = 0;
+        var maxAttempts = 50;
+        var interval = setInterval(function() {
+          attempts++;
+          if (self._started) {
+            clearInterval(interval);
+            applyParams();
+          } else if (attempts >= maxAttempts) {
+            clearInterval(interval);
+            console.error('[CopilotAnnotationForm] Form startup did not complete within timeout, applying params anyway');
+            applyParams();
+          }
+        }, 100);
       }
     },
 

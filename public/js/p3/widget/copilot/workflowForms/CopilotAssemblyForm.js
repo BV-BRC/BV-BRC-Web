@@ -51,94 +51,118 @@ define([
 
     /**
      * Populate form from workflow step params.
+     * Defers loading until startup has completed so all widgets are initialized.
      * @param {Object} params - Step params from workflow manifest
      */
     setFromManifest: function(params) {
       if (!params) return;
-      params = this.formatRerunJson(params);
 
-      if (this.recipe) {
-        this.recipe.set('value', params.recipe || 'auto');
-      }
-      if (this.output_path && params.output_path) {
-        this.output_path.set('value', params.output_path);
-      }
-      if (this.output_file && params.output_file) {
-        this.output_file.set('value', params.output_file);
-      }
-      if (this.trim) {
-        this.trim.set('checked', !!params.trim);
-      }
-      if (this.normalize) {
-        this.normalize.set('checked', !!params.normalize);
-      }
-      if (this.filter) {
-        this.filter.set('checked', !!params.filter);
-      }
-      if (this.racon_iter) {
-        this.racon_iter.set('value', params.racon_iter != null ? params.racon_iter : 2);
-      }
-      if (this.pilon_iter) {
-        this.pilon_iter.set('value', params.pilon_iter != null ? params.pilon_iter : 2);
-      }
-      if (this.min_contig_len) {
-        this.min_contig_len.set('value', params.min_contig_len != null ? params.min_contig_len : 300);
-      }
-      if (this.min_contig_cov) {
-        this.min_contig_cov.set('value', params.min_contig_cov != null ? params.min_contig_cov : 5);
-      }
-      if (this.coverage) {
-        this.coverage.set('value', params.target_depth != null ? params.target_depth : (params.coverage != null ? params.coverage : 200));
-      }
+      var self = this;
 
-      if (params.genome_size != null) {
-        var gs = params.genome_size;
-        if (typeof gs === 'number') {
-          if (gs >= 1000000) {
-            if (this.expected_genome_size) this.expected_genome_size.set('value', Math.round(gs / 1000000));
-            if (this.genome_size_units) this.genome_size_units.set('value', 'M');
-          } else {
-            if (this.expected_genome_size) this.expected_genome_size.set('value', Math.round(gs / 1000));
-            if (this.genome_size_units) this.genome_size_units.set('value', 'K');
+      var applyParams = function() {
+        var p = self.formatRerunJson(params);
+
+        if (self.recipe) {
+          self.recipe.set('value', p.recipe || 'auto');
+        }
+        if (self.output_path && p.output_path) {
+          self.output_path.set('value', p.output_path);
+        }
+        if (self.output_file && p.output_file) {
+          self.output_file.set('value', p.output_file);
+        }
+        if (self.trim) {
+          self.trim.set('checked', !!p.trim);
+        }
+        if (self.normalize) {
+          self.normalize.set('checked', !!p.normalize);
+        }
+        if (self.filter) {
+          self.filter.set('checked', !!p.filter);
+        }
+        if (self.racon_iter) {
+          self.racon_iter.set('value', p.racon_iter != null ? p.racon_iter : 2);
+        }
+        if (self.pilon_iter) {
+          self.pilon_iter.set('value', p.pilon_iter != null ? p.pilon_iter : 2);
+        }
+        if (self.min_contig_len) {
+          self.min_contig_len.set('value', p.min_contig_len != null ? p.min_contig_len : 300);
+        }
+        if (self.min_contig_cov) {
+          self.min_contig_cov.set('value', p.min_contig_cov != null ? p.min_contig_cov : 5);
+        }
+        if (self.coverage) {
+          self.coverage.set('value', p.target_depth != null ? p.target_depth : (p.coverage != null ? p.coverage : 200));
+        }
+
+        if (p.genome_size != null) {
+          var gs = p.genome_size;
+          if (typeof gs === 'number') {
+            if (gs >= 1000000) {
+              if (self.expected_genome_size) self.expected_genome_size.set('value', Math.round(gs / 1000000));
+              if (self.genome_size_units) self.genome_size_units.set('value', 'M');
+            } else {
+              if (self.expected_genome_size) self.expected_genome_size.set('value', Math.round(gs / 1000));
+              if (self.genome_size_units) self.genome_size_units.set('value', 'K');
+            }
           }
         }
-      }
 
-      if (params.paired_end_libs && params.paired_end_libs.length > 0) {
-        params.paired_end_libs.forEach(lang.hitch(this, function(paired_lib) {
-          var lrec = { _type: 'paired', type: 'paired' };
-          this.setupLibraryData(lrec, paired_lib, 'paired');
-          var infoLabels = {
-            platform: { label: 'Platform', value: 1 },
-            read1: { label: 'Read1', value: 1 },
-            read2: { label: 'Read2', value: 1 },
-            interleaved: { label: 'Interleaved', value: 0 },
-            read_orientation_outward: { label: 'Mate Paired', value: 0 }
-          };
-          this.addLibraryRowFormFill(lrec, infoLabels, 'pairdata');
-        }));
-      }
-      if (params.single_end_libs && params.single_end_libs.length > 0) {
-        params.single_end_libs.forEach(lang.hitch(this, function(single_lib) {
-          var lrec = { _type: 'single', type: 'single' };
-          var libData = typeof single_lib === 'object' ? single_lib : { read: single_lib };
-          this.setupLibraryData(lrec, libData, 'single');
-          var infoLabels = {
-            platform: { label: 'Platform', value: 1 },
-            read: { label: 'Read File', value: 1 }
-          };
-          this.addLibraryRowFormFill(lrec, infoLabels, 'singledata');
-        }));
-      }
-      if (params.srr_ids && params.srr_ids.length > 0) {
-        params.srr_ids.forEach(lang.hitch(this, function(srr_id) {
-          var sid = typeof srr_id === 'string' ? srr_id : (srr_id.srr_accession || srr_id.title || String(srr_id));
-          var lrec = { _type: 'srr_accession', type: 'srr_accession', title: sid };
-          lrec._id = this.makeLibraryIDFormFill(sid, lrec.type);
-          lrec.id = this.makeLibraryIDFormFill(sid, lrec.type);
-          var infoLabels = { title: { label: 'Title', value: 1 } };
-          this.addLibraryRowFormFill(lrec, infoLabels, 'srrdata');
-        }));
+        if (p.paired_end_libs && p.paired_end_libs.length > 0) {
+          p.paired_end_libs.forEach(lang.hitch(self, function(paired_lib) {
+            var lrec = { _type: 'paired', type: 'paired' };
+            self.setupLibraryData(lrec, paired_lib, 'paired');
+            var infoLabels = {
+              platform: { label: 'Platform', value: 1 },
+              read1: { label: 'Read1', value: 1 },
+              read2: { label: 'Read2', value: 1 },
+              interleaved: { label: 'Interleaved', value: 0 },
+              read_orientation_outward: { label: 'Mate Paired', value: 0 }
+            };
+            self.addLibraryRowFormFill(lrec, infoLabels, 'pairdata');
+          }));
+        }
+        if (p.single_end_libs && p.single_end_libs.length > 0) {
+          p.single_end_libs.forEach(lang.hitch(self, function(single_lib) {
+            var lrec = { _type: 'single', type: 'single' };
+            var libData = typeof single_lib === 'object' ? single_lib : { read: single_lib };
+            self.setupLibraryData(lrec, libData, 'single');
+            var infoLabels = {
+              platform: { label: 'Platform', value: 1 },
+              read: { label: 'Read File', value: 1 }
+            };
+            self.addLibraryRowFormFill(lrec, infoLabels, 'singledata');
+          }));
+        }
+        if (p.srr_ids && p.srr_ids.length > 0) {
+          p.srr_ids.forEach(lang.hitch(self, function(srr_id) {
+            var sid = typeof srr_id === 'string' ? srr_id : (srr_id.srr_accession || srr_id.title || String(srr_id));
+            var lrec = { _type: 'srr_accession', type: 'srr_accession', title: sid };
+            lrec._id = self.makeLibraryIDFormFill(sid, lrec.type);
+            lrec.id = self.makeLibraryIDFormFill(sid, lrec.type);
+            var infoLabels = { title: { label: 'Title', value: 1 } };
+            self.addLibraryRowFormFill(lrec, infoLabels, 'srrdata');
+          }));
+        }
+      };
+
+      if (this._started) {
+        applyParams();
+      } else {
+        var attempts = 0;
+        var maxAttempts = 50;
+        var interval = setInterval(function() {
+          attempts++;
+          if (self._started) {
+            clearInterval(interval);
+            applyParams();
+          } else if (attempts >= maxAttempts) {
+            clearInterval(interval);
+            console.error('[CopilotAssemblyForm] Form startup did not complete within timeout, applying params anyway');
+            applyParams();
+          }
+        }, 100);
       }
     },
 

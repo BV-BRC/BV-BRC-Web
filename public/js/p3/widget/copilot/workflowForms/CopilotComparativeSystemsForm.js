@@ -51,22 +51,49 @@ define([
 
     /**
      * Populate form from workflow step params.
+     * Defers genome group and genome ID loading until startup has completed
+     * so that libsTable, numlibs, and other widgets are fully initialized.
      * @param {Object} params - Step params from workflow manifest
      */
     setFromManifest: function(params) {
       if (!params) return;
 
-      if (this.output_path && params.output_path) {
-        this.output_path.set('value', params.output_path);
-      }
-      if (this.output_file && params.output_file) {
-        this.output_file.set('value', params.output_file);
-      }
-      if (params.genome_ids && params.genome_ids.length > 0) {
-        this.onAddGenomeRerun(params.genome_ids);
-      }
-      if (params.genome_groups && params.genome_groups.length > 0) {
-        this.onAddGenomeGroupRerun(params.genome_groups);
+      var self = this;
+
+      // Helper: apply params once the form is fully started
+      var applyParams = function() {
+        if (self.output_path && params.output_path) {
+          self.output_path.set('value', params.output_path);
+        }
+        if (self.output_file && params.output_file) {
+          self.output_file.set('value', params.output_file);
+        }
+        if (params.genome_ids && params.genome_ids.length > 0) {
+          self.onAddGenomeRerun(params.genome_ids);
+        }
+        if (params.genome_groups && params.genome_groups.length > 0) {
+          self.onAddGenomeGroupRerun(params.genome_groups);
+        }
+      };
+
+      // If startup has already completed, apply immediately
+      if (this._started) {
+        applyParams();
+      } else {
+        // Poll until startup completes (up to 5 seconds)
+        var attempts = 0;
+        var maxAttempts = 50;
+        var interval = setInterval(function() {
+          attempts++;
+          if (self._started) {
+            clearInterval(interval);
+            applyParams();
+          } else if (attempts >= maxAttempts) {
+            clearInterval(interval);
+            console.error('[CopilotComparativeSystemsForm] Form startup did not complete within timeout, applying params anyway');
+            applyParams();
+          }
+        }, 100);
       }
     },
 

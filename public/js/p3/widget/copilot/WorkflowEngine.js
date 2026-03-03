@@ -83,6 +83,12 @@ define([
     /** @property {dijit/form/Button|null} Reference to submit button */
     submitWorkflowButton: null,
 
+    /** @property {DOMNode|null} Reference to review button */
+    reviewWorkflowButton: null,
+
+    /** @property {boolean} Whether the review form is currently visible */
+    _reviewFormVisible: false,
+
     /** @property {Object} Reference to CopilotAPI for workflow submission */
     copilotApi: null,
 
@@ -100,6 +106,11 @@ define([
       this.stepCardNodesByIndex = {};
       this.stepValidationTimers = {};
       this.submitWorkflowButton = null;
+      this.reviewWorkflowButton = null;
+      this._reviewFormVisible = false;
+      this._singleStepFormHost = null;
+      this._singleStepSection = null;
+      this._singleStepApplyFromForm = null;
       this.detailPanel = null;
       this.detailTitleNode = null;
       this.detailContentNode = null;
@@ -226,6 +237,11 @@ define([
         class: 'copilot-dojo-form-container'
       }, section);
 
+      // Hide form host immediately — user must click Review to see it
+      domStyle.set(formHost, 'display', 'none');
+      self._singleStepFormHost = formHost;
+      self._singleStepSection = section;
+
       var loadingNode = domConstruct.create('div', {
         innerHTML: 'Loading service form...',
         class: 'workflow-form-loading'
@@ -235,23 +251,16 @@ define([
         domConstruct.destroy(loadingNode);
         domConstruct.place(formWidget.domNode, formHost);
         formWidget.startup();
-        setTimeout(function() {
-          formWidget.setFromManifest(params);
-        }, 100);
+        // setFromManifest now handles its own startup-readiness polling
+        formWidget.setFromManifest(params);
         self._singleStepFormWidget = formWidget;
 
-        var actionRow = domConstruct.create('div', { class: 'workflow-form-actions' }, section);
-        var applyBtn = domConstruct.create('button', {
-          type: 'button',
-          class: 'workflow-form-action-btn',
-          innerHTML: 'Apply Edits'
-        }, actionRow);
-        applyBtn.onclick = function() {
+        // Auto-apply form values to step params when form data changes
+        self._singleStepApplyFromForm = function() {
           var newParams = formWidget.toManifest();
           if (newParams) {
             step.params = lang.mixin({}, step.params, newParams);
             self.validateStep(0, { updateUI: true });
-            topic.publish('/Notification', { message: 'Step parameters updated', type: 'message' });
           }
         };
       }, function(err) {
@@ -364,7 +373,7 @@ define([
         }, metaContainer);
       }
 
-      // Add submit button if workflow is not yet submitted
+      // Add Review and Submit buttons if workflow is not yet submitted
       var isSubmitted = workflow.execution_metadata &&
                        workflow.execution_metadata.is_submitted;
       var isPlanned = workflow.execution_metadata &&
@@ -372,18 +381,72 @@ define([
 
       if (!isSubmitted || isPlanned) {
         var buttonContainer = domConstruct.create('div', {
-          style: 'margin-top: 15px; text-align: left;'
+          style: 'margin-top: 15px; text-align: left; display: flex; gap: 10px; align-items: center;'
         }, header);
 
+        // Review button — always enabled, toggles the editable form view
+        this.reviewWorkflowButton = domConstruct.create('button', {
+          type: 'button',
+          class: 'workflow-review-btn',
+          innerHTML: 'Review',
+          title: 'Review and edit service parameters'
+        }, buttonContainer);
+        this.reviewWorkflowButton.onclick = lang.hitch(this, function() {
+          this._toggleReviewForm(workflow);
+        });
+
+        // Submit button — disabled until validation passes
         this.submitWorkflowButton = new Button({
           label: 'Submit',
           type: 'submit',
           onClick: lang.hitch(this, function() {
+            // Auto-apply form edits before submitting if form is visible
+            if (this._reviewFormVisible && this._singleStepApplyFromForm) {
+              this._singleStepApplyFromForm();
+            }
             this.validateWorkflowBeforeSubmit(workflow);
           })
         });
         this.submitWorkflowButton.placeAt(buttonContainer);
         this.submitWorkflowButton.set('disabled', true);
+      }
+    },
+
+    /**
+     * Toggles the review form visibility for single-step workflows.
+     * For multi-step workflows, toggles the detail panel for step 0.
+     * @param {Object} workflow - Workflow data
+     */
+    _toggleReviewForm: function(workflow) {
+      // Single-step direct form path
+      if (this._singleStepFormHost) {
+        if (this._reviewFormVisible) {
+          // Closing review — auto-apply current form values
+          if (this._singleStepApplyFromForm) {
+            this._singleStepApplyFromForm();
+          }
+          domStyle.set(this._singleStepFormHost, 'display', 'none');
+          this._reviewFormVisible = false;
+          if (this.reviewWorkflowButton) {
+            this.reviewWorkflowButton.innerHTML = 'Review';
+          }
+        } else {
+          domStyle.set(this._singleStepFormHost, 'display', '');
+          this._reviewFormVisible = true;
+          if (this.reviewWorkflowButton) {
+            this.reviewWorkflowButton.innerHTML = 'Close Review';
+          }
+        }
+        return;
+      }
+
+      // Multi-step fallback — toggle first step details
+      if (workflow.steps && workflow.steps.length > 0) {
+        if (this.selectedStepIndex === 0) {
+          this.hideStepDetails();
+        } else {
+          this.showStepDetails(workflow.steps[0], 0);
+        }
       }
     },
 
@@ -935,9 +998,8 @@ define([
         }, paramsSection);
         domConstruct.place(formWidget.domNode, formContainer);
         formWidget.startup();
-        setTimeout(function() {
-          formWidget.setFromManifest(params);
-        }, 100);
+        // setFromManifest now handles its own startup-readiness polling
+        formWidget.setFromManifest(params);
         self._activeDojoForms = self._activeDojoForms || {};
         self._activeDojoForms[index] = formWidget;
 
@@ -1939,6 +2001,11 @@ define([
       this.stepCardNodesByIndex = {};
       this.stepValidationTimers = {};
       this.submitWorkflowButton = null;
+      this.reviewWorkflowButton = null;
+      this._reviewFormVisible = false;
+      this._singleStepFormHost = null;
+      this._singleStepSection = null;
+      this._singleStepApplyFromForm = null;
       this.detailPanel = null;
       this.detailTitleNode = null;
       this.detailContentNode = null;

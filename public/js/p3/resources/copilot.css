@@ -3050,6 +3050,27 @@
   }
 }
 
+/* ========== Workflow Review Button ========== */
+.workflow-review-btn {
+  border: 1px solid #93c5fd;
+  background-color: #dbeafe;
+  color: #1e3a8a;
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.workflow-review-btn:hover {
+  background-color: #bfdbfe;
+}
+
+.workflow-review-btn:active {
+  background-color: #93c5fd;
+}
+
 /* ========== Workflow Submission Status Messages ========== */
 .workflow-submission-status-container {
   position: fixed;
