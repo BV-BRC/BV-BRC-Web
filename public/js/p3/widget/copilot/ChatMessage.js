@@ -264,7 +264,9 @@ define([
         : {};
 
       // Infer lightweight tool-card metadata from persisted tool identity.
-      if (sourceTool && sourceTool.indexOf('workspace_browse_tool') !== -1) {
+      if (sourceTool && (sourceTool.indexOf('workspace_browse_tool') !== -1 ||
+          sourceTool.indexOf('list_genome_groups') !== -1 ||
+          sourceTool.indexOf('list_feature_groups') !== -1)) {
         this.message.isWorkspaceBrowse = true;
         if (!this.message.uiAction) {
           this.message.uiAction = 'open_workspace_tab';
@@ -324,8 +326,10 @@ define([
       // Skip processing if the message already has processed tool data (uiPayload/workspaceBrowseResult)
       // This happens when SSE handler already processed the tool output
       var alreadyProcessed = false;
-      if (sourceTool === 'bvbrc_server.workspace_browse_tool' && this.message.uiPayload && this.message.workspaceBrowseResult) {
-        console.log('[ChatMessage] Workspace browse already processed by SSE handler, skipping re-processing');
+      if ((sourceTool === 'bvbrc_server.workspace_browse_tool' ||
+          (sourceTool && (sourceTool.indexOf('list_genome_groups') !== -1 || sourceTool.indexOf('list_feature_groups') !== -1))) &&
+          this.message.uiPayload && this.message.workspaceBrowseResult) {
+        console.log('[ChatMessage] Workspace browse / group list already processed by SSE handler, skipping re-processing');
         alreadyProcessed = true;
       }
       if (
@@ -351,7 +355,9 @@ define([
       }
       if (
         sourceTool &&
-        sourceTool.indexOf('workspace_browse_tool') !== -1 &&
+        (sourceTool.indexOf('workspace_browse_tool') !== -1 ||
+          sourceTool.indexOf('list_genome_groups') !== -1 ||
+          sourceTool.indexOf('list_feature_groups') !== -1) &&
         messageToolCall &&
         !contentLooksLikeJson
       ) {
@@ -574,7 +580,9 @@ define([
       } else if (
         (this.message.isWorkspaceBrowse && this.message.uiPayload) ||
         (this.message.isWorkspaceListing && this.message.workspaceData) ||
-        (renderSourceTool.indexOf('workspace_browse_tool') !== -1 && this.message.tool_call)
+        ((renderSourceTool.indexOf('workspace_browse_tool') !== -1 ||
+          renderSourceTool.indexOf('list_genome_groups') !== -1 ||
+          renderSourceTool.indexOf('list_feature_groups') !== -1) && this.message.tool_call)
       ) {
         this.renderWorkspaceBrowseSummaryWidget(messageDiv);
       } else if (
@@ -1559,7 +1567,6 @@ define([
      */
     renderSimplifiedServiceCard: function(messageDiv, workflow) {
       var step = workflow.steps && workflow.steps[0];
-      debugger;
       var serviceName = step ? this._getServiceDisplayName(step.app) : (workflow.workflow_name || 'Workflow');
       if (!serviceName && step && step.step_name) {
         serviceName = step.step_name;

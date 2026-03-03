@@ -711,6 +711,14 @@ define([
              toolId.indexOf('query_collection') !== -1;
     },
 
+    _isGroupListTool: function(toolId) {
+      if (!toolId || typeof toolId !== 'string') {
+        return false;
+      }
+      return toolId.indexOf('list_genome_groups') !== -1 ||
+             toolId.indexOf('list_feature_groups') !== -1;
+    },
+
     _isServicePlanTool: function(toolId) {
       if (!toolId || typeof toolId !== 'string') {
         return false;
@@ -784,6 +792,18 @@ define([
       // Handle final_response event for workspace browse tool
       if (currentEvent === 'final_response' &&
           tool === 'bvbrc_server.workspace_browse_tool' &&
+          parsed.chunk) {
+        const processed = this._processWorkspaceBrowse(parsed.chunk, parsed);
+        if (processed) {
+          return processed;
+        }
+        // Return original if parsing fails
+        return parsed;
+      }
+      // Handle final_response event for group list tools (list_genome_groups, list_feature_groups)
+      // Same result/call/ui_grid envelope as workspace_browse_tool; reuse workspace browse processor
+      if (currentEvent === 'final_response' &&
+          this._isGroupListTool(tool) &&
           parsed.chunk) {
         const processed = this._processWorkspaceBrowse(parsed.chunk, parsed);
         if (processed) {
@@ -1035,10 +1055,9 @@ define([
         }
       }
 
-      // Handle workspace browse tool
-      if (sourceTool === 'bvbrc_server.workspace_browse_tool') {
-        console.log('[CopilotToolHandler] Processing workspace_browse_tool');
-        console.log('[CopilotToolHandler] sourceTool:', sourceTool);
+      // Handle workspace browse tool and group list tools (list_genome_groups, list_feature_groups)
+      if (sourceTool === 'bvbrc_server.workspace_browse_tool' || this._isGroupListTool(sourceTool)) {
+        console.log('[CopilotToolHandler] Processing workspace-style tool:', sourceTool);
         console.log('[CopilotToolHandler] content type:', typeof content);
         console.log('[CopilotToolHandler] content value:', content);
 
