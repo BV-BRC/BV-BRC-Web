@@ -1042,6 +1042,32 @@ define([
               return;
             }
 
+            // Get list of folder paths to exclude from the dropdown
+            // These are relative paths within a workspace (e.g., '/Genome Groups')
+            var excludeFolderPaths = window.App && window.App.workspaceSelectorExcludeFolders || [];
+
+            // Filter out excluded folders by matching paths
+            // Path format: /username/workspace/folder/subfolder
+            // We extract the portion after /username/workspace and check if it starts with an excluded path
+            if (excludeFolderPaths.length > 0) {
+              items = items.filter(function (item) {
+                var pathParts = item.path.split('/');
+                // Path structure: ['', username, workspace, folder, subfolder, ...]
+                // Extract the path within the workspace (starting from index 3)
+                if (pathParts.length >= 4) {
+                  var workspacePath = '/' + pathParts.slice(3).join('/');
+                  // Check if this path starts with any excluded path
+                  for (var i = 0; i < excludeFolderPaths.length; i++) {
+                    if (workspacePath === excludeFolderPaths[i] ||
+                        workspacePath.indexOf(excludeFolderPaths[i] + '/') === 0) {
+                      return false;
+                    }
+                  }
+                }
+                return true;
+              });
+            }
+
             // Create a Set for fast lookup of favorite paths
             var favoriteSet = {};
             favoritePaths.forEach(function (path) {
