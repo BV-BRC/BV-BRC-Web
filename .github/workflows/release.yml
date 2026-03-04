@@ -1,0 +1,46 @@
+name: Release
+on:
+  workflow_dispatch:
+    branches:
+      - alpha
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      release_message:
+        description: 'Release message (what changed in this release)'
+        required: true
+        type: string
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: alpha
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        run: |
+          npm version ${{ inputs.version_type }} --no-git-tag-version
+          VERSION=$(node -p "require('./package.json').version")
+          git add package.json package-lock.json
+          git commit -m "Release v${VERSION}
+
+          ${{ inputs.release_message }}"
+          git tag -a "v${VERSION}" -m "${{ inputs.release_message }}"
+
+      - name: Push changes
+        run: git push && git push --tags
