@@ -1,6 +1,8 @@
 name: Release
 on:
   workflow_dispatch:
+    branches:
+      - alpha
     inputs:
       version_type:
         description: 'Version bump type'
