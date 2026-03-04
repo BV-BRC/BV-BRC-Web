@@ -33,6 +33,10 @@ const defaults = {
   enableDevTools: false,
   reportProblemEmailAddress: 'help@bv-brc.org',
   sequenceSubmissionNotificationEmailAddress: ['gbsubmit@bvbrc.org'],
+  // Folder paths (relative to workspace root) to exclude from the output folder dropdown selector
+  // These system folders should not be used as output destinations
+  // Paths are matched from the start of the directory portion (e.g., '/Genome Groups' excludes /user/home/Genome Groups)
+  workspaceSelectorExcludeFolders: ['/CopilotDownloads'],
   'email': {
     'localSendmail': false,
     'defaultFrom': 'BV-BRC <do-not-reply@bv-brc.org>',
