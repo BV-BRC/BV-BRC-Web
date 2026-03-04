@@ -52,7 +52,7 @@
     "rql": "^0.3.3",
     "sanitize-html": "^2.17.0",
     "serve-favicon": "^2.5.0",
-    "underscore": "^1.13.6",
+    "underscore": "^1.13.8",
     "validator": "^13.15.26",
     "webcola": "^3.4.0"
   },
