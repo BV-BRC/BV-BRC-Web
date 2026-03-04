@@ -51,6 +51,9 @@ define([
       this.inherited(arguments);
       var _self = this;
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
+      if (_self.output_path) {
+        _self.output_path.set('value', _self.defaultPath);
+      }
 
       for (var i = 0; i < this.startingRows; i++) {
         var tr = this.libsTable.insertRow(0);
