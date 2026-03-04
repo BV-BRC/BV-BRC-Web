@@ -284,8 +284,24 @@ define([
       }
       this.value = value;
       // Only set on searchBox if it exists (may not during construction)
-      if (this.searchBox) {
-        this.searchBox.set('value', this.value);
+      if (this.searchBox && value) {
+        // Extract the name (final element) from the path
+        var name = value.replace(/\/+$/, '').split('/').pop();
+
+        // Add the value to the store so FilteringSelect validation passes
+        // This allows the form to be valid even before the async store loads
+        if (this.store) {
+          try {
+            if (!this.store.get(value)) {
+              this.store.add({ path: value, name: name });
+            }
+          } catch (e) {
+            // Ignore duplicate errors
+          }
+        }
+
+        // Now set the value - it should validate since it's in the store
+        this.searchBox.set('value', value);
       }
 
       // if (this._started) {
@@ -298,7 +314,13 @@ define([
     },
 
     _getValueAttr: function (value) {
-      return this.searchBox.get('value', value);
+      var searchBoxValue = this.searchBox.get('value', value);
+      // If searchBox doesn't have a value yet (store not loaded), fall back to this.value
+      // This ensures the value is returned even before the async store loads
+      if (!searchBoxValue && this.value) {
+        return this.value;
+      }
+      return searchBoxValue;
     },
 
     // sets selection of object selector form field
