@@ -4,14 +4,17 @@ define([
   'dojo/on', // Event handling
   'dojo/topic', // Topic messaging
   'dojo/_base/lang', // Language utilities
+  'dojo/Deferred', // Deferred/Promise utilities
+  'dojo/request', // HTTP request utilities
   'markdown-it/dist/markdown-it.min', // Markdown parser and renderer
   'markdown-it-link-attributes/dist/markdown-it-link-attributes.min', // Plugin to add attributes to links
   'dijit/Dialog', // Dialog widget
   './CopilotToolHandler', // Tool handler for special tool processing
   './WorkflowEngine', // Workflow engine widget for displaying workflows
+  './workflowForms/CopilotServiceFormAdapter', // Dojo form wrappers for single-step direct form modal
   '../../WorkspaceManager' // Workspace manager for file operations
 ], function (
-  declare, domConstruct, on, topic, lang, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, WorkspaceManager
+  declare, domConstruct, on, topic, lang, Deferred, request, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, CopilotServiceFormAdapter, WorkspaceManager
 ) {
   /**
    * @class ChatMessage
@@ -42,6 +45,15 @@ define([
 
     /** @property {string} sessionId - Current session ID for workflow submission context */
     sessionId: null,
+
+    /** @property {Array} _selectionSubscriptions - Topic subscriptions for cleanup */
+    _selectionSubscriptions: null,
+
+    /** @property {Array} _selectionIndicators - Tracked indicator nodes for reactive updates */
+    _selectionIndicators: null,
+
+    /** @property {Array} _bodyPopovers - Popover nodes appended to document.body for cleanup */
+    _bodyPopovers: null,
 
     /**
      * @constructor
@@ -201,6 +213,156 @@ define([
     },
 
     /**
+     * Renders a selection indicator on a tool card showing count and hover list.
+     * @param {HTMLElement} containerNode - The tool card to append the indicator to
+     * @param {Object} opts - Options: { category, toolCallId, getSelectedItems }
+     *   category: 'files'|'workflows'|'workspace'|'jobs'
+     *   toolCallId: unique identifier for this tool call (for scoping)
+     *   getSelectedItems: function returning array of {label, id} for current selections
+     */
+    _renderSelectionIndicator: function(containerNode, opts) {
+      if (!containerNode || !opts) return;
+      var category = opts.category || '';
+      var getSelectedItems = opts.getSelectedItems;
+      if (typeof getSelectedItems !== 'function') return;
+
+      var indicatorRow = domConstruct.create('div', {
+        class: 'tool-card-selection-indicator',
+        style: 'display:none;'
+      }, containerNode);
+
+      var countLabel = domConstruct.create('span', {
+        class: 'tool-card-selection-count'
+      }, indicatorRow);
+
+      var infoIcon = domConstruct.create('span', {
+        class: 'tool-card-selection-info-icon',
+        innerHTML: '<i class="fa fa-info-circle"></i>',
+        title: 'View selected items'
+      }, indicatorRow);
+
+      var hoverPopover = domConstruct.create('div', {
+        class: 'tool-card-selection-hover',
+        style: 'display:none;'
+      }, document.body);
+
+      // Track body-appended popover for cleanup
+      if (!this._bodyPopovers) { this._bodyPopovers = []; }
+      this._bodyPopovers.push(hoverPopover);
+
+      var hideTimer = null;
+      var maxDisplay = 20;
+
+      var positionPopover = function() {
+        var rect = indicatorRow.getBoundingClientRect();
+        hoverPopover.style.left = rect.left + 'px';
+        // Position above the indicator row with a 6px gap
+        hoverPopover.style.top = 'auto';
+        hoverPopover.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
+      };
+
+      var hidePopover = function() {
+        if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+        hoverPopover.style.display = 'none';
+      };
+      var scheduleHide = function() {
+        if (hideTimer) { clearTimeout(hideTimer); }
+        hideTimer = setTimeout(hidePopover, 160);
+      };
+      var showPopover = function() {
+        if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+        positionPopover();
+        hoverPopover.style.display = 'block';
+      };
+
+      on(indicatorRow, 'mouseenter', showPopover);
+      on(indicatorRow, 'mouseleave', scheduleHide);
+      on(hoverPopover, 'mouseenter', function() {
+        if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+      });
+      on(hoverPopover, 'mouseleave', scheduleHide);
+
+      var updateIndicator = function() {
+        var items = getSelectedItems();
+        var count = Array.isArray(items) ? items.length : 0;
+        if (count === 0) {
+          indicatorRow.style.display = 'none';
+          return;
+        }
+        indicatorRow.style.display = '';
+        countLabel.textContent = count + ' selected';
+
+        // Rebuild popover content
+        hoverPopover.innerHTML = '';
+        items.slice(0, maxDisplay).forEach(function(item) {
+          var itemNode = document.createElement('div');
+          itemNode.className = 'tool-card-selection-hover-item';
+          itemNode.textContent = (item && item.label) ? item.label : String(item);
+          hoverPopover.appendChild(itemNode);
+        });
+        if (items.length > maxDisplay) {
+          var moreNode = document.createElement('div');
+          moreNode.className = 'tool-card-selection-hover-more';
+          moreNode.textContent = '+ ' + (items.length - maxDisplay) + ' more';
+          hoverPopover.appendChild(moreNode);
+        }
+      };
+
+      // Initial render
+      updateIndicator();
+
+      // Track for reactive updates
+      if (!this._selectionIndicators) {
+        this._selectionIndicators = [];
+      }
+      this._selectionIndicators.push({
+        category: category,
+        update: updateIndicator
+      });
+
+      // Subscribe to selection changes if not already subscribed
+      this._ensureSelectionSubscription();
+    },
+
+    /**
+     * Subscribes to CopilotSelectionChanged topic for reactive tool card updates.
+     * Only subscribes once per ChatMessage instance.
+     */
+    _ensureSelectionSubscription: function() {
+      if (this._selectionSubscriptions) return;
+      this._selectionSubscriptions = [];
+      if (!this._selectionDataByCategory) {
+        this._selectionDataByCategory = {};
+      }
+      this._selectionSubscriptions.push(
+        topic.subscribe('CopilotSelectionChanged', lang.hitch(this, function(payload) {
+          if (!payload || !payload.category) return;
+          // Cache the latest selection data per category
+          this._selectionDataByCategory[payload.category] = Array.isArray(payload.items) ? payload.items : [];
+          if (!this._selectionIndicators) return;
+          var changedCategory = payload.category;
+          this._selectionIndicators.forEach(function(indicator) {
+            if (!changedCategory || indicator.category === changedCategory) {
+              indicator.update();
+            }
+          });
+        }))
+      );
+    },
+
+    /**
+     * Returns the cached selection items for a given category.
+     * @param {string} category - The selection category
+     * @returns {Array} Current selected items
+     */
+    _getSelectionItemsForCategory: function(category) {
+      if (!this._selectionDataByCategory) {
+        this._selectionDataByCategory = {};
+      }
+      return this._selectionDataByCategory[category] || [];
+    },
+
+    /**
      * Renders a chat message in the container
      * - Adds appropriate spacing based on if it's the first message
      * - Creates message container with role-based styling
@@ -263,7 +425,9 @@ define([
         : {};
 
       // Infer lightweight tool-card metadata from persisted tool identity.
-      if (sourceTool && sourceTool.indexOf('workspace_browse_tool') !== -1) {
+      if (sourceTool && (sourceTool.indexOf('workspace_browse_tool') !== -1 ||
+          sourceTool.indexOf('list_genome_groups') !== -1 ||
+          sourceTool.indexOf('list_feature_groups') !== -1)) {
         this.message.isWorkspaceBrowse = true;
         if (!this.message.uiAction) {
           this.message.uiAction = 'open_workspace_tab';
@@ -275,10 +439,16 @@ define([
           this.message.uiAction = 'open_jobs_tab';
         }
       }
-      if (sourceTool && (sourceTool.indexOf('plan_workflow') !== -1 || sourceTool.indexOf('submit_workflow') !== -1)) {
+      if (sourceTool && (sourceTool.indexOf('plan_workflow') !== -1 ||
+          sourceTool.indexOf('submit_workflow') !== -1 ||
+          sourceTool.indexOf('plan_genome_assembly') !== -1 ||
+          sourceTool.indexOf('plan_genome_annotation') !== -1 ||
+          sourceTool.indexOf('plan_comparative_systems') !== -1)) {
         var inferredWorkflowId = this.message.workflow_id ||
           toolCallArgs.workflow_id ||
           (messageToolCall && messageToolCall.workflow_id) ||
+          (this.message.workflowData && this.message.workflowData.workflow_id) ||
+          (this.message.workflowData && this.message.workflowData.execution_metadata && this.message.workflowData.execution_metadata.workflow_id) ||
           null;
         if (inferredWorkflowId) {
           this.message.isWorkflow = true;
@@ -300,11 +470,32 @@ define([
       ) {
         this.message.isQueryCollection = true;
         if (!this.message.queryCollectionData) {
+          // Reconstruct snapshot metadata from persisted tool_call.replay
+          var replayMeta = (messageToolCall && messageToolCall.replay && typeof messageToolCall.replay === 'object')
+            ? messageToolCall.replay
+            : {};
+          var restoredDownloadUrl = replayMeta.download_url || null;
+          // If a download_url exists, this was a snapshot result
+          var restoredIsSnapshot = !!restoredDownloadUrl;
+          // Extract numFound from download URL limit(N) parameter
+          var restoredNumFound = null;
+          if (restoredDownloadUrl) {
+            var limitMatch = restoredDownloadUrl.match(/[&?]limit\((\d+)\)/);
+            if (limitMatch) {
+              restoredNumFound = parseInt(limitMatch[1], 10);
+            }
+          }
+
           this.message.queryCollectionData = {
             queryParameters: toolCallArgs,
             collection: toolCallArgs.collection || null,
             rqlQueryUrl: toolCallArgs.data_api_base_url ? toolCallArgs.data_api_base_url : "https://www.bv-brc.org/api-bulk",
-            resultRows: []
+            resultRows: [],
+            // Snapshot metadata restored from tool_call.replay
+            download_url: restoredDownloadUrl,
+            is_snapshot: restoredIsSnapshot,
+            numFound: restoredNumFound,
+            snapshot_limit: null
           };
         }
       }
@@ -317,8 +508,10 @@ define([
       // Skip processing if the message already has processed tool data (uiPayload/workspaceBrowseResult)
       // This happens when SSE handler already processed the tool output
       var alreadyProcessed = false;
-      if (sourceTool === 'bvbrc_server.workspace_browse_tool' && this.message.uiPayload && this.message.workspaceBrowseResult) {
-        console.log('[ChatMessage] Workspace browse already processed by SSE handler, skipping re-processing');
+      if ((sourceTool === 'bvbrc_server.workspace_browse_tool' ||
+          (sourceTool && (sourceTool.indexOf('list_genome_groups') !== -1 || sourceTool.indexOf('list_feature_groups') !== -1))) &&
+          this.message.uiPayload && this.message.workspaceBrowseResult) {
+        console.log('[ChatMessage] Workspace browse / group list already processed by SSE handler, skipping re-processing');
         alreadyProcessed = true;
       }
       if (
@@ -332,7 +525,11 @@ define([
       }
       if (
         sourceTool &&
-        (sourceTool.indexOf('plan_workflow') !== -1 || sourceTool.indexOf('submit_workflow') !== -1) &&
+        (sourceTool.indexOf('plan_workflow') !== -1 ||
+          sourceTool.indexOf('submit_workflow') !== -1 ||
+          sourceTool.indexOf('plan_genome_assembly') !== -1 ||
+          sourceTool.indexOf('plan_genome_annotation') !== -1 ||
+          sourceTool.indexOf('plan_comparative_systems') !== -1) &&
         (this.message.workflowData || this.message.workflow_id || this.message.isWorkflow)
       ) {
         console.log('[ChatMessage] Workflow message already has persisted workflow metadata, skipping re-processing');
@@ -340,7 +537,9 @@ define([
       }
       if (
         sourceTool &&
-        sourceTool.indexOf('workspace_browse_tool') !== -1 &&
+        (sourceTool.indexOf('workspace_browse_tool') !== -1 ||
+          sourceTool.indexOf('list_genome_groups') !== -1 ||
+          sourceTool.indexOf('list_feature_groups') !== -1) &&
         messageToolCall &&
         !contentLooksLikeJson
       ) {
@@ -549,7 +748,10 @@ define([
 
       if ((this.message.isWorkflow && this.message.workflowData) ||
           (renderSourceTool.indexOf('plan_workflow') !== -1 && hasWorkflowIdentity) ||
-          (renderSourceTool.indexOf('submit_workflow') !== -1 && hasWorkflowIdentity)) {
+          (renderSourceTool.indexOf('submit_workflow') !== -1 && hasWorkflowIdentity) ||
+          (renderSourceTool.indexOf('plan_genome_assembly') !== -1 && hasWorkflowIdentity) ||
+          (renderSourceTool.indexOf('plan_genome_annotation') !== -1 && hasWorkflowIdentity) ||
+          (renderSourceTool.indexOf('plan_comparative_systems') !== -1 && hasWorkflowIdentity)) {
         // debugger; // Debug assistant message when loading planned workflow UI
         this.renderWorkflowManifestCard(messageDiv);
       } else if (
@@ -560,7 +762,9 @@ define([
       } else if (
         (this.message.isWorkspaceBrowse && this.message.uiPayload) ||
         (this.message.isWorkspaceListing && this.message.workspaceData) ||
-        (renderSourceTool.indexOf('workspace_browse_tool') !== -1 && this.message.tool_call)
+        ((renderSourceTool.indexOf('workspace_browse_tool') !== -1 ||
+          renderSourceTool.indexOf('list_genome_groups') !== -1 ||
+          renderSourceTool.indexOf('list_feature_groups') !== -1) && this.message.tool_call)
       ) {
         this.renderWorkspaceBrowseSummaryWidget(messageDiv);
       } else if (
@@ -722,11 +926,28 @@ define([
         tool: toolCall.tool || null
       };
 
+      var toolName = toolCall.tool || '';
+      var isGroupListTool = toolName.indexOf('list_genome_groups') !== -1 ||
+        toolName.indexOf('list_feature_groups') !== -1;
       var isSearch = toolArgs && toolArgs.name_contains && toolArgs.name_contains.length > 0 ? true : false;
+      var isSearchResult = isGroupListTool ||
+        (this.message.uiPayload && this.message.uiPayload.result_type === 'search_result') ||
+        (toolArgs && toolArgs.result_type === 'search_result');
 
-      var countValue = toolArgs.num_results ? toolArgs.num_results : 0;
+      // Derive count: prefer uiPayload.count, then toolArgs.num_results, then chatSummary
+      var countValue = (this.message.uiPayload && typeof this.message.uiPayload.count === 'number')
+        ? this.message.uiPayload.count
+        : (toolArgs && toolArgs.num_results ? toolArgs.num_results : null);
       var pathValue = toolCall.replay.path ? toolCall.replay.path : 'unknown path';
-      var summaryText = this.message.chatSummary || ('Found ' + countValue + ' ' + (countValue === 1 ? 'result' : 'results') + ' in ' + pathValue);
+
+      var summaryText;
+      if (this.message.chatSummary) {
+        summaryText = this.message.chatSummary;
+      } else if (countValue !== null) {
+        summaryText = 'Found ' + countValue + ' ' + (countValue === 1 ? 'result' : 'results') + ' in ' + pathValue;
+      } else {
+        summaryText = 'Workspace results are available. Open Workspace Tab to load.';
+      }
       var workspaceBrowserUrl = this._buildWorkspaceBrowserUrl(toolCall.replay.path);
 
       var container = domConstruct.create('div', {
@@ -757,7 +978,7 @@ define([
         });
       }));
 
-      if (workspaceBrowserUrl && !isSearch) {
+      if (workspaceBrowserUrl && !isSearch && !isSearchResult) {
         domConstruct.create('a', {
           class: 'workspace-summary-link',
           href: workspaceBrowserUrl,
@@ -766,6 +987,17 @@ define([
           innerHTML: 'Open in Workspace Browser'
         }, container);
       }
+
+      // Selection indicator for workspace items
+      this._renderSelectionIndicator(container, {
+        category: 'workspace',
+        getSelectedItems: lang.hitch(this, function() {
+          var items = this._getSelectionItemsForCategory('workspace');
+          return items.map(function(item) {
+            return { label: item.path || item.name || item.id || 'Workspace item', id: item.id || item.path };
+          });
+        })
+      });
     },
 
     renderJobsBrowseSummaryWidget: function(messageDiv) {
@@ -815,6 +1047,17 @@ define([
           uiAction: this.message.uiAction || 'open_jobs_tab'
         });
       }));
+
+      // Selection indicator for jobs
+      this._renderSelectionIndicator(container, {
+        category: 'jobs',
+        getSelectedItems: lang.hitch(this, function() {
+          var items = this._getSelectionItemsForCategory('jobs');
+          return items.map(function(item) {
+            return { label: item.id || item.application_name || 'Job', id: item.id || item.job_id };
+          });
+        })
+      });
     },
 
     renderRagResultWidget: function(messageDiv) {
@@ -842,6 +1085,17 @@ define([
       on(openButton, 'click', lang.hitch(this, function() {
         this.showRagChunksDialog(openButton);
       }));
+
+      // Selection indicator for files (RAG results may create files)
+      this._renderSelectionIndicator(container, {
+        category: 'files',
+        getSelectedItems: lang.hitch(this, function() {
+          var items = this._getSelectionItemsForCategory('files');
+          return items.map(function(item) {
+            return { label: item.file_name || item.id || 'File', id: item.id || item.file_id };
+          });
+        })
+      });
     },
 
     showRagChunksDialog: function(triggerButton) {
@@ -977,33 +1231,47 @@ define([
         }, container);
       }
 
-      // Preview container - will be populated async
+      // Preview container - Show Preview button reveals content on click
       var previewContainer = domConstruct.create('div', {
         class: 'file-preview-container'
       }, container);
 
-      domConstruct.create('div', {
-        class: 'file-preview-loading',
-        innerHTML: 'Loading preview...'
+      var previewToggleButton = domConstruct.create('button', {
+        type: 'button',
+        class: 'workspace-summary-open-button file-preview-toggle-button',
+        innerHTML: 'Show Preview'
       }, previewContainer);
 
-      // Non-blocking async fetch of download URL and preview
-      setTimeout(lang.hitch(this, function() {
+      var previewContentArea = domConstruct.create('div', {
+        class: 'file-preview-content-area'
+      }, previewContainer);
+      previewContentArea.style.display = 'none';
+
+      var showPreview = function() {
+        previewContainer.classList.add('file-preview-expanded');
+        previewToggleButton.style.display = 'none';
+        previewContentArea.style.display = '';
+      };
+
+      on(previewToggleButton, 'click', lang.hitch(this, function() {
+        if (previewContentArea.getAttribute('data-loaded') === '1') {
+          showPreview();
+          return;
+        }
+        if (previewContentArea.getAttribute('data-loading') === '1') {
+          return;
+        }
+        previewContentArea.setAttribute('data-loading', '1');
+        domConstruct.empty(previewContentArea);
+        domConstruct.create('div', {
+          class: 'file-preview-loading',
+          innerHTML: 'Loading preview...'
+        }, previewContentArea);
+        showPreview();
+
         WorkspaceManager.getDownloadUrls([filePath]).then(lang.hitch(this, function(urls) {
           if (urls && urls.length > 0) {
             var downloadUrl = urls[0];
-
-            // Add download link (primary CTA)
-            domConstruct.empty(downloadContainer);
-            domConstruct.create('a', {
-              class: 'workspace-summary-link',
-              href: downloadUrl,
-              target: '_blank',
-              download: fileName,
-              innerHTML: '<i class="fa icon-download"></i> Download file'
-            }, downloadContainer);
-
-            // Fetch preview with byte-range request (first 2KB)
             fetch(downloadUrl, {
               headers: {
                 'Range': 'bytes=0-2047'
@@ -1014,39 +1282,70 @@ define([
               }
               return response.text();
             }).then(lang.hitch(this, function(previewText) {
-              domConstruct.empty(previewContainer);
-
+              domConstruct.empty(previewContentArea);
               domConstruct.create('div', {
                 class: 'file-preview-label',
                 innerHTML: 'Preview (first 2KB):'
-              }, previewContainer);
-
+              }, previewContentArea);
               domConstruct.create('pre', {
                 class: 'file-preview-content',
                 innerHTML: this.escapeHtml(previewText)
-              }, previewContainer);
+              }, previewContentArea);
+              previewContentArea.setAttribute('data-loaded', '1');
+              previewContentArea.removeAttribute('data-loading');
             })).catch(lang.hitch(this, function() {
-              domConstruct.empty(previewContainer);
+              domConstruct.empty(previewContentArea);
               domConstruct.create('div', {
                 class: 'file-preview-error',
                 innerHTML: 'There was an issue previewing this file'
-              }, previewContainer);
+              }, previewContentArea);
+              previewContentArea.removeAttribute('data-loading');
             }));
           } else {
-            domConstruct.empty(previewContainer);
+            domConstruct.empty(previewContentArea);
             domConstruct.create('div', {
               class: 'file-preview-error',
               innerHTML: 'There was an issue previewing this file'
-            }, previewContainer);
+            }, previewContentArea);
+            previewContentArea.removeAttribute('data-loading');
           }
         })).catch(lang.hitch(this, function() {
-          domConstruct.empty(previewContainer);
+          domConstruct.empty(previewContentArea);
           domConstruct.create('div', {
             class: 'file-preview-error',
             innerHTML: 'There was an issue previewing this file'
-          }, previewContainer);
+          }, previewContentArea);
+          previewContentArea.removeAttribute('data-loading');
+        }));
+      }));
+
+      // Download link - fetch URL async (non-blocking)
+      setTimeout(lang.hitch(this, function() {
+        WorkspaceManager.getDownloadUrls([filePath]).then(lang.hitch(this, function(urls) {
+          if (urls && urls.length > 0) {
+            var downloadUrl = urls[0];
+            domConstruct.empty(downloadContainer);
+            domConstruct.create('a', {
+              class: 'workspace-summary-link',
+              href: downloadUrl,
+              target: '_blank',
+              download: fileName,
+              innerHTML: '<i class="fa icon-download"></i> Download file'
+            }, downloadContainer);
+          }
         }));
       }), 0);
+
+      // Selection indicator for files
+      this._renderSelectionIndicator(container, {
+        category: 'files',
+        getSelectedItems: lang.hitch(this, function() {
+          var items = this._getSelectionItemsForCategory('files');
+          return items.map(function(item) {
+            return { label: item.file_name || item.id || 'File', id: item.id || item.file_id };
+          });
+        })
+      });
     },
 
     /**
@@ -1253,7 +1552,7 @@ define([
       }
       // Simple special handling: for taxonomy, open TaxonList with query appended directly
       else if (collection && collection.toLowerCase() === 'taxonomy' && queryText) {
-        var baseTaxonomyUrl = 'https://www.bv-brc.org/view/TaxonList/?';
+        var baseTaxonomyUrl = 'https://www.bv-brc.org/view/TaxonList/';
         return {
           url: baseTaxonomyUrl + queryText,
           collection: collection,
@@ -1262,9 +1561,89 @@ define([
       }
       // Simple special handling: for genome_feature, open FeatureList with query appended directly
       else if (collection && collection.toLowerCase() === 'genome_feature' && queryText) {
-        var baseFeatureUrl = 'https://www.bv-brc.org/view/FeatureList/?';
+        var baseFeatureUrl = 'https://www.bv-brc.org/view/FeatureList/';
         return {
           url: baseFeatureUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'pathway' && queryText) {
+        var basePathwayUrl = 'https://www.bv-brc.org/view/PathwayList/';
+        return {
+          url: basePathwayUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'protein_structure' && queryText) {
+        var baseProteinStructureUrl = 'https://www.bv-brc.org/view/ProteinStructureList/';
+        return {
+          url: baseProteinStructureUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'strain' && queryText) {
+        var baseStrainUrl = 'https://www.bv-brc.org/view/StrainList/';
+        return {
+          url: baseStrainUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'surveillance' && queryText) {
+        var baseSurveillanceUrl = 'https://www.bv-brc.org/view/SurveillanceList/';
+        return {
+          url: baseSurveillanceUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'subsystem' && queryText) {
+        var baseSubsystemUrl = 'https://www.bv-brc.org/view/SubsystemList/';
+        return {
+          url: baseSubsystemUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'serology' && queryText) {
+        var baseSerologyUrl = 'https://www.bv-brc.org/view/SerologyList/';
+        return {
+          url: baseSerologyUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'epitope' && queryText) {
+        var baseEpitopeUrl = 'https://www.bv-brc.org/view/EpitopeList/';
+        return {
+          url: baseEpitopeUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'sp_gene' && queryText) {
+        var baseSpGeneUrl = 'https://www.bv-brc.org/view/SpecialtyGeneList/';
+        return {
+          url: baseSpGeneUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'sp_gene_ref' && queryText) {
+        var baseSpGeneRefUrl = 'https://www.bv-brc.org/view/SpecialtyVFGeneList/';
+        return {
+          url: baseSpGeneRefUrl + queryText,
+          collection: collection,
+          sourceTool: options.sourceTool || null
+        };
+      }
+      else if (collection && collection.toLowerCase() === 'protein_feature' && queryText) {
+        var baseDomainsMotifsUrl = 'https://www.bv-brc.org/view/DomainsAndMotifsList/';
+        return {
+          url: baseDomainsMotifsUrl + queryText,
           collection: collection,
           sourceTool: options.sourceTool || null
         };
@@ -1285,6 +1664,356 @@ define([
         return;
       }
       window.open(openPlan.url, '_blank', 'noopener,noreferrer');
+    },
+
+    /**
+     * Map of collection names to their Solr uniqueKey field for cursor pagination.
+     * Cursor-based pagination requires sort on the collection's unique key.
+     * Values sourced from bvbrc-python-api/bvbrc_solr_api/resources/*.py stream_all_solr() defaults.
+     * @private
+     */
+    _collectionSolrUniqueKey: {
+      genome: 'genome_id',
+      genome_feature: 'feature_id',
+      taxonomy: 'taxon_id',
+      genome_amr: 'id',
+      genome_sequence: 'sequence_id',
+      sp_gene: 'id',
+      pathway: 'id',
+      subsystem: 'id',
+      protein_family_ref: 'family_id',
+      sp_gene_ref: 'id',
+      antibiotics: 'pubchem_cid',
+      enzyme_class_ref: 'ec_number',
+      gene_ontology_ref: 'go_id',
+      protein_structure: 'pdb_id',
+      protein_feature: 'id',
+      epitope: 'epitope_id',
+      serology: 'id',
+      strain: 'id',
+      surveillance: 'id'
+    },
+
+    /**
+     * Shows a progress overlay dialog for group creation data download.
+     * Displays a progress bar, status text, and a cancel button.
+     * @param {Object} opts - Options
+     * @param {number} opts.total - Total number of records (from numFound), or null if unknown
+     * @param {Function} opts.onCancel - Callback when user clicks Cancel
+     * @returns {Object} Handle with update(fetched), close(), and isCancelled() methods
+     * @private
+     */
+    _showGroupProgressDialog: function(opts) {
+      var total = (opts && typeof opts.total === 'number') ? opts.total : null;
+      var onCancel = (opts && typeof opts.onCancel === 'function') ? opts.onCancel : function() {};
+      var cancelled = false;
+
+      // Build progress dialog content
+      var contentDiv = domConstruct.create('div', {
+        style: 'padding: 16px; min-width: 320px; font-family: inherit;'
+      });
+      var statusText = domConstruct.create('div', {
+        innerHTML: 'Downloading data for group creation...',
+        style: 'margin-bottom: 12px; font-size: 13px; color: #333;'
+      }, contentDiv);
+      var progressBarOuter = domConstruct.create('div', {
+        style: 'width: 100%; height: 20px; background: #e0e0e0; border-radius: 4px; overflow: hidden; margin-bottom: 12px;'
+      }, contentDiv);
+      var progressBarInner = domConstruct.create('div', {
+        style: 'width: 0%; height: 100%; background: #2196F3; border-radius: 4px; transition: width 0.3s ease;'
+      }, progressBarOuter);
+      var countText = domConstruct.create('div', {
+        innerHTML: total !== null ? '0 of ' + total.toLocaleString() + ' records' : '0 records fetched...',
+        style: 'margin-bottom: 16px; font-size: 12px; color: #666; text-align: center;'
+      }, contentDiv);
+      var cancelBtn = domConstruct.create('button', {
+        type: 'button',
+        innerHTML: 'Cancel',
+        class: 'workspace-summary-open-button',
+        style: 'display: block; margin: 0 auto;'
+      }, contentDiv);
+
+      var dlg = new Dialog({
+        title: 'Downloading Data',
+        content: contentDiv,
+        closable: false,
+        style: 'z-index: 10000;'
+      });
+
+      on(cancelBtn, 'click', function() {
+        cancelled = true;
+        onCancel();
+        dlg.hide();
+        setTimeout(function() { dlg.destroyRecursive(); }, 300);
+      });
+
+      dlg.show();
+
+      return {
+        update: function(fetched) {
+          if (total !== null) {
+            var pct = Math.min(100, Math.round((fetched / total) * 100));
+            progressBarInner.style.width = pct + '%';
+            countText.innerHTML = fetched.toLocaleString() + ' of ' + total.toLocaleString() + ' records (' + pct + '%)';
+          } else {
+            countText.innerHTML = fetched.toLocaleString() + ' records fetched...';
+          }
+          statusText.innerHTML = 'Downloading data for group creation...';
+        },
+        close: function() {
+          dlg.hide();
+          setTimeout(function() { dlg.destroyRecursive(); }, 300);
+        },
+        isCancelled: function() {
+          return cancelled;
+        }
+      };
+    },
+
+    /**
+     * Fetches all rows for group creation using Solr-style cursor-based pagination.
+     * Sends POST requests to the BV-BRC data API with application/solrquery+x-www-form-urlencoded
+     * content type, which supports cursorMark for efficient deep pagination without
+     * burdening the backend.
+     *
+     * @param {Object} payload - The query collection payload from renderQueryCollectionWidget
+     * @param {string} payload.collection - Collection name (e.g. 'genome', 'genome_feature')
+     * @param {string} payload.solrQuery - Solr q expression from tool_call.arguments_executed.q
+     * @param {string|null} payload.dataApiBaseUrl - Base API URL override
+     * @param {number|null} payload.numFound - Total result count if known
+     * @param {string} idField - The ID field to extract (e.g. 'genome_id', 'feature_id')
+     * @returns {Promise<Array>} Promise resolving to array of row objects containing at least the idField
+     * @private
+     */
+    _fetchAllRowsForGroup: function(payload, idField) {
+      var self = this;
+      var collection = payload.collection || '';
+      var numFound = typeof payload.numFound === 'number' ? payload.numFound : null;
+      var solrQuery = payload.solrQuery || '*:*';
+      var baseApiUrl = (payload.dataApiBaseUrl || 'https://www.bv-brc.org/api-bulk').replace(/\/+$/, '');
+      var solrUrl = baseApiUrl + '/' + collection + '/';
+
+      if (!collection) {
+        var dfd = new Deferred();
+        dfd.reject(new Error('No collection specified'));
+        return dfd.promise;
+      }
+
+      // Determine sort field for cursor pagination (must sort on Solr unique key)
+      var sortField = self._collectionSolrUniqueKey[collection] || 'id';
+
+      // Only request the fields we need
+      var selectFields = [idField];
+      if (idField !== sortField) {
+        selectFields.push(sortField);
+      }
+      if (idField === 'feature_id') {
+        // Also include genome_id for genome group creation from feature data
+        selectFields.push('genome_id');
+      }
+      // Deduplicate
+      var uniqueFields = [];
+      selectFields.forEach(function(f) {
+        if (uniqueFields.indexOf(f) === -1) uniqueFields.push(f);
+      });
+
+      var pageSize = 100;
+
+      // Show progress dialog
+      var progressHandle = self._showGroupProgressDialog({
+        total: numFound,
+        onCancel: function() { /* cancellation is checked via isCancelled() */ }
+      });
+
+      var allRows = [];
+      var cancelled = false;
+
+      // Use a master Deferred that we resolve/reject manually to avoid
+      // issues mixing native Promises with Dojo Deferreds.
+      var masterDfd = new Deferred();
+
+      var fetchPage = function(cursorMark) {
+        if (progressHandle.isCancelled() || cancelled) {
+          progressHandle.close();
+          masterDfd.reject(new Error('cancelled'));
+          return;
+        }
+
+        // Build Solr form-urlencoded POST body
+        var formParams = {
+          q: solrQuery,
+          rows: pageSize,
+          sort: sortField + ' asc',
+          fl: uniqueFields.join(','),
+          cursorMark: cursorMark,
+          wt: 'json'
+        };
+
+        // Encode as form data string
+        var formParts = [];
+        Object.keys(formParams).forEach(function(key) {
+          formParts.push(encodeURIComponent(key) + '=' + encodeURIComponent(formParams[key]));
+        });
+        var formBody = formParts.join('&');
+
+        var headers = {
+          'Accept': 'application/solr+json',
+          'Content-Type': 'application/solrquery+x-www-form-urlencoded',
+          'X-Requested-With': null
+        };
+        if (window.App && window.App.authorizationToken) {
+          headers['Authorization'] = window.App.authorizationToken;
+        }
+
+        request.post(solrUrl, {
+          data: formBody,
+          headers: headers,
+          handleAs: 'json'
+        }).then(
+          function(result) {
+            if (progressHandle.isCancelled() || cancelled) {
+              progressHandle.close();
+              masterDfd.reject(new Error('cancelled'));
+              return;
+            }
+
+            var response = (result && result.response) ? result.response : {};
+            var docs = Array.isArray(response.docs) ? response.docs : [];
+            var nextCursor = result.nextCursorMark || null;
+
+            // Update numFound from first response if we didn't have it
+            if (numFound === null && typeof response.numFound === 'number') {
+              numFound = response.numFound;
+            }
+
+            allRows = allRows.concat(docs);
+            progressHandle.update(allRows.length);
+
+            console.log('[ChatMessage] Group fetch page: got', docs.length, 'docs, total so far:', allRows.length, 'of', numFound || '?');
+
+            // Check if we're done: no next cursor, cursor unchanged, or we have all rows
+            var done = !nextCursor ||
+              nextCursor === cursorMark ||
+              (numFound !== null && allRows.length >= numFound);
+
+            if (done) {
+              progressHandle.close();
+              masterDfd.resolve(allRows);
+              return;
+            }
+
+            // Fetch next page
+            fetchPage(nextCursor);
+          },
+          function(err) {
+            progressHandle.close();
+            masterDfd.reject(err);
+          }
+        );
+      };
+
+      // Start pagination from cursor "*"
+      fetchPage('*');
+
+      return masterDfd.promise;
+    },
+
+    /**
+     * Opens the SelectionToGroup dialog to create a genome or feature group
+     * from the provided row data.
+     *
+     * @param {Array} rows - Array of data objects containing the relevant ID field
+     * @param {string} groupType - 'genome_group' or 'feature_group'
+     * @param {string} idField - 'genome_id' or 'feature_id'
+     * @private
+     */
+    _openCreateGroupDialog: function(rows, groupType, idField) {
+      // Filter to only rows that have the required ID field
+      var validRows = rows.filter(function(row) {
+        return row && idField in row && row[idField] !== null && row[idField] !== undefined && row[idField] !== '';
+      });
+
+      if (validRows.length === 0) {
+        var errorDlg = new Dialog({
+          title: 'Cannot Create Group',
+          content: '<div style="padding: 16px;">No valid ' + idField.replace(/_/g, ' ') + ' values found in the results.</div>'
+        });
+        errorDlg.show();
+        return;
+      }
+
+      var defaultPath = WorkspaceManager.getDefaultFolder(groupType);
+      var displayType = groupType === 'genome_group' ? 'Genome Group' : 'Feature Group';
+
+      // Lazy-load SelectionToGroup to avoid loading WorkspaceObjectSelector
+      // (and its window.App dependency) at module definition time.
+      // Must use full AMD path since dynamic require() doesn't resolve relative paths.
+      require(['p3/widget/SelectionToGroup'], function(SelectionToGroup) {
+        var stg = new SelectionToGroup({
+          selection: validRows,
+          type: groupType,
+          idType: idField,
+          path: defaultPath
+        });
+
+        var dlg = new Dialog({
+          title: 'Create ' + displayType + ' (' + validRows.length.toLocaleString() + ' items)',
+          content: stg
+        });
+
+        on(dlg.domNode, 'dialogAction', function() {
+          dlg.hide();
+          setTimeout(function() { dlg.destroyRecursive(); }, 300);
+        });
+
+        stg.startup();
+        dlg.show();
+      });
+    },
+
+    /**
+     * Handles a group creation button click: fetches all data rows via cursor
+     * pagination, then opens the SelectionToGroup dialog.
+     *
+     * @param {Object} payload - The query collection payload
+     * @param {string} groupType - 'genome_group' or 'feature_group'
+     * @param {string} idField - 'genome_id' or 'feature_id'
+     * @private
+     */
+    _handleCreateGroupClick: function(payload, groupType, idField) {
+      var self = this;
+
+      // Check if rows are already fully available in the payload
+      var existingRows = Array.isArray(payload.rows) ? payload.rows : [];
+      var numFound = typeof payload.numFound === 'number' ? payload.numFound : null;
+      var hasAllRows = existingRows.length > 0 && numFound !== null && existingRows.length >= numFound;
+
+      if (hasAllRows) {
+        // All rows already loaded, skip fetch
+        self._openCreateGroupDialog(existingRows, groupType, idField);
+        return;
+      }
+
+      // Fetch all rows via cursor pagination
+      self._fetchAllRowsForGroup(payload, idField).then(
+        function(allRows) {
+          console.log('[ChatMessage] Group data fetch complete, rows:', allRows.length, 'opening dialog for', groupType);
+          self._openCreateGroupDialog(allRows, groupType, idField);
+        },
+        function(err) {
+          if (err && err.message && err.message.indexOf('cancelled') !== -1) {
+            // User cancelled, do nothing
+            return;
+          }
+          console.error('[ChatMessage] Error fetching data for group creation:', err);
+          var errDlg = new Dialog({
+            title: 'Error',
+            content: '<div style="padding: 16px;">Failed to download data for group creation: ' +
+              (err && err.message ? err.message : 'Unknown error') + '</div>'
+          });
+          errDlg.show();
+        }
+      );
     },
 
     renderQueryCollectionWidget: function(messageDiv) {
@@ -1330,14 +2059,36 @@ define([
       var collectionLabel = (collection || '').replace(/_/g, ' ');
       var detailLine = collectionLabel;
 
+      // Snapshot metadata
+      var numFound = typeof data.numFound === 'number' ? data.numFound : null;
+      var isSnapshot = data.is_snapshot === true;
+      var snapshotLimit = typeof data.snapshot_limit === 'number' ? data.snapshot_limit : null;
+      var downloadUrl = data.download_url || null;
+      var displayCount = rows.length || rowCount;
+
       var payload = {
         queryParameters: params,
         collection: collection,
         rqlQueryUrl: rqlQueryUrl,
         rqlReplay: rqlReplay,
         summary: summary,
-        rows: rows
+        rows: rows,
+        numFound: numFound,
+        is_snapshot: isSnapshot,
+        snapshot_limit: snapshotLimit,
+        download_url: downloadUrl,
+        // Solr query metadata for cursor-based group creation fetch
+        solrQuery: toolArgs.q || null,
+        dataApiBaseUrl: toolArgs.data_api_base_url || null
       };
+
+      // Build count-aware status text
+      var statusText;
+      if (numFound !== null) {
+        statusText = 'Found ' + numFound.toLocaleString() + ' results';
+      } else {
+        statusText = 'Review your results';
+      }
 
       var container = domConstruct.create('div', {
         class: 'workspace-summary-card'
@@ -1345,7 +2096,7 @@ define([
 
       domConstruct.create('div', {
         class: 'tool-card-status-row workspace-summary-text',
-        innerHTML: 'Review your results'
+        innerHTML: statusText
       }, container);
 
       domConstruct.create('div', {
@@ -1388,12 +2139,38 @@ define([
       }
 
       if (collection && collection.toLowerCase() === 'genome_feature' && rqlQueryUrl) {
-        var authParam = (window.App && window.App.authorizationToken)
-          ? '&http_authorization=' + encodeURIComponent(window.App.authorizationToken)
-          : '';
-        var sep = rqlQueryUrl.indexOf('?') >= 0 ? '&' : '?';
-        ['Download DNA Fasta', 'Download Protein Fasta'].forEach(function(linkLabel, idx) {
-          var acceptType = idx === 0 ? 'application/dna+fasta' : 'application/protein+fasta';
+        // Build the RQL query for FASTA downloads.
+        // rqlReplay comes from the MCP server already URL-encoded via Python's
+        // quote().  We decode it to raw RQL, then strip double quotes from
+        // keyword() values because the BV-BRC POST RQL parser rejects literal
+        // '"' as an illegal character.  (The GET-based TSV download works with
+        // %22 in the URL, but the POST-based FASTA download does not.)
+        var rawRqlReplay = rqlReplay;
+        if (rawRqlReplay && rawRqlReplay.charAt(0) === '?') {
+          rawRqlReplay = rawRqlReplay.substring(1);
+        }
+        try {
+          rawRqlReplay = decodeURIComponent(rawRqlReplay);
+        } catch (e) {
+          // If decoding fails, use as-is
+        }
+        // Remove double quotes inside keyword() — the BV-BRC POST parser
+        // cannot handle them.  keyword(value) works identically without quotes.
+        rawRqlReplay = rawRqlReplay.replace(/keyword\("([^"]*)"\)/g, 'keyword($1)');
+        var fastaRqlQuery = rawRqlReplay + '&limit(100000)&sort(+feature_id)';
+
+        // Use the standard BV-BRC data service URL for FASTA downloads,
+        // matching the pattern used by the rest of the website
+        // (DownloadTooltipDialog.js, FeatureGridContainer.js, etc.).
+        var fastaDataServiceUrl = (window.App && window.App.dataServiceURL)
+          ? window.App.dataServiceURL
+          : toolArgs.data_api_base_url || 'https://www.bv-brc.org/api';
+        if (fastaDataServiceUrl.charAt(fastaDataServiceUrl.length - 1) !== '/') {
+          fastaDataServiceUrl += '/';
+        }
+        var fastaBaseUrl = fastaDataServiceUrl + 'genome_feature/';
+
+        var createFastaLink = lang.hitch(this, function(linkLabel, acceptType) {
           var fastaLink = domConstruct.create('a', {
             class: 'workspace-summary-link',
             href: '#',
@@ -1401,18 +2178,263 @@ define([
           }, container);
           on(fastaLink, 'click', lang.hitch(this, function(evt) {
             evt.preventDefault();
-            var downloadUrl = rqlQueryUrl + sep + 'http_accept=' + encodeURIComponent(acceptType) + '&http_download=true';
-            downloadUrl = downloadUrl + "&limit(100000)&sort(+patric_id)";
-            downloadUrl = downloadUrl + authParam;
-            window.open(downloadUrl, '_blank', 'noopener,noreferrer');
+            // Use hidden form POST, same pattern as DownloadTooltipDialog.js
+            var actionUrl = fastaBaseUrl + '?http_download=true&http_accept=' + encodeURIComponent(acceptType);
+            // Remove any previous download form
+            var oldForm = document.getElementById('copilotFastaDownloadForm');
+            if (oldForm) { oldForm.parentNode.removeChild(oldForm); }
+            var form = domConstruct.create('form', {
+              style: 'display: none;',
+              id: 'copilotFastaDownloadForm',
+              enctype: 'application/x-www-form-urlencoded',
+              name: 'copilotFastaDownloadForm',
+              method: 'post',
+              action: actionUrl
+            }, document.body);
+            // Set the raw RQL as the value — the browser's form encoding
+            // (application/x-www-form-urlencoded) will URL-encode it
+            // automatically before sending.  Do NOT use encodeURIComponent()
+            // here; that would double-encode the value.
+            domConstruct.create('input', { type: 'hidden', value: fastaRqlQuery, name: 'rql' }, form);
+            if (window.App && window.App.authorizationToken) {
+              domConstruct.create('input', { type: 'hidden', value: window.App.authorizationToken, name: 'http_authorization' }, form);
+            }
+            form.submit();
+            // Clean up the form after a short delay
+            setTimeout(function() {
+              if (form.parentNode) { form.parentNode.removeChild(form); }
+            }, 5000);
           }));
         });
+
+        createFastaLink('Download DNA Fasta', 'application/dna+fasta');
+        createFastaLink('Download Protein Fasta', 'application/protein+fasta');
       }
+
+      // Download Full Dataset (TSV) link - shown when snapshot has a download URL
+      if (downloadUrl && isSnapshot) {
+        var tsvLabel = numFound !== null
+          ? 'Download all ' + numFound.toLocaleString() + ' results as TSV'
+          : 'Download Full Dataset (TSV)';
+        var tsvLink = domConstruct.create('a', {
+          class: 'workspace-summary-link',
+          href: '#',
+          innerHTML: tsvLabel
+        }, container);
+        on(tsvLink, 'click', function(evt) {
+          evt.preventDefault();
+          var tsvDownloadUrl = downloadUrl;
+          if (window.App && window.App.authorizationToken) {
+            tsvDownloadUrl += '&http_authorization=' + encodeURIComponent(window.App.authorizationToken);
+          }
+          window.open(tsvDownloadUrl, '_blank', 'noopener,noreferrer');
+        });
+      }
+
+      // Group creation buttons - shown for genome and genome_feature collections
+      // when the user is authenticated
+      if (window.App && window.App.user) {
+        var normalizedCollection = collection ? collection.toLowerCase() : '';
+        var showGenomeGroup = (normalizedCollection === 'genome' || normalizedCollection === 'genome_feature');
+        var showFeatureGroup = (normalizedCollection === 'genome_feature');
+
+        if (showGenomeGroup || showFeatureGroup) {
+          var groupActionsDiv = domConstruct.create('div', {
+            style: 'margin-top: 6px; padding-top: 6px; border-top: 1px solid #e0e0e0;'
+          }, container);
+
+          if (showFeatureGroup) {
+            var featureGroupBtn = domConstruct.create('button', {
+              type: 'button',
+              class: 'workspace-summary-open-button',
+              innerHTML: '<i class="fa icon-object-group" style="margin-right: 4px;"></i>Create Feature Group',
+              style: 'margin-right: 8px;'
+            }, groupActionsDiv);
+            on(featureGroupBtn, 'click', lang.hitch(this, function() {
+              this._handleCreateGroupClick(payload, 'feature_group', 'feature_id');
+            }));
+          }
+
+          if (showGenomeGroup) {
+            var genomeGroupBtn = domConstruct.create('button', {
+              type: 'button',
+              class: 'workspace-summary-open-button',
+              innerHTML: '<i class="fa icon-object-group" style="margin-right: 4px;"></i>Create Genome Group'
+            }, groupActionsDiv);
+            on(genomeGroupBtn, 'click', lang.hitch(this, function() {
+              this._handleCreateGroupClick(payload, 'genome_group', 'genome_id');
+            }));
+          }
+        }
+      }
+
+      // Selection indicator for files (query results become session files)
+      this._renderSelectionIndicator(container, {
+        category: 'files',
+        getSelectedItems: lang.hitch(this, function() {
+          var items = this._getSelectionItemsForCategory('files');
+          return items.map(function(item) {
+            return { label: item.file_name || item.id || 'File', id: item.id || item.file_id };
+          });
+        })
+      });
+    },
+
+    /**
+     * Maps app names to human-readable service display names
+     * @param {string} appName - Application identifier (e.g., GenomeAssembly2)
+     * @returns {string} Display name
+     */
+    _getServiceDisplayName: function(appName) {
+      var map = {
+        'GenomeAssembly2': 'Genome Assembly',
+        'GenomeAnnotation': 'Genome Annotation',
+        'ComparativeSystems': 'Comparative Systems'
+      };
+      return map[appName] || appName;
+    },
+
+    /**
+     * Renders a simplified service card for single-step workflows
+     * @param {HTMLElement} messageDiv - Container to render into
+     * @param {Object} workflow - Workflow data with steps[0]
+     */
+    renderSimplifiedServiceCard: function(messageDiv, workflow) {
+      var step = workflow.steps && workflow.steps[0];
+      var serviceName = step ? this._getServiceDisplayName(step.app) : (workflow.workflow_name || 'Workflow');
+      if (!serviceName && step && step.step_name) {
+        serviceName = step.step_name;
+      }
+      var isSubmitted = workflow.execution_metadata && workflow.execution_metadata.is_submitted;
+      var statusValue = (workflow.execution_metadata && workflow.execution_metadata.status) ||
+        workflow.status || (isSubmitted ? 'submitted' : '') || 'planned';
+      var normalizeStatus = function(s) {
+        return (!s && s !== 0) ? '' : String(s).toLowerCase();
+      };
+      var getStatusStyle = function(s) {
+        var st = normalizeStatus(s);
+        if (st === 'succeeded' || st === 'completed') return 'background: #10b981; color: #fff;';
+        if (st === 'failed' || st === 'error') return 'background: #ef4444; color: #fff;';
+        if (st === 'cancelled') return 'background: #6b7280; color: #fff;';
+        if (st === 'running') return 'background: #2563eb; color: #fff;';
+        if (st === 'queued' || st === 'pending') return 'background: #f59e0b; color: #111827;';
+        if (st === 'submitted') return 'background: #14b8a6; color: #fff;';
+        if (st === 'planned') return 'background: #6366f1; color: #fff;';
+        return 'background: #9ca3af; color: #fff;';
+      };
+      var statusBadgeLabel = statusValue ? this.escapeHtml(String(statusValue).toUpperCase()) : '';
+
+      var card = domConstruct.create('div', {
+        class: 'copilot-service-card workflow-manifest-card'
+      }, messageDiv);
+
+      var titleRow = domConstruct.create('div', {
+        class: 'copilot-service-card-actions',
+        style: 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 0; padding-top: 0; border-top: none;'
+      }, card);
+
+      domConstruct.create('div', {
+        class: 'copilot-service-card-title',
+        innerHTML: this.escapeHtml(serviceName)
+      }, titleRow);
+
+      if (statusBadgeLabel) {
+        domConstruct.create('span', {
+          innerHTML: statusBadgeLabel,
+          style: 'padding: 2px 6px; font-size: 11px; border-radius: 3px; font-weight: 500; ' + getStatusStyle(statusValue)
+        }, titleRow);
+      }
+
+      var actionsRow = domConstruct.create('div', {
+        class: 'copilot-service-card-actions'
+      }, card);
+
+      var reviewButton = domConstruct.create('button', {
+        innerHTML: (isSubmitted ? 'View Results' : 'Review'),
+        class: 'workflow-review-btn',
+        title: 'Review and edit service parameters'
+      }, actionsRow);
+
+      on(reviewButton, 'click', lang.hitch(this, function() {
+        this.showWorkflowDialog();
+      }));
+
+      if (!isSubmitted) {
+        var self = this;
+        var submitButton = domConstruct.create('button', {
+          innerHTML: 'Submit',
+          type: 'button',
+          style: 'padding: 8px 16px; background: #2563eb; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;'
+        }, actionsRow);
+
+        on(submitButton, 'click', lang.hitch(this, function() {
+          if (!self.copilotApi || submitButton.disabled) return;
+          var workflowToSubmit = {};
+          try {
+            workflowToSubmit = JSON.parse(JSON.stringify(workflow));
+          } catch (e) {
+            workflowToSubmit = workflow;
+          }
+          delete workflowToSubmit.execution_metadata;
+
+          submitButton.disabled = true;
+          submitButton.innerHTML = 'Submitting...';
+
+          self.copilotApi.submitWorkflowForExecution(workflowToSubmit).then(function(response) {
+            if (response && response.error) {
+              submitButton.disabled = false;
+              submitButton.innerHTML = 'Submit';
+              topic.publish('/Notification', { message: 'Submission failed: ' + response.error, type: 'error' });
+              return;
+            }
+            var wfId = response && response.workflow_id;
+            var status = (response && response.status) || 'submitted';
+            var statusUrl = wfId && (window.App.workflow_url || 'https://dev-7.bv-brc.org/api/v1') + '/workflows/' + wfId + '/status';
+
+            if (!workflow.execution_metadata) workflow.execution_metadata = {};
+            workflow.execution_metadata.workflow_id = wfId;
+            workflow.execution_metadata.status = status;
+            workflow.execution_metadata.is_submitted = true;
+            workflow.execution_metadata.is_planned = false;
+            workflow.execution_metadata.status_url = statusUrl;
+            workflow.execution_metadata.submitted_at = new Date().toISOString();
+
+            topic.publish('CopilotWorkflowCardStatusUpdated', {
+              session_id: self.sessionId || null,
+              message_id: self.message && self.message.message_id ? self.message.message_id : null,
+              workflow: workflow
+            });
+
+            submitButton.innerHTML = 'Submitted';
+            topic.publish('/Notification', { message: 'Workflow submitted successfully.', type: 'message' });
+
+            if (self.sessionId && self.copilotApi && typeof self.copilotApi.addWorkflowToSession === 'function') {
+              self.copilotApi.addWorkflowToSession(self.sessionId, wfId).catch(function() {});
+            }
+          }, function(err) {
+            submitButton.disabled = false;
+            submitButton.innerHTML = 'Submit';
+            topic.publish('/Notification', { message: 'Submission failed: ' + (err && err.message ? err.message : err), type: 'error' });
+          });
+        }));
+      }
+
+      // Selection indicator for workflows
+      this._renderSelectionIndicator(card, {
+        category: 'workflows',
+        getSelectedItems: lang.hitch(this, function() {
+          var items = this._getSelectionItemsForCategory('workflows');
+          return items.map(function(item) {
+            return { label: item.workflow_name || item.workflow_id || item.id || 'Workflow', id: item.workflow_id || item.id };
+          });
+        })
+      });
     },
 
     /**
      * Renders a workflow manifest card with workflow details
-     * Displays workflow name, step count, output folder, and a Review & Submit button
+     * Displays workflow name, step count, output folder, and a Review button
+     * For single-step workflows, renders a simplified service card instead.
      * @param {HTMLElement} messageDiv - Container to render widget into
      */
     renderWorkflowManifestCard: function(messageDiv) {
@@ -1435,6 +2457,12 @@ define([
       // Count steps
       if (workflow.steps && Array.isArray(workflow.steps)) {
         stepCount = workflow.steps.length;
+      }
+
+      var isSingleStep = workflow && workflow.steps && workflow.steps.length === 1;
+      if (isSingleStep) {
+        this.renderSimplifiedServiceCard(messageDiv, workflow);
+        return;
       }
 
       // Get output folder
@@ -1527,6 +2555,18 @@ define([
         style: 'display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;'
       }, card);
 
+      // Service name (from service-specific tools: plan_genome_assembly, plan_genome_annotation, plan_comparative_systems)
+      var serviceApp = null;
+      if (workflow.steps && workflow.steps.length === 1 && workflow.steps[0].app) {
+        serviceApp = workflow.steps[0].app;
+      }
+      if (serviceApp) {
+        domConstruct.create('div', {
+          innerHTML: '<span style="color: #6b7280; font-size: 13px;">Service:</span> <span style="color: #374151; font-size: 13px; font-weight: 500;">' + this.escapeHtml(serviceApp) + '</span>',
+          style: 'display: flex; gap: 4px;'
+        }, detailsContainer);
+      }
+
       // Step count
       if (stepCount > 0) {
         domConstruct.create('div', {
@@ -1540,6 +2580,18 @@ define([
         domConstruct.create('div', {
           innerHTML: '<span style="color: #6b7280; font-size: 13px;">Output:</span> <span style="color: #374151; font-size: 13px; font-family: monospace;">' + this.escapeHtml(outputFolder) + '</span>',
           style: 'display: flex; gap: 4px;'
+        }, detailsContainer);
+      }
+
+      // Auto corrections (from service plan tools)
+      var autoCorrections = workflow.auto_corrections;
+      if (Array.isArray(autoCorrections) && autoCorrections.length > 0) {
+        var correctionsText = autoCorrections.map(function(c) {
+          return typeof c === 'string' ? c : (c && typeof c === 'object' && c.message ? c.message : String(c));
+        }).join(', ');
+        domConstruct.create('div', {
+          innerHTML: '<span style="color: #6b7280; font-size: 12px;">Auto-corrected:</span> <span style="color: #4b5563; font-size: 12px;">' + this.escapeHtml(correctionsText) + '</span>',
+          style: 'display: flex; gap: 4px; margin-top: 2px;'
         }, detailsContainer);
       }
 
@@ -1661,25 +2713,171 @@ define([
         }));
       }
 
-      // Review & Submit button
+      // Review button — opens the workflow dialog for review/editing
       var reviewButton = domConstruct.create('button', {
-        innerHTML: (isSubmitted ? 'View Workflow' : 'Review &amp; Submit'),
-        class: 'workflow-review-button',
-        style: 'padding: 4px 10px; background: #2563eb; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.2s;'
+        innerHTML: (isSubmitted ? 'View Workflow' : 'Review'),
+        class: 'workflow-review-btn',
+        title: 'Review and edit service parameters'
       }, rightActions);
 
-      // Hover effect
-      on(reviewButton, 'mouseenter', function() {
-        reviewButton.style.background = '#1d4ed8';
-      });
-      on(reviewButton, 'mouseleave', function() {
-        reviewButton.style.background = '#2563eb';
-      });
-
-      // Add click handler to show workflow dialog
       on(reviewButton, 'click', lang.hitch(this, function() {
         this.showWorkflowDialog();
       }));
+
+      // Selection indicator for workflows
+      this._renderSelectionIndicator(card, {
+        category: 'workflows',
+        getSelectedItems: lang.hitch(this, function() {
+          var items = this._getSelectionItemsForCategory('workflows');
+          return items.map(function(item) {
+            return { label: item.workflow_name || item.workflow_id || item.id || 'Workflow', id: item.workflow_id || item.id };
+          });
+        })
+      });
+    },
+
+    /**
+     * Shows a direct form modal for single-step workflows with Dojo form wrappers.
+     * Bypasses the pipeline grid and displays the service form directly.
+     * @param {Object} workflow - Full workflow data
+     * @param {Object} step - workflow.steps[0]
+     * @param {string} appName - Step app identifier
+     */
+    _showDirectFormModal: function(workflow, step, appName) {
+      var self = this;
+      var serviceName = this._getServiceDisplayName(appName);
+      var isSubmitted = workflow.execution_metadata && workflow.execution_metadata.is_submitted;
+      var statusValue = (workflow.execution_metadata && workflow.execution_metadata.status) ||
+        workflow.status || (isSubmitted ? 'submitted' : '') || 'planned';
+      var getStatusStyle = function(s) {
+        var st = (!s && s !== 0) ? '' : String(s).toLowerCase();
+        if (st === 'succeeded' || st === 'completed') return 'background: #10b981; color: #fff;';
+        if (st === 'failed' || st === 'error') return 'background: #ef4444; color: #fff;';
+        if (st === 'cancelled') return 'background: #6b7280; color: #fff;';
+        if (st === 'running') return 'background: #2563eb; color: #fff;';
+        if (st === 'queued' || st === 'pending') return 'background: #f59e0b; color: #111827;';
+        if (st === 'submitted') return 'background: #14b8a6; color: #fff;';
+        if (st === 'planned') return 'background: #6366f1; color: #fff;';
+        return 'background: #9ca3af; color: #fff;';
+      };
+
+      var formWidget = null;
+      var overlayNode = domConstruct.create('div', {
+        class: 'workflow-modal-overlay copilot-direct-form-overlay',
+        style: 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 900; display: flex; align-items: center; justify-content: center; padding: 24px;'
+      }, document.body);
+
+      var modalNode = domConstruct.create('div', {
+        class: 'workflow-modal-dialog copilot-direct-form-modal',
+        style: 'background: #fff; width: min(980px, 95vw); max-height: 88vh; border-radius: 10px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; overflow: hidden;'
+      }, overlayNode);
+
+      var headerNode = domConstruct.create('div', {
+        class: 'copilot-direct-form-modal-header'
+      }, modalNode);
+
+      var headerLeft = domConstruct.create('div', {
+        style: 'display: flex; align-items: center; gap: 12px;'
+      }, headerNode);
+
+      domConstruct.create('div', {
+        class: 'copilot-direct-form-modal-title',
+        innerHTML: this.escapeHtml(serviceName)
+      }, headerLeft);
+
+      if (statusValue) {
+        domConstruct.create('span', {
+          innerHTML: this.escapeHtml(String(statusValue).toUpperCase()),
+          style: 'padding: 2px 8px; font-size: 11px; border-radius: 4px; font-weight: 500; ' + getStatusStyle(statusValue)
+        }, headerLeft);
+      }
+
+      var closeBtn = domConstruct.create('button', {
+        innerHTML: '&times;',
+        style: 'padding: 4px 10px; background: transparent; border: none; font-size: 20px; cursor: pointer; color: #6b7280; line-height: 1;'
+      }, headerNode);
+
+      var contentNode = domConstruct.create('div', {
+        class: 'copilot-direct-form-modal-content'
+      }, modalNode);
+
+      var footerNode = domConstruct.create('div', {
+        class: 'copilot-direct-form-modal-footer'
+      }, modalNode);
+
+      // Back button — closes the form modal and returns to the card
+      var backBtn = domConstruct.create('button', {
+        innerHTML: 'Back',
+        type: 'button',
+        class: 'workflow-review-btn',
+        title: 'Return to the service card'
+      }, footerNode);
+
+      var formContainer = domConstruct.create('div', {
+        class: 'copilot-dojo-form-container'
+      }, contentNode);
+
+      var loadingNode = domConstruct.create('div', {
+        innerHTML: 'Loading service form...',
+        class: 'workflow-form-loading'
+      }, contentNode);
+
+      // Helper: apply form edits to step params
+      var applyFormEdits = function() {
+        if (!formWidget) return;
+        var updatedParams = formWidget.toManifest();
+        if (updatedParams) {
+          step.params = lang.mixin({}, step.params, updatedParams);
+        }
+      };
+
+      var keyHandler = null;
+      var closeModal = function() {
+        // Auto-apply form edits when closing
+        applyFormEdits();
+        if (keyHandler) {
+          keyHandler.remove();
+          keyHandler = null;
+        }
+        if (formWidget && typeof formWidget.destroyRecursive === 'function') {
+          try {
+            formWidget.destroyRecursive();
+          } catch (e) {
+            console.warn('[ChatMessage] Error destroying form:', e);
+          }
+          formWidget = null;
+        }
+        if (overlayNode && overlayNode.parentNode) {
+          overlayNode.parentNode.removeChild(overlayNode);
+        }
+      };
+
+      backBtn.onclick = closeModal;
+      closeBtn.onclick = closeModal;
+      on(overlayNode, 'click', function(evt) {
+        if (evt.target === overlayNode) closeModal();
+      });
+      keyHandler = on(document, 'keydown', function(evt) {
+        if (evt.key === 'Escape') closeModal();
+      });
+
+      CopilotServiceFormAdapter.createForm(appName).then(function(widget) {
+        formWidget = widget;
+        domConstruct.destroy(loadingNode);
+        domConstruct.place(formWidget.domNode, formContainer);
+        formWidget.startup();
+        // setFromManifest handles its own startup-readiness polling
+        formWidget.setFromManifest(step.params || {});
+      }, function(err) {
+        domConstruct.destroy(loadingNode);
+        domConstruct.create('div', {
+          innerHTML: 'Failed to load service form: ' + (err.message || err),
+          style: 'color: #991b1b; padding: 16px;'
+        }, contentNode);
+        topic.publish('/Notification', { message: 'Service form unavailable. Opening full workflow view.', type: 'message' });
+        closeModal();
+        self.showWorkflowDialog();
+      });
     },
 
     /**
@@ -1727,6 +2925,17 @@ define([
         return;
       }
 
+      var workflow = this.message.workflowData;
+      var isSingleStep = workflow && workflow.steps && workflow.steps.length === 1;
+      var step = isSingleStep && workflow.steps ? workflow.steps[0] : null;
+      var appName = step ? step.app : '';
+      var hasDojoForm = isSingleStep && CopilotServiceFormAdapter.hasDojoForm(appName);
+
+      if (hasDojoForm) {
+        this._showDirectFormModal(workflow, step, appName);
+        return;
+      }
+
       var workflowEngine = null;
       var overlayNode = null;
       var keyHandler = null;
@@ -1740,7 +2949,7 @@ define([
 
         overlayNode = domConstruct.create('div', {
           class: 'workflow-modal-overlay',
-          style: 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 2147483000; display: flex; align-items: center; justify-content: center; padding: 24px;'
+          style: 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 900; display: flex; align-items: center; justify-content: center; padding: 24px;'
         }, document.body);
 
         var modalNode = domConstruct.create('div', {

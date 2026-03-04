@@ -238,9 +238,15 @@ define([
 
       // Handle nested structure: items may be [{ "/path": [actual items] }]
       if (items && items.length > 0) {
-        // Check if first item is an object with path keys (nested structure)
+        // Check if first item is a path-keyed nested object (e.g. { "/user/home/...": [row1, row2] })
+        // vs a regular data object (e.g. { name: "MyGroup", type: "genome_group", ... })
         var firstItem = items[0];
+        var looksLikePathKeyed = false;
         if (typeof firstItem === 'object' && !Array.isArray(firstItem) && firstItem !== null) {
+          var firstKey = Object.keys(firstItem)[0];
+          looksLikePathKeyed = firstKey && firstKey.charAt(0) === '/';
+        }
+        if (looksLikePathKeyed) {
           // Extract path and items from the nested structure
           var allItems = [];
           var extractedPath = null;
