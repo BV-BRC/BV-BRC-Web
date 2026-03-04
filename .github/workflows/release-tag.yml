@@ -1,0 +1,40 @@
+name: Tag Release
+on:
+  pull_request:
+    types: [closed]
+    branches: [alpha]
+
+jobs:
+  tag-release:
+    # Only run if PR was merged and branch name starts with release/v
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'release/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: alpha
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tag
+        run: |
+          # Extract version from branch name (release/vX.X.X -> vX.X.X)
+          VERSION=$(echo "${{ github.event.pull_request.head.ref }}" | sed 's/release\///')
+          # Use PR title as tag message
+          git tag -a "$VERSION" -m "${{ github.event.pull_request.title }}"
+          git push origin "$VERSION"
+          echo "Created and pushed tag: $VERSION"
+
+      - name: Delete release branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+          gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/${BRANCH}" || true
+          echo "Deleted branch: $BRANCH"
