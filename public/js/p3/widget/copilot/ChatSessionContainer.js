@@ -111,7 +111,6 @@ define([
             this._sessionWorkspaceSelectionState = SessionWorkspaceSelectionStore.createInitialState(this.sessionId);
             this._sessionJobsSelectionState = SessionJobsSelectionStore.createInitialState(this.sessionId);
             this._activeGridPanel = 'files';
-            this.contextSectionOrder = ['files', 'workflows', 'workspace', 'jobs'];
         },
 
         /**
@@ -444,10 +443,11 @@ define([
                 class: 'copilot-panel-tab copilot-panel-tab-active'
             }, this.tabsContainer);
 
-            this.contextTabButton = domConstruct.create('button', {
+            this.imagesTabButton = domConstruct.create('button', {
                 type: 'button',
-                innerHTML: 'Context',
-                class: 'copilot-panel-tab'
+                innerHTML: 'Images',
+                class: 'copilot-panel-tab',
+                style: 'display: none;'
             }, this.tabsContainer);
 
             this.gridsTabButton = domConstruct.create('button', {
@@ -461,62 +461,15 @@ define([
                 this._setActiveTab('messages');
             }));
 
-            on(this.contextTabButton, 'click', lang.hitch(this, function() {
-                this._setActiveTab('context');
+            on(this.imagesTabButton, 'click', lang.hitch(this, function() {
+                this._setActiveTab('images');
             }));
 
             on(this.gridsTabButton, 'click', lang.hitch(this, function() {
                 this._setActiveTab('grids');
             }));
 
-            var hideContextHoverMenu = lang.hitch(this, function() {
-                if (this._contextHoverMenuHideTimer) {
-                    clearTimeout(this._contextHoverMenuHideTimer);
-                    this._contextHoverMenuHideTimer = null;
-                }
-                if (this.contextHoverMenuNode) {
-                    this.contextHoverMenuNode.style.display = 'none';
-                }
-            });
-
-            var scheduleContextHoverHide = lang.hitch(this, function() {
-                if (this._contextHoverMenuHideTimer) {
-                    clearTimeout(this._contextHoverMenuHideTimer);
-                }
-                this._contextHoverMenuHideTimer = setTimeout(hideContextHoverMenu, 160);
-            });
-
-            var showContextHoverMenu = lang.hitch(this, function() {
-                if (!this.contextHoverMenuNode || !this.contextTabButton) {
-                    return;
-                }
-                if (this._contextHoverMenuHideTimer) {
-                    clearTimeout(this._contextHoverMenuHideTimer);
-                    this._contextHoverMenuHideTimer = null;
-                }
-                this._renderContextTabSummary();
-                this.contextHoverMenuNode.style.display = 'block';
-            });
-
-            this.contextHoverMenuNode = domConstruct.create('div', {
-                class: 'copilot-context-hover-menu',
-                style: 'position:absolute; top: calc(100% + 6px); right: 0; min-width: 320px; max-width: 440px; max-height: 280px; overflow:auto; background:#fff; border:1px solid #d1d5db; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); padding:8px; z-index:1000; display:none;'
-            }, this.tabsContainer);
-
-            on(this.contextTabButton, 'mouseenter', showContextHoverMenu);
-            on(this.contextTabButton, 'mouseleave', scheduleContextHoverHide);
-            on(this.contextHoverMenuNode, 'mouseenter', lang.hitch(this, function() {
-                if (this._contextHoverMenuHideTimer) {
-                    clearTimeout(this._contextHoverMenuHideTimer);
-                    this._contextHoverMenuHideTimer = null;
-                }
-            }));
-            on(this.contextHoverMenuNode, 'mouseleave', scheduleContextHoverHide);
-            on(this.contextTabButton, 'click', hideContextHoverMenu);
-            on(this.messagesTabButton, 'click', hideContextHoverMenu);
-            on(this.gridsTabButton, 'click', hideContextHoverMenu);
-
-            this._renderContextTabSummary();
+            this._updateImagesTabVisibility();
         },
 
         /**
@@ -541,21 +494,26 @@ define([
             if (gridPanel && legacyGridPanels[gridPanel]) {
                 this._activeGridPanel = gridPanel;
             }
-            if (panel !== 'messages' && panel !== 'context' && panel !== 'grids') {
+            if (panel !== 'messages' && panel !== 'images' && panel !== 'grids') {
+                panel = 'messages';
+            }
+
+            // If images tab is hidden and was selected, fall back to messages
+            if (panel === 'images' && this.imagesTabButton && this.imagesTabButton.style.display === 'none') {
                 panel = 'messages';
             }
 
             // Update tab button styles
             domClass.toggle(this.messagesTabButton, 'copilot-panel-tab-active', panel === 'messages');
-            domClass.toggle(this.contextTabButton, 'copilot-panel-tab-active', panel === 'context');
+            domClass.toggle(this.imagesTabButton, 'copilot-panel-tab-active', panel === 'images');
             domClass.toggle(this.gridsTabButton, 'copilot-panel-tab-active', panel === 'grids');
 
             // Update display widget
             if (this.displayWidget && this.displayWidget.setActivePanel) {
                 if (panel === 'messages') {
                     this.displayWidget.setActivePanel('messages');
-                } else if (panel === 'context') {
-                    this.displayWidget.setActivePanel('context');
+                } else if (panel === 'images') {
+                    this.displayWidget.setActivePanel('images');
                 } else {
                     this.displayWidget.setActivePanel(this._activeGridPanel || 'files');
                 }
@@ -602,7 +560,6 @@ define([
                 onJobsSelectionChanged: lang.hitch(this, this._handleJobsSelectionChanged),
                 onImageContextChanged: lang.hitch(this, this._handleImageContextSelectionChanged),
                 onContextClearAll: lang.hitch(this, this._handleContextClearAll),
-                contextSectionOrder: this.contextSectionOrder,
                 context: 'main-chat'  // Mark this as main chat context
             });
             this.displayWidget.setSessionImageContextData(this._sessionImageContextState.items);
@@ -820,7 +777,7 @@ define([
             if (this.displayWidget && this.displayWidget.setSessionFilesSelectionData) {
                 this.displayWidget.setSessionFilesSelectionData(selectedItems);
             }
-            this._renderContextTabSummary();
+            topic.publish('CopilotSelectionChanged', { category: 'files', items: selectedItems });
         },
 
         _resetSessionWorkflowsSelectionState: function(sessionId) {
@@ -835,7 +792,7 @@ define([
             if (this.inputWidget && this.inputWidget.setSelectedWorkflows) {
                 this.inputWidget.setSelectedWorkflows(selectedItems);
             }
-            this._renderContextTabSummary();
+            topic.publish('CopilotSelectionChanged', { category: 'workflows', items: selectedItems });
         },
 
         _resetSessionImageContextState: function(sessionId) {
@@ -851,7 +808,7 @@ define([
             if (this.displayWidget && this.displayWidget.setSessionImageContextData) {
                 this.displayWidget.setSessionImageContextData(selectedItems);
             }
-            this._renderContextTabSummary();
+            this._updateImagesTabVisibility();
         },
 
         _syncWorkspaceSelectionsToWidgets: function() {
@@ -862,7 +819,7 @@ define([
             if (this.inputWidget && this.inputWidget.setSelectedWorkspaceItems) {
                 this.inputWidget.setSelectedWorkspaceItems(selectedItems);
             }
-            this._renderContextTabSummary();
+            topic.publish('CopilotSelectionChanged', { category: 'workspace', items: selectedItems });
         },
 
         _resetSessionJobsSelectionState: function(sessionId) {
@@ -877,7 +834,7 @@ define([
             if (this.inputWidget && this.inputWidget.setSelectedJobs) {
                 this.inputWidget.setSelectedJobs(selectedJobs);
             }
-            this._renderContextTabSummary();
+            topic.publish('CopilotSelectionChanged', { category: 'jobs', items: selectedJobs });
         },
 
         _workspaceSelectionSignature: function(items) {
@@ -1032,105 +989,20 @@ define([
             }
         },
 
-        _collectContextSummarySections: function() {
-            var sections = [];
-            var definitions = [
-                {
-                    key: 'files',
-                    label: 'Files',
-                    items: this._sessionFilesSelectionState ? SessionFilesSelectionStore.getSelectedItems(this._sessionFilesSelectionState) : [],
-                    mapItem: function(item) { return item && (item.file_name || item.id || 'File'); }
-                },
-                {
-                    key: 'workflows',
-                    label: 'Workflows',
-                    items: this._sessionWorkflowsSelectionState ? SessionWorkflowsSelectionStore.getSelectedItems(this._sessionWorkflowsSelectionState) : [],
-                    mapItem: function(item) { return item && (item.workflow_name || item.workflow_id || item.id || 'Workflow'); }
-                },
-                {
-                    key: 'workspace',
-                    label: 'Workspace',
-                    items: this._sessionWorkspaceSelectionState ? SessionWorkspaceSelectionStore.getSelectedItems(this._sessionWorkspaceSelectionState) : [],
-                    mapItem: function(item) { return item && (item.path || item.name || item.id || 'Workspace item'); }
-                },
-                {
-                    key: 'jobs',
-                    label: 'Jobs',
-                    items: this._sessionJobsSelectionState ? SessionJobsSelectionStore.getSelectedItems(this._sessionJobsSelectionState) : [],
-                    mapItem: function(item) { return item && (item.id || item.application_name || 'Job'); }
-                },
-                {
-                    key: 'images',
-                    label: 'Images',
-                    items: (this._sessionImageContextState && this._sessionImageContextState.items) || [],
-                    mapItem: function(item) { return item && (item.name || 'Image'); }
-                }
-            ];
-
-            definitions.forEach(function(definition) {
-                var items = Array.isArray(definition.items) ? definition.items : [];
-                if (!items.length) {
-                    return;
-                }
-                sections.push({
-                    key: definition.key,
-                    label: definition.label,
-                    count: items.length,
-                    names: items.map(definition.mapItem).filter(function(name) { return typeof name === 'string' && name.length > 0; })
-                });
-            });
-
-            return sections;
-        },
-
-        _renderContextTabSummary: function() {
-            if (!this.contextTabButton) {
+        _updateImagesTabVisibility: function() {
+            if (!this.imagesTabButton) {
                 return;
             }
-            var sections = this._collectContextSummarySections();
-            var total = sections.reduce(function(acc, section) {
-                return acc + (section.count || 0);
-            }, 0);
-            this.contextTabButton.innerHTML = 'Context (' + total + ')';
-
-            if (!this.contextHoverMenuNode) {
-                return;
+            var imageCount = (this._sessionImageContextState && this._sessionImageContextState.entries && this._sessionImageContextState.entries.length) || 0;
+            var shouldShow = imageCount > 0;
+            this.imagesTabButton.style.display = shouldShow ? '' : 'none';
+            if (shouldShow) {
+                this.imagesTabButton.innerHTML = 'Images (' + imageCount + ')';
             }
-            this.contextHoverMenuNode.innerHTML = '';
-            if (!sections.length) {
-                this.contextHoverMenuNode.appendChild(document.createTextNode('No context items selected.'));
-                return;
+            // If images tab was active but images were cleared, fall back to messages
+            if (!shouldShow && this.imagesTabButton.classList.contains('copilot-panel-tab-active')) {
+                this._setActiveTab('messages');
             }
-
-            sections.forEach(function(section) {
-                var sectionNode = document.createElement('div');
-                sectionNode.style.borderBottom = '1px solid #e5e7eb';
-                sectionNode.style.padding = '6px 4px';
-
-                var titleNode = document.createElement('div');
-                titleNode.style.fontWeight = '600';
-                titleNode.style.marginBottom = '4px';
-                titleNode.textContent = section.label + ' (' + section.count + ')';
-                sectionNode.appendChild(titleNode);
-
-                section.names.slice(0, 20).forEach(function(name) {
-                    var itemNode = document.createElement('div');
-                    itemNode.style.fontSize = '12px';
-                    itemNode.style.color = '#475569';
-                    itemNode.style.wordBreak = 'break-word';
-                    itemNode.textContent = '- ' + name;
-                    sectionNode.appendChild(itemNode);
-                });
-                if (section.names.length > 20) {
-                    var moreNode = document.createElement('div');
-                    moreNode.style.fontSize = '12px';
-                    moreNode.style.color = '#64748b';
-                    moreNode.textContent = '+ ' + (section.names.length - 20) + ' more';
-                    sectionNode.appendChild(moreNode);
-                }
-
-                this.contextHoverMenuNode.appendChild(sectionNode);
-            }, this);
         },
 
         _syncFilesToDisplay: function() {

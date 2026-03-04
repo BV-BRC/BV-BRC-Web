@@ -310,7 +310,7 @@ define([
     },
 
     onAddGenomeGroupRerun: function (genome_group_list) {
-      if (genome_group_list == 0) {
+      if (!genome_group_list || genome_group_list.length === 0) {
         return;
       }
 
@@ -365,6 +365,8 @@ define([
             handle.remove();
           }));
           this.increaseLib(lrec);
+        }), lang.hitch(this, function (err) {
+          console.error('[ComparativeSystems] Failed to load genome group "' + label + '" from path: ' + paths, err);
         }));
       }));
     }

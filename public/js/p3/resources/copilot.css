@@ -3050,6 +3050,27 @@
   }
 }
 
+/* ========== Workflow Review Button ========== */
+.workflow-review-btn {
+  border: 1px solid #93c5fd;
+  background-color: #dbeafe;
+  color: #1e3a8a;
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.workflow-review-btn:hover {
+  background-color: #bfdbfe;
+}
+
+.workflow-review-btn:active {
+  background-color: #93c5fd;
+}
+
 /* ========== Workflow Submission Status Messages ========== */
 .workflow-submission-status-container {
   position: fixed;
@@ -3123,3 +3144,201 @@
 }
 
 /* ========== End Workflow Submission Styles ========== */
+
+/* ========================================
+   COPILOT EMBEDDED SERVICE FORMS
+   ======================================== */
+/* Container for the embedded Dojo form */
+.copilot-dojo-form-container {
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0;
+}
+/* Override the full-page form styles when embedded */
+.copilot-embedded-form.PanelForm {
+  padding: 0;
+  margin: 0;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+.copilot-embedded-form .appTemplate {
+  padding: 0;
+  margin: 0;
+}
+.copilot-embedded-form .formFieldsContainer {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0;
+}
+/* Constrain the assembly two-column table layout */
+.copilot-embedded-form table.assemblyblocks {
+  width: 100% !important;
+}
+/* Ensure appBox sections fit within the panel */
+.copilot-embedded-form .appBox {
+  width: auto !important;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+/* Ensure WorkspaceObjectSelector inputs don't overflow */
+.copilot-embedded-form .appBox .dijitTextBox,
+.copilot-embedded-form .appBox .dijitSelect,
+.copilot-embedded-form .appBox .dijitValidationTextBox {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+/* Loading state */
+.workflow-form-loading {
+  padding: 20px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/* ========================================
+   IMAGES TAB PANEL
+   ======================================== */
+
+.copilot-images-container {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 16px 14px 16px;
+  box-sizing: border-box;
+}
+
+.copilot-images-empty {
+  text-align: center;
+  color: #6b7280;
+  padding: 18px 10px;
+}
+
+/* ========================================
+   TOOL CARD SELECTION INDICATOR
+   ======================================== */
+
+.tool-card-selection-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+  cursor: pointer;
+}
+
+.tool-card-selection-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: #1e3a8a;
+  background-color: #dbeafe;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid #93c5fd;
+  white-space: nowrap;
+}
+
+.tool-card-selection-info-icon {
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s ease;
+}
+
+.tool-card-selection-info-icon:hover {
+  color: #1e3a8a;
+}
+
+.tool-card-selection-hover {
+  position: fixed;
+  min-width: 220px;
+  max-width: 380px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 8px 10px;
+  z-index: 10000;
+}
+
+.tool-card-selection-hover-item {
+  font-size: 12px;
+  color: #374151;
+  padding: 3px 0;
+  word-break: break-word;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.tool-card-selection-hover-item:last-child {
+  border-bottom: none;
+}
+
+.tool-card-selection-hover-more {
+  font-size: 12px;
+  color: #6b7280;
+  font-style: italic;
+  padding-top: 4px;
+}
+
+/* ========================================
+   SIMPLIFIED SERVICE CARD (single-step)
+   ======================================== */
+.copilot-service-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  background: #f9fafb;
+  margin: 8px 0;
+}
+.copilot-service-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+.copilot-service-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* ========================================
+   DIRECT FORM MODAL (single-step bypass)
+   ======================================== */
+.copilot-direct-form-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f8fafc;
+}
+.copilot-direct-form-modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+.copilot-direct-form-modal-content {
+  padding: 0;
+  overflow-y: auto;
+  max-height: calc(88vh - 140px);
+}
+.copilot-direct-form-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid #e5e7eb;
+  background: #f8fafc;
+}

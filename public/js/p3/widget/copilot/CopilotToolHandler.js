@@ -58,6 +58,22 @@ define([
             : topLevel;
           var callInfo = (topLevel.call && typeof topLevel.call === 'object') ? topLevel.call : null;
 
+          // Flat format from plan_genome_assembly, plan_genome_annotation, plan_comparative_systems
+          // Has app and parameters at top level, no workflow_json
+          if (payloadSource.app && payloadSource.parameters && !payloadSource.workflow_json) {
+            console.log('[CopilotToolHandler] ✓ Path A0: Chunk is flat service-plan format (app + parameters)');
+            var normalizedWorkflow = this._normalizeServicePlanResponse(payloadSource);
+            if (normalizedWorkflow) {
+              return {
+                ...baseData,
+                chunk: JSON.stringify(chunk),
+                isWorkflow: true,
+                workflowData: normalizedWorkflow,
+                tool_call: callInfo
+              };
+            }
+          }
+
           // New format from plan_workflow or submit_workflow: {workflow_json: {...}, ...}
           // Also detect plan_workflow payloads by presence of prompt_payload.
           if (payloadSource.workflow_json || payloadSource.prompt_payload) {
@@ -168,6 +184,21 @@ define([
           ? parsedTopLevel.result
           : parsedTopLevel;
         var parsedCallInfo = (parsedTopLevel.call && typeof parsedTopLevel.call === 'object') ? parsedTopLevel.call : null;
+
+        // Handle flat service-plan format (plan_genome_assembly, plan_genome_annotation, plan_comparative_systems)
+        if (parsedPayload && parsedPayload.app && parsedPayload.parameters && !parsedPayload.workflow_json) {
+          console.log('[CopilotToolHandler] ✓ Detected flat service-plan format (parsed)');
+          var normalizedFromParsed = this._normalizeServicePlanResponse(parsedPayload);
+          if (normalizedFromParsed) {
+            return {
+              ...baseData,
+              chunk: content,
+              isWorkflow: true,
+              workflowData: normalizedFromParsed,
+              tool_call: parsedCallInfo
+            };
+          }
+        }
 
         // Handle new format: check if parsedChunk has workflow_json or prompt_payload
         if (parsedPayload && (parsedPayload.workflow_json || parsedPayload.prompt_payload)) {
@@ -338,11 +369,19 @@ define([
         }
 
         // Handle nested structure: [{ "/path": [row1, row2, ...] }]
+        // vs regular data objects: [{ name: "...", type: "...", ... }]
         if (item && typeof item === 'object') {
-          for (var key in item) {
-            if (item.hasOwnProperty(key) && Array.isArray(item[key])) {
-              flattened = flattened.concat(item[key]);
+          var firstKey = Object.keys(item)[0];
+          if (firstKey && firstKey.charAt(0) === '/') {
+            // Path-keyed nested structure
+            for (var key in item) {
+              if (item.hasOwnProperty(key) && Array.isArray(item[key])) {
+                flattened = flattened.concat(item[key]);
+              }
             }
+          } else {
+            // Regular data object (e.g. from group list tools)
+            flattened.push(item);
           }
         }
       }
@@ -680,6 +719,56 @@ define([
              toolId.indexOf('query_collection') !== -1;
     },
 
+    _isGroupListTool: function(toolId) {
+      if (!toolId || typeof toolId !== 'string') {
+        return false;
+      }
+      return toolId.indexOf('list_genome_groups') !== -1 ||
+             toolId.indexOf('list_feature_groups') !== -1;
+    },
+
+    _isServicePlanTool: function(toolId) {
+      if (!toolId || typeof toolId !== 'string') {
+        return false;
+      }
+      return toolId === 'bvbrc_server.plan_genome_assembly' ||
+             toolId === 'bvbrc_server.plan_genome_annotation' ||
+             toolId === 'bvbrc_server.plan_comparative_systems' ||
+             toolId.indexOf('plan_genome_assembly') !== -1 ||
+             toolId.indexOf('plan_genome_annotation') !== -1 ||
+             toolId.indexOf('plan_comparative_systems') !== -1;
+    },
+
+    _normalizeServicePlanResponse: function(response) {
+      if (!response || typeof response !== 'object' || !response.app || !response.parameters) {
+        return null;
+      }
+      var appToStepName = {
+        GenomeAssembly2: 'assemble_reads',
+        GenomeAnnotation: 'annotate_genome',
+        ComparativeSystems: 'compare_systems'
+      };
+      var stepName = appToStepName[response.app] || response.app;
+      return {
+        workflow_id: response.workflow_id,
+        workflow_name: response.workflow_name || 'Planned Workflow',
+        status: response.status || 'planned',
+        steps: [{
+          step_name: stepName,
+          app: response.app,
+          parameters: response.parameters
+        }],
+        auto_corrections: Array.isArray(response.auto_corrections) ? response.auto_corrections : [],
+        execution_metadata: {
+          workflow_id: response.workflow_id,
+          status: response.status || 'planned',
+          is_planned: (response.status || 'planned') === 'planned',
+          is_submitted: !!(response.status && response.status !== 'planned'),
+          source: response.source
+        }
+      };
+    },
+
     /**
      * Processes a tool-specific event
      * @param {string} currentEvent - The current SSE event type
@@ -695,10 +784,11 @@ define([
           console.log('[CopilotToolHandler][QueryCollection][processToolEvent] call.id=' + (parsed.call.id || 'n/a') + ', call.tool=' + (parsed.call.tool || parsed.call.tool_name || 'n/a'));
         }
       }
-      // Handle final_response event for workflow tools (plan_workflow and submit_workflow)
+      // Handle final_response event for workflow tools (plan_workflow, submit_workflow, plan_genome_*)
       if (currentEvent === 'final_response' &&
           (tool === 'bvbrc_server.plan_workflow' ||
-           tool === 'bvbrc_server.submit_workflow') &&
+           tool === 'bvbrc_server.submit_workflow' ||
+           this._isServicePlanTool(tool)) &&
           parsed.chunk) {
         const processed = this._processWorkflowManifest(parsed.chunk, parsed);
         if (processed) {
@@ -710,6 +800,18 @@ define([
       // Handle final_response event for workspace browse tool
       if (currentEvent === 'final_response' &&
           tool === 'bvbrc_server.workspace_browse_tool' &&
+          parsed.chunk) {
+        const processed = this._processWorkspaceBrowse(parsed.chunk, parsed);
+        if (processed) {
+          return processed;
+        }
+        // Return original if parsing fails
+        return parsed;
+      }
+      // Handle final_response event for group list tools (list_genome_groups, list_feature_groups)
+      // Same result/call/ui_grid envelope as workspace_browse_tool; reuse workspace browse processor
+      if (currentEvent === 'final_response' &&
+          this._isGroupListTool(tool) &&
           parsed.chunk) {
         const processed = this._processWorkspaceBrowse(parsed.chunk, parsed);
         if (processed) {
@@ -831,11 +933,14 @@ define([
         // If chunk is already a fully parsed object with workspace and summary, use it directly
         if (typeof chunk === 'object' && !chunk.content && (chunk.workspace || chunk.summary)) {
           console.log('[CopilotToolHandler] ✓ Path A: Chunk is already parsed query collection data');
-          var directCallInfo = (chunk.call && typeof chunk.call === 'object')
+           var directCallInfo = (chunk.call && typeof chunk.call === 'object')
             ? chunk.call
             : ((baseData && baseData.call && typeof baseData.call === 'object')
             ? baseData.call
             : ((baseData && baseData.tool_call && typeof baseData.tool_call === 'object') ? baseData.tool_call : null));
+          var directDownloadUrl = (directCallInfo && directCallInfo.replay && directCallInfo.replay.download_url)
+            ? directCallInfo.replay.download_url
+            : null;
           return {
             ...baseData,
             chunk: JSON.stringify(chunk), // Store stringified version for display
@@ -850,7 +955,12 @@ define([
               rqlQueryUrl: chunk.rqlQueryUrl || chunk.rql_query_url || chunk.queryUrl || chunk.query_url || null,
               nextCursorId: chunk.nextCursorId || null,
               collection: chunk.collection || (chunk.queryParameters && chunk.queryParameters.collection) || null,
-              resultRows: Array.isArray(chunk.results) ? chunk.results : []
+              resultRows: Array.isArray(chunk.results) ? chunk.results : [],
+              // Snapshot metadata
+              numFound: typeof chunk.numFound === 'number' ? chunk.numFound : null,
+              is_snapshot: typeof chunk.is_snapshot === 'boolean' ? chunk.is_snapshot : false,
+              snapshot_limit: typeof chunk.snapshot_limit === 'number' ? chunk.snapshot_limit : null,
+              download_url: directDownloadUrl
             },
             tool_call: directCallInfo
           };
@@ -904,6 +1014,11 @@ define([
           ? parsedChunk.result
           : parsedChunk;
 
+        // Extract download_url from call.replay if available
+        var snapshotDownloadUrl = (parsedCallInfo && parsedCallInfo.replay && parsedCallInfo.replay.download_url)
+          ? parsedCallInfo.replay.download_url
+          : null;
+
         let queryCollectionData = {
           workspace: resolvedPayload.workspace || null,
           summary: resolvedPayload.summary || null,
@@ -914,7 +1029,12 @@ define([
           rqlQueryUrl: resolvedPayload.rqlQueryUrl || resolvedPayload.rql_query_url || resolvedPayload.queryUrl || resolvedPayload.query_url || null,
           nextCursorId: resolvedPayload.nextCursorId || null,
           collection: resolvedPayload.collection || (resolvedPayload.queryParameters && resolvedPayload.queryParameters.collection) || null,
-          resultRows: Array.isArray(resolvedPayload.results) ? resolvedPayload.results : []
+          resultRows: Array.isArray(resolvedPayload.results) ? resolvedPayload.results : [],
+          // Snapshot metadata from bvbrc_search_data
+          numFound: typeof resolvedPayload.numFound === 'number' ? resolvedPayload.numFound : null,
+          is_snapshot: typeof resolvedPayload.is_snapshot === 'boolean' ? resolvedPayload.is_snapshot : false,
+          snapshot_limit: typeof resolvedPayload.snapshot_limit === 'number' ? resolvedPayload.snapshot_limit : null,
+          download_url: snapshotDownloadUrl
         };
 
         console.log('[CopilotToolHandler] ✓ Extracted query collection data');
@@ -946,9 +1066,10 @@ define([
       if (!sourceTool || !content) {
         return { content: content };
       }
-      // Handle workflow tools (plan_workflow and submit_workflow)
+      // Handle workflow tools (plan_workflow, submit_workflow, plan_genome_assembly, plan_genome_annotation, plan_comparative_systems)
       if (sourceTool === 'bvbrc_server.plan_workflow' ||
-          sourceTool === 'bvbrc_server.submit_workflow') {
+          sourceTool === 'bvbrc_server.submit_workflow' ||
+          this._isServicePlanTool(sourceTool)) {
         const baseData = { chunk: content };
         const processed = this._processWorkflowManifest(content, baseData);
         if (processed) {
@@ -960,10 +1081,9 @@ define([
         }
       }
 
-      // Handle workspace browse tool
-      if (sourceTool === 'bvbrc_server.workspace_browse_tool') {
-        console.log('[CopilotToolHandler] Processing workspace_browse_tool');
-        console.log('[CopilotToolHandler] sourceTool:', sourceTool);
+      // Handle workspace browse tool and group list tools (list_genome_groups, list_feature_groups)
+      if (sourceTool === 'bvbrc_server.workspace_browse_tool' || this._isGroupListTool(sourceTool)) {
+        console.log('[CopilotToolHandler] Processing workspace-style tool:', sourceTool);
         console.log('[CopilotToolHandler] content type:', typeof content);
         console.log('[CopilotToolHandler] content value:', content);
 
