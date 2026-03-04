@@ -1,9 +1,9 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/query', 'dojo/dom-class', 'dojo/topic', 'dojo/dom', './AppBase',
-  'dojo/text!./templates/HASubtypeNumberingConversion.html'
+  'dojo/text!./templates/HASubtypeNumberingConversion.html', '../../WorkspaceManager'
 ], function (
   declare, lang, query, domClass, Topic, dom, AppBase,
-  Template
+  Template, WorkspaceManager
 ) {
 
   const HaReferenceTypes = [
@@ -68,6 +68,11 @@ define([
         return;
       }
       this.inherited(arguments);
+
+      this.defaultPath = WorkspaceManager.getDefaultFolder() || this.activeWorkspacePath;
+      if (this.output_path) {
+        this.output_path.set('value', this.defaultPath);
+      }
 
       this.conversionScheme.addOption(HaReferenceTypes);
       this.onInputChange(true);
