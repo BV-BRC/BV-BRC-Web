@@ -146,7 +146,8 @@ app.use(function (req, res, next) {
     copilotEnableModelSelector: config.get('copilotEnableModelSelector') || false,
     copilotEnableRagSelector: config.get('copilotEnableRagSelector') || false,
     copilotEnableShowPromptDetails: config.get('copilotEnableShowPromptDetails') || false,
-    localStorageCheckInterval: config.get('localStorageCheckInterval')
+    localStorageCheckInterval: config.get('localStorageCheckInterval'),
+    workspaceSelectorExcludeFolders: config.get('workspaceSelectorExcludeFolders') || []
   };
   // console.log("Application Options: ", req.applicationOptions);
   next();
