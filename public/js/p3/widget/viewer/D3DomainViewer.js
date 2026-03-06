@@ -12,14 +12,13 @@ define([
 
   return declare([], {
     // Configuration
-    trackHeight: 24,
-    trackPadding: 4,
+    trackHeight: 20,
+    trackPadding: 3,
     backboneHeight: 10,
     headerHeight: 30,
     legendHeight: 25,
     minDomainWidth: 3,
-    maxTracks: 8,
-    overlapPadding: 5,
+    maxTracks: 15,
 
     // State
     domains: null,
@@ -183,23 +182,30 @@ define([
       var self = this;
       var tracks = [];
 
-      // Sort domains by start position
+      // Sort domains by start position, then by end position (shorter domains first)
       var sortedDomains = domains.slice().sort(function (a, b) {
-        return (a.start || 0) - (b.start || 0);
+        var startDiff = (a.start || 0) - (b.start || 0);
+        if (startDiff !== 0) {
+          return startDiff;
+        }
+        // If same start, shorter domain first
+        return (a.end || 0) - (b.end || 0);
       });
 
-      tracks.push({ domains: [], maxEnd: 0 });
+      tracks.push({ domains: [], maxEnd: -1 });
 
       sortedDomains.forEach(function (domain) {
         var start = domain.start || 0;
         var end = domain.end || start;
         var placed = false;
 
-        // Try to find a track where this domain fits
+        // Try to find a track where this domain fits (no overlap)
+        // A domain fits if its start position is greater than the track's maxEnd
+        // (i.e., the domain starts after all existing domains in the track end)
         for (var i = 0; i < tracks.length; i++) {
           var track = tracks[i];
-          if (start > track.maxEnd + self.overlapPadding) {
-            // Domain fits in this track
+          if (start > track.maxEnd) {
+            // Domain fits in this track - no overlap
             track.domains.push(domain);
             track.maxEnd = end;
             domain._track = i;
