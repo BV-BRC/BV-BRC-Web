@@ -227,6 +227,22 @@ define([
     },
 
     /**
+     * Determine if a hex color is dark (for text contrast)
+     * Uses relative luminance calculation
+     * @param {string} hexColor - Hex color code (e.g., '#1e3cbe')
+     * @returns {boolean} True if the color is dark
+     */
+    _isColorDark: function (hexColor) {
+      var hex = hexColor.replace('#', '');
+      var r = parseInt(hex.substring(0, 2), 16);
+      var g = parseInt(hex.substring(2, 4), 16);
+      var b = parseInt(hex.substring(4, 6), 16);
+      // Calculate relative luminance (ITU-R BT.709)
+      var luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      return luminance < 0.5;
+    },
+
+    /**
      * Render the protein backbone (horizontal bar)
      */
     _renderBackbone: function (canvasWidth) {
@@ -325,11 +341,15 @@ define([
           label = label.substring(0, Math.floor(width / 7) - 2) + '...';
         }
 
+        // Determine text color based on background brightness
+        var textColor = this._isColorDark(color) ? '#ffffff' : '#333333';
+
         domainGroup.append('text')
           .attr('x', width / 2)
           .attr('y', this.trackHeight / 2 + 4)
           .attr('text-anchor', 'middle')
           .attr('class', 'domain-viewer-domain-label')
+          .attr('fill', textColor)
           .text(label);
       }
 
