@@ -2859,7 +2859,13 @@ define([
             this.addChild(newPanel);
             this.activePanel = newPanel;
           } else {
-            this.activePanel.set('path', this.path);
+            // For job_result types, we need to set 'data' not 'path'
+            // because JobResult viewer uses data to initialize
+            if (obj.type === 'job_result') {
+              this.activePanel.set('data', obj);
+            } else {
+              this.activePanel.set('path', this.path);
+            }
             if (this.activePanel && 'clearSelection' in this.activePanel) {
               this.activePanel.clearSelection();
             }
