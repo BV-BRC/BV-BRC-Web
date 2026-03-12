@@ -140,6 +140,49 @@ state.search + '&' + state.hashParams.filter
 - D3.js for custom visualizations (charts, domain viewers)
 - Cytoscape for network graphs
 - JBrowse for genome browser (git submodule)
+- Mauve viewer for genome alignments (see below)
+
+### Mauve Genome Alignment Viewer
+The genome alignment viewer (`public/js/mauve_viewer/`) displays aligned genome sequences:
+
+**Key files:**
+- `src/mauve-viewer.js` - Main viewer class
+- `src/track.js` - Individual genome track rendering
+- `src/colors.js` - Color palette definitions
+- `src/backbone.js` - LCB connection lines between tracks
+
+**Color scheme:**
+- **LCBs (Locally Collinear Blocks):** Colored rectangles using a 20-color categorical palette. Same LCB across different genomes has the same color. Colors cycle if >20 LCBs.
+- **Contigs:** Vertical red lines (`#b50707`) at 65% opacity marking contig boundaries
+- **Features:** Gray rectangles (`#777`) at 40% opacity, only visible when zoomed ≤100,000 bp
+
+**LCB Color Palette (in order):**
+1. Blue `rgb(31, 119, 180)`, Light blue `rgb(174, 199, 232)`
+2. Orange `rgb(255, 127, 14)`, Light orange `rgb(255, 187, 120)`
+3. Green `rgb(44, 160, 44)`, Light green `rgb(152, 223, 138)`
+4. Red `rgb(214, 39, 40)`, Light red `rgb(255, 152, 150)`
+5. Purple `rgb(148, 103, 189)`, Light purple `rgb(197, 176, 213)`
+6. Brown `rgb(140, 86, 75)`, Light brown `rgb(196, 156, 148)`
+7. Pink `rgb(227, 119, 194)`, Light pink `rgb(247, 182, 210)`
+8. Gray `rgb(127, 127, 127)`, Light gray `rgb(199, 199, 199)`
+9. Yellow-green `rgb(188, 189, 34)`, Light yellow-green `rgb(219, 219, 141)`
+10. Cyan `rgb(23, 190, 207)`, Light cyan `rgb(158, 218, 229)`
+
+### Workspace and Job Result Navigation
+Workspace browsing is handled by `WorkspaceBrowser.js` with these key patterns:
+
+**Panel reuse:** When navigating between items of the same type, the existing panel is reused rather than creating a new one. The `instanceof` check determines if panel can be reused.
+
+**Job results:** Job results (`type: 'job_result'`) are special:
+- Files stored in hidden folders (e.g., `.JobName/` contains output files)
+- `JobResult.js` viewer displays job metadata header + file grid
+- Nested job results (e.g., "assembly" inside Comprehensive Genome Analysis) require `set('data', obj)` not `set('path', ...)` when reusing panels
+- When reusing JobResult panels, the existing viewer must be destroyed before creating a new one to prevent overlay issues
+
+**Key files:**
+- `widget/WorkspaceBrowser.js` - Main workspace navigation and panel management
+- `widget/WorkspaceExplorerView.js` - File/folder grid display
+- `widget/viewer/JobResult.js` - Job result viewer with metadata header
 
 ## Configuration
 
