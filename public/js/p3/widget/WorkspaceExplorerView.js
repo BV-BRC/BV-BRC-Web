@@ -178,6 +178,10 @@ define([
           }
 
           objs.sort(function (a, b) {
+            // Always keep parentfolder at the top regardless of sort order
+            if (a.type === 'parentfolder') return -1;
+            if (b.type === 'parentfolder') return 1;
+
             var s = sort[0];
             if (s.descending) {
               return (a[s.attribute] < b[s.attribute]) ? 1 : -1;

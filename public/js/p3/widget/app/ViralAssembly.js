@@ -36,6 +36,9 @@ define([
       this.inherited(arguments);
       var _self = this;
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
+      if (_self.output_path) {
+        _self.output_path.set('value', _self.defaultPath);
+      }
       this._started = true;
       this.form_flag = false;
       try {

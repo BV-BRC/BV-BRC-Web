@@ -1,10 +1,12 @@
 define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
+  'dojo/topic',
   './PageGrid', './formatter', '../store/ProteinFeaturesJsonRest', './GridSelector'
 ], function (
   declare, BorderContainer, on,
   domClass, ContentPane, domConstruct,
+  Topic,
   Grid, formatter, Store, selector
 ) {
 
@@ -62,6 +64,22 @@ define([
         });
       });
 
+      // Row hover event for domain visualization sync
+      this.on('.dgrid-content .dgrid-row:mouseover', function (evt) {
+        var row = _self.row(evt);
+        if (row && row.data) {
+          Topic.publish('/domainGrid/hover', {
+            id: row.data.id,
+            domain: row.data
+          });
+        }
+      });
+
+      // Row mouseout to clear hover
+      this.on('.dgrid-content .dgrid-row:mouseout', function (evt) {
+        Topic.publish('/domainGrid/hover', { id: null });
+      });
+
       this.on('dgrid-select', function (evt) {
         console.log('dgrid-select: ', evt);
         var newEvt = {
@@ -72,6 +90,10 @@ define([
           cancelable: true
         };
         on.emit(_self.domNode, 'select', newEvt);
+
+        // Publish selection to domain visualization
+        var selectedIds = Object.keys(evt.grid.selection);
+        Topic.publish('/domainGrid/select', { ids: selectedIds });
       });
       this.on('dgrid-deselect', function (evt) {
         console.log('dgrid-select');
@@ -83,7 +105,17 @@ define([
           cancelable: true
         };
         on.emit(_self.domNode, 'deselect', newEvt);
+
+        // Publish updated selection to domain visualization
+        var selectedIds = Object.keys(evt.grid.selection);
+        Topic.publish('/domainGrid/select', { ids: selectedIds });
       });
+
+      // Subscribe to visualization selection events to highlight rows in grid
+      Topic.subscribe('/domainViewer/hover', function (data) {
+        // Could add row highlighting here if needed
+      });
+
       this.inherited(arguments);
       this.refresh();
     }

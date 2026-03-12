@@ -119,6 +119,13 @@ define([
         this._viewerPlaceholder = null;
       }
 
+      // Clean up existing viewer if present (happens when reusing panel for different job_result)
+      if (this.viewer) {
+        this.removeChild(this.viewer);
+        this.viewer.destroyRecursive();
+        this.viewer = null;
+      }
+
       // Create viewHeader if it doesn't exist yet (async path runs before startup)
       if (!this.viewHeader) {
         this.viewHeader = new ContentPane({ content: 'Loading data from ' + this.data.name + ' job file.', region: 'top' });
