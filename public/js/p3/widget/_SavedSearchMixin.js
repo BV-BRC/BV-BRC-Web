@@ -44,7 +44,7 @@ define([
         },
         function (selection, container) {
           // Create descriptor from grid context
-          var descriptor = QueryDescriptor.createFromGrid(this.grid);
+          var descriptor = QueryDescriptor.createFromGrid(this.grid, this.containerType);
 
           // Add metadata
           if (this.state) {
