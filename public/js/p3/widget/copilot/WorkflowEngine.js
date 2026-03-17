@@ -15,6 +15,7 @@ define([
   'dijit/_TemplatedMixin',
   'dijit/form/Button',
   './workflowForms/ServiceFormRegistry',
+  './workflowForms/CopilotServiceFormAdapter',
   './ServiceValidationRules',
   '../../WorkspaceManager'
 ], function(
@@ -30,6 +31,7 @@ define([
   _TemplatedMixin,
   Button,
   ServiceFormRegistry,
+  CopilotServiceFormAdapter,
   ServiceValidationRules,
   WorkspaceManager
 ) {
@@ -81,6 +83,12 @@ define([
     /** @property {dijit/form/Button|null} Reference to submit button */
     submitWorkflowButton: null,
 
+    /** @property {DOMNode|null} Reference to review button */
+    reviewWorkflowButton: null,
+
+    /** @property {boolean} Whether the review form is currently visible */
+    _reviewFormVisible: false,
+
     /** @property {Object} Reference to CopilotAPI for workflow submission */
     copilotApi: null,
 
@@ -98,6 +106,11 @@ define([
       this.stepCardNodesByIndex = {};
       this.stepValidationTimers = {};
       this.submitWorkflowButton = null;
+      this.reviewWorkflowButton = null;
+      this._reviewFormVisible = false;
+      this._singleStepFormHost = null;
+      this._singleStepSection = null;
+      this._singleStepApplyFromForm = null;
       this.detailPanel = null;
       this.detailTitleNode = null;
       this.detailContentNode = null;
@@ -182,11 +195,79 @@ define([
       // Render workflow header
       this.renderWorkflowHeader(workflow, container);
 
-      // Render workflow steps
-      this.renderWorkflowSteps(workflow, container);
+      // For single-step with Dojo wrapper, bypass pipeline grid and show form directly
+      var isSingleStep = workflow.steps && workflow.steps.length === 1;
+      if (isSingleStep && CopilotServiceFormAdapter.hasDojoForm(workflow.steps[0].app)) {
+        this.renderSingleStepDirectForm(workflow, container);
+      } else {
+        this.renderWorkflowSteps(workflow, container);
+      }
 
       // Render workflow outputs
       this.renderWorkflowOutputs(workflow, container);
+    },
+
+    /**
+     * Renders the Dojo service form directly for single-step workflows (belt-and-suspenders).
+     * @param {Object} workflow - Workflow data
+     * @param {DOMNode} container - Parent container
+     */
+    renderSingleStepDirectForm: function(workflow, container) {
+      var self = this;
+      var step = workflow.steps[0];
+      var appName = step.app;
+      var params = step.params || {};
+      var appDisplayNames = {
+        'GenomeAssembly2': 'Genome Assembly',
+        'GenomeAnnotation': 'Genome Annotation',
+        'ComparativeSystems': 'Comparative Systems'
+      };
+      var serviceName = appDisplayNames[appName] || appName;
+
+      var section = domConstruct.create('div', {
+        class: 'workflow-steps-container workflow-single-step-direct'
+      }, container);
+
+      domConstruct.create('h3', {
+        class: 'workflow-section-title',
+        innerHTML: serviceName
+      }, section);
+
+      var formHost = domConstruct.create('div', {
+        class: 'copilot-dojo-form-container'
+      }, section);
+
+      // Hide form host immediately — user must click Review to see it
+      domStyle.set(formHost, 'display', 'none');
+      self._singleStepFormHost = formHost;
+      self._singleStepSection = section;
+
+      var loadingNode = domConstruct.create('div', {
+        innerHTML: 'Loading service form...',
+        class: 'workflow-form-loading'
+      }, section);
+
+      CopilotServiceFormAdapter.createForm(appName).then(function(formWidget) {
+        domConstruct.destroy(loadingNode);
+        domConstruct.place(formWidget.domNode, formHost);
+        formWidget.startup();
+        // setFromManifest now handles its own startup-readiness polling
+        formWidget.setFromManifest(params);
+        self._singleStepFormWidget = formWidget;
+
+        // Auto-apply form values to step params when form data changes
+        self._singleStepApplyFromForm = function() {
+          var newParams = formWidget.toManifest();
+          if (newParams) {
+            step.params = lang.mixin({}, step.params, newParams);
+            self.validateStep(0, { updateUI: true });
+          }
+        };
+      }, function(err) {
+        domConstruct.destroy(loadingNode);
+        domConstruct.empty(section);
+        self.renderWorkflowSteps(workflow, section);
+      });
     },
 
     /**
@@ -292,7 +373,7 @@ define([
         }, metaContainer);
       }
 
-      // Add submit button if workflow is not yet submitted
+      // Add Review and Submit buttons if workflow is not yet submitted
       var isSubmitted = workflow.execution_metadata &&
                        workflow.execution_metadata.is_submitted;
       var isPlanned = workflow.execution_metadata &&
@@ -300,18 +381,72 @@ define([
 
       if (!isSubmitted || isPlanned) {
         var buttonContainer = domConstruct.create('div', {
-          style: 'margin-top: 15px; text-align: left;'
+          style: 'margin-top: 15px; text-align: left; display: flex; gap: 10px; align-items: center;'
         }, header);
 
+        // Review button — always enabled, toggles the editable form view
+        this.reviewWorkflowButton = domConstruct.create('button', {
+          type: 'button',
+          class: 'workflow-review-btn',
+          innerHTML: 'Review',
+          title: 'Review and edit service parameters'
+        }, buttonContainer);
+        this.reviewWorkflowButton.onclick = lang.hitch(this, function() {
+          this._toggleReviewForm(workflow);
+        });
+
+        // Submit button — disabled until validation passes
         this.submitWorkflowButton = new Button({
           label: 'Submit',
           type: 'submit',
           onClick: lang.hitch(this, function() {
+            // Auto-apply form edits before submitting if form is visible
+            if (this._reviewFormVisible && this._singleStepApplyFromForm) {
+              this._singleStepApplyFromForm();
+            }
             this.validateWorkflowBeforeSubmit(workflow);
           })
         });
         this.submitWorkflowButton.placeAt(buttonContainer);
         this.submitWorkflowButton.set('disabled', true);
+      }
+    },
+
+    /**
+     * Toggles the review form visibility for single-step workflows.
+     * For multi-step workflows, toggles the detail panel for step 0.
+     * @param {Object} workflow - Workflow data
+     */
+    _toggleReviewForm: function(workflow) {
+      // Single-step direct form path
+      if (this._singleStepFormHost) {
+        if (this._reviewFormVisible) {
+          // Closing review — auto-apply current form values
+          if (this._singleStepApplyFromForm) {
+            this._singleStepApplyFromForm();
+          }
+          domStyle.set(this._singleStepFormHost, 'display', 'none');
+          this._reviewFormVisible = false;
+          if (this.reviewWorkflowButton) {
+            this.reviewWorkflowButton.innerHTML = 'Review';
+          }
+        } else {
+          domStyle.set(this._singleStepFormHost, 'display', '');
+          this._reviewFormVisible = true;
+          if (this.reviewWorkflowButton) {
+            this.reviewWorkflowButton.innerHTML = 'Close Review';
+          }
+        }
+        return;
+      }
+
+      // Multi-step fallback — toggle first step details
+      if (workflow.steps && workflow.steps.length > 0) {
+        if (this.selectedStepIndex === 0) {
+          this.hideStepDetails();
+        } else {
+          this.showStepDetails(workflow.steps[0], 0);
+        }
       }
     },
 
@@ -616,6 +751,7 @@ define([
       }
 
       if (this.selectedStepIndex !== -1 && this.selectedStepIndex !== index) {
+        this._destroyActiveDojoForm(this.selectedStepIndex);
         this.hideStepDetails();
       }
 
@@ -654,6 +790,7 @@ define([
     hideStepDetails: function() {
       var currentIndex = this.selectedStepIndex;
       if (currentIndex >= 0) {
+        this._destroyActiveDojoForm(currentIndex);
         var cardData = this.stepCardNodesByIndex[currentIndex];
         if (cardData && cardData.card) {
           domClass.remove(cardData.card, 'workflow-step-card-expanded');
@@ -749,8 +886,10 @@ define([
         }));
       }
 
-      // Parameters
-      if (step.params && Object.keys(step.params).length > 0) {
+      // Parameters (show for Dojo forms even when params empty, so user can configure)
+      var hasParams = step.params && Object.keys(step.params).length > 0;
+      var hasDojoForm = CopilotServiceFormAdapter.hasDojoForm(step.app || '');
+      if (hasParams || hasDojoForm) {
         var paramsSection = domConstruct.create('div', {
           class: 'workflow-detail-section'
         }, content);
@@ -833,6 +972,90 @@ define([
     },
 
     renderEditableParams: function(step, index, paramsSection) {
+      var appName = step.app || '';
+      if (CopilotServiceFormAdapter.hasDojoForm(appName)) {
+        this._destroyActiveDojoForm(index);
+        this._renderDojoForm(step, index, paramsSection);
+        return;
+      }
+      this._renderGenericParams(step, index, paramsSection);
+    },
+
+    _renderDojoForm: function(step, index, paramsSection) {
+      var self = this;
+      var appName = step.app;
+      var params = step.params || {};
+      var loadingNode = domConstruct.create('div', {
+        innerHTML: 'Loading service form...',
+        class: 'workflow-form-loading'
+      }, paramsSection);
+
+      CopilotServiceFormAdapter.createForm(appName).then(function(formWidget) {
+        domConstruct.destroy(loadingNode);
+        self.getStepFormState(step, index);
+        var formContainer = domConstruct.create('div', {
+          class: 'copilot-dojo-form-container'
+        }, paramsSection);
+        domConstruct.place(formWidget.domNode, formContainer);
+        formWidget.startup();
+        // setFromManifest now handles its own startup-readiness polling
+        formWidget.setFromManifest(params);
+        self._activeDojoForms = self._activeDojoForms || {};
+        self._activeDojoForms[index] = formWidget;
+
+        var actionRow = domConstruct.create('div', {
+          class: 'workflow-form-actions'
+        }, paramsSection);
+        var applyBtn = domConstruct.create('button', {
+          type: 'button',
+          class: 'workflow-form-action-btn',
+          innerHTML: 'Apply Edits'
+        }, actionRow);
+        var resetBtn = domConstruct.create('button', {
+          type: 'button',
+          class: 'workflow-form-action-btn workflow-form-action-btn-secondary',
+          innerHTML: 'Reset Step'
+        }, actionRow);
+        applyBtn.onclick = function() {
+          var newParams = formWidget.toManifest();
+          if (newParams) {
+            self.applyDojoFormEdits(step, index, newParams);
+          }
+        };
+        resetBtn.onclick = function() {
+          var state = self.getStepFormState(step, index);
+          formWidget.setFromManifest(state.original || step.params || {});
+        };
+      }, function(err) {
+        domConstruct.destroy(loadingNode);
+        domConstruct.create('div', {
+          innerHTML: 'Failed to load service form: ' + (err.message || err),
+          style: 'color: #991b1b; padding: 12px;'
+        }, paramsSection);
+        self._renderGenericParams(step, index, paramsSection);
+      });
+    },
+
+    applyDojoFormEdits: function(step, index, newParams) {
+      step.params = lang.mixin({}, step.params, newParams);
+      var state = this.getStepFormState(step, index);
+      state.current = this.cloneValue(step.params);
+      this.validateStep(index, { updateUI: true });
+      topic.publish('/Notification', { message: 'Step parameters updated', type: 'message' });
+    },
+
+    _destroyActiveDojoForm: function(index) {
+      if (this._activeDojoForms && this._activeDojoForms[index]) {
+        try {
+          this._activeDojoForms[index].destroyRecursive();
+        } catch (e) {
+          console.warn('[WorkflowEngine] Error destroying Dojo form:', e);
+        }
+        delete this._activeDojoForms[index];
+      }
+    },
+
+    _renderGenericParams: function(step, index, paramsSection) {
       var state = this.getStepFormState(step, index);
       var editableParams = state.current;
       var serviceMeta = ServiceFormRegistry.getDefinition(step.app || '');
@@ -1778,11 +2001,36 @@ define([
       this.stepCardNodesByIndex = {};
       this.stepValidationTimers = {};
       this.submitWorkflowButton = null;
+      this.reviewWorkflowButton = null;
+      this._reviewFormVisible = false;
+      this._singleStepFormHost = null;
+      this._singleStepSection = null;
+      this._singleStepApplyFromForm = null;
       this.detailPanel = null;
       this.detailTitleNode = null;
       this.detailContentNode = null;
       this.detailPrevBtn = null;
       this.detailNextBtn = null;
+      if (this._singleStepFormWidget) {
+        try {
+          this._singleStepFormWidget.destroyRecursive();
+        } catch (e) {
+          console.warn('[WorkflowEngine] Error destroying single-step form:', e);
+        }
+        this._singleStepFormWidget = null;
+      }
+      if (this._activeDojoForms) {
+        for (var idx in this._activeDojoForms) {
+          if (this._activeDojoForms.hasOwnProperty(idx)) {
+            try {
+              this._activeDojoForms[idx].destroyRecursive();
+            } catch (e) {
+              console.warn('[WorkflowEngine] Error destroying Dojo form:', e);
+            }
+          }
+        }
+        this._activeDojoForms = {};
+      }
       // Clear existing content
       domConstruct.empty(this.domNode);
       // Re-render

@@ -339,9 +339,17 @@ define([
       var current = data.current || 0;
       var total = data.total || 0;
       var percentage = Math.round(data.percentage || 0);
+      var collection = data.collection || '';
 
-      var content = 'Downloading ' + current + ' of ' + total +
-                    ' results (' + percentage + '%)';
+      var content;
+      if (current === 0 && collection) {
+        content = 'Querying ' + collection.replace(/_/g, ' ') + '...';
+      } else if (total > 0) {
+        content = 'Fetched ' + current + ' of ' + total +
+                  ' results (' + percentage + '%)';
+      } else {
+        content = 'Fetching results...';
+      }
 
       // Optionally include batch number if available
       if (data.batchNumber) {

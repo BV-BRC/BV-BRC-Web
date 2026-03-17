@@ -70,9 +70,12 @@ define([
       }));
 
       // activate genome group selector when user is logged in
-      if (window.App.user) {
-        this.defaultPath = WorkspaceManager.getDefaultFolder() || this.activeWorkspacePath;
+      this.defaultPath = WorkspaceManager.getDefaultFolder() || this.activeWorkspacePath;
+      if (this.output_path) {
+        this.output_path.set('value', this.defaultPath);
+      }
 
+      if (window.App.user) {
         var user = window.App.user;
         this.first_name.set('value', user.first_name);
         this.last_name.set('value', user.last_name);

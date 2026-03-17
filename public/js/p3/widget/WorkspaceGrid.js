@@ -285,6 +285,39 @@ define([
       // see WorkspaceExplorerView.listWorkspaceContents for sorting
       _self.set('sort', [{ attribute: 'name', descending: false }] );
 
+      // Override dgrid's sort to keep parentfolder at top
+      aspect.around(_self, 'renderArray', function (originalRenderArray) {
+        return function (results) {
+          // If results is an array, sort it with parentfolder pinned to top
+          if (Array.isArray(results)) {
+            var sort = _self.get('sort');
+            if (sort && sort.length > 0) {
+              results = results.slice().sort(function (a, b) {
+                // Always keep parentfolder at the top
+                if (a.type === 'parentfolder') return -1;
+                if (b.type === 'parentfolder') return 1;
+
+                var s = sort[0];
+                var aVal = a[s.attribute];
+                var bVal = b[s.attribute];
+                // Handle undefined/null values
+                if (aVal == null) aVal = '';
+                if (bVal == null) bVal = '';
+                // Case-insensitive string comparison
+                if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+                if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+
+                if (s.descending) {
+                  return (aVal < bVal) ? 1 : (aVal > bVal) ? -1 : 0;
+                }
+                return (aVal > bVal) ? 1 : (aVal < bVal) ? -1 : 0;
+              });
+            }
+          }
+          return originalRenderArray.call(this, results);
+        };
+      });
+
       this.inherited(arguments);
       this._started = true;
     },

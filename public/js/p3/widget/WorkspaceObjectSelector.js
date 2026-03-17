@@ -284,8 +284,24 @@ define([
       }
       this.value = value;
       // Only set on searchBox if it exists (may not during construction)
-      if (this.searchBox) {
-        this.searchBox.set('value', this.value);
+      if (this.searchBox && value) {
+        // Extract the name (final element) from the path
+        var name = value.replace(/\/+$/, '').split('/').pop();
+
+        // Add the value to the store so FilteringSelect validation passes
+        // This allows the form to be valid even before the async store loads
+        if (this.store) {
+          try {
+            if (!this.store.get(value)) {
+              this.store.add({ path: value, name: name });
+            }
+          } catch (e) {
+            // Ignore duplicate errors
+          }
+        }
+
+        // Now set the value - it should validate since it's in the store
+        this.searchBox.set('value', value);
       }
 
       // if (this._started) {
@@ -298,7 +314,13 @@ define([
     },
 
     _getValueAttr: function (value) {
-      return this.searchBox.get('value', value);
+      var searchBoxValue = this.searchBox.get('value', value);
+      // If searchBox doesn't have a value yet (store not loaded), fall back to this.value
+      // This ensures the value is returned even before the async store loads
+      if (!searchBoxValue && this.value) {
+        return this.value;
+      }
+      return searchBoxValue;
     },
 
     // sets selection of object selector form field
@@ -937,72 +959,214 @@ define([
       // Capture the current counter value to detect stale responses
       var currentCounter = this._refreshCounter || 0;
       var self = this;
-      this._refreshing = WorkspaceManager.getObjectsByType(this.type, target_path)
-        .then(lang.hitch(this, function (items) {
-          delete this._refreshing;
-          this._isLoadingDropdown = false;
 
+      // Check if this selector includes folders
+      var typeArray = this.type instanceof Array ? this.type : [this.type];
+      var includesFolders = typeArray.indexOf('folder') >= 0;
+
+      // Fetch workspace items and (if this is a folder selector) favorites in parallel
+      var itemsPromise = WorkspaceManager.getObjectsByType(this.type, target_path);
+      var favoritesPromise = includesFolders ? FavoriteFolders.load() : new Deferred();
+      if (!includesFolders) {
+        favoritesPromise.resolve([]);
+      }
+
+      this._refreshing = all([itemsPromise, favoritesPromise])
+        .then(lang.hitch(this, function (results) {
           // If counter changed, this response is stale - ignore it
           if ((self._refreshCounter || 0) !== currentCounter) {
+            delete this._refreshing;
             return;
           }
 
-          // sort by most recent
-          items.sort(function (a, b) {
-            return b.timestamp - a.timestamp;
+          var items = results[0];
+          var favoritePaths = results[1] || [];
+
+          // Create a Set for fast lookup of items we already have
+          var itemPathSet = {};
+          items.forEach(function (item) {
+            itemPathSet[item.path] = true;
           });
-          this.store = new Memory({ data: items, idProperty: 'path' });
-          if (this.isSortAlpha) {
-            // sort alphabetically
-            var dataArr = this.store.data;
-            dataArr.sort(compare);
 
-            this.store.data = dataArr;
+          // Find favorite paths that are NOT in the items list (from other workspaces)
+          var missingFavoritePaths = favoritePaths.filter(function (path) {
+            return !itemPathSet[path];
+          });
+
+          // If there are missing favorites, fetch their metadata
+          var missingFavoritesPromise;
+          if (missingFavoritePaths.length > 0) {
+            missingFavoritesPromise = WorkspaceManager.getObjects(missingFavoritePaths, true)
+              .then(function (metaList) {
+                var currentUserId = window.App && window.App.user ? window.App.user.id : null;
+                // Filter to only include folders with write access
+                return metaList.filter(function (meta) {
+                  // Must be a folder
+                  if (!meta || meta.type !== 'folder') {
+                    return false;
+                  }
+                  // Check if user has write access
+                  if (!currentUserId) {
+                    return false;
+                  }
+                  // Owner always has write access
+                  if (meta.owner_id === currentUserId) {
+                    return true;
+                  }
+                  // user_permissions from getObjects is the current user's permission level
+                  // It can be: 'o' (owner), 'a' (admin), 'w' (write), 'r' (read), 'n' (none)
+                  if (meta.user_permissions === 'w' || meta.user_permissions === 'a' || meta.user_permissions === 'o') {
+                    return true;
+                  }
+                  // Check global_permission for write access
+                  if (meta.global_permission === 'w') {
+                    return true;
+                  }
+                  return false;
+                });
+              }, function () {
+                // If fetch fails, just return empty array
+                return [];
+              });
+          } else {
+            missingFavoritesPromise = new Deferred();
+            missingFavoritesPromise.resolve([]);
           }
-          this.searchBox.set('store', this.store);
-          if (this.value) {
-            // If value is set but not in the store (e.g., cross-workspace path from rerun),
-            // inject a synthetic item so FilteringSelect can resolve and display it
-            try {
-              if (!this.store.get(this.value)) {
-                var name = this.value.replace(/\/+$/, '').split('/').pop();
-                this.store.add({ path: this.value, name: name });
-              }
-            } catch (e) { /* ignore */ }
-            this.searchBox.set('value', this.value);
-          }
-          // If the dropdown is currently open, refresh its display
-          // Force a re-search to update the dropdown contents
-          try {
-            var isOpen = false;
-            // Check various ways to detect if dropdown is open
-            if (this.searchBox._opened) {
-              isOpen = true;
-            } else if (this.searchBox.dropDown && this.searchBox.dropDown.domNode) {
-              var display = this.searchBox.dropDown.domNode.style.display;
-              if (display !== 'none' && display !== '') {
-                isOpen = true;
-              }
+
+          return missingFavoritesPromise.then(lang.hitch(this, function (missingFavorites) {
+            delete this._refreshing;
+            this._isLoadingDropdown = false;
+
+            // If counter changed, this response is stale - ignore it
+            if ((self._refreshCounter || 0) !== currentCounter) {
+              return;
             }
 
-            if (isOpen) {
-              // Try to trigger a re-search by calling the internal search method
-              if (this.searchBox._startSearch) {
-                this.searchBox._startSearch('');
-              } else if (this.searchBox.loadDropDown) {
-                this.searchBox.loadDropDown();
+            // Get list of folder paths to exclude from the dropdown
+            // These are relative paths within a workspace (e.g., '/Genome Groups')
+            var excludeFolderPaths = window.App && window.App.workspaceSelectorExcludeFolders || [];
+
+            // Filter out excluded folders by matching paths
+            // Path format: /username/workspace/folder/subfolder
+            // We extract the portion after /username/workspace and check if it starts with an excluded path
+            if (excludeFolderPaths.length > 0) {
+              items = items.filter(function (item) {
+                var pathParts = item.path.split('/');
+                // Path structure: ['', username, workspace, folder, subfolder, ...]
+                // Extract the path within the workspace (starting from index 3)
+                if (pathParts.length >= 4) {
+                  var workspacePath = '/' + pathParts.slice(3).join('/');
+                  // Check if this path starts with any excluded path
+                  for (var i = 0; i < excludeFolderPaths.length; i++) {
+                    if (workspacePath === excludeFolderPaths[i] ||
+                        workspacePath.indexOf(excludeFolderPaths[i] + '/') === 0) {
+                      return false;
+                    }
+                  }
+                }
+                return true;
+              });
+            }
+
+            // Create a Set for fast lookup of favorite paths
+            var favoriteSet = {};
+            favoritePaths.forEach(function (path) {
+              favoriteSet[path] = true;
+            });
+
+            // Mark items that are favorites and separate into two arrays
+            var favoriteItems = [];
+            var regularItems = [];
+            items.forEach(function (item) {
+              if (favoriteSet[item.path]) {
+                item.isFavorite = true;
+                favoriteItems.push(item);
               } else {
-                // Fallback: close and reopen
-                this.searchBox.closeDropDown();
-                var _searchBox = this.searchBox;
-                setTimeout(function() {
-                  _searchBox.openDropDown();
-                }, 50);
+                regularItems.push(item);
               }
+            });
+
+            // Add missing favorites (from other workspaces) to the favorites list
+            missingFavorites.forEach(function (meta) {
+              // Strip trailing slash from path for consistent formatting
+              var cleanPath = meta.path.replace(/\/+$/, '');
+              // Convert metadata to item format with timestamp
+              var item = {
+                path: cleanPath,
+                name: meta.name,
+                type: meta.type,
+                timestamp: meta.creation_time ? new Date(meta.creation_time).getTime() : 0,
+                isFavorite: true
+              };
+              favoriteItems.push(item);
+            });
+
+            // Sort favorites alphabetically
+            favoriteItems.sort(compare);
+
+            // Sort regular items by most recent timestamp
+            regularItems.sort(function (a, b) {
+              return b.timestamp - a.timestamp;
+            });
+
+            // Combine: favorites first, then regular items
+            var combinedItems = favoriteItems.concat(regularItems);
+
+            this.store = new Memory({ data: combinedItems, idProperty: 'path' });
+            if (this.isSortAlpha) {
+              // sort alphabetically (but keep favorites at top)
+              var dataArr = this.store.data;
+              var favs = dataArr.filter(function (item) { return item.isFavorite; });
+              var regs = dataArr.filter(function (item) { return !item.isFavorite; });
+              favs.sort(compare);
+              regs.sort(compare);
+              this.store.data = favs.concat(regs);
             }
-          } catch (e) {
-            // Ignore errors during dropdown refresh
-          }
+            this.searchBox.set('store', this.store);
+            if (this.value) {
+              // If value is set but not in the store (e.g., cross-workspace path from rerun),
+              // inject a synthetic item so FilteringSelect can resolve and display it
+              try {
+                if (!this.store.get(this.value)) {
+                  var name = this.value.replace(/\/+$/, '').split('/').pop();
+                  this.store.add({ path: this.value, name: name });
+                }
+              } catch (e) { /* ignore */ }
+              this.searchBox.set('value', this.value);
+            }
+            // If the dropdown is currently open, refresh its display
+            // Force a re-search to update the dropdown contents
+            try {
+              var isOpen = false;
+              // Check various ways to detect if dropdown is open
+              if (this.searchBox._opened) {
+                isOpen = true;
+              } else if (this.searchBox.dropDown && this.searchBox.dropDown.domNode) {
+                var display = this.searchBox.dropDown.domNode.style.display;
+                if (display !== 'none' && display !== '') {
+                  isOpen = true;
+                }
+              }
+
+              if (isOpen) {
+                // Try to trigger a re-search by calling the internal search method
+                if (this.searchBox._startSearch) {
+                  this.searchBox._startSearch('');
+                } else if (this.searchBox.loadDropDown) {
+                  this.searchBox.loadDropDown();
+                } else {
+                  // Fallback: close and reopen
+                  this.searchBox.closeDropDown();
+                  var _searchBox = this.searchBox;
+                  setTimeout(function() {
+                    _searchBox.openDropDown();
+                  }, 50);
+                }
+              }
+            } catch (e) {
+              // Ignore errors during dropdown refresh
+            }
+          }));
         }));
     },
 
@@ -1110,7 +1274,10 @@ define([
         return '<div style="display:none;"></div>';
       }
 
-      var label = '<div style="font-size:1em; border-bottom:1px solid grey;">/';
+      // Add star icon for favorite items
+      var starIcon = item.isFavorite ? '<i class="icon-star" style="color:#f0ad4e;margin-right:4px;"></i>' : '';
+
+      var label = '<div style="font-size:1em; border-bottom:1px solid grey;">' + starIcon + '/';
       var pathParts = item.path.split('/');
 
       // Skip items that are too high-level (e.g., /user/home with no subfolder)

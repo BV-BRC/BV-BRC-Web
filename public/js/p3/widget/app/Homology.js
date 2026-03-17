@@ -132,13 +132,9 @@ define([
       this.inherited(arguments);
 
       // activate genome group selector when user is logged in
-      if (window.App.user) {
-        this.defaultPath = WorkspaceManager.getDefaultFolder() || this.activeWorkspacePath;
-        // var ggDom = query('div[name="genome_group"]')[0];
-        // this.genome_group = new WorkspaceObjectSelector();
-        // this.genome_group.set('path', this.defaultPath);
-        // this.genome_group.set('type', ['genome_group']);
-        // this.genome_group.placeAt(ggDom, 'only');
+      this.defaultPath = WorkspaceManager.getDefaultFolder() || this.activeWorkspacePath;
+      if (this.output_path) {
+        this.output_path.set('value', this.defaultPath);
       }
       this.emptyTable(this.genomeTable, this.startingRows);
       // this.emptyTable(this.patternFileTable, this.patternRows);

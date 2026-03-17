@@ -1,0 +1,59 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      release_message:
+        description: 'Release message (what changed in this release)'
+        required: true
+        type: string
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: alpha
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        id: bump
+        run: |
+          npm version ${{ inputs.version_type }} --no-git-tag-version
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          git checkout -b release/v${VERSION}
+          git add package.json package-lock.json
+          git commit -m "Release v${VERSION}
+
+          ${{ inputs.release_message }}"
+
+      - name: Push branch and create PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=${{ steps.bump.outputs.version }}
+          git push -u origin release/v${VERSION}
+          gh pr create --base alpha --head release/v${VERSION} \
+            --title "Release v${VERSION}" \
+            --body "## Release v${VERSION}
+
+          ${{ inputs.release_message }}
+
+          ---
+          *After merging, a tag will be created automatically.*"

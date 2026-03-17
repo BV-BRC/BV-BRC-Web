@@ -51,6 +51,9 @@ define([
       this.inherited(arguments);
       var _self = this;
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
+      if (_self.output_path) {
+        _self.output_path.set('value', _self.defaultPath);
+      }
 
       for (var i = 0; i < this.startingRows; i++) {
         var tr = this.libsTable.insertRow(0);
@@ -310,7 +313,7 @@ define([
     },
 
     onAddGenomeGroupRerun: function (genome_group_list) {
-      if (genome_group_list == 0) {
+      if (!genome_group_list || genome_group_list.length === 0) {
         return;
       }
 
@@ -365,6 +368,8 @@ define([
             handle.remove();
           }));
           this.increaseLib(lrec);
+        }), lang.hitch(this, function (err) {
+          console.error('[ComparativeSystems] Failed to load genome group "' + label + '" from path: ' + paths, err);
         }));
       }));
     }

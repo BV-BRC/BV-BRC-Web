@@ -1,0 +1,251 @@
+/* Domain Viewer Styles */
+
+/* Panel Container */
+.domain-visualization-panel {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  /* Ensure proper sizing within BorderContainer */
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Override dijit ContentPane padding */
+.domain-visualization-panel.dijitContentPane {
+  padding: 0;
+}
+
+/* Adjust panel to align with grid (accounting for right panels) */
+.GridContainer > .domain-visualization-panel {
+  /* The right panels are: selectionActionBar (56px) + itemDetailPanel (250px) + splitter (~5px) = ~311px */
+  margin-right: 0;
+}
+
+.domain-visualization-panel.collapsed .domain-visualization-viewer {
+  display: none;
+}
+
+/* Header */
+.domain-visualization-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  border-radius: 4px 4px 0 0;
+}
+
+.domain-visualization-panel.collapsed .domain-visualization-header {
+  border-bottom: none;
+  border-radius: 4px;
+}
+
+.domain-visualization-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+  margin-right: 8px;
+}
+
+.domain-visualization-count {
+  font-size: 12px;
+  color: #666;
+  flex-grow: 1;
+}
+
+.domain-visualization-toggle {
+  background: transparent;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.domain-visualization-toggle:hover {
+  background: #e0e0e0;
+  border-color: #999;
+  color: #333;
+}
+
+.domain-visualization-toggle:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(83, 117, 185, 0.3);
+}
+
+/* Viewer Container */
+.domain-visualization-viewer {
+  padding: 10px;
+  min-height: 100px;
+}
+
+.domain-viewer-chart {
+  width: 100%;
+}
+
+.domain-viewer-svg {
+  display: block;
+  width: 100%;
+}
+
+/* Empty State */
+.domain-viewer-empty {
+  font-size: 14px;
+  fill: #999;
+  font-style: italic;
+}
+
+/* Backbone */
+.domain-viewer-backbone polyline {
+  stroke: #333;
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.domain-viewer-position-label {
+  font-size: 11px;
+  fill: #666;
+  font-family: 'Roboto', 'Open Sans', sans-serif;
+}
+
+.domain-viewer-title-label {
+  font-size: 12px;
+  fill: #333;
+  font-weight: 500;
+  font-family: 'Roboto', 'Open Sans', sans-serif;
+}
+
+/* Domain Rectangles */
+.domain-viewer-domain {
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.domain-viewer-domain:hover {
+  opacity: 0.9;
+}
+
+.domain-viewer-domain rect {
+  transition: stroke-width 0.15s ease;
+}
+
+.domain-viewer-domain-label {
+  font-size: 10px;
+  fill: #333;
+  font-family: 'Roboto', 'Open Sans', sans-serif;
+  pointer-events: none;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
+}
+
+/* Legend */
+.domain-viewer-legend {
+  font-family: 'Roboto', 'Open Sans', sans-serif;
+}
+
+.domain-viewer-legend-text {
+  font-size: 11px;
+  fill: #555;
+}
+
+/* Tooltip */
+.domain-tooltip {
+  position: absolute;
+  background: rgba(40, 40, 40, 0.95);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: 'Roboto', 'Open Sans', sans-serif;
+  line-height: 1.5;
+  max-width: 350px;
+  z-index: 10000;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.domain-tooltip strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 4px;
+  color: #fff;
+}
+
+.domain-tooltip-source {
+  color: #8dd3c7;
+  font-weight: 500;
+}
+
+.domain-tooltip-position,
+.domain-tooltip-length,
+.domain-tooltip-evalue {
+  color: #ddd;
+}
+
+.domain-tooltip-link {
+  color: #80b1d3;
+  font-style: italic;
+  margin-top: 4px;
+  display: block;
+}
+
+/* Selection Highlight */
+.domain-viewer-domain.selected rect {
+  stroke-width: 3px;
+}
+
+.domain-viewer-domain.hovered rect {
+  stroke-width: 2px;
+}
+
+/* Track Styling */
+.domain-viewer-track {
+  /* Track group styling if needed */
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .domain-visualization-header {
+    padding: 6px 10px;
+  }
+
+  .domain-visualization-title {
+    font-size: 13px;
+  }
+
+  .domain-visualization-count {
+    font-size: 11px;
+  }
+
+  .domain-viewer-position-label,
+  .domain-viewer-legend-text {
+    font-size: 10px;
+  }
+
+  .domain-viewer-domain-label {
+    font-size: 9px;
+  }
+
+  .domain-tooltip {
+    font-size: 11px;
+    max-width: 280px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .domain-visualization-toggle {
+    display: none;
+  }
+
+  .domain-visualization-panel {
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+
+  .domain-tooltip {
+    display: none !important;
+  }
+}
