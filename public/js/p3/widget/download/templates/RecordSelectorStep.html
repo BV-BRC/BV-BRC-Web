@@ -1,0 +1,73 @@
+<div class="stepContent recordSelectorStep">
+  <div class="stepHeader">
+    <h3>Select Records</h3>
+    <p class="stepDescription">Choose which records to include in the download.</p>
+  </div>
+
+  <div class="errorMessage dijitHidden" data-dojo-attach-point="errorNode"></div>
+  <div class="loadingIndicator dijitHidden" data-dojo-attach-point="loadingNode">
+    <i class="fa fa-spinner fa-spin"></i> Loading record counts...
+  </div>
+
+  <div class="recordOptions" data-dojo-attach-point="optionsNode">
+    <div class="recordOption" data-scope="selected" data-dojo-attach-point="selectedOption">
+      <div class="optionRadio">
+        <input type="radio" name="recordScope" value="selected" id="scope_selected" data-dojo-attach-point="selectedRadio">
+      </div>
+      <label for="scope_selected" class="optionLabel">
+        <div class="optionTitle">
+          <i class="fa fa-check-square"></i>
+          Download Selected Records
+        </div>
+        <div class="optionDescription">
+          Only download records you have selected
+        </div>
+        <div class="optionCount" data-dojo-attach-point="selectedCountNode">
+          <span class="countValue">0</span> records selected
+        </div>
+      </label>
+    </div>
+
+    <div class="recordOption" data-scope="all" data-dojo-attach-point="allOption">
+      <div class="optionRadio">
+        <input type="radio" name="recordScope" value="all" id="scope_all" checked data-dojo-attach-point="allRadio">
+      </div>
+      <label for="scope_all" class="optionLabel">
+        <div class="optionTitle">
+          <i class="fa fa-list"></i>
+          Download All Records
+        </div>
+        <div class="optionDescription">
+          Download all records matching your search criteria
+        </div>
+        <div class="optionCount" data-dojo-attach-point="allCountNode">
+          <span class="countValue">&mdash;</span> records total
+        </div>
+      </label>
+    </div>
+
+    <div class="recordOption" data-scope="random" data-dojo-attach-point="randomOption">
+      <div class="optionRadio">
+        <input type="radio" name="recordScope" value="random" id="scope_random" data-dojo-attach-point="randomRadio">
+      </div>
+      <label for="scope_random" class="optionLabel">
+        <div class="optionTitle">
+          <i class="fa fa-random"></i>
+          Download Random Subset
+        </div>
+        <div class="optionDescription">
+          Download a random sample of records
+        </div>
+        <div class="optionLimit">
+          Limit to <input type="number" value="2000" min="1" max="100000"
+                          data-dojo-attach-point="randomLimitInput"
+                          class="randomLimitInput"> records
+        </div>
+      </label>
+    </div>
+  </div>
+
+  <div class="recordSummary" data-dojo-attach-point="summaryNode">
+    <!-- Summary will be shown here -->
+  </div>
+</div>
