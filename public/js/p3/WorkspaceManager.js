@@ -362,8 +362,26 @@ define([
           return '/' + [this.userId, 'home', 'Experiment Groups'].join('/');
 
         default:
-          // Return user's home folder as a valid default output location
-          return '/' + this.userId + '/home';
+          // Check user's default job folder preference from user profile
+          var userProfile = null;
+          try {
+            var profileStr = window.localStorage.getItem('userProfile');
+            if (profileStr) {
+              userProfile = JSON.parse(profileStr);
+            }
+          } catch (e) {
+            // Ignore parse errors
+          }
+
+          // Check if user has a default_job_folder setting
+          if (userProfile && userProfile.settings &&
+              userProfile.settings.default_job_folder) {
+            // Return the user's preference
+            return userProfile.settings.default_job_folder;
+          }
+
+          // No preference set - return empty string to force user to browse
+          return '';
       }
     },
     _userWorkspacesGetter: function () {
