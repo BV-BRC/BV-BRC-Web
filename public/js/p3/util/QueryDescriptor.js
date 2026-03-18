@@ -127,96 +127,6 @@ define([
     return typeName + ': ' + english;
   }
 
-  /**
-   * Extract visible columns from a grid in display order
-   * @param {Object} grid - A dgrid instance with columns
-   * @returns {Array} Array of {field, label} objects for visible columns
-   */
-  function extractVisibleColumns(grid) {
-    if (!grid || !grid.columns) {
-      return [];
-    }
-
-    var columns = grid.columns;
-    var visibleColumns = [];
-    var columnKeys = Object.keys(columns);
-
-    columnKeys.forEach(function (key) {
-      var col = columns[key];
-
-      // Skip hidden columns
-      if (col.hidden) {
-        return;
-      }
-
-      // Skip special columns (selection checkboxes, etc.)
-      if (col.unhidable && key === 'Selection Checkboxes') {
-        return;
-      }
-
-      // Get field name - use explicit field property or fall back to key
-      var field = col.field || key;
-
-      // Skip internal columns
-      if (field === 'public' || field === 'Selection Checkboxes') {
-        return;
-      }
-
-      visibleColumns.push({
-        field: field,
-        label: col.label || field
-      });
-    });
-
-    return visibleColumns;
-  }
-
-  /**
-   * Extract all available columns from a grid
-   * @param {Object} grid - A dgrid instance with columns
-   * @returns {Array} Array of {field, label, group} objects for all columns
-   */
-  function extractAllColumns(grid) {
-    if (!grid || !grid.columns) {
-      return [];
-    }
-
-    var columns = grid.columns;
-    var allColumns = [];
-    var columnKeys = Object.keys(columns);
-
-    columnKeys.forEach(function (key) {
-      var col = columns[key];
-
-      // Skip special columns (selection checkboxes, etc.)
-      if (col.unhidable && key === 'Selection Checkboxes') {
-        return;
-      }
-
-      // Get field name - use explicit field property or fall back to key
-      var field = col.field || key;
-
-      // Skip internal columns
-      if (field === 'public' || field === 'Selection Checkboxes') {
-        return;
-      }
-
-      var colInfo = {
-        field: field,
-        label: col.label || field
-      };
-
-      // Include group if present (useful for organizing in download UI)
-      if (col.group) {
-        colInfo.group = col.group;
-      }
-
-      allColumns.push(colInfo);
-    });
-
-    return allColumns;
-  }
-
   return {
     /**
      * Data type label mappings
@@ -275,13 +185,7 @@ define([
 
         // Cached results
         resultCount: options.resultCount || null,
-        countTimestamp: options.countTimestamp || null,
-
-        // Visible columns at time of save (user's current view)
-        visibleColumns: options.visibleColumns || null,
-
-        // All available columns for this data type
-        availableColumns: options.availableColumns || null
+        countTimestamp: options.countTimestamp || null
       };
 
       // Generate display query if not provided
@@ -334,20 +238,7 @@ define([
         query = grid.store._currentQuery;
       }
 
-      // Extract columns from the grid
-      var visibleColumns = extractVisibleColumns(grid);
-      var availableColumns = extractAllColumns(grid);
-
-      var dataType = containerTypeToDataType[containerType] ||
-                     (containerType ? containerType.replace(/_data$/, '') : 'genome_feature');
-
-      return this.create({
-        dataType: dataType,
-        rqlQuery: query,
-        source: 'grid',
-        visibleColumns: visibleColumns.length > 0 ? visibleColumns : null,
-        availableColumns: availableColumns.length > 0 ? availableColumns : null
-      });
+      return this.createFromContainerType(containerType, query, 'grid');
     },
 
     /**

@@ -573,8 +573,12 @@ define([
         function (selection, container) {
           console.log('SaveSearch button clicked', selection, this.query);
           try {
-            // Create descriptor from grid to capture column visibility
-            var descriptor = QueryDescriptor.createFromGrid(this.grid, this.containerType);
+            // Get the RQL query string directly from GridContainer
+            var rqlQuery = this.query || (this.state && this.state.search) || '';
+            console.log('RQL Query:', rqlQuery);
+
+            // Create descriptor directly using the query string
+            var descriptor = QueryDescriptor.createFromContainerType(this.containerType, rqlQuery, 'grid');
             console.log('Created descriptor:', descriptor);
 
             if (this.state) {
