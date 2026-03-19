@@ -1,7 +1,7 @@
 define([
   'dojo/_base/declare', 'dojo/on', 'dojo/_base/lang', 'dojo/query', './Base', 'dijit/layout/ContentPane', 'dojo/dom-construct',
   '../../WorkspaceManager', '../ActionBar', '../ItemDetailPanel', 'dijit/form/CheckBox', 'dijit/TooltipDialog', 'dijit/popup',
-  'dijit/Dialog', 'FileSaver'
+  'dijit/Dialog', 'FileSaver', 'msa'
 ], function (
   declare, on, lang, query, Base, ContentPane, domConstruct,
   WorkspaceManager, ActionBar, ItemDetailPanel, CheckBox, TooltipDialog, popup,
