@@ -1,6 +1,6 @@
 {
   "name": "p3-web",
-  "version": "3.57.14",
+  "version": "3.57.26",
   "private": true,
   "scripts": {
     "start": "node ./bin/p3-web",
@@ -33,6 +33,7 @@
     "express-rate-limit": "^7.5.1",
     "feedparser": "^2.2.10",
     "flag-icons": "^7.2.1",
+    "flatted": "^3.4.2",
     "formidable": "^2.1.2",
     "helmet": "^7.2.0",
     "html2canvas": "^1.4.1",

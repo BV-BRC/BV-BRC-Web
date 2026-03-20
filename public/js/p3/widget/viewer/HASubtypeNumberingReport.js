@@ -1,7 +1,7 @@
 define([
   'dojo/_base/declare', 'dojo/on', 'dojo/_base/lang', 'dojo/query', './Base', 'dijit/layout/ContentPane', 'dojo/dom-construct',
   '../../WorkspaceManager', '../ActionBar', '../ItemDetailPanel', 'dijit/form/CheckBox', 'dijit/TooltipDialog', 'dijit/popup',
-  'dijit/Dialog', 'FileSaver'
+  'dijit/Dialog', 'FileSaver', 'msa'
 ], function (
   declare, on, lang, query, Base, ContentPane, domConstruct,
   WorkspaceManager, ActionBar, ItemDetailPanel, CheckBox, TooltipDialog, popup,
@@ -161,12 +161,12 @@ define([
     onSetState: function (attr, oldVal, state) {
       this.loading = true;
 
-      const pathValue = this.state.pathname.match(/path=..+?(?=&|$)/);
+      const pathMatch = this.state.pathname.match(/path=([^&]+)/);
 
-      if (!pathValue || pathValue.length !== 1) {
+      if (!pathMatch) {
         this.showError('Job path has to be provided.');
       } else {
-        const jobFolder = pathValue[0].split('=')[1];
+        const jobFolder = decodeURIComponent(pathMatch[1]);
 
         // Create breadcrumbs
         this.pathContainer = domConstruct.create('div', { 'class': 'wsBreadCrumbContainer' }, this.contentPane.containerNode);

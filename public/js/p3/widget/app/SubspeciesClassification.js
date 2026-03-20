@@ -83,8 +83,9 @@ define([
       this.inherited(arguments);
 
       // activate genome group selector when user is logged in
-      if (window.App.user) {
-        this.defaultPath = WorkspaceManager.getDefaultFolder() || this.activeWorkspacePath;
+      this.defaultPath = WorkspaceManager.getDefaultFolder() || this.activeWorkspacePath;
+      if (this.output_path) {
+        this.output_path.set('value', this.defaultPath);
       }
 
       this.onInputChange(true);
