@@ -20,7 +20,8 @@ define([
     idType: null,
     inputType: null,
     conversionTypes: {
-      feature_data: [{ label: 'Feature', value: 'feature_group' }, { label: 'Genome', value: 'genome_group' }]
+      feature_data: [{ label: 'Feature', value: 'feature_group' }, { label: 'Genome', value: 'genome_group' }],
+      structure_data: [{ label: 'Feature', value: 'feature_group' }, { label: 'Genome', value: 'genome_group' }]
     },
     selectType: false,
     _setTypeAttr: function (t) {
