@@ -25,3 +25,6 @@ jest.config.json
 gulpfile.js
 .eslintrc.json
 /public/js/p3/widget/UserDetails.js
+
+# Auspice dist files
+/public/js/auspice-custom/dist/
