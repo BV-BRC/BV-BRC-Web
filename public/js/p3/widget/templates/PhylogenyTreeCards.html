@@ -1,14 +1,242 @@
 <div class="taxonTreeCards">
     <style>
-      .taxonTreeCards {
-        padding: 14px 16px;
+      /* ── Layout shell ───────────────────────────────────────────── */
+      .ptc-layout {
+        display: flex;
+        gap: 0;
+        min-height: calc(100vh - 170px);
       }
 
+      /* ── Collapse toggle button (always visible) ────────────────── */
+      .ptc-toggle-btn {
+        position: absolute;
+        top: 14px;
+        right: -12px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        transition: background 0.12s, border-color 0.12s;
+        flex-shrink: 0;
+        user-select: none;
+        font-size: 10px;
+        color: #6b7280;
+        line-height: 1;
+      }
+
+      .ptc-toggle-btn:hover {
+        background: #eef2f7;
+        border-color: #2c7a7b;
+        color: #2c7a7b;
+      }
+
+      /* ── Left filter panel ──────────────────────────────────────── */
+      .ptc-filter-panel {
+        position: relative; /* anchor for the toggle button */
+        flex-shrink: 0;
+        background: #f8fafb;
+        border-right: 1px solid #e5e7eb;
+        box-sizing: border-box;
+        align-self: stretch;
+        /* Animate width for collapse/expand */
+        width: 220px;
+        overflow: hidden;
+        transition: width 0.2s ease, padding 0.2s ease;
+      }
+
+      .ptc-filter-panel.ptc-collapsed {
+        width: 0;
+        border-right: none;
+      }
+
+      .ptc-filter-inner {
+        width: 220px; /* fixed inner width so content doesn't reflow during animation */
+        padding: 14px 0;
+        box-sizing: border-box;
+      }
+
+      /* ── Collapsed state: show a slim re-open strip ─────────────── */
+      .ptc-expand-strip {
+        display: none;
+        flex-shrink: 0;
+        width: 28px;
+        background: #f8fafb;
+        border-right: 1px solid #e5e7eb;
+        align-self: stretch;
+        align-items: flex-start;
+        justify-content: center;
+        padding-top: 14px;
+        cursor: pointer;
+      }
+
+      .ptc-expand-strip:hover {
+        background: #eef2f7;
+      }
+
+      .ptc-expand-strip-icon {
+        font-size: 11px;
+        color: #9ca3af;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        transform: rotate(180deg);
+        letter-spacing: 0.05em;
+        user-select: none;
+      }
+
+      /* ── Filter headings ────────────────────────────────────────── */
+      .ptc-filter-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px 6px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .ptc-filter-section-header:hover .ptc-section-chevron {
+        color: #2c7a7b;
+      }
+
+      .ptc-filter-heading {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: #9ca3af;
+      }
+
+      .ptc-section-chevron {
+        font-size: 9px;
+        color: #9ca3af;
+        transition: transform 0.15s;
+        line-height: 1;
+      }
+
+      .ptc-section-chevron.ptc-section-collapsed {
+        transform: rotate(-90deg);
+      }
+
+      .ptc-section-body {
+        overflow: hidden;
+        transition: max-height 0.2s ease;
+        max-height: 600px; /* large enough for any segment list */
+      }
+
+      .ptc-section-body.ptc-section-hidden {
+        max-height: 0;
+      }
+
+      /* Divider between the two filter sections */
+      .ptc-filter-divider {
+        margin: 12px 16px;
+        border: none;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      /* ── Filter items ───────────────────────────────────────────── */
+      .ptc-filter-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 7px 16px;
+        font-size: 13px;
+        color: #374151;
+        cursor: pointer;
+        border-left: 3px solid transparent;
+        transition: background 0.12s, border-color 0.12s, color 0.12s;
+        user-select: none;
+        line-height: 1.35;
+        gap: 6px;
+      }
+
+      .ptc-filter-item:hover {
+        background: #eef2f7;
+        color: #111827;
+      }
+
+      .ptc-filter-item.ptc-filter-active {
+        border-left-color: #2c7a7b;
+        background: #e6f2f2;
+        color: #1a5253;
+        font-weight: 600;
+      }
+
+      .ptc-filter-label {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .ptc-filter-badge {
+        font-size: 10px;
+        font-weight: 600;
+        background: #d1d5db;
+        color: #4b5563;
+        border-radius: 10px;
+        padding: 1px 7px;
+        min-width: 20px;
+        text-align: center;
+        flex-shrink: 0;
+      }
+
+      .ptc-filter-active .ptc-filter-badge {
+        background: #2c7a7b;
+        color: #fff;
+      }
+
+      /* Checkbox indicator for multi-select segment items */
+      .ptc-seg-item {
+        padding-left: 12px;
+      }
+
+      .ptc-seg-check {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+        border: 1.5px solid #d1d5db;
+        border-radius: 3px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: #fff;
+        background: #fff;
+        transition: background 0.12s, border-color 0.12s;
+      }
+
+      .ptc-filter-active .ptc-seg-check {
+        background: #2c7a7b;
+        border-color: #2c7a7b;
+      }
+
+      /* ── Right card area ────────────────────────────────────────── */
+      .ptc-cards-area {
+        flex: 1;
+        min-width: 0;
+        padding: 14px 16px;
+        overflow-x: hidden;
+      }
+
+      .ptc-empty {
+        color: #9ca3af;
+        font-size: 13px;
+        padding: 24px 0;
+      }
+
+      /* ── Card grid (unchanged) ──────────────────────────────────── */
       .treeGroup {
         display: inline-block;
         width: 100%;
         margin: 0 0 28px;
-
         break-inside: avoid;
         -webkit-column-break-inside: avoid;
         page-break-inside: avoid;
@@ -44,20 +272,26 @@
       }
 
       @media (min-width: 520px) {
-        .treeList { grid-template-columns: repeat(2, minmax(240px, 1fr)); }
+        .treeList {
+          grid-template-columns: repeat(2, minmax(220px, 1fr));
+        }
       }
 
       @media (min-width: 768px) {
-        .treeList { grid-template-columns: repeat(3, minmax(240px, 1fr)); }
+        .treeList {
+          grid-template-columns: repeat(3, minmax(220px, 1fr));
+        }
       }
 
-      @media (min-width: 1023px) {
-        .treeList { grid-template-columns: repeat(4, minmax(240px, 1fr)); }
+      @media (min-width: 1100px) {
+        .treeList {
+          grid-template-columns: repeat(4, minmax(220px, 1fr));
+        }
       }
 
       @media (min-width: 1400px) {
         .treeList {
-          grid-template-columns: repeat(5, minmax(240px, 1fr));
+          grid-template-columns: repeat(5, minmax(220px, 1fr));
           max-width: 1400px;
         }
       }
@@ -97,7 +331,60 @@
       }
     </style>
 
-    <div class="sections">
-        <div data-dojo-attach-point="contentNode"></div>
+    <div class="ptc-layout">
+
+        <!-- Slim re-open strip (visible only when panel is collapsed) -->
+        <div data-dojo-attach-point="expandStripNode" class="ptc-expand-strip">
+            <span class="ptc-expand-strip-icon">&#9660; Filters</span>
+        </div>
+
+        <!-- Left: filter panel -->
+        <div data-dojo-attach-point="filterPanelNode" class="ptc-filter-panel">
+
+            <!-- Toggle button (chevron pill on the right edge) -->
+            <div data-dojo-attach-point="toggleBtnNode" class="ptc-toggle-btn" title="Collapse filters">&#9664;</div>
+
+            <div class="ptc-filter-inner">
+
+                <!-- Strain section -->
+                <div data-dojo-attach-point="strainHeaderNode" class="ptc-filter-section-header">
+                    <span class="ptc-filter-heading">Strain</span>
+                    <span data-dojo-attach-point="strainChevronNode" class="ptc-section-chevron">&#9660;</span>
+                </div>
+                <div data-dojo-attach-point="strainBodyNode" class="ptc-section-body">
+                    <div data-dojo-attach-point="strainListNode"></div>
+                </div>
+
+                <!-- Viewer section -->
+                <div data-dojo-attach-point="viewerPanelNode">
+                    <hr class="ptc-filter-divider"/>
+                    <div data-dojo-attach-point="viewerHeaderNode" class="ptc-filter-section-header">
+                        <span class="ptc-filter-heading">Viewer</span>
+                        <span data-dojo-attach-point="viewerChevronNode" class="ptc-section-chevron">&#9660;</span>
+                    </div>
+                    <div data-dojo-attach-point="viewerBodyNode" class="ptc-section-body">
+                        <div data-dojo-attach-point="viewerListNode"></div>
+                    </div>
+                </div>
+
+                <!-- Segment section (hidden when only one segment exists) -->
+                <div data-dojo-attach-point="segmentPanelNode">
+                    <hr class="ptc-filter-divider"/>
+                    <div data-dojo-attach-point="segmentHeaderNode" class="ptc-filter-section-header">
+                        <span class="ptc-filter-heading">Segment</span>
+                        <span data-dojo-attach-point="segmentChevronNode" class="ptc-section-chevron">&#9660;</span>
+                    </div>
+                    <div data-dojo-attach-point="segmentBodyNode" class="ptc-section-body">
+                        <div data-dojo-attach-point="segmentListNode"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Right: card grid -->
+        <div class="ptc-cards-area">
+            <div data-dojo-attach-point="contentNode"></div>
+        </div>
     </div>
 </div>
