@@ -221,7 +221,6 @@ define([
       this.overview.set('context', 'virus');
 
       this.viewer.removeChild(this.phylogeny);
-      this.viewer.removeChild(this.sequences);
       this.viewer.removeChild(this.amr);
       this.viewer.removeChild(this.circular);
       this.viewer.removeChild(this.specialtyGenes);
