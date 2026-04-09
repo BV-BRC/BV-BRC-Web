@@ -1,6 +1,6 @@
 {
   "name": "p3-web",
-  "version": "3.57.26",
+  "version": "3.57.27",
   "private": true,
   "scripts": {
     "start": "NEXTSTRAIN_DATASET_DIR=./lib/auspice-datasets node ./bin/p3-web",
