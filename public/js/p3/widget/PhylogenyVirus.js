@@ -1,10 +1,10 @@
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dijit/_WidgetsInTemplateMixin', 'dijit/_TemplatedMixin',
-  'dojo/_base/lang', 'dojo/request', 'dojo/dom-construct', 'dojo/on',
+  'dojo/_base/lang', 'dojo/request', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/on',
   'dojo/text!./templates/PhylogenyVirus.html', './PhylogenyTreeCards', './outbreaks/OutbreaksPhylogenyTreeViewer'
 ], function (
   declare, _WidgetBase, _WidgetsInTemplateMixin, _TemplatedMixin,
-  lang, request, domConstruct, on,
+  lang, request, domConstruct, domStyle, on,
   template, PhylogenyTreeCards, OutbreaksPhylogenyTreeViewer
 ) {
   return declare([_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin], {
@@ -22,6 +22,14 @@ define([
       if (this._cards) {
         this._cards.destroyRecursive();
         this._cards = null;
+      }
+      if (this._nextstrainIframe) {
+        domConstruct.destroy(this._nextstrainIframe);
+        this._nextstrainIframe = null;
+      }
+      if (this._nextstrainContainer) {
+        domConstruct.destroy(this._nextstrainContainer);
+        this._nextstrainContainer = null;
       }
       this._data = null;
       this.inherited(arguments);
@@ -66,9 +74,57 @@ define([
 
       this.viewerTitleNode.textContent = title;
 
-      this._ensureViewer();              // create viewer widget once
-      this._viewer.loadTree(payload.url);
+      if (payload.section === 'Nextstrain') {
+        this._hideArchaeopteryxViewer();
+        this._openNextstrainViewer(payload.url);
+      } else {
+        this._hideNextstrainViewer();
+        this._ensureViewer();
+        this._viewer.loadTree(payload.url);
+        domStyle.set(this.viewerHostNode, 'display', '');
+      }
+
       this._showViewer();
+    },
+
+    // ── Nextstrain iframe viewer ──────────────────────────────────────────
+
+    _openNextstrainViewer: function (url) {
+      // Remove old iframe if it exists (src may differ)
+      if (this._nextstrainIframe) {
+        domConstruct.destroy(this._nextstrainIframe);
+        this._nextstrainIframe = null;
+      }
+
+      domStyle.set(this.viewerHostNode, 'display', 'none');
+
+      if (!this._nextstrainContainer) {
+        this._nextstrainContainer = domConstruct.create('div', {}, this.viewerPaneNode);
+      }
+
+      domStyle.set(this._nextstrainContainer, {
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        minHeight: '600px'
+      });
+
+      this._nextstrainIframe = domConstruct.create('iframe', {
+        src: '/nextstrain-viewer/' + url,
+        style: 'width:100%; height:100%; min-height:600px; border:none; display:block;'
+      }, this._nextstrainContainer);
+
+      domStyle.set(this._nextstrainContainer, 'display', '');
+    },
+
+    _hideNextstrainViewer: function () {
+      if (this._nextstrainContainer) {
+        domStyle.set(this._nextstrainContainer, 'display', 'none');
+      }
+    },
+
+    _hideArchaeopteryxViewer: function () {
+      domStyle.set(this.viewerHostNode, 'display', 'none');
     },
 
     _ensureViewer: function () {

@@ -17,6 +17,7 @@ var google = require('./routes/google');
 var workspace = require('./routes/workspace');
 var outbreaks = require('./routes/outbreaks');
 var viewers = require('./routes/viewers');
+var auspice = require('./routes/auspice');
 var remotePage = require('./routes/remotePage');
 var search = require('./routes/search');
 var contentViewer = require('./routes/content');
@@ -267,6 +268,39 @@ app.use('/status', systemStatus);  // system status page
 app.use('/help', help);
 app.use('/uploads', uploads);
 app.use('/users', users);
+
+// Embedded Nextstrain/Auspice viewer
+app.use('/charon', auspice);
+// Use the custom Auspice build produced by `npm run build:nextstrain` (output: ./dist)
+var auspiceDist = path.join(__dirname, 'public/js/auspice-custom/dist');
+// Keep favicon served from the Auspice package itself
+// Auspice runtime loads chunks at /dist/* (absolute); serve same assets at both paths
+app.use('/dist', express.static(auspiceDist));
+app.use('/nextstrain-viewer/dist', express.static(auspiceDist));
+// Serve the Auspice index.html for any route under /nextstrain-viewer
+// so client-side routing (e.g. /nextstrain-viewer/dengue/all) works.
+function sendAuspiceIndex(req, res) {
+  var fs = require('fs');
+  var indexPath = path.join(auspiceDist, 'index.html');
+  fs.readFile(indexPath, 'utf8', function (err, html) {
+    if (err) {
+      res.setHeader('Cache-Control', 'no-cache');
+      res.type('html').status(200).send(
+        '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Nextstrain viewer</title></head><body style="font-family:sans-serif;padding:2rem;max-width:40em;">' +
+        '<h1>Nextstrain viewer not built</h1>' +
+        '<p>The embedded Nextstrain/Auspice viewer has not been built yet. Build it with:</p>' +
+        '<pre style="background:#f0f0f0;padding:0.75rem;">npm run build:nextstrain</pre>' +
+        '<p>Optional: add datasets under <code>./datasets/</code> and run the build to view them here.</p>' +
+        '</body></html>'
+      );
+      return;
+    }
+    html = html.replace(/href="\/favicon\.png"/g, 'href="/nextstrain-viewer/favicon.png"');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.type('html').send(html);
+  });
+}
+app.get(['/nextstrain-viewer', '/nextstrain-viewer/', '/nextstrain-viewer/*'], sendAuspiceIndex);
 
 // MTB Taxon Overview Route
 app.use('/pathogens/mtb', [
