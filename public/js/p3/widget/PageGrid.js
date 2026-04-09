@@ -1,10 +1,10 @@
 define([
-  'dojo/_base/declare', 'dgrid/Grid', 'dojo/store/JsonRest', 'dgrid/extensions/DijitRegistry', 'dgrid/extensions/Pagination',
+  'dojo/_base/declare', 'dgrid/Grid', 'dojo/store/JsonRest', 'dgrid/extensions/DijitRegistry', './CursorPagination',
   'dgrid/Keyboard', 'dgrid/Selection', './formatter', 'dgrid/extensions/ColumnResizer', './ColumnHider',
   'dgrid/extensions/DnD', 'dojo/dnd/Source', 'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', '../util/PathJoin',
   'dgrid/extensions/ColumnReorder', 'dojo/on', 'dojo/has', 'dojo/has!touch?./util/touch', './Confirmation','./GridCopyToClipboard'
 ], function (
-  declare, Grid, Store, DijitRegistry, Pagination,
+  declare, Grid, Store, DijitRegistry, CursorPagination,
   Keyboard, Selection, formatter, ColumnResizer,
   ColumnHider, DnD, DnDSource,
   Deferred, aspect, lang, PathJoin,
@@ -22,7 +22,7 @@ define([
     return document.getElementById(id);
   }
 
-  return declare([Grid, Pagination, ColumnReorder, ColumnHider, Keyboard, ColumnResizer, DijitRegistry, Selection,GridCopyToClipboard], {
+  return declare([Grid, CursorPagination, ColumnReorder, ColumnHider, Keyboard, ColumnResizer, DijitRegistry, Selection,GridCopyToClipboard], {
     constructor: function () {
       this.dndParams.creator = lang.hitch(this, function (item, hint) {
         // console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
