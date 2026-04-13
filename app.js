@@ -95,9 +95,11 @@ if (proxyConfig) {
 
   for (const prox of proxyConfig) {
     console.log(prox);
+    // Use https by default, but allow it to be disabled per-proxy
+    const useHttps = prox.https !== undefined ? prox.https : prox.site.startsWith('https://');
     app.use(prox.local, proxy(prox.site, {
       proxyReqPathResolver: req => req.originalUrl.replace(prox.local, ""),
-      https: true
+      https: useHttps
     }));
   }
 }
