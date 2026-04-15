@@ -1,0 +1,81 @@
+name: Tag Hotfix
+on:
+  pull_request:
+    types: [closed]
+    branches: [master]
+
+jobs:
+  tag-hotfix:
+    # Only run if PR was merged and branch name starts with hotfix/v
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'hotfix/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tag
+        run: |
+          # Extract version from branch name (hotfix/vX.X.X -> vX.X.X)
+          VERSION=$(echo "${{ github.event.pull_request.head.ref }}" | sed 's/hotfix\///')
+          # Use PR title as tag message
+          git tag -a "$VERSION" -m "${{ github.event.pull_request.title }}"
+          git push origin "$VERSION"
+          echo "Created and pushed tag: $VERSION"
+
+      - name: Cherry-pick to alpha
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Get the merge commit SHA
+          MERGE_COMMIT=${{ github.event.pull_request.merge_commit_sha }}
+          VERSION=$(echo "${{ github.event.pull_request.head.ref }}" | sed 's/hotfix\///')
+
+          # Fetch alpha branch
+          git fetch origin alpha
+          git checkout alpha
+
+          # Cherry-pick the commits from the hotfix (excluding merge commit itself)
+          # Get the commits that were in the PR
+          git cherry-pick -x $MERGE_COMMIT -m 1 || {
+            echo "Cherry-pick had conflicts. Creating a PR for manual resolution."
+            git cherry-pick --abort
+
+            # Create a branch for manual cherry-pick
+            git checkout -b cherry-pick/hotfix-${VERSION}
+            git push -u origin cherry-pick/hotfix-${VERSION}
+
+            gh pr create --base alpha --head cherry-pick/hotfix-${VERSION} \
+              --title "Cherry-pick: Hotfix ${VERSION} to alpha" \
+              --body "## Cherry-pick Hotfix ${VERSION}
+
+          The automatic cherry-pick had conflicts. Please manually apply the changes from the hotfix.
+
+          Original PR: #${{ github.event.pull_request.number }}
+          Merge commit: ${MERGE_COMMIT}
+
+          ---
+          *This PR was created automatically because the cherry-pick had conflicts.*"
+            exit 0
+          }
+
+          # Push the cherry-picked commit to alpha
+          git push origin alpha
+          echo "Successfully cherry-picked hotfix to alpha"
+
+      - name: Delete hotfix branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+          gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/${BRANCH}" || true
+          echo "Deleted branch: $BRANCH"

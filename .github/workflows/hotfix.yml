@@ -1,0 +1,78 @@
+name: Hotfix
+on:
+  workflow_dispatch:
+    inputs:
+      hotfix_message:
+        description: 'Hotfix description (what is being fixed)'
+        required: true
+        type: string
+
+jobs:
+  create-hotfix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Get version from alpha and bump patch
+        id: bump
+        run: |
+          # Fetch alpha branch to get the current version (alpha is the source of truth)
+          git fetch origin alpha
+
+          # Get the version from alpha's package.json
+          ALPHA_VERSION=$(git show origin/alpha:package.json | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')).version")
+          echo "Alpha version: $ALPHA_VERSION"
+
+          # Parse version components
+          MAJOR=$(echo $ALPHA_VERSION | cut -d. -f1)
+          MINOR=$(echo $ALPHA_VERSION | cut -d. -f2)
+          PATCH=$(echo $ALPHA_VERSION | cut -d. -f3)
+
+          # Bump patch version
+          NEW_PATCH=$((PATCH + 1))
+          VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+          echo "New hotfix version: $VERSION"
+
+          # Update package.json with the new version
+          npm version $VERSION --no-git-tag-version --allow-same-version
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          git checkout -b hotfix/v${VERSION}
+          git add package.json package-lock.json
+          git commit -m "Hotfix v${VERSION}
+
+          ${{ inputs.hotfix_message }}"
+
+      - name: Push branch and create PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=${{ steps.bump.outputs.version }}
+          # Delete the branch if it already exists (from a failed previous run)
+          git push origin --delete hotfix/v${VERSION} 2>/dev/null || true
+          git push -u origin hotfix/v${VERSION}
+          gh pr create --base master --head hotfix/v${VERSION} \
+            --title "Hotfix v${VERSION}" \
+            --body "## Hotfix v${VERSION}
+
+          ${{ inputs.hotfix_message }}
+
+          ---
+          **Next steps:**
+          1. Check out this branch locally: \`git fetch origin && git checkout hotfix/v${VERSION}\`
+          2. Make your fix commits
+          3. Push your changes: \`git push\`
+          4. Merge this PR when ready
+
+          *After merging, a tag will be created and changes will be cherry-picked to alpha.*"
