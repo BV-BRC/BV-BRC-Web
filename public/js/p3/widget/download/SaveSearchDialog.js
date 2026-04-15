@@ -109,7 +109,7 @@ define([
       }, nameSection);
       this.duplicateWarning = domConstruct.create('div', {
         'class': 'duplicateWarning dijitHidden',
-        innerHTML: '<i class="fa fa-exclamation-triangle"></i> A search with this name already exists. Saving will overwrite it.'
+        innerHTML: '<i class="icon-exclamation-triangle"></i> A search with this name already exists. Saving will overwrite it.'
       }, nameSection);
 
       // Data type section
@@ -180,7 +180,7 @@ define([
       this.saveButton = domConstruct.create('button', {
         type: 'button',
         'class': 'saveButton',
-        innerHTML: '<i class="fa fa-save"></i> Save Search'
+        innerHTML: '<i class="icon-save"></i> Save Search'
       }, actions);
 
       this.set('content', content);

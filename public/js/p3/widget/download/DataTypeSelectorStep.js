@@ -22,8 +22,8 @@ define([
   /**
    * DataTypeSelectorStep - Step 1: Select the download format
    *
-   * Displays available formats grouped by category (Sequence, Annotation, Table)
-   * based on the data type being downloaded.
+   * Displays available formats grouped by category (Sequence data, Accession list, Results table)
+   * based on the data type being downloaded. Only one format can be selected across all categories.
    */
 
   return declare([WizardStepBase], {
@@ -50,9 +50,14 @@ define([
     onContextSet: function (context) {
       this._renderCategories();
 
-      // Pre-select format if specified
+      // Pre-select format if specified, otherwise use default
       if (context && context.preselectedFormat) {
         this._selectFormat(context.preselectedFormat);
+      } else if (context && context.dataType) {
+        var defaultFormat = DownloadFormats.getDefaultFormat(context.dataType);
+        if (defaultFormat) {
+          this._selectFormat(defaultFormat);
+        }
       }
     },
 
@@ -63,6 +68,13 @@ define([
       this.inherited(arguments);
       if (!this.selectedFormat) {
         this._renderCategories();
+        // Select default format
+        if (this.context && this.context.dataType) {
+          var defaultFormat = DownloadFormats.getDefaultFormat(this.context.dataType);
+          if (defaultFormat) {
+            this._selectFormat(defaultFormat);
+          }
+        }
       }
     },
 
@@ -114,12 +126,10 @@ define([
         'data-category': category.id
       }, this.categoriesNode);
 
-      // Category header
+      // Category header (simplified - just the label)
       domConstruct.create('div', {
         'class': 'categoryHeader',
-        innerHTML: '<i class="fa ' + (category.icon || 'fa-file') + '"></i> ' +
-                   '<span class="categoryLabel">' + category.label + '</span>' +
-                   '<span class="categoryDescription">' + (category.description || '') + '</span>'
+        innerHTML: '<span class="categoryLabel">' + category.label + '</span>'
       }, categoryNode);
 
       // Format options
@@ -128,19 +138,36 @@ define([
       }, categoryNode);
 
       category.formats.forEach(function (format) {
+        // Build label with optional limit warning
+        var labelHtml = '<span class="formatName">' + format.label + '</span>';
+        if (format.limit) {
+          labelHtml += '<span class="formatLimit">(limited to ' + format.limit.toLocaleString() + ' results)</span>';
+        }
+
         var formatNode = domConstruct.create('div', {
           'class': 'formatOption',
           'data-format': format.id,
-          'data-category': category.id,
-          innerHTML: '<div class="formatRadio">' +
-                     '<input type="radio" name="downloadFormat" value="' + format.id + '" id="format_' + format.id + '">' +
-                     '</div>' +
-                     '<label for="format_' + format.id + '" class="formatLabel">' +
-                     '<i class="fa ' + (format.icon || 'fa-file') + '"></i> ' +
-                     '<span class="formatName">' + format.label + '</span>' +
-                     (format.extension ? '<span class="formatExtension">(' + format.extension + ')</span>' : '') +
-                     '</label>'
+          'data-category': category.id
         }, formatsNode);
+
+        // Radio button
+        var radioDiv = domConstruct.create('div', {
+          'class': 'formatRadio'
+        }, formatNode);
+
+        var radioInput = domConstruct.create('input', {
+          type: 'radio',
+          name: 'downloadFormat',
+          value: format.id,
+          id: 'format_' + format.id
+        }, radioDiv);
+
+        // Label
+        var labelNode = domConstruct.create('label', {
+          'for': 'format_' + format.id,
+          'class': 'formatLabel',
+          innerHTML: labelHtml
+        }, formatNode);
 
         // Click handler for the whole format option
         var handler = on(formatNode, 'click', function (evt) {
@@ -160,13 +187,14 @@ define([
       this.selectedFormat = formatId;
       this.selectedCategory = categoryId || this._getCategoryForFormat(formatId);
 
-      // Update UI
+      // Update UI - deselect all first
       query('.formatOption', this.categoriesNode).forEach(function (node) {
         domClass.remove(node, 'selected');
         var radio = node.querySelector('input[type="radio"]');
         if (radio) radio.checked = false;
       });
 
+      // Select the chosen format
       var selectedNode = query('.formatOption[data-format="' + formatId + '"]', this.categoriesNode)[0];
       if (selectedNode) {
         domClass.add(selectedNode, 'selected');
@@ -216,10 +244,15 @@ define([
      * Get step data
      */
     getData: function () {
+      var formatInfo = DownloadFormats.getFormat(this.selectedFormat);
       return {
         format: this.selectedFormat,
         category: this.selectedCategory,
-        formatInfo: DownloadFormats.getFormat(this.selectedFormat)
+        formatInfo: formatInfo,
+        isFasta: DownloadFormats.isFastaFormat(this.selectedFormat),
+        isAccession: DownloadFormats.isAccessionFormat(this.selectedFormat),
+        isTable: DownloadFormats.isTableFormat(this.selectedFormat),
+        isConfigurable: formatInfo && formatInfo.configurable
       };
     },
 

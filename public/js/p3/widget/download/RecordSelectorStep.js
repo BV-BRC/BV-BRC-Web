@@ -27,7 +27,6 @@ define([
    * Options:
    * - Selected records (from grid selection)
    * - All records (matching current query)
-   * - Random subset (with configurable limit)
    */
 
   return declare([WizardStepBase], {
@@ -40,7 +39,6 @@ define([
     selectedScope: 'all',
     selectionCount: 0,
     totalCount: null,
-    randomLimit: 2000,
 
     // Event handlers
     _handlers: null,
@@ -57,8 +55,8 @@ define([
     _setupEventHandlers: function () {
       var self = this;
 
-      // Option click handlers
-      ['selectedOption', 'allOption', 'randomOption'].forEach(function (optionName) {
+      // Option click handlers (only selected and all now)
+      ['selectedOption', 'allOption'].forEach(function (optionName) {
         if (self[optionName]) {
           var handler = on(self[optionName], 'click', function (evt) {
             var scope = this.getAttribute('data-scope');
@@ -67,21 +65,6 @@ define([
           self._handlers.push(handler);
         }
       });
-
-      // Random limit input handler
-      if (this.randomLimitInput) {
-        var handler = on(this.randomLimitInput, 'change', function () {
-          self.randomLimit = parseInt(this.value, 10) || 2000;
-          self.notifyDataChanged();
-        });
-        this._handlers.push(handler);
-
-        // Prevent click from bubbling to parent
-        var clickHandler = on(this.randomLimitInput, 'click', function (evt) {
-          evt.stopPropagation();
-        });
-        this._handlers.push(clickHandler);
-      }
     },
 
     /**
@@ -106,10 +89,13 @@ define([
     _updateCounts: function () {
       var self = this;
 
-      // Selection count
-      this.selectionCount = (this.context && this.context.selection)
-        ? this.context.selection.length
-        : 0;
+      // Selection count - check queryDescriptor.selectedIds first, then context.selection
+      this.selectionCount = 0;
+      if (this.context && this.context.queryDescriptor && this.context.queryDescriptor.selectedIds) {
+        this.selectionCount = this.context.queryDescriptor.selectedIds.length;
+      } else if (this.context && this.context.selection) {
+        this.selectionCount = this.context.selection.length;
+      }
 
       // Update selected count display
       if (this.selectedCountNode) {
@@ -121,13 +107,17 @@ define([
 
       // Disable selected option if no selection
       if (this.selectionCount === 0) {
-        domClass.add(this.selectedOption, 'disabled');
+        if (this.selectedOption) {
+          domClass.add(this.selectedOption, 'disabled');
+        }
         if (this.selectedRadio) this.selectedRadio.disabled = true;
         if (this.selectedScope === 'selected') {
           this._selectScope('all');
         }
       } else {
-        domClass.remove(this.selectedOption, 'disabled');
+        if (this.selectedOption) {
+          domClass.remove(this.selectedOption, 'disabled');
+        }
         if (this.selectedRadio) this.selectedRadio.disabled = false;
       }
 
@@ -149,7 +139,7 @@ define([
       if (this.allCountNode) {
         var countSpan = this.allCountNode.querySelector('.countValue');
         if (countSpan) {
-          countSpan.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+          countSpan.innerHTML = '<i class="icon-spinner fa-spin"></i>';
         }
       }
 
@@ -163,8 +153,8 @@ define([
         baseUrl += '/';
       }
 
-      var query = this.context.queryDescriptor.rqlQuery || '';
-      var countUrl = baseUrl + dataType + '/?select(id)&limit(1)&' + query;
+      var rqlQuery = this.context.queryDescriptor.rqlQuery || '';
+      var countUrl = baseUrl + dataType + '/?select(id)&limit(1)&' + rqlQuery;
 
       // Use xhr to get count from Content-Range header
       require(['dojo/request/xhr'], function (xhr) {
@@ -218,16 +208,17 @@ define([
       // Update radio buttons
       if (this.selectedRadio) this.selectedRadio.checked = (scope === 'selected');
       if (this.allRadio) this.allRadio.checked = (scope === 'all');
-      if (this.randomRadio) this.randomRadio.checked = (scope === 'random');
 
       // Update visual selection
-      query('.recordOption', this.optionsNode).forEach(function (node) {
-        domClass.remove(node, 'selected');
-      });
+      if (this.optionsNode) {
+        query('.recordOption', this.optionsNode).forEach(function (node) {
+          domClass.remove(node, 'selected');
+        });
 
-      var selectedNode = query('.recordOption[data-scope="' + scope + '"]', this.optionsNode)[0];
-      if (selectedNode) {
-        domClass.add(selectedNode, 'selected');
+        var selectedNode = query('.recordOption[data-scope="' + scope + '"]', this.optionsNode)[0];
+        if (selectedNode) {
+          domClass.add(selectedNode, 'selected');
+        }
       }
 
       // Clear error
@@ -242,13 +233,15 @@ define([
      */
     _updateUI: function () {
       // Ensure correct option is visually selected
-      query('.recordOption', this.optionsNode).forEach(function (node) {
-        domClass.remove(node, 'selected');
-      });
+      if (this.optionsNode) {
+        query('.recordOption', this.optionsNode).forEach(function (node) {
+          domClass.remove(node, 'selected');
+        });
 
-      var selectedNode = query('.recordOption[data-scope="' + this.selectedScope + '"]', this.optionsNode)[0];
-      if (selectedNode) {
-        domClass.add(selectedNode, 'selected');
+        var selectedNode = query('.recordOption[data-scope="' + this.selectedScope + '"]', this.optionsNode)[0];
+        if (selectedNode) {
+          domClass.add(selectedNode, 'selected');
+        }
       }
     },
 
@@ -259,18 +252,8 @@ define([
       if (this.selectedScope === 'selected' && this.selectionCount === 0) {
         return {
           valid: false,
-          message: 'No records are selected. Please select records or choose a different option.'
+          message: 'No records are selected. Please select records or choose "All records".'
         };
-      }
-
-      if (this.selectedScope === 'random') {
-        var limit = parseInt(this.randomLimitInput.value, 10);
-        if (isNaN(limit) || limit < 1) {
-          return {
-            valid: false,
-            message: 'Please enter a valid number for the random subset limit.'
-          };
-        }
       }
 
       return true;
@@ -283,10 +266,7 @@ define([
       return {
         scope: this.selectedScope,
         selectionCount: this.selectionCount,
-        totalCount: this.totalCount,
-        randomLimit: this.selectedScope === 'random'
-          ? parseInt(this.randomLimitInput.value, 10) || 2000
-          : null
+        totalCount: this.totalCount
       };
     },
 
@@ -297,9 +277,6 @@ define([
       this.inherited(arguments);
       this.selectedScope = 'all';
       this._selectScope('all');
-      if (this.randomLimitInput) {
-        this.randomLimitInput.value = '2000';
-      }
     },
 
     /**

@@ -55,24 +55,90 @@ define([
    * @returns {string} RQL query string
    */
   function buildQuery(spec) {
-    var query = spec.rqlQuery || '';
+    var query = '';
+    var pk = spec.primaryKey || 'id';
+
+    // Get the sort field from data type config (matches the pattern in DownloadTooltipDialog.js)
+    var dataTypeConfig = DownloadFormats.getDataTypeConfig(spec.dataType);
+    var sortField = dataTypeConfig.sortField || pk;
 
     // Handle record scope
     if (spec.scope === 'selected' && spec.selectedIds && spec.selectedIds.length > 0) {
-      var pk = spec.primaryKey || 'id';
-      var idQuery = 'in(' + pk + ',(' + spec.selectedIds.join(',') + '))';
-
-      if (query) {
-        query = 'and(' + query + ',' + idQuery + ')';
-      } else {
-        query = idQuery;
-      }
+      // For selected records, use ONLY the ID query - we know exactly which records we want
+      query = 'in(' + pk + ',(' + spec.selectedIds.join(',') + '))';
     } else if (spec.scope === 'random' && spec.randomLimit) {
-      // Random sampling handled server-side
-      query += '&limit(' + spec.randomLimit + ')';
+      // For random sampling, use the original query with a limit
+      query = cleanQuery(spec.rqlQuery || '', spec.dataType);
+      if (query) {
+        query += '&limit(' + spec.randomLimit + ')';
+      } else {
+        query = 'limit(' + spec.randomLimit + ')';
+      }
+    } else {
+      // For 'all' scope, use the cleaned original query
+      query = cleanQuery(spec.rqlQuery || '', spec.dataType);
+    }
+
+    // IMPORTANT: The data API requires sort() and limit() clauses for downloads to work.
+    // Without these, the server returns Content-Length: 0 (no results).
+    // This matches the pattern used in DownloadTooltipDialog.js and other working download code.
+    //
+    // Build sort clause: use sortField, and if it's different from the primary key,
+    // add the primary key as a secondary sort to ensure deterministic ordering.
+    var sortClause = 'sort(+' + sortField;
+    if (sortField !== pk) {
+      sortClause += ',+' + pk;
+    }
+    sortClause += ')';
+
+    if (query) {
+      query += '&' + sortClause + '&limit(2500000)';
+    } else {
+      query = sortClause + '&limit(2500000)';
     }
 
     return query;
+  }
+
+  /**
+   * Clean up a query to remove cross-collection join syntax and wildcards
+   * @param {string} query - The original RQL query
+   * @param {string} dataType - The data type being queried
+   * @returns {string} Cleaned query
+   */
+  function cleanQuery(query, dataType) {
+    if (!query) return '';
+
+    var cleaned = query;
+
+    // Remove eq(field_id,*) wildcard patterns - they match everything and are meaningless
+    cleaned = cleaned
+      .replace(/eq\([a-z_]+_id,\*\)&?/gi, '')
+      .replace(/eq\([a-z_]+_id,%22\*%22\)&?/gi, '')
+      .replace(/eq\([a-z_]+_id,"\*"\)&?/gi, '');
+
+    // Remove cross-collection join syntax: genome(...), feature(...), etc.
+    // These are used by grids for cross-collection queries but shouldn't be sent
+    // to the target collection's endpoint
+    // Pattern: collectionName(query) where collectionName is the SAME as dataType
+    // e.g., if dataType is 'genome', remove 'genome(...)' wrappers
+    if (dataType) {
+      // Extract the inner query from dataType(...) wrappers
+      var joinPattern = new RegExp(dataType + '\\(([^)]+)\\)', 'gi');
+      var match = joinPattern.exec(cleaned);
+      if (match) {
+        // If the entire query is just a join wrapper, extract the inner part
+        var inner = match[1];
+        cleaned = cleaned.replace(match[0], inner);
+      }
+    }
+
+    // Clean up any remaining issues
+    cleaned = cleaned
+      .replace(/^&+|&+$/g, '')  // trim leading/trailing &
+      .replace(/&&+/g, '&');     // collapse multiple &
+
+    return cleaned;
   }
 
   /**
@@ -98,7 +164,11 @@ define([
     }
 
     var format = DownloadFormats.getFormat(spec.format);
-    var extension = format ? format.extension : 'txt';
+    var extension = format ? format.extension : '.txt';
+    // Remove leading dot from extension if present (we'll add it ourselves)
+    if (extension && extension.charAt(0) === '.') {
+      extension = extension.substr(1);
+    }
     var baseName = spec.dataType || 'data';
 
     // Add timestamp
@@ -115,6 +185,8 @@ define([
   function executeServerSideDownload(spec) {
     var deferred = new Deferred();
 
+    console.log('executeServerSideDownload: spec =', spec);
+
     try {
       var format = DownloadFormats.getFormat(spec.format);
       if (!format) {
@@ -122,65 +194,54 @@ define([
         return deferred;
       }
 
-      // Build the request URL
+      // Build the RQL query
       var query = buildQuery(spec);
+      console.log('executeServerSideDownload: query =', query);
+
       var selectClause = buildSelectClause(spec);
+      console.log('executeServerSideDownload: selectClause =', selectClause);
+
       if (selectClause) {
         query = query ? query + '&' + selectClause : selectClause;
       }
+      console.log('executeServerSideDownload: final query =', query);
 
       // Determine the content type based on format
       var acceptType = format.mimeType || 'text/plain';
       var filename = generateFilename(spec);
 
-      // For FASTA formats, add header customization
-      var headers = {};
-      if (spec.fastaConfig) {
-        if (spec.fastaConfig.defLineFields && spec.fastaConfig.defLineFields.length > 0) {
-          headers['x-fasta-defline-fields'] = spec.fastaConfig.defLineFields.join(',');
-        }
-        if (spec.fastaConfig.delimiter) {
-          headers['x-fasta-defline-delimiter'] = spec.fastaConfig.delimiter;
-        }
-      }
+      // Build the action URL with http_download and http_accept as query params
+      // Note: http_download=true triggers the download, the server determines filename
+      // Note: Do NOT encode http_accept - the working code doesn't encode it
+      var actionUrl = DATA_API_URL + '/' + spec.dataType + '/';
+      actionUrl += '?http_download=true';
+      actionUrl += '&http_accept=' + acceptType;
+      console.log('executeServerSideDownload: actionUrl =', actionUrl);
 
       // Create hidden form for download
+      // Note: Do NOT use target='_blank' - it gets blocked by popup blockers
+      // The server's Content-Disposition header will trigger a download
       var form = domConstruct.create('form', {
         method: 'POST',
-        action: DATA_API_URL + '/' + spec.dataType + '/',
-        target: '_blank',
-        style: 'display: none;'
+        action: actionUrl,
+        id: 'downloadForm',
+        name: 'downloadForm',
+        style: 'display: none;',
+        enctype: 'application/x-www-form-urlencoded'
       }, document.body);
 
-      // Add query parameter
+      // Add RQL query as form field
+      // The server expects double-URL-encoded values:
+      // 1. We encode with encodeURIComponent
+      // 2. The browser's form submission encodes again
+      // This matches the behavior of the working download code
+      var encodedQuery = encodeURIComponent(query);
+      console.log('executeServerSideDownload: encodedQuery =', encodedQuery);
       domConstruct.create('input', {
         type: 'hidden',
         name: 'rql',
-        value: query
+        value: encodedQuery
       }, form);
-
-      // Add accept header via form field (server interprets this)
-      domConstruct.create('input', {
-        type: 'hidden',
-        name: 'http_accept',
-        value: acceptType
-      }, form);
-
-      // Add download header
-      domConstruct.create('input', {
-        type: 'hidden',
-        name: 'http_download',
-        value: filename
-      }, form);
-
-      // Add custom headers for FASTA
-      Object.keys(headers).forEach(function (key) {
-        domConstruct.create('input', {
-          type: 'hidden',
-          name: key.replace('x-', 'http_x_').replace(/-/g, '_'),
-          value: headers[key]
-        }, form);
-      });
 
       // Add authorization if available
       if (window.App && window.App.authorizationToken) {
@@ -191,11 +252,8 @@ define([
         }, form);
       }
 
-      // Submit and cleanup
+      // Submit the form - the server's Content-Disposition header triggers the download
       form.submit();
-      setTimeout(function () {
-        domConstruct.destroy(form);
-      }, 1000);
 
       topic.publish('/Download/started', {
         type: 'server-side',

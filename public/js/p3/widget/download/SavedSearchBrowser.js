@@ -233,8 +233,8 @@ define([
           domConstruct.create('div', {
             'class': 'emptyMessage',
             innerHTML: this.searches.length === 0
-              ? '<i class="fa fa-info-circle"></i> No saved searches yet. Save a search from any data view.'
-              : '<i class="fa fa-search"></i> No searches match your filter.'
+              ? '<i class="icon-info-circle"></i> No saved searches yet. Save a search from any data view.'
+              : '<i class="icon-search"></i> No searches match your filter.'
           }, this.emptyMessageNode);
         }
         return;
@@ -288,7 +288,7 @@ define([
       // Data type cell
       domConstruct.create('td', {
         'class': 'colDataType',
-        innerHTML: '<i class="fa fa-database"></i> ' + this._formatDataType(search.dataType)
+        innerHTML: '<i class="icon-database"></i> ' + this._formatDataType(search.dataType)
       }, row);
 
       // Name cell
@@ -527,11 +527,22 @@ define([
      * Download search results
      */
     _downloadSearch: function (search) {
-      // Open download wizard with this search's context
-      UnifiedDownloadWizard.show({
+      // Build a queryDescriptor from the saved search for the wizard
+      var queryDescriptor = {
+        id: search.id,
+        name: search.name,
         dataType: search.dataType,
         rqlQuery: search.rqlQuery,
+        displayQuery: search.displayQuery,
+        source: 'saved_search',
+        visibleColumns: search.visibleColumns,
+        availableColumns: search.availableColumns,
         downloadConfig: search.downloadConfig
+      };
+
+      // Open download wizard with this search's context
+      UnifiedDownloadWizard.show({
+        queryDescriptor: queryDescriptor
       });
 
       // Callback

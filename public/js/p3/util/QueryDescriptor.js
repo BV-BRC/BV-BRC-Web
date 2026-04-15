@@ -65,6 +65,75 @@ define([
     fasta_data: 'genome_feature'
   };
 
+  // Map dataType to primary key field
+  var dataTypePrimaryKeys = {
+    genome: 'genome_id',
+    genome_feature: 'feature_id',
+    genome_sequence: 'sequence_id',
+    sp_gene: 'id',
+    sp_gene_ref: 'id',
+    pathway: 'id',
+    subsystem: 'id',
+    protein_structure: 'pdb_id',
+    epitope: 'epitope_id',
+    surveillance: 'id',
+    serology: 'id',
+    transcriptomics_experiment: 'eid',
+    transcriptomics_sample: 'pid',
+    transcriptomics_gene: 'id',
+    experiment: 'exp_id',
+    bioset: 'bioset_id',
+    ppi: 'id',
+    genome_amr: 'id',
+    protein_feature: 'id',
+    sequence_feature: 'id'
+  };
+
+  /**
+   * Get the primary key field for a data type
+   * @param {string} dataType - The data type
+   * @returns {string} The primary key field name
+   */
+  function getPrimaryKeyForDataType(dataType) {
+    return dataTypePrimaryKeys[dataType] || 'id';
+  }
+
+  /**
+   * Extract IDs from a selection array
+   * @param {Array} selection - Array of selected row objects or IDs
+   * @param {string} primaryKey - The primary key field name
+   * @returns {Array} Array of ID values
+   */
+  function extractSelectedIds(selection, primaryKey) {
+    if (!selection || !Array.isArray(selection) || selection.length === 0) {
+      return null;
+    }
+
+    return selection.map(function (item) {
+      // If item is already a primitive (string/number), use it directly
+      if (typeof item === 'string' || typeof item === 'number') {
+        return item;
+      }
+
+      // If item is an object, extract the primary key value
+      if (typeof item === 'object' && item !== null) {
+        // Try the specified primary key first
+        if (item[primaryKey] !== undefined) {
+          return item[primaryKey];
+        }
+        // Fall back to common ID fields
+        if (item.feature_id !== undefined) return item.feature_id;
+        if (item.genome_id !== undefined) return item.genome_id;
+        if (item.id !== undefined) return item.id;
+      }
+
+      return null;
+    }).filter(function (id) {
+      // Remove null/undefined values
+      return id !== null && id !== undefined;
+    });
+  }
+
   /**
    * Generate a unique ID for a search
    */
@@ -239,6 +308,8 @@ define([
      * @param {string} [options.source] - Where the query was created (e.g., 'advanced_search')
      * @param {Object} [options.downloadConfig] - Saved download preferences
      * @param {number} [options.resultCount] - Cached result count
+     * @param {string} [options.primaryKey] - Primary key field for this data type
+     * @param {Array} [options.selectedIds] - Array of selected record IDs (primary key values)
      * @returns {Object} A new QueryDescriptor object
      */
     create: function (options) {
@@ -256,6 +327,13 @@ define([
         dataType: options.dataType,
         rqlQuery: options.rqlQuery,
         baseQuery: options.baseQuery || '',
+
+        // Primary key for this data type (e.g., 'genome_id', 'feature_id')
+        primaryKey: options.primaryKey || getPrimaryKeyForDataType(options.dataType),
+
+        // Selected record IDs (when user has made a selection)
+        // These are the primary key values of selected records
+        selectedIds: options.selectedIds || null,
 
         // Display (generated lazily if needed)
         displayQuery: options.displayQuery || '',
@@ -316,22 +394,36 @@ define([
      * Create a QueryDescriptor from a grid's current state
      * @param {Object} grid - A grid widget with store and state
      * @param {string} containerType - The container type
+     * @param {Object} [options] - Additional options
+     * @param {Array} [options.selection] - Array of selected row objects
+     * @param {string} [options.primaryKey] - Override primary key field
      * @returns {Object} A new QueryDescriptor
      */
-    createFromGrid: function (grid, containerType) {
+    createFromGrid: function (grid, containerType, options) {
+      options = options || {};
       var query = '';
 
       // Priority order for getting the RQL query string:
-      // 1. grid.query - the actual RQL string set on the grid
-      // 2. grid.state.search - RQL from the grid's state
-      // 3. grid.store._currentQuery - some stores cache the current query string
+      // 1. grid.get('query') - the proper dojo way to get the current query
+      // 2. grid.query - the actual RQL string set on the grid (if it's a string)
+      // 3. grid.state.search - RQL from the grid's state
       // Note: grid.store.query is a FUNCTION, not the query string!
-      if (grid && typeof grid.query === 'string' && grid.query) {
-        query = grid.query;
-      } else if (grid && grid.state && typeof grid.state.search === 'string' && grid.state.search) {
-        query = grid.state.search;
-      } else if (grid && grid.store && typeof grid.store._currentQuery === 'string') {
-        query = grid.store._currentQuery;
+      if (grid) {
+        // Try grid.get('query') first - this is the correct dojo/dijit way
+        if (typeof grid.get === 'function') {
+          var gridQuery = grid.get('query');
+          if (typeof gridQuery === 'string' && gridQuery) {
+            query = gridQuery;
+          }
+        }
+        // Fall back to direct property access
+        if (!query && typeof grid.query === 'string' && grid.query) {
+          query = grid.query;
+        }
+        // Fall back to state.search
+        if (!query && grid.state && typeof grid.state.search === 'string' && grid.state.search) {
+          query = grid.state.search;
+        }
       }
 
       // Extract columns from the grid
@@ -341,10 +433,21 @@ define([
       var dataType = containerTypeToDataType[containerType] ||
                      (containerType ? containerType.replace(/_data$/, '') : 'genome_feature');
 
+      // Get the primary key for this data type
+      var primaryKey = options.primaryKey || getPrimaryKeyForDataType(dataType);
+
+      // Extract selected IDs if selection is provided
+      var selectedIds = null;
+      if (options.selection && options.selection.length > 0) {
+        selectedIds = extractSelectedIds(options.selection, primaryKey);
+      }
+
       return this.create({
         dataType: dataType,
         rqlQuery: query,
         source: 'grid',
+        primaryKey: primaryKey,
+        selectedIds: selectedIds,
         visibleColumns: visibleColumns.length > 0 ? visibleColumns : null,
         availableColumns: availableColumns.length > 0 ? availableColumns : null
       });
@@ -445,6 +548,16 @@ define([
     /**
      * Generate a name from query (exposed for external use)
      */
-    generateName: generateName
+    generateName: generateName,
+
+    /**
+     * Get the primary key field for a data type (exposed for external use)
+     */
+    getPrimaryKeyForDataType: getPrimaryKeyForDataType,
+
+    /**
+     * Extract IDs from selection objects (exposed for external use)
+     */
+    extractSelectedIds: extractSelectedIds
   };
 });

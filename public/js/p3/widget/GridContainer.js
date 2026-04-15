@@ -612,21 +612,31 @@ define([
         function (selection, container) {
           console.log('AdvancedDownload button clicked', selection, this.containerType);
           try {
-            // Get the RQL query string directly from GridContainer
-            var rqlQuery = this.query || (this.state && this.state.search) || '';
-            console.log('RQL Query:', rqlQuery);
+            // Get the data model and primary key from the container
+            var dataType = this.dataModel || 'genome_feature';
+            var primaryKey = this.primaryKey || 'id';
+            console.log('Data Type:', dataType, 'Primary Key:', primaryKey);
 
-            var context = {
-              grid: this.grid,
+            // Create a QueryDescriptor with selection - this is the standard interface for downloads
+            var queryDescriptor = QueryDescriptor.createFromGrid(this.grid, this.containerType, {
               selection: selection,
-              containerType: this.containerType,
-              rqlQuery: rqlQuery
-            };
-            var dataType = this._getDataTypeFromContainer ? this._getDataTypeFromContainer() : 'genome_feature';
-            context.dataType = dataType;
+              primaryKey: primaryKey
+            });
 
-            console.log('Opening wizard with context:', context);
-            UnifiedDownloadWizard.show(context);
+            // Override dataType with the GridContainer's dataModel (more reliable)
+            queryDescriptor.dataType = dataType;
+            queryDescriptor.primaryKey = primaryKey;
+
+            // Get the RQL query from the grid
+            var rqlQuery = this.grid.get('query') || '';
+            queryDescriptor.rqlQuery = rqlQuery;
+
+            console.log('QueryDescriptor:', queryDescriptor);
+
+            // Open the wizard with the query descriptor
+            UnifiedDownloadWizard.show({
+              queryDescriptor: queryDescriptor
+            });
           } catch (e) {
             console.error('AdvancedDownload error:', e);
           }

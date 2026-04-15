@@ -12,15 +12,16 @@ define([], function () {
    * - label: Display name
    * - mimeType: MIME type for Accept header
    * - extension: File extension
-   * - category: Category for grouping ('sequence', 'annotation', 'table', 'other')
+   * - category: Category for grouping ('sequence', 'accession', 'table')
    * - serverSide: Whether download is handled server-side (form POST) or client-side (Blob)
    * - configurable: Whether format has Step 3 configuration options
    * - configurator: Name of configurator step component (if configurable)
+   * - limit: Optional record limit (e.g., for Excel)
    */
   var formats = {
     // Table formats
     'tsv': {
-      label: 'Tab-separated (TSV)',
+      label: 'TSV format',
       mimeType: 'text/tsv',
       extension: '.tsv',
       category: 'table',
@@ -28,7 +29,7 @@ define([], function () {
       icon: 'fa-table'
     },
     'csv': {
-      label: 'Comma-separated (CSV)',
+      label: 'CSV format',
       mimeType: 'text/csv',
       extension: '.csv',
       category: 'table',
@@ -36,27 +37,18 @@ define([], function () {
       icon: 'fa-table'
     },
     'excel': {
-      label: 'Excel Spreadsheet',
+      label: 'Excel format',
       mimeType: 'application/vnd.openxmlformats',
       extension: '.xlsx',
       category: 'table',
       serverSide: true,
-      icon: 'fa-file-excel'
+      icon: 'fa-file-excel',
+      limit: 10000
     },
 
     // Sequence formats - FASTA variants
-    'dna+fasta': {
-      label: 'DNA FASTA',
-      mimeType: 'application/dna+fasta',
-      extension: '.fna',
-      category: 'sequence',
-      serverSide: true,
-      configurable: true,
-      configurator: 'FASTAConfigurator',
-      icon: 'fa-dna'
-    },
     'protein+fasta': {
-      label: 'Protein FASTA',
+      label: 'Protein fasta',
       mimeType: 'application/protein+fasta',
       extension: '.faa',
       category: 'sequence',
@@ -65,8 +57,28 @@ define([], function () {
       configurator: 'FASTAConfigurator',
       icon: 'fa-cubes'
     },
-    'cds+fasta': {
-      label: 'CDS FASTA',
+    'dna+fasta': {
+      label: 'DNA fasta',
+      mimeType: 'application/dna+fasta',
+      extension: '.fna',
+      category: 'sequence',
+      serverSide: true,
+      configurable: true,
+      configurator: 'FASTAConfigurator',
+      icon: 'fa-dna'
+    },
+    'protein_feature+fasta': {
+      label: 'Protein feature fasta',
+      mimeType: 'application/protein+fasta',
+      extension: '.faa',
+      category: 'sequence',
+      serverSide: true,
+      configurable: true,
+      configurator: 'FASTAConfigurator',
+      icon: 'fa-cubes'
+    },
+    'dna_feature+fasta': {
+      label: 'DNA feature fasta',
       mimeType: 'application/dna+fasta',
       extension: '.ffn',
       category: 'sequence',
@@ -75,10 +87,10 @@ define([], function () {
       configurator: 'FASTAConfigurator',
       icon: 'fa-dna'
     },
-    'rna+fasta': {
-      label: 'RNA FASTA',
+    'contig_dna+fasta': {
+      label: 'Contig DNA fasta',
       mimeType: 'application/dna+fasta',
-      extension: '.frn',
+      extension: '.fna',
       category: 'sequence',
       serverSide: true,
       configurable: true,
@@ -86,42 +98,72 @@ define([], function () {
       icon: 'fa-dna'
     },
 
-    // Annotation formats
+    // Annotation/other sequence formats
     'gff': {
-      label: 'GFF3 Annotation',
+      label: 'GFF',
       mimeType: 'text/gff3',
       extension: '.gff',
-      category: 'annotation',
+      category: 'sequence',
       serverSide: true,
       icon: 'fa-list-alt'
     },
-    'features.tab': {
-      label: 'Features Table',
-      mimeType: 'text/tsv',
-      extension: '.features.tab',
-      category: 'annotation',
+    'genbank': {
+      label: 'Genbank',
+      mimeType: 'application/genbank',
+      extension: '.gbk',
+      category: 'sequence',
       serverSide: true,
-      icon: 'fa-table'
-    },
-    'pathway.tab': {
-      label: 'Pathway Table',
-      mimeType: 'text/tsv',
-      extension: '.pathway.tab',
-      category: 'annotation',
-      serverSide: true,
-      icon: 'fa-route'
+      icon: 'fa-file-alt'
     },
 
-    // Bundle format (for genomes)
-    'bundle': {
-      label: 'Genome Package',
-      mimeType: 'application/zip',
-      extension: '.zip',
-      category: 'bundle',
+    // Accession list formats
+    'bvbrc_id': {
+      label: 'BV-BRC ID',
+      mimeType: 'text/plain',
+      extension: '.txt',
+      category: 'accession',
       serverSide: true,
-      configurable: true,
-      configurator: 'GenomeBundleConfigurator',
-      icon: 'fa-file-archive'
+      icon: 'fa-list'
+    },
+    'genbank_accession': {
+      label: 'Genbank Accession',
+      mimeType: 'text/plain',
+      extension: '.txt',
+      category: 'accession',
+      serverSide: true,
+      icon: 'fa-list'
+    },
+    'feature_bvbrc_id': {
+      label: 'Feature BV-BRC ID',
+      mimeType: 'text/plain',
+      extension: '.txt',
+      category: 'accession',
+      serverSide: true,
+      icon: 'fa-list'
+    },
+    'feature_genbank_accession': {
+      label: 'Feature Genbank Accession',
+      mimeType: 'text/plain',
+      extension: '.txt',
+      category: 'accession',
+      serverSide: true,
+      icon: 'fa-list'
+    },
+    'genome_bvbrc_id': {
+      label: 'Genome BV-BRC ID',
+      mimeType: 'text/plain',
+      extension: '.txt',
+      category: 'accession',
+      serverSide: true,
+      icon: 'fa-list'
+    },
+    'genome_genbank_accession': {
+      label: 'Genome Genbank Accession',
+      mimeType: 'text/plain',
+      extension: '.txt',
+      category: 'accession',
+      serverSide: true,
+      icon: 'fa-list'
     }
   };
 
@@ -130,34 +172,22 @@ define([], function () {
    */
   var categories = {
     'sequence': {
-      label: 'Sequence Data',
-      description: 'Download sequences in FASTA format',
+      label: 'Sequence data',
+      description: 'Download sequences in FASTA or annotation format',
       icon: 'fa-dna',
       order: 1
     },
-    'annotation': {
-      label: 'Annotation Data',
-      description: 'Download annotation and feature data',
-      icon: 'fa-list-alt',
+    'accession': {
+      label: 'Accession list',
+      description: 'Download list of accession IDs',
+      icon: 'fa-list',
       order: 2
     },
     'table': {
-      label: 'Results Table',
+      label: 'Results table',
       description: 'Download tabular data',
       icon: 'fa-table',
       order: 3
-    },
-    'bundle': {
-      label: 'Data Package',
-      description: 'Download multiple files as archive',
-      icon: 'fa-file-archive',
-      order: 4
-    },
-    'other': {
-      label: 'Other Formats',
-      description: 'Additional download options',
-      icon: 'fa-file',
-      order: 5
     }
   };
 
@@ -169,42 +199,35 @@ define([], function () {
     'genome': {
       pk: 'genome_id',
       sortField: 'genome_id',
-      bundleSupport: true,
-      secondaryDataType: 'genome_sequence',
-      secondaryPK: 'genome_id',
-      secondarySortField: 'sequence_id',
+      defaultFormat: 'protein_feature+fasta',
+      defaultIdField: 'genome_id',
       categories: {
-        'sequence': ['dna+fasta'],
-        'annotation': ['gff', 'features.tab', 'pathway.tab'],
-        'table': ['tsv', 'csv', 'excel'],
-        'bundle': ['bundle']
-      },
-      bundleTypes: [
-        { label: 'Genomic Sequences in FASTA (*.fna)', type: 'fna', skipAnnotation: true },
-        { label: 'Protein Sequences in FASTA (*.faa)', type: 'faa' },
-        { label: 'Genomic features in GFF format (*.gff)', type: 'gff' },
-        { label: 'Genomic features in tab-delimited format (*.features.tab)', type: 'features.tab' },
-        { label: 'DNA Sequences of Protein Coding Genes (*.ffn)', type: 'ffn' },
-        { label: 'DNA Sequences of RNA Coding Genes (*.frn)', type: 'frn' },
-        { label: 'Pathway assignments in tab-delimited format (*.pathway.tab)', type: 'pathway.tab' }
-      ]
+        'sequence': ['protein_feature+fasta', 'dna_feature+fasta', 'contig_dna+fasta', 'genbank', 'gff'],
+        'accession': ['feature_bvbrc_id', 'feature_genbank_accession', 'genome_bvbrc_id', 'genome_genbank_accession'],
+        'table': ['csv', 'tsv', 'excel']
+      }
     },
 
     'genome_feature': {
       pk: 'feature_id',
       sortField: 'feature_id',
+      defaultFormat: 'protein+fasta',
+      defaultIdField: 'patric_id',
       categories: {
-        'sequence': ['dna+fasta', 'protein+fasta'],
-        'table': ['tsv', 'csv', 'excel']
+        'sequence': ['protein+fasta', 'dna+fasta', 'gff'],
+        'accession': ['bvbrc_id', 'genbank_accession'],
+        'table': ['csv', 'tsv', 'excel']
       }
     },
 
     'genome_sequence': {
       pk: 'sequence_id',
       sortField: 'sequence_id',
+      defaultFormat: 'dna+fasta',
+      defaultIdField: 'sequence_id',
       categories: {
         'sequence': ['dna+fasta'],
-        'table': ['tsv', 'csv', 'excel']
+        'table': ['csv', 'tsv', 'excel']
       }
     },
 
@@ -213,9 +236,12 @@ define([], function () {
       sortField: 'id',
       secondaryDataType: 'genome_feature',
       secondaryPK: 'feature_id',
+      defaultFormat: 'protein+fasta',
+      defaultIdField: 'patric_id',
       categories: {
-        'sequence': ['dna+fasta', 'protein+fasta'],
-        'table': ['tsv', 'csv', 'excel']
+        'sequence': ['protein+fasta', 'dna+fasta'],
+        'accession': ['bvbrc_id', 'genbank_accession'],
+        'table': ['csv', 'tsv', 'excel']
       }
     },
 
@@ -463,7 +489,8 @@ define([], function () {
             label: f.label,
             icon: f.icon,
             extension: f.extension,
-            configurable: f.configurable || false
+            configurable: f.configurable || false,
+            limit: f.limit || null
           };
         });
 
@@ -587,6 +614,79 @@ define([], function () {
     getConfigurator: function (formatId) {
       var format = formats[formatId];
       return format ? format.configurator : null;
+    },
+
+    /**
+     * Get the default format for a data type
+     * @param {string} dataType - Data type
+     * @returns {string} Default format ID
+     */
+    getDefaultFormat: function (dataType) {
+      var config = dataTypeFormats[dataType];
+      if (config && config.defaultFormat) {
+        return config.defaultFormat;
+      }
+      // Fallback: return first format from first category
+      if (config && config.categories) {
+        var cats = Object.keys(config.categories);
+        if (cats.length > 0 && config.categories[cats[0]].length > 0) {
+          return config.categories[cats[0]][0];
+        }
+      }
+      return 'tsv';
+    },
+
+    /**
+     * Get the default ID field for a data type (used for FASTA sequence ID)
+     * @param {string} dataType - Data type
+     * @returns {string} Default ID field name
+     */
+    getDefaultIdField: function (dataType) {
+      var config = dataTypeFormats[dataType];
+      if (config && config.defaultIdField) {
+        return config.defaultIdField;
+      }
+      // Fallback to pk
+      return config ? config.pk : 'id';
+    },
+
+    /**
+     * Get the record limit for a format (e.g., Excel has 10,000 limit)
+     * @param {string} formatId - Format ID
+     * @returns {number|null} Record limit or null if unlimited
+     */
+    getFormatLimit: function (formatId) {
+      var format = formats[formatId];
+      return format ? (format.limit || null) : null;
+    },
+
+    /**
+     * Check if format is a FASTA format
+     * @param {string} formatId - Format ID
+     * @returns {boolean}
+     */
+    isFastaFormat: function (formatId) {
+      return formatId && formatId.indexOf('+fasta') !== -1;
+    },
+
+    /**
+     * Check if format is an accession list format
+     * @param {string} formatId - Format ID
+     * @returns {boolean}
+     */
+    isAccessionFormat: function (formatId) {
+      var format = formats[formatId];
+      return format && format.category === 'accession';
+    },
+
+    /**
+     * Check if format is a table format
+     * @param {string} formatId - Format ID
+     * @returns {boolean}
+     */
+    isTableFormat: function (formatId) {
+      var format = formats[formatId];
+      return format && format.category === 'table';
     }
   };
 });

@@ -3,6 +3,7 @@ define([
   'dojo/_base/lang',
   'dojo/on',
   'dojo/dom-class',
+  'dojo/dom-construct',
   'dojo/query',
   './WizardStepBase',
   'dojo/text!./templates/FASTAConfiguratorStep.html',
@@ -12,6 +13,7 @@ define([
   lang,
   on,
   domClass,
+  domConstruct,
   query,
   WizardStepBase,
   template,
@@ -21,63 +23,36 @@ define([
    * FASTAConfiguratorStep - Step 3 configurator for FASTA formats
    *
    * Allows users to:
-   * - Use default definition line format
-   * - Build custom definition lines with field selection
+   * - Select the field to use as sequence ID (default: BV-BRC ID)
+   * - Select fields to include in the sequence description
    */
 
   return declare([WizardStepBase], {
     templateString: template,
     stepId: 'options',
     stepTitle: 'Options',
-    stepDescription: 'Configure FASTA download options',
+    stepDescription: 'Configure FASTA sequence metadata',
 
     // State
-    defLineFormat: 'default',
-    customFields: null,
-    delimiter: '|',
+    sequenceIdField: null,  // Field to use as sequence ID
+    descriptionFields: null, // Array of fields for description
+    availableFields: null,   // All available fields from query descriptor
 
     // Event handlers
     _handlers: null,
 
-    // DefinitionLineBuilder widget (lazy loaded)
-    _defLineBuilder: null,
-
     postCreate: function () {
       this.inherited(arguments);
       this._handlers = [];
-      this.customFields = [];
-      this._setupEventHandlers();
+      this.descriptionFields = [];
+      this.availableFields = [];
     },
 
     /**
-     * Setup event handlers
+     * Called when context is set
      */
-    _setupEventHandlers: function () {
-      var self = this;
-
-      // Default option click
-      if (this.defaultDefLineOption) {
-        var h1 = on(this.defaultDefLineOption, 'click', function () {
-          self._selectDefLineFormat('default');
-        });
-        this._handlers.push(h1);
-      }
-
-      // Custom option click
-      if (this.customDefLineOption) {
-        var h2 = on(this.customDefLineOption, 'click', function () {
-          self._selectDefLineFormat('custom');
-        });
-        this._handlers.push(h2);
-      }
-    },
-
-    /**
-     * Called when previous step data is set
-     */
-    onPreviousStepDataSet: function (data) {
-      this._updateSummary(data);
-      this._updateDefaultPreview();
+    onContextSet: function (context) {
+      this._initializeFields();
     },
 
     /**
@@ -85,120 +60,312 @@ define([
      */
     onShow: function () {
       this.inherited(arguments);
-      this._updateSummary(this.previousStepData);
-      this._updateDefaultPreview();
+      this._initializeFields();
+      this._updatePreview();
     },
 
     /**
-     * Update the summary display
+     * Initialize available fields from context
      */
-    _updateSummary: function (data) {
-      if (!data) return;
+    _initializeFields: function () {
+      var self = this;
 
-      // Format
-      if (this.formatValueNode && data.format) {
-        var formatInfo = DownloadFormats.getFormat(data.format);
-        this.formatValueNode.textContent = formatInfo ? formatInfo.label : data.format;
+      // Get available fields from query descriptor or use defaults
+      if (this.context && this.context.queryDescriptor && this.context.queryDescriptor.availableColumns) {
+        this.availableFields = this.context.queryDescriptor.availableColumns.map(function (col) {
+          return {
+            field: col.field,
+            label: col.label || col.field
+          };
+        });
+      } else {
+        // Use default fields based on data type
+        this.availableFields = this._getDefaultFieldsForDataType();
       }
 
-      // Records
-      if (this.recordsValueNode) {
-        var recordsText = 'All records';
-        if (data.scope === 'selected') {
-          recordsText = this.formatNumber(data.selectionCount) + ' selected records';
-        } else if (data.scope === 'random') {
-          recordsText = 'Random ' + this.formatNumber(data.randomLimit) + ' records';
-        } else if (data.totalCount) {
-          recordsText = this.formatNumber(data.totalCount) + ' records';
-        }
-        this.recordsValueNode.textContent = recordsText;
+      // Set default sequence ID field
+      if (!this.sequenceIdField) {
+        var dataType = this.context ? this.context.dataType : 'genome_feature';
+        this.sequenceIdField = DownloadFormats.getDefaultIdField(dataType);
       }
+
+      // Populate the sequence ID dropdown
+      this._populateIdFieldDropdown();
+
+      // Populate the available fields lists
+      this._populateFieldLists();
     },
 
     /**
-     * Update the default preview based on data type
+     * Get default fields for a data type
      */
-    _updateDefaultPreview: function () {
-      if (!this.defaultPreviewNode) return;
-
+    _getDefaultFieldsForDataType: function () {
       var dataType = this.context ? this.context.dataType : 'genome_feature';
-      var preview = '';
 
       if (dataType === 'genome' || dataType === 'genome_sequence') {
-        preview = '>accession|genome_name [organism]';
+        return [
+          { field: 'genome_id', label: 'Genome ID' },
+          { field: 'genome_name', label: 'Genome Name' },
+          { field: 'accession', label: 'Accession' },
+          { field: 'species', label: 'Species' },
+          { field: 'strain', label: 'Strain' },
+          { field: 'host_name', label: 'Host' },
+          { field: 'isolation_country', label: 'Country' },
+          { field: 'collection_date', label: 'Collection Date' }
+        ];
       } else {
         // genome_feature
-        preview = '>feature_id|locus_tag product [organism]';
+        return [
+          { field: 'patric_id', label: 'BV-BRC ID' },
+          { field: 'feature_id', label: 'Feature ID' },
+          { field: 'accession', label: 'Accession' },
+          { field: 'locus_tag', label: 'Locus Tag' },
+          { field: 'gene', label: 'Gene' },
+          { field: 'product', label: 'Product' },
+          { field: 'genome_name', label: 'Genome Name' },
+          { field: 'genome_id', label: 'Genome ID' }
+        ];
       }
-
-      this.defaultPreviewNode.innerHTML = '<code>' + preview + '</code>';
     },
 
     /**
-     * Select definition line format
+     * Populate the sequence ID field dropdown
      */
-    _selectDefLineFormat: function (format) {
+    _populateIdFieldDropdown: function () {
       var self = this;
-      this.defLineFormat = format;
 
-      // Update radio buttons
-      if (this.defaultDefLineRadio) this.defaultDefLineRadio.checked = (format === 'default');
-      if (this.customDefLineRadio) this.customDefLineRadio.checked = (format === 'custom');
+      if (!this.idFieldSelect) return;
 
-      // Update visual selection
-      query('.defLineOption', this.domNode).forEach(function (node) {
-        domClass.remove(node, 'selected');
+      // Clear existing options
+      domConstruct.empty(this.idFieldSelect);
+
+      // Add options
+      this.availableFields.forEach(function (f) {
+        var option = domConstruct.create('option', {
+          value: f.field,
+          innerHTML: f.label
+        }, self.idFieldSelect);
+
+        if (f.field === self.sequenceIdField) {
+          option.selected = true;
+        }
       });
 
-      var selectedNode = query('.defLineOption[data-option="' + format + '"]', this.domNode)[0];
-      if (selectedNode) {
-        domClass.add(selectedNode, 'selected');
+      // Setup change handler if not already done
+      if (!this._idFieldHandler) {
+        this._idFieldHandler = on(this.idFieldSelect, 'change', function () {
+          self.sequenceIdField = this.value;
+          self._updatePreview();
+          self.notifyDataChanged();
+        });
+        this._handlers.push(this._idFieldHandler);
       }
+    },
 
-      // Show/hide custom builder
-      if (format === 'custom') {
-        domClass.remove(this.customBuilderNode, 'dijitHidden');
-        this._loadDefinitionLineBuilder();
-      } else {
-        domClass.add(this.customBuilderNode, 'dijitHidden');
+    /**
+     * Populate the field selection lists
+     */
+    _populateFieldLists: function () {
+      var self = this;
+
+      if (!this.availableFieldsList || !this.selectedFieldsList) return;
+
+      // Clear existing
+      domConstruct.empty(this.availableFieldsList);
+      domConstruct.empty(this.selectedFieldsList);
+
+      // Get fields that are already selected
+      var selectedFieldNames = this.descriptionFields.map(function (f) {
+        return f.field;
+      });
+
+      // Populate available fields (excluding those already selected)
+      this.availableFields.forEach(function (f) {
+        if (selectedFieldNames.indexOf(f.field) === -1) {
+          self._createFieldItem(f, self.availableFieldsList, 'available');
+        }
+      });
+
+      // Populate selected fields
+      this.descriptionFields.forEach(function (f) {
+        self._createFieldItem(f, self.selectedFieldsList, 'selected');
+      });
+
+      this._updateButtonStates();
+    },
+
+    /**
+     * Create a field list item
+     */
+    _createFieldItem: function (field, container, type) {
+      var self = this;
+
+      var item = domConstruct.create('div', {
+        'class': 'fieldItem',
+        'data-field': field.field,
+        innerHTML: '<span class="fieldLabel">' + field.label + '</span>'
+      }, container);
+
+      // Click to select
+      var handler = on(item, 'click', function () {
+        // Toggle selection
+        if (domClass.contains(this, 'selected')) {
+          domClass.remove(this, 'selected');
+        } else {
+          // Deselect others in the same list
+          query('.fieldItem.selected', container).forEach(function (node) {
+            domClass.remove(node, 'selected');
+          });
+          domClass.add(this, 'selected');
+        }
+        self._updateButtonStates();
+      });
+
+      this._handlers.push(handler);
+      return item;
+    },
+
+    /**
+     * Update button states based on selection
+     */
+    _updateButtonStates: function () {
+      var availableSelected = query('.fieldItem.selected', this.availableFieldsList).length > 0;
+      var selectedSelected = query('.fieldItem.selected', this.selectedFieldsList).length > 0;
+      var selectedItems = query('.fieldItem', this.selectedFieldsList);
+
+      if (this.addFieldBtn) {
+        this.addFieldBtn.disabled = !availableSelected;
       }
+      if (this.removeFieldBtn) {
+        this.removeFieldBtn.disabled = !selectedSelected;
+      }
+      if (this.moveUpBtn) {
+        var selectedNode = query('.fieldItem.selected', this.selectedFieldsList)[0];
+        this.moveUpBtn.disabled = !selectedSelected || (selectedNode === selectedItems[0]);
+      }
+      if (this.moveDownBtn) {
+        var selectedNode = query('.fieldItem.selected', this.selectedFieldsList)[0];
+        this.moveDownBtn.disabled = !selectedSelected || (selectedNode === selectedItems[selectedItems.length - 1]);
+      }
+    },
 
+    /**
+     * Add selected field to description
+     */
+    _onAddField: function () {
+      var self = this;
+      var selectedNode = query('.fieldItem.selected', this.availableFieldsList)[0];
+      if (!selectedNode) return;
+
+      var fieldName = selectedNode.getAttribute('data-field');
+      var field = this.availableFields.find(function (f) {
+        return f.field === fieldName;
+      });
+
+      if (field) {
+        this.descriptionFields.push(field);
+        this._populateFieldLists();
+        this._updatePreview();
+        this.notifyDataChanged();
+      }
+    },
+
+    /**
+     * Remove selected field from description
+     */
+    _onRemoveField: function () {
+      var self = this;
+      var selectedNode = query('.fieldItem.selected', this.selectedFieldsList)[0];
+      if (!selectedNode) return;
+
+      var fieldName = selectedNode.getAttribute('data-field');
+      this.descriptionFields = this.descriptionFields.filter(function (f) {
+        return f.field !== fieldName;
+      });
+
+      this._populateFieldLists();
+      this._updatePreview();
       this.notifyDataChanged();
     },
 
     /**
-     * Lazy load the DefinitionLineBuilder widget
+     * Move selected field up
      */
-    _loadDefinitionLineBuilder: function () {
-      var self = this;
+    _onMoveUp: function () {
+      var selectedNode = query('.fieldItem.selected', this.selectedFieldsList)[0];
+      if (!selectedNode) return;
 
-      if (this._defLineBuilder) return;
-
-      require(['./DefinitionLineBuilder'], function (DefinitionLineBuilder) {
-        self._defLineBuilder = new DefinitionLineBuilder({
-          dataType: self.context ? self.context.dataType : 'genome_feature',
-          onChange: function (fields, delimiter) {
-            self.customFields = fields;
-            self.delimiter = delimiter;
-            self.notifyDataChanged();
-          }
-        });
-        self._defLineBuilder.placeAt(self.customBuilderNode);
-        self._defLineBuilder.startup();
+      var fieldName = selectedNode.getAttribute('data-field');
+      var idx = this.descriptionFields.findIndex(function (f) {
+        return f.field === fieldName;
       });
+
+      if (idx > 0) {
+        var temp = this.descriptionFields[idx - 1];
+        this.descriptionFields[idx - 1] = this.descriptionFields[idx];
+        this.descriptionFields[idx] = temp;
+        this._populateFieldLists();
+        // Reselect the moved item
+        var newNode = query('.fieldItem[data-field="' + fieldName + '"]', this.selectedFieldsList)[0];
+        if (newNode) domClass.add(newNode, 'selected');
+        this._updatePreview();
+        this.notifyDataChanged();
+      }
+    },
+
+    /**
+     * Move selected field down
+     */
+    _onMoveDown: function () {
+      var selectedNode = query('.fieldItem.selected', this.selectedFieldsList)[0];
+      if (!selectedNode) return;
+
+      var fieldName = selectedNode.getAttribute('data-field');
+      var idx = this.descriptionFields.findIndex(function (f) {
+        return f.field === fieldName;
+      });
+
+      if (idx < this.descriptionFields.length - 1) {
+        var temp = this.descriptionFields[idx + 1];
+        this.descriptionFields[idx + 1] = this.descriptionFields[idx];
+        this.descriptionFields[idx] = temp;
+        this._populateFieldLists();
+        // Reselect the moved item
+        var newNode = query('.fieldItem[data-field="' + fieldName + '"]', this.selectedFieldsList)[0];
+        if (newNode) domClass.add(newNode, 'selected');
+        this._updatePreview();
+        this.notifyDataChanged();
+      }
+    },
+
+    /**
+     * Update the preview
+     */
+    _updatePreview: function () {
+      if (!this.previewNode) return;
+
+      var idField = this.sequenceIdField || 'id';
+      var descFields = this.descriptionFields.map(function (f) {
+        return f.field;
+      });
+
+      var previewParts = ['>' + idField];
+      if (descFields.length > 0) {
+        previewParts.push(descFields.join(' | '));
+      }
+
+      this.previewNode.innerHTML = '<code>' + previewParts.join(' ') + '</code>';
     },
 
     /**
      * Validate
      */
     validate: function () {
-      if (this.defLineFormat === 'custom') {
-        if (!this.customFields || this.customFields.length === 0) {
-          return {
-            valid: false,
-            message: 'Please select at least one field for the custom definition line.'
-          };
-        }
+      if (!this.sequenceIdField) {
+        return {
+          valid: false,
+          message: 'Please select a field for the sequence ID.'
+        };
       }
       return true;
     },
@@ -208,9 +375,10 @@ define([
      */
     getData: function () {
       return {
-        defLineFormat: this.defLineFormat,
-        defLineFields: this.defLineFormat === 'custom' ? this.customFields : null,
-        delimiter: this.defLineFormat === 'custom' ? this.delimiter : '|'
+        sequenceIdField: this.sequenceIdField,
+        descriptionFields: this.descriptionFields.map(function (f) {
+          return f.field;
+        })
       };
     },
 
@@ -219,13 +387,9 @@ define([
      */
     reset: function () {
       this.inherited(arguments);
-      this.defLineFormat = 'default';
-      this.customFields = [];
-      this._selectDefLineFormat('default');
-
-      if (this._defLineBuilder) {
-        this._defLineBuilder.reset();
-      }
+      this.sequenceIdField = null;
+      this.descriptionFields = [];
+      this._initializeFields();
     },
 
     /**
@@ -236,12 +400,6 @@ define([
         h.remove();
       });
       this._handlers = [];
-
-      if (this._defLineBuilder) {
-        this._defLineBuilder.destroy();
-        this._defLineBuilder = null;
-      }
-
       this.inherited(arguments);
     }
   });

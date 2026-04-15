@@ -16,6 +16,7 @@ define([
   './RecordSelectorStep',
   './FASTAConfiguratorStep',
   './TableConfiguratorStep',
+  './AccessionConfiguratorStep',
   './GenomeBundleConfiguratorStep',
   'dijit/form/Button'
 ], function (
@@ -36,6 +37,7 @@ define([
   RecordSelectorStep,
   FASTAConfiguratorStep,
   TableConfiguratorStep,
+  AccessionConfiguratorStep,
   GenomeBundleConfiguratorStep
 ) {
   /**
@@ -90,7 +92,7 @@ define([
       this.inherited(arguments);
 
       // Set dialog dimensions
-      this.domNode.style.width = '700px';
+      this.domNode.style.width = '900px';
       this.containerNode.style.minHeight = '400px';
 
       // Build the wizard UI inside the dialog's containerNode
@@ -182,34 +184,45 @@ define([
     _buildContext: function () {
       var context = {
         queryDescriptor: this.queryDescriptor,
-        selection: this.selection || [],
+        selection: [],
         containerType: this.containerType,
         grid: this.grid,
         dataType: null,
         preselectedFormat: this.preselectedFormat
       };
 
-      // Determine data type
+      // If we have a query descriptor, use it as the primary source of truth
       if (this.queryDescriptor) {
         context.dataType = this.queryDescriptor.dataType;
-      } else if (this.containerType) {
-        context.dataType = DownloadFormats.containerTypeToDataType(this.containerType);
-      }
 
-      // Build query descriptor if not provided
-      if (!context.queryDescriptor && context.dataType) {
-        var rqlQuery = '';
-        if (this.grid && this.grid.store && this.grid.store.query) {
-          rqlQuery = this.grid.store.query;
-        } else if (this.grid && this.grid.state && this.grid.state.search) {
-          rqlQuery = this.grid.state.search;
+        // Extract selection from queryDescriptor.selectedIds
+        if (this.queryDescriptor.selectedIds && this.queryDescriptor.selectedIds.length > 0) {
+          context.selection = this.queryDescriptor.selectedIds;
+        }
+      } else {
+        // Fall back to containerType for data type
+        if (this.containerType) {
+          context.dataType = DownloadFormats.containerTypeToDataType(this.containerType);
+        } else if (this.dataType) {
+          context.dataType = this.dataType;
         }
 
-        context.queryDescriptor = QueryDescriptor.create({
-          dataType: context.dataType,
-          rqlQuery: rqlQuery,
-          source: 'download_wizard'
-        });
+        // Build query descriptor if not provided
+        if (context.dataType) {
+          // Get the RQL query string - prefer the explicitly passed rqlQuery
+          var rqlQuery = '';
+          if (this.rqlQuery && typeof this.rqlQuery === 'string') {
+            rqlQuery = this.rqlQuery;
+          } else if (this.grid && this.grid.state && this.grid.state.search) {
+            rqlQuery = this.grid.state.search;
+          }
+
+          context.queryDescriptor = QueryDescriptor.create({
+            dataType: context.dataType,
+            rqlQuery: rqlQuery,
+            source: 'download_wizard'
+          });
+        }
       }
 
       this.context = context;
@@ -288,14 +301,18 @@ define([
         oldStep.destroy();
       }
 
-      // Determine which configurator to use
+      // Determine which configurator to use based on format type
       var StepClass;
       if (formatType === 'bundle') {
         StepClass = GenomeBundleConfiguratorStep;
-      } else if (formatType === 'dna+fasta' || formatType === 'protein+fasta' ||
-                 formatType === 'cds+fasta' || formatType === 'rna+fasta') {
+      } else if (DownloadFormats.isFastaFormat(formatType)) {
+        // All FASTA formats use the FASTA configurator
         StepClass = FASTAConfiguratorStep;
+      } else if (DownloadFormats.isAccessionFormat(formatType)) {
+        // Accession lists use a simple skippable configurator
+        StepClass = AccessionConfiguratorStep;
       } else {
+        // Tables (CSV, TSV, Excel) use the table configurator with column selection
         StepClass = TableConfiguratorStep;
       }
 
@@ -405,9 +422,11 @@ define([
      */
     onNext: function () {
       var currentStep = this.steps[this.currentStepIndex];
+      console.log('onNext: currentStepIndex =', this.currentStepIndex, 'stepId =', currentStep.stepId);
 
       // Validate current step
       var validation = currentStep.validate();
+      console.log('onNext: validation =', validation);
       if (validation !== true) {
         var message = (typeof validation === 'object' && validation.message)
           ? validation.message
@@ -421,26 +440,37 @@ define([
 
       // Store step data
       this.stepData[currentStep.stepId] = currentStep.getData();
+      console.log('onNext: stepData =', this.stepData);
 
-      // If moving from step 1 (format selection), update options step
+      // If moving from step 0 (format selection), update options step
       if (this.currentStepIndex === 0) {
         var formatData = this.stepData.dataType || {};
         var format = formatData.format || 'tsv';
+        console.log('onNext: creating options step for format =', format);
         this._createOptionsStep(format);
       }
 
       // Check if we should skip the options step
       var nextStepIndex = this.currentStepIndex + 1;
+      console.log('onNext: nextStepIndex =', nextStepIndex, 'steps.length =', this.steps.length);
       if (nextStepIndex < this.steps.length) {
         var nextStep = this.steps[nextStepIndex];
+        console.log('onNext: nextStep.stepId =', nextStep.stepId, 'canSkip =', nextStep.canSkip ? nextStep.canSkip() : 'no canSkip method');
         if (nextStep.canSkip && nextStep.canSkip()) {
+          console.log('onNext: skipping step', nextStepIndex);
           nextStepIndex++;
         }
       }
 
-      // Go to next step
+      console.log('onNext: final nextStepIndex =', nextStepIndex);
+      // Go to next step, or trigger download if we've skipped past the last step
       if (nextStepIndex < this.steps.length) {
+        console.log('onNext: going to step', nextStepIndex);
         this._goToStep(nextStepIndex);
+      } else {
+        // All remaining steps can be skipped - proceed directly to download
+        console.log('onNext: triggering download');
+        this.onDownload();
       }
     },
 
@@ -481,22 +511,48 @@ define([
       var recordsData = this.stepData.records || {};
       var optionsData = this.stepData.options || {};
 
+      // Get query descriptor for data
+      var qd = this.context.queryDescriptor || {};
+
+      // Get selected IDs if scope is 'selected'
+      // These come from the queryDescriptor (already extracted as primary key values)
+      var selectedIds = [];
+      if (recordsData.scope === 'selected') {
+        if (qd.selectedIds && qd.selectedIds.length > 0) {
+          selectedIds = qd.selectedIds;
+        } else if (this.context.selection && this.context.selection.length > 0) {
+          // Fall back to context.selection (which should already be IDs)
+          selectedIds = this.context.selection;
+        }
+      }
+
       return {
         // Format info
         format: dataTypeData.format || 'tsv',
         category: dataTypeData.category || 'table',
 
-        // Record scope
-        recordScope: recordsData.scope || 'all',
+        // Record scope (executor expects 'scope', not 'recordScope')
+        scope: recordsData.scope || 'all',
         randomLimit: recordsData.randomLimit || 2000,
 
-        // Data context
-        dataType: this.context.dataType,
-        query: this.context.queryDescriptor ? this.context.queryDescriptor.rqlQuery : '',
-        selection: recordsData.scope === 'selected' ? this.context.selection : [],
+        // Data context from queryDescriptor
+        dataType: qd.dataType || this.context.dataType,
+        rqlQuery: qd.rqlQuery || '',
+        primaryKey: qd.primaryKey || 'id',
+        selectedIds: selectedIds,
+        totalCount: recordsData.totalCount,
 
-        // Format-specific options
-        config: optionsData
+        // Column selection (for table downloads)
+        columns: optionsData.columns || null,
+
+        // FASTA configuration
+        fastaConfig: optionsData.sequenceIdField ? {
+          defLineFields: [optionsData.sequenceIdField].concat(optionsData.descriptionFields || []),
+          delimiter: '|'
+        } : null,
+
+        // Bundle configuration
+        bundleConfig: optionsData.bundleConfig || null
       };
     },
 
@@ -511,7 +567,7 @@ define([
       this.downloadButton.innerHTML = '<span class="fa icon-spinner"></span> Downloading...';
 
       // Dynamically load and use DownloadExecutor
-      require(['../../util/DownloadExecutor'], function (DownloadExecutor) {
+      require(['p3/util/DownloadExecutor'], function (DownloadExecutor) {
         when(
           DownloadExecutor.execute(downloadSpec),
           function (result) {
