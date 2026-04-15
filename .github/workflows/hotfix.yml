@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: master
           fetch-depth: 0
 
       - name: Configure Git
@@ -44,7 +44,7 @@ jobs:
           # Delete the branch if it already exists (from a failed previous run)
           git push origin --delete hotfix/v${VERSION} 2>/dev/null || true
           git push -u origin hotfix/v${VERSION}
-          gh pr create --base main --head hotfix/v${VERSION} \
+          gh pr create --base master --head hotfix/v${VERSION} \
             --title "Hotfix v${VERSION}" \
             --body "## Hotfix v${VERSION}
 
