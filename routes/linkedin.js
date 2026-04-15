@@ -106,8 +106,14 @@ router.get('/posts', async function (req, res) {
     }).then(response => {
       res.send(response.data);
     }).catch(error => {
+      // Log full error server-side for debugging (never expose to client)
+      console.error('LinkedIn API error:', error.message);
+
+      // Return only a generic error message to the client
+      // Never send the raw error object as it may contain sensitive data
+      // such as Authorization headers with Bearer tokens
       res.status(400).send({
-        message: error
+        message: 'Failed to retrieve LinkedIn posts'
       });
     });
   } catch (e) {
