@@ -293,3 +293,65 @@ SaveSearchDialog.show({ queryDescriptor: descriptor });
 - `/SavedSearch/changed` - Published on save/delete/clear operations
 - `/SavedSearch/exported` - Published when exported to workspace
 - `/SavedSearch/imported` - Published when imported from workspace
+
+## Icon System (Icomoon)
+
+This project uses **Icomoon** icon font, NOT Font Awesome. Do not use `fa fa-*` classes.
+
+### Icon Class Prefix
+- **Correct:** `icon-` prefix (e.g., `<i class="icon-chevron-right"></i>`)
+- **Wrong:** `fa fa-` prefix (Font Awesome is NOT loaded)
+
+### Icon CSS Location
+- **Font definition:** `public/js/p3/resources/icomoon/style.css`
+- **Font files:** `public/js/p3/resources/icomoon/fonts/`
+- **Helper classes:** `public/js/p3/resources/icons.css` (sizing: `.fa-lg`, `.fa-2x`, etc.)
+
+### Common Icon Mappings (Font Awesome → Icomoon)
+
+| Font Awesome | Icomoon | Usage |
+|--------------|---------|-------|
+| `fa fa-chevron-right` | `icon-chevron-right` | Add/forward |
+| `fa fa-chevron-left` | `icon-chevron-left` | Remove/back |
+| `fa fa-chevron-up` | `icon-chevron-up` | Move up |
+| `fa fa-chevron-down` | `icon-chevron-down` | Move down |
+| `fa fa-arrow-up` | `icon-arrow-up` | Up arrow |
+| `fa fa-arrow-down` | `icon-arrow-down` | Down arrow |
+| `fa fa-spinner` | `icon-spinner` | Loading spinner |
+| `fa fa-search` | `icon-search` | Search |
+| `fa fa-times` | `icon-times` | Close/cancel |
+| `fa fa-check-circle` | `icon-check-circle` | Success |
+| `fa fa-exclamation-triangle` | `icon-exclamation-triangle` | Warning |
+| `fa fa-exclamation-circle` | `icon-exclamation-circle` | Error |
+| `fa fa-info-circle` | `icon-info-circle` | Information |
+| `fa fa-save` | `icon-save` | Save |
+| `fa fa-trash` | `icon-trash` | Delete |
+| `fa fa-upload` | `icon-upload` | Upload |
+| `fa fa-download` | `icon-download` | Download |
+| `fa fa-refresh` | `icon-refresh` | Refresh/retry |
+| `fa fa-bookmark` | `icon-bookmark` | Bookmark |
+| `fa fa-database` | `icon-database` | Database |
+| `fa fa-columns` | `icon-columns` | Columns |
+| `fa fa-tag` | `icon-tag` | Tag |
+| `fa fa-archive` | `icon-archive` | Archive |
+| `fa fa-file-archive-o` | `icon-file-archive-o` | Archive file |
+| `fa fa-hourglass` | `icon-hourglass` | Waiting |
+
+### Animation Classes
+The helper CSS in `icons.css` provides:
+- `.fa-spin` - Continuous rotation animation (for spinners)
+- `.fa-pulse` - Stepped rotation animation
+- `.fa-lg`, `.fa-2x`, `.fa-3x`, `.fa-4x`, `.fa-5x` - Size modifiers
+
+### Example Usage
+```html
+<!-- Correct: Using icomoon icon class -->
+<i class="icon-chevron-right"></i>
+<i class="icon-spinner fa-spin"></i>
+
+<!-- Wrong: Font Awesome classes won't display -->
+<i class="fa fa-chevron-right"></i>
+```
+
+### Finding Available Icons
+To see all available icons, check `public/js/p3/resources/icomoon/style.css` or open `public/js/p3/resources/icomoon/demo.html` in a browser.
