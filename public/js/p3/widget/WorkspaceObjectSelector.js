@@ -1319,7 +1319,19 @@ define([
     validate: function (/* Boolean */ isFocused) {
       // possibly need to build out refresh function to prevent tricky submissions(see validationtextbox)
       var isValid = this.disabled || this.searchBox.isValid(isFocused);
-      this._set('state', isValid ? '' : this.searchBox.state);
+
+      // Additional check: if required, ensure value is not empty
+      if (isValid && this.required && !this.disabled) {
+        var currentValue = this.get('value') || '';
+        // Check for empty value or invalid paths
+        if (!currentValue || currentValue === '' ||
+            currentValue === '__loading__' ||
+            (currentValue.indexOf && currentValue.indexOf('undefined') !== -1)) {
+          isValid = false;
+        }
+      }
+
+      this._set('state', isValid ? '' : (this.searchBox.state || 'Error'));
       this.focusNode.setAttribute('aria-invalid', this.state == 'Error' ? 'true' : 'false');
       if (isValid) {
         registry.byClass('p3.widget.WorkspaceFilenameValidationTextBox').forEach(function (obj) {
