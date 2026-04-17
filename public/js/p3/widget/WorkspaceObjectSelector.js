@@ -7,7 +7,7 @@ define([
   './Uploader', 'dijit/layout/BorderContainer', 'dojo/dom-attr', 'dijit/TooltipDialog', 'dijit/popup',
   'dijit/form/Button', 'dojo/_base/Deferred', 'dijit/form/CheckBox', 'dojo/topic', 'dijit/Tooltip',
   'dijit/registry', 'dgrid/editor', './formatter', 'dijit/form/FilteringSelect', 'dijit/form/Select',
-  '../util/FavoriteFolders', '../util/RecentFolders', 'dojo/promise/all'
+  '../util/FavoriteFolders', '../util/RecentFolders', 'dojo/promise/all', 'dijit/form/_FormValueMixin'
 ], function (
   declare, WidgetBase, on, lang, query,
   domClass, Templated, WidgetsInTemplate,
@@ -17,10 +17,10 @@ define([
   Uploader, BorderContainer, domAttr, TooltipDialog, popup,
   Button, Deferred, CheckBox, Topic, Tooltip,
   registry, editor, formatter, FilteringSelect, Select,
-  FavoriteFolders, RecentFolders, all
+  FavoriteFolders, RecentFolders, all, FormValueMixin
 ) {
 
-  return declare([WidgetBase, Templated, WidgetsInTemplate], {
+  return declare([WidgetBase, Templated, WidgetsInTemplate, FormValueMixin], {
     baseClass: 'WorkspaceObjectSelector',
     templateString: Template,
     workspace: '',
@@ -74,6 +74,12 @@ define([
           this.searchBox.textbox.value = '';
           this.searchBox._set('displayedValue', '');
           this.searchBox._set('value', '');
+        }
+
+        // Ensure required property is propagated to searchBox early
+        // This ensures validation works correctly from the start
+        if (this.required) {
+          this.searchBox.set('required', true);
         }
       }
 
@@ -632,7 +638,14 @@ define([
       this.dialog = new Dialog({
         title: this.title,
         draggable: true,
-        style: 'visibility: hidden;' // Hide initially to prevent flash of wrong state
+        style: 'visibility: hidden;', // Hide initially to prevent flash of wrong state
+        onHide: lang.hitch(this, function() {
+          // Re-validate after dialog closes to restore error state if still invalid
+          var self = this;
+          setTimeout(function() {
+            self.validate();
+          }, 100);
+        })
       });
       var frontBC = new BorderContainer({ style: { width: '805px', height: '650px' } });
       var backBC = new BorderContainer({
@@ -793,6 +806,10 @@ define([
       var cancelButton = new Button({ label: 'Cancel' });
       cancelButton.on('click', function () {
         _self.dialog.hide();
+        // Re-validate after closing to restore error state if still invalid
+        setTimeout(function() {
+          _self.validate();
+        }, 0);
       });
       var okButton = this.okButton = new Button({
         label: 'OK',
@@ -1260,7 +1277,38 @@ define([
       this.searchBox.set('required', this.required);
       this.searchBox.set('placeHolder', this.placeHolder);
       this.searchBox.labelFunc = this.labelFunc;
+
+      // Re-validate when the searchBox dropdown closes or loses focus
+      // This ensures error state is restored after user interaction
+      var self = this;
+      if (this.searchBox.dropDown) {
+        on(this.searchBox.dropDown, 'hide', function() {
+          setTimeout(function() { self.validate(); }, 0);
+        });
+      }
+      // Handle blur event on the searchBox
+      on(this.searchBox, 'blur', function() {
+        setTimeout(function() { self.validate(); }, 0);
+      });
+      // Handle when dropdown closes (closeDropDown is called)
+      var originalCloseDropDown = this.searchBox.closeDropDown;
+      if (originalCloseDropDown) {
+        this.searchBox.closeDropDown = function() {
+          var result = originalCloseDropDown.apply(this, arguments);
+          setTimeout(function() { self.validate(); }, 0);
+          return result;
+        };
+      }
       // window.App.refreshSelector = this.refreshWorkspaceItems;
+
+      // Validate after startup to show error state for empty required fields
+      // Use setTimeout to ensure DOM is fully rendered
+      var self = this;
+      setTimeout(function () {
+        if (self.required) {
+          self.validate();
+        }
+      }, 0);
     },
 
     labelFunc: function (item, store) {
@@ -1319,14 +1367,69 @@ define([
     validate: function (/* Boolean */ isFocused) {
       // possibly need to build out refresh function to prevent tricky submissions(see validationtextbox)
       var isValid = this.disabled || this.searchBox.isValid(isFocused);
-      this._set('state', isValid ? '' : this.searchBox.state);
-      this.focusNode.setAttribute('aria-invalid', this.state == 'Error' ? 'true' : 'false');
+
+      // Additional check: if required, ensure value is not empty and is a valid path
+      if (isValid && this.required && !this.disabled) {
+        var currentValue = this.get('value') || '';
+        // Check for empty value or invalid paths
+        // A valid workspace path should have at least 4 parts: ['', 'user', 'workspace', 'folder']
+        // e.g., '/user@example.com/home/myfolder'
+        if (!currentValue || currentValue === '' ||
+            currentValue === '/' ||
+            currentValue === '__loading__' ||
+            (currentValue.indexOf && currentValue.indexOf('undefined') !== -1)) {
+          isValid = false;
+        } else {
+          // Check path has enough depth (at least /user/workspace/folder)
+          var pathParts = currentValue.split('/');
+          if (pathParts.length < 4) {
+            isValid = false;
+          }
+        }
+      }
+
+      var newState = isValid ? '' : 'Error';
+      this._set('state', newState);
+      this.focusNode.setAttribute('aria-invalid', newState === 'Error' ? 'true' : 'false');
+
+      // Force the searchBox's visual validation state to match our validation result
+      // This ensures the red border appears when validation fails, even if the
+      // searchBox's own validation would pass (e.g., empty but not focused yet)
+      if (this.searchBox) {
+        if (!isValid) {
+          // Force error state on searchBox
+          this.searchBox._set('state', 'Error');
+          // Set _hasBeenBlurred so dijit will show the error styling
+          // Without this, dijit won't show error state on fields that haven't been touched
+          this.searchBox._hasBeenBlurred = true;
+          // Add error classes to show visual feedback
+          // The claro theme uses dijitTextBoxError for the red border
+          if (this.searchBox.domNode) {
+            domClass.add(this.searchBox.domNode, 'dijitError');
+            domClass.add(this.searchBox.domNode, 'dijitTextBoxError');
+          }
+        } else {
+          // Clear error state on searchBox
+          this.searchBox._set('state', '');
+          if (this.searchBox.domNode) {
+            domClass.remove(this.searchBox.domNode, 'dijitError');
+            domClass.remove(this.searchBox.domNode, 'dijitTextBoxError');
+          }
+        }
+      }
+
       if (isValid) {
         registry.byClass('p3.widget.WorkspaceFilenameValidationTextBox').forEach(function (obj) {
           obj.validate();
         });
       }
       return isValid;
+    },
+
+    isValid: function (/* Boolean */ isFocused) {
+      // This method is called by dijit/form/Form.validate() to check if this widget is valid
+      // It delegates to our validate() method which handles the actual validation logic
+      return this.validate(isFocused);
     },
 
     sanitizeSelection: function (path) {
