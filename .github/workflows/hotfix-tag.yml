@@ -44,32 +44,34 @@ jobs:
           git fetch origin alpha
           git checkout alpha
 
+          # Create a branch for the cherry-pick
+          git checkout -b cherry-pick/hotfix-${VERSION}-alpha
+
           # Cherry-pick the commits from the hotfix (excluding merge commit itself)
-          git cherry-pick -x $MERGE_COMMIT -m 1 || {
-            echo "Cherry-pick had conflicts. Creating a PR for manual resolution."
+          if git cherry-pick -x $MERGE_COMMIT -m 1; then
+            echo "Cherry-pick succeeded"
+          else
+            echo "Cherry-pick had conflicts. Aborting and creating PR with instructions."
             git cherry-pick --abort
+          fi
 
-            # Create a branch for manual cherry-pick
-            git checkout -b cherry-pick/hotfix-${VERSION}-alpha
-            git push -u origin cherry-pick/hotfix-${VERSION}-alpha
+          # Push the cherry-pick branch
+          git push -u origin cherry-pick/hotfix-${VERSION}-alpha
 
-            gh pr create --base alpha --head cherry-pick/hotfix-${VERSION}-alpha \
-              --title "Cherry-pick: Hotfix ${VERSION} to alpha" \
-              --body "## Cherry-pick Hotfix ${VERSION}
+          # Always create a PR (protected branches require PRs)
+          gh pr create --base alpha --head cherry-pick/hotfix-${VERSION}-alpha \
+            --title "Cherry-pick: Hotfix ${VERSION} to alpha" \
+            --body "## Cherry-pick Hotfix ${VERSION} to alpha
 
-          The automatic cherry-pick had conflicts. Please manually apply the changes from the hotfix.
+          This PR cherry-picks the hotfix from master to alpha.
 
           Original PR: #${{ github.event.pull_request.number }}
           Merge commit: ${MERGE_COMMIT}
 
           ---
-          *This PR was created automatically because the cherry-pick had conflicts.*"
-            exit 0
-          }
+          *This PR was created automatically by the hotfix-tag workflow.*"
 
-          # Push the cherry-picked commit to alpha
-          git push origin alpha
-          echo "Successfully cherry-picked hotfix to alpha"
+          echo "Created PR for cherry-pick to alpha"
 
       - name: Cherry-pick to beta
         env:
@@ -83,32 +85,34 @@ jobs:
           git fetch origin beta
           git checkout beta
 
+          # Create a branch for the cherry-pick
+          git checkout -b cherry-pick/hotfix-${VERSION}-beta
+
           # Cherry-pick the commits from the hotfix
-          git cherry-pick -x $MERGE_COMMIT -m 1 || {
-            echo "Cherry-pick had conflicts. Creating a PR for manual resolution."
+          if git cherry-pick -x $MERGE_COMMIT -m 1; then
+            echo "Cherry-pick succeeded"
+          else
+            echo "Cherry-pick had conflicts. Aborting and creating PR with instructions."
             git cherry-pick --abort
+          fi
 
-            # Create a branch for manual cherry-pick
-            git checkout -b cherry-pick/hotfix-${VERSION}-beta
-            git push -u origin cherry-pick/hotfix-${VERSION}-beta
+          # Push the cherry-pick branch
+          git push -u origin cherry-pick/hotfix-${VERSION}-beta
 
-            gh pr create --base beta --head cherry-pick/hotfix-${VERSION}-beta \
-              --title "Cherry-pick: Hotfix ${VERSION} to beta" \
-              --body "## Cherry-pick Hotfix ${VERSION}
+          # Always create a PR (protected branches require PRs)
+          gh pr create --base beta --head cherry-pick/hotfix-${VERSION}-beta \
+            --title "Cherry-pick: Hotfix ${VERSION} to beta" \
+            --body "## Cherry-pick Hotfix ${VERSION} to beta
 
-          The automatic cherry-pick had conflicts. Please manually apply the changes from the hotfix.
+          This PR cherry-picks the hotfix from master to beta.
 
           Original PR: #${{ github.event.pull_request.number }}
           Merge commit: ${MERGE_COMMIT}
 
           ---
-          *This PR was created automatically because the cherry-pick had conflicts.*"
-            exit 0
-          }
+          *This PR was created automatically by the hotfix-tag workflow.*"
 
-          # Push the cherry-picked commit to beta
-          git push origin beta
-          echo "Successfully cherry-picked hotfix to beta"
+          echo "Created PR for cherry-pick to beta"
 
       - name: Delete hotfix branch
         env:
