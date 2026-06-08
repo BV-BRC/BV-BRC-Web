@@ -2,11 +2,9 @@
     <div class="sdm-pop-header">
         <div class="sdm-pop-header-top">
             <div class="sdm-pop-location">
-                {% if item.collection_state_province %}{{ item.collection_state_province }}, {% endif %}{% if
-                item.collection_country %}{{ item.collection_country }}{% endif %}
+                {% if item.collection_state_province %}{{ item.collection_state_province }}, {% endif %}{% if item.collection_country %}{{ item.collection_country }}{% endif %}
             </div>
-            <div class="sdm-pop-coords"><span class="sdm-pop-coords-label">Lat / Lng</span> {{ item.collection_latitude
-                }}, {{ item.collection_longitude }}
+            <div class="sdm-pop-coords"><span class="sdm-pop-coords-label">Lat / Lng</span> {{ item.collection_latitude }}, {{ item.collection_longitude }}
             </div>
         </div>
     </div>
