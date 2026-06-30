@@ -52,11 +52,11 @@ define([
     resultUrlBase: '/view/Taxonomy/{taxon_id}?',
     resultUrlHash: '#view_tab=sfvt',
     defaultTaxonId: TAXON.INFLUENZA_A,
-    proteinOptions: [TAXON.MONKEYPOX, TAXON.MEASLES, TAXON.DENGUE, TAXON.CHIKUNGUNYA],
     segmentOptions: [TAXON.INFLUENZA_A],
     sfvtSequenceErrorMessage: 'There are too many Sequence Feature hits. Please refine Sequence Feature Variant Type Sequence pattern to narrow down the results.',
     sfvtMaxLimit: 300,
     sfvtIntermediateLimit: 400,
+    geneProductCache: null,
     geneProductMapping: {},
 
     startup: function () {
@@ -122,31 +122,6 @@ define([
         selectedTaxonId = this.defaultTaxonId;
       }
 
-      // Retrieve product values for gene
-      const self = this;
-      const sfURL = PathJoin(window.App.dataAPI, '/sequence_feature/');
-      const data = `q=taxon_id:${self.proteinOptions.join(' OR ')}&fl=gene,product&group=true&group.field=gene`;
-      const geneProductPromise = when(xhr.post(sfURL, {
-        handleAs: 'json',
-        headers: {
-          Accept: 'application/solr+json',
-          'Content-Type': 'application/solrquery+x-www-form-urlencoded',
-          'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
-        },
-        data: data
-      }), function (response) {
-        if (response && response.grouped && response.grouped.gene) {
-          response.grouped.gene.groups.forEach(group => {
-            const gene = group.groupValue;
-            const product = group.doclist.docs[0].product;
-            self.geneProductMapping[gene] = product;
-          });
-        }
-      }, function (err) {
-        console.error('Failed to load gene/product mapping:', err);
-      });
-
       storeBuilder('sequence_feature', 'taxon_id').then(lang.hitch(this, (store) => {
         // Display correct names based on taxon id
         store.data = store.data.filter(item => {
@@ -168,10 +143,9 @@ define([
 
         this.pathogenGroupNode.store = store;
         if (selectedTaxonId) {
-          // Wait for the gene/product mapping so gene labels render correctly
-          when(geneProductPromise, lang.hitch(this, function () {
-            this.pathogenGroupNode.set('value', selectedTaxonId);
-          }));
+          // onPathogenChange loads the per-taxon gene/product mapping before
+          // building gene labels, so no preload gating is needed here.
+          this.pathogenGroupNode.set('value', selectedTaxonId);
         }
       }));
 
@@ -184,6 +158,42 @@ define([
             });
         }
       }));
+    },
+
+    _loadGeneProducts: function (taxonId) {
+      this.geneProductCache = this.geneProductCache || {};
+      if (this.geneProductCache[taxonId]) {
+        this.geneProductMapping = this.geneProductCache[taxonId];
+        return when(true);
+      }
+
+      const mapping = {};
+      this.geneProductMapping = mapping;
+      const sfURL = PathJoin(window.App.dataAPI, '/sequence_feature/');
+      const data = `q=taxon_id:${taxonId}&fl=gene,product&group=true&group.field=gene&rows=1000`;
+      return when(xhr.post(sfURL, {
+        handleAs: 'json',
+        headers: {
+          Accept: 'application/solr+json',
+          'Content-Type': 'application/solrquery+x-www-form-urlencoded',
+          'X-Requested-With': null,
+          Authorization: (window.App.authorizationToken || '')
+        },
+        data: data
+      }), lang.hitch(this, function (response) {
+        if (response && response.grouped && response.grouped.gene) {
+          response.grouped.gene.groups.forEach(group => {
+            const docs = group.doclist.docs;
+            if (docs && docs.length) {
+              mapping[group.groupValue] = docs[0].product;
+            }
+          });
+        }
+        // Cache only on success so a failed fetch can be retried later.
+        this.geneProductCache[taxonId] = mapping;
+      }), function (err) {
+        console.error('Failed to load gene/product mapping:', err);
+      });
     },
 
     onPathogenChange: function () {
@@ -244,30 +254,53 @@ define([
         this.subtypeNode.addOption(items);
       }));
 
-      storeBuilder('sequence_feature', 'gene', condition).then(lang.hitch(this, (store) => {
-        let geneOptions = [];
-        for (let item of store.data) {
-          if (taxonId === this.defaultTaxonId) { // Influenza
-            const segmentNo = influenzaSegmentMapping[item.name];
-            geneOptions.push(
-              {
-                value: item.name,
-                label: segmentNo ? `${segmentNo} / ${item.name}` : item.name
-              });
-          } else {
-            const product = this.geneProductMapping[item.name];
-            geneOptions.push(
-              {
-                value: item.name,
-                label: product ? `${item.name} - ${product}` : item.name
-              });
-          }
+      const genesPromise = storeBuilder('sequence_feature', 'gene', condition);
+      let productsPromise;
+      let productsReady;
+      if (taxonId === this.defaultTaxonId) {
+        this.geneProductMapping = {};
+        productsPromise = when(true);
+        productsReady = true;
+      } else {
+        productsReady = !!(this.geneProductCache && this.geneProductCache[taxonId]);
+        productsPromise = this._loadGeneProducts(taxonId);
+      }
+
+      // Render the gene options from the current geneProductMapping. Genes whose
+      // product hasn't loaded yet fall back to the bare gene name. Sorting by the
+      // gene value (not the label) keeps the order stable when product suffixes
+      // are added on the second pass, so the list doesn't reshuffle.
+      const renderGeneOptions = lang.hitch(this, function (store) {
+        // Ignore stale results if the pathogen changed while we were loading.
+        if (this.pathogenGroupNode.value !== taxonId) {
+          return;
         }
+        const isInfluenza = taxonId === this.defaultTaxonId;
+        const geneOptions = store.data.map(item => {
+          if (isInfluenza) {
+            const segmentNo = influenzaSegmentMapping[item.name];
+            return { value: item.name, label: segmentNo ? `${segmentNo} / ${item.name}` : item.name };
+          }
+          const product = this.geneProductMapping[item.name];
+          return { value: item.name, label: product ? `${item.name} - ${product}` : item.name };
+        });
+        geneOptions.sort((a, b) => isInfluenza ? a.label.localeCompare(b.label) : a.value.localeCompare(b.value));
 
-        geneOptions.sort((a, b) => a.label.localeCompare(b.label));
-
+        const selected = this.geneNode.get('value');
+        this.geneNode.set('options', []);
         this.geneNode.addOption(geneOptions);
-      }));
+        // Preserve any selection the user made before the product pass landed.
+        if (selected && selected.length) {
+          this.geneNode.set('value', selected);
+          this.geneNode._updateSelection();
+        }
+      });
+
+      if (!productsReady) {
+        when(productsPromise, function () {
+          genesPromise.then(renderGeneOptions);
+        });
+      }
 
       query('.customFilter').style('display', 'none');
       const customFilters = query('.customFilter');
