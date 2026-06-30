@@ -15,6 +15,64 @@
     cursor: pointer;
     position: absolute;
     top: 0;
+    display: none !important;
+}
+
+.dgrid-hider-menu {
+    display: none !important;
+}
+
+.ActionButtonWrapper[rel="SelectColumns"] {
+    width: 100px;
+}
+
+/* Select Columns dialog */
+.SelectColumnsDialog .dijitDialogPaneContent {
+    padding: 0;
+}
+.SelectColumnsPanel {
+    width: 640px;
+    max-width: 90vw;
+    max-height: 70vh;
+    overflow-y: auto;
+    text-align: left;
+    padding: 8px 16px 16px;
+    box-sizing: border-box;
+}
+.SelectColumnsSection {
+    margin-bottom: 14px;
+}
+.SelectColumnsGroupHeader {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 0.04em;
+    color: #333;
+    border-bottom: 1px solid #333;
+    padding: 6px 2px 4px;
+    margin-bottom: 6px;
+}
+.SelectColumnsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 16px;
+    row-gap: 2px;
+}
+.SelectColumnsRow {
+    display: flex;
+    align-items: center;
+    padding: 4px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.SelectColumnsRow:hover {
+    background: #eef4fb;
+}
+.SelectColumnsLabel {
+    margin-left: 8px;
+    cursor: pointer;
+    flex: 1;
+    line-height: 1.3;
 }
 
 /*  */
@@ -218,6 +276,79 @@
 	font-weight: bold;
 }
 
+/* Taxonomy tab search bar */
+.TaxonSearchBar {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 12px;
+    background: #f9f9f9;
+    box-sizing: border-box;
+}
+
+.TaxonSearchIcon {
+    color: #999;
+    font-size: 14px;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.TaxonSearchInput {
+    flex: 1;
+    max-width: 320px;
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 13px;
+    outline: none;
+    background: #fff;
+}
+
+.TaxonSearchInput:focus {
+    border-color: #2c7a7b;
+    box-shadow: 0 0 0 2px rgba(44, 122, 123, 0.15);
+}
+
+.TaxonSearchClear {
+    display: none;
+    margin-left: 6px;
+    color: #999;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 3px;
+    flex-shrink: 0;
+}
+
+.TaxonSearchClear:hover {
+    color: #333;
+}
+
+.TaxonSearchSpinner {
+    display: none;
+    margin-left: 10px;
+    color: #2c7a7b;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.TaxonNoResults {
+    display: none;
+    margin-left: 12px;
+    padding: 3px 10px;
+    background: var(--main-bg);
+    border: 1px solid var(--border-gray);
+    border-radius: 3px;
+    color: #555;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.TaxonTreeGrid {
+    position: relative;
+}
+
 .TaxonTreeGrid .dgrid-cell {
     border: 0;
 }
@@ -228,6 +359,29 @@
 
 .TaxonTreeGrid .dgrid-cell.field-taxon_rank {
     width: 90px;
+}
+
+.TaxonTreeGrid .dgrid-cell.field-phylo_trees {
+    width: 45px;
+    text-align: center;
+}
+
+.TaxonTreeGrid.no-phylo-col .field-phylo_trees {
+    display: none;
+}
+
+/* Hide the HIGHLIGHT action button on non-virus taxonomy pages */
+.TaxonTreeGrid.no-phylo-col .ActionButtonWrapper[rel="ShowWithTrees"] {
+    display: none;
+}
+
+/* Filter: dim rows with no phylo tree data when the TREES toggle is active */
+.TaxonTreeGrid.trees-only-mode .dgrid-row:not(.has-phylo) {
+    opacity: 0.25;
+}
+
+.TaxonTreeGrid.trees-only-mode .dgrid-row.has-phylo {
+    background-color: rgba(44, 122, 123, 0.07);
 }
 
 .service_form {
@@ -317,8 +471,34 @@
     border-bottom: 1px solid #333;
 }
 
-.hider-menu-group {
-    font-weight: 600;
-    text-transform: uppercase;
-    border-bottom: 1px solid #333;
+.phyloVirusLayout {
+    display: flex;
+    align-items: stretch;
+}
+
+.phyloVirusContent {
+    flex: 1;
+    min-width: 0;
+}
+
+.phyloVirusHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 5px 0;
+}
+
+.phyloVirusActionBarHost {
+    width: 56px;
+    flex-shrink: 0;
+    /* Stretch to full height of the flex row */
+    display: flex;
+    flex-direction: column;
+}
+
+.phyloVirusActionBarHost > .ActionBar {
+    flex: 1;
+    height: 100%;
+    box-sizing: border-box;
+    margin-right: 0;
 }

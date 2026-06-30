@@ -95,7 +95,7 @@ define([
 
       var isValid;
 
-      if (self.selectedTable.getRows().length &&
+      if (self.selectedTable && self.selectedTable.getRows().length &&
         self.output_path.value &&
         self.output_file.value) {
         isValid = true;

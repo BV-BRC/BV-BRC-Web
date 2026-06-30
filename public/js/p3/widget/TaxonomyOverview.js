@@ -54,6 +54,74 @@ define([
       this.createSummary(taxon)
       this.createExternalLinks(taxon);
       this.createPubmedLinks(taxon);
+      this._renderHighlightedFeature(taxon);
+    },
+
+    // Influenza A (11320 / 2955291) and B (11520 / 2955465) only.
+    _INFLUENZA_AB_TAXON_IDS: [11320, 2955291, 11520, 2955465],
+
+    _isInfluenzaABTaxon: function (taxon) {
+      if (!taxon || !taxon.lineage_ids) return false;
+      var self = this;
+      return taxon.lineage_ids.some(function (id) {
+        return self._INFLUENZA_AB_TAXON_IDS.indexOf(Number(id)) !== -1;
+      });
+    },
+
+    // Flu taxon IDs (legacy + updated, species-level for A/B/C/D)
+    _FLU_TAXON_IDS: [11320, 11520, 11552, 1513237, 2955291, 2955465, 2955935, 2955744],
+
+    _isInfluenzaTaxon: function (taxon) {
+      if (!taxon || !taxon.lineage_ids) return false;
+      var self = this;
+      return taxon.lineage_ids.some(function (id) {
+        return self._FLU_TAXON_IDS.indexOf(Number(id)) !== -1;
+      });
+    },
+
+    _renderHighlightedFeature: function (taxon) {
+      if (!this.featureHighlightsNode) return;
+      domConstruct.empty(this.featureHighlightsNode);
+
+      var cards = [];
+      if (this._isInfluenzaABTaxon(taxon)) {
+        cards.push({
+          href: '/view/VaccineStrain',
+          title: 'Influenza Vaccine Strains',
+          img: 'https://www.bv-brc.org/api/content/images/cards/influenza_vaccine_strain.png'
+        });
+      }
+      if (this._isInfluenzaTaxon(taxon)) {
+        cards.push({
+          href: '/searches/InfluenzaSearch',
+          title: 'Influenza Search',
+          img: 'https://www.bv-brc.org/api/content/images/cards/influenza_search.png'
+        });
+      }
+
+      cards.forEach(this._buildFeatureCard, this);
+
+      if (this.featureHighlightsSection) {
+        this.featureHighlightsSection.style.display = cards.length ? '' : 'none';
+      }
+    },
+
+    _buildFeatureCard: function (cfg) {
+      var card = domConstruct.create('a', {
+        href: cfg.href,
+        title: cfg.title || '',
+        'class': 'feature-highlights-card'
+      }, this.featureHighlightsNode);
+      if (cfg.img) {
+        domConstruct.create('img', { src: cfg.img, alt: cfg.title || '' }, card);
+      } else {
+        domConstruct.create('div', { 'class': 'feature-highlights-img-placeholder' }, card);
+      }
+      domConstruct.create('span', {
+        'class': 'feature-highlights-title',
+        innerHTML: cfg.title || ''
+      }, card);
+      return card;
     },
 
     createSummary: function (taxon) {

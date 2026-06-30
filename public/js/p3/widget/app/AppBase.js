@@ -219,6 +219,11 @@ define([
         });
       }
 
+      // Explicitly validate after all child widgets have started
+      // This ensures required fields (like output folder) are properly checked
+      // even when they start empty
+      this.validate();
+
       this._started = true;
     },
 

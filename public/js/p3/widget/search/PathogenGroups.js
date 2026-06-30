@@ -35,7 +35,7 @@ define([
       { name: '----- Virus -----', id: '' },
       { name: 'Adenoviridae', id: 10508 },
       { name: 'Asfarviridae', id: 137992 },
-      { name: 'Bunyavirales', id: 1980410 },
+      { name: 'Bunyaviricetes', id: 3151693 },
       { name: 'Caliciviridae', id: 11974 },
       { name: 'Coronaviridae', id: 11118 },
       { name: 'Filoviridae', id: 11266 },

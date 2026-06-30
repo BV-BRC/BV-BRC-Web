@@ -213,7 +213,29 @@ define([
                 this.type = 'no_ids';
                 this.defaultLoadData(res);
               } else {
-                query.q = (resultIds.length > 0) ? 'accession:(' + resultIds.join(' OR ') + ')' : {};
+                // Separate IDs by query type based on pattern matching
+                var sequenceIdMatches = [];
+                var accessionMatches = [];
+                var conPattern = /^\d+\.\d+\.con\.\d+$/;
+
+                resultIds.forEach(function(id) {
+                  if (conPattern.test(id)) {
+                    sequenceIdMatches.push(id);
+                  } else {
+                    accessionMatches.push(id);
+                  }
+                });
+
+                // Build query parts
+                var queryParts = [];
+                if (sequenceIdMatches.length > 0) {
+                  queryParts.push('sequence_id:(' + sequenceIdMatches.join(' OR ') + ')');
+                }
+                if (accessionMatches.length > 0) {
+                  queryParts.push('accession:(' + accessionMatches.join(' OR ') + ')');
+                }
+
+                query.q = queryParts.length > 0 ? queryParts.join(' OR ') : {};
                 query.fl = 'genome_id,genome_name,taxon_id,sequence_id,accession,sequence_type,description';
               }
             } else if (this.type == 'genome_feature') {
@@ -257,7 +279,18 @@ define([
                 var keyMap = {};
                 keys.forEach(function (f) {
                   if (this.type == 'genome_sequence') {
-                    keyMap[f.accession] = f;
+                    if (f.sequence_id) {
+                      keyMap[f.sequence_id] = f;
+                    }
+                    if (f.accession) {
+                      keyMap[f.accession] = f;
+                    }
+                    if (f.genome_id && f.accession) {
+                      keyMap[f.genome_id + '.' + f.accession] = f;
+                    }
+                    if (f.genome_id && f.sequence_id) {
+                      keyMap[f.genome_id + '.' + f.sequence_id] = f;
+                    }
                   } else {
                     if (f.annotation == 'RefSeq') {
                       keyMap[f.refseq_locus_tag] = f;
@@ -358,18 +391,12 @@ define([
             delete entry.genome_id;
             delete entry.genome_name;
           } else if (this.type === 'genome_sequence') {
-            // target_id = target_id.replace('accn|', '');
-            if (target_id.includes('accn|')) {
-              target_id = target_id.replace('accn|', '');
-            } else if (target_id.includes('.con.')) {
-              target_id = target_id.replace(/^(\d+\.\d+)\.\1\./, '$1.');
-            } else {
-              target_id = target_id.replace(/^\d+\.\d+\./, '');
-            }
+            // Look up using the original sequence_id from the BLAST result
             if (Object.prototype.hasOwnProperty.call(metadata, target_id)) {
               entry.genome_id = metadata[target_id].genome_id;
               entry.sequence_type = metadata[target_id].sequence_type;
               entry.description = metadata[target_id].description;
+              entry.accession = metadata[target_id].accession;
               entry = lang.mixin(entry, metadata[target_id]);
             } else {
               console.log('missing id: ', target_id);

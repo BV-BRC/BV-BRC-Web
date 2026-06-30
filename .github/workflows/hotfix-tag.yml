@@ -1,0 +1,127 @@
+name: Tag Hotfix
+on:
+  pull_request:
+    types: [closed]
+    branches: [master]
+
+jobs:
+  tag-hotfix:
+    # Only run if PR was merged and branch name starts with hotfix/v
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'hotfix/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tag
+        run: |
+          # Extract version from branch name (hotfix/vX.X.X -> vX.X.X)
+          VERSION=$(echo "${{ github.event.pull_request.head.ref }}" | sed 's/hotfix\///')
+          # Check if tag already exists
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "Tag $VERSION already exists, skipping tag creation"
+          else
+            git tag -a "$VERSION" -m "${{ github.event.pull_request.title }}"
+            git push origin "$VERSION"
+            echo "Created and pushed tag: $VERSION"
+          fi
+
+      - name: Cherry-pick to alpha
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Get the merge commit SHA
+          MERGE_COMMIT=${{ github.event.pull_request.merge_commit_sha }}
+          VERSION=$(echo "${{ github.event.pull_request.head.ref }}" | sed 's/hotfix\///')
+
+          # Fetch alpha branch
+          git fetch origin alpha
+          git checkout alpha
+
+          # Create a branch for the cherry-pick
+          git checkout -b cherry-pick/hotfix-${VERSION}-alpha
+
+          # Cherry-pick the commits from the hotfix (excluding merge commit itself)
+          if git cherry-pick -x $MERGE_COMMIT -m 1; then
+            echo "Cherry-pick succeeded"
+          else
+            echo "Cherry-pick had conflicts. Aborting and creating PR with instructions."
+            git cherry-pick --abort
+          fi
+
+          # Push the cherry-pick branch
+          git push -u origin cherry-pick/hotfix-${VERSION}-alpha
+
+          # Always create a PR (protected branches require PRs)
+          gh pr create --base alpha --head cherry-pick/hotfix-${VERSION}-alpha \
+            --title "Cherry-pick: Hotfix ${VERSION} to alpha" \
+            --body "## Cherry-pick Hotfix ${VERSION} to alpha
+
+          This PR cherry-picks the hotfix from master to alpha.
+
+          Original PR: #${{ github.event.pull_request.number }}
+          Merge commit: ${MERGE_COMMIT}
+
+          ---
+          *This PR was created automatically by the hotfix-tag workflow.*"
+
+          echo "Created PR for cherry-pick to alpha"
+
+      - name: Cherry-pick to beta
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Get the merge commit SHA
+          MERGE_COMMIT=${{ github.event.pull_request.merge_commit_sha }}
+          VERSION=$(echo "${{ github.event.pull_request.head.ref }}" | sed 's/hotfix\///')
+
+          # Fetch beta branch
+          git fetch origin beta
+          git checkout beta
+
+          # Create a branch for the cherry-pick
+          git checkout -b cherry-pick/hotfix-${VERSION}-beta
+
+          # Cherry-pick the commits from the hotfix
+          if git cherry-pick -x $MERGE_COMMIT -m 1; then
+            echo "Cherry-pick succeeded"
+          else
+            echo "Cherry-pick had conflicts. Aborting and creating PR with instructions."
+            git cherry-pick --abort
+          fi
+
+          # Push the cherry-pick branch
+          git push -u origin cherry-pick/hotfix-${VERSION}-beta
+
+          # Always create a PR (protected branches require PRs)
+          gh pr create --base beta --head cherry-pick/hotfix-${VERSION}-beta \
+            --title "Cherry-pick: Hotfix ${VERSION} to beta" \
+            --body "## Cherry-pick Hotfix ${VERSION} to beta
+
+          This PR cherry-picks the hotfix from master to beta.
+
+          Original PR: #${{ github.event.pull_request.number }}
+          Merge commit: ${MERGE_COMMIT}
+
+          ---
+          *This PR was created automatically by the hotfix-tag workflow.*"
+
+          echo "Created PR for cherry-pick to beta"
+
+      - name: Delete hotfix branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+          gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/${BRANCH}" || true
+          echo "Deleted branch: $BRANCH"

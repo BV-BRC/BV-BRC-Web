@@ -18,7 +18,8 @@ define([
     perspectiveLabel: 'Taxon View',
     perspectiveIconClass: 'icon-selection-Taxonomy',
 
-    _phyloIndexUrl: 'https://www.bv-brc.org/api/content/phyloxml_trees/phylogeny-tree-groups.json',
+    _phyloIndexUrl: 'https://www.bv-brc.org/api/content/phyloxml_trees/manifest.json',
+    _phyloDataBaseUrl: 'https://www.bv-brc.org/api/content/phyloxml_trees/families/',
     _phyloGateSeq: 0,
 
     postCreate: function () {
@@ -71,7 +72,6 @@ define([
 
       this.viewer.addChild(this.phylogeny, 1);
       this.viewer.addChild(this.amr, 4);
-      this.viewer.addChild(this.sequences, 5)
       this.viewer.addChild(this.specialtyGenes, 8);
       // this.viewer.addChild(this.proteinFamilies, 10);
       this.viewer.addChild(this.pathways, 11);
@@ -83,7 +83,6 @@ define([
     changeToVirusContext: function () {
       this.viewer.removeChild(this.phylogeny);
       this.viewer.removeChild(this.amr);
-      this.viewer.removeChild(this.sequences);
       this.viewer.removeChild(this.specialtyGenes);
       // this.viewer.removeChild(this.proteinFamilies);
       this.viewer.removeChild(this.pathways);
@@ -107,17 +106,38 @@ define([
       this._toggleTab(this.surveillance, isSpecialVirus);
       this._toggleTab(this.serology, isSpecialVirus);
 
+      const isVirus = taxonomy.lineage_names.includes('Viruses');
+      if (this.taxontree) {
+        this.taxontree.setVirusContext(isVirus);
+      }
+
       const seq = ++this._phyloGateSeq;
-      this._getPhyloIndex().then(lang.hitch(this, function (idx) {
+      this._getPhyloIndex().then(lang.hitch(this, function (manifest) {
         if (seq !== this._phyloGateSeq) return;
 
-        const taxonBlock = idx && idx[taxonomy.taxon_id];
-        const shouldShow = this._taxonHasPhyloData(taxonBlock);
-
+        const taxonId = taxonomy.taxon_id;
+        const shouldShow = this._taxonHasPhyloData(manifest, taxonId);
         this._toggleTab(this.phylogenyVirus, shouldShow, 1);
 
+        // Feed phylo data into the Taxonomy tree grid (icon/count column)
+        if (manifest && this.taxontree) {
+          this.taxontree.setPhyloManifest(manifest);
+          this._getPhyloFamilies(manifest).then(lang.hitch(this, function (familyData) {
+            if (seq !== this._phyloGateSeq) {
+              return;
+            }
+            this.taxontree.setPhyloManifestData(familyData);
+          }));
+        }
+
         if (shouldShow && this.phylogenyVirus) {
-          this.phylogenyVirus.setTreeData(taxonBlock);
+          xhr.get(`${this._phyloDataBaseUrl}${taxonId}/${taxonId}.json`, {
+            handleAs: 'json'
+          }).then(lang.hitch(this, function (taxonData) {
+            if (this._phyloGateSeq === seq) {
+              this.phylogenyVirus.setTreeData(taxonData);
+            }
+          }));
         }
       }));
 
@@ -134,7 +154,7 @@ define([
 
       if (taxonomy.lineage_names.includes('Orthomyxoviridae')) {
         this.viewer.addChild(this.strains_orthomyxoviridae, 3);
-      } else if (taxonomy.lineage_names.includes('Bunyavirales')) {
+      } else if (taxonomy.lineage_names.includes('Bunyaviricetes')) {
         this.viewer.addChild(this.strains_bunyavirales, 3);
       } else {
         this.viewer.removeChild(this.strains || this.strains_orthomyxoviridae || this.strains_bunyavirales);
@@ -144,7 +164,7 @@ define([
       if (taxonomy.lineage_names.includes('Bacteria') && this.context === 'virus') {
         this.set('context', 'bacteria');
         this.changeToBacteriaContext();
-      } else if (taxonomy.lineage_names.includes('Viruses') && this.context === 'bacteria') {
+      } else if (isVirus && this.context === 'bacteria') {
         this.set('context', 'virus');
         this.changeToVirusContext();
       }
@@ -197,14 +217,17 @@ define([
         this.set('taxon_id', state.taxon_id);
 
         var s = 'eq(taxon_lineage_ids,' + state.taxon_id + ')';
-        state.search = state.search.replace(s, '');
-        if (state.search) {
-          this.filteredTaxon = QueryToEnglish(state.search.replace(s, ''));
-          var sx = [s];
-          if (state.search && state.search != s) {
-            sx.push(state.search);
-          }
-          state.search = sx.join('&').replace('&&', '&');
+        var deprecatedFilter = 'ne(genome_status,Deprecated)';
+        var searchTerms = (state.search || '')
+          .split('&')
+          .filter(function (term) {
+            return term && term !== s && term !== deprecatedFilter;
+          });
+        var sx = [s, deprecatedFilter].concat(searchTerms);
+        state.search = sx.join('&');
+
+        if (searchTerms.length > 0) {
+          this.filteredTaxon = QueryToEnglish(searchTerms.join('&'));
           if (this.taxonomy) {
             // Use DOM placement instead of innerHTML to prevent XSS
             this.queryNode.textContent = '';
@@ -212,7 +235,7 @@ define([
           }
 
         } else {
-          state.search = s;
+          state.search = sx.join('&');
           this.filteredTaxon = false;
           if (this.taxonomy) {
             // Use DOM placement instead of innerHTML to prevent XSS
@@ -299,7 +322,6 @@ define([
             search: 'eq(taxon_id,' + taxon_id + ')'
           }));
           break;
-        case 'structures':
         case 'surveillance':
         case 'serology':
         case 'strains':
@@ -312,11 +334,22 @@ define([
           }));
           break;
 
+        case 'genomes':
+          activeTab.set('state', lang.mixin({}, this.state, {
+            search: this.state.search,
+            hashParams: lang.mixin({}, this.state.hashParams)
+          }));
+          break;
+
         default:
           var activeQueryState;
           var prop = 'genome_id';
           if (active === 'interactions') {
             prop = 'genome_id_a';
+          } else if (active === 'structures') {
+            prop = 'genome_id';
+          } else if (active === 'proteinFeatures') {
+            prop = 'genome_id';
           }
           var context = [`eq(taxon_lineage_ids,${this.state.taxon_id})`]
           if (this.state.search) {
@@ -454,17 +487,48 @@ define([
       return this._phyloIndexPromise;
     },
 
-    _taxonHasPhyloData: function (taxonBlock) {
-      if (!taxonBlock) {
-        return false;
+    _getPhyloFamilies: function (manifest) {
+      if (!manifest) {
+        return Promise.resolve([]);
+      }
+      var taxonIds = Object.keys(manifest);
+      if (taxonIds.length === 0) {
+        return Promise.resolve([]);
       }
 
-      const groups = Array.isArray(taxonBlock.groups) ? taxonBlock.groups : [];
-      return groups.some(function (g) {
-        const phy = Array.isArray(g.archaeopteryx) ? g.archaeopteryx.length : 0;
-        const nxt = Array.isArray(g.nextstrain) ? g.nextstrain.length : 0;
-        return (phy + nxt) > 0;
-      });
+      // Cached — this is static data (all manifest families with their lineage_ids)
+      if (this._phyloFamilyData) {
+        return Promise.resolve(this._phyloFamilyData);
+      }
+      if (this._phyloFamilyDataPromise) {
+        return this._phyloFamilyDataPromise;
+      }
+
+      this._phyloFamilyDataPromise = xhr.post(PathJoin(this.apiServiceUrl, 'taxonomy'), {
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/rqlquery+x-www-form-urlencoded',
+          'X-Requested-With': null,
+          Authorization: (window.App.authorizationToken || '')
+        },
+        data: 'in(taxon_id,(' + taxonIds.join(',') + '))&select(taxon_id,lineage_ids)&limit(2000)',
+        handleAs: 'json'
+      }).then(
+        lang.hitch(this, function (data) {
+          this._phyloFamilyData = data || [];
+          return this._phyloFamilyData;
+        }),
+        function (err) {
+          console.error('Failed to load phylo family lineages:', err);
+          return [];
+        }
+      );
+
+      return this._phyloFamilyDataPromise;
+    },
+
+    _taxonHasPhyloData: function (manifest, taxon_id) {
+      return manifest !== null && manifest.hasOwnProperty(taxon_id);
     },
 
     _toggleTab: function (widget, shouldShow, position) {

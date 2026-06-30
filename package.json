@@ -1,17 +1,19 @@
 {
   "name": "p3-web",
-  "version": "3.57.22",
+  "version": "3.58.5",
   "private": true,
   "scripts": {
-    "start": "node ./bin/p3-web",
+    "start": "NEXTSTRAIN_DATASET_DIR=./lib/auspice-datasets node ./bin/p3-web",
     "test": "cross-env NODE_ENV=test gulp srcfiles && npm run move-src && eslint . && jest --config jest.config.json --notify",
     "move-src": "cp gulpified/app/app.js src/app/ && cp gulpified/app/p3app.js src/app/ && cp gulpified/widget/LoginForm.js src/widget",
     "xxxeslint:fix": "./node_modules/eslint/bin/eslint.js --fix public/js/p3",
     "xxxeslint:test": "./node_modules/eslint/bin/eslint.js public/js/p3",
     "xxxtest:intern": "./node_modules/.bin/intern",
-    "postinstall": "./post_install.sh"
+    "postinstall": "./post_install.sh",
+    "build:nextstrain": "cd ./public/js/auspice-custom && npx auspice build --extend ./extend/config.json"
   },
   "dependencies": {
+    "auspice": "^2.68.0",
     "axios": "^1.6.8",
     "body-parser": "^1.20.2",
     "braces": "^3.0.3",
@@ -33,7 +35,10 @@
     "express-rate-limit": "^7.5.1",
     "feedparser": "^2.2.10",
     "flag-icons": "^7.2.1",
+    "flatted": "^3.4.2",
+    "form-data": "^4.0.6",
     "formidable": "^2.1.2",
+    "gexf-js": "github:aswarren/gexf-js#patric_links",
     "helmet": "^7.2.0",
     "html2canvas": "^1.4.1",
     "http-proxy": "^1.18.1",

@@ -99,7 +99,8 @@ define([
     validate: function () {
       // console.log("validate", this.genome_id.get('value'), this.fasta.get('value'), !(this.genome_id.get('value') == '' && this.fasta.get('value') == ''));
       var input_genome_valid = this.genome_id.get('value') != '';
-      var input_fasta_valid = this.fasta.get('value') != '';
+      // Check if fasta selector exists (it's only created when user is logged in)
+      var input_fasta_valid = this.fasta ? this.fasta.get('value') != '' : false;
       var input_valid = (input_genome_valid && !input_fasta_valid) || (!input_genome_valid && input_fasta_valid);
 
       var bac = this.org_bacterial.get('value');

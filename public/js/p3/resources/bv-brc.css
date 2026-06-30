@@ -1122,3 +1122,45 @@ pre.bv-brc-code-block button:active {
 #about-menu.menu-section .menu-items {
   column-count: 2;
 }
+
+/* Feature Highlights section */
+.feature-highlights {
+  padding-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.feature-highlights-card {
+  display: block;
+  flex: 0 0 auto;
+  width: 90px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+  text-decoration: none;
+  color: var(--green);
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
+.feature-highlights-card:hover {
+  border-color: var(--green);
+  box-shadow: 0 2px 8px rgba(0,0,0,.12);
+}
+.feature-highlights-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.feature-highlights-img-placeholder {
+  width: 100%;
+  aspect-ratio: 11 / 6;
+  background: #f3f6f9;
+}
+.feature-highlights-title {
+  display: block;
+  padding: 5px 6px;
+  font-size: 0.78em;
+  font-weight: bold;
+  text-align: center;
+  line-height: 1.2;
+}

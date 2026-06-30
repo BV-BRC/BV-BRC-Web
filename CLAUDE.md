@@ -219,139 +219,71 @@ Configured in `p3-web.conf`:
 - Homology Service: BLAST searches
 - Compare Regions: Genome comparison
 
-## Saved Searches Subsystem
+## Dijit Form Validation Patterns
 
-The saved searches feature allows users to save grid queries for later reuse and download configuration.
+When working with dijit form validation, be aware of these key behaviors:
 
-### Key Files
+### Form Validation and Focus
+When `dijit/form/Form.validate()` is called (which happens on every keystroke if `intermediateChanges: true`):
+1. It iterates through all form widgets calling `isValid()`
+2. If a widget returns `false`, the Form **scrolls to it and calls `focus()`**
+3. This can steal focus from the field the user is currently typing in
 
-- **`util/QueryDescriptor.js`** - Core data structure for saved searches
-  - `create(options)` - Create a new descriptor with dataType, rqlQuery, columns, etc.
-  - `createFromGrid(grid, containerType)` - Extract query and column visibility from a dgrid
-  - `createFromContainerType(containerType, rqlQuery)` - Create from query string only
-  - `extractVisibleColumns(grid)` - Get currently visible columns as `[{field, label}]`
-  - `extractAllColumns(grid)` - Get all columns as `[{field, label, group}]`
-
-- **`util/SavedSearchManager.js`** - LocalStorage persistence layer
-  - `save(descriptor)` - Save to localStorage with auto-generated key
-  - `get(id)` / `list(options)` - Retrieve saved searches
-  - `delete(id)` - Remove a saved search
-  - `exportToWorkspace(id, path)` - Export to workspace as `.search` file
-  - `importFromWorkspace(path)` - Import from workspace file
-  - Storage key prefix: `bvbrc_saved_searches_`
-
-- **`widget/download/SaveSearchDialog.js`** - Save dialog UI
-  - Shows query preview (human-readable via QueryToEnglish)
-  - Optional workspace export
-  - Duplicate name warning
-
-- **`widget/download/SavedSearchBrowser.js`** - Browse/manage saved searches
-
-### QueryDescriptor Structure
-
+**Solution:** Override `focus()` in widgets that shouldn't receive automatic focus:
 ```javascript
-{
-  id: 'search_1234567890_abc123',      // Auto-generated unique ID
-  name: 'Genomes: genome name is E. coli',  // User-editable name
-  dataType: 'genome',                   // API data type
-  rqlQuery: 'eq(genome_name,E.%20coli)', // RQL query string
-  displayQuery: '<span>...</span>',     // HTML for display (QueryToEnglish)
-  source: 'grid',                       // Where query originated
-  created: 1234567890,                  // Timestamp
-  lastUsed: 1234567890,                 // Last access timestamp
-
-  // Column visibility (for tabular downloads)
-  visibleColumns: [                     // Columns visible at save time
-    { field: 'genome_name', label: 'Genome Name' },
-    { field: 'genome_id', label: 'Genome ID' }
-  ],
-  availableColumns: [                   // All possible columns
-    { field: 'genome_name', label: 'Genome Name', group: 'General Info' },
-    // ... all columns with optional group for UI organization
-  ],
-
-  // Download preferences
-  downloadConfig: {
-    lastUsedFormat: null,
-    lastUsedRecordScope: 'all',
-    fastaDefLineFields: null,
-    tableColumns: null
+focus: function () {
+  // Only focus if user explicitly initiated it
+  if (this._userInitiatedFocus) {
+    this._userInitiatedFocus = false;
+    this.searchBox.focus();
   }
+  // Otherwise, block automatic focus from form validation
 }
 ```
 
-### Integration Points
+### Making Custom Widgets Participate in Form Validation
+To make a custom widget participate in dijit form validation:
+1. Add `dijit/form/_FormValueMixin` to the widget's declare chain
+2. Implement `isValid(isFocused)` method that returns boolean
+3. Implement `validate(isFocused)` method for visual feedback
+4. Ensure the widget has a `name` attribute in the template
 
-**GridContainer.js** - SaveSearch action in `selectionActions` array:
+**Warning:** Adding `_FormValueMixin` makes the widget subject to Form's focus-stealing behavior.
+
+### Validation Order Matters
+When validating optional fields, check if the field is required/empty **before** calling inner widget's `isValid()`:
 ```javascript
-// Uses createFromGrid() to capture column state
-var descriptor = QueryDescriptor.createFromGrid(this.grid, this.containerType);
-SaveSearchDialog.show({ queryDescriptor: descriptor });
+validate: function (isFocused) {
+  // Check optional empty FIRST - return early to avoid inner validation
+  if (!this.required) {
+    var value = this.get('value') || '';
+    if (!value || value === '') {
+      return true;  // Optional empty = valid
+    }
+  }
+  // Only now check inner widget (which might return false for empty)
+  return this.innerWidget.isValid(isFocused);
+}
 ```
 
-**Topic events:**
-- `/SavedSearch/changed` - Published on save/delete/clear operations
-- `/SavedSearch/exported` - Published when exported to workspace
-- `/SavedSearch/imported` - Published when imported from workspace
+### Dijit Error Styling
+To show validation errors visually without triggering dijit side effects:
+```javascript
+// DO: Just add CSS classes
+domClass.add(widget.domNode, 'dijitError');
+domClass.add(widget.domNode, 'dijitTextBoxError');
 
-## Icon System (Icomoon)
-
-This project uses **Icomoon** icon font, NOT Font Awesome. Do not use `fa fa-*` classes.
-
-### Icon Class Prefix
-- **Correct:** `icon-` prefix (e.g., `<i class="icon-chevron-right"></i>`)
-- **Wrong:** `fa fa-` prefix (Font Awesome is NOT loaded)
-
-### Icon CSS Location
-- **Font definition:** `public/js/p3/resources/icomoon/style.css`
-- **Font files:** `public/js/p3/resources/icomoon/fonts/`
-- **Helper classes:** `public/js/p3/resources/icons.css` (sizing: `.fa-lg`, `.fa-2x`, etc.)
-
-### Common Icon Mappings (Font Awesome → Icomoon)
-
-| Font Awesome | Icomoon | Usage |
-|--------------|---------|-------|
-| `fa fa-chevron-right` | `icon-chevron-right` | Add/forward |
-| `fa fa-chevron-left` | `icon-chevron-left` | Remove/back |
-| `fa fa-chevron-up` | `icon-chevron-up` | Move up |
-| `fa fa-chevron-down` | `icon-chevron-down` | Move down |
-| `fa fa-arrow-up` | `icon-arrow-up` | Up arrow |
-| `fa fa-arrow-down` | `icon-arrow-down` | Down arrow |
-| `fa fa-spinner` | `icon-spinner` | Loading spinner |
-| `fa fa-search` | `icon-search` | Search |
-| `fa fa-times` | `icon-times` | Close/cancel |
-| `fa fa-check-circle` | `icon-check-circle` | Success |
-| `fa fa-exclamation-triangle` | `icon-exclamation-triangle` | Warning |
-| `fa fa-exclamation-circle` | `icon-exclamation-circle` | Error |
-| `fa fa-info-circle` | `icon-info-circle` | Information |
-| `fa fa-save` | `icon-save` | Save |
-| `fa fa-trash` | `icon-trash` | Delete |
-| `fa fa-upload` | `icon-upload` | Upload |
-| `fa fa-download` | `icon-download` | Download |
-| `fa fa-refresh` | `icon-refresh` | Refresh/retry |
-| `fa fa-bookmark` | `icon-bookmark` | Bookmark |
-| `fa fa-database` | `icon-database` | Database |
-| `fa fa-columns` | `icon-columns` | Columns |
-| `fa fa-tag` | `icon-tag` | Tag |
-| `fa fa-archive` | `icon-archive` | Archive |
-| `fa fa-file-archive-o` | `icon-file-archive-o` | Archive file |
-| `fa fa-hourglass` | `icon-hourglass` | Waiting |
-
-### Animation Classes
-The helper CSS in `icons.css` provides:
-- `.fa-spin` - Continuous rotation animation (for spinners)
-- `.fa-pulse` - Stepped rotation animation
-- `.fa-lg`, `.fa-2x`, `.fa-3x`, `.fa-4x`, `.fa-5x` - Size modifiers
-
-### Example Usage
-```html
-<!-- Correct: Using icomoon icon class -->
-<i class="icon-chevron-right"></i>
-<i class="icon-spinner fa-spin"></i>
-
-<!-- Wrong: Font Awesome classes won't display -->
-<i class="fa fa-chevron-right"></i>
+// DON'T: Manipulate dijit internal state (can cause focus issues)
+widget._set('state', 'Error');
+widget._hasBeenBlurred = true;  // Can trigger refresh/focus behavior
 ```
 
-### Finding Available Icons
-To see all available icons, check `public/js/p3/resources/icomoon/style.css` or open `public/js/p3/resources/icomoon/demo.html` in a browser.
+### Widget Lifecycle and Null Checks
+Widgets created conditionally (e.g., only when user is logged in) may not exist during early validation:
+```javascript
+// In startup() - widget may not exist yet
+this.inherited(arguments);  // Calls validate()
+
+// In validate() - always check existence
+var value = this.optionalWidget ? this.optionalWidget.get('value') : '';
+```

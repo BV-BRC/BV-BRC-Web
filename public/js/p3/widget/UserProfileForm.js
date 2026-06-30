@@ -289,6 +289,26 @@ define([
         patchObj.push({ 'op': this.userprofileStored.organisms ? 'replace' : 'add', 'path': '/organisms', 'value': vals.organisms });
       }
 
+      // Handle default job folder setting
+      // We need to patch the entire /settings object since nested paths don't work
+      // when the parent object doesn't exist
+      var newDefaultFolder = this.defaultJobFolderSelector.get('value') || '';
+      var currentSettings = this.userprofileStored.settings || {};
+      var currentDefaultFolder = currentSettings.default_job_folder || '';
+
+      if (newDefaultFolder !== currentDefaultFolder) {
+        // Build a new settings object with the updated value
+        var newSettings = lang.mixin({}, currentSettings, {
+          default_job_folder: newDefaultFolder
+        });
+        var op = this.userprofileStored.settings ? 'replace' : 'add';
+        patchObj.push({
+          'op': op,
+          'path': '/settings',
+          'value': newSettings
+        });
+      }
+
       var def = xhr(this.userServiceURL + '/user/' + window.localStorage.userid, {
         data: JSON.stringify(patchObj),
         method: 'post',
@@ -381,6 +401,11 @@ define([
 
         this._onProfileChange = lang.hitch(this,"onProfileChange");
         addEventListener("storage", this._onProfileChange);
+
+        // Load default job folder setting if it exists
+        if (this.userprofileStored.settings && this.userprofileStored.settings.default_job_folder) {
+          this.defaultJobFolderSelector.set('value', this.userprofileStored.settings.default_job_folder);
+        }
 
         // this.UNF.destroy();
         // domConstruct.create("span",{innerHTML: this.userprofileStored.id.replace('@' + localStorage.getItem("realm"), '')},this.usernameContainer)

@@ -6,8 +6,7 @@ define([
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog', './DownloadTooltipDialog', './PerspectiveToolTip',
   './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin',
   './FeatureDetailsTooltipDialog', './ServicesTooltipDialog', './RerunUtility', 'dojox/widget/Standby',
-  './copilot/ChatSessionContainerSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel',
-  './download/UnifiedDownloadWizard', './download/SaveSearchDialog', '../util/QueryDescriptor'
+  './copilot/ChatSessionContainerSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
@@ -16,8 +15,7 @@ define([
   Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
   CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin,
   FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility, Standby,
-  ChatSessionContainerSidePanel, CopilotAPI, ChatSessionOptionsBar,
-  UnifiedDownloadWizard, SaveSearchDialog, QueryDescriptor
+  ChatSessionContainerSidePanel, CopilotAPI, ChatSessionOptionsBar
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -150,38 +148,6 @@ define([
 
     constructor: function () {
       this._firstView = false;
-    },
-
-    /**
-     * Get data type from container type for download system
-     */
-    _getDataTypeFromContainer: function () {
-      var containerTypeMap = {
-        'genome_data': 'genome',
-        'sequence_data': 'genome_sequence',
-        'feature_data': 'genome_feature',
-        'protein_data': 'genome_feature',
-        'sequence_feature_data': 'genome_feature',
-        'spgene_data': 'sp_gene',
-        'spgene_ref_data': 'sp_gene',
-        'pathway_data': 'pathway',
-        'pathwayTab_data': 'pathway',
-        'subsystemTab_data': 'subsystem',
-        'transcriptomics_experiment_data': 'experiment',
-        'transcriptomics_sample_data': 'experiment',
-        'experiment_data': 'experiment',
-        'bioset_data': 'bioset',
-        'transcriptomics_gene_data': 'genome_feature',
-        'gene_expression_data': 'genome_feature',
-        'interaction_data': 'interaction',
-        'genome_amr_data': 'genome_amr',
-        'structure_data': 'protein_structure',
-        'proteinFeatures_data': 'protein_feature',
-        'epitope_data': 'epitope',
-        'surveillance_data': 'surveillance',
-        'serology_data': 'serology'
-      };
-      return containerTypeMap[this.containerType] || 'genome_feature';
     },
 
     postCreate: function () {

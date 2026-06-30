@@ -29,7 +29,7 @@
     var virus = [
         {name: "Adenoviridae", href: "/view/Taxonomy/10508#view_tab=overview"},
         {name: "Asfarviridae", href: "/view/Taxonomy/137992#view_tab=overview"},
-        {name: "Bunyavirales", href: "/view/Taxonomy/1980410#view_tab=overview"},
+        {name: "Bunyaviricetes", href: "/view/Taxonomy/3151693#view_tab=overview"},
         {name: "Caliciviridae", href: "/view/Taxonomy/11974#view_tab=overview"},
         {name: "Coronaviridae", href: "/view/Taxonomy/11118#view_tab=overview"},
         {name: "Filoviridae", href: "/view/Taxonomy/11266#view_tab=overview"},
@@ -52,7 +52,7 @@
     var featured_virus = [
         {name: "Bacteriophages", href: "/view/GenomeList/?and(eq(genome_name,phage),eq(superkingdom,Viruses))"},
         {name: "Dengue virus", href: "/view/Taxonomy/3052464#view_tab=overview"},
-        {name: "Ebola virus", href: "/view/GenomeList/?in(taxon_lineage_ids,(3044781,186536))"},
+        {name: "Ebola virus", href: "/view/Taxonomy/3044781#view_tab=overview"},
         {name: "Enteroviruses", href: "/view/Taxonomy/12059#view_tab=overview"},
         {name: "Hepatitis C virus", href: "/view/Taxonomy/3052230#view_tab=overview"},
         {name: "Influenza A virus", href: "/view/Taxonomy/2955291#view_tab=overview"},
@@ -110,7 +110,7 @@
                                         <a class="navigationLink" href="/view/Taxonomy/2157" title="Overview page for all Archea genomes">All Archaea</a>
                                     </span>
                                     <span class="menuItem half">
-                                        <a class="navigationLink" href="/view/Virus/10239" title="Overview page for all Viruses">All Viruses</a>
+                                        <a class="navigationLink" href="/view/Virus/10239#view_tab=overview" title="Overview page for all Viruses">All Viruses</a>
                                     </span>
                                     <span class="menuItem half">
                                         <a class="navigationLink" href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes"
@@ -164,6 +164,8 @@
                     <span>SEARCHES</span>
 
                     <div data-dojo-type="p3/widget/TooltipDialog">
+                        <div class="menuHeader" style="padding-right: 20px;">Feature Search</div>
+                        <div><a class="navigationLink" href="/searches/InfluenzaSearch">Influenza (BETA)</a></div>
                         <div class="menuHeader" style="padding-right: 20px;">Advanced Search</div>
                         <div><a class="navigationLink" href="/searches/TaxaSearch">Taxa</a></div>
                         <div><a class="navigationLink" href="/searches/GenomeSearch">Genomes</a></div>
@@ -179,8 +181,6 @@
                         <div><a class="navigationLink" href="/searches/SurveillanceSearch">Surveillance</a></div>
                         <div><a class="navigationLink" href="/searches/SerologySearch">Serology</a></div>
                         <div><a class="navigationLink" href="/searches/SFVTSearch">Sequence Feature Variant Types</a></div>
-                        <div class="menuHeader" style="margin-top: 10px;">My Searches</div>
-                        <div><a class="navigationLink" href="/view/SavedSearches">Saved Searches</a></div>
                     </div>
                 </div>
 
@@ -218,6 +218,7 @@
                                     <div><a class="navigationLink" href="/app/ComparativeSystems">Protein Family Sorter</a></div>
                                     <div><a class="navigationLink" href="/app/ComparativeSystems">Comparative Systems</a></div>
                                     <div><a class="navigationLink" href="/app/Docking">Docking</a></div>
+                                    <div><a class="navigationLink" href="/app/PredictStructure">Protein Structure Prediction</a></div>
                                 </div>
                             </div>
 
@@ -405,7 +406,7 @@
                                title="Overview page for all Bacteria genomes">All Bacteria</a>
                             <a href="/view/Taxonomy/2157"
                                title="Overview page for all Archea genomes">All Archaea</a>
-                            <a href="/view/Taxonomy/10239" title="Overview page for all Viruses">All Viruses</a>
+                            <a href="/view/Taxonomy/10239#view_tab=overview" title="Overview page for all Viruses">All Viruses</a>
                             <a href="/view/Host/?eq(taxon_lineage_ids,2759)#view_tab=genomes"
                                title="Overview page for all Eukaryotic host genomes">Eukaryotic Hosts</a>
                         </div>
@@ -452,6 +453,7 @@
                     <div class="menu-header" onclick="toggleSubMenu(this)">SEARCHES <span
                                 class="icon-chevron-down"></span></div>
                     <div class="menu-items" style="display: none;">
+                        <div><a href="/searches/InfluenzaSearch">Influenza (BETA)</a></div>
                         <div><a href="/searches/TaxaSearch">Taxa</a></div>
                         <div><a href="/searches/GenomeSearch">Genomes</a></div>
                         <div><a href="/searches/StrainSearch">Strains</a></div>
@@ -466,8 +468,6 @@
                         <div><a href="/searches/SurveillanceSearch">Surveillance</a></div>
                         <div><a href="/searches/SerologySearch">Serology</a></div>
                         <div><a href="/searches/SFVTSearch">Sequence Feature Variant Types</a></div>
-                        <div class="menuHeader" style="margin-top: 8px;">My Searches</div>
-                        <div><a href="/view/SavedSearches">Saved Searches</a></div>
                     </div>
                 </div>
 
@@ -502,6 +502,7 @@
                                 <div><a href="/app/ComparativeSystems">Protein Family Sorter</a></div>
                                 <div><a href="/app/ComparativeSystems">Comparative Systems</a></div>
                                 <div><a href="/app/Docking">Docking</a></div>
+                                <div><a href="/app/PredictStructure">Protein Structure Prediction</a></div>
                             </div>
                             <div class="menuHeader">Metagenomics</div>
                             <div class="sub-menu">

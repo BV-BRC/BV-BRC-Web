@@ -81,6 +81,11 @@ define([
       valid = valid.filter(function (an) {
         var act = this._actions[an];
         var validTypes = act.options.validTypes || [];
+        if (act.options.shouldShow && typeof act.options.shouldShow === 'function') {
+          if (!act.options.shouldShow(this.selection)) {
+            return false;
+          }
+        }
 
         if (act.options.searchOnly && !this.inSearch) {
             return false;

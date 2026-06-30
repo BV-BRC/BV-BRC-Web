@@ -127,7 +127,7 @@ define([
           });
       }
       else if (fileCheck && !isNaN(fileCheck.index)) {
-        var objPath = fileCheck[0].split('=')[1];
+        var objPath = decodeURIComponent(fileCheck[0].split('=')[1]);
         WorkspaceManager.getObjects([objPath]).then(lang.hitch(this, function (objs) {
           var obj = objs[0];
           var treeDat = {};
