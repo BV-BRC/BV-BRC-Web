@@ -296,6 +296,7 @@ define([
         }
       });
 
+      genesPromise.then(renderGeneOptions);
       if (!productsReady) {
         when(productsPromise, function () {
           genesPromise.then(renderGeneOptions);
