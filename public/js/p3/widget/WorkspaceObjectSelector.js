@@ -1110,7 +1110,8 @@ define([
             var seenPaths = {};
             favoriteItems.forEach(function (item) { seenPaths[normPath(item.path)] = true; });
             missingFavorites.forEach(function (meta) {
-              var cleanPath = normPath(meta.path);
+              // meta.path is the PARENT directory; full path is parent + name
+              var cleanPath = normPath(meta.path + meta.name);
               if (seenPaths[cleanPath]) return;
               seenPaths[cleanPath] = true;
               favoriteItems.push({
