@@ -278,6 +278,22 @@ widget._set('state', 'Error');
 widget._hasBeenBlurred = true;  // Can trigger refresh/focus behavior
 ```
 
+### WorkspaceObjectSelector and Favorite Folders
+
+The output folder dropdown in job submission forms uses `WorkspaceObjectSelector.js`, which wraps a Dojo `FilteringSelect` with a `Memory` store (`idProperty: 'path'`, `searchAttr: 'name'`).
+
+**Data sources for the dropdown:**
+1. `WorkspaceManager.getObjectsByType('folder')` — folders in the current workspace (recursive)
+2. `FavoriteFolders.load()` — favorite paths from `~/.preferences/favorites.json`
+3. "Missing favorites" — favorites NOT in source 1, fetched via `WorkspaceManager.getObjects(paths, true)`
+
+**Critical: `getObjects` metadata format:**
+`getObjects` returns `meta.path` as the PARENT directory (`obj[0][2]`), NOT the full path. The full path is `meta.path + meta.name`. This is different from `metaListToObj` which constructs `path: list[2] + list[0]` internally.
+
+**Path normalization:** Workspace paths may or may not have trailing slashes. Always normalize with `path.replace(/\/+$/, '')` before comparing paths across different sources.
+
+**Don't use `display:none` to hide dropdown items.** Hidden items still occupy slots in FilteringSelect's dropdown as invisible click targets, causing clicks to select the wrong item. Filter items out of the store data instead.
+
 ### Widget Lifecycle and Null Checks
 Widgets created conditionally (e.g., only when user is logged in) may not exist during early validation:
 ```javascript
