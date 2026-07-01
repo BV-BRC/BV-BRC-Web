@@ -339,12 +339,12 @@ define([
       // need to ensure item is in store (for public workspaces),
       // this is more efficient than recursively grabing all public objects of a certain type
       // Also skip adding to store if path contains 'undefined' (invalid user session)
-      // Also skip paths that are too short (e.g., /user/home with no subfolder)
+      // Also skip paths that are too short (e.g., just /user with no workspace)
       if (this.selection !== '*none*' && this.selection && this.selection.path &&
           this.selection.path.indexOf('undefined') === -1) {
-        // Check that path has at least 4 parts (e.g., /user/home/folder)
+        // Check that path has at least 3 parts (e.g., /user/workspace)
         var pathParts = this.selection.path.split('/');
-        if (pathParts.length < 4) {
+        if (pathParts.length < 3) {
           // Path is too high-level, don't add to store
           // But still update the selection state
         } else {
@@ -1324,19 +1324,20 @@ define([
       var label = '<div style="font-size:1em; border-bottom:1px solid grey;">' + starIcon + '/';
       var pathParts = item.path.split('/');
 
-      // Skip items that are too high-level (e.g., /user/home with no subfolder)
-      // These have only 3 parts: ['', 'user', 'home']
-      if (pathParts.length < 4) {
+      // Hide items with fewer than 3 parts (just /user)
+      if (pathParts.length < 3) {
         return '<div style="display:none;"></div>';
       }
 
-      var workspace = pathParts[2]; // home
-      var firstDir = pathParts[3]; // first level under home or file name
+      var workspace = pathParts[2]; // workspace name (e.g., 'home', 'test')
 
-      // Safety check: if firstDir is undefined or empty, hide this item
-      if (!firstDir) {
-        return '<div style="display:none;"></div>';
+      // Top-level workspace (e.g., /user/test) — show workspace name as the label
+      if (pathParts.length === 3) {
+        label += '</br><span style="font-size:1.05em; font-weight:bold;" title="/' + workspace + '">' + workspace + '</span></div>';
+        return label;
       }
+
+      var firstDir = pathParts[3]; // first level under workspace
 
       var title = pathParts.filter(function (p, idx) { return idx > 1 && idx !== (pathParts.length - 1); }).map(function (p) { return p.replace(/^\./, ''); }).join('/');
       var labelParts = [workspace];
@@ -1398,9 +1399,9 @@ define([
             (currentValue.indexOf && currentValue.indexOf('undefined') !== -1)) {
           isValid = false;
         } else {
-          // Check path has enough depth (at least /user/workspace/folder)
+          // Check path has enough depth (at least /user/workspace)
           var pathParts = currentValue.split('/');
-          if (pathParts.length < 4) {
+          if (pathParts.length < 3) {
             isValid = false;
           }
         }
