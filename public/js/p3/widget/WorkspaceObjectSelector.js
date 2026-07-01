@@ -999,15 +999,18 @@ define([
           var items = results[0];
           var favoritePaths = results[1] || [];
 
+          // Normalize paths by stripping trailing slashes for consistent comparison
+          function normPath(p) { return p ? p.replace(/\/+$/, '') : ''; }
+
           // Create a Set for fast lookup of items we already have
           var itemPathSet = {};
           items.forEach(function (item) {
-            itemPathSet[item.path] = true;
+            itemPathSet[normPath(item.path)] = true;
           });
 
           // Find favorite paths that are NOT in the items list (from other workspaces)
           var missingFavoritePaths = favoritePaths.filter(function (path) {
-            return !itemPathSet[path];
+            return !itemPathSet[normPath(path)];
           });
 
           // If there are missing favorites, fetch their metadata
@@ -1085,17 +1088,17 @@ define([
               });
             }
 
-            // Create a Set for fast lookup of favorite paths
+            // Create a Set for fast lookup of favorite paths (normalized)
             var favoriteSet = {};
             favoritePaths.forEach(function (path) {
-              favoriteSet[path] = true;
+              favoriteSet[normPath(path)] = true;
             });
 
             // Mark items that are favorites and separate into two arrays
             var favoriteItems = [];
             var regularItems = [];
             items.forEach(function (item) {
-              if (favoriteSet[item.path]) {
+              if (favoriteSet[normPath(item.path)]) {
                 item.isFavorite = true;
                 favoriteItems.push(item);
               } else {
@@ -1103,19 +1106,20 @@ define([
               }
             });
 
-            // Add missing favorites (from other workspaces) to the favorites list
+            // Add missing favorites (from other workspaces), skipping any already present
+            var seenPaths = {};
+            favoriteItems.forEach(function (item) { seenPaths[normPath(item.path)] = true; });
             missingFavorites.forEach(function (meta) {
-              // Strip trailing slash from path for consistent formatting
-              var cleanPath = meta.path.replace(/\/+$/, '');
-              // Convert metadata to item format with timestamp
-              var item = {
+              var cleanPath = normPath(meta.path);
+              if (seenPaths[cleanPath]) return;
+              seenPaths[cleanPath] = true;
+              favoriteItems.push({
                 path: cleanPath,
                 name: meta.name,
                 type: meta.type,
                 timestamp: meta.creation_time ? new Date(meta.creation_time).getTime() : 0,
                 isFavorite: true
-              };
-              favoriteItems.push(item);
+              });
             });
 
             // Sort favorites alphabetically
@@ -1331,9 +1335,9 @@ define([
 
       var workspace = pathParts[2]; // workspace name (e.g., 'home', 'test')
 
-      // Top-level workspace (e.g., /user/test) — show workspace name as the label
+      // Top-level workspace (e.g., /user/test) — show as "/test"
       if (pathParts.length === 3) {
-        label += '</br><span style="font-size:1.05em; font-weight:bold;" title="/' + workspace + '">' + workspace + '</span></div>';
+        label += '<span style="font-size:1.05em; font-weight:bold;" title="/' + workspace + '">' + workspace + '</span></div>';
         return label;
       }
 
