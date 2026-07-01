@@ -1131,7 +1131,14 @@ define([
             });
 
             // Combine: favorites first, then regular items
-            var combinedItems = favoriteItems.concat(regularItems);
+            // Filter out items with invalid paths before adding to store
+            // (items with 'undefined' or fewer than 3 path parts are not selectable)
+            var combinedItems = favoriteItems.concat(regularItems).filter(function (item) {
+              if (!item.path) return false;
+              if (item.path.indexOf('undefined') !== -1) return false;
+              if (item.path.split('/').length < 3) return false;
+              return true;
+            });
 
             this.store = new Memory({ data: combinedItems, idProperty: 'path' });
             if (this.isSortAlpha) {
@@ -1317,21 +1324,11 @@ define([
         return '<div style="font-size:1em; color:#666; padding:8px;">Loading folders...</div>';
       }
 
-      // Filter out invalid items containing 'undefined' in the path
-      if (item.path && item.path.indexOf('undefined') !== -1) {
-        return '<div style="display:none;"></div>';
-      }
-
       // Add star icon for favorite items
       var starIcon = item.isFavorite ? '<i class="icon-star" style="color:#f0ad4e;margin-right:4px;"></i>' : '';
 
       var label = '<div style="font-size:1em; border-bottom:1px solid grey;">' + starIcon + '/';
       var pathParts = item.path.split('/');
-
-      // Hide items with fewer than 3 parts (just /user)
-      if (pathParts.length < 3) {
-        return '<div style="display:none;"></div>';
-      }
 
       var workspace = pathParts[2]; // workspace name (e.g., 'home', 'test')
 
