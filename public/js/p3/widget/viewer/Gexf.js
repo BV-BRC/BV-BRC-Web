@@ -679,7 +679,7 @@ destroy: function(){
         rebuildPinnedElements: function() {
             if (!window.GexfJS) return;
             GexfJS.params.pinnedElements = {};
-            if (GexfJS.params.userPins) {
+            if (!GexfJS.params.pinsMuted && GexfJS.params.userPins) {
                 Object.keys(GexfJS.params.userPins).forEach(function(pinName) {
                     var pinObj = GexfJS.params.userPins[pinName];
                     Object.keys(pinObj.elements).forEach(function(elId) {
@@ -767,6 +767,22 @@ destroy: function(){
             html += '<div style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; font-size: 0.9em; background-color: #fafafa; margin-bottom: 15px;">';
             
             if (pins && Object.keys(pins).length > 0) {
+
+                var isMuted = GexfJS.params.pinsMuted;
+                var eyeIcon = isMuted ? 'fa-eye-slash' : 'fa-eye';
+                var eyeColor = isMuted ? '#999' : '#333';
+                var eyeTitle = isMuted ? 'Show Pinned Colors' : 'Mute Pinned Colors';
+                var listOpacity = isMuted ? '0.5' : '1.0';
+
+                // Header with Flexbox to align the icon
+                html += '<h4 style="margin-bottom:5px; display:flex; align-items:center;">';
+                html += 'Pinned Manifest ';
+                html += '<i class="fa ' + eyeIcon + '" style="cursor:pointer; margin-left:10px; color:' + eyeColor + ';" onclick="window.toggleMutePins();" title="' + eyeTitle + '"></i>';
+                html += '</h4>';
+                
+                // Div container with dynamic opacity applied
+                html += '<div style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; font-size: 0.9em; background-color: #fafafa; margin-bottom: 15px; transition: opacity 0.2s; opacity: ' + listOpacity + ';">';
+                
                 html += '<ul style="margin:0; padding-left:5px; list-style-type: none;">';
                 
                 Object.keys(pins).forEach(function(pinName) {
@@ -1089,7 +1105,17 @@ destroy: function(){
             
             // Initialize persistent pin storage
             if (!GexfJS.params.userPins) GexfJS.params.userPins = {};
+            if (typeof GexfJS.params.pinsMuted === 'undefined') GexfJS.params.pinsMuted = false; // NEW: Mute State
             GexfJS.params.currentHighlightName = "Selection";
+            
+            //Global Toggle Mute Function (The Eye Icon)
+            window.toggleMutePins = lang.hitch(this, function() {
+                if (window.GexfJS) {
+                    GexfJS.params.pinsMuted = !GexfJS.params.pinsMuted;
+                    this.rebuildPinnedElements(); // Pushes the state to the graph
+                    this.showDefaultSummary();    // Updates the eye icon
+                }
+            });
 
             // Global function to Remove a Pin
             window.removePin = lang.hitch(this, function(pinName) {
@@ -1181,6 +1207,8 @@ destroy: function(){
             }
 
             if (applied) {
+                GexfJS.params.pinsMuted = false; 
+
                 // Save to persistent user pins, overwriting if the name already exists
                 GexfJS.params.userPins[name] = { color: color, elements: elementsToPin };
                 this.rebuildPinnedElements();
