@@ -70,18 +70,8 @@ define([
     _initializeFields: function () {
       var self = this;
 
-      // Get available fields from query descriptor or use defaults
-      if (this.context && this.context.queryDescriptor && this.context.queryDescriptor.availableColumns) {
-        this.availableFields = this.context.queryDescriptor.availableColumns.map(function (col) {
-          return {
-            field: col.field,
-            label: col.label || col.field
-          };
-        });
-      } else {
-        // Use default fields based on data type
-        this.availableFields = this._getDefaultFieldsForDataType();
-      }
+      // Use fields appropriate for the target collection, not the source grid's columns
+      this.availableFields = this._getDefaultFieldsForDataType();
 
       // Set default sequence ID field
       if (!this.sequenceIdField) {
@@ -114,16 +104,30 @@ define([
           { field: 'collection_date', label: 'Collection Date' }
         ];
       } else {
-        // genome_feature
+        // genome_feature — includes genome_metadata.* fields for join enrichment
         return [
           { field: 'patric_id', label: 'BV-BRC ID' },
           { field: 'feature_id', label: 'Feature ID' },
-          { field: 'accession', label: 'Accession' },
-          { field: 'locus_tag', label: 'Locus Tag' },
-          { field: 'gene', label: 'Gene' },
+          { field: 'refseq_locus_tag', label: 'RefSeq Locus Tag' },
+          { field: 'alt_locus_tag', label: 'Alt Locus Tag' },
+          { field: 'gene', label: 'Gene Symbol' },
           { field: 'product', label: 'Product' },
+          { field: 'feature_type', label: 'Feature Type' },
+          { field: 'annotation', label: 'Annotation' },
+          { field: 'accession', label: 'Accession' },
+          { field: 'start', label: 'Start' },
+          { field: 'end', label: 'End' },
+          { field: 'strand', label: 'Strand' },
+          { field: 'na_length', label: 'NA Length' },
+          { field: 'aa_length', label: 'AA Length' },
+          { field: 'genome_id', label: 'Genome ID' },
           { field: 'genome_name', label: 'Genome Name' },
-          { field: 'genome_id', label: 'Genome ID' }
+          { field: 'taxon_id', label: 'Taxon ID' },
+          { field: 'genome_metadata.strain', label: 'Genome Strain' },
+          { field: 'genome_metadata.genome_status', label: 'Genome Status' },
+          { field: 'genome_metadata.assembly_accession', label: 'Assembly Accession' },
+          { field: 'genome_metadata.bioproject_accession', label: 'BioProject Accession' },
+          { field: 'genome_metadata.biosample_accession', label: 'BioSample Accession' }
         ];
       }
     },

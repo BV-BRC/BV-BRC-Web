@@ -105,7 +105,7 @@ define([
         }
       }
 
-      // Disable selected option if no selection
+      // Disable selected option if no selection, default to it when available
       if (this.selectionCount === 0) {
         if (this.selectedOption) {
           domClass.add(this.selectedOption, 'disabled');
@@ -119,6 +119,9 @@ define([
           domClass.remove(this.selectedOption, 'disabled');
         }
         if (this.selectedRadio) this.selectedRadio.disabled = false;
+        if (this.selectedScope === 'all') {
+          this._selectScope('selected');
+        }
       }
 
       // Fetch total count (async)
@@ -165,13 +168,17 @@ define([
             'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
             'Authorization': window.App.authorizationToken ? window.App.authorizationToken : ''
           }
-        }).then(
-          function (data, ioArgs) {
-            // Try to get total from response metadata
-            // The Content-Range header contains: items 0-0/total
-            self.totalCount = data && data.length >= 0 ? '~' : null;
+        }).response.then(
+          function (response) {
+            var contentRange = response.getHeader && response.getHeader('Content-Range');
+            if (contentRange) {
+              // Content-Range: items 0-0/12345
+              var match = contentRange.match(/\/(\d+)$/);
+              if (match) {
+                self.totalCount = parseInt(match[1], 10);
+              }
+            }
 
-            // For now, show that we have results
             if (self.allCountNode) {
               var countSpan = self.allCountNode.querySelector('.countValue');
               if (countSpan) {

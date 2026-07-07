@@ -7,7 +7,7 @@
    ============================================ */
 
 .unifiedDownloadWizard {
-  min-width: 900px;
+  min-width: 700px;
   max-width: 900px;
   display: flex;
   flex-direction: column;
@@ -90,6 +90,7 @@
   flex: 1;
   padding: 20px;
   overflow-y: auto;
+  max-height: 400px;
 }
 
 .unifiedDownloadWizard .stepContainer {
@@ -199,26 +200,19 @@
 
 .dataTypeSelectorStep .formatCategories {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 20px;
-  justify-content: stretch;
 }
 
 .dataTypeSelectorStep .formatCategory {
-  flex: 1;
-  min-width: 200px;
   background: #f9f9f9;
   border: 1px solid #eee;
   border-radius: 6px;
   padding: 15px;
-  display: flex;
-  flex-direction: column;
 }
 
 .dataTypeSelectorStep .categoryHeader {
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #3498db;
+  margin-bottom: 10px;
 }
 
 .dataTypeSelectorStep .categoryLabel {
@@ -231,7 +225,6 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-  flex: 1;
 }
 
 .dataTypeSelectorStep .formatOption {
@@ -260,8 +253,9 @@
 .dataTypeSelectorStep .formatLabel {
   flex: 1;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   cursor: pointer;
 }
 
@@ -270,7 +264,7 @@
 }
 
 .dataTypeSelectorStep .formatLimit {
-  font-size: 11px;
+  font-size: 12px;
   color: #e67e22;
   font-style: italic;
 }
@@ -580,220 +574,6 @@
   margin-right: 6px;
 }
 
-/* ============================================
-   Table Configurator Step
-   ============================================ */
-
-.tableConfiguratorStep .summarySection {
-  margin-bottom: 15px;
-}
-
-.tableConfiguratorStep .summaryInfo {
-  display: flex;
-  gap: 30px;
-  padding: 10px 15px;
-  background: #f8f9fa;
-  border-radius: 4px;
-}
-
-.tableConfiguratorStep .summaryItem {
-  display: flex;
-  gap: 8px;
-}
-
-.tableConfiguratorStep .summaryLabel {
-  font-weight: 600;
-  color: #666;
-}
-
-.tableConfiguratorStep .summaryValue {
-  color: #333;
-}
-
-/* Column selector - reuse similar styles to FASTA configurator */
-.tableConfiguratorStep .fieldSelector {
-  display: flex;
-  gap: 10px;
-  align-items: stretch;
-}
-
-.tableConfiguratorStep .fieldColumn {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.tableConfiguratorStep .fieldColumn .columnHeader {
-  font-weight: bold;
-  font-size: 13px;
-  margin-bottom: 8px;
-  color: #333;
-}
-
-.tableConfiguratorStep .fieldColumn .columnCount {
-  font-weight: normal;
-  color: #666;
-  margin-left: 5px;
-}
-
-.tableConfiguratorStep .fieldSearch {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  margin-bottom: 8px;
-  font-size: 13px;
-}
-
-.tableConfiguratorStep .fieldSearch:focus {
-  outline: none;
-  border-color: #2196F3;
-}
-
-.tableConfiguratorStep .fieldColumn .fieldList {
-  flex: 1;
-  min-height: 200px;
-  max-height: 250px;
-  overflow-y: auto;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: #fff;
-}
-
-.tableConfiguratorStep .fieldItem {
-  padding: 8px 12px;
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.tableConfiguratorStep .fieldItem:last-child {
-  border-bottom: none;
-}
-
-.tableConfiguratorStep .fieldItem:hover {
-  background: #f5f5f5;
-}
-
-.tableConfiguratorStep .fieldItem.selected {
-  background: #e3f2fd;
-}
-
-.tableConfiguratorStep .fieldItem .fieldLabel {
-  font-size: 13px;
-}
-
-/* Field selection buttons */
-.tableConfiguratorStep .fieldButtons {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5px;
-  padding: 0 5px;
-}
-
-.tableConfiguratorStep .fieldBtn {
-  width: 32px;
-  height: 32px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.tableConfiguratorStep .fieldBtn:hover:not(:disabled) {
-  background: #eee;
-}
-
-.tableConfiguratorStep .fieldBtn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.tableConfiguratorStep .fieldBtn i {
-  font-size: 14px;
-  color: #666;
-}
-
-/* Column action buttons */
-.tableConfiguratorStep .columnActions {
-  margin-top: 10px;
-  display: flex;
-  gap: 10px;
-}
-
-.tableConfiguratorStep .actionBtn {
-  padding: 6px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: #fff;
-  cursor: pointer;
-  font-size: 12px;
-  color: #666;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: all 0.2s ease;
-}
-
-.tableConfiguratorStep .actionBtn:hover {
-  background: #f5f5f5;
-  border-color: #ccc;
-}
-
-.tableConfiguratorStep .actionBtn i {
-  font-size: 12px;
-}
-
-/* ============================================
-   Accession Configurator Step
-   ============================================ */
-
-.accessionConfiguratorStep .summaryInfo {
-  padding: 15px;
-  background: #f8f9fa;
-  border-radius: 4px;
-  margin-bottom: 15px;
-}
-
-.accessionConfiguratorStep .summaryItem {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-
-.accessionConfiguratorStep .summaryItem:last-child {
-  margin-bottom: 0;
-}
-
-.accessionConfiguratorStep .summaryLabel {
-  font-weight: 600;
-  color: #666;
-  min-width: 80px;
-}
-
-.accessionConfiguratorStep .summaryValue {
-  color: #333;
-}
-
-.accessionConfiguratorStep .readyMessage {
-  margin-top: 20px;
-  padding: 15px;
-  background: #e8f5e9;
-  border: 1px solid #c8e6c9;
-  border-radius: 6px;
-  color: #2e7d32;
-}
-
-.accessionConfiguratorStep .readyMessage i {
-  margin-right: 8px;
-}
-
-/* Genome Bundle Configurator readyMessage */
 .genomeBundleConfiguratorStep .readyMessage {
   margin-top: 20px;
   padding: 15px;
@@ -1307,17 +1087,11 @@
 }
 
 .savedSearchBrowser .colDataType {
-  width: 120px;
-  min-width: 120px;
+  width: 140px;
 }
 
 .savedSearchBrowser .colName {
-  width: 250px;
-  min-width: 250px;
-  max-width: 250px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  width: 200px;
 }
 
 .savedSearchBrowser .colQuery {
@@ -1411,174 +1185,6 @@
 }
 
 /* ============================================
-   Utility Classes
-   ============================================ */
-
-.dijitHidden {
-  display: none !important;
-}
-
-/* ============================================
-   Download Wizard Header Step Indicators
-   ============================================ */
-
-.downloadWizardHeader {
-  padding: 15px 20px;
-  border-bottom: 1px solid #ddd;
-  background: #f9f9f9;
-}
-
-.downloadWizardSteps {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.downloadWizardSteps .stepIndicator {
-  display: flex;
-  align-items: center;
-  padding: 8px 16px;
-  cursor: default;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.downloadWizardSteps .stepIndicator.completed {
-  cursor: pointer;
-  color: #27ae60;
-}
-
-.downloadWizardSteps .stepIndicator.completed:hover {
-  background: #e8f5e9;
-}
-
-.downloadWizardSteps .stepIndicator.active {
-  background: #e3f2fd;
-}
-
-.downloadWizardSteps .stepIndicator .stepNumber {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #ccc;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: bold;
-  margin-right: 8px;
-}
-
-.downloadWizardSteps .stepIndicator.active .stepNumber {
-  background: #3498db;
-}
-
-.downloadWizardSteps .stepIndicator.completed .stepNumber {
-  background: #27ae60;
-}
-
-.downloadWizardSteps .stepIndicator .stepTitle {
-  font-size: 14px;
-  color: #666;
-}
-
-.downloadWizardSteps .stepIndicator.active .stepTitle {
-  color: #333;
-  font-weight: bold;
-}
-
-.downloadWizardSteps .stepIndicator.completed .stepTitle {
-  color: #27ae60;
-}
-
-/* Connector lines between steps */
-.downloadWizardSteps .stepIndicator:not(:last-child)::after {
-  content: '';
-  width: 30px;
-  height: 2px;
-  background: #ddd;
-  margin-left: 10px;
-}
-
-.downloadWizardSteps .stepIndicator.completed:not(:last-child)::after {
-  background: #27ae60;
-}
-
-/* Download Wizard Content Area */
-.downloadWizardContent {
-  padding: 20px;
-  min-height: 200px;
-  max-height: 400px;
-  overflow-y: auto;
-  flex: 1;
-}
-
-/* Download Wizard Footer */
-.downloadWizardFooter {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
-  border-top: 1px solid #ddd;
-  background: #f9f9f9;
-}
-
-.downloadWizardInfo {
-  font-size: 13px;
-  color: #666;
-}
-
-.downloadWizardButtons {
-  display: flex;
-  gap: 10px;
-}
-
-.downloadWizardButton {
-  padding: 8px 16px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: #fff;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.downloadWizardButton:hover {
-  background: #eee;
-}
-
-.downloadWizardButton.primary {
-  background: #3498db;
-  border-color: #3498db;
-  color: #fff;
-}
-
-.downloadWizardButton.primary:hover {
-  background: #2980b9;
-}
-
-.downloadWizardButton.downloadButton {
-  background: #27ae60;
-  border-color: #27ae60;
-  color: #fff;
-}
-
-.downloadWizardButton.downloadButton:hover {
-  background: #219a52;
-}
-
-.downloadWizardButton:disabled {
-  background: #ccc !important;
-  border-color: #ccc !important;
-  color: #fff !important;
-  cursor: not-allowed;
-}
-
-/* ============================================
    GenBank Configurator Step
    ============================================ */
 
@@ -1620,7 +1226,10 @@
   line-height: 1.5;
 }
 
-/* Dialog container override */
-.downloadWizardDialog .dijitDialogPaneContent {
-  padding: 0;
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+.dijitHidden {
+  display: none !important;
 }

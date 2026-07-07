@@ -1,0 +1,59 @@
+<div class="stepContent genbankConfiguratorStep">
+  <div class="stepHeader">
+    <h3>GenBank Options</h3>
+    <p class="stepDescription">Choose how contigs should be organized in the GenBank file.</p>
+  </div>
+
+  <div class="errorMessage dijitHidden" data-dojo-attach-point="errorNode"></div>
+
+  <!-- Summary Section -->
+  <div class="configSection">
+    <div class="summaryInfo">
+      <div class="summaryItem">
+        <span class="summaryLabel">Format:</span>
+        <span class="summaryValue" data-dojo-attach-point="formatValueNode">GenBank</span>
+      </div>
+      <div class="summaryItem">
+        <span class="summaryLabel">Records:</span>
+        <span class="summaryValue" data-dojo-attach-point="recordsValueNode">All</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contig Mode Selection -->
+  <div class="configSection">
+    <h4>Contig Organization</h4>
+
+    <div class="genbankModeOptions">
+      <div class="genbankModeOption">
+        <label class="genbankModeLabel">
+          <input type="radio" name="genbankMode" value="multi"
+                 data-dojo-attach-point="multiRecordRadio"
+                 data-dojo-attach-event="onchange:_onModeChange"
+                 checked="checked" />
+          <strong>Multi-record</strong> (one LOCUS entry per contig)
+        </label>
+        <p class="genbankModeDescription">
+          Each contig is output as a separate GenBank record with its own LOCUS, FEATURES,
+          and ORIGIN sections. This is the standard GenBank format for draft genomes with
+          multiple contigs.
+        </p>
+      </div>
+
+      <div class="genbankModeOption">
+        <label class="genbankModeLabel">
+          <input type="radio" name="genbankMode" value="merged"
+                 data-dojo-attach-point="mergedRadio"
+                 data-dojo-attach-event="onchange:_onModeChange" />
+          <strong>Merged</strong> (single LOCUS entry per genome)
+        </label>
+        <p class="genbankModeDescription">
+          All contigs are concatenated into a single GenBank record per genome. Feature
+          coordinates are adjusted to reflect positions in the merged sequence. Use this
+          for genome visualization tools such as Artemis and SnapGene that expect a single
+          LOCUS entry per genome.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

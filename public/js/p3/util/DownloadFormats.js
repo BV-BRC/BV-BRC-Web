@@ -119,49 +119,59 @@ define([], function () {
     // Accession list formats
     'bvbrc_id': {
       label: 'BV-BRC ID',
-      mimeType: 'text/plain',
+      mimeType: 'text/tsv',
       extension: '.txt',
       category: 'accession',
+      field: 'patric_id',
       serverSide: true,
       icon: 'fa-list'
     },
     'genbank_accession': {
       label: 'Genbank Accession',
-      mimeType: 'text/plain',
+      mimeType: 'text/tsv',
       extension: '.txt',
       category: 'accession',
+      field: 'genbank_accessions',
       serverSide: true,
       icon: 'fa-list'
     },
     'feature_bvbrc_id': {
       label: 'Feature BV-BRC ID',
-      mimeType: 'text/plain',
+      mimeType: 'text/tsv',
       extension: '.txt',
       category: 'accession',
+      field: 'patric_id',
+      dataEndpoint: 'genome_feature',
+      linkField: 'genome_id',
       serverSide: true,
       icon: 'fa-list'
     },
     'feature_genbank_accession': {
       label: 'Feature Genbank Accession',
-      mimeType: 'text/plain',
+      mimeType: 'text/tsv',
       extension: '.txt',
       category: 'accession',
+      field: 'genbank_accessions',
+      dataEndpoint: 'genome_feature',
+      linkField: 'genome_id',
       serverSide: true,
       icon: 'fa-list'
     },
     'genome_bvbrc_id': {
       label: 'Genome BV-BRC ID',
-      mimeType: 'text/plain',
+      mimeType: 'text/tsv',
       extension: '.txt',
       category: 'accession',
+      field: 'genome_id',
       serverSide: true,
       icon: 'fa-list'
     },
     'genome_genbank_accession': {
       label: 'Genome Genbank Accession',
-      mimeType: 'text/plain',
+      mimeType: 'text/tsv',
       extension: '.txt',
       category: 'accession',
+      field: 'genbank_accessions',
       serverSide: true,
       icon: 'fa-list'
     }
@@ -205,6 +215,13 @@ define([], function () {
         'sequence': ['protein_feature+fasta', 'dna_feature+fasta', 'contig_dna+fasta', 'genbank', 'gff'],
         'accession': ['feature_bvbrc_id', 'feature_genbank_accession', 'genome_bvbrc_id', 'genome_genbank_accession'],
         'table': ['csv', 'tsv', 'excel']
+      },
+      formatOverrides: {
+        'contig_dna+fasta': { dataEndpoint: 'genome_sequence', linkField: 'genome_id', sortField: 'sequence_id' },
+        'protein_feature+fasta': { dataEndpoint: 'genome_feature', linkField: 'genome_id' },
+        'dna_feature+fasta': { dataEndpoint: 'genome_feature', linkField: 'genome_id' },
+        'genbank': {},
+        'gff': { dataEndpoint: 'genome_feature', linkField: 'genome_id' }
       }
     },
 
@@ -242,6 +259,10 @@ define([], function () {
         'sequence': ['protein+fasta', 'dna+fasta'],
         'accession': ['bvbrc_id', 'genbank_accession'],
         'table': ['csv', 'tsv', 'excel']
+      },
+      formatOverrides: {
+        'protein+fasta': { dataEndpoint: 'genome_feature', linkField: 'feature_id' },
+        'dna+fasta': { dataEndpoint: 'genome_feature', linkField: 'feature_id' }
       }
     },
 
@@ -574,6 +595,22 @@ define([], function () {
         }
       }
       return format.mimeType;
+    },
+
+    /**
+     * Get format overrides for a specific data type + format combination.
+     * Returns cross-collection redirect info (dataEndpoint, linkField, sortField)
+     * when a format targets a different collection than the source grid.
+     * @param {string} dataType - Source data type (e.g., 'genome')
+     * @param {string} formatId - Format identifier (e.g., 'contig_dna+fasta')
+     * @returns {Object|null} Override properties or null
+     */
+    getFormatOverride: function (dataType, formatId) {
+      var config = dataTypeFormats[dataType];
+      if (config && config.formatOverrides && config.formatOverrides[formatId]) {
+        return config.formatOverrides[formatId];
+      }
+      return null;
     },
 
     /**

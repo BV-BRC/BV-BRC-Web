@@ -17,6 +17,7 @@ define([
   './FASTAConfiguratorStep',
   './TableConfiguratorStep',
   './AccessionConfiguratorStep',
+  './GenbankConfiguratorStep',
   './GenomeBundleConfiguratorStep',
   'dijit/form/Button'
 ], function (
@@ -38,6 +39,7 @@ define([
   FASTAConfiguratorStep,
   TableConfiguratorStep,
   AccessionConfiguratorStep,
+  GenbankConfiguratorStep,
   GenomeBundleConfiguratorStep
 ) {
   /**
@@ -292,7 +294,7 @@ define([
     /**
      * Create or replace the options step based on format
      */
-    _createOptionsStep: function (formatType) {
+    _createOptionsStep: function (formatType, effectiveDataType) {
       var self = this;
 
       // Remove existing options step if any
@@ -306,21 +308,28 @@ define([
       if (formatType === 'bundle') {
         StepClass = GenomeBundleConfiguratorStep;
       } else if (DownloadFormats.isFastaFormat(formatType)) {
-        // All FASTA formats use the FASTA configurator
         StepClass = FASTAConfiguratorStep;
-      } else if (DownloadFormats.isAccessionFormat(formatType)) {
-        // Accession lists use a simple skippable configurator
+      } else if (formatType === 'genbank') {
+        StepClass = GenbankConfiguratorStep;
+      } else if (formatType === 'gff' || DownloadFormats.isAccessionFormat(formatType)) {
         StepClass = AccessionConfiguratorStep;
       } else {
-        // Tables (CSV, TSV, Excel) use the table configurator with column selection
         StepClass = TableConfiguratorStep;
+      }
+
+      // For cross-collection formats, override dataType so the configurator
+      // shows fields from the target collection (e.g., genome_feature fields
+      // when downloading features from the genome grid)
+      var stepContext = this.context;
+      if (effectiveDataType && effectiveDataType !== this.context.dataType) {
+        stepContext = lang.mixin({}, this.context, { dataType: effectiveDataType });
       }
 
       var step3 = new StepClass({
         stepId: 'options',
         stepNumber: 2,
         wizard: this,
-        context: this.context
+        context: stepContext
       });
       step3.placeAt(this.contentNode);
       step3.startup();
@@ -364,7 +373,11 @@ define([
 
       // Pass accumulated data to the step
       newStep.setPreviousStepData(this._getAccumulatedData());
-      newStep.setContext(this.context);
+      // Options step (index 2) may have an overridden context for cross-collection
+      // formats — don't reset it with the wizard's base context
+      if (stepIndex !== 2) {
+        newStep.setContext(this.context);
+      }
 
       domClass.remove(newStep.domNode, 'dijitHidden');
       newStep.onShow();
@@ -447,7 +460,13 @@ define([
         var formatData = this.stepData.dataType || {};
         var format = formatData.format || 'tsv';
         console.log('onNext: creating options step for format =', format);
-        this._createOptionsStep(format);
+
+        // Determine the effective target data type for cross-collection formats
+        var sourceDataType = (this.context.queryDescriptor && this.context.queryDescriptor.dataType) ||
+                             this.context.dataType;
+        var formatOverride = DownloadFormats.getFormatOverride(sourceDataType, format);
+        var effectiveDataType = (formatOverride && formatOverride.dataEndpoint) || sourceDataType;
+        this._createOptionsStep(format, effectiveDataType);
       }
 
       // Check if we should skip the options step
@@ -514,42 +533,93 @@ define([
       // Get query descriptor for data
       var qd = this.context.queryDescriptor || {};
 
+      // Get format definition for accession-specific properties
+      var formatId = dataTypeData.format || 'tsv';
+      var format = DownloadFormats.getFormat(formatId);
+
+      // Determine data type and query — may be overridden for cross-collection formats
+      var dataType = qd.dataType || this.context.dataType;
+      var rqlQuery = qd.rqlQuery || '';
+      var primaryKey = qd.primaryKey || 'id';
+
       // Get selected IDs if scope is 'selected'
-      // These come from the queryDescriptor (already extracted as primary key values)
       var selectedIds = [];
       if (recordsData.scope === 'selected') {
         if (qd.selectedIds && qd.selectedIds.length > 0) {
           selectedIds = qd.selectedIds;
         } else if (this.context.selection && this.context.selection.length > 0) {
-          // Fall back to context.selection (which should already be IDs)
           selectedIds = this.context.selection;
         }
       }
 
+      // Only apply column selection for table formats — sequence formats (FASTA, genbank, gff)
+      // must not have a select() clause as their serializers handle field selection internally
+      var columns = (format && format.category === 'table') ? (optionsData.columns || null) : null;
+      var sourceDataType = null;
+      var sourcePrimaryKey = null;
+      if (format && format.field) {
+        columns = [format.field];
+
+        if (format.dataEndpoint) {
+          sourceDataType = qd.dataType || this.context.dataType;
+          sourcePrimaryKey = qd.primaryKey || 'id';
+          dataType = format.dataEndpoint;
+
+          if (recordsData.scope === 'selected' && format.linkField) {
+            primaryKey = format.linkField;
+          }
+        }
+      }
+
+      // Check for data-type-specific format overrides (cross-collection sequence downloads)
+      var formatOverride = DownloadFormats.getFormatOverride(
+        qd.dataType || this.context.dataType, formatId
+      );
+      if (formatOverride && formatOverride.dataEndpoint) {
+        sourceDataType = qd.dataType || this.context.dataType;
+        sourcePrimaryKey = qd.primaryKey || 'id';
+        dataType = formatOverride.dataEndpoint;
+
+        if (recordsData.scope === 'selected' && formatOverride.linkField) {
+          primaryKey = formatOverride.linkField;
+        }
+      }
+
+      var linkField = (formatOverride && formatOverride.linkField) ||
+                      (format && format.linkField) || null;
+      var targetSortField = (formatOverride && formatOverride.sortField) || null;
+
       return {
         // Format info
-        format: dataTypeData.format || 'tsv',
+        format: formatId,
         category: dataTypeData.category || 'table',
 
-        // Record scope (executor expects 'scope', not 'recordScope')
+        // Record scope
         scope: recordsData.scope || 'all',
         randomLimit: recordsData.randomLimit || 2000,
 
-        // Data context from queryDescriptor
-        dataType: qd.dataType || this.context.dataType,
-        rqlQuery: qd.rqlQuery || '',
-        primaryKey: qd.primaryKey || 'id',
+        // Data context
+        dataType: dataType,
+        rqlQuery: rqlQuery,
+        primaryKey: primaryKey,
         selectedIds: selectedIds,
         totalCount: recordsData.totalCount,
+        sourceDataType: sourceDataType,
+        sourcePrimaryKey: sourcePrimaryKey,
+        linkField: linkField,
+        targetSortField: targetSortField,
 
-        // Column selection (for table downloads)
-        columns: optionsData.columns || null,
+        // Column selection
+        columns: columns,
 
-        // FASTA configuration
+        // FASTA configuration — maps to http_fasta_* query parameters
         fastaConfig: optionsData.sequenceIdField ? {
-          defLineFields: [optionsData.sequenceIdField].concat(optionsData.descriptionFields || []),
-          delimiter: '|'
+          idFields: [optionsData.sequenceIdField],
+          descriptionFields: optionsData.descriptionFields || []
         } : null,
+
+        // GenBank merged mode
+        genbankMerged: optionsData.genbankMerged || false,
 
         // Bundle configuration
         bundleConfig: optionsData.bundleConfig || null

@@ -162,9 +162,8 @@ define([
           id: 'format_' + format.id
         }, radioDiv);
 
-        // Label
-        var labelNode = domConstruct.create('label', {
-          'for': 'format_' + format.id,
+        // Label (no 'for' attribute — the formatNode click handler manages selection)
+        var labelNode = domConstruct.create('span', {
           'class': 'formatLabel',
           innerHTML: labelHtml
         }, formatNode);

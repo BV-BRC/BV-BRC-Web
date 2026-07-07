@@ -58,9 +58,9 @@ define([
     var query = '';
     var pk = spec.primaryKey || 'id';
 
-    // Get the sort field from data type config (matches the pattern in DownloadTooltipDialog.js)
+    // Get the sort field — explicit override takes priority, then data type config
     var dataTypeConfig = DownloadFormats.getDataTypeConfig(spec.dataType);
-    var sortField = dataTypeConfig.sortField || pk;
+    var sortField = spec.sortFieldOverride || dataTypeConfig.sortField || pk;
 
     // Handle record scope
     if (spec.scope === 'selected' && spec.selectedIds && spec.selectedIds.length > 0) {
@@ -182,10 +182,75 @@ define([
    * @param {Object} spec - Download specification
    * @returns {Deferred} Promise that resolves when download starts
    */
+  /**
+   * Submit a server-side download via hidden form POST
+   */
+  function submitDownloadForm(spec, query) {
+    var format = DownloadFormats.getFormat(spec.format);
+    var acceptType = format.mimeType || 'text/tsv';
+    var filename = generateFilename(spec);
+
+    var selectClause = buildSelectClause(spec);
+    if (selectClause) {
+      query = query ? query + '&' + selectClause : selectClause;
+    }
+
+    var actionUrl = DATA_API_URL + '/' + spec.dataType + '/';
+    actionUrl += '?http_download=true';
+    actionUrl += '&http_accept=' + acceptType;
+
+    // GenBank merged mode
+    if (spec.genbankMerged) {
+      actionUrl += '&http_genbank_merged=true';
+    }
+
+    // FASTA header configuration via http_fasta_* query parameters.
+    // Send all params when configured — empty string disables a section/prefix.
+    if (spec.fastaConfig) {
+      var idFields = spec.fastaConfig.idFields || [];
+      var descFields = spec.fastaConfig.descriptionFields || [];
+      actionUrl += '&http_fasta_id_fields=' + encodeURIComponent(idFields.join(','));
+      actionUrl += '&http_fasta_id_prefix=';
+      actionUrl += '&http_fasta_description_fields=' + encodeURIComponent(descFields.join(','));
+      actionUrl += '&http_fasta_context_fields=';
+    }
+
+    var form = domConstruct.create('form', {
+      method: 'POST',
+      action: actionUrl,
+      id: 'downloadForm',
+      name: 'downloadForm',
+      style: 'display: none;',
+      enctype: 'application/x-www-form-urlencoded'
+    }, document.body);
+
+    domConstruct.create('input', {
+      type: 'hidden',
+      name: 'rql',
+      value: encodeURIComponent(query)
+    }, form);
+
+    if (window.App && window.App.authorizationToken) {
+      domConstruct.create('input', {
+        type: 'hidden',
+        name: 'http_authorization',
+        value: window.App.authorizationToken
+      }, form);
+    }
+
+    form.submit();
+
+    topic.publish('/Download/started', {
+      type: 'server-side',
+      spec: spec,
+      filename: filename
+    });
+
+    return { success: true, filename: filename, method: 'server-side' };
+  }
+
   function executeServerSideDownload(spec) {
     var deferred = new Deferred();
-
-    console.log('executeServerSideDownload: spec =', spec);
 
     try {
       var format = DownloadFormats.getFormat(spec.format);
@@ -194,78 +259,62 @@ define([
         return deferred;
       }
 
-      // Build the RQL query
+      // Cross-collection download: the format targets a different collection than the
+      // source grid. Fetch linking IDs from the source, then download from the target.
+      if (spec.sourceDataType && spec.linkField && spec.scope !== 'selected') {
+        var sourceQuery = buildQuery({
+          dataType: spec.sourceDataType,
+          rqlQuery: spec.rqlQuery,
+          primaryKey: spec.sourcePrimaryKey || 'id',
+          scope: 'all',
+          format: spec.format
+        });
+        sourceQuery += '&select(' + spec.linkField + ')';
+
+        var sourceUrl = DATA_API_URL + '/' + spec.sourceDataType + '/';
+        var headers = {
+          'Accept': 'application/json',
+          'Content-Type': 'application/rqlquery+x-www-form-urlencoded'
+        };
+        if (window.App && window.App.authorizationToken) {
+          headers['Authorization'] = window.App.authorizationToken;
+        }
+
+        xhr.post(sourceUrl, {
+          data: sourceQuery,
+          headers: headers,
+          handleAs: 'json',
+          timeout: 120000
+        }).then(function (data) {
+          var linkIds = data.map(function (item) {
+            return item[spec.linkField];
+          }).filter(function (id) { return id; });
+
+          if (linkIds.length === 0) {
+            deferred.reject(new Error('No matching records found'));
+            return;
+          }
+
+          // Build download query against the target collection
+          var targetSpec = lang.mixin({}, spec, {
+            scope: 'selected',
+            selectedIds: linkIds,
+            primaryKey: spec.linkField
+          });
+          if (spec.targetSortField) {
+            targetSpec.sortFieldOverride = spec.targetSortField;
+          }
+          var query = buildQuery(targetSpec);
+          deferred.resolve(submitDownloadForm(spec, query));
+        }, function (err) {
+          deferred.reject(err);
+        });
+
+        return deferred;
+      }
+
       var query = buildQuery(spec);
-      console.log('executeServerSideDownload: query =', query);
-
-      var selectClause = buildSelectClause(spec);
-      console.log('executeServerSideDownload: selectClause =', selectClause);
-
-      if (selectClause) {
-        query = query ? query + '&' + selectClause : selectClause;
-      }
-      console.log('executeServerSideDownload: final query =', query);
-
-      // Determine the content type based on format
-      var acceptType = format.mimeType || 'text/plain';
-      var filename = generateFilename(spec);
-
-      // Build the action URL with http_download and http_accept as query params
-      // Note: http_download=true triggers the download, the server determines filename
-      // Note: Do NOT encode http_accept - the working code doesn't encode it
-      var actionUrl = DATA_API_URL + '/' + spec.dataType + '/';
-      actionUrl += '?http_download=true';
-      actionUrl += '&http_accept=' + acceptType;
-      console.log('executeServerSideDownload: actionUrl =', actionUrl);
-
-      // Create hidden form for download
-      // Note: Do NOT use target='_blank' - it gets blocked by popup blockers
-      // The server's Content-Disposition header will trigger a download
-      var form = domConstruct.create('form', {
-        method: 'POST',
-        action: actionUrl,
-        id: 'downloadForm',
-        name: 'downloadForm',
-        style: 'display: none;',
-        enctype: 'application/x-www-form-urlencoded'
-      }, document.body);
-
-      // Add RQL query as form field
-      // The server expects double-URL-encoded values:
-      // 1. We encode with encodeURIComponent
-      // 2. The browser's form submission encodes again
-      // This matches the behavior of the working download code
-      var encodedQuery = encodeURIComponent(query);
-      console.log('executeServerSideDownload: encodedQuery =', encodedQuery);
-      domConstruct.create('input', {
-        type: 'hidden',
-        name: 'rql',
-        value: encodedQuery
-      }, form);
-
-      // Add authorization if available
-      if (window.App && window.App.authorizationToken) {
-        domConstruct.create('input', {
-          type: 'hidden',
-          name: 'http_authorization',
-          value: window.App.authorizationToken
-        }, form);
-      }
-
-      // Submit the form - the server's Content-Disposition header triggers the download
-      form.submit();
-
-      topic.publish('/Download/started', {
-        type: 'server-side',
-        spec: spec,
-        filename: filename
-      });
-
-      deferred.resolve({
-        success: true,
-        filename: filename,
-        method: 'server-side'
-      });
+      deferred.resolve(submitDownloadForm(spec, query));
 
     } catch (err) {
       deferred.reject(err);
@@ -308,14 +357,14 @@ define([
       requestHeaders['Authorization'] = window.App.authorizationToken;
     }
 
-    // Add FASTA configuration headers
+    // FASTA header configuration — send all params when configured
     if (spec.fastaConfig) {
-      if (spec.fastaConfig.defLineFields && spec.fastaConfig.defLineFields.length > 0) {
-        requestHeaders['X-FASTA-DefLine-Fields'] = spec.fastaConfig.defLineFields.join(',');
-      }
-      if (spec.fastaConfig.delimiter) {
-        requestHeaders['X-FASTA-DefLine-Delimiter'] = spec.fastaConfig.delimiter;
-      }
+      var idFields = spec.fastaConfig.idFields || [];
+      var descFields = spec.fastaConfig.descriptionFields || [];
+      query += '&http_fasta_id_fields=' + encodeURIComponent(idFields.join(','));
+      query += '&http_fasta_id_prefix=';
+      query += '&http_fasta_description_fields=' + encodeURIComponent(descFields.join(','));
+      query += '&http_fasta_context_fields=';
     }
 
     topic.publish('/Download/started', {
@@ -645,16 +694,17 @@ define([
   function convertToFasta(data, spec) {
     var lines = [];
     var fastaConfig = spec.fastaConfig || {};
-    var defLineFields = fastaConfig.defLineFields || ['feature_id'];
-    var delimiter = fastaConfig.delimiter || '|';
+    var idFields = fastaConfig.idFields || ['feature_id'];
+    var descFields = fastaConfig.descriptionFields || [];
     var sequenceField = spec.format === 'protein+fasta' ? 'aa_sequence' : 'na_sequence';
 
     data.forEach(function (record) {
-      // Build definition line
-      var parts = defLineFields.map(function (field) {
-        return record[field] || '';
-      });
-      var defLine = '>' + parts.join(delimiter);
+      var idPart = idFields.map(function (f) { return record[f] || ''; }).join('|');
+      var defLine = '>' + idPart;
+      if (descFields.length > 0) {
+        var descPart = descFields.map(function (f) { return record[f] || ''; }).join(' ');
+        defLine += ' ' + descPart;
+      }
       lines.push(defLine);
 
       // Add sequence (wrap at 70 chars)

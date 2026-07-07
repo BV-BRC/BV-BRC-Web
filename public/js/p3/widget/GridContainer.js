@@ -8,7 +8,8 @@ define([
   './FeatureDetailsTooltipDialog', './ServicesTooltipDialog', './RerunUtility', 'dojox/widget/Standby',
   './copilot/ChatSessionContainerSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel',
   '../util/QueryDescriptor',
-  './download/UnifiedDownloadWizard'
+  './download/UnifiedDownloadWizard',
+  './download/SaveSearchDialog'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
@@ -18,7 +19,7 @@ define([
   CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin,
   FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility, Standby,
   ChatSessionContainerSidePanel, CopilotAPI, ChatSessionOptionsBar,
-  QueryDescriptor, UnifiedDownloadWizard
+  QueryDescriptor, UnifiedDownloadWizard, SaveSearchDialog
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -571,6 +572,7 @@ define([
         'fa icon-download fa-2x',
         {
           label: 'ADV DWNLD',
+          persistent: true,
           multiple: true,
           validTypes: ['*'],
           ignoreDataType: true,
