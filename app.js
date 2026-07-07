@@ -97,7 +97,7 @@ if (proxyConfig) {
     console.log(prox);
     app.use(prox.local, proxy(prox.site, {
       proxyReqPathResolver: req => req.originalUrl.replace(prox.local, ""),
-      https: true
+      https: prox.site.startsWith('https')
     }));
   }
 }
