@@ -1,0 +1,63 @@
+<div class="stepContent fastaConfiguratorStep">
+  <div class="stepHeader">
+    <h3>FASTA Options</h3>
+    <p class="stepDescription">Configure how your FASTA sequences will be formatted.</p>
+  </div>
+
+  <div class="errorMessage dijitHidden" data-dojo-attach-point="errorNode"></div>
+
+  <!-- Section 1: Sequence ID Field -->
+  <div class="configSection">
+    <h4>Sequence ID Field</h4>
+    <p class="sectionDescription">Select the field to use as the sequence identifier (appears after &gt;).</p>
+    <div class="idFieldSelector">
+      <select data-dojo-attach-point="idFieldSelect" class="idFieldDropdown"></select>
+    </div>
+  </div>
+
+  <!-- Section 2: Description Fields -->
+  <div class="configSection">
+    <h4>Description Fields</h4>
+    <p class="sectionDescription">Select additional fields to include in the sequence description line.</p>
+
+    <div class="fieldSelector">
+      <div class="fieldColumn availableColumn">
+        <div class="columnHeader">Available Fields</div>
+        <div class="fieldList" data-dojo-attach-point="availableFieldsList"></div>
+      </div>
+
+      <div class="fieldButtons">
+        <button type="button" class="fieldBtn addBtn" data-dojo-attach-point="addFieldBtn"
+                data-dojo-attach-event="onclick:_onAddField" title="Add to description">
+          <i class="icon-chevron-right"></i>
+        </button>
+        <button type="button" class="fieldBtn removeBtn" data-dojo-attach-point="removeFieldBtn"
+                data-dojo-attach-event="onclick:_onRemoveField" title="Remove from description">
+          <i class="icon-chevron-left"></i>
+        </button>
+        <button type="button" class="fieldBtn moveUpBtn" data-dojo-attach-point="moveUpBtn"
+                data-dojo-attach-event="onclick:_onMoveUp" title="Move up">
+          <i class="icon-chevron-up"></i>
+        </button>
+        <button type="button" class="fieldBtn moveDownBtn" data-dojo-attach-point="moveDownBtn"
+                data-dojo-attach-event="onclick:_onMoveDown" title="Move down">
+          <i class="icon-chevron-down"></i>
+        </button>
+      </div>
+
+      <div class="fieldColumn selectedColumn">
+        <div class="columnHeader">Selected Fields</div>
+        <div class="fieldList" data-dojo-attach-point="selectedFieldsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview Section -->
+  <div class="configSection previewSection">
+    <h4>Preview</h4>
+    <p class="sectionDescription">Example definition line format:</p>
+    <div class="previewBox" data-dojo-attach-point="previewNode">
+      <code>&gt;id</code>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,41 @@
+<div class="stepContent recordSelectorStep">
+  <div class="stepHeader">
+    <h3>Select Records</h3>
+    <p class="stepDescription">Choose which records to include in the download.</p>
+  </div>
+
+  <div class="errorMessage dijitHidden" data-dojo-attach-point="errorNode"></div>
+  <div class="loadingIndicator dijitHidden" data-dojo-attach-point="loadingNode">
+    <i class="icon-spinner fa-spin"></i> Loading record counts...
+  </div>
+
+  <div class="recordOptions" data-dojo-attach-point="optionsNode">
+    <div class="recordOption" data-scope="selected" data-dojo-attach-point="selectedOption">
+      <div class="optionRadio">
+        <input type="radio" name="recordScope" value="selected" id="scope_selected" data-dojo-attach-point="selectedRadio">
+      </div>
+      <span class="optionLabel">
+        <div class="optionTitle">
+          Selected records
+        </div>
+        <div class="optionCount" data-dojo-attach-point="selectedCountNode">
+          (<span class="countValue">0</span> records)
+        </div>
+      </span>
+    </div>
+
+    <div class="recordOption selected" data-scope="all" data-dojo-attach-point="allOption">
+      <div class="optionRadio">
+        <input type="radio" name="recordScope" value="all" id="scope_all" checked data-dojo-attach-point="allRadio">
+      </div>
+      <span class="optionLabel">
+        <div class="optionTitle">
+          All records
+        </div>
+        <div class="optionCount" data-dojo-attach-point="allCountNode">
+          (<span class="countValue">&mdash;</span> records)
+        </div>
+      </span>
+    </div>
+  </div>
+</div>

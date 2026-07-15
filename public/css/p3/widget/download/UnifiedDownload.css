@@ -1,0 +1,1235 @@
+/**
+ * UnifiedDownload.css - Styles for the unified download wizard and saved search system
+ */
+
+/* ============================================
+   Unified Download Wizard
+   ============================================ */
+
+.unifiedDownloadWizard {
+  min-width: 700px;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 100px);
+}
+
+.unifiedDownloadWizard .wizardContent {
+  display: flex;
+  min-height: 400px;
+}
+
+/* Step Navigator (left sidebar) */
+.unifiedDownloadWizard .stepNavigator {
+  width: 200px;
+  background: #f5f5f5;
+  border-right: 1px solid #ddd;
+  padding: 20px 0;
+}
+
+.unifiedDownloadWizard .stepItem {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.unifiedDownloadWizard .stepItem:hover {
+  background: #eee;
+}
+
+.unifiedDownloadWizard .stepItem.active {
+  background: #fff;
+  border-left-color: #3498db;
+}
+
+.unifiedDownloadWizard .stepItem.completed {
+  color: #27ae60;
+}
+
+.unifiedDownloadWizard .stepItem.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.unifiedDownloadWizard .stepNumber {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ccc;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.unifiedDownloadWizard .stepItem.active .stepNumber {
+  background: #3498db;
+}
+
+.unifiedDownloadWizard .stepItem.completed .stepNumber {
+  background: #27ae60;
+}
+
+.unifiedDownloadWizard .stepItem.completed .stepNumber:before {
+  content: "\f00c";
+  font-family: icomoon;
+}
+
+.unifiedDownloadWizard .stepLabel {
+  font-size: 14px;
+}
+
+/* Step Content Area */
+.unifiedDownloadWizard .stepContent {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.unifiedDownloadWizard .stepContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Wizard Footer */
+.unifiedDownloadWizard .wizardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-top: 1px solid #ddd;
+  background: #f9f9f9;
+}
+
+.unifiedDownloadWizard .footerLeft,
+.unifiedDownloadWizard .footerRight {
+  display: flex;
+  gap: 10px;
+}
+
+.unifiedDownloadWizard .wizardFooter button {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.unifiedDownloadWizard .wizardFooter button:hover {
+  background: #eee;
+}
+
+.unifiedDownloadWizard .downloadButton {
+  background: #27ae60 !important;
+  border-color: #27ae60 !important;
+  color: #fff !important;
+}
+
+.unifiedDownloadWizard .downloadButton:hover {
+  background: #219a52 !important;
+}
+
+.unifiedDownloadWizard .downloadButton:disabled {
+  background: #ccc !important;
+  border-color: #ccc !important;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   Step Base Styles
+   ============================================ */
+
+.stepContent .stepHeader {
+  margin-bottom: 20px;
+}
+
+.stepContent .stepHeader h3 {
+  margin: 0 0 5px 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.stepContent .stepDescription {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.stepContent .errorMessage {
+  background: #fee;
+  border: 1px solid #fcc;
+  color: #c00;
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.stepContent .configSection {
+  margin-bottom: 20px;
+}
+
+.stepContent .configSection h4 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.stepContent .configSection h4 i {
+  margin-right: 8px;
+  color: #666;
+}
+
+.stepContent .sectionDescription {
+  margin: 0 0 10px 0;
+  color: #666;
+  font-size: 13px;
+}
+
+/* ============================================
+   Data Type Selector Step
+   ============================================ */
+
+.dataTypeSelectorStep .formatCategories {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dataTypeSelectorStep .formatCategory {
+  background: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 15px;
+}
+
+.dataTypeSelectorStep .categoryHeader {
+  margin-bottom: 10px;
+}
+
+.dataTypeSelectorStep .categoryLabel {
+  font-weight: bold;
+  color: #333;
+  font-size: 14px;
+}
+
+.dataTypeSelectorStep .categoryFormats {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dataTypeSelectorStep .formatOption {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.dataTypeSelectorStep .formatOption:hover {
+  background: #eee;
+}
+
+.dataTypeSelectorStep .formatOption.selected {
+  background: #e3f2fd;
+  border-color: #90caf9;
+}
+
+.dataTypeSelectorStep .formatRadio {
+  margin-right: 10px;
+}
+
+.dataTypeSelectorStep .formatLabel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.dataTypeSelectorStep .formatName {
+  font-size: 14px;
+}
+
+.dataTypeSelectorStep .formatLimit {
+  font-size: 12px;
+  color: #e67e22;
+  font-style: italic;
+}
+
+.dataTypeSelectorStep .noFormats {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+/* ============================================
+   Record Selector Step
+   ============================================ */
+
+.recordSelectorStep .recordOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.recordSelectorStep .recordOption {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recordSelectorStep .recordOption:hover {
+  background: #f5f5f5;
+}
+
+.recordSelectorStep .recordOption.selected {
+  border-color: #3498db;
+  background: #e3f2fd;
+}
+
+.recordSelectorStep .recordOption.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.recordSelectorStep .recordOption .optionRadio {
+  margin-right: 12px;
+}
+
+.recordSelectorStep .recordOption .optionLabel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.recordSelectorStep .recordOption .optionTitle {
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.recordSelectorStep .recordOption .optionCount {
+  color: #666;
+  font-size: 13px;
+}
+
+.recordSelectorStep .loadingIndicator {
+  padding: 15px;
+  color: #666;
+}
+
+/* Legacy styles for backward compatibility */
+.recordSelectorStep .scopeOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.recordSelectorStep .scopeOption {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recordSelectorStep .scopeOption:hover {
+  background: #f5f5f5;
+}
+
+.recordSelectorStep .scopeOption.selected {
+  border-color: #3498db;
+  background: #e3f2fd;
+}
+
+.recordSelectorStep .scopeOption.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.recordSelectorStep .scopeOption input[type="radio"] {
+  margin-right: 10px;
+}
+
+.recordSelectorStep .scopeDetails {
+  flex: 1;
+}
+
+.recordSelectorStep .scopeLabel {
+  font-weight: bold;
+  display: block;
+}
+
+.recordSelectorStep .scopeCount {
+  color: #666;
+  font-size: 13px;
+}
+
+.recordSelectorStep .randomLimitInput {
+  margin-left: 10px;
+  width: 80px;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.recordSelectorStep .summaryInfo {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 6px;
+}
+
+.recordSelectorStep .summaryItem {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.recordSelectorStep .summaryLabel {
+  font-weight: bold;
+  width: 100px;
+}
+
+/* ============================================
+   FASTA Configurator Step
+   ============================================ */
+
+/* Sequence ID Field Selector */
+.fastaConfiguratorStep .idFieldSelector {
+  margin-top: 10px;
+}
+
+.fastaConfiguratorStep .idFieldDropdown {
+  width: 250px;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Two-column field selector */
+.fastaConfiguratorStep .fieldSelector {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.fastaConfiguratorStep .fieldColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.fastaConfiguratorStep .fieldColumn .columnHeader {
+  font-weight: bold;
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.fastaConfiguratorStep .fieldColumn .fieldList {
+  flex: 1;
+  min-height: 180px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.fastaConfiguratorStep .fieldItem {
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.fastaConfiguratorStep .fieldItem:last-child {
+  border-bottom: none;
+}
+
+.fastaConfiguratorStep .fieldItem:hover {
+  background: #f5f5f5;
+}
+
+.fastaConfiguratorStep .fieldItem.selected {
+  background: #e3f2fd;
+}
+
+.fastaConfiguratorStep .fieldItem .fieldLabel {
+  font-size: 13px;
+}
+
+/* Field selection buttons */
+.fastaConfiguratorStep .fieldButtons {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 5px;
+}
+
+.fastaConfiguratorStep .fieldBtn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.fastaConfiguratorStep .fieldBtn:hover:not(:disabled) {
+  background: #eee;
+}
+
+.fastaConfiguratorStep .fieldBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.fastaConfiguratorStep .fieldBtn .fa {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Preview section */
+.fastaConfiguratorStep .previewSection {
+  margin-top: 15px;
+}
+
+.fastaConfiguratorStep .previewBox {
+  background: #f5f5f5;
+  padding: 12px 15px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.fastaConfiguratorStep .previewBox code {
+  background: transparent;
+}
+
+/* ============================================
+   Genome Bundle Configurator Step
+   ============================================ */
+
+.genomeBundleConfiguratorStep .fileTypesList {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 5px;
+}
+
+.genomeBundleConfiguratorStep .fileTypeOption {
+  padding: 8px;
+}
+
+.genomeBundleConfiguratorStep .fileTypeOption label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.genomeBundleConfiguratorStep .fileTypeOption input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.genomeBundleConfiguratorStep .annotationOptions,
+.genomeBundleConfiguratorStep .archiveOptions {
+  display: flex;
+  gap: 20px;
+}
+
+.genomeBundleConfiguratorStep .annotationOptions label,
+.genomeBundleConfiguratorStep .archiveOptions label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.genomeBundleConfiguratorStep .annotationOptions input,
+.genomeBundleConfiguratorStep .archiveOptions input {
+  margin-right: 6px;
+}
+
+.genomeBundleConfiguratorStep .readyMessage {
+  margin-top: 20px;
+  padding: 15px;
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  border-radius: 6px;
+  color: #2e7d32;
+}
+
+.genomeBundleConfiguratorStep .readyMessage i {
+  margin-right: 8px;
+}
+
+/* ============================================
+   Definition Line Builder
+   ============================================ */
+
+.definitionLineBuilder {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 15px;
+}
+
+.definitionLineBuilder .builderColumns {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.definitionLineBuilder .availableFieldsColumn,
+.definitionLineBuilder .selectedFieldsColumn {
+  flex: 1;
+}
+
+.definitionLineBuilder .columnHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.definitionLineBuilder .columnHeader h5 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.definitionLineBuilder .fieldSearch {
+  width: 120px;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.definitionLineBuilder .fieldCount {
+  color: #666;
+  font-size: 12px;
+}
+
+.definitionLineBuilder .fieldsList {
+  height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.definitionLineBuilder .fieldItem {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.definitionLineBuilder .fieldItem:hover {
+  background: #f5f5f5;
+}
+
+.definitionLineBuilder .fieldItem.selected {
+  background: #e3f2fd;
+}
+
+.definitionLineBuilder .fieldIndex {
+  width: 25px;
+  color: #999;
+  font-size: 12px;
+}
+
+.definitionLineBuilder .fieldLabel {
+  flex: 1;
+  font-size: 13px;
+}
+
+.definitionLineBuilder .fieldExample {
+  color: #999;
+  font-size: 11px;
+  font-style: italic;
+}
+
+.definitionLineBuilder .builderActions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+}
+
+.definitionLineBuilder .builderActions button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.definitionLineBuilder .builderActions button:hover {
+  background: #eee;
+}
+
+.definitionLineBuilder .reorderButtons {
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.definitionLineBuilder .reorderButtons button {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.definitionLineBuilder .reorderButtons button:hover {
+  background: #eee;
+}
+
+.definitionLineBuilder .delimiterSection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.definitionLineBuilder .delimiterSection select {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.definitionLineBuilder .previewSection {
+  background: #f5f5f5;
+  padding: 10px 15px;
+  border-radius: 4px;
+}
+
+.definitionLineBuilder .previewSection label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.definitionLineBuilder .defLinePreview {
+  font-family: monospace;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.definitionLineBuilder .defLinePreview code {
+  background: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  display: block;
+}
+
+/* ============================================
+   Download Progress Dialog
+   ============================================ */
+
+.downloadProgressDialog {
+  width: 400px;
+  padding: 20px;
+}
+
+.downloadProgressDialog .progressContent {
+  text-align: center;
+}
+
+.downloadProgressDialog .statusSection {
+  margin-bottom: 20px;
+}
+
+.downloadProgressDialog .statusIcon {
+  font-size: 32px;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.downloadProgressDialog .statusIcon.fa-check-circle {
+  color: #27ae60;
+}
+
+.downloadProgressDialog .statusIcon.fa-exclamation-circle {
+  color: #e74c3c;
+}
+
+.downloadProgressDialog .statusText {
+  font-size: 16px;
+  color: #333;
+}
+
+.downloadProgressDialog .progressSection {
+  margin-bottom: 15px;
+}
+
+.downloadProgressDialog .progressBarContainer {
+  height: 8px;
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.downloadProgressDialog .progressBar {
+  height: 100%;
+  background: #3498db;
+  transition: width 0.3s ease;
+}
+
+.downloadProgressDialog .progressText {
+  font-size: 14px;
+  color: #666;
+}
+
+.downloadProgressDialog .messageSection {
+  margin-bottom: 20px;
+  color: #666;
+  font-size: 13px;
+}
+
+.downloadProgressDialog .dialogActions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.downloadProgressDialog .dialogActions button {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.downloadProgressDialog .retryButton {
+  background: #3498db;
+  border-color: #3498db;
+  color: #fff;
+}
+
+/* ============================================
+   Save Search Dialog
+   ============================================ */
+
+.saveSearchDialogContainer {
+  min-width: 520px;
+}
+
+.saveSearchDialogContainer .dijitDialogPaneContent {
+  padding: 0;
+}
+
+.saveSearchDialog {
+  width: 500px;
+  min-width: 500px;
+}
+
+.saveSearchDialog .dialogContent {
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.saveSearchDialog .formSection {
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.saveSearchDialog .formSection label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 13px;
+}
+
+.saveSearchDialog .searchNameInput,
+.saveSearchDialog .tagsInput,
+.saveSearchDialog .workspacePathInput {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.saveSearchDialog .queryPreview {
+  background: #f5f5f5;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #666;
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.saveSearchDialog .duplicateWarning {
+  margin-top: 5px;
+  padding: 8px 10px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  color: #856404;
+  font-size: 12px;
+}
+
+.saveSearchDialog .duplicateWarning i {
+  margin-right: 5px;
+}
+
+.saveSearchDialog .checkboxLabel {
+  display: flex !important;
+  align-items: center;
+  font-weight: normal !important;
+  cursor: pointer;
+}
+
+.saveSearchDialog .checkboxLabel input {
+  margin-right: 8px;
+}
+
+.saveSearchDialog .dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+  background: #f9f9f9;
+}
+
+.saveSearchDialog .dialogActions button {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.saveSearchDialog .saveButton {
+  background: #3498db;
+  border-color: #3498db;
+  color: #fff;
+}
+
+.saveSearchDialog .saveButton:hover {
+  background: #2980b9;
+}
+
+/* ============================================
+   Saved Search Browser
+   ============================================ */
+
+.savedSearchBrowser {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  margin: 0 20px;
+}
+
+.savedSearchBrowser .browserHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.savedSearchBrowser .browserHeader h4 {
+  margin: 0;
+}
+
+.savedSearchBrowser .browserHeader h4 i {
+  margin-right: 8px;
+  color: #666;
+}
+
+.savedSearchBrowser .searchCount {
+  color: #666;
+  font-size: 13px;
+}
+
+.savedSearchBrowser .browserToolbar {
+  display: flex;
+  gap: 10px;
+  padding: 10px 20px;
+  background: #f9f9f9;
+  border-bottom: 1px solid #eee;
+}
+
+.savedSearchBrowser .filterInput {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.savedSearchBrowser .browserToolbar select {
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.savedSearchBrowser .importButton {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.savedSearchBrowser .importButton:hover {
+  background: #eee;
+}
+
+.savedSearchBrowser .batchActions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px 20px;
+  background: #e3f2fd;
+  border-bottom: 1px solid #90caf9;
+}
+
+.savedSearchBrowser .selectionCount {
+  font-weight: bold;
+}
+
+.savedSearchBrowser .batchDeleteButton {
+  padding: 6px 12px;
+  border: 1px solid #e74c3c;
+  border-radius: 4px;
+  background: #e74c3c;
+  color: #fff;
+  cursor: pointer;
+}
+
+.savedSearchBrowser .batchDeleteButton:hover {
+  background: #c0392b;
+}
+
+/* Table styles */
+.savedSearchBrowser .searchTableContainer {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.savedSearchBrowser .searchTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.savedSearchBrowser .searchTable thead {
+  background: #f5f5f5;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.savedSearchBrowser .searchTable th {
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: bold !important;
+  font-size: 13px;
+  color: #333;
+  border-bottom: 2px solid #ddd;
+}
+
+.savedSearchBrowser .searchTable td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.savedSearchBrowser .searchTable tbody tr:hover {
+  background: #f9f9f9;
+}
+
+.savedSearchBrowser .searchTable tbody tr.selected {
+  background: #e3f2fd;
+}
+
+/* Column widths */
+.savedSearchBrowser .colCheckbox {
+  width: 40px;
+  text-align: center;
+}
+
+.savedSearchBrowser .colDataType {
+  width: 140px;
+}
+
+.savedSearchBrowser .colName {
+  width: 200px;
+}
+
+.savedSearchBrowser .colQuery {
+  width: auto;
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.savedSearchBrowser .colActions {
+  width: 280px;
+  min-width: 280px;
+  white-space: nowrap !important;
+}
+
+.savedSearchBrowser .colDataType i {
+  margin-right: 5px;
+  color: #666;
+}
+
+/* Action buttons */
+.savedSearchBrowser td.colActions {
+  white-space: nowrap !important;
+}
+
+.savedSearchBrowser .actionButton {
+  padding: 4px 6px;
+  height: 24px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  transition: all 0.2s ease;
+  margin-right: 3px;
+  vertical-align: middle;
+}
+
+.savedSearchBrowser .actionButton:last-child {
+  margin-right: 0;
+}
+
+.savedSearchBrowser .actionButton .fa {
+  font-size: 11px;
+  margin-right: 3px;
+}
+
+.savedSearchBrowser .actionButton .btnText {
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.savedSearchBrowser .actionButton:hover {
+  background: #eee;
+}
+
+.savedSearchBrowser .runButton:hover {
+  background: #27ae60;
+  border-color: #27ae60;
+  color: #fff;
+}
+
+.savedSearchBrowser .downloadButton:hover {
+  background: #3498db;
+  border-color: #3498db;
+  color: #fff;
+}
+
+.savedSearchBrowser .deleteButton:hover {
+  background: #e74c3c;
+  border-color: #e74c3c;
+  color: #fff;
+}
+
+/* Empty message */
+.savedSearchBrowser .emptyMessageContainer {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.savedSearchBrowser .emptyMessage {
+  color: #666;
+}
+
+.savedSearchBrowser .emptyMessage i {
+  margin-right: 8px;
+}
+
+/* ============================================
+   GenBank Configurator Step
+   ============================================ */
+
+.genbankConfiguratorStep .genbankModeOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.genbankConfiguratorStep .genbankModeOption {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 14px 16px;
+  background: #fafafa;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.genbankConfiguratorStep .genbankModeOption:has(input:checked) {
+  border-color: #2980b9;
+  background: #eaf4fb;
+}
+
+.genbankConfiguratorStep .genbankModeLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.genbankConfiguratorStep .genbankModeLabel input[type="radio"] {
+  margin: 0;
+}
+
+.genbankConfiguratorStep .genbankModeDescription {
+  margin: 8px 0 0 24px;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+.dijitHidden {
+  display: none !important;
+}

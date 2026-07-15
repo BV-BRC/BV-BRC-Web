@@ -6,7 +6,10 @@ define([
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog', './DownloadTooltipDialog', './PerspectiveToolTip',
   './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin',
   './FeatureDetailsTooltipDialog', './ServicesTooltipDialog', './RerunUtility', 'dojox/widget/Standby',
-  './copilot/ChatSessionContainerSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel'
+  './copilot/ChatSessionContainerSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel',
+  '../util/QueryDescriptor',
+  './download/UnifiedDownloadWizard',
+  './download/SaveSearchDialog'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
@@ -15,7 +18,8 @@ define([
   Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
   CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin,
   FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility, Standby,
-  ChatSessionContainerSidePanel, CopilotAPI, ChatSessionOptionsBar
+  ChatSessionContainerSidePanel, CopilotAPI, ChatSessionOptionsBar,
+  QueryDescriptor, UnifiedDownloadWizard, SaveSearchDialog
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -523,6 +527,90 @@ define([
             });
           }), 10);
 
+        },
+        false
+      ], [
+        'SaveSearch',
+        'fa icon-bookmark fa-2x',
+        {
+          label: 'SAVE',
+          multiple: false,
+          validTypes: ['*'],
+          ignoreDataType: true,
+          tooltip: 'Save Current Search',
+          validContainerTypes: ['sequence_feature_data', 'genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
+        },
+        function (selection, container) {
+          console.log('SaveSearch button clicked', selection, this.query);
+          try {
+            // Create descriptor from grid to capture column visibility
+            var descriptor = QueryDescriptor.createFromGrid(this.grid, this.containerType);
+            console.log('Created descriptor:', descriptor);
+
+            if (this.state) {
+              descriptor.metadata = descriptor.metadata || {};
+              if (selection && selection.length > 0) {
+                descriptor.metadata.selectionCount = selection.length;
+              }
+            }
+            SaveSearchDialog.show({
+              queryDescriptor: descriptor,
+              onSave: lang.hitch(this, function (saved) {
+                console.log('Search saved:', saved);
+                if (window.App && window.App.showMessage) {
+                  window.App.showMessage('Search saved: ' + saved.name);
+                }
+              })
+            });
+          } catch (e) {
+            console.error('SaveSearch error:', e);
+          }
+        },
+        true
+      ], [
+        'AdvancedDownload',
+        'fa icon-download fa-2x',
+        {
+          label: 'ADV DWNLD',
+          persistent: true,
+          multiple: true,
+          validTypes: ['*'],
+          ignoreDataType: true,
+          tooltip: 'Advanced Download Options',
+          max: 100000,
+          validContainerTypes: ['sequence_feature_data', 'genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
+        },
+        function (selection, container) {
+          console.log('AdvancedDownload button clicked', selection, this.containerType);
+          try {
+            // Get the data model and primary key from the container
+            var dataType = this.dataModel || 'genome_feature';
+            var primaryKey = this.primaryKey || 'id';
+            console.log('Data Type:', dataType, 'Primary Key:', primaryKey);
+
+            // Create a QueryDescriptor with selection - this is the standard interface for downloads
+            var queryDescriptor = QueryDescriptor.createFromGrid(this.grid, this.containerType, {
+              selection: selection,
+              primaryKey: primaryKey
+            });
+
+            // Override dataType with the GridContainer's dataModel (more reliable)
+            queryDescriptor.dataType = dataType;
+            queryDescriptor.primaryKey = primaryKey;
+
+            // Get the RQL query from the grid
+            var rqlQuery = this.grid.get('query') || '';
+            queryDescriptor.rqlQuery = rqlQuery;
+
+            console.log('QueryDescriptor:', queryDescriptor);
+
+            // Open the wizard with the query descriptor
+            UnifiedDownloadWizard.show({
+              queryDescriptor: queryDescriptor
+            });
+          } catch (e) {
+            console.error('AdvancedDownload error:', e);
+          }
         },
         false
       ], [
