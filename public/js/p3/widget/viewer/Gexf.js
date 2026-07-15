@@ -83,7 +83,7 @@ var loadGexfDependencies = function(callback) {
 
     // INHERITANCE CHANGE: Inherit from BorderContainer to manage layout
     return declare([BorderContainer], { 
-        "baseClass": "GEXFView",
+        "baseClass": "Gexf",
         "disabled": false,
         "path": "",
         "file": null,

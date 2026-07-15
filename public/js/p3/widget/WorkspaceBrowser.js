@@ -1293,7 +1293,7 @@ define([
 
         tooltip: 'View Synteny Graph'
       }, function (selection) {
-          Topic.publish('/navigate', { href: '/view/GEXF/?' + '&path=' + encodePath(selection[0].path) });
+          Topic.publish('/navigate', { href: '/view/Gexf/?' + '&path=' + encodePath(selection[0].path) });
       }, true);
 
       this.browserHeader.addAction('ViewNwkXml', 'fa icon-eye fa-2x', {
