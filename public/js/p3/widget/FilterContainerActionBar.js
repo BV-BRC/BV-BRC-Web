@@ -396,6 +396,10 @@ define([
         },
           // callback
           (() => {
+            Object.keys(_self._ffWidgets).forEach(function (cat) {
+              _self._ffWidgets[cat].applyRange()
+            });
+
             if (_self.state && _self.state.hashParams && _self.state.hashParams.filter) {
               on.emit(this.domNode, 'SetAnchor', {
                 bubbles: true,
