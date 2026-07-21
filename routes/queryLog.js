@@ -28,7 +28,7 @@ module.exports = function (sessionManager) {
     }
 
     var result = sessionManager.start(username);
-    res.cookie('_querylog', result.sessionId, {
+    res.cookie('_querylog', result.filename, {
       path: '/',
       httpOnly: true,
       sameSite: 'lax'
@@ -37,29 +37,18 @@ module.exports = function (sessionManager) {
   });
 
   router.post('/stop', function (req, res) {
-    var sessionId = req.cookies && req.cookies._querylog;
-    if (!sessionId) {
-      return res.json({ status: 'not_active' });
-    }
-
-    sessionManager.stop(sessionId);
     res.clearCookie('_querylog', { path: '/' });
     res.json({ status: 'stopped' });
   });
 
   router.get('/status', function (req, res) {
-    var sessionId = req.cookies && req.cookies._querylog;
-    if (!sessionId) {
-      return res.json({ active: false });
-    }
-
-    var session = sessionManager.getSession(sessionId);
-    if (!session) {
+    var filename = req.cookies && req.cookies._querylog;
+    if (!filename || !sessionManager.isActive(filename)) {
       res.clearCookie('_querylog', { path: '/' });
       return res.json({ active: false });
     }
 
-    res.json({ active: true, filename: session.filename });
+    res.json({ active: true, filename: filename });
   });
 
   return router;
