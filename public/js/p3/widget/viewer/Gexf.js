@@ -800,22 +800,52 @@ destroy: function(){
             var html = '<div style="padding:10px;">';
             html += '<h3 style="margin-top:0;">Graph Summary</h3>';
             
-            // Statistics Table
+            // Basic Statistics
             html += '<table style="width:100%; font-size:0.95em; margin-bottom:15px; border-collapse: collapse;">';
             html += '<tr style="border-bottom: 1px solid #eee;"><td><b>Total Genomes:</b></td><td style="text-align:right;">' + (s.total_genomes || 0) + '</td></tr>';
             html += '<tr style="border-bottom: 1px solid #eee;"><td><b>Total Contigs:</b></td><td style="text-align:right;">' + (s.total_contigs || 0) + '</td></tr>';
             html += '<tr style="border-bottom: 1px solid #eee;"><td><b>Total Features:</b></td><td style="text-align:right;">' + (s.total_features || 0) + '</td></tr>';
             html += '<tr style="border-bottom: 1px solid #eee;"><td><b>Total Nodes:</b></td><td style="text-align:right;">' + (s.total_nodes || 0) + '</td></tr>';
-            
-            // Accommodate both old and new backend JSON summary keys
-            var countCnv = s.cnv_clusters || s.structural_variants || s.ambiguities || 0;
-            var countInv = s.inversions || s.inverted_blocks || 0;
-            var countTrans = s.translocations || s.junctions || s.breakpoint_junctions || 0;
+            html += '</table>';
 
-            // Special Interactive Stat Links
-            html += '<tr style="border-bottom: 1px solid #eee;"><td><b>Structural Variants:</b></td><td style="text-align:right;"><a href="javascript:void(0)" onclick="window.highlightSpecial(\'cnv\'); return false;" title="Highlight Breakpoints & Variations">' + countCnv + '</a></td></tr>';
-            html += '<tr style="border-bottom: 1px solid #eee;"><td><b>Inversions:</b></td><td style="text-align:right;"><a href="javascript:void(0)" onclick="window.highlightSpecial(\'inversions\'); return false;" title="Highlight Inverted Blocks">' + countInv + '</a></td></tr>';
-            html += '<tr><td><b>Junctions/Translocations:</b></td><td style="text-align:right;"><a href="javascript:void(0)" onclick="window.highlightSpecial(\'translocations\'); return false;" title="Highlight Structural Rearrangement Edges">' + countTrans + '</a></td></tr>';
+            
+            
+            // Map the old/new summary counts safely
+            var countSuperbubbles = s.superbubbles || s.is_superbubble || 0;
+            
+            // Map the overarching CNV count to Tandem Repeats for now
+            var countTandem = s.copy_number_variants || s.tandem_repeats || s.cnv_clusters || 0; 
+            
+            // (Note: Fragmented is 0 because the backend combined them in the summary JSON. 
+            // The button will still work to highlight them in the graph!)
+            var countFragmented = s.fragmented_cnv || s.repeat_fragmentation || 0; 
+            
+            var countAltPaths = s.alternative_paths || s.alt_paths || 0;
+            
+            // Map the exact structural_rearrangements key
+            var countRearrangements = s.structural_rearrangements || s.rearrangements || 0;
+            
+            var countInversions = s.inverted_blocks || s.inversions || 0;
+            var countBreaks = s.assembly_breaks || s.scaffolds || 0;
+
+            var pillStyle = 'display:inline-block; padding:2px 10px; background-color:#eef5fa; border:1px solid #bce8f1; border-radius:12px; color:#31708f; font-weight:bold; text-decoration:none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor:pointer;';
+
+            html += '<table style="width:100%; font-size:0.95em; margin-bottom:15px; border-collapse: separate; border-spacing: 0 6px;">';
+
+            html += '<tr><td><span title="Bounded structural variations. Hypervariable regions flanked by conserved core genes."><b>Superbubbles:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'superbubbles\'); return false;">' + countSuperbubbles + '</a></td></tr>';
+
+            html += '<tr><td><span title="Local alignment ambiguities, tandem expansions, and arbitrary routing shifts."><b>Copy Number Variants:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'tandem_repeats\'); return false;">' + countTandem + '</a></td></tr>';
+
+            html += '<tr><td><span title="Paralogous gene families that are syntenic (contiguous) in some genomes, but fragmented across separate contigs or replicons in others."><b>Fragmented CNV:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'fragmented_paralogs\'); return false;">' + countFragmented + '</a></td></tr>';
+
+            html += '<tr><td><span title="Minority structural bubbles and accessory insertions bridging a conserved backbone."><b>Alternative Paths:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'alt_paths\'); return false;">' + countAltPaths + '</a></td></tr>';
+
+            html += '<tr><td><span title="True biological rearrangements (NAHR, fusions) or chimeric misassemblies."><b>Structural Rearrangements:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'rearrangements\'); return false;">' + countRearrangements + '</a></td></tr>';
+
+            html += '<tr><td><span title="Continuous blocks of sequence traversed in reverse-complement."><b>Inverted Blocks:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'inversions\'); return false;">' + countInversions + '</a></td></tr>';
+
+            html += '<tr><td><span title="Tails terminating at the exact same repeat, indicating a shattered assembly. Includes suggested scaffold paths."><b>Assembly Breaks & Scaffolds:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'breaks\'); return false;">' + countBreaks + '</a></td></tr>';
+
             html += '</table>';
 
             // Parameters
@@ -990,57 +1020,126 @@ destroy: function(){
                         }
                     }
                 };
-                // -------------------------------------------------------------------------
 
-                if (type === 'inversions') {
-                    // Check Old Terminology
-                    addEdgesByAttr('is_inversion', 'true');
-                    // Check New Terminology
-                    addEdgesByAttr('inverted_block', 'true');
+// --- HELPER: Safely lookup boolean node attributes ---
+                var checkNodeBool = function(nodeObj, attrName) {
+                    var aId = GexfJS._node_attr_value[attrName];
+                    if (typeof aId !== 'undefined' && nodeObj.attributes) {
+                        return String(nodeObj.attributes[aId]).toLowerCase() === 'true';
+                    }
+                    return false;
+                };
 
-                } else if (type === 'translocations') {
-                    // Check Old Terminology
-                    addEdgesByAttr('is_translocation', 'true');
-                    // Check New Terminology (All Junction Types)
-                    addEdgesByAttr('junction_type', 'breakpoint_junction');
-                    addEdgesByAttr('junction_type', 'repeat_fragmentation_junction');
-                    addEdgesByAttr('junction_type', 'alt_path_junction');
+                // --- 1. SUPERBUBBLES ---
+                if (type === 'superbubbles') {
+                    addEdgesByAttr('is_superbubble', 'true');
+                    GexfJS.graph.nodeList.forEach(function(node) {
+                        if (checkNodeBool(node, 'is_superbubble')) {
+                            GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
+                            GexfJS.params.activeNodes[node.id] = true;
+                        }
+                    });
 
-                } else if (type === 'cnv') {
-                    // Collect Attribute IDs for Old and New Terminology
+                // --- 2. TANDEM REPEATS & SHIFTS ---
+                } else if (type === 'tandem_repeats') {
+                    addEdgesByAttr('repeat_ambiguity_detour', 'true'); // New Boolean
+                    addEdgesByAttr('sv_class', 'repeat_ambiguity_detour'); // Old fallback
+                    
                     var cnvId = GexfJS._node_attr_value['cnv_cluster_id'];
                     var conflictId = GexfJS._node_attr_value['conflict'];
-                    var nodeClassId = GexfJS._node_attr_value['node_class'];
 
                     GexfJS.graph.nodeList.forEach(function(node) {
-                        var isSpecialNode = false;
+                        var isSpecial = false;
+                        if (checkNodeBool(node, 'repeat_ambiguity')) isSpecial = true;
                         
-                        if (node.attributes) {
-                            // Old CNV detection
-                            if (typeof cnvId !== 'undefined' && node.attributes[cnvId] != null && String(node.attributes[cnvId]) !== "" && String(node.attributes[cnvId]) !== "0") {
-                                isSpecialNode = true;
-                            }
-                            
-                            // Old Conflict detection (1, 2, 3, 4)
-                            if (typeof conflictId !== 'undefined' && node.attributes[conflictId] != null && String(node.attributes[conflictId]) !== "0") {
-                                isSpecialNode = true;
-                            }
-                            
-                            // New Biological Ontology detection
-                            if (typeof nodeClassId !== 'undefined' && node.attributes[nodeClassId]) {
-                                var nc = String(node.attributes[nodeClassId]);
-                                if (nc === 'synteny_breakpoint' || nc === 'assembly_repeat_break' || nc === 'repeat_ambiguity' || nc === 'repeat_ambiguity_fragmentation' || nc === 'alternative_path') {
-                                    isSpecialNode = true;
-                                }
-                            }
+                        // Fallback for old graphs using cnv_cluster_id
+                        if (node.attributes && typeof cnvId !== 'undefined' && node.attributes[cnvId] != null && String(node.attributes[cnvId]) !== "" && String(node.attributes[cnvId]) !== "0") {
+                            if (typeof conflictId === 'undefined' || String(node.attributes[conflictId]) !== "3") isSpecial = true;
                         }
-
-                        if (isSpecialNode) {
+                        
+                        if (isSpecial) {
                             GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
                             GexfJS.params.activeNodes[node.id] = true; 
                         }
                     });
 
+                // --- 3. FRAGMENTED SYNTENY (PARALOGS) ---
+                } else if (type === 'fragmented_paralogs') {
+                    addEdgesByAttr('repeat_fragmentation_junction', 'true');
+                    
+                    var conflictId = GexfJS._node_attr_value['conflict'];
+                    GexfJS.graph.nodeList.forEach(function(node) {
+                        var isSpecial = false;
+                        if (checkNodeBool(node, 'repeat_ambiguity_fragmentation')) isSpecial = true;
+                        if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "3") isSpecial = true;
+                        
+                        if (isSpecial) {
+                            GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
+                            GexfJS.params.activeNodes[node.id] = true; 
+                        }
+                    });
+
+                // --- 4. ALTERNATIVE PATHS ---
+                } else if (type === 'alt_paths') {
+                    addEdgesByAttr('alt_path_junction', 'true');
+                    addEdgesByAttr('alternative_path', 'true'); // Edge check based on XML
+                    
+                    var conflictId = GexfJS._node_attr_value['conflict'];
+                    GexfJS.graph.nodeList.forEach(function(node) {
+                        var isSpecial = false;
+                        if (checkNodeBool(node, 'alternative_path')) isSpecial = true;
+                        if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "4") isSpecial = true;
+                        
+                        if (isSpecial) {
+                            GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
+                            GexfJS.params.activeNodes[node.id] = true; 
+                        }
+                    });
+
+                // --- 5. STRUCTURAL REARRANGEMENTS ---
+                } else if (type === 'rearrangements') {
+                    addEdgesByAttr('breakpoint_junction', 'true');
+                    addEdgesByAttr('genomic_rearrangement', 'true');
+                    addEdgesByAttr('intra_contig_rearrangement', 'true');
+                    
+                    var conflictId = GexfJS._node_attr_value['conflict'];
+                    GexfJS.graph.nodeList.forEach(function(node) {
+                        var isSpecial = false;
+                        if (checkNodeBool(node, 'synteny_breakpoint')) isSpecial = true;
+                        if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "1") isSpecial = true;
+                        
+                        if (isSpecial) {
+                            GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
+                            GexfJS.params.activeNodes[node.id] = true; 
+                        }
+                    });
+
+                // --- 6. INVERTED BLOCKS ---
+                } else if (type === 'inversions') {
+                    addEdgesByAttr('inverted_block', 'true'); 
+
+                // --- 7. ASSEMBLY BREAKS & SCAFFOLDS ---
+                } else if (type === 'breaks') {
+                    addEdgesByAttr('is_scaffold_path', 'true'); // New
+                    addEdgesByAttr('sv_class', 'potential_scaffold'); // Old
+                    
+                    var conflictId = GexfJS._node_attr_value['conflict'];
+                    var bridgeId = GexfJS._node_attr_value['is_scaffold_bridge']; // Old
+                    
+                    GexfJS.graph.nodeList.forEach(function(node) {
+                        var isSpecial = false;
+                        if (checkNodeBool(node, 'assembly_repeat_break')) isSpecial = true;
+                        if (checkNodeBool(node, 'is_scaffold_path')) isSpecial = true;
+                        if (node.attributes && typeof bridgeId !== 'undefined' && String(node.attributes[bridgeId]).toLowerCase() === 'true') isSpecial = true;
+                        if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "2") isSpecial = true;
+                        
+                        if (isSpecial) {
+                            GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
+                            GexfJS.params.activeNodes[node.id] = true; 
+                        }
+                    });
+
+                // --- BLOCK MANIFEST SUPPORT ---
                 } else if (type === 'block') {
                     var attrId = GexfJS._node_attr_value['block_name'] || GexfJS._node_attr_value['block_id'] || GexfJS._node_attr_value['block']; 
                     if (typeof attrId !== 'undefined' && targetValue) {
