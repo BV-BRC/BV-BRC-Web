@@ -87,6 +87,9 @@ var loadGexfDependencies = function(callback) {
         "disabled": false,
         "path": "",
         "file": null,
+        "genomeNameMap": null,
+        "sequenceNameMap": null,
+        "namesLoading": false,
         "gutters": false, // No spacing between regions
         "graphSummary": null,
         "design": "headline",
@@ -519,7 +522,7 @@ var loadGexfDependencies = function(callback) {
             var labelMenuDiv = domConstruct.create("div", {
                 innerHTML: '<div style="padding: 8px; white-space: nowrap;">' +
                            '<div style="margin-bottom: 5px;"><label><input type="checkbox" id="gexfLabelToggle" checked style="vertical-align:middle; cursor:pointer;"> Show Node Labels</label></div>' +
-                           '<div style="margin-bottom: 10px;"><label>Text Size Multiplier: <input type="number" id="gexfLabelSize" value="1.0" step="0.2" min="0.2" max="5.0" style="width: 50px; text-align:center;"></label></div>' +
+                           '<div style="margin-bottom: 10px;"><label>Text Size Multiplier: <input type="number" id="gexfLabelSize" value="0.6" step="0.2" min="0.2" max="5.0" style="width: 50px; text-align:center;"></label></div>' +
                            '<div style="text-align:right;">' +
                            '<button id="gexfLabelApply" style="padding: 4px 10px; cursor: pointer; margin-right: 5px;">Apply</button>' +
                            '<button id="gexfLabelCancel" style="padding: 4px 10px; cursor: pointer;">Close</button>' +
@@ -663,23 +666,32 @@ destroy: function(){
         loadAndRender: function(path) {
             this.path = path;
             loadGexfDependencies(lang.hitch(this, function() {
-                // Set content on the viewerPane, not 'this' (which is the BorderContainer)
-                this.viewerPane.set("content", "<div>Loading GEXF file...</div>");
+                this.viewerPane.set("content", "<div style='padding:20px;'><i class='fa fa-spinner fa-spin'></i> Loading GEXF file...</div>");
                 
-                WorkspaceManager.getObject(this.path, false).then(lang.hitch(this, function(res){
-                    if (res && res.data){
-                        // Reset the template into the center pane
-                        this.viewerPane.set("content", this.graphTemplateString);
-                        setTimeout(lang.hitch(this, function() { this.renderGraph(res.data); }), 50);
-                    }
-                }));
+                WorkspaceManager.getObject(this.path, false).then(
+                    // Success Callback
+                    lang.hitch(this, function(res){
+                        if (res && res.data){
+                            this.viewerPane.set("content", this.graphTemplateString);
+                            setTimeout(lang.hitch(this, function() { this.renderGraph(res.data); }), 50);
+                        } else {
+                            this.viewerPane.set("content", "<div style='padding:20px; color:red;'>Error: File is empty or invalid.</div>");
+                        }
+                    }),
+                    // --- NEW: Error Callback ---
+                    lang.hitch(this, function(err) {
+                        console.error("Workspace Fetch Error:", err);
+                        this.viewerPane.set("content", "<div style='padding:20px; color:#d9534f;'><b>Workspace Error:</b> Could not retrieve file. The server may be experiencing issues or the file is too large to process.<br><br><i>" + err + "</i></div>");
+                    })
+                    // ---------------------------
+                );
             }));
         },
 
         rebuildPinnedElements: function() {
             if (!window.GexfJS) return;
             GexfJS.params.pinnedElements = {};
-            if (GexfJS.params.userPins) {
+            if (!GexfJS.params.pinsMuted && GexfJS.params.userPins) {
                 Object.keys(GexfJS.params.userPins).forEach(function(pinName) {
                     var pinObj = GexfJS.params.userPins[pinName];
                     Object.keys(pinObj.elements).forEach(function(elId) {
@@ -723,6 +735,66 @@ destroy: function(){
             }
         },
 
+        fetchManifestNames: function(contigMap) {
+            this.namesLoading = true;
+            this.genomeNameMap = {};
+            this.sequenceNameMap = {};
+
+            var seqIds = [];
+            Object.keys(contigMap).forEach(function(gid) {
+                seqIds = seqIds.concat(contigMap[gid]);
+            });
+
+            if (seqIds.length === 0) {
+                this.namesLoading = false;
+                return;
+            }
+
+            // Solr typically crashes if an in() clause exceeds 1024 items.
+            // We cap it at 1000. Any contigs beyond 1000 will just safely 
+            // fall back to displaying their raw Accession ID in the UI.
+            if (seqIds.length > 1000) {
+                seqIds = seqIds.slice(0, 1000);
+            }
+
+            // A single query to 'genome_sequence' returns BOTH the sequence description AND its parent genome name!
+            var url = PathJoin(window.App.dataAPI, "genome_sequence");
+            var query = "in(sequence_id,(" + seqIds.map(encodeURIComponent).join(",") + "))&select(sequence_id,description,genome_id,genome_name)&limit(25000)";
+
+            xhr.post(url, {
+                headers: {
+                    accept: "application/json",
+                    "X-Requested-With": null,
+                    Authorization: (window.App.authorizationToken || "")
+                },
+                handleAs: "json",
+                data: query
+            }).then(lang.hitch(this, function(records) {
+                // Populate the dictionaries
+                records.forEach(lang.hitch(this, function(rec) {
+                    if (rec.genome_id && rec.genome_name) {
+                        this.genomeNameMap[rec.genome_id] = rec.genome_name;
+                    }
+                    if (rec.sequence_id && rec.description) {
+                        this.sequenceNameMap[rec.sequence_id] = rec.description;
+                    }
+                }));
+                
+                this.namesLoading = false;
+                
+                // Repaint the panel if the user is currently looking at the Graph Summary
+                if (this.itemDetailPanel.customDisplayNode && this.itemDetailPanel.customDisplayNode.innerHTML.indexOf("Genome Manifest") !== -1) {
+                    this.showDefaultSummary();
+                }
+            }), lang.hitch(this, function(err) {
+                console.error("Failed to fetch manifest names", err);
+                this.namesLoading = false;
+                if (this.itemDetailPanel.customDisplayNode && this.itemDetailPanel.customDisplayNode.innerHTML.indexOf("Genome Manifest") !== -1) {
+                    this.showDefaultSummary();
+                }
+            }));
+        },
+
         showDefaultSummary: function() {
             if (!this.graphSummary || !this.itemDetailPanel || !this.itemDetailPanel.customDisplayNode) {
                 // If no summary exists, default to clearing the panel
@@ -743,17 +815,52 @@ destroy: function(){
             var html = '<div style="padding:10px;">';
             html += '<h3 style="margin-top:0;">Graph Summary</h3>';
             
-            // Statistics Table
+            // Basic Statistics
             html += '<table style="width:100%; font-size:0.95em; margin-bottom:15px; border-collapse: collapse;">';
             html += '<tr style="border-bottom: 1px solid #eee;"><td><b>Total Genomes:</b></td><td style="text-align:right;">' + (s.total_genomes || 0) + '</td></tr>';
             html += '<tr style="border-bottom: 1px solid #eee;"><td><b>Total Contigs:</b></td><td style="text-align:right;">' + (s.total_contigs || 0) + '</td></tr>';
             html += '<tr style="border-bottom: 1px solid #eee;"><td><b>Total Features:</b></td><td style="text-align:right;">' + (s.total_features || 0) + '</td></tr>';
             html += '<tr style="border-bottom: 1px solid #eee;"><td><b>Total Nodes:</b></td><td style="text-align:right;">' + (s.total_nodes || 0) + '</td></tr>';
+            html += '</table>';
+
             
-            // Special Interactive Stat Links
-            html += '<tr style="border-bottom: 1px solid #eee;"><td><b>CNV Clusters:</b></td><td style="text-align:right;"><a href="javascript:void(0)" onclick="window.highlightSpecial(\'cnv\'); return false;" title="Highlight Nodes with CNV Clusters">' + (s.cnv_clusters || 0) + '</a></td></tr>';
-            html += '<tr style="border-bottom: 1px solid #eee;"><td><b>Inversions:</b></td><td style="text-align:right;"><a href="javascript:void(0)" onclick="window.highlightSpecial(\'inversions\'); return false;" title="Highlight Inversion Edges">' + (s.inversions || 0) + '</a></td></tr>';
-            html += '<tr><td><b>Translocations:</b></td><td style="text-align:right;"><a href="javascript:void(0)" onclick="window.highlightSpecial(\'translocations\'); return false;" title="Highlight Translocation Edges">' + (s.translocations || 0) + '</a></td></tr>';
+            
+            // Map the old/new summary counts safely
+            var countSuperbubbles = s.superbubbles || s.is_superbubble || 0;
+            
+            // Map the overarching CNV count to Tandem Repeats for now
+            var countTandem = s.copy_number_variants || s.tandem_repeats || s.cnv_clusters || 0; 
+            
+            // (Note: Fragmented is 0 because the backend combined them in the summary JSON. 
+            // The button will still work to highlight them in the graph!)
+            var countFragmented = s.fragmented_cnv || s.repeat_fragmentation || 0; 
+            
+            var countAltPaths = s.alternative_paths || s.alt_paths || 0;
+            
+            // Map the exact structural_rearrangements key
+            var countRearrangements = s.structural_rearrangements || s.rearrangements || 0;
+            
+            var countInversions = s.inverted_blocks || s.inversions || 0;
+            var countBreaks = s.assembly_breaks || s.scaffolds || 0;
+
+            var pillStyle = 'display:inline-block; padding:2px 10px; background-color:#eef5fa; border:1px solid #bce8f1; border-radius:12px; color:#31708f; font-weight:bold; text-decoration:none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor:pointer;';
+
+            html += '<table style="width:100%; font-size:0.95em; margin-bottom:15px; border-collapse: separate; border-spacing: 0 6px;">';
+
+            html += '<tr><td><span title="Bounded structural variations. Hypervariable regions flanked by conserved core genes."><b>Superbubbles:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'superbubbles\'); return false;">' + countSuperbubbles + '</a></td></tr>';
+
+            html += '<tr><td><span title="Local alignment ambiguities, tandem expansions, and arbitrary routing shifts."><b>Copy Number Variants:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'tandem_repeats\'); return false;">' + countTandem + '</a></td></tr>';
+
+            html += '<tr><td><span title="Paralogous gene families that are syntenic (contiguous) in some genomes, but fragmented across separate contigs or replicons in others."><b>Fragmented CNV:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'fragmented_paralogs\'); return false;">' + countFragmented + '</a></td></tr>';
+
+            html += '<tr><td><span title="Minority structural bubbles and accessory insertions bridging a conserved backbone."><b>Alternative Paths:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'alt_paths\'); return false;">' + countAltPaths + '</a></td></tr>';
+
+            html += '<tr><td><span title="True biological rearrangements (NAHR, fusions) or chimeric misassemblies."><b>Structural Rearrangements:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'rearrangements\'); return false;">' + countRearrangements + '</a></td></tr>';
+
+            html += '<tr><td><span title="Continuous blocks of sequence traversed in reverse-complement."><b>Inverted Blocks:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'inversions\'); return false;">' + countInversions + '</a></td></tr>';
+
+            html += '<tr><td><span title="Tails terminating at the exact same repeat, indicating a shattered assembly. Includes suggested scaffold paths."><b>Assembly Breaks & Scaffolds:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'breaks\'); return false;">' + countBreaks + '</a></td></tr>';
+
             html += '</table>';
 
             // Parameters
@@ -761,41 +868,62 @@ destroy: function(){
                 var paramsText = JSON.stringify(s.parameters).replace(/[{""}]/g, '').replace(/:/g, ': ');
                 html += '<div style="font-size:0.9em; margin-bottom:15px; color:#666;"><b>Params:</b> ' + paramsText + '</div>';
             }
+            
+            var isDefMuted = (window.GexfJS && GexfJS.params) ? GexfJS.params.muteDefaultColors : false;
+            var defEyeIcon = isDefMuted ? 'fa icon-eye-slash' : 'fa icon-eye';
+            var defEyeColor = isDefMuted ? '#999' : '#333';
+            var defEyeTitle = isDefMuted ? 'Show Default Graph Colors' : 'Mute Default Graph Colors';
+
+            html += '<h4 style="margin-bottom:15px; display:flex; align-items:center;">';
+            html += 'Default Colors ';
+            html += '<i class="fa ' + defEyeIcon + '" style="cursor:pointer; margin-left:10px; color:' + defEyeColor + ';" onclick="window.toggleMuteDefaultColors();" title="' + defEyeTitle + '"></i>';
+            html += '</h4>';
+
             var pins = (window.GexfJS && GexfJS.params) ? GexfJS.params.userPins : {};
+            var isMuted = (window.GexfJS && GexfJS.params) ? GexfJS.params.pinsMuted : false;
             
-            html += '<h4 style="margin-bottom:5px;">Pinned Manifest</h4>';
-            html += '<div style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; font-size: 0.9em; background-color: #fafafa; margin-bottom: 15px;">';
-            
+            var eyeIcon = isMuted ? 'fa icon-eye-slash' : 'fa icon-eye';
+            var eyeColor = isMuted ? '#999' : '#333';
+            var eyeTitle = isMuted ? 'Show Pinned Colors' : 'Mute Pinned Colors';
+            var listOpacity = isMuted ? '0.5' : '1.0';
+
+            // 1. Single Header (with Flexbox and Eye Icon)
+            html += '<h4 style="margin-bottom:5px; display:flex; align-items:center;">';
+            html += 'Pinned Manifest ';
+            // Only show the eye icon if there are actually pins to mute
             if (pins && Object.keys(pins).length > 0) {
+                html += '<i class="fa ' + eyeIcon + '" style="cursor:pointer; margin-left:10px; color:' + eyeColor + ';" onclick="window.toggleMutePins();" title="' + eyeTitle + '"></i>';
+            }
+            html += '</h4>';
+
+            // 2. Single scrollable container (with dynamic opacity applied)
+            html += '<div style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; font-size: 0.9em; background-color: #fafafa; margin-bottom: 15px; transition: opacity 0.2s; opacity: ' + listOpacity + ';">';
+
+            if (pins && Object.keys(pins).length > 0) {
+                // We have pins, draw the list
                 html += '<ul style="margin:0; padding-left:5px; list-style-type: none;">';
-                
                 Object.keys(pins).forEach(function(pinName) {
                     var pinColor = pins[pinName].color;
                     html += '<li style="margin-bottom: 6px; display: flex; align-items: center;">';
-                    // The color swatch
                     html += '<span style="display:inline-block; width:14px; height:14px; background-color:' + pinColor + '; border:1px solid #999; margin-right:8px; flex-shrink: 0;"></span>';
-                    // The Name
                     html += '<span style="flex-grow: 1; word-wrap: break-word;">' + pinName + '</span>';
-                    // The 'X' Button
                     html += '<a href="javascript:void(0)" onclick="window.removePin(\'' + pinName + '\'); return false;" style="color:#d9534f; text-decoration:none; font-weight:bold; font-size: 1.1em; padding-left: 8px;" title="Remove Pin">&#10006;</a>';
                     html += '</li>';
                 });
-                
                 html += '</ul>';
             } else {
-                // Show an empty state if nothing is pinned yet
+                // No pins, show the empty state message inside the same box
                 html += '<div style="color:#999; font-style:italic; padding-left:5px;">No pinned items.</div>';
             }
+            
             html += '</div>';
 
             if (s['block_manifest'] && s['block_manifest'].length > 0) {
                 html += '<h4 style="margin-bottom:5px;">Syntenic Block Manifest</h4>';
-                // Using the same max-height and overflow-y: auto to ensure it scrolls!
                 html += '<div style="max-height: 250px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; font-size: 0.9em; background-color: #fafafa; margin-bottom: 15px;">';
-                html += '<ul style="margin:0; padding-left:5px; list-style-type: square;">';
+                html += '<ul style="margin:0; padding-left:20px; list-style-type: square;">';
                 
                 s['block_manifest'].forEach(function(blockName) {
-                    // Pass the blockName as a second parameter to highlightSpecial
                     html += '<li><a href="javascript:void(0)" onclick="window.highlightSpecial(\'block\', \'' + blockName + '\'); return false;" title="Highlight Block: ' + blockName + '">' + blockName + '</a></li>';
                 });
                 
@@ -805,25 +933,40 @@ destroy: function(){
             
             // Genome Manifest (Collapsible)
             if (s.contig_map) {
-                html += '<h4 style="margin-bottom:5px;">Genome Manifest</h4>';
-                html += '<div style="max-height: 350px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; font-size: 0.9em; background-color: #fafafa;">';
+                // --- NEW: Loading Spinner logic ---
+                var loaderHtml = this.namesLoading ? ' <span style="font-size:0.8em; color:#666; font-weight:normal; margin-left:10px;"><i class="fa fa-spinner fa-spin"></i> getting names...</span>' : '';
                 
-                Object.keys(s.contig_map).forEach(function(genomeId) {
+                html += '<h4 style="margin-bottom:5px;">Genome Manifest' + loaderHtml + '</h4>';
+                html += '<div style="max-height: 350px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; font-size: 0.9em; background-color: #fafafa; margin-bottom: 15px;">';
+                
+                Object.keys(s.contig_map).forEach(lang.hitch(this, function(genomeId) {
                     var contigs = s.contig_map[genomeId];
-                    // Using native HTML5 details/summary for expand & collapse
+                    
+                    // --- NEW: Dictionary Lookup (Fallback to raw ID) ---
+                    var displayGenomeName = (this.genomeNameMap && this.genomeNameMap[genomeId]) ? this.genomeNameMap[genomeId] : genomeId;
+                    
+                    // Escape single quotes for the onclick string
+                    var safeGenomeName = displayGenomeName.replace(/'/g, "&apos;");
+                    
                     html += '<details style="margin-bottom: 4px;">';
                     html += '<summary style="cursor:pointer; outline:none; font-weight:bold;">';
-                    html += '<a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + genomeId + '\', \'' + genomeAttrId + '\', \'Genome: ' + genomeId + '\'); return false;" title="Highlight Genome">' + genomeId + '</a>';
+                    html += '<a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + genomeId + '\', \'' + genomeAttrId + '\', \'Genome: ' + safeGenomeName + '\'); return false;" title="Highlight Genome">' + displayGenomeName + '</a>';
                     html += ' <span style="font-weight:normal; color:#666;">(' + contigs.length + ' contigs)</span>';
                     html += '</summary>';
                     
                     html += '<ul style="margin-top:2px; padding-left:25px; list-style-type: square;">';
-                    contigs.forEach(function(contigId) {
-                        html += '<li><a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + contigId + '\', \'' + sequenceAttrId + '\', \'Contig: ' + contigId + '\'); return false;" title="Highlight Contig">' + contigId + '</a></li>';
-                    });
+                    contigs.forEach(lang.hitch(this, function(contigId) {
+                        
+                        // --- NEW: Sequence Dictionary Lookup ---
+                        //var displayContigName = (this.sequenceNameMap && this.sequenceNameMap[contigId]) ? this.sequenceNameMap[contigId] : contigId;
+                        var displayContigName = contigId; 
+                        var safeContigName = displayContigName.replace(/'/g, "&apos;");
+                        
+                        html += '<li><a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + contigId + '\', \'' + sequenceAttrId + '\', \'Contig: ' + safeContigName + '\'); return false;" title="Highlight Contig">' + displayContigName + '</a></li>';
+                    }));
                     html += '</ul>';
                     html += '</details>';
-                });
+                }));
                 
                 html += '</div>';
             }
@@ -845,6 +988,9 @@ destroy: function(){
             if (summaryNode) {
                 try {
                     this.graphSummary = JSON.parse(summaryNode.textContent);
+                    if (this.graphSummary && this.graphSummary.contig_map) {
+                        this.fetchManifestNames(this.graphSummary.contig_map);
+                    }
                 } catch(e) {
                     console.error("Error parsing GEXF summary:", e);
                     this.graphSummary = null;
@@ -866,91 +1012,181 @@ destroy: function(){
                 GexfJS.params.activeNode = -1; 
                 GexfJS.params.currentNode = -1;
                 GexfJS.params.activeNodes = {}; // Clean slate!
+                
                 var hlColor = GexfJS.params.highlightColorOverride || '#ff00ff';
                 this.rebuildPinnedElements();
 
+                // --- HELPER: Safely lookup and activate edges by Attribute Name & Value ---
+                var addEdgesByAttr = function(attrName, attrValue) {
+                    var attrId = GexfJS._edge_attr_value[attrName];
+                    if (typeof attrId !== 'undefined' && GexfJS.path_highlights && GexfJS.path_highlights[attrId]) {
+                        var edges = GexfJS.path_highlights[attrId][attrValue]; 
+                        if (edges) {
+                            for (var edgeId in edges) {
+                                GexfJS.params.activeEdges[edgeId] = true;
+                                var edgeObj = GexfJS.graph.edgeLookup[edgeId];
+                                if (edgeObj) {
+                                    var sourceNode = GexfJS.graph.nodeList[edgeObj.source];
+                                    var targetNode = GexfJS.graph.nodeList[edgeObj.target];
+                                    if (sourceNode) GexfJS.params.activeNodes[sourceNode.id] = true;
+                                    if (targetNode) GexfJS.params.activeNodes[targetNode.id] = true;
+                                }
+                            }
+                        }
+                    }
+                };
 
-                if (type === 'inversions') {
-                    var attrId = GexfJS._edge_attr_value['is_inversion'];
-                    if (typeof attrId !== 'undefined' && GexfJS.path_highlights && GexfJS.path_highlights[attrId]) {
-                        var edgesWithInversion = GexfJS.path_highlights[attrId]['true']; 
-                        if (edgesWithInversion) {
-                            for (var edgeId in edgesWithInversion) {
-                                // 1. Activate the Edge
-                                GexfJS.params.activeEdges[edgeId] = true;
-                                
-                                // 2. NEW: Activate the connected Nodes
-                                var edgeObj = GexfJS.graph.edgeLookup[edgeId];
-                                if (edgeObj) {
-                                    var sourceNode = GexfJS.graph.nodeList[edgeObj.source];
-                                    var targetNode = GexfJS.graph.nodeList[edgeObj.target];
-                                    if (sourceNode) GexfJS.params.activeNodes[sourceNode.id] = true;
-                                    if (targetNode) GexfJS.params.activeNodes[targetNode.id] = true;
-                                }
-                            }
+// --- HELPER: Safely lookup boolean node attributes ---
+                var checkNodeBool = function(nodeObj, attrName) {
+                    var aId = GexfJS._node_attr_value[attrName];
+                    if (typeof aId !== 'undefined' && nodeObj.attributes) {
+                        return String(nodeObj.attributes[aId]).toLowerCase() === 'true';
+                    }
+                    return false;
+                };
+
+                // --- 1. SUPERBUBBLES ---
+                if (type === 'superbubbles') {
+                    addEdgesByAttr('is_superbubble', 'true');
+                    GexfJS.graph.nodeList.forEach(function(node) {
+                        if (checkNodeBool(node, 'is_superbubble')) {
+                            GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
+                            GexfJS.params.activeNodes[node.id] = true;
                         }
-                    }
-                } else if (type === 'translocations') {
-                    var attrId = GexfJS._edge_attr_value['is_translocation'];
-                    if (typeof attrId !== 'undefined' && GexfJS.path_highlights && GexfJS.path_highlights[attrId]) {
-                        var edgesWithTranslocation = GexfJS.path_highlights[attrId]['true']; 
-                        if (edgesWithTranslocation) {
-                            for (var edgeId in edgesWithTranslocation) {
-                                // 1. Activate the Edge
-                                GexfJS.params.activeEdges[edgeId] = true;
-                                
-                                // 2. NEW: Activate the connected Nodes
-                                var edgeObj = GexfJS.graph.edgeLookup[edgeId];
-                                if (edgeObj) {
-                                    var sourceNode = GexfJS.graph.nodeList[edgeObj.source];
-                                    var targetNode = GexfJS.graph.nodeList[edgeObj.target];
-                                    if (sourceNode) GexfJS.params.activeNodes[sourceNode.id] = true;
-                                    if (targetNode) GexfJS.params.activeNodes[targetNode.id] = true;
-                                }
-                            }
-                        }
-                    }
-                } else if (type === 'cnv') {
-                    var attrId = GexfJS._node_attr_value['cnv_cluster_id'];
-                    if (typeof attrId !== 'undefined') {
-                        GexfJS.graph.nodeList.forEach(function(node) {
-                            if (node.attributes && node.attributes[attrId] != null && node.attributes[attrId] !== "" && node.attributes[attrId] !== "0") {
-                                GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
-                                GexfJS.params.activeNodes[node.id] = true; 
-                            }
-                        });
-                    }
-                }
-                else if (type === 'block') {
-                    // IMPORTANT: Change 'block_name' to whatever the actual Node attribute is called in your GEXF!
-                    var attrId = GexfJS._node_attr_value['block'] || GexfJS._node_attr_value['block_id']; 
+                    });
+
+                // --- 2. TANDEM REPEATS & SHIFTS ---
+                } else if (type === 'tandem_repeats') {
+                    addEdgesByAttr('repeat_ambiguity_detour', 'true'); // New Boolean
+                    addEdgesByAttr('sv_class', 'repeat_ambiguity_detour'); // Old fallback
                     
+                    var cnvId = GexfJS._node_attr_value['cnv_cluster_id'];
+                    var conflictId = GexfJS._node_attr_value['conflict'];
+
+                    GexfJS.graph.nodeList.forEach(function(node) {
+                        var isSpecial = false;
+                        if (checkNodeBool(node, 'repeat_ambiguity')) isSpecial = true;
+                        
+                        // Fallback for old graphs using cnv_cluster_id
+                        if (node.attributes && typeof cnvId !== 'undefined' && node.attributes[cnvId] != null && String(node.attributes[cnvId]) !== "" && String(node.attributes[cnvId]) !== "0") {
+                            if (typeof conflictId === 'undefined' || String(node.attributes[conflictId]) !== "3") isSpecial = true;
+                        }
+                        
+                        if (isSpecial) {
+                            GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
+                            GexfJS.params.activeNodes[node.id] = true; 
+                        }
+                    });
+
+                // --- 3. FRAGMENTED SYNTENY (PARALOGS) ---
+                } else if (type === 'fragmented_paralogs') {
+                    addEdgesByAttr('repeat_fragmentation_junction', 'true');
+                    
+                    var conflictId = GexfJS._node_attr_value['conflict'];
+                    GexfJS.graph.nodeList.forEach(function(node) {
+                        var isSpecial = false;
+                        if (checkNodeBool(node, 'repeat_ambiguity_fragmentation')) isSpecial = true;
+                        if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "3") isSpecial = true;
+                        
+                        if (isSpecial) {
+                            GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
+                            GexfJS.params.activeNodes[node.id] = true; 
+                        }
+                    });
+
+                // --- 4. ALTERNATIVE PATHS ---
+                } else if (type === 'alt_paths') {
+                    addEdgesByAttr('alt_path_junction', 'true');
+                    addEdgesByAttr('alternative_path', 'true'); // Edge check based on XML
+                    
+                    var conflictId = GexfJS._node_attr_value['conflict'];
+                    GexfJS.graph.nodeList.forEach(function(node) {
+                        var isSpecial = false;
+                        if (checkNodeBool(node, 'alternative_path')) isSpecial = true;
+                        if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "4") isSpecial = true;
+                        
+                        if (isSpecial) {
+                            GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
+                            GexfJS.params.activeNodes[node.id] = true; 
+                        }
+                    });
+
+                // --- 5. STRUCTURAL REARRANGEMENTS ---
+                } else if (type === 'rearrangements') {
+                    addEdgesByAttr('breakpoint_junction', 'true');
+                    addEdgesByAttr('genomic_rearrangement', 'true');
+                    addEdgesByAttr('intra_contig_rearrangement', 'true');
+                    
+                    var conflictId = GexfJS._node_attr_value['conflict'];
+                    GexfJS.graph.nodeList.forEach(function(node) {
+                        var isSpecial = false;
+                        if (checkNodeBool(node, 'synteny_breakpoint')) isSpecial = true;
+                        if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "1") isSpecial = true;
+                        
+                        if (isSpecial) {
+                            GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
+                            GexfJS.params.activeNodes[node.id] = true; 
+                        }
+                    });
+
+                // --- 6. INVERTED BLOCKS ---
+                } else if (type === 'inversions') {
+                    addEdgesByAttr('inverted_block', 'true'); 
+
+                // --- 7. ASSEMBLY BREAKS & SCAFFOLDS ---
+                } else if (type === 'breaks') {
+                    addEdgesByAttr('is_scaffold_path', 'true'); // New
+                    addEdgesByAttr('sv_class', 'potential_scaffold'); // Old
+                    
+                    var conflictId = GexfJS._node_attr_value['conflict'];
+                    var bridgeId = GexfJS._node_attr_value['is_scaffold_bridge']; // Old
+                    
+                    GexfJS.graph.nodeList.forEach(function(node) {
+                        var isSpecial = false;
+                        if (checkNodeBool(node, 'assembly_repeat_break')) isSpecial = true;
+                        if (checkNodeBool(node, 'is_scaffold_path')) isSpecial = true;
+                        if (node.attributes && typeof bridgeId !== 'undefined' && String(node.attributes[bridgeId]).toLowerCase() === 'true') isSpecial = true;
+                        if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "2") isSpecial = true;
+                        
+                        if (isSpecial) {
+                            GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
+                            GexfJS.params.activeNodes[node.id] = true; 
+                        }
+                    });
+
+                // --- BLOCK MANIFEST SUPPORT ---
+                } else if (type === 'block') {
+                    var attrId = GexfJS._node_attr_value['block_name'] || GexfJS._node_attr_value['block_id'] || GexfJS._node_attr_value['block']; 
                     if (typeof attrId !== 'undefined' && targetValue) {
                         GexfJS.graph.nodeList.forEach(function(node) {
                             if (node.attributes && node.attributes[attrId] === targetValue) {
-                                // Pin the matching nodes to a color (e.g., Magenta, or pick a new hex code like '#00aaff' for cyan)
                                 GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
-                                // Add to activeNodes so the rest of the graph fades out
                                 GexfJS.params.activeNodes[node.id] = true; 
                             }
                         });
                     }
                 }
                 
-                // Re-evaluate path_active based on whether edges were actually found
                 GexfJS.params.path_active = !jQuery.isEmptyObject(GexfJS.params.activeEdges);
-                
-                delete GexfJS.oldParams.zoomLevel; // Force redraw
+                delete GexfJS.oldParams.zoomLevel; 
             });
 
             var originalDisplayNode = window.displayNode;
-
-            // --- BRIDGE: Intercept Node Clicks ---
+            
             window.displayNode = lang.hitch(this, function(nodeIndex) {
                 if (originalDisplayNode) originalDisplayNode(nodeIndex);
 
-                // Check for Deselect (Clicking the background passes -1 or undefined)
+                // --- START FIX 1: Check for Deselect & Clean Up ---
                 if (nodeIndex === -1 || typeof nodeIndex === 'undefined') {
+                    if (window.GexfJS && GexfJS.params) {
+                        // Ensure all temporary highlight arrays are wiped
+                        GexfJS.params.activeEdges = {};
+                        GexfJS.params.activeNodes = {};
+                        GexfJS.params.path_active = false;
+                        
+                        // CRITICAL: Wipe temporary pins and restore only persistent user pins
+                        this.rebuildPinnedElements(); 
+                    }
                     this.showDefaultSummary();
                     return;
                 }
@@ -1078,7 +1314,7 @@ destroy: function(){
                 language: false,
                 textDisplayThreshold: 12, // Leave this at its normal default
                 showNodeLabels: true,    // NEW: Our dedicated toggle
-                labelSizeFactor: 1.0    // NEW: Our size multiplier
+                labelSizeFactor: 0.6    // NEW: Our size multiplier
             };
             setParams(graph_params);
 
@@ -1089,7 +1325,27 @@ destroy: function(){
             
             // Initialize persistent pin storage
             if (!GexfJS.params.userPins) GexfJS.params.userPins = {};
+            if (typeof GexfJS.params.pinsMuted === 'undefined') GexfJS.params.pinsMuted = false; // NEW: Mute State
             GexfJS.params.currentHighlightName = "Selection";
+            if (typeof GexfJS.params.muteDefaultColors === 'undefined') GexfJS.params.muteDefaultColors = false; 
+
+            
+            //Global Toggle Mute Function (The Eye Icon)
+            window.toggleMutePins = lang.hitch(this, function() {
+                if (window.GexfJS) {
+                    GexfJS.params.pinsMuted = !GexfJS.params.pinsMuted;
+                    this.rebuildPinnedElements(); // Pushes the state to the graph
+                    this.showDefaultSummary();    // Updates the eye icon
+                }
+            });
+            // Global Toggle Mute Default Colors
+             window.toggleMuteDefaultColors = lang.hitch(this, function() {
+                if (window.GexfJS) {
+                    GexfJS.params.muteDefaultColors = !GexfJS.params.muteDefaultColors;
+                    delete GexfJS.oldParams.zoomLevel; // Force redraw
+                    this.showDefaultSummary();         // Update the eye icon
+                }
+            });
 
             // Global function to Remove a Pin
             window.removePin = lang.hitch(this, function(pinName) {
@@ -1181,6 +1437,8 @@ destroy: function(){
             }
 
             if (applied) {
+                GexfJS.params.pinsMuted = false; 
+
                 // Save to persistent user pins, overwriting if the name already exists
                 GexfJS.params.userPins[name] = { color: color, elements: elementsToPin };
                 this.rebuildPinnedElements();
@@ -1230,23 +1488,14 @@ destroy: function(){
             }));
         },
 
-        updateSelection: function(records, featureMap, node) {
-            this.selection = records;
+        updateSelection: function(records, featureMap, node, isLoading, isTruncated) {
+            this.selection = records || [];
             
-            // 1. Update ActionBar
             this.selectionActionBar.set("currentContainerType", this.containerType);
             this.selectionActionBar.set("selection", this.selection);
-            this.itemDetailPanel.set("selection", this.selection);
 
-            // --- Helper for Color Input ---
-            var colorInput = function(ids, type) {
-                // Returns an HTML5 color picker that triggers window.pinColor on change
-                return '<input type="color" style="width:20px; height:20px; vertical-align:middle; border:none; padding:0; background:none; cursor:pointer;" onchange="window.pinColor(\'' + ids + '\', \'' + type + '\', this.value)"> ';
-            };
+            // (colorInput helper has been completely removed)
 
-            // 2. Prepare Data for HTML Construction
-            
-            // A. Helper to get attribute names from IDs
             var nodeAttrIdToName = {};
             if (window.GexfJS && GexfJS._node_attr_value) {
                 Object.keys(GexfJS._node_attr_value).forEach(function(name){
@@ -1254,23 +1503,11 @@ destroy: function(){
                 });
             }
 
-            // Lookup Edge Attribute IDs for displayPath
-            var genomeAttrId = 'genomes';
-            var sequenceAttrId = 'sequences';
-            
-            if (window.GexfJS && GexfJS._edge_attr_value) {
-                if (GexfJS._edge_attr_value['genomes']) {
-                    genomeAttrId = GexfJS._edge_attr_value['genomes'];
-                }
-                if (GexfJS._edge_attr_value['sequences']) {
-                    sequenceAttrId = GexfJS._edge_attr_value['sequences'];
-                }
-            }
+            var genomeAttrId = (window.GexfJS && GexfJS._edge_attr_value && GexfJS._edge_attr_value['genomes']) ? GexfJS._edge_attr_value['genomes'] : 'genomes';
+            var sequenceAttrId = (window.GexfJS && GexfJS._edge_attr_value && GexfJS._edge_attr_value['sequences']) ? GexfJS._edge_attr_value['sequences'] : 'sequences';
 
-            // B. Build Attributes HTML
             var attrHtml = '<div style="margin-bottom:10px; font-size:0.9em; color:#555;">';
             attrHtml += '<div><b>Node ID:</b> ' + node.id + '</div>';
-            
             if (node.attributes) {
                 Object.keys(node.attributes).forEach(function(attrId){
                     var name = nodeAttrIdToName[attrId];
@@ -1281,10 +1518,9 @@ destroy: function(){
             }
             attrHtml += '</div>';
 
-            // C. Build Graph Links
             var linksHtml = '';
             var recordMap = {};
-            records.forEach(function(rec) { 
+            this.selection.forEach(function(rec) { 
                 var key = rec.patric_id || rec.genome_id;
                 recordMap[key] = rec; 
             });
@@ -1292,76 +1528,94 @@ destroy: function(){
             if (featureMap) {
                 var allGenomes = Object.keys(featureMap);
                 var allSequences = [];
-                
-                // Build Hierarchy HTML
                 var hierarchyHtml = '<div class="graph-links" style="font-size:0.9em;">';
                 
-                Object.keys(featureMap).forEach(function(genomeId) {
-                    //if genomeId is "info" skip it
-                    if (genomeId === "info") return;
+                Object.keys(featureMap).forEach(lang.hitch(this, function(genomeId) {
                     var contigs = featureMap[genomeId];
                     var genomeSequences = Object.keys(contigs);
                     allSequences = allSequences.concat(genomeSequences);
                     
-                    // --- RESTORED LOGIC: Calculate genomeName ---
-                    var genomeName = genomeId; 
-                    var features = [];
-                    // Flatten features to find a record to get the name from
-                    Object.keys(contigs).forEach(function(k){ features = features.concat(contigs[k]); });
-                    
-                    if(features.length > 0 && recordMap[features[0]] && recordMap[features[0]].genome_name){
-                        genomeName = recordMap[features[0]].genome_name;
+                    var genomeName = genomeId;
+                    if (this.genomeNameMap && this.genomeNameMap[genomeId]) {
+                        genomeName = this.genomeNameMap[genomeId];
+                    } else {
+                        var firstSeq = genomeSequences[0];
+                        if(firstSeq && contigs[firstSeq][0] && recordMap[contigs[firstSeq][0]] && recordMap[contigs[firstSeq][0]].genome_name){
+                            genomeName = recordMap[contigs[firstSeq][0]].genome_name;
+                        }
                     }
-                    // ---------------------------------------------
 
                     hierarchyHtml += '<div style="margin-top:5px;">';
-                    // COLOR PICKER: Genome (Edge Group)
-                    //hierarchyHtml += colorInput(genomeId, 'path');
-                    hierarchyHtml += '<a href="javascript:void(0)" style="font-weight:bold;" onclick="window.doHighlightPath(undefined, \'' + genomeId + '\', \'' + genomeAttrId + '\', \'Genome: ' + genomeName + '\'); return false;">' + genomeName + '</a>:';
+                    // Inline color boxes removed
+                    hierarchyHtml += '<a href="javascript:void(0)" style="font-weight:bold;" onclick="window.doHighlightPath(undefined, \'' + genomeId + '\', \'' + genomeAttrId + '\', \'Genome: ' + genomeName.replace(/'/g, "&apos;") + '\'); return false;" title="Highlight Genome Edges">' + genomeName + '</a>:';
                     hierarchyHtml += '<div style="padding-left:20px;">';
 
                     Object.keys(contigs).forEach(function(contigId) {
                         hierarchyHtml += '<div>';
-                        // COLOR PICKER: Sequence (Edge Group)
-                        //hierarchyHtml += colorInput(contigId, 'path');
-                        hierarchyHtml += '<a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + contigId + '\', \'' + sequenceAttrId + '\', \'Contig: ' + contigId + '\'); return false;">' + contigId + '</a>:';
+                        // Inline color boxes removed
+                        hierarchyHtml += '<a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + contigId + '\', \'' + sequenceAttrId + '\', \'Contig: ' + contigId.replace(/'/g, "&apos;") + '\'); return false;" title="Highlight Contig Edges">' + contigId + '</a>:';
                         hierarchyHtml += '</div>';
                         
                         var feats = contigs[contigId];
-                        hierarchyHtml += '<div style="padding-left:10px; color:#666;">[' + feats.join(', ') + ']</div>';
+                        
+                        feats.forEach(function(fid) {
+                            var displayLabel = "[" + fid + "]";
+                            
+                            if(recordMap[fid]) {
+                                var extras = [];
+                                if (recordMap[fid].gene) extras.push(recordMap[fid].gene);
+                                if (recordMap[fid].refseq_locus_tag) extras.push(recordMap[fid].refseq_locus_tag);
+                                if (recordMap[fid].product) extras.push(recordMap[fid].product);
+                                
+                                if (extras.length > 0) {
+                                    displayLabel += " <span style='color:#666;'>(" + extras.join(" | ") + ")</span>";
+                                }
+                            } 
+
+                            hierarchyHtml += '<div style="padding-left:10px; margin-bottom: 2px;">';
+                            // --- CHANGED: Standard hyperlink opening in a new tab to the Feature page ---
+                            hierarchyHtml += '<a href="/view/Feature/' + encodeURIComponent(fid) + '" target="_blank" title="Open Feature Page in New Tab">' + displayLabel + '</a>';
+                            hierarchyHtml += '</div>';
+                        });
                     });
                     hierarchyHtml += '</div></div>';
-                });
+                }));
                 hierarchyHtml += '</div>';
 
-                // Summary Header
                 var summaryHtml = '<div style="margin-bottom:10px; padding-bottom:5px; border-bottom:1px solid #ccc;">';
+                summaryHtml += '<div style="margin-bottom:4px;"><b><a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + allGenomes.join(',') + '\', \'' + genomeAttrId + '\', \'Genomes: ' + allGenomes.length + '\'); return false;">Genomes[' + allGenomes.length + ']</a></b></div>';
+                summaryHtml += '<div><b><a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + allSequences.join(',') + '\', \'' + sequenceAttrId + '\', \'Sequences: ' + allSequences.length + '\'); return false;">Sequences[' + allSequences.length + ']</a></b></div>';
                 
-                // COLOR PICKER: All Genomes
-                //summaryHtml += '<div>' + colorInput(allGenomes.join(','), 'path');
-                summaryHtml += '<b><a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + allGenomes.join(',') + '\', \'' + genomeAttrId + '\', \'Genomes: ' + allGenomes.join(', ') + '\'); return false;">Genomes[' + allGenomes.length + ']</a></b></div>';
-                
-                // COLOR PICKER: All Sequences
-                //summaryHtml += '<div>' + colorInput(allSequences.join(','), 'path');
-                summaryHtml += '<b><a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + allSequences.join(',') + '\', \'' + sequenceAttrId + '\', \'Sequences: ' + allSequences.join(', ') + '\'); return false;">Sequences[' + allSequences.length + ']</a></b></div>';
+                if (isTruncated) {
+                    summaryHtml += '<div style="color:#d9534f; font-size:0.85em; margin-top:5px; padding:3px; background:#fdf0f0; border:1px solid #ebccd1; border-radius:3px;">';
+                    summaryHtml += '<i class="fa fa-exclamation-triangle"></i> Node contains too many features. Display truncated to first 500 to maintain performance.';
+                    summaryHtml += '</div>';
+                }
                 
                 summaryHtml += '</div>';
-
                 linksHtml = summaryHtml + hierarchyHtml;
+            } else {
+                html += '<ul style="margin-top:10px; padding-left:20px; list-style-type: square;">';
+                (records || []).forEach(function(rec) {
+                    var id = rec.genome_id || rec.patric_id;
+                    var name = rec.genome_name || id;
+                    // For pure genome nodes, pointing to the genome page
+                    html += '<li><a href="/view/Genome/' + encodeURIComponent(id) + '" target="_blank" title="Open Genome Page in New Tab">' + name + '</a></li>';
+                });
+                html += '</ul>';
             }
 
-            // 3. Assemble Content
+            var titleSpinner = isLoading ? ' <i class="fa fa-spinner fa-spin" style="font-size:0.6em; color:#999;" title="Fetching extended annotations..."></i>' : '';
+
             var content = '<div style="padding:10px;">';
-            // COLOR PICKER: Title (Node)
-            content += '<div style="margin-bottom:5px;">' + colorInput(node.id, 'node') + '<h3 style="margin:0; display:inline; word-wrap:break-word;">' + node.label + '</h3></div>';
+            // Inline color boxes removed from the title header as well
+            content += '<div style="margin-bottom:5px;"><h3 style="margin:0; display:inline; word-wrap:break-word;">' + node.label + titleSpinner + '</h3></div>';
             content += attrHtml;
             content += linksHtml;
             content += '</div>';
 
-            // 4. Update IDP
             if (this.itemDetailPanel.customDisplayNode) {
-                // Clear any previous selection logic to prevent conflicts
-                //this.itemDetailPanel.set('selection', []); 
+                this.itemDetailPanel.set('selection', []); 
                 this.itemDetailPanel.customDisplayNode.innerHTML = content;
             } else {
                 this.itemDetailPanel.set('content', content);
