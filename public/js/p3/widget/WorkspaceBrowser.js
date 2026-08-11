@@ -830,7 +830,7 @@ define([
       }, function (selection) {
         // console.log("Current Container Widget: ", self.actionPanel.currentContainerWidget, "Slection: ", selection)
         var modPath = self.actionPanel.currentContainerWidget.path.replace(/^\/public/, '');
-        Topic.publish('/navigate', { href: '/view/Homology' + modPath });
+        Topic.publish('/navigate', { href: '/view/Homology' + encodePath(modPath) });
       }, false);
 
 
