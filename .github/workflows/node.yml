@@ -42,8 +42,5 @@ jobs:
       - name: Smoke test — server module graph loads (catches require/ESM breakage)
         run: node -e "require('./app.js'); console.log('server module graph loaded OK')"
 
-      # Unit tests are enabled once the test-script repair (PR #1387) lands on
-      # these branches; until then `npm test` still points at the dead gulp
-      # pipeline. Uncomment when available:
-      # - name: Unit tests
-      #   run: npm test
+      - name: Unit tests
+        run: npm test
