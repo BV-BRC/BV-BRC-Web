@@ -193,7 +193,12 @@ define([
               res.lookups.push(this.getBlankMeta(resultIds));
             }
 
-            var query = { rows: 25000 };
+            // The data API silently truncates its response when rows >= 10000
+            // (returns HTTP 200 with a truncated body, which then fails JSON parsing).
+            // The decoration query only needs one Solr doc per BLAST hit id, so bound
+            // rows by the id count, capped safely below the API ceiling. See JIRA-4420.
+            var MAX_DECORATION_ROWS = 9000;
+            var query = { rows: Math.min(resultIds.length || 1, MAX_DECORATION_ROWS) };
 
             // var doQuery = false;
             if (this.type == 'genome_sequence') {
@@ -301,6 +306,14 @@ define([
                   }
                 }, this);
                 res.lookups.push(keyMap);
+                this.defaultLoadData(res);
+              }), lang.hitch(this, function (err) {
+                // Decoration query failed (e.g. API returned a truncated body).
+                // Don't leave the grid hanging on an unresolved deferred: render the
+                // BLAST results without Solr metadata rather than showing nothing.
+                console.warn('HomologyResultMemoryStore: decoration query failed, '
+                  + 'rendering results without metadata:', err);
+                res.lookups.push({});
                 this.defaultLoadData(res);
               }));
             }
