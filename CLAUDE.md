@@ -184,6 +184,16 @@ Workspace browsing is handled by `WorkspaceBrowser.js` with these key patterns:
 - `widget/WorkspaceExplorerView.js` - File/folder grid display
 - `widget/viewer/JobResult.js` - Job result viewer with metadata header
 
+### Empty result-grid pitfalls (JIRA-4420)
+
+The Homology/BLAST result VIEW showed an empty grid for two independent reasons — both worth knowing because the same patterns recur elsewhere:
+
+**1. Always `encodePath()` a workspace path before putting it in a `/navigate` href.**
+The VIEW action built its href from the raw workspace path (`'/view/Homology' + modPath`). For a folder named `Clostridium #50 BALST`, the literal `#` is treated as a URL **fragment delimiter**: `location.pathname` truncates at the `#` and the rest leaks into `location.hash`, so the store gets a wrong `dataPath` and hangs empty. Fix: `'/view/Homology' + encodePath(modPath)`. `encodePath` (`util/encodePath.js`) `encodeURIComponent`s each segment (leaving `/` and the user/public segments) and round-trips with the store's `_setState`, which `decodeURIComponent`s each segment. Other `/navigate` calls in `WorkspaceBrowser.js` (e.g. `/view/MSA/`, `afa_file` links, some `/workspace`/`/view/Gexf`) still use raw paths and will break the same way on `#`/space names.
+
+**2. The data API silently truncates responses at `rows >= 10000`.**
+It returns **HTTP 200 with a one-byte body (`[`)**, which then fails JSON parsing. `rows: 9999` returns complete valid JSON. Result stores that hardcode `rows: 25000` (`HomologyResultMemoryStore`, `BlastResultMemoryStore`, `ProteinFamiliesService*`, `IDMapping`, etc.) hit this whenever a job has ≥10k hits. Two-part fix: cap `rows` by the actual id count (`Math.min(ids.length, 9000)`), AND add an error handler to the decoration `request.post` so a failed/truncated query still resolves `_loadingDeferred` and renders results without Solr metadata rather than hanging forever. (This is a server-side bug; the client cap is a workaround.)
+
 ## Configuration
 
 Edit `p3-web.conf` (copy from `p3-web.conf.sample`):
