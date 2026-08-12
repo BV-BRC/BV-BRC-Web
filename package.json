@@ -74,5 +74,8 @@
     "qs": ">=6.15.2",
     "path-to-regexp": "0.1.13",
     "underscore": "$underscore"
+  },
+  "engines": {
+    "node": ">=22.0.0"
   }
 }
