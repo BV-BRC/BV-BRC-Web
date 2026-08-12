@@ -55,7 +55,7 @@
     "promised-io": "^0.3.6",
     "pug": "^3.0.3",
     "rql": "^0.3.3",
-    "sanitize-html": "^2.17.5",
+    "sanitize-html": "2.17.5",
     "serve-favicon": "^2.5.0",
     "underscore": "^1.13.8",
     "validator": "^13.15.26",
