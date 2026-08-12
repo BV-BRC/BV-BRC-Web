@@ -46,9 +46,14 @@ function mail(message, subject, from, files, options) {
   var attachments = [];
   if (files && files.length > 0) {
     files.forEach(function (f) {
+      // formidable v2+ renamed the parsed-file properties: name->originalFilename,
+      // path->filepath (the v1 names are undefined under the installed v2, which
+      // silently broke attachments -> fs.createReadStream(undefined)). Read the
+      // v2 names, falling back to v1 so this works regardless of which formidable
+      // version express-formidable resolves.
       var attach = {};
-      attach.filename = f.name;
-      attach.content = fs.createReadStream(f.path);
+      attach.filename = f.originalFilename || f.name;
+      attach.content = fs.createReadStream(f.filepath || f.path);
       attachments.push(attach);
     });
     mailmsg.attachments = attachments;
