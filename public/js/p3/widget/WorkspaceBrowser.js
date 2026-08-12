@@ -1536,9 +1536,9 @@ define([
               alignType = 'dna';
             }
             if (exist_nwk == 1) {
-              Topic.publish('/navigate', { href: '/view/MSATree/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
+              Topic.publish('/navigate', { href: '/view/MSATree/&alignType=' + alignType + '&path=' + encodeURIComponent(afa_file), target: 'blank' });
             } else {
-              Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
+              Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + encodeURIComponent(afa_file), target: 'blank' });
             }
           });
         }
@@ -2055,7 +2055,7 @@ define([
         var item = selection[0];
         var parentPath = item.path.split('/').slice(0, -1).join('/');
         if (parentPath) {
-          Topic.publish('/navigate', { href: '/workspace' + parentPath, target: 'blank' });
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(parentPath), target: 'blank' });
         }
       }, true); // The 'enabled' flag should be true so it can be controlled by logic
 
@@ -2781,7 +2781,7 @@ define([
             }
             break;
           case 'gexf':
-            Topic.publish('/navigate', { href: '/view/Gexf' + '&path=' + this.file, target: 'blank' });
+            Topic.publish('/navigate', { href: '/view/Gexf' + '&path=' + encodeURIComponent(this.file), target: 'blank' });
             return;
           case 'genome_group':
             panelCtor = window.App.getConstructor('p3/widget/viewer/WSGenomeGroup');
