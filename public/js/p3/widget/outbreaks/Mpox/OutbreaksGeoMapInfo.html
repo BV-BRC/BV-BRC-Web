@@ -1,22 +1,24 @@
-<div>
-    <p>
-        Click
-        <a href='/view/Taxonomy/10244#view_tab=genomes&filter=and(or(eq(genome_status,"Complete"),eq(genome_status,"Partial")),eq(collection_year,"2024"){{ locationFilter }})&defaultColumns=-cds,clade,collection_date&defaultSort=genome_name,clade'
-           target="_blank">here</a>
-        to view details about the records at {{ location }}.
-    </p>
-    <br/>
-    <p>The following were found at this location:</p>
-    <table>
-        <thead>
-        <th style="width: 25%">
-            Clade
-        </th>
-        <th style="width: 25%">
-            Count
-        </th>
-        </thead>
-        <tbody data-dojo-attach-point="cladeDetailsPoint">
-        </tbody>
-    </table>
+<div class="sdm-pop">
+    <div class="sdm-pop-header">
+        <div class="sdm-pop-eyebrow">Mpox 2024</div>
+        <div class="sdm-pop-location">{{ location }}</div>
+    </div>
+
+    <div class="sdm-pop-body">
+        <div class="sdm-pop-section-title">
+            Clades at this location
+            <a class="sdm-pop-link"
+               href='/view/Taxonomy/10244#view_tab=genomes&filter=and(or(eq(genome_status,"Complete"),eq(genome_status,"Partial")),or(eq(collection_year,"2024"),eq(collection_year,"2025"),eq(collection_year,"2026")){{ locationFilter }})&defaultColumns=-cds,clade,collection_date&defaultSort=genome_name,clade'
+               target="_blank">View all records &rarr;</a>
+        </div>
+        <table class="sdm-pop-table">
+            <thead>
+            <tr>
+                <th>Clade</th>
+                <th class="sdm-pop-num">Count</th>
+            </tr>
+            </thead>
+            <tbody data-dojo-attach-point="cladeDetailsPoint"></tbody>
+        </table>
+    </div>
 </div>
