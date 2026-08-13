@@ -1,30 +1,33 @@
-<div>
-    <p>
-        Click
-        <a href='/view/Taxonomy/11320#view_tab=genomes&filter=and(or(eq(genome_status,"Complete"),eq(genome_status,"Partial")),eq(subtype,"H5N1"),eq(collection_year,"2024"){{ locationFilter }})'
-           target="_blank">here</a>
-        to view details about the records at {{ metadata.location }}.
-    </p>
-    <br/>
-    <p>The following were found at this location:</p>
-    <table>
-        <thead>
-        <th style="width: 80%">
-            Host Common Name
-        </th>
-        <th style="width: 20%">
-            Count
-        </th>
-        </thead>
-        <tbody>
-        {% for name, count in metadata.hostCommonNames %}
-        <tr>
-            <td>
-                <a href='/view/Taxonomy/11320#view_tab=genomes&filter=and(or(eq(genome_status,"Complete"),eq(genome_status,"Partial")),eq(subtype,"H5N1"),eq(collection_year,"2024"){{ locationFilter }},eq(host_common_name,"{{ name }}"))'
-                   target="_blank">{{ name }}</a></td>
-            <td>{{ count }}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<div class="sdm-pop">
+    <div class="sdm-pop-header">
+        <div class="sdm-pop-eyebrow">H5N1 2024</div>
+        <div class="sdm-pop-location">{{ metadata.location }}</div>
+    </div>
+
+    <div class="sdm-pop-body">
+        <div class="sdm-pop-section-title">
+            Hosts at this location
+            <a class="sdm-pop-link"
+               href='/view/Taxonomy/11320#view_tab=genomes&filter=and(or(eq(genome_status,"Complete"),eq(genome_status,"Partial")),eq(subtype,"H5N1"),or(eq(collection_year,"2024"),eq(collection_year,"2025"),eq(collection_year,"2026")){{ locationFilter }})'
+               target="_blank">View all records &rarr;</a>
+        </div>
+        <table class="sdm-pop-table">
+            <thead>
+            <tr>
+                <th>Host common name</th>
+                <th class="sdm-pop-num">Count</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for name, count in metadata.hostCommonNames %}
+            <tr>
+                <td><a class="sdm-pop-link"
+                       href='/view/Taxonomy/11320#view_tab=genomes&filter=and(or(eq(genome_status,"Complete"),eq(genome_status,"Partial")),eq(subtype,"H5N1"),or(eq(collection_year,"2024"),eq(collection_year,"2025"),eq(collection_year,"2026")){{ locationFilter }},eq(host_common_name,"{{ name }}"))'
+                       target="_blank">{{ name }}</a></td>
+                <td class="sdm-pop-num">{{ count }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
