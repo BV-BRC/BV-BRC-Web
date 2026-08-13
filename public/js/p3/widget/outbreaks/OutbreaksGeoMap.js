@@ -1,85 +1,14 @@
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dijit/_WidgetsInTemplateMixin',
   'dijit/_TemplatedMixin', 'dojo/text!./OutbreaksGeoMap.html', 'dojo/_base/lang',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+  '../../util/LeafletSupport'
 ], function (
   declare, WidgetBase, _WidgetsInTemplateMixin,
   Templated, Template, lang,
-  LeafletExports
+  LeafletSupport
 ) {
 
-  if (typeof window !== 'undefined' && !window.L && LeafletExports && LeafletExports.map) {
-    window.L = LeafletExports;
-  }
-
-  function ensureCss(href) {
-    if (!document.querySelector('link[data-mapscanvas="' + href + '"]')) {
-      var link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = href;
-      link.setAttribute('data-mapscanvas', href);
-      document.head.appendChild(link);
-    }
-  }
-
-  ensureCss('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
-  ensureCss('https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css');
-  ensureCss('https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css');
-
-  var _amdHideCount = 0;
-  var _savedAmd;
-
-  function hideAmd() {
-    if (_amdHideCount === 0 && typeof window.define === 'function' && window.define.amd) {
-      _savedAmd = window.define.amd;
-      window.define.amd = undefined;
-    }
-    _amdHideCount++;
-  }
-
-  function unhideAmd() {
-    if (_amdHideCount > 0) {
-      _amdHideCount--;
-    }
-    if (_amdHideCount === 0 && _savedAmd !== undefined && typeof window.define === 'function') {
-      window.define.amd = _savedAmd;
-      _savedAmd = undefined;
-    }
-  }
-
-  var _clusterLoadPromise;
-
-  function loadMarkerCluster() {
-    if (_clusterLoadPromise) return _clusterLoadPromise;
-    _clusterLoadPromise = new Promise(function (resolve, reject) {
-      var src = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js';
-      var existing = document.querySelector('script[data-mapscanvas="' + src + '"]');
-      if (existing) {
-        if (existing.dataset.loaded === '1') return resolve();
-        existing.addEventListener('load', function () {
-          resolve();
-        });
-        existing.addEventListener('error', reject);
-        return;
-      }
-      hideAmd();
-      var s = document.createElement('script');
-      s.src = src;
-      s.async = false;
-      s.setAttribute('data-mapscanvas', src);
-      s.addEventListener('load', function () {
-        unhideAmd();
-        s.dataset.loaded = '1';
-        resolve();
-      });
-      s.addEventListener('error', function (e) {
-        unhideAmd();
-        reject(e);
-      });
-      document.head.appendChild(s);
-    });
-    return _clusterLoadPromise;
-  }
+  var loadMarkerCluster = LeafletSupport.loadMarkerCluster;
 
   // Session-level geocoding cache, shared across all OutbreaksGeoMap instances.
   // Maps "location string" → { lat, lng } | null (null = failed lookup).
@@ -609,16 +538,8 @@ define([
         worldCopyJump: true
       });
 
-      // CartoDB Voyager (default) + Positron (light), matching SurveillanceDataMap.
-      const cartoAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
-      this.tileLayers = {
-        standard: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          maxZoom: 19, subdomains: 'abcd', attribution: cartoAttribution
-        }),
-        light: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-          maxZoom: 19, subdomains: 'abcd', attribution: cartoAttribution
-        })
-      };
+      // CartoDB Voyager (default) + Positron (light)
+      this.tileLayers = LeafletSupport.createBaseTileLayers();
       this.tileLayers.standard.addTo(this.map);
       L.control.layers(
         { 'Standard': this.tileLayers.standard, 'Light': this.tileLayers.light },

@@ -5,7 +5,7 @@ define([
   './mapsInfoWindows/LocationInfoWindowShortList', './mapsInfoWindows/LocationInfoWindowSummary',
   'dojo/json', 'dojo/text!/public/js/p3/resources/surveillancemap/flyaways.json', 'dijit/form/CheckBox', 'dijit/ColorPalette',
   '../util/PathJoin', 'dojo/request', 'dojo/_base/lang',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+  '../util/LeafletSupport'
 ], function (
   declare, WidgetBase, on, _WidgetsInTemplateMixin,
   dom, Templated, domConstruct, domStyle, mouse,
@@ -13,87 +13,8 @@ define([
   LocationInfoWindowShortList, LocationInfoWindowSummary,
   JSON, flyawaysData, CheckBox, ColorPalette,
   PathJoin, xhr, lang,
-  LeafletExports
+  LeafletSupport
 ) {
-
-  // Leaflet's UMD does not assign window.L when loaded via AMD, but plugins
-  // (e.g. Leaflet.markercluster) extend the global L. Bridge it here.
-  if (typeof window !== 'undefined' && !window.L && LeafletExports && LeafletExports.map) {
-    window.L = LeafletExports;
-  }
-
-  function ensureCss(href) {
-    if (!document.querySelector('link[data-mapscanvas="' + href + '"]')) {
-      var link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = href;
-      link.setAttribute('data-mapscanvas', href);
-      document.head.appendChild(link);
-    }
-  }
-
-  // Hide AMD from UMD libraries (e.g. Leaflet, MarkerCluster) while they
-  // load via plain <script> tags. Without this, their anonymous define(L)
-  // calls land in Dojo's AMD pending queue and get mis-attributed to the
-  // next module Dojo loads (e.g. p3/widget/viewer/Virus on navigation),
-  // causing a multipleDefine error. Ref-counted so concurrent script
-  // loads don't restore AMD prematurely while another script is still
-  // executing.
-  var _amdHideCount = 0;
-  var _savedAmd;
-
-  function hideAmd() {
-    if (_amdHideCount === 0 && typeof window.define === 'function' && window.define.amd) {
-      _savedAmd = window.define.amd;
-      window.define.amd = undefined;
-    }
-    _amdHideCount++;
-  }
-
-  function unhideAmd() {
-    if (_amdHideCount > 0) {
-      _amdHideCount--;
-    }
-    if (_amdHideCount === 0 && _savedAmd !== undefined && typeof window.define === 'function') {
-      window.define.amd = _savedAmd;
-      _savedAmd = undefined;
-    }
-  }
-
-  function loadScript(src) {
-    return new Promise(function (resolve, reject) {
-      var existing = document.querySelector('script[data-mapscanvas="' + src + '"]');
-      if (existing) {
-        if (existing.dataset.loaded === '1') return resolve();
-        existing.addEventListener('load', function () {
-          resolve();
-        });
-        existing.addEventListener('error', reject);
-        return;
-      }
-
-      hideAmd();
-      var s = document.createElement('script');
-      s.src = src;
-      s.async = false;
-      s.setAttribute('data-mapscanvas', src);
-      s.addEventListener('load', function () {
-        unhideAmd();
-        s.dataset.loaded = '1';
-        resolve();
-      });
-      s.addEventListener('error', function (e) {
-        unhideAmd();
-        reject(e);
-      });
-      document.head.appendChild(s);
-    });
-  }
-
-  ensureCss('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
-  ensureCss('https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css');
-  ensureCss('https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css');
-
 
   return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
     baseClass: 'MapsCanvas',
@@ -760,22 +681,8 @@ define([
           worldCopyJump: true
         });
 
-        // CartoDB raster tiles built from OpenStreetMap data. Labels are
-        // rendered in Latin/English where OSM has `name:en` (or transliterated),
-        // which avoids the local-script labels on the default OSM tile server.
-        const cartoAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
-        this.tileLayers = {
-          standard: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            maxZoom: 19,
-            subdomains: 'abcd',
-            attribution: cartoAttribution
-          }),
-          light: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            maxZoom: 19,
-            subdomains: 'abcd',
-            attribution: cartoAttribution
-          })
-        };
+        // CartoDB Voyager (default) + Positron (light) base layers.
+        this.tileLayers = LeafletSupport.createBaseTileLayers();
         this.tileLayers.standard.addTo(this.map);
         L.control.layers({
           'Standard': this.tileLayers.standard,
@@ -844,7 +751,7 @@ define([
         // add the cluster layer and route subsequent addMarkerToMap calls
         // through it. If it fails we silently fall back to plain markers.
         const self = this;
-        loadScript('https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js')
+        LeafletSupport.loadMarkerCluster()
           .then(function () {
             if (typeof L.markerClusterGroup === 'function' && self.map && !self.clusterGroup) {
               self.clusterGroup = L.markerClusterGroup({
