@@ -105,7 +105,7 @@ define([
         msg = 'Required for the selected prediction tool. Choose <i>Precomputed MSA from Workspace</i> to upload one, or <i>Use MSA Server or Service</i> to have BV-BRC compute one with ColabFold.';
       } else {
         // tool === 'auto' (or unknown)
-        msg = 'Optional in Auto mode. With no MSA the service falls back to ESMFold for a single protein chain.';
+        msg = 'Optional in Auto mode. With no MSA uploaded, the service computes one automatically with ColabFold and Auto picks Boltz. For the fastest single-protein result pick ESMFold or ESMFold2 directly.';
       }
       this.msa_policy_message.innerHTML = msg;
     },
