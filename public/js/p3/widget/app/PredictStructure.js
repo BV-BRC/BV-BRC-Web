@@ -65,12 +65,30 @@ define([
       this.onToolChange();
     },
 
+    // #51: no per-job progress is available (the prediction tools emit none),
+    // so set expectations instead — the Jobs List shows queued/running, and
+    // this tells the user what a normal wait looks like for their tool.
+    _runtimeHints: {
+      esmfold: 'ESMFold typically finishes in minutes.',
+      boltz: 'Boltz typically takes a few minutes for small proteins; large complexes and MSA-server jobs can take an hour or more.',
+      openfold: 'OpenFold 3 typically takes a few minutes for small proteins; large complexes and MSA-server jobs can take an hour or more.',
+      chai: 'Chai-1 typically takes a few minutes for small proteins; large complexes and MSA-server jobs can take an hour or more.',
+      auto: 'Small proteins typically finish in minutes; large complexes and MSA-server jobs can take an hour or more.'
+    },
+
+    _refreshRuntimeHint: function () {
+      if (!this.runtimeHint) { return; }
+      var tool = this.tool ? this.tool.get('value') : 'auto';
+      this.runtimeHint.innerHTML = this._runtimeHints[tool] || this._runtimeHints.auto;
+    },
+
     openJobsList: function () {
       Topic.publish('/navigate', { href: '/job/' });
     },
 
     onToolChange: function () {
       this._refreshMsaPolicyMessage();
+      this._refreshRuntimeHint();
       this.checkParameterRequiredFields();
     },
 
