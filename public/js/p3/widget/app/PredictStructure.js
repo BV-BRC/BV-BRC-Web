@@ -16,7 +16,7 @@ define([
     applicationName: 'PredictStructure',
     requireAuth: true,
     applicationLabel: 'Protein Structure Prediction',
-    applicationDescription: 'Predict biomolecular structures (proteins, complexes, protein-DNA/RNA, protein-ligand) using Boltz, OpenFold 3, Chai, AlphaFold 2, or ESMFold. Provides a unified interface with automatic parameter mapping, format conversion, output normalization, and confidence scoring.',
+    applicationDescription: 'Predict biomolecular structures (proteins, complexes, protein-DNA/RNA, protein-ligand) using Boltz, OpenFold 3, Chai, AlphaFold 2, ESMFold, or ESMFold2. Provides a unified interface with automatic parameter mapping, format conversion, output normalization, and confidence scoring.',
     applicationHelp: 'quick_references/services/predict_structure_service.html',
     tutorialLink: 'tutorial/predict_structure/predict_structure.html',
     videoLink: '',
@@ -80,6 +80,8 @@ define([
       var msg;
       if (tool === 'esmfold') {
         msg = 'ESMFold does not use an MSA; this section is ignored.';
+      } else if (tool === 'esmfold2') {
+        msg = 'Optional. ESMFold2 can use a <i>Precomputed MSA from Workspace</i> for better accuracy on hard targets. <i>Use MSA Server or Service</i> is NOT available for ESMFold2 — selecting it folds single-sequence.';
       } else if (tool === 'alphafold') {
         msg = 'AlphaFold 2 builds its own MSA from BV-BRC databases; this section is ignored.';
       } else if (tool === 'boltz' || tool === 'openfold' || tool === 'chai') {
