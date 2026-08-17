@@ -16,7 +16,7 @@ define([
     applicationName: 'PredictStructure',
     requireAuth: true,
     applicationLabel: 'Protein Structure Prediction',
-    applicationDescription: 'Predict biomolecular structures (proteins, complexes, protein-DNA/RNA, protein-ligand) using Boltz, OpenFold 3, Chai, or ESMFold. Provides a unified interface with automatic parameter mapping, format conversion, output normalization, and confidence scoring.',
+    applicationDescription: 'Predict biomolecular structures (proteins, complexes, protein-DNA/RNA, protein-ligand) using Boltz, OpenFold 3, Chai, ESMFold, or ESMFold2. Provides a unified interface with automatic parameter mapping, format conversion, output normalization, and confidence scoring.',
     applicationHelp: 'quick_references/services/predict_structure_service.html',
     tutorialLink: 'tutorial/predict_structure/predict_structure.html',
     videoLink: '',
@@ -70,6 +70,7 @@ define([
     // this tells the user what a normal wait looks like for their tool.
     _runtimeHints: {
       esmfold: 'ESMFold typically finishes in minutes.',
+      esmfold2: 'ESMFold2 typically finishes in a few minutes.',
       boltz: 'Boltz typically takes a few minutes for small proteins; large complexes and MSA-server jobs can take an hour or more.',
       openfold: 'OpenFold 3 typically takes a few minutes for small proteins; large complexes and MSA-server jobs can take an hour or more.',
       chai: 'Chai-1 typically takes a few minutes for small proteins; large complexes and MSA-server jobs can take an hour or more.',
@@ -98,6 +99,8 @@ define([
       var msg;
       if (tool === 'esmfold') {
         msg = 'ESMFold does not use an MSA; this section is ignored.';
+      } else if (tool === 'esmfold2') {
+        msg = 'Optional. ESMFold2 can use a <i>Precomputed MSA from Workspace</i> for better accuracy on hard targets. <i>Use MSA Server or Service</i> is NOT available for ESMFold2 — selecting it folds single-sequence.';
       } else if (tool === 'boltz' || tool === 'openfold' || tool === 'chai') {
         msg = 'Required for the selected prediction tool. Choose <i>Precomputed MSA from Workspace</i> to upload one, or <i>Use MSA Server or Service</i> to have BV-BRC compute one with ColabFold.';
       } else {
