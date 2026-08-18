@@ -16,7 +16,7 @@ define([
     applicationName: 'PredictStructure',
     requireAuth: true,
     applicationLabel: 'Protein Structure Prediction',
-    applicationDescription: 'Predict biomolecular structures (proteins, complexes, protein-DNA/RNA, protein-ligand) using Boltz, OpenFold 3, Chai, AlphaFold 2, or ESMFold. Provides a unified interface with automatic parameter mapping, format conversion, output normalization, and confidence scoring.',
+    applicationDescription: 'Predict biomolecular structures (proteins, complexes, protein-DNA/RNA, protein-ligand) using Boltz, OpenFold 3, Chai, ESMFold, or ESMFold2. Provides a unified interface with automatic parameter mapping, format conversion, output normalization, and confidence scoring.',
     applicationHelp: 'quick_references/services/predict_structure_service.html',
     tutorialLink: 'tutorial/predict_structure/predict_structure.html',
     videoLink: '',
@@ -65,12 +65,31 @@ define([
       this.onToolChange();
     },
 
+    // #51: no per-job progress is available (the prediction tools emit none),
+    // so set expectations instead — the Jobs List shows queued/running, and
+    // this tells the user what a normal wait looks like for their tool.
+    _runtimeHints: {
+      esmfold: 'ESMFold typically finishes in minutes.',
+      esmfold2: 'ESMFold2 typically finishes in a few minutes.',
+      boltz: 'Boltz typically takes a few minutes for small proteins; large complexes and MSA-server jobs can take an hour or more.',
+      openfold: 'OpenFold 3 typically takes a few minutes for small proteins; large complexes and MSA-server jobs can take an hour or more.',
+      chai: 'Chai-1 typically takes a few minutes for small proteins; large complexes and MSA-server jobs can take an hour or more.',
+      auto: 'Small proteins typically finish in minutes; large complexes and MSA-server jobs can take an hour or more.'
+    },
+
+    _refreshRuntimeHint: function () {
+      if (!this.runtimeHint) { return; }
+      var tool = this.tool ? this.tool.get('value') : 'auto';
+      this.runtimeHint.innerHTML = this._runtimeHints[tool] || this._runtimeHints.auto;
+    },
+
     openJobsList: function () {
       Topic.publish('/navigate', { href: '/job/' });
     },
 
     onToolChange: function () {
       this._refreshMsaPolicyMessage();
+      this._refreshRuntimeHint();
       this.checkParameterRequiredFields();
     },
 
@@ -80,13 +99,13 @@ define([
       var msg;
       if (tool === 'esmfold') {
         msg = 'ESMFold does not use an MSA; this section is ignored.';
-      } else if (tool === 'alphafold') {
-        msg = 'AlphaFold 2 builds its own MSA from BV-BRC databases; this section is ignored.';
+      } else if (tool === 'esmfold2') {
+        msg = 'Optional. ESMFold2 can use a <i>Precomputed MSA from Workspace</i> for better accuracy on hard targets. <i>Use MSA Server or Service</i> is NOT available for ESMFold2 — selecting it folds single-sequence.';
       } else if (tool === 'boltz' || tool === 'openfold' || tool === 'chai') {
         msg = 'Required for the selected prediction tool. Choose <i>Precomputed MSA from Workspace</i> to upload one, or <i>Use MSA Server or Service</i> to have BV-BRC compute one with ColabFold.';
       } else {
         // tool === 'auto' (or unknown)
-        msg = 'Optional in Auto mode. With no MSA the service falls back to ESMFold for a single protein chain.';
+        msg = 'Optional in Auto mode. With no MSA uploaded, the service computes one automatically with ColabFold and Auto picks Boltz. For the fastest single-protein result pick ESMFold or ESMFold2 directly.';
       }
       this.msa_policy_message.innerHTML = msg;
     },
