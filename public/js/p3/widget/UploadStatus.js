@@ -111,6 +111,24 @@ define([
 
       }
 
+      if (msg && msg.type == 'UploadError') {
+        this._uploads.inProgress--;
+        if (this._uploads.files[msg.filename]) {
+          delete this._uploads.files[msg.filename];
+        }
+        this.activeUploadCountNode.innerHTML = this._uploads.inProgress;
+
+        if (this._uploads.inProgress < 1) {
+          domClass.add(this.uploadingProgress, 'dijitHidden');
+        }
+
+        var errorMsg = 'Upload failed for ' + msg.filename;
+        if (msg.message) {
+          errorMsg += ': ' + msg.message;
+        }
+        Topic.publish('/Notification', { message: errorMsg, type: 'error' });
+      }
+
     }
   });
 });

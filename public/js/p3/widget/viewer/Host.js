@@ -16,6 +16,7 @@ define([
     defaultTab: 'genomes',
     perspectiveLabel: 'Eukaryotic Hosts',
     perspectiveIconClass: 'icon-selection-GenomeList',
+    taxonId: '2759',
     query: '',
     totalGenomes: 0,
 
@@ -45,7 +46,7 @@ define([
         },
         handleAs: 'json',
         'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-        data: 'eq(taxon_lineage_ids,2759)&select(genome_id)'
+        data: `eq(taxon_lineage_ids,${this.taxonId})&select(genome_id)&limit(1)`
 
       }).then(function (res) {
 
@@ -53,10 +54,6 @@ define([
           var genomes = res.response.docs;
           if (genomes) {
             _self._set('total_genomes', res.response.numFound);
-            var genome_ids = genomes.map(function (o) {
-              return o.genome_id;
-            });
-            _self._set('genome_ids', genome_ids);
           }
         } else {
           console.warn('Invalid Response for: ', url);
@@ -68,18 +65,7 @@ define([
     onSetState: function (attr, oldVal, state) {
       // console.log("Host onSetState()  OLD: ", oldVal, " NEW: ", state);
       this.inherited(arguments);
-      if (!state.genome_ids) {
-        // console.log("NO Genome_IDS: old: ", oldVal.search, " new: ", state.search);
-        if (state.search == oldVal.search) {
-          this.set('state', lang.mixin({}, state, {
-            genome_ids: oldVal.genome_ids
-          }));
-          return;
-        }
-        this.set('query', state.search);
-
-      } else if (state.search != oldVal.search) {
-        console.log('SET QUERY: ', state.search);
+      if (state.search != (oldVal && oldVal.search)) {
         this.set('query', state.search);
       }
 
@@ -97,44 +83,36 @@ define([
         return;
       }
 
+      var hostLineage = `eq(taxon_lineage_ids,${this.taxonId})`;
       var activeQueryState;
       switch (active) {
         case 'features':
-          if (this.state && this.state.genome_ids) {
-            activeQueryState = lang.mixin({}, this.state, {
-              search: 'in(genome_id,(' + this.state.genome_ids.join(',') + '))',
-              hashParams: lang.mixin({}, this.state.hashParams, {
-                filter: 'eq(feature_type,%22CDS%22)'
-              })
-            });
-          }
-          if (activeQueryState) {
-            activeTab.set('state', activeQueryState);
-          }
+          activeQueryState = lang.mixin({}, this.state, {
+            search: 'eq(genome_id,*)&genome(' + hostLineage + ')',
+            hashParams: lang.mixin({}, this.state.hashParams, {
+              filter: 'eq(feature_type,%22CDS%22)'
+            })
+          });
+          activeTab.set('state', activeQueryState);
+          break;
+        case 'sequences':
+          activeQueryState = lang.mixin({}, this.state, {
+            search: 'eq(genome_id,*)&genome(' + hostLineage + ')',
+            hashParams: lang.mixin({}, this.state.hashParams)
+          });
+          activeTab.set('state', activeQueryState);
           break;
         case 'experiments':
           activeTab.set('state', lang.mixin({}, this.state, {
-            search: 'eq(taxon_lineage_ids,2759)'
+            search: hostLineage
           }));
           break;
         default:
-
-          if (this.state && this.state.genome_ids) {
-            // console.log("Found Genome_IDS in state object. count: ", this.state.genome_ids.length);
-
-            // console.log("USING ALL GENOME_IDS. count: ", this.state.genome_ids.length);
-            activeQueryState = lang.mixin({}, this.state, {
-              search: 'in(genome_id,(' + this.state.genome_ids.join(',') + '))',
-              hashParams: lang.mixin({}, this.state.hashParams)
-            });
-          }
-          if (activeQueryState) {
-            // console.log("Active Query State: ", activeQueryState);
-
-            activeTab.set('state', activeQueryState);
-          } else {
-            console.warn('MISSING activeQueryState for PANEL: ' + active);
-          }
+          activeQueryState = lang.mixin({}, this.state, {
+            search: hostLineage,
+            hashParams: lang.mixin({}, this.state.hashParams)
+          });
+          activeTab.set('state', activeQueryState);
           break;
       }
 
@@ -145,10 +123,6 @@ define([
           window.document.title = pageTitle;
         }
       }
-    },
-    onSetGenomeIds: function (attr, oldVal, genome_ids) {
-      this.state.genome_ids = genome_ids;
-      this.setActivePanelState();
     },
     onSetTotalGenomes: function (attr, oldVal, newVal) {
       this.totalCountNode.innerHTML = ' ( ' + newVal + ' Genomes ) ';
@@ -162,8 +136,6 @@ define([
     postCreate: function () {
       this.inherited(arguments);
 
-      // this.watch("query", lang.hitch(this, "onSetQuery"));
-      this.watch('genome_ids', lang.hitch(this, 'onSetGenomeIds'));
       this.watch('total_genomes', lang.hitch(this, 'onSetTotalGenomes'));
 
       // this.overview = this.createOverviewPanel(this.state);
@@ -177,7 +149,6 @@ define([
       this.sequences = new SequenceGridContainer({
         title: 'Sequences',
         id: this.viewer.id + '_sequences',
-        state: this.state,
         disable: false
       });
       this.features = new FeatureGridContainer({

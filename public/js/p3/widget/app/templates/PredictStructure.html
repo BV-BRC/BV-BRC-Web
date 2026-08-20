@@ -39,8 +39,8 @@
               <option value="boltz">Boltz-2</option>
               <option value="openfold">OpenFold 3</option>
               <option value="chai">Chai-1</option>
-              <option value="alphafold">AlphaFold 2</option>
               <option value="esmfold">ESMFold</option>
+              <option value="esmfold2">ESMFold2</option>
             </select>
           </div>
         </div>
@@ -51,7 +51,7 @@
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
             <label class="appBoxLabel">Biomolecular Inputs</label>
-            <div name="sequence-input" class="infobox iconbox infobutton dialoginfo">
+            <div name="biomolecular-inputs" class="infobox iconbox infobutton dialoginfo">
               <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
             </div>
           </div>
@@ -59,7 +59,7 @@
         <br>
         <div class="appRow">
           <div class="appFieldLong">
-            <label>Protein FASTA</label><br>
+            <label>Protein</label><br>
             <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="input_file" style="width:75%;"
               data-dojo-attach-point="input_file"
               data-dojo-attach-event="onChange:checkParameterRequiredFields"
@@ -69,7 +69,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <label>DNA FASTA</label><br>
+            <label>DNA</label><br>
             <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="dna_file" style="width:75%;"
               data-dojo-attach-point="dna_file"
               data-dojo-attach-event="onChange:checkParameterRequiredFields"
@@ -79,7 +79,7 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong">
-            <label>RNA FASTA</label><br>
+            <label>RNA</label><br>
             <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="rna_file" style="width:75%;"
               data-dojo-attach-point="rna_file"
               data-dojo-attach-event="onChange:checkParameterRequiredFields"
@@ -100,24 +100,26 @@
           </div>
         </div>
         <div class="appRow">
-          <div class="appFieldLong" style="width:45%; display:inline-block; vertical-align:top; margin-right:30px;">
-            <label>Ligands (CCD codes)</label><br>
-            <textarea id="${id}_ligand" data-dojo-attach-point="ligand" name="ligand"
-              style="resize: none; height:110px; width:96%; margin-left:10px; font-family: monospace; font-size:12px;"
-              data-dojo-type="dijit/form/SimpleTextarea"
-              data-dojo-attach-event="onChange:checkLigands"
-              data-dojo-props="rows:6, placeholder:'ATP, NAD, NAG', trim:true, intermediateChanges:true"></textarea>
-            <div class="warning" data-dojo-attach-point="ligand_message"
-              style="color:#b50707; margin-left:10px; min-height:1em;"></div>
+          <div class="appFieldLong" style="width:380px">
+            <label>Notation</label><br>
+            <select data-dojo-type="dijit/form/Select" data-dojo-attach-point="ligand_type"
+              name="ligand_type" style="width:100%;"
+              data-dojo-attach-event="onChange:onLigandTypeChange"
+              data-dojo-props="value:'ccd'">
+              <option value="ccd" selected>CCD codes</option>
+              <option value="smiles">SMILES strings</option>
+            </select>
           </div>
-          <div class="appFieldLong" style="width:45%; display:inline-block; vertical-align:top;">
-            <label>SMILES Strings</label><br>
-            <textarea id="${id}_smiles" data-dojo-attach-point="smiles" name="smiles"
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <label data-dojo-attach-point="ligand_input_label">Ligands</label><br>
+            <textarea id="${id}_ligand_input" data-dojo-attach-point="ligand_input" name="ligand_input"
               style="resize: none; height:110px; width:96%; margin-left:10px; font-family: monospace; font-size:12px;"
               data-dojo-type="dijit/form/SimpleTextarea"
-              data-dojo-attach-event="onChange:checkSmiles"
-              data-dojo-props="rows:6, placeholder:'Enter one SMILES string per line', trim:true, intermediateChanges:true"></textarea>
-            <div class="warning" data-dojo-attach-point="smiles_message"
+              data-dojo-attach-event="onChange:checkLigandInput"
+              data-dojo-props="rows:6, placeholder:'ATP\nNAD\nNAG', trim:true, intermediateChanges:true"></textarea>
+            <div class="warning" data-dojo-attach-point="ligand_message"
               style="color:#b50707; margin-left:10px; min-height:1em;"></div>
           </div>
         </div>
@@ -128,20 +130,33 @@
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
             <label class="appBoxLabel">Multiple Sequence Alignment</label>
-            <div name="msa-options" class="infobox iconbox infobutton dialoginfo">
+            <div name="multiple-sequence-alignment" class="infobox iconbox infobutton dialoginfo">
               <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
             </div>
           </div>
         </div>
         <div class="appRow">
+          <div class="appFieldLong" style="width:380px">
+            <label>MSA Source</label><br>
+            <select data-dojo-type="dijit/form/Select" data-dojo-attach-point="msa_source"
+              name="msa_source" style="width:100%;"
+              data-dojo-attach-event="onChange:onMsaSourceChange"
+              data-dojo-props="value:'none'">
+              <option value="none" selected>None</option>
+              <option value="workspace">Precomputed MSA from Workspace</option>
+              <option value="server">Use MSA Server or Service</option>
+            </select>
+            <div data-dojo-attach-point="msa_policy_message" style="margin-top:4px; color:#666;"></div>
+          </div>
+        </div>
+        <div class="appRow" data-dojo-attach-point="msa_workspace_row" style="display:none;">
           <div class="appFieldLong">
             <label>MSA File</label><br>
             <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="msa_file" style="width:75%;"
               data-dojo-attach-point="msa_file"
               data-dojo-attach-event="onChange:checkParameterRequiredFields"
-              data-dojo-props="type:['unspecified','txt'],multi:false,promptMessage:'Pre-computed Multiple Sequence Alignment (.a3m, .sto). Required for Boltz-2, OpenFold 3, and Chai-1. ESMFold ignores MSA; AlphaFold 2 builds its own from local databases.',placeHolder:'MSA data file'">
+              data-dojo-props="type:['unspecified','txt'],multi:false,promptMessage:'Pre-computed Multiple Sequence Alignment (.a3m, .sto, .pqt). Used as-is by Boltz-2, OpenFold 3, and Chai-1.',placeHolder:'MSA data file'">
             </div>
-            <div data-dojo-attach-point="msa_policy_message" style="margin-top:4px; color:#666;"></div>
           </div>
         </div>
       </div>
@@ -168,13 +183,19 @@
         </div>
         <div class="appRow">
           <div class="appFieldLong" style="width:380px">
-            <label>Output File Prefix</label><span class="charError"
+            <label>Job Name</label><span class="charError"
               style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
             <div data-dojo-attach-point="output_file" data-dojo-attach-event="onChange:checkOutputName"
               style="width:100%;"
               data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
-              data-dojo-props="intermediateChanges:true, promptMessage:'Optional output filename prefix; only used when P3_DEBUG_RUN_SUBFOLDER=1.',trim:true,placeHolder:'Optional output prefix'">
+              data-dojo-props="intermediateChanges:true, promptMessage:'Name for this job. A workspace object with this name is created inside the Output Folder and holds all job-related info including the prediction results.',trim:true,placeHolder:'Job name'">
             </div>
+          </div>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong" style="margin-top:8px; padding:8px 12px; background:#f5f5f5; border-left:3px solid #6e8baf; font-family:monospace; font-size:12px; color:#333;">
+            <span style="color:#6e8baf; font-weight:bold;">Result location:</span>
+            <span data-dojo-attach-point="output_path_preview">(set Output Folder and Job Name)</span>
           </div>
         </div>
       </div>
@@ -194,6 +215,7 @@
         Your job has been submitted successfully. Please visit your <a
           data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job and access
         the results.
+        <div data-dojo-attach-point="runtimeHint" style="margin-top:6px; font-style:italic;"></div>
       </div>
       <div style="margin-top: 10px; text-align:center;">
         <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel"

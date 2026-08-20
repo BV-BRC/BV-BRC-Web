@@ -3,13 +3,15 @@ define([
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/GlobalSearch.html', './Button', 'dijit/registry', 'dojo/_base/lang',
   'dojo/dom', 'dojo/topic', 'dijit/form/TextBox', 'dojo/keys', 'dijit/_FocusMixin', 'dijit/focus',
-  '../util/searchToQuery', '../util/searchToQueryWithOr', '../util/searchToQueryWithQuoteOr', '../util/searchToQueryWithQuoteAnd'
+  '../util/searchToQuery', '../util/searchToQueryWithOr', '../util/searchToQueryWithQuoteOr', '../util/searchToQueryWithQuoteAnd',
+  '../util/buildGlobalSearchQuery'
 ], function (
   declare, WidgetBase, on, domConstruct,
   domClass, Templated, WidgetsInTemplate,
   template, Button, Registry, lang,
   dom, Topic, TextBox, keys, FocusMixin, focusUtil,
-  searchToQuery, searchToQueryWithOr, searchToQueryWithQuoteOr, searchToQueryWithQuoteAnd
+  searchToQuery, searchToQueryWithOr, searchToQueryWithQuoteOr, searchToQueryWithQuoteAnd,
+  buildGlobalSearchQuery
 ) {
 
   function processQuery(query, searchOption) {
@@ -84,6 +86,7 @@ define([
 
         console.log('Search Filter: ', searchFilter, 'searchOption=', searchOption);
         var q = processQuery(query, searchOption);
+        var searchQuery = buildGlobalSearchQuery(searchFilter, q);
         console.log('Search query q=: ', q);
 
         // var clear = false;
@@ -93,15 +96,15 @@ define([
             // clear = true;
             break;
           case 'sp_genes':
-            Topic.publish('/navigate', { href: '/view/SpecialtyGeneList/?' + q });
+            Topic.publish('/navigate', { href: '/view/SpecialtyGeneList/?' + searchQuery });
             // clear = true;
             break;
           case 'genome_features':
-            Topic.publish('/navigate', { href: '/view/FeatureList/?' + q + '#view_tab=features&defaultSort=-score' });
+            Topic.publish('/navigate', { href: '/view/FeatureList/?' + searchQuery + '#view_tab=features&defaultSort=-score' });
             // clear = true;
             break;
           case 'proteins':
-            Topic.publish('/navigate', { href: '/view/ProteinList/?' + q + '#view_tab=proteins&defaultSort=-score' });
+            Topic.publish('/navigate', { href: '/view/ProteinList/?' + searchQuery + '#view_tab=proteins&defaultSort=-score' });
             // clear = true;
             break;
           case 'genome_sequences':
@@ -112,20 +115,20 @@ define([
             Topic.publish('/navigate', { href: '/view/StrainList/?' + q });
             break;
           case 'genomes':
-            Topic.publish('/navigate', { href: '/view/GenomeList/?' + q + '#view_tab=genomes&defaultSort=-score' });
+            Topic.publish('/navigate', { href: '/view/GenomeList/?' + searchQuery + '#view_tab=genomes&defaultSort=-score' });
             // clear = true;
             break;
           case 'protein_features':
-            Topic.publish('/navigate', { href: '/view/ProteinFeaturesList/?' + q });
+            Topic.publish('/navigate', { href: '/view/ProteinFeaturesList/?' + searchQuery });
             break;
           case 'protein_structures':
-            Topic.publish('/navigate', { href: '/view/ProteinStructureList/?' + q });
+            Topic.publish('/navigate', { href: '/view/ProteinStructureList/?' + searchQuery });
             break;
           case 'pathways':
-            Topic.publish('/navigate', { href: '/view/PathwayList/?' + q });
+            Topic.publish('/navigate', { href: '/view/PathwayList/?' + searchQuery });
             break;
           case 'subsystems':
-            Topic.publish('/navigate', { href: '/view/SubsystemList/?' + q });
+            Topic.publish('/navigate', { href: '/view/SubsystemList/?' + searchQuery });
             break;
           case 'surveillance':
             Topic.publish('/navigate', { href: '/view/SurveillanceList/?' + q });
@@ -203,18 +206,19 @@ define([
       }
 
       var q = processQuery(query, searchOption);
+      var searchQuery = buildGlobalSearchQuery(searchFilter, q);
       switch (searchFilter) {
         case 'everything':
           Topic.publish('/navigate', { href: '/search/?' + q });
           break;
         case 'sp_genes':
-          Topic.publish('/navigate', { href: '/view/SpecialtyGeneList/?' + q });
+          Topic.publish('/navigate', { href: '/view/SpecialtyGeneList/?' + searchQuery });
           break;
         case 'genome_features':
-          Topic.publish('/navigate', { href: '/view/FeatureList/?' + q + '#view_tab=features&defaultSort=-score' });
+          Topic.publish('/navigate', { href: '/view/FeatureList/?' + searchQuery + '#view_tab=features&defaultSort=-score' });
           break;
         case 'proteins':
-          Topic.publish('/navigate', { href: '/view/ProteinList/?' + q + '#view_tab=proteins&defaultSort=-score' });
+          Topic.publish('/navigate', { href: '/view/ProteinList/?' + searchQuery + '#view_tab=proteins&defaultSort=-score' });
           break;
         case 'genome_sequences':
           Topic.publish('/navigate', { href: '/view/SequenceList/?' + q });
@@ -223,19 +227,19 @@ define([
           Topic.publish('/navigate', { href: '/view/StrainList/?' + q });
           break;
         case 'genomes':
-          Topic.publish('/navigate', { href: '/view/GenomeList/?' + q });
+          Topic.publish('/navigate', { href: '/view/GenomeList/?' + searchQuery });
           break;
         case 'protein_features':
-          Topic.publish('/navigate', { href: '/view/ProteinFeaturesList/?' + q });
+          Topic.publish('/navigate', { href: '/view/ProteinFeaturesList/?' + searchQuery });
           break;
         case 'protein_structures':
-          Topic.publish('/navigate', { href: '/view/ProteinStructureList/?' + q });
+          Topic.publish('/navigate', { href: '/view/ProteinStructureList/?' + searchQuery });
           break;
         case 'pathways':
-          Topic.publish('/navigate', { href: '/view/PathwayList/?' + q });
+          Topic.publish('/navigate', { href: '/view/PathwayList/?' + searchQuery });
           break;
         case 'subsystems':
-          Topic.publish('/navigate', { href: '/view/SubsystemList/?' + q });
+          Topic.publish('/navigate', { href: '/view/SubsystemList/?' + searchQuery });
           break;
         case 'surveillance':
           Topic.publish('/navigate', { href: '/view/SurveillanceList/?' + q });

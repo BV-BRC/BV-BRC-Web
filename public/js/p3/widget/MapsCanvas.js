@@ -1,18 +1,19 @@
 define([
-  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dijit/_OnDijitClickMixin', 'dijit/_WidgetsInTemplateMixin',
-  'dojo/dom', 'dojo/dom-class', 'dijit/_TemplatedMixin', 'dojox/dtl/_Templated', 'dojo/dom-construct', 'dojo/dom-style',  'dojo/mouse',
+  'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dijit/_WidgetsInTemplateMixin',
+  'dojo/dom', 'dijit/_TemplatedMixin', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/mouse',
   'dojo/text!./templates/SurveillanceDataMap.html', './mapsInfoWindows/LocationInfoWindowSingle',
   './mapsInfoWindows/LocationInfoWindowShortList', './mapsInfoWindows/LocationInfoWindowSummary',
   'dojo/json', 'dojo/text!/public/js/p3/resources/surveillancemap/flyaways.json', 'dijit/form/CheckBox', 'dijit/ColorPalette',
   '../util/PathJoin', 'dojo/request', 'dojo/_base/lang',
-  'https://maps.googleapis.com/maps/api/js?key=AIzaSyAo6Eq83tcpiWufvVpw_uuqdoRfWbFXfQ8&sensor=false&libraries=drawing'
+  '../util/LeafletSupport'
 ], function (
-  declare, WidgetBase, on, OnDijitClickMixin, _WidgetsInTemplateMixin,
-  dom, domClass, Templated, DtlTemplated, domConstruct, domStyle, mouse,
+  declare, WidgetBase, on, _WidgetsInTemplateMixin,
+  dom, Templated, domConstruct, domStyle, mouse,
   Template, LocationInfoWindowSingle,
   LocationInfoWindowShortList, LocationInfoWindowSummary,
   JSON, flyawaysData, CheckBox, ColorPalette,
-  PathJoin, xhr, lang
+  PathJoin, xhr, lang,
+  LeafletSupport
 ) {
 
   return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
@@ -25,7 +26,6 @@ define([
     map: null,
     infoWindows: [],
     markers: [],
-    prevalenceData: [],
     overlays: {},
     canvasId: 'surveillanceMapCanvas',
     /* Page level variables to hold the map state */
@@ -34,7 +34,6 @@ define([
     defaultMarkerColor: '#FE7569',
     defaultMapOptions: {
       backgroundColor: '#E7F1FA',
-      mapTypeId: google.maps.MapTypeId.TERRAIN,
       scaleControl: true
     },
     flywayJSON: [],
@@ -75,14 +74,63 @@ define([
       return count;
     },
 
-    resetMapToDefault: function () {
-      this.map.setCenter(this.initialCenter);
-      this.map.setZoom(this.initialZoomLevel);
-      this.map.setMapTypeId(this.defaultMapOptions.mapTypeId);
+    _toggleInfoPopover: function () {
+      if (!this.infoPopoverNode) return;
+      const isHidden = this.infoPopoverNode.hasAttribute('hidden');
+      if (isHidden) {
+        this.infoPopoverNode.removeAttribute('hidden');
+        if (this.infoToggleNode) this.infoToggleNode.classList.add('is-active');
+      } else {
+        this.infoPopoverNode.setAttribute('hidden', '');
+        if (this.infoToggleNode) this.infoToggleNode.classList.remove('is-active');
+      }
+    },
 
-      // Close all the info  windows
-      for (let infoWindow of this.infoWindows) {
-        infoWindow.close();
+    _toggleSidebar: function () {
+      if (!this.sidebarNode) return;
+      const collapsed = this.sidebarNode.classList.toggle('sdm-collapsed');
+
+      if (this.expandStripNode) {
+        this.expandStripNode.classList.toggle('is-visible', collapsed);
+      }
+      if (this.sidebarToggleNode) {
+        const title = collapsed ? 'Show panel' : 'Hide panel';
+        this.sidebarToggleNode.title = title;
+        this.sidebarToggleNode.setAttribute('aria-label', title);
+      }
+
+      // Let the CSS transition run, then tell Leaflet to recompute its size.
+      if (this.map) {
+        const map = this.map;
+        setTimeout(function () {
+          map.invalidateSize();
+        }, 220);
+      }
+    },
+
+    resetMapToDefault: function () {
+      if (!this.map) return;
+      if (this.initialBounds && this.initialBounds.isValid && this.initialBounds.isValid()) {
+        this.map.fitBounds(this.initialBounds);
+      } else {
+        this.map.setView(this.initialCenter, this.initialZoomLevel);
+      }
+      if (this.tileLayers && this.tileLayers.standard) {
+        for (let key of Object.keys(this.tileLayers)) {
+          if (this.map.hasLayer(this.tileLayers[key])) {
+            this.map.removeLayer(this.tileLayers[key]);
+          }
+        }
+        this.tileLayers.standard.addTo(this.map);
+      }
+
+      this.map.closePopup();
+      if (this.clusterGroup && typeof this.clusterGroup.unspiderfy === 'function') {
+        this.clusterGroup.unspiderfy();
+      }
+      if (this._activeEntry) {
+        this._setMarkerSelected(this._activeEntry, false);
+        this._activeEntry = null;
       }
     },
 
@@ -167,6 +215,26 @@ define([
         // Clear existing data
         this.clearPartition();
 
+        // Count how many partitions actually have data, for the status banner
+        const partitionsWithData = dates.filter(d => d.count > 0).length;
+        const totalRecords = dates.reduce((sum, d) => sum + d.count, 0);
+
+        // Render a summary banner above the list so users see immediate feedback
+        const dataDiv = dojo.byId('partitionDataDiv');
+        if (dataDiv) {
+          const banner = domConstruct.create('div', {
+            'class': 'sdm-partition-banner',
+            'innerHTML':
+              '<div class="sdm-partition-banner-title">' + partitionsWithData +
+              ' time interval' + (partitionsWithData === 1 ? '' : 's') +
+              ' with data</div>' +
+              '<div class="sdm-partition-banner-helper">' + totalRecords +
+              ' record' + (totalRecords === 1 ? '' : 's') +
+              ' across the selected hosts &middot; click an interval to inspect</div>'
+          });
+          dojo.place(banner, dataDiv);
+        }
+
         let i = 0;
         for (let date of dates) {
           if (date.count > 0) {
@@ -196,27 +264,47 @@ define([
 
             dojo.place(partitionItemDiv, dojo.byId('partitionDataDiv'));
 
-            // Toggle modal
+            // Toggle modal — position relative to the viewport so it can escape
+            // the sidebar's overflow-clipped scroll container.
             on(dom.byId(`pb-checkbox-${id}`), 'click', function (evt) {
-              $(`#partition-modal-${id}`).toggle();
+              const modal = document.getElementById(`partition-modal-${id}`);
+              if (!modal) return;
+              const checkboxEl = document.getElementById(`pb-checkbox-${id}`);
+              const labelEl = checkboxEl ? checkboxEl.nextElementSibling : null;
+              const anchorRect = (labelEl || checkboxEl).getBoundingClientRect();
 
-              // Calculate position of the checbox for placing modal
-              const $checkboxLabel = $('#pb-checkbox-' + id).next();
-              const offset = $checkboxLabel.offset();
-              let topPosition = (offset.top - $(window).scrollTop() - $('.dijitTabPaneWrapper').offset().top) + 'px';
-              const leftPosition = offset.left + $checkboxLabel.width() + 10 + 'px';
-
-              dojo.query(`#partition-modal-${id}`).style({ 'top': topPosition, 'left': leftPosition });
+              const isHidden = modal.style.display === 'none' || !modal.style.display;
+              if (isHidden) {
+                modal.style.display = 'block';
+                // Place modal to the right of the checkbox label; if it would
+                // go off-screen, fall back to placing it to the left.
+                const modalWidth = 360;
+                let left = anchorRect.right + 10;
+                if (left + modalWidth > window.innerWidth - 8) {
+                  left = Math.max(8, anchorRect.left - modalWidth - 10);
+                }
+                let top = anchorRect.top;
+                const modalHeight = modal.offsetHeight || 220;
+                if (top + modalHeight > window.innerHeight - 8) {
+                  top = Math.max(8, window.innerHeight - modalHeight - 8);
+                }
+                modal.style.top = top + 'px';
+                modal.style.left = left + 'px';
+              } else {
+                modal.style.display = 'none';
+              }
             });
 
-            // Create partition modal to display species
-            let fluPositiveText = '';
+            // Compute test stats — color the chip with the same legend buckets
             const testedCount = this.getTestedCountByLocation(date.items);
+            let chipHtml = '';
             if (testedCount > 0) {
               const positiveCount = this.getPositiveTestedCountByLocation(date.items);
-              const prevalence = (positiveCount / testedCount * 100).toFixed(2);
-
-              fluPositiveText = `${prevalence}% | ${positiveCount} / ${testedCount}`;
+              const prevalence = (positiveCount / testedCount * 100).toFixed(1);
+              const chipClass = this._prevalenceBucketClass(prevalence);
+              chipHtml = `<span class="sdm-pop-chip ${chipClass}">${prevalence}% positive · ${positiveCount}/${testedCount}</span>`;
+            } else {
+              chipHtml = '<span class="sdm-pop-chip is-na">No test data</span>';
             }
 
             const partitionModalDiv = domConstruct.create('div',
@@ -228,53 +316,56 @@ define([
             const partitionModalInnerDiv = domConstruct.create('div', null, partitionModalDiv);
 
             // Create button for closing modal
-            const closeModalBtn = domConstruct.create('button',
+            domConstruct.create('button',
               {
                 'type': 'button',
-                'class': 'gm-ui-hover-effect partition-modal-close-btn',
-                'onclick': `$('#partition-modal-${id}').hide();$('#pb-checkbox-${id}').prop('checked', false);`,
+                'class': 'partition-modal-close-btn',
+                'onclick': `document.getElementById('partition-modal-${id}').style.display='none';document.getElementById('pb-checkbox-${id}').checked=false;`,
                 'draggable': 'false',
                 'aria-label': 'Close',
                 'title': 'Close',
+                'innerHTML': '&times;'
               }, partitionModalInnerDiv);
-            domConstruct.create('img',
+
+            // Hero header
+            domConstruct.create('div',
               {
-                'src': 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M19%206.41L17.59%205%2012%2010.59%206.41%205%205%206.41%2010.59%2012%205%2017.59%206.41%2019%2012%2013.41%2017.59%2019%2019%2017.59%2013.41%2012z%22/%3E%3Cpath%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%3C/svg%3E'
-              }, closeModalBtn);
+                'class': 'partition-modal-header',
+                'innerHTML':
+                  '<div class="partition-modal-eyebrow">Time interval</div>' +
+                  '<div class="partition-modal-range">' + dateText + '</div>' +
+                  '<div class="partition-modal-stats">' +
+                  '<span class="sdm-pop-chip">' + date.count + ' record' + (date.count === 1 ? '' : 's') + '</span>' +
+                  chipHtml +
+                  '</div>'
+              }, partitionModalInnerDiv);
 
-            // Create top table to display Collection Date Range and Flu Positive
-            const topTable = domConstruct.create('table', null, partitionModalInnerDiv);
-            const dateRangeTR = domConstruct.create('tr', {}, topTable);
-            domConstruct.create('td', {
-              innerHTML: `Collection Date Range: ${dateText}`
-            }, dateRangeTR);
-            const fluPositiveTR = domConstruct.create('tr', {}, topTable);
-            domConstruct.create('td', {
-              innerHTML: `Flu Positive: ${fluPositiveText}`
-            }, fluPositiveTR);
-
-            // Create bottom table to display Species info
-            const bottomTable = domConstruct.create('table', null, partitionModalInnerDiv);
-            const headTR = domConstruct.create('tr', {}, bottomTable);
-            domConstruct.create('th', {
-              innerHTML: 'Species'
-            }, headTR);
-            domConstruct.create('th', {
-              innerHTML: 'Species Count'
-            }, headTR);
-
+            // Species table
             const speciesMap = this.generateSpeciesCount(date.items);
-            for (const [species, count] of Object.entries(speciesMap)) {
-              const speciesTR = domConstruct.create('tr', {}, bottomTable);
-              domConstruct.create('td', {
-                innerHTML: species
-              }, speciesTR);
-              domConstruct.create('td', {
-                innerHTML: count
-              }, speciesTR);
+            const speciesEntries = Object.entries(speciesMap).sort((a, b) => b[1] - a[1]);
+
+            const tableWrap = domConstruct.create('div', { 'class': 'partition-modal-table-wrap' }, partitionModalInnerDiv);
+            domConstruct.create('div',
+              {
+                'class': 'sdm-pop-section-title',
+                'innerHTML': 'Species breakdown'
+              }, tableWrap);
+            const bottomTable = domConstruct.create('table', { 'class': 'sdm-pop-table' }, tableWrap);
+            const thead = domConstruct.create('thead', {}, bottomTable);
+            const headTR = domConstruct.create('tr', {}, thead);
+            domConstruct.create('th', { innerHTML: 'Species' }, headTR);
+            domConstruct.create('th', { 'class': 'sdm-pop-num', innerHTML: 'Count' }, headTR);
+
+            const tbody = domConstruct.create('tbody', {}, bottomTable);
+            for (const [species, count] of speciesEntries) {
+              const speciesTR = domConstruct.create('tr', {}, tbody);
+              domConstruct.create('td', { innerHTML: species || '<em style="color:#9ca3af;">Unknown</em>' }, speciesTR);
+              domConstruct.create('td', { 'class': 'sdm-pop-num', innerHTML: count }, speciesTR);
             }
 
-            dojo.place(partitionModalDiv, dojo.byId('partition-section'));
+            // Attach modal to body so it can render above the sidebar
+            // overflow:auto container without being clipped.
+            document.body.appendChild(partitionModalDiv);
 
             // Overlap selected modal over others
             on(dom.byId(`partition-modal-${id}`), 'click', function (evt) {
@@ -282,6 +373,17 @@ define([
               dojo.query(`#partition-modal-${id}`).style('z-index', '2');
             });
           }
+        }
+
+        // Scroll the partition results into view inside the sidebar so users
+        // see them immediately instead of having to scroll the sidebar.
+        const banner = dojo.byId('partitionDataDiv')
+          ? dojo.byId('partitionDataDiv').querySelector('.sdm-partition-banner')
+          : null;
+        if (banner && typeof banner.scrollIntoView === 'function') {
+          setTimeout(function () {
+            banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 50);
         }
       })).catch(err => console.log('error', err));
     },
@@ -328,77 +430,119 @@ define([
           return f.name === region;
         }).points;
 
-        // Convert locations into LatLng object
-        const mapPoints = points.map(p => new google.maps.LatLng(p.latitude, p.longitude));
+        // Convert locations into [lat, lng] tuples for Leaflet
+        const mapPoints = points.map(p => [p.latitude, p.longitude]);
 
-        const overlay = new google.maps.Polygon({
-          paths: mapPoints,
-          strokeColor: color,
-          strokeOpacity: 0.5,
-          strokeWeight: 2,
+        const overlay = L.polygon(mapPoints, {
+          color: color,
+          opacity: 0.5,
+          weight: 2,
           fillColor: color,
           fillOpacity: 0.5
         });
 
         // Add to the map
-        overlay.setMap(parent.map);
+        overlay.addTo(parent.map);
         parent.overlays[region] = overlay;
       } else {
-        parent.overlays[region].setMap(null);
+        parent.overlays[region].remove();
         delete parent.overlays[region];
+      }
+    },
+
+    // Refresh marker icons after color/percentage changes
+    _refreshMarkerIcons: function (usePercentage) {
+      for (let entry of this.markers) {
+        let color;
+        if (usePercentage) {
+          const percentage = entry.prevalence === null ? 0 : parseFloat(entry.prevalence);
+          color = percentage > 50 ? '#FF0000' :
+            percentage > 25 ? '#E86500' :
+              percentage > 15 ? '#DC950D' :
+                percentage > 7 ? '#FFFF00' :
+                  percentage > 0 ? '#869832' :
+                    '#00FF00';
+        } else {
+          color = this.defaultMarkerColor;
+        }
+        entry.color = color;
+        entry.marker.setIcon(this.createMarkerIcon(entry.count, color, entry.label));
       }
     },
 
     // Changes the icon color based on percentage number for positive tests
     showHidePercent: function () {
       const isChecked = this.percentageCheckBox.checked;
-      if (isChecked) {
-        // Show percentage/color gradient
-        // domStyle.set("fluPercents", 'display', "block");
-
-        for (let { marker, prevalence } of this.markers) {
-          let icon = marker.getIcon();
-          const percentage = prevalence === null ? 0 : parseFloat(prevalence);
-          icon.fillColor = percentage > 50 ? '#FF0000' :
-            percentage > 25 ? '#E86500' :
-              percentage > 15 ? '#DC950D' :
-                percentage > 7 ? '#FFFF00' :
-                  percentage > 0 ? '#869832' :
-                    '#00FF00';
-          marker.setIcon(icon);
-          google.maps.event.addListener(marker, 'mouseout', function () {
-            marker.setIcon(icon);
-          });
-        }
-      } else {
-        // Hide percentage/color gradient
-        // domStyle.set("fluPercents", 'display', "none");
-
-        // Reset marker colors back to default
-        for (let { marker } of this.markers) {
-          let icon = marker.getIcon();
-          icon.fillColor = this.defaultMarkerColor;
-          marker.setIcon(icon);
-          google.maps.event.addListener(marker, 'mouseout', function () {
-            marker.setIcon(icon);
-          });
-        }
-      }
+      this._refreshMarkerIcons(isChecked);
     },
 
-    // Create a marker icon with a size fit to the count and selected color
-    createMarkerIcon: function (count, color = this.defaultMarkerColor) {
-      const scale = count < 10 ? 1 : count < 100 ? 1.5 : count < 1000 ? 2 : 2.5;
+    // Create a Leaflet divIcon with an SVG teardrop shape sized to the count and selected color
+    createMarkerIcon: function (count, color, label) {
+      color = color || this.defaultMarkerColor;
+      const scale = count < 10 ? 1 : count < 100 ? 1.4 : count < 1000 ? 1.8 : 2.2;
+      const labelText = (label === undefined || label === null) ? '' : String(label);
 
-      return {
-        path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
-        fillColor: color,
-        fillOpacity: 1,
-        strokeColor: '#000',
-        strokeWeight: 1,
-        scale: scale,
-        labelOrigin: new google.maps.Point(0, -28)
-      };
+      // Path bounds: x in [-10, 10], y in [-40, 0]. Anchor (tip) is at (0, 0) — bottom-center.
+      // ViewBox uses 1px padding for the stroke.
+      const baseW = 22;
+      const baseH = 42;
+      const w = baseW * scale;
+      const h = baseH * scale;
+
+      // Bulb circle (radius 10) is centered at SVG (0, -30). In screen coords, that's at
+      // y = (-30 - (-41)) / 42 * h = 11/42 * h, with diameter 20/42 * h.
+      const bulbTopPct = ((-30 - 10) - (-41)) / baseH * 100; // 0
+      const bulbHeightPct = 20 / baseH * 100;                 // ~47.6%
+      const fontSize = Math.max(10, Math.round(11 * Math.min(scale, 1.6)));
+
+      const labelHtml = labelText
+        ? `<div style="position:absolute;left:0;top:${bulbTopPct}%;width:100%;height:${bulbHeightPct}%;` +
+        `display:flex;align-items:center;justify-content:center;` +
+        `color:#fff;font-size:${fontSize}px;font-weight:700;` +
+        `text-shadow:0 0 2px rgba(0,0,0,0.55);pointer-events:none;line-height:1;">${labelText}</div>`
+        : '';
+
+      const html =
+        `<div style="position:relative;width:${w}px;height:${h}px;filter:drop-shadow(0 1px 1px rgba(0,0,0,0.35));">` +
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="-11 -41 22 42" style="display:block;overflow:visible;">` +
+        `<path d="M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z" ` +
+        `fill="${color}" fill-opacity="0.95" stroke="#222" stroke-width="1.2" stroke-linejoin="round"/>` +
+        `</svg>` +
+        labelHtml +
+        `</div>`;
+
+      return L.divIcon({
+        className: 'mapscanvas-marker',
+        html: html,
+        iconSize: [w, h],
+        iconAnchor: [w / 2, h],
+        popupAnchor: [0, -h * 0.85]
+      });
+    },
+
+    // Map a prevalence percent (0–100) to a class matching the sidebar
+    // Flu-Positive Samples legend buckets, so popup chips share the same
+    // color language as the legend.
+    _prevalenceBucketClass: function (prevalence) {
+      if (prevalence === null || prevalence === undefined || isNaN(prevalence)) return 'is-na';
+      const p = parseFloat(prevalence);
+      if (p > 50) return 'is-prev-veryhigh';
+      if (p > 25) return 'is-prev-high';
+      if (p > 15) return 'is-prev-medhigh';
+      if (p > 7) return 'is-prev-med';
+      if (p > 0) return 'is-prev-low';
+      return 'is-prev-zero';
+    },
+
+    // Pick a chip class for a single-record test result. "Positive" maps to
+    // the high-prevalence color and "Negative" to the zero-prevalence color
+    // so the chip language matches the legend even for binary results.
+    _testResultClass: function (testResult) {
+      if (!testResult) return 'is-na';
+      const t = ('' + testResult).toLowerCase().trim();
+      if (t === 'positive') return 'is-prev-veryhigh';
+      if (t === 'negative') return 'is-prev-zero';
+      return 'is-na';
     },
 
     createInfoWindowContent: function (items) {
@@ -416,13 +560,17 @@ define([
         contentValues = Object.assign({}, contentValues, {
           positiveCount,
           testedCount,
-          prevalence
+          prevalence,
+          prevalenceClass: this._prevalenceBucketClass(prevalence)
         });
       }
 
       if (items.length === 1) {
         // Send the surveillance object to single info template
-        content = new LocationInfoWindowSingle(Object.assign({}, contentValues, { item: items[0] }));
+        content = new LocationInfoWindowSingle(Object.assign({}, contentValues, {
+          item: items[0],
+          testResultClass: this._testResultClass(items[0].pathogen_test_result)
+        }));
       } else {
         contentValues = Object.assign({}, contentValues, {
           collectionState: items[0].collection_state_province,
@@ -444,38 +592,55 @@ define([
       return { infoContent: content.domNode.innerHTML, prevalence };
     },
 
-    addMarkerToMap: function (location, showCount) {
-      const latitude = location.latitude.toFixed(5);
-      const longitude = location.longitude.toFixed(5);
-      const count = location.items.length;
+    _setMarkerSelected: function (entry, isSelected) {
+      const el = entry.marker.getElement();
+      if (!el) return;
+      if (isSelected) {
+        el.classList.add('is-selected');
+      } else {
+        el.classList.remove('is-selected');
+      }
+    },
 
-      const latLng = new google.maps.LatLng(latitude, longitude);
-      const icon = this.createMarkerIcon(count);
+    addMarkerToMap: function (location, showCount) {
+      const latitude = parseFloat(location.latitude.toFixed(5));
+      const longitude = parseFloat(location.longitude.toFixed(5));
+      const count = location.items.length;
       const markerLabel = showCount ? count.toString() : '';
-      const anchorPoint = count < 10 ? -7 : count < 100 ? -3 : count < 10000 ? -6 : -7;
       const { infoContent, prevalence } = this.createInfoWindowContent(location.items);
 
-      const marker = new google.maps.Marker({
-        position: latLng,
-        labelAnchor: new google.maps.Point(anchorPoint, 33),
+      const icon = this.createMarkerIcon(count, this.defaultMarkerColor, markerLabel);
+      const marker = L.marker([latitude, longitude], { icon: icon, mapscanvasCount: count });
+      marker.bindPopup(infoContent, { autoClose: true, closeOnClick: true, maxWidth: 380 });
+
+      const entry = {
+        marker: marker,
+        prevalence: prevalence,
+        count: count,
         label: markerLabel,
-        icon: icon,
-        map: this.map
-      });
-      this.markers.push({ marker, prevalence });
+        color: this.defaultMarkerColor
+      };
 
-      const infoWindow = new google.maps.InfoWindow({
-        content: infoContent
-      });
-      this.infoWindows.push(infoWindow);
+      marker.on('popupopen', lang.hitch(this, function () {
+        if (this._activeEntry && this._activeEntry !== entry) {
+          this._setMarkerSelected(this._activeEntry, false);
+        }
+        this._activeEntry = entry;
+        this._setMarkerSelected(entry, true);
+      }));
+      marker.on('popupclose', lang.hitch(this, function () {
+        this._setMarkerSelected(entry, false);
+        if (this._activeEntry === entry) this._activeEntry = null;
+      }));
 
-      marker.addListener('click', () => {
-        infoWindow.open({
-          anchor: marker,
-          map: this.map,
-          shouldFocus: false
-        });
-      });
+      if (this.clusterGroup) {
+        this.clusterGroup.addLayer(marker);
+      } else {
+        marker.addTo(this.map);
+      }
+
+      this.markers.push(entry);
+      this.infoWindows.push(marker);
     },
 
     startup: function () {
@@ -487,27 +652,54 @@ define([
       const mapData = this.mapData;
 
       if (mapData && mapData.locations) {
-        let minLatLong = new google.maps.LatLng(mapData.minimumLatitude, mapData.minimumLongitude);
-        let maxLatLong = new google.maps.LatLng(mapData.maximumLatitude, mapData.maximumLongitude);
+        this._renderMap(mapData);
+      }
+    },
 
-        const bounds = new google.maps.LatLngBounds(minLatLong, maxLatLong);
+    _addAllMarkers: function (mapData) {
+      for (let location of mapData.locations) {
+        this.addMarkerToMap(location, mapData.showCount);
+      }
+    },
+
+    _renderMap: function (mapData) {
+      if (mapData && mapData.locations) {
+        const bounds = L.latLngBounds(
+          [mapData.minimumLatitude, mapData.minimumLongitude],
+          [mapData.maximumLatitude, mapData.maximumLongitude]
+        );
+        this.initialBounds = bounds;
         this.initialCenter = bounds.getCenter();
 
-        let options = this.defaultMapOptions;
-        options.center = this.initialCenter;
+        const canvas = document.getElementById(this.canvasId);
+        canvas.style.backgroundColor = this.defaultMapOptions.backgroundColor;
 
-        this.map = new google.maps.Map(document.getElementById(this.canvasId), options);
-        this.map.fitBounds(bounds);
+        this.map = L.map(this.canvasId, {
+          center: this.initialCenter,
+          zoom: 2,
+          scrollWheelZoom: true,
+          worldCopyJump: true
+        });
 
-        google.maps.event.addListenerOnce(this.map, 'bounds_changed', lang.hitch(this, function () {
-          const initialZoomLevel = this.map.getZoom();
-          this.initialZoomLevel = initialZoomLevel;
-          this.map.setZoom(initialZoomLevel);
-        }));
+        // CartoDB Voyager (default) + Positron (light) base layers.
+        this.tileLayers = LeafletSupport.createBaseTileLayers();
+        this.tileLayers.standard.addTo(this.map);
+        L.control.layers({
+          'Standard': this.tileLayers.standard,
+          'Light': this.tileLayers.light
+        }, null, { position: 'topright' }).addTo(this.map);
+        L.control.scale().addTo(this.map);
+
+        // Fit map to data bounds, then capture the resulting zoom as the reset target
+        if (bounds.isValid() && mapData.minimumLatitude !== mapData.maximumLatitude) {
+          this.map.fitBounds(bounds);
+        } else {
+          this.map.setView(this.initialCenter, 4);
+        }
+        this.initialZoomLevel = this.map.getZoom();
 
         this.flywayJSON = JSON.parse(flyawaysData);
-        const palettes = ['white', 'lime', 'green', 'blue', 'silver', 'yellow', 'fuchsia', 'navy', 'gray', 'red', 'purple', 'black'];
-        let divGroupId;
+        const palettes = ['lime', 'green', 'blue', 'silver', 'yellow', 'fuchsia', 'navy', 'gray', 'red', 'purple', 'black'];
         for (let i = 0; i < this.flywayJSON.length; ++i) {
           const region = this.flywayJSON[i].name;
           const trimmedCheckboxId = region.replaceAll(' ', '_');
@@ -516,40 +708,30 @@ define([
           const colorPaletteId = 'colorPalette' + i;
           const divId = trimmedCheckboxId + 'Div';
 
-          // Display 3 fly away option per row
-          if (i % 3 === 0) {
-            divGroupId = 'flyawayGroup' + i;
-            dojo.create('div', { id: divGroupId, style: 'display: flex;' }, 'flyawayDiv');
-
-            // Align color display to the end for last items
-            if (i !== 0) {
-              domStyle.set(dom.byId('colorDisplay' + (i - 1)), 'margin-right', '0');
-            }
-          }
-
-          // Create main div for flyaway options
-          dojo.create('div', { id: divId, style: 'flex: 1; display: flex; position: relative;' }, divGroupId);
+          // One full-width row per flyway region
+          dojo.create('div', { id: divId, 'class': 'sdm-flyway-row' }, 'flyawayDiv');
 
           const checkbox = new CheckBox({
             name: checkboxId,
             id: checkboxId,
             value: region,
             checked: false,
-            style: 'align-self: center;',
             onChange: this.handleFlywayHighlightChange.bind(null, this, region, colorDisplayId)
           });
-          const label = domConstruct.create('label', { 'for': checkboxId, 'innerHTML': region, 'style': 'align-self: center;' });
+          const label = domConstruct.create('label', { 'for': checkboxId, 'innerHTML': region });
 
           const colorPalette = new ColorPalette({
             id: colorPaletteId,
             onChange: this.updateColorPalette.bind(null, colorPaletteId, colorDisplayId),
             palette: '3x4',
-            style: 'display: none; position: absolute; z-index: 1; top: 0; right: 0;'
+            style: 'display: none; position: absolute; z-index: 10; top: 28px; right: 8px;'
           });
 
           const colorDisplay = domConstruct.create('div', {
             id: colorDisplayId,
-            style: 'background-color: ' + palettes[i + 1] + '; width: 14px; height: 14px; display: inline-block; float: right; margin-right: 10px; align-self: center; margin-left: auto;',
+            'class': 'sdm-flyway-swatch',
+            style: 'background-color: ' + palettes[i % palettes.length] + ';',
+            title: 'Click to change color'
           });
 
           checkbox.placeAt(divId);
@@ -563,17 +745,48 @@ define([
           on(dom.byId(colorPaletteId), mouse.leave, function (evt) {
             domStyle.set(dom.byId(colorPaletteId), 'display', 'none');
           });
-
-          // Align color display to the end for last item
-          if (i === (this.flywayJSON.length - 1)) {
-            domStyle.set(dom.byId(colorDisplayId), 'margin-right', '0');
-          }
         }
 
-        // Add marker and info windows for each location
-        for (let location of mapData.locations) {
-          this.addMarkerToMap(location, mapData.showCount);
-        }
+        // Try to upgrade to a marker cluster group; if the plugin loads we
+        // add the cluster layer and route subsequent addMarkerToMap calls
+        // through it. If it fails we silently fall back to plain markers.
+        const self = this;
+        LeafletSupport.loadMarkerCluster()
+          .then(function () {
+            if (typeof L.markerClusterGroup === 'function' && self.map && !self.clusterGroup) {
+              self.clusterGroup = L.markerClusterGroup({
+                showCoverageOnHover: false,
+                spiderfyOnMaxZoom: true,
+                disableClusteringAtZoom: 8,
+                maxClusterRadius: 50,
+                iconCreateFunction: function (cluster) {
+                  const total = cluster.getAllChildMarkers()
+                    .reduce(function (sum, m) {
+                      return sum + ((m.options && m.options.mapscanvasCount) || 1);
+                    }, 0);
+                  const sizeClass = total < 10 ? 'sm' : total < 100 ? 'md' : 'lg';
+                  return L.divIcon({
+                    html: '<div><span>' + total + '</span></div>',
+                    className: 'marker-cluster-mapscanvas marker-cluster-mapscanvas-' + sizeClass,
+                    iconSize: L.point(40, 40)
+                  });
+                }
+              }).addTo(self.map);
+              // Move any markers already on the map into the cluster group
+              for (const entry of self.markers) {
+                if (self.map.hasLayer(entry.marker)) {
+                  self.map.removeLayer(entry.marker);
+                }
+                self.clusterGroup.addLayer(entry.marker);
+              }
+            }
+          })
+          .catch(function () { /* clustering optional */
+          });
+
+        // Add marker and info windows for each location (these go directly on
+        // the map; if the cluster plugin loads later they are migrated above)
+        this._addAllMarkers(mapData);
       }
     }
   });
