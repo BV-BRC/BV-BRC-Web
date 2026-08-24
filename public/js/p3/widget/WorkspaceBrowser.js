@@ -1077,7 +1077,9 @@ define([
             })
           );
           if (path) {
-            Topic.publish("/navigate", { href: "/workspace" + encodePath(path) });
+            // Open in a new tab so the user keeps their place in the
+            // workspace listing; the report is a destination, not a step.
+            window.open("/workspace" + encodePath(path), "_blank");
           } else {
             console.log("Error: could not find report.html");
           }
@@ -1108,7 +1110,7 @@ define([
             })
           );
           if (path) {
-            Topic.publish("/navigate", { href: "/workspace" + encodePath(path) });
+            window.open("/workspace" + encodePath(path), "_blank");
           } else {
             console.log("Error: could not find <basename>_report.html");
           }
