@@ -1057,6 +1057,63 @@ define([
           }
         }
       );
+      this.browserHeader.addAction(
+        "ViewPredictStructureReport",
+        "fa icon-eye fa-2x",
+        {
+          label: "REPORT",
+          multiple: false,
+          validTypes: ["PredictStructure"],
+          tooltip: "View Structure Prediction Report",
+        },
+        function (selection) {
+          var path;
+          selection[0].autoMeta.output_files.forEach(
+            lang.hitch(this, function (file_data) {
+              var filepath = file_data[0].split("/");
+              if (filepath[filepath.length - 1] === "report.html") {
+                path = filepath.join("/");
+              }
+            })
+          );
+          if (path) {
+            Topic.publish("/navigate", { href: "/workspace" + encodePath(path) });
+          } else {
+            console.log("Error: could not find report.html");
+          }
+        }
+      );
+      this.browserHeader.addAction(
+        "ViewStabiliNNatorReport",
+        "fa icon-eye fa-2x",
+        {
+          label: "REPORT",
+          multiple: false,
+          validTypes: ["StabiliNNator"],
+          tooltip: "View Protein Stability Report",
+        },
+        function (selection) {
+          var path;
+          // StabiliNNator names its report after the input structure
+          // (<basename>_report.html), so match the suffix rather than a
+          // fixed filename as the other report actions do.
+          selection[0].autoMeta.output_files.forEach(
+            lang.hitch(this, function (file_data) {
+              var filepath = file_data[0].split("/");
+              var filename = filepath[filepath.length - 1];
+              if (filename.length > "_report.html".length &&
+                  filename.slice(-"_report.html".length) === "_report.html") {
+                path = filepath.join("/");
+              }
+            })
+          );
+          if (path) {
+            Topic.publish("/navigate", { href: "/workspace" + encodePath(path) });
+          } else {
+            console.log("Error: could not find <basename>_report.html");
+          }
+        }
+      );
 
       // TODO: Paired_Filter report??
       this.browserHeader.addAction('ViewFastqUtilsOutput', 'fa icon-eye fa-2x', {
