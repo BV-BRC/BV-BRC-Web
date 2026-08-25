@@ -133,8 +133,9 @@
         Your job has been submitted successfully. Please visit your <a
           data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u> </a>to check the status of your job and access
         the results.
-        <div style="margin-top:6px; font-style:italic;">Most jobs finish in well under a minute; the wait is dominated by
-          staging the analysis container rather than by the prediction itself.</div>
+        <div style="margin-top:6px; font-style:italic;">The analysis itself takes seconds. Total time to results depends on
+          queue wait and on whether the analysis container is already staged on the assigned node, so a job may sit as
+          queued for a while before it runs.</div>
       </div>
       <div style="margin-top: 10px; text-align:center;">
         <div data-dojo-attach-point="cancelButton" data-dojo-attach-event="onClick:onCancel"
