@@ -1096,9 +1096,12 @@ define([
         },
         function (selection) {
           var path;
-          // StabiliNNator names its report after the input structure
-          // (<basename>_report.html), so match the suffix rather than a
-          // fixed filename as the other report actions do.
+          // Match on the "_report.html" suffix rather than a fixed filename as
+          // the other report actions do. StabiliNNator now writes a fixed
+          // stabilinnator_report.html, but jobs completed before that change
+          // named the report after the input structure
+          // (<basename>_report.html). The suffix match covers both, so it must
+          // stay until those legacy results are gone.
           selection[0].autoMeta.output_files.forEach(
             lang.hitch(this, function (file_data) {
               var filepath = file_data[0].split("/");
