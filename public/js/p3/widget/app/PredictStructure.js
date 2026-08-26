@@ -3,12 +3,14 @@ define([
   'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/PredictStructure.html', './AppBase',
   '../../WorkspaceManager',
+  'dojo/dom-style', 'dojo/dom-construct',
   'dijit/form/Button', 'dijit/form/Select', 'dijit/form/SimpleTextarea',
   'p3/widget/WorkspaceFilenameValidationTextBox', 'p3/widget/WorkspaceObjectSelector'
 ], function (
   declare, Topic,
   Templated, WidgetsInTemplate,
-  Template, AppBase, WorkspaceManager
+  Template, AppBase, WorkspaceManager,
+  domStyle, domConstruct
 ) {
   return declare([AppBase], {
     baseClass: 'PredictStructure',
@@ -60,9 +62,162 @@ define([
 
     postCreate: function () {
       this.inherited(arguments);
+      this._entityRowCount = 1;
+      this._refreshEntityRows();
       this._updateLigandLabel();
       this.onMsaSourceChange();
       this.onToolChange();
+    },
+
+    //
+    // Typed entity rows
+    // -----------------
+    // The form still submits input_file / dna_file / rna_file, unchanged --
+    // these rows only choose which selector is visible in which row. Three
+    // types, one file each, so at most three rows and each type used once.
+    //
+    _ENTITY_TYPES: [
+      { value: 'protein', label: 'Protein', slot: 'input_file' },
+      { value: 'dna', label: 'DNA', slot: 'dna_file' },
+      { value: 'rna', label: 'RNA', slot: 'rna_file' }
+    ],
+
+    _entityRowCount: 1,
+
+    _entityTypeOf: function (i) {
+      var sel = this['entityType' + i];
+      return sel && sel.value ? sel.value : null;
+    },
+
+    /** Types chosen by rows other than `except`. */
+    _entityTypesTaken: function (except) {
+      var taken = [];
+      for (var i = 0; i < this._entityRowCount; i++) {
+        if (i === except) { continue; }
+        var t = this._entityTypeOf(i);
+        if (t) { taken.push(t); }
+      }
+      return taken;
+    },
+
+    /**
+     * Rebuild row i's dropdown to offer only unused types (plus its own).
+     *
+     * Rebuilds ONLY when the option set actually changed. Emptying and
+     * recreating a <select> destroys the element the user is interacting
+     * with, which drops focus and makes the page jump. A row's own option
+     * set is invariant to its own value (it is "all types except those
+     * taken by OTHER rows"), so the select the user just changed is never
+     * rebuilt -- only the other rows are.
+     */
+    _rebuildEntityOptions: function (i) {
+      var sel = this['entityType' + i];
+      if (!sel) { return; }
+      var taken = this._entityTypesTaken(i);
+      var current = this._entityTypeOf(i);
+      var avail = this._ENTITY_TYPES.filter(function (t) {
+        return taken.indexOf(t.value) < 0;
+      });
+      if (!avail.length) { return; }
+      var keep = current && avail.some(function (t) { return t.value === current; })
+        ? current : avail[0].value;
+
+      var have = [];
+      for (var o = 0; o < sel.options.length; o++) { have.push(sel.options[o].value); }
+      var want = avail.map(function (t) { return t.value; });
+      var same = have.length === want.length && have.every(function (v, n) { return v === want[n]; });
+      if (same) {
+        if (sel.value !== keep) { sel.value = keep; }
+        return;
+      }
+
+      domConstruct.empty(sel);
+      avail.forEach(function (t) {
+        domConstruct.create('option', { value: t.value, innerHTML: t.label }, sel);
+      });
+      sel.value = keep;
+    },
+
+    /**
+     * Move each selector into the row that selected its type, hide the rest,
+     * and CLEAR any selector that is not currently shown.
+     *
+     * The clearing is load-bearing: getValues() reads every named widget via
+     * this.inherited(arguments) regardless of visibility, so a selector left
+     * populated after its row switched type would still be submitted -- the
+     * user would silently get an extra chain they did not ask for.
+     */
+    _refreshEntityRows: function () {
+      var self = this;
+      var shown = {};
+
+      // Moving selector nodes between rows reflows the form; if the page is
+      // scrolled, the browser loses its anchor and jumps. Pin the scroll
+      // position across the rearrangement and restore it afterwards.
+      var scroller = document.scrollingElement || document.documentElement;
+      var scrollTop = scroller ? scroller.scrollTop : 0;
+
+      for (var i = 0; i < 3; i++) {
+        var row = this['entityRow' + i];
+        if (!row) { continue; }
+        domStyle.set(row, 'display', i < this._entityRowCount ? '' : 'none');
+      }
+
+      for (var i = 0; i < this._entityRowCount; i++) {
+        this._rebuildEntityOptions(i);
+        var type = this._entityTypeOf(i);
+        var def = this._ENTITY_TYPES.filter(function (t) { return t.value === type; })[0];
+        if (!def) { continue; }
+        var widget = this[def.slot];
+        var slot = this['entitySlot' + i];
+        if (widget && slot && widget.domNode.parentNode !== slot) {
+          domConstruct.place(widget.domNode, slot);
+        }
+        shown[def.slot] = true;
+      }
+
+      this._ENTITY_TYPES.forEach(function (t) {
+        if (shown[t.slot]) { return; }
+        var w = self[t.slot];
+        if (!w) { return; }
+        if (w.get('value')) { w.set('value', ''); }   // see docblock
+        if (w.domNode.parentNode !== self.entityParking) {
+          domConstruct.place(w.domNode, self.entityParking);
+        }
+      });
+
+      // "+ Add" only on the last row, and only while a type is still free.
+      for (var i = 0; i < 3; i++) {
+        var btn = this['entityAdd' + i];
+        if (!btn) { continue; }
+        var last = (i === this._entityRowCount - 1);
+        domStyle.set(btn, 'display',
+          (last && this._entityRowCount < this._ENTITY_TYPES.length) ? '' : 'none');
+      }
+
+      if (scroller && scroller.scrollTop !== scrollTop) {
+        scroller.scrollTop = scrollTop;
+      }
+
+      this.checkParameterRequiredFields();
+    },
+
+    onEntityAdd: function () {
+      if (this._entityRowCount >= this._ENTITY_TYPES.length) { return; }
+      this._entityRowCount += 1;
+      this._refreshEntityRows();
+    },
+
+    onEntityRemove: function (evt) {
+      if (this._entityRowCount <= 1) { return; }
+      // Rows are removed from the end; the row's own selector is cleared by
+      // _refreshEntityRows once it is no longer shown.
+      this._entityRowCount -= 1;
+      this._refreshEntityRows();
+    },
+
+    onEntityTypeChange: function () {
+      this._refreshEntityRows();
     },
 
     // #51: no per-job progress is available (the prediction tools emit none),

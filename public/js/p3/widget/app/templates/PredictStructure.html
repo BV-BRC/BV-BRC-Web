@@ -57,34 +57,69 @@
           </div>
         </div>
         <br>
-        <div class="appRow">
+        <!-- Typed entity rows. The three WorkspaceObjectSelectors keep their
+             original names (input_file / dna_file / rna_file) so the submission
+             payload and the app spec are unchanged -- this is presentation only.
+             Each row picks which one it shows; unused rows are hidden AND
+             cleared (a hidden-but-populated selector still serialises). -->
+        <div class="appRow" data-dojo-attach-point="entityRow0">
           <div class="appFieldLong">
-            <label>Protein</label><br>
-            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="input_file" style="width:75%;"
-              data-dojo-attach-point="input_file"
-              data-dojo-attach-event="onChange:checkParameterRequiredFields"
-              data-dojo-props="type:['feature_protein_fasta','aligned_protein_fasta','contigs'],multi:false,promptMessage:'Protein sequence(s) in FASTA format (.fasta, .fa). Multi-chain complexes: include multiple sequences in one file. Maximum 26 sequences and 10,000 total residues per job. Boltz also accepts a YAML manifest for full feature support.',placeHolder:'Protein FASTA file'">
-            </div>
+            <select data-dojo-attach-point="entityType0"
+              data-dojo-attach-event="onChange:onEntityTypeChange"
+              style="width:22%;margin-right:6px;vertical-align:top;">
+              <option value="protein">Protein</option>
+              <option value="dna">DNA</option>
+              <option value="rna">RNA</option>
+            </select>
+            <span data-dojo-attach-point="entitySlot0" style="display:inline-block;width:70%;"></span>
+            <button type="button" data-dojo-attach-point="entityAdd0"
+              data-dojo-attach-event="onClick:onEntityAdd"
+              style="margin-left:6px;">+ Add</button>
           </div>
         </div>
-        <div class="appRow">
+        <div class="appRow" data-dojo-attach-point="entityRow1" style="display:none;">
           <div class="appFieldLong">
-            <label>DNA</label><br>
-            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="dna_file" style="width:75%;"
-              data-dojo-attach-point="dna_file"
-              data-dojo-attach-event="onChange:checkParameterRequiredFields"
-              data-dojo-props="type:['feature_dna_fasta','aligned_dna_fasta','contigs'],multi:false,promptMessage:'DNA sequence(s) in FASTA format. Supported by Boltz-2, OpenFold 3, and Chai-1.',placeHolder:'DNA FASTA file'">
-            </div>
+            <select data-dojo-attach-point="entityType1"
+              data-dojo-attach-event="onChange:onEntityTypeChange"
+              style="width:22%;margin-right:6px;vertical-align:top;"></select>
+            <span data-dojo-attach-point="entitySlot1" style="display:inline-block;width:70%;"></span>
+            <button type="button" data-dojo-attach-point="entityAdd1"
+              data-dojo-attach-event="onClick:onEntityAdd"
+              style="margin-left:6px;">+ Add</button>
+            <button type="button" data-dojo-attach-point="entityRemove1"
+              data-dojo-attach-event="onClick:onEntityRemove"
+              title="Remove this input" style="margin-left:4px;">&times;</button>
           </div>
         </div>
-        <div class="appRow">
+        <div class="appRow" data-dojo-attach-point="entityRow2" style="display:none;">
           <div class="appFieldLong">
-            <label>RNA</label><br>
-            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="rna_file" style="width:75%;"
-              data-dojo-attach-point="rna_file"
-              data-dojo-attach-event="onChange:checkParameterRequiredFields"
-              data-dojo-props="type:['feature_dna_fasta','aligned_dna_fasta','contigs'],multi:false,promptMessage:'RNA sequence(s) in FASTA format. Supported by Boltz-2, OpenFold 3, and Chai-1.',placeHolder:'RNA FASTA file'">
-            </div>
+            <select data-dojo-attach-point="entityType2"
+              data-dojo-attach-event="onChange:onEntityTypeChange"
+              style="width:22%;margin-right:6px;vertical-align:top;"></select>
+            <span data-dojo-attach-point="entitySlot2" style="display:inline-block;width:70%;"></span>
+            <button type="button" data-dojo-attach-point="entityRemove2"
+              data-dojo-attach-event="onClick:onEntityRemove"
+              title="Remove this input" style="margin-left:4px;">&times;</button>
+          </div>
+        </div>
+
+        <!-- The selectors themselves. Parked here and moved into whichever row
+             selects their type; names and props are exactly as before. -->
+        <div data-dojo-attach-point="entityParking" style="display:none;">
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="input_file" style="width:100%;"
+            data-dojo-attach-point="input_file"
+            data-dojo-attach-event="onChange:checkParameterRequiredFields"
+            data-dojo-props="type:['feature_protein_fasta','aligned_protein_fasta','contigs'],multi:false,promptMessage:'Protein sequence(s) in FASTA format (.fasta, .fa). Multi-chain complexes: include multiple sequences in one file. Maximum 26 sequences and 10,000 total residues per job. Boltz also accepts a YAML manifest for full feature support.',placeHolder:'Protein FASTA file'">
+          </div>
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="dna_file" style="width:100%;"
+            data-dojo-attach-point="dna_file"
+            data-dojo-attach-event="onChange:checkParameterRequiredFields"
+            data-dojo-props="type:['feature_dna_fasta','aligned_dna_fasta','contigs'],multi:false,promptMessage:'DNA sequence(s) in FASTA format. Both strands of a duplex go in one file as two records. Supported by Boltz-2, OpenFold 3, Chai-1 and ESMFold2.',placeHolder:'DNA FASTA file'">
+          </div>
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="rna_file" style="width:100%;"
+            data-dojo-attach-point="rna_file"
+            data-dojo-attach-event="onChange:checkParameterRequiredFields"
+            data-dojo-props="type:['feature_dna_fasta','aligned_dna_fasta','contigs'],multi:false,promptMessage:'RNA sequence(s) in FASTA format. Supported by Boltz-2, OpenFold 3, Chai-1 and ESMFold2.',placeHolder:'RNA FASTA file'">
           </div>
         </div>
       </div>
