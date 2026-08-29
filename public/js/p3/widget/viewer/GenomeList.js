@@ -67,6 +67,8 @@ define([
           _self.changeToBacteria();
         } else if (data.superkingdom[0] === 'Viruses' && data.superkingdom.length === 1) {
           _self.changeToViruses();
+        } else if (data.superkingdom.length > 1) {
+          _self.changeToMixed();
         }
       });
 
@@ -293,6 +295,9 @@ define([
       this.viewer.removeChild(this.strains);
       this.viewer.removeChild(this.surveillance);
       this.viewer.removeChild(this.serology);
+      if (this.genomes && this.genomes.setOrganismContext) {
+        this.genomes.setOrganismContext('bacteria');
+      }
     },
 
     changeToViruses: function () {
@@ -303,6 +308,15 @@ define([
       this.viewer.removeChild(this.subsystems);
       this.viewer.removeChild(this.experiments);
       this.viewer.removeChild(this.interactions);
+      if (this.genomes && this.genomes.setOrganismContext) {
+        this.genomes.setOrganismContext('virus');
+      }
+    },
+
+    changeToMixed: function () {
+      if (this.genomes && this.genomes.setOrganismContext) {
+        this.genomes.setOrganismContext('mixed');
+      }
     }
   });
 });

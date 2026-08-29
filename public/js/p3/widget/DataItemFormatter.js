@@ -3044,7 +3044,7 @@ define([
       options = options || {};
 
       var metadataGenomeSummaryID = this.genome_meta_table_names();
-      var metadataGenomeSummaryValue = this.genome_meta_spec();
+      var metadataGenomeSummaryValue = this.genome_meta_spec(item);
 
       var div = domConstruct.create('div');
       displayHeader(div, item.genome_name, 'fa icon-genome fa-2x', '/view/Genome/' + item.genome_id, options);
@@ -3052,10 +3052,13 @@ define([
       var chromosomes = item.chromosomes || 0;
       var plasmids = item.plasmids || 0;
       var contigs = item.contigs || 0;
+      var isViral = item.superkingdom === 'Viruses' ||
+        (item.taxon_lineage_names && item.taxon_lineage_names.indexOf('Viruses') > -1);
+      var contigsLabel = isViral ? 'Segments' : 'Contigs';
       var summary = 'Length: ' + item.genome_length + 'bp, ' +
         (chromosomes ? 'Chromosomes: ' + chromosomes + ', ' : '') +
         (plasmids ? 'Plasmids: ' + plasmids + ', ' : '') +
-        (contigs ? 'Contigs: ' + contigs : '');
+        (contigs ? contigsLabel + ': ' + contigs : '');
 
       domConstruct.create('div', {
         innerHTML: summary,
@@ -3071,7 +3074,7 @@ define([
       return ['General Info', 'Taxonomy Info', 'Status', 'Type Info', 'Database Cross Reference', 'Sequence Info', 'Genome Statistics', 'Annotation Statistics', 'Genome Quality', 'Isolate Info', 'Host Info', 'Phenotype Info', 'Additional Info'];
     },
 
-    genome_meta_spec: function () {
+    genome_meta_spec: function (item) {
       var spec = {
         'General Info': [{
           name: 'Genome ID',
@@ -3305,34 +3308,42 @@ define([
           editable: true
         }],
 
-        'Genome Statistics': [{
-          name: 'Chromosomes',
-          text: 'chromosomes',
-        }, {
-          name: 'Plasmids',
-          text: 'plasmids',
-        }, {
-          name: 'Segments',
-          text: 'segments',
-        }, {
-          name: 'Contigs',
-          text: 'contigs',
-          link: function (obj) {
-            return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=sequences">{obj.contigs}</a>', { obj: obj });
+        'Genome Statistics': (function () {
+          var isViral = item && (item.superkingdom === 'Viruses' ||
+            (item.taxon_lineage_names && item.taxon_lineage_names.indexOf('Viruses') > -1));
+          var stats = [{
+            name: 'Chromosomes',
+            text: 'chromosomes',
+          }, {
+            name: 'Plasmids',
+            text: 'plasmids',
+          }, {
+            name: 'Segments',
+            text: 'segments',
+          }, {
+            name: isViral ? 'Segments' : 'Contigs',
+            text: 'contigs',
+            link: function (obj) {
+              return lang.replace('<a href="/view/Genome/{obj.genome_id}#view_tab=sequences">{obj.contigs}</a>', { obj: obj });
+            }
+          }, {
+            name: 'Genome Length',
+            text: 'genome_length',
+          }, {
+            name: 'GC Content',
+            text: 'gc_content',
+          }];
+          if (!isViral) {
+            stats.push({
+              name: 'Contig L50',
+              text: 'contig_l50',
+            }, {
+              name: 'Contig N50',
+              text: 'contig_n50',
+            });
           }
-        }, {
-          name: 'Genome Length',
-          text: 'genome_length',
-        }, {
-          name: 'GC Content',
-          text: 'gc_content',
-        }, {
-          name: 'Contig L50',
-          text: 'contig_l50',
-        }, {
-          name: 'Contig N50',
-          text: 'contig_n50',
-        }],
+          return stats;
+        })(),
 
         'Annotation Statistics': [{
           name: 'tRNA',
