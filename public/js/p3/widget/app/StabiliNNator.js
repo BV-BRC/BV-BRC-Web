@@ -79,7 +79,7 @@ define([
         } else if (t === 'disulfide') {
           msg = 'Scores cysteines for their likelihood of forming a disulfide bond. The annotated PDB carries a value on every residue, but only cysteines are meaningful; the ranked summary is filtered to them.';
         } else {
-          msg = 'Runs both analyses. They are independent, and together take only a few seconds longer than either alone.';
+          msg = 'Runs proliNNator and disulfiNNate. They are independent, and together take only a few seconds longer than either alone.';
         }
         this.analysis_message.innerHTML = msg;
       }
