@@ -63,6 +63,29 @@ define([
       this.onAnalysisTypeChange();
     },
 
+    // A Dojo form reset restores every widget to its *initial* value. Both
+    // output_path and output_file are filled programmatically in startup(), so
+    // the template has nothing for them to restore to: a reset empties both and
+    // nothing regenerates the job name. That is the alpha review's "job name
+    // prefill ... was a little spotty after multiple submissions", and the
+    // blank-name screenshot.
+    //
+    // This has to hook reset() rather than onReset(): Form.reset() calls
+    // onReset() first and only restores the widget values afterwards, so
+    // anything set from onReset() is immediately overwritten (dijit/form/Form.js
+    // line 108).
+    reset: function () {
+      this.inherited(arguments);
+      if (this.output_path && !this.output_path.get('value')) {
+        this.output_path.set('value', this.defaultPath);
+      }
+      if (this.output_file && !this.output_file.get('value')) {
+        this.output_file.set('value', this._defaultJobName());
+      }
+      this.onAnalysisTypeChange();
+      this.updateOutputPathPreview();
+    },
+
     openJobsList: function () {
       Topic.publish('/navigate', { href: '/job/' });
     },
@@ -149,9 +172,19 @@ define([
         var n = String(name).replace(/^\/+/, '');
         this.output_path_preview.textContent = f + '/' + n;
       } else if (folder) {
-        // Non-breaking spaces: this is one placeholder token, and with the
-        // path now wrapping it would otherwise break after "Job".
-        this.output_path_preview.textContent = String(folder).replace(/\/+$/, '') + '/(enter\u00a0Job\u00a0Name)';
+        // The path is one long token, so the container needs overflow-wrap to
+        // wrap it at all -- which then breaks the placeholder mid-word
+        // ("(enter Job Nam / e)"). Non-breaking spaces do not help: the break
+        // is inside a word, not at a space. Keep the placeholder in its own
+        // non-wrapping span instead, and let the path wrap ahead of it.
+        var p = this.output_path_preview;
+        p.textContent = String(folder).replace(/\/+$/, '') + '/';
+        var ph = document.createElement('span');
+        ph.style.whiteSpace = 'nowrap';
+        ph.style.overflowWrap = 'normal';
+        ph.style.wordBreak = 'normal';
+        ph.textContent = '(enter Job Name)';
+        p.appendChild(ph);
       } else {
         this.output_path_preview.textContent = '(set Output Folder and Job Name)';  // wraps fine: it is prose, not a path
       }
