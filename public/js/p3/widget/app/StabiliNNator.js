@@ -149,9 +149,11 @@ define([
         var n = String(name).replace(/^\/+/, '');
         this.output_path_preview.textContent = f + '/' + n;
       } else if (folder) {
-        this.output_path_preview.textContent = String(folder).replace(/\/+$/, '') + '/(enter Job Name)';
+        // Non-breaking spaces: this is one placeholder token, and with the
+        // path now wrapping it would otherwise break after "Job".
+        this.output_path_preview.textContent = String(folder).replace(/\/+$/, '') + '/(enter\u00a0Job\u00a0Name)';
       } else {
-        this.output_path_preview.textContent = '(set Output Folder and Job Name)';
+        this.output_path_preview.textContent = '(set Output Folder and Job Name)';  // wraps fine: it is prose, not a path
       }
     },
 
