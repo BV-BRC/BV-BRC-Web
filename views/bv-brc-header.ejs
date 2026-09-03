@@ -52,7 +52,7 @@
     var featured_virus = [
         {name: "Bacteriophages", href: "/view/GenomeList/?and(eq(genome_name,phage),eq(superkingdom,Viruses))"},
         {name: "Dengue virus", href: "/view/Taxonomy/3052464#view_tab=overview"},
-        {name: "Ebola virus", href: "/view/GenomeList/?in(taxon_lineage_ids,(3044781,186536))"},
+        {name: "Ebola virus", href: "/view/Taxonomy/3044781#view_tab=overview"},
         {name: "Enteroviruses", href: "/view/Taxonomy/12059#view_tab=overview"},
         {name: "Hepatitis C virus", href: "/view/Taxonomy/3052230#view_tab=overview"},
         {name: "Influenza A virus", href: "/view/Taxonomy/2955291#view_tab=overview"},
@@ -164,6 +164,8 @@
                     <span>SEARCHES</span>
 
                     <div data-dojo-type="p3/widget/TooltipDialog">
+                        <div class="menuHeader" style="padding-right: 20px;">Feature Search</div>
+                        <div><a class="navigationLink" href="/searches/InfluenzaSearch">Influenza (BETA)</a></div>
                         <div class="menuHeader" style="padding-right: 20px;">Advanced Search</div>
                         <div><a class="navigationLink" href="/searches/TaxaSearch">Taxa</a></div>
                         <div><a class="navigationLink" href="/searches/GenomeSearch">Genomes</a></div>
@@ -217,6 +219,7 @@
                                     <div><a class="navigationLink" href="/app/ComparativeSystems">Comparative Systems</a></div>
                                     <div><a class="navigationLink" href="/app/Docking">Docking</a></div>
                                     <div><a class="navigationLink" href="/app/PredictStructure">Protein Structure Prediction</a></div>
+                                    <div><a class="navigationLink" href="/app/StabiliNNator">Protein Stability Prediction</a></div>
                                 </div>
                             </div>
 
@@ -349,7 +352,11 @@
                        data-dojo-type="p3/widget/GlobalSearch"/>
             </div>
 
-            <!-- <div class="navbar-flex-space" style="flex-grow: 0.85;"></div> -->
+            <div id="querylog-indicator" class="dijitHidden" style="display:flex;align-items:center;margin-right:8px;cursor:pointer;"
+                 title="Query logging is active — click to stop"
+                 onclick="window.App.stopQueryLogging && window.App.stopQueryLogging()">
+                <span class="querylog-recording-dot"></span>
+            </div>
 
             <div id="bv-brc-right-header">
                 <div class="HideWithAuth authLinks showOnLoad dijitHidden">
@@ -451,6 +458,7 @@
                     <div class="menu-header" onclick="toggleSubMenu(this)">SEARCHES <span
                                 class="icon-chevron-down"></span></div>
                     <div class="menu-items" style="display: none;">
+                        <div><a href="/searches/InfluenzaSearch">Influenza (BETA)</a></div>
                         <div><a href="/searches/TaxaSearch">Taxa</a></div>
                         <div><a href="/searches/GenomeSearch">Genomes</a></div>
                         <div><a href="/searches/StrainSearch">Strains</a></div>
@@ -500,6 +508,7 @@
                                 <div><a href="/app/ComparativeSystems">Comparative Systems</a></div>
                                 <div><a href="/app/Docking">Docking</a></div>
                                 <div><a href="/app/PredictStructure">Protein Structure Prediction</a></div>
+                                <div><a href="/app/StabiliNNator">Protein Stability Prediction</a></div>
                             </div>
                             <div class="menuHeader">Metagenomics</div>
                             <div class="sub-menu">

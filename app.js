@@ -88,6 +88,18 @@ app.use(['/js/jDataView/demo', '/js/phyloview/testTree.html'], function(req, res
   res.status(404).send('Not Found');
 });
 
+var queryLogDir = config.get('queryLogDir');
+if (queryLogDir) {
+  var queryLogger = require('./lib/queryLogger');
+  var queryLogRoutes = require('./routes/queryLog');
+  queryLogger.sessionManager.init(queryLogDir);
+  app.use('/_querylog', queryLogRoutes(queryLogger.sessionManager));
+  app.use(config.get('dataServiceURL'),
+    express.raw({ type: '*/*', limit: '10mb' }),
+    queryLogger.middleware()
+  );
+}
+
 const proxyConfig = config.get('proxyConfig');
 if (proxyConfig) {
   const proxy = require("express-http-proxy");
@@ -97,7 +109,7 @@ if (proxyConfig) {
     console.log(prox);
     app.use(prox.local, proxy(prox.site, {
       proxyReqPathResolver: req => req.originalUrl.replace(prox.local, ""),
-      https: true
+      https: prox.site.startsWith('https')
     }));
   }
 }
@@ -149,7 +161,8 @@ app.use(function (req, res, next) {
     copilotEnableShowPromptDetails: config.get('copilotEnableShowPromptDetails') || false,
     localStorageCheckInterval: config.get('localStorageCheckInterval'),
     workspaceSelectorExcludeFolders: config.get('workspaceSelectorExcludeFolders') || [],
-    cartoBasemapApiKey: config.get('cartoBasemapApiKey') || ''
+    cartoBasemapApiKey: config.get('cartoBasemapApiKey') || '',
+    queryLoggingEnabled: !!config.get('queryLogDir')
   };
   // console.log("Application Options: ", req.applicationOptions);
   next();

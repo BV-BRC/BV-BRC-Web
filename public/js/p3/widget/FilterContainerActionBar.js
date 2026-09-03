@@ -5,7 +5,7 @@ define([
   'rql/parser', './FilteredValueButton', 'dojo/query', 'dojo/_base/Deferred',
   'dojo/data/ObjectStore', 'dojo/store/Memory', 'dojox/form/CheckedMultiSelect',
   'dijit/form/DropDownButton', 'dijit/DropDownMenu',
-  'dijit/Dialog', 'dijit/form/Button', 'dijit/form/Select', './AdvancedSearchRowForm',
+  'dijit/Dialog', 'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', './AdvancedSearchRowForm',
   'dijit/focus', '../util/PathJoin', '../util/constructMetadataName',
   'dojo/debounce'
 ], function (
@@ -15,7 +15,7 @@ define([
   RQLParser, FilteredValueButton, Query, Deferred,
   ObjectStore, Memory, CheckedMultiSelect,
   DropDownButton, DropDownMenu,
-  Dialog, Button, Select, AdvancedSearchRowForm,
+  Dialog, Button, CheckBox, Select, AdvancedSearchRowForm,
   focusUtil, PathJoin, constructMetadataName,
   debounce
 ) {
@@ -349,6 +349,22 @@ define([
 
       const _self = this;
 
+      // Select Columns: moves dgrid's built-in "+" column hider into a toolbar dialog
+      this.buildSelectColumnsDialog();
+      this.addAction('SelectColumns', 'fa icon-columns fa-2x', {
+        style: { 'font-size': '.5em', width: '100px' },
+        label: 'SELECT COLUMNS',
+        validType: ['*'],
+        tooltip: 'Show or hide grid columns'
+      },
+        (() => {
+          _self.refreshSelectColumnsDialog();
+          _self.SelectColumnsDialog.show();
+        }),
+        true,
+        this.rightButtons
+      );
+
       this.addAction('ToggleFilters', 'fa icon-filter fa-2x', {
         style: { 'font-size': '.5em' },
         label: 'FILTERS',
@@ -380,6 +396,10 @@ define([
         },
           // callback
           (() => {
+            Object.keys(_self._ffWidgets).forEach(function (cat) {
+              _self._ffWidgets[cat].applyRange()
+            });
+
             if (_self.state && _self.state.hashParams && _self.state.hashParams.filter) {
               on.emit(this.domNode, 'SetAnchor', {
                 bubbles: true,
@@ -903,6 +923,72 @@ define([
       on(_row, 'create', lang.hitch(this, 'createAdvancedSearchRow'))
       this._Searches[this._SearchesIdx] = _row
       this._SearchesIdx++;
+    },
+    buildSelectColumnsDialog: function () {
+      this.SelectColumnsPanel = domConstruct.create('div', {
+        'class': 'SelectColumnsPanel'
+      });
+      this.SelectColumnsDialog = new Dialog({
+        title: 'Select Columns',
+        content: this.SelectColumnsPanel,
+        'class': 'SelectColumnsDialog'
+      });
+    },
+    refreshSelectColumnsDialog: function () {
+      domConstruct.empty(this.SelectColumnsPanel);
+      const grid = this.currentContainerWidget && this.currentContainerWidget.grid;
+      if (!grid || !grid.subRows || !grid.subRows[0]) {
+        domConstruct.create('div', { innerHTML: 'No columns available.' }, this.SelectColumnsPanel);
+        return;
+      }
+      const subRow = grid.subRows[0];
+      // Group by col.group (default 'common')
+      const groups = {};
+      const groupOrder = [];
+      subRow.forEach(function (col) {
+        if (col.unhidable) return;
+        const g = col.group || 'common';
+        if (!groups[g]) {
+          groups[g] = [];
+          groupOrder.push(g);
+        }
+        groups[g].push(col);
+      });
+
+      groupOrder.forEach(lang.hitch(this, function (g) {
+        const section = domConstruct.create('div', {
+          'class': 'SelectColumnsSection'
+        }, this.SelectColumnsPanel);
+        if (g !== 'common') {
+          domConstruct.create('div', {
+            innerHTML: g,
+            'class': 'SelectColumnsGroupHeader'
+          }, section);
+        }
+        const grid2col = domConstruct.create('div', {
+          'class': 'SelectColumnsGrid'
+        }, section);
+        groups[g].forEach(lang.hitch(this, function (col) {
+          const row = domConstruct.create('div', {
+            'class': 'SelectColumnsRow'
+          }, grid2col);
+          const cb = new CheckBox({
+            checked: !col.hidden,
+            onChange: function (checked) {
+              grid.toggleColumnHiddenState(col.id, !checked);
+            }
+          });
+          domConstruct.place(cb.domNode, row);
+          const labelText = (col.label !== undefined && col.label !== null && col.label !== '') ? col.label : col.field;
+          domConstruct.create('label', {
+            innerHTML: labelText,
+            'class': 'SelectColumnsLabel',
+            onclick: function () {
+              cb.set('checked', !cb.get('checked'));
+            }
+          }, row);
+        }));
+      }));
     },
     buildAdvancedSearchPanel: function () {
       this.AdvancedSearchPanel = domConstruct.create('div', {

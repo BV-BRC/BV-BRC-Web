@@ -56,7 +56,7 @@ define([
       }
       var starNode = query('.wsFavoriteStar', this.pathContainer)[0];
       if (starNode) {
-        FavoriteFolders.isFavorite(this.path).then(lang.hitch(this, function (isFav) {
+        FavoriteFolders.isFavorite(this._normalizePath(this.path)).then(lang.hitch(this, function (isFav) {
           this._setStarState(starNode, isFav);
         }));
       }
@@ -74,6 +74,11 @@ define([
         domClass.add(starNode, 'not-favorite');
         domAttr.set(starNode, 'title', 'Add to favorites');
       }
+    },
+
+    // Strip /public/ prefix from workspace paths so favorites use the canonical path
+    _normalizePath: function (path) {
+      return path.replace(/\/+/g, '/').replace(/^\/public\//, '/');
     },
 
     _shouldShowFavoriteStar: function (path) {
@@ -112,7 +117,7 @@ define([
       // Add favorite star at the beginning (if applicable)
       if (this._shouldShowFavoriteStar(path)) {
         // Start with outline star, will be updated async after render
-        out.push('<i class="icon-star-o wsFavoriteStar not-favorite" data-path="' + path + '" title="Add to favorites"></i> ');
+        out.push('<i class="icon-star-o wsFavoriteStar not-favorite" data-path="' + this._normalizePath(path) + '" title="Add to favorites"></i> ');
       }
 
       // if viewing all public workspaces, just create header

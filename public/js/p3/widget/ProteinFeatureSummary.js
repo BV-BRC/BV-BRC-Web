@@ -46,40 +46,50 @@ define([
       var genomeId = this.query.match(/eq\(genome_id,([^)]+)\)/);
       var genomeFilter = genomeId ? 'genome_id:' + genomeId[1] : '*:*';
 
+      // PERF: each type:query sub-facet is computed as a DocSet over the WHOLE
+      // genome_feature collection (hundreds of millions of docs) and only then
+      // intersected with the base-query domain. The main query's genome filter
+      // scopes the domain but NOT the sub-facet DocSet computation, so without
+      // this the seven sub-queries each scan the full index (~15s total on a
+      // small genome). Prepending the genome filter to every sub-query scopes
+      // the DocSet to the genome first, dropping the request to <1s. Counts are
+      // identical either way.
+      var scope = function (q) { return genomeFilter + ' AND (' + q + ')'; };
+
       var jsonFacet = JSON.stringify({
         hypothetical: {
           type: 'query',
-          q: 'product:hypothetical+protein AND feature_type:CDS',
+          q: scope('product:hypothetical+protein AND feature_type:CDS'),
           facet: { by_annotation: { type: 'terms', field: 'annotation' } }
         },
         functional: {
           type: 'query',
-          q: '(*:* NOT product:hypothetical+protein) AND feature_type:CDS',
+          q: scope('feature_type:CDS AND -product:hypothetical+protein'),
           facet: { by_annotation: { type: 'terms', field: 'annotation' } }
         },
         ec_assigned: {
           type: 'query',
-          q: 'property:EC*',
+          q: scope('property:EC*'),
           facet: { by_annotation: { type: 'terms', field: 'annotation' } }
         },
         pathway_assigned: {
           type: 'query',
-          q: 'property:Pathway',
+          q: scope('property:Pathway'),
           facet: { by_annotation: { type: 'terms', field: 'annotation' } }
         },
         subsystem_assigned: {
           type: 'query',
-          q: 'property:Subsystem',
+          q: scope('property:Subsystem'),
           facet: { by_annotation: { type: 'terms', field: 'annotation' } }
         },
         plfam_assigned: {
           type: 'query',
-          q: 'plfam_id:PLF*',
+          q: scope('plfam_id:PLF*'),
           facet: { by_annotation: { type: 'terms', field: 'annotation' } }
         },
         pgfam_assigned: {
           type: 'query',
-          q: 'pgfam_id:PGF*',
+          q: scope('pgfam_id:PGF*'),
           facet: { by_annotation: { type: 'terms', field: 'annotation' } }
         }
       });

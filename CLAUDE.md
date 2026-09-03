@@ -184,6 +184,16 @@ Workspace browsing is handled by `WorkspaceBrowser.js` with these key patterns:
 - `widget/WorkspaceExplorerView.js` - File/folder grid display
 - `widget/viewer/JobResult.js` - Job result viewer with metadata header
 
+### Empty result-grid pitfalls (JIRA-4420)
+
+The Homology/BLAST result VIEW showed an empty grid for two independent reasons — both worth knowing because the same patterns recur elsewhere:
+
+**1. Always `encodePath()` a workspace path before putting it in a `/navigate` href.**
+The VIEW action built its href from the raw workspace path (`'/view/Homology' + modPath`). For a folder named `Clostridium #50 BALST`, the literal `#` is treated as a URL **fragment delimiter**: `location.pathname` truncates at the `#` and the rest leaks into `location.hash`, so the store gets a wrong `dataPath` and hangs empty. Fix: `'/view/Homology' + encodePath(modPath)`. `encodePath` (`util/encodePath.js`) `encodeURIComponent`s each segment (leaving `/` and the user/public segments) and round-trips with the store's `_setState`, which `decodeURIComponent`s each segment. Other `/navigate` calls in `WorkspaceBrowser.js` (e.g. `/view/MSA/`, `afa_file` links, some `/workspace`/`/view/Gexf`) still use raw paths and will break the same way on `#`/space names.
+
+**2. The data API silently truncates responses at `rows >= 10000`.**
+It returns **HTTP 200 with a one-byte body (`[`)**, which then fails JSON parsing. `rows: 9999` returns complete valid JSON. Result stores that hardcode `rows: 25000` (`HomologyResultMemoryStore`, `BlastResultMemoryStore`, `ProteinFamiliesService*`, `IDMapping`, etc.) hit this whenever a job has ≥10k hits. Two-part fix: cap `rows` by the actual id count (`Math.min(ids.length, 9000)`), AND add an error handler to the decoration `request.post` so a failed/truncated query still resolves `_loadingDeferred` and renders results without Solr metadata rather than hanging forever. (This is a server-side bug; the client cap is a workaround.)
+
 ## Configuration
 
 Edit `p3-web.conf` (copy from `p3-web.conf.sample`):
@@ -277,6 +287,22 @@ domClass.add(widget.domNode, 'dijitTextBoxError');
 widget._set('state', 'Error');
 widget._hasBeenBlurred = true;  // Can trigger refresh/focus behavior
 ```
+
+### WorkspaceObjectSelector and Favorite Folders
+
+The output folder dropdown in job submission forms uses `WorkspaceObjectSelector.js`, which wraps a Dojo `FilteringSelect` with a `Memory` store (`idProperty: 'path'`, `searchAttr: 'name'`).
+
+**Data sources for the dropdown:**
+1. `WorkspaceManager.getObjectsByType('folder')` — folders in the current workspace (recursive)
+2. `FavoriteFolders.load()` — favorite paths from `~/.preferences/favorites.json`
+3. "Missing favorites" — favorites NOT in source 1, fetched via `WorkspaceManager.getObjects(paths, true)`
+
+**Critical: `getObjects` metadata format:**
+`getObjects` returns `meta.path` as the PARENT directory (`obj[0][2]`), NOT the full path. The full path is `meta.path + meta.name`. This is different from `metaListToObj` which constructs `path: list[2] + list[0]` internally.
+
+**Path normalization:** Workspace paths may or may not have trailing slashes. Always normalize with `path.replace(/\/+$/, '')` before comparing paths across different sources.
+
+**Don't use `display:none` to hide dropdown items.** Hidden items still occupy slots in FilteringSelect's dropdown as invisible click targets, causing clicks to select the wrong item. Filter items out of the store data instead.
 
 ### Widget Lifecycle and Null Checks
 Widgets created conditionally (e.g., only when user is logged in) may not exist during early validation:
