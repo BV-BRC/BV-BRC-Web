@@ -30,6 +30,7 @@ const defaults = {
   'copilotEnableModelSelector': false,
   'copilotEnableRagSelector': false,
   localStorageCheckInterval: 86400,
+  cartoBasemapApiKey: '',
   enableDevTools: false,
   reportProblemEmailAddress: 'help@bv-brc.org',
   sequenceSubmissionNotificationEmailAddress: ['gbsubmit@bvbrc.org'],

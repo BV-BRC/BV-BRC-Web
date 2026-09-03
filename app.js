@@ -148,7 +148,8 @@ app.use(function (req, res, next) {
     copilotEnableRagSelector: config.get('copilotEnableRagSelector') || false,
     copilotEnableShowPromptDetails: config.get('copilotEnableShowPromptDetails') || false,
     localStorageCheckInterval: config.get('localStorageCheckInterval'),
-    workspaceSelectorExcludeFolders: config.get('workspaceSelectorExcludeFolders') || []
+    workspaceSelectorExcludeFolders: config.get('workspaceSelectorExcludeFolders') || [],
+    cartoBasemapApiKey: config.get('cartoBasemapApiKey') || ''
   };
   // console.log("Application Options: ", req.applicationOptions);
   next();
