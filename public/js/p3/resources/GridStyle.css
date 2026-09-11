@@ -15,10 +15,11 @@
     cursor: pointer;
     position: absolute;
     top: 0;
-    display: none !important;
 }
 
-.dgrid-hider-menu {
+/* Keep the built-in picker unless this grid has a toolbar replacement. */
+.hasSelectColumnsAction > .dgrid-hider-toggle,
+.hasSelectColumnsAction > .dgrid-hider-menu {
     display: none !important;
 }
 
