@@ -98,13 +98,20 @@ define([
     return _clusterLoadPromise;
   }
 
+  var CARTO_API_KEY =
+    (typeof window !== 'undefined' && window.App && window.App.cartoBasemapApiKey) || '';
+
+  function withKey(baseUrl) {
+    return CARTO_API_KEY ? baseUrl + '?key=' + encodeURIComponent(CARTO_API_KEY) : baseUrl;
+  }
+
   // Build the { standard, light } CartoDB base layers used by both maps.
   function createBaseTileLayers() {
     return {
-      standard: window.L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      standard: window.L.tileLayer(withKey('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'), {
         maxZoom: 19, subdomains: 'abcd', attribution: CARTO_ATTRIBUTION
       }),
-      light: window.L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      light: window.L.tileLayer(withKey('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'), {
         maxZoom: 19, subdomains: 'abcd', attribution: CARTO_ATTRIBUTION
       })
     };

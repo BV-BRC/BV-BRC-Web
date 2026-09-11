@@ -136,6 +136,30 @@ Use RQL (Resource Query Language):
 state.search + '&' + state.hashParams.filter
 ```
 
+### Never inject collection-specific filters into `state.search` (PR #1330 / #1412)
+
+`state.search` is **shared verbatim across every tab of a list viewer**. `GenomeList.setActivePanelState()` mixes it into each sibling tab's state unchanged, and `GridContainer.buildQuery()` forwards it to the API as-is. So a clause that is only valid for one collection becomes an HTTP 400 on all the others:
+
+```
+genome          keyword(coli)&ne(genome_status,Deprecated)   200  128,823
+genome_feature  keyword(coli)&ne(genome_status,Deprecated)   400  undefined field genome_status
+sp_gene         keyword(coli)&ne(genome_status,Deprecated)   400  undefined field genome_status
+```
+
+`genome_status` and `completion_date` exist **only** on the `genome` collection — not on `genome_feature`, `genome_sequence`, `sp_gene`, `pathway`, `subsystem`, `protein_feature`, `protein_structure`, or `genome_amr`. This breaks the common workflow of filtering on the Genomes tab and then switching to Features to see the corresponding features.
+
+To filter non-genome collections by a genome property, use the `genome(...)` cross-collection join the facet panel already builds — but note two constraints:
+
+**1. A join with only negative clauses matches nothing.** It needs at least one positive clause:
+
+```
+eq(genome_id,*)&genome(ne(genome_status,Deprecated))                   -> 0 hits
+eq(genome_id,*)&genome(and(eq(species,Escherichia coli),
+                           ne(genome_status,Deprecated)))              -> 1,066,934,281 hits
+```
+
+**2. Joins are expensive.** `genome_feature keyword(polymerase)` is 1.1s unjoined vs 19.7s with a `genome(...)` join. Don't add one to a query that doesn't need it — especially not to count queries.
+
 ### Visualization Components
 - D3.js for custom visualizations (charts, domain viewers)
 - Cytoscape for network graphs
