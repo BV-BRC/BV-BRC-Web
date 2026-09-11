@@ -943,8 +943,12 @@ define([
         content: this.SelectColumnsPanel,
         'class': 'SelectColumnsDialog'
       });
+      this.own(this.SelectColumnsDialog);
     },
     refreshSelectColumnsDialog: function () {
+      this.SelectColumnsDialog.getChildren().forEach(function (widget) {
+        widget.destroyRecursive();
+      });
       domConstruct.empty(this.SelectColumnsPanel);
       const grid = this.currentContainerWidget && this.currentContainerWidget.grid;
       if (!grid || !grid.subRows || !grid.subRows[0]) {
@@ -993,9 +997,7 @@ define([
           domConstruct.create('label', {
             innerHTML: labelText,
             'class': 'SelectColumnsLabel',
-            onclick: function () {
-              cb.set('checked', !cb.get('checked'));
-            }
+            'for': cb.id
           }, row);
         }));
       }));
