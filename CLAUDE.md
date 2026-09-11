@@ -136,6 +136,30 @@ Use RQL (Resource Query Language):
 state.search + '&' + state.hashParams.filter
 ```
 
+### Never inject collection-specific filters into `state.search` (PR #1330 / #1412)
+
+`state.search` is **shared verbatim across every tab of a list viewer**. `GenomeList.setActivePanelState()` mixes it into each sibling tab's state unchanged, and `GridContainer.buildQuery()` forwards it to the API as-is. So a clause that is only valid for one collection becomes an HTTP 400 on all the others:
+
+```
+genome          keyword(coli)&ne(genome_status,Deprecated)   200  128,823
+genome_feature  keyword(coli)&ne(genome_status,Deprecated)   400  undefined field genome_status
+sp_gene         keyword(coli)&ne(genome_status,Deprecated)   400  undefined field genome_status
+```
+
+`genome_status` and `completion_date` exist **only** on the `genome` collection — not on `genome_feature`, `genome_sequence`, `sp_gene`, `pathway`, `subsystem`, `protein_feature`, `protein_structure`, or `genome_amr`. This breaks the common workflow of filtering on the Genomes tab and then switching to Features to see the corresponding features.
+
+To filter non-genome collections by a genome property, use the `genome(...)` cross-collection join the facet panel already builds — but note two constraints:
+
+**1. A join with only negative clauses matches nothing.** It needs at least one positive clause:
+
+```
+eq(genome_id,*)&genome(ne(genome_status,Deprecated))                   -> 0 hits
+eq(genome_id,*)&genome(and(eq(species,Escherichia coli),
+                           ne(genome_status,Deprecated)))              -> 1,066,934,281 hits
+```
+
+**2. Joins are expensive.** `genome_feature keyword(polymerase)` is 1.1s unjoined vs 19.7s with a `genome(...)` join. Don't add one to a query that doesn't need it — especially not to count queries.
+
 ### Visualization Components
 - D3.js for custom visualizations (charts, domain viewers)
 - Cytoscape for network graphs
@@ -183,6 +207,16 @@ Workspace browsing is handled by `WorkspaceBrowser.js` with these key patterns:
 - `widget/WorkspaceBrowser.js` - Main workspace navigation and panel management
 - `widget/WorkspaceExplorerView.js` - File/folder grid display
 - `widget/viewer/JobResult.js` - Job result viewer with metadata header
+
+### Empty result-grid pitfalls (JIRA-4420)
+
+The Homology/BLAST result VIEW showed an empty grid for two independent reasons — both worth knowing because the same patterns recur elsewhere:
+
+**1. Always `encodePath()` a workspace path before putting it in a `/navigate` href.**
+The VIEW action built its href from the raw workspace path (`'/view/Homology' + modPath`). For a folder named `Clostridium #50 BALST`, the literal `#` is treated as a URL **fragment delimiter**: `location.pathname` truncates at the `#` and the rest leaks into `location.hash`, so the store gets a wrong `dataPath` and hangs empty. Fix: `'/view/Homology' + encodePath(modPath)`. `encodePath` (`util/encodePath.js`) `encodeURIComponent`s each segment (leaving `/` and the user/public segments) and round-trips with the store's `_setState`, which `decodeURIComponent`s each segment. Other `/navigate` calls in `WorkspaceBrowser.js` (e.g. `/view/MSA/`, `afa_file` links, some `/workspace`/`/view/Gexf`) still use raw paths and will break the same way on `#`/space names.
+
+**2. The data API silently truncates responses at `rows >= 10000`.**
+It returns **HTTP 200 with a one-byte body (`[`)**, which then fails JSON parsing. `rows: 9999` returns complete valid JSON. Result stores that hardcode `rows: 25000` (`HomologyResultMemoryStore`, `BlastResultMemoryStore`, `ProteinFamiliesService*`, `IDMapping`, etc.) hit this whenever a job has ≥10k hits. Two-part fix: cap `rows` by the actual id count (`Math.min(ids.length, 9000)`), AND add an error handler to the decoration `request.post` so a failed/truncated query still resolves `_loadingDeferred` and renders results without Solr metadata rather than hanging forever. (This is a server-side bug; the client cap is a workaround.)
 
 ## Configuration
 
@@ -277,6 +311,22 @@ domClass.add(widget.domNode, 'dijitTextBoxError');
 widget._set('state', 'Error');
 widget._hasBeenBlurred = true;  // Can trigger refresh/focus behavior
 ```
+
+### WorkspaceObjectSelector and Favorite Folders
+
+The output folder dropdown in job submission forms uses `WorkspaceObjectSelector.js`, which wraps a Dojo `FilteringSelect` with a `Memory` store (`idProperty: 'path'`, `searchAttr: 'name'`).
+
+**Data sources for the dropdown:**
+1. `WorkspaceManager.getObjectsByType('folder')` — folders in the current workspace (recursive)
+2. `FavoriteFolders.load()` — favorite paths from `~/.preferences/favorites.json`
+3. "Missing favorites" — favorites NOT in source 1, fetched via `WorkspaceManager.getObjects(paths, true)`
+
+**Critical: `getObjects` metadata format:**
+`getObjects` returns `meta.path` as the PARENT directory (`obj[0][2]`), NOT the full path. The full path is `meta.path + meta.name`. This is different from `metaListToObj` which constructs `path: list[2] + list[0]` internally.
+
+**Path normalization:** Workspace paths may or may not have trailing slashes. Always normalize with `path.replace(/\/+$/, '')` before comparing paths across different sources.
+
+**Don't use `display:none` to hide dropdown items.** Hidden items still occupy slots in FilteringSelect's dropdown as invisible click targets, causing clicks to select the wrong item. Filter items out of the store data instead.
 
 ### Widget Lifecycle and Null Checks
 Widgets created conditionally (e.g., only when user is logged in) may not exist during early validation:
