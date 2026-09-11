@@ -365,6 +365,16 @@ define([
         this.rightButtons
       );
 
+      const columnsGrid = this.currentContainerWidget && this.currentContainerWidget.grid;
+      if (columnsGrid && typeof columnsGrid.toggleColumnHiddenState === 'function') {
+        domClass.add(columnsGrid.domNode, 'hasSelectColumnsAction');
+        this.own({
+          remove: function () {
+            domClass.remove(columnsGrid.domNode, 'hasSelectColumnsAction');
+          }
+        });
+      }
+
       this.addAction('ToggleFilters', 'fa icon-filter fa-2x', {
         style: { 'font-size': '.5em' },
         label: 'FILTERS',
