@@ -365,7 +365,7 @@ define([
         this.rightButtons
       );
 
-      const columnsGrid = this.currentContainerWidget && this.currentContainerWidget.grid;
+      const columnsGrid = this.getSelectColumnsGrid();
       if (columnsGrid && typeof columnsGrid.toggleColumnHiddenState === 'function') {
         domClass.add(columnsGrid.domNode, 'hasSelectColumnsAction');
         this.own({
@@ -934,6 +934,10 @@ define([
       this._Searches[this._SearchesIdx] = _row
       this._SearchesIdx++;
     },
+    getSelectColumnsGrid: function () {
+      const container = this.currentContainerWidget;
+      return container && (container.getSelectColumnsGrid ? container.getSelectColumnsGrid() : container.grid);
+    },
     buildSelectColumnsDialog: function () {
       this.SelectColumnsPanel = domConstruct.create('div', {
         'class': 'SelectColumnsPanel'
@@ -950,7 +954,7 @@ define([
         widget.destroyRecursive();
       });
       domConstruct.empty(this.SelectColumnsPanel);
-      const grid = this.currentContainerWidget && this.currentContainerWidget.grid;
+      const grid = this.getSelectColumnsGrid();
       if (!grid || !grid.subRows || !grid.subRows[0]) {
         domConstruct.create('div', { innerHTML: 'No columns available.' }, this.SelectColumnsPanel);
         return;
