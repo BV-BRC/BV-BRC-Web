@@ -719,9 +719,12 @@ Phase 0 splits cleanly into two independent branches. **Both are now implemented
 ### Phase 1: Deploy p3_oidc (Foundation)
 - Create `p3_oidc` service with `oidc-provider`, MongoDB adapter, `findAccount` reading existing `users` collection
 - Password validation reuses existing bcrypt/SHA1 dual logic from `p3_user/models/user.js`
-- Deploy at `https://auth.bv-brc.org`
-- Pre-register OAuth2 clients
-- **Delivers:** Running OIDC provider, no user-facing changes, no risk to existing services
+- **Two deployments of one artifact** (#11 resolved): `https://auth.bv-brc.org` and a single non-production `https://auth-dev.bv-brc.org` serving every property's dev/alpha/beta tier. Same build; each gets its own config file, its own `oidc_*` **database**, and its own signing keys and client secrets. Both point `findAccount` at the one shared accounts database — the split is `oidc_*` records, not users. See #11 for the layout and its three consequences.
+  - The database name is already a separate config key in p3_user (`mongo.db`, honored down at `dactic-store-mongodb/index.js:35-46`), so this needs no code change to reach.
+  - **Do not share signing keys or client secrets between the two.** That is the entire point of the split; sharing them makes non-prod a production credential store.
+- Pre-register OAuth2 clients — **per deployment**, since the non-prod hostnames are different `redirect_uri` values. This is where #16 (the hostname matrix) stops being optional: every hostname is an exact-match entry and a missing one is a 400 at runtime on a host nobody tested.
+- Register a `backchannel_logout_uri` placeholder per client while the table is being created (see #15) — free now, a coordinated update later.
+- **Delivers:** Running OIDC provider in both tiers, no user-facing changes, no risk to existing services
 
 ### Phase 2: Dual-token validation in p3_api
 - Update `p3_api/middleware/auth.js`: strip scheme prefix, detect format, validate JWTs via JWKS
@@ -742,6 +745,7 @@ Split into three independently shippable sub-phases.
 - Add `/callback` route to website backend for code exchange
 - Implement the BFF session layer: server-side refresh token storage, session cookie, `POST /auth/refresh`, `POST /auth/logout`
   - **The session store must be server-side, keyed by session id, and record `sub` and the IdP's `sid` on every record.** Not a self-contained signed cookie. This is what refresh-token rotation, reuse detection, admin session revocation, and any future back-channel logout all require — see open question 15.
+  - **The access token is held in a JS closure and never persisted** (#1 resolved: in-memory + server-side refresh, not a full API proxy). Two things follow. It must be **short-lived (5–15 min)**, because it is the whole blast radius of an XSS and the bound on a locally-logged-out user's ability to continue. And a **page reload discards it**, so `POST /auth/refresh` must be callable on app boot to silently re-issue from the session cookie — that boot path is on Phase 3a's critical path, not an optimization.
   - **Logout is local-only for now**: clear the BFF cookie *and* revoke the refresh token at the IdP. Revocation is what bounds the exposure, so it is not optional.
 - Write the BFF endpoint contract down as a **normative spec document** in this repo — it is the artifact the LDKB/DXKB React sites will implement against, and it should be reviewable independently of the Dojo client code
 - Remove the ViPR Basic-auth login path (`LoginForm.js:76-93`, `loginWithVipr()`, the `@viprbrc.org` strip at `p3app.js:838`) — the realm is closed to new credentials
@@ -1226,7 +1230,13 @@ Groups are resolved at login time and cached in the token. With short-lived acce
 
 ## Open Questions
 
-1. **BFF scope** — full API proxy (no token in JS at all) or in-memory access token with server-side refresh? The latter is proposed above as the pragmatic choice; confirm.
+1. ~~**BFF scope** — full API proxy or in-memory access token with server-side refresh?~~ **Resolved** (Robert, 2026-09-11): **in-memory access token with server-side refresh**, the option proposed above. The refresh token stays in the BFF's server-side session and never reaches JavaScript; the access token lives in a JS closure, never in `localStorage`.
+
+    Two consequences this locks in:
+    - **The access token must be short-lived** (5–15 min). It is the entire blast radius of an XSS, since it is the one credential the browser holds. This is also what makes local-only logout defensible — see #15.
+    - **A page reload discards the access token**, so the BFF needs a silent re-issue path from the session cookie on app boot. That is a normal part of this pattern, but it is a real endpoint to build, and it is on the critical path for Phase 3.
+
+    Note this does **not** re-open the `dataServiceURL` arrangement: p3_api is already reached same-origin via the website's server-side proxy on every property (see #13), so choosing the in-memory variant over a full proxy changes nothing about how API requests are routed.
 2. **Idle session policy** — preserve today's "logged out unless mouse active" behavior, or move to refresh-token-window semantics? These give noticeably different UX for long-running analysis sessions.
 3. **Impersonation re-auth** — is `prompt=login` acceptable to admins, or is the current password re-prompt preferred for familiarity?
 4. ~~**Where do `P3AuthToken.pm` and `P3TokenValidator.pm` live?**~~ **Resolved:** `git@github.com:olsonanl/p3_auth`, vendored at `dev_container/modules/p3_auth/lib/`. Both read and inventoried — see *4a-0* above. The shim strategy is confirmed viable. Remaining sub-question: who owns `p3_auth` releases, and how does a change there propagate to the deployed CLI and to `app_service`?
@@ -1241,7 +1251,29 @@ Groups are resolved at login time and cached in the token. With short-lived acce
     This unblocks Phase 0's server side more than expected: the bare-token convention is already near-universal, so `authHeaders.js` keys on Shock-or-`/task_info` vs. everything else. Two follow-ups fall out:
     - **Shock is still in play as the Workspace backing store** (Robert, 2026-09-08), so `OAuth ` does not retire with AWE. Every `OAuth ` sender is a Shock client and all of them are live. This promotes Shock to a first-class migration participant — see *4c-1* for the open sub-question of whether Shock **validates** BV-BRC tokens or merely carries them, which determines whether the legacy signing key can be retired in Phase 6 at all.
 10. **Are there non-browser, non-CLI legacy token consumers** (external collaborators, cron jobs) that would need notice before Phase 6? The Phase 2 metrics should answer this empirically.
-11. **Separate non-production IdP (`auth-dev.bv-brc.org`) or shared?** Recommended separate — the only way to rehearse key rotation, secret rotation, and p3_oidc upgrades without touching production auth. One shared non-production instance serves every property's dev/alpha/beta tier, so it is two IdP deployments total, not five. Decide before Phase 1, since it doubles what Phase 1 builds. If separate: shared `users` collection with distinct `oidc_*` collections, or full isolation?
+11. ~~**Separate non-production IdP (`auth-dev.bv-brc.org`) or shared?**~~ **Resolved** (Robert, 2026-09-11): **separate non-production IdP, sharing one user-account database, with `oidc_*` records in per-tier databases.** One shared non-production instance serves every property's dev/alpha/beta tier, so it is two IdP deployments total, not five.
+
+    ```
+    mongodb://host/
+    ├── p3_users          <- ONE database, shared by both IdPs
+    │     └── users         (accounts, bcrypt hashes, roles)
+    ├── p3_oidc_prod      <- prod IdP only
+    │     └── oidc_* collections (sessions, grants, codes, refresh tokens)
+    └── p3_oidc_dev       <- non-prod IdP only
+          └── oidc_* collections
+    ```
+
+    **This is configuration, not code.** Verified in the current p3_user: `config.js` already keeps `mongo.url` and `mongo.db` as separate keys, and `dataModel.js:16` passes `db` per store; the driver honors it at `dactic-store-mongodb/index.js:35-46`, which does `client.db(dbName)` off a single `MongoClient`. `oidc-provider`'s MongoDB adapter is instantiated independently of whatever `findAccount` reads, so the two point at different database names without a code change.
+
+    **Correction to this entry's earlier cost estimate:** it claimed the split "doubles what Phase 1 builds." That was wrong. Phase 1 builds *one* p3_oidc service; non-prod is the same artifact with its own config file, its own `oidc_*` database, and its own signing keys and client secrets. One build, two deploys.
+
+    Three consequences that follow from sharing accounts. None block the design; they are recorded so it stays a deliberate choice:
+
+    - **Non-prod validates production credentials.** A dev-tier login is a real production password checked against the real bcrypt hash. The non-prod IdP is therefore in scope for credential handling — TLS, no password logging, the same rate limiting as prod. It is not a throwaway deployment.
+    - **`lastLogin` is a write, and it is shared.** `p3_user/routes/authenticate.js:26-28` patches `/lastLogin` on every successful login, so non-prod logins mutate production user records. Harmless in itself, but "shared accounts" is not read-only, and anything built on `lastLogin` (inactive-account reaping, audit reporting) will see dev traffic mixed into prod data.
+    - **The `roles: ['admin']` array is shared.** Every prod admin is an admin on non-prod, including for SU Login — so non-prod impersonation can mint a token for any real user. Scoped to the non-prod IdP's own sessions, but the account set is the production one.
+
+    Remaining sub-question: rehearsing a **user-schema** migration is now the one thing this arrangement cannot do in isolation, since there is only one accounts database. Key rotation, secret rotation and p3_oidc upgrades — the reasons for splitting — are all unaffected.
 12. ~~**What are DXKB and LDKB, exactly?**~~ **Resolved** (Robert, 2026-09-08): DXKB runs the same codebase as BV-BRC today but moves to a **new React site in 9–12 months**; LDKB is **greenfield, probably React**. So the Dojo port target is MAAGE plus DXKB-in-the-interim — see the reframing above. The **BFF endpoint contract, written down as a normative spec, is the artifact the React sites consume**; the Dojo modules are not portable to them. Remaining sub-question: does the DXKB React rewrite land before or after Phase 3? If after, DXKB needs the Dojo port and then discards it — in which case consider deferring DXKB's port entirely and letting the rewrite pick up OIDC natively, rather than paying for it twice.
 13. ~~**Do the three `withCredentials: true` call sites matter?**~~ **Resolved** (Robert, 2026-09-08): **no — all three are same-origin in production**, and the data API and other site-facing endpoints were deliberately placed under the site's own domain, probably *because* of this latent bug. Verified in code: `app/app.js:638` uses the relative `dataServiceURL`, and `/user/` and `/sulogin` are mounted by `bvbrc_website` itself (`app.js:268-269`). So `withCredentials: true` is inert on all three and nothing depends on credentialed cross-origin requests. **Phase 0b is unblocked**; the flags can be deleted with the CORS fix. The follow-on constraint is recorded above: the same-domain arrangement is a workaround, and the BFF must keep the browser talking only to its own origin so the migration does not quietly re-open the gap it papers over.
 
