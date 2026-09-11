@@ -6,7 +6,7 @@ define([
   '../ActionBar', '../FilterContainerActionBar', 'phyloview/PhyloTree',
   'd3/d3', 'phyloview/TreeNavSVG', '../../util/PathJoin', 'dijit/form/Button',
   'dijit/MenuItem', 'dijit/TooltipDialog', 'dijit/popup', '../SelectionToGroup', '../PerspectiveToolTip',
-  'dijit/Dialog', '../ItemDetailPanel', 'dojo/query', 'FileSaver', 'msa'
+  'dijit/Dialog', '../ItemDetailPanel', 'dojo/query', 'FileSaver', '../../auth/authHeaders', 'msa'
 ], function (
   declare, Base, on, Topic,
   domClass, ContentPane, domConstruct,
@@ -15,8 +15,8 @@ define([
   ActionBar, ContainerActionBar, PhyloTree,
   d3, d3Tree, PathJoin, Button,
   MenuItem, TooltipDialog, popup,
-  SelectionToGroup, PerspectiveToolTipDialog, Dialog, ItemDetailPanel, query, saveAs
-) {
+  SelectionToGroup, PerspectiveToolTipDialog, Dialog, ItemDetailPanel, query, saveAs,
+  authHeader) {
 
   var schemes = [{
     name: 'Zappo',
@@ -240,7 +240,7 @@ define([
           accept: 'application/solr+json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, function (res) {
@@ -324,7 +324,7 @@ define([
           accept: 'application/solr+json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, function (res) {

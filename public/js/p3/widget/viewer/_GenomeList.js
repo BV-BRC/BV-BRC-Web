@@ -5,7 +5,7 @@ define([
   '../PathwayGridContainer',
   '../ExperimentsContainer', '../InteractionContainer', '../GenomeGridContainer',
   '../AMRPanelGridContainer', '../SubsystemGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer', '../SFVTGridContainer',
-  '../SequenceGridContainer', '../StrainGridContainer', '../StrainGridContainer_Orthomyxoviridae', '../StrainGridContainer_Bunyavirales', '../EpitopeGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog'
+  '../SequenceGridContainer', '../StrainGridContainer', '../StrainGridContainer_Orthomyxoviridae', '../StrainGridContainer_Bunyavirales', '../EpitopeGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog', '../../auth/authHeaders'
 ], function (
   declare, TabViewerBase, on, lang, xhr,
   ContentPane, Topic, domConstruct,
@@ -13,8 +13,8 @@ define([
   PathwayGridContainer,
   ExperimentsContainer, InteractionsContainer, GenomeGridContainer,
   AMRPanelGridContainer, SubsystemGridContainer, SurveillanceGridContainer, SerologyGridContainer, SFVTGridContainer,
-  SequenceGridContainer, StrainGridContainer, StrainGridContainer_Orthomyxoviridae, StrainGridContainer_Bunyavirales, EpitopeGridContainer, PathJoin, QueryToEnglish, Dialog
-) {
+  SequenceGridContainer, StrainGridContainer, StrainGridContainer_Orthomyxoviridae, StrainGridContainer_Bunyavirales, EpitopeGridContainer, PathJoin, QueryToEnglish, Dialog,
+  authHeader) {
   return declare([TabViewerBase], {
     totalGenomes: 0,
     perspectiveLabel: 'Genome List View',
@@ -39,7 +39,7 @@ define([
           accept: 'application/solr+json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json',
         'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
@@ -67,7 +67,7 @@ define([
           accept: 'application/solr+json',
           'X-Requested-With': null,
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json',
         data: `${this.query}&or(eq(reference_genome,Representative),eq(reference_genome,Reference))&select(genome_id,reference_genome)&limit(${genomeCount})`
@@ -143,7 +143,7 @@ define([
               headers: {
                 accept: 'application/json',
                 'X-Requested-With': null,
-                Authorization: (window.App.authorizationToken || '')
+                Authorization: authHeader()
               },
               data: q,
               handleAs: 'json'

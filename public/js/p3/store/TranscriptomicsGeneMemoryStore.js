@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/request', 'dojo/when', 'dojo/Stateful', 'dojo/topic', 'dojo/promise/all',
   'dojo/store/Memory', 'dojo/store/util/QueryResults',
-  './ArrangeableMemoryStore', '../WorkspaceManager', './HeatmapDataTypes'
+  './ArrangeableMemoryStore', '../WorkspaceManager', './HeatmapDataTypes', '../auth/authHeaders'
 ], function (
   declare, lang, Deferred,
   request, when, Stateful, Topic, All,
   Memory, QueryResults,
-  ArrangeableMemoryStore, WorkspaceManager, HeatmapDataTypes
-) {
+  ArrangeableMemoryStore, WorkspaceManager, HeatmapDataTypes,
+  authHeader) {
 
   var tgStateDefault = {
     heatmapAxis: '',
@@ -326,7 +326,7 @@ define([
             Accept: 'application/json',
             'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
             'X-Requested-With': null,
-            Authorization: (window.App.authorizationToken || '')
+            Authorization: authHeader()
           },
           data: query + '&select(eid,pid,expname,expmean,timepoint,mutant,strain,condition)&limit(99999)'
         }), function (results) {

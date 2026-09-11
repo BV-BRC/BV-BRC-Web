@@ -5,7 +5,7 @@ define([
   'dojo/store/util/QueryResults',
   'dojo/when', 'dojo/_base/lang',
   'dojo/_base/Deferred', 'dojo/Stateful',
-  '../util/PathJoin'
+  '../util/PathJoin', '../auth/authHeaders'
 
 ], function (
   declare,
@@ -14,8 +14,8 @@ define([
   QueryResults,
   when, lang,
   Deferred, Stateful,
-  PathJoin
-) {
+  PathJoin,
+  authHeader) {
   return declare([Memory, Stateful], {
     baseQuery: {},
     idProperty: 'id',
@@ -139,7 +139,7 @@ define([
           Accept: 'application/json',
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: this.token ? this.token : (window.App.authorizationToken || '')
+          Authorization: authHeader('api', this.token)
         },
         timeout: 1200000
 

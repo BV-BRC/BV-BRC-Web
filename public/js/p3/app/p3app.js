@@ -8,7 +8,7 @@ define([
   'dojo/window', '../widget/Drawer', 'dijit/layout/ContentPane',
   '../jsonrpc', '../panels', '../WorkspaceManager', '../DataAPI', 'dojo/keys',
   'dijit/ConfirmDialog', '../util/PathJoin', 'dojo/request', '../widget/WorkspaceController',
-  'p3/widget/copilot/ChatButton', '../util/RecentFolders', '../util/FavoriteFolders'
+  'p3/widget/copilot/ChatButton', '../util/RecentFolders', '../util/FavoriteFolders', '../auth/authHeaders'
 
 ], function (
   declare,
@@ -20,8 +20,8 @@ define([
   Router, Window,
   Drawer, ContentPane,
   RPC, Panels, WorkspaceManager, DataAPI, Keys,
-  ConfirmDialog, PathJoin, xhr, WorkspaceController, ChatButton, RecentFolders, FavoriteFolders
-) {
+  ConfirmDialog, PathJoin, xhr, WorkspaceController, ChatButton, RecentFolders, FavoriteFolders,
+  authHeader) {
   return declare([App], {
     panels: Panels,
     activeWorkspace: null,
@@ -590,7 +590,7 @@ define([
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
-              'Authorization': window.App.authorizationToken
+              'Authorization': authHeader()
             }
           }).then(function () {
             _self._hideQueryLogIndicator();
@@ -701,7 +701,7 @@ define([
             xhr.get(userServiceURL + '/authenticate/refresh/', {
               headers: {
                 'Accept': 'application/json',
-                'Authorization': window.App.authorizationToken
+                'Authorization': authHeader()
               }
             })
               .then(
@@ -804,7 +804,9 @@ define([
         xhr.get(userServiceURL + '/user/' + userid, {
           headers: {
             'Accept': 'application/json',
-            'Authorization': token
+            // forToken: this runs during login, with the token just issued
+            // and not yet assigned to window.App.authorizationToken.
+            'Authorization': authHeader.forToken('api', token)
           }
         })
           .then(
@@ -893,7 +895,7 @@ define([
       return xhr.get(this.userServiceURL + '/user/' + window.localStorage.userid, {
         headers: {
           'Accept': 'application/json',
-          'Authorization': window.App.authorizationToken
+          'Authorization': authHeader()
         }
       })
         .then(
@@ -975,7 +977,7 @@ define([
           headers: {
             'Accept': 'application/solr+json',
             'Content-Type': 'application/rqlquery+x-www-urlencoded',
-            'Authorization': window.App.authorizationToken
+            'Authorization': authHeader()
           },
           handleAs: 'json'
         }).then(function (data) {

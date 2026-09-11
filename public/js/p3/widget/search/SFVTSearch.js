@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/store/Memory', 'dojo/text!./templates/SFVTSearch.html', 'dojo/query',
   './TextInputEncoder', './SearchBase', './FacetStoreBuilder', '../../store/SFVTViruses', '../../util/PathJoin', 'dojo/request/xhr',
-  'dijit/Dialog', 'dojo/on', 'dojo/when', 'dojo/dom-construct'
+  'dijit/Dialog', 'dojo/on', 'dojo/when', 'dojo/dom-construct', '../../auth/authHeaders'
 ], function (
   declare, lang, Memory, template, query,
   TextInputEncoder, SearchBase, storeBuilder, SFVTViruses, PathJoin, xhr,
-  Dialog, on, when, domConstruct
-) {
+  Dialog, on, when, domConstruct,
+  authHeader) {
 
   // Taxon ids that get special-cased in this search.
   const TAXON = {
@@ -177,7 +177,7 @@ define([
           Accept: 'application/solr+json',
           'Content-Type': 'application/solrquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         data: data
       }), lang.hitch(this, function (response) {
@@ -480,7 +480,7 @@ define([
             accept: 'application/json',
             'Content-Type': 'application/solrquery+x-www-form-urlencoded',
             'X-Requested-With': null,
-            Authorization: (window.App.authorizationToken || '')
+            Authorization: authHeader()
           },
           handleAs: 'json',
           data: {
@@ -508,7 +508,7 @@ define([
               accept: 'application/json',
               'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json',
             data: sfQuery

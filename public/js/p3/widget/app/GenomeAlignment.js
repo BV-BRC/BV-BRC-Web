@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/on', 'dojo/topic', 'dojo/dom-class',
   'dojo/text!./templates/GenomeAlignment.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/lang', 'dojo/query', 'dijit/Dialog', 'dojo/dom-style',
-  '../../WorkspaceManager', 'dojo/when', 'dojo/request', '../SelectedTable'
+  '../../WorkspaceManager', 'dojo/when', 'dojo/request', '../SelectedTable', '../../auth/authHeaders'
 ], function (
   declare, on, Topic, domClass,
   Template, AppBase, domConstruct, registry,
   lang, query, Dialog, domStyle,
-  WorkspaceManager, when, request, SelectedTable
-) {
+  WorkspaceManager, when, request, SelectedTable,
+  authHeader) {
   return declare([AppBase], {
     apiServiceUrl: window.App.dataAPI,
     baseClass: 'App GenomeAlignment',
@@ -163,7 +163,7 @@ define([
       return when(request.get(url, {
         headers: {
           Accept: 'application/json',
-          Authorization: window.App.authorizationToken
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }), function (res) {

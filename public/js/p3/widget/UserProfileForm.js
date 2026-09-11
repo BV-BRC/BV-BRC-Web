@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dojo/dom-construct',"dijit/registry",
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/UserProfileForm.html', 'dijit/form/Form', 'dojo/request',
-  'dojo/dom-form', 'dojo/_base/lang', 'dojox/validate/web','dojo/topic'
+  'dojo/dom-form', 'dojo/_base/lang', 'dojox/validate/web','dojo/topic', '../auth/authHeaders'
 ], function (
   declare, WidgetBase, on, domConstruct,registry,
   domClass, Templated, WidgetsInTemplate,
   Template, FormMixin, xhr,
-  domForm, lang, validate,Topic
-) {
+  domForm, lang, validate,Topic,
+  authHeader) {
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
     'baseClass': 'App UserProfileForm',
     templateString: Template,
@@ -90,7 +90,7 @@ define([
           'Content-Type': 'application/json',
           'X-Requested-With': null,
           'Accept': 'application/json',
-          'Authorization': window.App.authorizationToken
+          'Authorization': authHeader()
         }
       });
 
@@ -147,7 +147,7 @@ define([
             'Content-Type': 'application/json',
             'X-Requested-With': null,
             'Accept': 'application/json',
-            'Authorization': window.App.authorizationToken
+            'Authorization': authHeader()
           }
         });
         def.then(function (data) {
@@ -213,7 +213,7 @@ define([
           'Content-Type': 'application/json',
           'X-Requested-With': null,
           'Accept': 'application/json',
-          'Authorization': window.App.authorizationToken
+          'Authorization': authHeader()
         }
       }).then(function (data) {
         var result = JSON.parse(data);
@@ -374,7 +374,7 @@ define([
           'Content-Type': 'application/json-patch+json',
           'X-Requested-With': null,
           'Accept': 'application/json',
-          'Authorization': window.App.authorizationToken
+          'Authorization': authHeader()
         }
       });
       var _self = this;

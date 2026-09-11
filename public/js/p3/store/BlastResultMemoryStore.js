@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/request', 'dojo/Stateful', 'dojo/when', 'dojo/topic',
-  'dojo/store/Memory', 'dojo/store/util/QueryResults'
+  'dojo/store/Memory', 'dojo/store/util/QueryResults', '../auth/authHeaders'
 ], function (
   declare, lang, Deferred,
   request, Stateful, when, Topic,
-  Memory, QueryResults
-) {
+  Memory, QueryResults,
+  authHeader) {
 
   return declare([Memory, Stateful], {
     // baseQuery: {},
@@ -100,7 +100,7 @@ define([
 
       this._loadingDeferred = when(request.post(window.App.homologyServiceURL, {
         headers: {
-          Authorization: (window.App.authorizationToken || ''),
+          Authorization: authHeader(),
           Accept: 'application/json'
         },
         handleAs: 'json',
@@ -161,7 +161,7 @@ define([
             Accept: 'application/json',
             'Content-Type': 'application/solrquery+x-www-form-urlencoded',
             'X-Requested-With': null,
-            Authorization: (window.App.authorizationToken || '')
+            Authorization: authHeader()
           },
           data: query
         }), lang.hitch(this, function (keys) {

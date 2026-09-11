@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/request', 'dojo/when', 'dojo/Stateful', 'dojo/topic', 'dojo/promise/all',
   'dojo/store/Memory', 'dojo/store/util/QueryResults',
-  './HeatmapDataTypes'
+  './HeatmapDataTypes', '../auth/authHeaders'
 ], function (
   declare, lang, Deferred,
   request, when, Stateful, Topic, All,
   Memory, QueryResults,
-  HeatmapDataTypes
-) {
+  HeatmapDataTypes,
+  authHeader) {
 
   var pmState = {
     heatmapAxis: 'Transposed',
@@ -126,7 +126,7 @@ define([
           Accept: 'application/json',
           'Content-Type': 'application/solrquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: _self.token ? _self.token : (window.App.authorizationToken || '')
+          Authorization: authHeader('api', _self.token)
         },
         data: {
           q: 'genome_id:(' + _self.state.genome_ids.join(' OR ') + ')',
@@ -164,7 +164,7 @@ define([
             Accept: 'application/solr+json',
             'Content-Type': 'application/solrquery+x-www-form-urlencoded',
             'X-Requested-With': null,
-            Authorization: _self.token ? _self.token : (window.App.authorizationToken || '')
+            Authorization: authHeader('api', _self.token)
           },
           data: q
         }), function (response) {
@@ -223,7 +223,7 @@ define([
               Accept: 'application/json',
               'Content-Type': 'application/solrquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: _self.token ? _self.token : (window.App.authorizationToken || '')
+              Authorization: authHeader('api', _self.token)
             },
             data: {
               q: 'pathway_id:' + _self.pmState.pathway_id + ' AND ec_number:(' + ecNumbers.join(' OR ') + ')',

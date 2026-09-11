@@ -4,15 +4,15 @@ define([
   'dojo/text!./OverviewDetails.html', 'dojo/text!./Resources.html', 'dojo/text!./News.html', 'dojo/text!./Contents.html',
   'dojo/text!./Data.html', 'dojo/text!./CommandLineTool.html', '../OutbreaksTabContainer', '../OutbreaksPhylogenyTreeViewer',
   '../OutbreaksGeoMap', '../OutbreaksGeoMapInfo', 'dojo/text!./OutbreaksGeoMapInfo.html',
-  'dojo/text!./GeoMapHeader.html', 'dojo/text!./GeoMapFooter.html'
+  'dojo/text!./GeoMapHeader.html', 'dojo/text!./GeoMapFooter.html', '../../../auth/authHeaders'
 ], function (
   declare, lang, xhr, domParser, domConstruct,
   PathJoin, TabViewerBase, OutbreaksOverview, OutbreaksTab,
   OverviewDetailsTemplate, ResourcesTemplate, NewsTemplate, ContentsTemplate,
   DataTemplate, CommandLineToolTemplate, OutbreaksTabContainer, OutbreaksPhylogenyTreeViewer,
   OutbreaksGeoMap, OutbreaksGeoMapInfo, OutbreaksGeoMapInfoTemplate,
-  GeoMapHeaderTemplate, GeoMapFooterTemplate
-) {
+  GeoMapHeaderTemplate, GeoMapFooterTemplate,
+  authHeader) {
   return declare([TabViewerBase], {
     perspectiveLabel: '',
     perspectiveIconClass: '',
@@ -270,7 +270,7 @@ define([
           accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, async function (genomes) {

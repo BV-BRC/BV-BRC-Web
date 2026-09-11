@@ -8,10 +8,10 @@ define([
   'dgrid/extensions/ColumnResizer',
   'dgrid/extensions/ColumnHider',
   'dgrid/extensions/DijitRegistry',
-  'dgrid/selector'
+  'dgrid/selector', '../../auth/authHeaders'
 ], function (
-  declare, lang, Memory, request, OnDemandGrid, Selection, ColumnResizer, ColumnHider, DijitRegistry, selector
-) {
+  declare, lang, Memory, request, OnDemandGrid, Selection, ColumnResizer, ColumnHider, DijitRegistry, selector,
+  authHeader) {
   return declare([OnDemandGrid, Selection, ColumnResizer, ColumnHider, DijitRegistry], {
     minRowsPerPage: 20,
     maxRowsPerPage: 100,
@@ -194,7 +194,7 @@ define([
       var workflowUrl = (window && window.App && window.App.workflow_url) ? window.App.workflow_url : 'https://dev-7.bv-brc.org/api/v1';
       var headers = { 'Accept': 'application/json' };
       if (window && window.App && window.App.authorizationToken) {
-        headers.Authorization = window.App.authorizationToken;
+        headers.Authorization = authHeader();
       }
 
       var placeholders = ids.map(function(id) {

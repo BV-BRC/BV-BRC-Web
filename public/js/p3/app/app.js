@@ -631,11 +631,15 @@ define([
       };
 
       // console.log("getNavigationContent: ", href, acceptType);
+      // No withCredentials: it was inert. Neither p3_api nor p3_user has ever
+      // sent Access-Control-Allow-Credentials -- both misspelled the cors
+      // option as `credential` -- so the browser would have discarded any
+      // credentialed cross-origin response. See util/corsOptions.js in those
+      // repos. (This method also has no callers.)
       return xhr.get(href, {
         headers: headers,
         handleAs: (acceptType === 'application/json') ? 'json' : '',
-        query: (acceptType === 'text/html') ? { 'http_templateStyle': 'embedded' } : '',
-        withCredentials: true
+        query: (acceptType === 'text/html') ? { 'http_templateStyle': 'embedded' } : ''
       });
 
     },

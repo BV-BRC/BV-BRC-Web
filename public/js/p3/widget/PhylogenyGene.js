@@ -6,7 +6,7 @@ define([
   'dijit/MenuItem', 'dijit/TooltipDialog', 'dijit/popup', './SelectionToGroup',
   'dijit/Dialog', './ItemDetailPanel', 'dojo/query', 'FileSaver',
   './ActionBar', './ContainerActionBar', 'dijit/layout/BorderContainer', './PerspectiveToolTip',
-  'dijit/layout/ContentPane', 'dojo/dom-class', 'dojo/on', 'dojo/topic'
+  'dijit/layout/ContentPane', 'dojo/dom-class', 'dojo/on', 'dojo/topic', '../auth/authHeaders'
 ], function (
   declare, PhyloTree, TreeNavSVG,
   WidgetBase, request, domConstruct,
@@ -15,8 +15,8 @@ define([
   Button, MenuItem, TooltipDialog, popup,
   SelectionToGroup, Dialog, ItemDetailPanel, query, saveAs,
   ActionBar, ContainerActionBar, BorderContainer, PerspectiveToolTipDialog,
-  ContentPane, domClass, on, Topic
-) {
+  ContentPane, domClass, on, Topic,
+  authHeader) {
 
   var infoMenu = new TooltipDialog({
     content: '<div> Create groups and download sequences by making a selection in the tree on the left.</div>',
@@ -473,7 +473,7 @@ define([
               accept: 'application/solr+json',
               'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json',
             'Content-Type': 'application/rqlquery+x-www-form-urlencoded',

@@ -18,10 +18,10 @@ define([
     'dojo/topic',
     'dijit/Dialog',
     './CopilotSSEEventHandler',
-    './CopilotToolHandler'
+    './CopilotToolHandler', '../../auth/authHeaders'
 ], function(
-    declare, _WidgetBase, request, lang, topic, Dialog, CopilotSSEEventHandler, CopilotToolHandler
-) {
+    declare, _WidgetBase, request, lang, topic, Dialog, CopilotSSEEventHandler, CopilotToolHandler,
+    authHeader) {
     /**
      * @class CopilotAPI
      * @extends {dijit/_WidgetBase}
@@ -103,7 +103,7 @@ define([
 
             return request.get(this.apiUrlBase + `/get-all-sessions?${qs}`, {
                 headers: {
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -126,7 +126,7 @@ define([
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
             return request.get(this.apiUrlBase + '/start-chat', {
                 headers: {
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(lang.hitch(this, function(response) {
@@ -158,7 +158,7 @@ define([
                 data: JSON.stringify(data),
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -260,7 +260,7 @@ define([
                 data: JSON.stringify(data),
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -465,7 +465,7 @@ define([
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': (window.App.authorizationToken || ''),
+                    'Authorization': authHeader(),
                     'Accept': 'text/event-stream',
                     'Cache-Control': 'no-cache'
                 },
@@ -822,7 +822,7 @@ define([
                 data: JSON.stringify(payload),
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             });
@@ -861,7 +861,7 @@ define([
                 data: JSON.stringify(data),
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -900,7 +900,7 @@ define([
                 data: JSON.stringify(data),
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(lang.hitch(this, function(response) {
@@ -944,7 +944,7 @@ define([
                 data: JSON.stringify(data),
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -972,7 +972,7 @@ define([
                 data: JSON.stringify(data),
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -1010,7 +1010,7 @@ define([
 
             return request.get(this.apiUrlBase + `/get-session-messages?${queryParams.join('&')}`, {
                 headers: {
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -1051,7 +1051,7 @@ define([
             ];
             return request.get(this.apiUrlBase + `/get-session-files?${queryParams.join('&')}`, {
                 headers: {
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -1074,7 +1074,7 @@ define([
             var _self = this;
             return request.get(this.apiUrlBase + `/get-session-title?session_id=${encodeURIComponent(sessionId)}`, {
                 headers: {
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -1103,7 +1103,7 @@ define([
                 }),
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -1133,7 +1133,7 @@ define([
                 }),
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -1156,7 +1156,7 @@ define([
             var _self = this;
             return request.get(this.apiUrlBase + '/get-user-prompts?user_id=' + _self.user_id, {
                 headers: {
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -1185,7 +1185,7 @@ define([
                 }),
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -1223,7 +1223,7 @@ define([
                 }),
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -1257,7 +1257,7 @@ define([
                 }),
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -1286,7 +1286,7 @@ define([
                 }),
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -1328,7 +1328,7 @@ define([
                 submitPromise = request.post(submitByIdUrl, {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': (window.App.authorizationToken || '')
+                        'Authorization': authHeader()
                     },
                     handleAs: 'json'
                 });
@@ -1381,7 +1381,7 @@ define([
                     data: JSON.stringify(workflowForSubmission),
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': (window.App.authorizationToken || '')
+                        'Authorization': authHeader()
                     },
                     handleAs: 'json'
                 });
@@ -1449,7 +1449,7 @@ define([
             return request.get(workflowUrl, {
                 headers: {
                     'Accept': 'application/json',
-                    'Authorization': (window.App.authorizationToken || '')
+                    'Authorization': authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -1475,7 +1475,7 @@ define([
             return request.get(statusUrl, {
                 headers: {
                     'Accept': 'application/json',
-                    'Authorization': (window.App.authorizationToken || '')
+                    'Authorization': authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -1516,7 +1516,7 @@ define([
                 }),
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -1557,7 +1557,7 @@ define([
 
             return request.get(this.apiUrlBase + '/rag-chunk-search?' + queryParts.join('&'), {
                 headers: {
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -1587,7 +1587,7 @@ define([
                 }),
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -1615,7 +1615,7 @@ define([
                 }),
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {
@@ -1643,7 +1643,7 @@ define([
                 }),
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
                 },
                 handleAs: 'json'
             }).then(function(response) {

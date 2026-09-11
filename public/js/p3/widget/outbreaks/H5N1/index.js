@@ -5,7 +5,7 @@ define([
   'dojo/text!./Data.html', 'dojo/text!./CommandLineTool.html', '../OutbreaksTabContainer', './genomes/GenomesGridContainer',
   'dojo/text!./OutbreaksGeoMapInfo.html',
   'dojo/text!./Clustering.html', '../OutbreaksPhylogenyTreeViewer', '../OutbreaksGeoMap', '../OutbreaksGeoMapInfo',
-  'dojo/text!./GeoMapHeader.html', 'dojo/text!./GeoMapFooter.html'
+  'dojo/text!./GeoMapHeader.html', 'dojo/text!./GeoMapFooter.html', '../../../auth/authHeaders'
 ], function (
   declare, lang, xhr, domParser, domConstruct,
   PathJoin, TabViewerBase, OutbreaksOverview, OutbreaksTab,
@@ -13,8 +13,8 @@ define([
   DataTemplate, CommandLineToolTemplate, OutbreaksTabContainer, GenomesGridContainer,
   OutbreaksGeoMapInfoTemplate,
   ClusteringTemplate, OutbreaksPhylogenyTreeViewer, OutbreaksGeoMap, OutbreaksGeoMapInfo,
-  GeoMapHeaderTemplate, GeoMapFooterTemplate
-) {
+  GeoMapHeaderTemplate, GeoMapFooterTemplate,
+  authHeader) {
   return declare([TabViewerBase], {
     perspectiveLabel: '',
     perspectiveIconClass: '',
@@ -431,7 +431,7 @@ define([
           accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, async function (genomes) {

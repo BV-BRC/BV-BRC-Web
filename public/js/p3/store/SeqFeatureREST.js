@@ -1,6 +1,6 @@
 define([
-  'dojo/_base/declare', 'dojo/request', 'JBrowse/Store/SeqFeature/REST', 'JBrowse/Store/LRUCache', 'dojo/_base/lang'
-], function (declare, dojoRequest, baseStore, LRUCache, lang) {
+  'dojo/_base/declare', 'dojo/request', 'JBrowse/Store/SeqFeature/REST', 'JBrowse/Store/LRUCache', 'dojo/_base/lang', '../auth/authHeaders'
+], function (declare, dojoRequest, baseStore, LRUCache, lang, authHeader) {
 
   return declare([baseStore], {
     _get: function ( request, callback, errorCallback ) {
@@ -10,7 +10,7 @@ define([
         method: 'GET',
         headers: {
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(
@@ -40,7 +40,7 @@ define([
                 method: 'GET',
                 headers: {
                   'X-Requested-With': null,
-                  Authorization: (window.App.authorizationToken || '')
+                  Authorization: authHeader()
                 },
                 handleAs: 'json'
               },

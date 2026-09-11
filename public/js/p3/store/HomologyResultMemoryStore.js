@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/request', 'dojo/Stateful', 'dojo/when',
-  'dojo/store/Memory', 'dojo/store/util/QueryResults', '../WorkspaceManager', 'dojo/topic'
+  'dojo/store/Memory', 'dojo/store/util/QueryResults', '../WorkspaceManager', 'dojo/topic', '../auth/authHeaders'
 ], function (
   declare, lang, Deferred,
   request, Stateful, when,
-  Memory, QueryResults, WorkspaceManager, topic
-) {
+  Memory, QueryResults, WorkspaceManager, topic,
+  authHeader) {
 
   return declare([Memory, Stateful], {
     loaded: false,
@@ -277,7 +277,7 @@ define([
                   Accept: 'application/json',
                   'Content-Type': 'application/solrquery+x-www-form-urlencoded',
                   'X-Requested-With': null,
-                  Authorization: (window.App.authorizationToken || '')
+                  Authorization: authHeader()
                 },
                 data: query
               }).then(lang.hitch(this, function (keys) {

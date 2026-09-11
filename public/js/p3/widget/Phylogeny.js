@@ -7,7 +7,7 @@ define([
   'dijit/Dialog', './ItemDetailPanel', 'dojo/query', 'FileSaver',
   './ActionBar', './ContainerActionBar', 'dijit/layout/BorderContainer', './PerspectiveToolTip',
   'dijit/layout/ContentPane', 'dojo/dom-class', 'dojo/on', 'dojo/topic',
-  'dojo/text!./templates/Phylogeny2.html', 'dijit/_TemplatedMixin'
+  'dojo/text!./templates/Phylogeny2.html', 'dijit/_TemplatedMixin', '../auth/authHeaders'
 ], function (
   declare, PhyloTree, TreeNavSVG, when,
   WidgetBase, request, domConstruct,
@@ -17,8 +17,8 @@ define([
   SelectionToGroup, Dialog, ItemDetailPanel, query, saveAs,
   ActionBar, ContainerActionBar, BorderContainer, PerspectiveToolTipDialog,
   ContentPane, domClass, on, Topic,
-  Template, Templated
-) {
+  Template, Templated,
+  authHeader) {
 
   var infoMenu = new TooltipDialog({
     content: '<div> Create groups and download sequences by making a selection in the tree on the left.</div>',
@@ -268,7 +268,7 @@ define([
             headers: {
               accept: 'application/json',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json'
           }).then(lang.hitch(this, function (record) {
@@ -280,7 +280,7 @@ define([
             headers: {
               accept: 'application/json',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json'
           }).then(lang.hitch(this, function (record) {

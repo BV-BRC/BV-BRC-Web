@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on', 'dojo/topic',
   './ActionBar', 'dijit/layout/TabContainer',
   './TrackController', 'circulus/Viewer', 'circulus/LineTrack', 'circulus/HistogramTrack', 'circulus/HeatmapTrack',
-  'circulus/SectionTrack', 'circulus/SectionTrackWithLabel', 'dojo/_base/lang', 'dojo/request', './DataItemFormatter', '../util/PathJoin', '../util/searchToQuery'
+  'circulus/SectionTrack', 'circulus/SectionTrackWithLabel', 'dojo/_base/lang', 'dojo/request', './DataItemFormatter', '../util/PathJoin', '../util/searchToQuery', '../auth/authHeaders'
 ], function (
   declare, BorderContainer, on, Topic,
   ActionBar, TabContainer,
   TrackController, CirculusViewer, LineTrack, HistogramTrack, HeatmapTrack,
-  SectionTrack, SectionTrackWithLabel, lang, xhr, DataItemFormatter, PathJoin, searchToQuery
-) {
+  SectionTrack, SectionTrackWithLabel, lang, xhr, DataItemFormatter, PathJoin, searchToQuery,
+  authHeader) {
 
   var custom_colors = ['blue', 'green', 'orange', 'pink', 'red', 'purple'];
   var user_colors = ['#1E90FF', '#32CD32', '#FF6347', '#FF69B4', '#DC143C', '#8A2BE2'];
@@ -67,7 +67,7 @@ define([
         headers: {
           accept: 'application/json',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, function (refseqs) {
@@ -119,7 +119,7 @@ define([
         headers: {
           accept: 'application/json',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, function (refseqs) {
@@ -190,7 +190,7 @@ define([
         headers: {
           accept: 'application/json',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, function (spgenes) {
@@ -215,7 +215,7 @@ define([
             accept: 'application/json',
             'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
             'X-Requested-With': null,
-            Authorization: (window.App.authorizationToken || '')
+            Authorization: authHeader()
           },
           handleAs: 'json'
         }).then(lang.hitch(this, function (refseqs) {

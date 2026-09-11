@@ -5,7 +5,7 @@ define([
   'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', 'dojo/topic',
   '../TsvCsvFeatures', 'dojo/request', '../../util/PathJoin', 'dijit/popup',
   '../PerspectiveToolTip', 'dojo/promise/all', 'dojo/when',
-  '../CopyTooltipDialog', '../../util/encodePath', 'dijit/registry', 'dijit/dijit'
+  '../CopyTooltipDialog', '../../util/encodePath', 'dijit/registry', 'dijit/dijit', '../../auth/authHeaders'
 ], function (
   declare, on, ContentPane, domConstruct,
   TSV_CSV_GridContainer, WS, Deferred,
@@ -13,8 +13,8 @@ define([
   Button, CheckBox, Select, Topic,
   tsvCsvFeatures, request, PathJoin, popup,
   PerspectiveToolTipDialog, all, when,
-  CopyTooltipDialog, encodePath, registry, dijit
-) {
+  CopyTooltipDialog, encodePath, registry, dijit,
+  authHeader) {
 
   var copySelectionTT = new CopyTooltipDialog({});
   copySelectionTT.startup();
@@ -363,7 +363,7 @@ define([
             Accept: 'application/solr+json',
             'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
             'X-Requested-With': null,
-            Authorization: (window.App.authorizationToken || '')
+            Authorization: authHeader()
 
           }
         }), function (response) {
@@ -378,7 +378,7 @@ define([
             Accept: 'application/solr+json',
             'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
             'X-Requested-With': null,
-            Authorization: (window.App.authorizationToken || '')
+            Authorization: authHeader()
 
           }
         }), function (response) {
@@ -450,7 +450,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
 
                     }
                   }).then(function (response) {
@@ -477,7 +477,7 @@ define([
                     Accept: 'application/json',
                     'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                     'X-Requested-With': null,
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
 
                   }
                 }).then(function (response) {
@@ -518,7 +518,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
 
                     }
                   }).then(function (response) {
@@ -559,7 +559,7 @@ define([
                     Accept: 'application/json',
                     'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                     'X-Requested-With': null,
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
 
                   }
                 }).then(function (response) {
@@ -634,7 +634,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
 
                     }
                   }).then(function (response) {
@@ -662,7 +662,7 @@ define([
                     Accept: 'application/json',
                     'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                     'X-Requested-With': null,
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
 
                   }
                 }).then(function (response) {
@@ -702,7 +702,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
 
                     }
                   }).then(function (response) {
@@ -744,7 +744,7 @@ define([
                     Accept: 'application/json',
                     'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                     'X-Requested-With': null,
-                    Authorization: (window.App.authorizationToken || '')
+                    Authorization: authHeader()
 
                   }
                 }).then(function (response) {

@@ -3,14 +3,14 @@ define([
   'dojo/on', 'dojo/topic', 'dojo/when', 'dojo/request', 'dojo/dom-construct',
   'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
   './ContainerActionBar', 'FileSaver',
-  './ProteinFamiliesGrid', './GridContainer', './DownloadTooltipDialog', '../util/PathJoin', './SelectionToGroup'
+  './ProteinFamiliesGrid', './GridContainer', './DownloadTooltipDialog', '../util/PathJoin', './SelectionToGroup', '../auth/authHeaders'
 ], function (
   declare, lang,
   on, Topic, when, request, domConstruct,
   popup, TooltipDialog, Dialog,
   ContainerActionBar, saveAs,
-  ProteinFamiliesGrid, GridContainer, DownloadTooltipDialog, PathJoin, SelectionToGroup
-) {
+  ProteinFamiliesGrid, GridContainer, DownloadTooltipDialog, PathJoin, SelectionToGroup,
+  authHeader) {
 
   var vfc = ['<div class="wsActionTooltip" rel="dna">View FASTA DNA</div>',
     '<div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
@@ -178,7 +178,7 @@ define([
               Accept: 'application/json',
               'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             data: query
           }), function (response) {
@@ -285,7 +285,7 @@ define([
               Accept: 'application/json',
               'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             data: query
           }), function (ids) {

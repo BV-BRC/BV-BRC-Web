@@ -22,6 +22,29 @@ un=user@realm|tokenid=UUID|expiry=UNIX_TS|client_id=user@realm|token_type=Bearer
 - Solr `owner`/`user_read`/`user_write` fields = `jsmith@bvbrc`
 - Workspace paths = `/jsmith@bvbrc/home`
 
+### Authorization Header Conventions (three, not one)
+
+The header format is **not uniform today**, and the differences are load-bearing. A survey of `public/js/p3/`, `routes/`, and `lib/` finds ~294 sites setting an `Authorization` header:
+
+| Convention | Count | Sent to | Notes |
+|---|---|---|---|
+| Bare token (`window.App.authorizationToken`) | ~287 | p3_api, p3_user, **Workspace RPC, app service RPC** | No scheme prefix at all |
+| `OAuth <token>` | 4 | **Shock** (download/upload node URLs) | `WorkspaceManager.js:864,1181`, `UploadManager.js:32` |
+| `Oauth <token>` (lowercase 'a') | 2 | App service stdout/stderr URLs | `JobManager.js:229,240` |
+
+This is not merely cosmetic sloppiness — **p3_api rejects a prefixed token.** `p3_api/middleware/auth.js` passes the raw header value straight into `p3_user/validateToken.js`, which does `token.split('|')` and reconstructs the signed base string from the parts. With an `OAuth ` prefix the first part parses as key `"OAuth un"`, the reconstructed base string no longer matches what was signed, and RSA verification fails.
+
+**The same constraint applies to the Workspace and app service JSON-RPC APIs** — a server-side survey (2026-09-08) found that neither strips a scheme prefix either, so both require a bare token exactly as p3_api does. `WorkspaceManager`'s RPC client sends one (`jsonrpc.js:11`). The `OAuth `-prefixed sites are **Shock** node URLs, not Workspace or app-service endpoints; the sole exception is the app service's `/task_info` mount. This corrects the earlier "workspace/app service require `OAuth `" reading — see *4c-1* for the evidence and for what it changes about `authHeaders.js`.
+
+**Implication for the migration:** the plan's original Phase 3 line "update `Authorization` headers from raw token to `Bearer <jwt>`" understates the work by two orders of magnitude. See *Prerequisite: Centralize the Authorization Header* below.
+
+### Token Lifecycle in the Browser (current)
+
+- Token, parsed claims, and user profile live in `localStorage` under `tokenstring`, `auth`, `userProfile`, `userid`, `realm` (`p3app.js:795–801`)
+- `checkLogin()` polls on a timer, parses `auth.expiry`, and refreshes via `GET /authenticate/refresh` — but **only if `window.App.activeMouse || window.App.uploadInProgress`** (`p3app.js:690–730`). An idle user is logged out rather than refreshed.
+- Cross-tab logout is detected by polling for a missing `tokenstring`; a `storage` event listener syncs `userProfile` changes
+- Admin impersonation stashes a second full token under `Aauth`/`Atokenstring`/`AuserProfile`/`Auserid`/`Arealm` (see *Admin Impersonation* below)
+
 ### Services Affected
 | Service | Role | Auth-relevant files |
 |---------|------|-------------------|
@@ -84,6 +107,17 @@ This is **non-negotiable** because `username@realm` is embedded throughout:
 
 Using the same format means **zero changes** to p3_api's `DecorateQuery.js`, `patch.js`, `genomePermissionRouter.js`, or any Solr data.
 
+### Realm Assignment for Social-Login Accounts
+
+**Decision: social-login users get `@bvbrc` identities, same as password users.** There is one BV-BRC identity namespace; the social provider is an *authentication method*, not a separate identity domain. A user who signs in with Google, later links ORCID, and later still sets a BV-BRC password is the same `jsmith@bvbrc` throughout, owns the same workspace, and appears in `user_read`/`user_write` under one name.
+
+Consequences to design for:
+
+- **One username namespace.** A social signup choosing `jsmith` collides with an existing password account `jsmith`. The username-availability check at account creation must consult the same `users` collection used by classic registration — there is no per-realm partition to fall back on.
+- **Do not encode the provider in `sub`.** Formats like `jsmith@google` would fragment the identity across Solr `owner` values and workspace paths, which is exactly what this decision avoids. The provider lives only in `federated_identities`.
+- **Reserved-name handling** applies equally to social signups (same validation rules as current registration: alphanumeric, dot, dash, underscore).
+- **Realm claim.** The `realm` claim stays `bvbrc`. If other realms exist or are added later, `sub` remains `username@realm` and nothing here changes; the point is that federation does not itself create a realm.
+
 ### JWT Claims Structure
 ```json
 {
@@ -123,6 +157,58 @@ Using the same format means **zero changes** to p3_api's `DecorateQuery.js`, `pa
 ### Service-to-Service: Client Credentials
 - Replaces current `POST /authenticate/service` (non-standard app-token + user-token exchange)
 - Services present `client_id`/`client_secret` to get service-scoped JWT
+
+### Admin Impersonation ("SU Login")
+
+This is an existing, in-use feature that the original plan did not address. It must be redesigned, not dropped.
+
+**How it works today:**
+1. Admin clicks "SU Login" (`views/p3header.ejs:275`, `bv-brc-header.ejs:381`), enters their own username/password plus a target username (`widget/SuLogin.js:49`)
+2. `POST /authenticate/sulogin` (`p3_user/routes/authenticate.js:42`) verifies the caller has the `admin` role and re-checks their password with bcrypt, then calls `generateToken(targetUser, 'user')` — returning **a full, ordinary user token for the target**, indistinguishable from one the target would get by logging in
+3. The client stashes the admin's own five `localStorage` keys under `A*` prefixes and swaps in the target's token (`SuLogin.js:58`)
+4. `checkSU()` (`p3app.js:735`) shows a "switch back" affordance when `Aauth.roles` includes `admin`; `suSwitchBack()` (`p3app.js:768`) restores the `A*` keys
+
+**Problems with the current design:**
+- The impersonation token carries **no marker** that it is an impersonation. Every downstream service, log line, and Solr write attributes the action to the target user with no trace of the admin. There is no audit trail.
+- "Am I impersonating?" is decided client-side from `localStorage`. Clearing `Aauth` strands the session as the target with no way back — and, more importantly, the *server* has no idea impersonation is in effect.
+- Two live, fully-privileged tokens sit in `localStorage` simultaneously.
+
+**OIDC design — use Token Exchange with an `act` claim:**
+
+Impersonation is exactly the RFC 8693 impersonation case, and `oidc-provider` already gives us the vocabulary:
+
+```
+POST https://auth.bv-brc.org/token
+grant_type=urn:ietf:params:oauth:grant-type:token-exchange
+subject_token=<target user identity>
+requested_token_type=urn:ietf:params:oauth:token-type:access_token
+actor_token=<admin's own access token>
+actor_token_type=urn:ietf:params:oauth:token-type:access_token
+client_id=bvbrc-web-bff
+client_secret=<secret>
+scope=user
+```
+
+Issued token:
+```json
+{
+  "sub": "targetuser@bvbrc",
+  "act": { "sub": "adminuser@bvbrc" },
+  "scope": "user",
+  "exp": "<short — 30 minutes, not 24 hours>"
+}
+```
+
+Requirements:
+- **The exchange is performed by the website backend (BFF), never the browser.** The `bvbrc-web-bff` client secret stays server-side. This is a second reason to adopt the BFF pattern below.
+- **p3_oidc verifies the actor's `admin` role server-side** at exchange time, from the `users` record — not from a claim the caller supplies.
+- **Re-authentication:** preserve the current password re-prompt. Map it to an OIDC `prompt=login` step or a `max_age` constraint so the admin proves possession recently, rather than re-posting a password to a bespoke endpoint.
+- **Impersonation tokens are short-lived** (30 min, no refresh token). Ending impersonation means discarding the token, not restoring shadow `localStorage` keys.
+- **`act` is honored downstream.** p3_api sets `req.user` from `sub` (so authorization behaves as the target, preserving current semantics) but logs `act.sub` alongside every request. Any write path (`patch.js`, workspace mutations, job submission) records both.
+- **Audit:** every impersonation exchange is logged in p3_oidc (admin, target, timestamp, granted scope) per the AU-2/AU-3 requirements below.
+- **UI:** the existing "switch back" affordance and the `icon-superpowers warning` treatment on the login button should be driven by the presence of `act` in the token, not by `localStorage` shadow keys.
+
+**Phase 6 cleanup:** remove `Aauth`/`Atokenstring`/`AuserProfile`/`Auserid`/`Arealm` handling from `p3app.js` (lines ~768–778, ~925) and `SuLogin.js`, and remove `POST /authenticate/sulogin` from p3_user.
 
 ### Job Submission: Token Exchange (RFC 8693)
 
@@ -208,6 +294,265 @@ Between submission and execution, the one-time ticket sits in Slurm's job metada
 
 ---
 
+## Token Storage: Adopt the BFF Pattern
+
+The original plan proposed "short-lived access tokens in memory/localStorage, refresh tokens with sliding window (30 days) and absolute max (90 days)." **Refresh tokens must not go in `localStorage`.**
+
+**The risk.** Today an XSS on the site steals a 24-hour token. Under the naive plan it would steal a refresh token good for 30–90 days, silently renewable, surviving password changes unless explicitly revoked. That is a strict regression in blast radius, and it lands on a large legacy Dojo codebase with a great deal of `innerHTML` construction — see the RQL/HTML-entity class of bug already documented in `CLAUDE.md`. Assuming no XSS is not a safe premise here.
+
+**The design.** The website backend becomes a Backend-For-Frontend confidential client:
+
+- The browser never sees a refresh token. `/callback` (already planned) exchanges the code and stores the refresh token **server-side**, keyed by a session cookie: `httpOnly`, `Secure`, `SameSite=Lax`, host-scoped.
+- The browser holds only a short-lived access token (15–30 min) **in memory** (`window.App.authorizationToken`, which already exists), not in `localStorage`.
+- On access-token expiry the client calls `POST /auth/refresh` on the *website's own origin*; the BFF uses its stored refresh token to mint a new access token and returns it in the response body. Refresh-token rotation and reuse detection happen entirely server-side.
+- Optionally the BFF can proxy API calls entirely, so no token reaches JS at all. That is the stronger posture but a much larger change to ~294 call sites; the in-memory-access-token variant is the pragmatic middle and can be tightened later.
+
+**What this changes about existing behavior:**
+
+- **Page reload no longer has a token in `localStorage` to resume from.** On load, the client calls `/auth/refresh` once; the session cookie silently re-establishes the access token. This is a behavior change in `checkLogin()` and needs care so a hard refresh does not flash the logged-out UI.
+- **Cross-tab sync.** Current logic polls `localStorage.tokenstring` and watches `storage` events. With an in-memory token each tab holds its own; logout must be broadcast — either a `BroadcastChannel`, or keep a *non-sensitive* `localStorage` flag (e.g. `loggedIn: true/false`) purely as a cross-tab signal while the token itself stays in memory.
+- **The idle-logout quirk should be revisited.** `checkLogin()` only refreshes when `activeMouse || uploadInProgress`, so an idle user is logged out even though the refresh would have succeeded. With server-side refresh tokens the natural model is: refresh on demand when an API call needs it, and let the refresh token's own sliding/absolute window define the session lifetime. Decide this deliberately rather than porting the mouse-activity heuristic.
+- **`userProfile` in `localStorage`** is not a credential and can stay, but should be treated as a cache, re-validated from the ID token / `/userinfo`.
+
+If the BFF is judged too large for Phase 3, the fallback is: access token in memory, refresh token in an `httpOnly` cookie scoped to a single refresh endpoint, with rotation and reuse detection enabled. What is *not* acceptable is a long-lived refresh token readable by JavaScript.
+
+---
+
+## Multi-Domain Rollout and CORS
+
+The auth service is to be served at a single origin (`auth.bv-brc.org`) while web properties span **several registrable domains, not just subdomains**:
+
+| Property | Production | Non-production | Codebase |
+|---|---|---|---|
+| BV-BRC | `bv-brc.org`, `www.bv-brc.org` | `alpha.bv-brc.org`, `beta.bv-brc.org`, `dev-N.bv-brc.org` | `bvbrc_website` |
+| DXKB | `dxkb.org` | `dev.dxkb.org`, `test.dxkb.org` | `bvbrc_website` today → **React rewrite in 9–12 months** |
+| LDKB | `ldkb.org` | `dev.ldkb.org`, `test.ldkb.org` | **Greenfield, likely React** |
+| MAAGE | `maage-brc.org` | `dev.maage-brc.org`, `test.maage-brc.org` | `MAAGE-Web` (separate repo) |
+
+**Neither the hostname prefixes nor the environment count are uniform across properties.** BV-BRC uses `alpha.`/`beta.`/`dev-N.`; the other three use `dev.`/`test.`. Since `redirect_uri` matching is exact-string, no naming convention can paper over this — every hostname is enumerated individually regardless.
+
+The consequence is for tooling and config: **derive the URI and client lists from an explicit per-property, per-environment config table — never from string interpolation over a property name.** Anything of the form `` `https://${env}.${property}/callback` `` is wrong for BV-BRC on the first try, and the failure mode is a `400 invalid_redirect_uri` at login rather than anything that surfaces while testing the generator. The same table drives the CORS origin allowlist, so an error there breaks two things at once.
+
+**These twelve origins are also exactly p3_user's `cors_origins` list.** Note that they are *not* p3_api's: `dataServiceURL` is relative and server-side proxied, so every property reaches the data API same-origin no matter which registrable domain it is on. `userServiceURL` is absolute (`https://user.patricbrc.org`) and therefore cross-origin from all twelve. See *Multi-Domain Rollout and CORS*.
+
+This drives the client count. Totalling the known hosts — BV-BRC at 4+ (prod/www, alpha, beta, one or more `dev-N`) and three properties at 3 each (prod, dev, test) — gives **13+ registered clients minimum, and 16+ once local-dev and additional `dev-N` hosts are included**. Two consequences:
+
+- **Scripted, config-driven registration is mandatory**, not a nicety. Hand-registering 16 clients across two IdP instances guarantees drift, and drift here presents as one environment intermittently failing to log in.
+- **The client-secret inventory is now the dominant key-management burden.** Every one of these is a BFF, and a BFF is by definition a confidential client, so each carries its own secret — they cannot be made public clients without abandoning the BFF pattern. The *OAuth2 Client Secrets* section below specifies annual rotation; at 16 clients that is a real operational process needing a named owner and a scripted procedure, not an afterthought. It also means **16 secrets distributed across hosts of varying trust**, which is an independent argument for the separate non-production IdP: a leaked `test.ldkb.org` secret should not be a credential against the production issuer.
+
+(Whether every property truly needs every tier still needs confirming — see open question 16.)
+
+**These are similar but divergent sibling codebases, not one app behind four vhosts** — and two of the four are on their way off Dojo entirely (Robert, 2026-09-08):
+
+- **DXKB** currently runs the same codebase as BV-BRC, but **moves to a new React site in the next 9–12 months.**
+- **LDKB** is **greenfield, probably React** — no Dojo inheritance to port to at all.
+- **MAAGE** (`MAAGE-Web`) is a distinct repository with unrelated git history that nonetheless carries the same `p3app.js` / `WorkspaceManager.js` architecture — including its own copy of the inline `Authorization` sites. This is the one true Dojo port target.
+
+**This reframes what "portable" has to mean.** Only MAAGE (and DXKB in the interim) can receive a Dojo-shaped port. LDKB and post-rewrite DXKB will consume the auth design as an *API and a protocol*, not as copied AMD modules. So the portable artifact is split in two:
+
+- **Portable across all four: the server side and the contract.** The BFF endpoints (`/auth/login`, `/auth/callback`, `/auth/session`, `/auth/refresh`, `/auth/logout`), the session-cookie semantics, the client-registration table, and the token-shape expectations. A React app can implement the same BFF contract from scratch in a day if the contract is written down; it cannot inherit a Dojo module at all. **Write the BFF as an Express router that is independent of the Dojo app**, and document the endpoint contract in this repo as the normative spec — that document, not the JavaScript, is the deliverable the React sites consume.
+- **Portable to MAAGE only: the Dojo client modules.** `auth/authHeaders.js`, the session client, the callback handler.
+
+Two consequences worth acting on now:
+
+- **Do not over-invest in making the Dojo client side portable.** Its audience is one repo (MAAGE), plus DXKB for a year. The earlier instinct to keep it copy-paste-clean is still right — it is nearly free — but it should not shape decisions. If a choice trades Dojo-side elegance for a cleaner BFF contract, take the contract.
+- **The React sites are a reason to get the BFF boundary right the first time.** A greenfield LDKB will be built against whatever the contract says. If the BFF leaks Dojo assumptions (`p3app.js`-shaped session objects, `A*` localStorage conventions, PATRIC-specific user-record fields), LDKB inherits them permanently. Keep the session payload minimal and standards-shaped: `sub`, expiry, and the claims a UI actually renders.
+
+**Porting to the other properties remains explicitly a later step.** The work happens in `bvbrc_website` first. Supporting constraints:
+
+- **All origin/issuer/client-id values come from config**, never a literal in a module. Each property substitutes its own; a hardcoded `bv-brc.org` is a portability bug even though it works here.
+- Keep the diff **mechanical and reviewable** — the port to MAAGE is a manual reapplication, and it goes far better against "add a module, replace N call sites with a call to it" than against something entangled with unrelated refactoring.
+- Where a change *must* touch divergent shared code (`p3app.js`), keep it small and localized for the same reason.
+
+Do not build a shared cross-repo JavaScript package for this now — that is a larger coordination problem than the migration itself, and with two of four consumers becoming React it would be a package with a shrinking audience. Write portable code, document the contract, port deliberately later.
+
+(`patricbrc.org`, `viprbrc.org`, and `fludb.org` appear throughout the codebase but are **not** in the initial rollout set. They remain relevant as *realms* carried in existing `sub` values — see the ViPR subsection at the end — and as legacy redirect targets, but they get no BFF clients. `viprbrc.org` in particular is **closed to new credentials**, so it is a migration concern only, never a rollout target.)
+
+### The good news: the OIDC flows are structurally CORS-free
+
+This is a significant argument for the standard flows over a bespoke XHR-based login. Nothing in the critical path is a cross-origin browser fetch:
+
+| Step | Mechanism | Cross-origin XHR? |
+|---|---|---|
+| `/auth` authorization request | Top-level browser redirect | No — a navigation, not a fetch |
+| Login form + consent | Served by `auth.bv-brc.org` to itself | No |
+| `/callback` code exchange | Server-to-server from the BFF | No — never leaves the datacenter |
+| Device flow (CLI) | Native HTTP client | No — no `Origin` header at all |
+| Discovery + JWKS | Fetched server-side by p3_api / BFF | No |
+| `POST /auth/refresh` | XHR to the property's **own** origin | No — same-origin by design |
+| JWT sent to p3_api | XHR with `Authorization` header | **Yes** — but this is the situation today |
+
+The only flows that would introduce new browser→`auth.bv-brc.org` XHR are RP-initiated silent renewal (hidden iframe / `prompt=none`) and a JS-side `/userinfo` call. **The BFF design removes the need for both** — renewal is a same-origin call to the BFF, and profile data comes from the ID token. Keep it that way; if silent-renewal-via-iframe is ever proposed, note it also depends on third-party cookies and is being broken by browsers regardless.
+
+### The real constraint: the BFF session cookie cannot span registrable domains
+
+The BFF section above specifies a host-scoped `httpOnly`/`Secure`/`SameSite=Lax` session cookie. A cookie set by `www.bv-brc.org` **cannot be read by `www.dxkb.org`** — different registrable domains. No cookie attribute changes this (`Domain=` only widens within one registrable domain), and the historical workarounds all depend on third-party cookies, which are being removed.
+
+So "one BFF for all properties" is not viable. **Recommended: one BFF per property, one shared IdP.**
+
+- Each property runs its own confidential OIDC client with its own host-scoped session cookie
+- `auth.bv-brc.org` holds the shared **IdP session**
+- SSO still works: a user already authenticated at the IdP who lands on a second property is redirected through `/auth` and back **without a login prompt** — the IdP session cookie is first-party to `auth.bv-brc.org` during that redirect, so no third-party cookie is involved
+- Single logout does not follow from SSO — clearing one property's session cookie does not clear the others'. **Per-site logout is accepted for the initial rollout** (Robert, 2026-09-08); the one thing that must not be foreclosed is a **server-side session store keyed by session id, recording `sub` and the IdP `sid`**, since back-channel logout is unbuildable without it. See open question 15 for the full options analysis and why front-channel logout is a dead end.
+
+Rejected alternatives: a single BFF that other properties call cross-origin (reintroduces credentialed cross-origin XHR — more moving parts and worse failure modes than it saves), and any cross-domain cookie scheme.
+
+### Per-property registration details
+
+- **`redirect_uri` is exact-match in `oidc-provider`** — no wildcards, no pattern matching, by specification. Enumerate every URI before Phase 1 rather than discovering them one `400 invalid_redirect_uri` at a time.
+- **Register one client per property**, not one shared client. Distinct client IDs give per-property revocation, per-property secrets, and usable audit logs.
+
+- **`SameSite=Lax` is correct only for a top-level GET callback.** If any property is configured with `response_mode=form_post`, the callback arrives as a **cross-site POST**, on which a `Lax` cookie is *not* sent — login fails silently and confusingly. Pin the response mode to the default query form, or the cookie must become `SameSite=None; Secure`, which is a materially weaker CSRF posture. Prefer pinning the response mode.
+- **`state` and PKCE are per-property**, generated and verified by that property's BFF.
+
+### Non-production environments
+
+**Do `alpha.bv-brc.org`, `beta.bv-brc.org`, `dev.dxkb.org` and friends need their own support? Yes — and the answer splits in two.**
+
+*Redirect URIs: unavoidably yes.* `https://alpha.bv-brc.org/callback` is a different exact string from `https://www.bv-brc.org/callback`, so it must be registered or that environment's login simply fails. Same for `beta`, each `dev-N`, and local dev (`https://localhost:3000/callback`). Not a design choice — a consequence of exact-match.
+
+*Clients: yes, and they should be **separate** clients rather than extra URIs bolted onto the production client.* Adding a non-production callback as a second URI on the production client is the tempting shortcut and it is the wrong call:
+
+- A confidential client's secret would then be shared between production and a lower-trust environment. Compromise of `dev.dxkb.org` becomes compromise of production.
+- The client is the unit of revocation, rate limiting, and audit. Merged clients make non-production traffic indistinguishable from production in the logs — exactly backwards, since the pre-production tiers are where the anomalies will be.
+- These environments want different settings anyway: shorter token lifetimes, relaxed consent for testing, test upstream IdP credentials.
+
+So `bvbrc-web`, `bvbrc-web-alpha`, `bvbrc-web-beta`, `maage-web`, `maage-web-dev`, `maage-web-test`, and so on — **13+ clients** across the property × environment matrix above, and 16+ once local-dev and additional `dev-N` hosts are counted. At that scale, registration must be config-driven and scripted, and the secret inventory needs an owner; see the matrix discussion above.
+
+**The sharper question is whether non-production shares the production IdP at all.** Two defensible answers; this needs an explicit decision:
+
+1. **Shared IdP, separate clients** (simpler). Non-production points at `auth.bv-brc.org` with real users and real accounts. But a p3_oidc bug or misconfiguration exercised from a dev tier lands on production auth, and testers' sessions are production sessions.
+2. **A separate non-production IdP instance** — `auth-dev.bv-brc.org` or similar (safer, and recommended). Its own issuer, own signing keys, own MongoDB OIDC collections. This is the only way to test **key rotation, client-secret rotation, upstream IdP configuration changes, and p3_oidc upgrades** without touching production auth — precisely the operations the *Key Management Procedures* section says to rehearse. It also means a dev-issued token cannot be replayed against production, because `iss` and `aud` will not match the pins p3_api enforces.
+
+Note that option 2 means **one non-production IdP shared by all properties' dev tiers**, not one per environment — `alpha.bv-brc.org`, `beta.bv-brc.org`, and `dev.dxkb.org` can all be clients of the same `auth-dev`. Two IdP instances total, not five.
+
+The cost is one more service instance and one more set of upstream IdP registrations (Google/ORCID/GitHub each need non-production callback URLs too). Since Phase 1 stands up p3_oidc from scratch anyway, standing up two is marginal work at the point where it is cheapest — and it provides somewhere to rehearse Phase 6's legacy removal before that becomes irreversible.
+
+**On accounts:** user accounts are already shared across properties and environments today — both `bvbrc_website/p3-web.conf` and `MAAGE-Web/p3-web.conf` point `userServiceURL` and `accountURL` at the same `https://user.patricbrc.org`. So a separate non-production IdP does *not* automatically mean separate accounts. The second half of the decision: does `auth-dev` read the same `users` collection (real accounts, isolated grants and sessions — the pragmatic choice), or a distinct one (full isolation, but testers need separate accounts)? Shared `users` with distinct `oidc_*` collections is probably the right balance and is consistent with how these environments already relate.
+
+### Existing CORS configuration is broken, and must not be naively "fixed"
+
+Both API services configure `cors` with **two misspelled option names**, verified against the vendored `cors/lib/index.js` (which reads `options.credentials` and `options.allowedHeaders`; neither singular form appears anywhere in the library):
+
+```javascript
+// p3_api/app.js:129  and  p3_user/app.js:79
+app.use(cors({
+  origin: true,
+  allowHeaders: [...],   // WRONG — library reads `allowedHeaders`
+  credential: true,      // WRONG — library reads `credentials`
+  ...
+}))
+```
+
+Consequences today:
+
+- **`Access-Control-Allow-Credentials` is never sent** by either service.
+- `allowedHeaders` being unset means the library **reflects `Access-Control-Request-Headers`**, which is why `authorization` works cross-origin at all. It works by accident, not by configuration.
+- Three call sites set `withCredentials: true` (`app/app.js:638`, `UserProfileEditor.js:38`, `suLoginForm.js:26`).
+
+**Resolved (Robert, 2026-09-08): all three are same-origin in production, and that is not a coincidence — the data API and the other site-facing endpoints were deliberately arranged to live under the same domain as the site, most likely *because* of this latent bug.** Verified in the code: every one of the three resolves to a same-origin path.
+
+| Site | Request | Resolves to |
+|---|---|---|
+| `app/app.js:638` | `xhr.get(this.apiServer + href)` | `apiServer` = `dataServiceURL` = `/alpha/api` (relative; `/api` in the sample conf) |
+| `widget/UserProfileEditor.js:38` | `xhr.post('/user/')` | served by `bvbrc_website` itself — `app.js:268` mounts `/user` on `contentViewer` |
+| `widget/suLoginForm.js:26` | `xhr.post('/sulogin')` | same — `app.js:269` mounts `/sulogin` on `contentViewer` |
+
+So `withCredentials: true` is inert on all three: same-origin requests carry cookies regardless, and no ACAC header is required. **Nothing depends on credentialed cross-origin requests today.**
+
+**Correction (implementation, 2026-09-08): the three sites are same-origin, but do not generalize that to "the user service is only reached same-origin." It is not, and reading it that way nearly broke production login.**
+
+Two things turned up while implementing 0b:
+
+1. **All three sites are dead code.** `getNavigationContent`, `UserProfileEditor` and `suLoginForm` each have zero references. And `/user` / `/sulogin` are mounted on `routes/content.js`, which is *only* `router.get('*')` rendering the SPA shell — there is no POST handler and no proxy behind either mount, so those two `xhr.post`s would 404 if anything called them.
+
+2. **The live user-service traffic is genuinely cross-origin.** The site runs on `bv-brc.org` and calls `userServiceURL` = `https://user.patricbrc.org` — a different registrable domain — for login, token refresh, SU login, registration, password reset and profile reads: `p3app.js:701` (`/authenticate/refresh/`), `p3app.js:804,893` (`/user/:id`), `LoginForm.js:99` (`POST /authenticate`), `LoginForm.js:45` (`POST /reset`), `SuLogin.js:49` (`POST /authenticate/sulogin`), `UserProfileForm.js:86,143,284,370`.
+
+The consequence is that **p3_user's allowlist must gate credentials only, never the origin.** Confirmed by curl preflight against production: `OPTIONS https://user.patricbrc.org/authenticate` with `Origin: https://www.bv-brc.org` returns ACAO and no ACAC. Gating ACAO on an allowlist would break login on any property not enumerated — a failure that surfaces at deploy, not in test.
+
+This is a load-bearing fact rather than a footnote, and it cuts in two directions:
+
+**It de-risks the CORS fix.** There is no working *credentialed* behavior to preserve — ACAC has never been sent by either service — so the credentials gate can be tight from day one, and the three `withCredentials: true` flags can simply be deleted as part of the change. But per the correction above, the *origin* reflection is load-bearing on p3_user and must stay.
+
+**It creates a constraint the migration must not silently violate.** The same-domain arrangement is a *workaround*, and workarounds erode when the people who remember them move on. Two live pressures:
+
+- **`accountURL` / `authorizationURL` / `userServiceURL` still point at `https://user.patricbrc.org`** — a genuinely different origin, and one this migration replaces. `auth.bv-brc.org` will be cross-origin to `bv-brc.org` by design.
+- **The multi-property rollout (`bv-brc.org`, `maage.bv-brc.org`, `dxkb.*`, `ldkb.*`) breaks the same-domain premise wherever a property is not a subdomain of the API's registrable domain.** DXKB and LDKB are the ones to check.
+
+    **Resolved (Robert, 2026-09-11): the premise was misstated. There is no domain-relationship question here.** DXKB and LDKB are on their own registrable domains — `dxkb.org`, `test.dxkb.org`, `dev.dxkb.org`, `ldkb.org`, `test.ldkb.org`, `dev.ldkb.org` — and it does not matter, because `dataServiceURL` is a **relative path** (`/api`) that `bvbrc_website` reverse-proxies server-side (`app.js:107`, `express-http-proxy` over `proxyConfig`). The browser therefore fetches `https://dxkb.org/api/...` — same-origin by construction, whatever the property's domain — and never learns p3_api's real hostname. The mechanism is a proxy, not shared-domain cookie scoping, so nothing needs to be "inherited" and six separate registrable domains behave exactly like `bv-brc.org`.
+
+    What survives is the p3_user case: `userServiceURL` is an **absolute** URL (`https://user.patricbrc.org`), genuinely cross-origin from all six. That is why p3_user's allowlist gates credentials only. **When `cors_origins` is populated it must enumerate all six DXKB/LDKB origins plus the BV-BRC ones** — the same list as the `redirect_uri` registration.
+
+The BFF design already absorbs most of this: the browser talks only to its own origin, and the BFF makes the cross-origin calls server-side, where CORS does not apply. **That is now a hard requirement, not a preference.** Any design that has the browser call p3_api or p3_oidc cross-origin with credentials re-opens exactly the gap the same-domain arrangement papers over, and would need the CORS fix to be genuinely correct first.
+
+**Do not simply correct the spelling.** `origin: true` reflects *any* requesting origin. Combined with a working `credentials: true`, that would let any website on the internet make credentialed requests to p3_api with a victim's ambient authority — and because the same-domain arrangement means nothing currently exercises the cross-origin path, the regression would be invisible in testing. The correct sequence is: **introduce an explicit origin allowlist first, then fix the spelling, in the same change.** Note that the allowlist is exactly the set of properties enumerated for this rollout — the same list the `redirect_uri` registration needs.
+
+Also relevant: p3_api sets `Content-Security-Policy` (`app.js:125`) but neither service sets CORS-adjacent hardening headers on the auth surface. `auth.bv-brc.org` should send a restrictive CSP of its own, and **should not enable CORS at all** — nothing legitimately fetches it from a browser under this design. An OIDC provider with permissive CORS is a liability, not a feature.
+
+### `viprbrc.org` is a closed realm — migrate the existing users, build nothing new
+
+`LoginForm.js:76-93` has a live **ViPR login path** that authenticates `<user>@viprbrc.org` against `https://p3.theseed.org/goauth/token` with HTTP Basic, entirely outside p3_user. `p3app.js:838` then strips `@viprbrc.org` to derive the userid, and `loginWithVipr()` handles the result.
+
+**Decision (Robert, 2026-09-08): no new `viprbrc.org` credentials will be created. It was a transitory realm for the IRD/ViPR-into-BV-BRC integration.** That settles the design question and simplifies it considerably:
+
+- **`viprbrc.org` is not an upstream IdP in p3_oidc.** Do not build a federation connector to `p3.theseed.org`. The realm is closed to new registrations, so there is no ongoing flow to support — only an existing population to carry across.
+- **`LoginForm.js:76-93` and `loginWithVipr()` are removal targets, not port targets.** The browser-side Basic-auth XHR to a third-party origin disappears with the legacy login form in Phase 3a. Nothing replaces it. This also removes one of the cross-origin credentialed-request cases from the CORS analysis above.
+- **The remaining work is a bounded, one-time migration**, sized by however many `@viprbrc.org` accounts are actually in the user store. Count them early — if the number is small, individual outreach beats any automated linking scheme.
+
+**What is still open is the `sub` question, and it is unavoidable.** Existing ViPR identities already appear as `@viprbrc.org` in Solr `owner` / `user_read` / `user_write` fields and in workspace paths. Since `sub` = `username@realm`, there are two options and they are not equivalent:
+
+- **Keep `sub` = `<user>@viprbrc.org` for the migrated population.** Zero data migration; their existing objects and workspace paths keep resolving. Cost: a dead realm string persists in `sub` values indefinitely, and the realm list never shrinks.
+- **Migrate them to `@bvbrc`.** Clean namespace. Cost: this is *not a rename* — it is a rewrite of `owner`, `user_read`, `user_write` across Solr plus a workspace path migration, with a correctness risk on every object the user has shared. Same class of problem as the `sub` decision itself.
+
+**Recommendation: keep `@viprbrc.org` in `sub` for existing users.** The realm being closed means the string is a frozen historical artifact of bounded size, not a growing liability. Rewriting live ownership data to retire a string is a poor trade. Treat `patricbrc.org` identically and for the same reason.
+
+This no longer blocks Phase 3b (social login), since ViPR is not becoming a social-style upstream provider. It does need to be settled before Phase 3a removes the legacy login form, so the migrated users have a working path in.
+
+---
+
+## Prerequisite: Centralize the Authorization Header
+
+**This should happen before Phase 3, and can land independently of the whole migration.**
+
+As surveyed above, ~294 sites build `Authorization` headers inline, in three mutually incompatible conventions, with the correct convention depending on which service is being called. Changing the token format means touching every one of them — unless they are first funnelled through a single helper.
+
+Proposed refactor (mechanical, no behavior change, ships on its own branch):
+
+```javascript
+// public/js/p3/auth/authHeaders.js
+// scheme: 'api'   -> bare token. p3_api, p3_user, Workspace RPC, app service RPC.
+//                    This is the default and covers ~287 of the ~294 sites.
+// scheme: 'oauth' -> 'OAuth ' prefix. Shock node URLs only (+ app service /task_info).
+// token:  optional explicit token; falls back to the ambient one when omitted.
+function authHeader(scheme, token) { ... }
+```
+
+- Replace `Authorization: (window.App.authorizationToken || '')` with `authHeader('api')`
+- Replace `'OAuth ' + window.App.authorizationToken` / `'Oauth ' + ...` with `authHeader('oauth')`
+- `WorkflowManager.js:22` already has a local `getAuthHeader()` — fold it in. Note it falls back to `localStorage.getItem('tokenstring')` when `window.App.authorizationToken` is unset; the shared helper should adopt that fallback rather than drop it.
+- `jsonrpc.js:11` and `SEEDClient.js:137` take the token as a parameter; route those through the helper too
+
+**The helper needs an optional explicit-token argument, not just a scheme.** A pattern census of the 292 client sites (2026-09-08) found ~36 of them are not plain header construction but *token override*:
+
+```
+ 27  Authorization: _self.token ? _self.token : (window.App.authorizationToken || '')
+  4  Authorization': this.token ? this.token : (window.App.authorizationToken || "")
+  3  Authorization: this.token  ? this.token : (window.App.authorizationToken || '')
+  2  Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+```
+
+plus three sites that receive a token purely by parameter (`GenomeList.js:61`, `GenomeGroup.js:56`, `p3app.js:807`) and the two already noted (`jsonrpc.js:11`, `SEEDClient.js:137`). A one-argument `authHeader(scheme)` that only reads the global would silently discard the per-store/per-widget token on all of these — a real behavior change in exactly the Phase 0 refactor that is supposed to have none. Signature: `authHeader(scheme, token)`, where an omitted `token` means "use the ambient one."
+
+Remaining distribution, for sizing: 198 sites are the single canonical spelling `Authorization: (window.App.authorizationToken || '')`, and another ~30 are trivial spelling variants of it (quoted key, no `|| ''`, `"` vs `'`). So roughly 230 of 292 are a literal find-and-replace, ~36 need the two-argument form, 4 are the `OAuth`/`Oauth` sites, and the rest are one-offs. The 292 are spread across **138 files**.
+
+**Name the `'oauth'` scheme after Shock, not after a service tier.** The survey in *4c-1* found the discriminator is not "workspace/app service vs. API" — both of those speak bare tokens on their RPC paths. It is Shock (plus the one `/task_info` mount). A helper documented the old way invites a future caller to reach for `authHeader('oauth')` when adding a Workspace call, which fails signature verification server-side with a misleading error.
+
+Once this exists, the Phase 3 change is: `authHeader()` returns `'Bearer ' + jwt`, in one file. Without it, Phase 3 is a 294-site edit with a per-site correctness question, done at the same time as everything else is changing.
+
+**Server-side counterpart:** **no service accepts `Bearer` today** — the string appears nowhere in `Workspace` or `app_service` (surveyed 2026-09-08). That support is real work, and it belongs in `P3TokenValidator`/`P3AuthToken` where Phase 4 already schedules it. The good news is that the client-side flip is simpler than assumed: since the RPC paths already require bare tokens, most call sites change scheme exactly once, at the Phase 3 flip.
+
+---
+
 ## Third-Party Provider Integration
 
 Third-party providers are **upstream IdPs in p3_oidc**, not integrated directly into the website:
@@ -258,6 +603,24 @@ Indexes: `{ provider, provider_sub }` (unique), `{ bvbrc_user_id, provider }`
    - **If existing account is passwordless** (social-only): send a verification code to the email on file, require the user to enter it to prove ownership
    - **Email match alone is never sufficient to auto-link** — this prevents an attacker from creating a social account with a victim's email and hijacking their BV-BRC account
 
+### "Verified Email" Must Be Enforced, Not Assumed
+
+The collision logic above says "provider's verified email" — that qualifier has to be mechanically enforced, because the providers differ:
+
+- **Google:** returns `email_verified` in the ID token. Require it to be `true`. Also require `hd` handling to be deliberate if institutional domains matter later.
+- **GitHub:** a user may have multiple emails, some unverified, and may hide their email entirely (returning a `@users.noreply.github.com` address). Query the `/user/emails` API and use **only** an address marked both `primary` and `verified`. If none exists, treat it as "no email" and fall through to the no-collision path (user picks a username, no linking).
+- **ORCID:** email is often not released at all — ORCID users frequently keep email private. The ORCID iD itself is the stable identifier; do not assume an email is present.
+
+Hard rules:
+- An email that is absent, or present but not asserted-verified by the provider, **never** participates in collision detection and **never** triggers a link prompt.
+- Never trust an email supplied in a form field over one asserted by the provider.
+- The `{ provider, provider_sub }` pair — not email — is the unique key for `federated_identities`, as the schema already specifies. Email is a *hint* for the linking UX only.
+- Providers that cannot assert email verification are still usable for login; they simply always take the "no collision" path.
+
+### Unlink Guard — Lockout Prevention
+
+The plan already notes the passwordless-single-provider guard. Make it a server-side invariant, not a UI check: **reject any unlink request that would leave an account with zero usable authentication methods** (no password AND no remaining linked provider). Enforce this in the p3_oidc/p3_user API, since the UI can be bypassed.
+
 **Linking from account settings (already logged in):** User goes to account settings, clicks "Link Google/ORCID/GitHub account," completes the social provider's OAuth flow, creates the `federated_identities` record.
 
 **Account settings UI for linked accounts:** The user profile/settings page includes a "Linked Accounts" section showing:
@@ -293,45 +656,302 @@ Indexes: `{ provider, provider_sub }` (unique), `{ bvbrc_user_id, provider }`
 
 ## Dual-Token Validation in p3_api
 
-During transition, `p3_api/middleware/auth.js` accepts both formats:
+During transition, `p3_api/middleware/auth.js` accepts both formats.
 
-- **Legacy tokens** contain `|` characters
-- **JWTs** contain exactly two `.` characters (header.payload.signature)
+**Step 0 — normalize the scheme prefix, before any format sniffing.** Today `auth.js` passes `req.headers['authorization']` verbatim into `ValidateToken`, which immediately does `token.split('|')`. That works only because p3_api's callers send a bare token; an `OAuth `-prefixed token fails signature verification (the prefix corrupts the reconstructed base string). The new middleware must strip a leading `Bearer `, `OAuth `, or `Oauth ` (case-insensitive scheme match) and then dispatch:
 
-Both paths set `req.user = "username@realm"` — downstream middleware (`DecorateQuery.js`, `patch.js`, etc.) is unchanged.
+```
+raw = req.headers['authorization']
+token = raw.replace(/^\s*(Bearer|OAuth)\s+/i, '').trim()
+if token contains '|'        -> legacy path (existing ValidateToken)
+else if token matches JWT    -> JWKS path
+else                         -> reject
+```
 
-JWT verification uses JWKS from `https://auth.bv-brc.org/.well-known/openid-configuration` with TTL-based caching (similar to existing `ssCache` for legacy public key).
+Sniff the JWT case with a real shape test (`/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/`), not a count of `.` characters — a malformed legacy token without `|` should be rejected outright, not handed to the JWT verifier.
+
+Both paths set `req.user = "username@realm"` — downstream middleware (`DecorateQuery.js:10`, `patch.js`, etc.) is unchanged. Keep setting `req.authUser` as well; both are populated today.
+
+JWT verification uses JWKS from `https://auth.bv-brc.org/.well-known/openid-configuration` with TTL-based caching (similar to the existing `ssCache` for the legacy public key).
+
+**Operational details worth specifying now:**
+
+- **Clock skew.** `jose` defaults to zero tolerance on `exp`/`nbf`/`iat`. Set an explicit tolerance (e.g. `clockTolerance: '30s'`); otherwise NTP drift between colo hosts produces intermittent, hard-to-diagnose 401s.
+- **JWKS fetch failure must not empty the cache.** The existing `ssCache` caches on success and simply refetches on miss; a JWKS cache with a TTL has a failure mode `ssCache` does not — if the refresh fetch fails at TTL expiry and the code clears the entry, *every* request 401s until the provider returns. Serve the stale key set on fetch failure and only hard-fail after an extended grace period. Log loudly when serving stale.
+- **Single-flight the JWKS refresh** so a burst of requests at TTL expiry does not stampede p3_oidc.
+- **Validate `iss` and `aud` explicitly.** Signature-valid is not sufficient; pin the issuer to the configured `https://auth.bv-brc.org` and require `aud` to include `bvbrc-api`. This is the JWT analogue of the `SigningSubject` check already in `validateToken.js` — which, per its own comment, was fail-closed only by accident at one point. Do not repeat that.
+- **Fail closed on unknown `kid`.** Refetch JWKS once (rate-limited), then reject.
+- **Metrics for Phase 6.** Count legacy vs. JWT validations, labeled by caller where possible. Phase 6's "monitor usage, remove when safe" needs this data to exist from Phase 2 onward — add it now, not later.
+
+### Roles and Revocation Latency
+
+`sulogin` gates on `user.roles.indexOf('admin')` read from MongoDB, and the client reads `auth.roles` from the parsed token for UI decisions (`p3app.js:742`). Once roles ride in the JWT, **role changes do not take effect until the access token expires.** For group membership the plan already accepts this tradeoff; for `admin` it deserves a decision rather than an inheritance:
+
+- Short access tokens (15–30 min) bound the window, which is probably acceptable for role *grants*
+- For role *revocation* — de-admining someone — 30 minutes of residual privilege may not be. Options: keep authoritative role checks server-side at the point of privileged action (p3_oidc re-reads the `users` record on impersonation exchange regardless, as specified above), or add token introspection for privileged endpoints only.
+- **Client-side `roles` is UI-only.** It already is today, but state it explicitly so the JWT version is not mistaken for an authorization decision. Every privileged operation re-checks server-side.
 
 ---
 
 ## Phased Migration
 
+### Phase 0: Centralize the Authorization header (prerequisite)
+Phase 0 splits cleanly into two independent branches. **Both are now implemented** — 0a on `phase0a/centralize-auth-header` (bvbrc_website), 0b on `phase0b/cors-allowlist` in all three of bvbrc_website, p3_api and p3_user.
+
+**Phase 0a — the header refactor (no open questions remain):** *implemented, `5e525b84e`*
+- Introduce `public/js/p3/auth/authHeaders.js` with signature `authHeader(scheme, token)`; convert all ~294 inline `Authorization` sites (across 138 files) to it, preserving the existing per-destination scheme (**bare for p3_api, p3_user, Workspace RPC and app service RPC; `OAuth ` for Shock only** — see *4c-1*)
+- The optional `token` argument is required by the ~36 `this.token ? this.token : <ambient>` override sites; omitting it would be a silent behavior change
+- Fold in `WorkflowManager.js`'s local `getAuthHeader()` (preserving its `localStorage.tokenstring` fallback), plus the token-parameter cases in `jsonrpc.js`, `SEEDClient.js`, `GenomeList.js:61`, `GenomeGroup.js:56`, `p3app.js:807`
+- ~~Confirm workspace and app services accept `Bearer`~~ — **surveyed: they do not, and neither strips any scheme prefix.** Adding `Bearer` support is Phase 4 work in `P3TokenValidator`/`P3AuthToken`, not a Phase 0 confirmation step.
+- Write the new module to be **portable to the sibling property codebases** — self-contained, config-driven, no hardcoded origins
+
+**Phase 0b — CORS (also unblocked; #13 resolved):** *implemented — `dd229015b` (bvbrc_website), `2fdf0a9b` (p3_api), `8b53891` (p3_user)*
+- ~~Determine whether the three `withCredentials: true` call sites depend on cross-origin credentialed requests~~ — **they do not.** All three are same-origin *and* dead code. But see the correction under *Multi-Domain Rollout and CORS*: the user service as a whole **is** reached cross-origin, at `https://user.patricbrc.org`.
+- ~~**Delete the three `withCredentials: true` flags.**~~ Done. They were inert and they misdescribed the deployment.
+- ~~**Fix the broken CORS configuration**~~ Done, in `p3_api/util/corsOptions.js` and `p3_user/corsOptions.js`, each landing the `credential`/`allowHeaders` spelling fix **together with** the allowlist in one commit. As implemented, the allowlist gates **credentials only** — the origin stays reflected on both services. On p3_user that is required for login to keep working; on p3_api it is required because it is a public data API with legitimate anonymous consumers.
+  - `cors_origins` defaults to `[]` in both, which reproduces production behavior exactly (curl-verified: ACAO reflected, ACAC never sent), so the change is a no-op until an operator populates the list.
+  - `cors` is pinned at **2.5.3** in p3_api, which does not accept an array `origin` — only `true`, a string, or a function. Both services use the options-delegate form.
+  - Tests: `p3_api/tests/test-security/security-cors.spec.js` (16 mocha tests). p3_user has no test framework, so `p3_user/bin/verify_cors.js` (21 checks, express + cors + Node built-ins only) follows the `bin/verify_users.js` convention. Both suites were mutation-tested against the naive spelling-only "fix" — it fails 3 and 2 checks respectively.
+- ~~Confirm whether DXKB and LDKB are subdomains of the API's registrable domain.~~ **Moot** (2026-09-11): they are on their own domains (`dxkb.org`, `ldkb.org`, each with `test.`/`dev.`), but `dataServiceURL` is relative and server-side proxied, so every property reaches p3_api same-origin regardless. See *Multi-Domain Rollout and CORS*.
+- **Still open:** populating `cors_origins` per deployment. This is a p3_user concern only — it is reached at an absolute cross-origin URL — and the list must cover all six DXKB/LDKB origins plus the BV-BRC properties, kept in sync with the `redirect_uri` registration.
+- **Delivers:** no behavior change, but Phase 3 becomes a one-file edit instead of a 294-site edit, and the CORS posture stops being accidental. Ships independently on its own branch, reviewable in isolation.
+
 ### Phase 1: Deploy p3_oidc (Foundation)
 - Create `p3_oidc` service with `oidc-provider`, MongoDB adapter, `findAccount` reading existing `users` collection
 - Password validation reuses existing bcrypt/SHA1 dual logic from `p3_user/models/user.js`
-- Deploy at `https://auth.bv-brc.org`
-- Pre-register OAuth2 clients
-- **Delivers:** Running OIDC provider, no user-facing changes, no risk to existing services
+- **Two deployments of one artifact** (#11 resolved): `https://auth.bv-brc.org` and a single non-production `https://auth-dev.bv-brc.org` serving every property's dev/alpha/beta tier. Same build; each gets its own config file, its own `oidc_*` **database**, and its own signing keys and client secrets. Both point `findAccount` at the one shared accounts database — the split is `oidc_*` records, not users. See #11 for the layout and its three consequences.
+  - The database name is already a separate config key in p3_user (`mongo.db`, honored down at `dactic-store-mongodb/index.js:35-46`), so this needs no code change to reach.
+  - **Do not share signing keys or client secrets between the two.** That is the entire point of the split; sharing them makes non-prod a production credential store.
+- Pre-register OAuth2 clients — **per deployment**, since the non-prod hostnames are different `redirect_uri` values. This is where #16 (the hostname matrix) stops being optional: every hostname is an exact-match entry and a missing one is a 400 at runtime on a host nobody tested.
+- Register a `backchannel_logout_uri` placeholder per client while the table is being created (see #15) — free now, a coordinated update later.
+- **Delivers:** Running OIDC provider in both tiers, no user-facing changes, no risk to existing services
 
 ### Phase 2: Dual-token validation in p3_api
-- Update `p3_api/middleware/auth.js` to detect and validate JWTs via JWKS
+- Update `p3_api/middleware/auth.js`: strip scheme prefix, detect format, validate JWTs via JWKS
 - Add `jose` library dependency
+- Add legacy-vs-JWT validation metrics (needed for the Phase 6 decision)
+- Implement stale-on-failure JWKS caching, single-flight refresh, explicit `iss`/`aud` checks, clock tolerance
 - **Delivers:** API accepts JWTs — any client can start using them while legacy tokens still work
-- **Critical test:** `req.user` is identical for same user regardless of token format
+- **Critical test:** `req.user` is identical for the same user regardless of token format
+- **Also test:** prefixed and unprefixed legacy tokens both validate; a garbage token with neither `|` nor JWT shape is rejected; JWKS unavailability does not 401 valid legacy tokens
+
+**Gate:** Phase 3 does not ship until Phase 2 is deployed *in production* and verified with synthetic JWTs. If the website begins issuing JWTs before every p3_api instance accepts them, in-flight users break. Verify across all API instances behind the load balancer, not just one.
 
 ### Phase 3: Website OIDC login
-- Add `/callback` route to website backend for code exchange
-- Update `LoginForm.js` — redirect-based OIDC flow with social login buttons
-- Update `p3app.js` — JWT-aware `login()`, `checkLogin()`, token refresh via `grant_type=refresh_token`
-- Update `Authorization` headers from raw token to `Bearer <jwt>`
-- Add "Linked Accounts" section to `UserProfileForm.js` — view/link/unlink social providers
-- **Delivers:** Users can log in via OIDC including Google/ORCID/GitHub, and manage their linked accounts
 
-### Phase 4: CLI Device Authorization
+Split into three independently shippable sub-phases.
+
+**Phase 3a — BFF + OIDC login with BV-BRC credentials only**
+- Add `/callback` route to website backend for code exchange
+- Implement the BFF session layer: server-side refresh token storage, session cookie, `POST /auth/refresh`, `POST /auth/logout`
+  - **The session store must be server-side, keyed by session id, and record `sub` and the IdP's `sid` on every record.** Not a self-contained signed cookie. This is what refresh-token rotation, reuse detection, admin session revocation, and any future back-channel logout all require — see open question 15.
+  - **The access token is held in a JS closure and never persisted** (#1 resolved: in-memory + server-side refresh, not a full API proxy). Two things follow. It must be **short-lived (5–15 min)**, because it is the whole blast radius of an XSS and the bound on a locally-logged-out user's ability to continue. And a **page reload discards it**, so `POST /auth/refresh` must be callable on app boot to silently re-issue from the session cookie — that boot path is on Phase 3a's critical path, not an optimization.
+  - **Logout is local-only for now**: clear the BFF cookie *and* revoke the refresh token at the IdP. Revocation is what bounds the exposure, so it is not optional.
+- Write the BFF endpoint contract down as a **normative spec document** in this repo — it is the artifact the LDKB/DXKB React sites will implement against, and it should be reviewable independently of the Dojo client code
+- Remove the ViPR Basic-auth login path (`LoginForm.js:76-93`, `loginWithVipr()`, the `@viprbrc.org` strip at `p3app.js:838`) — the realm is closed to new credentials
+- Update `LoginForm.js` — redirect-based OIDC flow (no social buttons yet)
+- Update `p3app.js` — JWT-aware `login()`/`checkLogin()`; in-memory access token; cross-tab logout signal replacing `localStorage` token polling; resolve the idle-refresh (`activeMouse`) question
+- Flip `authHeaders.js` to emit `Bearer <jwt>` (one file, thanks to Phase 0)
+- **Delivers:** existing users log in through OIDC with no visible change in available login methods. The riskiest infrastructure lands with the smallest surface of new user-facing behavior, and is independently revertable.
+
+**Phase 3b — Social providers and linked accounts**
+- Configure Google, ORCID, GitHub as upstream IdPs in p3_oidc
+- First-time-login account creation flow (username choice, availability check against the shared namespace)
+- Email-collision linking flow with per-provider verified-email enforcement
+- Add "Linked Accounts" section to `UserProfileForm.js` — view/link/unlink, with the lockout guard enforced server-side
+- **Delivers:** third-party login and account linking
+
+**Phase 3c — SU Login redesign**
+- Impersonation via Token Exchange with `act` claim; server-side admin verification; short-lived, non-refreshable token
+- p3_api logs `act.sub` alongside `sub`
+- Drive the switch-back UI from the `act` claim rather than `A*` localStorage keys
+- **Delivers:** admin impersonation with a real audit trail
+- **Depends on:** 3a (needs the BFF to hold the exchange client secret)
+
+### Phase 4: CLI Device Authorization and the Perl Stack
+
+This is the second-largest phase and the one with the most code outside this repository. The original one-line description ("Update Perl `P3AuthToken` module to handle JWT format") understated it substantially. An inventory of `app_service/` follows; **it is partial** — the Perl CLI distribution (`p3-*` commands) is a separate repo that has not been surveyed. Complete that inventory before committing to an estimate.
+
+#### 4a-0. The auth modules: `p3_auth` (located)
+
+`P3AuthToken.pm` and `P3TokenValidator.pm` live in **`git@github.com:olsonanl/p3_auth`**, vendored as `dev_container/modules/p3_auth/lib/`. Both are small, and the shim strategy below is confirmed viable by reading them.
+
+**`P3AuthToken.pm` (209 lines).** Every accessor is a regex over the raw `$self->{token}` string — there is no parse step to hook:
+
+| Method | Implementation | JWT equivalent |
+|---|---|---|
+| `is_token($str)` | `return 0 unless $str =~ /\bun=/`, then checks `expiry=` | Must learn JWT shape, else a JWT is silently "not a token" |
+| `user_id` | `/\bun=([^\|]+)/` | `sub` claim |
+| `expiry` | `/\bexpiry=(\d+)/` | `exp` claim |
+| `is_admin` | `/\|scope=user\|/ && /\|roles=admin\|/` | `roles` claim — **client-side/UI only, never an authorization decision** |
+| `signature` | `/\bsig=([^\|]+)/` | No equivalent; audit callers |
+
+**`is_token()` is the highest-risk method.** It gates both `initialize_token_from_environment` (reading `P3_AUTH_TOKEN`/`KB_AUTH_TOKEN`) and `initialize_token_from_files` (reading `~/.patric_token`). A JWT in either location is rejected as "not a token" and the constructor returns an object with an undef token — **no error, no warning**. Teaching `is_token` the JWT shape is the first change in this module, not an afterthought.
+
+Note also that `is_token` and `expiry` do a *local, unverified* expiry check by regex. The JWT path must not simply trust `exp` from an unverified payload for anything security-relevant — local expiry checking is a UX affordance ("your token is stale, log in again"), and the authoritative check stays in `P3TokenValidator`.
+
+**`P3TokenValidator.pm` (108 lines).** A discrete class: `validate()` returns `($ok, $msg)`, so the interface does not move — this is the contained change the plan assumed. It caches pubkeys per signer URL for 86400s and calls `$pubkey->use_sha1_hash()`. Two things to carry into the JWT path:
+
+- The pubkey cache has **no stale-on-failure behavior** — on a fetch failure it returns `undef` and every validation fails until the signer recovers. This is the same hazard called out for the JWKS cache in *Dual-Token Validation in p3_api* above; fix it in both places, not just the Node one.
+- The signer allowlist (`trust_token_signers` from `P3AuthConstants`) is the Perl analogue of the `iss` check. The JWT path needs an equivalent explicit issuer pin, plus an `aud` check that has no current counterpart.
+
+**Pre-existing bug, unrelated to OAuth2 but in the blast radius:** `validate()` line 30 computes `$token_str` from either a string or an object (`ref($token) ? $token->token() : $token`), but line 39 then calls `$token->token()` unconditionally when building `%vars`. Passing a plain string dies rather than validating. Every current caller passes an object, so it is latent — but it will surface the moment someone refactors this method for dual-format dispatch. Fix it as part of that work.
+
+#### 4a. Inventory findings (app_service only)
+
+**The good news: there is a real abstraction, and most code uses it.** 14 files `use P3AuthToken`, and the accessor surface actually exercised is small:
+
+| Accessor | Uses | Notes |
+|---|---|---|
+| `->user_id` | 9 | The dominant use. Maps to JWT `sub`. |
+| `->token` | 7 | Raw token string, for forwarding in headers / storing |
+| `->expiry` | 3 | Unix epoch. Maps to JWT `exp`. |
+| `->is_admin` | 2 | Maps to a `roles` claim — but see the hardcoded-username bug below |
+
+Constructor forms in use: `P3AuthToken->new()`, `->new(token => $t)`, `->new(token => $t, ignore_authrc => 1)`, `->new(ignore_authrc => $ENV{KB_INTERACTIVE} ? 0 : 1)`.
+
+**This means a compatibility shim is viable and should be the primary strategy.** If `P3AuthToken` learns to detect a JWT, verify it via JWKS, and populate `user_id`/`expiry`/`is_admin` from claims, the great majority of the 14 consumers need no change at all. Budget the work as "one module done properly" plus the exceptions below — not "rewrite the Perl stack."
+
+**The bad news: four sites bypass the abstraction and parse the raw string.** These break silently on a JWT (the regex simply fails to match, yielding `undef` rather than an error):
+
+1. `lib/Bio/KBase/AppService/Util.pm:426` — `my($user_id) = $token =~ /\bun=([^|]+)/;` inside `token_user_is_admin`
+2. `lib/Bio/KBase/AppService/Quick.pm:132` — same regex, sets `vars->{user}` and `$ENV{KB_AUTH_TOKEN}`
+3. `lib/Bio/KBase/AppService/AppServiceImpl.pm:164` — `sed -e '/un=/s/sig=[a-z0-9]*/sig=XXX/'` used to **redact the signature from logged tokens**. On a JWT this pattern matches nothing, so *tokens would be written to logs unredacted*. This is a security regression if missed — fix it in the same commit that enables JWTs, not later.
+4. `lib/Bio/KBase/AppService/SlurmCluster.pm:1023` — `split(/\|/)`; confirm whether this is token parsing or unrelated field splitting before touching it.
+
+**Bug found during inventory — `token_user_is_admin` is not an admin check.** `Util.pm:418–428` reads:
+```perl
+my($user_id) = $token =~ /\bun=([^|]+)/;
+return $user_id eq 'olson@patricbrc.org';
+```
+The comment says "Let admins (Bob for now) submit when the service is down." It hardcodes a single username, ignores the token's `roles` field entirely, and — because it never validates the signature — **trusts an unverified string**. Anyone who can present a token-shaped string containing `un=olson@patricbrc.org` passes this check. Callers are `Util.pm:334` and `Util.pm:372`. This should be fixed on its own, independently of and **before** the OAuth2 work, and the fix should be a real roles check against a validated token. Do not port this logic forward.
+
+#### 4b. Job token plumbing (interacts with the Token Exchange design)
+
+The Phase-3 Token Exchange design for jobs lands directly on this code, so the two must be planned together:
+
+- **`TaskToken` table** (`Schema/Result/TaskToken.pm`) stores `task_id`, `token` (TEXT), `expiration` (TIMESTAMP). This is the "bearer token at rest in the scheduler DB" the plan proposes to eliminate — replaced by the one-time ticket. Written at `Scheduler.pm:333`, `Schema.pm:65`, `SchedulerDB.pm:220`; read at `SlurmCluster.pm:853` (`order_by expiration DESC`, single row). Verified against the current `app_service` checkout, 2026-09-08.
+- **The table has no primary key and no index** (`Schema.sql:326-332`): just `task_id INTEGER`, `token TEXT`, `expiration TIMESTAMP DEFAULT NULL`, and a foreign key to `Task(id)`. Multiple rows per task are expected — `SlurmCluster.pm:853` explicitly takes the one with the longest expiration ("use the token with the longest expiration"). Any `ticket_hash` migration must preserve the multi-row-per-task shape, or find and change that selection logic too.
+- **`SlurmCluster.pm:854-859` fails the task outright when no token row is found** (`state_code => 'F'` with a warning). Under the ticket model this is the natural place for redemption failure to surface, and its behavior — hard-fail rather than retry — should be a deliberate choice, not an inherited one. A ticket that has already been redeemed is indistinguishable here from one that was never written.
+- **`expiration` is derived from `$token->expiry`** (`Scheduler.pm:336`, `Schema.pm:68`, `SchedulerDB.pm:222`). Under the ticket model this column changes meaning — it becomes the ticket's validity window, not the token's.
+- **`slurm_batch.tt:71-72`** exports the token into the job environment:
+  ```
+  export P3_AUTH_TOKEN="[% task.token %]"
+  export KB_AUTH_TOKEN="[% task.token %]"
+  ```
+  This is where the ticket-redemption step is inserted. **Note there are two environment variables, not one** — both are consumed downstream (`p3x-submit-job.pl:179` sets both explicitly). Any change must set both, or find and update every reader.
+- **Schema migration:** replacing `token` with `ticket_hash` is a DB migration on a live scheduler with in-flight jobs. Plan for a period where both columns exist: new jobs get tickets, already-queued jobs still redeem their stored token. Do not migrate in place and strand queued work.
+- `p3x-archive-tasks.pl:399` deletes `TaskToken` rows on archive; `p3x-resubmit-load-files.pl:50` joins against them. Both need review under the new schema.
+
+#### 4c. Perl HTTP clients send `OAuth`, and must learn `Bearer`
+
+Mirroring the JavaScript situation, four Perl sites hardcode the `OAuth` scheme:
+- `Shock.pm:23`, `Awe.pm:175` (which *also* sends a non-standard `Datatoken` header carrying the same token), `Quick.pm:266`, `AppScript.pm:325`
+
+These need the same centralization treatment as Phase 0 does for the browser: one helper that emits the right scheme, so the JWT flip is a single edit.
+
+**Two of those four are dead and drop out of scope** (Robert, 2026-09-08: "AWE is no longer in the picture"). Verified in `synack-2025-12/app_service`:
+
+- **`Shock.pm` has zero `use` sites.** No file in `app_service` does `use Bio::KBase::AppService::Shock`. It is unreferenced.
+- **`Awe.pm` has no live caller.** Four files `use` it — `Monitor.pm:10`, `Quick.pm:16`, `scripts/codon-tree-stats.pl:7`, `service-scripts/gather-stats.pl:6` — but:
+  - `Monitor.pm` is the only one that actually *instantiates* it (`:40`, `:78`, as `Awe->new($impl->{awe_server}, session('token'))`), and **`awe_server` is never populated**. `AppServiceImpl.pm` never sets the key; the only `awe-server` value in the tree is a stale `deploy.cfg` pointing at `http://redwood.mcs.anl.gov:7080`. Those calls would construct against `undef` today. `Monitor.pm` is mounted at `/monitor` in both `AppService.psgi:52` and `AppServiceAsync.psgi:53`, so it is *reachable* — which makes it dead code that is also exposed, and worth deleting on its own merits rather than porting.
+  - `Quick.pm:16` `use`s `Awe` but never calls it — a leftover import.
+  - **`scripts/codon-tree-stats.pl` and `service-scripts/gather-stats.pl` are dead code** (Robert, 2026-09-08). They are also the two scripts flagged in *4d* as using the older `Bio::KBase::AuthToken`, so both concerns close at once.
+
+**Net effect on Phase 4c: the `OAuth` → `Bearer` work is two sites, not four — `Quick.pm:266` and `AppScript.pm:325`.** `AppScript.pm` is the one that matters; `Quick.pm` is mounted at `/quick` in both `.psgi` files and is a genuine raw-regex site (`:132`), so it stays in scope.
+
+The `Datatoken` header question is closed: **drop it.** Do not carry a non-standard token header into the JWT design.
+
+Preferred disposition for the dead modules is **delete `Awe.pm`, `AweEvents.pm`, `Shock.pm`, `Monitor.pm`, the two stats scripts, and the top-level `awe` script; drop the stale `use` from `Quick.pm`** — as a separate cleanup commit, before Phase 4 rather than during it. That keeps the auth migration's diff to code that is actually live, and removes an exposed mounted route in the process. It is not on the OAuth2 critical path; it just shrinks it.
+
+**One reason to actually do the deletion rather than merely note it: `SRC_SERVICE_PERL = $(wildcard service-scripts/*.pl)` (`Makefile:25`).** Every `.pl` in that directory is built into `$(BIN_DIR)` and deployed to `$(SERVICE_DIR)/bin` with no per-file opt-in. So `gather-stats.pl` **ships on every deploy today** despite being dead, and any Phase 4 sweep that greps deployed Perl for token handling will keep finding it. Deleting the file is the only way to take it out of the build.
+
+#### 4c-1. Correction: the `OAuth` convention is narrower than documented
+
+The `Workspace` repo (`../Workspace`, at `041fc04`) was surveyed 2026-09-08 to answer open question 9. It **overturns the "workspace service requires `OAuth `" rule** recorded in `CLAUDE.md` and in the *Authorization header* section above.
+
+**No Workspace server code strips a scheme prefix.** All four validation entry points pass the raw header value straight into `P3AuthToken->new(token => $token, ignore_authrc => 1)`:
+
+- `Service.pm:225` (`auth_ping`) and `Service.pm:269` (`call_method` — the JSON-RPC dispatch path that gates every authenticated method)
+- `WorkspaceImpl.pm:1521` (`_set_auth_request`)
+- `WorkspaceCompletion.psgi:32`
+
+There is no `s/^OAuth //`, no `Bearer` handling, and no regex over the scheme anywhere in `Workspace/lib`. So the Workspace API is subject to **exactly the same constraint as p3_api**: a prefixed token would be split on `|`, the first field would parse as key `"OAuth un"`, and the reconstructed base string would not match the signature. **The Workspace JSON-RPC API requires a bare token.**
+
+And that is in fact what it receives. `WorkspaceManager.init()` (`WorkspaceManager.js:1654`) builds its RPC client as `RPC(apiUrl, token)`, and `jsonrpc.js:11` sends `Authorization: token` — bare, no scheme. `p3app.js:508-514` passes `this.authorizationToken` directly.
+
+**So what are the `OAuth ` sites actually talking to?** Shock, not Workspace:
+
+- `WorkspaceManager.js:864` and `:1181` — both `xhr.get(meta.link_reference + '?download')`. `link_reference` is a **Shock node URL**, not a Workspace endpoint.
+- `UploadManager.js:32` — the upload URL, also Shock.
+- On the Perl side, **every** `OAuth ` site is a Shock call, with no exceptions once the URLs are traced:
+  - `WorkspaceImpl.pm:343,790,793,800,811,830,1823,3126` — `$self->_shockurl()` / `$obj->{shocknode}` operations
+  - `WSFileMember.pm:98` — documented `curl` against `shock_api`
+  - `WorkspaceClientExt.pm:109` (`shock_read_bytes($url,...)`), `:342` (`$meta->shock_url`), `:386` and `:455` (both `my $shock_url = $res->[11]`, the Shock URL the Workspace RPC hands back) — these *look* like Workspace-client calls from the module name, but the target is Shock in all four
+  - `WorkspaceTests.pm:319` — POSTs to `$output->[0]->[11]`, the same field: a Shock URL
+
+  Field 11 of a Workspace object-meta tuple is the Shock URL; that is the tell. The pattern is always "ask Workspace over RPC with a bare token, get back a Shock URL, then talk to Shock with `OAuth `."
+
+**The app service is inconsistent with itself, and the difference is per-mount.** Surveyed in the updated `../app_service` checkout at `45f783f`:
+
+- **`AppServiceImpl.pm:90` does strip it** — `if ($auth =~ /^OAuth\s+(.*)$/i)`, with an `elsif` fallback to HTTP Basic that logs in via `P3AuthLogin::login_patric`. But this is inside **`sub _task_info`** (opens at `:62`), which is mounted only at `/task_info` — the endpoint running jobs call back into. It is not the RPC path.
+- **`AsyncService.pm:239`, the JSON-RPC `call_method` dispatch that gates every authenticated app-service method, does *not* strip.** Raw header straight into `P3AuthToken->new(token => $token, ignore_authrc => 1)`. Same at `AsyncService.pm:198` (`auth_ping`).
+
+So `OAuth ` is accepted at exactly one app-service endpoint and rejected at the main one. `AppService.psgi` and `AppServiceAsync.psgi` both mount `AppServiceImpl` for `/task_info` and the RPC handler for `/`.
+
+**Revised rule: the `OAuth ` scheme belongs to Shock (and historically AWE), plus the single `/task_info` endpoint — not to "the workspace service" or "the app service" wholesale.** The three-convention table should read:
+
+| Convention | Actually required by |
+|---|---|
+| **Bare token** | p3_api, p3_user, **the Workspace JSON-RPC API**, **the app service JSON-RPC API** |
+| `OAuth <token>` | **Shock**, and app service `/task_info` only |
+| `Oauth <token>` | app service stdout/stderr URLs (`JobManager.js`) |
+
+Two consequences for Phase 0, both concrete:
+
+- **`authHeaders.js` must key its scheme on the destination *endpoint*, not the destination service.** "Workspace vs. API" is the wrong axis and produces a helper that works on whichever path happens to get exercised first. The axis that actually predicts the answer is **Shock-or-`/task_info` vs. everything else**, and the bare-token case is now the large majority.
+- **Shock stays, so the `OAuth ` scheme stays with it.** AWE's retirement does *not* generalize: **Shock is still in play as the Workspace backing store** (Robert, 2026-09-08). Every object body lives there, so the `OAuth ` sites are the live data path — `WorkspaceImpl.pm:343,790,793,800,811,830,1823,3126` (node create, ACL set, read), `WSFileMember.pm:98`, and the browser's download/upload URLs.
+
+  This makes Shock a **first-class Phase 4/5 participant, not a cleanup item**, and it raises a question the plan has not addressed: **does Shock validate BV-BRC tokens itself, or does it just carry them?** Shock is third-party Go infrastructure — it is not going to grow JWKS verification because we ask it to. Three possibilities, and they have very different costs:
+
+  1. **Shock validates the token against p3_user's `/public_key`.** Then Shock is a legacy-token consumer that Phase 6 cannot decommission around, and it needs either a JWT-capable auth plugin or a shim endpoint that keeps serving the old format.
+  2. **Shock only checks ACLs by username**, with the token used to identify the caller via a configured auth provider. Then the integration point is that provider config, and it may be satisfiable by pointing Shock at an OIDC userinfo endpoint.
+  3. **Workspace mediates all Shock access** and the browser's direct-to-Shock URLs are pre-authorized (signed/expiring). Then the browser's `OAuth ` header may be vestigial on those requests.
+
+  `WorkspaceImpl.pm:343` PUTs an ACL for `$self->_getUsername()`, which is evidence for (2) — but the browser also sends `OAuth ` on `?download` requests, which suggests Shock does check something. **Resolve this before Phase 4**; it is the single largest unknown remaining in the Perl/service tier, and under case (1) it constrains when the legacy signing key can be retired. Note also that `Shock.pm` in `app_service` being dead does *not* mean Shock is dead — Workspace talks to it directly, via `WorkspaceImpl.pm`, not through that module.
+
+Update `CLAUDE.md`'s *Authorization header* table when this lands; it currently states the wrong rule, and the wrong rule is the kind that produces a plausible-looking helper that fails in production.
+
+#### 4d. Validation path
+
+`P3TokenValidator` is used in 3 files (`AsyncService.pm:28,199,239`, `AppServiceImpl.pm:94,289`, `Quick.pm:25,77`). It is the Perl analogue of `p3_api/middleware/auth.js` and needs the same dual-token treatment: scheme-prefix stripping, format detection, JWKS verification with caching, explicit `iss`/`aud` checks, and clock tolerance. Because it is already a discrete class with a `validate()` method returning `($ok, $msg)`, this is a contained change — the interface does not move.
+
+**`Bio::KBase::AuthToken` — the older, pre-`P3AuthToken` module — has three consumers, and all three are dead.** They need no JWT work; they need deleting:
+
+- `scripts/codon-tree-stats.pl:6` and `service-scripts/gather-stats.pl:5` — confirmed dead (Robert, 2026-09-08)
+- **`awe`** (top-level, unlisted in *4c* above because it does not `use ...::Awe`) — an AWE operations script: connects to a local `AWEDB` MongoDB on `localhost:27017` and REST-calls `http://redwood:7080` with `Authorization: OAuth <token>` (`awe:18`). Dead by the same decision, since AWE is gone. Not referenced by the `Makefile`.
+
+That retires `Bio::KBase::AuthToken` from `app_service` entirely — worth confirming during the open-question-5 CLI survey, since if the CLI repo has no consumers either, the module itself can go.
+
+#### 4e. The CLI login command itself
+
 - Enable Device Authorization Grant in p3_oidc
-- Create `bvbrc-login` CLI command for device flow
-- Update Perl `P3AuthToken` module to handle JWT format
-- **Delivers:** CLI users authenticate via browser, no passwords in terminal
+- Create the `bvbrc-login` CLI command: `POST /device/authorize`, display `user_code` + `verification_uri`, poll `/token` respecting the `interval` and `slow_down` responses per RFC 8628
+- **Token storage on disk.** Current behavior is governed by `ignore_authrc` and an `.authrc`-style file; `Quick.pm:43` explicitly deletes `$ENV{KB_AUTH_TOKEN}`. Decide where the JWT and its refresh token live (`~/.bvbrc/auth_token` is proposed) and set permissions to `600`. A refresh token on disk is long-lived — this is the CLI's equivalent of the browser refresh-token question and deserves the same scrutiny.
+- **Refresh on the CLI.** Unlike the browser there is no BFF. The CLI is a public client, so it gets a rotating refresh token stored locally; ensure rotation and reuse-detection are enabled so a stolen file is detectable.
+- **Non-interactive/service use.** `ignore_authrc => 1` and `KB_INTERACTIVE` indicate there are non-interactive callers that cannot complete a device flow. These need a different path — Client Credentials (Phase 5) or a long-lived, explicitly-provisioned credential. **Enumerate these before Phase 6 removes the legacy path**, or scripted/cron users break with no migration route.
+
+#### 4f. Sequencing
+
+1. Fix `token_user_is_admin` (independent, do now)
+2. Fix the `sed` signature-redaction so it handles both formats (do with, or before, JWT enablement)
+3. Centralize Perl `Authorization` header construction (analogue of Phase 0)
+4. Teach `P3AuthToken` and `P3TokenValidator` dual-format handling
+5. Convert the four raw-regex sites to use the accessor
+6. `bvbrc-login` device flow command
+7. Job-token/ticket plumbing — coordinate with Phase 3's Token Exchange work
+
+- **Delivers:** CLI users authenticate via browser, no passwords in terminal; Perl services accept JWTs
 
 ### Phase 5: Service-to-service migration
 - Register service clients, migrate workspace/app services to Client Credentials
@@ -349,9 +969,14 @@ JWT verification uses JWKS from `https://auth.bv-brc.org/.well-known/openid-conf
 
 - **PKCE mandatory** for all Authorization Code flows (S256 only)
 - **Refresh token rotation** — each refresh yields new token; old one invalidated; reuse triggers grant revocation
-- **Token storage** — short-lived access tokens (15-30 min) in memory/localStorage, refresh tokens with sliding window (30 days) and absolute max (90 days)
+- **Token storage** — short-lived access tokens (15-30 min) **in memory only**; refresh tokens held server-side by the BFF behind an `httpOnly`/`Secure`/`SameSite=Lax` session cookie, with sliding window (30 days) and absolute max (90 days). **Refresh tokens are never readable by JavaScript.** See *Token Storage: Adopt the BFF Pattern* above for rationale and the fallback option.
 - **RSA-SHA1 → RS256** — significant cryptographic upgrade (also addresses FIPS 140-2/SC-13 — SHA-1 is deprecated for digital signatures under NIST SP 800-131A)
 - **Rate limiting** on `/token` and `/device/authorize` endpoints
+- **Device flow: rate-limit the verification page too.** The plan rate-limits `/device/authorize` (code issuance) but the brute-force target is the *user-facing* `/device` page where a `user_code` is entered. Require adequate `user_code` entropy, rate-limit attempts per session/IP, and invalidate a `device_code` after a small number of failed `user_code` entries.
+- **Redirect URI allowlisting** — exact-match only, no wildcards, no scheme-relative values. Register the precise `/callback` URL for every property and every environment; see the hostname matrix in *Multi-Domain Rollout and CORS* for the full list and the reason it cannot be generated by interpolation.
+- **`state` parameter** in addition to PKCE, for CSRF protection on the callback.
+- **Open-redirect review on `/callback`** — any post-login `returnTo` must be validated against a same-origin allowlist, not reflected.
+- **Content Security Policy.** With access tokens in JS memory, CSP is the primary XSS mitigation. Worth an assessment during Phase 3 even if a strict policy is a longer project for a Dojo codebase.
 
 ---
 
@@ -482,6 +1107,9 @@ Log the following events:
 - Client secret creation and rotation
 - Failed authentication attempts to p3_oidc
 - Token Exchange requests (which service requested delegation for which user)
+- **Admin impersonation** — every SU Login exchange: admin identity, target identity, timestamp, scope, and the resulting token's `tokenid`. Also log the *end* of an impersonation session where observable. This capability produces no audit trail today; the migration is the opportunity to fix that.
+- **Requests made under impersonation** — p3_api logs `act.sub` alongside `sub` for any request whose token carries an `act` claim, so a write attributed to a user can be traced to the admin who performed it
+- Account linking and unlinking (user, provider, provider_sub, timestamp)
 - Administrative actions (client registration changes, user role modifications)
 
 ---
@@ -533,24 +1161,163 @@ Groups are resolved at login time and cached in the token. With short-lived acce
 
 ## Files Requiring Changes (by phase)
 
+### Phase 0 (prerequisite, ships independently)
+- `bvbrc_website/public/js/p3/auth/authHeaders.js` — **new**, single source of auth headers
+- ~294 call sites across `public/js/p3/` — mechanical conversion. Concentrations: `GridContainer.js` (9), `PathwayMapKegg.js` (6), `SubSystemsOverviewMemoryGrid.js` (4), `UserProfileForm.js` (4), `IDMappingAppResultGridContainer.js` (3), `GroupExplore.js` (3), `SubsystemServiceMemoryGridContainer.js` (3), `p3app.js` (4), `WorkspaceManager.js` (2), `JobManager.js` (2)
+- `public/js/p3/WorkflowManager.js` — remove local `getAuthHeader()` in favor of the shared one
+- `public/js/p3/jsonrpc.js`, `public/js/p3/widget/SEEDClient.js`, `public/js/p3/UploadManager.js` — token-parameter cases
+
 ### Phase 1 (new service, no existing file changes)
 - New repo: `p3_oidc/` with `oidc-provider` configuration, MongoDB adapter, `findAccount` adapter
 
 ### Phase 2
-- `p3_api/middleware/auth.js` — dual-token detection and JWT validation
+- `p3_api/middleware/auth.js` — scheme-prefix stripping, dual-token detection, JWT validation, metrics
 - `p3_api/package.json` — add `jose` dependency
 
 ### Phase 3
-- `bvbrc_website/routes/` — new `callback.js` route
-- `bvbrc_website/app.js` — mount callback route
+- `bvbrc_website/routes/` — new `callback.js` route; new `auth.js` route (`/auth/refresh`, `/auth/logout`)
+- `bvbrc_website/app.js` — mount callback/auth routes, session middleware
+- `bvbrc_website/lib/` — BFF session + refresh-token store
 - `bvbrc_website/public/js/p3/widget/LoginForm.js` — OIDC redirect flow
-- `bvbrc_website/public/js/p3/app/p3app.js` — JWT-aware auth lifecycle
-- `bvbrc_website/public/js/p3/WorkspaceManager.js` — `Bearer` prefix
+- `bvbrc_website/public/js/p3/app/p3app.js` — JWT-aware auth lifecycle; in-memory token; `checkLogin()`/`timeout()`/`checkSU()` rework; cross-tab logout signal
+- `bvbrc_website/public/js/p3/auth/authHeaders.js` — switch to `Bearer` (single edit)
+- `bvbrc_website/public/js/p3/widget/SuLogin.js` — Token Exchange flow, drop `A*` localStorage shadow keys
+- `bvbrc_website/public/js/p3/widget/UserProfileForm.js` — Linked Accounts section
+- `p3_oidc` — impersonation Token Exchange with server-side admin check
 
 ### Phase 4
-- CLI tools (separate repo) — device flow command
-- Perl modules — JWT parsing
+
+*Core auth modules (repo not checked out locally — locate before estimating):*
+- `P3AuthToken.pm` — dual-format detection; populate `user_id`/`expiry`/`is_admin` from JWT claims. **The compatibility shim that makes most of the rest a no-op.**
+- `P3TokenValidator.pm` — scheme stripping, format detection, JWKS verification, `iss`/`aud` checks, clock tolerance
+
+*Raw-regex parse sites that bypass the abstraction (`app_service/`):*
+- `lib/Bio/KBase/AppService/Util.pm:426` — `un=` regex in `token_user_is_admin` (**also fix the hardcoded-username bug, separately and first**)
+- `lib/Bio/KBase/AppService/Quick.pm:132` — `un=` regex
+- `lib/Bio/KBase/AppService/AppServiceImpl.pm:164` — `sed` signature redaction; **silently stops redacting on JWTs**
+- `lib/Bio/KBase/AppService/SlurmCluster.pm:1023` — `split(/\|/)`; confirm whether token-related
+
+*`OAuth` → `Bearer` header sites (`app_service/`):*
+- `lib/Bio/KBase/AppService/AppScript.pm:325`
+- `lib/Bio/KBase/AppService/Quick.pm:266`
+- ~~`Shock.pm:23`, `Awe.pm:175`~~ — dead, see *4c*. AWE is out of the picture; `Shock.pm` has no `use` sites.
+
+*Dead-code cleanup (separate commit, before Phase 4):*
+- Delete `lib/Bio/KBase/AppService/`: `Awe.pm`, `AweEvents.pm`, `Shock.pm`, `Monitor.pm`
+- Delete `scripts/codon-tree-stats.pl`, `service-scripts/gather-stats.pl`, and the top-level `awe` script — all dead, all `Bio::KBase::AuthToken` consumers. **`gather-stats.pl` deploys today** via `Makefile:25`'s `$(wildcard service-scripts/*.pl)`; deletion is the only opt-out.
+- Delete `make-log-events-data.pl` (declares `package ...::AweEvents`)
+- Drop the stale `use ...::Awe` from `Quick.pm:16`
+- Unmount `/monitor` from `lib/AppService.psgi:52` and `lib/AppServiceAsync.psgi:53`
+- Remove the stale `awe-server` entries from `deploy.cfg:4,26`
+
+*Job token plumbing (coordinate with Phase 3 Token Exchange):*
+- `lib/Bio/KBase/AppService/Schema/Result/TaskToken.pm` — schema change, `token` → `ticket_hash`
+- `lib/Bio/KBase/AppService/Scheduler.pm:333`, `Schema.pm:65`, `SchedulerDB.pm:220` — writers
+- `lib/Bio/KBase/AppService/SlurmCluster.pm:822` — reader
+- `lib/Bio/KBase/AppService/slurm_batch.tt:71-72` — ticket redemption; sets **both** `P3_AUTH_TOKEN` and `KB_AUTH_TOKEN`
+- `service-scripts/p3x-archive-tasks.pl:399`, `p3x-resubmit-load-files.pl:50` — review under new schema
+
+*CLI (separate repo, not surveyed):*
+- `bvbrc-login` device flow command; on-disk token/refresh-token storage at `600`
 
 ### Phase 6
-- `p3_user/routes/authenticate.js` — remove or redirect legacy endpoints
+- `p3_user/routes/authenticate.js` — remove or redirect legacy endpoints, including `POST /authenticate/sulogin` (line 42)
 - `p3_api/middleware/auth.js` — remove legacy validation path
+- `bvbrc_website/public/js/p3/app/p3app.js` — remove residual `A*` localStorage handling (~768–778, ~925)
+- Perl: remove legacy branch from `P3AuthToken`/`P3TokenValidator`; drop `OAuth` scheme fallback
+
+---
+
+## Open Questions
+
+1. ~~**BFF scope** — full API proxy or in-memory access token with server-side refresh?~~ **Resolved** (Robert, 2026-09-11): **in-memory access token with server-side refresh**, the option proposed above. The refresh token stays in the BFF's server-side session and never reaches JavaScript; the access token lives in a JS closure, never in `localStorage`.
+
+    Two consequences this locks in:
+    - **The access token must be short-lived** (5–15 min). It is the entire blast radius of an XSS, since it is the one credential the browser holds. This is also what makes local-only logout defensible — see #15.
+    - **A page reload discards the access token**, so the BFF needs a silent re-issue path from the session cookie on app boot. That is a normal part of this pattern, but it is a real endpoint to build, and it is on the critical path for Phase 3.
+
+    Note this does **not** re-open the `dataServiceURL` arrangement: p3_api is already reached same-origin via the website's server-side proxy on every property (see #13), so choosing the in-memory variant over a full proxy changes nothing about how API requests are routed.
+2. **Idle session policy** — preserve today's "logged out unless mouse active" behavior, or move to refresh-token-window semantics? These give noticeably different UX for long-running analysis sessions.
+3. **Impersonation re-auth** — is `prompt=login` acceptable to admins, or is the current password re-prompt preferred for familiarity?
+4. ~~**Where do `P3AuthToken.pm` and `P3TokenValidator.pm` live?**~~ **Resolved:** `git@github.com:olsonanl/p3_auth`, vendored at `dev_container/modules/p3_auth/lib/`. Both read and inventoried — see *4a-0* above. The shim strategy is confirmed viable. Remaining sub-question: who owns `p3_auth` releases, and how does a change there propagate to the deployed CLI and to `app_service`?
+5. **Perl CLI repo inventory** — the `p3-*` command distribution has not been surveyed at all. Run the same `un=` / `SigningSubject` / `tokenid` / `split(/\|/)` / `P3AuthToken` grep there. **Add `Bio::KBase::AuthToken` to that grep**: its three `app_service` consumers are all dead, so if the CLI repo has none either, the module can be retired outright rather than taught JWTs.
+6. **Non-interactive Perl callers** — `ignore_authrc => 1` and `KB_INTERACTIVE` imply scripted users who cannot complete a device flow. Enumerate them and decide their migration path (Client Credentials? provisioned credential?) before Phase 6 removes legacy tokens.
+7. ~~**`Awe.pm`'s `Datatoken` header** — is AWE still in the request path?~~ **Resolved** (Robert, 2026-09-08): AWE is no longer in the picture. Drop the `Datatoken` header; `Awe.pm` and `Shock.pm` are dead and leave Phase 4c with two `OAuth`-scheme sites instead of four. `codon-tree-stats.pl`, `gather-stats.pl`, and the top-level `awe` script are **also dead** (Robert, 2026-09-08), which retires `Bio::KBase::AuthToken` from `app_service` entirely. See *4c*/*4d* for the verification and the cleanup commit. Note `gather-stats.pl` currently **deploys** via the `service-scripts/*.pl` wildcard in `Makefile:25`, so it must actually be deleted, not just ignored. Nothing further outstanding here beyond confirming during the open-question-5 CLI survey that `Bio::KBase::AuthToken` has no consumers there either — if not, the module itself can go.
+8. **`TaskToken` migration strategy** — confirm the dual-column approach for in-flight jobs is acceptable to operations, and who owns the schema change. Re-verified against the current `../app_service` (`45f783f`), 2026-09-08: writers and readers are as inventoried, and two shape constraints were added to *4b* — the table has **no primary key or index** and is **intentionally multi-row per task** (`SlurmCluster.pm:853` picks the longest expiration), and `SlurmCluster.pm:854-859` **hard-fails the task** when no row is found, which is where ticket-redemption failure will surface.
+9. ~~**Workspace/app service `Bearer` support** — does it exist already, or is it work?~~ **Answered by survey** (`../Workspace` at `041fc04`, `../app_service` at `45f783f`, 2026-09-08). **No `Bearer` support exists anywhere** — the string does not appear in either repo. It is work, and it lands in `P3TokenValidator`/`P3AuthToken` where Phase 4 already puts it.
+
+    The survey also **overturned the documented `OAuth `-for-workspace rule** — see *4c-1*. Both JSON-RPC dispatch paths (`Workspace/Service.pm:269`, `app_service/AsyncService.pm:239`) pass the raw header into `P3AuthToken` with **no scheme stripping**, so both require a bare token exactly as p3_api does. Only Shock and the app service's `/task_info` endpoint (`AppServiceImpl.pm:90`) take `OAuth `.
+
+    This unblocks Phase 0's server side more than expected: the bare-token convention is already near-universal, so `authHeaders.js` keys on Shock-or-`/task_info` vs. everything else. Two follow-ups fall out:
+    - **Shock is still in play as the Workspace backing store** (Robert, 2026-09-08), so `OAuth ` does not retire with AWE. Every `OAuth ` sender is a Shock client and all of them are live. This promotes Shock to a first-class migration participant — see *4c-1* for the open sub-question of whether Shock **validates** BV-BRC tokens or merely carries them, which determines whether the legacy signing key can be retired in Phase 6 at all.
+10. **Are there non-browser, non-CLI legacy token consumers** (external collaborators, cron jobs) that would need notice before Phase 6? The Phase 2 metrics should answer this empirically.
+11. ~~**Separate non-production IdP (`auth-dev.bv-brc.org`) or shared?**~~ **Resolved** (Robert, 2026-09-11): **separate non-production IdP, sharing one user-account database, with `oidc_*` records in per-tier databases.** One shared non-production instance serves every property's dev/alpha/beta tier, so it is two IdP deployments total, not five.
+
+    ```
+    mongodb://host/
+    ├── p3_users          <- ONE database, shared by both IdPs
+    │     └── users         (accounts, bcrypt hashes, roles)
+    ├── p3_oidc_prod      <- prod IdP only
+    │     └── oidc_* collections (sessions, grants, codes, refresh tokens)
+    └── p3_oidc_dev       <- non-prod IdP only
+          └── oidc_* collections
+    ```
+
+    **This is configuration, not code.** Verified in the current p3_user: `config.js` already keeps `mongo.url` and `mongo.db` as separate keys, and `dataModel.js:16` passes `db` per store; the driver honors it at `dactic-store-mongodb/index.js:35-46`, which does `client.db(dbName)` off a single `MongoClient`. `oidc-provider`'s MongoDB adapter is instantiated independently of whatever `findAccount` reads, so the two point at different database names without a code change.
+
+    **Correction to this entry's earlier cost estimate:** it claimed the split "doubles what Phase 1 builds." That was wrong. Phase 1 builds *one* p3_oidc service; non-prod is the same artifact with its own config file, its own `oidc_*` database, and its own signing keys and client secrets. One build, two deploys.
+
+    Three consequences that follow from sharing accounts. None block the design; they are recorded so it stays a deliberate choice:
+
+    - **Non-prod validates production credentials.** A dev-tier login is a real production password checked against the real bcrypt hash. The non-prod IdP is therefore in scope for credential handling — TLS, no password logging, the same rate limiting as prod. It is not a throwaway deployment.
+    - **`lastLogin` is a write, and it is shared.** `p3_user/routes/authenticate.js:26-28` patches `/lastLogin` on every successful login, so non-prod logins mutate production user records. Harmless in itself, but "shared accounts" is not read-only, and anything built on `lastLogin` (inactive-account reaping, audit reporting) will see dev traffic mixed into prod data.
+    - **The `roles: ['admin']` array is shared.** Every prod admin is an admin on non-prod, including for SU Login — so non-prod impersonation can mint a token for any real user. Scoped to the non-prod IdP's own sessions, but the account set is the production one.
+
+    Remaining sub-question: rehearsing a **user-schema** migration is now the one thing this arrangement cannot do in isolation, since there is only one accounts database. Key rotation, secret rotation and p3_oidc upgrades — the reasons for splitting — are all unaffected.
+12. ~~**What are DXKB and LDKB, exactly?**~~ **Resolved** (Robert, 2026-09-08): DXKB runs the same codebase as BV-BRC today but moves to a **new React site in 9–12 months**; LDKB is **greenfield, probably React**. So the Dojo port target is MAAGE plus DXKB-in-the-interim — see the reframing above. The **BFF endpoint contract, written down as a normative spec, is the artifact the React sites consume**; the Dojo modules are not portable to them. Remaining sub-question: does the DXKB React rewrite land before or after Phase 3? If after, DXKB needs the Dojo port and then discards it — in which case consider deferring DXKB's port entirely and letting the rewrite pick up OIDC natively, rather than paying for it twice.
+13. ~~**Do the three `withCredentials: true` call sites matter?**~~ **Resolved** (Robert, 2026-09-08): **no — all three are same-origin in production**, and the data API and other site-facing endpoints were deliberately placed under the site's own domain, probably *because* of this latent bug. Verified in code: `app/app.js:638` uses the relative `dataServiceURL`, and `/user/` and `/sulogin` are mounted by `bvbrc_website` itself (`app.js:268-269`). So `withCredentials: true` is inert on all three and nothing depends on credentialed cross-origin requests. **Phase 0b is unblocked**; the flags can be deleted with the CORS fix. The follow-on constraint is recorded above: the same-domain arrangement is a workaround, and the BFF must keep the browser talking only to its own origin so the migration does not quietly re-open the gap it papers over.
+
+    **Implementation amendment (2026-09-08):** the per-site finding held up, but the generalization it invites does not. All three sites are not just same-origin, they are *dead* (zero references; `/user` and `/sulogin` resolve to `routes/content.js`, a bare `router.get('*')` SPA shell with no POST handler). Meanwhile the *live* user-service traffic — login, refresh, sulogin, register, reset, profile — goes to `https://user.patricbrc.org`, a different registrable domain. So "nothing depends on credentialed cross-origin requests" is true, but "the user service is only reached same-origin" is false, and building the allowlist on the latter would have broken production login. p3_user's allowlist gates credentials only; the origin stays reflected. See the correction under *Multi-Domain Rollout and CORS*.
+
+    ~~Remaining sub-question, now a rollout item rather than a blocker: **are DXKB and LDKB subdomains of the API's registrable domain?**~~ **Moot** (Robert, 2026-09-11): they are on their own registrable domains (`dxkb.org`, `ldkb.org`, plus `test.`/`dev.` of each), but the question does not apply — `dataServiceURL` is a relative path that `bvbrc_website` reverse-proxies server-side, so the browser's request to p3_api is same-origin on every property by construction. Nothing is inherited and nothing needs to be. The live cross-origin surface is p3_user at `https://user.patricbrc.org`; its `cors_origins` list must enumerate all six.
+14. ~~**ViPR realm disposition**~~ **Resolved** (Robert, 2026-09-08): **no new `viprbrc.org` credentials will be created** — it was a transitory realm for the IRD/ViPR integration. Therefore: no upstream-IdP connector, and `LoginForm.js:76-93` / `loginWithVipr()` are removal targets. No longer blocks Phase 3b. Remaining sub-question: how many `@viprbrc.org` accounts exist, and do they keep `@viprbrc.org` in `sub` (recommended — see above) or get migrated to `@bvbrc`? Must be settled before Phase 3a retires the legacy login form.
+15. **Single logout across properties** — **Decided for now** (Robert, 2026-09-08): **per-site logout is acceptable.** Recorded here with the options and their implications, since this is a design the initial build must not foreclose.
+
+    **The problem.** Under the BFF design there are *N+1* independent sessions: one host-scoped session cookie per property BFF (`bv-brc.org`, `dxkb.org`, `ldkb.org`, `maage-brc.org`), plus the IdP's own session cookie on `auth.bv-brc.org`. SSO works because a second property's authorization request finds the IdP session already established and returns without a prompt. Logout does not compose the same way: clearing one property's cookie leaves both the other properties' cookies *and* the IdP session intact.
+
+    That produces three distinguishable behaviors, and it matters which one "logout" means:
+
+    | Action | BFF session cleared | IdP session cleared | Effect on other properties |
+    |---|---|---|---|
+    | **Local logout** | this one | no | none — and re-login here is silent (no prompt) |
+    | **RP-initiated logout** (`end_session_endpoint`) | this one | yes | none *immediately*; they stay logged in until their own session expires, but a *new* login anywhere prompts |
+    | **Single logout** (front-channel or back-channel) | this one | yes | all cleared |
+
+    The middle row is the trap. RP-initiated logout is the one most teams reach for because `oidc-provider` supports it out of the box, but its user-visible effect is *asymmetric*: the user clicked "log out" on BV-BRC and is still logged in on DXKB — yet the DXKB session can no longer be silently renewed. It is arguably more confusing than plain local logout, not less.
+
+    **The options.**
+
+    1. **Local logout only** (chosen for now). The BFF clears its own cookie and revokes its refresh token at the IdP. The IdP session survives. Simple, no new endpoints, and the failure mode is well-understood.
+       - *Implication:* on a shared machine, logging out of BV-BRC and navigating to DXKB lands the user still authenticated as themselves. In a lab or classroom this is a real exposure, not a theoretical one. **Revoking the refresh token is what makes this defensible** — the user's ability to *continue* is bounded by the access-token lifetime, which is why the access token must be short (5–15 min), not hours.
+       - *Also:* clicking "log out" then "log in" appears to do nothing, because the IdP session silently re-authenticates. Some sites add `prompt=login` on the *next* login after an explicit logout to make it feel honest. Cheap; worth doing.
+
+    2. **RP-initiated logout** (OIDC RP-Initiated Logout 1.0). Redirect to the IdP's `end_session_endpoint` with `id_token_hint` and `post_logout_redirect_uri`; the IdP kills its own session and redirects back.
+       - *Cost:* every property needs its `post_logout_redirect_uri` registered — **another exact-match URI per client**, on the same enumerated list as `redirect_uri`, with the same 400-at-runtime failure mode if missed.
+       - *Implication:* the asymmetry above. Only choose this over option 1 if the "next login must prompt" property is worth more than the confusion.
+
+    3. **Front-channel logout** (OIDC Front-Channel Logout 1.0). The IdP's logout page embeds a hidden `<iframe>` per registered RP hitting each one's `frontchannel_logout_uri`, so each BFF clears its own cookie.
+       - **This is the option that is actively decaying.** Those iframes are third-party contexts across registrable domains — exactly what Chrome's third-party-cookie restrictions, Safari ITP, and Firefox Total Cookie Protection block. The iframe loads, the `Set-Cookie: ...; Max-Age=0` is dropped, and logout *silently* half-fails. There is no error to observe. **Do not build this.**
+
+    4. **Back-channel logout** (OIDC Back-Channel Logout 1.0). The IdP POSTs a signed logout token server-to-server to each RP's `backchannel_logout_uri`. No browser involvement, so no cookie-policy exposure.
+       - **This is the correct answer if single logout is ever required**, and it is the one to keep the door open for.
+       - *Cost:* it forces the BFF's session store to become **server-side and externally addressable by `sid`**. A logout token identifies the session by `sub` and/or `sid`; the BFF must be able to find and destroy that session without the user's browser present. A stateless signed-cookie session cannot do this at all.
+
+    **The one decision this forces today, despite deferring the feature:** make the BFF session store **server-side, keyed by a session id, with `sub` and the IdP's `sid` recorded on each record** — Redis or Mongo, not a self-contained signed cookie. This is the design that keeps option 4 reachable. It also happens to be what refresh-token rotation, reuse detection, and admin-initiated session revocation all need independently, so it is not speculative work — it is the same store three other requirements already ask for. Retrofitting it later means touching every property's BFF simultaneously.
+
+    Correspondingly: **register a `backchannel_logout_uri` placeholder per client from the start** if it is free to do so, so the client table does not need a coordinated update later.
+
+    Revisit if any of these become true: a shared-workstation deployment appears; a security review requires "log out everywhere"; or an admin needs to terminate a compromised user's sessions across properties (which is the same mechanism).
+16. **Confirm the remainder of the hostname matrix.** DXKB, LDKB and MAAGE are confirmed at `dev.` + `test.` each; BV-BRC at `alpha.` + `beta.` + `dev-N.`. Still to enumerate: how many `dev-N.bv-brc.org` hosts, local-dev ports, and whether `www.` and apex are both live for each property. Every hostname is an exact-match `redirect_uri` and a CORS allowlist entry, so the list must live in explicit config, never be generated by interpolation over a property name.
+17. **Does Shock validate BV-BRC tokens, or only carry them?** **Shock is live** — the Workspace backing store (Robert, 2026-09-08) — so every object read and write traverses it with an `OAuth `-prefixed legacy token. It is third-party Go infrastructure and will not grow JWKS verification on request. If it validates against p3_user's `/public_key`, it is a legacy-token consumer that **Phase 6 cannot decommission around**, and the legacy signing key cannot be retired until Shock is dealt with — which would make this a critical-path dependency rather than a detail. If it only maps a token to a username for ACL purposes, the fix may be provider configuration. **Resolve before Phase 4**; see *4c-1* for the three cases and the evidence for each.
+
+18. **Who owns client-secret rotation?** 13+ confidential BFF clients on an annual rotation is a standing operational process, not a one-off. Needs a named owner and a scripted procedure before Phase 3 puts the first ones into production.

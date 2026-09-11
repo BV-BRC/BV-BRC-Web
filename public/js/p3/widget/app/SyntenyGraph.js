@@ -4,14 +4,14 @@ define([
 	"dojo/text!./templates/SyntenyGraph.html", "../../util/PathJoin",
 	"dojo/request", "./AppBase", "../../WorkspaceManager", "../WorkspaceObjectSelector",
     "dojo/query", "dojo/_base/lang", "dijit/Tooltip", "dijit/popup", "dojo/dom-construct",
-    "dojo/when"
+    "dojo/when", '../../auth/authHeaders'
 
 ], function(declare, WidgetBase, on,
 			domClass, 
 			Template, PathJoin,
 			xhr, AppBase, WorkspaceManager, 
             WorkspaceObjectSelector,query,lang,
-            Tooltip, popup, domConstruct, when){
+            Tooltip, popup, domConstruct, when, authHeader){
 	return declare([AppBase], {
 		"baseClass": "SyntenyGraph",
 		applicationName: "SyntenyGraph",
@@ -448,7 +448,7 @@ define([
 					'Accept': "application/json",
 					'Content-Type': "application/rqlquery+x-www-form-urlencoded",
 					'X-Requested-With': null,
-					'Authorization': this.token ? this.token : (window.App.authorizationToken || "")
+					'Authorization': authHeader('api', this.token)
 				},
 				data: q
 			}).then(function(res){
@@ -464,7 +464,7 @@ define([
 						'Accept': "application/json",
 						'Content-Type': "application/rqlquery+x-www-form-urlencoded",
 						'X-Requested-With': null,
-						'Authorization': this.token ? this.token : (window.App.authorizationToken || "")
+						'Authorization': authHeader('api', this.token)
 					},
 					data: lq
 				}).then(function(res){

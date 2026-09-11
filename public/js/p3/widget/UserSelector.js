@@ -3,14 +3,14 @@ define([
   'dojo/store/JsonRest', 'dojo/dom-construct', 'dijit/TooltipDialog',
   'dojo/on', 'dijit/popup', 'dojo/_base/lang',
   'dijit/form/CheckBox', 'dojo/string', 'dojo/when', 'dijit/form/_AutoCompleterMixin',
-  '../util/PathJoin'
+  '../util/PathJoin', '../auth/authHeaders'
 ], function (
   FilteringSelect, declare, Topic,
   Store, domConstr, TooltipDialog,
   on, popup, lang, Checkbox,
   string, when, AutoCompleterMixin,
-  PathJoin
-) {
+  PathJoin,
+  authHeader) {
 
   return declare([FilteringSelect, AutoCompleterMixin], {
     apiServiceUrl: window.App.accountURL,
@@ -36,7 +36,7 @@ define([
         this.store = new Store({
           target: PathJoin(this.apiServiceUrl, 'user') + '/',
           idProperty: 'id',
-          headers: { accept: 'application/json', Authorization: (window.App.authorizationToken || '') }
+          headers: { accept: 'application/json', Authorization: authHeader() }
         });
       }
 

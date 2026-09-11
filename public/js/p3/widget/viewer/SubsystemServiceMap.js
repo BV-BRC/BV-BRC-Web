@@ -1,9 +1,9 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/when', 'dojo/request', 'dojo/dom-construct',
-  'dijit/dijit', 'dijit/layout/ContentPane', './SubSystemMap', '../SubsystemServiceMapContainer', 'dojo/topic', '../../util/PathJoin'
+  'dijit/dijit', 'dijit/layout/ContentPane', './SubSystemMap', '../SubsystemServiceMapContainer', 'dojo/topic', '../../util/PathJoin', '../../auth/authHeaders'
 ], function (
-  declare, lang, when, request, domConstruct, dijit, ContentPane, oldMap, SubsystemMapContainer, Topic, PathJoin
-) {
+  declare, lang, when, request, domConstruct, dijit, ContentPane, oldMap, SubsystemMapContainer, Topic, PathJoin,
+  authHeader) {
   return declare([oldMap], {
     disabled: false,
     query: null,
@@ -33,7 +33,7 @@ define([
           Accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         data: query
       }).then(function (response) {

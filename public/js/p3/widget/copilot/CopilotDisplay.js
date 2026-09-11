@@ -33,10 +33,10 @@ define([
   './DataExplorerAdapter',
   './SessionFilesExplorerAdapter',
   './WorkflowsExplorerAdapter',
-  './WorkflowEngine'
+  './WorkflowEngine', '../../auth/authHeaders'
 ], function (
-  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, request, markdownit, linkAttributes, ChatMessage, SuggestedQuestions, WorkspaceExplorerAdapter, JobsExplorerAdapter, DataExplorerAdapter, SessionFilesExplorerAdapter, WorkflowsExplorerAdapter, WorkflowEngine
-) {
+  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, request, markdownit, linkAttributes, ChatMessage, SuggestedQuestions, WorkspaceExplorerAdapter, JobsExplorerAdapter, DataExplorerAdapter, SessionFilesExplorerAdapter, WorkflowsExplorerAdapter, WorkflowEngine,
+  authHeader) {
 
   /**
    * @class CopilotDisplay
@@ -422,7 +422,7 @@ define([
         headers['X-Requested-With'] = null;
       }
       if (window.App && window.App.authorizationToken && !headers.Authorization) {
-        headers.Authorization = window.App.authorizationToken;
+        headers.Authorization = authHeader();
       }
 
       var maxRows = (requestArgs && typeof requestArgs.limit === 'number' && requestArgs.limit > 0)

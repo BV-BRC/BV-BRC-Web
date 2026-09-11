@@ -3,15 +3,15 @@ define([
   'dgrid/Keyboard', 'dgrid/Selection', './formatter', 'dgrid/extensions/ColumnResizer', 'dgrid/extensions/ColumnHider',
   'dgrid/extensions/DnD', 'dojo/dnd/Source', 'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/dom-construct',
   'dojo/topic', 'dgrid/editor', 'dijit/Menu', 'dijit/MenuItem', '../WorkspaceManager', 'dojo/on', 'dijit/form/TextBox',
-  'dojo/dom-class', 'dojo/dom-attr', 'dojo/query', '../util/FavoriteFolders'
+  'dojo/dom-class', 'dojo/dom-attr', 'dojo/query', '../util/FavoriteFolders', '../auth/authHeaders'
 ], function (
   declare, Grid, Store, DijitRegistry,
   Keyboard, Selection, formatter, ColumnResizer,
   ColumnHider, DnD, DnDSource,
   Deferred, aspect, lang, domConstruct,
   Topic, editor, Menu, MenuItem, WorkspaceManager, on, TextBox,
-  domClass, domAttr, query, FavoriteFolders
-) {
+  domClass, domAttr, query, FavoriteFolders,
+  authHeader) {
   return declare([Grid, ColumnHider, Selection, Keyboard, ColumnResizer, DijitRegistry], {
     columns: {
       favorite: {
@@ -341,7 +341,7 @@ define([
           accept: 'application/json',
           'content-type': 'application/json',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         }
       });
       // console.log("store: ", store);

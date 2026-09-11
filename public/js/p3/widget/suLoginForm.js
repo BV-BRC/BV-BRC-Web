@@ -21,9 +21,11 @@ define([
       this.submitButton.set('disabled', true);
       var vals = this.getValues();
 
+      // No withCredentials: it was inert, since p3_user has never sent
+      // Access-Control-Allow-Credentials (it misspelled the cors option as
+      // `credential`). See corsOptions.js in the p3_user repo.
       var def = xhr.post('/sulogin', {
-        data: vals,
-        withCredentials: true
+        data: vals
       });
 
       def.then(lang.hitch(this, function (results) {

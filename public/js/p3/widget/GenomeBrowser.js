@@ -20,7 +20,7 @@ define([
   'JBrowse/GenomeView',
   './DataItemFormatter',
   'dijit/Dialog',
-  'dojo/keys'
+  'dojo/keys', '../auth/authHeaders'
 ], function (
   declare, WidgetBase, JBrowser,
   domConstruct, lang, domGeometry,
@@ -41,8 +41,8 @@ define([
   InfoDialog,
   FileDialog,
   GenomeView, DataItemFormatter,
-  Dialog, keys
-) {
+  Dialog, keys,
+  authHeader) {
   window.featureDialogContent = function (feature) {
     var content = DataItemFormatter(feature.data, 'feature_data', { linkTitle: true });
     if (!window.featureDialog) {
@@ -720,7 +720,7 @@ define([
           handleAs: 'text',
           headers: {
             'X-Requested-With': null,
-            Authorization: (window.App.authorizationToken || '')
+            Authorization: authHeader()
           }
         })
           .then(

@@ -2,14 +2,14 @@ define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dojo/promise/all', 'dojo/when',
   'dojo/dom-class', './SummaryWidget',
   'dojo/request', 'dojo/_base/lang', 'dojox/charting/Chart2D', './PATRICTheme', 'dojox/charting/action2d/MoveSlice',
-  'dojox/charting/action2d/Tooltip', 'dojo/dom-construct', '../util/PathJoin', 'dojo/fx/easing'
+  'dojox/charting/action2d/Tooltip', 'dojo/dom-construct', '../util/PathJoin', 'dojo/fx/easing', '../auth/authHeaders'
 
 ], function (
   declare, WidgetBase, on, All, when,
   domClass, SummaryWidget,
   xhr, lang, Chart2D, Theme, MoveSlice,
-  ChartTooltip, domConstruct, PathJoin, easing
-) {
+  ChartTooltip, domConstruct, PathJoin, easing,
+  authHeader) {
 
   var labels = ['Hypothetical proteins', 'Proteins with functional assignments', 'Proteins with EC number assignments', 'Proteins with Pathway assignments', 'Proteins with Subsystem assignments', 'Proteins with PATRIC genus-specific family (PLfam) assignments', 'Proteins with PATRIC cross-genus family (PGfam) assignments'];
   var shortLabels = ['Hypothetical', 'Functional', 'EC assigned', 'Pathway assigned', 'Subsystem assigned', 'PLfam assigned', 'PGfam assigned'];
@@ -104,7 +104,7 @@ define([
           'accept': 'application/solr+json',
           'content-type': 'application/solrquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          'Authorization': (window.App.authorizationToken || '')
+          'Authorization': authHeader()
         },
         data: solrData
       }), lang.hitch(this, 'processData'));

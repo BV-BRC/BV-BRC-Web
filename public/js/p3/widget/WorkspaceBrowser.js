@@ -9,7 +9,7 @@ define([
   'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './RerunUtility', './viewer/JobResult',
   'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree',
   'dijit/registry', 'dojo/keys', 'dojo/dom-style', 'dojo/Stateful',  'dojo/hash', 'dojo/io-query',
-  '../util/FavoriteFolders', '../util/RecentFolders'
+  '../util/FavoriteFolders', '../util/RecentFolders', '../auth/authHeaders'
 ], function (
   declare, BorderContainer, on, query,
   domClass, domConstruct, domAttr,
@@ -21,8 +21,8 @@ define([
   All, encodePath, when, request, tsvCsvFeatures, rerunUtility, JobResult,
   NodeList_traverse, Homology, GenomeAlignment, PhylogeneticTree,
   registry, keys, domStyle, Stateful, hash, ioQuery,
-  FavoriteFolders, RecentFolders
-) {
+  FavoriteFolders, RecentFolders,
+  authHeader) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
   var viewMSATT = new TooltipDialog({
@@ -1497,7 +1497,7 @@ define([
 
           when(request.post('/notifySubmitSequence', {
             headers: {
-              'Authorization': (window.App.authorizationToken || ''),
+              'Authorization': authHeader(),
               'enctype': 'multipart/form-data'
             },
             data: formData

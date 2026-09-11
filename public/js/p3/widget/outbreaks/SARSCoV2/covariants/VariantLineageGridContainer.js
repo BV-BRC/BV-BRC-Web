@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/topic', 'dojo/request', 'dojo/dom-construct',
   'dijit/layout/ContentPane', 'dijit/form/TextBox', 'dijit/form/Button', 'dijit/form/Select',
-  './VariantLineageGrid', '../../../GridContainer'
+  './VariantLineageGrid', '../../../GridContainer', '../../../../auth/authHeaders'
 ], function (
   declare, lang, on, Topic, xhr, domConstruct,
   ContentPane, TextBox, Button, Select,
-  VariantLineageGrid, GridContainer
-) {
+  VariantLineageGrid, GridContainer,
+  authHeader) {
 
   return declare([GridContainer], {
     gridCtor: VariantLineageGrid,
@@ -77,7 +77,7 @@ define([
           accept: 'application/solr+json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(function (res) {
