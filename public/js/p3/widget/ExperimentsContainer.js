@@ -2,12 +2,13 @@ define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on',
   './ActionBar', './FilterContainerActionBar', 'dijit/layout/StackContainer', 'dijit/layout/TabController',
   'dijit/layout/ContentPane', './ExperimentGridContainer', 'dojo/topic', 'dojo/_base/lang',
-  './BiosetGridContainer', 'dojo/request', '../util/PathJoin', '../auth/authHeaders'
+  './BiosetGridContainer', 'dojo/request', '../util/PathJoin', 'dojo/aspect', 'dojo/dom-class', 
+  '../auth/authHeaders'
 ], function (
   declare, BorderContainer, on,
   ActionBar, FilterContainerActionBar, TabContainer, StackController,
   ContentPane, ExperimentGridContainer, Topic, lang,
-  BiosetGridContainer, xhr, PathJoin,
+  BiosetGridContainer, xhr, PathJoin, aspect, domClass,
   authHeader) {
 
   return declare([BorderContainer], {
@@ -153,6 +154,10 @@ define([
       }));
 
     },
+    getSelectColumnsGrid: function () {
+      var selected = this.tabContainer && this.tabContainer.selectedChildWidget;
+      return selected && selected.grid;
+    },
     onFirstView: function () {
       if (this._firstView) {
         return;
@@ -163,7 +168,6 @@ define([
         region: 'top',
         splitter: true,
         layoutPriority: 7,
-        style: 'height: 48px;',
         facetFields: this.facetFields,
         state: this.state,
         className: 'BrowserHeader',
@@ -185,6 +189,20 @@ define([
         enableFilterPanel: false,
         title: 'Biosets'
       });
+      // These grids are created lazily and share the outer column selector.
+      [this.experimentsGrid, this.biosetGrid].forEach(function (container) {
+        this.own(aspect.after(container, 'onFirstView', lang.hitch(this, function () {
+          if (container.grid && !domClass.contains(container.grid.domNode, 'hasSelectColumnsAction')) {
+            var gridNode = container.grid.domNode;
+            domClass.add(gridNode, 'hasSelectColumnsAction');
+            this.filterPanel.own({
+              remove: function () {
+                domClass.remove(gridNode, 'hasSelectColumnsAction');
+              }
+            });
+          }
+        }), true));
+      }, this);
       this.tabContainer.addChild(this.experimentsGrid);
       this.tabContainer.addChild(this.biosetGrid);
 
