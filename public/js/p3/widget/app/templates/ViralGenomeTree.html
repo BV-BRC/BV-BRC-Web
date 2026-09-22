@@ -1,4 +1,93 @@
 <form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+  <style>
+    .ViralGenomeTree .genome-group-segment-summary {
+      box-sizing: border-box;
+      color: #444;
+      font-size: 14px;
+      line-height: 1.45;
+      margin-top: 8px;
+      overflow: hidden;
+      text-transform: none;
+      width: 85%;
+    }
+    .ViralGenomeTree .genome-group-segment-summary__status {
+      color: #666;
+    }
+    .ViralGenomeTree .genome-group-segment-summary__header {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .ViralGenomeTree .genome-group-segment-summary__title {
+      font-weight: 500;
+    }
+    .ViralGenomeTree .genome-group-segment-summary__actions {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .ViralGenomeTree .genome-group-segment-summary__action {
+      background: #f7f7f7;
+      border: 1px solid #b8b8b8;
+      border-radius: 2px;
+      color: #333;
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 1.2;
+      padding: 2px 8px;
+    }
+    .ViralGenomeTree .genome-group-segment-summary__toggle {
+      display: block;
+      font-size: 13px;
+      margin: 4px 0 2px;
+    }
+    .ViralGenomeTree .genome-group-segment-summary__options {
+      display: grid;
+      gap: 6px 14px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-top: 6px;
+    }
+    .ViralGenomeTree .genome-group-segment-summary__option {
+      align-items: center;
+      display: inline-flex;
+      font-size: 13px;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .ViralGenomeTree .genome-group-segment-summary__note {
+      color: #666;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+    .ViralGenomeTree .genome-group-segment-summary__indicator {
+      color: #9a6b00;
+      font-weight: 700;
+    }
+    .ViralGenomeTree .assemblyblocks {
+      table-layout: fixed;
+      width: 100%;
+    }
+    .ViralGenomeTree .assemblyblocks > tbody > tr > td {
+      vertical-align: top;
+    }
+    .ViralGenomeTree .genome-table {
+      width: 100%;
+    }
+    .ViralGenomeTree .genome-table .genomedata {
+      width: auto;
+    }
+    .ViralGenomeTree .genome-table .libraryrow {
+      box-sizing: border-box;
+      display: block;
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      text-align: left;
+      white-space: nowrap;
+    }
+  </style>
   <div class="appTemplate">
     <div class="appTitle">
       <span class="breadcrumb">Services</span>
@@ -24,10 +113,10 @@
       </div>
       <table class="assemblyblocks">
         <tr>
-          <td style="width:50%">
+          <td>
             <table>
               <tr>
-                <td>
+                <td style="width:68%">
                   <div class="appBox appShadow">
                     <div class="headerrow">
                       <div style="width:85%;display:inline-block;">
@@ -61,8 +150,9 @@
                         <i class="fa icon-question-circle fa"></i>
                       </div>
                       <br>
-                      <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_genomegroup" required="false" data-dojo-attach-point="user_genomes_genomegroup" data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace for Comparison',missingMessage:'Genome group is optional.', placeHolder:'Optional'"></div>
+                      <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genomes_genomegroup" required="false" data-dojo-attach-point="user_genomes_genomegroup" data-dojo-attach-event="onChange:handleGenomeGroupSelectionChange" data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace for the tree',missingMessage:'Genome group is optional.', placeHolder:'Optional'"></div>
                       <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddGenomeGroup" class="fa icon-plus-circle fa-lg"></i></div>
+                      <div class="info" data-dojo-attach-point="genomegroup_summary"></div>
                       <br>
                       <label>Aligned fasta</label><br>
                       <div style="width:85%;display:inline-block;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="sequences" required="false" data-dojo-attach-point="user_genomes_fasta" data-dojo-props="type:['aligned_dna_fasta','contigs'],multi:false,promptMessage:'Select or Upload aligned genome fasta file to your workspace',missingMessage:'User genome file is optional.', placeHolder:'Optional'"></div>
@@ -80,17 +170,17 @@
                       <div class="warning" data-dojo-attach-point="genomegroup_message"></div>
                     </div>
                     <div class="appRow">
-                      <label> selected files and genomes</label>
+                      <label>Selected files and genomes</label>
                     </div>
                     <div class="appRow" style="width:90%; margin-top:10px; text-align: center;">
-                      <table class="librarytable" frame="box" data-dojo-attach-point="genomeTable" style="margin:0 0 0 10px; width:100%; height:160px;">
+                      <table class="librarytable genome-table" frame="box" data-dojo-attach-point="genomeTable" style="margin:0 0 0 10px; width:100%; height:160px;">
                         <tbody data-dojo-attach-point="genomeTableBody">
                         </tbody>
                       </table>
                     </div>
                   </div>
                 </td>
-                <td>
+                <td style="width:32%">
                   <div class="appBox appShadow">
                     <div class="headerrow">
                       <div style="width:85%;display:inline-block;">
