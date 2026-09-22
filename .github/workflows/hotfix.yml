@@ -6,6 +6,10 @@ on:
         description: 'Hotfix description (what is being fixed)'
         required: true
         type: string
+      version:
+        description: 'Explicit version, no leading v (optional; default bumps the last component of the higher of master/alpha)'
+        required: false
+        type: string
 
 jobs:
   create-hotfix:
@@ -24,29 +28,86 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Bump patch version and create hotfix branch
+      - name: Compute hotfix version
         id: bump
+        env:
+          EXPLICIT_VERSION: ${{ inputs.version }}
         run: |
-          # Get version from both master and alpha, use the higher one
+          set -euo pipefail
+
           MASTER_VERSION=$(node -p "require('./package.json').version")
-          ALPHA_VERSION=$(git show origin/alpha:package.json | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).version")
+          git show origin/alpha:package.json > /tmp/alpha-package.json
+          ALPHA_VERSION=$(node -p "require('/tmp/alpha-package.json').version")
+          echo "master=$MASTER_VERSION alpha=$ALPHA_VERSION explicit=${EXPLICIT_VERSION:-<none>}"
 
-          # Compare versions and use the higher one as the base for bumping
-          HIGHER=$(node -p "
-            const s = (v) => v.split('.').map(Number);
-            const [a, b] = ['$MASTER_VERSION', '$ALPHA_VERSION'].map(s);
-            for (let i = 0; i < 3; i++) { if (a[i] !== b[i]) { process.stdout.write(a[i] > b[i] ? '$MASTER_VERSION' : '$ALPHA_VERSION'); process.exit(); } }
-            process.stdout.write('$MASTER_VERSION');
-          ")
+          # Pick the version to release.
+          #
+          # Versions go in as argv, never interpolated into the script body. The
+          # previous revision built the comparison out of shell interpolation and
+          # emitted the return value of process.stdout.write() -- the boolean true --
+          # whenever the two versions were equal, yielding "3.59.12true".
+          #
+          # Comparison is component-count agnostic so four-part versions such as
+          # 3.59.12.1 sort correctly against three-part ones; a missing component
+          # counts as 0, so 3.59.12 < 3.59.12.1.
+          VERSION=$(node -e '
+            const [master, alpha, explicit] = process.argv.slice(1);
 
-          # Set package.json to the higher version, then bump patch
-          if [ "$HIGHER" != "$MASTER_VERSION" ]; then
-            npm version "$HIGHER" --no-git-tag-version --allow-same-version
-          fi
-          npm version patch --no-git-tag-version
-          VERSION=$(node -p "require('./package.json').version")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          git checkout -b hotfix/v${VERSION}
+            const parts = (v) => v.split(".").map(Number);
+            const cmp = (a, b) => {
+              const [x, y] = [parts(a), parts(b)];
+              const n = Math.max(x.length, y.length);
+              for (let i = 0; i < n; i++) {
+                const d = (x[i] || 0) - (y[i] || 0);
+                if (d) return d;
+              }
+              return 0;
+            };
+            const bump = (v) => {
+              const p = parts(v);
+              p[p.length - 1]++;
+              return p.join(".");
+            };
+
+            const version = explicit || bump(cmp(master, alpha) >= 0 ? master : alpha);
+            if (!/^\d+(\.\d+)+$/.test(version)) {
+              console.error("Refusing to release malformed version: " + version);
+              process.exit(1);
+            }
+            if (cmp(version, master) <= 0) {
+              console.error("Refusing to release " + version + ": not greater than master " + master);
+              process.exit(1);
+            }
+            process.stdout.write(version);
+          ' "$MASTER_VERSION" "$ALPHA_VERSION" "${EXPLICIT_VERSION:-}")
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Releasing hotfix v$VERSION"
+
+      - name: Write version and create hotfix branch
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          # Written directly rather than through `npm version`, which cannot handle
+          # the four-part versions this repo uses on the master hotfix lane: it
+          # parses 3.59.12.1 as 3.59.1-2.1 and exits 0, and `npm version patch` on
+          # top of one exits 1 with "Invalid version: patch".
+          node -e '
+            const fs = require("fs");
+            const version = process.argv[1];
+            for (const f of ["package.json", "package-lock.json"]) {
+              const raw = fs.readFileSync(f, "utf8");
+              const o = JSON.parse(raw);
+              o.version = version;
+              if (o.packages && o.packages[""]) o.packages[""].version = version;
+              const indent = /^\{\n(\s+)/.exec(raw)?.[1].length || 2;
+              fs.writeFileSync(f, JSON.stringify(o, null, indent) + "\n");
+            }
+          ' "$VERSION"
+
+          git checkout -b "hotfix/v${VERSION}"
           git add package.json package-lock.json
           git commit -m "Hotfix v${VERSION}
 
@@ -55,22 +116,30 @@ jobs:
       - name: Push branch and create PR
         env:
           GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.bump.outputs.version }}
+          HOTFIX_MESSAGE: ${{ inputs.hotfix_message }}
         run: |
-          VERSION=${{ steps.bump.outputs.version }}
-          # Delete the branch if it already exists (from a failed previous run)
-          git push origin --delete hotfix/v${VERSION} 2>/dev/null || true
-          git push -u origin hotfix/v${VERSION}
-          gh pr create --base master --head hotfix/v${VERSION} \
+          set -euo pipefail
+
+          # Remove any leftover branch from a failed previous run.
+          git push origin --delete "hotfix/v${VERSION}" 2>/dev/null || true
+          git push -u origin "hotfix/v${VERSION}"
+
+          {
+            echo "## Hotfix v${VERSION}"
+            echo
+            echo "${HOTFIX_MESSAGE}"
+            echo
+            echo "---"
+            echo "**Next steps:**"
+            echo "1. Check out this branch locally: \`git fetch origin && git checkout hotfix/v${VERSION}\`"
+            echo "2. Make your fix commits"
+            echo "3. Push your changes: \`git push\`"
+            echo "4. Merge this PR when ready"
+            echo
+            echo "*After merging, a tag will be created and the changes cherry-picked to alpha and beta.*"
+          } > /tmp/hotfix-body.md
+
+          gh pr create --base master --head "hotfix/v${VERSION}" \
             --title "Hotfix v${VERSION}" \
-            --body "## Hotfix v${VERSION}
-
-          ${{ inputs.hotfix_message }}
-
-          ---
-          **Next steps:**
-          1. Check out this branch locally: \`git fetch origin && git checkout hotfix/v${VERSION}\`
-          2. Make your fix commits
-          3. Push your changes: \`git push\`
-          4. Merge this PR when ready
-
-          *After merging, a tag will be created and changes will be cherry-picked to alpha.*"
+            --body-file /tmp/hotfix-body.md
