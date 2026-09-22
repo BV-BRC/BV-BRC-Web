@@ -392,7 +392,8 @@ define([
           when(WorkspaceManager.getObject(fastaFilePath), lang.hitch(this, function (res) {
             const type = res.metadata.type;
             const seqType = type.includes('protein') ? 'protein' : 'dna';
-            const reto = this.validateFasta(res.data, seqType, false);
+            // Workspace files are not subject to the size limit for pasted text.
+            const reto = this.validateFasta(res.data, seqType, false, 'record_1', false);
 
             if (!reto.valid) {
               this.fastafile_message.innerHTML = reto.message;
