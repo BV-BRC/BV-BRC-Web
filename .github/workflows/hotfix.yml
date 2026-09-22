@@ -7,7 +7,7 @@ on:
         required: true
         type: string
       version:
-        description: 'Explicit version, no leading v (optional; default bumps the last component of the higher of master/alpha)'
+        description: 'Explicit X.Y.Z version, no leading v (optional; defaults to master patch + 1, and must be below alpha)'
         required: false
         type: string
 
@@ -40,16 +40,23 @@ jobs:
           ALPHA_VERSION=$(node -p "require('/tmp/alpha-package.json').version")
           echo "master=$MASTER_VERSION alpha=$ALPHA_VERSION explicit=${EXPLICIT_VERSION:-<none>}"
 
-          # Pick the version to release.
+          # Pick the version to release: master's own patch bump.
+          #
+          # SemVer has no separate notation for a hotfix -- the patch component IS
+          # the hotfix component, so a fix to 3.59.12 ships as 3.59.13. Neither
+          # extension mechanism works as a substitute: a prerelease suffix
+          # (3.59.12-1) sorts BEFORE 3.59.12, and build metadata (3.59.12+hotfix.1)
+          # is ignored for precedence and compares EQUAL to the release it fixes.
+          #
+          # The previous revision bumped "the higher of master and alpha", which
+          # dragged alpha's number into a master-lane decision and manufactured the
+          # collision it was trying to avoid. Master owns its own patch lane; alpha
+          # is never consulted except to check the lane invariant below.
           #
           # Versions go in as argv, never interpolated into the script body. The
-          # previous revision built the comparison out of shell interpolation and
+          # original revision built the comparison out of shell interpolation and
           # emitted the return value of process.stdout.write() -- the boolean true --
           # whenever the two versions were equal, yielding "3.59.12true".
-          #
-          # Comparison is component-count agnostic so four-part versions such as
-          # 3.59.12.1 sort correctly against three-part ones; a missing component
-          # counts as 0, so 3.59.12 < 3.59.12.1.
           VERSION=$(node -e '
             const [master, alpha, explicit] = process.argv.slice(1);
 
@@ -63,21 +70,39 @@ jobs:
               }
               return 0;
             };
+
             const bump = (v) => {
               const p = parts(v);
-              p[p.length - 1]++;
-              return p.join(".");
+              p[2]++;
+              return [p[0], p[1], p[2]].join(".");
             };
 
-            const version = explicit || bump(cmp(master, alpha) >= 0 ? master : alpha);
-            if (!/^\d+(\.\d+)+$/.test(version)) {
-              console.error("Refusing to release malformed version: " + version);
+            const version = explicit || bump(master);
+
+            // Strict three-part SemVer. Four-part versions are not valid SemVer and
+            // npm silently mis-parses them: `npm version 3.59.12.1` stores
+            // 3.59.1-2.1 and exits 0.
+            if (!/^\d+\.\d+\.\d+$/.test(version)) {
+              console.error("Refusing to release " + version + ": not a three-part X.Y.Z version");
               process.exit(1);
             }
             if (cmp(version, master) <= 0) {
               console.error("Refusing to release " + version + ": not greater than master " + master);
               process.exit(1);
             }
+
+            // Lane invariant: master holds the lower line, alpha the higher one.
+            // Bump alpha to a new version line BEFORE cutting a hotfix, or the
+            // hotfix number collides with what alpha will release next.
+            if (cmp(version, alpha) >= 0) {
+              console.error("Refusing to release " + version + ": alpha is at " + alpha + ".");
+              console.error("");
+              console.error("The hotfix version must be strictly below alpha, so that the");
+              console.error("number cannot collide with alpha's next release. Bump alpha to a");
+              console.error("new version line first (Release workflow, minor), then re-run.");
+              process.exit(1);
+            }
+
             process.stdout.write(version);
           ' "$MASTER_VERSION" "$ALPHA_VERSION" "${EXPLICIT_VERSION:-}")
 
@@ -90,10 +115,12 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Written directly rather than through `npm version`, which cannot handle
-          # the four-part versions this repo uses on the master hotfix lane: it
-          # parses 3.59.12.1 as 3.59.1-2.1 and exits 0, and `npm version patch` on
-          # top of one exits 1 with "Invalid version: patch".
+          # Written directly rather than through `npm version`, which would compute
+          # its own bump from package.json and re-derive a number the step above
+          # already decided (and already validated against the lane invariant).
+          # This writes the agreed version verbatim, keeps package-lock's
+          # packages[""] entry in sync, and preserves the file's indentation so the
+          # diff is exactly the version lines.
           node -e '
             const fs = require("fs");
             const version = process.argv[1];
