@@ -7,7 +7,7 @@ define([
   declare, TabViewerBase, on,
   domClass, domConstruct,
   Grid, formatter, PathJoin, xhr, lang,
-  GoogleMapsCanvas
+  MapsCanvas
 ) {
   return declare([TabViewerBase], {
     baseClass: 'Surveillance',
@@ -64,7 +64,7 @@ define([
     },
 
     createMapPanel: function () {
-      return new GoogleMapsCanvas({
+      return new MapsCanvas({
         title: 'Map',
         id: this.viewer.id + '_map',
         state: this.state

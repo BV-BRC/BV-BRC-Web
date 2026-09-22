@@ -56,6 +56,16 @@
                 </div>
               </td>
             </tr>
+            <tr data-dojo-attach-point="queryLogRow" class="dijitHidden">
+              <td style="width:25%;text-align:left;vertical-align:top;">Query Logging:</td>
+              <td colspan="2">
+                <div data-dojo-attach-point="queryLogButton"
+                     data-dojo-type="dijit/form/Button"
+                     data-dojo-attach-event="onClick: onQueryLogToggle">Start Logging</div>
+                <span data-dojo-attach-point="queryLogStatus"
+                      style="margin-left:8px;color:#666;font-size:0.9em;"></span>
+              </td>
+            </tr>
           </tbody>
       </table>
       <p class="HideWithAuth">Click <a href="https://lists.bv-brc.org/mailman/listinfo/all-users" target="_blank">HERE</a> to sign up for the BV-BRC mailing list.</p>

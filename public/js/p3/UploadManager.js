@@ -110,45 +110,146 @@ define(['dojo/request', 'dojo/_base/declare', 'dojo/_base/lang',
         });
       });
 
-      req.upload.addEventListener('load', lang.hitch(this, function (data) {
-        var p = workspacePath;
-        if (p.charAt(p.length - 1) != '/') {
-          p += '/';
-        }
-        p += file.name;
-        WorkspaceManager.updateAutoMetadata([p]).then(lang.hitch(this, function () {
-          _self.activeCount--;
-          _self.completeCount++;
-          _self.completedUploads.push({ filename: file.name, size: file.size, workspacePath: workspacePath });
-          Object.keys(_self.inProgress).some(function (key) {
-            if (key == file.name) {
-              delete _self.inProgress[key];
+      // req.upload 'load' fires when the client finishes sending bytes.
+      // Do NOT treat this as success — wait for the server response via req 'load'.
+
+      // Server response handler — fires when shock responds to the PUT
+      req.addEventListener('load', lang.hitch(this, function () {
+        if (timeoutTimer) clearTimeout(timeoutTimer);
+        if (uploadTimedOut) return;
+        if (req.status >= 200 && req.status < 300) {
+          // Shock accepted the upload
+          var p = workspacePath;
+          if (p.charAt(p.length - 1) != '/') {
+            p += '/';
+          }
+          p += file.name;
+          WorkspaceManager.updateAutoMetadata([p]).then(lang.hitch(this, function () {
+            _self.activeCount--;
+            _self.completeCount++;
+            _self.completedUploads.push({ filename: file.name, size: file.size, workspacePath: workspacePath });
+            delete _self.inProgress[file.name];
+
+            Topic.publish('/upload', {
+              type: 'UploadComplete',
+              filename: file.name,
+              size: file.size,
+              url: url,
+              workspacePath: workspacePath
+            });
+
+            if (_self.activeCount < 1) {
+              _self.unloadPageListener();
             }
-          });
+            def.resolve(true);
+          }));
+        } else {
+          // Shock rejected the upload (4xx, 5xx)
+          console.error('Upload failed for ' + file.name + ': HTTP ' + req.status);
+          _self.activeCount--;
+          _self.errorCount++;
+          delete _self.inProgress[file.name];
 
           Topic.publish('/upload', {
-            type: 'UploadComplete',
+            type: 'UploadError',
             filename: file.name,
             size: file.size,
             url: url,
-            workspacePath: workspacePath
+            workspacePath: workspacePath,
+            status: req.status,
+            message: 'Server returned HTTP ' + req.status
           });
 
           if (_self.activeCount < 1) {
             _self.unloadPageListener();
           }
-          def.resolve(data);
-        }));
+          def.reject(new Error('Upload failed: HTTP ' + req.status));
+        }
       }));
 
-      req.upload.addEventListener('error', function (error) {
-        // console.log("Error Uploading File: ", error);
+      // Network-level failure (connection dropped, DNS failure, etc.)
+      req.addEventListener('error', lang.hitch(this, function () {
+        console.error('Upload network error for ' + file.name);
         _self.activeCount--;
         _self.errorCount++;
+        delete _self.inProgress[file.name];
+
+        Topic.publish('/upload', {
+          type: 'UploadError',
+          filename: file.name,
+          size: file.size,
+          url: url,
+          workspacePath: workspacePath,
+          message: 'Network error during upload'
+        });
+
+        if (_self.activeCount < 1) {
+          _self.unloadPageListener();
+        }
+        def.reject(new Error('Upload network error'));
+      }));
+
+      // Upload send-side error (less common, but handle it)
+      req.upload.addEventListener('error', function (error) {
+        console.error('Upload send error for ' + file.name);
+        _self.activeCount--;
+        _self.errorCount++;
+        delete _self.inProgress[file.name];
+
+        Topic.publish('/upload', {
+          type: 'UploadError',
+          filename: file.name,
+          size: file.size,
+          url: url,
+          workspacePath: workspacePath,
+          message: 'Error sending file data'
+        });
+
+        if (_self.activeCount < 1) {
+          _self.unloadPageListener();
+        }
         def.reject(error);
       });
 
       req.open('PUT', url, true);
+
+      // XHR timeout is unreliable during uploads, so use a manual timeout.
+      // Reset the timer on each progress event; fire if no progress for this duration.
+      var uploadTimeout = 1800000; // 30 minutes
+      var timeoutTimer = null;
+      var uploadTimedOut = false;
+
+      function resetTimer() {
+        if (timeoutTimer) clearTimeout(timeoutTimer);
+        if (uploadTimedOut) return;
+        timeoutTimer = setTimeout(function () {
+          uploadTimedOut = true;
+          console.error('Upload timed out for ' + file.name + ' (no progress)');
+          req.abort();
+          _self.activeCount--;
+          _self.errorCount++;
+          delete _self.inProgress[file.name];
+
+          Topic.publish('/upload', {
+            type: 'UploadError',
+            filename: file.name,
+            size: file.size,
+            url: url,
+            workspacePath: workspacePath,
+            message: 'Upload timed out (no progress)'
+          });
+
+          if (_self.activeCount < 1) {
+            _self.unloadPageListener();
+          }
+          def.reject(new Error('Upload timed out'));
+        }, uploadTimeout);
+      }
+
+      // Reset timeout on each progress event
+      req.upload.addEventListener('progress', function () { resetTimer(); });
+      // Start the timer
+      resetTimer();
 
       for (var prop in this.headers) {
         // guard-for-in

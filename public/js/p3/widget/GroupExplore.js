@@ -3,13 +3,15 @@ define([
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
   'dojo/_base/Deferred',
   'dojo/request', 'dojo/_base/lang', 'dojo/when', '../WorkspaceManager',
-  'd3/d3', './Venn', 'dgrid/Grid', 'dgrid/extensions/ColumnResizer'
+  'd3/d3', './Venn', 'dgrid/Grid', 'dgrid/extensions/ColumnResizer',
+  '../util/encodePath'
 ], function (
   declare, WidgetBase, on, Topic,
   domClass, ContentPane, domConstruct,
   fDeferred,
   xhr, lang, when, WorkspaceManager,
-  d3, Venn, Grid, ColumnResizer
+  d3, Venn, Grid, ColumnResizer,
+  encodePath
 ) {
 
   var groupCompare = null;
@@ -292,7 +294,11 @@ define([
       console.log('ids=', id_array);
       console.log('myPath=', myPath);
       WorkspaceManager.createGroup(regionGroupName, myType, myPath, idType, id_array);
-      document.getElementById('create_msg').innerHTML = "<b>The group has been successfully created. Click <a href='/workspace" + myPath + '/' + regionGroupName + "' target=_blank>here</a> to view.</b>";
+      // encodePath the full workspace path so special characters (spaces, #, ', etc.)
+      // in the folder path or the user-supplied group name neither break the URL nor
+      // inject markup into this innerHTML string. See path-encoding pass / JIRA-4420.
+      var groupHref = '/workspace' + encodePath(myPath.replace(/\/+$/, '') + '/' + regionGroupName);
+      document.getElementById('create_msg').innerHTML = "<b>The group has been successfully created. Click <a href='" + groupHref + "' target=_blank>here</a> to view.</b>";
       document.getElementById('create_msg').style = 'color: green';
       // alert("Please refresh the workspace folder to view.");
     } else if (regionGroupName) {

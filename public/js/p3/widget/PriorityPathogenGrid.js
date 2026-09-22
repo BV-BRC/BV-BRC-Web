@@ -62,6 +62,10 @@ define([
       return row;
     },
 
+    // Overridable hook for subclasses to decorate a column definition
+    // (e.g. add a renderCell). No-op by default.
+    _postProcessColumn: function (/* colDef, rank, header, key */) {},
+
     setGridData: function (headers, dataRows) {
       var cols = {};
       var mappedRows = [];
@@ -191,6 +195,7 @@ define([
           };
         }
 
+        this._postProcessColumn(colDef, rank, header, key);
         cols[key] = colDef;
       }, this);
 

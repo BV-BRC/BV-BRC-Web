@@ -16,7 +16,11 @@ define([
     dataModel: 'genome_feature',
     query: '',
     view: 'table',
-    baseQuery: '&limit(1)&in(annotation,(PATRIC,RefSeq))&ne(feature_type,source)&facet((pivot,(annotation,feature_type)),(mincount,0))',
+    // (method,enum) hints Solr to use the enum faceting method on the low-cardinality
+    // annotation/feature_type pivot fields. Output is byte-identical to the default; it
+    // avoids the pathological cost the term-enum method would incur on a high-cardinality
+    // text field (do NOT copy this onto a free-text facet like product).
+    baseQuery: '&limit(1)&in(annotation,(PATRIC,RefSeq))&ne(feature_type,source)&facet((pivot,(annotation,feature_type)),(mincount,0),(method,enum))',
     columns: [{
       label: ' ',
       field: 'feature_type'

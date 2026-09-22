@@ -339,12 +339,12 @@ define([
       // need to ensure item is in store (for public workspaces),
       // this is more efficient than recursively grabing all public objects of a certain type
       // Also skip adding to store if path contains 'undefined' (invalid user session)
-      // Also skip paths that are too short (e.g., /user/home with no subfolder)
+      // Also skip paths that are too short (e.g., just /user with no workspace)
       if (this.selection !== '*none*' && this.selection && this.selection.path &&
           this.selection.path.indexOf('undefined') === -1) {
-        // Check that path has at least 4 parts (e.g., /user/home/folder)
+        // Check that path has at least 3 parts (e.g., /user/workspace)
         var pathParts = this.selection.path.split('/');
-        if (pathParts.length < 4) {
+        if (pathParts.length < 3) {
           // Path is too high-level, don't add to store
           // But still update the selection state
         } else {
@@ -999,15 +999,18 @@ define([
           var items = results[0];
           var favoritePaths = results[1] || [];
 
+          // Normalize paths by stripping trailing slashes for consistent comparison
+          function normPath(p) { return p ? p.replace(/\/+$/, '') : ''; }
+
           // Create a Set for fast lookup of items we already have
           var itemPathSet = {};
           items.forEach(function (item) {
-            itemPathSet[item.path] = true;
+            itemPathSet[normPath(item.path)] = true;
           });
 
           // Find favorite paths that are NOT in the items list (from other workspaces)
           var missingFavoritePaths = favoritePaths.filter(function (path) {
-            return !itemPathSet[path];
+            return !itemPathSet[normPath(path)];
           });
 
           // If there are missing favorites, fetch their metadata
@@ -1085,17 +1088,17 @@ define([
               });
             }
 
-            // Create a Set for fast lookup of favorite paths
+            // Create a Set for fast lookup of favorite paths (normalized)
             var favoriteSet = {};
             favoritePaths.forEach(function (path) {
-              favoriteSet[path] = true;
+              favoriteSet[normPath(path)] = true;
             });
 
             // Mark items that are favorites and separate into two arrays
             var favoriteItems = [];
             var regularItems = [];
             items.forEach(function (item) {
-              if (favoriteSet[item.path]) {
+              if (favoriteSet[normPath(item.path)]) {
                 item.isFavorite = true;
                 favoriteItems.push(item);
               } else {
@@ -1103,19 +1106,21 @@ define([
               }
             });
 
-            // Add missing favorites (from other workspaces) to the favorites list
+            // Add missing favorites (from other workspaces), skipping any already present
+            var seenPaths = {};
+            favoriteItems.forEach(function (item) { seenPaths[normPath(item.path)] = true; });
             missingFavorites.forEach(function (meta) {
-              // Strip trailing slash from path for consistent formatting
-              var cleanPath = meta.path.replace(/\/+$/, '');
-              // Convert metadata to item format with timestamp
-              var item = {
+              // meta.path is the PARENT directory; full path is parent + name
+              var cleanPath = normPath(meta.path + meta.name);
+              if (seenPaths[cleanPath]) return;
+              seenPaths[cleanPath] = true;
+              favoriteItems.push({
                 path: cleanPath,
                 name: meta.name,
                 type: meta.type,
                 timestamp: meta.creation_time ? new Date(meta.creation_time).getTime() : 0,
                 isFavorite: true
-              };
-              favoriteItems.push(item);
+              });
             });
 
             // Sort favorites alphabetically
@@ -1127,7 +1132,14 @@ define([
             });
 
             // Combine: favorites first, then regular items
-            var combinedItems = favoriteItems.concat(regularItems);
+            // Filter out items with invalid paths before adding to store
+            // (items with 'undefined' or fewer than 3 path parts are not selectable)
+            var combinedItems = favoriteItems.concat(regularItems).filter(function (item) {
+              if (!item.path) return false;
+              if (item.path.indexOf('undefined') !== -1) return false;
+              if (item.path.split('/').length < 3) return false;
+              return true;
+            });
 
             this.store = new Memory({ data: combinedItems, idProperty: 'path' });
             if (this.isSortAlpha) {
@@ -1313,30 +1325,21 @@ define([
         return '<div style="font-size:1em; color:#666; padding:8px;">Loading folders...</div>';
       }
 
-      // Filter out invalid items containing 'undefined' in the path
-      if (item.path && item.path.indexOf('undefined') !== -1) {
-        return '<div style="display:none;"></div>';
-      }
-
       // Add star icon for favorite items
       var starIcon = item.isFavorite ? '<i class="icon-star" style="color:#f0ad4e;margin-right:4px;"></i>' : '';
 
       var label = '<div style="font-size:1em; border-bottom:1px solid grey;">' + starIcon + '/';
       var pathParts = item.path.split('/');
 
-      // Skip items that are too high-level (e.g., /user/home with no subfolder)
-      // These have only 3 parts: ['', 'user', 'home']
-      if (pathParts.length < 4) {
-        return '<div style="display:none;"></div>';
+      var workspace = pathParts[2]; // workspace name (e.g., 'home', 'test')
+
+      // Top-level workspace (e.g., /user/test) — show as "/test"
+      if (pathParts.length === 3) {
+        label += '<span style="font-size:1.05em; font-weight:bold;" title="/' + workspace + '">' + workspace + '</span></div>';
+        return label;
       }
 
-      var workspace = pathParts[2]; // home
-      var firstDir = pathParts[3]; // first level under home or file name
-
-      // Safety check: if firstDir is undefined or empty, hide this item
-      if (!firstDir) {
-        return '<div style="display:none;"></div>';
-      }
+      var firstDir = pathParts[3]; // first level under workspace
 
       var title = pathParts.filter(function (p, idx) { return idx > 1 && idx !== (pathParts.length - 1); }).map(function (p) { return p.replace(/^\./, ''); }).join('/');
       var labelParts = [workspace];
@@ -1398,9 +1401,9 @@ define([
             (currentValue.indexOf && currentValue.indexOf('undefined') !== -1)) {
           isValid = false;
         } else {
-          // Check path has enough depth (at least /user/workspace/folder)
+          // Check path has enough depth (at least /user/workspace)
           var pathParts = currentValue.split('/');
-          if (pathParts.length < 4) {
+          if (pathParts.length < 3) {
             isValid = false;
           }
         }

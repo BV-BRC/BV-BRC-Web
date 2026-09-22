@@ -31,27 +31,27 @@ define([
       var _self = this;
       // console.log('spGeneList setQuery - this.query: ', this.query);
 
-      var url = PathJoin(this.apiServiceUrl, 'genome_sequence', '?' + (this.query) + '&limit(1)'); // &facet((field,genome_id),(limit,35000))");
-
-      // console.log("url: ", url);
-      xhr.get(url, {
+      xhr.post(PathJoin(this.apiServiceUrl, 'genome_sequence/'), {
         headers: {
           accept: 'application/solr+json',
+          'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
           Authorization: (window.App.authorizationToken || '')
         },
-        handleAs: 'json'
+        handleAs: 'json',
+        data: query + '&limit(1)'
       }).then(function (res) {
+        // console.log("Got FeatureList Query Results: ", res)
         if (res && res.response && res.response.docs) {
           var features = res.response.docs;
           if (features) {
             _self._set('totalFeatures', res.response.numFound);
           }
         } else {
-          console.warn('Invalid Response for: ', url);
+          console.log('Invalid Response for: ', query);
         }
       }, function (err) {
-        console.error('Error Retreiving Genomic Sequences: ', err);
+        console.error('Error Retreiving sequences: ', err);
       });
 
     },
@@ -101,6 +101,26 @@ define([
       this.watch('query', lang.hitch(this, 'onSetQuery'));
       this.watch('totalFeatures', lang.hitch(this, 'onSetTotalSequences'));
 
+      let sequenceGridOptions = {
+        title: 'Sequences',
+        id: this.viewer.id + '_sequences',
+        state: this.state,
+        disable: false
+      };
+
+      // Set filter value by url
+      if (this.state && this.state.search) {
+        const params = new URLSearchParams(this.state.search);
+        let filter = params.get('filter');
+        if (filter) {
+          // Remove additional quotes
+          sequenceGridOptions.defaultFilter = filter.replace(/^"|"$/g, '');
+
+          // Remove filter value from search
+          this.state.search = this.state.search.replace(/filter="[^"]*"&/, '');
+          this.state.search = this.state.search.replace(/filter=%22[^"]*%22&/, '');
+        }
+      }
 
       this.sequences = new SequenceGridContainer({
         title: 'Sequences',
@@ -108,6 +128,7 @@ define([
         state: this.state,
         disable: false
       });
+
       this.viewer.addChild(this.sequences);
 
     },

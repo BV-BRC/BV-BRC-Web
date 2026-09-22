@@ -1,0 +1,310 @@
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}" dojoAttachEvent="onsubmit:onSubmit">
+  <div class="bvs-search">
+    <div class="bvs-header">
+      <span class="bvs-breadcrumb"></span>
+      <h1 class="bvs-title">Search Influenza Data (BETA)</h1>
+      <p class="bvs-subtitle">Search influenza genomes, segments, sequences, and proteins using subtype, host, geography, date, and sequence metadata.</p>
+    </div>
+
+    <!-- ==================== CORE SEARCH ==================== -->
+    <div class="bvs-card bvs-card-primary">
+      <!-- Predefined search: label + chips inline -->
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+        <label style="font-size:12px;font-weight:700;color:#09456f;text-transform:none;letter-spacing:0;margin:0;white-space:nowrap;">Predefined search</label>
+        <div class="bvs-chip-group" data-dojo-attach-point="presetChoiceGroup">
+          <!-- Chips generated dynamically from PRESETS array in JS -->
+        </div>
+      </div>
+
+      <!-- Data Type + Virus Type: stacked (label on top, buttons below) -->
+      <div class="bvs-grid-2">
+        <div class="bvs-field-stacked">
+          <label>Data Type</label>
+          <div class="bvs-chip-group">
+            <button type="button" class="bvs-chip is-active" data-dojo-attach-point="dataTypeGenomeBtn" data-value="genome">Genome / Strain</button>
+            <button type="button" class="bvs-chip" data-dojo-attach-point="dataTypeSegmentBtn" data-value="segment">Segment / Sequence</button>
+            <button type="button" class="bvs-chip" data-dojo-attach-point="dataTypeProteinBtn" data-value="protein">Protein</button>
+          </div>
+          <div style="display:none;">
+            <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="dataTypeGenome" name="${id}_dataType" value="genome" checked="checked" />
+            <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="dataTypeSegment" name="${id}_dataType" value="segment" />
+            <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="dataTypeProtein" name="${id}_dataType" value="protein" />
+          </div>
+        </div>
+        <div class="bvs-field-stacked">
+          <label>Virus Type <span class="bvs-multi-hint">(select one or more)</span></label>
+          <div class="bvs-chip-group">
+            <button type="button" class="bvs-chip is-active" data-dojo-attach-point="btnFluA" data-value="A">Influenza A</button>
+            <button type="button" class="bvs-chip" data-dojo-attach-point="btnFluB" data-value="B">Influenza B</button>
+            <button type="button" class="bvs-chip" data-dojo-attach-point="btnFluC" data-value="C">Influenza C</button>
+            <button type="button" class="bvs-chip" data-dojo-attach-point="btnFluD" data-value="D">Influenza D</button>
+          </div>
+          <div class="bvs-inline-checks" style="margin-top:8px;">
+            <div class="bvs-field bvs-field-narrow bvs-field-date" style="margin:0;">
+              <label>Reference</label>
+              <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="referenceNode" name="reference_genome" style="width:100%"></div>
+            </div>
+            <label>
+              <input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="excludeDeprecatedNode" id="${id}_chkExcludeDeprecated" checked="checked" />
+              Exclude deprecated
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="bvs-divider"></div>
+
+      <!-- Host: inline label-value -->
+      <div class="bvs-row">
+        <div class="bvs-field bvs-field-lg">
+          <label>Host Group</label>
+          <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Avian, Human'" data-dojo-attach-point="hostGroupNode" name="host_group" style="width:100%"></div>
+        </div>
+        <div class="bvs-field bvs-field-narrow bvs-field-lg">
+          <label>Host</label>
+          <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Chicken'" data-dojo-attach-point="hostNameNode" name="host_name" style="width:100%"></div>
+        </div>
+      </div>
+
+      <!-- Location: inline label-value -->
+      <div class="bvs-row" style="margin-top:8px;">
+        <div class="bvs-field bvs-field-lg">
+          <label>Continent</label>
+          <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="geographicGroupNode" name="geographic_group" style="width:100%"></div>
+        </div>
+        <div class="bvs-field bvs-field-narrow bvs-field-lg">
+          <label>Country</label>
+          <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="isolationCountryNode" name="isolation_country" style="width:100%"></div>
+        </div>
+        <div class="bvs-field bvs-field-narrow bvs-field-lg" data-dojo-attach-point="stateField">
+          <label style="flex: 0 0 40px">State</label>
+          <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="stateProvinceNode" name="state_province" style="width:100%"></div>
+        </div>
+      </div>
+
+      <div class="bvs-divider"></div>
+
+      <!-- Collection Date: inline label-value -->
+      <div class="bvs-row" style="margin-top:8px;">
+        <div class="bvs-field bvs-field-date">
+          <label>Collected From</label>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeHolder:'YYYY-MM-DD', regExp:'\\d{4}(-\\d{2}(-\\d{2})?)?', invalidMessage:'Enter YYYY, YYYY-MM, or YYYY-MM-DD'" data-dojo-attach-point="collectionDateFromNode" name="collection_date_from" style="width:100%"></div>
+            <span data-dojo-attach-point="collectionDateFromCalendarIcon" class="icon-calendar" style="cursor:pointer;font-size:16px;" title="Pick date"></span>
+          </div>
+        </div>
+        <div class="bvs-field bvs-field-narrow bvs-field-date">
+          <label>Collected To</label>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeHolder:'YYYY-MM-DD', regExp:'\\d{4}(-\\d{2}(-\\d{2})?)?', invalidMessage:'Enter YYYY, YYYY-MM, or YYYY-MM-DD'" data-dojo-attach-point="collectionDateToNode" name="collection_date_to" style="width:100%"></div>
+            <span data-dojo-attach-point="collectionDateToCalendarIcon" class="icon-calendar" style="cursor:pointer;font-size:16px;" title="Pick date"></span>
+          </div>
+        </div>
+        <div class="bvs-field bvs-field-narrow bvs-field-sm">
+          <label>Season</label>
+          <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. 57-58'" data-dojo-attach-point="seasonNode" name="season" style="width:100%"></div>
+        </div>
+      </div>
+
+      <div class="bvs-divider"></div>
+
+      <!-- Strain Name + Length Min/Max -->
+      <div class="bvs-row" style="margin-top:8px;">
+        <div class="bvs-field bvs-field-lg">
+          <label>Strain Name</label>
+          <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. A/cattle/Maryland/546/2024'" data-dojo-attach-point="strainNameNode" name="strain_name" style="width:100%"></div>
+        </div>
+        <div class="bvs-field bvs-field-range">
+          <label>Length</label>
+          <div class="bvs-range">
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'1600'" data-dojo-attach-point="seqLengthFromNode" name="seq_length_from"></div>
+            <span class="bvs-range-sep">to</span>
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'2400'" data-dojo-attach-point="seqLengthToNode" name="seq_length_to"></div>
+          </div>
+        </div>
+        <div class="bvs-field bvs-field-check">
+          <label class="bvs-inline-checks">
+            <input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="completeGenomeNode" id="${id}_chkCompleteGenome" /> Complete genome only
+          </label>
+        </div>
+      </div>
+
+      <!-- Protein accordion (Protein data type only) -->
+      <div class="bvs-accordion" style="display:none; margin-top:20px;" data-dojo-attach-point="proteinAccordion">
+        <div class="bvs-accordion-header" data-dojo-attach-point="proteinAccordionHeader">
+          <span>Protein</span>
+          <span class="bvs-accordion-toggle" data-dojo-attach-point="proteinAccordionIcon">&minus;</span>
+        </div>
+        <div class="bvs-accordion-body" data-dojo-attach-point="proteinAccordionBody">
+          <div class="bvs-row" data-dojo-attach-point="proteinRow">
+            <div class="bvs-field bvs-field-narrow bvs-field-sm">
+              <label>Gene</label>
+              <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="geneNode" name="gene" style="width:100%"></div>
+            </div>
+            <div class="bvs-field bvs-field-narrow bvs-field-lg">
+              <label>Product</label>
+              <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="productNode" name="product" style="width:100%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bvs-accordion" style="margin-top:20px;" data-dojo-attach-point="completenessAccordion">
+        <div class="bvs-accordion-header" data-dojo-attach-point="completenessAccordionHeader">
+          <span>Segments</span>
+          <span class="bvs-accordion-toggle" data-dojo-attach-point="completenessAccordionIcon">&minus;</span>
+        </div>
+        <div class="bvs-accordion-body" data-dojo-attach-point="completenessAccordionBody">
+          <div class="bvs-field bvs-field-wide">
+            <label>Required Segments</label>
+            <div class="bvs-inline-checks">
+              <label><input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="segPB2Node" /> PB2 (1)</label>
+              <label><input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="segPB1Node" /> PB1 (2)</label>
+              <label><input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="segPANode" /> PA (3)</label>
+              <label><input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="segHANode" /> HA (4)</label>
+              <label><input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="segNPNode" /> NP (5)</label>
+              <label data-dojo-attach-point="segNALabel"><input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="segNANode" /> NA (6)</label>
+              <label><input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="segMNode" /> M (7)</label>
+              <label><input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="segNSNode" /> NS (8)</label>
+              <label style="margin-left:8px;border-left:1px solid var(--bvs-divider);padding-left:12px;"><input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="segSelectAllNode" /> Select all</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subtype and lineage accordion (inside core search) -->
+      <div class="bvs-accordion" style="margin-top:20px;" data-dojo-attach-point="subtypeAccordion">
+        <div class="bvs-accordion-header" data-dojo-attach-point="subtypeAccordionHeader">
+          <span data-dojo-attach-point="subtypeAccordionTitle">Subtype and Classification</span>
+          <span class="bvs-accordion-toggle" data-dojo-attach-point="subtypeAccordionIcon">&minus;</span>
+        </div>
+        <div class="bvs-accordion-body" data-dojo-attach-point="subtypeAccordionBody">
+          <!-- Subtypes (Flu A) row -->
+          <div data-dojo-attach-point="subtypeSection">
+            <div class="bvs-row">
+              <div class="bvs-field bvs-field-narrow bvs-field-sm">
+                <label>H Subtype</label>
+                <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="haSubtypeNode" name="ha_subtype" style="width:100%"></div>
+              </div>
+              <div class="bvs-field bvs-field-narrow bvs-field-sm">
+                <label>N Subtype</label>
+                <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="naSubtypeNode" name="na_subtype" style="width:100%"></div>
+              </div>
+              <div class="bvs-field bvs-field-sm">
+                <label>Full Subtype</label>
+                <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. H5N1'" data-dojo-attach-point="fullSubtypeNode" name="subtype" style="width:100%"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Subtype (Flu B) row -->
+          <div data-dojo-attach-point="fluBSubtypeSection" style="display:none;">
+            <div class="bvs-row">
+              <div class="bvs-field bvs-field-narrow bvs-field-sm">
+                <label>Subtype</label>
+                <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Victoria'" data-dojo-attach-point="fluBSubtypeNode" name="flu_b_subtype" style="width:100%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- H-specific clade fields (Flu A only) -->
+          <div class="bvs-row" style="margin-top:12px;" data-dojo-attach-point="cladeRow">
+            <div class="bvs-field bvs-field-narrow bvs-field-sm" data-dojo-attach-point="h1CladeGlobalField">
+              <label>H1 Clade (Global)</label>
+              <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="h1CladeGlobalNode" name="h1_clade_global" style="width:100%"></div>
+            </div>
+            <div class="bvs-field bvs-field-narrow bvs-field-sm" data-dojo-attach-point="h1CladeUsField">
+              <label>H1 Clade (US)</label>
+              <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="h1CladeUsNode" name="h1_clade_us" style="width:100%"></div>
+            </div>
+            <div class="bvs-field bvs-field-narrow bvs-field-sm" data-dojo-attach-point="h3CladeField">
+              <label>H3 Clade</label>
+              <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="h3CladeNode" name="h3_clade" style="width:100%"></div>
+            </div>
+            <div class="bvs-field bvs-field-narrow bvs-field-sm" data-dojo-attach-point="h5CladeField">
+              <label>H5 Clade</label>
+              <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="h5CladeNode" name="h5_clade" style="width:100%"></div>
+            </div>
+            <div class="bvs-field bvs-field-narrow bvs-field-sm">
+              <label>Sub-clade</label>
+              <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="subcladeNode" name="subclade" style="width:100%"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== ADVANCED OPTIONS ==================== -->
+    <div class="bvs-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <h2 class="bvs-section-title" style="margin-bottom:4px;">Advanced options</h2>
+          <p class="bvs-section-intro" style="margin-bottom:0;">Filter by BioProject, submission date, isolation source, passage history, and vaccine strain.</p>
+        </div>
+        <button type="button" class="bvs-toggle-btn" data-dojo-attach-point="advancedToggleBtn">Show advanced</button>
+      </div>
+
+      <div data-dojo-attach-point="advancedSection" style="display:none;margin-top:18px;">
+        <!-- Group 1: BioProject -->
+        <div class="bvs-row">
+          <div class="bvs-field">
+            <label>BioProject</label>
+            <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. PRJNA1102327'" data-dojo-attach-point="bioprojectNode" name="bioproject_accession" style="width:100%"></div>
+          </div>
+        </div>
+
+        <!-- Group 2: Submission dates -->
+        <div class="bvs-row" style="margin-top:16px;">
+          <div class="bvs-field bvs-field-date">
+            <label>Submitted From</label>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeHolder:'YYYY-MM-DD', regExp:'\\d{4}(-\\d{2}(-\\d{2})?)?', invalidMessage:'Enter YYYY, YYYY-MM, or YYYY-MM-DD'" data-dojo-attach-point="submissionDateFromNode" name="submission_date_from" style="width:100%"></div>
+              <span data-dojo-attach-point="submissionDateFromCalendarIcon" class="icon-calendar" style="cursor:pointer;font-size:16px;" title="Pick date"></span>
+            </div>
+          </div>
+          <div class="bvs-field bvs-field-date">
+            <label>Submitted To</label>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeHolder:'YYYY-MM-DD', regExp:'\\d{4}(-\\d{2}(-\\d{2})?)?', invalidMessage:'Enter YYYY, YYYY-MM, or YYYY-MM-DD'" data-dojo-attach-point="submissionDateToNode" name="submission_date_to" style="width:100%"></div>
+              <span data-dojo-attach-point="submissionDateToCalendarIcon" class="icon-calendar" style="cursor:pointer;font-size:16px;" title="Pick date"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bvs-divider" style="margin:16px 0;"></div>
+
+        <!-- Group 3: Sample metadata -->
+        <div class="bvs-row">
+          <div class="bvs-field">
+            <label>Source</label>
+            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="isolationSourceNode" name="isolation_source" style="width:100%"></div>
+          </div>
+          <div class="bvs-field bvs-field-narrow">
+            <label>Passage</label>
+            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="passageNode" name="passage" style="width:100%"></div>
+          </div>
+          <div class="bvs-field bvs-field-narrow">
+            <label>Vaccine Strain</label>
+            <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="vaccineStrainNode" name="vaccine_strain" style="width:100%"></div>
+          </div>
+        </div>
+
+        <div class="bvs-divider" style="margin:16px 0;"></div>
+
+        <!-- Group 4: Custom filter criteria -->
+        <div>
+          <div class="bvs-field" style="align-items:flex-start;">
+            <label style="padding-top:4px;">Additional Criteria</label>
+            <div dojoAttachPoint="AdvancedSearchPanel"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== ACTIONS ==================== -->
+    <div class="bvs-actions">
+      <button type="button" data-dojo-attach-point="resetButton" class="bvs-btn-secondary">Reset</button>
+      <button type="submit" data-dojo-attach-point="submitButton" class="bvs-btn-primary">Search</button>
+    </div>
+  </div>
+</form>

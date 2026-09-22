@@ -1,0 +1,10 @@
+{
+  "testEnvironment": "node",
+  "roots": [
+    "<rootDir>/public/js/p3/widget/copilot",
+    "<rootDir>/public/js/p3/widget/app"
+  ],
+  "testMatch": [
+    "**/tests/**/*.test.js"
+  ]
+}

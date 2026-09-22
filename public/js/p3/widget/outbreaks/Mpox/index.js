@@ -250,8 +250,8 @@ define([
         cladeIDetected: '#028c81',
         cladeIIDetected: '#035999',
         bothCladesDetected: '#0590b1',
-        createInfoWindowContent: this.googleMapsInfoWindowContent,
-        createMarker: this.createGoogleMapsMarker,
+        createInfoWindowContent: this.infoWindowContent,
+        createMarker: this.createMarker,
         headerInfo: GeoMapHeaderTemplate,
         footerInfo: GeoMapFooterTemplate,
         focusOnUS: false
@@ -381,7 +381,7 @@ define([
       return node.getElementsByTagName(tag)[0].childNodes[0].nodeValue;
     },
 
-    googleMapsInfoWindowContent: function (item) {
+    infoWindowContent: function (item) {
       let contentValues = {map: this.map, index: this.index++};
 
       //Sort host common names
@@ -418,31 +418,31 @@ define([
         } else {
           let td = domConstruct.create('td', {}, tr);
           domConstruct.create('a', {
-            href: `/view/Taxonomy/10244#view_tab=genomes&filter=and(or(eq(genome_status,"Complete"),eq(genome_status,"Partial")),eq(collection_year,"2024")${locationFilter},eq(clade,"${encodeURIComponent(clade)}"))&defaultColumns=-cds,clade,collection_date&defaultSort=genome_name,clade`,
+            'class': 'sdm-pop-link',
+            href: `/view/Taxonomy/10244#view_tab=genomes&filter=and(or(eq(genome_status,"Complete"),eq(genome_status,"Partial")),or(eq(collection_year,"2024"),eq(collection_year,"2025"),eq(collection_year,"2026"))${locationFilter},eq(clade,"${encodeURIComponent(clade)}"))&defaultColumns=-cds,clade,collection_date&defaultSort=genome_name,clade`,
             target: '_blank',
             innerHTML: clade
           }, td);
         }
 
-        domConstruct.create('td', { innerHTML: count }, tr);
+        domConstruct.create('td', { 'class': 'sdm-pop-num', innerHTML: count }, tr);
       }
 
       return content.domNode.innerHTML;
     },
 
-    createGoogleMapsMarker: function (item) {
-      const latitude = item.latitude.toFixed(5);
-      const longitude = item.longitude.toFixed(5);
+    createMarker: function (item) {
+      const latitude = item.latitude;
+      const longitude = item.longitude;
       const count = item.metadata.genomeNames.length;
       const clades = item.metadata.clades;
 
       // Find all keys that start with 'I.' and 'II.'
-      let cladeIKeys = Object.keys(clades).filter(c => c.startsWith('I.'));
+      const cladeIKeys = Object.keys(clades).filter(c => c.startsWith('I.'));
       const cladeIIKeys = Object.keys(clades).filter(c => c.startsWith('II.'));
 
-      // Calculate the total number of values for each clade
-      let cladeICount = cladeIKeys.reduce((count, key) => count + clades[key], 0);
-      const cladeIICount = cladeIIKeys.reduce((count, key) => count + clades[key], 0);
+      const cladeICount = cladeIKeys.reduce((s, k) => s + clades[k], 0);
+      const cladeIICount = cladeIIKeys.reduce((s, k) => s + clades[k], 0);
 
       let markerColor, markerLabel;
       if (cladeIKeys.length > 0 && cladeIIKeys.length > 0) {
@@ -454,28 +454,52 @@ define([
       } else if (cladeIIKeys.length > 0) {
         markerColor = this.cladeIIDetected;
         markerLabel = count.toString();
+      } else {
+        // No clade info
+        markerColor = this.bothCladesDetected || '#777';
+        markerLabel = count.toString();
       }
 
       const length = markerLabel.length;
       const scale = length === 1 ? 1 : 1.5 + (length - 2) * 0.2;
 
-      const icon = {
-        path: item.isCountryLevel ? 'M 0,0 L 11,-15 L 0,-30 L -11,-15 Z' : 'M 0,0 C -2,-10 -10,-10 -10,-20 A 10,10 0 1,1 10,-20 C 10,-10 2,-10 0,0 Z',
-        fillColor: markerColor,
-        fillOpacity: 1,
-        strokeColor: '#fff',
-        strokeWeight: 0.5,
-        scale: scale,
-        labelOrigin: item.isCountryLevel ? new google.maps.Point(0, -15) : new google.maps.Point(0, -18)
-      };
-      const anchorPoint = count === 1 ? 1 : 1.5 + (count - 2) * 0.2;
+      const isCountry = item.isCountryLevel;
+      const path = isCountry
+        ? 'M 0,0 L 11,-15 L 0,-30 L -11,-15 Z'
+        : 'M 0,0 C -2,-10 -10,-10 -10,-20 A 10,10 0 1,1 10,-20 C 10,-10 2,-10 0,0 Z';
+      const pathWidth = isCountry ? 22 : 20;
+      const pathHeight = 30;
+      const w = pathWidth * scale;
+      const h = pathHeight * scale;
 
-      return new google.maps.Marker({
-        position: new google.maps.LatLng(latitude, longitude),
-        labelAnchor: new google.maps.Point(anchorPoint, 33),
-        label: {text: markerLabel, color: '#fff'},
-        icon: icon,
-        map: this.map
+      const bulbCenterPct = isCountry ? 46 : 34;
+      const fontSize = Math.max(11, Math.min(15, Math.round((pathWidth * scale * 0.9) / (markerLabel.length * 0.6))));
+
+      const labelHtml =
+        '<div style="position:absolute;left:0;top:0;width:100%;height:' + (bulbCenterPct * 2) + '%;' +
+        'display:flex;align-items:center;justify-content:center;white-space:nowrap;' +
+        'color:#fff;font-size:' + fontSize + 'px;font-weight:700;line-height:1;' +
+        'pointer-events:none;text-shadow:0 0 2px rgba(0,0,0,0.4);">' + markerLabel + '</div>';
+
+      const html =
+        '<div style="position:relative;width:' + w + 'px;height:' + h + 'px;' +
+        'filter:drop-shadow(0 1px 2px rgba(0,0,0,0.3));">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h +
+        '" viewBox="-12 -31 24 32" style="display:block;overflow:visible;">' +
+        '<path d="' + path + '" fill="' + markerColor +
+        '" fill-opacity="1" stroke="#fff" stroke-width="0.5"/>' +
+        '</svg>' +
+        labelHtml +
+        '</div>';
+
+      return L.marker([latitude, longitude], {
+        icon: L.divIcon({
+          className: 'outbreaks-geomap-marker',
+          html: html,
+          iconSize: [w, h],
+          iconAnchor: [w / 2, h],
+          popupAnchor: [0, -h * 0.85]
+        })
       });
     }
   });

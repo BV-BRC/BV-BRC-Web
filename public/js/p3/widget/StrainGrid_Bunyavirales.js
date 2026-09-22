@@ -19,34 +19,40 @@ define([
     deselectOnRefresh: true,
     columns: {
       'Selection Checkboxes': selector({ unhidable: true }),
-      taxon_id: { label: 'Taxon ID', field: 'taxon_id', hidden: true },
+      // Taxonomy & Classification
+      taxon_id: { label: 'Taxon ID', field: 'taxon_id', hidden: true, group: 'Taxonomy & Classification' },
       // taxon_lineage_ids: { label: 'Taxon Lineage IDs', field: 'taxon_lineage_ids', hidden: true },
       // taxon_lineage_names: { label: 'Taxon Lineage Names', field: 'taxon_lineage_names', hidden: true },
 
-      family: { label: 'Family', field: 'family', hidden: true },
-      genus: { label: 'Genus', field: 'genus', hidden: true },
-      species: { label: 'Species', field: 'species', hidden: false },
-      strain: { label: 'Strain', field: 'strain', hidden: false },
+      family: { label: 'Family', field: 'family', hidden: true, group: 'Taxonomy & Classification' },
+      genus: { label: 'Genus', field: 'genus', hidden: true, group: 'Taxonomy & Classification' },
+      species: { label: 'Species', field: 'species', hidden: false, group: 'Taxonomy & Classification' },
+      strain: { label: 'Strain', field: 'strain', hidden: false, group: 'Taxonomy & Classification' },
 
-      subtype: { label: 'Subtype', field: 'subtype', hidden: true },
+      subtype: { label: 'Subtype', field: 'subtype', hidden: true, group: 'Taxonomy & Classification' },
       // h_type: { label: 'H Type', field: 'h_type', hidden: true },
       // n_type: { label: 'N Type', field: 'n_type', hidden: true },
 
-      genome_ids: { label: 'Genome IDs', field: 'genome_ids', hidden: true },
-      genbank_accessions: { label: 'Genbank Accessions', field: 'genbank_accessions', hidden: true },
-      segment_count: { label: 'Segment Count', field: 'segment_count', hidden: false },
-      status: { label: 'Status', field: 'status', hidden: false },
+      // Genome & Sequence Information
+      genome_ids: { label: 'Genome IDs', field: 'genome_ids', hidden: true, group: 'Genome & Sequence Information' },
+      genbank_accessions: { label: 'Genbank Accessions', field: 'genbank_accessions', hidden: true, group: 'Genome & Sequence Information' },
+      segment_count: { label: 'Segment Count', field: 'segment_count', hidden: false, group: 'Genome & Sequence Information' },
+      status: { label: 'Status', field: 'status', hidden: false, group: 'Genome & Sequence Information' },
 
-      host_group: { label: 'Host Group', field: 'host_group', hidden: true },
-      host_common_name: { label: 'Host Common Name', field: 'host_common_name', hidden: false },
-      host_name: { label: 'Host Name', field: 'host_name', hidden: true },
-      lab_host: { label: 'Lab Host', field: 'lab_host', hidden: true },
-      passage: { label: 'Passage', field: 'passage', hidden: true },
+      // Host Information
+      host_group: { label: 'Host Group', field: 'host_group', hidden: true, group: 'Host Information' },
+      host_common_name: { label: 'Host Common Name', field: 'host_common_name', hidden: false, group: 'Host Information' },
+      host_name: { label: 'Host Name', field: 'host_name', hidden: true, group: 'Host Information' },
+      lab_host: { label: 'Lab Host', field: 'lab_host', hidden: true, group: 'Host Information' },
 
-      geographic_group: { label: 'Geographic Group', field: 'geographic_group', hidden: true },
-      isolation_country: { label: 'Isolation Country', field: 'isolation_country', hidden: false },
-      collection_year: { label: 'Collection Year', field: 'collection_year', hidden: true },
-      collection_date: { label: 'Collection Date', field: 'collection_date', hidden: false },
+      // Isolation & Passage Information
+      passage: { label: 'Passage', field: 'passage', hidden: true, group: 'Isolation & Passage Information' },
+
+      // Collection & Geographic Information
+      geographic_group: { label: 'Geographic Group', field: 'geographic_group', hidden: true, group: 'Collection & Geographic Information' },
+      isolation_country: { label: 'Isolation Country', field: 'isolation_country', hidden: false, group: 'Collection & Geographic Information' },
+      collection_year: { label: 'Collection Year', field: 'collection_year', hidden: true, group: 'Collection & Geographic Information' },
+      collection_date: { label: 'Collection Date', field: 'collection_date', hidden: false, group: 'Collection & Geographic Information' },
       // season: { label: 'Season', field: 'season', hidden: true },
 
       // s_1_pb2: { label: '1_PB2', field: '1_pb2', hidden: false },
@@ -57,10 +63,11 @@ define([
       // s_6_na: { label: '6_NA', field: '6_na', hidden: false },
       // s_7_mp: { label: '7_MP', field: '7_mp', hidden: false },
       // s_8_ns: { label: '8_NS', field: '8_ns', hidden: false },
-      s_s: { label: 'S', field: 's', hidden: false },
-      s_m: { label: 'M', field: 'm', hidden: false },
-      s_l: { label: 'L', field: 'l', hidden: false },
-      s_other_segments: { label: 'Other Segments', field: 'other_segments', hidden: false },
+      // Genome Segments
+      s_s: { label: 'S', field: 's', hidden: false, group: 'Genome Segments' },
+      s_m: { label: 'M', field: 'm', hidden: false, group: 'Genome Segments' },
+      s_l: { label: 'L', field: 'l', hidden: false, group: 'Genome Segments' },
+      s_other_segments: { label: 'Other Segments', field: 'other_segments', hidden: false, group: 'Genome Segments' },
     },
     startup: function () {
       var _self = this;
