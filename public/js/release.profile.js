@@ -234,6 +234,7 @@ var profile = {
         "p3/widget/app/MobileElementDetection",
         "p3/widget/app/MSA",
         "p3/widget/app/PhylogeneticTree",
+        "p3/widget/app/PPI",
         "p3/widget/app/PrimerDesign",
         "p3/widget/app/ProteinFamily",
         "p3/widget/app/Reconstruct",
@@ -364,4 +365,3 @@ var profile = {
     }
   }
 }
-
