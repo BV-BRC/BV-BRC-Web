@@ -99,55 +99,6 @@ define([
       });
 
       // Initialize Phylogenetic Tree Viewer
-      const decorator = 'vipr:';
-      const nodeVisualizations = {};
-
-      nodeVisualizations['Host'] = {
-        label: 'Host',
-        description: 'the host of the virus',
-        field: null,
-        cladeRef: decorator + 'Host',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        sizes: null
-      };
-
-      nodeVisualizations['Country'] = {
-        label: 'Country',
-        description: 'the country of the virus',
-        field: null,
-        cladeRef: decorator + 'Country',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        sizes: null
-      };
-
-      nodeVisualizations['Year'] = {
-        label: 'Year',
-        description: 'the year of the virus',
-        field: null,
-        cladeRef: decorator + 'Year',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50c',
-        colorsAlt: ['#FF0000', '#000000', '#00FF00'],
-        sizes: null
-      };
-
-      nodeVisualizations['Clade'] = {
-        label: 'Clade',
-        description: 'the clade of the monkey pox virus',
-        field: null,
-        cladeRef: decorator + 'Clade',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        colorsAlt: ['#FF0000', '#000000', '#00FF00'],
-        sizes: [20, 60]
-      };
-
       const nodeLabels = {};
 
       nodeLabels['Host'] = {
@@ -183,41 +134,15 @@ define([
       };
 
       let options = {};
-      options.minBranchLengthValueToShow = 0.001;
-      options.minConfidenceValueToShow = 50;
-      options.initialNodeFillColorVisualization = 'Clade';
-      options.phylogram = true;
-      options.showConfidenceValues = false;
-      options.showExternalLabels = true;
-      options.showNodeName = true;
-      options.showNodeVisualizations = true;
-      options.showVisualizationsLegend = true;
-      options.visualizationsLegendOrientation = 'vertical';
-      options.visualizationsLegendXpos = 220;
+      options.initialVisualization = 'Clade';
       options.visualizationsLegendYpos = 30;
-      options.showInternalLabels = true;
 
       let settings = {};
-      settings.border = '1px solid #909090';
-      settings.controls0Left = 20;
-      settings.controls1Width = 120;
-      settings.rootOffset = 220;
-      settings.controls0Top = 10;
-      settings.controls1Top = 10;
       settings.enableDownloads = true;
       settings.enableDynamicSizing = true;
-      settings.enableMsaResidueVisualizations = false;
-      settings.enableCollapseByFeature = true;
-      settings.enableNodeVisualizations = true;
-      settings.enableBranchVisualizations = false;
+      settings.enableVisualizations = true;
       settings.nhExportWriteConfidences = true;
       settings.enableSubtreeDeletion = true;
-      settings.showSequenceButton = false;
-      settings.showShortenNodeNamesButton = false;
-      settings.showExternalLabelsButton = false;
-      settings.showInternalLabelsButton = true;
-      settings.showExternalNodesButton = false;
-      settings.showInternalNodesButton = false;
 
       const phylogenyId = 'phylogenyMonkeypox';
       this[phylogenyId] = new OutbreaksPhylogenyTreeViewer({
@@ -225,10 +150,7 @@ define([
         id: this.viewer.id + '_' + phylogenyId,
         phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/mpox/monkeypox.xml',
         updateState: true,
-        settings: settings,
-        options: options,
-        nodeVisualizations: nodeVisualizations,
-        specialVisualizations: nodeLabels
+        config: { ...options, ...settings, nodeLabels: nodeLabels }
       });
 
       this.phylogenetics = new OutbreaksTabContainer({

@@ -472,18 +472,42 @@
     border-bottom: 1px solid #333;
 }
 
+.phylogenyVirus,
+.phyloVirusSection,
+.phyloVirusViewerPane {
+    height: 100%;
+    min-height: 0;
+}
+
+.phylogenyVirus .cardsHost {
+    max-height: 100%;
+    overflow-y: auto;
+}
+
 .phyloVirusLayout {
     display: flex;
     align-items: stretch;
+    height: 100%;
+    min-height: 0;
 }
 
 .phyloVirusContent {
     flex: 1;
     min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.phyloVirusViewerHost {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .phyloVirusHeader {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     gap: 12px;
     margin: 5px 0;
