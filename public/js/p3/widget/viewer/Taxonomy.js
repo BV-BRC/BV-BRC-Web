@@ -217,14 +217,17 @@ define([
         this.set('taxon_id', state.taxon_id);
 
         var s = 'eq(taxon_lineage_ids,' + state.taxon_id + ')';
-        state.search = state.search.replace(s, '');
-        if (state.search) {
-          this.filteredTaxon = QueryToEnglish(state.search.replace(s, ''));
-          var sx = [s];
-          if (state.search && state.search != s) {
-            sx.push(state.search);
-          }
-          state.search = sx.join('&').replace('&&', '&');
+        var deprecatedFilter = 'ne(genome_status,Deprecated)';
+        var searchTerms = (state.search || '')
+          .split('&')
+          .filter(function (term) {
+            return term && term !== s && term !== deprecatedFilter;
+          });
+        var sx = [s, deprecatedFilter].concat(searchTerms);
+        state.search = sx.join('&');
+
+        if (searchTerms.length > 0) {
+          this.filteredTaxon = QueryToEnglish(searchTerms.join('&'));
           if (this.taxonomy) {
             // Use DOM placement instead of innerHTML to prevent XSS
             this.queryNode.textContent = '';
@@ -232,7 +235,7 @@ define([
           }
 
         } else {
-          state.search = s;
+          state.search = sx.join('&');
           this.filteredTaxon = false;
           if (this.taxonomy) {
             // Use DOM placement instead of innerHTML to prevent XSS
@@ -319,7 +322,6 @@ define([
             search: 'eq(taxon_id,' + taxon_id + ')'
           }));
           break;
-        case 'structures':
         case 'surveillance':
         case 'serology':
         case 'strains':
@@ -332,11 +334,22 @@ define([
           }));
           break;
 
+        case 'genomes':
+          activeTab.set('state', lang.mixin({}, this.state, {
+            search: this.state.search,
+            hashParams: lang.mixin({}, this.state.hashParams)
+          }));
+          break;
+
         default:
           var activeQueryState;
           var prop = 'genome_id';
           if (active === 'interactions') {
             prop = 'genome_id_a';
+          } else if (active === 'structures') {
+            prop = 'genome_id';
+          } else if (active === 'proteinFeatures') {
+            prop = 'genome_id';
           }
           var context = [`eq(taxon_lineage_ids,${this.state.taxon_id})`]
           if (this.state.search) {

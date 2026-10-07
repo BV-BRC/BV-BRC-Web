@@ -822,7 +822,7 @@ define([
       return undefined;
     },
 
-    validateFasta: function (fastaText, seqType = 'aa', replace = true, firstName = 'record_1') {
+    validateFasta: function (fastaText, seqType = 'aa', replace = true, firstName = 'record_1', enforceTextLimit = true) {
       /*
       Calculates the validity of a FASTA file.
 
@@ -833,6 +833,8 @@ define([
       seqType: string
         Use 'dna' to indicate that the FASTA file should just be nucleotide sequences.
       firstName: The fasta id to call the first record.
+      enforceTextLimit: boolean
+        Apply the maximum size intended for FASTA data entered in a text field.
 
       Returns
       -------
@@ -858,7 +860,7 @@ define([
         message,
         trimFasta,
       };
-      if (!this.ignoreMaxFastaTextLimit && fastaText.length > this.maxFastaText) {
+      if (enforceTextLimit && !this.ignoreMaxFastaTextLimit && fastaText.length > this.maxFastaText) {
         reto.status = 'too_long';
         reto.message = 'The text input is too large. Save the data to a file.';
         return reto;

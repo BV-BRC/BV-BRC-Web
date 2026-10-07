@@ -1,0 +1,332 @@
+/* ===========================================================
+   BV-BRC Modernized Search UI
+   ----------------------------------------------------------
+   Shared layout primitives and design tokens for search pages.
+   Scope everything under .bvs-search to avoid leaking into
+   the rest of the legacy Dojo UI.
+
+   First consumer: InfluenzaSearch.
+   =========================================================== */
+
+.bvs-search {
+  /* Design tokens (scoped so they don't leak) */
+  --bvs-primary: #34698e;
+  --bvs-primary-dark: #09456f;
+  --bvs-label: #466b7e;
+  --bvs-muted: #4f6b77;
+  --bvs-text: #09456f;
+  --bvs-text-muted: #777;
+  --bvs-border: #d3d3d3;
+  --bvs-border-accent: #b5cde0;
+  --bvs-bg-accent: #eaf1f7;
+  --bvs-divider: #e5edf1;
+
+  --bvs-label-col: 85px;
+
+  max-width: 1120px;
+  margin: 0 auto;
+  color: var(--bvs-text);
+  font-family: Arial, sans-serif;
+}
+
+/* ---------- Header ---------- */
+.bvs-header { margin-bottom: 20px; }
+.bvs-breadcrumb { display: inline-block; font-size: 12px; color: var(--bvs-muted); margin-bottom: 6px; }
+.bvs-title { margin: 0; font-size: 30px; line-height: 1.2; color: var(--bvs-text); }
+.bvs-subtitle { margin: 10px 0 0 0; max-width: 820px; font-size: 14px; line-height: 1.5; color: var(--bvs-muted); }
+
+/* ---------- Cards ---------- */
+.bvs-search .bvs-card {
+  background: #fff;
+  border: 1px solid var(--bvs-border);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(9, 69, 111, 0.06);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+.bvs-search .bvs-card-primary {
+  border-color: var(--bvs-border-accent);
+  box-shadow: 0 3px 12px rgba(52, 105, 142, 0.10);
+}
+.bvs-section-title { margin: 0 0 4px 0; font-size: 20px; color: var(--bvs-text); }
+.bvs-section-intro { margin: 0 0 18px 0; font-size: 13px; color: #617985; }
+
+/* ---------- Field primitive ----------
+   A field = label (fixed-width slot) + small gap + input
+   (sized per modifier class). Per-row label slot width can
+   be overridden via --bvs-label-col CSS variable on the row. */
+.bvs-search .bvs-field {
+  --bvs-input-w: 170px;
+  display: inline-grid;
+  grid-template-columns: minmax(var(--bvs-label-col), max-content) var(--bvs-input-w);
+  align-items: center;
+  column-gap: 6px;
+  margin: 0 16px 8px 0;
+  vertical-align: middle;
+}
+.bvs-search .bvs-field-xs   { --bvs-input-w: 45px;  } /* 4-digit numbers */
+.bvs-search .bvs-field-sm   { --bvs-input-w: 95px;  } /* subtypes, reference */
+.bvs-search .bvs-field-date { --bvs-input-w: 140px; } /* date + calendar icon */
+.bvs-search .bvs-field-lg   { --bvs-input-w: 220px; } /* host, country, state */
+.bvs-search .bvs-field.bvs-field-narrow {
+  grid-template-columns: minmax(65px, max-content) var(--bvs-input-w);
+}
+.bvs-search .bvs-field.bvs-field-wide {
+  /* Full row; input cell flexes to fill remaining space */
+  display: grid;
+  grid-template-columns: minmax(var(--bvs-label-col), max-content) 1fr;
+  width: 100%;
+}
+/* Range field: label + (input1 "to" input2). Reserves a wider input cell. */
+.bvs-search .bvs-field.bvs-field-range { --bvs-input-w: 180px; }
+
+/* Checkbox-only field: single auto-sized cell (no label column / input column).
+   Used inline next to other fields, e.g. "Complete genome only" beside Length. */
+.bvs-search .bvs-field.bvs-field-check {
+  display: inline-flex;
+  align-items: center;
+  grid-template-columns: none;
+}
+.bvs-search .bvs-field.bvs-field-check > label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 0 4px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #304f5b;
+  text-transform: none !important;
+  white-space: nowrap;
+}
+.bvs-search .bvs-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+.bvs-search .bvs-range > div { flex: 1 1 0; min-width: 0; }
+.bvs-search .bvs-range-sep {
+  font-size: 12px;
+  color: var(--bvs-label);
+  flex: 0 0 auto;
+}
+
+.bvs-search .bvs-field > label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bvs-label);
+  text-transform: none !important;
+  letter-spacing: 0;
+  white-space: nowrap;
+  margin: 0;
+  text-align: left;
+  min-width: 0;
+}
+.bvs-search .bvs-field > div {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+.bvs-search .bvs-field .dijitTextBox,
+.bvs-search .bvs-field .dijitSelect,
+.bvs-search .bvs-field .dijitValidationTextBox {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* ---------- Row container ---------- */
+.bvs-search .bvs-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ---------- Stacked field variant (for button groups) ---------- */
+.bvs-search .bvs-field-stacked { min-width: 0; }
+.bvs-search .bvs-field-stacked > label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bvs-text);
+  text-transform: none !important;
+  letter-spacing: 0;
+}
+
+/* ---------- Grid helper ---------- */
+.bvs-search .bvs-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 20px;
+}
+
+/* ---------- Divider ---------- */
+.bvs-search .bvs-divider {
+  height: 1px;
+  background: var(--bvs-divider);
+  margin: 16px 0;
+}
+
+/* ---------- Chip-style button group (Data Type, Virus Type, presets) ---------- */
+.bvs-search .bvs-chip-group {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.bvs-search .bvs-chip {
+  padding: 6px 12px;
+  border: 1px solid var(--bvs-border-accent);
+  border-radius: 3px;
+  background: #fff;
+  color: var(--bvs-primary);
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.2;
+}
+.bvs-search .bvs-chip:hover {
+  background: var(--bvs-bg-accent);
+  border-color: var(--bvs-primary);
+}
+.bvs-search .bvs-chip.is-active {
+  background: var(--bvs-primary);
+  border-color: var(--bvs-primary-dark);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(9, 69, 111, 0.18);
+}
+
+/* Multi-select chip group hint label */
+.bvs-search .bvs-multi-hint {
+  font-weight: normal;
+  font-size: 11px;
+  color: var(--bvs-text-muted);
+  margin-left: 4px;
+}
+
+/* ---------- Accordion ---------- */
+.bvs-search .bvs-accordion {
+  border: 1px solid var(--bvs-border);
+  border-radius: 3px;
+  overflow: hidden;
+  background: #fff;
+  margin-bottom: 10px;
+}
+.bvs-search .bvs-accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: var(--bvs-bg-accent);
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--bvs-text);
+  font-size: 13px;
+}
+.bvs-search .bvs-accordion-toggle {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--bvs-primary);
+  user-select: none;
+}
+.bvs-search .bvs-accordion-body {
+  padding: 14px;
+  border-top: 1px solid var(--bvs-border);
+}
+
+/* ---------- Inline checkbox row ---------- */
+.bvs-search .bvs-inline-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+}
+.bvs-search .bvs-inline-checks > label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: #304f5b;
+  text-transform: none !important;
+  letter-spacing: 0;
+}
+
+/* ---------- Action buttons ---------- */
+.bvs-search .bvs-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.bvs-search .bvs-btn-primary {
+  min-width: 120px;
+  padding: 6px 12px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  background: var(--bvs-primary);
+  color: #fff;
+  border: 1px solid var(--bvs-primary-dark);
+  box-shadow: 0 3px 10px rgba(9, 69, 111, 0.18);
+}
+.bvs-search .bvs-btn-primary:hover { background: var(--bvs-primary-dark); }
+.bvs-search .bvs-btn-secondary {
+  min-width: 120px;
+  padding: 6px 12px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  background: #fff;
+  color: var(--bvs-primary);
+  border: 1px solid var(--bvs-border-accent);
+}
+.bvs-search .bvs-btn-secondary:hover {
+  background: var(--bvs-bg-accent);
+  border-color: var(--bvs-primary);
+}
+
+/* Small pill-style toggle (e.g. "Show advanced") */
+.bvs-search .bvs-toggle-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--bvs-border-accent);
+  border-radius: 3px;
+  background: var(--bvs-bg-accent);
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--bvs-primary);
+}
+.bvs-search .bvs-toggle-btn:hover {
+  background: var(--bvs-primary);
+  color: #fff;
+}
+
+/* ---------- Responsive ---------- */
+@media (min-width: 901px) and (max-width: 1100px) {
+  .bvs-search .bvs-field-lg { --bvs-input-w: 180px; }
+}
+@media (max-width: 900px) {
+  .bvs-search .bvs-grid-2 { grid-template-columns: 1fr; }
+  .bvs-search .bvs-field,
+  .bvs-search .bvs-field.bvs-field-narrow {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    width: 100%;
+    margin-right: 0;
+  }
+  .bvs-search .bvs-field > div {
+    width: 100%;
+    max-width: 360px;
+  }
+  .bvs-search .bvs-field.bvs-field-wide > div {
+    max-width: none;
+  }
+  .bvs-search .bvs-field.bvs-field-check {
+    display: inline-flex;
+    width: auto;
+    grid-template-columns: none;
+  }
+}

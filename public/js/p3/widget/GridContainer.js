@@ -952,7 +952,7 @@ define([
             popup.open({
               popup: new PerspectiveToolTipDialog({
                 perspective: 'GenomeList',
-                perspectiveUrl: '/view/GenomeList/?eq(*,*)&genome(in(genome_id,(' + genome_ids.join(',') + ')))'
+                perspectiveUrl: '/view/GenomeList/?eq(genome_id,*)&genome(in(genome_id,(' + genome_ids.join(',') + ')))'
               }),
               around: button,
               orient: ['below']
@@ -961,7 +961,7 @@ define([
         },
         function (selection) {
           const genome_ids = Array.from(selection.reduce((p, v) => { return p.add(v.genome_id) }, new Set()))
-          Topic.publish('/navigate', { href: '/view/GenomeList/?eq(*,*)&genome(in(genome_id,(' + genome_ids.join(',') + ')))' });
+          Topic.publish('/navigate', { href: '/view/GenomeList/?eq(genome_id,*)&genome(in(genome_id,(' + genome_ids.join(',') + ')))' });
         },
         false
       ],

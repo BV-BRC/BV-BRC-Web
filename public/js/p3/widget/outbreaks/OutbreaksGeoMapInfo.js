@@ -25,8 +25,7 @@ define([
         if (this.map.getZoom() > 12) {
           zoomLevel = this.map.getZoom();
         }
-        this.map.setCenter(new google.maps.LatLng(this.latitude, this.longitude));
-        this.map.setZoom(zoomLevel);
+        this.map.setView([this.latitude, this.longitude], zoomLevel);
       }));
     }
   });

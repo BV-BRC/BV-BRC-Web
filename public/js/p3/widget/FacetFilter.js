@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/on', 'dojo/_base/Deferred', 'dijit/_Templated',
   'dojo/dom-class', 'dojo/dom-construct', 'dijit/_WidgetBase', 'dijit/form/TextBox',
   'dojo/_base/xhr', 'dojo/_base/lang', 'dojo/dom-attr', 'dojo/query',
-  'dojo/dom-geometry', 'dojo/dom-style', 'dojo/when', 
+  'dojo/dom-geometry', 'dojo/dom-style', 'dojo/when', 'dojo/debounce',
   '../util/constructMetadataName',
 ], function (
   declare, on, Deferred, Templated,
   domClass, domConstruct, WidgetBase, TextBox,
   xhr, lang, domAttr, Query,
-  domGeometry, domStyle, when,
+  domGeometry, domStyle, when, debounce,
   constructMetadataName
 ) {
 
@@ -246,6 +246,39 @@ define([
       if (filtered && filtered.length > 0) {
         this.set('data', filtered)
       }
+
+      // Compute the pending range filter (mirroring the numeric Advanced Search
+      // fields), but don't push it to the grid yet -- that only happens once
+      // applyRange() runs, i.e. when APPLY is clicked.
+      let filter = '';
+      if (!isNaN(lowerBound) && !isNaN(upperBound)) {
+        filter = 'between(' + this.category + ',' + lowerBound + ',' + upperBound + ')';
+      } else if (!isNaN(lowerBound)) {
+        filter = 'gt(' + this.category + ',' + lowerBound + ')';
+      } else if (!isNaN(upperBound)) {
+        filter = 'lt(' + this.category + ',' + upperBound + ')';
+      }
+
+      this.filter = filter;
+    },
+    applyRange: function () {
+      // Commits the currently-typed min/max range to the grid query. Called
+      // by the APPLY button so the table doesn't refilter on every keystroke.
+      if (this.type !== 'numeric') {
+        return;
+      }
+
+      this.filterByRange()
+
+      domClass.toggle(this.categoryNode, 'selected', !!this.filter);
+
+      on.emit(this.domNode, 'UpdateFilterCategory', {
+        category: this.category,
+        filter: this.filter || '',
+        selected: [],
+        bubbles: true,
+        cancelable: true
+      });
     },
     filterByKeyword: function () {
       if (this.originalData === null) {
@@ -278,8 +311,17 @@ define([
             width: '40px'
           }
         })
-        on(this.facetRangeMin, 'keyup', lang.hitch(this, 'filterByRange'))
-        on(this.facetRangeMax, 'keyup', lang.hitch(this, 'filterByRange'))
+        const debouncedFilterByRange = debounce(lang.hitch(this, 'filterByRange'), 500)
+        const rangeKeyupHandler = function (evt) {
+          // Only queue the filter once the field is empty (cleared) or holds a
+          // full 4-digit year; avoids submitting on incomplete input like "201".
+          const len = evt.target.value.length
+          if (len === 0 || len >= 4) {
+            debouncedFilterByRange()
+          }
+        }
+        on(this.facetRangeMin, 'keyup', rangeKeyupHandler)
+        on(this.facetRangeMax, 'keyup', rangeKeyupHandler)
 
         domConstruct.place(this.facetRangeMin.domNode, this.searchNode, 'last');
         domConstruct.place('<span> to </span>', this.searchNode, 'last');

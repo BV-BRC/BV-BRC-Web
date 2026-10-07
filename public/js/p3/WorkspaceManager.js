@@ -127,6 +127,11 @@ define([
         formats: ['.nwk'],
         description: 'Phylogenetic tree file.'
       },
+      cif: {
+        label: 'mmCIF',
+        formats: ['.cif', '.mmcif'],
+        description: 'A macromolecular structure in mmCIF (PDBx) format, the format wwPDB distributes for entries too large for PDB format.'
+      },
       pdb: {
         label: 'PDB',
         formats: ['.pdb'],
