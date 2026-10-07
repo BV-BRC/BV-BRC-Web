@@ -21,6 +21,18 @@ define([
     }
   });
 
+  // Genome names and sequence descriptions routinely contain commas (e.g.
+  // "Brucella ovis strain Bo873 chromosome 1, complete sequence."), which shift
+  // every later column of a CSV row. Quote per RFC 4180; for TSV just strip the
+  // characters that would break the row.
+  function escapeField(value, delimiter) {
+    var s = (value === null || value === undefined) ? '' : String(value);
+    if (delimiter === '\t') {
+      return s.replace(/[\t\r\n]+/g, ' ');
+    }
+    return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
   on(downloadTT.domNode, 'div:click', lang.hitch(function (evt) {
     var rel = evt.target.attributes.rel.value;
     var data = downloadTT.get('data');
@@ -38,10 +50,14 @@ define([
     }
 
     var content = data.map(function (d) {
-      return d.join(DELIMITER);
+      return d.map(function (field) {
+        return escapeField(field, DELIMITER);
+      }).join(DELIMITER);
     });
 
-    var fileContent = headers.join(DELIMITER) + '\n' + content.join('\n');
+    var fileContent = headers.map(function (h) {
+      return escapeField(h, DELIMITER);
+    }).join(DELIMITER) + '\n' + content.join('\n');
 
     saveAs(new Blob([fileContent], { type: rel }), filename + '.' + ext);
 
@@ -186,29 +202,43 @@ define([
               dataType = 'genome_sequence';
             } else if (firstRow.database && firstRow.source_id) {
               dataType = 'specialty_genes';
+            } else if (firstRow.sseqid) {
+              dataType = 'no_ids';
             }
           }
 
           switch (dataType) {
             case 'genome_feature':
             case 'feature_data':  // Also handle containerType value
-              headers = ['Genome', 'Genome ID', 'Subject ID', 'RefSeq Locus Tag', 'Gene', 'Product', 'Length (NT)', 'Length (AA)', 'ALN Length', 'Identity', 'Query cover', 'Subject cover', 'Hit from', 'Hit to', 'Score', 'E value'];
+              // 'Subject ID' is the id BLAST reported (sseqid). It was previously
+              // mapped to patric_id, which is blank whenever the Solr decoration
+              // query misses -- so the one column a user needs to chase a hit
+              // down came through empty (issue #1542). Export both.
+              headers = ['Query ID', 'Genome', 'Genome ID', 'Subject ID', 'BRC ID', 'RefSeq Locus Tag', 'Gene', 'Product', 'Length (NT)', 'Length (AA)', 'ALN Length', 'Identity', 'Query cover', 'Subject cover', 'Hit from', 'Hit to', 'Score', 'E value'];
               content = data.map(function (row) {
-                return [row.genome_name, row.genome_id, row.patric_id, row.refseq_locus_tag, row.gene, JSON.stringify(row['function']), row.na_length, row.aa_length, row.length, row.pident, row.query_coverage, row.subject_coverage, row.hit_from, row.hit_to, row.bitscore, row.evalue];
+                return [row.qseqid, row.genome_name, row.genome_id, row.sseqid, row.patric_id, row.refseq_locus_tag, row.gene, row['function'], row.na_length, row.aa_length, row.length, row.pident, row.query_coverage, row.subject_coverage, row.hit_from, row.hit_to, row.bitscore, row.evalue];
               });
               break;
             case 'genome_sequence':
             case 'sequence_data':  // Also handle containerType value
-              headers = ['Genome', 'Genome ID', 'Subject ID', 'Description', 'Product', 'Identity', 'Query cover', 'Subject cover', 'Hit from', 'Hit to', 'ALN Length', 'Score', 'E value'];
+              headers = ['Query ID', 'Genome', 'Genome ID', 'Subject ID', 'Accession', 'Description', 'Identity', 'Query cover', 'Subject cover', 'Hit from', 'Hit to', 'ALN Length', 'Score', 'E value'];
               content = data.map(function (row) {
-                return [row.genome_name, row.genome_id, row.accession, JSON.stringify(row.description), JSON.stringify(row['function']), row.pident, row.query_coverage, row.subject_coverage, row.hit_from, row.hit_to, row.length, row.bitscore, row.evalue];
+                return [row.qseqid, row.genome_name, row.genome_id, row.sseqid, row.accession, row.description, row.pident, row.query_coverage, row.subject_coverage, row.hit_from, row.hit_to, row.length, row.bitscore, row.evalue];
               });
               break;
             case 'specialty_genes':
             case 'spgene_data':  // Also handle containerType value
-              headers = ['Database', 'Source ID', 'Description', 'Organism', 'Identity', 'Query cover', 'Subject cover', 'Length', 'Score', 'E value'];
+              headers = ['Query ID', 'Subject ID', 'Database', 'Source ID', 'Description', 'Organism', 'Identity', 'Query cover', 'Subject cover', 'Length', 'Score', 'E value'];
               content = data.map(function (row) {
-                return [row.database, row.source_id, JSON.stringify(row['function']), row.organism, row.pident, row.query_coverage, row.subject_coverage, row.length, row.bitscore, row.evalue];
+                return [row.qseqid, row.sseqid, row.database, row.source_id, row['function'], row.organism, row.pident, row.query_coverage, row.subject_coverage, row.length, row.bitscore, row.evalue];
+              });
+              break;
+            case 'no_ids':
+            case 'fasta_data':  // Also handle containerType value
+              // Hits against an undecorated database: sseqid is all we have.
+              headers = ['Query ID', 'Subject ID', 'ALN Length', 'Identity', 'Query cover', 'Subject cover', 'Hit from', 'Hit to', 'Score', 'E value'];
+              content = data.map(function (row) {
+                return [row.qseqid, row.sseqid, row.length, row.pident, row.query_coverage, row.subject_coverage, row.hit_from, row.hit_to, row.bitscore, row.evalue];
               });
               break;
             default:
