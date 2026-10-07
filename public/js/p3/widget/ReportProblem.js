@@ -2,12 +2,12 @@ define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on',
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/ReportProblem.html', 'dijit/form/Form',
-  'dojo/topic', 'dojo/request', 'dojo/when', 'dojo/query', 'dojo/html'
+  'dojo/topic', 'dojo/request', 'dojo/when', 'dojo/query', 'dojo/html', '../auth/authHeaders'
 ], function (
   declare, WidgetBase, on,
   domClass, Templated, WidgetsInTemplate,
-  Template, FormMixin, Topic, request, when, query, html
-) {
+  Template, FormMixin, Topic, request, when, query, html,
+  authHeader) {
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
     'baseClass': 'CreateWorkspace',
     templateString: Template,
@@ -85,7 +85,7 @@ define([
 
         when(request.post('/reportProblem', {
           headers: {
-            'Authorization': (window.App.authorizationToken || ''),
+            'Authorization': authHeader(),
             'enctype': 'multipart/form-data'
           },
           data: formData

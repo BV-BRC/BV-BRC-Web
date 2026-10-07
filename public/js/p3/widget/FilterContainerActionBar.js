@@ -7,7 +7,7 @@ define([
   'dijit/form/DropDownButton', 'dijit/DropDownMenu',
   'dijit/Dialog', 'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', './AdvancedSearchRowForm',
   'dijit/focus', '../util/PathJoin', '../util/constructMetadataName',
-  'dojo/debounce'
+  'dojo/debounce', '../auth/authHeaders'
 ], function (
   declare, ContainerActionBar, lang,
   domConstruct, domGeometry, domStyle, domClass,
@@ -17,8 +17,8 @@ define([
   DropDownButton, DropDownMenu,
   Dialog, Button, CheckBox, Select, AdvancedSearchRowForm,
   focusUtil, PathJoin, constructMetadataName,
-  debounce
-) {
+  debounce,
+  authHeader) {
 
   function sortByLabel(firstEl, secondEl) {
     return (firstEl['label'] < secondEl['label']) ? -1 : (firstEl['label'] > secondEl['label'] ? 1 : 0)
@@ -1210,7 +1210,7 @@ define([
           accept: 'application/solr+json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         }
       });
 

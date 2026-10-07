@@ -1,9 +1,9 @@
 define(['dojo/request', 'dojo/_base/declare', 'dojo/_base/lang',
-  'dojo/_base/Deferred', 'dojo/topic', './WorkspaceManager'
+  'dojo/_base/Deferred', 'dojo/topic', './WorkspaceManager', './auth/authHeaders'
 ], function (
   xhr, declare, lang,
-  Deferred, Topic, WorkspaceManager
-) {
+  Deferred, Topic, WorkspaceManager,
+  authHeader) {
 
   // var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
   var UploadManager = (declare([], {
@@ -29,7 +29,7 @@ define(['dojo/request', 'dojo/_base/declare', 'dojo/_base/lang',
       if (token) {
         this.token = token;
         this.headers = {
-          Authorization: 'OAuth ' + token
+          Authorization: authHeader('shock', token)
         };
       }
       var _self = this;

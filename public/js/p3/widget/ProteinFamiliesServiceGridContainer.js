@@ -3,14 +3,14 @@ define([
   'dojo/on', 'dojo/topic', 'dojo/when', 'dojo/request', 'dojo/dom-construct',
   'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/layout/StackContainer',
   './ContainerActionBar', 'FileSaver', '../WorkspaceManager',
-  './ProteinFamiliesServiceGrid', './GridContainer', './DownloadTooltipDialog', '../util/PathJoin', './SelectionToGroup'
+  './ProteinFamiliesServiceGrid', './GridContainer', './DownloadTooltipDialog', '../util/PathJoin', './SelectionToGroup', '../auth/authHeaders'
 ], function (
   declare, lang,
   on, Topic, when, request, domConstruct,
   popup, TooltipDialog, Dialog, TabContainer,
   ContainerActionBar, saveAs, WorkspaceManager,
-  ProteinFamiliesServiceGrid, GridContainer, DownloadTooltipDialog, PathJoin, SelectionToGroup
-) {
+  ProteinFamiliesServiceGrid, GridContainer, DownloadTooltipDialog, PathJoin, SelectionToGroup,
+  authHeader) {
 
   var vfc = ['<div class="wsActionTooltip" rel="dna">View FASTA DNA</div>',
     '<div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>'
@@ -159,7 +159,7 @@ define([
               Accept: 'application/json',
               'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             data: query
           }), function (response) {
@@ -266,7 +266,7 @@ define([
               Accept: 'application/json',
               'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             data: query
           }), function (ids) {

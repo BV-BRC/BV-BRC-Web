@@ -2,14 +2,14 @@ define([
   'dijit/form/FilteringSelect', 'dojo/_base/declare',
   'dojo/store/JsonRest', 'dojo/_base/lang', 'dojo/dom-construct',
   './TaxonNameSelector', 'dojo/on', 'dijit/TooltipDialog',
-  'dijit/popup', '../util/PathJoin'
+  'dijit/popup', '../util/PathJoin', '../auth/authHeaders'
 
 ], function (
   FilteringSelect, declare,
   Store, lang, domConstr,
   TaxonNameSelector, on, TooltipDialog,
-  popup, PathJoin
-) {
+  popup, PathJoin,
+  authHeader) {
 
   return declare([FilteringSelect], {
     apiServiceUrl: window.App.dataAPI,
@@ -31,7 +31,7 @@ define([
         this.store = new Store({
           target: PathJoin(this.apiServiceUrl, 'taxonomy') + '/',
           idProperty: 'taxon_id',
-          headers: { accept: 'application/json', Authorization: (window.App.authorizationToken || '') }
+          headers: { accept: 'application/json', Authorization: authHeader() }
         });
       }
 

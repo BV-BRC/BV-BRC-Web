@@ -1,12 +1,12 @@
 define([
   'dojo/request', 'dojo/_base/declare', 'dojo/_base/lang',
   'dojo/_base/Deferred', 'dojo/topic', './jsonrpc', 'dojo/Stateful',
-  'dojo/promise/all', 'dijit/Dialog', 'dijit/form/Button', 'dojo/dom-construct'
+  'dojo/promise/all', 'dijit/Dialog', 'dijit/form/Button', 'dojo/dom-construct', './auth/authHeaders'
 ], function (
   xhr, declare, lang,
   Deferred, Topic, RPC, Stateful,
-  All, Dialog, Button, domConstruct
-) {
+  All, Dialog, Button, domConstruct,
+  authHeader) {
 
   var WorkspaceManager = (declare([Stateful], {
     userWorkspaces: null,
@@ -861,7 +861,7 @@ define([
             'X-Requested-With': null
           };
           if (window.App.authorizationToken) {
-            headers.Authorization = 'OAuth ' + window.App.authorizationToken;
+            headers.Authorization = authHeader('shock');
           }
 
           var d = xhr.get(meta.link_reference + '?download', {
@@ -1178,7 +1178,7 @@ define([
             'X-Requested-With': null
           };
           if (window.App.authorizationToken) {
-            headers.Authorization = 'OAuth ' + window.App.authorizationToken;
+            headers.Authorization = authHeader('shock');
           }
 
           var d = xhr.get(meta.link_reference + '?download', {

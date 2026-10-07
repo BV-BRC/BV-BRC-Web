@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/_base/Deferred', 'dojo/request', 'dojo/_base/lang', 'dojo/topic',
   'dojo/dom-construct',
   './_GenomeList', '../Phylogeny', '../../util/PathJoin', '../../store/SFVTViruses',
-  '../TaxonomyTreeGridContainer', '../TaxonomyOverview', '../../util/QueryToEnglish', '../PhylogenyVirus'
+  '../TaxonomyTreeGridContainer', '../TaxonomyOverview', '../../util/QueryToEnglish', '../PhylogenyVirus', '../../auth/authHeaders'
 ], function (
   declare, Deferred, xhr, lang, Topic,
   domConstruct,
   GenomeList, Phylogeny, PathJoin, SFVTViruses,
-  TaxonomyTreeGrid, TaxonomyOverview, QueryToEnglish, PhylogenyVirus
-) {
+  TaxonomyTreeGrid, TaxonomyOverview, QueryToEnglish, PhylogenyVirus,
+  authHeader) {
   return declare([GenomeList], {
     params: null,
     taxon_id: '',
@@ -192,7 +192,7 @@ define([
             accept: 'application/json',
             'content-type': 'application/rqlquery+x-www-form-urlencoded',
             'X-Requested-With': null,
-            Authorization: (window.App.authorizationToken || '')
+            Authorization: authHeader()
           },
           data: 'eq(taxon_name,' + taxon_id_or_name + ')&in(taxon_rank,(genus,species))&select(taxon_id,taxon_name,taxon_rank)&limit(1)',
           handleAs: 'json'
@@ -509,7 +509,7 @@ define([
           accept: 'application/json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         data: 'in(taxon_id,(' + taxonIds.join(',') + '))&select(taxon_id,lineage_ids)&limit(2000)',
         handleAs: 'json'

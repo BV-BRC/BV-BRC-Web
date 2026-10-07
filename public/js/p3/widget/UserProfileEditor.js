@@ -32,10 +32,12 @@ define([
 
       console.log('Submit Vals: ', vals);
 
+      // No withCredentials: it was inert, since p3_user has never sent
+      // Access-Control-Allow-Credentials (it misspelled the cors option as
+      // `credential`). See corsOptions.js in the p3_user repo.
       var def = xhr.post('/user/', {
         headers: { accept: 'application/json' },
-        data: vals,
-        withCredentials: true
+        data: vals
       });
 
       def.then(lang.hitch(this, function (results) {

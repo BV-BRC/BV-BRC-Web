@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/when', 'dojo/request', 'dojo/dom-construct',
   'dijit/dijit', 'dijit/layout/ContentPane', 'dojo/_base/Deferred',
-  './Base', '../../util/PathJoin', '../SubsystemMapContainer', 'dojo/topic'
+  './Base', '../../util/PathJoin', '../SubsystemMapContainer', 'dojo/topic', '../../auth/authHeaders'
 ], function (
   declare, lang, when, request, domConstruct,
   dijit, ContentPane, Deferred,
-  ViewerBase, PathJoin, SubsystemMapContainer, Topic
-) {
+  ViewerBase, PathJoin, SubsystemMapContainer, Topic,
+  authHeader) {
   return declare([ViewerBase], {
     disabled: false,
     query: null,
@@ -37,7 +37,7 @@ define([
           Accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         data: query
       }).then(function (response) {
@@ -87,7 +87,7 @@ define([
           Accept: 'application/json',
           'Content-Type': 'application/solrquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: window.App.authorizationToken
+          Authorization: authHeader()
         },
         data: ref_query
       }), function (res) {
@@ -172,7 +172,7 @@ define([
           Accept: 'application/solr+json',
           'Content-Type': 'application/solrquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: window.App.authorizationToken
+          Authorization: authHeader()
         },
         data: query
       }), function (response) {

@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', './GridContainer',
   './TaxonomyTreeGrid', 'dijit/popup',
   'dijit/TooltipDialog', 'dojo/on', 'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/request',
-  'dojo/topic', '../util/PathJoin'
+  'dojo/topic', '../util/PathJoin', '../auth/authHeaders'
 ], function (
   declare, GridContainer,
   Grid, popup,
   TooltipDialog, on, domClass, ContentPane, domConstruct, request,
-  Topic, PathJoin
-) {
+  Topic, PathJoin,
+  authHeader) {
 
   var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
   var downloadTT = new TooltipDialog({
@@ -129,7 +129,7 @@ define([
         handleAs: 'json',
         headers: {
           accept: 'application/json',
-          Authorization: (window.App && window.App.authorizationToken) ? window.App.authorizationToken : ''
+          Authorization: authHeader()
         }
       }).then(function (results) {
         if (term !== _self._searchTerm) {

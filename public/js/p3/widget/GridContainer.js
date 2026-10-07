@@ -6,7 +6,7 @@ define([
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog', './DownloadTooltipDialog', './PerspectiveToolTip',
   './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin',
   './FeatureDetailsTooltipDialog', './ServicesTooltipDialog', './RerunUtility', 'dojox/widget/Standby',
-  './copilot/ChatSessionContainerSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel'
+  './copilot/ChatSessionContainerSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel', '../auth/authHeaders'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
@@ -15,8 +15,8 @@ define([
   Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
   CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin,
   FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility, Standby,
-  ChatSessionContainerSidePanel, CopilotAPI, ChatSessionOptionsBar
-) {
+  ChatSessionContainerSidePanel, CopilotAPI, ChatSessionOptionsBar,
+  authHeader) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
   var viewMSATT = new TooltipDialog({
@@ -839,7 +839,7 @@ define([
               Accept: 'application/json',
               'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             data : 'in(id,(' + idList.join(',') + '))&gt(collection_latitude,-91)&select(id,collection_latitude,collection_longitude)&limit(' + idList.length + ')'
             }), function (response) {
@@ -1058,7 +1058,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(pathway_id,(' + pathway_ids.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {
@@ -1082,7 +1082,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(ec_number,(' + ec_numbers.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {
@@ -1209,7 +1209,7 @@ define([
                   Accept: 'application/json',
                   'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                   'X-Requested-With': null,
-                  Authorization: (window.App.authorizationToken || '')
+                  Authorization: authHeader()
                 },
                 data: 'and(in(' + familyIdName + ',(' + familyIds.join(',') + ')),in(genome_id,(' + genomeIds.join(',') + ')))&select(feature_id)&limit(25000)'
               }), function (response) {
@@ -1240,7 +1240,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(pathway_id,(' + pathway_ids.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {
@@ -1268,7 +1268,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(ec_number,(' + ec_numbers.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {
@@ -1406,7 +1406,7 @@ define([
                   Accept: 'application/json',
                   'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                   'X-Requested-With': null,
-                  Authorization: (window.App.authorizationToken || '')
+                  Authorization: authHeader()
                 },
                 data: 'and(in(' + familyIdName + ',(' + familyIds.join(',') + ')),in(genome_id,(' + genomeIds.join(',') + ')))&select(feature_id)&limit(25000)'
               }), function (response) {
@@ -1440,7 +1440,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(pathway_id,(' + pathway_ids.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {
@@ -1465,7 +1465,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(ec_number,(' + ec_numbers.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {

@@ -5,7 +5,7 @@ define([
   './ContainerActionBar', 'FileSaver', './PerspectiveToolTip',
   './GridContainer', './IDMappingAppResultGrid',
   './DownloadTooltipDialog', 'dijit/Dialog',
-  './SelectionToGroup', 'dojo/dom-construct'
+  './SelectionToGroup', 'dojo/dom-construct', '../auth/authHeaders'
 ], function (
   declare, lang,
   on, Topic, query, domClass, when, request,
@@ -13,8 +13,8 @@ define([
   ContainerActionBar, saveAs, PerspectiveToolTipDialog,
   GridContainer, IDMappingAppResultGrid,
   DownloadTooltipDialog, Dialog,
-  SelectionToGroup, domConstruct
-) {
+  SelectionToGroup, domConstruct,
+  authHeader) {
 
   var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
   var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div>';
@@ -477,7 +477,7 @@ define([
                   Accept: 'application/json',
                   'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                   'X-Requested-With': null,
-                  Authorization: (window.App.authorizationToken || '')
+                  Authorization: authHeader()
                 },
                 data: 'and(in(' + familyIdName + ',(' + familyIds.join(',') + ')),in(genome_id,(' + genomeIds.join(',') + ')))&select(feature_id)&limit(25000)'
               }), function (response) {
@@ -511,7 +511,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(pathway_id,(' + pathway_ids.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {
@@ -536,7 +536,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(ec_number,(' + ec_numbers.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {

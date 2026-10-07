@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on', 'dojo/_base/Deferred',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dijit/Tooltip',
   'dojo/_base/xhr', 'dojo/_base/lang', './PageGrid', './formatter', '../store/SubsystemsOverviewMemoryStore', 'dojo/request',
-  'dojo/aspect', './GridSelector', 'dojo/when', 'd3/d3', 'dojo/Stateful', 'dojo/topic', '../util/PathJoin', 'dojo/promise/all', './DataVisualizationTheme', 'dojox/widget/Standby'
+  'dojo/aspect', './GridSelector', 'dojo/when', 'd3/d3', 'dojo/Stateful', 'dojo/topic', '../util/PathJoin', 'dojo/promise/all', './DataVisualizationTheme', 'dojox/widget/Standby', '../auth/authHeaders'
 ], function (
   declare, BorderContainer, on, Deferred,
   domClass, ContentPane, domConstruct, Tooltip,
   xhr, lang, Grid, formatter, SubsystemsOverviewMemoryStore, request,
-  aspect, selector, when, d3, Stateful, Topic, PathJoin, All, Theme, Standby
-) {
+  aspect, selector, when, d3, Stateful, Topic, PathJoin, All, Theme, Standby,
+  authHeader) {
   return declare([Stateful, BorderContainer], {
     store: null,
     subsystemSvg: null,
@@ -479,7 +479,7 @@ define([
           Accept: 'application/solr+json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         }
       }), function (data) {
         def.resolve(data.response.numFound);
@@ -499,7 +499,7 @@ define([
           Accept: 'application/solr+json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         }
       }), function (data) {
         def.resolve(data.response.numFound);
@@ -519,7 +519,7 @@ define([
           Accept: 'application/solr+json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         }
       }), function (data) {
         def.resolve(data.response.numFound);
@@ -539,7 +539,7 @@ define([
           Accept: 'application/solr+json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         }
       }), function (data) {
         def.resolve(data.response.numFound);

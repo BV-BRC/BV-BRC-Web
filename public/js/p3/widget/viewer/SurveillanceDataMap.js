@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on',
   'dojo/dom-class', 'dojo/dom-construct',
   '../PageGrid', '../formatter', '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang',
-  '../MapsCanvas'
+  '../MapsCanvas', '../../auth/authHeaders'
 ], function (
   declare, TabViewerBase, on,
   domClass, domConstruct,
   Grid, formatter, PathJoin, xhr, lang,
-  MapsCanvas
-) {
+  MapsCanvas,
+  authHeader) {
   return declare([TabViewerBase], {
     baseClass: 'Surveillance',
     disabled: false,
@@ -85,7 +85,7 @@ define([
           accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json',
         'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
