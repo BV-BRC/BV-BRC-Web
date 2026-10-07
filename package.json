@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "auspice": "^2.68.0",
-    "axios": "^1.18.0",
+    "axios": "^1.20.0",
     "body-parser": "^1.20.6",
     "braces": "^3.0.3",
     "bvbrc_js_client": "github:bv-brc/bvbrc_js_client",
