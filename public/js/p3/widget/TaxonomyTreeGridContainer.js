@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', './GridContainer',
   './TaxonomyTreeGrid', 'dijit/popup',
   'dijit/TooltipDialog', 'dojo/on', 'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/request',
-  'dojo/topic', '../util/PathJoin'
+  'dojo/topic', '../util/PathJoin', '../auth/authHeaders'
 ], function (
   declare, GridContainer,
   Grid, popup,
   TooltipDialog, on, domClass, ContentPane, domConstruct, request,
-  Topic, PathJoin
-) {
+  Topic, PathJoin,
+  authHeader) {
 
   var dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
   var downloadTT = new TooltipDialog({
@@ -89,15 +89,24 @@ define([
         this._searchNoResults.style.display = 'none';
       }
 
-      // One keyword() clause per word
+      // Tokenise on whitespace AND forward-slash so influenza strain names like
+      // "A/mallard/Alberta/243/2006" are split into meaningful tokens rather
+      // than treated as one opaque string that the keyword index can't match.
       // - Multi-char tokens: trailing wildcard for prefix matching ("influen*")
-      // - Single-char tokens: exact match ("a") — a wildcard "a*" would match
-      //   almost every name, but exact "a" only matches the standalone letter,
-      //   so "influenza a" correctly excludes Influenza B / C / D virus.
+      // - Single-char tokens: exact match ("A") — "A*" would match almost every
+      //   taxon name; exact "A" combined with other tokens still narrows correctly.
       // Leading wildcards are intentionally avoided — they force SOLR to scan
       // the full term index and fail for common words like "virus".
-      var words = term.trim().split(/\s+/).filter(function (w) {
+      var rawWords = term.trim().split(/[\s/]+/).filter(function (w) {
         return w.length > 0;
+      });
+      // Deduplicate while preserving order (e.g. "A/A/influenza" → ["A","influenza"])
+      var seen = {};
+      var words = rawWords.filter(function (w) {
+        var lc = w.toLowerCase();
+        if (seen[lc]) { return false; }
+        seen[lc] = true;
+        return true;
       });
       var kwParts = words.map(function (w) {
         return w.length === 1
@@ -108,10 +117,11 @@ define([
       var match = this._baseQuery && this._baseQuery.match(/eq\(taxon_id,(\d+)\)/);
       var rootId = match ? match[1] : null;
 
-      // Build the URL: RQL clauses are &-joined at the top level (no and() wrapper needed).
+      // Use gt(genomes,0) (≥ 1 genome) rather than gt(genomes,1) (≥ 2 genomes)
+      // so that specific strain-level taxa with a single genome are included.
       var filterParts = rootId
-        ? ['eq(lineage_ids,' + rootId + ')', 'gt(genomes,1)'].concat(kwParts)
-        : ['gt(genomes,1)'].concat(kwParts);
+        ? ['eq(lineage_ids,' + rootId + ')', 'gt(genomes,0)'].concat(kwParts)
+        : ['gt(genomes,0)'].concat(kwParts);
       var url = PathJoin(window.App.dataServiceURL, 'taxonomy') + '/?' + filterParts.join('&') +
         '&select(taxon_id,taxon_name,taxon_rank,genomes,lineage_ids,lineage_names,lineage_ranks)&sort(-genomes)&limit(200)';
 
@@ -119,7 +129,7 @@ define([
         handleAs: 'json',
         headers: {
           accept: 'application/json',
-          Authorization: (window.App && window.App.authorizationToken) ? window.App.authorizationToken : ''
+          Authorization: authHeader()
         }
       }).then(function (results) {
         if (term !== _self._searchTerm) {
@@ -419,8 +429,7 @@ define([
     onFirstView: function () {
       this.inherited(arguments);
 
-      // TODO: re-enable once taxonomy search API issues are resolved.
-      /*var _self = this;
+      var _self = this;
 
       // ── Search bar
       var searchPane = new ContentPane({
@@ -477,7 +486,7 @@ define([
         input.value = '';
         clearBtn.style.display = 'none';
         _self._applySearch('');
-      });*/
+      });
       if (this._pendingPhyloManifest) {
         this.grid.set('phyloManifest', this._pendingPhyloManifest);
       }

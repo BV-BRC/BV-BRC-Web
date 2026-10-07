@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/dom-construct', 'dojo/when', 'dojo/request',
   'dijit/layout/BorderContainer', 'dijit/layout/ContentPane', 'dijit/form/Select',
-  '../../../D3VerticalBarChart', '../../../D3StackedAreaChart'
+  '../../../D3VerticalBarChart', '../../../D3StackedAreaChart', '../../../../auth/authHeaders'
 ], function (
   declare, lang, Deferred,
   domConstruct, when, xhr,
   BorderContainer, ContentPane, Select,
-  VBarChart, StackedAreaChart
-) {
+  VBarChart, StackedAreaChart,
+  authHeader) {
 
   return declare([BorderContainer], {
     gutters: false,
@@ -132,7 +132,7 @@ define([
           accept: 'application/solr+json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, function (res) {
@@ -174,7 +174,7 @@ define([
           accept: 'application/json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then((data) => {
@@ -201,7 +201,7 @@ define([
           accept: 'application/solr+json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then((res1) => {
@@ -221,7 +221,7 @@ define([
             accept: 'application/json',
             'content-type': 'application/rqlquery+x-www-form-urlencoded',
             'X-Requested-With': null,
-            Authorization: (window.App.authorizationToken || '')
+            Authorization: authHeader()
           },
           handleAs: 'json'
         }).then((res2) => {
@@ -249,7 +249,7 @@ define([
               accept: 'application/json',
               'content-type': 'application/rqlquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json'
           }).then((data) => {

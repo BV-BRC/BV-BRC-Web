@@ -4,7 +4,7 @@ define([
   'dojo/store/util/QueryResults',
   'dojo/when', 'dojo/_base/lang',
   'dojo/_base/xhr', 'dojo/json',
-  'dojo/Evented'
+  'dojo/Evented', '../auth/authHeaders'
 
 ], function (
   declare,
@@ -12,8 +12,8 @@ define([
   QueryResults,
   when, lang,
   xhr, json,
-  Evented
-) {
+  Evented,
+  authHeader) {
   return declare([Store, Evented], {
     headers: null,
     constructor: function (options) {
@@ -38,7 +38,7 @@ define([
         //  "//content-type": "application/json",
         'content-type': 'application/rqlquery+x-www-form-urlencoded',
         'X-Requested-With': null,
-        Authorization: (window.App.authorizationToken || '')
+        Authorization: authHeader()
       };
     },
     autoFacet: false,

@@ -6,7 +6,7 @@ define([
   '../GenomeBrowser', '../CircularViewerContainer', '../SequenceGridContainer',
   '../FeatureGridContainer', '../ProteinGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer', '../ProteinFamiliesContainer',
   '../PathwaysContainer', '../SubSystemsContainer', '../ExperimentsContainer', '../InteractionContainer',
-  '../../util/PathJoin'
+  '../../util/PathJoin', '../../auth/authHeaders'
 ], function (
   declare, lang,
   domConstruct, xhr,
@@ -15,8 +15,8 @@ define([
   GenomeBrowser, CircularViewerContainer, SequenceGridContainer,
   FeatureGridContainer, ProteinGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer, ProteinFamiliesContainer,
   PathwaysContainer, SubSystemsContainer, ExperimentsContainer, InteractionsContainer,
-  PathJoin
-) {
+  PathJoin,
+  authHeader) {
   return declare([TabViewerBase], {
     baseClass: 'GenomeGroup',
     disabled: false,
@@ -44,7 +44,7 @@ define([
         headers: {
           accept: 'application/json',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, function (genome) {

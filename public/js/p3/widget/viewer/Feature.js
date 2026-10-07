@@ -4,7 +4,7 @@ define([
   './TabViewerBase',
   '../FeatureOverview', '../GenomeBrowser', '../CompareRegionContainer',
   '../GeneExpressionContainer', '../CorrelatedGenesContainer', '../InteractionContainer', '../ProteinStructureGridContainer', '../ProteinFeaturesGridContainer',
-  '../../util/PathJoin'
+  '../../util/PathJoin', '../../auth/authHeaders'
 
 ], function (
   declare, lang,
@@ -12,8 +12,8 @@ define([
   TabViewerBase,
   FeatureOverview, GenomeBrowser, CompareRegionContainer,
   GeneExpressionContainer, CorrelatedGenesContainer, InteractionContainer, ProteinStructureGridContainer, ProteinFeaturesGridContainer,
-  PathJoin
-) {
+  PathJoin,
+  authHeader) {
 
   return declare([TabViewerBase], {
     baseClass: 'FeatureGroup',
@@ -49,7 +49,7 @@ define([
         headers: {
           accept: 'application/json',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, function (feature) {
@@ -221,7 +221,7 @@ define([
             headers: {
               accept: 'application/json',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json'
           }).then(lang.hitch(this, function (features) {

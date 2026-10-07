@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/dom-construct',
   '../../util/QueryToEnglish',
   '../ExperimentGridContainer', '../BiosetGridContainer',
-  '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang'
+  '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang', '../../auth/authHeaders'
 ], function (
   declare, TabViewerBase, domConstruct,
   QueryToEnglish,
   ExperimentGridContainer, BiosetGridContainer,
-  PathJoin, xhr, lang
-) {
+  PathJoin, xhr, lang,
+  authHeader) {
   return declare([TabViewerBase], {
     baseClass: 'ExperimentList',
     disabled: false,
@@ -34,7 +34,7 @@ define([
         headers: {
           accept: 'application/solr+json',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(function (res) {

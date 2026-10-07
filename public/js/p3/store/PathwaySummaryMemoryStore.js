@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/request', 'dojo/when', 'dojo/Stateful', 'dojo/topic',
-  'dojo/store/Memory', 'dojo/store/util/QueryResults'
+  'dojo/store/Memory', 'dojo/store/util/QueryResults', '../auth/authHeaders'
 ], function (
   declare, lang, Deferred,
   request, when, Stateful, Topic,
-  Memory, QueryResults
-) {
+  Memory, QueryResults,
+  authHeader) {
 
   return declare([Memory, Stateful], {
     baseQuery: {},
@@ -102,7 +102,7 @@ define([
           Accept: 'application/solr+json',
           'Content-Type': 'application/solrquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         data: postData
       }), function (response) {
@@ -179,7 +179,7 @@ define([
             Accept: 'application/solr+json',
             'Content-Type': 'application/solrquery+x-www-form-urlencoded',
             'X-Requested-With': null,
-            Authorization: (window.App.authorizationToken || '')
+            Authorization: authHeader()
           },
           data: q
         }), function (response) {

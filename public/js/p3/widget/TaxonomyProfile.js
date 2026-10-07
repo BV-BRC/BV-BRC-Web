@@ -1,13 +1,13 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang',
   'dojo/dom-class', 'dojo/dom-construct', 'dojo/on', 'dojo/request',
-  './SummaryWidget', '../util/PathJoin', './D3HorizontalBarChart'
+  './SummaryWidget', '../util/PathJoin', './D3HorizontalBarChart', '../auth/authHeaders'
 
 ], function (
   declare, lang,
   domClass, domConstruct, on, xhr,
-  SummaryWidget, PathJoin, D3HorizontalBarChart
-) {
+  SummaryWidget, PathJoin, D3HorizontalBarChart,
+  authHeader) {
 
   return declare([SummaryWidget], {
     dataModel: 'genome_feature',
@@ -54,7 +54,7 @@ define([
           Accept: 'application/solr+json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: window.App.authorizationToken || ''
+          Authorization: authHeader()
         },
         data: 'in(genome_id,(' + genomeIds.join(',') + '))&limit(1)&facet((pivot,(species,genome_id)),(mincount,1),(limit,-1))&json(nl,map)'
       }).then(lang.hitch(this, function (res) {

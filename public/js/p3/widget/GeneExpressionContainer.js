@@ -3,14 +3,14 @@ define([
   'dijit/layout/BorderContainer', 'dijit/layout/TabContainer', 'dijit/layout/StackContainer', 'dijit/layout/TabController', 'dijit/layout/ContentPane',
   'dijit/form/RadioButton', 'dijit/form/Textarea', 'dijit/form/TextBox', 'dijit/form/Button', 'dijit/form/Select',
   './ActionBar', './ContainerActionBar',
-  './GeneExpressionGridContainer', './GeneExpressionChartContainer', './GeneExpressionMetadataChartContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup'
+  './GeneExpressionGridContainer', './GeneExpressionChartContainer', './GeneExpressionMetadataChartContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup', '../auth/authHeaders'
 ], function (
   declare, lang, on, Topic, domConstruct, xhr, when, Deferred,
   BorderContainer, TabContainer, StackContainer, TabController, ContentPane,
   RadioButton, TextArea, TextBox, Button, Select,
   ActionBar, ContainerActionBar,
-  GeneExpressionGridContainer, GeneExpressionChartContainer, GeneExpressionMetadataChartContainer, TooltipDialog, Dialog, popup
-) {
+  GeneExpressionGridContainer, GeneExpressionChartContainer, GeneExpressionMetadataChartContainer, TooltipDialog, Dialog, popup,
+  authHeader) {
 
   return declare([BorderContainer], {
     id: 'GEContainer',
@@ -75,7 +75,7 @@ define([
           accept: 'application/solr+json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(function (res) {

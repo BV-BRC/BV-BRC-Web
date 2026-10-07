@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
+    outputs:
+      version: ${{ steps.tag.outputs.version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,104 +25,164 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Create and push tag
+        id: tag
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          # Extract version from branch name (hotfix/vX.X.X -> vX.X.X)
-          VERSION=$(echo "${{ github.event.pull_request.head.ref }}" | sed 's/hotfix\///')
-          # Check if tag already exists
+          set -euo pipefail
+
+          # hotfix/vX.Y.Z -> vX.Y.Z
+          VERSION="${HEAD_REF#hotfix/}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
           if git rev-parse "$VERSION" >/dev/null 2>&1; then
             echo "Tag $VERSION already exists, skipping tag creation"
           else
-            git tag -a "$VERSION" -m "${{ github.event.pull_request.title }}"
+            git tag -a "$VERSION" -m "$PR_TITLE"
             git push origin "$VERSION"
             echo "Created and pushed tag: $VERSION"
           fi
 
-      - name: Cherry-pick to alpha
+  # One independent leg per downstream branch. Previously alpha and beta were two
+  # steps in a single job, so any alpha failure skipped beta entirely -- and alpha
+  # failed on every run this workflow has ever had. fail-fast is off so one leg
+  # failing no longer hides the other.
+  cherry-pick:
+    needs: tag-hotfix
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [alpha, beta]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Cherry-pick to ${{ matrix.target }}
         env:
           GH_TOKEN: ${{ github.token }}
+          GIT_EDITOR: 'true'
+          TARGET: ${{ matrix.target }}
+          VERSION: ${{ needs.tag-hotfix.outputs.version }}
+          MERGE_COMMIT: ${{ github.event.pull_request.merge_commit_sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          # Get the merge commit SHA
-          MERGE_COMMIT=${{ github.event.pull_request.merge_commit_sha }}
-          VERSION=$(echo "${{ github.event.pull_request.head.ref }}" | sed 's/hotfix\///')
+          set -euo pipefail
 
-          # Fetch alpha branch
-          git fetch origin alpha
-          git checkout alpha
+          BRANCH="cherry-pick/hotfix-${VERSION}-${TARGET}"
 
-          # Create a branch for the cherry-pick
-          git checkout -b cherry-pick/hotfix-${VERSION}-alpha
+          git fetch origin "$TARGET"
+          git checkout -B "$BRANCH" "origin/${TARGET}"
 
-          # Cherry-pick the commits from the hotfix (excluding merge commit itself)
-          if git cherry-pick -x $MERGE_COMMIT -m 1; then
-            echo "Cherry-pick succeeded"
+          # -m 1 selects the mainline parent and is only meaningful for a merge
+          # commit. A squash- or rebase-merged PR lands on master as an ordinary
+          # one-parent commit; all three merge methods are enabled on this repo, so
+          # both shapes really occur. Older git errors on -m for a non-merge commit.
+          PARENTS=$(git rev-list --parents -n1 "$MERGE_COMMIT" | wc -w)
+          if [ "$PARENTS" -gt 2 ]; then
+            MAINLINE="-m 1"
           else
-            echo "Cherry-pick had conflicts. Aborting and creating PR with instructions."
-            git cherry-pick --abort
+            MAINLINE=""
           fi
 
-          # Push the cherry-pick branch
-          git push -u origin cherry-pick/hotfix-${VERSION}-alpha
+          # shellcheck disable=SC2086
+          if git cherry-pick -x $MAINLINE "$MERGE_COMMIT"; then
+            echo "Cherry-pick applied cleanly."
+          elif [ -n "$(git diff --name-only --diff-filter=U)" ]; then
+            # The hotfix version bump must never propagate: alpha and beta are on a
+            # higher version line than master, so the manifests always collide.
+            # Resolve those two in favour of the target branch and keep going.
+            for f in package.json package-lock.json; do
+              if git diff --name-only --diff-filter=U | grep -qx "$f"; then
+                git checkout --ours -- "$f"
+                git add -- "$f"
+              fi
+            done
 
-          # Always create a PR (protected branches require PRs)
-          gh pr create --base alpha --head cherry-pick/hotfix-${VERSION}-alpha \
-            --title "Cherry-pick: Hotfix ${VERSION} to alpha" \
-            --body "## Cherry-pick Hotfix ${VERSION} to alpha
+            REMAINING="$(git diff --name-only --diff-filter=U)"
+            if [ -n "$REMAINING" ]; then
+              git cherry-pick --abort
+              echo "::error::Hotfix ${VERSION} conflicts with ${TARGET} in: $(echo "$REMAINING" | tr '\n' ' ')"
+              echo "Resolve by hand:"
+              echo "  git fetch origin && git checkout -b ${BRANCH} origin/${TARGET}"
+              echo "  git cherry-pick -x ${MAINLINE} ${MERGE_COMMIT}"
+              echo "  # resolve, then: git cherry-pick --continue && git push -u origin ${BRANCH}"
+              exit 1
+            fi
 
-          This PR cherry-picks the hotfix from master to alpha.
-
-          Original PR: #${{ github.event.pull_request.number }}
-          Merge commit: ${MERGE_COMMIT}
-
-          ---
-          *This PR was created automatically by the hotfix-tag workflow.*"
-
-          echo "Created PR for cherry-pick to alpha"
-
-      - name: Cherry-pick to beta
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          # Get the merge commit SHA
-          MERGE_COMMIT=${{ github.event.pull_request.merge_commit_sha }}
-          VERSION=$(echo "${{ github.event.pull_request.head.ref }}" | sed 's/hotfix\///')
-
-          # Fetch beta branch
-          git fetch origin beta
-          git checkout beta
-
-          # Create a branch for the cherry-pick
-          git checkout -b cherry-pick/hotfix-${VERSION}-beta
-
-          # Cherry-pick the commits from the hotfix
-          if git cherry-pick -x $MERGE_COMMIT -m 1; then
-            echo "Cherry-pick succeeded"
+            # Everything that conflicted was a manifest. If that is all the commit
+            # touched, the cherry-pick is now empty and --continue refuses it.
+            git cherry-pick --continue || git cherry-pick --skip
           else
-            echo "Cherry-pick had conflicts. Aborting and creating PR with instructions."
-            git cherry-pick --abort
+            # Not a conflict, so the change is already present on the target and the
+            # cherry-pick produced nothing. The old workflow called --abort here and
+            # then unconditionally ran `gh pr create`, which failed with "No commits
+            # between ..." and, under bash -e, took the rest of the job with it.
+            echo "Cherry-pick is empty: hotfix ${VERSION} is already on ${TARGET}."
+            git cherry-pick --skip || git cherry-pick --quit
           fi
 
-          # Push the cherry-pick branch
-          git push -u origin cherry-pick/hotfix-${VERSION}-beta
+          # Drop any version bump that applied without conflicting.
+          git checkout "origin/${TARGET}" -- package.json package-lock.json
+          if ! git diff --cached --quiet; then
+            git commit --amend --no-edit
+          fi
 
-          # Always create a PR (protected branches require PRs)
-          gh pr create --base beta --head cherry-pick/hotfix-${VERSION}-beta \
-            --title "Cherry-pick: Hotfix ${VERSION} to beta" \
-            --body "## Cherry-pick Hotfix ${VERSION} to beta
+          if git diff --quiet "origin/${TARGET}" HEAD; then
+            echo "Nothing to propagate to ${TARGET}; not opening a PR."
+            exit 0
+          fi
 
-          This PR cherry-picks the hotfix from master to beta.
+          git push -u --force-with-lease origin "$BRANCH"
 
-          Original PR: #${{ github.event.pull_request.number }}
-          Merge commit: ${MERGE_COMMIT}
+          if [ -n "$(gh pr list --base "$TARGET" --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
+            echo "A PR for ${BRANCH} is already open; pushed the update to it."
+            exit 0
+          fi
 
-          ---
-          *This PR was created automatically by the hotfix-tag workflow.*"
+          {
+            echo "## Cherry-pick Hotfix ${VERSION} to ${TARGET}"
+            echo
+            echo "This PR cherry-picks the hotfix from master to ${TARGET}."
+            echo
+            echo "Original PR: #${PR_NUMBER}"
+            echo "Merge commit: ${MERGE_COMMIT}"
+            echo
+            echo "The version bump from the hotfix is deliberately excluded: ${TARGET} is on"
+            echo "its own, higher version line."
+            echo
+            echo "---"
+            echo "*This PR was created automatically by the hotfix-tag workflow.*"
+          } > /tmp/cherry-pick-body.md
 
-          echo "Created PR for cherry-pick to beta"
+          gh pr create --base "$TARGET" --head "$BRANCH" \
+            --title "Cherry-pick: Hotfix ${VERSION} to ${TARGET}" \
+            --body-file /tmp/cherry-pick-body.md
 
+  delete-branch:
+    needs: [tag-hotfix, cherry-pick]
+    # The hotfix branch is already merged into master, so deleting it is safe even
+    # if a cherry-pick leg failed. Without always(), a failed leg leaves the branch
+    # behind and the next run of the same version trips over it.
+    if: always() && needs.tag-hotfix.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
       - name: Delete hotfix branch
         env:
           GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
         run: |
-          BRANCH="${{ github.event.pull_request.head.ref }}"
           gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/${BRANCH}" || true
           echo "Deleted branch: $BRANCH"

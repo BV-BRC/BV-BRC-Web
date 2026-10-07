@@ -8,7 +8,7 @@ define([
   'dojo/window', '../widget/Drawer', 'dijit/layout/ContentPane',
   '../jsonrpc', '../panels', '../WorkspaceManager', '../DataAPI', 'dojo/keys',
   'dijit/ConfirmDialog', '../util/PathJoin', 'dojo/request', '../widget/WorkspaceController',
-  'p3/widget/copilot/ChatButton', '../util/RecentFolders', '../util/FavoriteFolders'
+  'p3/widget/copilot/ChatButton', '../util/RecentFolders', '../util/FavoriteFolders', '../auth/authHeaders'
 
 ], function (
   declare,
@@ -20,8 +20,8 @@ define([
   Router, Window,
   Drawer, ContentPane,
   RPC, Panels, WorkspaceManager, DataAPI, Keys,
-  ConfirmDialog, PathJoin, xhr, WorkspaceController, ChatButton, RecentFolders, FavoriteFolders
-) {
+  ConfirmDialog, PathJoin, xhr, WorkspaceController, ChatButton, RecentFolders, FavoriteFolders,
+  authHeader) {
   return declare([App], {
     panels: Panels,
     activeWorkspace: null,
@@ -571,6 +571,34 @@ define([
         this.updateFavoriteFoldersList();
       }));
 
+      // Query logging indicator
+      if (this.queryLoggingEnabled && this.user && this.user.id) {
+        var _self = this;
+        xhr('/_querylog/status', {
+          method: 'get',
+          headers: { 'Accept': 'application/json' }
+        }).then(function (data) {
+          var result = JSON.parse(data);
+          if (result.active) {
+            _self._showQueryLogIndicator();
+          }
+        }, function () {});
+
+        this.stopQueryLogging = function () {
+          xhr('/_querylog/stop', {
+            method: 'post',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': authHeader()
+            }
+          }).then(function () {
+            _self._hideQueryLogIndicator();
+            Topic.publish('/Notification', { message: 'Query logging stopped' });
+          });
+        };
+      }
+
       // update "My Data" > "Completed Jobs" count on homepage
       if (this.user && this.user.id) {
         this.api.service('AppService.query_task_summary', []).then(function (status) {
@@ -673,7 +701,7 @@ define([
             xhr.get(userServiceURL + '/authenticate/refresh/', {
               headers: {
                 'Accept': 'application/json',
-                'Authorization': window.App.authorizationToken
+                'Authorization': authHeader()
               }
             })
               .then(
@@ -776,7 +804,9 @@ define([
         xhr.get(userServiceURL + '/user/' + userid, {
           headers: {
             'Accept': 'application/json',
-            'Authorization': token
+            // forToken: this runs during login, with the token just issued
+            // and not yet assigned to window.App.authorizationToken.
+            'Authorization': authHeader.forToken('api', token)
           }
         })
           .then(
@@ -851,11 +881,21 @@ define([
         console.log('I should not see the chat button');
       }
     },
+    _showQueryLogIndicator: function () {
+      var el = dom.byId('querylog-indicator');
+      if (el) { domClass.remove(el, 'dijitHidden'); }
+    },
+
+    _hideQueryLogIndicator: function () {
+      var el = dom.byId('querylog-indicator');
+      if (el) { domClass.add(el, 'dijitHidden'); }
+    },
+
     refreshUser: function () {
       return xhr.get(this.userServiceURL + '/user/' + window.localStorage.userid, {
         headers: {
           'Accept': 'application/json',
-          'Authorization': window.App.authorizationToken
+          'Authorization': authHeader()
         }
       })
         .then(
@@ -937,7 +977,7 @@ define([
           headers: {
             'Accept': 'application/solr+json',
             'Content-Type': 'application/rqlquery+x-www-urlencoded',
-            'Authorization': window.App.authorizationToken
+            'Authorization': authHeader()
           },
           handleAs: 'json'
         }).then(function (data) {
