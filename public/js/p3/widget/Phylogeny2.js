@@ -398,12 +398,10 @@ define([
         if (this.fileType == 'phyloxml') {
           mytree = window.archaeopteryx.parsePhyloXML(this.newickxml);
 
-          var refs_set = forester.collectPropertyRefs(mytree, 'node', true);
-          // console.log('mytree collectPropertyRefs refs_set: ', refs_set);
+          var labelRefs = forester.labelPropertyRefs(mytree);
 
-          if (refs_set.size > 0) {
-            this.treeDiv3 = domConstruct.create('div', { id: 'controls1' }, this.treeDiv); // show control1 panel if there are node properties
-            refs_set.forEach(function (a) {
+          if (labelRefs.length > 0) {
+            labelRefs.forEach(function (a) {
               // console.log('refs_set a', a);
 
               var property_line = a.split(':');
@@ -430,7 +428,6 @@ define([
             });
           }
 
-          // Were any custom node visualizations provided in the treeDat? If so, include them here.
         }
         else {
           mytree = window.archaeopteryx.parseNewHampshire(this.newickxml, true, false);

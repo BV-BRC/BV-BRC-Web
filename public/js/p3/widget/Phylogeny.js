@@ -347,9 +347,10 @@ define([
           }
           catch (e) {
             alert('error while parsing tree: ' + e);
+            return;
           }
-          var refs_set = forester.collectPropertyRefs(mytree, 'node', true);
-          refs_set.forEach(function (a) {
+          var labelRefs = forester.labelPropertyRefs(mytree);
+          labelRefs.forEach(function (a) {
             // console.log('refs_set a', a);
             var property_name = '';
             var property_line = a.split(':');
