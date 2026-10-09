@@ -6,7 +6,8 @@
 .Phylogeny a:hover {
     color:red;
 }
-.Phylogeny svg{
+/* Archaeopteryx control icons need a transparent background on selected buttons. */
+.Phylogeny svg:not(.aptx-glyph){
     background:#FFFFFF;
     /*border: 1px dotted #222222;*/
 }

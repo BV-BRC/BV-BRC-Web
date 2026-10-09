@@ -385,9 +385,7 @@ define([
         options = lang.mixin(options, this.options);
       }
 
-      var nodeLabels = {};
 
-      var property_name = '';
       if (!this.newickxml) {
         console.log('No Newick or xml File To Render');
         return;
@@ -398,35 +396,6 @@ define([
         if (this.fileType == 'phyloxml') {
           mytree = window.archaeopteryx.parsePhyloXML(this.newickxml);
 
-          var labelRefs = forester.labelPropertyRefs(mytree);
-
-          if (labelRefs.length > 0) {
-            labelRefs.forEach(function (a) {
-              // console.log('refs_set a', a);
-
-              var property_line = a.split(':');
-              // console.log('property_line', property_line);
-              var selected = false;
-
-              if (property_line.length == 1) {
-                property_name = property_line[0];
-              }
-              else if (property_line.length > 1) {
-                property_name = property_line[1];
-              }
-
-              if (property_name.toLowerCase() == 'genome_name') {
-                selected = true;
-              }
-              nodeLabels[property_name] = {
-                label: property_name,
-                description: property_name,
-                propertyRef: a,
-                selected: selected,
-                showButton: true
-              };
-            });
-          }
 
         }
         else {
@@ -446,9 +415,8 @@ define([
           // console.log('this.options ', this.options);
           // console.log('options ', options);
           // console.log('settings ', settings);
-          // console.log('nodeLabels ', nodeLabels);
 
-          window.archaeopteryx.launch('#phylogram1', mytree, lang.mixin({}, options, settings, { nodeLabels: nodeLabels }));
+          window.archaeopteryx.launch('#phylogram1', mytree, lang.mixin({}, options, settings));
           console.log('processTree this ', this);
           // get node labels
           var nodeList = this.getLeafNodes([mytree]);
