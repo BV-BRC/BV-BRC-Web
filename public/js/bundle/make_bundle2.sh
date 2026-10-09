@@ -6,16 +6,19 @@ cd "$(dirname "$0")"
 # These lists drive both the freshness check and bundle generation.
 COMMON_INPUTS="
 ../archaeopteryx/archaeopteryx-dependencies/d3.v3.min.js
-../archaeopteryx/archaeopteryx-dependencies/sax.js
+../archaeopteryx/archaeopteryx-js/docs/lib/sax.js
 ../archaeopteryx/archaeopteryx-dependencies/jquery-ui.js
 ../archaeopteryx/archaeopteryx-dependencies/FileSaver.js
-../archaeopteryx/archaeopteryx-dependencies/phyloxml.js
+../archaeopteryx/archaeopteryx-js/docs/lib/phyloxml.js
 ../rgbcolor.js
 ../archaeopteryx/archaeopteryx-dependencies/stackblur.js
 ../archaeopteryx/archaeopteryx-dependencies/canvg.js
 "
 ARCHAEOPTERYX_INPUTS="
 ../archaeopteryx/archaeopteryx-js/docs/lib/d3.v7.min.js
+../archaeopteryx/archaeopteryx-js/docs/lib/canvg.global.js
+../archaeopteryx/archaeopteryx-js/docs/lib/jspdf.umd.min.js
+../archaeopteryx/archaeopteryx-js/docs/lib/svg2pdf.umd.min.js
 ../archaeopteryx/archaeopteryx-js/forester.js
 ../archaeopteryx/archaeopteryx-js/archaeopteryx.js
 "
@@ -48,7 +51,16 @@ echo "Regenerating bundle2.js..."
 # Leave the previous bundle intact if any input cannot be read.
 BUNDLE_TEMP=$(mktemp ./bundle2.js.XXXXXX)
 trap 'rm -f "$BUNDLE_TEMP"' EXIT
-cat $COMMON_INPUTS > "$BUNDLE_TEMP"
+# A library may end without a semicolon (or with a line comment). Keep the
+# next file's opening expression from becoming part of the previous one.
+append_inputs() {
+    for BUNDLE_INPUT do
+        printf '\n;\n'
+        cat "$BUNDLE_INPUT" || return 1
+    done
+    printf '\n;\n'
+}
+append_inputs $COMMON_INPUTS > "$BUNDLE_TEMP"
 
 # Archaeopteryx 3 captures D3 v7 at initialization. Keep the global D3 v3
 # instance for legacy widgets; v7 must start with a fresh object because its
@@ -61,7 +73,7 @@ cat >> "$BUNDLE_TEMP" <<'JS'
     root.d3 = {};
 JS
 
-cat $ARCHAEOPTERYX_INPUTS >> "$BUNDLE_TEMP"
+append_inputs $ARCHAEOPTERYX_INPUTS >> "$BUNDLE_TEMP"
 
 cat >> "$BUNDLE_TEMP" <<'JS'
 

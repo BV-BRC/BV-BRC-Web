@@ -339,7 +339,6 @@ define([
 
           var options = this.options;
           var settings = this.settings;
-          var nodeLabels = {};
 
           try {
             mytree = window.archaeopteryx.parsePhyloXML(phyloxml);
@@ -347,37 +346,12 @@ define([
           }
           catch (e) {
             alert('error while parsing tree: ' + e);
+            return;
           }
-          var refs_set = forester.collectPropertyRefs(mytree, 'node', true);
-          refs_set.forEach(function (a) {
-            // console.log('refs_set a', a);
-            var property_name = '';
-            var property_line = a.split(':');
-            // console.log('property_line', property_line);
-            var selected = false;
-
-            if (property_line.length == 1) {
-              property_name = property_line[0];
-            }
-            else if (property_line.length > 1) {
-              property_name = property_line[1];
-            }
-
-            if (property_name.toLowerCase() == 'genome_name') {
-              selected = true;
-            }
-            nodeLabels[property_name] = {
-              label: property_name,
-              description: property_name,
-              propertyRef: a,
-              selected: selected,
-              showButton: true
-            };
-          });
           // forester.midpointRoot(mytree);
           if (mytree) {
             try {
-              window.archaeopteryx.launch('#phylogram1', mytree, lang.mixin({}, options, settings, { nodeLabels: nodeLabels }));
+              window.archaeopteryx.launch('#phylogram1', mytree, lang.mixin({}, options, settings));
 
               var nodeList = this.getLeafNodes([mytree]);
               // console.log('mytree nodeList', nodeList);
