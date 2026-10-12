@@ -116,82 +116,6 @@ define([
       });
 
       // Initialize Phylogenetic Tree Viewer
-      const nodeLabels = {};
-
-      nodeLabels['Host'] = {
-        label: 'Host',
-        description: 'to use the host as part of node names',
-        propertyRef: 'vipr:Host',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Host_Group'] = {
-        label: 'Host Group',
-        description: 'to use the host range as part of node names',
-        propertyRef: 'vipr:Host_Group',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Host_Group_Domestic_vs_Wild'] = {
-        label: 'Host Group (Dom vs Wild)',
-        description: 'to use the host group (domestic vs wild) as part of node names',
-        propertyRef: 'vipr:Host_Group_Domestic_vs_Wild',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Region'] = {
-        label: 'Region',
-        description: 'to use the region as part of node names',
-        propertyRef: 'vipr:Region',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Country'] = {
-        label: 'Country',
-        description: 'to use the country as part of node names',
-        propertyRef: 'vipr:Country',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['State'] = {
-        label: 'State',
-        description: 'to use the state as part of node names',
-        propertyRef: 'vipr:State',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Year'] = {
-        label: 'Year',
-        description: 'to use the year as part of node names',
-        propertyRef: 'vipr:Year',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Subtype'] = {
-        label: 'Subtype',
-        description: 'to use the subtype as part of node names',
-        propertyRef: 'vipr:Subtype',
-        selected: false,
-        showButton: true
-      };
-
-      // Add special node for Segment 4
-      const nodeLabelsSegment4 = {...nodeLabels};
-      nodeLabelsSegment4['H5_clade'] = {
-        label: 'H5 clade',
-        description: 'to use the H5 clade as part of node names',
-        propertyRef: 'vipr:H5_clade',
-        selected: true,
-        showButton: true
-      };
-
       let options = {};
       options.initialVisualization = 'Host Group Domestic vs Wild';
       options.visualizationsLegendYpos = 30;
@@ -211,7 +135,7 @@ define([
           id: this.viewer.id + '_' + phylogenySegmentId,
           phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/H5N1/h5n1_segment_' + id + '.xml',
           updateState: true,
-          config: { ...options, ...settings, nodeLabels: id === '4' ? nodeLabelsSegment4 : nodeLabels }
+          config: { ...options, ...settings, showProperties: id === '4', labelProperties: id === '4' ? ['vipr:H5_clade'] : null }
         });
 
         phyloTabContainer.push(this[phylogenySegmentId]);
@@ -231,7 +155,7 @@ define([
           id: this.viewer.id + '_' + clusteredPhyloSegmentId,
           phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/H5N1/h5n1_segment_' + id + '_clustered.xml',
           updateState: true,
-          config: { ...options, ...settings, nodeLabels: id === '4' ? nodeLabelsSegment4 : nodeLabels }
+          config: { ...options, ...settings, showProperties: id === '4', labelProperties: id === '4' ? ['vipr:H5_clade'] : null }
         });
 
         clusteredphyloTabContainer.push(this[clusteredPhyloSegmentId]);
@@ -243,7 +167,7 @@ define([
         id: this.viewer.id + '_' + clusteredPhyloConcatenatedId,
         phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/H5N1/h5n1_all_concatenated_clustered.xml',
         updateState: true,
-        config: { ...options, ...settings, nodeLabels: nodeLabels }
+        config: { ...options, ...settings }
       });
       clusteredphyloTabContainer.push(this[clusteredPhyloConcatenatedId]);
       this.clusteringInfo = new OutbreaksTab({

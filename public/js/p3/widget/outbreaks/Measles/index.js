@@ -99,40 +99,6 @@ define([
       });
 
       // Initialize Phylogenetic Tree Viewer
-      const nodeLabels = {};
-
-      nodeLabels['Host'] = {
-        label: 'Host',
-        description: 'to use the host as part of node names',
-        propertyRef: 'vipr:Host',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Country'] = {
-        label: 'Country',
-        description: 'to use the country as part of node names',
-        propertyRef: 'vipr:Country',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Year'] = {
-        label: 'Year',
-        description: 'to use the year as part of node names',
-        propertyRef: 'vipr:Year',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Subclade'] = {
-        label: 'Subclade',
-        description: 'to use the subclade (genotype) as part of node names',
-        propertyRef: 'vipr:Subclade',
-        selected: false,
-        showButton: true
-      };
-
       let options = {};
       options.initialVisualization = 'Year';
       options.visualizationsLegendYpos = 30;
@@ -150,7 +116,7 @@ define([
         id: this.viewer.id + '_' + phylogenyCompleteMeasles,
         phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/measles/measles.xml',
         updateState: true,
-        config: { ...options, ...settings, nodeLabels: nodeLabels }
+        config: { ...options, ...settings }
       });
 
       const phylogenyNGeneMeasles = 'phylogenyNGeneMeasles';
@@ -159,7 +125,7 @@ define([
         id: this.viewer.id + '_' + phylogenyNGeneMeasles,
         phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/measles/measles_n_gene.xml',
         updateState: true,
-        config: { ...options, ...settings, nodeLabels: nodeLabels }
+        config: { ...options, ...settings }
       });
 
       this.phylogenetics = new OutbreaksTabContainer({

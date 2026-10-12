@@ -99,40 +99,6 @@ define([
       });
 
       // Initialize Phylogenetic Tree Viewer
-      const nodeLabels = {};
-
-      nodeLabels['Host'] = {
-        label: 'Host',
-        description: 'to use the host as part of node names',
-        propertyRef: 'vipr:Host',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Country'] = {
-        label: 'Country',
-        description: 'to use the country as part of node names',
-        propertyRef: 'vipr:Country',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Year'] = {
-        label: 'Year',
-        description: 'to use the year as part of node names',
-        propertyRef: 'vipr:Year',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Clade'] = {
-        label: 'Clade',
-        description: 'to use the clade as part of node names',
-        propertyRef: 'vipr:Clade',
-        selected: false,
-        showButton: true
-      };
-
       let options = {};
       options.initialVisualization = 'Clade';
       options.visualizationsLegendYpos = 30;
@@ -150,7 +116,7 @@ define([
         id: this.viewer.id + '_' + phylogenyId,
         phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/mpox/monkeypox.xml',
         updateState: true,
-        config: { ...options, ...settings, nodeLabels: nodeLabels }
+        config: { ...options, ...settings }
       });
 
       this.phylogenetics = new OutbreaksTabContainer({

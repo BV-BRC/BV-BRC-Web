@@ -217,7 +217,6 @@ define([
       }
 
       let options = {};
-      options.initialVisualization = 'Host';
       options.visualizationsLegendYpos = 30;
 
       let settings = {};
@@ -227,76 +226,10 @@ define([
       settings.nhExportWriteConfidences = true;
       settings.enableSubtreeDeletion = true;
 
-      const nodeLabels = {};
-
-      nodeLabels['Host'] = {
-        label: 'Host',
-        description: 'to use the host as part of node names',
-        propertyRef: 'vipr:Host',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Host_Group'] = {
-        label: 'Host Group',
-        description: 'to use the host range as part of node names',
-        propertyRef: 'vipr:Host_Group',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Host_Group_Domestic_vs_Wild'] = {
-        label: 'Host Group (Dom vs Wild)',
-        description: 'to use the host group (domestic vs wild) as part of node names',
-        propertyRef: 'vipr:Host_Group_Domestic_vs_Wild',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Region'] = {
-        label: 'Region',
-        description: 'to use the region as part of node names',
-        propertyRef: 'vipr:Region',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Country'] = {
-        label: 'Country',
-        description: 'to use the country as part of node names',
-        propertyRef: 'vipr:Country',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['State'] = {
-        label: 'State',
-        description: 'to use the state as part of node names',
-        propertyRef: 'vipr:State',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Year'] = {
-        label: 'Year',
-        description: 'to use the year as part of node names',
-        propertyRef: 'vipr:Year',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Subtype'] = {
-        label: 'Subtype',
-        description: 'to use the subtype as part of node names',
-        propertyRef: 'vipr:Subtype',
-        selected: false,
-        showButton: true
-      };
-
       this._viewer = new OutbreaksPhylogenyTreeViewer({
         id: this.id + '_inlinePhyloViewer',
         mode: 'reuse',
-        config: { ...options, ...settings, nodeLabels: nodeLabels }
+        config: { ...options, ...settings }
       }, domConstruct.create('div', {}, this.viewerHostNode));
 
       this._viewer.startup();
