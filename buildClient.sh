@@ -9,7 +9,7 @@
 #   1. Check out that SHA inside the archaeopteryx-js submodule
 #   2. Regenerate public/js/bundle/bundle2.js from it
 # ============================================================================
-ARCHAEOPTERYX_SHA="69f1ba77be98c3d1820152fd2d7f323c194890ea"
+ARCHAEOPTERYX_SHA="18df13b60b59ba35fc345c5232a5199916410462"
 
 maxParam=""
 if [ -f /proc/cpuinfo ] ; then

@@ -26859,7 +26859,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
  *
  */
 
-// v 3.27.0
+// v 3.28.0
 // 2026-09-17
 //
 // forester.js is a general suite for dealing with phylogenetic trees.
@@ -26946,7 +26946,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     // concatenates its own bundle can pair them from different releases, and
     // until this constant nothing could tell. Bumped with the other four
     // places; test/visualization_test.js holds all five together.
-    forester.VERSION = '3.27.0';
+    forester.VERSION = '3.28.0';
 
 
     /**
@@ -38044,7 +38044,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
  *
  */
 
-// v 3.27.0
+// v 3.28.0
 // 2026-09-17
 //
 // Archaeopteryx.js is a software tool for the visualization and
@@ -38127,7 +38127,7 @@ function (root, d3, forester, phyloXml) {
     // IIFE's own function name -- a plain object says what it is.)
     let archaeopteryx = {};
 
-    const VERSION = '3.27.0';
+    const VERSION = '3.28.0';
     const WEBSITE = 'https://cmzmasek.github.io/archaeopteryx-js/';
     const DESKTOP_WEBSITE = 'https://cmzmasek.github.io/archaeopteryx/';
     const SOURCE_WEBSITE = 'https://github.com/cmzmasek/archaeopteryx-js';
@@ -38296,6 +38296,9 @@ function (root, d3, forester, phyloXml) {
     const PHYLOGRAM_MIN_BRANCH_FRACTION = 0.5;
     const SHORTEN_NAME_MAX_LENGTH = 18;
     const PANEL_STYLE_ID = 'aptx-panel-styles';
+    // The tree's own <svg>: named so that the stylesheet can say what a host
+    // page's rules for a bare "svg" would otherwise decide (hostProofCss).
+    const TREE_SVG_CLASS = 'aptx-tree';
     // How wide a legend row is treated as, for grabbing it with the mouse.
     const PANEL_WIDTH = 214; // fixed control-panel width; shared by the .aptx-panel CSS and leftPanelClearance() so the two can't drift
     const PANEL_WIDTH_COMPACT = 196; // the same, at panelDensity 'compact'; panelWidth() picks between them
@@ -38478,6 +38481,7 @@ function (root, d3, forester, phyloXml) {
     // archaeopteryx-anime.svg), inlined so the library stays a single file.
     // Gradient ids are prefixed: they were generic enough to collide with an
     // embedding page's own defs.
+    // (drawn with attributes, as any svg file is; paintInline moves its paint into styles where it is used)
     const ARCHAEOPTERYX_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Archaeopteryx"> <defs> <linearGradient id="aptxlogo-wg" x1="0" y1="1" x2="1" y2="0"> <stop offset="0" stop-color="#4f46e5"/><stop offset="0.55" stop-color="#38bdf8"/><stop offset="1" stop-color="#a7f3d0"/> </linearGradient> <linearGradient id="aptxlogo-wg2" x1="0" y1="1" x2="1" y2="0"> <stop offset="0" stop-color="#3730a3"/><stop offset="1" stop-color="#4f79e0"/> </linearGradient> <linearGradient id="aptxlogo-tg" x1="0" y1="1" x2="1" y2="0"> <stop offset="0" stop-color="#f43f5e"/><stop offset="0.5" stop-color="#fb923c"/><stop offset="1" stop-color="#fde047"/> </linearGradient> <linearGradient id="aptxlogo-bg" x1="0" y1="0" x2="0" y2="1"> <stop offset="0" stop-color="#fff7e0"/><stop offset="1" stop-color="#fcd34d"/> </linearGradient> </defs> <g transform="translate(28.9,18.0) scale(0.9091)"> <g stroke="#25304f" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"> <path d="M 78.0,152.0 C 49.3,150.6 12.5,173.3 -4.4,194.3 C 25.1,192.0 66.1,175.5 78.0,152.0 Z" fill="url(#aptxlogo-tg)"/> <path d="M 78.0,152.0 C 48.1,143.8 3.5,158.8 -19.7,176.6 C 12.1,181.2 59.5,173.7 78.0,152.0 Z" fill="url(#aptxlogo-tg)"/> <path d="M 78.0,152.0 C 51.8,138.2 6.9,142.5 -18.7,154.0 C 10.0,164.8 56.0,167.9 78.0,152.0 Z" fill="url(#aptxlogo-tg)"/> <path d="M 78.0,152.0 C 58.9,135.3 20.6,130.3 -2.8,135.1 C 18.9,149.7 56.6,161.2 78.0,152.0 Z" fill="url(#aptxlogo-tg)"/> <path d="M 118.0,126.0 C 110.4,106.2 84.4,93.0 65.5,92.1 C 75.9,110.5 99.0,129.6 118.0,126.0 Z" fill="url(#aptxlogo-wg2)"/> <path d="M 118.0,126.0 C 115.6,103.3 92.6,79.7 73.5,71.3 C 79.1,93.8 97.5,122.0 118.0,126.0 Z" fill="url(#aptxlogo-wg2)"/> <path d="M 118.0,126.0 C 123.0,106.1 110.4,79.8 96.5,67.4 C 94.4,87.9 101.6,117.0 118.0,126.0 Z" fill="url(#aptxlogo-wg2)"/> <path d="M 106,172 L 101,202 M 132,172 L 129,202" fill="none" stroke-width="9"/> <path d="M 101,202 L 88,209 M 101,202 L 112,210 M 101,202 L 99,213 M 129,202 L 116,209 M 129,202 L 140,210 M 129,202 L 128,213" fill="none" stroke-width="6"/> <path d="M 96,176 C 74,168 66,146 76,128 C 86,110 110,102 132,106 C 152,110 164,126 162,146 C 160,166 142,180 120,180 C 112,180 103,179 96,176 Z" fill="url(#aptxlogo-bg)"/> <path d="M 100,174 C 86,166 82,150 90,138 C 96,146 108,152 122,152 C 136,152 148,148 156,140 C 160,156 150,172 128,177 C 118,179 108,178 100,174 Z" fill="#fff6dd" stroke="none"/> <path d="M 96,176 C 74,168 66,146 76,128 C 86,110 110,102 132,106 C 152,110 164,126 162,146 C 160,166 142,180 120,180 C 112,180 103,179 96,176 Z" fill="none"/> <path d="M 150.0,60.0 C 159.5,51.2 158.7,35.2 152.9,25.9 C 145.3,35.7 141.5,51.8 150.0,60.0 Z" fill="url(#aptxlogo-wg)"/> <path d="M 164.0,56.0 C 174.4,51.0 177.8,37.3 175.2,28.0 C 166.2,34.2 158.9,46.9 164.0,56.0 Z" fill="url(#aptxlogo-wg)"/> <path d="M 136.0,66.0 C 141.8,56.5 137.0,44.2 129.6,38.5 C 125.7,48.3 126.7,61.9 136.0,66.0 Z" fill="url(#aptxlogo-wg)"/> <path d="M 158,58 C 186,54 208,72 208,96 C 208,120 188,136 164,134 C 140,132 126,114 128,92 C 130,72 142,60 158,58 Z" fill="url(#aptxlogo-bg)"/> <path d="M 203,82 C 216,84 230,92 238,100 C 230,108 216,113 202,112 C 206,104 206,90 203,82 Z" fill="#fb923c"/> <path d="M 204,101 C 214,102 224,103 234,101" fill="none" stroke-width="4"/> <path d="M 128.0,116.0 C 113.1,91.9 75.3,80.3 50.0,83.2 C 68.3,104.8 103.7,124.6 128.0,116.0 Z" fill="url(#aptxlogo-wg)"/> <path d="M 128.0,116.0 C 118.0,85.8 79.7,60.2 51.1,54.1 C 65.4,83.1 98.9,116.3 128.0,116.0 Z" fill="url(#aptxlogo-wg)"/> <path d="M 128.0,116.0 C 127.0,83.7 97.3,47.3 71.5,32.7 C 76.9,65.0 99.8,107.4 128.0,116.0 Z" fill="url(#aptxlogo-wg)"/> <path d="M 128.0,116.0 C 136.1,88.7 121.1,50.1 103.3,30.9 C 99.0,59.5 106.6,101.2 128.0,116.0 Z" fill="url(#aptxlogo-wg)"/> </g> <g> <ellipse cx="172" cy="94" rx="15" ry="17" fill="#25304f"/> <ellipse cx="172" cy="97" rx="10" ry="11" fill="#38bdf8"/> <circle cx="167" cy="88" r="6" fill="#ffffff"/> <circle cx="178" cy="103" r="3" fill="#ffffff" opacity="0.9"/> <ellipse cx="146" cy="112" rx="9" ry="5" fill="#fb7185" opacity="0.75"/> <path d="M 52,53 C 53.62,59.75 54.25,60.38 61,62 C 54.25,63.62 53.62,64.25 52,71 C 50.38,64.25 49.75,63.62 43,62 C 49.75,60.38 50.38,59.75 52,53 Z" fill="#fde68a"/> <path d="M 222,161 C 223.26,166.25 223.75,166.74 229,168 C 223.75,169.26 223.26,169.75 222,175 C 220.74,169.75 220.25,169.26 215,168 C 220.25,166.74 220.74,166.25 222,161 Z" fill="#fde68a"/> <path d="M 86,208 C 87.08,212.5 87.5,212.92 92,214 C 87.5,215.08 87.08,215.5 86,220 C 84.92,215.5 84.5,215.08 80,214 C 84.5,212.92 84.92,212.5 86,208 Z" fill="#fde68a"/> </g> </g> </svg>';
     const NODE_DATA = 'node_data_dialog';
     const COLOR_PICKER = 'color_picker_dialog';
@@ -39562,9 +39566,9 @@ function (root, d3, forester, phyloXml) {
         let fill = hoverGlowColor(d);
         HOVER_GLOW_RADII.forEach(function (radius, i) {
             g.append('circle')
-                .attr('fill-opacity', HOVER_GLOW_ALPHAS[i])
-                .attr('stroke', 'none')
-                .attr('fill', fill)
+                .style('fill-opacity', HOVER_GLOW_ALPHAS[i])
+                .style('stroke', 'none')
+                .style('fill', fill)
                 .attr('r', (dia * radius) / 2);
         });
     }
@@ -40782,7 +40786,7 @@ function (root, d3, forester, phyloXml) {
         chips.forEach(function (chip) {
             let t = g.append('text')
                 .attr('x', chipRight).attr('y', baseline)
-                .attr('text-anchor', 'end')
+                .style('text-anchor', 'end')
                 .style('font', rowFont)
                 .style('fill', ink)
                 .style('fill-opacity', 0.75)
@@ -40810,10 +40814,10 @@ function (root, d3, forester, phyloXml) {
             let frac = max > min ? (mean - min) / (max - min) : 0.5;
             let gradId = 'aptx_legend_ramp_' + id;
             let grad = g.append('defs').append('linearGradient').attr('id', gradId);
-            grad.append('stop').attr('offset', '0%').attr('stop-color', VIS_COLOR_RAMP[0]);
+            grad.append('stop').attr('offset', '0%').style('stop-color', VIS_COLOR_RAMP[0]);
             grad.append('stop').attr('offset', (100 * Math.max(0.01, Math.min(0.99, frac))) + '%')
-                .attr('stop-color', VIS_COLOR_RAMP[1]);
-            grad.append('stop').attr('offset', '100%').attr('stop-color', VIS_COLOR_RAMP[2]);
+                .style('stop-color', VIS_COLOR_RAMP[1]);
+            grad.append('stop').attr('offset', '100%').style('stop-color', VIS_COLOR_RAMP[2]);
             let barY = baseline + 6;
             let barW = width - 2 * PAD;
             g.append('rect')
@@ -40829,7 +40833,7 @@ function (root, d3, forester, phyloXml) {
                 .text(legendNumberLabel(min));
             g.append('text')
                 .attr('x', x + PAD + barW).attr('y', lblY)
-                .attr('text-anchor', 'end')
+                .style('text-anchor', 'end')
                 .style('font', rowFont).style('fill', ink)
                 .text(legendNumberLabel(max));
             baseline = lblY;
@@ -40894,7 +40898,7 @@ function (root, d3, forester, phyloXml) {
                 .text(r.text);
             g.append('text')
                 .attr('x', x + width - PAD).attr('y', baseline)
-                .attr('text-anchor', 'end')
+                .style('text-anchor', 'end')
                 .style('font', rowFont)
                 .style('fill', ink)
                 .style('fill-opacity', 0.55)
@@ -41404,7 +41408,7 @@ function (root, d3, forester, phyloXml) {
             .style('paint-order', 'stroke')
             // anchor, dy and x all come from nodeLabelPlacement, which the
             // occupancy box is built from too
-            .attr('text-anchor', function (d) {
+            .style('text-anchor', function (d) {
                 return nodeLabelPlacement(d).anchor;
             })
             .attr('transform', function (d) {
@@ -41442,7 +41446,7 @@ function (root, d3, forester, phyloXml) {
         node.select('text.bllabel')
             .style('font-size', _state.branchDataFontSize + 'px')
             .style('fill', _state.branchColorDefault)
-            .attr('text-anchor', function () {
+            .style('text-anchor', function () {
                 return radialDisplay() ? 'middle' : null;
             })
             .attr('transform', function (d) {
@@ -41609,9 +41613,9 @@ function (root, d3, forester, phyloXml) {
         if (tipGuides || collapsedGuides.length > 0) {
             let ext = _svgGroup.insert('g', 'g').attr('class', 'aptx-align-ext');
             let guideStyle = function (sel) {
-                return sel.attr('fill', 'none')
-                    .attr('stroke-width', 1)
-                    .attr('stroke', _state.branchColorDefault)
+                return sel.style('fill', 'none')
+                    .style('stroke-width', 1)
+                    .style('stroke', _state.branchColorDefault)
                     .style('stroke-opacity', 0.25);
             };
             if (tipGuides) {
@@ -41656,10 +41660,10 @@ function (root, d3, forester, phyloXml) {
                 conn.selectAll('line')
                     .data(connected)
                     .enter().append('line')
-                    .attr('stroke', _state.branchColorDefault)
+                    .style('stroke', _state.branchColorDefault)
                     // width/opacity match the rectangular aligned extensions; the
                     // dash alone marks these as connectors (0.5px at 0.3 vanished)
-                    .attr('stroke-width', 1)
+                    .style('stroke-width', 1)
                     .style('stroke-opacity', 0.4)
                     .style('stroke-dasharray', '2,3')
                     .attr('x1', function (d) { return radialXY(d.x, innerY(d))[0]; })
@@ -42753,7 +42757,7 @@ function (root, d3, forester, phyloXml) {
             sync(g, 'text.extlabel', d._extLabelText !== '', function (sel) {
                 sel.append('text')
                     .attr('class', 'extlabel')
-                    .attr('text-anchor', d.children ? 'end' : 'start')
+                    .style('text-anchor', d.children ? 'end' : 'start')
                     .style('font-family', font)
                     .style('fill-opacity', 0.5);
             });
@@ -42769,7 +42773,7 @@ function (root, d3, forester, phyloXml) {
                 sync(g, 'text.conflabel', d._confText !== '', function (sel) {
                     sel.append('text')
                         .attr('class', 'conflabel')
-                        .attr('text-anchor', 'middle')
+                        .style('text-anchor', 'middle')
                         .style('font-family', font);
                 });
             }
@@ -42777,7 +42781,7 @@ function (root, d3, forester, phyloXml) {
                 sync(g, 'text.brancheventlabel', d._eventText !== '', function (sel) {
                     sel.append('text')
                         .attr('class', 'brancheventlabel')
-                        .attr('text-anchor', 'middle')
+                        .style('text-anchor', 'middle')
                         .style('font-family', font);
                 });
             }
@@ -43417,9 +43421,16 @@ function (root, d3, forester, phyloXml) {
         let els = sizeLayer(_geomLayers.branches, 'path', branchList.length);
         branchList.forEach(function (b, k) {
             b.el = els[k];
-            b.el.setAttribute('fill', 'none');
-            b.el.setAttribute('stroke', b.color);
-            b.el.setAttribute('stroke-width', b.width);
+            // These paths are kept from one drawing to the next, and a style
+            // is not an attribute: a value that is no colour or no width (a
+            // file's <width>-1</width>) is IGNORED, and the path would keep
+            // what another batch gave it the last time. So the old is taken
+            // off first, and such a batch is drawn as the svg has it.
+            b.el.style.setProperty('fill', 'none');
+            b.el.style.removeProperty('stroke');
+            b.el.style.setProperty('stroke', b.color);
+            b.el.style.removeProperty('stroke-width');
+            b.el.style.setProperty('stroke-width', b.width);
         });
         // `last`: batches painted after the sorted ones, whatever their count
         let paintLayer = function (batches, layer, last) {
@@ -44916,8 +44927,15 @@ function (root, d3, forester, phyloXml) {
             createGui();
 
             _baseSvg = d3.select(containerEl).append('svg')
-                .attr('width', _displayWidth)
-                .attr('height', _displayHeight)
+                .attr('class', TREE_SVG_CLASS)
+                .call(sizeTreeSvg, _displayWidth, _displayHeight)
+                // The tree's font, for the texts that state only a size (the
+                // alignment strip's ruler and caption, the heat map strip's
+                // numbers and caption): they were drawn in the PAGE's font,
+                // in boxes measured for this one, and in an exported file in
+                // whatever the program that opened it thought best. Inline,
+                // so that the file has it too.
+                .style('font-family', FONT_DEFAULTS)
                 // an inline svg sits on a text baseline, and the room left
                 // under it for descenders makes a container sized to the
                 // svg a few pixels taller than the svg itself -- enough to
@@ -44940,8 +44958,7 @@ function (root, d3, forester, phyloXml) {
                         }
                         _displayWidth = size.w;
                         _displayHeight = size.h;
-                        _baseSvg.attr('width', size.w);
-                        _baseSvg.attr('height', size.h);
+                        sizeTreeSvg(_baseSvg, size.w, size.h);
                         rebuildOverview();
                         if ((_settings.zoomToFitUponWindowResize === true) && (_zoomed_x_or_y === false) && (Math.abs(currentZoomScale() - 1.0) < 0.001)) {
                             zoomToFit();
@@ -46013,7 +46030,7 @@ function (root, d3, forester, phyloXml) {
                 let x1 = Math.round(originX + (endI * cw));
                 g.append('rect').attr('x', x0).attr('y', cy)
                     .attr('width', Math.max(1, x1 - x0)).attr('height', rh)
-                    .attr('fill', 'rgb(' + runRgb.join(',') + ')');
+                    .style('fill', 'rgb(' + runRgb.join(',') + ')');
                 runStart = -1;
                 runRgb = null;
             };
@@ -46028,7 +46045,7 @@ function (root, d3, forester, phyloXml) {
                 g.append('line')
                     .attr('x1', Math.round(originX + (gapStart * cw))).attr('y1', mid)
                     .attr('x2', Math.round(originX + (endI * cw))).attr('y2', mid)
-                    .attr('stroke', ink).attr('stroke-opacity', 0.35).attr('stroke-width', 1);
+                    .style('stroke', ink).style('stroke-opacity', 0.35).style('stroke-width', 1);
                 gapStart = -1;
             };
             for (let i = 0; i < visible; ++i) {
@@ -46052,9 +46069,9 @@ function (root, d3, forester, phyloXml) {
                     let x1 = Math.round(originX + ((i + 1) * cw));
                     g.append('rect').attr('x', x0).attr('y', cy)
                         .attr('width', Math.max(1, x1 - x0)).attr('height', rh)
-                        .attr('fill', 'rgb(' + rgb.join(',') + ')');
+                        .style('fill', 'rgb(' + rgb.join(',') + ')');
                     g.append('text').attr('x', x0 + ((x1 - x0) / 2)).attr('y', cy + (rh / 2))
-                        .attr('text-anchor', 'middle').attr('dy', '0.35em')
+                        .style('text-anchor', 'middle').attr('dy', '0.35em')
                         .style('font-family', 'monospace').style('font-size', fontPx + 'px')
                         .style('fill', forester.msaLetterInk(rgb))
                         .text(ch.toUpperCase());
@@ -46078,13 +46095,13 @@ function (root, d3, forester, phyloXml) {
         if (offset <= 0) {
             g.append('line').attr('x1', Math.round(originX)).attr('x2', Math.round(originX))
                 .attr('y1', rowsTop).attr('y2', rowsBottom)
-                .attr('stroke', ink).attr('stroke-opacity', 0.7).attr('stroke-width', 1);
+                .style('stroke', ink).style('stroke-opacity', 0.7).style('stroke-width', 1);
         }
         if ((offset + visible) >= total) {
             let xe = Math.round(originX + (visible * cw));
             g.append('line').attr('x1', xe).attr('x2', xe)
                 .attr('y1', rowsTop).attr('y2', rowsBottom)
-                .attr('stroke', ink).attr('stroke-opacity', 0.7).attr('stroke-width', 1);
+                .style('stroke', ink).style('stroke-opacity', 0.7).style('stroke-width', 1);
         }
 
         // Scored over the visible WINDOW only -- the whole alignment would
@@ -46123,9 +46140,9 @@ function (root, d3, forester, phyloXml) {
             g.append('line')
                 .attr('x1', from).attr('x2', guideEnd)
                 .attr('y1', d.x).attr('y2', d.x)
-                .attr('stroke', ink)
-                .attr('stroke-width', 1)
-                .attr('stroke-dasharray', '2,3')
+                .style('stroke', ink)
+                .style('stroke-width', 1)
+                .style('stroke-dasharray', '2,3')
                 .style('stroke-opacity', 0.35)
                 .style('pointer-events', 'none');
         }
@@ -46135,7 +46152,7 @@ function (root, d3, forester, phyloXml) {
         let strip = floatStripGroup('aptx-msa-strip', _clusterH, stripH);
         strip.append('rect').attr('x', Math.round(originX) - 2).attr('y', _clusterH)
             .attr('width', trackW + 4).attr('height', stripH)
-            .attr('fill', _state.backgroundColorDefault);
+            .style('fill', _state.backgroundColorDefault);
         let consTop = _clusterH + MSA_CONS_TOP_GAP;
         // A caption on the panel's own background, so it stays readable over
         // whatever the band happens to draw underneath it.
@@ -46148,9 +46165,9 @@ function (root, d3, forester, phyloXml) {
             let xe = Math.round(originX) + trackW - 3;
             strip.append('rect').attr('x', xe - w).attr('y', y - 8)
                 .attr('width', w).attr('height', 11)
-                .attr('fill', _state.backgroundColorDefault).attr('fill-opacity', 0.85);
+                .style('fill', _state.backgroundColorDefault).style('fill-opacity', 0.85);
             strip.append('text').attr('x', xe - 3).attr('y', y)
-                .attr('text-anchor', 'end')
+                .style('text-anchor', 'end')
                 .style('font-size', '8px').style('fill', ink).style('fill-opacity', 0.9)
                 .text(txt);
         };
@@ -46167,7 +46184,7 @@ function (root, d3, forester, phyloXml) {
             strip.append('line')
                 .attr('x1', Math.round(originX)).attr('x2', Math.round(originX) + trackW)
                 .attr('y1', floor).attr('y2', floor)
-                .attr('stroke', ink).attr('stroke-opacity', 0.5).attr('stroke-width', 1);
+                .style('stroke', ink).style('stroke-opacity', 0.5).style('stroke-width', 1);
             for (let i = 0; i < visible; ++i) {
                 let col = logo.columns[i];
                 if (!col || !(col.height > 0)) {
@@ -46189,7 +46206,7 @@ function (root, d3, forester, phyloXml) {
                         .attr('transform', 'translate(' + (x0 + ((x1 - x0) / 2)) + ','
                             + (y - (glyph.descent * sy)) + ')'
                             + ' scale(' + (Math.max(1, x1 - x0) / glyph.width) + ',' + sy + ')')
-                        .attr('text-anchor', 'middle')
+                        .style('text-anchor', 'middle')
                         .style('font-family', 'monospace')
                         .style('font-size', MSA_LOGO_FONT_PX + 'px')
                         .style('fill', rgb === null ? ink : 'rgb(' + rgb.join(',') + ')')
@@ -46202,7 +46219,7 @@ function (root, d3, forester, phyloXml) {
         } else {
             strip.append('rect').attr('x', Math.round(originX)).attr('y', consTop)
                 .attr('width', trackW).attr('height', MSA_CONS_BAR_H)
-                .attr('fill', ink).attr('fill-opacity', 0.08);
+                .style('fill', ink).style('fill-opacity', 0.08);
             for (let i = 0; i < visible; ++i) {
                 let score = cons.scores[i] || 0;
                 if (score <= 0) {
@@ -46213,7 +46230,7 @@ function (root, d3, forester, phyloXml) {
                 let x1 = Math.round(originX + ((i + 1) * cw));
                 strip.append('rect').attr('x', x0).attr('y', (consTop + MSA_CONS_BAR_H) - bh)
                     .attr('width', Math.max(1, x1 - x0)).attr('height', bh)
-                    .attr('fill', ink).attr('fill-opacity', 0.7);
+                    .style('fill', ink).style('fill-opacity', 0.7);
             }
             caption('Consensus identity (n = ' + n + ')', consTop + 9);
             for (let i = 0; i < visible; ++i) {
@@ -46223,7 +46240,7 @@ function (root, d3, forester, phyloXml) {
                 }
                 strip.append('text').attr('x', Math.round(originX + (i * cw)) + (cw / 2))
                     .attr('y', consTop + MSA_CONS_BAR_H + 10)
-                    .attr('text-anchor', 'middle')
+                    .style('text-anchor', 'middle')
                     .style('font-family', 'monospace').style('font-size', '8px')
                     .style('fill', ink)
                     .text(cc);
@@ -46235,7 +46252,7 @@ function (root, d3, forester, phyloXml) {
         let rulerY = consTop + (logo ? MSA_LOGO_CAP_H + MSA_LOGO_H : MSA_CONS_BAR_H + MSA_CONS_ROW_H);
         strip.append('line').attr('x1', Math.round(originX)).attr('x2', Math.round(originX) + trackW)
             .attr('y1', rulerY).attr('y2', rulerY)
-            .attr('stroke', ink).attr('stroke-opacity', 0.8).attr('stroke-width', 1);
+            .style('stroke', ink).style('stroke-opacity', 0.8).style('stroke-width', 1);
         let lastRight = -Infinity;
         let drawTick = function (c, force) {
             let i = c - 1 - offset;
@@ -46244,11 +46261,11 @@ function (root, d3, forester, phyloXml) {
             }
             let x = Math.round(originX + (i * cw)) + (cw / 2);
             strip.append('line').attr('x1', x).attr('x2', x).attr('y1', rulerY).attr('y2', rulerY + 4)
-                .attr('stroke', ink).attr('stroke-opacity', 0.8).attr('stroke-width', 1);
+                .style('stroke', ink).style('stroke-opacity', 0.8).style('stroke-width', 1);
             let label = String(c);
             let half = label.length * 2.8;
             if (force || (x - half) >= (lastRight + 4)) {
-                strip.append('text').attr('x', x).attr('y', rulerY + 14).attr('text-anchor', 'middle')
+                strip.append('text').attr('x', x).attr('y', rulerY + 14).style('text-anchor', 'middle')
                     .style('font-size', '9px').style('fill', ink)
                     .text(label);
                 lastRight = x + half;
@@ -46265,7 +46282,7 @@ function (root, d3, forester, phyloXml) {
         g.append('rect').attr('class', 'aptx-msa-hover')
             .attr('x', Math.round(originX)).attr('y', rowsTop)
             .attr('width', trackW).attr('height', Math.max(1, rowsBottom - rowsTop))
-            .attr('fill', 'transparent')
+            .style('fill', 'transparent')
             .on('mousemove', msaHoverMove)
             .on('mouseout', msaHoverOut)
             .on('wheel', function (event) {
@@ -46767,10 +46784,14 @@ function (root, d3, forester, phyloXml) {
     // that came and went with the zoom level. Both strokes are a constant
     // screen width, so a zoom neither fattens nor loses them.
     function paintHeatmapCell(el, fill, bordered) {
-        el.attr('fill', fill)
-            .attr('stroke', bordered ? heatmapBorderColor(fill) : fill)
-            .attr('stroke-width', bordered ? HEATMAP_BORDER_W : HEATMAP_SEAL_W)
-            .attr('vector-effect', 'non-scaling-stroke');
+        el.style('fill', fill)
+            .style('stroke', bordered ? heatmapBorderColor(fill) : fill)
+            .style('stroke-width', bordered ? HEATMAP_BORDER_W : HEATMAP_SEAL_W)
+            // ... said twice: as a style for the page, as everything here is,
+            // and as an attribute for canvg, which draws the PNG and reads this
+            // from the attribute alone (as a style only, every border came out
+            // at the export's scale, four times as wide)
+            .style('vector-effect', 'non-scaling-stroke').attr('vector-effect', 'non-scaling-stroke');
         return el;
     }
 
@@ -46900,8 +46921,8 @@ function (root, d3, forester, phyloXml) {
                 let rect = g.append('rect').attr('x', x0).attr('y', cy)
                     .attr('width', Math.max(1, x1 - x0)).attr('height', rh);
                 if (runFill === HEATMAP_BLANK) {
-                    rect.attr('fill', _state.backgroundColorDefault)
-                        .attr('stroke', ink).attr('stroke-opacity', 0.45).attr('stroke-width', 1);
+                    rect.style('fill', _state.backgroundColorDefault)
+                        .style('stroke', ink).style('stroke-opacity', 0.45).style('stroke-width', 1);
                 } else {
                     paintHeatmapCell(rect, runFill, bordered);
                 }
@@ -46933,8 +46954,8 @@ function (root, d3, forester, phyloXml) {
         g.append('rect')
             .attr('x', Math.round(originX)).attr('y', rowsTop)
             .attr('width', trackW).attr('height', Math.max(1, rowsBottom - rowsTop))
-            .attr('fill', 'none')
-            .attr('stroke', ink).attr('stroke-opacity', 0.55).attr('stroke-width', 1);
+            .style('fill', 'none')
+            .style('stroke', ink).style('stroke-opacity', 0.55).style('stroke-width', 1);
 
         // ---- the clustering behind the column order, above the grid ----
         // Drawn with the cells, in the tree's own group, so it zooms, pans and
@@ -46987,9 +47008,9 @@ function (root, d3, forester, phyloXml) {
             }
             g.append('path').attr('class', 'aptx-heatmap-dendro')
                 .attr('d', path)
-                .attr('fill', 'none')
-                .attr('stroke', ink)
-                .attr('stroke-width', Math.max(1, _state.branchWidthDefault))
+                .style('fill', 'none')
+                .style('stroke', ink)
+                .style('stroke-width', Math.max(1, _state.branchWidthDefault))
                 .style('pointer-events', 'none');
         }
 
@@ -47018,9 +47039,9 @@ function (root, d3, forester, phyloXml) {
                 g.append('line')
                     .attr('x1', from).attr('x2', guideEnd)
                     .attr('y1', d.x).attr('y2', d.x)
-                    .attr('stroke', ink)
-                    .attr('stroke-width', 1)
-                    .attr('stroke-dasharray', '2,3')
+                    .style('stroke', ink)
+                    .style('stroke-width', 1)
+                    .style('stroke-dasharray', '2,3')
                     .style('stroke-opacity', 0.35)
                     .style('pointer-events', 'none');
             }
@@ -47032,7 +47053,7 @@ function (root, d3, forester, phyloXml) {
         let strip = floatStripGroup('aptx-heatmap-strip', _clusterH, heatmapBottomReserve());
         strip.append('rect').attr('x', Math.round(originX) - 2).attr('y', _clusterH)
             .attr('width', trackW + 4).attr('height', heatmapStripHeight())
-            .attr('fill', _state.backgroundColorDefault);
+            .style('fill', _state.backgroundColorDefault);
         let labelTop = _clusterH + HEATMAP_HEAD_GAP;
         let headH = heatmapHeadHeight();
         if (headH > 0) {
@@ -47043,7 +47064,7 @@ function (root, d3, forester, phyloXml) {
                     .attr('transform', 'translate(' + (originX + (i * cw) + (cw / 2)) + ','
                         + labelTop + ') rotate(-90)')
                     .attr('dy', '0.32em')
-                    .attr('text-anchor', 'end')
+                    .style('text-anchor', 'end')
                     .style('font', font)
                     .style('fill', _state.labelColorDefault)
                     .text(clipTextToWidth(col.label, font, HEATMAP_LABEL_MAX_PX));
@@ -47060,20 +47081,20 @@ function (root, d3, forester, phyloXml) {
         VIS_COLOR_RAMP.forEach(function (c, i) {
             grad.append('stop')
                 .attr('offset', ((i * 100) / (VIS_COLOR_RAMP.length - 1)) + '%')
-                .attr('stop-color', c);
+                .style('stop-color', c);
         });
         strip.append('rect')
             .attr('x', Math.round(originX)).attr('y', scaleTop)
             .attr('width', barW).attr('height', HEATMAP_SCALE_BAR_H)
-            .attr('fill', 'url(#' + gradId + ')')
-            .attr('stroke', ink).attr('stroke-opacity', 0.5).attr('stroke-width', 1);
+            .style('fill', 'url(#' + gradId + ')')
+            .style('stroke', ink).style('stroke-opacity', 0.5).style('stroke-width', 1);
         let numY = scaleTop + HEATMAP_SCALE_BAR_H + 10;
         strip.append('text').attr('x', Math.round(originX)).attr('y', numY)
-            .attr('text-anchor', 'start')
+            .style('text-anchor', 'start')
             .style('font-size', '9px').style('fill', ink)
             .text(heatmapNum(model.min));
         strip.append('text').attr('x', Math.round(originX) + barW).attr('y', numY)
-            .attr('text-anchor', 'end')
+            .style('text-anchor', 'end')
             .style('font-size', '9px').style('fill', ink)
             .text(heatmapNum(model.max));
         // the caption: what the matrix is showing, and -- when it is windowed
@@ -47091,11 +47112,11 @@ function (root, d3, forester, phyloXml) {
             if ((rightEdge - cursor) >= keyW) {
                 strip.append('rect').attr('x', cursor).attr('y', scaleTop)
                     .attr('width', HEATMAP_SCALE_BAR_H).attr('height', HEATMAP_SCALE_BAR_H)
-                    .attr('fill', _state.backgroundColorDefault)
-                    .attr('stroke', ink).attr('stroke-opacity', 0.45).attr('stroke-width', 1);
+                    .style('fill', _state.backgroundColorDefault)
+                    .style('stroke', ink).style('stroke-opacity', 0.45).style('stroke-width', 1);
                 strip.append('text').attr('x', cursor + HEATMAP_SCALE_BAR_H + 4)
                     .attr('y', scaleTop + HEATMAP_SCALE_BAR_H)
-                    .attr('text-anchor', 'start')
+                    .style('text-anchor', 'start')
                     .style('font', capFont).style('fill', ink).style('fill-opacity', 0.85)
                     .text(HEATMAP_NOT_ASSESSED);
                 cursor += keyW + 10;
@@ -47103,7 +47124,7 @@ function (root, d3, forester, phyloXml) {
         }
         if ((rightEdge - cursor) > 60) {
             strip.append('text').attr('x', cursor).attr('y', scaleTop + HEATMAP_SCALE_BAR_H)
-                .attr('text-anchor', 'start')
+                .style('text-anchor', 'start')
                 .style('font', capFont).style('fill', ink).style('fill-opacity', 0.85)
                 .text(clipTextToWidth(caption, capFont, rightEdge - cursor));
         }
@@ -47112,7 +47133,7 @@ function (root, d3, forester, phyloXml) {
         g.append('rect').attr('class', 'aptx-heatmap-hover')
             .attr('x', Math.round(originX)).attr('y', rowsTop)
             .attr('width', trackW).attr('height', Math.max(1, rowsBottom - rowsTop))
-            .attr('fill', 'transparent')
+            .style('fill', 'transparent')
             .on('mousemove', heatmapHoverMove)
             .on('mouseout', heatmapHoverOut)
             .on('wheel', function (event) {
@@ -47254,12 +47275,12 @@ function (root, d3, forester, phyloXml) {
                 let path = g.append('path')
                     .attr('d', heatmapSector(edge[runStart], a1, r0, r1 + bleed));
                 if (runFill === HEATMAP_BLANK) {
-                    path.attr('fill', _state.backgroundColorDefault)
-                        .attr('stroke', ink).attr('stroke-opacity', 0.45).attr('stroke-width', 1);
+                    path.style('fill', _state.backgroundColorDefault)
+                        .style('stroke', ink).style('stroke-opacity', 0.45).style('stroke-width', 1);
                 } else if (bordered) {
                     paintHeatmapCell(path, runFill, true);
                 } else {
-                    path.attr('fill', runFill);   // the bleed already closes the seams here
+                    path.style('fill', runFill);   // the bleed already closes the seams here
                 }
                 runStart = -1;
                 runFill = null;
@@ -47285,7 +47306,7 @@ function (root, d3, forester, phyloXml) {
         [start, start + (columns.length * ringW)].forEach(function (r) {
             g.append('path')
                 .attr('d', heatmapSector(edge[0], edge[n], r - 0.5, r + 0.5))
-                .attr('fill', ink).attr('fill-opacity', 0.5);
+                .style('fill', ink).style('fill-opacity', 0.5);
         });
 
         // Each ring's name, laid along the ring at the fan's seam -- the gap
@@ -47309,7 +47330,7 @@ function (root, d3, forester, phyloXml) {
                 g.append('text')
                     .attr('transform', 'translate(' + xy[0].toFixed(1) + ',' + xy[1].toFixed(1) + ') '
                         + 'rotate(' + (deg + (flip ? 180 : 0)).toFixed(1) + ')')
-                    .attr('text-anchor', 'middle')
+                    .style('text-anchor', 'middle')
                     .attr('dy', '0.32em')
                     .style('font', font)
                     .style('fill', _state.labelColorDefault)
@@ -47321,7 +47342,7 @@ function (root, d3, forester, phyloXml) {
         g.append('path')
             .attr('class', 'aptx-heatmap-hover')
             .attr('d', heatmapSector(edge[0], edge[n], start, start + (columns.length * ringW)))
-            .attr('fill', 'transparent')
+            .style('fill', 'transparent')
             .on('mousemove', heatmapHoverMove)
             .on('mouseout', heatmapHoverOut);
 
@@ -47375,31 +47396,31 @@ function (root, d3, forester, phyloXml) {
         VIS_COLOR_RAMP.forEach(function (c, i) {
             grad.append('stop')
                 .attr('offset', ((i * 100) / (VIS_COLOR_RAMP.length - 1)) + '%')
-                .attr('stop-color', c);
+                .style('stop-color', c);
         });
         let barY = y + PAD;
         g.append('rect').attr('x', x + PAD).attr('y', barY)
             .attr('width', BAR_W).attr('height', HEATMAP_SCALE_BAR_H)
-            .attr('fill', 'url(#' + gradId + ')')
-            .attr('stroke', frame).attr('stroke-opacity', 0.5).attr('stroke-width', 1);
+            .style('fill', 'url(#' + gradId + ')')
+            .style('stroke', frame).style('stroke-opacity', 0.5).style('stroke-width', 1);
         let line = barY + HEATMAP_SCALE_BAR_H + FS + 2;
-        g.append('text').attr('x', x + PAD).attr('y', line).attr('text-anchor', 'start')
+        g.append('text').attr('x', x + PAD).attr('y', line).style('text-anchor', 'start')
             .style('font', capFont).style('fill', ink).text(heatmapNum(m.min));
-        g.append('text').attr('x', x + PAD + BAR_W).attr('y', line).attr('text-anchor', 'end')
+        g.append('text').attr('x', x + PAD + BAR_W).attr('y', line).style('text-anchor', 'end')
             .style('font', capFont).style('fill', ink).text(heatmapNum(m.max));
         if (blanks) {
             line += FS + 4;
             g.append('rect').attr('x', x + PAD).attr('y', line - HEATMAP_SCALE_BAR_H)
                 .attr('width', HEATMAP_SCALE_BAR_H).attr('height', HEATMAP_SCALE_BAR_H)
-                .attr('fill', _state.backgroundColorDefault)
-                .attr('stroke', frame).attr('stroke-opacity', 0.45).attr('stroke-width', 1);
+                .style('fill', _state.backgroundColorDefault)
+                .style('stroke', frame).style('stroke-opacity', 0.45).style('stroke-width', 1);
             g.append('text').attr('x', x + PAD + HEATMAP_SCALE_BAR_H + 4).attr('y', line)
-                .attr('text-anchor', 'start')
+                .style('text-anchor', 'start')
                 .style('font', capFont).style('fill', ink).style('fill-opacity', 0.85)
                 .text(HEATMAP_NOT_ASSESSED);
         }
         line += FS + 4;
-        g.append('text').attr('x', x + PAD).attr('y', line).attr('text-anchor', 'start')
+        g.append('text').attr('x', x + PAD).attr('y', line).style('text-anchor', 'start')
             .style('font', capFont).style('fill', ink).style('fill-opacity', 0.85)
             .text(caption);
     }
@@ -47994,7 +48015,7 @@ function (root, d3, forester, phyloXml) {
             let gap = _state.nodeLabelGap;
             let flip = radialDisplay() && labelFlip(d);
             if (_state.circularDisplay && _radial) {
-                t.attr('text-anchor', flip ? 'end' : 'start')
+                t.style('text-anchor', flip ? 'end' : 'start')
                     .attr('x', flip ? -gap : gap).attr('dy', '0.32em');
                 if (_radialLabelsHorizontal) {
                     let p = radialXY(d.x, d.y);
@@ -48007,12 +48028,12 @@ function (root, d3, forester, phyloXml) {
             } else if (radialDisplay()) {
                 let r = radialRadius(far) - radialRadius(d.y) + gap;
                 t.attr('transform', 'rotate(' + labelAngleDeg(d) + ') translate(' + r + ',0)' + (flip ? ' rotate(180)' : ''))
-                    .attr('text-anchor', flip ? 'end' : 'start')
+                    .style('text-anchor', flip ? 'end' : 'start')
                     .attr('x', 0).attr('dy', '0.32em');
             } else {
                 let column = (_state.phylogram && _state.alignPhylogram) ? _w : far;
                 t.attr('transform', null)
-                    .attr('text-anchor', 'start')
+                    .style('text-anchor', 'start')
                     .attr('x', column - d.y + gap)
                     .attr('dy', (0.3 * fs) + 'px');
             }
@@ -49279,6 +49300,9 @@ function (root, d3, forester, phyloXml) {
         let svg = clockSvg(body, 'svg', 'aptx-clock-svg');
         svg.setAttribute('width', CLOCK_PLOT_W);
         svg.setAttribute('height', CLOCK_PLOT_H);
+        // inline as well: an attribute gives way to a page's rule for a bare "svg" (sizeTreeSvg)
+        svg.style.width = CLOCK_PLOT_W + 'px';
+        svg.style.height = CLOCK_PLOT_H + 'px';
         svg.setAttribute('viewBox', '0 0 ' + CLOCK_PLOT_W + ' ' + CLOCK_PLOT_H);
         svg.setAttribute('role', 'img');
         svg.setAttribute('aria-label', 'Clock plot: each tip\'s date against its divergence from the root');
@@ -49605,7 +49629,7 @@ function (root, d3, forester, phyloXml) {
             let t = clockSvg(cp.axes, 'text', cls);
             t.setAttribute('x', tx);
             t.setAttribute('y', ty);
-            t.setAttribute('text-anchor', anchor);
+            t.style.setProperty('text-anchor', anchor);
             t.textContent = s;
             return t;
         };
@@ -50398,8 +50422,8 @@ function (root, d3, forester, phyloXml) {
                 made[id] = true;
                 let grad = d3.select(defs).append('linearGradient').attr('id', id)
                     .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 1);
-                grad.append('stop').attr('offset', '0%').attr('stop-color', forester.domainLighten(base, 0.12));
-                grad.append('stop').attr('offset', '100%').attr('stop-color', forester.domainDarken(base, 0.10));
+                grad.append('stop').attr('offset', '0%').style('stop-color', forester.domainLighten(base, 0.12));
+                grad.append('stop').attr('offset', '100%').style('stop-color', forester.domainDarken(base, 0.10));
             }
             return 'url(#' + id + ')';
         }
@@ -50580,7 +50604,7 @@ function (root, d3, forester, phyloXml) {
             el.setAttribute('x', t.x);
             el.setAttribute('y', t.y);
             el.setAttribute('dy', '0.35em');
-            el.setAttribute('text-anchor', 'middle');
+            el.style.setProperty('text-anchor', 'middle');
             el.style.font = t.font;
             el.style.fill = t.fill;
             el.textContent = t.text;
@@ -51293,7 +51317,7 @@ function (root, d3, forester, phyloXml) {
             el.setAttribute('x', t.x);
             el.setAttribute('y', t.y);
             el.setAttribute('dy', '0.35em');
-            el.setAttribute('text-anchor', 'middle');
+            el.style.setProperty('text-anchor', 'middle');
             el.style.font = t.font;
             el.style.fill = t.fill;
             el.textContent = t.text;
@@ -51708,7 +51732,7 @@ function (root, d3, forester, phyloXml) {
         });
         g.append('text')
             .attr('x', x + (bar.px / 2)).attr('y', y - 6)
-            .attr('text-anchor', 'middle')
+            .style('text-anchor', 'middle')
             .style('font', fs + 'px ' + FONT_DEFAULTS)
             .style('fill', _state.labelColorDefault)
             .text(bar.label);
@@ -51787,8 +51811,8 @@ function (root, d3, forester, phyloXml) {
         function gridLineAt(x) {
             grid.append('line').attr('x1', x).attr('x2', x)
                 .attr('y1', 0).attr('y2', axisTop)
-                .attr('stroke', ink).attr('stroke-opacity', 0.18)
-                .attr('stroke-width', 1);
+                .style('stroke', ink).style('stroke-opacity', 0.18)
+                .style('stroke-width', 1);
         }
 
         let sc = info.type === 'calendar' ? -corr : corr;
@@ -51808,11 +51832,11 @@ function (root, d3, forester, phyloXml) {
                 let p1 = polarXY(a, radialRadius(x1));
                 el = g.append('line').attr('x1', p0[0]).attr('y1', p0[1])
                     .attr('x2', p1[0]).attr('y2', p1[1])
-                    .attr('stroke', fill).attr('stroke-width', thick);
+                    .style('stroke', fill).style('stroke-width', thick);
             } else {
                 el = g.append('rect').attr('x', Math.min(x0, x1)).attr('y', d.x - (thick / 2))
                     .attr('width', Math.max(1, Math.abs(x1 - x0))).attr('height', thick)
-                    .attr('fill', fill);
+                    .style('fill', fill);
             }
             el.datum(d).attr('class', cls);
         }
@@ -51831,7 +51855,7 @@ function (root, d3, forester, phyloXml) {
                 q = [x, d.x + 4];
             }
             g.append('line').attr('x1', p[0]).attr('y1', p[1]).attr('x2', q[0]).attr('y2', q[1])
-                .attr('stroke', FOSSIL_BAR_COLOR).attr('stroke-width', 1)
+                .style('stroke', FOSSIL_BAR_COLOR).style('stroke-width', 1)
                 .datum(d).attr('class', 'aptx-fossil-cap');
         }
 
@@ -51903,7 +51927,7 @@ function (root, d3, forester, phyloXml) {
             let left = Math.min(x0, x1);
             ax.append('rect').attr('x', left - 2).attr('y', axisTop - 4)
                 .attr('width', Math.abs(x1 - x0) + 4).attr('height', scaleAxisBottomReserve() + 4)
-                .attr('fill', _state.backgroundColorDefault);
+                .style('fill', _state.backgroundColorDefault);
         }
         if (info.type === 'geologic') {
             let rootAge = info.rootAge;
@@ -51944,11 +51968,11 @@ function (root, d3, forester, phyloXml) {
                     }
                     ax.append('rect').attr('x', left).attr('y', rowY)
                         .attr('width', w).attr('height', TIME_BAND_ROW_H)
-                        .attr('fill', iv.color)
-                        .attr('stroke', ink).attr('stroke-opacity', 0.5).attr('stroke-width', 0.5);
+                        .style('fill', iv.color)
+                        .style('stroke', ink).style('stroke-opacity', 0.5).style('stroke-width', 0.5);
                     if ((iv.name.length * 5.5) + 4 <= w) {
                         ax.append('text').attr('x', left + (w / 2)).attr('y', rowY + TIME_BAND_ROW_H - 3.5)
-                            .attr('text-anchor', 'middle')
+                            .style('text-anchor', 'middle')
                             .style('font-size', '9px')
                             .style('fill', forester.msaLetterInk(hexToRgbTriple(iv.color)))
                             .text(iv.name);
@@ -51959,7 +51983,7 @@ function (root, d3, forester, phyloXml) {
             let rulerY = axisTop + (2 * TIME_BAND_ROW_H) + 4;
             ax.append('line').attr('x1', xOfAge(rootAge)).attr('x2', xOfAge(youngBound))
                 .attr('y1', rulerY).attr('y2', rulerY)
-                .attr('stroke', ink).attr('stroke-width', 1);
+                .style('stroke', ink).style('stroke-width', 1);
             let labels = [];
             forester.maAxisTickValues(rootAge).forEach(function (v) {
                 if (v >= youngBound - 1e-9 && v <= rootAge + 1e-9) {
@@ -51979,7 +52003,7 @@ function (root, d3, forester, phyloXml) {
                 let x = xOfAge(l.age);
                 ax.append('line').attr('x1', x).attr('x2', x)
                     .attr('y1', rulerY).attr('y2', rulerY + 4)
-                    .attr('stroke', ink).attr('stroke-width', 1);
+                    .style('stroke', ink).style('stroke-width', 1);
                 let text = String(l.age);
                 let half = text.length * 2.8;
                 let ok = true;
@@ -51991,14 +52015,14 @@ function (root, d3, forester, phyloXml) {
                 }
                 if (ok || l.priority > 0) {
                     ax.append('text').attr('x', x).attr('y', rulerY + 14)
-                        .attr('text-anchor', 'middle')
+                        .style('text-anchor', 'middle')
                         .style('font-size', '9px').style('fill', ink)
                         .text(text);
                     placed.push(x);
                 }
             });
             ax.append('text').attr('x', xOfAge(youngBound) + 8).attr('y', rulerY + 14)
-                .attr('text-anchor', 'start')
+                .style('text-anchor', 'start')
                 .style('font-size', '9px').style('fill', ink)
                 .text('Ma');
         } else {
@@ -52027,18 +52051,18 @@ function (root, d3, forester, phyloXml) {
             let rulerY = axisTop + 4;
             ax.append('line').attr('x1', xOfYear(rootYear)).attr('x2', xOfYear(present))
                 .attr('y1', rulerY).attr('y2', rulerY)
-                .attr('stroke', ink).attr('stroke-width', 1);
+                .style('stroke', ink).style('stroke-width', 1);
             let lastRight = -Infinity;
             forester.calendarTickYears(rootYear, present).forEach(function (yv) {
                 let x = xOfYear(yv);
                 ax.append('line').attr('x1', x).attr('x2', x)
                     .attr('y1', rulerY).attr('y2', rulerY + 4)
-                    .attr('stroke', ink).attr('stroke-width', 1);
+                    .style('stroke', ink).style('stroke-width', 1);
                 let text = String(Math.round(yv));
                 let half = text.length * 2.8;
                 if ((x - half) >= lastRight + 4) {
                     ax.append('text').attr('x', x).attr('y', rulerY + 14)
-                        .attr('text-anchor', 'middle')
+                        .style('text-anchor', 'middle')
                         .style('font-size', '9px').style('fill', ink)
                         .text(text);
                     lastRight = x + half;
@@ -52132,15 +52156,15 @@ function (root, d3, forester, phyloXml) {
                 return;
             }
             behind.append('path').attr('d', ring.innerRadius(a).outerRadius(b)())
-                .attr('fill', iv.color).attr('fill-opacity', 0.35);
+                .style('fill', iv.color).style('fill-opacity', 0.35);
             named.push({r: (a + b) / 2, span: b - a, text: iv.name, color: iv.color});
         });
         if (grid) {
             ticks.forEach(function (t) {
                 let r = radiusOf(t.value);
                 if (r > r0 + 0.5 && r < r1 - 0.5) {
-                    grid.append('circle').attr('r', r).attr('fill', 'none')
-                        .attr('stroke', ink).attr('stroke-opacity', 0.18).attr('stroke-width', 1);
+                    grid.append('circle').attr('r', r).style('fill', 'none')
+                        .style('stroke', ink).style('stroke-opacity', 0.18).style('stroke-width', 1);
                 }
             });
         }
@@ -52159,7 +52183,7 @@ function (root, d3, forester, phyloXml) {
         let e0 = at(r0, 0);
         let e1 = at(r1, 0);
         ax.append('line').attr('x1', e0[0]).attr('y1', e0[1]).attr('x2', e1[0]).attr('y2', e1[1])
-            .attr('stroke', ink).attr('stroke-width', 1);
+            .style('stroke', ink).style('stroke-width', 1);
         // numbers on one side of the ruler, interval names on the other; the
         // headline value first, then the round ticks outward, none overlapping
         function label(r, off, text, fill, backdrop) {
@@ -52169,9 +52193,9 @@ function (root, d3, forester, phyloXml) {
             let w = text.length * 5.5;
             if (backdrop) {
                 t.append('rect').attr('x', -(w / 2) - 2).attr('y', -6).attr('width', w + 4).attr('height', 12)
-                    .attr('rx', 2).attr('fill', _state.backgroundColorDefault).attr('fill-opacity', 0.85);
+                    .attr('rx', 2).style('fill', _state.backgroundColorDefault).style('fill-opacity', 0.85);
             }
-            t.append('text').attr('text-anchor', 'middle').attr('dominant-baseline', 'central')
+            t.append('text').style('text-anchor', 'middle').style('dominant-baseline', 'central')
                 .style('font-size', '9px').style('fill', fill).text(text);
         }
         let side = flip ? -1 : 1;
@@ -52184,7 +52208,7 @@ function (root, d3, forester, phyloXml) {
             let c0 = at(r, -4);
             let c1 = at(r, 4);
             ax.append('line').attr('x1', c0[0]).attr('y1', c0[1]).attr('x2', c1[0]).attr('y2', c1[1])
-                .attr('stroke', ink).attr('stroke-width', 1);
+                .style('stroke', ink).style('stroke-width', 1);
             let half = t.text.length * 2.8;
             for (let i = 0; i < placed.length; ++i) {
                 if (Math.abs(placed[i] - r) < (half * 2) + 6) {
@@ -52258,8 +52282,8 @@ function (root, d3, forester, phyloXml) {
                 if (v > 0 && v < maxDist - 1e-9) {
                     grid.append('line').attr('x1', xOf(v)).attr('x2', xOf(v))
                         .attr('y1', 0).attr('y2', axisTop)
-                        .attr('stroke', ink).attr('stroke-opacity', 0.18)
-                        .attr('stroke-width', 1);
+                        .style('stroke', ink).style('stroke-opacity', 0.18)
+                        .style('stroke-width', 1);
                 }
             });
         }
@@ -52271,23 +52295,23 @@ function (root, d3, forester, phyloXml) {
         // opaque, as the time axis's, so tips panned under it do not show
         ax.append('rect').attr('x', x0 - 2).attr('y', axisTop - 4)
             .attr('width', (x1 - x0) + 4).attr('height', reserve + 4)
-            .attr('fill', _state.backgroundColorDefault);
+            .style('fill', _state.backgroundColorDefault);
         let rulerY = axisTop + 4;
         ax.append('line').attr('x1', x0).attr('x2', x1)
             .attr('y1', rulerY).attr('y2', rulerY)
-            .attr('stroke', ink).attr('stroke-width', 1);
+            .style('stroke', ink).style('stroke-width', 1);
         // every tick drawn, its number only where it clears the last one
         let lastRight = -Infinity;
         ticks.forEach(function (v) {
             let x = xOf(v);
             ax.append('line').attr('x1', x).attr('x2', x)
                 .attr('y1', rulerY).attr('y2', rulerY + 4)
-                .attr('stroke', ink).attr('stroke-width', 1);
+                .style('stroke', ink).style('stroke-width', 1);
             let text = String(v);
             let half = text.length * 2.8;
             if ((x - half) >= lastRight + 4) {
                 ax.append('text').attr('x', x).attr('y', rulerY + 14)
-                    .attr('text-anchor', 'middle')
+                    .style('text-anchor', 'middle')
                     .style('font-size', '9px').style('fill', ink)
                     .text(text);
                 lastRight = x + half;
@@ -52297,7 +52321,7 @@ function (root, d3, forester, phyloXml) {
             // past the ruler's end, and past the last number, which is
             // centred on that end
             ax.append('text').attr('x', Math.max(x1 + 8, lastRight + 6)).attr('y', rulerY + 14)
-                .attr('text-anchor', 'start')
+                .style('text-anchor', 'start')
                 .style('font-size', '9px').style('fill', ink)
                 .text(unit);
         }
@@ -52879,8 +52903,7 @@ function (root, d3, forester, phyloXml) {
                 _displayHeight = size.h;
                 // the canvas has to follow, or the layout is computed for one
                 // size and drawn on another
-                _baseSvg.attr('width', size.w);
-                _baseSvg.attr('height', size.h);
+                sizeTreeSvg(_baseSvg, size.w, size.h);
             }
         }
         // Where the user dragged the legend to is their choice; a resize is no
@@ -54769,9 +54792,11 @@ function (root, d3, forester, phyloXml) {
             case 'moon': body = glyphMoon(); break;
             default: throw new Error('unknown control-panel glyph: ' + kind);
         }
-        return '<svg class="aptx-glyph" viewBox="0 0 ' + w + ' 100" aria-hidden="true" focusable="false"'
+        // written as an svg file would be, its paint in attributes; paintInline
+        // makes inline styles of it, which no rule of a page outranks
+        return paintInline('<svg class="aptx-glyph" viewBox="0 0 ' + w + ' 100" aria-hidden="true" focusable="false"'
             + ' fill="none" stroke="currentColor" stroke-width="' + sw + '"'
-            + ' stroke-linecap="' + cap + '" stroke-linejoin="' + join + '">' + body + '</svg>';
+            + ' stroke-linecap="' + cap + '" stroke-linejoin="' + join + '">' + body + '</svg>');
     }
 
     // The desktop's UNCOLLAPSE_ALL glyph (ControlButtonIcon.paintUncollapse),
@@ -54788,6 +54813,214 @@ function (root, d3, forester, phyloXml) {
             + '<path d="M56,20 H94 M56,50 H94 M56,80 H94"/>';
     }
 
+    // ===================== A host page's stylesheet =====================
+    // The viewer is drawn inside somebody else's page, under that page's
+    // stylesheet, and a rule of the host's wins wherever this sheet says
+    // nothing. BV-BRC, 2026-10-09: ".Phylogeny svg { background:#FFFFFF }",
+    // written when the only svg in that widget was the tree, put a white box
+    // behind every icon of the panel. Measured after that, on pages nobody
+    // had tried: a page set in capitals, or centred, set the dialogs and the
+    // tooltip that way too; and under "* { box-sizing: border-box }", which
+    // most pages have, the tooltip came out 22 px narrower.
+    //
+    // So the sheet opens by saying what it used to leave unsaid. These rules
+    // come FIRST, and the general ones carry as little weight as will do:
+    // every rule after them still has the last word. What they cannot do is
+    // outrank a rule of the host's that is heavier still: one scoped by an
+    // id, or by more classes than the rule here has, or marked !important.
+    //
+    // test/browser/host_css.html launches the viewer under real host sheets
+    // and fails on any difference from a clean page. Something new that the
+    // viewer hangs on the page goes into HOST_PROOF_ROOTS, and through it.
+    const HOST_PROOF_ROOTS = ['.aptx-panel', '.aptx-dialog', '.aptx-node-menu', '.aptx-suggest', '.aptx-tip',
+        '.aptx-busy', '.aptx-msa-nav'];
+    // What paints a shape or sets a text, what shows or hides it, and what
+    // would animate it: the properties a page's rule for a bare "path", "rect"
+    // or "text" is likely to set. An svg ATTRIBUTE for one of these gives way
+    // to any such rule, so the viewer states them as inline styles, and its
+    // sheet says, for every shape of its svgs, "as a page that says nothing
+    // has it" -- which for most of them is what the shape's parent has, and
+    // so, in the end, what the svg itself has: the value beside each name,
+    // where a parent hands it down. (Without one: not handed down; or stated
+    // by the svg's own rule; or left to the page on purpose, as the cursor
+    // and whether the thing is shown at all.)
+    //
+    // It also means that an ATTRIBUTE for one of these, on a shape of the
+    // viewer's, no longer does anything, in any page: test/
+    // visualization_test.js holds the drawing code to that, and test/browser/
+    // host_css.html the page (with these rules taken out, nothing changes).
+    // Markup with its paint in attributes goes through paintInline.
+    //
+    // Not here, and still attributes: where a shape is and how large (x, y,
+    // d, r, transform), clip-path and mask.
+    const SHAPE_PAINT = {
+        'fill': '#000', 'fill-opacity': '1', 'fill-rule': 'nonzero',
+        'stroke': 'none', 'stroke-width': '1', 'stroke-opacity': '1', 'stroke-dasharray': 'none',
+        'stroke-dashoffset': '0', 'stroke-linecap': 'butt', 'stroke-linejoin': 'miter', 'stroke-miterlimit': '4',
+        'paint-order': 'normal', 'text-anchor': 'start', 'dominant-baseline': 'auto', 'shape-rendering': 'auto',
+        'vector-effect': null, 'stop-color': null, 'stop-opacity': null, 'opacity': null, 'filter': null,
+        'mix-blend-mode': null, 'display': null, 'visibility': null, 'cursor': null, 'pointer-events': null,
+        'color': null, 'font': null, 'letter-spacing': null, 'word-spacing': null, 'text-transform': null,
+        'text-decoration': null, 'text-shadow': null, 'text-rendering': null, 'white-space': null,
+        'transition': null, 'animation': null
+    };
+    // What of that paint a FILE states as attributes again (paintAsAttributes,
+    // for the SVG, PNG and PDF downloads). A file has no page to hold its
+    // ground against, and not every program that opens one reads a style as
+    // well as it reads an attribute: MuPDF takes a line's colour from a style
+    // and not its opacity, and drew the faint lines of a time axis at full
+    // strength. These are the paint properties SVG 1.1 has as attributes, and
+    // vector-effect, which every release wrote as one. (paint-order is SVG
+    // 2's: it stays the style it always was. So do the fonts.)
+    const FILE_PAINT = ['fill', 'fill-opacity', 'fill-rule', 'stroke', 'stroke-width', 'stroke-opacity',
+        'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit',
+        'text-anchor', 'dominant-baseline', 'shape-rendering', 'vector-effect', 'stop-color', 'stop-opacity',
+        'opacity'];
+    // The paints that are a colour, each with the attribute a colour's alpha
+    // goes to in a file. SVG 1.1 has no colour with an alpha and no
+    // "transparent", and a program that knows neither draws black: MuPDF put
+    // a black slab over a heat map (the surface it listens to the pointer
+    // with) and over every row of a legend, and a solid bar where a node's
+    // age interval is a translucent one.
+    const FILE_ALPHA = {'fill': 'fill-opacity', 'stroke': 'stroke-opacity', 'stop-color': 'stop-opacity'};
+    // every kind of element an svg of the viewer's is made of: the rule names
+    // them one by one, so that a browser never tries it on anything else
+    const SHAPE_ELEMENTS = ['g', 'path', 'line', 'rect', 'circle', 'ellipse', 'polygon', 'polyline', 'text', 'tspan',
+        'textPath', 'use', 'image', 'a', 'defs', 'mask', 'clipPath', 'linearGradient', 'radialGradient', 'stop',
+        'symbol', 'marker', 'pattern', 'title', 'desc'];
+    // Weight without rank. A selector made of element names alone weighs less
+    // than one class however many names it has, so eight names that are no
+    // element's, inside a ":not", make a rule outweigh every rule a page
+    // writes with element names only ("label", "fieldset > legend", "*"),
+    // whichever sheet came first, and still give way to any rule for a class.
+    const ELEMENT_WEIGHT = ':not(' + new Array(8).fill('aptx-none').join(' ') + ')';
+    // Where the browser's own focus ring is what shows the focus (the menus
+    // light the entry instead), and the controls there that draw their own.
+    const FOCUS_RING_ROOTS = ['.aptx-panel', '.aptx-dialog', '.aptx-msa-nav'];
+    // (Every rule of this sheet that sets an outline has its control here: the
+    // rule that gives the ring back outweighs them all, so one left out gets
+    // the browser's ring on top of its own. A colour swatch draws an outline
+    // under the pointer, and keeps the browser's ring otherwise.)
+    const OWN_FOCUS = ['.aptx-cp-hex', '.aptx-reps-input', '.aptx-reorder-row', '.aptx-reps-button',
+        '.aptx-msa-nav-jump', '.aptx-clampable', '.aptx-cp-sw:hover', 'input[type=text]', 'select'];
+
+    // Svg markup as a file has it, its paint in attributes, with that paint
+    // moved into inline styles: an attribute gives way to any rule of the page
+    // the markup is put in, and to the viewer's own "as a page that says
+    // nothing has it" (SHAPE_PAINT). The icons and the logo go through here.
+    // An attribute may say what a style may not: a font given piece by piece,
+    // a size without its unit.
+    function paintInline(markup) {
+        let names = Object.keys(SHAPE_PAINT).concat(['font-family', 'font-size', 'font-style', 'font-weight']);
+        let paint = new RegExp('\\s(' + names.join('|') + ')="([^"]*)"', 'g');
+        return markup.replace(/<([a-zA-Z]+)(\s[^<>]*?)(\/?)>/g, function (all, tag, attributes, closed) {
+            let styles = [];
+            let rest = attributes.replace(paint, function (attribute, name, value) {
+                let unitless = (name === 'font-size' || name === 'letter-spacing' || name === 'word-spacing')
+                    && /^-?[0-9.]+$/.test(value);
+                styles.push(name + ':' + value + (unitless ? 'px' : ''));
+                return '';
+            });
+            if (styles.length === 0) {
+                return all;
+            }
+            // a style the element already has is said after, and so still has the last word
+            let own = '';
+            rest = rest.replace(/\sstyle="([^"]*)"/, function (attribute, value) {
+                own = ';' + value;
+                return '';
+            });
+            return '<' + tag + rest + ' style="' + styles.join(';') + own + '"' + closed + '>';
+        });
+    }
+
+    function hostProofCss() {
+        let roots = HOST_PROOF_ROOTS.join(', ');
+        // (the weight: BV-BRC's rule is ".Phylogeny svg", exactly as heavy as "svg.aptx-tree")
+        let tree = 'svg.' + TREE_SVG_CLASS + ELEMENT_WEIGHT;
+        // Every root and all that is in it (":where" adds no weight), svgs
+        // apart: their shapes are drawn with attributes, which a rule saying
+        // "revert" would undo. The part about the element itself stands last,
+        // where a browser tries it first: a shape of the tree is turned away
+        // at "svg *". (Measured, a whole page's styles worked out again: 8 ms
+        // became 10 on a page of 20,000 elements around the viewer.)
+        let everything = ':where(' + roots + ')' + ELEMENT_WEIGHT
+            + ', :where(' + roots + ') :not(svg, svg *)' + ELEMENT_WEIGHT;
+        // Every shape of every svg of the viewer's: the tree's, the icons',
+        // the logo's, the clock plot's. With the weight of a class, as the
+        // svgs themselves: "rect:hover", "text:first-child" and ".chart text"
+        // all weigh one class and an element. So a rule of this sheet for a
+        // shape names two classes (".aptx-dialog .aptx-clock-grid"), or it
+        // loses to this one.
+        let svgs = ':is(svg.' + TREE_SVG_CLASS + ', ' + HOST_PROOF_ROOTS.map(function (r) {
+            return r + ' svg';
+        }).join(', ') + ')';
+        let shapes = SHAPE_ELEMENTS.map(function (element) {
+            return svgs + ' ' + element + ELEMENT_WEIGHT;
+        }).join(', ');
+        let properties = Object.keys(SHAPE_PAINT);
+        // where a shape's paint starts from, for what it does not state: said on the svg
+        let start = properties.filter(function (name) {
+            return SHAPE_PAINT[name] !== null;
+        }).map(function (name) {
+            return name + ':' + SHAPE_PAINT[name] + ';';
+        }).join(' ');
+        return ''
+            // 1. Everything starts from the browser's own defaults, as in a
+            //    page that says nothing: a reset's "* { box-sizing:border-box }"
+            //    or "button { font: inherit }", a framework's "label { font-
+            //    weight: 700 }". In a page that does say nothing this rule
+            //    changes nothing; and every rule of this sheet for a class,
+            //    here or below, still wins (ELEMENT_WEIGHT).
+            + everything + ' { all:revert; }'
+            //    An svg's own element likewise (its shapes are left alone),
+            //    and with the weight of a class: BV-BRC's rule was a class of
+            //    the page's and "svg". So an svg of the viewer's states its
+            //    size in the sheet or inline, never as attributes alone, and
+            //    its own rule names two classes (or it loses to this one).
+            + ':is(' + roots + ') svg' + ELEMENT_WEIGHT + ' { all:revert; ' + start + ' }'
+            //    And a shape of an svg, in what paints it (SHAPE_PAINT): it
+            //    states that inline, so what a page says of a "path" or a
+            //    "text" is set aside for what the browser has, which for most
+            //    of these is what the shape's parent has.
+            + shapes + ' { ' + properties.join(':revert; ') + ':revert; }'
+            //    Bootstrap 3 names tick boxes by their type, which outweighs
+            //    the rule above: the one tick box here that states no margin
+            //    of its own keeps the browser's, and a disabled one its cursor.
+            + '.aptx-dialog .aptx-reorder-check { margin:revert; }'
+            + '.aptx-dialog input[type=checkbox]:disabled, .aptx-dialog input[type=radio]:disabled { cursor:default; }'
+            // 2. What a page hands down by inheritance stops at each root. The
+            //    values are the ones a page that says nothing has; a root's
+            //    own rule, further down, states its font, size and colour.
+            //    (Left to the page on purpose: direction, cursor, visibility,
+            //    pointer-events.)
+            + roots + ', ' + tree + ' {'
+            + '  color-scheme:light; accent-color:auto; caret-color:auto;'
+            + '  font:400 11px system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;'
+            + '  letter-spacing:normal; word-spacing:normal; text-align:start; text-align-last:auto; text-indent:0;'
+            + '  text-transform:none; text-shadow:none; text-rendering:auto;'
+            + '  -webkit-text-size-adjust:auto; text-size-adjust:auto;'
+            + '  white-space:normal; word-break:normal; overflow-wrap:normal; hyphens:manual; tab-size:8;'
+            + '  quotes:auto; list-style:disc outside none; }'
+            // 3. The tree's own svg. Its shapes carry their paint inline; what
+            //    they inherit, and what a rule for a bare "svg" would set, is
+            //    said here. (Its width, height and font are inline: they are
+            //    the file's as well as the page's, see sizeTreeSvg and where
+            //    the svg is made. The background is the viewer's own rect.)
+            //    border-box, so that a border a page gives it on purpose fits
+            //    inside the size stated, in a page with a reset and without.
+            //    Nor does it move as a page's "* { transition: all .3s }" would
+            //    have it: the tree is redrawn frame by frame.
+            + tree + ' { color:#000; background:none; max-width:none; box-sizing:border-box;'
+            + '  vertical-align:baseline; transition:none; animation:none; ' + start + ' }'
+            // "node" is every d3 example's class as well: ".node { font: 10px sans-serif; cursor: pointer }"
+            + tree + ' g.node { font:inherit; cursor:inherit; }'
+            // 4. The browser's own focus ring, back on whatever does not draw
+            //    one of its own: ":focus { outline:0 }" is in many a sheet.
+            + ':is(' + FOCUS_RING_ROOTS.join(', ') + ') :focus-visible:not(' + OWN_FOCUS.join(', ') + ')'
+            + ' { outline:revert; outline-offset:revert; }';
+    }
+
     function injectPanelStyles() {
         loadPanelTheme();
         if (document.getElementById(PANEL_STYLE_ID)) {
@@ -54799,7 +55032,7 @@ function (root, d3, forester, phyloXml) {
             + '  --p-line:#27343f; --p-line-strong:#35434f; --p-surface2:#202d38;'
             + '  --p-accent:#57a6ff; --p-accent-ink:#9cc7ff; --p-accent-weak:rgba(87,166,255,0.18);'
             + '  --p-shadow-sm:0 1px 2px rgba(0,0,0,0.4);';
-        let css = ''
+        let css = hostProofCss()
             + '.aptx-panel {'
             + '  --p-bg: rgba(255,255,255,0.86); --p-ink:#1e2a35; --p-muted:#6b7a89; --p-faint:#93a3b2; --p-warn:#b15a0b;'
             + '  --p-line:#e3e9f0; --p-line-strong:#cad6e1; --p-surface2:#f3f6fa;'
@@ -54995,7 +55228,8 @@ function (root, d3, forester, phyloXml) {
             + '.aptx-reps { line-height:1.35; }'
             + '.aptx-reps-lead { margin:0 0 4px; }'
             + '.aptx-reps-choice { display:flex; align-items:center; gap:6px; padding:2px 0; cursor:pointer; }'
-            + '.aptx-reps-choice input { accent-color:var(--p-accent); width:13px; height:13px; margin:0; flex:none; }'
+            // (".aptx-dialog": Bootstrap 3's rule for a tick box weighs as much as ".aptx-reps-choice input")
+            + '.aptx-dialog .aptx-reps-choice input { accent-color:var(--p-accent); width:13px; height:13px; margin:0; flex:none; }'
             + '.aptx-reps-disabled { color:var(--p-faint); cursor:default; }'
             + '.aptx-reps-input { display:block; box-sizing:border-box; width:100%; font:inherit; color:var(--p-ink);'
             + '  background:var(--p-surface2); border:1px solid var(--p-line-strong); border-radius:6px; padding:4px 7px; }'
@@ -55044,18 +55278,18 @@ function (root, d3, forester, phyloXml) {
             // node's in the tree and is set on the point itself
             + '.aptx-dialog-drag { cursor:move; touch-action:none; user-select:none; -webkit-user-select:none; }'
             + '.aptx-clock.aptx-dialog-body { overflow:visible; }'
-            + '.aptx-clock-svg { display:block; touch-action:none; user-select:none; -webkit-user-select:none; }'
-            + '.aptx-clock-svg text { font-size:10px; fill:var(--p-muted); font-variant-numeric:tabular-nums; }'
-            + '.aptx-clock-svg text.aptx-clock-title { font-size:10.5px; fill:var(--p-ink); }'
-            + '.aptx-clock-ground { fill:var(--p-surface2); }'
-            + '.aptx-clock-grid { stroke:var(--p-line); stroke-width:1; shape-rendering:crispEdges; }'
-            + '.aptx-clock-frame { stroke:var(--p-line-strong); stroke-width:1; shape-rendering:crispEdges; }'
-            + '.aptx-clock-line { stroke:var(--p-accent); stroke-width:1.6; }'
-            + '.aptx-clock-internal circle { fill:var(--p-faint); fill-opacity:0.55; }'
-            + '.aptx-clock-tips circle { fill:var(--p-ink); fill-opacity:0.8; }'
-            + '.aptx-clock-svg circle.aptx-clock-hit { fill-opacity:1; stroke-width:1.2; }'
-            + '.aptx-clock-ring { fill:none; stroke:var(--p-accent); stroke-width:1.8; pointer-events:none; }'
-            + '.aptx-clock-box { fill:var(--p-accent-weak); stroke:var(--p-accent); stroke-width:1;'
+            + '.aptx-dialog .aptx-clock-svg { display:block; touch-action:none; user-select:none; -webkit-user-select:none; }'
+            + '.aptx-dialog .aptx-clock-svg text { font-size:10px; fill:var(--p-muted); font-variant-numeric:tabular-nums; }'
+            + '.aptx-dialog .aptx-clock-svg text.aptx-clock-title { font-size:10.5px; fill:var(--p-ink); }'
+            + '.aptx-dialog .aptx-clock-ground { fill:var(--p-surface2); }'
+            + '.aptx-dialog .aptx-clock-grid { stroke:var(--p-line); stroke-width:1; shape-rendering:crispEdges; }'
+            + '.aptx-dialog .aptx-clock-frame { stroke:var(--p-line-strong); stroke-width:1; shape-rendering:crispEdges; }'
+            + '.aptx-dialog .aptx-clock-line { stroke:var(--p-accent); stroke-width:1.6; }'
+            + '.aptx-dialog .aptx-clock-internal circle { fill:var(--p-faint); fill-opacity:0.55; }'
+            + '.aptx-dialog .aptx-clock-tips circle { fill:var(--p-ink); fill-opacity:0.8; }'
+            + '.aptx-dialog .aptx-clock-svg circle.aptx-clock-hit { fill-opacity:1; stroke-width:1.2; }'
+            + '.aptx-dialog .aptx-clock-ring { fill:none; stroke:var(--p-accent); stroke-width:1.8; pointer-events:none; }'
+            + '.aptx-dialog .aptx-clock-box { fill:var(--p-accent-weak); stroke:var(--p-accent); stroke-width:1;'
             + '  shape-rendering:crispEdges; pointer-events:none; }'
             + '.aptx-clock-options { display:flex; align-items:center; gap:14px; margin:6px 0 8px; }'
             + '.aptx-clock-options .aptx-clock-deselect { margin-left:auto; height:22px; padding:0 9px; }'
@@ -55121,7 +55355,7 @@ function (root, d3, forester, phyloXml) {
             + '.aptx-about .aptx-dialog-key { flex-basis:31%; }'
             + '.aptx-about-head { display:flex; align-items:center; gap:12px; margin-bottom:10px; }'
             + '.aptx-about-logo { flex:none; width:56px; height:56px; }'
-            + '.aptx-about-logo svg { width:100%; height:100%; display:block; }'
+            + '.aptx-dialog .aptx-about-logo svg { width:100%; height:100%; display:block; }'
             + '.aptx-about-name { font-size:15px; font-weight:650; letter-spacing:-0.01em; }'
             + '.aptx-about-version { color:var(--p-muted); }'
             + '.aptx-about-blurb { margin:0 0 11px; color:var(--p-muted); }'
@@ -55147,6 +55381,7 @@ function (root, d3, forester, phyloXml) {
             + '.aptx-panel legend { float:none; width:auto; padding:0; margin:0 0 5px; font-size:9px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:var(--p-faint); }'
             + '.aptx-panel label { cursor:pointer; }'
             + '.aptx-panel input[type=checkbox],.aptx-panel input[type=radio] { accent-color:var(--p-accent); width:13px; height:13px; vertical-align:-2px; margin:0 4px 0 0; }'
+            + '.aptx-panel input[type=checkbox]:disabled,.aptx-panel input[type=radio]:disabled { cursor:default; }'
             // checkbox/radio + label as one item (used by the Display Data grid and the inline P/A/C and search-option rows)
             // every item carries an invisible box, so the one that lights up
             // (Auto-hide Labels while it is hiding) does not shift its neighbours
@@ -55234,9 +55469,9 @@ function (root, d3, forester, phyloXml) {
             + '.aptx-panel .aptx-searchnav { align-items:center; gap:4px; margin:2px 0 4px; }'
             + '.aptx-panel .aptx-searchnav span { flex:1 1 auto; text-align:center; font-weight:600; font-size:11px; color:var(--p-ink); }'
             + '.aptx-panel .aptx-searchnav .aptx-gbtn:last-child { margin-right:0; }'
-            + '.aptx-found-halo { opacity:' + HALO_REST_OPACITY + '; transform-box:fill-box; transform-origin:center; animation:aptx-halo-pulse 1.3s ease-in-out infinite; }'
+            + 'svg.' + TREE_SVG_CLASS + ' .aptx-found-halo { opacity:' + HALO_REST_OPACITY + '; transform-box:fill-box; transform-origin:center; animation:aptx-halo-pulse 1.3s ease-in-out infinite; }'
             + '@keyframes aptx-halo-pulse { 0%,100% { transform:scale(1); opacity:' + HALO_REST_OPACITY + '; } 50% { transform:scale(2.5); opacity:0.12; } }'
-            + '@media (prefers-reduced-motion: reduce) { .aptx-found-halo { animation:none; } }'
+            + '@media (prefers-reduced-motion: reduce) { svg.' + TREE_SVG_CLASS + ' .aptx-found-halo { animation:none; } }'
             + '.aptx-panel .aptx-zoomgrid { display:flex; flex-direction:column; align-items:stretch; }'
             + '.aptx-panel .aptx-zoomgrid > input[type=button] { width:100%; margin-right:0; }'
             + '.aptx-panel .aptx-zoomrow { display:flex; }'
@@ -56933,7 +57168,7 @@ function (root, d3, forester, phyloXml) {
         head.className = 'aptx-about-head';
         let logo = document.createElement('div');
         logo.className = 'aptx-about-logo';
-        logo.innerHTML = ARCHAEOPTERYX_LOGO_SVG;
+        logo.innerHTML = paintInline(ARCHAEOPTERYX_LOGO_SVG);
         head.appendChild(logo);
 
         let titles = document.createElement('div');
@@ -58268,7 +58503,7 @@ function (root, d3, forester, phyloXml) {
             .attr('height', '100%')
             .style('opacity', 1)
             .attr('class', BASE_BACKGROUND)
-            .attr('fill', _state.backgroundColorDefault);
+            .style('fill', _state.backgroundColorDefault);
     }
 
 
@@ -58474,6 +58709,19 @@ function (root, d3, forester, phyloXml) {
         return _baseSvg ? _baseSvg.node() : null;
     }
 
+    // The tree svg's size, said twice. The attributes are what an export and
+    // the layout read; but an attribute gives way to any rule of the page the
+    // viewer is drawn in: under "svg { width: 24px; height: 24px }", a page
+    // whose only svgs were icons, the tree was 24 px square. (A rule that says
+    // "height: auto" changes nothing: the attributes still give the svg its
+    // own size.) The inline style does not give way.
+    function sizeTreeSvg(svg, w, h) {
+        svg.attr('width', w)
+            .attr('height', h)
+            .style('width', w + 'px')
+            .style('height', h + 'px');
+    }
+
     // An export is always light, whatever the screen is set to: a dark PNG or
     // SVG is wrong on paper, in a slide and in a paper figure, and it is the
     // file that outlives the session. Only the four theme colours are swapped,
@@ -58517,6 +58765,15 @@ function (root, d3, forester, phyloXml) {
     }
 
     function cleanExportCopy(copy) {
+        // What the live svg carries only for the page it is drawn in (its
+        // class, its size said a second time): a file has no page, and an
+        // inline size would hold a full-size drawing to the window's.
+        copy.classList.remove(TREE_SVG_CLASS);
+        if (!copy.getAttribute('class')) {
+            copy.removeAttribute('class');
+        }
+        copy.style.removeProperty('width');
+        copy.style.removeProperty('height');
         // Serialize a COPY with the overview taken out of it: the overview is
         // an on-screen navigation aid, not part of the tree, and working on a
         // copy leaves the live display untouched.
@@ -58533,7 +58790,57 @@ function (root, d3, forester, phyloXml) {
         if (glow) {
             glow.remove();
         }
-        return copy;
+        return paintAsAttributes(copy);
+    }
+
+    // The opposite of paintInline, for a file: a shape's paint, inline styles
+    // on the page, is attributes again (FILE_PAINT). Where an element says a
+    // thing both ways, the style is what painted it and has the last word.
+    function paintAsAttributes(svg) {
+        [svg].concat(Array.prototype.slice.call(svg.querySelectorAll('[style]'))).forEach(function (el) {
+            let style = el.style;
+            if (!style) {
+                return;
+            }
+            FILE_PAINT.forEach(function (name) {
+                let value = style.getPropertyValue(name);
+                if (value !== '') {
+                    // (the browser writes url("#id"); an attribute has no quotes there)
+                    el.setAttribute(name, value.replace(/^url\("([^"]*)"\)$/, 'url($1)'));
+                    style.removeProperty(name);
+                }
+            });
+            if (style.length === 0) {
+                el.removeAttribute('style');
+            }
+        });
+        // A colour with an alpha is the colour and, in the paint's own
+        // opacity, the alpha times what the shape has of it already, stated
+        // or handed down; a paint that is no paint at all is "none". Only on
+        // a shape: an opacity stated on a group would reach the shapes in it
+        // that have a colour of their own.
+        Array.prototype.slice.call(svg.querySelectorAll('[fill], [stroke], [stop-color]')).forEach(function (el) {
+            let holdsShapes = Array.prototype.some.call(el.children, function (child) {
+                return child.localName !== 'title' && child.localName !== 'desc';
+            });
+            Object.keys(FILE_ALPHA).forEach(function (paint) {
+                let c = el.hasAttribute(paint) ? d3.color(el.getAttribute(paint)) : null;
+                if (!c || !(c.opacity < 1) || holdsShapes) {
+                    return;
+                }
+                let opacity = FILE_ALPHA[paint];
+                if (c.opacity === 0 && paint !== 'stop-color') {
+                    el.setAttribute(paint, 'none');
+                    return;
+                }
+                // (a gradient's stop hands nothing down, and is handed nothing)
+                let from = paint === 'stop-color' ? (el.hasAttribute(opacity) ? el : null) : el.closest('[' + opacity + ']');
+                let has = from ? parseFloat(from.getAttribute(opacity)) : 1;
+                el.setAttribute(paint, c.copy({opacity: 1}).formatRgb());
+                el.setAttribute(opacity, String(+(c.opacity * (isNaN(has) ? 1 : has)).toFixed(4)));
+            });
+        });
+        return svg;
     }
 
     // The same element of the copy as `live` is of the svg: children are
@@ -59376,4 +59683,4 @@ function (root, d3, forester, phyloXml) {
     root.d3 = legacyD3;
   }
 })(window);
-// bundle2 inputs: a129318cba8cd65a207a75a688d613c4dac7f0a57d464a5fc26d35d1de575cb3
+// bundle2 inputs: 0579410c47ff8894c2f2a320094cdf3f36f105c1671540a07a00aeca4d270c35
