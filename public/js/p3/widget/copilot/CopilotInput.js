@@ -1089,8 +1089,9 @@ define([
         // card.  Runs ONE turn in execute mode (execute_once) without
         // changing the session's Plan/Execute toggle — "allow once", not
         // "allow always".  The canned follow-up is pinned to the agent
-        // that was blocked so the router cannot send it elsewhere; the
-        // prepared inputs are already in the conversation history.
+        // that was blocked; the gateway re-pins it to the service agent,
+        // which replays the card's blocked_actions verbatim (no LLM
+        // rebuild of the inputs).
         this._topicHandles.push(topic.subscribe('CopilotExecutionModeRun', lang.hitch(this, function(data) {
           if (!data) { return; }
           if (data.sessionId && this.sessionId && data.sessionId !== this.sessionId) { return; }
@@ -1099,7 +1100,11 @@ define([
             return;
           }
           this._setInputTextValue(this._buildExecuteRunMessage(data.blocked_actions));
-          this._handleSubmitStream({ target_agent: data.agent || null, execute_once: true });
+          this._handleSubmitStream({
+            target_agent: data.agent || null,
+            execute_once: true,
+            replay_actions: data.blocked_actions || null
+          });
         })));
 
         // 3. CopilotPlanExecuteNext — execute the next step in plan
@@ -2026,6 +2031,8 @@ define([
      *   (used by the execution_blocked card's run button).
      * @param {boolean} [submitOpts.execute_once] - Run this one turn in
      *   execute mode without changing the session toggle.
+     * @param {Array} [submitOpts.replay_actions] - With execute_once: the
+     *   card's blocked_actions, replayed verbatim by the service agent.
      */
     _handleSubmitStream: function(submitOpts) {
       submitOpts = submitOpts || {};
@@ -2160,6 +2167,9 @@ define([
       }
       if (submitOpts.execute_once) {
         params.execute_once = true;
+      }
+      if (submitOpts.execute_once && Array.isArray(submitOpts.replay_actions) && submitOpts.replay_actions.length > 0) {
+        params.replay_actions = submitOpts.replay_actions;
       }
 
       if (hasUploadedImage) {

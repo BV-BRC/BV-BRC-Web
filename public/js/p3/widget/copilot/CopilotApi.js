@@ -292,6 +292,11 @@ define([
             if (params.execute_once === true) {
                 data.execute_once = true;
             }
+            // "Submit this job": the refused calls, run verbatim by the
+            // service agent (the gateway checks them against the stored card).
+            if (Array.isArray(params.replay_actions) && params.replay_actions.length > 0) {
+                data.replay_actions = params.replay_actions;
+            }
             var streamEndpoint = this.apiUrlBase + '/copilot-agent';
 
             // Create abort controller for this request
