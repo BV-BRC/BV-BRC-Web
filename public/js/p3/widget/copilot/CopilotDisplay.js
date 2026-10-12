@@ -626,7 +626,7 @@ define([
         }
 
         // Capture additional error details for display (only for non-disconnect errors)
-        if (!isStreamDisconnect && (error.response || error.status || error.statusText || error.stack)) {
+        if (!isStreamDisconnect && !error.noReload && (error.response || error.status || error.statusText || error.stack)) {
           errorDetails = {
             status: error.status || (error.response && error.response.status),
             statusText: error.statusText || (error.response && error.response.statusText),
@@ -660,13 +660,18 @@ define([
         }, errorContainer);
       }
 
+      // Scroll the error into view so the user notices it
+      this.resultContainer.scrollTop = this.resultContainer.scrollHeight;
+
+      // A notice, not a failure (e.g. TURN_IN_FLIGHT): nothing to reload.
+      if (error && error.noReload) {
+        return;
+      }
+
       var reloadButton = domConstruct.create('button', {
         innerHTML: 'Reload Session',
         class: 'copilot-error-reload-button'
       }, errorContainer);
-
-      // Scroll the error into view so the user notices it
-      this.resultContainer.scrollTop = this.resultContainer.scrollHeight;
 
       on(reloadButton, 'click', lang.hitch(this, function() {
         // If we have a session ID, reload it; otherwise start new chat

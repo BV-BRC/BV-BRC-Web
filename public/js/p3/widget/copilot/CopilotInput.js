@@ -2243,12 +2243,26 @@ define([
               }
           },
           (error) => {
+              // Another turn is still running in this chat (gateway 409).
+              // Nothing was sent: take the message back out of the chat, give
+              // the text back, and show the notice without "Reload Session".
+              var turnInFlight = !!(error && error.code === 'TURN_IN_FLIGHT');
+              if (turnInFlight) {
+                  this.chatStore.removeMessage(userMessage.message_id);
+                  this.displayWidget.showMessages(this.chatStore.query());
+                  if (!submitOpts.execute_once && !this.textArea.get('value')) {
+                      this._setInputTextValue(inputText);
+                  }
+                  error.noReload = true;
+              }
               topic.publish('CopilotApiError', { error: error });
               this.displayWidget.hideLoadingIndicator();
               this.isSubmitting = false;
               this.isQueryProgressActive = false;
               this.submitButton.set('disabled', false);
               this._updateStopButtonState();
+              // The other turn is still running: keep its busy chip.
+              if (turnInFlight) { return; }
               // Errors that pre-empt the turn locally shouldn't clear the chip.
               // The gateway may still be running; the poll is the source of truth.
               if (error && error.isStreamDisconnect) {
