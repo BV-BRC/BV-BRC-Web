@@ -196,6 +196,8 @@ define([
                     if (!this._chatContainer) { return; }
 
                     this._copilotApi.getSessionMessages(savedSessionId).then(lang.hitch(this, function (res) {
+                        // Skip if the user already moved on (New Chat, another session).
+                        if (!this._chatContainer || this._chatContainer.sessionId !== savedSessionId) { return; }
                         var messages = [];
                         if (res && Array.isArray(res.messages)) {
                             if (res.messages.length > 0 && Array.isArray(res.messages[0] && res.messages[0].messages)) {

@@ -222,11 +222,15 @@ define([
 
             this.own(topic.subscribe('RefreshSession', lang.hitch(this, function(sessionId, scrollToBottom = true) {
                 if (!this._active) { return; }
-                // Only refresh if the published session matches our current session
-                if (sessionId && this.sessionId && sessionId !== this.sessionId) { return; }
+                // Refresh only the session on screen.  The sidebar poller
+                // publishes this when ANY session's background turn ends; the
+                // old guard let it through whenever either id was empty.
+                if (!sessionId || !this.sessionId || sessionId !== this.sessionId) { return; }
                 this.copilotApi.getSessionMessages(sessionId).then(lang.hitch(this, function(res) {
-                    console.log('[DEBUG] RefreshSession - Full response:', res);
-                    console.log('[DEBUG] RefreshSession - res.workflow_ids:', res.workflow_ids);
+                    // The user may have switched (e.g. New Chat) while this was
+                    // in flight; rendering now would show the old session's
+                    // messages under the new session id (mshukla, 2026-10-09).
+                    if (sessionId !== this.sessionId) { return; }
                     var messages = [];
                     if (Array.isArray(res.messages)) {
                         if (res.messages.length > 0 && Array.isArray(res.messages[0] && res.messages[0].messages)) {
@@ -665,11 +669,6 @@ define([
          * @param {string} sessionId New session identifier
          */
         changeSessionId: function(sessionId) {
-            console.warn('[ChatSessionContainer] changeSessionId called',
-                { newSessionId: sessionId, previousSessionId: this._previousSessionId || null,
-                  hasActiveStream: !!(this.copilotApi && this.copilotApi.currentAbortController),
-                  isSubmitting: !!(this.inputWidget && this.inputWidget.isSubmitting) });
-            console.trace('[ChatSessionContainer] changeSessionId caller');
             this.sessionId = sessionId;
             // Do not add the session to the sessions store here; it will be added after the first successful message.
 

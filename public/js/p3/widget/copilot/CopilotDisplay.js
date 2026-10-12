@@ -686,7 +686,9 @@ define([
           }, this.resultContainer);
 
           // Reload session messages
-          this.copilotApi.getSessionMessages(this.sessionId).then(lang.hitch(this, function(res) {
+          var reloadSessionId = this.sessionId;
+          this.copilotApi.getSessionMessages(reloadSessionId).then(lang.hitch(this, function(res) {
+            if (reloadSessionId !== this.sessionId) { return; }
             var messages = [];
             if (res && Array.isArray(res.messages)) {
               if (res.messages.length > 0 && Array.isArray(res.messages[0] && res.messages[0].messages)) {

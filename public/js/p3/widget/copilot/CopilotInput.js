@@ -2015,8 +2015,13 @@ define([
        */
       _finishNewChat: function(generateTitleImmediately, sessionId) {
         if (typeof generateTitleImmediately === 'undefined') { generateTitleImmediately = true; }
-        this.new_chat = false;
-        this.session_registered = true;
+        // These flags belong to the session on screen.  A turn from an
+        // earlier session finishing after New Chat must not clear the new
+        // session's flags (its first send would skip registration/title).
+        if (!sessionId || sessionId === this.sessionId) {
+          this.new_chat = false;
+          this.session_registered = true;
+        }
 
         if (generateTitleImmediately && sessionId) {
           setTimeout(function() {
