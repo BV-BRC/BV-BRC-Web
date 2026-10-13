@@ -167,6 +167,19 @@ jobs:
             echo "4. Merge this PR when ready"
             echo
             echo "*After merging, a tag will be created and the changes cherry-picked to alpha and beta.*"
+            echo
+            echo "### If this fix already exists on alpha or beta"
+            echo
+            echo "Add the originating commit to **this PR description** as a trailer:"
+            echo
+            echo '```'
+            echo "Cherry-picked-from: <sha on alpha/beta>"
+            echo '```'
+            echo
+            echo "The propagation step reads it from the merge commit and skips any branch"
+            echo "that already contains that commit. Without it the cherry-pick is attempted"
+            echo "backwards -- and if the master copy was adapted for this lane, applying it"
+            echo "to the newer branch reverts the adaptation."
           } > /tmp/hotfix-body.md
 
           gh pr create --base master --head "hotfix/v${VERSION}" \
