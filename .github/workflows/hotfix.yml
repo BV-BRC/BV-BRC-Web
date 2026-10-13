@@ -98,7 +98,9 @@ jobs:
               console.error("Refusing to release " + version + ": alpha is at " + alpha + ".");
               console.error("");
               console.error("The hotfix version must be strictly below alpha, so that the");
-              console.error("number cannot collide with alpha's next release. Bump alpha to a");
+              // No apostrophes in this script: the whole thing is a single-quoted
+              // shell word, and one would close it and break the step at parse time.
+              console.error("number cannot collide with the next alpha release. Bump alpha to a");
               console.error("new version line first (Release workflow, minor), then re-run.");
               process.exit(1);
             }
