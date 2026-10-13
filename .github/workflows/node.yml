@@ -30,6 +30,13 @@ jobs:
         with:
           submodules: recursive
 
+      # Before npm ci, so it still runs if the install breaks. The release and
+      # hotfix workflows are dispatched by hand and never exercised on a PR, so
+      # a shell syntax error in one of them otherwise surfaces only when it is
+      # needed. No dependencies -- plain node plus bash -n.
+      - name: Workflow shell syntax
+        run: node .github/scripts/check-workflow-shell.js
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
