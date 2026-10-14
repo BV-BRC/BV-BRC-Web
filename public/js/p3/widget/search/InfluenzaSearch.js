@@ -193,7 +193,6 @@ define([
       var facetBindings = [
         ['genome', 'host_common_name', 'hostNameNode', fluCondition],
         ['genome', 'geographic_group', 'geographicGroupNode', fluCondition],
-        ['genome', 'isolation_country', 'isolationCountryNode', fluCondition],
         ['genome', 'state_province', 'stateProvinceNode', fluCondition],
         ['genome', 'subtype', 'fullSubtypeNode', fluACondition],
         ['genome', 'subtype', 'fluBSubtypeNode', fluBCondition],
@@ -221,8 +220,14 @@ define([
       setupCalendarPopup(this.submissionDateFromCalendarIcon, this.submissionDateFromNode);
       setupCalendarPopup(this.submissionDateToCalendarIcon, this.submissionDateToNode);
 
+      // ===== Countries follow the selected continent =====
+      this.geographicGroupNode.on('change', lang.hitch(this, function () {
+        this._updateStateVisibility();
+        this._updateCountryOptions();
+      }));
+      this._updateCountryOptions();
+
       // ===== State field visibility (US only) =====
-      this.geographicGroupNode.on('change', lang.hitch(this, '_updateStateVisibility'));
       this.isolationCountryNode.on('change', lang.hitch(this, '_updateStateVisibility'));
 
       // ===== Clade visibility based on H subtype =====
@@ -560,6 +565,41 @@ define([
       this.h3CladeNode.set('value', '');
       this.h5CladeNode.set('value', '');
       this.subcladeNode.set('value', '');
+    },
+
+    _updateCountryOptions: function () {
+      var continent = this.geographicGroupNode.get('value') || '';
+      var countryNode = this.isolationCountryNode;
+      var value = countryNode.get('value');
+      var isMulti = Array.isArray(value);
+      var selected = isMulti ? value.slice() : (value ? [value] : []);
+      var input = countryNode.searchBox || countryNode;
+      var requestId = this._countryRequestId = (this._countryRequestId || 0) + 1;
+      var condition = '(' + buildTaxonCondition(['A', 'B', 'C', 'D']) + ')';
+      if (continent) {
+        var escaped = continent.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        condition += ' AND geographic_group:"' + escaped + '"';
+      }
+
+      // Remove stale choices while loading so a new continent cannot be
+      // submitted together with countries from the previous continent.
+      countryNode.set('value', isMulti ? [] : '');
+      countryNode.set('store', new Memory({ data: [] }));
+      input.set('placeHolder', 'Loading countries...');
+      return storeBuilder('genome', 'isolation_country', condition).then(lang.hitch(this, function (store) {
+        if (this._destroyed || requestId !== this._countryRequestId) return;
+        countryNode.set('store', store);
+        var retained = selected.filter(function (country) {
+          return !!store.get(country);
+        });
+        countryNode.set('value', isMulti ? retained : (retained[0] || ''));
+        input.set('placeHolder', isMulti ? 'Add countries' : 'Any');
+        this._updateStateVisibility();
+      }), lang.hitch(this, function (error) {
+        if (this._destroyed || requestId !== this._countryRequestId) return;
+        input.set('placeHolder', 'Unable to load countries');
+        console.error('Unable to load countries for the selected continent', error);
+      }));
     },
 
     // ===== State field: only visible for North America / USA =====
