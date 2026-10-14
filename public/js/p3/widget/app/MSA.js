@@ -4,15 +4,29 @@ define([
   'dojo/text!./templates/MSA.html', './AppBase', 'dojo/dom-construct', 'dijit/registry',
   'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', 'dojo/domReady!', 'dijit/form/NumberTextBox', 'dijit/form/Textarea', 'dijit/form/Select', 'dijit/form/FilteringSelect',
   'dojo/query', 'dojo/dom', 'dijit/popup', 'dijit/Tooltip', 'dijit/Dialog', 'dijit/TooltipDialog', '../../DataAPI',
-  'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when'
+  'dojo/NodeList-traverse', '../../WorkspaceManager', 'dojo/store/Memory', 'dojox/widget/Standby', 'dojo/when',
+  '../../util/ViralGenomeGroupClassifier'
 ], function (
   declare, WidgetBase, Topic, on,
   domClass,
   Template, AppBase, domConstruct, registry,
   Deferred, aspect, lang, domReady, NumberTextBox, Textarea, Select, FilteringSelect,
   query, dom, popup, Tooltip, Dialog, TooltipDialog, DataAPI,
-  children, WorkspaceManager, Memory, Standby, when
+  children, WorkspaceManager, Memory, Standby, when,
+  ViralGenomeGroupClassifier
 ) {
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, function (character) {
+      return {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[character];
+    });
+  }
+
   return declare([AppBase], {
     baseClass: 'MSA',
     templateString: Template,
@@ -36,6 +50,11 @@ define([
     fid_value: '',
     validFasta: false,
     textInput: false,
+    genomeGroupClassification: null,
+    genomeGroupSelectedSegments: [],
+    genomeGroupLoading: false,
+    genomeGroupConcatSegments: false,
+    pendingGenomeGroupSelection: null,
 
     startup: function () {
       var _self = this;
@@ -372,6 +391,16 @@ define([
 
       // console.log('def: ' + def);
       if (this.select_genomegroup.get('required') && this.select_genomegroup.searchBox.item && (this.input_genomegroup.checked == true) && (this.unaligned.checked == true)) {
+        if (this.genomeGroupLoading) {
+          this.genomegroup_message.innerHTML = 'Fetching genome group segments...';
+          return false;
+        }
+        if (this.genomeGroupClassification
+          && this.genomeGroupClassification.segmentation_mode === 'segmented'
+          && !this.getSelectedGenomeGroupSegments().length) {
+          this.genomegroup_message.innerHTML = 'Select at least one segment.';
+          return false;
+        }
         var ref_id = this.select_genome_id.get('value');
         var id_valid = true;
         if (this.genome_id.get('checked')) {
@@ -421,10 +450,182 @@ define([
         }
         if (res && res.data && res.data.id_list && res.data.id_list.genome_id) {
           // viral genome checks
-          genomes_valid = this.checkViralGenomes(res.data.id_list.genome_id);
+          genomes_valid = this.checkViralGenomes(res.data.id_list.genome_id, path);
         }
       }));
       return genomes_valid;
+    },
+
+    handleGenomeGroupChange: function () {
+      var path = this.select_genomegroup.get('value');
+
+      if (!path) {
+        this.genomeGroupClassification = null;
+        this.genomeGroupSelectedSegments = [];
+        this.genomeGroupLoading = false;
+        this.genomeGroupConcatSegments = false;
+        this.pendingGenomeGroupSelection = null;
+        this.updateGenomeGroupSummary();
+        this.validate();
+        return;
+      }
+
+      this.genomeGroupLoading = true;
+      this.updateGenomeGroupSummary();
+      ViralGenomeGroupClassifier.fetchGenomeGroupClassification(path).then(lang.hitch(this, function (classification) {
+        if (this.select_genomegroup.get('value') !== path) {
+          return;
+        }
+        this.genomeGroupLoading = false;
+        this.genomeGroupClassification = classification;
+        if (this.pendingGenomeGroupSelection) {
+          this.genomeGroupSelectedSegments = this.pendingGenomeGroupSelection.selected_segments.filter(function (segment) {
+            return classification.available_segments.indexOf(segment) > -1;
+          });
+          this.genomeGroupConcatSegments = this.pendingGenomeGroupSelection.concat_segments;
+          this.pendingGenomeGroupSelection = null;
+        } else {
+          this.genomeGroupSelectedSegments = classification.available_segments ? classification.available_segments.slice() : [];
+        }
+        this.updateGenomeGroupSummary();
+        this.validate();
+      }), lang.hitch(this, function () {
+        if (this.select_genomegroup.get('value') !== path) {
+          return;
+        }
+        this.genomeGroupLoading = false;
+        this.genomeGroupClassification = null;
+        this.genomeGroupSelectedSegments = [];
+        this.genomeGroupConcatSegments = false;
+        this.pendingGenomeGroupSelection = null;
+        this.updateGenomeGroupSummary();
+        this.validate();
+      }));
+    },
+
+    getSelectedGenomeGroupSegments: function () {
+      if (!this.genomegroup_summary) {
+        return [];
+      }
+
+      var selected = [];
+      query('input[data-genome-group-segment]', this.genomegroup_summary).forEach(function (node) {
+        if (node.checked) {
+          selected.push(node.value);
+        }
+      });
+
+      return selected;
+    },
+
+    setGenomeGroupSegmentsChecked: function (checked) {
+      if (!this.genomegroup_summary) {
+        return;
+      }
+
+      query('input[data-genome-group-segment]', this.genomegroup_summary).forEach(function (node) {
+        node.checked = checked;
+      });
+    },
+
+    bindGenomeGroupSummaryControls: function () {
+      if (!this.genomegroup_summary) {
+        return;
+      }
+
+      query('[data-segment-action]', this.genomegroup_summary).forEach(lang.hitch(this, function (node) {
+        on(node, 'click', lang.hitch(this, function (evt) {
+          evt.preventDefault();
+          evt.stopPropagation();
+          this.setGenomeGroupSegmentsChecked(node.getAttribute('data-segment-action') === 'all');
+          this.genomeGroupSelectedSegments = this.getSelectedGenomeGroupSegments();
+          this.validate();
+        }));
+      }));
+
+      query('input[data-genome-group-segment]', this.genomegroup_summary).forEach(lang.hitch(this, function (node) {
+        on(node, 'change', lang.hitch(this, function () {
+          this.genomeGroupSelectedSegments = this.getSelectedGenomeGroupSegments();
+          this.validate();
+        }));
+      }));
+
+      query('input[data-genome-group-concat]', this.genomegroup_summary).forEach(lang.hitch(this, function (node) {
+        node.checked = !!this.genomeGroupConcatSegments;
+        on(node, 'change', lang.hitch(this, function () {
+          this.genomeGroupConcatSegments = node.checked;
+        }));
+      }));
+    },
+
+    getGenomeGroupConcatSegments: function () {
+      if (!this.genomegroup_summary) {
+        return !!this.genomeGroupConcatSegments;
+      }
+
+      var node = query('input[data-genome-group-concat]', this.genomegroup_summary)[0];
+      if (node) {
+        this.genomeGroupConcatSegments = node.checked;
+      }
+      return !!this.genomeGroupConcatSegments;
+    },
+
+    updateGenomeGroupSummary: function () {
+      if (!this.genomegroup_summary) {
+        return;
+      }
+
+      if (this.genomeGroupLoading) {
+        this.genomegroup_summary.innerHTML = 'Fetching segments...';
+        return;
+      }
+
+      var classification = this.genomeGroupClassification;
+      if (!classification || !classification.genome_count) {
+        this.genomegroup_summary.innerHTML = '';
+        return;
+      }
+
+      if (classification.segmentation_mode === 'segmented' && classification.available_segments.length) {
+        var selectedSegments = this.genomeGroupSelectedSegments || [];
+        var labels = classification.available_segment_labels || classification.available_segments;
+        var missingSegments = classification.segments_missing_in_some_genomes || [];
+        var html = [
+          '<div class="genome-group-segment-summary">',
+          '<div class="genome-group-segment-summary__header">',
+          '<span class="genome-group-segment-summary__title">Available segments</span>',
+          '<span class="genome-group-segment-summary__actions">',
+          '<button type="button" class="genome-group-segment-summary__action" data-segment-action="all">Select all</button>',
+          '<button type="button" class="genome-group-segment-summary__action" data-segment-action="none">Clear</button>',
+          '</span>',
+          '</div>',
+          '<label class="genome-group-segment-summary__toggle">',
+          '<input type="checkbox" data-genome-group-concat="1"', this.genomeGroupConcatSegments ? ' checked' : '', '> ',
+          'Concatenate selected segments',
+          '</label>',
+          '<div class="genome-group-segment-summary__options">'
+        ];
+        classification.available_segments.forEach(function (segment, idx) {
+          var checked = selectedSegments.indexOf(segment) > -1 ? ' checked' : '';
+          var missingMarker = missingSegments.indexOf(segment) > -1 ? ' *' : '';
+          html.push(
+            '<label class="genome-group-segment-summary__option">'
+            + '<input type="checkbox" data-genome-group-segment="1" value="' + escapeHtml(segment) + '"' + checked + '> '
+            + escapeHtml(labels[idx]) + missingMarker
+            + '</label>'
+          );
+        });
+        html.push('</div>');
+        if (missingSegments.length) {
+          html.push('<div class="genome-group-segment-summary__note">* indicates a segment that is not present in all selected genomes.</div>');
+        }
+        html.push('</div>');
+        this.genomegroup_summary.innerHTML = html.join('');
+        this.bindGenomeGroupSummaryControls();
+        return;
+      }
+
+      this.genomegroup_summary.innerHTML = '<div class="genome-group-segment-summary genome-group-segment-summary__status">No segment values found. This group will be treated as unsegmented.</div>';
     },
 
     validateReferenceID: function (ref_id) {
@@ -461,14 +662,18 @@ define([
     },
 
     // TODO: there may be a limit to the number of genome_ids that can be passed into the query, check that
-    checkViralGenomes: function (genome_id_list) {
+    checkViralGenomes: function (genome_id_list, path) {
       // As far as I have seen Bacteria do not have a superkingdom field, only viruses
-      var query = `in(genome_id,(${genome_id_list.toString()}))&select(genome_id,superkingdom,genome_length)&limit(${genome_id_list.length})`;
+      var query = `in(genome_id,(${genome_id_list.toString()}))&select(genome_id,superkingdom,genome_length,segment,species,genome_name)&limit(${genome_id_list.length})`;
       // console.log('query = ', query);
       var all_valid = true;
       DataAPI.queryGenomes(query).then(lang.hitch(this, function (res) {
+        if (path && this.select_genomegroup.get('value') !== path) {
+          return;
+        }
         // console.log('result = ', res);
         var errors = {};
+        this.genomeGroupClassification = ViralGenomeGroupClassifier.classifyGenomeItems(res && res.items ? res.items : []);
         if (genome_id_list.length > this.maxGenomes) {
           errors['genomecount_error'] = 'Error: the number of genomes ( ' + genome_id_list.length + ' ) exceeds the maximum count of ' + this.maxGenomes.toString();
           all_valid = false;
@@ -514,6 +719,7 @@ define([
 
     getValues: function () {
       var values = this.inherited(arguments);
+      var selectedGenomeSegments = this.getSelectedGenomeGroupSegments();
       if (!values.fasta_keyboard_input) {
         values.fasta_keyboard_input = '';
       }
@@ -523,6 +729,10 @@ define([
       }
       if (values.select_genomegroup) {
         values.select_genomegroup = [values.select_genomegroup];
+        values.genome_selection = {
+          selected_segments: selectedGenomeSegments,
+          concat_segments: this.getGenomeGroupConcatSegments()
+        };
       }
       var fastaFiles = [];
       var my_input_type = '';
@@ -682,6 +892,13 @@ define([
       }
       else if (job_data['input_type'] === 'input_genomegroup') {
         this.input_genomegroup.set('checked', true);
+        var genomeSelection = job_data['genome_selection'] || {};
+        if (Array.isArray(genomeSelection.selected_segments)) {
+          this.pendingGenomeGroupSelection = {
+            selected_segments: genomeSelection.selected_segments.slice(),
+            concat_segments: !!genomeSelection.concat_segments
+          };
+        }
         this.select_genomegroup.set('value', job_data['select_genomegroup'][0]);
       }
       else {

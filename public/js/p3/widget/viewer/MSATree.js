@@ -280,7 +280,10 @@ define([
       var objPath = decodeURIComponent(fileCheck[1]);
       // Normalize path: remove duplicate slashes
       objPath = objPath.replace(/\/+/g, '/');
-      var objPathNwk = objPath.replace('.afa', '_fasttree.nwk');
+      var treeFileCheck = this.state.pathname.match(/treePath=([^&]+)/);
+      var objPathNwk = treeFileCheck
+        ? decodeURIComponent(treeFileCheck[1]).replace(/\/+/g, '/')
+        : objPath.replace(/\.afa$/i, '_fasttree.nwk');
 
       this.path = objPath;
       console.log('WorkspaceManager objPath', objPath);

@@ -93,18 +93,17 @@ define([
       var _self = this;
 
       // console.log("[JobResult] data: ", data);
-      if (data.autoMeta.parameters && data.autoMeta.parameters.output_path && data.autoMeta.parameters.output_path != data.path)
-      {
-        // console.log("Rewrite data path from", data.autoMeta.parameters.output_path, "to", data.path);
+      if (data.autoMeta.parameters && data.autoMeta.parameters.output_path) {
+        var originalPath = data.autoMeta.parameters.output_path.replace(/\/+$/, '');
+        var currentPath = data.path.replace(/\/+$/, '');
 
         // Escape special regex characters in the path to avoid "Invalid regular expression" errors
         // when paths contain characters like ), (, [, ], etc.
-        var escapedPath = data.autoMeta.parameters.output_path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        var escapedPath = originalPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-        if (data.autoMeta.output_files) {
-          for (var outfile of data.autoMeta.output_files)
-          {
-            outfile[0] = outfile[0].replace(new RegExp('^' + escapedPath), data.path);
+        if (originalPath !== currentPath && data.autoMeta.output_files) {
+          for (var outfile of data.autoMeta.output_files) {
+            outfile[0] = outfile[0].replace(new RegExp('^' + escapedPath + '(?=/|$)'), currentPath);
           }
         }
       }
