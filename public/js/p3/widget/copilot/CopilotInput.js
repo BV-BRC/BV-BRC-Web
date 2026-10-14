@@ -1228,6 +1228,9 @@ define([
                       sessionId: this.sessionId,
                       completedResults: this._getCompletedResultsFromPlan(planData)
                     };
+                  } else if (data.event === 'blocked') {
+                    // D4 Phase 3: waiting on the step's Yes / No / Other question.
+                    planData.steps[j].status = 'awaiting_approval';
                   } else if (data.event === 'failed') {
                     planData.steps[j].status = 'failed';
                   }

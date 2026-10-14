@@ -13,7 +13,9 @@
   var IDENTIFIER_KEYS = [
     'service', 'service_id', 'service_name', 'app', 'app_name',
     'workflow', 'workflow_id', 'workflow_name', 'submission_id',
-    'job_id', 'task_id', 'result_id'
+    'job_id', 'task_id', 'result_id',
+    // D4 Phase 3: a plan's next step needs these exactly.
+    'submission_ids', 'result_summary'
   ];
 
   function truncateString(value, maxChars) {
@@ -88,6 +90,11 @@
     }
     if (structuredData && typeof structuredData === 'object') {
       result.structured_data = sanitizeStructuredData(structuredData);
+    }
+    // step_outputs (D4 Phase 3) are bounded server-side (<= 200 ids per
+    // list); the gateway also merges its stored copy into execute_next.
+    if (source.step_outputs && typeof source.step_outputs === 'object' && !Array.isArray(source.step_outputs)) {
+      result.step_outputs = sanitizeStructuredData(source.step_outputs);
     }
     IDENTIFIER_KEYS.forEach(function(key) {
       if (source[key] !== undefined) {

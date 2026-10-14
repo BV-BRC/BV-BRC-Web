@@ -94,4 +94,23 @@ describe('PlanResultSanitizer', () => {
       submission_id: 'submission-1'
     });
   });
+
+  test('keeps what the next plan step needs: submission_ids, result_summary, step_outputs (D4 Phase 3)', () => {
+    const ids = Array.from({ length: 250 }, (_, i) => `fig|1.1.peg.${i}`);
+    const out = PlanResultSanitizer.sanitizeResult({
+      answer: 'done',
+      submission_ids: ['sub_1', 'sub_2'],
+      result_summary: 'Created the group.',
+      step_outputs: {
+        groups: [{ path: '/u/home/Feature Groups/g', count: 100 }],
+        ids: ids,
+        values: { plfam_id: 'PLF_1763_00002110' }
+      }
+    });
+    expect(out.submission_ids).toEqual(['sub_1', 'sub_2']);
+    expect(out.result_summary).toBe('Created the group.');
+    expect(out.step_outputs.groups[0].path).toBe('/u/home/Feature Groups/g');
+    expect(out.step_outputs.values.plfam_id).toBe('PLF_1763_00002110');
+    expect(out.step_outputs.ids).toHaveLength(200);
+  });
 });

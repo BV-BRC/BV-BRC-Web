@@ -555,53 +555,15 @@ define([
                                 case 'plan_step_started':
                                 case 'plan_step_completed':
                                 case 'plan_step_failed':
-                                    // These are handled by CopilotSSEEventHandler
-                                    // which publishes CopilotPlanStepUpdate topic
-                                    // for PlanCard to consume
-                                    if (onStatusMessage) {
-                                        var statusResult = eventHandler.handleEvent(currentEvent, parsed);
-                                        if (statusResult) {
-                                            onStatusMessage(statusResult);
-                                        }
-                                    }
-                                    break;
-
+                                case 'plan_step_needs_input':
+                                case 'plan_step_blocked':
                                 case 'plan_review_ready':
-                                    // Route through CopilotSSEEventHandler which
-                                    // publishes CopilotPlanReviewReady topic for
-                                    // PlanCard to render the review panel.
-                                    if (onStatusMessage) {
-                                        var reviewResult = eventHandler.handleEvent(currentEvent, parsed);
-                                        if (reviewResult) {
-                                            onStatusMessage(reviewResult);
-                                        }
-                                    }
-                                    break;
-
                                 case 'plan_workflow_submitted':
-                                    // A plan step submitted a long-running workflow.
-                                    // Route through CopilotSSEEventHandler which
-                                    // publishes CopilotPlanWorkflowSubmitted topic
-                                    // for PlanCard to pause and show waiting state.
-                                    if (onStatusMessage) {
-                                        var wfSubResult = eventHandler.handleEvent(currentEvent, parsed);
-                                        if (wfSubResult) {
-                                            onStatusMessage(wfSubResult);
-                                        }
-                                    }
-                                    break;
-
                                 case 'workflow_complete':
-                                    // A watched workflow reached a terminal state.
-                                    // Route through CopilotSSEEventHandler which
-                                    // publishes CopilotWorkflowComplete topic for
-                                    // PlanCard to show a "Continue Plan" button.
-                                    if (onStatusMessage) {
-                                        var wfCompResult = eventHandler.handleEvent(currentEvent, parsed);
-                                        if (wfCompResult) {
-                                            onStatusMessage(wfCompResult);
-                                        }
-                                    }
+                                    // Already handled above: handleEvent ran the
+                                    // formatter, which publishes the topic the
+                                    // PlanCard consumes.  Calling it again here
+                                    // published every step update twice.
                                     break;
 
                                 default:

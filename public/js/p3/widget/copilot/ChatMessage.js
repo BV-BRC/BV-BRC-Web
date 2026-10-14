@@ -955,19 +955,16 @@ define([
         innerHTML: 'Regenerate'
       }, actionBlock);
 
-      // Executing a plan delegates to the service agent, which submits
-      // jobs — so Approve needs Execute mode.  The gateway refuses with
-      // 409 PLAN_MODE anyway; this just makes the requirement visible.
+      // D4 Phase 3: plans run in either mode.  In Plan mode a step that
+      // creates a group or submits a job pauses and asks first; the hint
+      // says so (it is hidden in Execute mode).
       var modeHint = domConstruct.create('div', {
         'class': 'plan-action-block-hint',
-        innerHTML: 'Switch this chat to <strong>Execute</strong> mode to run this plan.'
+        innerHTML: 'Steps that create a group or submit a job will ask you before they run.'
       }, actionBlock);
 
       function applyMode(mode) {
-        var canExecute = mode === 'execute';
-        approveBtn.disabled = !canExecute;
-        approveBtn.title = canExecute ? '' : 'Switch to Execute mode to run this plan';
-        modeHint.style.display = canExecute ? 'none' : '';
+        modeHint.style.display = mode === 'execute' ? 'none' : '';
       }
       applyMode(window.App && window.App.copilotExecutionMode);
       var modeHandle = topic.subscribe('CopilotExecutionModeChanged', function (data) {
@@ -985,7 +982,6 @@ define([
       }
 
       on(approveBtn, 'click', function () {
-        if (approveBtn.disabled) { return; }
         modeHandle.remove();
         setCompleted('Plan approved');
         planCard._approvePlan();

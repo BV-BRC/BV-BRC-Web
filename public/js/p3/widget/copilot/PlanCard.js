@@ -43,6 +43,7 @@ define([
     running: '\u23F3',     // ⏳
     completed: '\u2705',   // ✅
     needs_input: '\u270B', // ✋
+    awaiting_approval: '\u23F8', // ⏸ (D4 Phase 3: the step's question is waiting)
     failed: '\u274C',      // ❌
     skipped: '\u2298'      // ⊘
   };
@@ -105,6 +106,10 @@ define([
         this._needsInputStepIndex = this.plan._needsInputStepIndex;
         this._paused = true;
       }
+      // A step paused on its Yes / No / Other question stays paused.
+      if ((this.plan.steps || []).some(function (s) { return s.status === 'awaiting_approval'; })) {
+        this._paused = true;
+      }
 
       // Infer initial mode from persisted plan/step statuses.
       // On page reload, steps may already be completed/failed/skipped.
@@ -115,7 +120,8 @@ define([
         // Plan was mid-execution when page was reloaded.
         // Check if any steps are still pending/running/needs_input.
         var hasActive = (this.plan.steps || []).some(function (s) {
-          return s.status === 'pending' || s.status === 'running' || s.status === 'needs_input';
+          return s.status === 'pending' || s.status === 'running' || s.status === 'needs_input' ||
+            s.status === 'awaiting_approval';
         });
         // If a step was 'running' at persist time, it was interrupted by
         // the reload -- revert it to 'pending' so it can be re-executed.
@@ -148,15 +154,6 @@ define([
       // Subscribe to workflow submitted events (pauses plan for long-running workflows)
       var wfSubHandle = topic.subscribe('CopilotPlanWorkflowSubmitted', lang.hitch(this, '_onWorkflowSubmitted'));
       this._topicHandles.push(wfSubHandle);
-
-      // Plan/Execute toggle — step execution needs Execute mode, so
-      // re-render the action buttons when the mode flips.
-      var modeHandle = topic.subscribe('CopilotExecutionModeChanged', lang.hitch(this, function () {
-        if (this._mode === 'executing') {
-          this._render();
-        }
-      }));
-      this._topicHandles.push(modeHandle);
 
       // Subscribe to workflow completion events (resumes paused plan)
       var wfCompleteHandle = topic.subscribe('CopilotWorkflowComplete', lang.hitch(this, '_onWorkflowComplete'));
@@ -327,18 +324,6 @@ define([
           self._render();
         });
 
-        // Running a step delegates to the service agent (job submission),
-        // so Continue / Resume need Execute mode.  Pause and Edit stay on.
-        if (!this._canExecute()) {
-          Array.prototype.slice.call(actions.querySelectorAll('.plan-card-btn-primary')).forEach(function (btn) {
-            btn.disabled = true;
-            btn.title = 'Switch to Execute mode to run this plan';
-          });
-          domConstruct.create('div', {
-            'class': 'plan-action-block-hint',
-            innerHTML: 'Switch this chat to <strong>Execute</strong> mode to continue this plan.'
-          }, actions);
-        }
 
       } else {
         // Draft display mode — action buttons are rendered externally
@@ -415,6 +400,28 @@ define([
           innerHTML: 'Waiting for your reply in the chat below...',
           style: 'color: #b45309; font-size: 12px; margin-top: 4px; font-style: italic;'
         }, stepNode);
+      }
+
+      // D4 Phase 3: the step prepared jobs or groups and is waiting for the
+      // Yes / No / Other question below.  Skip moves on without them.
+      if (step.status === 'awaiting_approval') {
+        domConstruct.create('div', {
+          'class': 'plan-step-needs-input',
+          innerHTML: 'Waiting for your answer to the question below. ' +
+            'Yes runs it and the plan continues.',
+          style: 'color: #b45309; font-size: 12px; margin-top: 4px; font-style: italic;'
+        }, stepNode);
+        var awaitActions = domConstruct.create('div', {
+          'class': 'plan-step-fail-actions'
+        }, stepNode);
+        var selfAwait = this;
+        var skipAwaitBtn = domConstruct.create('button', {
+          'class': 'plan-card-btn plan-card-btn-small plan-card-btn-secondary',
+          innerHTML: 'Skip this step'
+        }, awaitActions);
+        on(skipAwaitBtn, 'click', function () {
+          selfAwait._skipStep(step);
+        });
       }
 
       // Error message (for failed steps)
@@ -639,13 +646,18 @@ define([
           break;
 
         case 'completed':
+          // Yes on a step's question completes it: the plan resumes.
+          if (step.status === 'awaiting_approval') {
+            this._paused = false;
+          }
           step.status = 'completed';
           step.result_summary = data.result_summary || '';
           if (data.agent_result) {
             this._storeCompletedResult(
               data.step_id,
               data.agent_result,
-              data.structured_data
+              data.structured_data,
+              data.step_outputs
             );
           }
           // Auto-advance to next step if not paused
@@ -681,6 +693,14 @@ define([
           this._needsInputStepIndex = data.step_index;
           // Persist on plan object so it survives page reload
           this.plan._needsInputStepIndex = data.step_index;
+          break;
+
+        case 'blocked':
+          // D4 Phase 3: the step prepared jobs or groups under the plan
+          // gate.  Pause until the user answers the question below it.
+          step.status = 'awaiting_approval';
+          step.result_summary = data.result_summary || step.result_summary || '';
+          this._paused = true;
           break;
 
         case 'failed':
@@ -727,22 +747,9 @@ define([
       });
     },
 
-    /** True when the session's Plan/Execute toggle allows running steps. */
-    _canExecute: function () {
-      return !!(window.App && window.App.copilotExecutionMode === 'execute');
-    },
-
     _executeNextPendingStep: function () {
       // Don't submit if paused (waiting for review)
       if (this._paused) return;
-
-      // Plan mode: the gateway would refuse with 409 PLAN_MODE; stop here
-      // so the card does not flip a step to "running" first.
-      if (!this._canExecute()) {
-        console.warn('[PlanCard] Not executing step: session is in plan mode');
-        this._render();
-        return;
-      }
 
       // Don't submit if a step is already running
       var hasRunning = this.plan.steps.some(function (s) { return s.status === 'running'; });
@@ -788,6 +795,10 @@ define([
     },
 
     _skipStep: function (step) {
+      // Skipping a step that waited on its question resumes the plan.
+      if (step.status === 'awaiting_approval') {
+        this._paused = false;
+      }
       topic.publish('CopilotPlanSkipStep', {
         plan: this.plan,
         stepId: step.step_id,
@@ -1173,10 +1184,14 @@ define([
     // Helpers
     // =========================================================================
 
-    _storeCompletedResult: function (stepId, result, structuredDataOverride) {
+    _storeCompletedResult: function (stepId, result, structuredDataOverride, stepOutputs) {
       if (!stepId) return;
+      var withOutputs = result;
+      if (stepOutputs && typeof result === 'object' && result) {
+        withOutputs = lang.mixin({}, result, { step_outputs: stepOutputs });
+      }
       this._completedResults[stepId] = PlanResultSanitizer.sanitizeResult(
-        result,
+        withOutputs,
         structuredDataOverride
       );
     },

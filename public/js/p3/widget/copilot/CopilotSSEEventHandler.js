@@ -461,14 +461,35 @@ define([
         step_index: data.step_index,
         result_summary: data.result_summary,
         agent_result: data.agent_result,
-        structured_data: data.structured_data || null
+        structured_data: data.structured_data || null,
+        step_outputs: data.step_outputs || null
+      });
+
+      var doneNum = (data.step_index !== undefined ? data.step_index + 1 : '?');
+      return this.updateStatusMessage('Step ' + doneNum + ' done.', 'plan_step_completed');
+    },
+
+    /**
+     * Formats 'plan_step_blocked' event (D4 Phase 3).
+     * The step prepared jobs or groups; the plan pauses until the user
+     * answers the question card that arrives with it.
+     */
+    format_plan_step_blocked: function(data) {
+      topic.publish('CopilotPlanStepUpdate', {
+        event: 'blocked',
+        plan_id: data.plan_id,
+        step_id: data.step_id,
+        step_index: data.step_index,
+        summaries: data.summaries || [],
+        result_summary: data.result_summary || '',
+        step_outputs: data.step_outputs || null
       });
 
       return {
         role: 'status',
-        type: 'plan_step_started',
-        content: content,
-        should_remove: false
+        type: 'plan_step_blocked',
+        content: '',
+        should_remove: true
       };
     },
 
@@ -552,6 +573,9 @@ define([
      */
     format_workflow_complete: function(data) {
       topic.publish('CopilotWorkflowComplete', {
+        // PlanCard matches a waiting step on submission_id; without it a
+        // plan resumed only through its 30 s poll (D4 Phase 3).
+        submission_id: data.submission_id || null,
         workflow_id: data.workflow_id,
         workflow_name: data.workflow_name || '',
         status: data.status,
