@@ -4109,6 +4109,71 @@ a.workspace-path-chip:hover {
   color: #78350f;
 }
 
+/* Execution question (Yes / No / Other) on the prepared-jobs card */
+.execution-question {
+  margin-top: 6px;
+}
+
+.execution-question-text {
+  font-weight: 600;
+  color: #78350f;
+  margin: 6px 0 4px 0;
+}
+
+.execution-question-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.execution-question-chip {
+  padding: 4px 12px;
+  border: 1px solid #d97706;
+  border-radius: 16px;
+  background: #fff;
+  color: #78350f;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.execution-question-chip:hover:not(:disabled) {
+  background: #fef3c7;
+}
+
+.execution-question-yes {
+  background: #d97706;
+  border-color: #d97706;
+  color: #fff;
+  font-weight: 600;
+}
+
+.execution-question-yes:hover:not(:disabled) {
+  background: #b45309;
+}
+
+.execution-question-other {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.execution-question-input {
+  flex: 1;
+}
+
+.execution-question-answered {
+  font-weight: 600;
+  color: #166534;
+  margin: 4px 0;
+}
+
+.execution-question .execution-blocked-note {
+  margin-top: 6px;
+}
+
 /* One-shot execute marker on a user message */
 .message-attachment-chip--execute {
   background: #fef3c7;

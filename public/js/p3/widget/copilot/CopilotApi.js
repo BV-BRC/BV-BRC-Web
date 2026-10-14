@@ -297,6 +297,11 @@ define([
             if (Array.isArray(params.replay_actions) && params.replay_actions.length > 0) {
                 data.replay_actions = params.replay_actions;
             }
+            // "Other" on the prepared-jobs question: the stored set goes back
+            // to the service agent to be revised (never submitted on this turn).
+            if (Array.isArray(params.prepared_actions) && params.prepared_actions.length > 0) {
+                data.prepared_actions = params.prepared_actions;
+            }
             var streamEndpoint = this.apiUrlBase + '/copilot-agent';
 
             // Create abort controller for this request
@@ -924,6 +929,31 @@ define([
             }).catch(function(error) {
                 console.error('Error updating session execution mode:', error);
                 throw error;
+            });
+        },
+
+        /**
+         * Record "No" on a prepared-jobs question without running a chat
+         * turn.  The actions identify the stored card, as a replay would.
+         * @param {string} sessionId
+         * @param {Array} actions - the card's blocked_actions
+         * @param {'no'} answer
+         */
+        answerExecutionQuestion: function(sessionId, actions, answer) {
+            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
+            var _self = this;
+            return request.post(this.apiUrlBase + '/execution-question/answer', {
+                data: JSON.stringify({
+                    session_id: sessionId,
+                    actions: actions,
+                    answer: answer || 'no',
+                    user_id: _self.user_id
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
             });
         },
 

@@ -1107,6 +1107,24 @@ define([
           });
         })));
 
+        // CopilotExecutionRevise — "Other" (free text) on the prepared-jobs
+        // question.  A normal turn pinned to the service agent that carries
+        // the stored set as prepared_actions, so the agent edits the set
+        // instead of starting over, and asks again.  Nothing is submitted.
+        this._topicHandles.push(topic.subscribe('CopilotExecutionRevise', lang.hitch(this, function(data) {
+          if (!data || !data.text) { return; }
+          if (data.sessionId && this.sessionId && data.sessionId !== this.sessionId) { return; }
+          if (this.isSubmitting) {
+            console.warn('[CopilotInput] CopilotExecutionRevise: already submitting, ignoring');
+            return;
+          }
+          this._setInputTextValue(data.text);
+          this._handleSubmitStream({
+            target_agent: 'service',
+            prepared_actions: data.blocked_actions || null
+          });
+        })));
+
         // 3. CopilotPlanExecuteNext — execute the next step in plan
         this._topicHandles.push(topic.subscribe('CopilotPlanExecuteNext', lang.hitch(this, function(data) {
           if (!data || !data.plan) { return; }
@@ -2038,6 +2056,9 @@ define([
      *   execute mode without changing the session toggle.
      * @param {Array} [submitOpts.replay_actions] - With execute_once: the
      *   card's blocked_actions, replayed verbatim by the service agent.
+     * @param {Array} [submitOpts.prepared_actions] - Without execute_once:
+     *   the card's blocked_actions, sent back for revision ("Other"); the
+     *   service agent edits the set under the plan gate and asks again.
      */
     _handleSubmitStream: function(submitOpts) {
       submitOpts = submitOpts || {};
@@ -2118,6 +2139,8 @@ define([
       if (submitOpts.execute_once) {
         // Mirrors the chip the gateway persists on the stored message.
         allAttachments = allAttachments.concat([{ type: 'execution', source: 'once', name: 'Execute mode (this message only)' }]);
+      } else if (Array.isArray(submitOpts.prepared_actions) && submitOpts.prepared_actions.length > 0) {
+        allAttachments = allAttachments.concat([{ type: 'execution', source: 'revise', name: 'Changing the prepared jobs' }]);
       }
       var userMessage = this._buildUserMessageForSubmit(
           inputText,
@@ -2175,6 +2198,9 @@ define([
       }
       if (submitOpts.execute_once && Array.isArray(submitOpts.replay_actions) && submitOpts.replay_actions.length > 0) {
         params.replay_actions = submitOpts.replay_actions;
+      }
+      if (!submitOpts.execute_once && Array.isArray(submitOpts.prepared_actions) && submitOpts.prepared_actions.length > 0) {
+        params.prepared_actions = submitOpts.prepared_actions;
       }
 
       if (hasUploadedImage) {

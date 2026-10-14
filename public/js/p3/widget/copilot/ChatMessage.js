@@ -1017,7 +1017,11 @@ define([
           agent: payload.agent || null,
           blockedActions: payload.blocked_actions || [],
           originalQuery: payload.original_query || '',
-          sessionId: this.message.session_id || this.sessionId || null
+          sessionId: this.message.session_id || this.sessionId || null,
+          copilotApi: this.copilotApi || null,
+          // Recorded by the gateway on the first answer; renders read-only.
+          answered: payload.answered || null,
+          planContext: payload.plan_context || null
         });
         var container = domConstruct.create('div', {
           'class': 'execution-blocked-card-container'
