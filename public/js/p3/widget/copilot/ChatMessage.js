@@ -1017,7 +1017,10 @@ define([
           copilotApi: this.copilotApi || null,
           // Recorded by the gateway on the first answer; renders read-only.
           answered: payload.answered || null,
-          planContext: payload.plan_context || null
+          planContext: payload.plan_context || null,
+          // The card records its answer here too, so a re-render of this
+          // message (a plan's next step redraws the chat) keeps it.
+          cardPayload: payload
         });
         var container = domConstruct.create('div', {
           'class': 'execution-blocked-card-container'

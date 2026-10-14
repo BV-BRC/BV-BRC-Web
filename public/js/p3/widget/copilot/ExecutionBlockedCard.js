@@ -50,6 +50,7 @@ define([
     copilotApi: null,       // For the No answer (no chat turn)
     answered: null,         // {answer: 'yes'|'no'|'other', at, text, count} from the stored card
     planContext: null,      // {plan_id, step_id, step_index} when a plan step prepared the set
+    cardPayload: null,      // the message's card_payload; the answer is written back to it
 
     _questionNode: null,
     _answered: false,
@@ -62,6 +63,7 @@ define([
       this.copilotApi = params.copilotApi || null;
       this.answered = params.answered && params.answered.answer ? params.answered : null;
       this.planContext = params.planContext || null;
+      this.cardPayload = params.cardPayload || null;
       this._answered = !!this.answered;
     },
 
@@ -211,6 +213,24 @@ define([
       return input;
     },
 
+    /**
+     * Keep the answer on the chat's copy of this message.  The gateway
+     * stores it too, but until a reload the chat re-renders from its own
+     * copy -- and a plan's next step re-renders right after Yes, which
+     * brought the question back unanswered.
+     */
+    _recordAnswer: function (answered) {
+      var record = { answer: answered.answer, at: new Date().toISOString() };
+      if (answered.text) { record.text = answered.text; }
+      if (this.cardPayload) { this.cardPayload.answered = record; }
+      this.answered = record;
+      topic.publish('CopilotExecutionQuestionAnswered', {
+        sessionId: this.sessionId,
+        blocked_actions: this.blockedActions,
+        answered: record
+      });
+    },
+
     _renderAnswered: function (answered) {
       domConstruct.empty(this._questionNode);
       var text;
@@ -239,6 +259,7 @@ define([
     _onYes: function () {
       if (this._answered) { return; }
       this._answered = true;
+      this._recordAnswer({ answer: 'yes' });
       this._renderAnswered({ answer: 'yes' });
       topic.publish('CopilotExecutionModeRun', {
         sessionId: this.sessionId,
@@ -253,6 +274,7 @@ define([
       if (this._answered) { return; }
       this._answered = true;
       var self = this;
+      this._recordAnswer({ answer: 'no' });
       this._renderAnswered({ answer: 'no', _live: true });
       if (this.copilotApi && this.copilotApi.answerExecutionQuestion) {
         this.copilotApi.answerExecutionQuestion(this.sessionId, this.blockedActions, 'no')
@@ -270,6 +292,7 @@ define([
       // Allowed after No (the text revises the same set) but not after Yes.
       if (this.answered && this.answered.answer === 'yes') { return; }
       this._answered = true;
+      this._recordAnswer({ answer: 'other', text: text });
       this._renderAnswered({ answer: 'other', text: text });
       topic.publish('CopilotExecutionRevise', {
         sessionId: this.sessionId,

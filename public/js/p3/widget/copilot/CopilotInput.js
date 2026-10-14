@@ -1200,6 +1200,23 @@ define([
           );
         })));
 
+        // 4b. CopilotExecutionQuestionAnswered — keep a question's answer on
+        // the stored message so a re-render (a plan's next step redraws the
+        // chat right after Yes) shows it answered, as a reload would.
+        this._topicHandles.push(topic.subscribe('CopilotExecutionQuestionAnswered', lang.hitch(this, function(data) {
+          if (!data || !data.answered || !this.chatStore) { return; }
+          var key = JSON.stringify(data.blocked_actions || []);
+          var messages = this.chatStore.query();
+          for (var i = messages.length - 1; i >= 0; i--) {
+            var card = messages[i] && messages[i].card;
+            if (card && card.card_type === 'execution_blocked' && card.card_payload &&
+                JSON.stringify(card.card_payload.blocked_actions || []) === key) {
+              card.card_payload.answered = data.answered;
+              break;
+            }
+          }
+        })));
+
         // 5. CopilotPlanStepUpdate — sync step statuses on the plan message
         // in the chat store so they survive showMessages() re-renders.
         this._topicHandles.push(topic.subscribe('CopilotPlanStepUpdate', lang.hitch(this, function(data) {
