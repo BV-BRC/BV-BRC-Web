@@ -1324,10 +1324,11 @@ define([
         //    This is the primary cancel mechanism. The SSE close (step 2)
         //    only disconnects the local stream; the backend only stops when
         //    the Redis flag is polled.  If currentJobId is not yet set
-        //    (Stop pressed before the first SSE event), the POST will fail
-        //    and the backend turn runs to completion.
+        //    (Stop pressed before the first SSE event), the gateway stops
+        //    whatever turn holds this chat (session_id).
         this.copilotApi.abortActiveQueryJob({
           user_id: this.copilotApi.user_id,
+          session_id: this.sessionId,
           reason: 'Stopped from chat UI'
         }).catch(function(err) {
           console.warn('[CopilotInput] Stop abort POST failed:', err.message);

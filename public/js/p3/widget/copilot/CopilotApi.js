@@ -705,12 +705,40 @@ define([
             this.activeStreamSessionId = null;
         },
 
+        /**
+         * Stop the turn that holds this chat (gateway POST /session/:id/stop).
+         * 404 NO_TURN means the gateway has not taken the request yet: try
+         * once more a second later.
+         */
+        stopSessionTurn: function(sessionId, retried) {
+            var _self = this;
+            return request.post(this.apiUrlBase + '/session/' + encodeURIComponent(sessionId) + '/stop', {
+                data: JSON.stringify({}),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: (window.App.authorizationToken || '')
+                },
+                handleAs: 'json'
+            }).then(null, function(err) {
+                var status = err && err.response && err.response.status;
+                if (status === 404 && !retried) {
+                    return new Promise(function(resolve) { setTimeout(resolve, 1000); }).then(function() {
+                        return _self.stopSessionTurn(sessionId, true);
+                    });
+                }
+                throw err;
+            });
+        },
+
         abortActiveQueryJob: function(opts) {
             if (!this._checkLoggedIn()) return Promise.reject(new Error('Not logged in'));
             opts = opts || {};
 
             var jobId = opts.job_id || this.currentJobId;
             if (!jobId) {
+                // Stop before the `started` event: no job id yet, so stop
+                // whatever turn holds this chat.
+                if (opts.session_id) return this.stopSessionTurn(opts.session_id);
                 return Promise.reject(new Error('No active job to abort'));
             }
 
