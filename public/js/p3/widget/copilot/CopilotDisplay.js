@@ -164,6 +164,22 @@ define([
           style: 'padding-right: 10px;padding-left: 10px;'
         }, this.panelContainer);
 
+        // "Jump to latest" button over the bottom of the message list.  Shown
+        // while there is content below the view; after a response finishes
+        // off-screen it reads "New response", so the user knows it is done
+        // without scrolling to check.  Auto-scroll stays off while streaming.
+        this._jumpButton = domConstruct.create('button', {
+          type: 'button',
+          class: 'copilot-jump-bottom',
+          title: 'Jump to the latest message',
+          'aria-label': 'Jump to the latest message',
+          innerHTML: '<span class="copilot-jump-bottom-label">New response</span>' +
+            '<span class="copilot-jump-bottom-arrow" aria-hidden="true">&#8595;</span>'
+        }, this.panelContainer);
+        on(this._jumpButton, 'click', lang.hitch(this, function() {
+          this._jumpToBottom();
+        }));
+
         // Create files panel container
         this.filesContainer = domConstruct.create('div', {
           class: 'copilot-files-container',
@@ -187,6 +203,7 @@ define([
         // Add scroll event listener to detect user scrolling
         on(this.resultContainer, 'scroll', lang.hitch(this, function() {
           this._userIsScrolling = true;
+          this._updateJumpButton();
 
           // Clear existing timeout
           if (this._scrollTimeout) {
@@ -218,6 +235,18 @@ define([
         topic.subscribe('RefreshSessionDisplay', lang.hitch(this, 'showMessages'));
         topic.subscribe('CopilotApiError', lang.hitch(this, 'onQueryError'));
         topic.subscribe('chatTextSizeChanged', lang.hitch(this, 'setFontSize'));
+        // A turn in this chat finished: if the user is not at the bottom,
+        // the jump button announces the new response.
+        topic.subscribe('ChatSession:TurnEnded', lang.hitch(this, function(data) {
+          if (!data || data.sessionId !== this.sessionId) return;
+          // Let the final render land first.
+          setTimeout(lang.hitch(this, function() {
+            if (!this._isAtBottom()) {
+              this._hasNewResponse = true;
+            }
+            this._updateJumpButton();
+          }), 0);
+        }));
         topic.subscribe('noJobDataError', lang.hitch(this, function(error) {
             error.message = 'No job data found.\n\n' + error.message;
             this.onQueryError(error);
@@ -250,6 +279,7 @@ define([
       }
 
       domStyle.set(this.resultContainer, 'display', this.activePanel === 'messages' ? 'block' : 'none');
+      this._updateJumpButton();
       domStyle.set(this.filesContainer, 'display', this.activePanel === 'files' ? 'block' : 'none');
       domStyle.set(this.imagesContainer, 'display', this.activePanel === 'images' ? 'block' : 'none');
       domStyle.set(this.workflowsContainer, 'display', this.activePanel === 'workflows' ? 'block' : 'none');
@@ -404,9 +434,47 @@ define([
         if (scrollToBottom || wasNearBottom) {
           this.scrollToBottom();
         }
+        this._updateJumpButton();
       } else {
         this.showEmptyState();
+        this._hasNewResponse = false;
+        this._updateJumpButton();
       }
+    },
+
+    /** True when the message list is scrolled to (within 40 px of) the bottom. */
+    _isAtBottom: function() {
+      var el = this.resultContainer;
+      if (!el) return true;
+      return el.scrollTop + el.clientHeight >= el.scrollHeight - 40;
+    },
+
+    /**
+     * Shows the jump button when there is content below the view (and the
+     * messages panel is the one showing); "New response" styling after a turn
+     * finished off-screen.  Reaching the bottom clears both.
+     */
+    _updateJumpButton: function() {
+      if (!this._jumpButton) return;
+      var messagesShown = !this.resultContainer || this.resultContainer.style.display !== 'none';
+      var atBottom = this._isAtBottom();
+      if (atBottom) {
+        this._hasNewResponse = false;
+      }
+      domClass.toggle(this._jumpButton, 'visible', messagesShown && !atBottom);
+      domClass.toggle(this._jumpButton, 'has-new', !!this._hasNewResponse);
+    },
+
+    _jumpToBottom: function() {
+      var el = this.resultContainer;
+      if (!el) return;
+      if (typeof el.scrollTo === 'function') {
+        el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+      } else {
+        el.scrollTop = el.scrollHeight;
+      }
+      this._hasNewResponse = false;
+      domClass.remove(this._jumpButton, 'has-new');
     },
 
     resetSessionFiles: function() {
@@ -582,6 +650,8 @@ define([
       if (this.resultContainer) {
         this.resultContainer.scrollTop = this.resultContainer.scrollHeight;
       }
+      this._hasNewResponse = false;
+      this._updateJumpButton();
     },
 
     /**
@@ -743,6 +813,7 @@ define([
      */
     setSessionId: function(sessionId) {
       this.sessionId = sessionId;
+      this._hasNewResponse = false;
       this._contextEntriesByCategory = null;
       this._contextHiddenIdsByCategory = {};
 

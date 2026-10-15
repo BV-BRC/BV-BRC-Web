@@ -324,6 +324,60 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    position: relative;        /* anchors .copilot-jump-bottom */
+}
+
+/* Jump to latest message: a round arrow while there is content below the
+   view; a labelled pill ("New response") once a response finished off-screen */
+.copilot-jump-bottom {
+    display: none;
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    min-width: 32px;
+    padding: 0 9px;
+    border: 1px solid #cbd5e1;
+    border-radius: 16px;
+    background: #ffffff;
+    color: #334155;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+}
+.copilot-jump-bottom.visible {
+    display: inline-flex;
+}
+.copilot-jump-bottom:hover {
+    background: #f1f5f9;
+}
+.copilot-jump-bottom:focus-visible {
+    outline: 2px solid #0284c7;
+    outline-offset: 2px;
+}
+.copilot-jump-bottom-arrow {
+    font-size: 16px;
+}
+.copilot-jump-bottom-label {
+    display: none;
+    font-weight: 600;
+}
+.copilot-jump-bottom.has-new {
+    background: #0b5cab;
+    border-color: #0b5cab;
+    color: #ffffff;
+    padding: 0 14px;
+}
+.copilot-jump-bottom.has-new:hover {
+    background: #094c8f;
+}
+.copilot-jump-bottom.has-new .copilot-jump-bottom-label {
+    display: inline;
 }
 
 /* Main Result Container */
