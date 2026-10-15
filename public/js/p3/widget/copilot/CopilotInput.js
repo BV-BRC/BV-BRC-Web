@@ -725,6 +725,13 @@ define([
         this.submitButton.set('disabled', true);
         this._updateStopButtonState();
 
+        // Plan actions (Approve, Continue, answers) are turns too: show the
+        // sidebar's "Running" state like a typed message does.  Same end rules
+        // as _handleSubmitStream: an aborted or disconnected stream leaves the
+        // chip to the sidebar's active_job_id poll.
+        var planSessionId = sessionId || this.sessionId;
+        topic.publish('ChatSession:TurnStarted', { sessionId: planSessionId });
+
         this.displayWidget.showLoadingIndicator('Processing\u2026');
 
         var assistantMessage = null;
@@ -733,7 +740,7 @@ define([
 
         var params = {
           inputText: queryText,
-          sessionId: sessionId || this.sessionId,
+          sessionId: planSessionId,
           systemPrompt: '',
           model: this.model,
           save_chat: true,
@@ -782,12 +789,15 @@ define([
               _self.displayWidget.showMessages(_self.chatStore.query());
             }
           },
-          function() {
+          function(info) {
             // onEnd
             _self.isSubmitting = false;
             _self.isQueryProgressActive = false;
             _self.submitButton.set('disabled', false);
             _self._updateStopButtonState();
+            if (!info || info.reason !== 'aborted') {
+              topic.publish('ChatSession:TurnEnded', { sessionId: planSessionId });
+            }
           },
           function(error) {
             // onError
@@ -797,6 +807,10 @@ define([
             _self.isQueryProgressActive = false;
             _self.submitButton.set('disabled', false);
             _self._updateStopButtonState();
+            // Another turn holds the chat (409), or the stream dropped while
+            // the gateway keeps running: leave the chip to the poll.
+            if (error && (error.code === 'TURN_IN_FLIGHT' || error.isStreamDisconnect)) { return; }
+            topic.publish('ChatSession:TurnEnded', { sessionId: planSessionId });
           },
           function(progressInfo) {
             // onProgress — silent for plan actions
