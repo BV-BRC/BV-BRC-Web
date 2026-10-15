@@ -22,16 +22,18 @@
   "parserOptions": {
     "ecmaVersion": 8
   },
+  "settings": {
+    "_comment_reactivate_later": ["block-scoped-var", "no-restricted-globals", "no-redeclare",
+      "no-nested-ternary", "no-return-assign", "no-restricted-syntax", "no-multi-assign", "no-loop-func",
+      "array-callback-return", "no-use-before-define", "no-template-curly-in-string", "no-new", "no-cond-assign",
+      "no-dupe-keys",
+      "no-plusplus", "no-bitwise"]
+  },
   "rules": {
     "semi": 0,
     "no-else-return": 0,
     "one-var-declaration-per-line": 0,
     "comma-dangle": 0,
-    "_comment_reactivate_later": ["block-scoped-var", "no-restricted-globals", "no-redeclare",
-      "no-nested-ternary", "no-return-assign", "no-restricted-syntax", "no-multi-assign", "no-loop-func",
-      "array-callback-return", "no-use-before-define", "no-template-curly-in-string", "no-new", "no-cond-assign",
-      "no-dupe-keys",
-      "no-plusplus", "no-bitwise"],
     "block-scoped-var": 0,
     "no-restricted-globals": 0,
     "no-redeclare": 0,

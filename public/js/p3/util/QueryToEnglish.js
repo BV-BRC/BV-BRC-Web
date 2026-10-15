@@ -87,13 +87,13 @@ define([
           out = '<span class="searchOperator"> NOT </span>' + walk(term.args[0]);
           break;
         case 'between':
-          out = '<span class="searchField">' + escapeHtml(term.args[0]) + '</span> is between ' + escapeHtml(term.args[1]) + ' and ' + escapeHtml(term.args[2]);
+          out = '<span class="searchField">' + escapeHtml(term.args[0]) + ' </span><span class="searchOperator"> is between </span><span class="searchValue">' + escapeHtml(term.args[1]) + '</span> and <span class="searchValue">' + escapeHtml(term.args[2]) + '</span>';
           break;
         case 'lt':
-          out = '<span class="searchField">' + escapeHtml(term.args[0]) + '</span> &lt;= ' + escapeHtml(term.args[1]);
+          out = '<span class="searchField">' + escapeHtml(term.args[0]) + ' </span><span class="searchOperator"> &lt;= </span><span class="searchValue">' + escapeHtml(term.args[1]) + '</span>';
           break;
         case 'gt':
-          out = '<span class="searchField">' + escapeHtml(term.args[0]) + '</span> &gt;= ' + escapeHtml(term.args[1]);
+          out = '<span class="searchField">' + escapeHtml(term.args[0]) + ' </span><span class="searchOperator"> &gt;= </span><span class="searchValue">' + escapeHtml(term.args[1]) + '</span>';
           break;
         case 'GenomeGroup':
           var groupParts = decodeURIComponent(term.args[0]).split('/');

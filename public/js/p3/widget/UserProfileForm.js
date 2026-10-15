@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dojo/dom-construct',"dijit/registry",
   'dojo/dom-class', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/UserProfileForm.html', 'dijit/form/Form', 'dojo/request',
-  'dojo/dom-form', 'dojo/_base/lang', 'dojox/validate/web','dojo/topic'
+  'dojo/dom-form', 'dojo/_base/lang', 'dojox/validate/web','dojo/topic', '../auth/authHeaders'
 ], function (
   declare, WidgetBase, on, domConstruct,registry,
   domClass, Templated, WidgetsInTemplate,
   Template, FormMixin, xhr,
-  domForm, lang, validate,Topic
-) {
+  domForm, lang, validate,Topic,
+  authHeader) {
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
     'baseClass': 'App UserProfileForm',
     templateString: Template,
@@ -90,7 +90,7 @@ define([
           'Content-Type': 'application/json',
           'X-Requested-With': null,
           'Accept': 'application/json',
-          'Authorization': window.App.authorizationToken
+          'Authorization': authHeader()
         }
       });
 
@@ -147,7 +147,7 @@ define([
             'Content-Type': 'application/json',
             'X-Requested-With': null,
             'Accept': 'application/json',
-            'Authorization': window.App.authorizationToken
+            'Authorization': authHeader()
           }
         });
         def.then(function (data) {
@@ -202,6 +202,64 @@ define([
           }
         }
     },
+    _queryLogActive: false,
+
+    onQueryLogToggle: function () {
+      var _self = this;
+      var url = this._queryLogActive ? '/_querylog/stop' : '/_querylog/start';
+      xhr(url, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': null,
+          'Accept': 'application/json',
+          'Authorization': authHeader()
+        }
+      }).then(function (data) {
+        var result = JSON.parse(data);
+        if (result.status === 'started') {
+          _self._queryLogActive = true;
+          _self.queryLogButton.set('label', 'Stop Logging');
+          _self.queryLogStatus.innerHTML = 'Recording to ' + result.filename;
+          if (window.App._showQueryLogIndicator) { window.App._showQueryLogIndicator(); }
+        } else {
+          _self._queryLogActive = false;
+          _self.queryLogButton.set('label', 'Start Logging');
+          _self.queryLogStatus.innerHTML = '';
+          if (window.App._hideQueryLogIndicator) { window.App._hideQueryLogIndicator(); }
+        }
+      }, function (err) {
+        console.error('Query log toggle failed:', err);
+        Topic.publish('/Notification', {
+          message: 'Failed to toggle query logging',
+          type: 'error'
+        });
+      });
+    },
+
+    _initQueryLogging: function () {
+      if (!window.App.queryLoggingEnabled) {
+        return;
+      }
+      var _self = this;
+      domClass.remove(this.queryLogRow, 'dijitHidden');
+      xhr('/_querylog/status', {
+        method: 'get',
+        headers: {
+          'Accept': 'application/json'
+        }
+      }).then(function (data) {
+        var result = JSON.parse(data);
+        if (result.active) {
+          _self._queryLogActive = true;
+          _self.queryLogButton.set('label', 'Stop Logging');
+          _self.queryLogStatus.innerHTML = 'Recording to ' + result.filename;
+        }
+      }, function () {
+        // Status check failed — leave in default state
+      });
+    },
+
     onSubmit: function (evt) {
       evt.preventDefault();
       evt.stopPropagation();
@@ -316,7 +374,7 @@ define([
           'Content-Type': 'application/json-patch+json',
           'X-Requested-With': null,
           'Accept': 'application/json',
-          'Authorization': window.App.authorizationToken
+          'Authorization': authHeader()
         }
       });
       var _self = this;
@@ -406,6 +464,8 @@ define([
         if (this.userprofileStored.settings && this.userprofileStored.settings.default_job_folder) {
           this.defaultJobFolderSelector.set('value', this.userprofileStored.settings.default_job_folder);
         }
+
+        this._initQueryLogging();
 
         // this.UNF.destroy();
         // domConstruct.create("span",{innerHTML: this.userprofileStored.id.replace('@' + localStorage.getItem("realm"), '')},this.usernameContainer)

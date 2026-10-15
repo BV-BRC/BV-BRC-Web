@@ -1,161 +1,1018 @@
-<div style="margin-left: 5px; margin-right: 5px;">
-    <div class="third left">
-        <div class="section">
-            <h3 class="section-title close"><span class="wrap">Information</span></h3>
-            <p>The markers on the map below show the locations of the selected surveillance records. The number inside a
-                marker indicates the number of records found at that location. Each marker can be clicked to provide
-                additional details about the records at that location, including the percent positive samples at that
-                location. Be aware that the percent of flu-positive samples may be affected by sampling and/or reporting
-                bias. When more than 20 records are found at a single location, a summary of the records is given.</p>
-            <br>
-            <p> The controls on the map can be used to zoom in or out or switch to a satellite view. The map can be
-                dragged to move to navigate to different areas </p>
-        </div>
+<div class="sdm-layout" data-dojo-attach-point="layoutNode">
+    <style>
+      /* ── Marker icon styles ─────────────────────────────────────── */
+      .mapscanvas-marker {
+        background: transparent;
+        border: 0;
+      }
 
-        <div class="section">
-            <h3 class="section-title close"><span class="wrap">Flu-positive Samples</span></h3>
-            <div>
-                <div>
-                    <input data-dojo-type="dijit/form/CheckBox"
-                           id="percentageCheckBox"
-                           data-dojo-attach-point="percentageCheckBox"
-                           checked="false"
-                           data-dojo-attach-event="onChange:showHidePercent"
-                    />
-                    <label for="percentageCheckBox">Show percentage by color gradient</label>
-                    </br>
-                    <div id="fluPercents">
-                        <table style="margin: 0; border: 0 none; text-align: center;">
-                            <tbody>
-                            <tr>
-                                <td style="color: black; background-color: #FF0000; width: 16%;">
-                                    50-100%
-                                </td>
-                                <td style="color: black; background-color: #E86500; width: 16%;">
-                                    25-50%
-                                </td>
-                                <td style="color: black; background-color: #DC950D; width: 16%;">
-                                    15-25%
-                                </td>
-                                <td style="color: black; background-color: #FFFF00; width: 16%;">
-                                    7-15%
-                                </td>
-                                <td style="color: black; background-color: #869832; width: 16%;">
-                                    0-7%
-                                </td>
-                                <td style="color: black; background-color: #00FF00; width: 16%;">
-                                    0%
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+      .mapscanvas-marker.is-selected svg path {
+        stroke: #1f78d1;
+        stroke-width: 2.4;
+      }
+
+      .mapscanvas-marker.is-selected {
+        z-index: 1000 !important;
+      }
+
+      /* ── Cluster icon styles ────────────────────────────────────── */
+      .marker-cluster-mapscanvas {
+        background-clip: padding-box;
+        border-radius: 50%;
+      }
+
+      .marker-cluster-mapscanvas div {
+        width: 30px;
+        height: 30px;
+        margin-left: 5px;
+        margin-top: 5px;
+        text-align: center;
+        border-radius: 50%;
+        font: 12px/30px "Helvetica Neue", Arial, sans-serif;
+        color: #fff;
+        font-weight: 700;
+      }
+
+      .marker-cluster-mapscanvas-sm {
+        background: rgba(31, 120, 180, 0.6);
+      }
+
+      .marker-cluster-mapscanvas-sm div {
+        background: rgba(31, 120, 180, 0.85);
+      }
+
+      .marker-cluster-mapscanvas-md {
+        background: rgba(230, 138, 0, 0.6);
+      }
+
+      .marker-cluster-mapscanvas-md div {
+        background: rgba(230, 138, 0, 0.9);
+      }
+
+      .marker-cluster-mapscanvas-lg {
+        background: rgba(214, 39, 40, 0.6);
+      }
+
+      .marker-cluster-mapscanvas-lg div {
+        background: rgba(214, 39, 40, 0.9);
+      }
+
+      /* ── Layout shell ──────────────────────────────────────────── */
+      .sdm-layout {
+        display: flex;
+        gap: 0;
+        height: calc(100vh - 160px);
+        min-height: 500px;
+      }
+
+      /* ── Filter panel ──────────────────────────────────────────── */
+      .sdm-filter-panel {
+        position: relative;
+        flex-shrink: 0;
+        background: #f8fafb;
+        border-right: 1px solid #e5e7eb;
+        box-sizing: border-box;
+        align-self: stretch;
+        width: 260px;
+        overflow: hidden;
+        transition: width 0.2s ease;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sdm-filter-panel.sdm-collapsed {
+        width: 0;
+        border-right: none;
+      }
+
+      .sdm-filter-inner {
+        width: 260px;
+        padding: 0 0 14px;
+        box-sizing: border-box;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+      }
+
+      /* Title bar */
+      .sdm-panel-titlebar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px 6px 16px;
+        border-bottom: 1px solid #e5e7eb;
+        flex: 0 0 auto;
+      }
+
+      .sdm-panel-title {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: #9ca3af;
+      }
+
+      .sdm-titlebar-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .sdm-toggle-btn {
+        height: 24px;
+        padding: 0 10px;
+        border-radius: 4px;
+        background: #fff;
+        border: 1px solid #d1d5db;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        user-select: none;
+        font-size: 11px;
+        font-weight: 600;
+        color: #6b7280;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .sdm-toggle-btn:hover {
+        background: #eef2f7;
+        border-color: #2c7a7b;
+        color: #2c7a7b;
+      }
+
+      .sdm-icon-btn {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        cursor: pointer;
+        font-family: Georgia, serif;
+        font-style: italic;
+        font-size: 12px;
+        font-weight: 700;
+        color: #6b7280;
+        line-height: 1;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .sdm-icon-btn:hover {
+        background: #eef2f7;
+        border-color: #2c7a7b;
+        color: #2c7a7b;
+      }
+
+      .sdm-icon-btn.is-active {
+        background: #2c7a7b;
+        border-color: #2c7a7b;
+        color: #fff;
+      }
+
+      /* Info popover */
+      .sdm-info-popover {
+        position: relative;
+        margin: 8px 12px;
+        padding: 10px 28px 10px 12px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(15, 30, 55, 0.08);
+        font-size: 12.5px;
+        line-height: 1.5;
+        color: #374151;
+        flex: 0 0 auto;
+      }
+
+      .sdm-info-popover[hidden] {
+        display: none;
+      }
+
+      .sdm-info-popover p {
+        margin: 0;
+      }
+
+      .sdm-popover-close {
+        position: absolute;
+        top: 4px;
+        right: 6px;
+        background: none;
+        border: 0;
+        font-size: 18px;
+        line-height: 1;
+        color: #9ca3af;
+        cursor: pointer;
+        padding: 2px 6px;
+      }
+
+      .sdm-popover-close:hover {
+        color: #2c7a7b;
+      }
+
+      /* Quick actions row — Reset Map */
+      .sdm-quick-actions {
+        padding: 10px 16px 4px;
+      }
+
+      .sdm-quick-actions .dijitButton,
+      .sdm-quick-actions .dijitButtonNode,
+      .sdm-quick-actions .dijitButtonContents {
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .sdm-quick-actions .dijitButtonNode {
+        background: #fff !important;
+        background-image: none !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 4px !important;
+        padding: 6px 10px !important;
+        box-shadow: none !important;
+        transition: background .12s, border-color .12s, color .12s;
+      }
+
+      .sdm-quick-actions .dijitButtonNode:hover {
+        background: #eef2f7 !important;
+        border-color: #2c7a7b !important;
+      }
+
+      .sdm-quick-actions .dijitButtonText {
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        color: #374151 !important;
+        text-transform: none !important;
+        letter-spacing: 0;
+      }
+
+      .sdm-quick-actions .dijitButtonNode:hover .dijitButtonText {
+        color: #2c7a7b !important;
+      }
+
+      /* Partition section buttons — scoped, smaller, secondary */
+      .sdm-partition-buttons .dijitButtonNode {
+        background: #fff !important;
+        background-image: none !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 4px !important;
+        box-shadow: none !important;
+        padding: 4px 10px !important;
+      }
+
+      .sdm-partition-buttons .dijitButtonNode:hover {
+        background: #eef2f7 !important;
+        border-color: #2c7a7b !important;
+      }
+
+      .sdm-partition-buttons .dijitButtonText {
+        font-size: 11.5px !important;
+        font-weight: 600 !important;
+        color: #374151 !important;
+        text-transform: none !important;
+      }
+
+      .sdm-partition-buttons .dijitButtonNode:hover .dijitButtonText {
+        color: #2c7a7b !important;
+      }
+
+      .sdm-partition-primary .dijitButtonNode {
+        background: #2c7a7b !important;
+        border-color: #2c7a7b !important;
+      }
+
+      .sdm-partition-primary .dijitButtonNode:hover {
+        background: #236163 !important;
+        border-color: #236163 !important;
+      }
+
+      .sdm-partition-primary .dijitButtonText {
+        color: #fff !important;
+      }
+
+      .sdm-partition-primary .dijitButtonNode:hover .dijitButtonText {
+        color: #fff !important;
+      }
+
+      /* ── Marker popup styling ──────────────────────────────────── */
+      .leaflet-popup-content-wrapper {
+        border-radius: 10px !important;
+        padding: 0 !important;
+        box-shadow: 0 10px 30px rgba(15, 30, 55, 0.22) !important;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+      }
+
+      .leaflet-popup-content {
+        margin: 0 !important;
+        width: 340px !important;
+        max-width: 360px;
+        line-height: 1.45;
+      }
+
+      .leaflet-popup-tip {
+        box-shadow: 0 4px 14px rgba(15, 30, 55, 0.18) !important;
+      }
+
+      .leaflet-popup .leaflet-popup-close-button {
+        display: none !important;
+      }
+
+      .sdm-pop {
+        font: 13px/1.45 "Helvetica Neue", Arial, sans-serif;
+        color: #1f2937;
+      }
+
+      /* Tinted hero header */
+      .sdm-pop-header {
+        background: linear-gradient(135deg, #f3f7f7 0%, #e8f1f1 100%);
+        padding: 12px 16px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .sdm-pop-header-top {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .sdm-pop-location {
+        font-weight: 700;
+        font-size: 15px;
+        color: #0f1f1f;
+        flex: 1;
+        min-width: 0;
+        letter-spacing: -0.01em;
+      }
+
+      .sdm-pop-coords {
+        font-size: 11px;
+        color: #6b7280;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: baseline;
+        gap: 5px;
+      }
+
+      .sdm-pop-coords-label {
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: #9ca3af;
+      }
+
+      /* Body */
+      .sdm-pop-body {
+        padding: 12px 16px 14px;
+      }
+
+      .sdm-pop-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+
+      .sdm-pop-meta .sdm-pop-btn {
+        margin-left: auto;
+      }
+
+      /* Chips, with semantic variants based on test result */
+      .sdm-pop-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: #f1f3f5;
+        color: #374151;
+        font-size: 11.5px;
+        font-weight: 600;
+        border: 1px solid #e5e7eb;
+      }
+
+      .sdm-pop-chip::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #9ca3af;
+      }
+
+      .sdm-pop-chip.is-na {
+        background: #f3f4f6;
+        border-color: #e5e7eb;
+        color: #6b7280;
+      }
+
+      /* Prevalence buckets — mirror the sidebar Flu-Positive Samples legend.
+         Each chip uses a soft tint with a saturated dot indicator. */
+      .sdm-pop-chip.is-prev-veryhigh {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #7f1d1d;
+      }
+
+      .sdm-pop-chip.is-prev-veryhigh::before {
+        background: #FF0000;
+      }
+
+      .sdm-pop-chip.is-prev-high {
+        background: #fff4ec;
+        border-color: #fed7aa;
+        color: #7c2d12;
+      }
+
+      .sdm-pop-chip.is-prev-high::before {
+        background: #E86500;
+      }
+
+      .sdm-pop-chip.is-prev-medhigh {
+        background: #fef7e6;
+        border-color: #fde68a;
+        color: #78350f;
+      }
+
+      .sdm-pop-chip.is-prev-medhigh::before {
+        background: #DC950D;
+      }
+
+      .sdm-pop-chip.is-prev-med {
+        background: #fefce8;
+        border-color: #fde047;
+        color: #713f12;
+      }
+
+      .sdm-pop-chip.is-prev-med::before {
+        background: #FFFF00;
+        border: 1px solid #c8a800;
+      }
+
+      .sdm-pop-chip.is-prev-low {
+        background: #f4f6e6;
+        border-color: #d9e3a1;
+        color: #4d5d1f;
+      }
+
+      .sdm-pop-chip.is-prev-low::before {
+        background: #869832;
+      }
+
+      .sdm-pop-chip.is-prev-zero {
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+        color: #065f46;
+      }
+
+      .sdm-pop-chip.is-prev-zero::before {
+        background: #00FF00;
+        border: 1px solid #0fae0f;
+      }
+
+      .sdm-pop-btn {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 6px;
+        background: #fff;
+        border: 1px solid #d1d5db;
+        color: #374151;
+        font-size: 11.5px;
+        font-weight: 600;
+        cursor: pointer;
+        user-select: none;
+        transition: background .12s, border-color .12s, color .12s;
+      }
+
+      .sdm-pop-btn:hover {
+        background: #eef2f7;
+        border-color: #2c7a7b;
+        color: #2c7a7b;
+      }
+
+      .sdm-pop-section-title {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: #9ca3af;
+        margin: 2px 0 8px;
+      }
+
+      .sdm-pop-link {
+        color: #2c7a7b;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 11.5px;
+      }
+
+      .sdm-pop-link:hover {
+        text-decoration: underline;
+      }
+
+      .sdm-pop-helper {
+        font-size: 12px;
+        color: #6b7280;
+        margin: 0 0 10px;
+      }
+
+      .sdm-pop-dl {
+        display: grid;
+        grid-template-columns: 90px 1fr;
+        gap: 8px 12px;
+        margin: 0;
+        padding: 0;
+        align-items: baseline;
+      }
+
+      .sdm-pop-dl dt {
+        font-size: 10.5px;
+        color: #6b7280;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+      }
+
+      .sdm-pop-dl dd {
+        margin: 0;
+        font-size: 12.5px;
+        color: #1f2937;
+      }
+
+      .sdm-pop-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+
+      .sdm-pop-table th {
+        text-align: left;
+        font-weight: 700;
+        color: #6b7280;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        border-bottom: 1px solid #eef0f2;
+        padding: 6px;
+        background: #fafbfc;
+      }
+
+      .sdm-pop-table td {
+        padding: 6px;
+        border-bottom: 1px solid #f4f5f7;
+        color: #374151;
+      }
+
+      .sdm-pop-table tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .sdm-pop-table .sdm-pop-num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .sdm-pop-table tbody tr:hover {
+        background: #fafbfc;
+      }
+
+      /* Collapsed re-open strip */
+      .sdm-expand-strip {
+        display: none;
+        flex-shrink: 0;
+        width: 28px;
+        background: #f8fafb;
+        border-right: 1px solid #e5e7eb;
+        align-self: stretch;
+        align-items: flex-start;
+        justify-content: center;
+        padding-top: 14px;
+        cursor: pointer;
+      }
+
+      .sdm-expand-strip.is-visible {
+        display: flex;
+      }
+
+      .sdm-expand-strip:hover {
+        background: #eef2f7;
+      }
+
+      .sdm-expand-strip-label {
+        font-size: 11px;
+        color: #9ca3af;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        transform: rotate(180deg);
+        letter-spacing: 0.05em;
+        user-select: none;
+      }
+
+      /* Sections */
+      .sdm-section {
+        padding: 12px 0 4px;
+      }
+
+      .sdm-section-header {
+        padding: 0 16px 6px;
+      }
+
+      .sdm-section-title {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: #9ca3af;
+      }
+
+      .sdm-divider {
+        margin: 4px 16px;
+        border: 0;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      .sdm-padded {
+        padding: 0 16px;
+      }
+
+      .sdm-section p {
+        margin: 0 0 8px;
+        font-size: 12.5px;
+        line-height: 1.5;
+        color: #374151;
+      }
+
+      .sdm-helper {
+        font-size: 12px;
+        color: #6b7280;
+      }
+
+      /* Flu-positive legend */
+      .sdm-inline-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 16px;
+        font-size: 12.5px;
+        color: #374151;
+        margin-bottom: 8px;
+      }
+
+      .sdm-legend.sdm-legend-row {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        margin: 0 16px;
+        border-radius: 3px;
+        overflow: hidden;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+      }
+
+      .sdm-legend-cell {
+        font-size: 9.5px;
+        color: #1f2937;
+        padding: 5px 0;
+        text-align: center;
+        line-height: 1;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: clip;
+        min-width: 0;
+      }
+
+      /* Flyway list: full-width row per region */
+      #flyawayDiv {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sdm-flyway-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        position: relative;
+        transition: background 0.12s;
+      }
+
+      .sdm-flyway-row:hover {
+        background: #eef2f7;
+      }
+
+      .sdm-flyway-row label {
+        flex: 1;
+        min-width: 0;
+        font-size: 12.5px;
+        color: #374151;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: pointer;
+      }
+
+      .sdm-flyway-swatch {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+        cursor: pointer;
+      }
+
+      /* Partition */
+      .sdm-partition-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+
+      .sdm-partition-controls select {
+        padding: 4px 6px;
+        font-size: 12px;
+      }
+
+      .sdm-partition-buttons {
+        display: flex;
+        gap: 6px;
+      }
+
+      #partitionDataDiv {
+        padding: 0;
+        margin-top: 4px;
+      }
+
+      .sdm-partition-banner {
+        background: #f0f7f7;
+        border: 1px solid #cfe3e3;
+        border-left: 3px solid #2c7a7b;
+        border-radius: 4px;
+        padding: 8px 10px;
+        margin: 8px 0;
+      }
+
+      .sdm-partition-banner-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: #1a5253;
+      }
+
+      .sdm-partition-banner-helper {
+        font-size: 11px;
+        color: #5b6b7a;
+        margin-top: 2px;
+        line-height: 1.4;
+      }
+
+      .partition-item {
+        padding: 4px 0 4px 8px;
+        margin: 2px 0;
+        border-radius: 4px;
+        border-left: 3px solid transparent;
+        transition: background 0.12s, border-color 0.12s;
+      }
+
+      .partition-item:hover {
+        background: #eef2f7;
+        border-left-color: #2c7a7b;
+      }
+
+      .partition-item input[type="checkbox"] {
+        margin-right: 6px;
+      }
+
+      .partition-item label {
+        font-size: 12.5px;
+        color: #374151;
+        cursor: pointer;
+        line-height: 1.35;
+      }
+
+      /* ── Right card area (map) ─────────────────────────────────── */
+      .sdm-cards-area {
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sdm-map-canvas {
+        width: 100%;
+        flex: 1 1 auto;
+        min-height: 0;
+        border-left: 0;
+        overflow: hidden;
+      }
+    </style>
+    <div class="sdm-filter-panel" data-dojo-attach-point="sidebarNode">
+        <div class="sdm-panel-titlebar">
+            <span class="sdm-panel-title">Filter Panel</span>
+            <div class="sdm-titlebar-actions">
+                <button type="button" class="sdm-icon-btn" data-dojo-attach-point="infoToggleNode"
+                        data-dojo-attach-event="onClick:_toggleInfoPopover"
+                        title="About this view" aria-label="About this view">i
+                </button>
+                <button type="button" class="sdm-toggle-btn" data-dojo-attach-point="sidebarToggleNode"
+                        data-dojo-attach-event="onClick:_toggleSidebar"
+                        title="Hide panel" aria-label="Hide panel">Hide
+                </button>
             </div>
         </div>
 
-        <div class="section">
-            <h3 class="section-title close"><span class="wrap">Highlight Flyways</span></h3>
-            <div>
-                <p>The flyways of wild birds can be superimposed on the map using the "Highlight Flyways" option.</p>
-                </br>
-                <div id="flyawayDiv"></div>
-            </div>
+        <div class="sdm-info-popover" data-dojo-attach-point="infoPopoverNode" hidden>
+            <p>Markers show the locations of the selected surveillance records. The number inside a marker is the number
+                of records at that location. Each marker can be clicked to provide additional details about the records
+                at that location, including the percent positive samples at that location. Be aware that the percent of
+                flu-positive samples may be affected by sampling and/or reporting bias. When more than 20 records are
+                found at a single location, a summary of the records is given.</p>
+            <button type="button" class="sdm-popover-close" data-dojo-attach-event="onClick:_toggleInfoPopover"
+                    aria-label="Close">&times;
+            </button>
         </div>
 
-        <div class="section" id="partition-section">
-            <h3 class="section-title close"><span class="wrap">Partition</span></h3>
-            <div>
-                <p>Partition all surveillance samples that map to these hosts by time interval.</p>
-                <div>
-                    <label for="dateRange">Partition by time interval:</label>
-                    <select id="dateRange" data-dojo-attach-point="partitionDateRange" width="100">
-                        <option value="0.5">0.5 Year</option>
-                        <option value="1">1 Year</option>
-                        <option value="2">2 Years</option>
-                        <option value="3">3 Years</option>
-                        <option value="5">5 Years</option>
-                        <option value="10">10 Years</option>
-                    </select>
-                    <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="onClick:partitionByYear">
-                        Submit
-                    </button>
-                    <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="onClick:clearPartition">
-                        Clear
-                    </button>
-                </div>
-                <div id="partitionDataDiv" style="max-height: 150px; overflow-y: auto;"></div>
-
-                <style>
-                    .partition-item {
-                        display: flex;
-                        position: relative;
-                        align-items: center;
-                    }
-
-                    .partition-modal {
-                        display: none;
-                        border-radius: 8px;
-                        height: auto;
-                        width: auto;
-                        position: absolute;
-                        background: #fff;
-                        border: 1px solid #000;
-                        z-index: 1;
-                        line-height: initial;
-                    }
-
-                    .partition-modal > div {
-                        padding: 5px;
-                        width: 350px;
-                        text-align: left;
-                    }
-
-                    .partition-modal table th {
-                        width: 50%;
-                        font-weight: bold;
-                    }
-
-                    .partition-modal-close-btn {
-                        background: none;
-                        display: block;
-                        border: 0px;
-                        margin: 0px;
-                        padding: 0px;
-                        text-transform: none;
-                        appearance: none;
-                        position: absolute;
-                        cursor: pointer;
-                        user-select: none;
-                        top: -6px;
-                        right: -6px;
-                        width: 30px;
-                        height: 30px;
-                    }
-
-                    .partition-modal-close-btn > img {
-                        pointer-events: none;
-                        display: block;
-                        width: 14px;
-                        height: 14px;
-                        margin: 8px;
-                    }
-                </style>
-            </div>
-        </div>
-    </div>
-
-    <div class="two-third right">
-        <div class="section" style="margin: 0px 5px; ">
-            <h3 class="section-title close"><span class="wrap">Map</span></h3>
-            <div id="surveillanceMapCanvas" style="width: 100%; height: 600px;">
-                Loading Surveillance Data Map...
-            </div>
-            <div class="BrowserHeader right">
+        <div class="sdm-filter-inner" data-dojo-attach-point="sidebarContentNode">
+            <div class="sdm-quick-actions">
                 <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="onClick:resetMapToDefault">
                     Reset Map
                 </button>
             </div>
+
+            <hr class="sdm-divider"/>
+
+            <div class="sdm-section">
+                <div class="sdm-section-header">
+                    <span class="sdm-section-title">Flu-positive Samples</span>
+                </div>
+                <div class="sdm-section-body">
+                    <label class="sdm-inline-checkbox">
+                        <input data-dojo-type="dijit/form/CheckBox"
+                               id="percentageCheckBox"
+                               data-dojo-attach-point="percentageCheckBox"
+                               checked="false"
+                               data-dojo-attach-event="onChange:showHidePercent"/>
+                        <span>Show percentage by color</span>
+                    </label>
+                    <div id="fluPercents" class="sdm-legend sdm-legend-row">
+                        <span class="sdm-legend-cell" style="background:#FF0000;color:#fff;">50&ndash;100</span>
+                        <span class="sdm-legend-cell" style="background:#E86500;color:#fff;">25&ndash;50</span>
+                        <span class="sdm-legend-cell" style="background:#DC950D;color:#fff;">15&ndash;25</span>
+                        <span class="sdm-legend-cell" style="background:#FFFF00">7&ndash;15</span>
+                        <span class="sdm-legend-cell" style="background:#869832;color:#fff;">0&ndash;7</span>
+                        <span class="sdm-legend-cell" style="background:#00FF00">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="sdm-divider"/>
+
+            <div class="sdm-section">
+                <div class="sdm-section-header">
+                    <span class="sdm-section-title">Highlight Flyways</span>
+                </div>
+                <div class="sdm-section-body">
+                    <p class="sdm-padded sdm-helper">Superimpose flyways of wild birds on the map.</p>
+                    <div id="flyawayDiv"></div>
+                </div>
+            </div>
+
+            <hr class="sdm-divider"/>
+
+            <div class="sdm-section" id="partition-section">
+                <div class="sdm-section-header">
+                    <span class="sdm-section-title">Partition</span>
+                </div>
+                <div class="sdm-section-body sdm-padded">
+                    <p class="sdm-helper">Partition surveillance samples mapped to these hosts by time interval.</p>
+                    <div class="sdm-partition-controls">
+                        <label for="dateRange" class="sdm-helper">Time interval</label>
+                        <select id="dateRange" data-dojo-attach-point="partitionDateRange">
+                            <option value="0.5">0.5 Year</option>
+                            <option value="1">1 Year</option>
+                            <option value="2">2 Years</option>
+                            <option value="3">3 Years</option>
+                            <option value="5">5 Years</option>
+                            <option value="10">10 Years</option>
+                        </select>
+                        <div class="sdm-partition-buttons">
+                            <span class="sdm-partition-primary">
+                                <button data-dojo-type="dijit/form/Button"
+                                        data-dojo-attach-event="onClick:partitionByYear">
+                                    Apply partition
+                                </button>
+                            </span>
+                            <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="onClick:clearPartition">
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                    <div id="partitionDataDiv"></div>
+
+                    <style>
+                      .partition-modal {
+                        display: none;
+                        border-radius: 10px;
+                        position: fixed;
+                        background: #fff;
+                        border: 1px solid #e5e7eb;
+                        z-index: 2000;
+                        line-height: 1.45;
+                        box-shadow: 0 14px 36px rgba(15, 30, 55, 0.20);
+                        width: 340px;
+                        overflow: hidden;
+                        font: 13px/1.45 "Helvetica Neue", Arial, sans-serif;
+                        color: #1f2937;
+                      }
+
+                      .partition-modal > div {
+                        width: 100%;
+                        box-sizing: border-box;
+                        padding: 0;
+                      }
+
+                      .partition-modal-header {
+                        background: linear-gradient(135deg, #f3f7f7 0%, #e8f1f1 100%);
+                        border-bottom: 1px solid #e5e7eb;
+                        padding: 12px 16px 10px;
+                      }
+
+                      .partition-modal-eyebrow {
+                        font-size: 10px;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        letter-spacing: .08em;
+                        color: #9ca3af;
+                        margin-bottom: 2px;
+                      }
+
+                      .partition-modal-range {
+                        font-size: 14px;
+                        font-weight: 700;
+                        color: #0f1f1f;
+                        margin-bottom: 8px;
+                      }
+
+                      .partition-modal-stats {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 6px;
+                      }
+
+                      .partition-modal-table-wrap {
+                        padding: 12px 16px 14px;
+                      }
+
+                      .partition-modal-close-btn {
+                        background: rgba(255, 255, 255, 0.95);
+                        color: #6b7280;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border: 1px solid #e5e7eb;
+                        border-radius: 50%;
+                        position: absolute;
+                        top: 8px;
+                        right: 8px;
+                        width: 24px;
+                        height: 24px;
+                        padding: 0;
+                        font-size: 18px;
+                        font-weight: 400;
+                        line-height: 1;
+                        cursor: pointer;
+                        user-select: none;
+                        box-shadow: 0 1px 3px rgba(15, 30, 55, 0.08);
+                        z-index: 1;
+                      }
+
+                      .partition-modal-close-btn:hover {
+                        background: #eef2f7;
+                        color: #2c7a7b;
+                      }
+                    </style>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sdm-expand-strip" data-dojo-attach-point="expandStripNode"
+         data-dojo-attach-event="onClick:_toggleSidebar" title="Show panel" aria-label="Show panel">
+        <span class="sdm-expand-strip-label">Show filters</span>
+    </div>
+
+    <div class="sdm-cards-area">
+        <div id="surveillanceMapCanvas" class="sdm-map-canvas">
+            Loading Surveillance Data Map...
         </div>
     </div>
 </div>

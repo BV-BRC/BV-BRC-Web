@@ -9,7 +9,7 @@ define([
   'dojo/promise/all', '../util/encodePath', 'dojo/when', 'dojo/request', './TsvCsvFeatures', './RerunUtility', './viewer/JobResult',
   'dojo/NodeList-traverse', './app/Homology', './app/GenomeAlignment', './app/PhylogeneticTree',
   'dijit/registry', 'dojo/keys', 'dojo/dom-style', 'dojo/Stateful',  'dojo/hash', 'dojo/io-query',
-  '../util/FavoriteFolders', '../util/RecentFolders'
+  '../util/FavoriteFolders', '../util/RecentFolders', '../auth/authHeaders'
 ], function (
   declare, BorderContainer, on, query,
   domClass, domConstruct, domAttr,
@@ -21,8 +21,8 @@ define([
   All, encodePath, when, request, tsvCsvFeatures, rerunUtility, JobResult,
   NodeList_traverse, Homology, GenomeAlignment, PhylogeneticTree,
   registry, keys, domStyle, Stateful, hash, ioQuery,
-  FavoriteFolders, RecentFolders
-) {
+  FavoriteFolders, RecentFolders,
+  authHeader) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
   var viewMSATT = new TooltipDialog({
@@ -830,7 +830,7 @@ define([
       }, function (selection) {
         // console.log("Current Container Widget: ", self.actionPanel.currentContainerWidget, "Slection: ", selection)
         var modPath = self.actionPanel.currentContainerWidget.path.replace(/^\/public/, '');
-        Topic.publish('/navigate', { href: '/view/Homology' + modPath });
+        Topic.publish('/navigate', { href: '/view/Homology' + encodePath(modPath) });
       }, false);
 
 
@@ -1054,6 +1054,68 @@ define([
             Topic.publish("/navigate", { href: "/workspace" + encodePath(path) });
           } else {
             console.log("Error: could not find small_molecule_docking_report.html");
+          }
+        }
+      );
+      this.browserHeader.addAction(
+        "ViewPredictStructureReport",
+        "fa icon-eye fa-2x",
+        {
+          label: "REPORT",
+          multiple: false,
+          validTypes: ["PredictStructure"],
+          tooltip: "View Structure Prediction Report",
+        },
+        function (selection) {
+          var path;
+          selection[0].autoMeta.output_files.forEach(
+            lang.hitch(this, function (file_data) {
+              var filepath = file_data[0].split("/");
+              if (filepath[filepath.length - 1] === "report.html") {
+                path = filepath.join("/");
+              }
+            })
+          );
+          if (path) {
+            // Open in a new tab so the user keeps their place in the
+            // workspace listing; the report is a destination, not a step.
+            window.open("/workspace" + encodePath(path), "_blank");
+          } else {
+            console.log("Error: could not find report.html");
+          }
+        }
+      );
+      this.browserHeader.addAction(
+        "ViewStabiliNNatorReport",
+        "fa icon-eye fa-2x",
+        {
+          label: "REPORT",
+          multiple: false,
+          validTypes: ["StabiliNNator"],
+          tooltip: "View Protein Stability Report",
+        },
+        function (selection) {
+          var path;
+          // Match on the "_report.html" suffix rather than a fixed filename as
+          // the other report actions do. StabiliNNator now writes a fixed
+          // stabilinnator_report.html, but jobs completed before that change
+          // named the report after the input structure
+          // (<basename>_report.html). The suffix match covers both, so it must
+          // stay until those legacy results are gone.
+          selection[0].autoMeta.output_files.forEach(
+            lang.hitch(this, function (file_data) {
+              var filepath = file_data[0].split("/");
+              var filename = filepath[filepath.length - 1];
+              if (filename.length > "_report.html".length &&
+                  filename.slice(-"_report.html".length) === "_report.html") {
+                path = filepath.join("/");
+              }
+            })
+          );
+          if (path) {
+            window.open("/workspace" + encodePath(path), "_blank");
+          } else {
+            console.log("Error: could not find <basename>_report.html");
           }
         }
       );
@@ -1293,7 +1355,7 @@ define([
 
         tooltip: 'View Synteny Graph'
       }, function (selection) {
-          Topic.publish('/navigate', { href: '/view/GEXF/?' + '&path=' + encodePath(selection[0].path) });
+          Topic.publish('/navigate', { href: '/view/Gexf/?' + '&path=' + encodePath(selection[0].path) });
       }, true);
 
       this.browserHeader.addAction('ViewNwkXml', 'fa icon-eye fa-2x', {
@@ -1435,7 +1497,7 @@ define([
 
           when(request.post('/notifySubmitSequence', {
             headers: {
-              'Authorization': (window.App.authorizationToken || ''),
+              'Authorization': authHeader(),
               'enctype': 'multipart/form-data'
             },
             data: formData
@@ -1490,58 +1552,118 @@ define([
         tooltip: 'View aligned fasta'
       }, function (selection, container) {
         var alignType = 'protein';
-        if (this.selection[0].type.includes('dna')) {
+        if (selection[0].type.includes('dna')) {
           alignType = 'dna';
         }
         console.log('container ', container);
         var msa_file = selection[0].path;
-        var exist_nwk = 0;
-        if (msa_file[msa_file.length - 1] === 'nwk') {
-          exist_nwk = 1;
-        }
+        var nwk_file = msa_file.replace(/\.afa$/i, '_fasttree.nwk');
         if ((!alignType)) {
           console.log('Error: Alignment file doesnt exist or alignment alphabet could not be determined');
-        } else if (exist_nwk == 1) {
-          Topic.publish('/navigate', { href: '/view/MSATree/&alignType=' + alignType + '&path=' + encodeURIComponent(msa_file), target: 'blank' });
         } else {
-          Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + encodeURIComponent(msa_file), target: 'blank' });
+          when(WorkspaceManager.getObject(nwk_file, true), function () {
+            Topic.publish('/navigate', {
+              href: '/view/MSATree/&alignType=' + alignType + '&path=' + encodeURIComponent(msa_file)
+                + '&treePath=' + encodeURIComponent(nwk_file),
+              target: 'blank'
+            });
+          }, function () {
+            Topic.publish('/navigate', {
+              href: '/view/MSAView/&alignType=' + alignType + '&path=' + encodeURIComponent(msa_file),
+              target: 'blank'
+            });
+          });
         }
       }, false);
 
-      this.browserHeader.addAction('ViewAFA', 'fa icon-eye fa-2x', {
-        label: 'MSA',
+      this.browserHeader.addAction('ViewMSAReport', 'fa icon-eye fa-2x', {
+        label: 'REPORT',
         multiple: false,
         validTypes: ['MSA'],
-        tooltip: 'View aligned fasta'
-      }, function (selection, container, button) {
-        // console.log('selection= ', selection);
-        // var alignType = selection[0].autoMeta.parameters.alphabet;
-        var afa_file;
-        var exist_nwk = 0;
-        selection[0].autoMeta.output_files.forEach(lang.hitch(this, function (msa_file_data) {
-          var msa_file = msa_file_data[0].split('.');
-          if (msa_file[msa_file.length - 1] === 'afa') {
-            afa_file = msa_file.join('.');
+        tooltip: 'View MSA report'
+      }, function (selection) {
+        var job = selection[0];
+        var parameters = job.autoMeta && job.autoMeta.parameters ? job.autoMeta.parameters : {};
+        var outputFiles = job.autoMeta && job.autoMeta.output_files ? job.autoMeta.output_files : [];
+        var hiddenPath = PathJoin(job.path, '.' + job.name);
+        var reportCandidates = [];
+
+        var addCandidate = function (path) {
+          if (path && reportCandidates.indexOf(path) === -1) {
+            reportCandidates.push(path.replace(/\/+/g, '/'));
           }
-          if (msa_file[msa_file.length - 1] === 'nwk') {
-            exist_nwk = 1;
+        };
+
+        addCandidate(PathJoin(hiddenPath, 'index.html'));
+        outputFiles.forEach(function (outputFile) {
+          if (outputFile && /(^|\/)index\.html$/i.test(outputFile[0] || '')) {
+            addCandidate(outputFile[0]);
           }
-        }));
-        if ((!afa_file)) {
-          console.log('Error: Alignment file doesn\'t exist.');
-        } else {
-          when(WorkspaceManager.getObject(afa_file, true), function (data) {
-            var alignType = 'protein';
-            if (data.type.includes('dna')) {
-              alignType = 'dna';
+        });
+        if (parameters.output_path && parameters.output_file) {
+          addCandidate(PathJoin(parameters.output_path, '.' + parameters.output_file, 'index.html'));
+        }
+
+        var openLegacyAlignment = function () {
+          var alignmentCandidates = [];
+          var addAlignmentCandidate = function (path) {
+            path = path && path.replace(/\/+/g, '/');
+            if (path && alignmentCandidates.indexOf(path) === -1) {
+              alignmentCandidates.push(path);
             }
-            if (exist_nwk == 1) {
-              Topic.publish('/navigate', { href: '/view/MSATree/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
-            } else {
-              Topic.publish('/navigate', { href: '/view/MSAView/&alignType=' + alignType + '&path=' + afa_file, target: 'blank' });
+          };
+
+          if (parameters.output_file) {
+            addAlignmentCandidate(PathJoin(hiddenPath, parameters.output_file + '.afa'));
+          }
+          outputFiles.forEach(function (outputFile) {
+            if (outputFile && /\.afa$/i.test(outputFile[0] || '')) {
+              addAlignmentCandidate(outputFile[0]);
             }
           });
-        }
+
+          var tryAlignment = function (index) {
+            if (index >= alignmentCandidates.length) {
+              console.log('Error: could not find MSA report or alignment file');
+              return;
+            }
+            var alignmentPath = alignmentCandidates[index];
+            when(WorkspaceManager.getObject(alignmentPath, true), function (data) {
+              var alignType = data.type && data.type.includes('dna') ? 'dna' : 'protein';
+              var treePath = alignmentPath.replace(/\.afa$/i, '_fasttree.nwk');
+              when(WorkspaceManager.getObject(treePath, true), function () {
+                Topic.publish('/navigate', {
+                  href: '/view/MSATree/&alignType=' + alignType + '&path=' + encodeURIComponent(alignmentPath)
+                    + '&treePath=' + encodeURIComponent(treePath),
+                  target: 'blank'
+                });
+              }, function () {
+                Topic.publish('/navigate', {
+                  href: '/view/MSAView/&alignType=' + alignType + '&path=' + encodeURIComponent(alignmentPath),
+                  target: 'blank'
+                });
+              });
+            }, function () {
+              tryAlignment(index + 1);
+            });
+          };
+
+          tryAlignment(0);
+        };
+
+        var openReport = function (index) {
+          if (index >= reportCandidates.length) {
+            openLegacyAlignment();
+            return;
+          }
+          when(WorkspaceManager.getObject(reportCandidates[index], true), function () {
+            Topic.publish('/navigate', { href: '/workspace' + encodePath(reportCandidates[index]) });
+          }, function () {
+            openReport(index + 1);
+          });
+        };
+
+        openReport(0);
       }, false);
 
       this.browserHeader.addAction('ViewExperimentSummary', 'fa icon-eye fa-2x', {
@@ -2055,7 +2177,7 @@ define([
         var item = selection[0];
         var parentPath = item.path.split('/').slice(0, -1).join('/');
         if (parentPath) {
-          Topic.publish('/navigate', { href: '/workspace' + parentPath, target: 'blank' });
+          Topic.publish('/navigate', { href: '/workspace' + encodePath(parentPath), target: 'blank' });
         }
       }, true); // The 'enabled' flag should be true so it can be controlled by logic
 
@@ -2781,7 +2903,7 @@ define([
             }
             break;
           case 'gexf':
-            Topic.publish('/navigate', { href: '/view/Gexf' + '&path=' + this.file, target: 'blank' });
+            Topic.publish('/navigate', { href: '/view/Gexf' + '&path=' + encodeURIComponent(this.file), target: 'blank' });
             return;
           case 'genome_group':
             panelCtor = window.App.getConstructor('p3/widget/viewer/WSGenomeGroup');

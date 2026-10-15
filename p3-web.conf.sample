@@ -6,5 +6,6 @@
   'dataServiceURL': '/api',
   'gaID': '',
   'newrelic_license_key': '',
-  'enableDevTools': false
+  'enableDevTools': false,
+  'cartoBasemapApiKey': ''
 }

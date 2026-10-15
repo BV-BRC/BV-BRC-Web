@@ -7,7 +7,7 @@ define([
   'dijit/form/DropDownButton', 'dijit/DropDownMenu',
   'dijit/Dialog', 'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', './AdvancedSearchRowForm',
   'dijit/focus', '../util/PathJoin', '../util/constructMetadataName',
-  'dojo/debounce'
+  'dojo/debounce', '../auth/authHeaders'
 ], function (
   declare, ContainerActionBar, lang,
   domConstruct, domGeometry, domStyle, domClass,
@@ -17,8 +17,8 @@ define([
   DropDownButton, DropDownMenu,
   Dialog, Button, CheckBox, Select, AdvancedSearchRowForm,
   focusUtil, PathJoin, constructMetadataName,
-  debounce
-) {
+  debounce,
+  authHeader) {
 
   function sortByLabel(firstEl, secondEl) {
     return (firstEl['label'] < secondEl['label']) ? -1 : (firstEl['label'] > secondEl['label'] ? 1 : 0)
@@ -365,6 +365,16 @@ define([
         this.rightButtons
       );
 
+      const columnsGrid = this.getSelectColumnsGrid();
+      if (columnsGrid && typeof columnsGrid.toggleColumnHiddenState === 'function') {
+        domClass.add(columnsGrid.domNode, 'hasSelectColumnsAction');
+        this.own({
+          remove: function () {
+            domClass.remove(columnsGrid.domNode, 'hasSelectColumnsAction');
+          }
+        });
+      }
+
       this.addAction('ToggleFilters', 'fa icon-filter fa-2x', {
         style: { 'font-size': '.5em' },
         label: 'FILTERS',
@@ -396,6 +406,10 @@ define([
         },
           // callback
           (() => {
+            Object.keys(_self._ffWidgets).forEach(function (cat) {
+              _self._ffWidgets[cat].applyRange()
+            });
+
             if (_self.state && _self.state.hashParams && _self.state.hashParams.filter) {
               on.emit(this.domNode, 'SetAnchor', {
                 bubbles: true,
@@ -920,6 +934,10 @@ define([
       this._Searches[this._SearchesIdx] = _row
       this._SearchesIdx++;
     },
+    getSelectColumnsGrid: function () {
+      const container = this.currentContainerWidget;
+      return container && (container.getSelectColumnsGrid ? container.getSelectColumnsGrid() : container.grid);
+    },
     buildSelectColumnsDialog: function () {
       this.SelectColumnsPanel = domConstruct.create('div', {
         'class': 'SelectColumnsPanel'
@@ -929,10 +947,14 @@ define([
         content: this.SelectColumnsPanel,
         'class': 'SelectColumnsDialog'
       });
+      this.own(this.SelectColumnsDialog);
     },
     refreshSelectColumnsDialog: function () {
+      this.SelectColumnsDialog.getChildren().forEach(function (widget) {
+        widget.destroyRecursive();
+      });
       domConstruct.empty(this.SelectColumnsPanel);
-      const grid = this.currentContainerWidget && this.currentContainerWidget.grid;
+      const grid = this.getSelectColumnsGrid();
       if (!grid || !grid.subRows || !grid.subRows[0]) {
         domConstruct.create('div', { innerHTML: 'No columns available.' }, this.SelectColumnsPanel);
         return;
@@ -979,9 +1001,7 @@ define([
           domConstruct.create('label', {
             innerHTML: labelText,
             'class': 'SelectColumnsLabel',
-            onclick: function () {
-              cb.set('checked', !cb.get('checked'));
-            }
+            'for': cb.id
           }, row);
         }));
       }));
@@ -1190,7 +1210,7 @@ define([
           accept: 'application/solr+json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         }
       });
 

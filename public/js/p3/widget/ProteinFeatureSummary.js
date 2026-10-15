@@ -2,14 +2,14 @@ define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dojo/on', 'dojo/promise/all', 'dojo/when',
   'dojo/dom-class', './SummaryWidget',
   'dojo/request', 'dojo/_base/lang', 'dojox/charting/Chart2D', './PATRICTheme', 'dojox/charting/action2d/MoveSlice',
-  'dojox/charting/action2d/Tooltip', 'dojo/dom-construct', '../util/PathJoin', 'dojo/fx/easing'
+  'dojox/charting/action2d/Tooltip', 'dojo/dom-construct', '../util/PathJoin', 'dojo/fx/easing', '../auth/authHeaders'
 
 ], function (
   declare, WidgetBase, on, All, when,
   domClass, SummaryWidget,
   xhr, lang, Chart2D, Theme, MoveSlice,
-  ChartTooltip, domConstruct, PathJoin, easing
-) {
+  ChartTooltip, domConstruct, PathJoin, easing,
+  authHeader) {
 
   var labels = ['Hypothetical proteins', 'Proteins with functional assignments', 'Proteins with EC number assignments', 'Proteins with Pathway assignments', 'Proteins with Subsystem assignments', 'Proteins with PATRIC genus-specific family (PLfam) assignments', 'Proteins with PATRIC cross-genus family (PGfam) assignments'];
   var shortLabels = ['Hypothetical', 'Functional', 'EC assigned', 'Pathway assigned', 'Subsystem assigned', 'PLfam assigned', 'PGfam assigned'];
@@ -46,40 +46,50 @@ define([
       var genomeId = this.query.match(/eq\(genome_id,([^)]+)\)/);
       var genomeFilter = genomeId ? 'genome_id:' + genomeId[1] : '*:*';
 
+      // PERF: each type:query sub-facet is computed as a DocSet over the WHOLE
+      // genome_feature collection (hundreds of millions of docs) and only then
+      // intersected with the base-query domain. The main query's genome filter
+      // scopes the domain but NOT the sub-facet DocSet computation, so without
+      // this the seven sub-queries each scan the full index (~15s total on a
+      // small genome). Prepending the genome filter to every sub-query scopes
+      // the DocSet to the genome first, dropping the request to <1s. Counts are
+      // identical either way.
+      var scope = function (q) { return genomeFilter + ' AND (' + q + ')'; };
+
       var jsonFacet = JSON.stringify({
         hypothetical: {
           type: 'query',
-          q: 'product:hypothetical+protein AND feature_type:CDS',
+          q: scope('product:hypothetical+protein AND feature_type:CDS'),
           facet: { by_annotation: { type: 'terms', field: 'annotation' } }
         },
         functional: {
           type: 'query',
-          q: '(*:* NOT product:hypothetical+protein) AND feature_type:CDS',
+          q: scope('feature_type:CDS AND -product:hypothetical+protein'),
           facet: { by_annotation: { type: 'terms', field: 'annotation' } }
         },
         ec_assigned: {
           type: 'query',
-          q: 'property:EC*',
+          q: scope('property:EC*'),
           facet: { by_annotation: { type: 'terms', field: 'annotation' } }
         },
         pathway_assigned: {
           type: 'query',
-          q: 'property:Pathway',
+          q: scope('property:Pathway'),
           facet: { by_annotation: { type: 'terms', field: 'annotation' } }
         },
         subsystem_assigned: {
           type: 'query',
-          q: 'property:Subsystem',
+          q: scope('property:Subsystem'),
           facet: { by_annotation: { type: 'terms', field: 'annotation' } }
         },
         plfam_assigned: {
           type: 'query',
-          q: 'plfam_id:PLF*',
+          q: scope('plfam_id:PLF*'),
           facet: { by_annotation: { type: 'terms', field: 'annotation' } }
         },
         pgfam_assigned: {
           type: 'query',
-          q: 'pgfam_id:PGF*',
+          q: scope('pgfam_id:PGF*'),
           facet: { by_annotation: { type: 'terms', field: 'annotation' } }
         }
       });
@@ -94,7 +104,7 @@ define([
           'accept': 'application/solr+json',
           'content-type': 'application/solrquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          'Authorization': (window.App.authorizationToken || '')
+          'Authorization': authHeader()
         },
         data: solrData
       }), lang.hitch(this, 'processData'));

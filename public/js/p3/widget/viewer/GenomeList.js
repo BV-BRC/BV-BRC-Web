@@ -6,7 +6,8 @@ define([
   '../FeatureGridContainer', '../ProteinGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFamiliesContainer',
   '../PathwayGridContainer', '../ExperimentsContainer',  '../SubsystemGridContainer',
   '../StrainGridContainer', '../ProteinStructureGridContainer', '../ProteinFeaturesGridContainer',
-  '../InteractionsContainer', '../EpitopeGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer'
+  '../InteractionsContainer', '../EpitopeGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
+  '../../auth/authHeaders'
 ], function (
   declare, lang, Topic, domConstruct, xhr,
   TabViewerBase, QueryToEnglish, DataAPI, PathJoin,
@@ -15,7 +16,8 @@ define([
   FeatureGridContainer, ProteinGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
   PathwaysContainer, ExperimentsContainer, SubSystemsContainer,
   StrainGridContainer, ProteinStructureGridContainer, ProteinFeaturesGridContainer,
-  InteractionsContainer, EpitopeGridContainer, SurveillanceGridContainer, SerologyGridContainer
+  InteractionsContainer, EpitopeGridContainer, SurveillanceGridContainer, SerologyGridContainer,
+  authHeader
 ) {
 
   return declare([TabViewerBase], {
@@ -58,7 +60,11 @@ define([
 
       xhr.get(PathJoin(dataAPI, 'data/taxon_category/', `?${query}`), {
         headers: {
-          Authorization: authToken,
+          // forToken: authToken is captured into a prototype property at
+          // module-declare time (see `authToken:` above), so it is whatever
+          // the ambient token was when this module first loaded. Preserved
+          // as-is here; an ambient fallback would mask that.
+          Authorization: authHeader.forToken('api', authToken),
           Accept: 'application/solr+json',
         },
         handleAs: 'json',

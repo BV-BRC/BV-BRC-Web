@@ -4,7 +4,7 @@ define([
   'dijit/_WidgetBase', 'dijit/_Templated', 'dijit/Dialog', 'dijit/form/Button',
   '../util/PathJoin', 'dgrid/Grid', 'dgrid/extensions/ColumnResizer',
   './DataItemFormatter', './ExternalItemFormatter', './formatter',
-  './D3SingleGeneViewer', './SelectionToGroup', '../DataAPI', './ServicesTooltipDialog', 'dijit/popup'
+  './D3SingleGeneViewer', './SelectionToGroup', '../DataAPI', './ServicesTooltipDialog', 'dijit/popup', '../auth/authHeaders'
 
 ], function (
   declare, lang, on, xhr, Topic,
@@ -12,8 +12,8 @@ define([
   WidgetBase, Templated, Dialog, Button,
   PathJoin, Grid, ColumnResizer,
   DataItemFormatter, ExternalItemFormatter, formatter,
-  D3SingleGeneViewer, SelectionToGroup, DataAPI, ServicesTooltipDialog, popup
-) {
+  D3SingleGeneViewer, SelectionToGroup, DataAPI, ServicesTooltipDialog, popup,
+  authHeader) {
 
   var xhrOption = {
     handleAs: 'json',
@@ -21,7 +21,7 @@ define([
       Accept: 'application/json',
       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
       'X-Requested-With': null,
-      Authorization: window.App.authorizationToken || ''
+      Authorization: authHeader()
     }
   };
 
