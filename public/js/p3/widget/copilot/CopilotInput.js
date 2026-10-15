@@ -2156,6 +2156,10 @@ define([
       var hasScreenshot = hasUploadedImage && (uploadedImagePayload.attachments || []).some(function(att) {
         return att && att.source === 'screenshot';
       });
+      // Nothing to send: no text and no attachment.
+      if (!(inputText && inputText.trim()) && !hasUploadedImage && !hasUploadedFiles && !hasUploadedPdfs) {
+        return;
+      }
       var hasAnyImage = hasUploadedImage;
       var submitModel = hasAnyImage ? this._resolveImageModel() : this.model;
 

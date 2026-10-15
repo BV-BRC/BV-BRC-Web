@@ -2284,6 +2284,16 @@
   -webkit-box-orient: vertical;
 }
 
+/* Inline rename from the cog menu's Edit Title */
+.scrollCardTitleInput {
+    width: 100%;
+    box-sizing: border-box;
+    font: inherit;
+    padding: 2px 4px;
+    border: 1px solid #0284c7;
+    border-radius: 4px;
+}
+
 /* ========================================
    ERROR TOOLTIP STYLES
    ======================================== */
@@ -4460,6 +4470,17 @@ a.workspace-path-chip:hover {
 
 .clarification-submit-btn:hover {
   background: #1d4ed8;
+}
+
+/* A required question with no answer when Submit Answers was pressed */
+.clarification-question-block.clarification-question-missing {
+    border-left: 3px solid #b91c1c;
+    padding-left: 8px;
+}
+.clarification-error {
+    margin-top: 6px;
+    color: #b91c1c;
+    font-size: 13px;
 }
 
 .clarification-summary {

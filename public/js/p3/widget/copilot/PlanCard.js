@@ -600,6 +600,7 @@ define([
       on(saveBtn, 'click', function () {
         self._mode = (plan.status === 'executing') ? 'executing' : 'display';
         self._render();
+        if (self.onEditDone) { self.onEditDone(); }
         // Publish edit event
         topic.publish('CopilotPlanEdited', {
           plan: self.plan,
@@ -614,6 +615,7 @@ define([
       on(cancelBtn, 'click', function () {
         self._mode = (plan.status === 'executing') ? 'executing' : 'display';
         self._render();
+        if (self.onEditDone) { self.onEditDone(); }
       });
     },
 

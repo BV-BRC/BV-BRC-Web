@@ -151,6 +151,7 @@ define([
                 this._getPathState();
                 this.changeSessionId(this.sessionId);
                 this._initialized.resolve();
+                this._replaceIfArchived(this.sessionId);
             } else {
                 // No session supplied – create a brand-new one
                 this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
@@ -424,6 +425,31 @@ define([
 
             errorDialog.startup();
             errorDialog.show();
+        },
+
+        /**
+         * A restored chat id (localStorage) may belong to a chat the user
+         * deleted: the gateway archives it and answers 404 SESSION_ARCHIVED.
+         * Start a fresh chat instead of showing an error.
+         * @param {string} sessionId
+         */
+        _replaceIfArchived: function(sessionId) {
+            this.copilotApi.getSessionMessages(sessionId).then(null, lang.hitch(this, function(err) {
+                var status = err && err.response && err.response.status;
+                if (status !== 404 || this.sessionId !== sessionId) { return; }
+                try {
+                    if (window.localStorage) { localStorage.removeItem('copilot-current-session-id'); }
+                } catch (e) { /* ignore */ }
+                this.copilotApi.getNewSessionId().then(lang.hitch(this, function(newId) {
+                    if (this.sessionId !== sessionId) { return; }
+                    if (this.titleWidget && this.titleWidget.startNewChat) {
+                        this.titleWidget.startNewChat(newId);
+                    }
+                    this.changeSessionId(newId);
+                    // No Mongo row yet: register and title it on first send.
+                    if (this.inputWidget) { this.inputWidget.new_chat = true; }
+                }));
+            }));
         },
 
         /**
@@ -798,9 +824,26 @@ define([
         /**
          * Handles opening the report issue dialog
          */
-        _handleOpenReportIssueDialog: function() {
-            var sessionId = this.sessionId;
-            var messages = this.chatStore.query();
+        _handleOpenReportIssueDialog: function(payload) {
+            // The cog menu sends the chat it belongs to; it may not be the
+            // open one, so fetch that chat's messages first.
+            var sessionId = (payload && payload.sessionId) || this.sessionId;
+            if (sessionId !== this.sessionId) {
+                this.copilotApi.getSessionMessages(sessionId).then(lang.hitch(this, function(res) {
+                    var msgs = Array.isArray(res && res.messages) ? res.messages : [];
+                    if (msgs.length > 0 && msgs[0] && Array.isArray(msgs[0].messages)) {
+                        msgs = msgs[0].messages; // legacy nested shape
+                    }
+                    this._openReportIssueDialog(sessionId, msgs);
+                }), function(err) {
+                    console.error('Could not load the chat to report:', err);
+                });
+                return;
+            }
+            this._openReportIssueDialog(sessionId, this.chatStore.query());
+        },
+
+        _openReportIssueDialog: function(sessionId, messages) {
 
             // Helper function to truncate long content
             var truncateContent = function(content, maxLength) {

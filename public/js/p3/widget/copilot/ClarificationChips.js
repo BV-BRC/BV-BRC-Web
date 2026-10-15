@@ -41,6 +41,7 @@ define([
       this._selectedAnswers = {};
       this._chipNodes = {};
       this._textInputs = {};
+      this._questionBlocks = {};
     },
 
     buildRendering: function () {
@@ -64,11 +65,12 @@ define([
         var qBlock = domConstruct.create('div', {
           'class': 'clarification-question-block'
         }, self.domNode);
+        self._questionBlocks[q.id] = qBlock;
 
-        // Question text
+        // Question text (model-written: text, not HTML)
         domConstruct.create('div', {
           'class': 'clarification-question-text',
-          innerHTML: q.question
+          textContent: q.question
         }, qBlock);
 
         // Option chips
@@ -81,7 +83,7 @@ define([
         q.options.forEach(function (option) {
           var chip = domConstruct.create('button', {
             'class': 'clarification-chip',
-            innerHTML: option,
+            textContent: option,
             tabindex: '0'
           }, chipsRow);
 
@@ -104,6 +106,16 @@ define([
             // Deselect all chips for this question
             self._deselectAllChips(q.id);
             self._selectedAnswers[q.id] = textInput.value.trim();
+          } else if (!self._chipNodes[q.id].some(function (c) { return domClass.contains(c, 'clarification-chip-selected'); })) {
+            // Cleared the box and no chip is picked: no answer any more.
+            delete self._selectedAnswers[q.id];
+          }
+          self._clearMissing(q.id);
+        });
+        on(textInput, 'keydown', function (evt) {
+          if (evt.key === 'Enter') {
+            evt.preventDefault();
+            self._submitAnswers();
           }
         });
 
@@ -123,6 +135,22 @@ define([
       on(submitBtn, 'click', function () {
         self._submitAnswers();
       });
+
+      // Shown when a required question has no answer yet.
+      this._errorNode = domConstruct.create('div', {
+        'class': 'clarification-error',
+        role: 'alert',
+        style: 'display:none;'
+      }, buttonRow);
+    },
+
+    _clearMissing: function (questionId) {
+      if (this._questionBlocks[questionId]) {
+        domClass.remove(this._questionBlocks[questionId], 'clarification-question-missing');
+      }
+      if (this._errorNode && !this.domNode.querySelector('.clarification-question-missing')) {
+        this._errorNode.style.display = 'none';
+      }
     },
 
     _selectOption: function (questionId, option, chipNode) {
@@ -132,6 +160,7 @@ define([
       // Select this chip
       domClass.add(chipNode, 'clarification-chip-selected');
       this._selectedAnswers[questionId] = option;
+      this._clearMissing(questionId);
 
       // Clear free text input for this question
       if (this._textInputs[questionId]) {
@@ -168,16 +197,28 @@ define([
       });
 
       if (!allAnswered) {
-        // Highlight unanswered required questions
+        // Mark each unanswered required question and say which ones.
+        var missing = [];
+        var first = null;
         this.questions.forEach(function (q) {
           if (q.required && !self._selectedAnswers[q.id]) {
-            var blocks = self.domNode.querySelectorAll('.clarification-question-block');
-            // Simple visual feedback
-            if (blocks.length > 0) {
-              // Flash the unanswered question
+            missing.push(q.question);
+            var block = self._questionBlocks[q.id];
+            if (block) {
+              domClass.add(block, 'clarification-question-missing');
+              first = first || block;
             }
           }
         });
+        if (this._errorNode) {
+          this._errorNode.textContent = missing.length === 1
+            ? 'Please answer: ' + missing[0]
+            : 'Please answer the ' + missing.length + ' highlighted questions.';
+          this._errorNode.style.display = '';
+        }
+        if (first && first.scrollIntoView) {
+          first.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
         return;
       }
 
@@ -215,12 +256,12 @@ define([
 
         domConstruct.create('span', {
           'class': 'clarification-summary-q',
-          innerHTML: 'Q: ' + a.question
+          textContent: 'Q: ' + a.question
         }, line);
 
         domConstruct.create('span', {
           'class': 'clarification-summary-a',
-          innerHTML: ' A: ' + a.answer
+          textContent: ' A: ' + a.answer
         }, line);
       });
     },

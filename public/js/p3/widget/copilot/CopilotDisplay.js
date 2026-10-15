@@ -235,6 +235,15 @@ define([
         topic.subscribe('RefreshSessionDisplay', lang.hitch(this, 'showMessages'));
         topic.subscribe('CopilotApiError', lang.hitch(this, 'onQueryError'));
         topic.subscribe('chatTextSizeChanged', lang.hitch(this, 'setFontSize'));
+        // Start at the saved Text Size: the setting is only published when
+        // the floating window builds its options dialog, so the full-page
+        // view used to ignore it.
+        try {
+          var savedTextSize = parseInt(window.localStorage && localStorage.getItem('copilot-text-size'), 10);
+          if (savedTextSize >= 1 && savedTextSize <= 100) {
+            this.fontSize = savedTextSize;
+          }
+        } catch (e) { /* ignore */ }
         // A turn in this chat finished: if the user is not at the bottom,
         // the jump button announces the new response.
         topic.subscribe('ChatSession:TurnEnded', lang.hitch(this, function(data) {
@@ -420,6 +429,18 @@ define([
         }
         domConstruct.empty(this.resultContainer);
         this._loadingIndicator = null;
+        // Clarification cards: answered when a later "Answered Questions"
+        // message exists; otherwise they render as chips again (also after a
+        // reload) with the user message they were asked about.
+        messages = messages.map(function(message, i) {
+          if (!message || !message.card || message.card.card_type !== 'clarification') return message;
+          var later = messages.slice(i + 1);
+          var before = messages.slice(0, i).reverse().filter(function(m) { return m && m.role === 'user'; })[0];
+          return lang.mixin({}, message, {
+            clarificationAnswered: later.some(function(m) { return m && m.role === 'user_clarification'; }),
+            originalQuery: message.originalQuery || (before && before.content) || ''
+          });
+        });
         messages.forEach(lang.hitch(this, function(message) {
           new ChatMessage({
             ...message,

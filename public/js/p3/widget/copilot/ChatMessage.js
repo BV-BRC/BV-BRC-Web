@@ -988,7 +988,12 @@ define([
       });
 
       on(editBtn, 'click', function () {
-        setCompleted('Editing plan');
+        // Hide (not replace) the buttons: the plan is still a draft after
+        // Save Changes or Cancel, so Approve must come back.
+        actionBlock.style.display = 'none';
+        planCard.onEditDone = function () {
+          actionBlock.style.display = '';
+        };
         planCard._mode = 'edit';
         planCard._render();
       });
@@ -1038,7 +1043,15 @@ define([
      */
     renderClarificationChips: function (parentNode) {
       try {
-        var clarData = this.message.clarificationData;
+        // Live: clarificationData (set while streaming).  After a reload:
+        // the stored card's payload.  Already answered (a later "Answered
+        // Questions" message exists, see CopilotDisplay.showMessages): the
+        // answers are shown there, so no chips.
+        if (this.message.clarificationAnswered) {
+          return;
+        }
+        var clarData = this.message.clarificationData ||
+          (this.message.card && this.message.card.card_payload);
         if (!clarData || !clarData.questions || clarData.questions.length === 0) {
           console.warn('[ChatMessage] renderClarificationChips called without valid data');
           return;
@@ -1046,7 +1059,7 @@ define([
 
         var chips = new ClarificationChips({
           questions: clarData.questions,
-          sessionId: this.message.session_id || null,
+          sessionId: this.message.session_id || this.sessionId || null,
           originalQuery: this.message.originalQuery || ''
         });
 

@@ -213,7 +213,9 @@ define([
                         if (res.active_job_id && this._chatContainer._pollUntilTurnComplete) {
                             this._chatContainer._pollUntilTurnComplete(savedSessionId);
                         }
-                    }));
+                    }), function () {
+                        // 404: the chat was deleted; ChatSessionContainer starts a new one.
+                    });
 
                     this._copilotApi.getSessionTitle(savedSessionId).then(lang.hitch(this, function (titleRes) {
                         if (titleRes.title && titleRes.title.length > 0) {
@@ -222,7 +224,7 @@ define([
                                 this._chatContainer.titleWidget.updateTitle(title);
                             }
                         }
-                    }));
+                    }), function () { /* deleted chat */ });
                 }), 500);
             }
 
