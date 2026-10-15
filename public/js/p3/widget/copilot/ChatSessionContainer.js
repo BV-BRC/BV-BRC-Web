@@ -480,9 +480,19 @@ define([
                 });
             };
 
+            // The title comes from the user's first message only: the assistant's
+            // reply (tool output, links, job cards) made titles about the answer
+            // instead of the request.  Long pastes (FASTA) are cut.
+            var firstUserMessage = function(messages) {
+                var first = (messages || []).filter(function(m) {
+                    return m && m.role === 'user' && typeof m.content === 'string' && m.content.trim();
+                })[0];
+                return first ? [first.content.trim().slice(0, 2000)] : [];
+            };
+
             if (this.sessionId === targetSessionId) {
-                var msgs = this.chatStore.query().map(function(x) { return x.content; });
-                generateFromMessages(msgs);
+                var opening = firstUserMessage(this.chatStore.query());
+                if (opening.length) generateFromMessages(opening);
             } else {
                 // Switched away — fetch messages from the API
                 this.copilotApi.getSessionMessages(targetSessionId).then(function(res) {
@@ -494,7 +504,8 @@ define([
                             messages = res.messages;
                         }
                     }
-                    generateFromMessages(messages.map(function(m) { return m.content; }));
+                    var opening = firstUserMessage(messages);
+                    if (opening.length) generateFromMessages(opening);
                 }).catch(function(err) {
                     console.warn('Could not fetch messages for title generation', err);
                 });
