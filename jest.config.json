@@ -3,6 +3,7 @@
   "roots": [
     "<rootDir>/public/js/p3/auth",
     "<rootDir>/public/js/p3/store",
+    "<rootDir>/public/js/p3/util",
     "<rootDir>/public/js/p3/widget/copilot",
     "<rootDir>/public/js/p3/widget/app"
   ],
