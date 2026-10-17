@@ -1,9 +1,9 @@
 define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
-  'dojo/promise/all', 'dojo/when', './store/PaginatedJobStore'
+  'dojo/promise/all', 'dojo/when', './store/PaginatedJobStore', './auth/authHeaders'
 ], function (
   Deferred, Topic, xhr,
-  All, When, PaginatedJobStore
-) {
+  All, When, PaginatedJobStore,
+  authHeader) {
 
   var self = this;
   var TIME_OUT = 30000; // in ms
@@ -226,7 +226,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
         if (detail.stderr_url && stderr) {
           defs.push(Deferred.when(xhr.get(detail.stderr_url, {
             headers: {
-              Authorization: 'Oauth ' + window.App.authorizationToken,
+              Authorization: authHeader('shock'),
               'X-Requested-With': false
             }
           }), function (txt) {
@@ -237,7 +237,7 @@ define(['dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
         if (detail.stdout_url && stdout) {
           defs.push(Deferred.when(xhr.get(detail.stdout_url, {
             headers: {
-              Authorization: 'Oauth ' + window.App.authorizationToken,
+              Authorization: authHeader('shock'),
               'X-Requested-With': false
             }
           }), function (txt) {

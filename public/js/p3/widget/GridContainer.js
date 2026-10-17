@@ -7,6 +7,7 @@ define([
   './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin',
   './FeatureDetailsTooltipDialog', './ServicesTooltipDialog', './RerunUtility', 'dojox/widget/Standby',
   './copilot/ChatSessionContainerSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel',
+  '../auth/authHeaders',
   '../util/QueryDescriptor',
   './download/UnifiedDownloadWizard',
   './download/SaveSearchDialog'
@@ -19,6 +20,7 @@ define([
   CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin,
   FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility, Standby,
   ChatSessionContainerSidePanel, CopilotAPI, ChatSessionOptionsBar,
+  authHeader,
   QueryDescriptor, UnifiedDownloadWizard, SaveSearchDialog
 ) {
 
@@ -927,7 +929,7 @@ define([
               Accept: 'application/json',
               'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             data : 'in(id,(' + idList.join(',') + '))&gt(collection_latitude,-91)&select(id,collection_latitude,collection_longitude)&limit(' + idList.length + ')'
             }), function (response) {
@@ -1040,7 +1042,7 @@ define([
             popup.open({
               popup: new PerspectiveToolTipDialog({
                 perspective: 'GenomeList',
-                perspectiveUrl: '/view/GenomeList/?eq(*,*)&genome(in(genome_id,(' + genome_ids.join(',') + ')))'
+                perspectiveUrl: '/view/GenomeList/?eq(genome_id,*)&genome(in(genome_id,(' + genome_ids.join(',') + ')))'
               }),
               around: button,
               orient: ['below']
@@ -1049,7 +1051,7 @@ define([
         },
         function (selection) {
           const genome_ids = Array.from(selection.reduce((p, v) => { return p.add(v.genome_id) }, new Set()))
-          Topic.publish('/navigate', { href: '/view/GenomeList/?eq(*,*)&genome(in(genome_id,(' + genome_ids.join(',') + ')))' });
+          Topic.publish('/navigate', { href: '/view/GenomeList/?eq(genome_id,*)&genome(in(genome_id,(' + genome_ids.join(',') + ')))' });
         },
         false
       ],
@@ -1146,7 +1148,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(pathway_id,(' + pathway_ids.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {
@@ -1170,7 +1172,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(ec_number,(' + ec_numbers.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {
@@ -1297,7 +1299,7 @@ define([
                   Accept: 'application/json',
                   'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                   'X-Requested-With': null,
-                  Authorization: (window.App.authorizationToken || '')
+                  Authorization: authHeader()
                 },
                 data: 'and(in(' + familyIdName + ',(' + familyIds.join(',') + ')),in(genome_id,(' + genomeIds.join(',') + ')))&select(feature_id)&limit(25000)'
               }), function (response) {
@@ -1328,7 +1330,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(pathway_id,(' + pathway_ids.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {
@@ -1356,7 +1358,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(ec_number,(' + ec_numbers.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {
@@ -1494,7 +1496,7 @@ define([
                   Accept: 'application/json',
                   'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                   'X-Requested-With': null,
-                  Authorization: (window.App.authorizationToken || '')
+                  Authorization: authHeader()
                 },
                 data: 'and(in(' + familyIdName + ',(' + familyIds.join(',') + ')),in(genome_id,(' + genomeIds.join(',') + ')))&select(feature_id)&limit(25000)'
               }), function (response) {
@@ -1528,7 +1530,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(pathway_id,(' + pathway_ids.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {
@@ -1553,7 +1555,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(ec_number,(' + ec_numbers.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {

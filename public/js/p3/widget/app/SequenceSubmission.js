@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred', 'dojo/store/Memory', 'dojo/on', 'dojo/query',
   'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-style', 'dojo/topic', 'dojo/when', 'dojo/request',
   './AppBase', 'dojox/data/CsvStore', '../../store/SequenceSubmissionSample', 'dojo/text!./templates/SequenceSubmission.html',
-  'dijit/form/Form', '../../util/PathJoin', '../../WorkspaceManager', 'dijit/registry', 'dijit/Dialog', 'FileSaver'
+  'dijit/form/Form', '../../util/PathJoin', '../../WorkspaceManager', 'dijit/registry', 'dijit/Dialog', 'FileSaver', '../../auth/authHeaders'
 ], function (
   declare, lang, Deferred, Memory, on, query,
   domClass, domConstruct, domStyle, Topic, when, request,
   AppBase, CsvStore, SubmissionSample, Template,
-  FormMixin, PathJoin, WorkspaceManager, registry, Dialog, saveAs
-) {
+  FormMixin, PathJoin, WorkspaceManager, registry, Dialog, saveAs,
+  authHeader) {
 
   return declare([AppBase], {
     baseClass: 'SequenceSubmission',
@@ -446,7 +446,7 @@ define([
 
               when(request.post('/notifySubmitSequence', {
                 headers: {
-                  'Authorization': (window.App.authorizationToken || ''),
+                  'Authorization': authHeader(),
                   'enctype': 'multipart/form-data'
                 },
                 data: formData

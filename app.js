@@ -161,7 +161,9 @@ app.use(function (req, res, next) {
     copilotEnableShowPromptDetails: config.get('copilotEnableShowPromptDetails') || false,
     localStorageCheckInterval: config.get('localStorageCheckInterval'),
     workspaceSelectorExcludeFolders: config.get('workspaceSelectorExcludeFolders') || [],
-    queryLoggingEnabled: !!config.get('queryLogDir')
+    cartoBasemapApiKey: config.get('cartoBasemapApiKey') || '',
+    queryLoggingEnabled: !!config.get('queryLogDir'),
+    enableThrottleRetry: config.get('enableThrottleRetry') || false
   };
   // console.log("Application Options: ", req.applicationOptions);
   next();

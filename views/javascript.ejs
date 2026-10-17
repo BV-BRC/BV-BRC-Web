@@ -1,6 +1,7 @@
 <script>
 dojoConfig = {
     parseOnLoad: false,
+    requestProvider: 'p3/util/throttledRequest',
     packages: [
       {name: 'lazyload', location: "../lazyload", main: 'lazyload'},
       {name: 'jDataView', location: '../jDataView/src', main: 'jdataview'},
@@ -271,6 +272,7 @@ const load_scripts = [
         appOpts.copilotDbURL = "<%= request.applicationOptions.copilotDbURL %>";
         appOpts.mailinglistURL = "<%= request.applicationOptions.mailinglistURL %>";
         appOpts.localStorageCheckInterval = "<%= request.applicationOptions.localStorageCheckInterval %>";
+        appOpts.cartoBasemapApiKey = "<%= request.applicationOptions.cartoBasemapApiKey %>";
         appOpts.copilotEnablePublications = "<%= request.applicationOptions.copilotEnablePublications %>";
         appOpts.copilotEnableEnhancePrompt = "<%= request.applicationOptions.copilotEnableEnhancePrompt %>";
         appOpts.copilotEnableShowPromptDetails = "<%= request.applicationOptions.copilotEnableShowPromptDetails %>";

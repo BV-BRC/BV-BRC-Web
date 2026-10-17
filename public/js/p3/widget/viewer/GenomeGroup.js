@@ -5,14 +5,15 @@ define([
   '../FeatureGridContainer', '../ProteinGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer',
   '../ProteinFamiliesContainer', '../PathwayGridContainer', '../SubsystemGridContainer', '../ExperimentsContainer', '../InteractionsContainer',
   '../EpitopeGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
-
+  '../../auth/authHeaders'
 ], function (
   declare, lang, PathJoin, xhr,
   TabViewerBase, GenomeList, AMRPanelGridContainer,
   Overview, StrainGridContainer, GroupGenomeGridContainer, AMRPanelGridContainer, SequenceGridContainer,
   FeatureGridContainer, ProteinGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer,
   ProteinFamiliesContainer, PathwayGridContainer, SubsystemGridContainer, ExperimentsContainer, InteractionsContainer,
-  EpitopeGridContainer, SurveillanceGridContainer, SerologyGridContainer
+  EpitopeGridContainer, SurveillanceGridContainer, SerologyGridContainer,
+  authHeader
 ) {
 
   return declare([GenomeList], {
@@ -53,7 +54,9 @@ define([
 
       xhr.get(PathJoin(dataAPI, 'data/taxon_category/', `?${query}`), {
         headers: {
-          Authorization: authToken,
+          // forToken: see the note in GenomeList.js -- authToken is a
+          // prototype property captured at module-declare time.
+          Authorization: authHeader.forToken('api', authToken),
           Accept: 'application/solr+json',
         },
         handleAs: 'json',

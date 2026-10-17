@@ -7,7 +7,7 @@ define([
   'dijit/Dialog', './ItemDetailPanel', 'dojo/query', 'FileSaver',
   './ActionBar', './ContainerActionBar', 'dijit/layout/BorderContainer', './PerspectiveToolTip',
   'dijit/layout/ContentPane', 'dojo/dom-class', 'dojo/on', 'dojo/topic',
-  'dojo/text!./templates/Phylogeny2.html', 'dijit/_TemplatedMixin'
+  'dojo/text!./templates/Phylogeny2.html', 'dijit/_TemplatedMixin', '../auth/authHeaders'
 ], function (
   declare, PhyloTree, TreeNavSVG, when,
   WidgetBase, request, domConstruct,
@@ -17,8 +17,8 @@ define([
   SelectionToGroup, Dialog, ItemDetailPanel, query, saveAs,
   ActionBar, ContainerActionBar, BorderContainer, PerspectiveToolTipDialog,
   ContentPane, domClass, on, Topic,
-  Template, Templated
-) {
+  Template, Templated,
+  authHeader) {
 
   var infoMenu = new TooltipDialog({
     content: '<div> Create groups and download sequences by making a selection in the tree on the left.</div>',
@@ -129,64 +129,14 @@ define([
 
     pre_build_options: function () {
       const options = {};
-      options.backgroundColorDefault = '#ffffff';
-      options.branchColorDefault = '#909090';
-      options.branchDataFontSize = 12;
-      options.branchWidthDefault = 3;
-      options.collapasedLabelLength = 7;
-      options.defaultFont = ['Arial', 'Helvetica', 'Times'];
-      options.dynahide = true;
-      options.externalNodeFontSize = 12;
-      options.internalNodeFontSize = 12;
-      options.labelColorDefault = '#202020';
-      options.minBranchLengthValueToShow = 0.01;
-      options.minConfidenceValueToShow = 0.5;
-      options.nodeSizeDefault = 2;
-      options.nodeVisualizationsOpacity = 1.0;
-      options.phylogram = true;
-      options.searchIsCaseSensitive = false;
-      options.searchIsPartial = true;
-      options.searchUsesRegex = false;
-      options.showBranchEvents = true;
-      options.showBranchLengthValues = false;
-      options.showConfidenceValues = false;
-      options.showDisributions = true;
-      options.showExternalLabels = true;
-      options.showExternalNodes = false;
-      options.showInternalLabels = false;
-      options.showInternalNodes = false;
-      options.showNodeEvents = true;
-      options.showNodeName = false;
-      options.showSequence = true;
-      options.showSequenceAccession = true;
-      options.showSequenceGeneSymbol = true;
-      options.showSequenceName = true;
-      options.showSequenceSymbol = true;
-      options.showTaxonomy = false;
-      options.showTaxonomyCode = true;
-      options.showTaxonomyCommonName = true;
-      options.showTaxonomyRank = true;
-      options.showTaxonomyScientificName = true;
-      options.showTaxonomySynonyms = true;
 
       var settings = {};
-      settings.border = '1px solid #909090';
-      settings.controls0Top = 10;
-      settings.controls1Top = 10;
       settings.enableAccessToDatabases = true;
-      settings.controlsBackgroundColor = '#e0e0e0';
-      settings.controlsFont = ['Arial', 'Helvetica', 'Times'];
-      settings.controlsFontColor = '#505050';
-      settings.controlsFontSize = 8;
       settings.enableDownloads = true;
-      settings.enableBranchVisualizations = true;
-      settings.enableCollapseByBranchLenghts = false;
-      settings.enableCollapseByFeature = false;
-      settings.enableNodeVisualizations = true;
+      settings.enableVisualizations = true;
       settings.nhExportWriteConfidences = true;
-      settings.rootOffset = 180;
-      settings.allowManualNodeSelection = true;
-      settings.orderTree = true;
+      settings.enableManualNodeSelection = true;
+      settings.ladderizeTree = true;
 
       this.settings = settings;
       this.options = options;
@@ -261,14 +211,13 @@ define([
       console.log('onNodeSelection this.idType', this.idType);
       console.log('onNodeSelection this.nodeType', this.nodeType);
 
-
       if (cur && cur.length == 1) {
         if (cur[0].feature_id) {
           request.get(PathJoin(this.apiServer, 'genome_feature', cur[0].feature_id), {
             headers: {
               accept: 'application/json',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json'
           }).then(lang.hitch(this, function (record) {
@@ -280,7 +229,7 @@ define([
             headers: {
               accept: 'application/json',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json'
           }).then(lang.hitch(this, function (record) {
@@ -335,9 +284,10 @@ define([
         domConstruct.destroy('iconBanner');
         domConstruct.destroy('taxonBanner');
       } else {
-        this.treeDiv = domConstruct.create('div', { id: this.id + 'tree-container', class: 'size archaeopteryxClass' }, this.containerPane.domNode);
+        this.treeDiv = domConstruct.create('div', { id: this.id + 'tree-container', class: 'size archaeopteryxClass', style: 'height: 100%; min-height: 400px;' }, this.containerPane.domNode);
       }
-      domConstruct.create('div', { id: 'phylogram1' }, this.treeDiv);
+      // Archaeopteryx 3 measures this container instead of the browser window.
+      domConstruct.create('div', { id: 'phylogram1', style: 'height: 100%; min-height: 400px;' }, this.treeDiv);
       domConstruct.create('div', { id: 'controls0' }, this.treeDiv);
       domConstruct.create('div', { id: 'controls1' }, this.treeDiv);
 
@@ -389,64 +339,19 @@ define([
 
           var options = this.options;
           var settings = this.settings;
-          var nodeVisualizations = {};
-          // var specialVisualizations = this.specialVisualizations;
-          var nodeLabels = {};
 
           try {
             mytree = window.archaeopteryx.parsePhyloXML(phyloxml);
-            var nodeListSize = this.getLeafNodes([mytree]).length;
-            if (nodeListSize > 65 && nodeListSize <= 75) {
-              options.externalNodeFontSize = 10;
-            } else if (nodeListSize > 75) {
-              options.externalNodeFontSize = 8;
-            }
 
           }
           catch (e) {
             alert('error while parsing tree: ' + e);
+            return;
           }
-          var refs_set = forester.collectPropertyRefs(mytree, 'node', true);
-          refs_set.forEach(function (a) {
-            // console.log('refs_set a', a);
-            var property_name = '';
-            var property_line = a.split(':');
-            // console.log('property_line', property_line);
-            var selected = false;
-
-            if (property_line.length == 1) {
-              property_name = property_line[0];
-            }
-            else if (property_line.length > 1) {
-              property_name = property_line[1];
-            }
-
-            if (property_name.toLowerCase() == 'genome_name') {
-              selected = true;
-              options.showNodeName = false;
-            }
-            nodeVisualizations[property_name] =  {
-              label: property_name,
-              description: property_name,
-              field: null,
-              cladeRef: a,
-              regex: false,
-              shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-              colors: 'category50',
-              sizes: null
-            };
-            nodeLabels[property_name] = {
-              label: property_name,
-              description: property_name,
-              propertyRef: 'BVBRC:' + property_name,
-              selected: selected,
-              showButton: true
-            };
-          });
           // forester.midpointRoot(mytree);
           if (mytree) {
             try {
-              window.archaeopteryx.launch('#phylogram1', mytree, options, settings, nodeVisualizations, nodeLabels);
+              window.archaeopteryx.launch('#phylogram1', mytree, lang.mixin({}, options, settings));
 
               var nodeList = this.getLeafNodes([mytree]);
               // console.log('mytree nodeList', nodeList);

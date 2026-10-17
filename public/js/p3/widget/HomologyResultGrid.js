@@ -10,6 +10,34 @@ define([
   selector, topic
 ) {
 
+  var HTML_ESCAPES = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  };
+
+  function escapeHTML(str) {
+    return String(str).replace(/[&<>"']/g, function (c) {
+      return HTML_ESCAPES[c];
+    });
+  }
+
+  // Link the genome name to its Genome view. BLAST hits carry no link of their
+  // own, so without this there is no way to get from a hit back to the genome
+  // it came from (issue #1542).
+  function genomeLink(value, obj) {
+    if (!value) {
+      return '';
+    }
+    if (!obj || !obj.genome_id) {
+      return escapeHTML(value);
+    }
+    return '<a class="navigationLink" href="/view/Genome/'
+      + encodeURIComponent(obj.genome_id) + '">' + escapeHTML(value) + '</a>';
+  }
+
   return declare([Grid], {
     region: 'center',
     query: '',
@@ -37,7 +65,7 @@ define([
           },
           query: { label: 'Query ID', field: 'qseqid' },
           subject: { label: 'Subject ID', field: 'sseqid' },
-          genome: { label: 'Genome', field: 'genome_name' },
+          genome: { label: 'Genome', field: 'genome_name', formatter: genomeLink },
           genome_id: { label: 'Genome ID', field: 'genome_id', hidden: true },
           patric_id: { label: 'BRC ID', field: 'patric_id' },
           refseq_locus_tag: { label: 'RefSeq Locus Tag', field: 'refseq_locus_tag' },
@@ -72,7 +100,7 @@ define([
           },
           query: { label: 'Query ID', field: 'qseqid' },
           subject: { label: 'Subject ID', field: 'sseqid' },
-          genome: { label: 'Genome', field: 'genome_name' },
+          genome: { label: 'Genome', field: 'genome_name', formatter: genomeLink },
           genome_id: { label: 'Genome ID', field: 'genome_id', hidden: true },
           accession: { label: 'Accession', field: 'accession' },
           description: { label: 'Description', field: 'description' },

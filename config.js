@@ -30,7 +30,13 @@ const defaults = {
   'copilotEnableModelSelector': false,
   'copilotEnableRagSelector': false,
   localStorageCheckInterval: 86400,
+  cartoBasemapApiKey: '',
   enableDevTools: false,
+  // Retry Data API 429/503 responses with backoff, per BV-BRC-API
+  // Docs/CLIENT-429.md. Off by default: enabling it routes all dojo/request
+  // traffic through p3/util/throttledRequest, so it wants a soak on a
+  // deployment before being turned on everywhere.
+  enableThrottleRetry: false,
   reportProblemEmailAddress: 'help@bv-brc.org',
   sequenceSubmissionNotificationEmailAddress: ['gbsubmit@bvbrc.org'],
   // Folder paths (relative to workspace root) to exclude from the output folder dropdown selector

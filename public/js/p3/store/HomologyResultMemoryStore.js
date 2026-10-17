@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/request', 'dojo/Stateful', 'dojo/when',
-  'dojo/store/Memory', 'dojo/store/util/QueryResults', '../WorkspaceManager', 'dojo/topic'
+  'dojo/store/Memory', 'dojo/store/util/QueryResults', '../WorkspaceManager', 'dojo/topic', '../auth/authHeaders'
 ], function (
   declare, lang, Deferred,
   request, Stateful, when,
-  Memory, QueryResults, WorkspaceManager, topic
-) {
+  Memory, QueryResults, WorkspaceManager, topic,
+  authHeader) {
 
   return declare([Memory, Stateful], {
     loaded: false,
@@ -30,6 +30,22 @@ define([
     },
 
     onSetLoaded: function (attr, oldVal, loaded) {
+    },
+
+    // BLAST hit ids for a nucleotide (fna) database carry a decoration that the
+    // genome_sequence collection does not: 'accn|CP002078', or a doubled genome
+    // prefix such as '235.127.235.127.con.0001'. Strip it so the id matches the
+    // sequence_id / accession we query Solr with AND the key we later look the
+    // metadata back up by. Both sides must use this function -- when the query
+    // side normalized and the lookup side did not, every row lost its genome
+    // (issue #1542).
+    normalizeSequenceId: function (id) {
+      if (id.includes('accn|')) {
+        return id.replace('accn|', '');
+      } else if (id.includes('.con.')) {
+        return id.replace(/^(\d+\.\d+)\.\1\./, '$1.');
+      }
+      return id.replace(/^\d+\.\d+\./, '');
     },
 
     constructor: function (options) {
@@ -203,15 +219,7 @@ define([
             // var doQuery = false;
             if (this.type == 'genome_sequence') {
               // doQuery = true;
-              resultIds = resultIds.map(function (d) {
-                if (d.includes('accn|')) {
-                  return d.replace('accn|', '');
-                } else if (d.includes('.con.')) {
-                  return d.replace(/^(\d+\.\d+)\.\1\./, '$1.');
-                } else {
-                  return d.replace(/^\d+\.\d+\./, '');
-                }
-              }).filter(function (d) {
+              resultIds = resultIds.map(lang.hitch(this, 'normalizeSequenceId')).filter(function (d) {
                 return d !== '';
               });
               if (resultIds.length <= 0) {
@@ -277,7 +285,7 @@ define([
                   Accept: 'application/json',
                   'Content-Type': 'application/solrquery+x-www-form-urlencoded',
                   'X-Requested-With': null,
-                  Authorization: (window.App.authorizationToken || '')
+                  Authorization: authHeader()
                 },
                 data: query
               }).then(lang.hitch(this, function (keys) {
@@ -344,7 +352,9 @@ define([
 
       // NEED ANOTHER LOOP HERE TO ACCOUNT FOR THE MULTIPLE QUERIES
       // AND TO FIGURE OUT WHICH GRID YOU SHOULD USE FOR NON-DECORATING RESULTS
-      var metadata = json.lookups[0];
+      // The 'no_ids' path reaches here with lookups still empty, and the
+      // hasOwnProperty probes below throw on undefined.
+      var metadata = json.lookups[0] || {};
       var identical = {}; // NEED TO FIND OUT WHEN / HOW IDENTICAL IS POPULATED
       var features = json.lookups[1] || {};
       var entries = [];
@@ -404,15 +414,13 @@ define([
             delete entry.genome_id;
             delete entry.genome_name;
           } else if (this.type === 'genome_sequence') {
-            // Look up using the original sequence_id from the BLAST result
-            if (Object.prototype.hasOwnProperty.call(metadata, target_id)) {
-              entry.genome_id = metadata[target_id].genome_id;
-              entry.sequence_type = metadata[target_id].sequence_type;
-              entry.description = metadata[target_id].description;
-              entry.accession = metadata[target_id].accession;
-              entry = lang.mixin(entry, metadata[target_id]);
+            // The keyMap was built from normalized ids, so normalize here too.
+            var seq_key = this.normalizeSequenceId(target_id);
+            if (Object.prototype.hasOwnProperty.call(metadata, seq_key)) {
+              entry = lang.mixin(entry, metadata[seq_key]);
             } else {
-              console.log('missing id: ', target_id);
+              console.warn('HomologyResultMemoryStore: no genome_sequence metadata for hit id '
+                + target_id + ' (normalized to ' + seq_key + ')');
             }
           } else if (this.type === 'specialty_genes' || this.state.submit_values.db_source === 'fasta_data') {
             if (Object.prototype.hasOwnProperty.call(metadata, target_id)) {

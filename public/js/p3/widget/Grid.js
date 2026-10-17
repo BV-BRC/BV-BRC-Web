@@ -3,13 +3,15 @@ define(
     'dojo/_base/declare', 'dgrid/OnDemandGrid', 'dojo/store/JsonRest', 'dgrid/extensions/DijitRegistry',
     'dgrid/Keyboard', 'dgrid/Selection', './formatter', 'dgrid/extensions/ColumnResizer',
     './ColumnHider', 'dgrid/extensions/DnD', 'dojo/dnd/Source',
-    'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', '../util/PathJoin','./GridCopyToClipboard'
+    'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', '../util/PathJoin','./GridCopyToClipboard',
+    '../auth/authHeaders'
   ],
   function (
     declare, Grid, Store, DijitRegistry,
     Keyboard, Selection, formatter, ColumnResizer,
     ColumnHider, DnD, DnDSource,
-    Deferred, aspect, lang, PathJoin,GridCopyToClipboard
+    Deferred, aspect, lang, PathJoin,GridCopyToClipboard,
+    authHeader
   ) {
     return declare([Grid, ColumnHider, Keyboard, ColumnResizer, DijitRegistry, Selection,GridCopyToClipboard], {
       constructor: function () {
@@ -133,7 +135,7 @@ define(
           headers: {
             accept: 'application/json',
             'content-type': 'application/json',
-            Authorization: (window.App.authorizationToken || ''),
+            Authorization: authHeader(),
             'X-Requested-With': null
           }
         });

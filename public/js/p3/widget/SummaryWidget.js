@@ -3,14 +3,14 @@ define([
   'dojo/dom-class', 'dijit/_Templated', 'dojo/text!./templates/SummaryWidget.html',
   'dojo/request', 'dojo/_base/lang', 'dojox/charting/Chart2D', 'dojox/charting/themes/WatersEdge', 'dojox/charting/action2d/MoveSlice',
   'dojox/charting/action2d/Tooltip', 'dojo/dom-construct', '../util/PathJoin', 'dgrid/Grid',
-  'dgrid/extensions/CompoundColumns'
+  'dgrid/extensions/CompoundColumns', '../auth/authHeaders'
 
 ], function (
   declare, WidgetBase, on, domGeometry, domStyle,
   domClass, Templated, Template,
   xhr, lang, Chart2D, Theme, MoveSlice,
-  ChartTooltip, domConstruct, PathJoin, Grid, CompoundColumns
-) {
+  ChartTooltip, domConstruct, PathJoin, Grid, CompoundColumns,
+  authHeader) {
   return declare([WidgetBase, Templated], {
     baseClass: 'SummaryWidget',
     templateString: Template,
@@ -51,7 +51,7 @@ define([
       accept: 'application/solr+json',
       'content-type': 'application/rqlquery+x-www-form-urlencoded',
       'X-Requested-With': null,
-      Authorization: (window.App.authorizationToken || '')
+      Authorization: authHeader()
     },
 
     onSetQuery: function (attr, oldVal, query) {

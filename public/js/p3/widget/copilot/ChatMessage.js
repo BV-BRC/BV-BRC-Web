@@ -12,9 +12,11 @@ define([
   './CopilotToolHandler', // Tool handler for special tool processing
   './WorkflowEngine', // Workflow engine widget for displaying workflows
   './workflowForms/CopilotServiceFormAdapter', // Dojo form wrappers for single-step direct form modal
-  '../../WorkspaceManager' // Workspace manager for file operations
+  '../../WorkspaceManager', // Workspace manager for file operations
+  '../../auth/authHeaders' // Authorization header construction
 ], function (
-  declare, domConstruct, on, topic, lang, Deferred, request, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, CopilotServiceFormAdapter, WorkspaceManager
+  declare, domConstruct, on, topic, lang, Deferred, request, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, CopilotServiceFormAdapter, WorkspaceManager,
+  authHeader
 ) {
   /**
    * @class ChatMessage
@@ -1862,7 +1864,7 @@ define([
           'X-Requested-With': null
         };
         if (window.App && window.App.authorizationToken) {
-          headers['Authorization'] = window.App.authorizationToken;
+          headers['Authorization'] = authHeader();
         }
 
         request.post(solrUrl, {

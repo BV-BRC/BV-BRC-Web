@@ -4,15 +4,15 @@ define([
   'dojo/text!./OverviewDetails.html', 'dojo/text!./Resources.html', 'dojo/text!./News.html', 'dojo/text!./Contents.html',
   'dojo/text!./Data.html', 'dojo/text!./CommandLineTool.html', '../OutbreaksTabContainer', '../OutbreaksPhylogenyTreeViewer',
   '../OutbreaksGeoMap', '../OutbreaksGeoMapInfo', 'dojo/text!./OutbreaksGeoMapInfo.html',
-  'dojo/text!./GeoMapHeader.html', 'dojo/text!./GeoMapFooter.html'
+  'dojo/text!./GeoMapHeader.html', 'dojo/text!./GeoMapFooter.html', '../../../auth/authHeaders'
 ], function (
   declare, lang, xhr, domParser, domConstruct,
   PathJoin, TabViewerBase, OutbreaksOverview, OutbreaksTab,
   OverviewDetailsTemplate, ResourcesTemplate, NewsTemplate, ContentsTemplate,
   DataTemplate, CommandLineToolTemplate, OutbreaksTabContainer, OutbreaksPhylogenyTreeViewer,
   OutbreaksGeoMap, OutbreaksGeoMapInfo, OutbreaksGeoMapInfoTemplate,
-  GeoMapHeaderTemplate, GeoMapFooterTemplate
-) {
+  GeoMapHeaderTemplate, GeoMapFooterTemplate,
+  authHeader) {
   return declare([TabViewerBase], {
     perspectiveLabel: '',
     perspectiveIconClass: '',
@@ -99,125 +99,16 @@ define([
       });
 
       // Initialize Phylogenetic Tree Viewer
-      const decorator = 'vipr:';
-      const nodeVisualizations = {};
-
-      nodeVisualizations['Host'] = {
-        label: 'Host',
-        description: 'the host of the virus',
-        field: null,
-        cladeRef: decorator + 'Host',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        sizes: null
-      };
-
-      nodeVisualizations['Country'] = {
-        label: 'Country',
-        description: 'the country of the virus',
-        field: null,
-        cladeRef: decorator + 'Country',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        sizes: null
-      };
-
-      nodeVisualizations['Year'] = {
-        label: 'Year',
-        description: 'the year of the virus',
-        field: null,
-        cladeRef: decorator + 'Year',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50c',
-        colorsAlt: ['#FF0000', '#000000', '#00FF00'],
-        sizes: null
-      };
-
-      nodeVisualizations['Clade'] = {
-        label: 'Clade',
-        description: 'the clade of the monkey pox virus',
-        field: null,
-        cladeRef: decorator + 'Clade',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        colorsAlt: ['#FF0000', '#000000', '#00FF00'],
-        sizes: [20, 60]
-      };
-
-      const nodeLabels = {};
-
-      nodeLabels['Host'] = {
-        label: 'Host',
-        description: 'to use the host as part of node names',
-        propertyRef: 'vipr:Host',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Country'] = {
-        label: 'Country',
-        description: 'to use the country as part of node names',
-        propertyRef: 'vipr:Country',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Year'] = {
-        label: 'Year',
-        description: 'to use the year as part of node names',
-        propertyRef: 'vipr:Year',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Clade'] = {
-        label: 'Clade',
-        description: 'to use the clade as part of node names',
-        propertyRef: 'vipr:Clade',
-        selected: false,
-        showButton: true
-      };
-
       let options = {};
-      options.minBranchLengthValueToShow = 0.001;
-      options.minConfidenceValueToShow = 50;
-      options.initialNodeFillColorVisualization = 'Clade';
-      options.phylogram = true;
-      options.showConfidenceValues = false;
-      options.showExternalLabels = true;
-      options.showNodeName = true;
-      options.showNodeVisualizations = true;
-      options.showVisualizationsLegend = true;
-      options.visualizationsLegendOrientation = 'vertical';
-      options.visualizationsLegendXpos = 220;
+      options.initialVisualization = 'Clade';
       options.visualizationsLegendYpos = 30;
-      options.showInternalLabels = true;
 
       let settings = {};
-      settings.border = '1px solid #909090';
-      settings.controls0Left = 20;
-      settings.controls1Width = 120;
-      settings.rootOffset = 220;
-      settings.controls0Top = 10;
-      settings.controls1Top = 10;
       settings.enableDownloads = true;
       settings.enableDynamicSizing = true;
-      settings.enableMsaResidueVisualizations = false;
-      settings.enableCollapseByFeature = true;
-      settings.enableNodeVisualizations = true;
-      settings.enableBranchVisualizations = false;
+      settings.enableVisualizations = true;
       settings.nhExportWriteConfidences = true;
       settings.enableSubtreeDeletion = true;
-      settings.showSequenceButton = false;
-      settings.showShortenNodeNamesButton = false;
-      settings.showExternalLabelsButton = false;
-      settings.showInternalLabelsButton = true;
-      settings.showExternalNodesButton = false;
-      settings.showInternalNodesButton = false;
 
       const phylogenyId = 'phylogenyMonkeypox';
       this[phylogenyId] = new OutbreaksPhylogenyTreeViewer({
@@ -225,10 +116,7 @@ define([
         id: this.viewer.id + '_' + phylogenyId,
         phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/mpox/monkeypox.xml',
         updateState: true,
-        settings: settings,
-        options: options,
-        nodeVisualizations: nodeVisualizations,
-        specialVisualizations: nodeLabels
+        config: { ...options, ...settings }
       });
 
       this.phylogenetics = new OutbreaksTabContainer({
@@ -250,8 +138,8 @@ define([
         cladeIDetected: '#028c81',
         cladeIIDetected: '#035999',
         bothCladesDetected: '#0590b1',
-        createInfoWindowContent: this.googleMapsInfoWindowContent,
-        createMarker: this.createGoogleMapsMarker,
+        createInfoWindowContent: this.infoWindowContent,
+        createMarker: this.createMarker,
         headerInfo: GeoMapHeaderTemplate,
         footerInfo: GeoMapFooterTemplate,
         focusOnUS: false
@@ -270,7 +158,7 @@ define([
           accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, async function (genomes) {
@@ -381,7 +269,7 @@ define([
       return node.getElementsByTagName(tag)[0].childNodes[0].nodeValue;
     },
 
-    googleMapsInfoWindowContent: function (item) {
+    infoWindowContent: function (item) {
       let contentValues = {map: this.map, index: this.index++};
 
       //Sort host common names
@@ -418,31 +306,31 @@ define([
         } else {
           let td = domConstruct.create('td', {}, tr);
           domConstruct.create('a', {
-            href: `/view/Taxonomy/10244#view_tab=genomes&filter=and(or(eq(genome_status,"Complete"),eq(genome_status,"Partial")),eq(collection_year,"2024")${locationFilter},eq(clade,"${encodeURIComponent(clade)}"))&defaultColumns=-cds,clade,collection_date&defaultSort=genome_name,clade`,
+            'class': 'sdm-pop-link',
+            href: `/view/Taxonomy/10244#view_tab=genomes&filter=and(or(eq(genome_status,"Complete"),eq(genome_status,"Partial")),or(eq(collection_year,"2024"),eq(collection_year,"2025"),eq(collection_year,"2026"))${locationFilter},eq(clade,"${encodeURIComponent(clade)}"))&defaultColumns=-cds,clade,collection_date&defaultSort=genome_name,clade`,
             target: '_blank',
             innerHTML: clade
           }, td);
         }
 
-        domConstruct.create('td', { innerHTML: count }, tr);
+        domConstruct.create('td', { 'class': 'sdm-pop-num', innerHTML: count }, tr);
       }
 
       return content.domNode.innerHTML;
     },
 
-    createGoogleMapsMarker: function (item) {
-      const latitude = item.latitude.toFixed(5);
-      const longitude = item.longitude.toFixed(5);
+    createMarker: function (item) {
+      const latitude = item.latitude;
+      const longitude = item.longitude;
       const count = item.metadata.genomeNames.length;
       const clades = item.metadata.clades;
 
       // Find all keys that start with 'I.' and 'II.'
-      let cladeIKeys = Object.keys(clades).filter(c => c.startsWith('I.'));
+      const cladeIKeys = Object.keys(clades).filter(c => c.startsWith('I.'));
       const cladeIIKeys = Object.keys(clades).filter(c => c.startsWith('II.'));
 
-      // Calculate the total number of values for each clade
-      let cladeICount = cladeIKeys.reduce((count, key) => count + clades[key], 0);
-      const cladeIICount = cladeIIKeys.reduce((count, key) => count + clades[key], 0);
+      const cladeICount = cladeIKeys.reduce((s, k) => s + clades[k], 0);
+      const cladeIICount = cladeIIKeys.reduce((s, k) => s + clades[k], 0);
 
       let markerColor, markerLabel;
       if (cladeIKeys.length > 0 && cladeIIKeys.length > 0) {
@@ -454,28 +342,52 @@ define([
       } else if (cladeIIKeys.length > 0) {
         markerColor = this.cladeIIDetected;
         markerLabel = count.toString();
+      } else {
+        // No clade info
+        markerColor = this.bothCladesDetected || '#777';
+        markerLabel = count.toString();
       }
 
       const length = markerLabel.length;
       const scale = length === 1 ? 1 : 1.5 + (length - 2) * 0.2;
 
-      const icon = {
-        path: item.isCountryLevel ? 'M 0,0 L 11,-15 L 0,-30 L -11,-15 Z' : 'M 0,0 C -2,-10 -10,-10 -10,-20 A 10,10 0 1,1 10,-20 C 10,-10 2,-10 0,0 Z',
-        fillColor: markerColor,
-        fillOpacity: 1,
-        strokeColor: '#fff',
-        strokeWeight: 0.5,
-        scale: scale,
-        labelOrigin: item.isCountryLevel ? new google.maps.Point(0, -15) : new google.maps.Point(0, -18)
-      };
-      const anchorPoint = count === 1 ? 1 : 1.5 + (count - 2) * 0.2;
+      const isCountry = item.isCountryLevel;
+      const path = isCountry
+        ? 'M 0,0 L 11,-15 L 0,-30 L -11,-15 Z'
+        : 'M 0,0 C -2,-10 -10,-10 -10,-20 A 10,10 0 1,1 10,-20 C 10,-10 2,-10 0,0 Z';
+      const pathWidth = isCountry ? 22 : 20;
+      const pathHeight = 30;
+      const w = pathWidth * scale;
+      const h = pathHeight * scale;
 
-      return new google.maps.Marker({
-        position: new google.maps.LatLng(latitude, longitude),
-        labelAnchor: new google.maps.Point(anchorPoint, 33),
-        label: {text: markerLabel, color: '#fff'},
-        icon: icon,
-        map: this.map
+      const bulbCenterPct = isCountry ? 46 : 34;
+      const fontSize = Math.max(11, Math.min(15, Math.round((pathWidth * scale * 0.9) / (markerLabel.length * 0.6))));
+
+      const labelHtml =
+        '<div style="position:absolute;left:0;top:0;width:100%;height:' + (bulbCenterPct * 2) + '%;' +
+        'display:flex;align-items:center;justify-content:center;white-space:nowrap;' +
+        'color:#fff;font-size:' + fontSize + 'px;font-weight:700;line-height:1;' +
+        'pointer-events:none;text-shadow:0 0 2px rgba(0,0,0,0.4);">' + markerLabel + '</div>';
+
+      const html =
+        '<div style="position:relative;width:' + w + 'px;height:' + h + 'px;' +
+        'filter:drop-shadow(0 1px 2px rgba(0,0,0,0.3));">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h +
+        '" viewBox="-12 -31 24 32" style="display:block;overflow:visible;">' +
+        '<path d="' + path + '" fill="' + markerColor +
+        '" fill-opacity="1" stroke="#fff" stroke-width="0.5"/>' +
+        '</svg>' +
+        labelHtml +
+        '</div>';
+
+      return L.marker([latitude, longitude], {
+        icon: L.divIcon({
+          className: 'outbreaks-geomap-marker',
+          html: html,
+          iconSize: [w, h],
+          iconAnchor: [w / 2, h],
+          popupAnchor: [0, -h * 0.85]
+        })
       });
     }
   });

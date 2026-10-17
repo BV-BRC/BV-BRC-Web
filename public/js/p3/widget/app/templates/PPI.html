@@ -1,0 +1,140 @@
+<form dojoAttachPoint="containerNode" class="PanelForm App ${baseClass}"
+  dojoAttachEvent="onreset:_onReset,onsubmit:_onSubmit,onchange:validate">
+  <div class="appTemplate">
+    <div class="appTitle">
+      <span class="breadcrumb">Services</span>
+      <h1 class="appHeader">${applicationLabel}</h1>
+      <p>${applicationDescription} Provide one or more proteins in each input set; the service evaluates the interactions between the two sets.</p>
+    </div>
+
+    <div style="width:85%; margin:auto" class="formFieldsContainer">
+      <div style="width:97%;" class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Protein Sequence 1</label>
+        </div>
+        <div class="appRow">
+          <input type="radio" id="${id}_query_paste" data-dojo-type="dijit/form/RadioButton"
+            data-dojo-attach-point="queryPaste" name="${id}_query_source" value="paste"
+            data-dojo-attach-event="onChange:onQuerySourceChange" checked />
+          <label for="${id}_query_paste">Paste sequence</label>
+          <input type="radio" id="${id}_query_file" data-dojo-type="dijit/form/RadioButton"
+            data-dojo-attach-point="queryFile" name="${id}_query_source" value="file"
+            data-dojo-attach-event="onChange:onQuerySourceChange" />
+          <label for="${id}_query_file">Upload or select FASTA file</label>
+          <input type="radio" id="${id}_query_group" data-dojo-type="dijit/form/RadioButton"
+            data-dojo-attach-point="queryGroup" name="${id}_query_source" value="group"
+            data-dojo-attach-event="onChange:onQuerySourceChange" />
+          <label for="${id}_query_group">Select Feature Group</label>
+        </div>
+        <div class="appRow" data-dojo-attach-point="queryPastePanel">
+          <textarea name="query_fasta_keyboard_input" data-dojo-type="dijit/form/Textarea"
+            data-dojo-attach-point="queryPasteInput" data-dojo-attach-event="onChange:onQueryInputChange"
+            style="width:96%; height:130px; margin-left:5px; font-family:monospace; font-size:12px;"
+            data-dojo-props="rows:8,trim:true,placeholder:'Paste one protein sequence or one or more FASTA records.'"></textarea>
+        </div>
+        <div class="appRow" data-dojo-attach-point="queryFilePanel" style="display:none;">
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="query_fasta_file"
+            data-dojo-attach-point="queryFileInput" data-dojo-attach-event="onChange:onQueryInputChange"
+            style="width:85%;" required="false"
+            data-dojo-props="type:['feature_protein_fasta'],multi:false,promptMessage:'Select or upload a protein FASTA file.',missingMessage:'A protein FASTA file is required.',placeHolder:'Protein FASTA file'">
+          </div>
+        </div>
+        <div class="appRow" data-dojo-attach-point="queryGroupPanel" style="display:none;">
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="query_feature_group"
+            data-dojo-attach-point="queryGroupInput"
+            data-dojo-attach-event="onChange:onQueryInputChange"
+            style="width:85%;" required="false"
+            data-dojo-props="type:['feature_group'],multi:false,allowUpload:false,promptMessage:'Select a feature group from your workspace.',missingMessage:'A feature group is required.',placeHolder:'Feature Group'">
+          </div>
+        </div>
+        <div class="warning" data-dojo-attach-point="queryMessage"></div>
+      </div>
+
+      <div style="width:97%;" class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Protein Sequence 2</label>
+        </div>
+        <div class="appRow">
+          <input type="radio" id="${id}_target_paste" data-dojo-type="dijit/form/RadioButton"
+            data-dojo-attach-point="targetPaste" name="${id}_target_source" value="paste"
+            data-dojo-attach-event="onChange:onTargetSourceChange" checked />
+          <label for="${id}_target_paste">Paste sequence</label>
+          <input type="radio" id="${id}_target_file" data-dojo-type="dijit/form/RadioButton"
+            data-dojo-attach-point="targetFile" name="${id}_target_source" value="file"
+            data-dojo-attach-event="onChange:onTargetSourceChange" />
+          <label for="${id}_target_file">Upload or select FASTA file</label>
+          <input type="radio" id="${id}_target_group" data-dojo-type="dijit/form/RadioButton"
+            data-dojo-attach-point="targetGroup" name="${id}_target_source" value="group"
+            data-dojo-attach-event="onChange:onTargetSourceChange" />
+          <label for="${id}_target_group">Select Feature Group</label>
+        </div>
+        <div class="appRow" data-dojo-attach-point="targetPastePanel">
+          <textarea name="target_fasta_keyboard_input" data-dojo-type="dijit/form/Textarea"
+            data-dojo-attach-point="targetPasteInput" data-dojo-attach-event="onChange:onTargetInputChange"
+            style="width:96%; height:130px; margin-left:5px; font-family:monospace; font-size:12px;"
+            data-dojo-props="rows:8,trim:true,placeholder:'Paste one protein sequence or one or more FASTA records.'"></textarea>
+        </div>
+        <div class="appRow" data-dojo-attach-point="targetFilePanel" style="display:none;">
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="target_fasta_file"
+            data-dojo-attach-point="targetFileInput" data-dojo-attach-event="onChange:onTargetInputChange"
+            style="width:85%;" required="false"
+            data-dojo-props="type:['feature_protein_fasta'],multi:false,promptMessage:'Select or upload a protein FASTA file.',missingMessage:'A protein FASTA file is required.',placeHolder:'Protein FASTA file'">
+          </div>
+        </div>
+        <div class="appRow" data-dojo-attach-point="targetGroupPanel" style="display:none;">
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="target_feature_group"
+            data-dojo-attach-point="targetGroupInput"
+            data-dojo-attach-event="onChange:onTargetInputChange"
+            style="width:85%;" required="false"
+            data-dojo-props="type:['feature_group'],multi:false,allowUpload:false,promptMessage:'Select a feature group from your workspace.',missingMessage:'A feature group is required.',placeHolder:'Feature Group'">
+          </div>
+        </div>
+        <div class="warning" data-dojo-attach-point="targetMessage"></div>
+      </div>
+
+      <div style="width:97%;" class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Output</label>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong">
+            <label>Output Folder</label><br>
+            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
+              data-dojo-attach-point="output_path" data-dojo-attach-event="onChange:onOutputPathChange"
+              style="width:75%;" required="true"
+              data-dojo-props="allowUpload:false,title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'Workspace folder for protein-protein interface results.',missingMessage:'Output Folder must be selected.',placeHolder:'Output Folder'">
+            </div>
+          </div>
+        </div>
+        <div class="appRow">
+          <div class="appFieldLong" style="width:380px;">
+            <label>Output Name</label><span class="charError"
+              style="color:red; font-size:8pt; padding-left:10px; font-weight:bold;">&nbsp;</span><br>
+            <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
+              data-dojo-attach-point="output_file" data-dojo-attach-event="onChange:checkOutputName"
+              style="width:100%;" required="true"
+              data-dojo-props="intermediateChanges:true,promptMessage:'Name for the protein-protein interface results.',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="appSubmissionArea">
+      <div data-dojo-attach-point="workingMessage" class="messageContainer workingMessage"
+        style="margin-top:10px; text-align:center;">Submitting Protein-Protein Interface Prediction Job</div>
+      <div data-dojo-attach-point="errorMessage" class="messageContainer errorMessage"
+        style="margin-top:10px; text-align:center;">Error Submitting Job</div>
+      <div data-dojo-attach-point="submittedMessage" class="messageContainer submittedMessage"
+        style="margin-top:10px; text-align:center;">
+        Your job has been submitted successfully. Visit your
+        <a data-dojo-attach-event="onclick:openJobsList"><u>Jobs List</u></a> to monitor it and access the results.
+      </div>
+      <div style="margin-top:10px; text-align:center;">
+        <div data-dojo-attach-point="resetButton" type="reset" data-dojo-type="dijit/form/Button">Reset</div>
+        <div data-dojo-attach-point="submitButton" type="submit" data-dojo-type="dijit/form/Button"
+          data-dojo-props="disabled:true">Submit</div>
+      </div>
+    </div>
+  </div>
+</form>

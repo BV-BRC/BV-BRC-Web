@@ -6,7 +6,7 @@ define([
   '../ActionBar', '../FilterContainerActionBar', 'phyloview/PhyloTree', '../../WorkspaceManager',
   'd3/d3', 'phyloview/TreeNavSVG', '../../util/PathJoin', 'dijit/form/Button',
   'dijit/MenuItem', 'dijit/TooltipDialog', 'dijit/popup', '../SelectionToGroup', '../PerspectiveToolTip',
-  'dijit/Dialog', '../ItemDetailPanel', 'dojo/query', 'FileSaver', 'msa'
+  'dijit/Dialog', '../ItemDetailPanel', 'dojo/query', 'FileSaver', '../../auth/authHeaders', 'msa'
 ], function (
   declare, Base, on, Topic,
   domClass, ContentPane, domConstruct,
@@ -15,8 +15,8 @@ define([
   ActionBar, ContainerActionBar, PhyloTree, WorkspaceManager,
   d3, d3Tree, PathJoin, Button,
   MenuItem, TooltipDialog, popup,
-  SelectionToGroup, PerspectiveToolTipDialog, Dialog, ItemDetailPanel, query, saveAs
-) {
+  SelectionToGroup, PerspectiveToolTipDialog, Dialog, ItemDetailPanel, query, saveAs,
+  authHeader) {
 
   var schemes = [{
     name: 'Zappo',
@@ -289,7 +289,7 @@ define([
             headers: {
               accept: 'application/json',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json'
           }).then(lang.hitch(this, function (record) {
@@ -301,7 +301,7 @@ define([
             headers: {
               accept: 'application/json',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json'
           }).then(lang.hitch(this, function (record) {
@@ -505,7 +505,7 @@ define([
           headers: {
             accept: 'application/json',
             'X-Requested-With': null,
-            Authorization: (window.App.authorizationToken || '')
+            Authorization: authHeader()
           },
           handleAs: 'json',
           // headers: this.headers,
@@ -551,7 +551,7 @@ define([
             headers: {
               accept: 'application/json',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json',
             // headers: this.headers,
@@ -602,15 +602,20 @@ define([
         var genome_ids = [];
         console.log('ids=', ids);
 
-        if (ids.some(id => /^\d+\.\d+$/.test(id))) {
-          genome_ids = ids;
-        } else {
-          ids.forEach((id) => {
+        ids.forEach((id) => {
+          if (/^\d+\.\d+$/.test(id)) {
+            genome_ids.push(id);
+          } else {
             var myid = id.match(/.*\|(\d+\.\d+).*/);
             // console.log('id=', id);
             // console.log('myid=', myid);
-            genome_ids.push(myid[1]) });
-        }
+            if (myid && myid[1]) {
+              genome_ids.push(myid[1]);
+            } else {
+              console.warn('Could not extract a genome ID from sequence identifier:', id);
+            }
+          }
+        });
         // console.log('genome_ids=', genome_ids);
         var q = 'in(genome_id,(' + genome_ids.join(',') + '))&select(genome_id,genome_name,genbank_accessions,species,strain,geographic_group,isolation_country,host_group,host_common_name,collection_year,subtype,lineage,clade,h1_clade_global,h1_clade_us,h3_clade,h5_clade)&limit(25000)';
         // console.log('q =', q);
@@ -619,7 +624,7 @@ define([
           headers: {
             accept: 'application/json',
             'X-Requested-With': null,
-            Authorization: (window.App.authorizationToken || '')
+            Authorization: authHeader()
           },
           handleAs: 'json',
           data: q
@@ -631,15 +636,16 @@ define([
             var keys = Object.keys(seqIds);
             // console.log('in when response keys', keys);
 
-            if (keys.some(k => /^\d+\.\d+$/.test(k))) {
+            if (seqIds[genome.genome_id] > 0) {
               seqIdIndex = seqIds[genome.genome_id] - 1;
             } else {
-              for (var i = 0; i < keys.length; i++) {
+              for(var i = 0; i < keys.length; i++) {
                 var mykey = keys[i].match(/.*\|(\d+\.\d+).*/);
                 // console.log('in when response genome.genome_id, keys, mykey', genome.genome_id, keys[i], mykey);
-                if (genome.genome_id == mykey[1]) {
+                if (mykey && genome.genome_id == mykey[1]) {
                   // console.log('in when response mykey', mykey[1]);
                   seqIdIndex = seqIds[keys[i]] - 1;
+                  break;
                 }
               }
             }

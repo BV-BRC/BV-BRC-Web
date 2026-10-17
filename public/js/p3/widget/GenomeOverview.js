@@ -5,7 +5,7 @@ define([
   '../util/PathJoin', './SelectionToGroup', './GenomeFeatureSummary', './DataItemFormatter',
   './ExternalItemFormatter', './DownloadTooltipDialog', 'dijit/form/TextBox', 'dijit/form/Form', './Confirmation',
   './InputList', 'dijit/form/SimpleTextarea', 'dijit/form/DateTextBox', './MetaEditor',
-  '../DataAPI', './PermissionEditor', './ServicesTooltipDialog', 'dijit/popup'
+  '../DataAPI', './PermissionEditor', './ServicesTooltipDialog', 'dijit/popup', '../auth/authHeaders'
 ], function (
   declare, lang, on, xhr, Topic,
   domClass, domQuery, domStyle, Template, domConstruct,
@@ -13,8 +13,8 @@ define([
   PathJoin, SelectionToGroup, GenomeFeatureSummary, DataItemFormatter,
   ExternalItemFormatter, DownloadTooltipDialog, TextBox, Form, Confirmation,
   InputList, TextArea, DateTextBox, MetaEditor,
-  DataAPI, PermissionEditor, ServicesTooltipDialog, popup
-) {
+  DataAPI, PermissionEditor, ServicesTooltipDialog, popup,
+  authHeader) {
 
   return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
     baseClass: 'GenomeOverview',
@@ -140,7 +140,7 @@ define([
                 headers: {
                   accept: 'application/json',
                   'X-Requested-With': null,
-                  Authorization: (window.App.authorizationToken || '')
+                  Authorization: authHeader()
                 },
                 handleAs: 'json'
               }).then(lang.hitch(this, function (genome) {
@@ -256,7 +256,7 @@ define([
         headers: {
           accept: 'application/json',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, function (genome) {

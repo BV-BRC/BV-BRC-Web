@@ -21,10 +21,16 @@ gulpfile.js
 src/
 test/
 intern.js
-jest.config.json
 gulpfile.js
 .eslintrc.json
 /public/js/p3/widget/UserDetails.js
 
 # Auspice dist files
 /public/js/auspice-custom/dist/
+# Vendored bvbrc_js_client. The bare `src/` and `test/` rules above are
+# unanchored, so they match at any depth and would silently swallow this
+# vendored package's own source. Re-include it explicitly; only its build
+# dependencies stay ignored.
+public/js/bvbrc_js_client/node_modules/
+!public/js/bvbrc_js_client/src/
+!public/js/bvbrc_js_client/test/

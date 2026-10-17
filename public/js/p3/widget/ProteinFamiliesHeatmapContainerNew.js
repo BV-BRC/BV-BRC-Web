@@ -4,7 +4,7 @@ define([
   'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
   'dijit/TitlePane', 'dijit/registry', 'dijit/form/Form', 'dijit/form/RadioButton', 'dijit/form/Select', 'dijit/form/Button',
   './ContainerActionBar', './SelectionToGroup', '../util/PathJoin', 'FileSaver',
-  './HeatmapContainerNew', 'heatmap/dist/hotmap', 'dojo/dom-class', './Confirmation', 'xstyle/css!heatmap/dist/hotmap.css'
+  './HeatmapContainerNew', 'heatmap/dist/hotmap', 'dojo/dom-class', './Confirmation', '../auth/authHeaders', 'xstyle/css!heatmap/dist/hotmap.css'
 
 ], function (
   declare, lang,
@@ -12,8 +12,8 @@ define([
   ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
   TitlePane, registry, Form, RadioButton, Select, Button,
   ContainerActionBar, SelectionToGroup, PathJoin, saveAs,
-  HeatmapContainerNew, Hotmap, domClass, Confirmation
-) {
+  HeatmapContainerNew, Hotmap, domClass, Confirmation,
+  authHeader) {
 
   return declare([BorderContainer, HeatmapContainerNew], {
     gutters: false,
@@ -266,7 +266,7 @@ define([
         headers: {
           Accept: 'application/json',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         }
       }).then(lang.hitch(this, function (features) {
         Topic.publish(this.topicId, 'hideLoadingMask');
@@ -296,7 +296,7 @@ define([
           Accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         data: query
       }).then(lang.hitch(this, function (features) {

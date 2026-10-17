@@ -1,10 +1,10 @@
 define.amd.jQuery = true;
 define([
   'dojo/_base/declare', 'dijit/_WidgetBase', 'dijit/_TemplatedMixin', 'dojo/request',
-  'dojo/text!./OutbreaksPhylogenyTreeViewer.html'
+  'dojo/text!./OutbreaksPhylogenyTreeViewer.html', 'dojo/dom-geometry'
 ], function (
   declare, WidgetBase, Templated, xhr,
-  Template
+  Template, domGeometry
 ) {
   return declare([WidgetBase, Templated], {
     baseClass: 'OutbreaksPhylogenyTreeViewer',
@@ -13,58 +13,14 @@ define([
     apiServiceUrl: window.App.dataAPI,
     isLoaded: false,
     phyloxmlTreeURL: null,
-    defaultOptions: {
-      alignPhylogram: false, // We should launch with "regular" phylogram.
-      branchDataFontSize: 9,
-      defaultFont: ['Arial', 'Helvetica', 'Times'],
-      initialNodeFillColorVisualization: 'PANGO VOC',
-      minBranchLengthValueToShow: 0.000001,
-      minConfidenceValueToShow: 50,
-      phylogram: true, // We should launch with "regular" phylogram.
-      showConfidenceValues: false,
-      showExternalLabels: true,
-      showNodeName: true,
-      showLineage: false,  // NEW as of 1.8.7b1
-      showMutations: false, // NEW as of 1.8.7b1
-      showNodeVisualizations: true,
-      showSequence: false, // Do not show "Sequence" upon launch.
-      showSequenceAccession: true, // If user turns on "Sequence" display, accession will be shown.
-      searchProperties: true,
-      searchIsPartial: false,
-      showBranchEvents: false,
-      showVisualizationsLegend: true,
-      visualizationsLegendOrientation: 'vertical',
-      visualizationsLegendXpos: 160,
-      visualizationsLegendYpos: 30
-    },
-    defaultSettings: {
-      border: '1px solid #909090',
-      controls0Top: 10,
-      controls1Top: 10, // Should have both boxes in line.
-      // displayHeight: 700,
-      // displayWidth: 1200,
+    defaultConfig: {
       enableAccessToDatabases: true,
-      enableCollapseByFeature: false,
       enableDownloads: true,
-      enableNodeVisualizations: true,
+      enableVisualizations: true,
       enableDynamicSizing: true,
-      enableSpecialVisualizations2: true,
-      enableSpecialVisualizations3: true,
-      enableSpecialVisualizations4: true,
-      nhExportWriteConfidences: true,
-      searchFieldWidth: '50px',
-      collapseLabelWidth: '36px',
-      textFieldHeight: '16px',
-      showLineageButton: true,
-      showMutationsButton: true,
-      showShortenNodeNamesButton: false,
-      showDynahideButton: false,
-      showSearchPropertiesButton: true,
-      dynamicallyAddNodeVisualizations: true,
-      propertiesToIgnoreForNodeVisualization: ['AccessionNumber', 'Mutation']
+      nhExportWriteConfidences: true
     },
-    nodeVisualizations: null,
-    specialVisualizations: null,
+    config: null,
 
     startup: function () {
       if (this._started) {
@@ -80,19 +36,33 @@ define([
       }
     },
 
+    resize: function (size) {
+      // StackContainer passes the space below its tabs to resizable children.
+      // A percentage height alone cannot cross its unsized wrapper element.
+      var previousWidth = this.domNode.clientWidth;
+      var previousHeight = this.domNode.clientHeight;
+      if (size) {
+        domGeometry.setMarginBox(this.domNode, size);
+      }
+      if (this.phylogramNode && this.phylogramNode.querySelector('svg') &&
+          (previousWidth !== this.domNode.clientWidth || previousHeight !== this.domNode.clientHeight)) {
+        // v3 exposes resizing through its window listener, not its viewer handle.
+        // Defer until Dijit has finished laying out the surrounding panes.
+        if (this._treeResizeTimer) {
+          this._treeResizeTimer.remove();
+        }
+        this._treeResizeTimer = this.defer(function () {
+          this._treeResizeTimer = null;
+          window.dispatchEvent(new Event('resize'));
+        });
+      }
+    },
+
     loadOnce: function () {
       // show overlay
       this._setLoading('Downloading tree…', true);
 
-      const options = {...this.defaultOptions, ...this.options};
-      const settings = {
-        ...this.defaultSettings, ...this.settings, ...{
-          controls0: 'controls-' + this.id + '-0',
-          controls1: 'controls-' + this.id + '-1'
-        }
-      };
-      const nodeVisualizations = this.nodeVisualizations || {};
-      const specialVisualizations = this.specialVisualizations || {};
+      const config = {...this.defaultConfig, ...this.config};
 
       // Yield so overlay paints
       this.afterPaint(() => {
@@ -117,21 +87,7 @@ define([
                 // Yield again before launch
                 this.afterPaint(() => {
                   try {
-                    window.archaeopteryx.launch('#phylogramOutbreak-' + this.id, tree, options, settings, nodeVisualizations, specialVisualizations);
-
-                    const loading = document.querySelector('.phyloLoading');
-                    const widgets = document.querySelectorAll('.phylogram-outbreak-controls');
-
-                    // Adjust widgets top value based on loading div
-                    if (loading && widgets.length) {
-                      const loadingHeight = loading.offsetHeight;
-
-                      for (let widget of widgets) {
-                        const currentTop = parseFloat(widget.style.top) || 0;
-                        widget.style.top = (currentTop - loadingHeight) + 'px';
-                        widget.style.display = 'block';
-                      }
-                    }
+                    window.archaeopteryx.launch('#phylogramOutbreak-' + this.id, tree, config);
                   } catch (e) {
                     alert('Error while launching archaeopteryx: ' + e);
                   } finally {
