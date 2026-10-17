@@ -35,9 +35,21 @@ define([
     return !!base && String(url).indexOf(base) === 0;
   }
 
-  // Data API URLs: retry them. Everything else falls through to the registry's
-  // own fallback provider (./xhr), unwrapped.
-  registry.register(isDataApi, function (url, options) {
+  /** Feature flag; see retryRequest.js. Also read per call. */
+  function enabled() {
+    return !!(typeof window !== 'undefined' && window.App && window.App.enableThrottleRetry);
+  }
+
+  // Data API URLs: retry them, when the feature is on. Everything else falls
+  // through to the registry's own fallback provider (./xhr), unwrapped.
+  //
+  // The flag is part of the match, not a branch inside the handler: a
+  // non-matching URL never enters this function at all, so with the feature
+  // off every request takes the stock ./xhr path and gets dojo's own promise
+  // rather than the rebuilt one below. Off means absent, not inert.
+  registry.register(function (url) {
+    return enabled() && isDataApi(url);
+  }, function (url, options) {
     // dojo/request's contract is a *dual* promise: the data promise plus a
     // .response sub-promise (request/util.js:146). Delegating preserved that
     // for free; wrapping in retryRequest does not, so rebuild it from the

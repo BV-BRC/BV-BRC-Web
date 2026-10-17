@@ -55,11 +55,14 @@ function shedError(status, retryAfter) {
 beforeEach(() => {
   jest.useFakeTimers();
   jest.spyOn(Math, 'random').mockReturnValue(0); // jitter -> exactly 1.0x
+  // Feature flag on for the behavioural tests; the gate has its own block.
+  global.window = { App: { enableThrottleRetry: true } };
 });
 
 afterEach(() => {
   jest.useRealTimers();
   Math.random.mockRestore();
+  delete global.window;
 });
 
 /**
@@ -342,5 +345,49 @@ describe('retryRequest', () => {
     const fn = jest.fn(() => { throw new Error('bad call'); });
 
     await expect(retryRequest(fn)).rejects.toThrow('bad call');
+  });
+
+  describe('enableThrottleRetry feature flag', () => {
+    const OFF_STATES = [
+      ['flag false', { App: { enableThrottleRetry: false } }],
+      ['flag absent', { App: {} }],
+      ['App absent', {}]
+    ];
+
+    test.each(OFF_STATES)('disabled (%s): does not retry a 429', async (_name, win) => {
+      global.window = win;
+      const { retryRequest, topics } = setup();
+      const err = shedError(429, 1);
+      const fn = jest.fn().mockRejectedValue(err);
+
+      // Rejects with the original error, not the throttle message.
+      await expect(retryRequest(fn)).rejects.toBe(err);
+      expect(fn).toHaveBeenCalledTimes(1);
+      expect(topics()).toEqual([]);
+    });
+
+    test('disabled: returns the caller\'s own promise, not a rebuilt one', async () => {
+      global.window = { App: { enableThrottleRetry: false } };
+      const { retryRequest } = setup();
+
+      // Off should mean *absent from the chain*, not merely inert: the caller
+      // gets back the very object its requestFn produced, so nothing can
+      // regress in the promise contract when the feature is off.
+      const original = Promise.resolve('ok');
+      original.someTransportProperty = 'preserved';
+      const returned = retryRequest(() => original);
+
+      expect(returned).toBe(original);
+      expect(returned.someTransportProperty).toBe('preserved');
+      await expect(returned).resolves.toBe('ok');
+    });
+
+    test('enabled: wraps, so the returned promise is a new one', async () => {
+      global.window = { App: { enableThrottleRetry: true } };
+      const { retryRequest } = setup();
+      const original = Promise.resolve('ok');
+
+      expect(retryRequest(() => original)).not.toBe(original);
+    });
   });
 });

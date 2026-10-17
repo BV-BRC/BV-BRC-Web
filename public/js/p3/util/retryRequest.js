@@ -45,6 +45,23 @@ define([
   var MIN_DELAY_SECONDS = 1;
 
   /**
+   * Feature flag, from the `enableThrottleRetry` config variable (config.js ->
+   * app.js applicationOptions -> window.App).
+   *
+   * Gating here rather than only at the dojoConfig registration is deliberate:
+   * P3JsonRest calls retryRequest directly, because it uses dojo/_base/xhr and
+   * never sees the dojo/request provider. A flag that covered only the
+   * provider would leave the grid's own query retrying while the facet queries
+   * around it did not -- the half-enabled state is the one that produces a
+   * silently empty grid, so the flag has to reach both.
+   *
+   * Read per call: window.App does not exist when this module is loaded.
+   */
+  function enabled() {
+    return !!(typeof window !== 'undefined' && window.App && window.App.enableThrottleRetry);
+  }
+
+  /**
    * Pull the HTTP status off whatever the transport rejected with. Dojo's
    * dojo/_base/xhr copies status onto the error (xhr.js:631); dojo/request
    * rejects with a RequestError carrying .response.status; fetch callers hand
@@ -132,6 +149,13 @@ define([
    *          and aborts the in-flight request.
    */
   return function retryRequest(requestFn, options) {
+    // Disabled: hand back the caller's own promise untouched, so the wrapper
+    // is not merely inert but entirely absent from the chain -- no rebuilt
+    // promise, no behavior to regress.
+    if (!enabled()) {
+      return requestFn(0);
+    }
+
     var opts = {};
     var k;
     for (k in DEFAULTS) { opts[k] = DEFAULTS[k]; }
