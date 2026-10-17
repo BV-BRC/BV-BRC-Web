@@ -304,6 +304,42 @@ Workspace browsing is handled by `WorkspaceBrowser.js` with these key patterns:
 - `widget/WorkspaceExplorerView.js` - File/folder grid display
 - `widget/viewer/JobResult.js` - Job result viewer with metadata header
 
+### `/public` is a UI-only path prefix
+
+Workspace paths under Public Workspaces are displayed and routed as
+`/public/<owner>/<folder>`, but the Workspace service has never heard of `/public`. The
+canonical path it accepts is `/<owner>/<folder>`. The prefix is added for display and
+stripped before every outbound call, so a path crossing a layer boundary is in one of two
+different forms and you must know which.
+
+Strip sites (UI path → service path), all producing the identical canonical path:
+
+| site | code |
+|---|---|
+| `WorkspaceBrowser.js:2847` | `'/' + this.path.split('/').slice(2).join('/')` — before `getObject` |
+| `WorkspaceBrowser.js:832` | `.replace(/^\/public/, '')` — before a `/view/Homology` href |
+| `ContainerActionBar.js:80` | `_normalizePath()` — so favorites key on the canonical path |
+| `ContainerActionBar.js:105` | `parts.splice(1, 1)` — breadcrumb rendering |
+
+The inverse re-add is `WorkspaceGrid.js:208` and `:230`, which put `/public` back on a row
+path when the grid is showing a public folder:
+
+```javascript
+var path = _self.path.split('/')[1] == 'public' ? '/public' + row.data.path : row.data.path;
+```
+
+Two consequences worth holding onto:
+
+- **Favorites must be normalized or they double up.** A folder favorited from the public
+  view and the same folder favorited from its owner's view are the same object; only
+  `_normalizePath` makes them compare equal.
+- **The Workshop shortcut stores a literal space, not `%20`.** `WorkspaceObjectSelector.js:742`
+  sets `'/public/ARWattam@patricbrc.org/BV-BRC Workshop'` — correct, because that value is an
+  internal path, not a URL. The same folder appears as a hand-written href with `%20` in
+  `views/bv-brc-header.ejs:561` and `public/js/p3/app/p3app.js:1029`. Don't "fix" either to
+  match the other; they are in different domains. But a raw path with a space is exactly the
+  `encodePath` hazard below if it ever reaches a `/navigate` href.
+
 ### Empty result-grid pitfalls (JIRA-4420)
 
 The Homology/BLAST result VIEW showed an empty grid for two independent reasons — both worth knowing because the same patterns recur elsewhere:
@@ -323,6 +359,66 @@ Edit `p3-web.conf` (copy from `p3-web.conf.sample`):
 - `workspaceServiceURL` - Workspace service endpoint
 
 **Important:** Restart server after config changes.
+
+## Release branches, versions, and hotfixes
+
+Four lanes: `alpha` (staging/dev, the default PR target), `beta` (pre-release), `master`
+(production). Normal flow is alpha → beta → master. Hotfixes go **directly to master** and
+are cherry-picked back.
+
+### Versions are strict three-part SemVer. There is no fourth component.
+
+Do not invent a hotfix suffix. **The patch component *is* the hotfix component** — that is
+what SemVer clause 6 defines it as. Both ways of extending `X.Y.Z` are broken here:
+
+- `3.59.12-1` is a **prerelease** and sorts *below* `3.59.12`
+- `3.59.12+hotfix.1` is **build metadata**, excluded from precedence by clause 10 —
+  `semver.compare('3.59.12+hotfix.1', '3.59.12')` returns **0**, `semver.eq()` is **true**
+
+A four-part `3.59.12.1` is not SemVer at all, breaks sort order against every prior `vX.Y.Z` tag (58 as of 2026-10), and
+npm **silently mis-parses it**: `npm version 3.59.12.1` stores `3.59.1-2.1` and exits 0.
+A later `npm version patch` against a four-part version then exits **1** with
+`Invalid version: patch`.
+
+Two npm traps found the hard way:
+
+- **`npm version --dry-run` is not read-only.** `npm version patch --no-git-tag-version
+  --dry-run` reported `v3.59.14` *and wrote the manifest*. Don't trust that flag
+  combination; `git diff` after.
+- **`node -p` prints the final expression's value.** `node -p "...process.stdout.write(v)"`
+  emits the version *and* the boolean `write()` returns — this produced a literal
+  `3.59.12true` version string in the hotfix workflow. Use `node -e` when writing to stdout.
+
+### The lane invariant: alpha must be bumped before cutting a hotfix
+
+**master holds the lower version line; alpha holds the higher one. A hotfix version must be
+strictly below alpha's.** Otherwise the hotfix number collides with whatever alpha releases
+next — the original workflow bumped "the higher of master and alpha" and produced `3.60.2`
+with master at 3.59.12 and alpha at 3.60.1, which was alpha's own next release number.
+
+If alpha is not already ahead, bump it to a new minor line (Release workflow) *first*, then
+cut the hotfix. `.github/workflows/hotfix.yml` enforces this and refuses to run otherwise.
+
+### Workflow gotchas
+
+`hotfix-tag.yml` tags, then cherry-picks to alpha and beta. Points that bit us:
+
+- **The tag step runs first and succeeds even when everything after it fails.** All five
+  historical runs failed at the cherry-pick, but all five tags exist — so the breakage was
+  invisible. If you only check that the tag landed, you have checked nothing.
+- **An empty cherry-pick and a conflicted one both exit non-zero.** Distinguish them with
+  `git diff --name-only --diff-filter=U` (empty = no unmerged paths), not the exit code.
+  Treating "empty" as "conflict" led to an abort, then an unconditional `gh pr create` that
+  died on "No commits between", and `bash -e` killed the job — skipping beta entirely.
+- **`git cherry-pick -m 1` is only valid on a merge commit.** Squash and rebase merges
+  produce single-parent commits, where `-m` fails. Detect with
+  `git rev-list --parents -n1 <sha> | wc -w` (3 = merge, 2 = ordinary).
+- **Never cherry-pick the version bump across lanes.** The target branch owns its own
+  version. Restore the manifests from the target after the pick:
+  `git checkout "origin/${TARGET}" -- package.json package-lock.json`.
+
+The same reasoning applies by hand: to move a change from master to alpha, **cherry-pick,
+don't merge** — a merge drags master's lower version number into alpha's manifests.
 
 ## Security Utilities
 
