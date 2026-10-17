@@ -1,15 +1,12 @@
 {
-  'appLabel': '',
-  'production': true,
-  'accountURL': '',
-  'authorizationURL': '',
-  'dataServiceURL': '/api',
-  'gaID': '',
-  'newrelic_license_key': '',
-  'enableDevTools': false,
-  'cartoBasemapApiKey': '',
-  // Retry Data API 429/503 responses with backoff (BV-BRC-API Docs/CLIENT-429.md).
-  // Off by default; enabling routes dojo/request traffic through
-  // p3/util/throttledRequest. Enable per-deployment after a soak.
-  'enableThrottleRetry': false
+  "appLabel": "",
+  "production": true,
+  "accountURL": "",
+  "authorizationURL": "",
+  "dataServiceURL": "/api",
+  "gaID": "",
+  "newrelic_license_key": "",
+  "enableDevTools": false,
+  "cartoBasemapApiKey": "",
+  "enableThrottleRetry": false
 }
