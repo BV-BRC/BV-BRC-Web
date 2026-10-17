@@ -255,3 +255,14 @@ bundle must be committed alongside the `src/` change.
 
 The bundle is self-contained: `node-fetch` is a build-time dependency only, and the
 browser build uses the native `fetch`.
+
+### node-fetch is pinned to v2 on purpose
+
+The original `>=2.6.1` range resolved to node-fetch 3.x, which is ESM-only.
+browserify cannot parse it, so `npm run build` failed — and because the build
+pipes through `derequire`, the failure **truncated `dist/bvbrc_client.js` to
+zero bytes** rather than leaving the previous bundle intact. Pinned to `^2.7.0`
+(CJS), which is what the committed bundle has always been built against.
+
+If you change this, check `dist/` is non-empty afterwards; a broken build here
+is silent until the page fails to load.

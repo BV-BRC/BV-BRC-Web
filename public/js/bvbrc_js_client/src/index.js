@@ -1,6 +1,7 @@
 const fetch = require('node-fetch');
 const errors = require("./errors");
 const QueryResult = require("./query_result")
+const { fetchWithBackoff, httpError } = require("./retry")
 
 class BVBRCAPIService {
 	constructor(endpoint, token) {
@@ -51,13 +52,13 @@ class BVBRCAPIService {
 			}
 		}
 
-		const response = await fetch(`${this.endpoint}/${data_type}/${encodeURIComponent(id)}`, req_opts)
+		const response = await fetchWithBackoff(`${this.endpoint}/${data_type}/${encodeURIComponent(id)}`, req_opts)
 
 		if (!response.ok) {
 			if (response.status === 404) {
 				throw new errors.NotFound(`${data_type} ${id} not found`)
 			}
-			throw Error(`${response.status} ${response.statusText}`);
+			throw httpError(response);
 		}
 		return response.json()
 	}
@@ -121,10 +122,10 @@ class BVBRCAPIService {
 			req_options.body = body;
 		}
 		
-		var response = await fetch(url, req_options)
+		var response = await fetchWithBackoff(url, req_options)
 		
 		if (!response.ok) {
-			throw Error(`${response.statusText}`);
+			throw httpError(response);
 		}
 
 		switch(req_options.headers.accept){
@@ -159,10 +160,10 @@ class BVBRCAPIService {
 				accept: "application/json"
 			}
 		}
-		return fetch(`${this.endpoint}/${data_type}/schema`, req_opts)
+		return fetchWithBackoff(`${this.endpoint}/${data_type}/schema`, req_opts)
 			.then((response) => {
 				if (!response.ok) {
-					throw Error(`${response.statusText}`);
+					throw httpError(response);
 				}
 				return response.json()
 			})
@@ -445,10 +446,10 @@ class BVBRCAPIService {
 			body: JSON.stringify(data)
 		}
 
-		var response = await fetch(`${this.endpoint}/permissions/genome/${ids.join(',')}`, req_options)
+		var response = await fetchWithBackoff(`${this.endpoint}/permissions/genome/${ids.join(',')}`, req_options)
 
 		if (!response.ok) {
-			throw Error(`${response.statusText}`);
+			throw httpError(response);
 		}
 
 		return await response.json()

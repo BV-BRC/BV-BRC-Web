@@ -14,7 +14,7 @@
         "build": "mkdir -p dist && ./node_modules/.bin/browserify -p tinyify src/index.js --standalone BVBRCClient | ./node_modules/.bin/derequire  > dist/bvbrc_client.js"
     },
     "dependencies": {
-        "node-fetch": ">=2.6.1"
+        "node-fetch": "^2.7.0"
     },
     "devDependencies": {
         "browserify": "^17.0.0",
