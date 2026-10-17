@@ -78,6 +78,9 @@ define([
       this.viewer.addChild(this.subsystems, 12);
       // this.viewer.addChild(this.transcriptomics, 13);
       this.viewer.addChild(this.interactions, 14);
+      if (this.genomes && this.genomes.setOrganismContext) {
+        this.genomes.setOrganismContext('bacteria');
+      }
     },
 
     changeToVirusContext: function () {
@@ -89,6 +92,9 @@ define([
       this.viewer.removeChild(this.subsystems);
       // this.viewer.removeChild(this.transcriptomics);
       this.viewer.removeChild(this.interactions);
+      if (this.genomes && this.genomes.setOrganismContext) {
+        this.genomes.setOrganismContext('virus');
+      }
     },
 
     onSetTaxonomy: function (attr, oldVal, taxonomy) {

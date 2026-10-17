@@ -1,11 +1,11 @@
 define([
-  'dojo/_base/declare', 'dojo/on', 'dojo/dom-construct',
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/dom-construct',
   'dijit/popup', 'dijit/TooltipDialog',
   './GenomeGrid', './AdvancedSearchFields', './GridContainer',
   '../util/PathJoin'
 
 ], function (
-  declare, on, domConstruct,
+  declare, lang, on, domConstruct,
   popup, TooltipDialog,
   GenomeGrid, AdvancedSearchFields, GridContainer,
   PathJoin
@@ -32,7 +32,56 @@ define([
     enableAnchorButton: true,
     dataModel: 'genome',
     primaryKey: 'genome_id',
-    tooltip: 'The "Genomes" tab contains a list of all genomes associated with the current view and their metadata',
+    organismContext: null,
+
+    setOrganismContext: function (context) {
+      this.organismContext = context;
+      if (this.grid) {
+        this._applyOrganismContext();
+      }
+    },
+
+    _applyOrganismContext: function () {
+      if (!this.grid) {
+        return;
+      }
+      var columns = this.grid.get('columns');
+      if (!columns) {
+        return;
+      }
+
+      if (columns.contigs) {
+        columns.contigs = lang.mixin({}, columns.contigs);
+        switch (this.organismContext) {
+          case 'virus':
+            columns.contigs.label = 'Segments';
+            break;
+          case 'mixed':
+            columns.contigs.label = 'Contigs/Segments';
+            break;
+          default:
+            columns.contigs.label = 'Contigs';
+        }
+      }
+
+      if (this.organismContext === 'virus') {
+        if (columns.contig_l50) {
+          columns.contig_l50 = lang.mixin({}, columns.contig_l50, { hidden: true });
+        }
+        if (columns.contig_n50) {
+          columns.contig_n50 = lang.mixin({}, columns.contig_n50, { hidden: true });
+        }
+      }
+
+      this.grid.set('columns', columns);
+    },
+
+    onFirstView: function () {
+      this.inherited(arguments);
+      if (this.organismContext) {
+        this._applyOrganismContext();
+      }
+    },
     containerActions: GridContainer.prototype.containerActions.concat([
       [
         'DownloadTable',
