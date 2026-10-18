@@ -71,6 +71,31 @@ does not check the exit code of `build.sh`, so a failed optimize step leaves a s
   - `store/` - Data stores (JsonRest, Memory)
   - `resources/` - CSS stylesheets
 
+### `bvbrc_js_client` is vendored, not an npm dependency
+
+`public/js/bvbrc_js_client/` holds real, tracked files. It **was** a symlink to
+`node_modules/bvbrc_js_client` installed from `github:bv-brc/bvbrc_js_client` — git tracked
+the symlink and nothing inside it, so the client's source was not editable from this repo
+at all. Upstream has been dormant since 2021-08-10 (the pinned SHA was also HEAD of
+`main`), and BV-BRC-Web is its only consumer, so it was vendored. **This copy is the source
+of truth**; upstream is not kept in sync.
+
+`dist/bvbrc_client.js` is generated and must not be hand-edited. After changing `src/`:
+
+```bash
+cd public/js/bvbrc_js_client && npm install && npm run build   # commit dist/ too
+```
+
+Two traps, both documented in that directory's README:
+
+- **`node-fetch` is pinned to `^2.7.0` on purpose.** The original `>=2.6.1` resolved to 3.x,
+  which is ESM-only and unparseable by browserify — and because the build pipes through
+  `derequire`, the failure **truncated `dist/bvbrc_client.js` to zero bytes** rather than
+  leaving the previous bundle intact.
+- **`.gitignore` has bare `src/` and `test/` rules** (unanchored, so they match at any
+  depth) which silently swallowed the vendored package's own source. They are re-included
+  explicitly. Worth knowing before vendoring anything else.
+
 ### Widget Pattern
 Widgets follow Dojo's dijit pattern:
 ```javascript
@@ -162,6 +187,79 @@ Use RQL (Resource Query Language):
 // With filters
 state.search + '&' + state.hashParams.filter
 ```
+
+### HTTP 429/503 throttling: three transports, one contract (PRs #1465, #1467)
+
+The Data API sheds load with `429` (and `503`) carrying `Retry-After`. The normative client
+contract is [`BV-BRC-API/Docs/CLIENT-429.md`](https://github.com/BV-BRC/BV-BRC-API/blob/alpha/Docs/CLIENT-429.md);
+**the API ships with admission control disabled until clients implement it.**
+
+The rule is not "retry on 429" — it is *back off by the amount the server asked for, and
+give up rather than hammer*. Retry amplification caused the 2026-06-05 coordinator crash.
+
+`util/retryRequest.js` implements it: honour `Retry-After`, **jitter every wait by up to
++30%**, cap at 3 retries (interactive) or hold at a 300 s ceiling indefinitely
+(`mode: 'unattended'`, spec §3a), retry **429/503 only**, floor every delay at 1 s. It
+publishes `/throttle/{active,retrying,resolved,failed}`, which `widget/ThrottleBanner.js`
+renders as a countdown. All of it is gated on the **`enableThrottleRetry`** config flag
+(default `false`).
+
+**504 and 400 are deliberately not retried.** A 504 means the query was too expensive, so
+retrying repeats the cost; a 400 is a permanent refusal of that query.
+
+#### There is no single request funnel — there are three
+
+Knowing which transport a call uses determines whether it has 429 handling:
+
+| transport | how it gets coverage |
+|---|---|
+| `dojo/request` (the overwhelming majority of p3 imports — ~216 vs ~13 files importing `dojo/request/xhr`) | `util/throttledRequest.js`, registered as `requestProvider` in the `dojoConfig` at `views/javascript.ejs` — covers every call site with **no edits to any of them** |
+| `store/P3JsonRest.js` | uses `dojo.rawXhrPost` from legacy `dojo/_base/xhr`, which **never consults `config-requestProvider`**; wrapped separately |
+| `bvbrc_js_client` (`fetch`) | its own `src/retry.js`, a deliberate duplicate since the package is standalone with no AMD loader |
+
+The `requestProvider` hook works because `dojo/request` loads `./request/default!` with an
+empty plugin id, and `request/default.js` resolves `has('config-requestProvider')` in that
+case. The Dojo build leaves that as a **runtime** lookup while folding `has('host-browser')`
+to a literal, so it survives `buildClient.sh`. Verified.
+
+**Importing `dojo/request/xhr` directly opts you out of all of this.** Use `dojo/request`
+unless you specifically need the raw transport. The data-API callers currently doing so —
+and therefore uncovered — are `widget/search/SFVTSearch.js`, `widget/viewer/SystemStatus.js`,
+`util/DownloadExecutor.js` and `widget/download/RecordSelectorStep.js`. To find them:
+
+```bash
+grep -rl "dojo/request/xhr" public/js/p3/ | xargs grep -l "dataAPI\|dataServiceURL\|apiServer"
+```
+
+#### Two freeze traps when wrapping a dojo promise
+
+Both are silent no-ops that bite on the **success path with no 429 involved**:
+
+- **`dojo/Deferred` freezes its promise** (`Deferred.js:305`), so `promise.response = …` or
+  `results.total = …` on it does nothing. `lang.delegate()` first — which is exactly what
+  `QueryResults` does to a promise for the same reason.
+- **`dojo/request`'s contract is a *dual* promise** — the data promise plus a `.response`
+  sub-promise (`request/util.js:146`). Delegating to `dojo/request/xhr` preserves it for
+  free; wrapping does not, and dropping it breaks consumers inside dojo/dgrid even though
+  no p3 call site reads it directly.
+
+`P3JsonRest` hit a third: `results.total` used to read the xhr off `results.ioArgs`, a
+property of the *specific* Deferred `rawXhrPost` returned. Any wrapper returns a different
+promise, so that back-channel vanishes and every grid silently loses its row count.
+
+#### Never render a shed request as an empty result set
+
+This is the contract's sharpest requirement and the easiest to get wrong. Measured on a
+grid whose query was shed with the banner absent: it renders `1 - 1 of 0 results` —
+indistinguishable from a legitimate empty result, so **the user concludes their data is
+missing**. Retry logic without the banner makes throttling *less* visible, not more.
+
+#### Still uncovered: downloads
+
+`form.submit()` and `window.open()` hand the response to the browser, so no wrapper can
+reach them — and they are the heaviest requests on the site (`limit(2500000)`). See the
+Unified Download Wizard section; `DownloadExecutor`'s `xhr.post` sites also import
+`dojo/request/xhr` directly and so bypass the provider.
 
 ### Never inject collection-specific filters into `state.search` (PR #1330 / #1412)
 
@@ -398,6 +496,24 @@ with master at 3.59.12 and alpha at 3.60.1, which was alpha's own next release n
 
 If alpha is not already ahead, bump it to a new minor line (Release workflow) *first*, then
 cut the hotfix. `.github/workflows/hotfix.yml` enforces this and refuses to run otherwise.
+
+### An unmerged release PR blocks every later release run
+
+`release.yml` derives the next version from **alpha's `package.json`**, which only advances
+when a release PR *merges*. Leave one open and the next run recomputes the same number,
+then dies trying to push a branch that already exists:
+
+```
+! [rejected]  release/v3.60.6 -> release/v3.60.6 (fetch first)
+```
+
+Nothing in that message says "a release PR is still open," which is what it actually means.
+It failed safely — the push was rejected rather than clobbering the branch, and nothing
+landed on alpha — but it will recur identically until the open PR is merged or abandoned.
+
+**Merge release PRs promptly.** If one is abandoned, close it *and* delete its branch;
+check `git ls-remote --tags` first, because a tag for that version would make the number
+unusable.
 
 ### Workflow gotchas
 
