@@ -414,11 +414,23 @@ define([
      * - Scrolls to bottom after rendering
      * - Shows empty state if no messages
      */
-    showMessages: function(messages, scrollToBottom = false) {
+    /**
+     * @param {Array} messages
+     * @param {boolean} [scrollToBottom]
+     * @param {boolean} [announce] - The refresh may have appended messages
+     *   the user did not ask for (a job-completed message found by the
+     *   workflow-watch poll): if the chat on screen grew and the user was
+     *   at the bottom, follow it; otherwise light the "New response" pill.
+     */
+    showMessages: function(messages, scrollToBottom = false, announce = false) {
       if (!Array.isArray(messages)) {
         messages = [];
       }
       if (messages.length) {
+        var previous = (this._messagesSessionId === this.sessionId && Array.isArray(this.messages)) ? this.messages : [];
+        var grew = announce && previous.length > 0 && messages.length > previous.length;
+        var wasAtBottom = this._isAtBottom();
+        this._messagesSessionId = this.sessionId;
         this.messages = messages; // Store messages for redrawing
 
         // Check if user was near bottom before re-rendering
@@ -457,6 +469,12 @@ define([
         wasNearBottom = false;
         if (scrollToBottom || wasNearBottom) {
           this.scrollToBottom();
+        } else if (grew) {
+          if (wasAtBottom) {
+            this.scrollToBottom();
+          } else if (!this._isAtBottom()) {
+            this._hasNewResponse = true;
+          }
         }
         this._updateJumpButton();
       } else {

@@ -223,27 +223,7 @@ define([
 
             this.own(topic.subscribe('RefreshSession', lang.hitch(this, function(sessionId, scrollToBottom = true) {
                 if (!this._active) { return; }
-                // Refresh only the session on screen.  The sidebar poller
-                // publishes this when ANY session's background turn ends; the
-                // old guard let it through whenever either id was empty.
-                if (!sessionId || !this.sessionId || sessionId !== this.sessionId) { return; }
-                this.copilotApi.getSessionMessages(sessionId).then(lang.hitch(this, function(res) {
-                    // The user may have switched (e.g. New Chat) while this was
-                    // in flight; rendering now would show the old session's
-                    // messages under the new session id (mshukla, 2026-10-09).
-                    if (sessionId !== this.sessionId) { return; }
-                    var messages = [];
-                    if (Array.isArray(res.messages)) {
-                        if (res.messages.length > 0 && Array.isArray(res.messages[0] && res.messages[0].messages)) {
-                            messages = res.messages[0].messages; // Legacy nested API shape
-                        } else {
-                            messages = res.messages; // Current flat API shape
-                        }
-                    }
-                    this.chatStore.setData(messages);
-                    this.displayWidget.showMessages(messages, scrollToBottom);
-                    this._applySessionWorkflowContext(res);
-                }));
+                this._refreshMessages(sessionId, scrollToBottom, false);
             })));
 
             // Handle selecting existing chat sessions
@@ -385,7 +365,7 @@ define([
                     // A completion that came in during the turn waited for it.
                     if (this._watchRefreshPending) {
                         this._watchRefreshPending = false;
-                        topic.publish('RefreshSession', this.sessionId, false);
+                        this._refreshMessages(this.sessionId, false, true);
                     }
                     // The turn may have submitted jobs; their watches are
                     // registered as it is saved, so look again shortly.
@@ -716,6 +696,36 @@ define([
          * Clears existing chat data when switching sessions
          * @param {string} sessionId New session identifier
          */
+        /**
+         * Re-read the session's messages from Mongo and render them.
+         * Refreshes only the session on screen.  The sidebar poller
+         * publishes RefreshSession when ANY session's background turn ends;
+         * the old guard let it through whenever either id was empty.
+         * @param {boolean} announce - the refresh may append messages the
+         *   user did not ask for (the workflow-watch poll): follow them if
+         *   the user is at the bottom, else show the "New response" pill.
+         */
+        _refreshMessages: function(sessionId, scrollToBottom, announce) {
+            if (!sessionId || !this.sessionId || sessionId !== this.sessionId) { return; }
+            this.copilotApi.getSessionMessages(sessionId).then(lang.hitch(this, function(res) {
+                // The user may have switched (e.g. New Chat) while this was
+                // in flight; rendering now would show the old session's
+                // messages under the new session id (mshukla, 2026-10-09).
+                if (sessionId !== this.sessionId) { return; }
+                var messages = [];
+                if (Array.isArray(res.messages)) {
+                    if (res.messages.length > 0 && Array.isArray(res.messages[0] && res.messages[0].messages)) {
+                        messages = res.messages[0].messages; // Legacy nested API shape
+                    } else {
+                        messages = res.messages; // Current flat API shape
+                    }
+                }
+                this.chatStore.setData(messages);
+                this.displayWidget.showMessages(messages, scrollToBottom, announce);
+                this._applySessionWorkflowContext(res);
+            }));
+        },
+
         changeSessionId: function(sessionId) {
             this.sessionId = sessionId;
             // Do not add the session to the sessions store here; it will be added after the first successful message.
@@ -1411,7 +1421,7 @@ define([
                         if (this.inputWidget && this.inputWidget.isSubmitting) {
                             this._watchRefreshPending = true;
                         } else {
-                            topic.publish('RefreshSession', sessionId, false);
+                            this._refreshMessages(sessionId, false, true);
                         }
                     }), 3000);
                 }
