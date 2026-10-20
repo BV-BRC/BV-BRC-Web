@@ -152,9 +152,33 @@
   }
 
   /**
+   * Save-dialog details for a link: the suggested name (no row count, which
+   * is not known yet when the dialog opens) and the file type.  Null for a
+   * link this module does not page.
+   */
+  function saveOptions(href) {
+    var parsed = parseDownloadUrl(href);
+    if (!canPage(parsed)) return null;
+    var accept = {};
+    accept[parsed.format.mime] = ['.' + parsed.format.ext];
+    return {
+      suggestedName: parsed.collection + (parsed.format.suffix || '') + '.' + parsed.format.ext,
+      types: [{ description: parsed.format.ext.toUpperCase() + ' file', accept: accept }]
+    };
+  }
+
+  /**
    * Fetch every page.  opts: {fetch, token, pageSize, confirmLarge(total) -> Promise<bool>,
-   * onProgress(rows, total), isCancelled() -> bool}.
-   * Resolves {parts, rows, total, fileName, mime} or {cancelled: true}.
+   * onProgress(rows, total), isCancelled() -> bool, sink}.
+   *
+   * Without a sink the pages are kept and joined by the caller (resolves
+   * {parts, rows, total, fileName, mime}); above CONFIRM_ABOVE_ROWS it asks
+   * first, since all of it is in memory until saved.  With a sink
+   * ({write(text) -> Promise}: a file the browser writes as we go, File
+   * System Access API) each page is written as it arrives and dropped, so
+   * memory stays at one page and nothing is asked (resolves
+   * {rows, total, streamed: true}).  Either way {cancelled: true} on cancel;
+   * closing or aborting the sink is the caller's.
    */
   function run(href, opts) {
     var parsed = parseDownloadUrl(href);
@@ -182,7 +206,8 @@
     // before anything big is fetched.
     return get('*', 1).then(function (probe) {
       var total = probe.total;
-      var ask = (total !== null && total > CONFIRM_ABOVE_ROWS && opts.confirmLarge)
+      var sink = opts.sink || null;
+      var ask = (!sink && total !== null && total > CONFIRM_ABOVE_ROWS && opts.confirmLarge)
         ? opts.confirmLarge(total) : Promise.resolve(true);
       return Promise.resolve(ask).then(function (ok) {
         if (!ok) return { cancelled: true };
@@ -194,16 +219,24 @@
             if (cancelled()) return { cancelled: true };
             var n = countRecords(page.text, parsed.format);
             var body = pageBody(page.text, parsed.format, isFirst);
-            if (body) parts.push(body);
-            rows += n;
-            if (page.total !== null) total = page.total;
-            if (opts.onProgress) opts.onProgress(rows, total);
-            var done = n === 0 || !page.next || page.next === mark || (total !== null && rows >= total);
-            return done ? null : step(page.next, false);
+            var written = Promise.resolve();
+            if (body && sink) {
+              written = sink.write(body);
+            } else if (body) {
+              parts.push(body);
+            }
+            return Promise.resolve(written).then(function () {
+              rows += n;
+              if (page.total !== null) total = page.total;
+              if (opts.onProgress) opts.onProgress(rows, total);
+              var done = n === 0 || !page.next || page.next === mark || (total !== null && rows >= total);
+              return done ? null : step(page.next, false);
+            });
           });
         };
         return Promise.resolve(step('*', true)).then(function (stop) {
           if (stop && stop.cancelled) return stop;
+          if (sink) return { rows: rows, total: total, streamed: true };
           return {
             parts: parts,
             rows: rows,
@@ -225,6 +258,7 @@
     totalFromRange: totalFromRange,
     pageBody: pageBody,
     countRecords: countRecords,
+    saveOptions: saveOptions,
     run: run
   };
 }));

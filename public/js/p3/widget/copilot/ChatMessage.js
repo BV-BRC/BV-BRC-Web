@@ -170,7 +170,10 @@ define([
      * Data-API download links in an answer (TSV / FASTA, http_download=true)
      * stop at 25,000 rows on the server.  A plain left click pages through the
      * whole result in the browser instead (CursorDownload); middle-click and
-     * copy-link still get the plain link.
+     * copy-link still get the plain link.  Where the browser has the File
+     * System Access API (Chrome, Edge) the Save dialog opens first and each
+     * page is written to the file as it arrives; elsewhere (Firefox, Safari)
+     * the pages are held in memory and saved at the end.
      * @private
      */
     _wireCursorDownloads: function (contentNode) {
@@ -183,15 +186,45 @@ define([
         var href = link.getAttribute('href');
         if (!CursorDownload.canPage(CursorDownload.parseDownloadUrl(href))) return;
         evt.preventDefault();
-        this._runCursorDownload(href);
+        if (typeof window.showSaveFilePicker !== 'function') {
+          this._runCursorDownload(href, null);
+          return;
+        }
+        // Must be called while the click still counts as a user action, so
+        // before anything is fetched.
+        window.showSaveFilePicker(CursorDownload.saveOptions(href)).then(lang.hitch(this, function (handle) {
+          return handle.createWritable().then(lang.hitch(this, function (writable) {
+            this._runCursorDownload(href, { writable: writable, name: handle.name });
+          }));
+        }), lang.hitch(this, function (err) {
+          if (err && err.name === 'AbortError') return; // the Save dialog was closed
+          this._runCursorDownload(href, null); // refused (e.g. inside a frame): keep it in memory
+        }));
       }));
     },
 
-    /** Runs one paged download with a progress dialog (Cancel), then saves the file. @private */
-    _runCursorDownload: function (href) {
+    /**
+     * Runs one paged download with a progress dialog (Cancel).  With a file
+     * ({writable, name} from the Save dialog) each page is written as it
+     * arrives and a cancelled or failed download discards the file; without
+     * one the pages are joined and saved at the end.
+     * @private
+     */
+    _runCursorDownload: function (href, file) {
       var cancelled = false;
-      var box = domConstruct.create('div', { style: 'padding: 16px; min-width: 320px;' });
-      var status = domConstruct.create('div', { style: 'margin-bottom: 12px; font-size: 13px; color: #333;' }, box);
+      var discarded = false;
+      var discard = function () {
+        if (file && !discarded) {
+          discarded = true;
+          file.writable.abort().catch(function () {});
+        }
+      };
+      // Fixed width with wrapping: the long "Download anyway?" text otherwise
+      // widened the dialog past the window.
+      var box = domConstruct.create('div', { style: 'padding: 16px; width: 380px; max-width: 80vw; box-sizing: border-box;' });
+      var status = domConstruct.create('div', {
+        style: 'margin-bottom: 12px; font-size: 13px; color: #333; white-space: normal; overflow-wrap: anywhere;'
+      }, box);
       var barOuter = domConstruct.create('div', {
         style: 'width: 100%; height: 20px; background: #e0e0e0; border-radius: 4px; overflow: hidden; margin-bottom: 12px;'
       }, box);
@@ -212,6 +245,7 @@ define([
       };
       var cancelHandle = on(cancelBtn, 'click', function () {
         cancelled = true;
+        discard();
         close();
       });
       dlg.show();
@@ -227,6 +261,7 @@ define([
       CursorDownload.run(href, {
         fetch: window.fetch.bind(window),
         token: (window.App && window.App.authorizationToken) || null,
+        sink: file ? { write: function (text) { return file.writable.write(text); } } : null,
         isCancelled: function () { return cancelled; },
         onProgress: function (rows, total) {
           status.textContent = 'Downloading…';
@@ -263,10 +298,20 @@ define([
           });
         }
       }).then(function (result) {
-        if (cancelled || !result || result.cancelled) return;
+        if (cancelled || !result || result.cancelled) {
+          discard();
+          return;
+        }
         if (!result.rows) {
+          discard();
           finish('No rows matched this query, so there is nothing to download.');
           return;
+        }
+        if (file) {
+          return file.writable.close().then(function () {
+            bar.style.width = '100%';
+            finish('Saved ' + fmt(result.rows) + ' rows to ' + file.name + '.');
+          });
         }
         var blobUrl = URL.createObjectURL(new Blob(result.parts, { type: result.mime }));
         var a = domConstruct.create('a', { href: blobUrl, download: result.fileName, style: 'display: none;' }, document.body);
@@ -277,7 +322,8 @@ define([
         }, 1000);
         bar.style.width = '100%';
         finish('Saved ' + fmt(result.rows) + ' rows as ' + result.fileName + '.');
-      }, function (err) {
+      }).then(null, function (err) {
+        discard();
         if (cancelled) return;
         finish('The download failed: ' + (err && err.message ? err.message : err)
             + '. The plain link (first 25,000 rows) still works with a middle-click.');

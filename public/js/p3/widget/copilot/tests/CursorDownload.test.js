@@ -135,3 +135,39 @@ describe('run', () => {
     await expect(CD.run(TSV, { fetch })).rejects.toThrow('HTTP 500');
   });
 });
+
+describe('run with a file to write to (File System Access API)', () => {
+  test('writes each page as it arrives, one header, nothing kept', async () => {
+    const api = fakeApi([['r1', 'r2'], ['r3', 'r4'], ['r5']]);
+    const written = [];
+    const sink = { write: (text) => { written.push(text); return Promise.resolve(); } };
+    const result = await CD.run(TSV, { fetch: api.fetch, pageSize: 2, sink });
+    expect(written).toEqual(['Genome ID\tGenome Name\nr1\nr2\n', 'r3\nr4\n', 'r5\n']);
+    expect(result).toEqual({ rows: 5, total: 5, streamed: true });
+  });
+
+  test('does not ask about size: the file is on disk, not in memory', async () => {
+    const api = fakeApi([['r1']], { total: CD.CONFIRM_ABOVE_ROWS + 1 });
+    const confirmLarge = jest.fn(() => Promise.resolve(false));
+    const sink = { write: () => Promise.resolve() };
+    const result = await CD.run(TSV, { fetch: api.fetch, sink, confirmLarge });
+    expect(confirmLarge).not.toHaveBeenCalled();
+    expect(result.streamed).toBe(true);
+  });
+
+  test('a failed write stops the download', async () => {
+    const api = fakeApi([['r1', 'r2'], ['r3']]);
+    const sink = { write: () => Promise.reject(new Error('disk full')) };
+    await expect(CD.run(TSV, { fetch: api.fetch, pageSize: 2, sink })).rejects.toThrow('disk full');
+    expect(api.calls).toHaveLength(2); // probe + first page, nothing after the failed write
+  });
+
+  test('saveOptions names the file without a row count and gives its type', () => {
+    expect(CD.saveOptions(TSV)).toEqual({
+      suggestedName: 'genome.tsv',
+      types: [{ description: 'TSV file', accept: { 'text/tab-separated-values': ['.tsv'] } }]
+    });
+    expect(CD.saveOptions(FASTA).suggestedName).toBe('genome_feature_protein.fasta');
+    expect(CD.saveOptions('https://www.bv-brc.org/view/GenomeList/')).toBeNull();
+  });
+});
