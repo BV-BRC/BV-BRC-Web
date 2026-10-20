@@ -232,6 +232,14 @@ define([
         style: 'width: 0%; height: 100%; background: #2196F3; transition: width 0.3s ease;'
       }, barOuter);
       var count = domConstruct.create('div', { style: 'margin-bottom: 16px; font-size: 12px; color: #666; text-align: center;' }, box);
+      // In-memory path only (Firefox, Safari: no File System Access API).
+      if (!file) {
+        domConstruct.create('div', {
+          style: 'margin-bottom: 12px; font-size: 12px; color: #666; white-space: normal;',
+          textContent: 'This browser cannot save straight to a file, so the download is held in memory '
+            + 'until it finishes. For very large downloads, Chrome or Edge write the file as it downloads.'
+        }, box);
+      }
       var buttons = domConstruct.create('div', { style: 'text-align: center;' }, box);
       var cancelBtn = domConstruct.create('button', { type: 'button', class: 'chat-card-btn', textContent: 'Cancel' }, buttons);
       status.textContent = 'Preparing the download…';
