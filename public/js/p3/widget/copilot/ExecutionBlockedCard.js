@@ -76,16 +76,18 @@ define([
 
     _toolLabel: function (tool) {
       if (tool === 'submit_gowe_job') { return 'Job'; }
-      if (tool === 'create_group') { return 'Group'; }
+      if (tool === 'create_group' || tool === 'edit_group') { return 'Group'; }
       return tool || 'Action';
     },
 
     _counts: function () {
-      var jobs = 0, groups = 0;
+      var jobs = 0, groups = 0, edits = 0;
       this.blockedActions.forEach(function (a) {
-        if (a && a.tool === 'create_group') { groups++; } else { jobs++; }
+        if (a && a.tool === 'create_group') { groups++; }
+        else if (a && a.tool === 'edit_group') { groups++; edits++; }
+        else { jobs++; }
       });
-      return { jobs: jobs, groups: groups };
+      return { jobs: jobs, groups: groups, edits: edits };
     },
 
     // "Submit these 3 jobs?" / "Submit this job?" / "Create this group?" /
@@ -97,7 +99,10 @@ define([
         return 'Run these ' + n + ' actions?';
       }
       if (c.groups) {
-        return c.groups === 1 ? 'Create this group?' : 'Create these ' + c.groups + ' groups?';
+        // edit_group changes an existing group (asks in every mode)
+        var verb = c.edits === c.groups ? 'Update' : (c.edits ? 'Run' : 'Create');
+        if (verb === 'Run') { return 'Run these ' + c.groups + ' group actions?'; }
+        return c.groups === 1 ? verb + ' this group?' : verb + ' these ' + c.groups + ' groups?';
       }
       return c.jobs === 1 ? 'Submit this job?' : 'Submit these ' + c.jobs + ' jobs?';
     },
@@ -105,7 +110,10 @@ define([
     _yesLabel: function () {
       var c = this._counts();
       if (c.jobs && c.groups) { return 'Yes, run them'; }
-      if (c.groups) { return c.groups === 1 ? 'Yes, create it' : 'Yes, create them'; }
+      if (c.groups) {
+        var v = c.edits === c.groups ? 'update' : (c.edits ? 'run' : 'create');
+        return c.groups === 1 ? 'Yes, ' + v + ' it' : 'Yes, ' + v + ' them';
+      }
       return c.jobs === 1 ? 'Yes, submit it' : 'Yes, submit all ' + c.jobs;
     },
 
